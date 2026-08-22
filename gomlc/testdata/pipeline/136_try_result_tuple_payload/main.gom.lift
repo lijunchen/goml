@@ -6,53 +6,53 @@ fn split_host_port(ok/0: bool) -> Result__(string,string)__string {
   }
 }
 
-fn render(ok/1: bool) -> Result__string__string {
-  let mtmp799 =
-    let mtmp796 = split_host_port(ok/1) in
-    match mtmp796 {
-      Result__(string,string)__string::Ok(x797) => {
-        let x797 = Result__(string,string)__string::Ok._0(mtmp796) in
-        let try_value/14 = x797 in
-        try_value/14
+fn render(ok/0: bool) -> Result__string__string {
+  let mtmp0 =
+    let mtmp1 = split_host_port(ok/0) in
+    match mtmp1 {
+      Result__(string,string)__string::Ok(x0) => {
+        let x0 = Result__(string,string)__string::Ok._0(mtmp1) in
+        let try_value/0 = x0 in
+        try_value/0
       },
-      Result__(string,string)__string::Err(x798) => {
-        let x798 = Result__(string,string)__string::Err._0(mtmp796) in
-        let try_residual/14 = x798 in
-        return Result__string__string::Err(try_residual/14)
+      Result__(string,string)__string::Err(x1) => {
+        let x1 = Result__(string,string)__string::Err._0(mtmp1) in
+        let try_residual/0 = x1 in
+        return Result__string__string::Err(try_residual/0)
       },
     } in
-  let x800 = mtmp799.0 in
-  let x801 = mtmp799.1 in
-  let port/3 = x801 in
-  let host/2 = x800 in
-  Result__string__string::Ok(((host/2 + ":") + port/3))
+  let x2 = mtmp0.0 in
+  let x3 = mtmp0.1 in
+  let port/0 = x3 in
+  let host/0 = x2 in
+  Result__string__string::Ok(((host/0 + ":") + port/0))
 }
 
-fn show(res/4: Result__string__string) -> string {
-  match res/4 {
-    Result__string__string::Ok(x802) => {
-      let x802 = Result__string__string::Ok._0(res/4) in
-      let value/5 = x802 in
-      ("ok " + value/5)
+fn show(res/0: Result__string__string) -> string {
+  match res/0 {
+    Result__string__string::Ok(x0) => {
+      let x0 = Result__string__string::Ok._0(res/0) in
+      let value/0 = x0 in
+      ("ok " + value/0)
     },
-    Result__string__string::Err(x803) => {
-      let x803 = Result__string__string::Err._0(res/4) in
-      let err/6 = x803 in
-      ("err " + err/6)
+    Result__string__string::Err(x1) => {
+      let x1 = Result__string__string::Err._0(res/0) in
+      let err/0 = x1 in
+      ("err " + err/0)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild804 = println__T_string(show(render(true))) in
-  let _wild805 = println__T_string(show(render(false))) in
+  let _wild0 = println__T_string(show(render(true))) in
+  let _wild1 = println__T_string(show(render(false))) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

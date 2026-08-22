@@ -1,432 +1,432 @@
 fn early_return() -> isize {
-  let defer_return796 = 7 in
-  join inline_cont969(_defer797: unit) -> isize {
-    let inline966 = "return:outer" in
-    let inline967 = trait_impl#ToString#string#to_string(inline966) in
-    let inline968 = @runtime(core.string_println)(inline967) in
-    defer_return796
+  let defer_return0 = 7 in
+  join inline_cont0(_defer0: unit) -> isize {
+    let inline0 = "return:outer" in
+    let inline1 = trait_impl#ToString#string#to_string(inline0) in
+    let inline2 = @runtime(core.string_println)(inline1) in
+    defer_return0
   } in
-  let inline970 = "return:inner" in
-  let inline971 = trait_impl#ToString#string#to_string(inline970) in
-  let inline972 = @runtime(core.string_println)(inline971) in
-  jump inline_cont969(())
+  let inline3 = "return:inner" in
+  let inline4 = trait_impl#ToString#string#to_string(inline3) in
+  let inline5 = @runtime(core.string_println)(inline4) in
+  jump inline_cont0(())
 }
 
 fn maybe(value/0: Option__isize) -> Option__isize {
-  join k850(jp851: isize) -> Option__isize {
-    let defer_result807 = Option__isize::Some(jp851) in
-    let inline978 = "try:cleanup" in
-    let inline979 = trait_impl#ToString#string#to_string(inline978) in
-    let inline980 = @runtime(core.string_println)(inline979) in
-    defer_result807
+  join k0(jp0: isize) -> Option__isize {
+    let defer_result0 = Option__isize::Some(jp0) in
+    let inline0 = "try:cleanup" in
+    let inline1 = trait_impl#ToString#string#to_string(inline0) in
+    let inline2 = @runtime(core.string_println)(inline1) in
+    defer_result0
   } in
   match value/0 {
     Tag_0 => {
-      let defer_return805 = Tag_0 in
-      let inline974 = "try:cleanup" in
-      let inline975 = trait_impl#ToString#string#to_string(inline974) in
-      let inline976 = @runtime(core.string_println)(inline975) in
-      defer_return805
+      let defer_return0 = Tag_0 in
+      let inline3 = "try:cleanup" in
+      let inline4 = trait_impl#ToString#string#to_string(inline3) in
+      let inline5 = @runtime(core.string_println)(inline4) in
+      defer_return0
     },
     Tag_1 => {
-      let x804 = Option__isize::Some._0(value/0) in
-      jump k850(x804)
+      let x0 = Option__isize::Some._0(value/0) in
+      jump k0(x0)
     },
   }
 }
 
 fn loop_cleanup() -> unit {
-  join inline_cont1002(index/2: Ref[isize]) -> unit {
-    join exit853() -> unit {
+  join inline_cont0(index/0: Ref[isize]) -> unit {
+    join exit0() -> unit {
       ()
     } in
     joinrec {
-      join loop854() -> unit {
-        join inline_cont1000(t855: isize) -> unit {
-          let t856 = (t855 < 3) in
-          if t856 {
-            join inline_cont998(current/3: isize) -> unit {
-              let t857 = (current/3 + 1) in
-              join inline_cont996(_wild809: unit) -> unit {
-                let t861 = (current/3 == 0) in
-                join k858() -> unit {
-                  join inline_cont994(t859: string) -> unit {
-                    let t860 = ("loop:" + t859) in
-                    let inline992 = trait_impl#ToString#string#to_string(t860) in
-                    let inline993 = @runtime(core.string_println)(inline992) in
-                    jump loop854()
+      join loop0() -> unit {
+        join inline_cont1(t0: isize) -> unit {
+          let t1 = (t0 < 3) in
+          if t1 {
+            join inline_cont2(current/0: isize) -> unit {
+              let t2 = (current/0 + 1) in
+              join inline_cont3(_wild0: unit) -> unit {
+                let t3 = (current/0 == 0) in
+                join k0() -> unit {
+                  join inline_cont4(t4: string) -> unit {
+                    let t5 = ("loop:" + t4) in
+                    let inline0 = trait_impl#ToString#string#to_string(t5) in
+                    let inline1 = @runtime(core.string_println)(inline0) in
+                    jump loop0()
                   } in
-                  let inline995 = __goml_builtin_int_to_string(current/3) in
-                  jump inline_cont994(inline995)
+                  let inline2 = __goml_builtin_int_to_string(current/0) in
+                  jump inline_cont4(inline2)
                 } in
-                if t861 {
-                  join inline_cont984(t862: string) -> unit {
-                    let t863 = ("loop:" + t862) in
-                    let inline982 = trait_impl#ToString#string#to_string(t863) in
-                    let inline983 = @runtime(core.string_println)(inline982) in
-                    jump loop854()
+                if t3 {
+                  join inline_cont5(t6: string) -> unit {
+                    let t7 = ("loop:" + t6) in
+                    let inline3 = trait_impl#ToString#string#to_string(t7) in
+                    let inline4 = @runtime(core.string_println)(inline3) in
+                    jump loop0()
                   } in
-                  let inline985 = __goml_builtin_int_to_string(current/3) in
-                  jump inline_cont984(inline985)
+                  let inline5 = __goml_builtin_int_to_string(current/0) in
+                  jump inline_cont5(inline5)
                 } else {
-                  let t865 = (current/3 == 1) in
-                  if t865 {
-                    join inline_cont989(t866: string) -> unit {
-                      let t867 = ("loop:" + t866) in
-                      let inline987 = trait_impl#ToString#string#to_string(t867) in
-                      let inline988 = @runtime(core.string_println)(inline987) in
-                      jump exit853()
+                  let t8 = (current/0 == 1) in
+                  if t8 {
+                    join inline_cont6(t9: string) -> unit {
+                      let t10 = ("loop:" + t9) in
+                      let inline6 = trait_impl#ToString#string#to_string(t10) in
+                      let inline7 = @runtime(core.string_println)(inline6) in
+                      jump exit0()
                     } in
-                    let inline990 = __goml_builtin_int_to_string(current/3) in
-                    jump inline_cont989(inline990)
+                    let inline8 = __goml_builtin_int_to_string(current/0) in
+                    jump inline_cont6(inline8)
                   } else {
-                    jump k858()
+                    jump k0()
                   }
                 }
               } in
-              let inline997 = @intrinsic(ref.set)(index/2, t857) in
-              jump inline_cont996(())
+              let inline9 = @intrinsic(ref.set)(index/0, t2) in
+              jump inline_cont3(())
             } in
-            let inline999 = @intrinsic(ref.get)(index/2) in
-            jump inline_cont998(inline999)
+            let inline10 = @intrinsic(ref.get)(index/0) in
+            jump inline_cont2(inline10)
           } else {
-            jump exit853()
+            jump exit0()
           }
         } in
-        let inline1001 = @intrinsic(ref.get)(index/2) in
-        jump inline_cont1000(inline1001)
+        let inline11 = @intrinsic(ref.get)(index/0) in
+        jump inline_cont1(inline11)
       } in
     } in
-    jump loop854()
+    jump loop0()
   } in
-  let inline1003 = 0 in
-  let inline1004 = @intrinsic(ref.new)(inline1003) in
-  jump inline_cont1002(inline1004)
+  let inline12 = 0 in
+  let inline13 = @intrinsic(ref.new)(inline12) in
+  jump inline_cont0(inline13)
 }
 
 fn observed_at_exit() -> unit {
-  join inline_cont1013(value/4: Ref[string]) -> unit {
-    join inline_cont1010(defer_result816: unit) -> unit {
-      join inline_cont1008(t869: string) -> unit {
-        let t870 = ("observed:" + t869) in
-        let inline1006 = trait_impl#ToString#string#to_string(t870) in
-        let inline1007 = @runtime(core.string_println)(inline1006) in
+  join inline_cont0(value/0: Ref[string]) -> unit {
+    join inline_cont1(defer_result0: unit) -> unit {
+      join inline_cont2(t0: string) -> unit {
+        let t1 = ("observed:" + t0) in
+        let inline0 = trait_impl#ToString#string#to_string(t1) in
+        let inline1 = @runtime(core.string_println)(inline0) in
         ()
       } in
-      let inline1009 = @intrinsic(ref.get)(value/4) in
-      jump inline_cont1008(inline1009)
+      let inline2 = @intrinsic(ref.get)(value/0) in
+      jump inline_cont2(inline2)
     } in
-    let inline1011 = "after" in
-    let inline1012 = @intrinsic(ref.set)(value/4, inline1011) in
-    jump inline_cont1010(())
+    let inline3 = "after" in
+    let inline4 = @intrinsic(ref.set)(value/0, inline3) in
+    jump inline_cont1(())
   } in
-  let inline1014 = "before" in
-  let inline1015 = @intrinsic(ref.new)(inline1014) in
-  jump inline_cont1013(inline1015)
+  let inline5 = "before" in
+  let inline6 = @intrinsic(ref.new)(inline5) in
+  jump inline_cont0(inline6)
 }
 
-fn pattern_cleanup(value/5: Option__isize) -> isize {
-  match value/5 {
+fn pattern_cleanup(value/0: Option__isize) -> isize {
+  match value/0 {
     Tag_1 => {
-      let x820 = Option__isize::Some._0(value/5) in
-      let x823 = 2 in
-      let defer_tast_result819 = (x820 + x823) in
-      let inline1017 = "pattern:cleanup" in
-      let inline1018 = trait_impl#ToString#string#to_string(inline1017) in
-      let inline1019 = @runtime(core.string_println)(inline1018) in
-      defer_tast_result819
+      let x0 = Option__isize::Some._0(value/0) in
+      let x1 = 2 in
+      let defer_tast_result0 = (x0 + x1) in
+      let inline0 = "pattern:cleanup" in
+      let inline1 = trait_impl#ToString#string#to_string(inline0) in
+      let inline2 = @runtime(core.string_println)(inline1) in
+      defer_tast_result0
     },
     _ => {
-      let defer_return825 = 0 in
-      let inline1021 = "pattern:cleanup" in
-      let inline1022 = trait_impl#ToString#string#to_string(inline1021) in
-      let inline1023 = @runtime(core.string_println)(inline1022) in
-      defer_return825
+      let defer_return0 = 0 in
+      let inline3 = "pattern:cleanup" in
+      let inline4 = trait_impl#ToString#string#to_string(inline3) in
+      let inline5 = @runtime(core.string_println)(inline4) in
+      defer_return0
     },
   }
 }
 
 fn closure_cleanup() -> unit {
-  let t876 = closure_env_run_0 {} in
-  let run/9 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](t876) in
-  let _wild830 = run/9() in
-  join inline_cont1028(defer_result831: unit) -> unit {
-    let inline1025 = "closure:outer" in
-    let inline1026 = trait_impl#ToString#string#to_string(inline1025) in
-    let inline1027 = @runtime(core.string_println)(inline1026) in
+  let t0 = closure_env_run_0 {} in
+  let run/0 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](t0) in
+  let _wild0 = run/0() in
+  join inline_cont0(defer_result0: unit) -> unit {
+    let inline0 = "closure:outer" in
+    let inline1 = trait_impl#ToString#string#to_string(inline0) in
+    let inline2 = @runtime(core.string_println)(inline1) in
     ()
   } in
-  let inline1029 = "closure:after" in
-  let inline1030 = trait_impl#ToString#string#to_string(inline1029) in
-  let inline1031 = @runtime(core.string_println)(inline1030) in
-  jump inline_cont1028(())
+  let inline3 = "closure:after" in
+  let inline4 = trait_impl#ToString#string#to_string(inline3) in
+  let inline5 = @runtime(core.string_println)(inline4) in
+  jump inline_cont0(())
 }
 
 fn main() -> unit {
-  let defer_result833 = println__T_string("body") in
-  let _defer834 = println__T_string("block") in
-  let t878 = early_return() in
-  join inline_cont1078(t879: string) -> unit {
-    join inline_cont1075(_wild836: unit) -> unit {
-      let mtmp837 = maybe(Tag_0) in
-      let _wild839 = loop_cleanup() in
-      join inline_cont1069(_wild840: unit) -> unit {
-        let t880 = Option__isize::Some(3) in
-        let t881 = pattern_cleanup(t880) in
-        join inline_cont1067(t882: string) -> unit {
-          join inline_cont1064(_wild841: unit) -> unit {
-            join inline_cont1051(t883: isize) -> unit {
-              join inline_cont1049(t884: string) -> unit {
-                join inline_cont1046(_wild842: unit) -> unit {
-                  join inline_cont1040(defer_tast_result838: unit) -> unit {
-                    join inline_cont1036(_wild843: unit) -> unit {
-                      let inline1033 = "main:first" in
-                      let inline1034 = trait_impl#ToString#string#to_string(inline1033) in
-                      let inline1035 = @runtime(core.string_println)(inline1034) in
+  let defer_result0 = println__T_string("body") in
+  let _defer0 = println__T_string("block") in
+  let t0 = early_return() in
+  join inline_cont0(t1: string) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      let mtmp0 = maybe(Tag_0) in
+      let _wild1 = loop_cleanup() in
+      join inline_cont2(_wild2: unit) -> unit {
+        let t2 = Option__isize::Some(3) in
+        let t3 = pattern_cleanup(t2) in
+        join inline_cont3(t4: string) -> unit {
+          join inline_cont4(_wild3: unit) -> unit {
+            join inline_cont5(t5: isize) -> unit {
+              join inline_cont6(t6: string) -> unit {
+                join inline_cont7(_wild4: unit) -> unit {
+                  join inline_cont8(defer_tast_result0: unit) -> unit {
+                    join inline_cont9(_wild5: unit) -> unit {
+                      let inline0 = "main:first" in
+                      let inline1 = trait_impl#ToString#string#to_string(inline0) in
+                      let inline2 = @runtime(core.string_println)(inline1) in
                       ()
                     } in
-                    let inline1037 = "main:second" in
-                    let inline1038 = trait_impl#ToString#string#to_string(inline1037) in
-                    let inline1039 = @runtime(core.string_println)(inline1038) in
-                    jump inline_cont1036(())
+                    let inline3 = "main:second" in
+                    let inline4 = trait_impl#ToString#string#to_string(inline3) in
+                    let inline5 = @runtime(core.string_println)(inline4) in
+                    jump inline_cont9(())
                   } in
-                  let inline1041 = closure_env_run_0 {} in
-                  let inline1042 =
-                    pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline1041) in
-                  let inline1043 = inline1042() in
-                  let inline1044 = println__T_string("closure:after") in
-                  let inline1045 = println__T_string("closure:outer") in
-                  jump inline_cont1040(())
+                  let inline6 = closure_env_run_0 {} in
+                  let inline7 =
+                    pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](inline6) in
+                  let inline8 = inline7() in
+                  let inline9 = println__T_string("closure:after") in
+                  let inline10 = println__T_string("closure:outer") in
+                  jump inline_cont8(())
                 } in
-                let inline1047 = trait_impl#ToString#string#to_string(t884) in
-                let inline1048 = @runtime(core.string_println)(inline1047) in
-                jump inline_cont1046(())
+                let inline11 = trait_impl#ToString#string#to_string(t6) in
+                let inline12 = @runtime(core.string_println)(inline11) in
+                jump inline_cont7(())
               } in
-              let inline1050 = __goml_builtin_int_to_string(t883) in
-              jump inline_cont1049(inline1050)
+              let inline13 = __goml_builtin_int_to_string(t5) in
+              jump inline_cont6(inline13)
             } in
-            let inline1062 = 0 in
-            let inline1063 = println__T_string("pattern:cleanup") in
-            jump inline_cont1051(inline1062)
+            let inline14 = 0 in
+            let inline15 = println__T_string("pattern:cleanup") in
+            jump inline_cont5(inline14)
           } in
-          let inline1065 = trait_impl#ToString#string#to_string(t882) in
-          let inline1066 = @runtime(core.string_println)(inline1065) in
-          jump inline_cont1064(())
+          let inline16 = trait_impl#ToString#string#to_string(t4) in
+          let inline17 = @runtime(core.string_println)(inline16) in
+          jump inline_cont4(())
         } in
-        let inline1068 = __goml_builtin_int_to_string(t881) in
-        jump inline_cont1067(inline1068)
+        let inline18 = __goml_builtin_int_to_string(t3) in
+        jump inline_cont3(inline18)
       } in
-      let inline1070 = inherent#Ref#Ref[T]#new__T_string("before") in
-      let inline1071 = inherent#Ref#Ref[T]#set__T_string(inline1070, "after") in
-      let inline1072 = inherent#Ref#Ref[T]#get__T_string(inline1070) in
-      let inline1073 = ("observed:" + inline1072) in
-      let inline1074 = println__T_string(inline1073) in
-      jump inline_cont1069(())
+      let inline19 = inherent#Ref#Ref[T]#new__T_string("before") in
+      let inline20 = inherent#Ref#Ref[T]#set__T_string(inline19, "after") in
+      let inline21 = inherent#Ref#Ref[T]#get__T_string(inline19) in
+      let inline22 = ("observed:" + inline21) in
+      let inline23 = println__T_string(inline22) in
+      jump inline_cont2(())
     } in
-    let inline1076 = trait_impl#ToString#string#to_string(t879) in
-    let inline1077 = @runtime(core.string_println)(inline1076) in
-    jump inline_cont1075(())
+    let inline24 = trait_impl#ToString#string#to_string(t1) in
+    let inline25 = @runtime(core.string_println)(inline24) in
+    jump inline_cont1(())
   } in
-  let inline1079 = __goml_builtin_int_to_string(t878) in
-  jump inline_cont1078(inline1079)
+  let inline26 = __goml_builtin_int_to_string(t0) in
+  jump inline_cont0(inline26)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont1080(t886: string) -> unit {
-    let t887 = @runtime(core.string_println)(t886) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont1080(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn inherent#Ref#Ref[T]#new__T_isize(value/684: isize) -> Ref[isize] {
-  let t890 = @intrinsic(ref.new)(value/684) in
-  t890
+fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#get__T_isize(self/685: Ref[isize]) -> isize {
-  let t893 = @intrinsic(ref.get)(self/685) in
-  t893
+fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/686: Ref[isize], value/687: isize) -> unit {
-  let t895 = @intrinsic(ref.set)(self/686, value/687) in
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn inherent#isize#isize#to_string(self/285: isize) -> string {
-  let inline1082 = (self/285 as i64) in
-  let inline1083 = signed_decimal_string(inline1082) in
-  inline1083
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/684: string) -> Ref[string] {
-  let t901 = @intrinsic(ref.new)(value/684) in
-  t901
+fn inherent#Ref#Ref[T]#new__T_string(value/0: string) -> Ref[string] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/686: Ref[string], value/687: string) -> unit {
-  let t903 = @intrinsic(ref.set)(self/686, value/687) in
+fn inherent#Ref#Ref[T]#set__T_string(self/0: Ref[string], value/0: string) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#get__T_string(self/685: Ref[string]) -> string {
-  let t906 = @intrinsic(ref.get)(self/685) in
-  t906
+fn inherent#Ref#Ref[T]#get__T_string(self/0: Ref[string]) -> string {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  let t911 = (value/222 as i64) in
-  let inline1085 = (t911 < 0) in
-  if inline1085 {
-    let inline1086 = (t911 as u64) in
-    let inline1087 = (0 - inline1086) in
-    let inline1088 = decimal_string(inline1087) in
-    let inline1089 = ("-" + inline1088) in
-    inline1089
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
   } else {
-    let inline1090 = (t911 as u64) in
-    let inline1091 = decimal_string(inline1090) in
-    inline1091
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
   }
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  let t917 = (value/214 < 0) in
-  if t917 {
-    let t918 = (value/214 as u64) in
-    let t919 = (0 - t918) in
-    let t920 = decimal_string(t919) in
-    let t921 = ("-" + t920) in
-    t921
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
   } else {
-    let t922 = (value/214 as u64) in
-    let t923 = decimal_string(t922) in
-    t923
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let t946 = (value/208 == 0) in
-  join k926() -> string {
-    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-    let remaining/210 = value/208 in
-    join exit927() -> string {
-      join inline_cont1100(t928: isize) -> string {
-        let bytes/211 = @intrinsic(vec.with_capacity)(t928) in
-        let offset/212 = 0 in
-        join exit929() -> string {
-          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-          let x364 = mtmp362.1 in
-          x364
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
         } in
         joinrec {
-          join loop930() -> string {
-            join inline_cont1098(t931: isize) -> string {
-              let t932 = (offset/212 < t931) in
-              if t932 {
-                join inline_cont1096(t933: isize) -> string {
-                  let t934 = (t933 - offset/212) in
-                  let t935 = (t934 - 1) in
-                  let t936 = @intrinsic(vec.get)(reversed/209, t935) in
-                  join inline_cont1094(_wild357: unit) -> string {
-                    let compound_old358 = offset/212 in
-                    let compound_value359 = 1 in
-                    let t937 = (compound_old358 + compound_value359) in
-                    let t938 = offset/212 = t937 in
-                    jump loop930()
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
                   } in
-                  let inline1095 = @intrinsic(vec.push)(bytes/211, t936) in
-                  jump inline_cont1094(())
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
                 } in
-                let inline1097 = @intrinsic(vec.len)(reversed/209) in
-                jump inline_cont1096(inline1097)
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
               } else {
-                jump exit929()
+                jump exit1()
               }
             } in
-            let inline1099 = @intrinsic(vec.len)(reversed/209) in
-            jump inline_cont1098(inline1099)
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
           } in
         } in
-        jump loop930()
+        jump loop1()
       } in
-      let inline1101 = @intrinsic(vec.len)(reversed/209) in
-      jump inline_cont1100(inline1101)
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
     } in
     joinrec {
-      join loop939() -> string {
-        let t940 = (remaining/210 > 0) in
-        if t940 {
-          let t941 = (remaining/210 % 10) in
-          let t942 = (t941 as u8) in
-          let t943 = (t942 + 48) in
-          join inline_cont1092(_wild352: unit) -> string {
-            let compound_old353 = remaining/210 in
-            let compound_value354 = 10 in
-            let t944 = (compound_old353 / compound_value354) in
-            let t945 = remaining/210 = t944 in
-            jump loop939()
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
           } in
-          let inline1093 = @intrinsic(vec.push)(reversed/209, t943) in
-          jump inline_cont1092(())
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
         } else {
-          jump exit927()
+          jump exit0()
         }
       } in
     } in
-    jump loop939()
+    jump loop0()
   } in
-  if t946 {
+  if t0 {
     "0"
   } else {
-    jump k926()
+    jump k0()
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  let t948 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  let t951 = @intrinsic(vec.len)(self/526) in
-  t951
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  let t954 = (self/438 == other/439) in
-  t954
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  let t957 = @runtime(core.int_hash)(self/464) in
-  t957
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  let t0 = @runtime(core.int_hash)(self/0) in
+  t0
 }
 
-fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
-  let t960 = (self/434 == other/435) in
-  t960
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#string#hash(self/462: string) -> u64 {
-  let t963 = @runtime(core.string_hash)(self/462) in
-  t963
+fn trait_impl#Hash#string#hash(self/0: string) -> u64 {
+  let t0 = @runtime(core.string_hash)(self/0) in
+  t0
 }
 
-fn inherent#closure_env_run_0#closure_env_run_0#apply(env845: closure_env_run_0) -> unit {
-  join inline_cont1106(defer_result828: unit) -> unit {
-    let inline1103 = "closure:inner" in
-    let inline1104 = trait_impl#ToString#string#to_string(inline1103) in
-    let inline1105 = @runtime(core.string_println)(inline1104) in
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env0: closure_env_run_0) -> unit {
+  join inline_cont0(defer_result0: unit) -> unit {
+    let inline0 = "closure:inner" in
+    let inline1 = trait_impl#ToString#string#to_string(inline0) in
+    let inline2 = @runtime(core.string_println)(inline1) in
     ()
   } in
-  let inline1107 = "closure:body" in
-  let inline1108 = trait_impl#ToString#string#to_string(inline1107) in
-  let inline1109 = @runtime(core.string_println)(inline1108) in
-  jump inline_cont1106(())
+  let inline3 = "closure:body" in
+  let inline4 = trait_impl#ToString#string#to_string(inline3) in
+  let inline5 = @runtime(core.string_println)(inline4) in
+  jump inline_cont0(())
 }

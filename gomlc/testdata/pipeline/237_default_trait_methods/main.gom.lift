@@ -1,33 +1,33 @@
-fn trait_impl#Describe#DefaultValue#name(self/3: DefaultValue) -> string {
-  DefaultValue.name(self/3)
+fn trait_impl#Describe#DefaultValue#name(self/0: DefaultValue) -> string {
+  DefaultValue.name(self/0)
 }
 
 fn trait_impl#Describe#DefaultValue#describe(default_arg0: DefaultValue) -> string {
   trait_default#Describe#describe__Self_DefaultValue(default_arg0)
 }
 
-fn trait_impl#Describe#OverrideValue#name(self/4: OverrideValue) -> string {
+fn trait_impl#Describe#OverrideValue#name(self/0: OverrideValue) -> string {
   "override-name"
 }
 
-fn trait_impl#Describe#OverrideValue#describe(self/5: OverrideValue) -> string {
+fn trait_impl#Describe#OverrideValue#describe(self/0: OverrideValue) -> string {
   "override"
 }
 
-fn describe_dyn(value/6: dyn Describe) -> string {
-  dyn_call[Describe::describe](value/6)
+fn describe_dyn(value/0: dyn Describe) -> string {
+  dyn_call[Describe::describe](value/0)
 }
 
 fn main() -> unit {
-  let default_value/7 = DefaultValue { name: "value" } in
-  let _wild796 =
-    println__T_string(trait_default#Describe#describe__Self_DefaultValue(default_value/7)) in
-  let _wild797 =
+  let default_value/0 = DefaultValue { name: "value" } in
+  let _wild0 =
+    println__T_string(trait_default#Describe#describe__Self_DefaultValue(default_value/0)) in
+  let _wild1 =
     println__T_string(
-      trait_default#Keep#keep__Self_DefaultValue__T_string(default_value/7, "generic")
+      trait_default#Keep#keep__Self_DefaultValue__T_string(default_value/0, "generic")
     ) in
-  let _wild798 = println__T_string(trait_impl#Describe#OverrideValue#describe(OverrideValue {})) in
-  let _wild799 = println__T_string(describe_dyn(to_dyn[Describe]{DefaultValue}(default_value/7))) in
+  let _wild2 = println__T_string(trait_impl#Describe#OverrideValue#describe(OverrideValue {})) in
+  let _wild3 = println__T_string(describe_dyn(to_dyn[Describe]{DefaultValue}(default_value/0))) in
   ()
 }
 
@@ -35,17 +35,17 @@ fn trait_default#Describe#describe__Self_DefaultValue(self/0: DefaultValue) -> s
   ("default:" + trait_impl#Describe#DefaultValue#name(self/0))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
 fn trait_default#Keep#keep__Self_DefaultValue__T_string(
-  self/1: DefaultValue,
-  value/2: string
+  self/0: DefaultValue,
+  value/0: string
 ) -> string {
-  value/2
+  value/0
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

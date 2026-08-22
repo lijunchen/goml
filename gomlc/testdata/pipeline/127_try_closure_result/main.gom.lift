@@ -6,61 +6,61 @@ fn parse_text(ok/0: bool) -> Result__string__string {
   }
 }
 
-fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
-  let run/4 =
+fn decorate(prefix/0: string, ok/0: bool) -> Result__string__string {
+  let run/0 =
     pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](
-      closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 }
+      closure_env_run_0 { ok_0: ok/0, prefix_1: prefix/0 }
     ) in
-  run/4()
+  run/0()
 }
 
-fn show(res/5: Result__string__string) -> string {
-  match res/5 {
-    Result__string__string::Ok(x799) => {
-      let x799 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x799 in
-      ("ok " + value/6)
+fn show(res/0: Result__string__string) -> string {
+  match res/0 {
+    Result__string__string::Ok(x0) => {
+      let x0 = Result__string__string::Ok._0(res/0) in
+      let value/0 = x0 in
+      ("ok " + value/0)
     },
-    Result__string__string::Err(x800) => {
-      let x800 = Result__string__string::Err._0(res/5) in
-      let err/7 = x800 in
-      ("err " + err/7)
+    Result__string__string::Err(x1) => {
+      let x1 = Result__string__string::Err._0(res/0) in
+      let err/0 = x1 in
+      ("err " + err/0)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild801 = println__T_string(show(decorate("outer", true))) in
-  let _wild802 = println__T_string(show(decorate("outer", false))) in
+  let _wild0 = println__T_string(show(decorate("outer", true))) in
+  let _wild1 = println__T_string(show(decorate("outer", false))) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(
-  env803: closure_env_run_0
+  env0: closure_env_run_0
 ) -> Result__string__string {
-  let ok/2 = closure_env_run_0.ok_0(env803) in
-  let prefix/1 = closure_env_run_0.prefix_1(env803) in
-  let text/3 =
-    let mtmp796 = parse_text(ok/2) in
-    match mtmp796 {
-      Result__string__string::Ok(x797) => {
-        let x797 = Result__string__string::Ok._0(mtmp796) in
-        let try_value/12 = x797 in
-        try_value/12
+  let ok/0 = closure_env_run_0.ok_0(env0) in
+  let prefix/0 = closure_env_run_0.prefix_1(env0) in
+  let text/0 =
+    let mtmp0 = parse_text(ok/0) in
+    match mtmp0 {
+      Result__string__string::Ok(x0) => {
+        let x0 = Result__string__string::Ok._0(mtmp0) in
+        let try_value/0 = x0 in
+        try_value/0
       },
-      Result__string__string::Err(x798) => {
-        let x798 = Result__string__string::Err._0(mtmp796) in
-        let try_residual/12 = x798 in
-        return Result__string__string::Err(try_residual/12)
+      Result__string__string::Err(x1) => {
+        let x1 = Result__string__string::Err._0(mtmp0) in
+        let try_residual/0 = x1 in
+        return Result__string__string::Err(try_residual/0)
       },
     } in
-  Result__string__string::Ok(((prefix/1 + ":") + text/3))
+  Result__string__string::Ok(((prefix/0 + ":") + text/0))
 }

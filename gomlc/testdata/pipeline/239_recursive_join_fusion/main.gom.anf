@@ -1,133 +1,133 @@
 fn find(wanted/0: isize) -> Option__isize {
-  join inline_cont847(current/1: Ref[isize]) -> Option__isize {
+  join inline_cont0(current/0: Ref[isize]) -> Option__isize {
     joinrec {
-      join loop_expr809() -> Option__isize {
-        join inline_cont845(value/2: isize) -> Option__isize {
-          let t811 = (value/2 >= 5) in
-          join k810() -> Option__isize {
-            jump loop_expr809()
+      join loop_expr0() -> Option__isize {
+        join inline_cont1(value/0: isize) -> Option__isize {
+          let t0 = (value/0 >= 5) in
+          join k0() -> Option__isize {
+            jump loop_expr0()
           } in
-          if t811 {
+          if t0 {
             Tag_0
           } else {
-            let t813 = (value/2 == wanted/0) in
-            if t813 {
-              let t814 = Option__isize::Some(value/2) in
-              t814
+            let t1 = (value/0 == wanted/0) in
+            if t1 {
+              let t2 = Option__isize::Some(value/0) in
+              t2
             } else {
-              let t815 = (value/2 + 1) in
-              let inline844 = @intrinsic(ref.set)(current/1, t815) in
-              jump k810()
+              let t3 = (value/0 + 1) in
+              let inline0 = @intrinsic(ref.set)(current/0, t3) in
+              jump k0()
             }
           }
         } in
-        let inline846 = @intrinsic(ref.get)(current/1) in
-        jump inline_cont845(inline846)
+        let inline1 = @intrinsic(ref.get)(current/0) in
+        jump inline_cont1(inline1)
       } in
     } in
-    jump loop_expr809()
+    jump loop_expr0()
   } in
-  let inline848 = 0 in
-  let inline849 = @intrinsic(ref.new)(inline848) in
-  jump inline_cont847(inline849)
+  let inline2 = 0 in
+  let inline3 = @intrinsic(ref.new)(inline2) in
+  jump inline_cont0(inline3)
 }
 
-fn any(wanted/3: isize) -> bool {
-  let inline851 = inherent#Ref#Ref[T]#new__T_isize(0) in
+fn any(wanted/0: isize) -> bool {
+  let inline0 = inherent#Ref#Ref[T]#new__T_isize(0) in
   joinrec {
-    join inline_join852() -> bool {
-      let inline853 = inherent#Ref#Ref[T]#get__T_isize(inline851) in
-      let inline854 = (inline853 >= 5) in
-      join inline_join855() -> bool {
-        jump inline_join852()
+    join inline_join0() -> bool {
+      let inline1 = inherent#Ref#Ref[T]#get__T_isize(inline0) in
+      let inline2 = (inline1 >= 5) in
+      join inline_join1() -> bool {
+        jump inline_join0()
       } in
-      if inline854 {
+      if inline2 {
         false
       } else {
-        let inline857 = (inline853 == wanted/3) in
-        if inline857 {
+        let inline3 = (inline1 == wanted/0) in
+        if inline3 {
           true
         } else {
-          let inline859 = (inline853 + 1) in
-          let inline860 = inherent#Ref#Ref[T]#set__T_isize(inline851, inline859) in
-          jump inline_join855()
+          let inline4 = (inline1 + 1) in
+          let inline5 = inherent#Ref#Ref[T]#set__T_isize(inline0, inline4) in
+          jump inline_join1()
         }
       }
     } in
   } in
-  jump inline_join852()
+  jump inline_join0()
 }
 
 fn main() -> unit {
-  join inline_cont870(t821: bool) -> unit {
-    join inline_cont867(_wild803: unit) -> unit {
-      join inline_cont864(t822: bool) -> unit {
-        let inline862 = trait_impl#ToString#bool#to_string(t822) in
-        let inline863 = @runtime(core.string_println)(inline862) in
+  join inline_cont0(t0: bool) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      join inline_cont2(t1: bool) -> unit {
+        let inline0 = trait_impl#ToString#bool#to_string(t1) in
+        let inline1 = @runtime(core.string_println)(inline0) in
         ()
       } in
-      let inline865 = 8 in
-      let inline866 = find(inline865) in
-      match inline866 {
+      let inline2 = 8 in
+      let inline3 = find(inline2) in
+      match inline3 {
         Tag_0 => {
-          jump inline_cont864(false)
+          jump inline_cont2(false)
         },
         Tag_1 => {
-          jump inline_cont864(true)
+          jump inline_cont2(true)
         },
       }
     } in
-    let inline868 = trait_impl#ToString#bool#to_string(t821) in
-    let inline869 = @runtime(core.string_println)(inline868) in
-    jump inline_cont867(())
+    let inline4 = trait_impl#ToString#bool#to_string(t0) in
+    let inline5 = @runtime(core.string_println)(inline4) in
+    jump inline_cont1(())
   } in
-  let inline871 = 3 in
-  let inline872 = find(inline871) in
-  match inline872 {
+  let inline6 = 3 in
+  let inline7 = find(inline6) in
+  match inline7 {
     Tag_0 => {
-      jump inline_cont870(false)
+      jump inline_cont0(false)
     },
     Tag_1 => {
-      jump inline_cont870(true)
+      jump inline_cont0(true)
     },
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_isize(value/684: isize) -> Ref[isize] {
-  let t825 = @intrinsic(ref.new)(value/684) in
-  t825
+fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#get__T_isize(self/685: Ref[isize]) -> isize {
-  let t828 = @intrinsic(ref.get)(self/685) in
-  t828
+fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/686: Ref[isize], value/687: isize) -> unit {
-  let t830 = @intrinsic(ref.set)(self/686, value/687) in
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  join inline_cont873(t832: string) -> unit {
-    let t833 = @runtime(core.string_println)(t832) in
+fn println__T_bool(value/0: bool) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  let inline874 = @runtime(core.bool_to_string)(value/1) in
-  jump inline_cont873(inline874)
+  let inline0 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont0(inline0)
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  let t836 = @runtime(core.bool_to_string)(self/401) in
-  t836
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  let t0 = @runtime(core.bool_to_string)(self/0) in
+  t0
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  let t839 = (self/438 == other/439) in
-  t839
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  let t842 = @runtime(core.int_hash)(self/464) in
-  t842
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  let t0 = @runtime(core.int_hash)(self/0) in
+  t0
 }

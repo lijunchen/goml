@@ -1,115 +1,115 @@
 fn split_host_port(ok/0: bool) -> Result__(string,string)__string {
   if ok/0 {
-    let t810 = ("localhost", "8080") in
-    let t811 = Result__(string,string)__string::Ok(t810) in
-    t811
+    let t0 = ("localhost", "8080") in
+    let t1 = Result__(string,string)__string::Ok(t0) in
+    t1
   } else {
-    let t812 = Result__(string,string)__string::Err("missing port") in
-    t812
+    let t2 = Result__(string,string)__string::Err("missing port") in
+    t2
   }
 }
 
-fn pair(ok/1: bool) -> Result__(string,string)__string {
-  if ok/1 {
-    let inline841 = ("localhost", "8080") in
-    let inline842 = Result__(string,string)__string::Ok(inline841) in
-    inline842
+fn pair(ok/0: bool) -> Result__(string,string)__string {
+  if ok/0 {
+    let inline0 = ("localhost", "8080") in
+    let inline1 = Result__(string,string)__string::Ok(inline0) in
+    inline1
   } else {
-    let inline843 = Result__(string,string)__string::Err("missing port") in
-    inline843
+    let inline2 = Result__(string,string)__string::Err("missing port") in
+    inline2
   }
 }
 
-fn render(ok/2: bool) -> Result__string__string {
-  join inline_cont844(mtmp796: Result__(string,string)__string) -> Result__string__string {
-    join k818(jp819: (string, string)) -> Result__string__string {
-      let x800 = jp819.0 in
-      let x801 = jp819.1 in
-      let t820 = (x800 + "=") in
-      let t821 = (t820 + x801) in
-      let t822 = Result__string__string::Ok(t821) in
-      t822
+fn render(ok/0: bool) -> Result__string__string {
+  join inline_cont0(mtmp0: Result__(string,string)__string) -> Result__string__string {
+    join k0(jp0: (string, string)) -> Result__string__string {
+      let x0 = jp0.0 in
+      let x1 = jp0.1 in
+      let t0 = (x0 + "=") in
+      let t1 = (t0 + x1) in
+      let t2 = Result__string__string::Ok(t1) in
+      t2
     } in
-    match mtmp796 {
+    match mtmp0 {
       Tag_0 => {
-        let x797 = Result__(string,string)__string::Ok._0(mtmp796) in
-        jump k818(x797)
+        let x2 = Result__(string,string)__string::Ok._0(mtmp0) in
+        jump k0(x2)
       },
       Tag_1 => {
-        let x798 = Result__(string,string)__string::Err._0(mtmp796) in
-        let t823 = Result__string__string::Err(x798) in
-        t823
+        let x3 = Result__(string,string)__string::Err._0(mtmp0) in
+        let t3 = Result__string__string::Err(x3) in
+        t3
       },
     }
   } in
-  let inline845 = split_host_port(ok/2) in
-  jump inline_cont844(inline845)
+  let inline0 = split_host_port(ok/0) in
+  jump inline_cont0(inline0)
 }
 
-fn show(res/5: Result__string__string) -> string {
-  match res/5 {
+fn show(res/0: Result__string__string) -> string {
+  match res/0 {
     Tag_0 => {
-      let x802 = Result__string__string::Ok._0(res/5) in
-      let t828 = ("ok " + x802) in
-      t828
+      let x0 = Result__string__string::Ok._0(res/0) in
+      let t0 = ("ok " + x0) in
+      t0
     },
     Tag_1 => {
-      let x803 = Result__string__string::Err._0(res/5) in
-      let t829 = ("err " + x803) in
-      t829
+      let x1 = Result__string__string::Err._0(res/0) in
+      let t1 = ("err " + x1) in
+      t1
     },
   }
 }
 
 fn main() -> unit {
-  let t831 = render(true) in
-  join inline_cont859(t832: string) -> unit {
-    join inline_cont856(_wild804: unit) -> unit {
-      let t833 = render(false) in
-      join inline_cont849(t834: string) -> unit {
-        let inline847 = trait_impl#ToString#string#to_string(t834) in
-        let inline848 = @runtime(core.string_println)(inline847) in
+  let t0 = render(true) in
+  join inline_cont0(t1: string) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      let t2 = render(false) in
+      join inline_cont2(t3: string) -> unit {
+        let inline0 = trait_impl#ToString#string#to_string(t3) in
+        let inline1 = @runtime(core.string_println)(inline0) in
         ()
       } in
-      match t833 {
+      match t2 {
         Tag_0 => {
-          let inline850 = Result__string__string::Ok._0(t833) in
-          let inline852 = ("ok " + inline850) in
-          jump inline_cont849(inline852)
+          let inline2 = Result__string__string::Ok._0(t2) in
+          let inline3 = ("ok " + inline2) in
+          jump inline_cont2(inline3)
         },
         Tag_1 => {
-          let inline853 = Result__string__string::Err._0(t833) in
-          let inline855 = ("err " + inline853) in
-          jump inline_cont849(inline855)
+          let inline4 = Result__string__string::Err._0(t2) in
+          let inline5 = ("err " + inline4) in
+          jump inline_cont2(inline5)
         },
       }
     } in
-    let inline857 = trait_impl#ToString#string#to_string(t832) in
-    let inline858 = @runtime(core.string_println)(inline857) in
-    jump inline_cont856(())
+    let inline6 = trait_impl#ToString#string#to_string(t1) in
+    let inline7 = @runtime(core.string_println)(inline6) in
+    jump inline_cont1(())
   } in
-  match t831 {
+  match t0 {
     Tag_0 => {
-      let inline860 = Result__string__string::Ok._0(t831) in
-      let inline862 = ("ok " + inline860) in
-      jump inline_cont859(inline862)
+      let inline8 = Result__string__string::Ok._0(t0) in
+      let inline9 = ("ok " + inline8) in
+      jump inline_cont0(inline9)
     },
     Tag_1 => {
-      let inline863 = Result__string__string::Err._0(t831) in
-      let inline865 = ("err " + inline863) in
-      jump inline_cont859(inline865)
+      let inline10 = Result__string__string::Err._0(t0) in
+      let inline11 = ("err " + inline10) in
+      jump inline_cont0(inline11)
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont866(t836: string) -> unit {
-    let t837 = @runtime(core.string_println)(t836) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont866(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

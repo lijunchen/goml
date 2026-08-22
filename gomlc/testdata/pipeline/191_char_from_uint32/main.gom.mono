@@ -1,16 +1,16 @@
 fn show_scalar(value/0: u32) -> unit {
   {
-    let mtmp796 = char_from_u32(value/0) in
-    match mtmp796 {
+    let mtmp0 = char_from_u0(value/0) in
+    match mtmp0 {
       Option__char::None => {
         println__T_string("none")
       },
-      Option__char::Some(x797) => {
+      Option__char::Some(x0) => {
         {
-          let x797 = Option__char::Some._0(mtmp796) in
+          let x0 = Option__char::Some._0(mtmp0) in
           {
-            let result/1 = x797 in
-            println__T_u32((result/1 as u32))
+            let result/0 = x0 in
+            println__T_u0((result/0 as u32))
           }
         }
       },
@@ -19,26 +19,26 @@ fn show_scalar(value/0: u32) -> unit {
 }
 
 fn main() -> unit {
-  let _wild798 = show_scalar(0) in
-  let _wild799 = show_scalar(65) in
-  let _wild800 = show_scalar(55295) in
-  let _wild801 = show_scalar(55296) in
-  let _wild802 = show_scalar(57343) in
-  let _wild803 = show_scalar(57344) in
-  let _wild804 = show_scalar(1114111) in
-  let _wild805 = show_scalar(1114112) in
+  let _wild0 = show_scalar(0) in
+  let _wild1 = show_scalar(65) in
+  let _wild2 = show_scalar(55295) in
+  let _wild3 = show_scalar(55296) in
+  let _wild4 = show_scalar(57343) in
+  let _wild5 = show_scalar(57344) in
+  let _wild6 = show_scalar(1114111) in
+  let _wild7 = show_scalar(1114112) in
   {
-    let mtmp806 = char_from_u32(128512) in
-    match mtmp806 {
+    let mtmp0 = char_from_u0(128512) in
+    match mtmp0 {
       Option__char::None => {
         println__T_string("none")
       },
-      Option__char::Some(x807) => {
+      Option__char::Some(x0) => {
         {
-          let x807 = Option__char::Some._0(mtmp806) in
+          let x0 = Option__char::Some._0(mtmp0) in
           {
-            let result/2 = x807 in
-            println__T_string(inherent#char#char#to_string(result/2))
+            let result/0 = x0 in
+            println__T_string(inherent#char#char#to_string(result/0))
           }
         }
       },
@@ -46,32 +46,32 @@ fn main() -> unit {
   }
 }
 
-fn char_from_u32(value/2: u32) -> Option__char {
-  __goml_builtin_char_from_uint32(value/2)
+fn char_from_u32(value/0: u32) -> Option__char {
+  __goml_builtin_char_from_uint0(value/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_u32(value/1: u32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#u32#to_string(value/1))
+fn println__T_u32(value/0: u32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u32#to_string(value/0))
 }
 
-fn inherent#char#char#to_string(self/287: char) -> string {
-  char_to_string(self/287)
+fn inherent#char#char#to_string(self/0: char) -> string {
+  char_to_string(self/0)
 }
 
-fn __goml_builtin_char_from_uint32(value/283: u32) -> Option__char {
-  if utf8_valid_scalar(value/283) {
+fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
+  if utf8_valid_scalar(value/0) {
       {
-        let mtmp407 = @runtime(core.char_from_uint32)(value/283) in
+        let mtmp0 = @runtime(core.char_from_uint32)(value/0) in
         {
-          let x409 = mtmp407.1 in
+          let x0 = mtmp0.1 in
           {
-            let character/284 = x409 in
+            let character/0 = x0 in
             {
-              Option__char::Some(character/284)
+              Option__char::Some(character/0)
             }
           }
         }
@@ -83,22 +83,22 @@ fn __goml_builtin_char_from_uint32(value/283: u32) -> Option__char {
   }
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#u32#to_string(self/411: u32) -> string {
-  __goml_builtin_uint32_to_string(self/411)
+fn trait_impl#ToString#u32#to_string(self/0: u32) -> string {
+  __goml_builtin_uint32_to_string(self/0)
 }
 
-fn char_to_string(value/282: char) -> string {
-  if utf8_valid_scalar((value/282 as u32)) {
+fn char_to_string(value/0: char) -> string {
+  if utf8_valid_scalar((value/0 as u32)) {
       {
-        @runtime(core.char_to_string)(value/282)
+        @runtime(core.char_to_string)(value/0)
       }
   } else {
       {
-        let mtmp406 = @runtime(core.string_get)("", -1) in
+        let mtmp0 = @runtime(core.string_get)("", -1) in
         {
           ""
         }
@@ -106,10 +106,10 @@ fn char_to_string(value/282: char) -> string {
   }
 }
 
-fn utf8_valid_scalar(value/257: u32) -> bool {
-  if (value/257 <= 1114111) {
-      (!if (value/257 >= 55296) {
-          (value/257 <= 57343)
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  if (value/0 <= 1114111) {
+      (!if (value/0 >= 55296) {
+          (value/0 <= 57343)
       } else {
           false
       })
@@ -118,13 +118,13 @@ fn utf8_valid_scalar(value/257: u32) -> bool {
   }
 }
 
-fn __goml_builtin_uint32_to_string(value/230: u32) -> string {
-  decimal_string((value/230 as u64))
+fn __goml_builtin_uint32_to_string(value/0: u32) -> string {
+  decimal_string((value/0 as u64))
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -133,58 +133,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

@@ -1,78 +1,78 @@
 fn main() -> unit {
-  let first/4 = Box__isize { value: 42 } in
-  let text/6 =
+  let first/0 = Box__isize { value: 42 } in
+  let text/0 =
     inherent#Box#Box[T]#map__T_isize__U_string(
-      first/4,
-      |value/5| inherent#isize#isize#to_string(value/5)
+      first/0,
+      |value/0| inherent#isize#isize#to_string(value/0)
     ) in
-  let _wild797 = println__T_string(Box__string.value(text/6)) in
-  let second/7 = Box__isize { value: 7 } in
-  let explicit/9 =
+  let _wild0 = println__T_string(Box__string.value(text/0)) in
+  let second/0 = Box__isize { value: 7 } in
+  let explicit/0 =
     inherent#Box#Box[T]#map__T_isize__U_string(
-      second/7,
-      |value/8| inherent#isize#isize#to_string(value/8)
+      second/0,
+      |value/1| inherent#isize#isize#to_string(value/1)
     ) in
-  let _wild798 = println__T_string(Box__string.value(explicit/9)) in
-  let third/10 = Box__isize { value: 9 } in
-  let static_call/12 =
+  let _wild1 = println__T_string(Box__string.value(explicit/0)) in
+  let third/0 = Box__isize { value: 9 } in
+  let static_call/0 =
     inherent#Box#Box[T]#map__T_isize__U_string(
-      third/10,
-      |value/11| inherent#isize#isize#to_string(value/11)
+      third/0,
+      |value/2| inherent#isize#isize#to_string(value/2)
     ) in
-  let _wild799 = println__T_string(Box__string.value(static_call/12)) in
-  let rendered/13 =
+  let _wild2 = println__T_string(Box__string.value(static_call/0)) in
+  let rendered/0 =
     inherent#Box#Box[T]#render__T_string__U_isize(Box__string { value: "value" }, 5) in
-  let _wild800 = println__T_string(rendered/13) in
+  let _wild3 = println__T_string(rendered/0) in
 }
 
-fn inherent#isize#isize#to_string(self/285: isize) -> string {
-  __goml_builtin_int_to_string(self/285)
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
 fn inherent#Box#Box[T]#map__T_isize__U_string(
   self/0: Box__isize,
-  map_fn/1: (isize) -> string
+  map_fn/0: (isize) -> string
 ) -> Box__string {
-  Box__string { value: map_fn/1(Box__isize.value(self/0)) }
+  Box__string { value: map_fn/0(Box__isize.value(self/0)) }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn inherent#Box#Box[T]#render__T_string__U_isize(self/2: Box__string, value/3: isize) -> string {
+fn inherent#Box#Box[T]#render__T_string__U_isize(self/0: Box__string, value/0: isize) -> string {
   {
-    ("value:" + trait_impl#ToString#isize#to_string(value/3))
+    ("value:" + trait_impl#ToString#isize#to_string(value/0))
   }
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -81,58 +81,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

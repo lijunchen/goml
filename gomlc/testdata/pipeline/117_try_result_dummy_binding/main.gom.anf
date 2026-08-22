@@ -1,164 +1,164 @@
 fn configure(ok/0: bool) -> Result__unit__string {
   if ok/0 {
-    let t812 = Result__unit__string::Ok(()) in
-    t812
+    let t0 = Result__unit__string::Ok(()) in
+    t0
   } else {
-    let t813 = Result__unit__string::Err("config failed") in
-    t813
+    let t1 = Result__unit__string::Err("config failed") in
+    t1
   }
 }
 
-fn read_duration(ok/1: bool) -> Result__string__string {
-  if ok/1 {
-    let t818 = Result__string__string::Ok("2s") in
-    t818
+fn read_duration(ok/0: bool) -> Result__string__string {
+  if ok/0 {
+    let t0 = Result__string__string::Ok("2s") in
+    t0
   } else {
-    let t819 = Result__string__string::Err("duration failed") in
-    t819
+    let t1 = Result__string__string::Err("duration failed") in
+    t1
   }
 }
 
-fn format_duration(value/2: string) -> string {
-  let t822 = ("duration=" + value/2) in
-  t822
+fn format_duration(value/0: string) -> string {
+  let t0 = ("duration=" + value/0) in
+  t0
 }
 
-fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__string {
-  join inline_cont855(mtmp796: Result__unit__string) -> Result__string__string {
-    join k825() -> Result__string__string {
-      join inline_cont852(mtmp800: Result__string__string) -> Result__string__string {
-        join k826(jp827: string) -> Result__string__string {
-          join inline_cont850(t828: string) -> Result__string__string {
-            let t829 = Result__string__string::Ok(t828) in
-            t829
+fn configure_and_format(config_ok/0: bool, read_ok/0: bool) -> Result__string__string {
+  join inline_cont0(mtmp0: Result__unit__string) -> Result__string__string {
+    join k0() -> Result__string__string {
+      join inline_cont1(mtmp1: Result__string__string) -> Result__string__string {
+        join k1(jp0: string) -> Result__string__string {
+          join inline_cont2(t0: string) -> Result__string__string {
+            let t1 = Result__string__string::Ok(t0) in
+            t1
           } in
-          let inline851 = ("duration=" + jp827) in
-          jump inline_cont850(inline851)
+          let inline0 = ("duration=" + jp0) in
+          jump inline_cont2(inline0)
         } in
-        match mtmp800 {
+        match mtmp1 {
           Tag_0 => {
-            let x801 = Result__string__string::Ok._0(mtmp800) in
-            jump k826(x801)
+            let x0 = Result__string__string::Ok._0(mtmp1) in
+            jump k1(x0)
           },
           Tag_1 => {
-            let x802 = Result__string__string::Err._0(mtmp800) in
-            let t830 = Result__string__string::Err(x802) in
-            t830
+            let x1 = Result__string__string::Err._0(mtmp1) in
+            let t2 = Result__string__string::Err(x1) in
+            t2
           },
         }
       } in
-      if read_ok/4 {
-        let inline853 = Result__string__string::Ok("2s") in
-        jump inline_cont852(inline853)
+      if read_ok/0 {
+        let inline1 = Result__string__string::Ok("2s") in
+        jump inline_cont1(inline1)
       } else {
-        let inline854 = Result__string__string::Err("duration failed") in
-        jump inline_cont852(inline854)
+        let inline2 = Result__string__string::Err("duration failed") in
+        jump inline_cont1(inline2)
       }
     } in
-    match mtmp796 {
+    match mtmp0 {
       Tag_0 => {
-        jump k825()
+        jump k0()
       },
       Tag_1 => {
-        let x798 = Result__unit__string::Err._0(mtmp796) in
-        let t831 = Result__string__string::Err(x798) in
-        t831
+        let x2 = Result__unit__string::Err._0(mtmp0) in
+        let t3 = Result__string__string::Err(x2) in
+        t3
       },
     }
   } in
-  if config_ok/3 {
-    let inline856 = Result__unit__string::Ok(()) in
-    jump inline_cont855(inline856)
+  if config_ok/0 {
+    let inline3 = Result__unit__string::Ok(()) in
+    jump inline_cont0(inline3)
   } else {
-    let inline857 = Result__unit__string::Err("config failed") in
-    jump inline_cont855(inline857)
+    let inline4 = Result__unit__string::Err("config failed") in
+    jump inline_cont0(inline4)
   }
 }
 
-fn show(res/6: Result__string__string) -> string {
-  match res/6 {
+fn show(res/0: Result__string__string) -> string {
+  match res/0 {
     Tag_0 => {
-      let x803 = Result__string__string::Ok._0(res/6) in
-      let t836 = ("ok " + x803) in
-      t836
+      let x0 = Result__string__string::Ok._0(res/0) in
+      let t0 = ("ok " + x0) in
+      t0
     },
     Tag_1 => {
-      let x804 = Result__string__string::Err._0(res/6) in
-      let t837 = ("err " + x804) in
-      t837
+      let x1 = Result__string__string::Err._0(res/0) in
+      let t1 = ("err " + x1) in
+      t1
     },
   }
 }
 
 fn main() -> unit {
-  let t839 = configure_and_format(true, true) in
-  join inline_cont881(t840: string) -> unit {
-    join inline_cont878(_wild805: unit) -> unit {
-      let t841 = configure_and_format(true, false) in
-      join inline_cont871(t842: string) -> unit {
-        join inline_cont868(_wild806: unit) -> unit {
-          let t843 = configure_and_format(false, true) in
-          join inline_cont861(t844: string) -> unit {
-            let inline859 = trait_impl#ToString#string#to_string(t844) in
-            let inline860 = @runtime(core.string_println)(inline859) in
+  let t0 = configure_and_format(true, true) in
+  join inline_cont0(t1: string) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      let t2 = configure_and_format(true, false) in
+      join inline_cont2(t3: string) -> unit {
+        join inline_cont3(_wild1: unit) -> unit {
+          let t4 = configure_and_format(false, true) in
+          join inline_cont4(t5: string) -> unit {
+            let inline0 = trait_impl#ToString#string#to_string(t5) in
+            let inline1 = @runtime(core.string_println)(inline0) in
             ()
           } in
-          match t843 {
+          match t4 {
             Tag_0 => {
-              let inline862 = Result__string__string::Ok._0(t843) in
-              let inline864 = ("ok " + inline862) in
-              jump inline_cont861(inline864)
+              let inline2 = Result__string__string::Ok._0(t4) in
+              let inline3 = ("ok " + inline2) in
+              jump inline_cont4(inline3)
             },
             Tag_1 => {
-              let inline865 = Result__string__string::Err._0(t843) in
-              let inline867 = ("err " + inline865) in
-              jump inline_cont861(inline867)
+              let inline4 = Result__string__string::Err._0(t4) in
+              let inline5 = ("err " + inline4) in
+              jump inline_cont4(inline5)
             },
           }
         } in
-        let inline869 = trait_impl#ToString#string#to_string(t842) in
-        let inline870 = @runtime(core.string_println)(inline869) in
-        jump inline_cont868(())
+        let inline6 = trait_impl#ToString#string#to_string(t3) in
+        let inline7 = @runtime(core.string_println)(inline6) in
+        jump inline_cont3(())
       } in
-      match t841 {
+      match t2 {
         Tag_0 => {
-          let inline872 = Result__string__string::Ok._0(t841) in
-          let inline874 = ("ok " + inline872) in
-          jump inline_cont871(inline874)
+          let inline8 = Result__string__string::Ok._0(t2) in
+          let inline9 = ("ok " + inline8) in
+          jump inline_cont2(inline9)
         },
         Tag_1 => {
-          let inline875 = Result__string__string::Err._0(t841) in
-          let inline877 = ("err " + inline875) in
-          jump inline_cont871(inline877)
+          let inline10 = Result__string__string::Err._0(t2) in
+          let inline11 = ("err " + inline10) in
+          jump inline_cont2(inline11)
         },
       }
     } in
-    let inline879 = trait_impl#ToString#string#to_string(t840) in
-    let inline880 = @runtime(core.string_println)(inline879) in
-    jump inline_cont878(())
+    let inline12 = trait_impl#ToString#string#to_string(t1) in
+    let inline13 = @runtime(core.string_println)(inline12) in
+    jump inline_cont1(())
   } in
-  match t839 {
+  match t0 {
     Tag_0 => {
-      let inline882 = Result__string__string::Ok._0(t839) in
-      let inline884 = ("ok " + inline882) in
-      jump inline_cont881(inline884)
+      let inline14 = Result__string__string::Ok._0(t0) in
+      let inline15 = ("ok " + inline14) in
+      jump inline_cont0(inline15)
     },
     Tag_1 => {
-      let inline885 = Result__string__string::Err._0(t839) in
-      let inline887 = ("err " + inline885) in
-      jump inline_cont881(inline887)
+      let inline16 = Result__string__string::Err._0(t0) in
+      let inline17 = ("err " + inline16) in
+      jump inline_cont0(inline17)
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont888(t846: string) -> unit {
-    let t847 = @runtime(core.string_println)(t846) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont888(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

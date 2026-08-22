@@ -1,164 +1,164 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
   if ok/0 {
-    let t810 = Result__string__string::Ok("goml") in
-    t810
+    let t0 = Result__string__string::Ok("goml") in
+    t0
   } else {
-    let t811 = Result__string__string::Err("parse failed") in
-    t811
+    let t1 = Result__string__string::Err("parse failed") in
+    t1
   }
 }
 
-fn normalize_text(ok/1: bool) -> Result__string__string {
-  join inline_cont843(mtmp796: Result__string__string) -> Result__string__string {
-    join k814(jp815: string) -> Result__string__string {
-      let t816 = (jp815 + "!") in
-      let t817 = Result__string__string::Ok(t816) in
-      t817
+fn normalize_text(ok/0: bool) -> Result__string__string {
+  join inline_cont0(mtmp0: Result__string__string) -> Result__string__string {
+    join k0(jp0: string) -> Result__string__string {
+      let t0 = (jp0 + "!") in
+      let t1 = Result__string__string::Ok(t0) in
+      t1
     } in
-    match mtmp796 {
+    match mtmp0 {
       Tag_0 => {
-        let x797 = Result__string__string::Ok._0(mtmp796) in
-        jump k814(x797)
+        let x0 = Result__string__string::Ok._0(mtmp0) in
+        jump k0(x0)
       },
       Tag_1 => {
-        let x798 = Result__string__string::Err._0(mtmp796) in
-        let t818 = Result__string__string::Err(x798) in
-        t818
+        let x1 = Result__string__string::Err._0(mtmp0) in
+        let t2 = Result__string__string::Err(x1) in
+        t2
       },
     }
   } in
-  if ok/1 {
-    let inline844 = Result__string__string::Ok("goml") in
-    jump inline_cont843(inline844)
+  if ok/0 {
+    let inline0 = Result__string__string::Ok("goml") in
+    jump inline_cont0(inline0)
   } else {
-    let inline845 = Result__string__string::Err("parse failed") in
-    jump inline_cont843(inline845)
+    let inline1 = Result__string__string::Err("parse failed") in
+    jump inline_cont0(inline1)
   }
 }
 
-fn decorate_text(ok/3: bool) -> Result__string__string {
-  join inline_cont846(mtmp799: Result__string__string) -> Result__string__string {
-    join k821(jp822: string) -> Result__string__string {
-      let t823 = ("[" + jp822) in
-      let t824 = (t823 + "]") in
-      let t825 = Result__string__string::Ok(t824) in
-      t825
+fn decorate_text(ok/0: bool) -> Result__string__string {
+  join inline_cont0(mtmp0: Result__string__string) -> Result__string__string {
+    join k0(jp0: string) -> Result__string__string {
+      let t0 = ("[" + jp0) in
+      let t1 = (t0 + "]") in
+      let t2 = Result__string__string::Ok(t1) in
+      t2
     } in
-    match mtmp799 {
+    match mtmp0 {
       Tag_0 => {
-        let x800 = Result__string__string::Ok._0(mtmp799) in
-        jump k821(x800)
+        let x0 = Result__string__string::Ok._0(mtmp0) in
+        jump k0(x0)
       },
       Tag_1 => {
-        let x801 = Result__string__string::Err._0(mtmp799) in
-        let t826 = Result__string__string::Err(x801) in
-        t826
+        let x1 = Result__string__string::Err._0(mtmp0) in
+        let t3 = Result__string__string::Err(x1) in
+        t3
       },
     }
   } in
-  let inline847 = parse_text(ok/3) in
-  join inline_join848(inline849: string) -> Result__string__string {
-    let inline851 = (inline849 + "!") in
-    let inline852 = Result__string__string::Ok(inline851) in
-    jump inline_cont846(inline852)
+  let inline0 = parse_text(ok/0) in
+  join inline_join0(inline1: string) -> Result__string__string {
+    let inline2 = (inline1 + "!") in
+    let inline3 = Result__string__string::Ok(inline2) in
+    jump inline_cont0(inline3)
   } in
-  match inline847 {
+  match inline0 {
     Tag_0 => {
-      let inline853 = Result__string__string::Ok._0(inline847) in
-      jump inline_join848(inline853)
+      let inline4 = Result__string__string::Ok._0(inline0) in
+      jump inline_join0(inline4)
     },
     Tag_1 => {
-      let inline855 = Result__string__string::Err._0(inline847) in
-      let inline857 = Result__string__string::Err(inline855) in
-      jump inline_cont846(inline857)
+      let inline5 = Result__string__string::Err._0(inline0) in
+      let inline6 = Result__string__string::Err(inline5) in
+      jump inline_cont0(inline6)
     },
   }
 }
 
-fn show(res/5: Result__string__string) -> string {
-  match res/5 {
+fn show(res/0: Result__string__string) -> string {
+  match res/0 {
     Tag_0 => {
-      let x802 = Result__string__string::Ok._0(res/5) in
-      let t831 = ("ok " + x802) in
-      t831
+      let x0 = Result__string__string::Ok._0(res/0) in
+      let t0 = ("ok " + x0) in
+      t0
     },
     Tag_1 => {
-      let x803 = Result__string__string::Err._0(res/5) in
-      let t832 = ("err " + x803) in
-      t832
+      let x1 = Result__string__string::Err._0(res/0) in
+      let t1 = ("err " + x1) in
+      t1
     },
   }
 }
 
 fn main() -> unit {
-  let t834 = decorate_text(true) in
-  join inline_cont885(t835: string) -> unit {
-    join inline_cont882(_wild804: unit) -> unit {
-      join inline_cont868(t836: Result__string__string) -> unit {
-        join inline_cont861(t837: string) -> unit {
-          let inline859 = trait_impl#ToString#string#to_string(t837) in
-          let inline860 = @runtime(core.string_println)(inline859) in
+  let t0 = decorate_text(true) in
+  join inline_cont0(t1: string) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      join inline_cont2(t2: Result__string__string) -> unit {
+        join inline_cont3(t3: string) -> unit {
+          let inline0 = trait_impl#ToString#string#to_string(t3) in
+          let inline1 = @runtime(core.string_println)(inline0) in
           ()
         } in
-        match t836 {
+        match t2 {
           Tag_0 => {
-            let inline862 = Result__string__string::Ok._0(t836) in
-            let inline864 = ("ok " + inline862) in
-            jump inline_cont861(inline864)
+            let inline2 = Result__string__string::Ok._0(t2) in
+            let inline3 = ("ok " + inline2) in
+            jump inline_cont3(inline3)
           },
           Tag_1 => {
-            let inline865 = Result__string__string::Err._0(t836) in
-            let inline867 = ("err " + inline865) in
-            jump inline_cont861(inline867)
+            let inline4 = Result__string__string::Err._0(t2) in
+            let inline5 = ("err " + inline4) in
+            jump inline_cont3(inline5)
           },
         }
       } in
-      let inline869 = false in
-      let inline870 = normalize_text(inline869) in
-      join inline_join871(inline872: string) -> unit {
-        let inline874 = ("[" + inline872) in
-        let inline875 = (inline874 + "]") in
-        let inline876 = Result__string__string::Ok(inline875) in
-        jump inline_cont868(inline876)
+      let inline6 = false in
+      let inline7 = normalize_text(inline6) in
+      join inline_join0(inline8: string) -> unit {
+        let inline9 = ("[" + inline8) in
+        let inline10 = (inline9 + "]") in
+        let inline11 = Result__string__string::Ok(inline10) in
+        jump inline_cont2(inline11)
       } in
-      match inline870 {
+      match inline7 {
         Tag_0 => {
-          let inline877 = Result__string__string::Ok._0(inline870) in
-          jump inline_join871(inline877)
+          let inline12 = Result__string__string::Ok._0(inline7) in
+          jump inline_join0(inline12)
         },
         Tag_1 => {
-          let inline879 = Result__string__string::Err._0(inline870) in
-          let inline881 = Result__string__string::Err(inline879) in
-          jump inline_cont868(inline881)
+          let inline13 = Result__string__string::Err._0(inline7) in
+          let inline14 = Result__string__string::Err(inline13) in
+          jump inline_cont2(inline14)
         },
       }
     } in
-    let inline883 = trait_impl#ToString#string#to_string(t835) in
-    let inline884 = @runtime(core.string_println)(inline883) in
-    jump inline_cont882(())
+    let inline15 = trait_impl#ToString#string#to_string(t1) in
+    let inline16 = @runtime(core.string_println)(inline15) in
+    jump inline_cont1(())
   } in
-  match t834 {
+  match t0 {
     Tag_0 => {
-      let inline886 = Result__string__string::Ok._0(t834) in
-      let inline888 = ("ok " + inline886) in
-      jump inline_cont885(inline888)
+      let inline17 = Result__string__string::Ok._0(t0) in
+      let inline18 = ("ok " + inline17) in
+      jump inline_cont0(inline18)
     },
     Tag_1 => {
-      let inline889 = Result__string__string::Err._0(t834) in
-      let inline891 = ("err " + inline889) in
-      jump inline_cont885(inline891)
+      let inline19 = Result__string__string::Err._0(t0) in
+      let inline20 = ("err " + inline19) in
+      jump inline_cont0(inline20)
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont892(t839: string) -> unit {
-    let t840 = @runtime(core.string_println)(t839) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont892(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

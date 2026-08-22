@@ -1,112 +1,109 @@
 fn main() -> unit {
   let some/0 = Option__isize::Some(3) in
-  let mapped/2 =
+  let mapped/0 =
     inherent#Option#Option[T]#map__T_isize__U_string(
       some/0,
-      |value/1| inherent#isize#isize#to_string(value/1)
+      |value/0| inherent#isize#isize#to_string(value/0)
     ) in
-  let _wild796 =
-    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(mapped/2, "missing")) in
-  let static_mapped/4 =
+  let _wild0 =
+    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(mapped/0, "missing")) in
+  let static_mapped/0 =
     inherent#Option#Option[T]#map__T_isize__U_string(
       some/0,
-      |value/3| ("static:" + inherent#isize#isize#to_string(value/3))
+      |value/1| ("static:" + inherent#isize#isize#to_string(value/1))
     ) in
-  let _wild797 =
-    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(static_mapped/4, "missing")) in
-  let chained/6 =
+  let _wild1 =
+    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(static_mapped/0, "missing")) in
+  let chained/0 =
     inherent#Option#Option[T]#and_then__T_isize__U_string(
       some/0,
-      |value/5| Option__string::Some(("value:" + inherent#isize#isize#to_string(value/5)))
+      |value/2| Option__string::Some(("value:" + inherent#isize#isize#to_string(value/2)))
     ) in
-  let _wild798 =
-    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(chained/6, "missing")) in
-  let none/7 = Option__isize::None in
-  let converted/8 = inherent#Option#Option[T]#ok_or__E_string__T_isize(none/7, "none") in
-  let _wild799 =
+  let _wild2 =
+    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(chained/0, "missing")) in
+  let none/0 = Option__isize::None in
+  let converted/0 = inherent#Option#Option[T]#ok_or__E_string__T_isize(none/0, "none") in
+  let _wild3 =
     println__T_isize(
       inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_isize(
-        converted/8,
-        |error/9| inherent#string#string#len(error/9)
+        converted/0,
+        |error/0| inherent#string#string#len(error/0)
       )
     ) in
-  let ok/10 = Result__isize__string::Ok(5) in
-  let _wild800 =
+  let ok/0 = Result__isize__string::Ok(5) in
+  let _wild4 =
     println__T_isize(
       inherent#Result#Result[T,E]#unwrap_or__E_string__T_isize(
-        inherent#Result#Result[T,E]#map__E_string__T_isize__U_isize(
-          ok/10,
-          |value/11| (value/11 + 2)
-        ),
+        inherent#Result#Result[T,E]#map__E_string__T_isize__U_isize(ok/0, |value/3| (value/3 + 2)),
         0
       )
     ) in
-  let error/12 = Result__isize__string::Err("bad") in
-  let mapped_error/14 =
+  let error/1 = Result__isize__string::Err("bad") in
+  let mapped_error/0 =
     inherent#Result#Result[T,E]#map_err__E_string__F_isize__T_isize(
-      error/12,
-      |value/13| inherent#string#string#len(value/13)
+      error/1,
+      |value/4| inherent#string#string#len(value/4)
     ) in
-  let _wild801 =
+  let _wild5 =
     println__T_isize(
       inherent#Result#Result[T,E]#unwrap_or_else__E_isize__T_isize(
-        mapped_error/14,
-        |value/15| value/15
+        mapped_error/0,
+        |value/5| value/5
       )
     ) in
-  let next/17 =
+  let next/0 =
     inherent#Result#Result[T,E]#and_then__E_string__T_isize__U_string(
-      ok/10,
-      |value/16| Result__string__string::Ok(("next:" + inherent#isize#isize#to_string(value/16)))
+      ok/0,
+      |value/6| Result__string__string::Ok(("next:" + inherent#isize#isize#to_string(value/6)))
     ) in
-  let _wild802 =
+  let _wild6 =
     println__T_string(
-      inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(next/17, "missing")
+      inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(next/0, "missing")
     ) in
 }
 
-fn inherent#isize#isize#to_string(self/285: isize) -> string {
-  __goml_builtin_int_to_string(self/285)
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
 fn inherent#Option#Option[T]#map__T_isize__U_string(
-  self/735: Option__isize,
-  map_fn/736: (isize) -> string
+  self/0: Option__isize,
+  map_fn/0: (isize) -> string
 ) -> Option__string {
-  match self/735 {
+  match self/0 {
     Option__isize::None => {
       Option__string::None
     },
-    Option__isize::Some(x783) => {
+    Option__isize::Some(x0) => {
       {
-        let x783 = Option__isize::Some._0(self/735) in
+        let x0 = Option__isize::Some._0(self/0) in
         {
-          let value/737 = x783 in
-          Option__string::Some(map_fn/736(value/737))
+          let value/0 = x0 in
+          Option__string::Some(map_fn/0(value/0))
         }
       }
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_string(
-  self/720: Option__string,
-  fallback/721: string
+  self/0: Option__string,
+  fallback/0: string
 ) -> string {
-  match self/720 {
+  match self/0 {
     Option__string::None => {
-      fallback/721
+      fallback/0
     },
-    Option__string::Some(x775) => {
+    Option__string::Some(x0) => {
       {
-        let x775 = Option__string::Some._0(self/720) in
+        let x0 = Option__string::Some._0(self/0) in
         {
-          let value/722 = x775 in
-          value/722
+          let value/0 = x0 in
+          value/0
         }
       }
     },
@@ -114,19 +111,19 @@ fn inherent#Option#Option[T]#unwrap_or__T_string(
 }
 
 fn inherent#Option#Option[T]#and_then__T_isize__U_string(
-  self/738: Option__isize,
-  next/739: (isize) -> Option__string
+  self/0: Option__isize,
+  next/0: (isize) -> Option__string
 ) -> Option__string {
-  match self/738 {
+  match self/0 {
     Option__isize::None => {
       Option__string::None
     },
-    Option__isize::Some(x784) => {
+    Option__isize::Some(x0) => {
       {
-        let x784 = Option__isize::Some._0(self/738) in
+        let x0 = Option__isize::Some._0(self/0) in
         {
-          let value/740 = x784 in
-          next/739(value/740)
+          let value/0 = x0 in
+          next/0(value/0)
         }
       }
     },
@@ -134,53 +131,53 @@ fn inherent#Option#Option[T]#and_then__T_isize__U_string(
 }
 
 fn inherent#Option#Option[T]#ok_or__E_string__T_isize(
-  self/741: Option__isize,
-  error/742: string
+  self/0: Option__isize,
+  error/0: string
 ) -> Result__isize__string {
-  match self/741 {
+  match self/0 {
     Option__isize::None => {
-      Result__isize__string::Err(error/742)
+      Result__isize__string::Err(error/0)
     },
-    Option__isize::Some(x785) => {
+    Option__isize::Some(x0) => {
       {
-        let x785 = Option__isize::Some._0(self/741) in
+        let x0 = Option__isize::Some._0(self/0) in
         {
-          let value/743 = x785 in
-          Result__isize__string::Ok(value/743)
+          let value/0 = x0 in
+          Result__isize__string::Ok(value/0)
         }
       }
     },
   }
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
+fn println__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn inherent#string#string#len(self/288: string) -> isize {
-  @runtime(core.string_len)(self/288)
+fn inherent#string#string#len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_isize(
-  self/731: Result__isize__string,
-  fallback/732: (string) -> isize
+  self/0: Result__isize__string,
+  fallback/0: (string) -> isize
 ) -> isize {
-  match self/731 {
-    Result__isize__string::Ok(x781) => {
+  match self/0 {
+    Result__isize__string::Ok(x0) => {
       {
-        let x781 = Result__isize__string::Ok._0(self/731) in
+        let x0 = Result__isize__string::Ok._0(self/0) in
         {
-          let value/733 = x781 in
-          value/733
+          let value/0 = x0 in
+          value/0
         }
       }
     },
-    Result__isize__string::Err(x782) => {
+    Result__isize__string::Err(x1) => {
       {
-        let x782 = Result__isize__string::Err._0(self/731) in
+        let x1 = Result__isize__string::Err._0(self/0) in
         {
-          let error/734 = x782 in
-          fallback/732(error/734)
+          let error/0 = x1 in
+          fallback/0(error/0)
         }
       }
     },
@@ -188,25 +185,25 @@ fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_isize(
 }
 
 fn inherent#Result#Result[T,E]#map__E_string__T_isize__U_isize(
-  self/744: Result__isize__string,
-  map_fn/745: (isize) -> isize
+  self/0: Result__isize__string,
+  map_fn/0: (isize) -> isize
 ) -> Result__isize__string {
-  match self/744 {
-    Result__isize__string::Ok(x786) => {
+  match self/0 {
+    Result__isize__string::Ok(x0) => {
       {
-        let x786 = Result__isize__string::Ok._0(self/744) in
+        let x0 = Result__isize__string::Ok._0(self/0) in
         {
-          let value/746 = x786 in
-          Result__isize__string::Ok(map_fn/745(value/746))
+          let value/0 = x0 in
+          Result__isize__string::Ok(map_fn/0(value/0))
         }
       }
     },
-    Result__isize__string::Err(x787) => {
+    Result__isize__string::Err(x1) => {
       {
-        let x787 = Result__isize__string::Err._0(self/744) in
+        let x1 = Result__isize__string::Err._0(self/0) in
         {
-          let error/747 = x787 in
-          Result__isize__string::Err(error/747)
+          let error/0 = x1 in
+          Result__isize__string::Err(error/0)
         }
       }
     },
@@ -214,47 +211,47 @@ fn inherent#Result#Result[T,E]#map__E_string__T_isize__U_isize(
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_isize(
-  self/728: Result__isize__string,
-  fallback/729: isize
+  self/0: Result__isize__string,
+  fallback/0: isize
 ) -> isize {
-  match self/728 {
-    Result__isize__string::Ok(x779) => {
+  match self/0 {
+    Result__isize__string::Ok(x0) => {
       {
-        let x779 = Result__isize__string::Ok._0(self/728) in
+        let x0 = Result__isize__string::Ok._0(self/0) in
         {
-          let value/730 = x779 in
-          value/730
+          let value/0 = x0 in
+          value/0
         }
       }
     },
-    Result__isize__string::Err(x780) => {
+    Result__isize__string::Err(x1) => {
       {
-        fallback/729
+        fallback/0
       }
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#map_err__E_string__F_isize__T_isize(
-  self/748: Result__isize__string,
-  map_fn/749: (string) -> isize
+  self/0: Result__isize__string,
+  map_fn/0: (string) -> isize
 ) -> Result__isize__isize {
-  match self/748 {
-    Result__isize__string::Ok(x788) => {
+  match self/0 {
+    Result__isize__string::Ok(x0) => {
       {
-        let x788 = Result__isize__string::Ok._0(self/748) in
+        let x0 = Result__isize__string::Ok._0(self/0) in
         {
-          let value/750 = x788 in
-          Result__isize__isize::Ok(value/750)
+          let value/0 = x0 in
+          Result__isize__isize::Ok(value/0)
         }
       }
     },
-    Result__isize__string::Err(x789) => {
+    Result__isize__string::Err(x1) => {
       {
-        let x789 = Result__isize__string::Err._0(self/748) in
+        let x1 = Result__isize__string::Err._0(self/0) in
         {
-          let error/751 = x789 in
-          Result__isize__isize::Err(map_fn/749(error/751))
+          let error/0 = x1 in
+          Result__isize__isize::Err(map_fn/0(error/0))
         }
       }
     },
@@ -262,25 +259,25 @@ fn inherent#Result#Result[T,E]#map_err__E_string__F_isize__T_isize(
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else__E_isize__T_isize(
-  self/731: Result__isize__isize,
-  fallback/732: (isize) -> isize
+  self/0: Result__isize__isize,
+  fallback/0: (isize) -> isize
 ) -> isize {
-  match self/731 {
-    Result__isize__isize::Ok(x781) => {
+  match self/0 {
+    Result__isize__isize::Ok(x0) => {
       {
-        let x781 = Result__isize__isize::Ok._0(self/731) in
+        let x0 = Result__isize__isize::Ok._0(self/0) in
         {
-          let value/733 = x781 in
-          value/733
+          let value/0 = x0 in
+          value/0
         }
       }
     },
-    Result__isize__isize::Err(x782) => {
+    Result__isize__isize::Err(x1) => {
       {
-        let x782 = Result__isize__isize::Err._0(self/731) in
+        let x1 = Result__isize__isize::Err._0(self/0) in
         {
-          let error/734 = x782 in
-          fallback/732(error/734)
+          let error/0 = x1 in
+          fallback/0(error/0)
         }
       }
     },
@@ -288,25 +285,25 @@ fn inherent#Result#Result[T,E]#unwrap_or_else__E_isize__T_isize(
 }
 
 fn inherent#Result#Result[T,E]#and_then__E_string__T_isize__U_string(
-  self/752: Result__isize__string,
-  next/753: (isize) -> Result__string__string
+  self/0: Result__isize__string,
+  next/0: (isize) -> Result__string__string
 ) -> Result__string__string {
-  match self/752 {
-    Result__isize__string::Ok(x790) => {
+  match self/0 {
+    Result__isize__string::Ok(x0) => {
       {
-        let x790 = Result__isize__string::Ok._0(self/752) in
+        let x0 = Result__isize__string::Ok._0(self/0) in
         {
-          let value/754 = x790 in
-          next/753(value/754)
+          let value/0 = x0 in
+          next/0(value/0)
         }
       }
     },
-    Result__isize__string::Err(x791) => {
+    Result__isize__string::Err(x1) => {
       {
-        let x791 = Result__isize__string::Err._0(self/752) in
+        let x1 = Result__isize__string::Err._0(self/0) in
         {
-          let error/755 = x791 in
-          Result__string__string::Err(error/755)
+          let error/0 = x1 in
+          Result__string__string::Err(error/0)
         }
       }
     },
@@ -314,54 +311,54 @@ fn inherent#Result#Result[T,E]#and_then__E_string__T_isize__U_string(
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(
-  self/728: Result__string__string,
-  fallback/729: string
+  self/0: Result__string__string,
+  fallback/0: string
 ) -> string {
-  match self/728 {
-    Result__string__string::Ok(x779) => {
+  match self/0 {
+    Result__string__string::Ok(x0) => {
       {
-        let x779 = Result__string__string::Ok._0(self/728) in
+        let x0 = Result__string__string::Ok._0(self/0) in
         {
-          let value/730 = x779 in
-          value/730
+          let value/0 = x0 in
+          value/0
         }
       }
     },
-    Result__string__string::Err(x780) => {
+    Result__string__string::Err(x1) => {
       {
-        fallback/729
+        fallback/0
       }
     },
   }
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -370,58 +367,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

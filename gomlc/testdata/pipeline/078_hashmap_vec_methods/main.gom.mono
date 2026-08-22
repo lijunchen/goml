@@ -2,20 +2,20 @@ fn trait_impl#Hash#Key#hash(self/0: Key) -> u64 {
   match self/0 {
     Key::A => {
       {
-        let h/1 = (((0 as u64) + 14695981039346656037) + 1) in
-        h/1
+        let h/0 = (((0 as u64) + 14695981039346656037) + 1) in
+        h/0
       }
     },
-    Key::B(x796) => {
+    Key::B(x0) => {
       {
-        let x796 = Key::B._0(self/0) in
+        let x0 = Key::B._0(self/0) in
         {
-          let #derive0_field/2 = x796 in
+          let #derive0_field/0 = x0 in
           {
-            let h/3 = (((0 as u64) + 14695981039346656037) + 2) in
-            let h/4 =
-              ((h/3 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#i32#hash(#derive0_field/2)) in
-            h/4
+            let h/1 = (((0 as u64) + 14695981039346656037) + 2) in
+            let h/2 =
+              ((h/1 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#i32#hash(#derive0_field/0)) in
+            h/2
           }
         }
       }
@@ -23,34 +23,34 @@ fn trait_impl#Hash#Key#hash(self/0: Key) -> u64 {
   }
 }
 
-fn trait_impl#PartialEq#Key#eq(self/5: Key, other/6: Key) -> bool {
+fn trait_impl#PartialEq#Key#eq(self/0: Key, other/0: Key) -> bool {
   {
-    let mtmp797 = (self/5, other/6) in
+    let mtmp0 = (self/0, other/0) in
     {
-      let x798 = mtmp797.0 in
-      let x799 = mtmp797.1 in
-      match x799 {
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      match x1 {
         Key::A => {
-          match x798 {
+          match x0 {
             Key::A => {
               true
             },
             _ => false,
           }
         },
-        Key::B(x800) => {
+        Key::B(x2) => {
           {
-            let x800 = Key::B._0(x799) in
-            match x798 {
-              Key::B(x802) => {
+            let x2 = Key::B._0(x1) in
+            match x0 {
+              Key::B(x3) => {
                 {
-                  let x802 = Key::B._0(x798) in
+                  let x3 = Key::B._0(x0) in
                   {
-                    let #derive0_left/7 = x802 in
+                    let #derive0_left/0 = x3 in
                     {
-                      let #derive1_right/8 = x800 in
+                      let #derive1_right/0 = x2 in
                       if true {
-                          trait_impl#PartialEq#i32#eq(#derive0_left/7, #derive1_right/8)
+                          trait_impl#PartialEq#i32#eq(#derive0_left/0, #derive1_right/0)
                       } else {
                           false
                       }
@@ -67,17 +67,17 @@ fn trait_impl#PartialEq#Key#eq(self/5: Key, other/6: Key) -> bool {
   }
 }
 
-fn print_opt_int(x/9: Option__i32) -> unit {
-  match x/9 {
+fn print_opt_int(x/0: Option__i32) -> unit {
+  match x/0 {
     Option__i32::None => {
       println__T_string("none")
     },
-    Option__i32::Some(x803) => {
+    Option__i32::Some(x0) => {
       {
-        let x803 = Option__i32::Some._0(x/9) in
+        let x0 = Option__i32::Some._0(x/0) in
         {
-          let v/10 = x803 in
-          println__T_i32(v/10)
+          let v/0 = x0 in
+          println__T_i0(v/0)
         }
       }
     },
@@ -85,61 +85,61 @@ fn print_opt_int(x/9: Option__i32) -> unit {
 }
 
 fn main() -> unit {
-  let v/11 = inherent#Vec#Vec[T]#new__T_isize() in
-  let _wild804 = inherent#Vec#Vec[T]#push__T_isize(v/11, 10) in
-  let _wild805 = inherent#Vec#Vec[T]#push__T_isize(v/11, 20) in
-  let _wild806 = inherent#Vec#Vec[T]#push__T_isize(v/11, 30) in
-  let _wild807 = println__T_isize(inherent#Vec#Vec[T]#get__T_isize(v/11, 0)) in
-  let _wild808 = println__T_isize(inherent#Vec#Vec[T]#get__T_isize(v/11, 1)) in
-  let _wild809 = println__T_isize(inherent#Vec#Vec[T]#get__T_isize(v/11, 2)) in
-  let _wild810 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(v/11)) in
-  let m/12 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_i32() in
-  let _wild811 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_i32(m/12, Key::A, 10) in
-  let _wild812 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_i32(m/12, Key::B(1), 20) in
-  let _wild813 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_Key__V_i32(m/12)) in
-  let _wild814 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_i32(m/12, Key::A)) in
-  let _wild815 =
-    println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i32(m/12, Key::B(1))) in
-  let _wild816 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_i32(m/12, Key::B(1)) in
-  let _wild817 =
-    println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i32(m/12, Key::B(1))) in
-  let _wild818 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_Key__V_i32(m/12)) in
+  let v/0 = inherent#Vec#Vec[T]#new__T_isize() in
+  let _wild0 = inherent#Vec#Vec[T]#push__T_isize(v/0, 10) in
+  let _wild1 = inherent#Vec#Vec[T]#push__T_isize(v/0, 20) in
+  let _wild2 = inherent#Vec#Vec[T]#push__T_isize(v/0, 30) in
+  let _wild3 = println__T_isize(inherent#Vec#Vec[T]#get__T_isize(v/0, 0)) in
+  let _wild4 = println__T_isize(inherent#Vec#Vec[T]#get__T_isize(v/0, 1)) in
+  let _wild5 = println__T_isize(inherent#Vec#Vec[T]#get__T_isize(v/0, 2)) in
+  let _wild6 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(v/0)) in
+  let m/0 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_i0() in
+  let _wild7 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_i0(m/0, Key::A, 10) in
+  let _wild8 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_i0(m/0, Key::B(1), 20) in
+  let _wild9 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_Key__V_i0(m/0)) in
+  let _wild10 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_i0(m/0, Key::A)) in
+  let _wild11 =
+    println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i0(m/0, Key::B(1))) in
+  let _wild12 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_i0(m/0, Key::B(1)) in
+  let _wild13 =
+    println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i0(m/0, Key::B(1))) in
+  let _wild14 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_Key__V_i0(m/0)) in
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  @runtime(core.int32_hash)(self/467)
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  @runtime(core.int32_hash)(self/0)
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  (self/444 == other/445)
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  (self/0 == other/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_i32(value/1: i32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
+fn println__T_i32(value/0: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
 fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/511: Vec[isize], elem/512: isize) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
+fn println__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn inherent#Vec#Vec[T]#get__T_isize(self/521: Vec[isize], index/522: isize) -> isize {
-  @intrinsic(vec.get)(self/521, index/522)
+fn inherent#Vec#Vec[T]#get__T_isize(self/0: Vec[isize], index/0: isize) -> isize {
+  @intrinsic(vec.get)(self/0, index/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_isize(self/526: Vec[isize]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_isize(self/0: Vec[isize]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_i32() -> HashMap[Key, i32] {
@@ -147,81 +147,81 @@ fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_i32() -> HashMap[Key, i32] {
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_Key__V_i32(
-  self/675: HashMap[Key, i32],
-  key/676: Key,
-  value/677: i32
+  self/0: HashMap[Key, i32],
+  key/0: Key,
+  value/0: i32
 ) -> unit {
-  @intrinsic(hashmap.set)(self/675, key/676, value/677)
+  @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_i32(self/680: HashMap[Key, i32]) -> isize {
-  @intrinsic(hashmap.len)(self/680)
+fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_i32(self/0: HashMap[Key, i32]) -> isize {
+  @intrinsic(hashmap.len)(self/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_i32(
-  self/673: HashMap[Key, i32],
-  key/674: Key
+  self/0: HashMap[Key, i32],
+  key/0: Key
 ) -> Option__i32 {
-  @intrinsic(hashmap.get)(self/673, key/674)
+  @intrinsic(hashmap.get)(self/0, key/0)
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
 fn inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i32(
-  self/681: HashMap[Key, i32],
-  key/682: Key
+  self/0: HashMap[Key, i32],
+  key/0: Key
 ) -> bool {
-  @intrinsic(hashmap.contains)(self/681, key/682)
+  @intrinsic(hashmap.contains)(self/0, key/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#remove__K_Key__V_i32(
-  self/678: HashMap[Key, i32],
-  key/679: Key
+  self/0: HashMap[Key, i32],
+  key/0: Key
 ) -> unit {
-  @intrinsic(hashmap.remove)(self/678, key/679)
+  @intrinsic(hashmap.remove)(self/0, key/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
-  __goml_builtin_int32_to_string(self/407)
+fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -230,58 +230,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

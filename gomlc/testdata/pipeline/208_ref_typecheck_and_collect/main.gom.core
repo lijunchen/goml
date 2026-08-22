@@ -2,19 +2,19 @@ fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
 
-fn utf8_valid_decode(value/253: u32, width/254: isize) -> (bool, char, isize) {
+fn utf8_valid_decode(value/0: u32, width/0: isize) -> (bool, char, isize) {
   {
-    let mtmp385 = __goml_builtin_char_from_uint32(value/253) in
-    match mtmp385 {
+    let mtmp0 = __goml_builtin_char_from_uint0(value/0) in
+    match mtmp0 {
       Option::None => {
         utf8_invalid_decode()
       },
-      Option::Some(x386) => {
+      Option::Some(x0) => {
         {
-          let x386 = Option::Some._0(mtmp385) in
+          let x0 = Option::Some._0(mtmp0) in
           {
-            let character/255 = x386 in
-            (true, character/255, width/254)
+            let character/0 = x0 in
+            (true, character/0, width/0)
           }
         }
       },
@@ -22,18 +22,18 @@ fn utf8_valid_decode(value/253: u32, width/254: isize) -> (bool, char, isize) {
   }
 }
 
-fn utf8_invalid_continuation(value/256: u32) -> bool {
-  if (value/256 < 128) {
+fn utf8_invalid_continuation(value/0: u32) -> bool {
+  if (value/0 < 128) {
       true
   } else {
-      (value/256 > 191)
+      (value/0 > 191)
   }
 }
 
-fn utf8_valid_scalar(value/257: u32) -> bool {
-  if (value/257 <= 1114111) {
-      (!if (value/257 >= 55296) {
-          (value/257 <= 57343)
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  if (value/0 <= 1114111) {
+      (!if (value/0 >= 55296) {
+          (value/0 <= 57343)
       } else {
           false
       })
@@ -42,13 +42,13 @@ fn utf8_valid_scalar(value/257: u32) -> bool {
   }
 }
 
-fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, isize) {
-  let length/260 = inherent#string#string#byte_len(value/258) in
-  let _wild387 =
-    if if (index/259 < 0) {
+fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
+  let length/0 = inherent#string#string#byte_len(value/0) in
+  let _wild0 =
+    if if (index/0 < 0) {
         true
     } else {
-        (index/259 >= length/260)
+        (index/0 >= length/0)
     } {
         {
           return utf8_invalid_decode()
@@ -58,21 +58,21 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
           ()
         }
     } in
-  let first/261 = (inherent#string#string#byte_get(value/258, index/259) as u32) in
-  if (first/261 < 128) {
+  let first/0 = (inherent#string#string#byte_get(value/0, index/0) as u32) in
+  if (first/0 < 128) {
       {
-        utf8_valid_decode(first/261, 1)
+        utf8_valid_decode(first/0, 1)
       }
   } else {
-      if (first/261 < 194) {
+      if (first/0 < 194) {
           {
             utf8_invalid_decode()
           }
       } else {
-          if (first/261 < 224) {
+          if (first/0 < 224) {
               {
-                let _wild388 =
-                  if ((length/260 - index/259) < 2) {
+                let _wild1 =
+                  if ((length/0 - index/0) < 2) {
                       {
                         return utf8_invalid_decode()
                       }
@@ -81,23 +81,22 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                         ()
                       }
                   } in
-                let second/262 =
-                  (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
-                if utf8_invalid_continuation(second/262) {
+                let second/0 = (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
+                if utf8_invalid_continuation(second/0) {
                     {
                       utf8_invalid_decode()
                     }
                 } else {
                     {
-                      utf8_valid_decode((((first/261 & 31) << 6) | (second/262 & 63)), 2)
+                      utf8_valid_decode((((first/0 & 31) << 6) | (second/0 & 63)), 2)
                     }
                 }
               }
           } else {
-              if (first/261 < 240) {
+              if (first/0 < 240) {
                   {
-                    let _wild389 =
-                      if ((length/260 - index/259) < 3) {
+                    let _wild2 =
+                      if ((length/0 - index/0) < 3) {
                           {
                             return utf8_invalid_decode()
                           }
@@ -106,27 +105,27 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                             ()
                           }
                       } in
-                    let second/263 =
-                      (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
-                    let third/264 =
-                      (inherent#string#string#byte_get(value/258, (index/259 + 2)) as u32) in
-                    if if if if utf8_invalid_continuation(second/263) {
+                    let second/1 =
+                      (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
+                    let third/0 =
+                      (inherent#string#string#byte_get(value/0, (index/0 + 2)) as u32) in
+                    if if if if utf8_invalid_continuation(second/1) {
                         true
                     } else {
-                        utf8_invalid_continuation(third/264)
+                        utf8_invalid_continuation(third/0)
                     } {
                         true
                     } else {
-                        if (first/261 == 224) {
-                            (second/263 < 160)
+                        if (first/0 == 224) {
+                            (second/1 < 160)
                         } else {
                             false
                         }
                     } {
                         true
                     } else {
-                        if (first/261 == 237) {
-                            (second/263 >= 160)
+                        if (first/0 == 237) {
+                            (second/1 >= 160)
                         } else {
                             false
                         }
@@ -137,18 +136,17 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                     } else {
                         {
                           utf8_valid_decode(
-                            ((((first/261 & 15) << 12) | ((second/263 & 63) << 6)) |
-                              (third/264 & 63)),
+                            ((((first/0 & 15) << 12) | ((second/1 & 63) << 6)) | (third/0 & 63)),
                             3
                           )
                         }
                     }
                   }
               } else {
-                  if (first/261 < 245) {
+                  if (first/0 < 245) {
                       {
-                        let _wild390 =
-                          if ((length/260 - index/259) < 4) {
+                        let _wild3 =
+                          if ((length/0 - index/0) < 4) {
                               {
                                 return utf8_invalid_decode()
                               }
@@ -157,33 +155,33 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                                 ()
                               }
                           } in
-                        let second/265 =
-                          (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
-                        let third/266 =
-                          (inherent#string#string#byte_get(value/258, (index/259 + 2)) as u32) in
-                        let fourth/267 =
-                          (inherent#string#string#byte_get(value/258, (index/259 + 3)) as u32) in
-                        if if if if if utf8_invalid_continuation(second/265) {
+                        let second/2 =
+                          (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
+                        let third/1 =
+                          (inherent#string#string#byte_get(value/0, (index/0 + 2)) as u32) in
+                        let fourth/0 =
+                          (inherent#string#string#byte_get(value/0, (index/0 + 3)) as u32) in
+                        if if if if if utf8_invalid_continuation(second/2) {
                             true
                         } else {
-                            utf8_invalid_continuation(third/266)
+                            utf8_invalid_continuation(third/1)
                         } {
                             true
                         } else {
-                            utf8_invalid_continuation(fourth/267)
+                            utf8_invalid_continuation(fourth/0)
                         } {
                             true
                         } else {
-                            if (first/261 == 240) {
-                                (second/265 < 144)
+                            if (first/0 == 240) {
+                                (second/2 < 144)
                             } else {
                                 false
                             }
                         } {
                             true
                         } else {
-                            if (first/261 == 244) {
-                                (second/265 > 143)
+                            if (first/0 == 244) {
+                                (second/2 > 143)
                             } else {
                                 false
                             }
@@ -194,9 +192,9 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                         } else {
                             {
                               utf8_valid_decode(
-                                (((((first/261 & 7) << 18) | ((second/265 & 63) << 12)) |
-                                  ((third/266 & 63) << 6)) |
-                                  (fourth/267 & 63)),
+                                (((((first/0 & 7) << 18) | ((second/2 & 63) << 12)) |
+                                  ((third/1 & 63) << 6)) |
+                                  (fourth/0 & 63)),
                                 4
                               )
                             }
@@ -213,19 +211,19 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
   }
 }
 
-fn string_get(value/270: string, index/271: isize) -> char {
-  let mtmp391 = string_decode_utf8_at(value/270, index/271) in
+fn string_get(value/0: string, index/0: isize) -> char {
+  let mtmp0 = string_decode_utf8_at(value/0, index/0) in
   {
-    let x392 = mtmp391.0 in
-    let x393 = mtmp391.1 in
+    let x0 = mtmp0.0 in
+    let x1 = mtmp0.1 in
     {
-      let character/273 = x393 in
+      let character/0 = x1 in
       {
-        let valid/272 = x392 in
+        let valid/0 = x0 in
         {
-          if valid/272 {
+          if valid/0 {
               {
-                character/273
+                character/0
               }
           } else {
               {
@@ -238,16 +236,16 @@ fn string_get(value/270: string, index/271: isize) -> char {
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/283: u32) -> Option[char] {
-  if utf8_valid_scalar(value/283) {
+fn __goml_builtin_char_from_uint32(value/0: u32) -> Option[char] {
+  if utf8_valid_scalar(value/0) {
       {
-        let mtmp407 = @runtime(core.char_from_uint32)(value/283) in
+        let mtmp0 = @runtime(core.char_from_uint32)(value/0) in
         {
-          let x409 = mtmp407.1 in
+          let x0 = mtmp0.1 in
           {
-            let character/284 = x409 in
+            let character/0 = x0 in
             {
-              Option::Some(character/284)
+              Option::Some(character/0)
             }
           }
         }
@@ -259,23 +257,23 @@ fn __goml_builtin_char_from_uint32(value/283: u32) -> Option[char] {
   }
 }
 
-fn inherent#string#string#len(self/288: string) -> isize {
-  @runtime(core.string_len)(self/288)
+fn inherent#string#string#len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
 }
 
-fn inherent#string#string#byte_len(self/289: string) -> isize {
-  @runtime(core.string_len)(self/289)
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
 }
 
-fn inherent#string#string#get(self/290: string, index/291: isize) -> char {
-  string_get(self/290, index/291)
+fn inherent#string#string#get(self/0: string, index/0: isize) -> char {
+  string_get(self/0, index/0)
 }
 
-fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
-  @runtime(core.string_byte_get)(self/292, index/293)
+fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
+  @runtime(core.string_byte_get)(self/0, index/0)
 }
 
-fn trait_impl#PartialEq#unit#eq(self/430: unit, other/431: unit) -> bool {
+fn trait_impl#PartialEq#unit#eq(self/0: unit, other/0: unit) -> bool {
   true
 }
 
@@ -283,116 +281,116 @@ fn trait_impl#Eq#unit#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#bool#eq(self/432: bool, other/433: bool) -> bool {
-  (self/432 == other/433)
+fn trait_impl#PartialEq#bool#eq(self/0: bool, other/0: bool) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#bool#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
-  (self/434 == other/435)
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#string#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#char#eq(self/436: char, other/437: char) -> bool {
-  (self/436 == other/437)
+fn trait_impl#PartialEq#char#eq(self/0: char, other/0: char) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#char#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  (self/438 == other/439)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#isize#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i8#eq(self/440: i8, other/441: i8) -> bool {
-  (self/440 == other/441)
+fn trait_impl#PartialEq#i8#eq(self/0: i8, other/0: i8) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i8#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i16#eq(self/442: i16, other/443: i16) -> bool {
-  (self/442 == other/443)
+fn trait_impl#PartialEq#i16#eq(self/0: i16, other/0: i16) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i16#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  (self/444 == other/445)
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i32#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i64#eq(self/446: i64, other/447: i64) -> bool {
-  (self/446 == other/447)
+fn trait_impl#PartialEq#i64#eq(self/0: i64, other/0: i64) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i64#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u8#eq(self/448: u8, other/449: u8) -> bool {
-  (self/448 == other/449)
+fn trait_impl#PartialEq#u8#eq(self/0: u8, other/0: u8) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u8#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u16#eq(self/450: u16, other/451: u16) -> bool {
-  (self/450 == other/451)
+fn trait_impl#PartialEq#u16#eq(self/0: u16, other/0: u16) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u16#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u32#eq(self/452: u32, other/453: u32) -> bool {
-  (self/452 == other/453)
+fn trait_impl#PartialEq#u32#eq(self/0: u32, other/0: u32) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u32#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u64#eq(self/454: u64, other/455: u64) -> bool {
-  (self/454 == other/455)
+fn trait_impl#PartialEq#u64#eq(self/0: u64, other/0: u64) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u64#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#f32#eq(self/456: f32, other/457: f32) -> bool {
-  (self/456 == other/457)
+fn trait_impl#PartialEq#f32#eq(self/0: f32, other/0: f32) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#PartialEq#f64#eq(self/458: f64, other/459: f64) -> bool {
-  (self/458 == other/459)
+fn trait_impl#PartialEq#f64#eq(self/0: f64, other/0: f64) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#unit#hash(self/460: unit) -> u64 {
+fn trait_impl#Hash#unit#hash(self/0: unit) -> u64 {
   0
 }
 
-fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
-  if self/461 {
+fn trait_impl#Hash#bool#hash(self/0: bool) -> u64 {
+  if self/0 {
       {
         1
       }
@@ -403,83 +401,83 @@ fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
   }
 }
 
-fn trait_impl#Hash#string#hash(self/462: string) -> u64 {
-  @runtime(core.string_hash)(self/462)
+fn trait_impl#Hash#string#hash(self/0: string) -> u64 {
+  @runtime(core.string_hash)(self/0)
 }
 
-fn trait_impl#Hash#char#hash(self/463: char) -> u64 {
-  @runtime(core.char_hash)(self/463)
+fn trait_impl#Hash#char#hash(self/0: char) -> u64 {
+  @runtime(core.char_hash)(self/0)
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  @runtime(core.int_hash)(self/464)
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
 }
 
-fn trait_impl#Hash#i8#hash(self/465: i8) -> u64 {
-  @runtime(core.int8_hash)(self/465)
+fn trait_impl#Hash#i8#hash(self/0: i8) -> u64 {
+  @runtime(core.int8_hash)(self/0)
 }
 
-fn trait_impl#Hash#i16#hash(self/466: i16) -> u64 {
-  @runtime(core.int16_hash)(self/466)
+fn trait_impl#Hash#i16#hash(self/0: i16) -> u64 {
+  @runtime(core.int16_hash)(self/0)
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  @runtime(core.int32_hash)(self/467)
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  @runtime(core.int32_hash)(self/0)
 }
 
-fn trait_impl#Hash#i64#hash(self/468: i64) -> u64 {
-  @runtime(core.int64_hash)(self/468)
+fn trait_impl#Hash#i64#hash(self/0: i64) -> u64 {
+  @runtime(core.int64_hash)(self/0)
 }
 
-fn trait_impl#Hash#u8#hash(self/469: u8) -> u64 {
-  @runtime(core.uint8_hash)(self/469)
+fn trait_impl#Hash#u8#hash(self/0: u8) -> u64 {
+  @runtime(core.uint8_hash)(self/0)
 }
 
-fn trait_impl#Hash#u16#hash(self/470: u16) -> u64 {
-  @runtime(core.uint16_hash)(self/470)
+fn trait_impl#Hash#u16#hash(self/0: u16) -> u64 {
+  @runtime(core.uint16_hash)(self/0)
 }
 
-fn trait_impl#Hash#u32#hash(self/471: u32) -> u64 {
-  @runtime(core.uint32_hash)(self/471)
+fn trait_impl#Hash#u32#hash(self/0: u32) -> u64 {
+  @runtime(core.uint32_hash)(self/0)
 }
 
-fn trait_impl#Hash#u64#hash(self/472: u64) -> u64 {
-  self/472
+fn trait_impl#Hash#u64#hash(self/0: u64) -> u64 {
+  self/0
 }
 
-fn trait_impl#PartialEq#Ref[T]#eq[T](self/473: Ref[T], other/474: Ref[T]) -> bool {
-  @intrinsic(ref.ptr_eq)(self/473, other/474)
+fn trait_impl#PartialEq#Ref[T]#eq[T](self/0: Ref[T], other/0: Ref[T]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/0, other/0)
 }
 
 fn trait_impl#Eq#Ref[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Ref[T]#hash[T](self/475: Ref[T]) -> u64 {
-  @intrinsic(ref.ptr_hash)(self/475)
+fn trait_impl#Hash#Ref[T]#hash[T](self/0: Ref[T]) -> u64 {
+  @intrinsic(ref.ptr_hash)(self/0)
 }
 
-fn trait_impl#PartialEq#Vec[T]#eq[T](self/476: Vec[T], other/477: Vec[T]) -> bool {
-  if (inherent#Vec#Vec[T]#len(self/476) != inherent#Vec#Vec[T]#len(other/477)) {
+fn trait_impl#PartialEq#Vec[T]#eq[T](self/0: Vec[T], other/0: Vec[T]) -> bool {
+  if (inherent#Vec#Vec[T]#len(self/0) != inherent#Vec#Vec[T]#len(other/0)) {
       {
         false
       }
   } else {
       {
-        let index/478 = 0 in
-        let _wild541 =
-          while (index/478 < inherent#Vec#Vec[T]#len(self/476)) {
+        let index/0 = 0 in
+        let _wild0 =
+          while (index/0 < inherent#Vec#Vec[T]#len(self/0)) {
               {
                 if trait_call[PartialEq::eq](
-                  @intrinsic(vec.get)(self/476, index/478),
-                  @intrinsic(vec.get)(other/477, index/478)
+                  @intrinsic(vec.get)(self/0, index/0),
+                  @intrinsic(vec.get)(other/0, index/0)
                 ) {
                     {
-                      let _wild540 =
+                      let _wild1 =
                         {
-                          let compound_old538 = index/478 in
-                          let compound_value539 = 1 in
-                          index/478 = (compound_old538 + compound_value539)
+                          let compound_old0 = index/0 in
+                          let compound_value0 = 1 in
+                          index/0 = (compound_old0 + compound_value0)
                         } in
                     }
                 } else {
@@ -498,47 +496,47 @@ fn trait_impl#Eq#Vec[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Vec[T]#hash[T](self/479: Vec[T]) -> u64 {
-  let value/480 = 14695981039346656037 in
-  let index/481 = 0 in
-  let _wild546 =
-    while (index/481 < inherent#Vec#Vec[T]#len(self/479)) {
+fn trait_impl#Hash#Vec[T]#hash[T](self/0: Vec[T]) -> u64 {
+  let value/0 = 14695981039346656037 in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Vec#Vec[T]#len(self/0)) {
         {
-          let _wild542 =
-            value/480 = ((value/480 * 1099511628211) +
-              trait_call[Hash::hash](@intrinsic(vec.get)(self/479, index/481))) in
-          let _wild545 =
+          let _wild1 =
+            value/0 = ((value/0 * 1099511628211) +
+              trait_call[Hash::hash](@intrinsic(vec.get)(self/0, index/0))) in
+          let _wild2 =
             {
-              let compound_old543 = index/481 in
-              let compound_value544 = 1 in
-              index/481 = (compound_old543 + compound_value544)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  value/480
+  value/0
 }
 
-fn trait_impl#PartialEq#Slice[T]#eq[T](self/482: Slice[T], other/483: Slice[T]) -> bool {
-  if (inherent#Slice#Slice[T]#len(self/482) != inherent#Slice#Slice[T]#len(other/483)) {
+fn trait_impl#PartialEq#Slice[T]#eq[T](self/0: Slice[T], other/0: Slice[T]) -> bool {
+  if (inherent#Slice#Slice[T]#len(self/0) != inherent#Slice#Slice[T]#len(other/0)) {
       {
         false
       }
   } else {
       {
-        let index/484 = 0 in
-        let _wild550 =
-          while (index/484 < inherent#Slice#Slice[T]#len(self/482)) {
+        let index/0 = 0 in
+        let _wild0 =
+          while (index/0 < inherent#Slice#Slice[T]#len(self/0)) {
               {
                 if trait_call[PartialEq::eq](
-                  @intrinsic(slice.get)(self/482, index/484),
-                  @intrinsic(slice.get)(other/483, index/484)
+                  @intrinsic(slice.get)(self/0, index/0),
+                  @intrinsic(slice.get)(other/0, index/0)
                 ) {
                     {
-                      let _wild549 =
+                      let _wild1 =
                         {
-                          let compound_old547 = index/484 in
-                          let compound_value548 = 1 in
-                          index/484 = (compound_old547 + compound_value548)
+                          let compound_old0 = index/0 in
+                          let compound_value0 = 1 in
+                          index/0 = (compound_old0 + compound_value0)
                         } in
                     }
                 } else {
@@ -557,53 +555,53 @@ fn trait_impl#Eq#Slice[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Slice[T]#hash[T](self/485: Slice[T]) -> u64 {
-  let value/486 = 14695981039346656037 in
-  let index/487 = 0 in
-  let _wild555 =
-    while (index/487 < inherent#Slice#Slice[T]#len(self/485)) {
+fn trait_impl#Hash#Slice[T]#hash[T](self/0: Slice[T]) -> u64 {
+  let value/0 = 14695981039346656037 in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Slice#Slice[T]#len(self/0)) {
         {
-          let _wild551 =
-            value/486 = ((value/486 * 1099511628211) +
-              trait_call[Hash::hash](@intrinsic(slice.get)(self/485, index/487))) in
-          let _wild554 =
+          let _wild1 =
+            value/0 = ((value/0 * 1099511628211) +
+              trait_call[Hash::hash](@intrinsic(slice.get)(self/0, index/0))) in
+          let _wild2 =
             {
-              let compound_old552 = index/487 in
-              let compound_value553 = 1 in
-              index/487 = (compound_old552 + compound_value553)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  value/486
+  value/0
 }
 
-fn trait_impl#PartialEq#Option[T]#eq[T](self/488: Option[T], other/489: Option[T]) -> bool {
+fn trait_impl#PartialEq#Option[T]#eq[T](self/0: Option[T], other/0: Option[T]) -> bool {
   {
-    let mtmp556 = (self/488, other/489) in
+    let mtmp0 = (self/0, other/0) in
     {
-      let x557 = mtmp556.0 in
-      let x558 = mtmp556.1 in
-      match x558 {
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      match x1 {
         Option::None => {
-          match x557 {
+          match x0 {
             Option::None => {
               true
             },
             _ => false,
           }
         },
-        Option::Some(x559) => {
+        Option::Some(x2) => {
           {
-            let x559 = Option::Some._0(x558) in
-            match x557 {
-              Option::Some(x561) => {
+            let x2 = Option::Some._0(x1) in
+            match x0 {
+              Option::Some(x3) => {
                 {
-                  let x561 = Option::Some._0(x557) in
+                  let x3 = Option::Some._0(x0) in
                   {
-                    let left/490 = x561 in
+                    let left/0 = x3 in
                     {
-                      let right/491 = x559 in
-                      trait_call[PartialEq::eq](left/490, right/491)
+                      let right/0 = x2 in
+                      trait_call[PartialEq::eq](left/0, right/0)
                     }
                   }
                 }
@@ -621,45 +619,42 @@ fn trait_impl#Eq#Option[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Option[T]#hash[T](self/492: Option[T]) -> u64 {
-  match self/492 {
+fn trait_impl#Hash#Option[T]#hash[T](self/0: Option[T]) -> u64 {
+  match self/0 {
     Option::None => {
       14695981039346656038
     },
-    Option::Some(x562) => {
+    Option::Some(x0) => {
       {
-        let x562 = Option::Some._0(self/492) in
+        let x0 = Option::Some._0(self/0) in
         {
-          let value/493 = x562 in
-          (14695981039346656039 + trait_call[Hash::hash](value/493))
+          let value/0 = x0 in
+          (14695981039346656039 + trait_call[Hash::hash](value/0))
         }
       }
     },
   }
 }
 
-fn trait_impl#PartialEq#Result[T,E]#eq[T, E](
-  self/494: Result[T, E],
-  other/495: Result[T, E]
-) -> bool {
+fn trait_impl#PartialEq#Result[T,E]#eq[T, E](self/0: Result[T, E], other/0: Result[T, E]) -> bool {
   {
-    let mtmp563 = (self/494, other/495) in
+    let mtmp0 = (self/0, other/0) in
     {
-      let x564 = mtmp563.0 in
-      let x565 = mtmp563.1 in
-      match x565 {
-        Result::Ok(x566) => {
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      match x1 {
+        Result::Ok(x2) => {
           {
-            let x566 = Result::Ok._0(x565) in
-            match x564 {
-              Result::Ok(x568) => {
+            let x2 = Result::Ok._0(x1) in
+            match x0 {
+              Result::Ok(x3) => {
                 {
-                  let x568 = Result::Ok._0(x564) in
+                  let x3 = Result::Ok._0(x0) in
                   {
-                    let left/496 = x568 in
+                    let left/0 = x3 in
                     {
-                      let right/497 = x566 in
-                      trait_call[PartialEq::eq](left/496, right/497)
+                      let right/0 = x2 in
+                      trait_call[PartialEq::eq](left/0, right/0)
                     }
                   }
                 }
@@ -668,18 +663,18 @@ fn trait_impl#PartialEq#Result[T,E]#eq[T, E](
             }
           }
         },
-        Result::Err(x567) => {
+        Result::Err(x4) => {
           {
-            let x567 = Result::Err._0(x565) in
-            match x564 {
-              Result::Err(x571) => {
+            let x4 = Result::Err._0(x1) in
+            match x0 {
+              Result::Err(x5) => {
                 {
-                  let x571 = Result::Err._0(x564) in
+                  let x5 = Result::Err._0(x0) in
                   {
-                    let left/498 = x571 in
+                    let left/1 = x5 in
                     {
-                      let right/499 = x567 in
-                      trait_call[PartialEq::eq](left/498, right/499)
+                      let right/1 = x4 in
+                      trait_call[PartialEq::eq](left/1, right/1)
                     }
                   }
                 }
@@ -697,23 +692,23 @@ fn trait_impl#Eq#Result[T,E]#__marker[T, E]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Result[T,E]#hash[T, E](self/500: Result[T, E]) -> u64 {
-  match self/500 {
-    Result::Ok(x572) => {
+fn trait_impl#Hash#Result[T,E]#hash[T, E](self/0: Result[T, E]) -> u64 {
+  match self/0 {
+    Result::Ok(x0) => {
       {
-        let x572 = Result::Ok._0(self/500) in
+        let x0 = Result::Ok._0(self/0) in
         {
-          let value/501 = x572 in
-          (14695981039346656038 + trait_call[Hash::hash](value/501))
+          let value/0 = x0 in
+          (14695981039346656038 + trait_call[Hash::hash](value/0))
         }
       }
     },
-    Result::Err(x573) => {
+    Result::Err(x1) => {
       {
-        let x573 = Result::Err._0(self/500) in
+        let x1 = Result::Err._0(self/0) in
         {
-          let value/502 = x573 in
-          (14695981039346656039 + trait_call[Hash::hash](value/502))
+          let value/1 = x1 in
+          (14695981039346656039 + trait_call[Hash::hash](value/1))
         }
       }
     },
@@ -724,90 +719,86 @@ fn inherent#Vec#Vec[T]#new[T]() -> Vec[T] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#get[T](self/521: Vec[T], index/522: isize) -> T {
-  @intrinsic(vec.get)(self/521, index/522)
+fn inherent#Vec#Vec[T]#get[T](self/0: Vec[T], index/0: isize) -> T {
+  @intrinsic(vec.get)(self/0, index/0)
 }
 
-fn inherent#Vec#Vec[T]#set[T](self/523: Vec[T], index/524: isize, elem/525: T) -> unit {
-  @intrinsic(vec.set)(self/523, index/524, elem/525)
+fn inherent#Vec#Vec[T]#set[T](self/0: Vec[T], index/0: isize, elem/0: T) -> unit {
+  @intrinsic(vec.set)(self/0, index/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len[T](self/526: Vec[T]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len[T](self/0: Vec[T]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#len[T](self/649: FrozenVec[T]) -> isize {
-  inherent#Vec#Vec[T]#len(FrozenVec.values(self/649))
+fn inherent#FrozenVec#FrozenVec[T]#len[T](self/0: FrozenVec[T]) -> isize {
+  inherent#Vec#Vec[T]#len(FrozenVec.values(self/0))
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#get[T](self/651: FrozenVec[T], index/652: isize) -> T {
-  @intrinsic(vec.get)(FrozenVec.values(self/651), index/652)
+fn inherent#FrozenVec#FrozenVec[T]#get[T](self/0: FrozenVec[T], index/0: isize) -> T {
+  @intrinsic(vec.get)(FrozenVec.values(self/0), index/0)
 }
 
 fn inherent#OnceCell#OnceCell[T]#new[T]() -> OnceCell[T] {
   @intrinsic(once_cell.new)()
 }
 
-fn inherent#Slice#Slice[T]#get[T](self/658: Slice[T], index/659: isize) -> T {
-  @intrinsic(slice.get)(self/658, index/659)
+fn inherent#Slice#Slice[T]#get[T](self/0: Slice[T], index/0: isize) -> T {
+  @intrinsic(slice.get)(self/0, index/0)
 }
 
-fn inherent#Slice#Slice[T]#len[T](self/660: Slice[T]) -> isize {
-  @intrinsic(slice.len)(self/660)
+fn inherent#Slice#Slice[T]#len[T](self/0: Slice[T]) -> isize {
+  @intrinsic(slice.len)(self/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get[K, V](self/673: HashMap[K, V], key/674: K) -> Option[V] {
-  @intrinsic(hashmap.get)(self/673, key/674)
+fn inherent#HashMap#HashMap[K,V]#get[K, V](self/0: HashMap[K, V], key/0: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/0, key/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set[K, V](
-  self/675: HashMap[K, V],
-  key/676: K,
-  value/677: V
-) -> unit {
-  @intrinsic(hashmap.set)(self/675, key/676, value/677)
+fn inherent#HashMap#HashMap[K,V]#set[K, V](self/0: HashMap[K, V], key/0: K, value/0: V) -> unit {
+  @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len[K, V](self/680: HashMap[K, V]) -> isize {
-  @intrinsic(hashmap.len)(self/680)
+fn inherent#HashMap#HashMap[K,V]#len[K, V](self/0: HashMap[K, V]) -> isize {
+  @intrinsic(hashmap.len)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#new[T](value/684: T) -> Ref[T] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new[T](value/0: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#get[T](self/685: Ref[T]) -> T {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get[T](self/0: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set[T](self/686: Ref[T], value/687: T) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set[T](self/0: Ref[T], value/0: T) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn inherent#Channel#Channel[T]#new[T](capacity/688: isize) -> Channel[T] {
-  @intrinsic(channel.new)(capacity/688)
+fn inherent#Channel#Channel[T]#new[T](capacity/0: isize) -> Channel[T] {
+  @intrinsic(channel.new)(capacity/0)
 }
 
-fn trait_impl#PartialEq#usize#eq(self/706: usize, other/707: usize) -> bool {
-  (self/706 == other/707)
+fn trait_impl#PartialEq#usize#eq(self/0: usize, other/0: usize) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#usize#__marker() -> unit {
   ()
 }
 
-fn trait_impl#Hash#usize#hash(self/708: usize) -> u64 {
-  @runtime(core.uint_hash)(self/708)
+fn trait_impl#Hash#usize#hash(self/0: usize) -> u64 {
+  @runtime(core.uint_hash)(self/0)
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -> bool {
-  match self/1113 {
+fn trait_impl#PartialEq#Ordering#eq(self/0: Ordering, other/0: Ordering) -> bool {
+  match self/0 {
     Ordering::Less => {
-      match other/1114 {
+      match other/0 {
         Ordering::Less => {
           true
         },
@@ -815,7 +806,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -
       }
     },
     Ordering::Equal => {
-      match other/1114 {
+      match other/0 {
         Ordering::Equal => {
           true
         },
@@ -823,7 +814,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -
       }
     },
     Ordering::Greater => {
-      match other/1114 {
+      match other/0 {
         Ordering::Greater => {
           true
         },
@@ -839,7 +830,7 @@ fn trait_impl#Eq#Ordering#__marker() -> unit {
 
 fn main() -> i32 {
   let value/0 = inherent#Ref#Ref[i32]#new(1) in
-  let mtmp796 = inherent#Ref#Ref[i32]#set(value/0, 2) in
+  let mtmp0 = inherent#Ref#Ref[i32]#set(value/0, 2) in
   {
     inherent#Ref#Ref[i32]#get(value/0)
   }

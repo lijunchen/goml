@@ -6,45 +6,45 @@ fn cut_prefix(case_id/0: i32) -> Option__string {
   }
 }
 
-fn trim_go(case_id/1: i32) -> Option__string {
-  let suffix/2 =
-    let mtmp796 = cut_prefix(case_id/1) in
-    match mtmp796 {
+fn trim_go(case_id/0: i32) -> Option__string {
+  let suffix/0 =
+    let mtmp0 = cut_prefix(case_id/0) in
+    match mtmp0 {
       Option__string::None => {
         return Option__string::None
       },
-      Option__string::Some(x797) => {
-        let x797 = Option__string::Some._0(mtmp796) in
-        let try_value/13 = x797 in
-        try_value/13
+      Option__string::Some(x0) => {
+        let x0 = Option__string::Some._0(mtmp0) in
+        let try_value/0 = x0 in
+        try_value/0
       },
     } in
-  Option__string::Some((suffix/2 + "!"))
+  Option__string::Some((suffix/0 + "!"))
 }
 
-fn show(opt/3: Option__string) -> string {
-  match opt/3 {
+fn show(opt/0: Option__string) -> string {
+  match opt/0 {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x798) => {
-      let x798 = Option__string::Some._0(opt/3) in
-      let value/4 = x798 in
-      ("some " + value/4)
+    Option__string::Some(x0) => {
+      let x0 = Option__string::Some._0(opt/0) in
+      let value/0 = x0 in
+      ("some " + value/0)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild799 = println__T_string(show(trim_go(0))) in
-  let _wild800 = println__T_string(show(trim_go(1))) in
+  let _wild0 = println__T_string(show(trim_go(0))) in
+  let _wild1 = println__T_string(show(trim_go(1))) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

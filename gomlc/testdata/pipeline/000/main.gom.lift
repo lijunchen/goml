@@ -12,145 +12,145 @@ fn trait_impl#ToString#Color#to_string(self/0: Color) -> string {
   }
 }
 
-fn trait_impl#ToString#Point#to_string(self/1: Point) -> string {
-  let mtmp796 = self/1 in
-  let x797 = Point.x(mtmp796) in
-  let x798 = Point.y(mtmp796) in
-  let x799 = Point.color(mtmp796) in
-  let #derive2_field/4 = x799 in
-  let #derive1_field/3 = x798 in
-  let #derive0_field/2 = x797 in
-  ((((((((("Point { " + "x: ") + trait_impl#ToString#i32#to_string(#derive0_field/2)) + ", ") +
+fn trait_impl#ToString#Point#to_string(self/0: Point) -> string {
+  let mtmp0 = self/0 in
+  let x0 = Point.x(mtmp0) in
+  let x1 = Point.y(mtmp0) in
+  let x2 = Point.color(mtmp0) in
+  let #derive2_field/0 = x2 in
+  let #derive1_field/0 = x1 in
+  let #derive0_field/0 = x0 in
+  ((((((((("Point { " + "x: ") + trait_impl#ToString#i32#to_string(#derive0_field/0)) + ", ") +
     "y: ") +
-    trait_impl#ToString#i32#to_string(#derive1_field/3)) +
+    trait_impl#ToString#i32#to_string(#derive1_field/0)) +
     ", ") +
     "color: ") +
-    trait_impl#ToString#Color#to_string(#derive2_field/4)) +
+    trait_impl#ToString#Color#to_string(#derive2_field/0)) +
     " }")
 }
 
-fn inherent#Point#Point#new(x/5: i32, y/6: i32, color/7: Color) -> Point {
-  Point { x: x/5, y: y/6, color: color/7 }
+fn inherent#Point#Point#new(x/0: i32, y/0: i32, color/0: Color) -> Point {
+  Point { x: x/0, y: y/0, color: color/0 }
 }
 
-fn trait_impl#ToString#Line#to_string(self/8: Line) -> string {
-  let mtmp800 = self/8 in
-  let x801 = Line.from(mtmp800) in
-  let x802 = Line.to(mtmp800) in
-  let x803 = Line.color(mtmp800) in
-  let #derive2_field/11 = x803 in
-  let #derive1_field/10 = x802 in
-  let #derive0_field/9 = x801 in
-  ((((((((("Line { " + "from: ") + trait_impl#ToString#Point#to_string(#derive0_field/9)) + ", ") +
+fn trait_impl#ToString#Line#to_string(self/0: Line) -> string {
+  let mtmp0 = self/0 in
+  let x0 = Line.from(mtmp0) in
+  let x1 = Line.to(mtmp0) in
+  let x2 = Line.color(mtmp0) in
+  let #derive2_field/0 = x2 in
+  let #derive1_field/0 = x1 in
+  let #derive0_field/0 = x0 in
+  ((((((((("Line { " + "from: ") + trait_impl#ToString#Point#to_string(#derive0_field/0)) + ", ") +
     "to: ") +
-    trait_impl#ToString#Point#to_string(#derive1_field/10)) +
+    trait_impl#ToString#Point#to_string(#derive1_field/0)) +
     ", ") +
     "color: ") +
-    trait_impl#ToString#Color#to_string(#derive2_field/11)) +
+    trait_impl#ToString#Color#to_string(#derive2_field/0)) +
     " }")
 }
 
-fn inherent#Line#Line#new(from/12: Point, to/13: Point, color/14: Color) -> Line {
-  Line { from: from/12, to: to/13, color: color/14 }
+fn inherent#Line#Line#new(from/0: Point, to/0: Point, color/0: Color) -> Line {
+  Line { from: from/0, to: to/0, color: color/0 }
 }
 
-fn trait_impl#ToString#LineList#to_string(self/15: LineList) -> string {
-  match self/15 {
+fn trait_impl#ToString#LineList#to_string(self/0: LineList) -> string {
+  match self/0 {
     LineList::Nil => {
       "LineList::Nil"
     },
-    LineList::Cons(x804, x805) => {
-      let x804 = LineList::Cons._0(self/15) in
-      let x805 = LineList::Cons._1(self/15) in
-      let #derive1_field/17 = x805 in
-      let #derive0_field/16 = x804 in
-      (((("LineList::Cons(" + trait_impl#ToString#Line#to_string(#derive0_field/16)) + ", ") +
-        trait_impl#ToString#LineList#to_string(#derive1_field/17)) +
+    LineList::Cons(x0, x1) => {
+      let x0 = LineList::Cons._0(self/0) in
+      let x1 = LineList::Cons._1(self/0) in
+      let #derive1_field/0 = x1 in
+      let #derive0_field/0 = x0 in
+      (((("LineList::Cons(" + trait_impl#ToString#Line#to_string(#derive0_field/0)) + ", ") +
+        trait_impl#ToString#LineList#to_string(#derive1_field/0)) +
         ")")
     },
   }
 }
 
 fn main() -> unit {
-  let from/18 = inherent#Point#Point#new(10, 20, Color::Red) in
-  let to/19 = inherent#Point#Point#new(30, 40, Color::Green) in
-  let line/20 = inherent#Line#Line#new(from/18, to/19, Color::Blue) in
-  let lines/21 = LineList::Cons(line/20, LineList::Nil) in
-  let _wild806 = println__T_string(trait_impl#ToString#LineList#to_string(lines/21)) in
+  let from/0 = inherent#Point#Point#new(10, 20, Color::Red) in
+  let to/0 = inherent#Point#Point#new(30, 40, Color::Green) in
+  let line/0 = inherent#Line#Line#new(from/0, to/0, Color::Blue) in
+  let lines/0 = LineList::Cons(line/0, LineList::Nil) in
+  let _wild0 = println__T_string(trait_impl#ToString#LineList#to_string(lines/0)) in
   ()
 }
 
-fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
-  __goml_builtin_int32_to_string(self/407)
+fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
-      ("-" + decimal_string((0 - (value/214 as u64))))
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      ("-" + decimal_string((0 - (value/0 as u64))))
   } else {
-      decimal_string((value/214 as u64))
+      decimal_string((value/0 as u64))
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         return "0"
     } else {
         ()
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
-        let _wild352 =
-          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-        let _wild355 =
-          let compound_old353 = remaining/210 in
-          let compound_value354 = 10 in
-          remaining/210 = (compound_old353 / compound_value354) in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        let _wild2 =
+          inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+        let _wild3 =
+          let compound_old0 = remaining/0 in
+          let compound_value0 = 10 in
+          remaining/0 = (compound_old0 / compound_value0) in
         ()
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
-        let _wild357 =
-          inherent#Vec#Vec[T]#push__T_u8(
-            bytes/211,
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        let _wild5 =
+          inherent#Vec#Vec[T]#push__T_u0(
+            bytes/0,
             @intrinsic(vec.get)(
-              reversed/209,
-              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              reversed/0,
+              ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
             )
           ) in
-        let _wild360 =
-          let compound_old358 = offset/212 in
-          let compound_value359 = 1 in
-          offset/212 = (compound_old358 + compound_value359) in
+        let _wild6 =
+          let compound_old1 = offset/0 in
+          let compound_value1 = 1 in
+          offset/0 = (compound_old1 + compound_value1) in
         ()
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-  let x364 = mtmp362.1 in
-  let result/213 = x364 in
-  result/213
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let result/0 = x0 in
+  result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

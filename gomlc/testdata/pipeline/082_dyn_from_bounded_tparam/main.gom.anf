@@ -3,30 +3,30 @@ fn trait_impl#Display#S#show(self/0: S) -> string {
 }
 
 fn main() -> unit {
-  let t801 = S {} in
-  join inline_cont814(mtmp796: dyn Display) -> unit {
-    let inline811 = "ok" in
-    let inline812 = trait_impl#ToString#string#to_string(inline811) in
-    let inline813 = @runtime(core.string_println)(inline812) in
+  let t0 = S {} in
+  join inline_cont0(mtmp0: dyn Display) -> unit {
+    let inline0 = "ok" in
+    let inline1 = trait_impl#ToString#string#to_string(inline0) in
+    let inline2 = @runtime(core.string_println)(inline1) in
     ()
   } in
-  let inline815 = to_dyn[Display]{S}(t801) in
-  jump inline_cont814(inline815)
+  let inline3 = to_dyn[Display]{S}(t0) in
+  jump inline_cont0(inline3)
 }
 
-fn to_dyn__T_S(x/1: S) -> dyn Display {
-  let t804 = to_dyn[Display]{S}(x/1) in
-  t804
+fn to_dyn__T_S(x/0: S) -> dyn Display {
+  let t0 = to_dyn[Display]{S}(x/0) in
+  t0
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont816(t806: string) -> unit {
-    let t807 = @runtime(core.string_println)(t806) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont816(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

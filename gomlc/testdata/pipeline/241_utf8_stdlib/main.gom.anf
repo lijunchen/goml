@@ -1,638 +1,638 @@
-fn check_utf8(bytes/0: Vec[u8], expected/1: bool) -> unit {
-  join inline_cont1099(expected_length/2: isize) -> unit {
-    let mtmp796 = string_from_utf8(bytes/0) in
-    let x797 = mtmp796.0 in
-    let x798 = mtmp796.1 in
-    let t837 = (x797 == expected/1) in
-    join inline_cont1096(_wild799: unit) -> unit {
-      if x797 {
-        join inline_cont1091(t839: isize) -> unit {
-          let t840 = (t839 == expected_length/2) in
-          let inline1089 = trait_impl#ToString#bool#to_string(t840) in
-          let inline1090 = @runtime(core.string_println)(inline1089) in
+fn check_utf8(bytes/0: Vec[u8], expected/0: bool) -> unit {
+  join inline_cont0(expected_length/0: isize) -> unit {
+    let mtmp0 = string_from_utf0(bytes/0) in
+    let x0 = mtmp0.0 in
+    let x1 = mtmp0.1 in
+    let t0 = (x0 == expected/0) in
+    join inline_cont1(_wild0: unit) -> unit {
+      if x0 {
+        join inline_cont2(t1: isize) -> unit {
+          let t2 = (t1 == expected_length/0) in
+          let inline0 = trait_impl#ToString#bool#to_string(t2) in
+          let inline1 = @runtime(core.string_println)(inline0) in
           ()
         } in
-        let inline1092 = @runtime(core.string_len)(x798) in
-        jump inline_cont1091(inline1092)
+        let inline2 = @runtime(core.string_len)(x1) in
+        jump inline_cont2(inline2)
       } else {
-        let t842 = (x798 == "") in
-        let inline1094 = trait_impl#ToString#bool#to_string(t842) in
-        let inline1095 = @runtime(core.string_println)(inline1094) in
+        let t3 = (x1 == "") in
+        let inline3 = trait_impl#ToString#bool#to_string(t3) in
+        let inline4 = @runtime(core.string_println)(inline3) in
         ()
       }
     } in
-    let inline1097 = trait_impl#ToString#bool#to_string(t837) in
-    let inline1098 = @runtime(core.string_println)(inline1097) in
-    jump inline_cont1096(())
+    let inline5 = trait_impl#ToString#bool#to_string(t0) in
+    let inline6 = @runtime(core.string_println)(inline5) in
+    jump inline_cont1(())
   } in
-  let inline1100 = @intrinsic(vec.len)(bytes/0) in
-  jump inline_cont1099(inline1100)
+  let inline7 = @intrinsic(vec.len)(bytes/0) in
+  jump inline_cont0(inline7)
 }
 
-fn check_scalar(bytes/5: Vec[u8], expected/6: u32, expected_width/7: isize) -> unit {
-  let mtmp800 = string_from_utf8(bytes/5) in
-  let x801 = mtmp800.0 in
-  let x802 = mtmp800.1 in
-  join inline_cont1126(_wild803: unit) -> unit {
-    join commute_arm1234() -> unit {
-      join inline_cont1105(_wild806: unit) -> unit {
-        let inline1102 = false in
-        let inline1103 = trait_impl#ToString#bool#to_string(inline1102) in
-        let inline1104 = @runtime(core.string_println)(inline1103) in
+fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> unit {
+  let mtmp0 = string_from_utf0(bytes/0) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  join inline_cont0(_wild0: unit) -> unit {
+    join commute_arm0() -> unit {
+      join inline_cont1(_wild1: unit) -> unit {
+        let inline0 = false in
+        let inline1 = trait_impl#ToString#bool#to_string(inline0) in
+        let inline2 = @runtime(core.string_println)(inline1) in
         ()
       } in
-      let inline1106 = false in
-      let inline1107 = trait_impl#ToString#bool#to_string(inline1106) in
-      let inline1108 = @runtime(core.string_println)(inline1107) in
-      jump inline_cont1105(())
+      let inline3 = false in
+      let inline4 = trait_impl#ToString#bool#to_string(inline3) in
+      let inline5 = @runtime(core.string_println)(inline4) in
+      jump inline_cont1(())
     } in
-    join commute_arm1236(commute_field1235: (char, isize)) -> unit {
-      let x808 = commute_field1235.0 in
-      let x809 = commute_field1235.1 in
-      let t847 = (x808 as u32) in
-      let t848 = (t847 == expected/6) in
-      join inline_cont1112(_wild810: unit) -> unit {
-        let t849 = (x809 == expected_width/7) in
-        let inline1110 = trait_impl#ToString#bool#to_string(t849) in
-        let inline1111 = @runtime(core.string_println)(inline1110) in
+    join commute_arm1(commute_field0: (char, isize)) -> unit {
+      let x2 = commute_field0.0 in
+      let x3 = commute_field0.1 in
+      let t0 = (x2 as u32) in
+      let t1 = (t0 == expected/0) in
+      join inline_cont2(_wild2: unit) -> unit {
+        let t2 = (x3 == expected_width/0) in
+        let inline6 = trait_impl#ToString#bool#to_string(t2) in
+        let inline7 = @runtime(core.string_println)(inline6) in
         ()
       } in
-      let inline1113 = trait_impl#ToString#bool#to_string(t848) in
-      let inline1114 = @runtime(core.string_println)(inline1113) in
-      jump inline_cont1112(())
+      let inline8 = trait_impl#ToString#bool#to_string(t1) in
+      let inline9 = @runtime(core.string_println)(inline8) in
+      jump inline_cont2(())
     } in
-    let inline1116 = 0 in
-    let inline1117 = string_decode_utf8_at(x802, inline1116) in
-    let inline1118 = inline1117.0 in
-    let inline1119 = inline1117.1 in
-    let inline1120 = inline1117.2 in
-    if inline1118 {
-      let inline1124 = (inline1119, inline1120) in
-      jump commute_arm1236(inline1124)
+    let inline10 = 0 in
+    let inline11 = string_decode_utf8_at(x1, inline10) in
+    let inline12 = inline11.0 in
+    let inline13 = inline11.1 in
+    let inline14 = inline11.2 in
+    if inline12 {
+      let inline15 = (inline13, inline14) in
+      jump commute_arm1(inline15)
     } else {
-      jump commute_arm1234()
+      jump commute_arm0()
     }
   } in
-  let inline1127 = trait_impl#ToString#bool#to_string(x801) in
-  let inline1128 = @runtime(core.string_println)(inline1127) in
-  jump inline_cont1126(())
+  let inline16 = trait_impl#ToString#bool#to_string(x0) in
+  let inline17 = @runtime(core.string_println)(inline16) in
+  jump inline_cont0(())
 }
 
 fn main() -> unit {
-  let t852 = [] in
-  let t853 = @intrinsic(vec.from_array)(t852) in
-  let _wild811 = check_utf8(t853, true) in
-  let t854 = [0] in
-  let t855 = @intrinsic(vec.from_array)(t854) in
-  let _wild812 = check_utf8(t855, true) in
-  let t856 = [127] in
-  let t857 = @intrinsic(vec.from_array)(t856) in
-  let _wild813 = check_utf8(t857, true) in
-  let t858 = [194, 128] in
-  let t859 = @intrinsic(vec.from_array)(t858) in
-  let _wild814 = check_scalar(t859, 128, 2) in
-  let t860 = [223, 191] in
-  let t861 = @intrinsic(vec.from_array)(t860) in
-  let _wild815 = check_scalar(t861, 2047, 2) in
-  let t862 = [224, 160, 128] in
-  let t863 = @intrinsic(vec.from_array)(t862) in
-  let _wild816 = check_scalar(t863, 2048, 3) in
-  let t864 = [237, 159, 191] in
-  let t865 = @intrinsic(vec.from_array)(t864) in
-  let _wild817 = check_scalar(t865, 55295, 3) in
-  let t866 = [238, 128, 128] in
-  let t867 = @intrinsic(vec.from_array)(t866) in
-  let _wild818 = check_scalar(t867, 57344, 3) in
-  let t868 = [239, 191, 189] in
-  let t869 = @intrinsic(vec.from_array)(t868) in
-  let _wild819 = check_scalar(t869, 65533, 3) in
-  let t870 = [239, 191, 191] in
-  let t871 = @intrinsic(vec.from_array)(t870) in
-  let _wild820 = check_scalar(t871, 65535, 3) in
-  let t872 = [240, 144, 128, 128] in
-  let t873 = @intrinsic(vec.from_array)(t872) in
-  let _wild821 = check_scalar(t873, 65536, 4) in
-  let t874 = [244, 143, 191, 191] in
-  let t875 = @intrinsic(vec.from_array)(t874) in
-  let _wild822 = check_scalar(t875, 1114111, 4) in
-  let t876 = [128] in
-  let t877 = @intrinsic(vec.from_array)(t876) in
-  let _wild823 = check_utf8(t877, false) in
-  let t878 = [191] in
-  let t879 = @intrinsic(vec.from_array)(t878) in
-  let _wild824 = check_utf8(t879, false) in
-  let t880 = [192, 128] in
-  let t881 = @intrinsic(vec.from_array)(t880) in
-  let _wild825 = check_utf8(t881, false) in
-  let t882 = [193, 191] in
-  let t883 = @intrinsic(vec.from_array)(t882) in
-  let _wild826 = check_utf8(t883, false) in
-  let t884 = [194] in
-  let t885 = @intrinsic(vec.from_array)(t884) in
-  let _wild827 = check_utf8(t885, false) in
-  let t886 = [194, 127] in
-  let t887 = @intrinsic(vec.from_array)(t886) in
-  let _wild828 = check_utf8(t887, false) in
-  let t888 = [224, 159, 191] in
-  let t889 = @intrinsic(vec.from_array)(t888) in
-  let _wild829 = check_utf8(t889, false) in
-  let t890 = [225, 128] in
-  let t891 = @intrinsic(vec.from_array)(t890) in
-  let _wild830 = check_utf8(t891, false) in
-  let t892 = [225, 128, 127] in
-  let t893 = @intrinsic(vec.from_array)(t892) in
-  let _wild831 = check_utf8(t893, false) in
-  let t894 = [237, 160, 128] in
-  let t895 = @intrinsic(vec.from_array)(t894) in
-  let _wild832 = check_utf8(t895, false) in
-  let t896 = [240, 143, 191, 191] in
-  let t897 = @intrinsic(vec.from_array)(t896) in
-  let _wild833 = check_utf8(t897, false) in
-  let t898 = [240, 144, 128] in
-  let t899 = @intrinsic(vec.from_array)(t898) in
-  join inline_cont1159(_wild834: unit) -> unit {
-    let t900 = [244, 144, 128, 128] in
-    let t901 = @intrinsic(vec.from_array)(t900) in
-    join inline_cont1144(_wild835: unit) -> unit {
-      let t902 = [245, 128, 128, 128] in
-      let t903 = @intrinsic(vec.from_array)(t902) in
-      let inline1130 = false in
-      let inline1131 = inherent#Vec#Vec[T]#len__T_u8(t903) in
-      let inline1132 = string_from_utf8(t903) in
-      let inline1133 = inline1132.0 in
-      let inline1134 = inline1132.1 in
-      let inline1137 = (inline1133 == inline1130) in
-      let inline1138 = println__T_bool(inline1137) in
-      if inline1133 {
-        let inline1139 = inherent#string#string#byte_len(inline1134) in
-        let inline1140 = (inline1139 == inline1131) in
-        let inline1141 = println__T_bool(inline1140) in
+  let t0 = [] in
+  let t1 = @intrinsic(vec.from_array)(t0) in
+  let _wild0 = check_utf0(t1, true) in
+  let t2 = [0] in
+  let t3 = @intrinsic(vec.from_array)(t2) in
+  let _wild1 = check_utf0(t3, true) in
+  let t4 = [127] in
+  let t5 = @intrinsic(vec.from_array)(t4) in
+  let _wild2 = check_utf0(t5, true) in
+  let t6 = [194, 128] in
+  let t7 = @intrinsic(vec.from_array)(t6) in
+  let _wild3 = check_scalar(t7, 128, 2) in
+  let t8 = [223, 191] in
+  let t9 = @intrinsic(vec.from_array)(t8) in
+  let _wild4 = check_scalar(t9, 2047, 2) in
+  let t10 = [224, 160, 128] in
+  let t11 = @intrinsic(vec.from_array)(t10) in
+  let _wild5 = check_scalar(t11, 2048, 3) in
+  let t12 = [237, 159, 191] in
+  let t13 = @intrinsic(vec.from_array)(t12) in
+  let _wild6 = check_scalar(t13, 55295, 3) in
+  let t14 = [238, 128, 128] in
+  let t15 = @intrinsic(vec.from_array)(t14) in
+  let _wild7 = check_scalar(t15, 57344, 3) in
+  let t16 = [239, 191, 189] in
+  let t17 = @intrinsic(vec.from_array)(t16) in
+  let _wild8 = check_scalar(t17, 65533, 3) in
+  let t18 = [239, 191, 191] in
+  let t19 = @intrinsic(vec.from_array)(t18) in
+  let _wild9 = check_scalar(t19, 65535, 3) in
+  let t20 = [240, 144, 128, 128] in
+  let t21 = @intrinsic(vec.from_array)(t20) in
+  let _wild10 = check_scalar(t21, 65536, 4) in
+  let t22 = [244, 143, 191, 191] in
+  let t23 = @intrinsic(vec.from_array)(t22) in
+  let _wild11 = check_scalar(t23, 1114111, 4) in
+  let t24 = [128] in
+  let t25 = @intrinsic(vec.from_array)(t24) in
+  let _wild12 = check_utf0(t25, false) in
+  let t26 = [191] in
+  let t27 = @intrinsic(vec.from_array)(t26) in
+  let _wild13 = check_utf0(t27, false) in
+  let t28 = [192, 128] in
+  let t29 = @intrinsic(vec.from_array)(t28) in
+  let _wild14 = check_utf0(t29, false) in
+  let t30 = [193, 191] in
+  let t31 = @intrinsic(vec.from_array)(t30) in
+  let _wild15 = check_utf0(t31, false) in
+  let t32 = [194] in
+  let t33 = @intrinsic(vec.from_array)(t32) in
+  let _wild16 = check_utf0(t33, false) in
+  let t34 = [194, 127] in
+  let t35 = @intrinsic(vec.from_array)(t34) in
+  let _wild17 = check_utf0(t35, false) in
+  let t36 = [224, 159, 191] in
+  let t37 = @intrinsic(vec.from_array)(t36) in
+  let _wild18 = check_utf0(t37, false) in
+  let t38 = [225, 128] in
+  let t39 = @intrinsic(vec.from_array)(t38) in
+  let _wild19 = check_utf0(t39, false) in
+  let t40 = [225, 128, 127] in
+  let t41 = @intrinsic(vec.from_array)(t40) in
+  let _wild20 = check_utf0(t41, false) in
+  let t42 = [237, 160, 128] in
+  let t43 = @intrinsic(vec.from_array)(t42) in
+  let _wild21 = check_utf0(t43, false) in
+  let t44 = [240, 143, 191, 191] in
+  let t45 = @intrinsic(vec.from_array)(t44) in
+  let _wild22 = check_utf0(t45, false) in
+  let t46 = [240, 144, 128] in
+  let t47 = @intrinsic(vec.from_array)(t46) in
+  join inline_cont0(_wild23: unit) -> unit {
+    let t48 = [244, 144, 128, 128] in
+    let t49 = @intrinsic(vec.from_array)(t48) in
+    join inline_cont1(_wild24: unit) -> unit {
+      let t50 = [245, 128, 128, 128] in
+      let t51 = @intrinsic(vec.from_array)(t50) in
+      let inline0 = false in
+      let inline1 = inherent#Vec#Vec[T]#len__T_u0(t51) in
+      let inline2 = string_from_utf0(t51) in
+      let inline3 = inline2.0 in
+      let inline4 = inline2.1 in
+      let inline5 = (inline3 == inline0) in
+      let inline6 = println__T_bool(inline5) in
+      if inline3 {
+        let inline7 = inherent#string#string#byte_len(inline4) in
+        let inline8 = (inline7 == inline1) in
+        let inline9 = println__T_bool(inline8) in
         ()
       } else {
-        let inline1142 = (inline1134 == "") in
-        let inline1143 = println__T_bool(inline1142) in
+        let inline10 = (inline4 == "") in
+        let inline11 = println__T_bool(inline10) in
         ()
       }
     } in
-    let inline1145 = false in
-    let inline1146 = inherent#Vec#Vec[T]#len__T_u8(t901) in
-    let inline1147 = string_from_utf8(t901) in
-    let inline1148 = inline1147.0 in
-    let inline1149 = inline1147.1 in
-    let inline1152 = (inline1148 == inline1145) in
-    let inline1153 = println__T_bool(inline1152) in
-    if inline1148 {
-      let inline1154 = inherent#string#string#byte_len(inline1149) in
-      let inline1155 = (inline1154 == inline1146) in
-      let inline1156 = println__T_bool(inline1155) in
-      jump inline_cont1144(())
+    let inline12 = false in
+    let inline13 = inherent#Vec#Vec[T]#len__T_u0(t49) in
+    let inline14 = string_from_utf0(t49) in
+    let inline15 = inline14.0 in
+    let inline16 = inline14.1 in
+    let inline17 = (inline15 == inline12) in
+    let inline18 = println__T_bool(inline17) in
+    if inline15 {
+      let inline19 = inherent#string#string#byte_len(inline16) in
+      let inline20 = (inline19 == inline13) in
+      let inline21 = println__T_bool(inline20) in
+      jump inline_cont1(())
     } else {
-      let inline1157 = (inline1149 == "") in
-      let inline1158 = println__T_bool(inline1157) in
-      jump inline_cont1144(())
+      let inline22 = (inline16 == "") in
+      let inline23 = println__T_bool(inline22) in
+      jump inline_cont1(())
     }
   } in
-  let inline1160 = false in
-  let inline1161 = inherent#Vec#Vec[T]#len__T_u8(t899) in
-  let inline1162 = string_from_utf8(t899) in
-  let inline1163 = inline1162.0 in
-  let inline1164 = inline1162.1 in
-  let inline1167 = (inline1163 == inline1160) in
-  let inline1168 = println__T_bool(inline1167) in
-  if inline1163 {
-    let inline1169 = inherent#string#string#byte_len(inline1164) in
-    let inline1170 = (inline1169 == inline1161) in
-    let inline1171 = println__T_bool(inline1170) in
-    jump inline_cont1159(())
+  let inline24 = false in
+  let inline25 = inherent#Vec#Vec[T]#len__T_u0(t47) in
+  let inline26 = string_from_utf0(t47) in
+  let inline27 = inline26.0 in
+  let inline28 = inline26.1 in
+  let inline29 = (inline27 == inline24) in
+  let inline30 = println__T_bool(inline29) in
+  if inline27 {
+    let inline31 = inherent#string#string#byte_len(inline28) in
+    let inline32 = (inline31 == inline25) in
+    let inline33 = println__T_bool(inline32) in
+    jump inline_cont0(())
   } else {
-    let inline1172 = (inline1164 == "") in
-    let inline1173 = println__T_bool(inline1172) in
-    jump inline_cont1159(())
+    let inline34 = (inline28 == "") in
+    let inline35 = println__T_bool(inline34) in
+    jump inline_cont0(())
   }
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  let t907 = @intrinsic(vec.len)(self/526) in
-  t907
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn string_from_utf8(bytes/277: Vec[u8]) -> (bool, string) {
-  let mtmp395 = @runtime(core.string_from_utf8)(bytes/277) in
-  let x397 = mtmp395.1 in
-  let index/279 = 0 in
-  join exit910() -> (bool, string) {
-    let t911 = (true, x397) in
-    t911
+fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let index/0 = 0 in
+  join exit0() -> (bool, string) {
+    let t0 = (true, x0) in
+    t0
   } in
   joinrec {
-    join loop912() -> (bool, string) {
-      join inline_cont1174(t913: isize) -> (bool, string) {
-        let t914 = (index/279 < t913) in
-        if t914 {
-          let mtmp398 = string_decode_utf8_at(x397, index/279) in
-          let x399 = mtmp398.0 in
-          let x401 = mtmp398.2 in
-          if x399 {
-            let compound_old402 = index/279 in
-            let t916 = (compound_old402 + x401) in
-            let t917 = index/279 = t916 in
-            jump loop912()
+    join loop0() -> (bool, string) {
+      join inline_cont0(t1: isize) -> (bool, string) {
+        let t2 = (index/0 < t1) in
+        if t2 {
+          let mtmp1 = string_decode_utf8_at(x0, index/0) in
+          let x1 = mtmp1.0 in
+          let x2 = mtmp1.2 in
+          if x1 {
+            let compound_old0 = index/0 in
+            let t3 = (compound_old0 + x2) in
+            let t4 = index/0 = t3 in
+            jump loop0()
           } else {
-            let t918 = (false, "") in
-            t918
+            let t5 = (false, "") in
+            t5
           }
         } else {
-          jump exit910()
+          jump exit0()
         }
       } in
-      let inline1175 = @runtime(core.string_len)(x397) in
-      jump inline_cont1174(inline1175)
+      let inline0 = @runtime(core.string_len)(x0) in
+      jump inline_cont0(inline0)
     } in
   } in
-  jump loop912()
+  jump loop0()
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  join inline_cont1176(t920: string) -> unit {
-    let t921 = @runtime(core.string_println)(t920) in
+fn println__T_bool(value/0: bool) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  let inline1177 = @runtime(core.bool_to_string)(value/1) in
-  jump inline_cont1176(inline1177)
+  let inline0 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont0(inline0)
 }
 
-fn inherent#string#string#byte_len(self/289: string) -> isize {
-  let t924 = @runtime(core.string_len)(self/289) in
-  t924
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  let t0 = @runtime(core.string_len)(self/0) in
+  t0
 }
 
-fn inherent#string#string#decode_at(self/299: string, index/300: isize) -> Option__(char,isize) {
-  let mtmp410 = string_decode_utf8_at(self/299, index/300) in
-  let x411 = mtmp410.0 in
-  let x412 = mtmp410.1 in
-  let x413 = mtmp410.2 in
-  if x411 {
-    let t929 = (x412, x413) in
-    let t930 = Option__(char,isize)::Some(t929) in
-    t930
+fn inherent#string#string#decode_at(self/0: string, index/0: isize) -> Option__(char,isize) {
+  let mtmp0 = string_decode_utf8_at(self/0, index/0) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  let x2 = mtmp0.2 in
+  if x0 {
+    let t0 = (x1, x2) in
+    let t1 = Option__(char,isize)::Some(t0) in
+    t1
   } else {
     Tag_0
   }
 }
 
-fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, isize) {
-  let length/260 = inherent#string#string#byte_len(value/258) in
-  let t1049 = (index/259 < 0) in
-  join k1046(jp1047: bool) -> (bool, char, isize) {
-    join k933() -> (bool, char, isize) {
-      let t934 = inherent#string#string#byte_get(value/258, index/259) in
-      let first/261 = (t934 as u32) in
-      let t937 = (first/261 < 128) in
-      if t937 {
-        let inline1181 = 1 in
-        let inline1182 = __goml_builtin_char_from_uint32(first/261) in
-        match inline1182 {
+fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
+  let length/0 = inherent#string#string#byte_len(value/0) in
+  let t0 = (index/0 < 0) in
+  join k0(jp0: bool) -> (bool, char, isize) {
+    join k1() -> (bool, char, isize) {
+      let t1 = inherent#string#string#byte_get(value/0, index/0) in
+      let first/0 = (t1 as u32) in
+      let t2 = (first/0 < 128) in
+      if t2 {
+        let inline0 = 1 in
+        let inline1 = __goml_builtin_char_from_uint0(first/0) in
+        match inline1 {
           Tag_0 => {
-            let inline1183 = utf8_invalid_decode() in
-            inline1183
+            let inline2 = utf8_invalid_decode() in
+            inline2
           },
           Tag_1 => {
-            let inline1184 = Option__char::Some._0(inline1182) in
-            let inline1186 = (true, inline1184, inline1181) in
-            inline1186
+            let inline3 = Option__char::Some._0(inline1) in
+            let inline4 = (true, inline3, inline0) in
+            inline4
           },
         }
       } else {
-        let t941 = (first/261 < 194) in
-        if t941 {
-          let inline1188 = (false, '\0', 0) in
-          inline1188
+        let t3 = (first/0 < 194) in
+        if t3 {
+          let inline5 = (false, '\0', 0) in
+          inline5
         } else {
-          let t945 = (first/261 < 224) in
-          if t945 {
-            let t958 = (length/260 - index/259) in
-            let t959 = (t958 < 2) in
-            join k946() -> (bool, char, isize) {
-              let t947 = (index/259 + 1) in
-              join inline_cont1203(t948: u8) -> (bool, char, isize) {
-                let second/262 = (t948 as u32) in
-                join inline_cont1200(t951: bool) -> (bool, char, isize) {
-                  if t951 {
-                    let inline1192 = (false, '\0', 0) in
-                    inline1192
+          let t4 = (first/0 < 224) in
+          if t4 {
+            let t5 = (length/0 - index/0) in
+            let t6 = (t5 < 2) in
+            join k2() -> (bool, char, isize) {
+              let t7 = (index/0 + 1) in
+              join inline_cont0(t8: u8) -> (bool, char, isize) {
+                let second/0 = (t8 as u32) in
+                join inline_cont1(t9: bool) -> (bool, char, isize) {
+                  if t9 {
+                    let inline6 = (false, '\0', 0) in
+                    inline6
                   } else {
-                    let t953 = (first/261 & 31) in
-                    let t954 = (t953 << 6) in
-                    let t955 = (second/262 & 63) in
-                    let t956 = (t954 | t955) in
-                    let inline1194 = 2 in
-                    let inline1195 = __goml_builtin_char_from_uint32(t956) in
-                    match inline1195 {
+                    let t10 = (first/0 & 31) in
+                    let t11 = (t10 << 6) in
+                    let t12 = (second/0 & 63) in
+                    let t13 = (t11 | t12) in
+                    let inline7 = 2 in
+                    let inline8 = __goml_builtin_char_from_uint0(t13) in
+                    match inline8 {
                       Tag_0 => {
-                        let inline1196 = utf8_invalid_decode() in
-                        inline1196
+                        let inline9 = utf8_invalid_decode() in
+                        inline9
                       },
                       Tag_1 => {
-                        let inline1197 = Option__char::Some._0(inline1195) in
-                        let inline1199 = (true, inline1197, inline1194) in
-                        inline1199
+                        let inline10 = Option__char::Some._0(inline8) in
+                        let inline11 = (true, inline10, inline7) in
+                        inline11
                       },
                     }
                   }
                 } in
-                let inline1201 = (second/262 < 128) in
-                if inline1201 {
-                  jump inline_cont1200(true)
+                let inline12 = (second/0 < 128) in
+                if inline12 {
+                  jump inline_cont1(true)
                 } else {
-                  let inline1202 = (second/262 > 191) in
-                  jump inline_cont1200(inline1202)
+                  let inline13 = (second/0 > 191) in
+                  jump inline_cont1(inline13)
                 }
               } in
-              let inline1204 = @runtime(core.string_byte_get)(value/258, t947) in
-              jump inline_cont1203(inline1204)
+              let inline14 = @runtime(core.string_byte_get)(value/0, t7) in
+              jump inline_cont0(inline14)
             } in
-            if t959 {
-              let inline1190 = (false, '\0', 0) in
-              inline1190
+            if t6 {
+              let inline15 = (false, '\0', 0) in
+              inline15
             } else {
-              jump k946()
+              jump k2()
             }
           } else {
-            let t963 = (first/261 < 240) in
-            if t963 {
-              let t996 = (length/260 - index/259) in
-              let t997 = (t996 < 3) in
-              join k964() -> (bool, char, isize) {
-                let t965 = (index/259 + 1) in
-                let t966 = inherent#string#string#byte_get(value/258, t965) in
-                let second/263 = (t966 as u32) in
-                let t967 = (index/259 + 2) in
-                let t968 = inherent#string#string#byte_get(value/258, t967) in
-                let third/264 = (t968 as u32) in
-                let t994 = utf8_invalid_continuation(second/263) in
-                join k988(jp989: bool) -> (bool, char, isize) {
-                  join k982(jp983: bool) -> (bool, char, isize) {
-                    join k971(jp972: bool) -> (bool, char, isize) {
-                      if jp972 {
-                        let inline1211 = (false, '\0', 0) in
-                        inline1211
+            let t14 = (first/0 < 240) in
+            if t14 {
+              let t15 = (length/0 - index/0) in
+              let t16 = (t15 < 3) in
+              join k3() -> (bool, char, isize) {
+                let t17 = (index/0 + 1) in
+                let t18 = inherent#string#string#byte_get(value/0, t17) in
+                let second/1 = (t18 as u32) in
+                let t19 = (index/0 + 2) in
+                let t20 = inherent#string#string#byte_get(value/0, t19) in
+                let third/0 = (t20 as u32) in
+                let t21 = utf8_invalid_continuation(second/1) in
+                join k4(jp1: bool) -> (bool, char, isize) {
+                  join k5(jp2: bool) -> (bool, char, isize) {
+                    join k6(jp3: bool) -> (bool, char, isize) {
+                      if jp3 {
+                        let inline16 = (false, '\0', 0) in
+                        inline16
                       } else {
-                        let t974 = (first/261 & 15) in
-                        let t975 = (t974 << 12) in
-                        let t976 = (second/263 & 63) in
-                        let t977 = (t976 << 6) in
-                        let t978 = (t975 | t977) in
-                        let t979 = (third/264 & 63) in
-                        let t980 = (t978 | t979) in
-                        let inline1213 = 3 in
-                        let inline1214 = __goml_builtin_char_from_uint32(t980) in
-                        match inline1214 {
+                        let t22 = (first/0 & 15) in
+                        let t23 = (t22 << 12) in
+                        let t24 = (second/1 & 63) in
+                        let t25 = (t24 << 6) in
+                        let t26 = (t23 | t25) in
+                        let t27 = (third/0 & 63) in
+                        let t28 = (t26 | t27) in
+                        let inline17 = 3 in
+                        let inline18 = __goml_builtin_char_from_uint0(t28) in
+                        match inline18 {
                           Tag_0 => {
-                            let inline1215 = utf8_invalid_decode() in
-                            inline1215
+                            let inline19 = utf8_invalid_decode() in
+                            inline19
                           },
                           Tag_1 => {
-                            let inline1216 = Option__char::Some._0(inline1214) in
-                            let inline1218 = (true, inline1216, inline1213) in
-                            inline1218
+                            let inline20 = Option__char::Some._0(inline18) in
+                            let inline21 = (true, inline20, inline17) in
+                            inline21
                           },
                         }
                       }
                     } in
-                    if jp983 {
-                      jump k971(true)
+                    if jp2 {
+                      jump k6(true)
                     } else {
-                      let t986 = (first/261 == 237) in
-                      if t986 {
-                        let t987 = (second/263 >= 160) in
-                        jump k971(t987)
+                      let t29 = (first/0 == 237) in
+                      if t29 {
+                        let t30 = (second/1 >= 160) in
+                        jump k6(t30)
                       } else {
-                        jump k971(false)
+                        jump k6(false)
                       }
                     }
                   } in
-                  if jp989 {
-                    jump k982(true)
+                  if jp1 {
+                    jump k5(true)
                   } else {
-                    let t992 = (first/261 == 224) in
-                    if t992 {
-                      let t993 = (second/263 < 160) in
-                      jump k982(t993)
+                    let t31 = (first/0 == 224) in
+                    if t31 {
+                      let t32 = (second/1 < 160) in
+                      jump k5(t32)
                     } else {
-                      jump k982(false)
+                      jump k5(false)
                     }
                   }
                 } in
-                if t994 {
-                  jump k988(true)
+                if t21 {
+                  jump k4(true)
                 } else {
-                  let inline1208 = (third/264 < 128) in
-                  if inline1208 {
-                    jump k988(true)
+                  let inline22 = (third/0 < 128) in
+                  if inline22 {
+                    jump k4(true)
                   } else {
-                    let inline1209 = (third/264 > 191) in
-                    jump k988(inline1209)
+                    let inline23 = (third/0 > 191) in
+                    jump k4(inline23)
                   }
                 }
               } in
-              if t997 {
-                let inline1206 = (false, '\0', 0) in
-                inline1206
+              if t16 {
+                let inline24 = (false, '\0', 0) in
+                inline24
               } else {
-                jump k964()
+                jump k3()
               }
             } else {
-              let t1001 = (first/261 < 245) in
-              if t1001 {
-                let t1042 = (length/260 - index/259) in
-                let t1043 = (t1042 < 4) in
-                join k1002() -> (bool, char, isize) {
-                  let t1003 = (index/259 + 1) in
-                  let t1004 = inherent#string#string#byte_get(value/258, t1003) in
-                  let second/265 = (t1004 as u32) in
-                  let t1005 = (index/259 + 2) in
-                  let t1006 = inherent#string#string#byte_get(value/258, t1005) in
-                  let third/266 = (t1006 as u32) in
-                  let t1007 = (index/259 + 3) in
-                  let t1008 = inherent#string#string#byte_get(value/258, t1007) in
-                  let fourth/267 = (t1008 as u32) in
-                  let t1040 = utf8_invalid_continuation(second/265) in
-                  join k1037(jp1038: bool) -> (bool, char, isize) {
-                    join k1031(jp1032: bool) -> (bool, char, isize) {
-                      join k1025(jp1026: bool) -> (bool, char, isize) {
-                        join k1011(jp1012: bool) -> (bool, char, isize) {
-                          if jp1012 {
-                            let t1013 = utf8_invalid_decode() in
-                            t1013
+              let t33 = (first/0 < 245) in
+              if t33 {
+                let t34 = (length/0 - index/0) in
+                let t35 = (t34 < 4) in
+                join k7() -> (bool, char, isize) {
+                  let t36 = (index/0 + 1) in
+                  let t37 = inherent#string#string#byte_get(value/0, t36) in
+                  let second/2 = (t37 as u32) in
+                  let t38 = (index/0 + 2) in
+                  let t39 = inherent#string#string#byte_get(value/0, t38) in
+                  let third/1 = (t39 as u32) in
+                  let t40 = (index/0 + 3) in
+                  let t41 = inherent#string#string#byte_get(value/0, t40) in
+                  let fourth/0 = (t41 as u32) in
+                  let t42 = utf8_invalid_continuation(second/2) in
+                  join k8(jp4: bool) -> (bool, char, isize) {
+                    join k9(jp5: bool) -> (bool, char, isize) {
+                      join k10(jp6: bool) -> (bool, char, isize) {
+                        join k11(jp7: bool) -> (bool, char, isize) {
+                          if jp7 {
+                            let t43 = utf8_invalid_decode() in
+                            t43
                           } else {
-                            let t1014 = (first/261 & 7) in
-                            let t1015 = (t1014 << 18) in
-                            let t1016 = (second/265 & 63) in
-                            let t1017 = (t1016 << 12) in
-                            let t1018 = (t1015 | t1017) in
-                            let t1019 = (third/266 & 63) in
-                            let t1020 = (t1019 << 6) in
-                            let t1021 = (t1018 | t1020) in
-                            let t1022 = (fourth/267 & 63) in
-                            let t1023 = (t1021 | t1022) in
-                            let t1024 = utf8_valid_decode(t1023, 4) in
-                            t1024
+                            let t44 = (first/0 & 7) in
+                            let t45 = (t44 << 18) in
+                            let t46 = (second/2 & 63) in
+                            let t47 = (t46 << 12) in
+                            let t48 = (t45 | t47) in
+                            let t49 = (third/1 & 63) in
+                            let t50 = (t49 << 6) in
+                            let t51 = (t48 | t50) in
+                            let t52 = (fourth/0 & 63) in
+                            let t53 = (t51 | t52) in
+                            let t54 = utf8_valid_decode(t53, 4) in
+                            t54
                           }
                         } in
-                        if jp1026 {
-                          jump k1011(true)
+                        if jp6 {
+                          jump k11(true)
                         } else {
-                          let t1029 = (first/261 == 244) in
-                          if t1029 {
-                            let t1030 = (second/265 > 143) in
-                            jump k1011(t1030)
+                          let t55 = (first/0 == 244) in
+                          if t55 {
+                            let t56 = (second/2 > 143) in
+                            jump k11(t56)
                           } else {
-                            jump k1011(false)
+                            jump k11(false)
                           }
                         }
                       } in
-                      if jp1032 {
-                        jump k1025(true)
+                      if jp5 {
+                        jump k10(true)
                       } else {
-                        let t1035 = (first/261 == 240) in
-                        if t1035 {
-                          let t1036 = (second/265 < 144) in
-                          jump k1025(t1036)
+                        let t57 = (first/0 == 240) in
+                        if t57 {
+                          let t58 = (second/2 < 144) in
+                          jump k10(t58)
                         } else {
-                          jump k1025(false)
+                          jump k10(false)
                         }
                       }
                     } in
-                    if jp1038 {
-                      jump k1031(true)
+                    if jp4 {
+                      jump k9(true)
                     } else {
-                      let t1039 = utf8_invalid_continuation(fourth/267) in
-                      jump k1031(t1039)
+                      let t59 = utf8_invalid_continuation(fourth/0) in
+                      jump k9(t59)
                     }
                   } in
-                  if t1040 {
-                    jump k1037(true)
+                  if t42 {
+                    jump k8(true)
                   } else {
-                    let t1041 = utf8_invalid_continuation(third/266) in
-                    jump k1037(t1041)
+                    let t60 = utf8_invalid_continuation(third/1) in
+                    jump k8(t60)
                   }
                 } in
-                if t1043 {
-                  let t1044 = utf8_invalid_decode() in
-                  t1044
+                if t35 {
+                  let t61 = utf8_invalid_decode() in
+                  t61
                 } else {
-                  jump k1002()
+                  jump k7()
                 }
               } else {
-                let t1045 = utf8_invalid_decode() in
-                t1045
+                let t62 = utf8_invalid_decode() in
+                t62
               }
             }
           }
         }
       }
     } in
-    if jp1047 {
-      let inline1179 = (false, '\0', 0) in
-      inline1179
+    if jp0 {
+      let inline25 = (false, '\0', 0) in
+      inline25
     } else {
-      jump k933()
+      jump k1()
     }
   } in
-  if t1049 {
-    jump k1046(true)
+  if t0 {
+    jump k0(true)
   } else {
-    let t1050 = (index/259 >= length/260) in
-    jump k1046(t1050)
+    let t63 = (index/0 >= length/0) in
+    jump k0(t63)
   }
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  let t1053 = @runtime(core.bool_to_string)(self/401) in
-  t1053
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  let t0 = @runtime(core.bool_to_string)(self/0) in
+  t0
 }
 
 fn utf8_invalid_decode() -> (bool, char, isize) {
-  let t1056 = (false, '\0', 0) in
-  t1056
+  let t0 = (false, '\0', 0) in
+  t0
 }
 
-fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
-  let t1059 = @runtime(core.string_byte_get)(self/292, index/293) in
-  t1059
+fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
+  let t0 = @runtime(core.string_byte_get)(self/0, index/0) in
+  t0
 }
 
-fn utf8_valid_decode(value/253: u32, width/254: isize) -> (bool, char, isize) {
-  join commute_arm1237() -> (bool, char, isize) {
-    let inline1220 = (false, '\0', 0) in
-    inline1220
+fn utf8_valid_decode(value/0: u32, width/0: isize) -> (bool, char, isize) {
+  join commute_arm0() -> (bool, char, isize) {
+    let inline0 = (false, '\0', 0) in
+    inline0
   } in
-  join commute_arm1239(commute_field1238: char) -> (bool, char, isize) {
-    let t1065 = (true, commute_field1238, width/254) in
-    t1065
+  join commute_arm1(commute_field0: char) -> (bool, char, isize) {
+    let t0 = (true, commute_field0, width/0) in
+    t0
   } in
-  let inline1222 = utf8_valid_scalar(value/253) in
-  if inline1222 {
-    let inline1223 = @runtime(core.char_from_uint32)(value/253) in
-    let inline1224 = inline1223.1 in
-    jump commute_arm1239(inline1224)
+  let inline1 = utf8_valid_scalar(value/0) in
+  if inline1 {
+    let inline2 = @runtime(core.char_from_uint32)(value/0) in
+    let inline3 = inline2.1 in
+    jump commute_arm1(inline3)
   } else {
-    jump commute_arm1237()
+    jump commute_arm0()
   }
 }
 
-fn utf8_invalid_continuation(value/256: u32) -> bool {
-  let t1070 = (value/256 < 128) in
-  if t1070 {
+fn utf8_invalid_continuation(value/0: u32) -> bool {
+  let t0 = (value/0 < 128) in
+  if t0 {
     true
   } else {
-    let t1071 = (value/256 > 191) in
-    t1071
+    let t1 = (value/0 > 191) in
+    t1
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/283: u32) -> Option__char {
-  join inline_cont1227(t1076: bool) -> Option__char {
-    if t1076 {
-      let mtmp407 = @runtime(core.char_from_uint32)(value/283) in
-      let x409 = mtmp407.1 in
-      let t1077 = Option__char::Some(x409) in
-      t1077
+fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
+  join inline_cont0(t0: bool) -> Option__char {
+    if t0 {
+      let mtmp0 = @runtime(core.char_from_uint32)(value/0) in
+      let x0 = mtmp0.1 in
+      let t1 = Option__char::Some(x0) in
+      t1
     } else {
       Tag_0
     }
   } in
-  let inline1228 = (value/283 <= 1114111) in
-  if inline1228 {
-    let inline1229 = (value/283 >= 55296) in
-    join inline_join1230(inline1231: bool) -> Option__char {
-      let inline1232 = (!inline1231) in
-      jump inline_cont1227(inline1232)
+  let inline0 = (value/0 <= 1114111) in
+  if inline0 {
+    let inline1 = (value/0 >= 55296) in
+    join inline_join0(inline2: bool) -> Option__char {
+      let inline3 = (!inline2) in
+      jump inline_cont0(inline3)
     } in
-    if inline1229 {
-      let inline1233 = (value/283 <= 57343) in
-      jump inline_join1230(inline1233)
+    if inline1 {
+      let inline4 = (value/0 <= 57343) in
+      jump inline_join0(inline4)
     } else {
-      jump inline_join1230(false)
+      jump inline_join0(false)
     }
   } else {
-    jump inline_cont1227(false)
+    jump inline_cont0(false)
   }
 }
 
-fn utf8_valid_scalar(value/257: u32) -> bool {
-  let t1082 = (value/257 <= 1114111) in
-  if t1082 {
-    let t1086 = (value/257 >= 55296) in
-    join k1083(jp1084: bool) -> bool {
-      let t1085 = (!jp1084) in
-      t1085
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  let t0 = (value/0 <= 1114111) in
+  if t0 {
+    let t1 = (value/0 >= 55296) in
+    join k0(jp0: bool) -> bool {
+      let t2 = (!jp0) in
+      t2
     } in
-    if t1086 {
-      let t1087 = (value/257 <= 57343) in
-      jump k1083(t1087)
+    if t1 {
+      let t3 = (value/0 <= 57343) in
+      jump k0(t3)
     } else {
-      jump k1083(false)
+      jump k0(false)
     }
   } else {
     false

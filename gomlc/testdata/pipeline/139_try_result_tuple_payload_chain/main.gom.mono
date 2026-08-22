@@ -10,67 +10,67 @@ fn split_host_port(ok/0: bool) -> Result__(string,string)__string {
   }
 }
 
-fn pair(ok/1: bool) -> Result__(string,string)__string {
-  split_host_port(ok/1)
+fn pair(ok/0: bool) -> Result__(string,string)__string {
+  split_host_port(ok/0)
 }
 
-fn render(ok/2: bool) -> Result__string__string {
-  let mtmp799 =
+fn render(ok/0: bool) -> Result__string__string {
+  let mtmp0 =
     {
-      let mtmp796 = pair(ok/2) in
-      match mtmp796 {
-        Result__(string,string)__string::Ok(x797) => {
+      let mtmp1 = pair(ok/0) in
+      match mtmp1 {
+        Result__(string,string)__string::Ok(x0) => {
           {
-            let x797 = Result__(string,string)__string::Ok._0(mtmp796) in
+            let x0 = Result__(string,string)__string::Ok._0(mtmp1) in
             {
-              let try_value/17 = x797 in
-              try_value/17
+              let try_value/0 = x0 in
+              try_value/0
             }
           }
         },
-        Result__(string,string)__string::Err(x798) => {
+        Result__(string,string)__string::Err(x1) => {
           {
-            let x798 = Result__(string,string)__string::Err._0(mtmp796) in
+            let x1 = Result__(string,string)__string::Err._0(mtmp1) in
             {
-              let try_residual/17 = x798 in
-              return Result__string__string::Err(try_residual/17)
+              let try_residual/0 = x1 in
+              return Result__string__string::Err(try_residual/0)
             }
           }
         },
       }
     } in
   {
-    let x800 = mtmp799.0 in
-    let x801 = mtmp799.1 in
+    let x2 = mtmp0.0 in
+    let x3 = mtmp0.1 in
     {
-      let port/4 = x801 in
+      let port/0 = x3 in
       {
-        let host/3 = x800 in
+        let host/0 = x2 in
         {
-          Result__string__string::Ok(((host/3 + "=") + port/4))
+          Result__string__string::Ok(((host/0 + "=") + port/0))
         }
       }
     }
   }
 }
 
-fn show(res/5: Result__string__string) -> string {
-  match res/5 {
-    Result__string__string::Ok(x802) => {
+fn show(res/0: Result__string__string) -> string {
+  match res/0 {
+    Result__string__string::Ok(x0) => {
       {
-        let x802 = Result__string__string::Ok._0(res/5) in
+        let x0 = Result__string__string::Ok._0(res/0) in
         {
-          let value/6 = x802 in
-          ("ok " + value/6)
+          let value/0 = x0 in
+          ("ok " + value/0)
         }
       }
     },
-    Result__string__string::Err(x803) => {
+    Result__string__string::Err(x1) => {
       {
-        let x803 = Result__string__string::Err._0(res/5) in
+        let x1 = Result__string__string::Err._0(res/0) in
         {
-          let err/7 = x803 in
-          ("err " + err/7)
+          let err/0 = x1 in
+          ("err " + err/0)
         }
       }
     },
@@ -78,14 +78,14 @@ fn show(res/5: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild804 = println__T_string(show(render(true))) in
-  let _wild805 = println__T_string(show(render(false))) in
+  let _wild0 = println__T_string(show(render(true))) in
+  let _wild1 = println__T_string(show(render(false))) in
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

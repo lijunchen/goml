@@ -1,469 +1,464 @@
 fn print_selection(value/0: std::channel::Selection__isize) -> unit {
   match value/0 {
     Tag_0 => {
-      let x796 = std::channel::Selection__isize::Received._0(value/0) in
-      let x797 = std::channel::Selection__isize::Received._1(value/0) in
-      join inline_cont1063(_wild799: unit) -> unit {
-        join inline_cont1059(t827: isize) -> unit {
-          let inline1057 = trait_impl#ToString#isize#to_string(t827) in
-          let inline1058 = @runtime(core.string_println)(inline1057) in
+      let x0 = std::channel::Selection__isize::Received._0(value/0) in
+      let x1 = std::channel::Selection__isize::Received._1(value/0) in
+      join inline_cont0(_wild0: unit) -> unit {
+        join inline_cont1(t0: isize) -> unit {
+          let inline0 = trait_impl#ToString#isize#to_string(t0) in
+          let inline1 = @runtime(core.string_println)(inline0) in
           ()
         } in
-        let inline1060 = -1 in
-        match x797 {
+        let inline2 = -1 in
+        match x1 {
           Tag_0 => {
-            jump inline_cont1059(inline1060)
+            jump inline_cont1(inline2)
           },
           Tag_1 => {
-            let inline1061 = Option__isize::Some._0(x797) in
-            jump inline_cont1059(inline1061)
+            let inline3 = Option__isize::Some._0(x1) in
+            jump inline_cont1(inline3)
           },
         }
       } in
-      let inline1064 = trait_impl#ToString#isize#to_string(x796) in
-      let inline1065 = @runtime(core.string_println)(inline1064) in
-      jump inline_cont1063(())
+      let inline4 = trait_impl#ToString#isize#to_string(x0) in
+      let inline5 = @runtime(core.string_println)(inline4) in
+      jump inline_cont0(())
     },
     Tag_1 => {
-      let x798 = std::channel::Selection__isize::Sent._0(value/0) in
-      let inline1067 = trait_impl#ToString#isize#to_string(x798) in
-      let inline1068 = @runtime(core.string_println)(inline1067) in
+      let x2 = std::channel::Selection__isize::Sent._0(value/0) in
+      let inline6 = trait_impl#ToString#isize#to_string(x2) in
+      let inline7 = @runtime(core.string_println)(inline6) in
       ()
     },
   }
 }
 
 fn main() -> unit {
-  let first/4 = inherent#Channel#Channel[T]#new__T_isize(1) in
-  let second/5 = inherent#Channel#Channel[T]#new__T_isize(1) in
-  let _wild800 = inherent#Channel#Channel[T]#send__T_isize(first/4, 10) in
-  let _wild801 = inherent#Channel#Channel[T]#send__T_isize(second/5, 20) in
-  let t831 = inherent#Channel#Channel[T]#receiver__T_isize(first/4) in
-  let t832 = std::channel::Operation__isize::Receive(t831) in
-  let t833 = inherent#Channel#Channel[T]#receiver__T_isize(second/5) in
-  let t834 = std::channel::Operation__isize::Receive(t833) in
-  let t835 = [t832, t834] in
-  let operations/6 = @intrinsic(vec.from_array)(t835) in
-  let t836 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](operations/6) in
-  let t837 = @intrinsic(slice.new)(operations/6, 0, t836) in
-  let mtmp802 = std::channel::try_select_priority__T_isize(t837) in
-  join k838() -> unit {
-    let t839 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](operations/6) in
-    let t840 = @intrinsic(slice.new)(operations/6, 0, t839) in
-    let mtmp807 = std::channel::try_select__T_isize(t840) in
-    join k841() -> unit {
-      let empty/9 = inherent#Channel#Channel[T]#new__T_isize(0) in
-      let target/10 = inherent#Channel#Channel[T]#new__T_isize(1) in
-      let t842 = inherent#Channel#Channel[T]#receiver__T_isize(empty/9) in
-      let t843 = std::channel::Operation__isize::Receive(t842) in
-      let t844 = inherent#Channel#Channel[T]#sender__T_isize(target/10) in
-      let t845 = std::channel::Operation__isize::Send(t844, 30) in
-      let t846 = [t843, t845] in
-      let mixed/11 = @intrinsic(vec.from_array)(t846) in
-      let t847 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](mixed/11) in
-      let t848 = @intrinsic(slice.new)(mixed/11, 0, t847) in
-      let mtmp812 = std::channel::select__T_isize(t848) in
-      join k849() -> unit {
-        let t850 = inherent#Channel#Channel[T]#recv__T_isize(target/10) in
-        let t851 = inherent#Option#Option[T]#unwrap_or__T_isize(t850, -4) in
-        let _wild816 = println__T_isize(t851) in
-        let t852 = inherent#Channel#Channel[T]#receiver__T_isize(empty/9) in
-        let t853 = std::channel::Operation__isize::Receive(t852) in
-        let t854 = [t853] in
-        let none/13 = @intrinsic(vec.from_array)(t854) in
-        let t855 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](none/13) in
-        let t856 = @intrinsic(slice.new)(none/13, 0, t855) in
-        let mtmp817 = std::channel::try_select__T_isize(t856) in
-        join k857(jp858: isize) -> unit {
-          let _wild821 = println__T_isize(jp858) in
-          join inline_cont1116(no_operations/14: Vec[std::channel::Operation__isize]) -> unit {
-            join inline_cont1114(t859: isize) -> unit {
-              let t860 = @intrinsic(slice.new)(no_operations/14, 0, t859) in
-              let mtmp822 = std::channel::select__T_isize(t860) in
-              join k861(jp862: isize) -> unit {
-                let inline1112 = trait_impl#ToString#isize#to_string(jp862) in
-                let inline1113 = @runtime(core.string_println)(inline1112) in
+  let first/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let second/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let _wild0 = inherent#Channel#Channel[T]#send__T_isize(first/0, 10) in
+  let _wild1 = inherent#Channel#Channel[T]#send__T_isize(second/0, 20) in
+  let t0 = inherent#Channel#Channel[T]#receiver__T_isize(first/0) in
+  let t1 = std::channel::Operation__isize::Receive(t0) in
+  let t2 = inherent#Channel#Channel[T]#receiver__T_isize(second/0) in
+  let t3 = std::channel::Operation__isize::Receive(t2) in
+  let t4 = [t1, t3] in
+  let operations/0 = @intrinsic(vec.from_array)(t4) in
+  let t5 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](operations/0) in
+  let t6 = @intrinsic(slice.new)(operations/0, 0, t5) in
+  let mtmp0 = std::channel::try_select_priority__T_isize(t6) in
+  join k0() -> unit {
+    let t7 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](operations/0) in
+    let t8 = @intrinsic(slice.new)(operations/0, 0, t7) in
+    let mtmp1 = std::channel::try_select__T_isize(t8) in
+    join k1() -> unit {
+      let empty/0 = inherent#Channel#Channel[T]#new__T_isize(0) in
+      let target/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
+      let t9 = inherent#Channel#Channel[T]#receiver__T_isize(empty/0) in
+      let t10 = std::channel::Operation__isize::Receive(t9) in
+      let t11 = inherent#Channel#Channel[T]#sender__T_isize(target/0) in
+      let t12 = std::channel::Operation__isize::Send(t11, 30) in
+      let t13 = [t10, t12] in
+      let mixed/0 = @intrinsic(vec.from_array)(t13) in
+      let t14 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](mixed/0) in
+      let t15 = @intrinsic(slice.new)(mixed/0, 0, t14) in
+      let mtmp2 = std::channel::select__T_isize(t15) in
+      join k2() -> unit {
+        let t16 = inherent#Channel#Channel[T]#recv__T_isize(target/0) in
+        let t17 = inherent#Option#Option[T]#unwrap_or__T_isize(t16, -4) in
+        let _wild2 = println__T_isize(t17) in
+        let t18 = inherent#Channel#Channel[T]#receiver__T_isize(empty/0) in
+        let t19 = std::channel::Operation__isize::Receive(t18) in
+        let t20 = [t19] in
+        let none/0 = @intrinsic(vec.from_array)(t20) in
+        let t21 = inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](none/0) in
+        let t22 = @intrinsic(slice.new)(none/0, 0, t21) in
+        let mtmp3 = std::channel::try_select__T_isize(t22) in
+        join k3(jp0: isize) -> unit {
+          let _wild3 = println__T_isize(jp0) in
+          join inline_cont0(no_operations/0: Vec[std::channel::Operation__isize]) -> unit {
+            join inline_cont1(t23: isize) -> unit {
+              let t24 = @intrinsic(slice.new)(no_operations/0, 0, t23) in
+              let mtmp4 = std::channel::select__T_isize(t24) in
+              join k4(jp1: isize) -> unit {
+                let inline0 = trait_impl#ToString#isize#to_string(jp1) in
+                let inline1 = @runtime(core.string_println)(inline0) in
                 ()
               } in
-              match mtmp822 {
+              match mtmp4 {
                 Tag_1 => {
-                  let x824 =
+                  let x0 =
                     Result__std::channel::Selection__isize__std::channel::SelectError::Err._0(
-                      mtmp822
+                      mtmp4
                     ) in
-                  match x824 {
+                  match x0 {
                     Tag_0 => {
-                      jump k861(50)
+                      jump k4(50)
                     },
                   }
                 },
                 _ => {
-                  jump k861(-6)
+                  jump k4(-6)
                 },
               }
             } in
-            let inline1115 = @intrinsic(vec.len)(no_operations/14) in
-            jump inline_cont1114(inline1115)
+            let inline2 = @intrinsic(vec.len)(no_operations/0) in
+            jump inline_cont1(inline2)
           } in
-          let inline1117 = @intrinsic(vec.new)() in
-          jump inline_cont1116(inline1117)
+          let inline3 = @intrinsic(vec.new)() in
+          jump inline_cont0(inline3)
         } in
-        match mtmp817 {
+        match mtmp3 {
           Tag_0 => {
-            let x818 =
+            let x1 =
               Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(
-                mtmp817
+                mtmp3
               ) in
-            match x818 {
+            match x1 {
               Tag_0 => {
-                jump k857(40)
+                jump k3(40)
               },
               _ => {
-                jump k857(-5)
+                jump k3(-5)
               },
             }
           },
           _ => {
-            jump k857(-5)
+            jump k3(-5)
           },
         }
       } in
-      match mtmp812 {
+      match mtmp2 {
         Tag_0 => {
-          let x813 =
-            Result__std::channel::Selection__isize__std::channel::SelectError::Ok._0(mtmp812) in
-          let t868 = print_selection(x813) in
-          jump k849()
+          let x2 =
+            Result__std::channel::Selection__isize__std::channel::SelectError::Ok._0(mtmp2) in
+          let t25 = print_selection(x2) in
+          jump k2()
         },
         Tag_1 => {
-          let inline1108 = -3 in
-          let inline1109 = trait_impl#ToString#isize#to_string(inline1108) in
-          let inline1110 = @runtime(core.string_println)(inline1109) in
-          jump k849()
+          let inline4 = -3 in
+          let inline5 = trait_impl#ToString#isize#to_string(inline4) in
+          let inline6 = @runtime(core.string_println)(inline5) in
+          jump k2()
         },
       }
     } in
-    match mtmp807 {
+    match mtmp1 {
       Tag_0 => {
-        let x808 =
-          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(
-            mtmp807
-          ) in
-        match x808 {
+        let x3 =
+          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(mtmp1) in
+        match x3 {
           Tag_1 => {
-            let x810 = Option__std::channel::Selection__isize::Some._0(x808) in
-            match x810 {
+            let x4 = Option__std::channel::Selection__isize::Some._0(x3) in
+            match x4 {
               Tag_0 => {
-                let inline1089 = std::channel::Selection__isize::Received._0(x810) in
-                let inline1090 = std::channel::Selection__isize::Received._1(x810) in
-                let inline1093 = println__T_isize(inline1089) in
-                let inline1094 = inherent#Option#Option[T]#unwrap_or__T_isize(inline1090, -1) in
-                let inline1095 = println__T_isize(inline1094) in
-                jump k841()
+                let inline7 = std::channel::Selection__isize::Received._0(x4) in
+                let inline8 = std::channel::Selection__isize::Received._1(x4) in
+                let inline9 = println__T_isize(inline7) in
+                let inline10 = inherent#Option#Option[T]#unwrap_or__T_isize(inline8, -1) in
+                let inline11 = println__T_isize(inline10) in
+                jump k1()
               },
               Tag_1 => {
-                let inline1096 = std::channel::Selection__isize::Sent._0(x810) in
-                let inline1098 = println__T_isize(inline1096) in
-                jump k841()
+                let inline12 = std::channel::Selection__isize::Sent._0(x4) in
+                let inline13 = println__T_isize(inline12) in
+                jump k1()
               },
             }
           },
           _ => {
-            let inline1100 = -2 in
-            let inline1101 = trait_impl#ToString#isize#to_string(inline1100) in
-            let inline1102 = @runtime(core.string_println)(inline1101) in
-            jump k841()
+            let inline14 = -2 in
+            let inline15 = trait_impl#ToString#isize#to_string(inline14) in
+            let inline16 = @runtime(core.string_println)(inline15) in
+            jump k1()
           },
         }
       },
       _ => {
-        let inline1104 = -2 in
-        let inline1105 = trait_impl#ToString#isize#to_string(inline1104) in
-        let inline1106 = @runtime(core.string_println)(inline1105) in
-        jump k841()
+        let inline17 = -2 in
+        let inline18 = trait_impl#ToString#isize#to_string(inline17) in
+        let inline19 = @runtime(core.string_println)(inline18) in
+        jump k1()
       },
     }
   } in
-  match mtmp802 {
+  match mtmp0 {
     Tag_0 => {
-      let x803 =
-        Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(mtmp802) in
-      match x803 {
+      let x5 =
+        Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(mtmp0) in
+      match x5 {
         Tag_1 => {
-          let x805 = Option__std::channel::Selection__isize::Some._0(x803) in
-          match x805 {
+          let x6 = Option__std::channel::Selection__isize::Some._0(x5) in
+          match x6 {
             Tag_0 => {
-              let inline1070 = std::channel::Selection__isize::Received._0(x805) in
-              let inline1071 = std::channel::Selection__isize::Received._1(x805) in
-              let inline1074 = println__T_isize(inline1070) in
-              let inline1075 = inherent#Option#Option[T]#unwrap_or__T_isize(inline1071, -1) in
-              let inline1076 = println__T_isize(inline1075) in
-              jump k838()
+              let inline20 = std::channel::Selection__isize::Received._0(x6) in
+              let inline21 = std::channel::Selection__isize::Received._1(x6) in
+              let inline22 = println__T_isize(inline20) in
+              let inline23 = inherent#Option#Option[T]#unwrap_or__T_isize(inline21, -1) in
+              let inline24 = println__T_isize(inline23) in
+              jump k0()
             },
             Tag_1 => {
-              let inline1077 = std::channel::Selection__isize::Sent._0(x805) in
-              let inline1079 = println__T_isize(inline1077) in
-              jump k838()
+              let inline25 = std::channel::Selection__isize::Sent._0(x6) in
+              let inline26 = println__T_isize(inline25) in
+              jump k0()
             },
           }
         },
         _ => {
-          let inline1081 = -1 in
-          let inline1082 = trait_impl#ToString#isize#to_string(inline1081) in
-          let inline1083 = @runtime(core.string_println)(inline1082) in
-          jump k838()
+          let inline27 = -1 in
+          let inline28 = trait_impl#ToString#isize#to_string(inline27) in
+          let inline29 = @runtime(core.string_println)(inline28) in
+          jump k0()
         },
       }
     },
     _ => {
-      let inline1085 = -1 in
-      let inline1086 = trait_impl#ToString#isize#to_string(inline1085) in
-      let inline1087 = @runtime(core.string_println)(inline1086) in
-      jump k838()
+      let inline30 = -1 in
+      let inline31 = trait_impl#ToString#isize#to_string(inline30) in
+      let inline32 = @runtime(core.string_println)(inline31) in
+      jump k0()
     },
   }
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  join inline_cont1118(t879: string) -> unit {
-    let t880 = @runtime(core.string_println)(t879) in
+fn println__T_isize(value/0: isize) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  let inline1119 = __goml_builtin_int_to_string(value/1) in
-  jump inline_cont1118(inline1119)
+  let inline0 = __goml_builtin_int_to_string(value/0) in
+  jump inline_cont0(inline0)
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_isize(
-  self/720: Option__isize,
-  fallback/721: isize
-) -> isize {
-  match self/720 {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/0: isize) -> isize {
+  match self/0 {
     Tag_0 => {
-      fallback/721
+      fallback/0
     },
     Tag_1 => {
-      let x775 = Option__isize::Some._0(self/720) in
-      x775
+      let x0 = Option__isize::Some._0(self/0) in
+      x0
     },
   }
 }
 
-fn inherent#Channel#Channel[T]#new__T_isize(capacity/688: isize) -> Channel[isize] {
-  let t887 = @intrinsic(channel.new)(capacity/688) in
-  t887
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize] {
+  let t0 = @intrinsic(channel.new)(capacity/0) in
+  t0
 }
 
-fn inherent#Channel#Channel[T]#send__T_isize(self/689: Channel[isize], value/690: isize) -> unit {
-  let t889 = @intrinsic(channel.send)(self/689, value/690) in
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+  let t0 = @intrinsic(channel.send)(self/0, value/0) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#receiver__T_isize(self/696: Channel[isize]) -> Receiver[isize] {
-  let t892 = @intrinsic(channel.receiver)(self/696) in
-  t892
+fn inherent#Channel#Channel[T]#receiver__T_isize(self/0: Channel[isize]) -> Receiver[isize] {
+  let t0 = @intrinsic(channel.receiver)(self/0) in
+  t0
 }
 
 fn std::channel::try_select_priority__T_isize(
-  operations/35: Slice[std::channel::Operation__isize]
+  operations/0: Slice[std::channel::Operation__isize]
 ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-  join inline_cont1127(
-    t897: isize
+  join inline_cont0(
+    t0: isize
   ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-    let t898 = (t897 == 0) in
-    if t898 {
-      let t899 =
+    let t1 = (t0 == 0) in
+    if t1 {
+      let t2 =
         Result__Option__std::channel::Selection__isize__std::channel::SelectError::Err(Tag_0) in
-      t899
+      t2
     } else {
-      let prepared/36 = std::channel::prepare__T_isize(operations/35) in
-      let mtmp34 = std::channel::prepared_slices__T_isize(prepared/36) in
-      let x35 = mtmp34.0 in
-      let x36 = mtmp34.1 in
-      let x37 = mtmp34.2 in
-      let x38 = mtmp34.3 in
-      let mtmp39 = @intrinsic(channel.dynamic_try_select_priority)(x35, x36, x37, x38) in
-      let x40 = mtmp39.0 in
-      let x41 = mtmp39.1 in
-      let x42 = mtmp39.2 in
-      let x43 = mtmp39.3 in
-      let x44 = mtmp39.4 in
-      join k900(
-        jp901: Option__std::channel::Selection__isize
+      let prepared/0 = std::channel::prepare__T_isize(operations/0) in
+      let mtmp0 = std::channel::prepared_slices__T_isize(prepared/0) in
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      let x2 = mtmp0.2 in
+      let x3 = mtmp0.3 in
+      let mtmp1 = @intrinsic(channel.dynamic_try_select_priority)(x0, x1, x2, x3) in
+      let x4 = mtmp1.0 in
+      let x5 = mtmp1.1 in
+      let x6 = mtmp1.2 in
+      let x7 = mtmp1.3 in
+      let x8 = mtmp1.4 in
+      join k0(
+        jp0: Option__std::channel::Selection__isize
       ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-        let t902 =
-          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(jp901) in
-        t902
+        let t3 =
+          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(jp0) in
+        t3
       } in
-      if x44 {
-        join inline_cont1120(
-          t903: std::channel::Selection__isize
+      if x8 {
+        join inline_cont1(
+          t4: std::channel::Selection__isize
         ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-          let t904 = Option__std::channel::Selection__isize::Some(t903) in
-          jump k900(t904)
+          let t5 = Option__std::channel::Selection__isize::Some(t4) in
+          jump k0(t5)
         } in
-        let inline1121 = (x41 == 0) in
-        if inline1121 {
-          join inline_join1122(
-            inline1123: Option__isize
+        let inline0 = (x5 == 0) in
+        if inline0 {
+          join inline_join0(
+            inline1: Option__isize
           ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-            let inline1124 = std::channel::Selection__isize::Received(x40, inline1123) in
-            jump inline_cont1120(inline1124)
+            let inline2 = std::channel::Selection__isize::Received(x4, inline1) in
+            jump inline_cont1(inline2)
           } in
-          if x43 {
-            let inline1125 = Option__isize::Some(x42) in
-            jump inline_join1122(inline1125)
+          if x7 {
+            let inline3 = Option__isize::Some(x6) in
+            jump inline_join0(inline3)
           } else {
-            jump inline_join1122(Tag_0)
+            jump inline_join0(Tag_0)
           }
         } else {
-          let inline1126 = std::channel::Selection__isize::Sent(x40) in
-          jump inline_cont1120(inline1126)
+          let inline4 = std::channel::Selection__isize::Sent(x4) in
+          jump inline_cont1(inline4)
         }
       } else {
-        jump k900(Tag_0)
+        jump k0(Tag_0)
       }
     }
   } in
-  let inline1128 = @intrinsic(slice.len)(operations/35) in
-  jump inline_cont1127(inline1128)
+  let inline5 = @intrinsic(slice.len)(operations/0) in
+  jump inline_cont0(inline5)
 }
 
 fn inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](
-  self/526: Vec[std::channel::Operation__isize]
+  self/0: Vec[std::channel::Operation__isize]
 ) -> isize {
-  let t907 = @intrinsic(vec.len)(self/526) in
-  t907
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
 fn std::channel::try_select__T_isize(
-  operations/24: Slice[std::channel::Operation__isize]
+  operations/0: Slice[std::channel::Operation__isize]
 ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-  join inline_cont1136(
-    t912: isize
+  join inline_cont0(
+    t0: isize
   ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-    let t913 = (t912 == 0) in
-    if t913 {
-      let t914 =
+    let t1 = (t0 == 0) in
+    if t1 {
+      let t2 =
         Result__Option__std::channel::Selection__isize__std::channel::SelectError::Err(Tag_0) in
-      t914
+      t2
     } else {
-      let prepared/25 = std::channel::prepare__T_isize(operations/24) in
-      let mtmp23 = std::channel::prepared_slices__T_isize(prepared/25) in
-      let x24 = mtmp23.0 in
-      let x25 = mtmp23.1 in
-      let x26 = mtmp23.2 in
-      let x27 = mtmp23.3 in
-      let mtmp28 = @intrinsic(channel.dynamic_try_select)(x24, x25, x26, x27) in
-      let x29 = mtmp28.0 in
-      let x30 = mtmp28.1 in
-      let x31 = mtmp28.2 in
-      let x32 = mtmp28.3 in
-      let x33 = mtmp28.4 in
-      join k915(
-        jp916: Option__std::channel::Selection__isize
+      let prepared/0 = std::channel::prepare__T_isize(operations/0) in
+      let mtmp0 = std::channel::prepared_slices__T_isize(prepared/0) in
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      let x2 = mtmp0.2 in
+      let x3 = mtmp0.3 in
+      let mtmp1 = @intrinsic(channel.dynamic_try_select)(x0, x1, x2, x3) in
+      let x4 = mtmp1.0 in
+      let x5 = mtmp1.1 in
+      let x6 = mtmp1.2 in
+      let x7 = mtmp1.3 in
+      let x8 = mtmp1.4 in
+      join k0(
+        jp0: Option__std::channel::Selection__isize
       ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-        let t917 =
-          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(jp916) in
-        t917
+        let t3 =
+          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(jp0) in
+        t3
       } in
-      if x33 {
-        join inline_cont1129(
-          t918: std::channel::Selection__isize
+      if x8 {
+        join inline_cont1(
+          t4: std::channel::Selection__isize
         ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-          let t919 = Option__std::channel::Selection__isize::Some(t918) in
-          jump k915(t919)
+          let t5 = Option__std::channel::Selection__isize::Some(t4) in
+          jump k0(t5)
         } in
-        let inline1130 = (x30 == 0) in
-        if inline1130 {
-          join inline_join1131(
-            inline1132: Option__isize
+        let inline0 = (x5 == 0) in
+        if inline0 {
+          join inline_join0(
+            inline1: Option__isize
           ) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
-            let inline1133 = std::channel::Selection__isize::Received(x29, inline1132) in
-            jump inline_cont1129(inline1133)
+            let inline2 = std::channel::Selection__isize::Received(x4, inline1) in
+            jump inline_cont1(inline2)
           } in
-          if x32 {
-            let inline1134 = Option__isize::Some(x31) in
-            jump inline_join1131(inline1134)
+          if x7 {
+            let inline3 = Option__isize::Some(x6) in
+            jump inline_join0(inline3)
           } else {
-            jump inline_join1131(Tag_0)
+            jump inline_join0(Tag_0)
           }
         } else {
-          let inline1135 = std::channel::Selection__isize::Sent(x29) in
-          jump inline_cont1129(inline1135)
+          let inline4 = std::channel::Selection__isize::Sent(x4) in
+          jump inline_cont1(inline4)
         }
       } else {
-        jump k915(Tag_0)
+        jump k0(Tag_0)
       }
     }
   } in
-  let inline1137 = @intrinsic(slice.len)(operations/24) in
-  jump inline_cont1136(inline1137)
+  let inline5 = @intrinsic(slice.len)(operations/0) in
+  jump inline_cont0(inline5)
 }
 
-fn inherent#Channel#Channel[T]#sender__T_isize(self/695: Channel[isize]) -> Sender[isize] {
-  let t922 = @intrinsic(channel.sender)(self/695) in
-  t922
+fn inherent#Channel#Channel[T]#sender__T_isize(self/0: Channel[isize]) -> Sender[isize] {
+  let t0 = @intrinsic(channel.sender)(self/0) in
+  t0
 }
 
 fn std::channel::select__T_isize(
-  operations/14: Slice[std::channel::Operation__isize]
+  operations/0: Slice[std::channel::Operation__isize]
 ) -> Result__std::channel::Selection__isize__std::channel::SelectError {
-  join inline_cont1145(
-    t927: isize
+  join inline_cont0(
+    t0: isize
   ) -> Result__std::channel::Selection__isize__std::channel::SelectError {
-    let t928 = (t927 == 0) in
-    if t928 {
-      let t929 = Result__std::channel::Selection__isize__std::channel::SelectError::Err(Tag_0) in
-      t929
+    let t1 = (t0 == 0) in
+    if t1 {
+      let t2 = Result__std::channel::Selection__isize__std::channel::SelectError::Err(Tag_0) in
+      t2
     } else {
-      let prepared/15 = std::channel::prepare__T_isize(operations/14) in
-      let mtmp12 = std::channel::prepared_slices__T_isize(prepared/15) in
-      let x13 = mtmp12.0 in
-      let x14 = mtmp12.1 in
-      let x15 = mtmp12.2 in
-      let x16 = mtmp12.3 in
-      let mtmp17 = @intrinsic(channel.dynamic_select)(x13, x14, x15, x16) in
-      let x18 = mtmp17.0 in
-      let x19 = mtmp17.1 in
-      let x20 = mtmp17.2 in
-      let x21 = mtmp17.3 in
-      join inline_cont1138(
-        t930: std::channel::Selection__isize
+      let prepared/0 = std::channel::prepare__T_isize(operations/0) in
+      let mtmp0 = std::channel::prepared_slices__T_isize(prepared/0) in
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      let x2 = mtmp0.2 in
+      let x3 = mtmp0.3 in
+      let mtmp1 = @intrinsic(channel.dynamic_select)(x0, x1, x2, x3) in
+      let x4 = mtmp1.0 in
+      let x5 = mtmp1.1 in
+      let x6 = mtmp1.2 in
+      let x7 = mtmp1.3 in
+      join inline_cont1(
+        t3: std::channel::Selection__isize
       ) -> Result__std::channel::Selection__isize__std::channel::SelectError {
-        let t931 = Result__std::channel::Selection__isize__std::channel::SelectError::Ok(t930) in
-        t931
+        let t4 = Result__std::channel::Selection__isize__std::channel::SelectError::Ok(t3) in
+        t4
       } in
-      let inline1139 = (x19 == 0) in
-      if inline1139 {
-        join inline_join1140(
-          inline1141: Option__isize
+      let inline0 = (x5 == 0) in
+      if inline0 {
+        join inline_join0(
+          inline1: Option__isize
         ) -> Result__std::channel::Selection__isize__std::channel::SelectError {
-          let inline1142 = std::channel::Selection__isize::Received(x18, inline1141) in
-          jump inline_cont1138(inline1142)
+          let inline2 = std::channel::Selection__isize::Received(x4, inline1) in
+          jump inline_cont1(inline2)
         } in
-        if x21 {
-          let inline1143 = Option__isize::Some(x20) in
-          jump inline_join1140(inline1143)
+        if x7 {
+          let inline3 = Option__isize::Some(x6) in
+          jump inline_join0(inline3)
         } else {
-          jump inline_join1140(Tag_0)
+          jump inline_join0(Tag_0)
         }
       } else {
-        let inline1144 = std::channel::Selection__isize::Sent(x18) in
-        jump inline_cont1138(inline1144)
+        let inline4 = std::channel::Selection__isize::Sent(x4) in
+        jump inline_cont1(inline4)
       }
     }
   } in
-  let inline1146 = @intrinsic(slice.len)(operations/14) in
-  jump inline_cont1145(inline1146)
+  let inline5 = @intrinsic(slice.len)(operations/0) in
+  jump inline_cont0(inline5)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_isize(self/691: Channel[isize]) -> Option__isize {
-  let mtmp764 = @intrinsic(channel.recv)(self/691) in
-  let x765 = mtmp764.0 in
-  let x766 = mtmp764.1 in
-  if x766 {
-    let t936 = Option__isize::Some(x765) in
-    t936
+fn inherent#Channel#Channel[T]#recv__T_isize(self/0: Channel[isize]) -> Option__isize {
+  let mtmp0 = @intrinsic(channel.recv)(self/0) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  if x1 {
+    let t0 = Option__isize::Some(x0) in
+    t0
   } else {
     Tag_0
   }
@@ -472,363 +467,357 @@ fn inherent#Channel#Channel[T]#recv__T_isize(self/691: Channel[isize]) -> Option
 fn inherent#Vec#Vec[T]#new__T_std::channel::Operation[isize]() -> Vec[
   std::channel::Operation__isize
 ] {
-  let t939 = @intrinsic(vec.new)() in
-  t939
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  let inline1148 = (self/404 as i64) in
-  let inline1149 = signed_decimal_string(inline1148) in
-  inline1149
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
 }
 
 fn inherent#Slice#Slice[T]#len__T_std::channel::Operation[isize](
-  self/660: Slice[std::channel::Operation__isize]
+  self/0: Slice[std::channel::Operation__isize]
 ) -> isize {
-  let t945 = @intrinsic(slice.len)(self/660) in
-  t945
+  let t0 = @intrinsic(slice.len)(self/0) in
+  t0
 }
 
 fn std::channel::prepare__T_isize(
   operations/0: Slice[std::channel::Operation__isize]
 ) -> std::channel::PreparedOperations__isize {
-  join inline_cont1170(t948: isize) -> std::channel::PreparedOperations__isize {
-    join inline_cont1168(kinds/1: Vec[isize]) -> std::channel::PreparedOperations__isize {
-      join inline_cont1166(
-        receivers/2: Vec[Receiver[isize]]
+  join inline_cont0(t0: isize) -> std::channel::PreparedOperations__isize {
+    join inline_cont1(kinds/0: Vec[isize]) -> std::channel::PreparedOperations__isize {
+      join inline_cont2(
+        receivers/0: Vec[Receiver[isize]]
       ) -> std::channel::PreparedOperations__isize {
-        join inline_cont1164(
-          senders/3: Vec[Sender[isize]]
+        join inline_cont3(
+          senders/0: Vec[Sender[isize]]
         ) -> std::channel::PreparedOperations__isize {
-          join inline_cont1162(values/4: Vec[isize]) -> std::channel::PreparedOperations__isize {
-            let for_limit1 = @intrinsic(slice.len)(operations/0) in
-            let for_index2 = 0 in
-            join exit949() -> std::channel::PreparedOperations__isize {
-              let t950 =
+          join inline_cont4(values/0: Vec[isize]) -> std::channel::PreparedOperations__isize {
+            let for_limit0 = @intrinsic(slice.len)(operations/0) in
+            let for_index0 = 0 in
+            join exit0() -> std::channel::PreparedOperations__isize {
+              let t1 =
                 std::channel::PreparedOperations__isize {
-                  kinds: kinds/1,
-                  receivers: receivers/2,
-                  senders: senders/3,
-                  values: values/4
+                  kinds: kinds/0,
+                  receivers: receivers/0,
+                  senders: senders/0,
+                  values: values/0
                 } in
-              t950
+              t1
             } in
             joinrec {
-              join loop951() -> std::channel::PreparedOperations__isize {
-                let t952 = (for_index2 < for_limit1) in
-                if t952 {
-                  let for_item3 = @intrinsic(slice.get)(operations/0, for_index2) in
-                  let t953 = (for_index2 + 1) in
-                  let _wild4 = for_index2 = t953 in
-                  match for_item3 {
+              join loop0() -> std::channel::PreparedOperations__isize {
+                let t2 = (for_index0 < for_limit0) in
+                if t2 {
+                  let for_item0 = @intrinsic(slice.get)(operations/0, for_index0) in
+                  let t3 = (for_index0 + 1) in
+                  let _wild0 = for_index0 = t3 in
+                  match for_item0 {
                     Tag_0 => {
-                      let x5 = std::channel::Operation__isize::Receive._0(for_item3) in
-                      join inline_cont1152(
-                        _wild8: unit
-                      ) -> std::channel::PreparedOperations__isize {
-                        let inline1151 = @intrinsic(vec.push)(receivers/2, x5) in
-                        jump loop951()
+                      let x0 = std::channel::Operation__isize::Receive._0(for_item0) in
+                      join inline_cont5(_wild1: unit) -> std::channel::PreparedOperations__isize {
+                        let inline0 = @intrinsic(vec.push)(receivers/0, x0) in
+                        jump loop0()
                       } in
-                      let inline1153 = 0 in
-                      let inline1154 = @intrinsic(vec.push)(kinds/1, inline1153) in
-                      jump inline_cont1152(())
+                      let inline1 = 0 in
+                      let inline2 = @intrinsic(vec.push)(kinds/0, inline1) in
+                      jump inline_cont5(())
                     },
                     Tag_1 => {
-                      let x6 = std::channel::Operation__isize::Send._0(for_item3) in
-                      let x7 = std::channel::Operation__isize::Send._1(for_item3) in
-                      join inline_cont1159(
-                        _wild9: unit
-                      ) -> std::channel::PreparedOperations__isize {
-                        join inline_cont1157(
-                          _wild10: unit
-                        ) -> std::channel::PreparedOperations__isize {
-                          let inline1156 = @intrinsic(vec.push)(values/4, x7) in
-                          jump loop951()
+                      let x1 = std::channel::Operation__isize::Send._0(for_item0) in
+                      let x2 = std::channel::Operation__isize::Send._1(for_item0) in
+                      join inline_cont6(_wild2: unit) -> std::channel::PreparedOperations__isize {
+                        join inline_cont7(_wild3: unit) -> std::channel::PreparedOperations__isize {
+                          let inline3 = @intrinsic(vec.push)(values/0, x2) in
+                          jump loop0()
                         } in
-                        let inline1158 = @intrinsic(vec.push)(senders/3, x6) in
-                        jump inline_cont1157(())
+                        let inline4 = @intrinsic(vec.push)(senders/0, x1) in
+                        jump inline_cont7(())
                       } in
-                      let inline1160 = 1 in
-                      let inline1161 = @intrinsic(vec.push)(kinds/1, inline1160) in
-                      jump inline_cont1159(())
+                      let inline5 = 1 in
+                      let inline6 = @intrinsic(vec.push)(kinds/0, inline5) in
+                      jump inline_cont6(())
                     },
                   }
                 } else {
-                  jump exit949()
+                  jump exit0()
                 }
               } in
             } in
-            jump loop951()
+            jump loop0()
           } in
-          let inline1163 = @intrinsic(vec.new)() in
-          jump inline_cont1162(inline1163)
+          let inline7 = @intrinsic(vec.new)() in
+          jump inline_cont4(inline7)
         } in
-        let inline1165 = @intrinsic(vec.new)() in
-        jump inline_cont1164(inline1165)
+        let inline8 = @intrinsic(vec.new)() in
+        jump inline_cont3(inline8)
       } in
-      let inline1167 = @intrinsic(vec.new)() in
-      jump inline_cont1166(inline1167)
+      let inline9 = @intrinsic(vec.new)() in
+      jump inline_cont2(inline9)
     } in
-    let inline1169 = @intrinsic(vec.with_capacity)(t948) in
-    jump inline_cont1168(inline1169)
+    let inline10 = @intrinsic(vec.with_capacity)(t0) in
+    jump inline_cont1(inline10)
   } in
-  let inline1171 = @intrinsic(slice.len)(operations/0) in
-  jump inline_cont1170(inline1171)
+  let inline11 = @intrinsic(slice.len)(operations/0) in
+  jump inline_cont0(inline11)
 }
 
-fn std::channel::prepared_slices__T_isize(prepared/9: std::channel::PreparedOperations__isize) -> (
+fn std::channel::prepared_slices__T_isize(prepared/0: std::channel::PreparedOperations__isize) -> (
   Slice[isize],
   Slice[Receiver[isize]],
   Slice[Sender[isize]],
   Slice[isize]
 ) {
-  let t959 = std::channel::PreparedOperations__isize.kinds(prepared/9) in
-  let t960 = std::channel::PreparedOperations__isize.kinds(prepared/9) in
-  join inline_cont1178(t961: isize) -> (
+  let t0 = std::channel::PreparedOperations__isize.kinds(prepared/0) in
+  let t1 = std::channel::PreparedOperations__isize.kinds(prepared/0) in
+  join inline_cont0(t2: isize) -> (
     Slice[isize],
     Slice[Receiver[isize]],
     Slice[Sender[isize]],
     Slice[isize]
   ) {
-    let t962 = @intrinsic(slice.new)(t959, 0, t961) in
-    let t963 = std::channel::PreparedOperations__isize.receivers(prepared/9) in
-    let t964 = std::channel::PreparedOperations__isize.receivers(prepared/9) in
-    join inline_cont1176(t965: isize) -> (
+    let t3 = @intrinsic(slice.new)(t0, 0, t2) in
+    let t4 = std::channel::PreparedOperations__isize.receivers(prepared/0) in
+    let t5 = std::channel::PreparedOperations__isize.receivers(prepared/0) in
+    join inline_cont1(t6: isize) -> (
       Slice[isize],
       Slice[Receiver[isize]],
       Slice[Sender[isize]],
       Slice[isize]
     ) {
-      let t966 = @intrinsic(slice.new)(t963, 0, t965) in
-      let t967 = std::channel::PreparedOperations__isize.senders(prepared/9) in
-      let t968 = std::channel::PreparedOperations__isize.senders(prepared/9) in
-      join inline_cont1174(t969: isize) -> (
+      let t7 = @intrinsic(slice.new)(t4, 0, t6) in
+      let t8 = std::channel::PreparedOperations__isize.senders(prepared/0) in
+      let t9 = std::channel::PreparedOperations__isize.senders(prepared/0) in
+      join inline_cont2(t10: isize) -> (
         Slice[isize],
         Slice[Receiver[isize]],
         Slice[Sender[isize]],
         Slice[isize]
       ) {
-        let t970 = @intrinsic(slice.new)(t967, 0, t969) in
-        let t971 = std::channel::PreparedOperations__isize.values(prepared/9) in
-        let t972 = std::channel::PreparedOperations__isize.values(prepared/9) in
-        join inline_cont1172(t973: isize) -> (
+        let t11 = @intrinsic(slice.new)(t8, 0, t10) in
+        let t12 = std::channel::PreparedOperations__isize.values(prepared/0) in
+        let t13 = std::channel::PreparedOperations__isize.values(prepared/0) in
+        join inline_cont3(t14: isize) -> (
           Slice[isize],
           Slice[Receiver[isize]],
           Slice[Sender[isize]],
           Slice[isize]
         ) {
-          let t974 = @intrinsic(slice.new)(t971, 0, t973) in
-          let t975 = (t962, t966, t970, t974) in
-          t975
+          let t15 = @intrinsic(slice.new)(t12, 0, t14) in
+          let t16 = (t3, t7, t11, t15) in
+          t16
         } in
-        let inline1173 = @intrinsic(vec.len)(t972) in
-        jump inline_cont1172(inline1173)
+        let inline0 = @intrinsic(vec.len)(t13) in
+        jump inline_cont3(inline0)
       } in
-      let inline1175 = @intrinsic(vec.len)(t968) in
-      jump inline_cont1174(inline1175)
+      let inline1 = @intrinsic(vec.len)(t9) in
+      jump inline_cont2(inline1)
     } in
-    let inline1177 = @intrinsic(vec.len)(t964) in
-    jump inline_cont1176(inline1177)
+    let inline2 = @intrinsic(vec.len)(t5) in
+    jump inline_cont1(inline2)
   } in
-  let inline1179 = @intrinsic(vec.len)(t960) in
-  jump inline_cont1178(inline1179)
+  let inline3 = @intrinsic(vec.len)(t1) in
+  jump inline_cont0(inline3)
 }
 
 fn std::channel::selection__T_isize(
-  index/10: isize,
-  kind/11: isize,
-  value/12: isize,
-  open/13: bool
+  index/0: isize,
+  kind/0: isize,
+  value/0: isize,
+  open/0: bool
 ) -> std::channel::Selection__isize {
-  let t980 = (kind/11 == 0) in
-  if t980 {
-    join k981(jp982: Option__isize) -> std::channel::Selection__isize {
-      let t983 = std::channel::Selection__isize::Received(index/10, jp982) in
-      t983
+  let t0 = (kind/0 == 0) in
+  if t0 {
+    join k0(jp0: Option__isize) -> std::channel::Selection__isize {
+      let t1 = std::channel::Selection__isize::Received(index/0, jp0) in
+      t1
     } in
-    if open/13 {
-      let t984 = Option__isize::Some(value/12) in
-      jump k981(t984)
+    if open/0 {
+      let t2 = Option__isize::Some(value/0) in
+      jump k0(t2)
     } else {
-      jump k981(Tag_0)
+      jump k0(Tag_0)
     }
   } else {
-    let t985 = std::channel::Selection__isize::Sent(index/10) in
-    t985
+    let t3 = std::channel::Selection__isize::Sent(index/0) in
+    t3
   }
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  let t988 = (value/222 as i64) in
-  let inline1181 = (t988 < 0) in
-  if inline1181 {
-    let inline1182 = (t988 as u64) in
-    let inline1183 = (0 - inline1182) in
-    let inline1184 = decimal_string(inline1183) in
-    let inline1185 = ("-" + inline1184) in
-    inline1185
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
   } else {
-    let inline1186 = (t988 as u64) in
-    let inline1187 = decimal_string(inline1186) in
-    inline1187
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
   }
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/510: isize) -> Vec[isize] {
-  let t992 = @intrinsic(vec.with_capacity)(capacity/510) in
-  t992
+fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/0: isize) -> Vec[isize] {
+  let t0 = @intrinsic(vec.with_capacity)(capacity/0) in
+  t0
 }
 
 fn inherent#Vec#Vec[T]#new__T_Receiver[isize]() -> Vec[Receiver[isize]] {
-  let t995 = @intrinsic(vec.new)() in
-  t995
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
 fn inherent#Vec#Vec[T]#new__T_Sender[isize]() -> Vec[Sender[isize]] {
-  let t998 = @intrinsic(vec.new)() in
-  t998
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
 fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
-  let t1001 = @intrinsic(vec.new)() in
-  t1001
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/511: Vec[isize], elem/512: isize) -> unit {
-  let t1003 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#push__T_Receiver[isize](
-  self/511: Vec[Receiver[isize]],
-  elem/512: Receiver[isize]
+  self/0: Vec[Receiver[isize]],
+  elem/0: Receiver[isize]
 ) -> unit {
-  let t1005 = @intrinsic(vec.push)(self/511, elem/512) in
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#push__T_Sender[isize](
-  self/511: Vec[Sender[isize]],
-  elem/512: Sender[isize]
+  self/0: Vec[Sender[isize]],
+  elem/0: Sender[isize]
 ) -> unit {
-  let t1007 = @intrinsic(vec.push)(self/511, elem/512) in
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_isize(self/526: Vec[isize]) -> isize {
-  let t1010 = @intrinsic(vec.len)(self/526) in
-  t1010
+fn inherent#Vec#Vec[T]#len__T_isize(self/0: Vec[isize]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#len__T_Receiver[isize](self/526: Vec[Receiver[isize]]) -> isize {
-  let t1013 = @intrinsic(vec.len)(self/526) in
-  t1013
+fn inherent#Vec#Vec[T]#len__T_Receiver[isize](self/0: Vec[Receiver[isize]]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#len__T_Sender[isize](self/526: Vec[Sender[isize]]) -> isize {
-  let t1016 = @intrinsic(vec.len)(self/526) in
-  t1016
+fn inherent#Vec#Vec[T]#len__T_Sender[isize](self/0: Vec[Sender[isize]]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  let t1021 = (value/214 < 0) in
-  if t1021 {
-    let t1022 = (value/214 as u64) in
-    let t1023 = (0 - t1022) in
-    let t1024 = decimal_string(t1023) in
-    let t1025 = ("-" + t1024) in
-    t1025
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
   } else {
-    let t1026 = (value/214 as u64) in
-    let t1027 = decimal_string(t1026) in
-    t1027
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let t1050 = (value/208 == 0) in
-  join k1030() -> string {
-    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-    let remaining/210 = value/208 in
-    join exit1031() -> string {
-      join inline_cont1196(t1032: isize) -> string {
-        let bytes/211 = @intrinsic(vec.with_capacity)(t1032) in
-        let offset/212 = 0 in
-        join exit1033() -> string {
-          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-          let x364 = mtmp362.1 in
-          x364
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
         } in
         joinrec {
-          join loop1034() -> string {
-            join inline_cont1194(t1035: isize) -> string {
-              let t1036 = (offset/212 < t1035) in
-              if t1036 {
-                join inline_cont1192(t1037: isize) -> string {
-                  let t1038 = (t1037 - offset/212) in
-                  let t1039 = (t1038 - 1) in
-                  let t1040 = @intrinsic(vec.get)(reversed/209, t1039) in
-                  join inline_cont1190(_wild357: unit) -> string {
-                    let compound_old358 = offset/212 in
-                    let compound_value359 = 1 in
-                    let t1041 = (compound_old358 + compound_value359) in
-                    let t1042 = offset/212 = t1041 in
-                    jump loop1034()
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
                   } in
-                  let inline1191 = @intrinsic(vec.push)(bytes/211, t1040) in
-                  jump inline_cont1190(())
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
                 } in
-                let inline1193 = @intrinsic(vec.len)(reversed/209) in
-                jump inline_cont1192(inline1193)
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
               } else {
-                jump exit1033()
+                jump exit1()
               }
             } in
-            let inline1195 = @intrinsic(vec.len)(reversed/209) in
-            jump inline_cont1194(inline1195)
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
           } in
         } in
-        jump loop1034()
+        jump loop1()
       } in
-      let inline1197 = @intrinsic(vec.len)(reversed/209) in
-      jump inline_cont1196(inline1197)
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
     } in
     joinrec {
-      join loop1043() -> string {
-        let t1044 = (remaining/210 > 0) in
-        if t1044 {
-          let t1045 = (remaining/210 % 10) in
-          let t1046 = (t1045 as u8) in
-          let t1047 = (t1046 + 48) in
-          join inline_cont1188(_wild352: unit) -> string {
-            let compound_old353 = remaining/210 in
-            let compound_value354 = 10 in
-            let t1048 = (compound_old353 / compound_value354) in
-            let t1049 = remaining/210 = t1048 in
-            jump loop1043()
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
           } in
-          let inline1189 = @intrinsic(vec.push)(reversed/209, t1047) in
-          jump inline_cont1188(())
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
         } else {
-          jump exit1031()
+          jump exit0()
         }
       } in
     } in
-    jump loop1043()
+    jump loop0()
   } in
-  if t1050 {
+  if t0 {
     "0"
   } else {
-    jump k1030()
+    jump k0()
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  let t1052 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  let t1055 = @intrinsic(vec.len)(self/526) in
-  t1055
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }

@@ -2,89 +2,86 @@ static VALUE: OnceCell__isize = OnceCell::new();
 
 fn main() -> unit {
   let results/0 = inherent#Channel#Channel[T]#new__T_isize(2) in
-  let _wild796 =
+  let _wild0 =
     go pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](
       closure_env_main_1 { results_0: results/0 }
     ) in
-  let _wild797 =
+  let _wild1 =
     go pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](
       closure_env_main_3 { results_0: results/0 }
     ) in
-  let first/1 =
+  let first/0 =
     inherent#Option#Option[T]#unwrap_or__T_isize(
       inherent#Channel#Channel[T]#recv__T_isize(results/0),
       0
     ) in
-  let second/2 =
+  let second/0 =
     inherent#Option#Option[T]#unwrap_or__T_isize(
       inherent#Channel#Channel[T]#recv__T_isize(results/0),
       0
     ) in
-  println__T_string(trait_impl#ToString#bool#to_string((first/1 == second/2)))
+  println__T_string(trait_impl#ToString#bool#to_string((first/0 == second/0)))
 }
 
-fn inherent#Channel#Channel[T]#new__T_isize(capacity/688: isize) -> Channel[isize] {
-  @intrinsic(channel.new)(capacity/688)
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize] {
+  @intrinsic(channel.new)(capacity/0)
 }
 
 fn inherent#OnceCell#OnceCell[T]#get_or_init__T_isize(
-  self/655: OnceCell__isize,
-  init/656: () -> isize
+  self/0: OnceCell__isize,
+  init/0: () -> isize
 ) -> isize {
-  @intrinsic(once_cell.get_or_init)(self/655, init/656)
+  @intrinsic(once_cell.get_or_init)(self/0, init/0)
 }
 
-fn inherent#Channel#Channel[T]#send__T_isize(self/689: Channel[isize], value/690: isize) -> unit {
-  @intrinsic(channel.send)(self/689, value/690)
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+  @intrinsic(channel.send)(self/0, value/0)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_isize(self/691: Channel[isize]) -> Option__isize {
-  let mtmp764 = @intrinsic(channel.recv)(self/691) in
-  let x765 = mtmp764.0 in
-  let x766 = mtmp764.1 in
-  let ok/693 = x766 in
-  let value/692 = x765 in
-  if ok/693 {
-      Option__isize::Some(value/692)
+fn inherent#Channel#Channel[T]#recv__T_isize(self/0: Channel[isize]) -> Option__isize {
+  let mtmp0 = @intrinsic(channel.recv)(self/0) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  let ok/0 = x1 in
+  let value/0 = x0 in
+  if ok/0 {
+      Option__isize::Some(value/0)
   } else {
       Option__isize::None
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_isize(
-  self/720: Option__isize,
-  fallback/721: isize
-) -> isize {
-  match self/720 {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/0: isize) -> isize {
+  match self/0 {
     Option__isize::None => {
-      fallback/721
+      fallback/0
     },
-    Option__isize::Some(x775) => {
-      let x775 = Option__isize::Some._0(self/720) in
-      let value/722 = x775 in
-      value/722
+    Option__isize::Some(x0) => {
+      let x0 = Option__isize::Some._0(self/0) in
+      let value/0 = x0 in
+      value/0
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env798: closure_env_main_0) -> isize {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env0: closure_env_main_0) -> isize {
   41
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(env799: closure_env_main_1) -> unit {
-  let results/0 = closure_env_main_1.results_0(env799) in
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env0: closure_env_main_1) -> unit {
+  let results/0 = closure_env_main_1.results_0(env0) in
   inherent#Channel#Channel[T]#send__T_isize(
     results/0,
     inherent#OnceCell#OnceCell[T]#get_or_init__T_isize(
@@ -94,12 +91,12 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(env799: closure_env_main
   )
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(env800: closure_env_main_2) -> isize {
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env0: closure_env_main_2) -> isize {
   42
 }
 
-fn inherent#closure_env_main_3#closure_env_main_3#apply(env801: closure_env_main_3) -> unit {
-  let results/0 = closure_env_main_3.results_0(env801) in
+fn inherent#closure_env_main_3#closure_env_main_3#apply(env0: closure_env_main_3) -> unit {
+  let results/0 = closure_env_main_3.results_0(env0) in
   inherent#Channel#Channel[T]#send__T_isize(
     results/0,
     inherent#OnceCell#OnceCell[T]#get_or_init__T_isize(

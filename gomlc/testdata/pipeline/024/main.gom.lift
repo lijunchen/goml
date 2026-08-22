@@ -1,16 +1,16 @@
 fn point32_to_string(p/0: Point) -> string {
-  let mtmp796 = p/0 in
-  let x797 = Point.x(mtmp796) in
-  let x798 = Point.y(mtmp796) in
-  let y/2 = x798 in
-  let x/1 = x797 in
-  (((("Point { x: " + inherent#i32#i32#to_string(x/1)) + ", y: ") +
-    inherent#i32#i32#to_string(y/2)) +
+  let mtmp0 = p/0 in
+  let x0 = Point.x(mtmp0) in
+  let x1 = Point.y(mtmp0) in
+  let y/0 = x1 in
+  let x/0 = x0 in
+  (((("Point { x: " + inherent#i32#i32#to_string(x/0)) + ", y: ") +
+    inherent#i32#i32#to_string(y/0)) +
     " }")
 }
 
-fn color_to_string(c/3: Color) -> string {
-  match c/3 {
+fn color_to_string(c/0: Color) -> string {
+  match c/0 {
     Color::Red => {
       "Red"
     },
@@ -23,26 +23,26 @@ fn color_to_string(c/3: Color) -> string {
   }
 }
 
-fn line_to_string(l/4: Line) -> string {
-  let mtmp799 = l/4 in
-  let x800 = Line.from(mtmp799) in
-  let x801 = Line.to(mtmp799) in
-  let x802 = Line.color(mtmp799) in
-  let color/7 = x802 in
-  let to/6 = x801 in
-  let from/5 = x800 in
-  (((((("Line { from: " + point32_to_string(from/5)) + ", to: ") + point32_to_string(to/6)) +
+fn line_to_string(l/0: Line) -> string {
+  let mtmp0 = l/0 in
+  let x0 = Line.from(mtmp0) in
+  let x1 = Line.to(mtmp0) in
+  let x2 = Line.color(mtmp0) in
+  let color/0 = x2 in
+  let to/0 = x1 in
+  let from/0 = x0 in
+  (((((("Line { from: " + point32_to_string(from/0)) + ", to: ") + point32_to_string(to/0)) +
     ", color: ") +
-    color_to_string(color/7)) +
+    color_to_string(color/0)) +
     " }")
 }
 
-fn point_type(p/8: Point) -> string {
-  let x803 = Point.x(p/8) in
-  let x804 = Point.y(p/8) in
-  match x803 {
+fn point_type(p/0: Point) -> string {
+  let x0 = Point.x(p/0) in
+  let x1 = Point.y(p/0) in
+  match x0 {
     0 => {
-      match x804 {
+      match x1 {
         0 => {
           "origin"
         },
@@ -50,9 +50,9 @@ fn point_type(p/8: Point) -> string {
           "up"
         },
         _ =>
-          let y/9 = x804 in
-          let mtmp805 = (0 < y/9) in
-          match mtmp805 {
+          let y/0 = x1 in
+          let mtmp0 = (0 < y/0) in
+          match mtmp0 {
             true => {
               "above"
             },
@@ -63,7 +63,7 @@ fn point_type(p/8: Point) -> string {
       }
     },
     1 => {
-      match x804 {
+      match x1 {
         0 => {
           "right"
         },
@@ -75,84 +75,84 @@ fn point_type(p/8: Point) -> string {
 }
 
 fn main() -> unit {
-  let p0/10 = Point { x: 0, y: 0 } in
-  let mtmp806 = println__T_string(point_type(p0/10)) in
-  let p1/11 = Point { x: 10, y: 10 } in
-  let line/12 = Line { from: p0/10, to: p1/11, color: Color::Red } in
-  println__T_string(line_to_string(line/12))
+  let p0/0 = Point { x: 0, y: 0 } in
+  let mtmp0 = println__T_string(point_type(p0/0)) in
+  let p1/0 = Point { x: 10, y: 10 } in
+  let line/0 = Line { from: p0/0, to: p1/0, color: Color::Red } in
+  println__T_string(line_to_string(line/0))
 }
 
-fn inherent#i32#i32#to_string(self/286: i32) -> string {
-  __goml_builtin_int32_to_string(self/286)
+fn inherent#i32#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
-      ("-" + decimal_string((0 - (value/214 as u64))))
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      ("-" + decimal_string((0 - (value/0 as u64))))
   } else {
-      decimal_string((value/214 as u64))
+      decimal_string((value/0 as u64))
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         return "0"
     } else {
         ()
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
-        let _wild352 =
-          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-        let _wild355 =
-          let compound_old353 = remaining/210 in
-          let compound_value354 = 10 in
-          remaining/210 = (compound_old353 / compound_value354) in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        let _wild2 =
+          inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+        let _wild3 =
+          let compound_old0 = remaining/0 in
+          let compound_value0 = 10 in
+          remaining/0 = (compound_old0 / compound_value0) in
         ()
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
-        let _wild357 =
-          inherent#Vec#Vec[T]#push__T_u8(
-            bytes/211,
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        let _wild5 =
+          inherent#Vec#Vec[T]#push__T_u0(
+            bytes/0,
             @intrinsic(vec.get)(
-              reversed/209,
-              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              reversed/0,
+              ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
             )
           ) in
-        let _wild360 =
-          let compound_old358 = offset/212 in
-          let compound_value359 = 1 in
-          offset/212 = (compound_old358 + compound_value359) in
+        let _wild6 =
+          let compound_old1 = offset/0 in
+          let compound_value1 = 1 in
+          offset/0 = (compound_old1 + compound_value1) in
         ()
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-  let x364 = mtmp362.1 in
-  let result/213 = x364 in
-  result/213
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let result/0 = x0 in
+  result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

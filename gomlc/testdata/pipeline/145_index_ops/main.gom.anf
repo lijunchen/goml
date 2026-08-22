@@ -1,651 +1,647 @@
 fn print_opt_int(x/0: Option__i32) -> unit {
   match x/0 {
     Tag_0 => {
-      let inline1093 = "none" in
-      let inline1094 = trait_impl#ToString#string#to_string(inline1093) in
-      let inline1095 = @runtime(core.string_println)(inline1094) in
+      let inline0 = "none" in
+      let inline1 = trait_impl#ToString#string#to_string(inline0) in
+      let inline2 = @runtime(core.string_println)(inline1) in
       ()
     },
     Tag_1 => {
-      let x796 = Option__i32::Some._0(x/0) in
-      let inline1097 = trait_impl#ToString#i32#to_string(x796) in
-      let inline1098 = @runtime(core.string_println)(inline1097) in
+      let x0 = Option__i32::Some._0(x/0) in
+      let inline3 = trait_impl#ToString#i32#to_string(x0) in
+      let inline4 = @runtime(core.string_println)(inline3) in
       ()
     },
   }
 }
 
 fn main() -> unit {
-  let t863 = [31, 32] in
-  let t864 = @intrinsic(array.get)(t863, 1) in
-  let _wild797 = println__T_isize(t864) in
-  let arr/2 = [1, 2, 3] in
-  let t865 = @intrinsic(array.get)(arr/2, 0) in
-  let _wild798 = println__T_isize(t865) in
-  let arr2/3 = [4, 5, 6] in
-  let place_root799 = arr2/3 in
-  let index800 = 1 in
-  let place801 = @intrinsic(array.get)(place_root799, index800) in
-  let value802 = 50 in
-  let t866 = @intrinsic(array.set)(place_root799, index800, value802) in
-  let t867 = arr2/3 = t866 in
-  let t868 = @intrinsic(array.get)(arr2/3, 1) in
-  let _wild804 = println__T_isize(t868) in
-  let t869 = inherent#Vec#Vec[T]#new__T_isize() in
-  let t870 = inherent#Vec#Vec[T]#pushed__T_isize(t869, 7) in
-  let t871 = inherent#Vec#Vec[T]#pushed__T_isize(t870, 8) in
-  let vec/4 = inherent#Vec#Vec[T]#pushed__T_isize(t871, 9) in
-  let t872 = @intrinsic(vec.get)(vec/4, 2) in
-  let _wild805 = println__T_isize(t872) in
-  join inline_cont1142(t873: Vec[i32]) -> unit {
-    let t874 = inherent#Vec#Vec[T]#pushed__T_i32(t873, 10) in
-    let t875 = inherent#Vec#Vec[T]#pushed__T_i32(t874, 11) in
-    let vec2/5 = inherent#Vec#Vec[T]#pushed__T_i32(t875, 12) in
-    let index807 = 0 in
-    let place808 = @intrinsic(vec.get)(vec2/5, index807) in
-    let value809 = 100 in
-    let t876 = @intrinsic(vec.set)(vec2/5, index807, value809) in
-    let t877 = @intrinsic(vec.get)(vec2/5, 0) in
-    join inline_cont1139(_wild811: unit) -> unit {
-      join inline_cont1135(s/6: Slice[i32]) -> unit {
-        let t878 = @intrinsic(slice.get)(s/6, 1) in
-        join inline_cont1132(_wild812: unit) -> unit {
-          join inline_cont1130(map/7: HashMap[string, i32]) -> unit {
-            let index814 = "a" in
-            let place815 = @intrinsic(hashmap.get)(map/7, index814) in
-            let value816 = 13 in
-            let t879 = @intrinsic(hashmap.set)(map/7, index814, value816) in
-            let t880 = @intrinsic(hashmap.get)(map/7, "a") in
-            join inline_cont1125(_wild818: unit) -> unit {
-              let t881 = @intrinsic(hashmap.get)(map/7, "missing") in
-              join inline_cont1120(_wild819: unit) -> unit {
-                let t882 = [1, 2] in
-                let t883 = [3, 4] in
-                let matrix/8 = [t882, t883] in
-                let place_root820 = matrix/8 in
-                let index821 = 1 in
-                let place822 = @intrinsic(array.get)(place_root820, index821) in
-                let index823 = 0 in
-                let place824 = @intrinsic(array.get)(place822, index823) in
-                let value825 = 30 in
-                let t884 = @intrinsic(array.set)(place822, index823, value825) in
-                let t885 = @intrinsic(array.set)(place_root820, index821, t884) in
-                let t886 = matrix/8 = t885 in
-                let t887 = @intrinsic(array.get)(matrix/8, 1) in
-                let t888 = @intrinsic(array.get)(t887, 0) in
-                join inline_cont1117(_wild827: unit) -> unit {
-                  let t889 = [14, 15] in
-                  let pair/9 = (t889, 0) in
-                  let place_root828 = pair/9 in
-                  let place829 = place_root828.0 in
-                  let index830 = 1 in
-                  let place831 = @intrinsic(array.get)(place829, index830) in
-                  let value832 = 150 in
-                  let t890 = @intrinsic(array.set)(place829, index830, value832) in
-                  let t891 = place_root828.1 in
-                  let t892 = (t890, t891) in
-                  let t893 = pair/9 = t892 in
-                  let t894 = pair/9.0 in
-                  let t895 = @intrinsic(array.get)(t894, 1) in
-                  join inline_cont1114(_wild834: unit) -> unit {
-                    let t896 = [16, 17] in
-                    join inline_cont1112(t897: Vec[[i32; 2]]) -> unit {
-                      let t898 = [18, 19] in
-                      let t899 = inherent#Vec#Vec[T]#pushed__T_[i32;2](t897, t898) in
-                      let t900 = [20, 21] in
-                      let t901 = inherent#Vec#Vec[T]#pushed__T_[i32;2](t899, t900) in
-                      let holder/10 = Holder { data: t896, vecs: t901 } in
-                      let place_root835 = holder/10 in
-                      let place836 = Holder.data(place_root835) in
-                      let index837 = 0 in
-                      let place838 = @intrinsic(array.get)(place836, index837) in
-                      let value839 = 160 in
-                      let t902 = @intrinsic(array.set)(place836, index837, value839) in
-                      let t903 = Holder.vecs(place_root835) in
-                      let t904 = Holder { data: t902, vecs: t903 } in
-                      let t905 = holder/10 = t904 in
-                      let t906 = Holder.data(holder/10) in
-                      let t907 = @intrinsic(array.get)(t906, 0) in
-                      join inline_cont1109(_wild841: unit) -> unit {
-                        let place_root842 = holder/10 in
-                        let place843 = Holder.vecs(place_root842) in
-                        let index844 = 1 in
-                        let place845 = @intrinsic(vec.get)(place843, index844) in
-                        let index846 = 0 in
-                        let place847 = @intrinsic(array.get)(place845, index846) in
-                        let value848 = 200 in
-                        let t908 = @intrinsic(array.set)(place845, index846, value848) in
-                        let t909 = @intrinsic(vec.set)(place843, index844, t908) in
-                        let t910 = Holder.vecs(holder/10) in
-                        let t911 = @intrinsic(vec.get)(t910, 1) in
-                        let t912 = @intrinsic(array.get)(t911, 0) in
-                        join inline_cont1106(_wild850: unit) -> unit {
-                          let t913 = [22, 23] in
-                          join inline_cont1104(r/11: Ref[[i32; 2]]) -> unit {
-                            let place_root852 = @intrinsic(ref.get)(r/11) in
-                            let index853 = 1 in
-                            let place854 = @intrinsic(array.get)(place_root852, index853) in
-                            let value855 = 230 in
-                            let t914 = @intrinsic(array.set)(place_root852, index853, value855) in
-                            let t915 = @intrinsic(ref.set)(r/11, t914) in
-                            join inline_cont1102(t916: [i32; 2]) -> unit {
-                              let t917 = @intrinsic(array.get)(t916, 1) in
-                              let inline1100 = trait_impl#ToString#i32#to_string(t917) in
-                              let inline1101 = @runtime(core.string_println)(inline1100) in
+  let t0 = [31, 32] in
+  let t1 = @intrinsic(array.get)(t0, 1) in
+  let _wild0 = println__T_isize(t1) in
+  let arr/0 = [1, 2, 3] in
+  let t2 = @intrinsic(array.get)(arr/0, 0) in
+  let _wild1 = println__T_isize(t2) in
+  let arr2/0 = [4, 5, 6] in
+  let place_root0 = arr2/0 in
+  let index0 = 1 in
+  let place0 = @intrinsic(array.get)(place_root0, index0) in
+  let value0 = 50 in
+  let t3 = @intrinsic(array.set)(place_root0, index0, value0) in
+  let t4 = arr2/0 = t3 in
+  let t5 = @intrinsic(array.get)(arr2/0, 1) in
+  let _wild2 = println__T_isize(t5) in
+  let t6 = inherent#Vec#Vec[T]#new__T_isize() in
+  let t7 = inherent#Vec#Vec[T]#pushed__T_isize(t6, 7) in
+  let t8 = inherent#Vec#Vec[T]#pushed__T_isize(t7, 8) in
+  let vec/0 = inherent#Vec#Vec[T]#pushed__T_isize(t8, 9) in
+  let t9 = @intrinsic(vec.get)(vec/0, 2) in
+  let _wild3 = println__T_isize(t9) in
+  join inline_cont0(t10: Vec[i32]) -> unit {
+    let t11 = inherent#Vec#Vec[T]#pushed__T_i0(t10, 10) in
+    let t12 = inherent#Vec#Vec[T]#pushed__T_i0(t11, 11) in
+    let vec2/0 = inherent#Vec#Vec[T]#pushed__T_i0(t12, 12) in
+    let index1 = 0 in
+    let place1 = @intrinsic(vec.get)(vec2/0, index1) in
+    let value1 = 100 in
+    let t13 = @intrinsic(vec.set)(vec2/0, index1, value1) in
+    let t14 = @intrinsic(vec.get)(vec2/0, 0) in
+    join inline_cont1(_wild4: unit) -> unit {
+      join inline_cont2(s/0: Slice[i32]) -> unit {
+        let t15 = @intrinsic(slice.get)(s/0, 1) in
+        join inline_cont3(_wild5: unit) -> unit {
+          join inline_cont4(map/0: HashMap[string, i32]) -> unit {
+            let index2 = "a" in
+            let place2 = @intrinsic(hashmap.get)(map/0, index2) in
+            let value2 = 13 in
+            let t16 = @intrinsic(hashmap.set)(map/0, index2, value2) in
+            let t17 = @intrinsic(hashmap.get)(map/0, "a") in
+            join inline_cont5(_wild6: unit) -> unit {
+              let t18 = @intrinsic(hashmap.get)(map/0, "missing") in
+              join inline_cont6(_wild7: unit) -> unit {
+                let t19 = [1, 2] in
+                let t20 = [3, 4] in
+                let matrix/0 = [t19, t20] in
+                let place_root1 = matrix/0 in
+                let index3 = 1 in
+                let place3 = @intrinsic(array.get)(place_root1, index3) in
+                let index4 = 0 in
+                let place4 = @intrinsic(array.get)(place3, index4) in
+                let value3 = 30 in
+                let t21 = @intrinsic(array.set)(place3, index4, value3) in
+                let t22 = @intrinsic(array.set)(place_root1, index3, t21) in
+                let t23 = matrix/0 = t22 in
+                let t24 = @intrinsic(array.get)(matrix/0, 1) in
+                let t25 = @intrinsic(array.get)(t24, 0) in
+                join inline_cont7(_wild8: unit) -> unit {
+                  let t26 = [14, 15] in
+                  let pair/0 = (t26, 0) in
+                  let place_root2 = pair/0 in
+                  let place5 = place_root2.0 in
+                  let index5 = 1 in
+                  let place6 = @intrinsic(array.get)(place5, index5) in
+                  let value4 = 150 in
+                  let t27 = @intrinsic(array.set)(place5, index5, value4) in
+                  let t28 = place_root2.1 in
+                  let t29 = (t27, t28) in
+                  let t30 = pair/0 = t29 in
+                  let t31 = pair/0.0 in
+                  let t32 = @intrinsic(array.get)(t31, 1) in
+                  join inline_cont8(_wild9: unit) -> unit {
+                    let t33 = [16, 17] in
+                    join inline_cont9(t34: Vec[[i32; 2]]) -> unit {
+                      let t35 = [18, 19] in
+                      let t36 = inherent#Vec#Vec[T]#pushed__T_[i32;2](t34, t35) in
+                      let t37 = [20, 21] in
+                      let t38 = inherent#Vec#Vec[T]#pushed__T_[i32;2](t36, t37) in
+                      let holder/0 = Holder { data: t33, vecs: t38 } in
+                      let place_root3 = holder/0 in
+                      let place7 = Holder.data(place_root3) in
+                      let index6 = 0 in
+                      let place8 = @intrinsic(array.get)(place7, index6) in
+                      let value5 = 160 in
+                      let t39 = @intrinsic(array.set)(place7, index6, value5) in
+                      let t40 = Holder.vecs(place_root3) in
+                      let t41 = Holder { data: t39, vecs: t40 } in
+                      let t42 = holder/0 = t41 in
+                      let t43 = Holder.data(holder/0) in
+                      let t44 = @intrinsic(array.get)(t43, 0) in
+                      join inline_cont10(_wild10: unit) -> unit {
+                        let place_root4 = holder/0 in
+                        let place9 = Holder.vecs(place_root4) in
+                        let index7 = 1 in
+                        let place10 = @intrinsic(vec.get)(place9, index7) in
+                        let index8 = 0 in
+                        let place11 = @intrinsic(array.get)(place10, index8) in
+                        let value6 = 200 in
+                        let t45 = @intrinsic(array.set)(place10, index8, value6) in
+                        let t46 = @intrinsic(vec.set)(place9, index7, t45) in
+                        let t47 = Holder.vecs(holder/0) in
+                        let t48 = @intrinsic(vec.get)(t47, 1) in
+                        let t49 = @intrinsic(array.get)(t48, 0) in
+                        join inline_cont11(_wild11: unit) -> unit {
+                          let t50 = [22, 23] in
+                          join inline_cont12(r/0: Ref[[i32; 2]]) -> unit {
+                            let place_root5 = @intrinsic(ref.get)(r/0) in
+                            let index9 = 1 in
+                            let place12 = @intrinsic(array.get)(place_root5, index9) in
+                            let value7 = 230 in
+                            let t51 = @intrinsic(array.set)(place_root5, index9, value7) in
+                            let t52 = @intrinsic(ref.set)(r/0, t51) in
+                            join inline_cont13(t53: [i32; 2]) -> unit {
+                              let t54 = @intrinsic(array.get)(t53, 1) in
+                              let inline0 = trait_impl#ToString#i32#to_string(t54) in
+                              let inline1 = @runtime(core.string_println)(inline0) in
                               ()
                             } in
-                            let inline1103 = @intrinsic(ref.get)(r/11) in
-                            jump inline_cont1102(inline1103)
+                            let inline2 = @intrinsic(ref.get)(r/0) in
+                            jump inline_cont13(inline2)
                           } in
-                          let inline1105 = @intrinsic(ref.new)(t913) in
-                          jump inline_cont1104(inline1105)
+                          let inline3 = @intrinsic(ref.new)(t50) in
+                          jump inline_cont12(inline3)
                         } in
-                        let inline1107 = trait_impl#ToString#i32#to_string(t912) in
-                        let inline1108 = @runtime(core.string_println)(inline1107) in
-                        jump inline_cont1106(())
+                        let inline4 = trait_impl#ToString#i32#to_string(t49) in
+                        let inline5 = @runtime(core.string_println)(inline4) in
+                        jump inline_cont11(())
                       } in
-                      let inline1110 = trait_impl#ToString#i32#to_string(t907) in
-                      let inline1111 = @runtime(core.string_println)(inline1110) in
-                      jump inline_cont1109(())
+                      let inline6 = trait_impl#ToString#i32#to_string(t44) in
+                      let inline7 = @runtime(core.string_println)(inline6) in
+                      jump inline_cont10(())
                     } in
-                    let inline1113 = @intrinsic(vec.new)() in
-                    jump inline_cont1112(inline1113)
+                    let inline8 = @intrinsic(vec.new)() in
+                    jump inline_cont9(inline8)
                   } in
-                  let inline1115 = trait_impl#ToString#isize#to_string(t895) in
-                  let inline1116 = @runtime(core.string_println)(inline1115) in
-                  jump inline_cont1114(())
+                  let inline9 = trait_impl#ToString#isize#to_string(t32) in
+                  let inline10 = @runtime(core.string_println)(inline9) in
+                  jump inline_cont8(())
                 } in
-                let inline1118 = trait_impl#ToString#i32#to_string(t888) in
-                let inline1119 = @runtime(core.string_println)(inline1118) in
-                jump inline_cont1117(())
+                let inline11 = trait_impl#ToString#i32#to_string(t25) in
+                let inline12 = @runtime(core.string_println)(inline11) in
+                jump inline_cont7(())
               } in
-              match t881 {
+              match t18 {
                 Tag_0 => {
-                  let inline1121 = println__T_string("none") in
-                  jump inline_cont1120(())
+                  let inline13 = println__T_string("none") in
+                  jump inline_cont6(())
                 },
                 Tag_1 => {
-                  let inline1122 = Option__i32::Some._0(t881) in
-                  let inline1124 = println__T_i32(inline1122) in
-                  jump inline_cont1120(())
+                  let inline14 = Option__i32::Some._0(t18) in
+                  let inline15 = println__T_i0(inline14) in
+                  jump inline_cont6(())
                 },
               }
             } in
-            match t880 {
+            match t17 {
               Tag_0 => {
-                let inline1126 = println__T_string("none") in
-                jump inline_cont1125(())
+                let inline16 = println__T_string("none") in
+                jump inline_cont5(())
               },
               Tag_1 => {
-                let inline1127 = Option__i32::Some._0(t880) in
-                let inline1129 = println__T_i32(inline1127) in
-                jump inline_cont1125(())
+                let inline17 = Option__i32::Some._0(t17) in
+                let inline18 = println__T_i0(inline17) in
+                jump inline_cont5(())
               },
             }
           } in
-          let inline1131 = @intrinsic(hashmap.new)() in
-          jump inline_cont1130(inline1131)
+          let inline19 = @intrinsic(hashmap.new)() in
+          jump inline_cont4(inline19)
         } in
-        let inline1133 = trait_impl#ToString#i32#to_string(t878) in
-        let inline1134 = @runtime(core.string_println)(inline1133) in
-        jump inline_cont1132(())
+        let inline20 = trait_impl#ToString#i32#to_string(t15) in
+        let inline21 = @runtime(core.string_println)(inline20) in
+        jump inline_cont3(())
       } in
-      let inline1136 = 0 in
-      let inline1137 = 2 in
-      let inline1138 = @intrinsic(slice.new)(vec2/5, inline1136, inline1137) in
-      jump inline_cont1135(inline1138)
+      let inline22 = 0 in
+      let inline23 = 2 in
+      let inline24 = @intrinsic(slice.new)(vec2/0, inline22, inline23) in
+      jump inline_cont2(inline24)
     } in
-    let inline1140 = trait_impl#ToString#i32#to_string(t877) in
-    let inline1141 = @runtime(core.string_println)(inline1140) in
-    jump inline_cont1139(())
+    let inline25 = trait_impl#ToString#i32#to_string(t14) in
+    let inline26 = @runtime(core.string_println)(inline25) in
+    jump inline_cont1(())
   } in
-  let inline1143 = @intrinsic(vec.new)() in
-  jump inline_cont1142(inline1143)
+  let inline27 = @intrinsic(vec.new)() in
+  jump inline_cont0(inline27)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont1144(t919: string) -> unit {
-    let t920 = @runtime(core.string_println)(t919) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont1144(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn println__T_i32(value/1: i32) -> unit {
-  join inline_cont1145(t922: string) -> unit {
-    let t923 = @runtime(core.string_println)(t922) in
+fn println__T_i32(value/0: i32) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  let inline1146 = __goml_builtin_int32_to_string(value/1) in
-  jump inline_cont1145(inline1146)
+  let inline0 = __goml_builtin_int32_to_string(value/0) in
+  jump inline_cont0(inline0)
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  join inline_cont1147(t925: string) -> unit {
-    let t926 = @runtime(core.string_println)(t925) in
+fn println__T_isize(value/0: isize) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  let inline1148 = __goml_builtin_int_to_string(value/1) in
-  jump inline_cont1147(inline1148)
+  let inline0 = __goml_builtin_int_to_string(value/0) in
+  jump inline_cont0(inline0)
 }
 
 fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
-  let t929 = @intrinsic(vec.new)() in
-  t929
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_isize(self/513: Vec[isize], elem/514: isize) -> Vec[isize] {
-  join inline_cont1157(t932: isize) -> Vec[isize] {
-    let t933 = (t932 + 1) in
-    join inline_cont1155(result/515: Vec[isize]) -> Vec[isize] {
-      let index/516 = 0 in
-      join exit934() -> Vec[isize] {
-        let inline1154 = @intrinsic(vec.push)(result/515, elem/514) in
-        result/515
+fn inherent#Vec#Vec[T]#pushed__T_isize(self/0: Vec[isize], elem/0: isize) -> Vec[isize] {
+  join inline_cont0(t0: isize) -> Vec[isize] {
+    let t1 = (t0 + 1) in
+    join inline_cont1(result/0: Vec[isize]) -> Vec[isize] {
+      let index/0 = 0 in
+      join exit0() -> Vec[isize] {
+        let inline0 = @intrinsic(vec.push)(result/0, elem/0) in
+        result/0
       } in
       joinrec {
-        join loop935() -> Vec[isize] {
-          join inline_cont1151(t936: isize) -> Vec[isize] {
-            let t937 = (index/516 < t936) in
-            if t937 {
-              let t938 = @intrinsic(vec.get)(self/513, index/516) in
-              join inline_cont1149(_wild574: unit) -> Vec[isize] {
-                let compound_old575 = index/516 in
-                let compound_value576 = 1 in
-                let t939 = (compound_old575 + compound_value576) in
-                let t940 = index/516 = t939 in
-                jump loop935()
+        join loop0() -> Vec[isize] {
+          join inline_cont2(t2: isize) -> Vec[isize] {
+            let t3 = (index/0 < t2) in
+            if t3 {
+              let t4 = @intrinsic(vec.get)(self/0, index/0) in
+              join inline_cont3(_wild0: unit) -> Vec[isize] {
+                let compound_old0 = index/0 in
+                let compound_value0 = 1 in
+                let t5 = (compound_old0 + compound_value0) in
+                let t6 = index/0 = t5 in
+                jump loop0()
               } in
-              let inline1150 = @intrinsic(vec.push)(result/515, t938) in
-              jump inline_cont1149(())
+              let inline1 = @intrinsic(vec.push)(result/0, t4) in
+              jump inline_cont3(())
             } else {
-              jump exit934()
+              jump exit0()
             }
           } in
-          let inline1152 = @intrinsic(vec.len)(self/513) in
-          jump inline_cont1151(inline1152)
+          let inline2 = @intrinsic(vec.len)(self/0) in
+          jump inline_cont2(inline2)
         } in
       } in
-      jump loop935()
+      jump loop0()
     } in
-    let inline1156 = @intrinsic(vec.with_capacity)(t933) in
-    jump inline_cont1155(inline1156)
+    let inline3 = @intrinsic(vec.with_capacity)(t1) in
+    jump inline_cont1(inline3)
   } in
-  let inline1158 = @intrinsic(vec.len)(self/513) in
-  jump inline_cont1157(inline1158)
+  let inline4 = @intrinsic(vec.len)(self/0) in
+  jump inline_cont0(inline4)
 }
 
 fn inherent#Vec#Vec[T]#new__T_i32() -> Vec[i32] {
-  let t943 = @intrinsic(vec.new)() in
-  t943
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_i32(self/513: Vec[i32], elem/514: i32) -> Vec[i32] {
-  join inline_cont1167(t946: isize) -> Vec[i32] {
-    let t947 = (t946 + 1) in
-    join inline_cont1165(result/515: Vec[i32]) -> Vec[i32] {
-      let index/516 = 0 in
-      join exit948() -> Vec[i32] {
-        let inline1164 = @intrinsic(vec.push)(result/515, elem/514) in
-        result/515
+fn inherent#Vec#Vec[T]#pushed__T_i32(self/0: Vec[i32], elem/0: i32) -> Vec[i32] {
+  join inline_cont0(t0: isize) -> Vec[i32] {
+    let t1 = (t0 + 1) in
+    join inline_cont1(result/0: Vec[i32]) -> Vec[i32] {
+      let index/0 = 0 in
+      join exit0() -> Vec[i32] {
+        let inline0 = @intrinsic(vec.push)(result/0, elem/0) in
+        result/0
       } in
       joinrec {
-        join loop949() -> Vec[i32] {
-          join inline_cont1161(t950: isize) -> Vec[i32] {
-            let t951 = (index/516 < t950) in
-            if t951 {
-              let t952 = @intrinsic(vec.get)(self/513, index/516) in
-              join inline_cont1159(_wild574: unit) -> Vec[i32] {
-                let compound_old575 = index/516 in
-                let compound_value576 = 1 in
-                let t953 = (compound_old575 + compound_value576) in
-                let t954 = index/516 = t953 in
-                jump loop949()
+        join loop0() -> Vec[i32] {
+          join inline_cont2(t2: isize) -> Vec[i32] {
+            let t3 = (index/0 < t2) in
+            if t3 {
+              let t4 = @intrinsic(vec.get)(self/0, index/0) in
+              join inline_cont3(_wild0: unit) -> Vec[i32] {
+                let compound_old0 = index/0 in
+                let compound_value0 = 1 in
+                let t5 = (compound_old0 + compound_value0) in
+                let t6 = index/0 = t5 in
+                jump loop0()
               } in
-              let inline1160 = @intrinsic(vec.push)(result/515, t952) in
-              jump inline_cont1159(())
+              let inline1 = @intrinsic(vec.push)(result/0, t4) in
+              jump inline_cont3(())
             } else {
-              jump exit948()
+              jump exit0()
             }
           } in
-          let inline1162 = @intrinsic(vec.len)(self/513) in
-          jump inline_cont1161(inline1162)
+          let inline2 = @intrinsic(vec.len)(self/0) in
+          jump inline_cont2(inline2)
         } in
       } in
-      jump loop949()
+      jump loop0()
     } in
-    let inline1166 = @intrinsic(vec.with_capacity)(t947) in
-    jump inline_cont1165(inline1166)
+    let inline3 = @intrinsic(vec.with_capacity)(t1) in
+    jump inline_cont1(inline3)
   } in
-  let inline1168 = @intrinsic(vec.len)(self/513) in
-  jump inline_cont1167(inline1168)
+  let inline4 = @intrinsic(vec.len)(self/0) in
+  jump inline_cont0(inline4)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_i32(self/564: Vec[i32], start/565: isize, end/566: isize) -> Slice[
-  i32
-] {
-  let t957 = @intrinsic(slice.new)(self/564, start/565, end/566) in
-  t957
+fn inherent#Vec#Vec[T]#slice__T_i32(self/0: Vec[i32], start/0: isize, end/0: isize) -> Slice[i32] {
+  let t0 = @intrinsic(slice.new)(self/0, start/0, end/0) in
+  t0
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_i32() -> HashMap[string, i32] {
-  let t960 = @intrinsic(hashmap.new)() in
-  t960
+  let t0 = @intrinsic(hashmap.new)() in
+  t0
 }
 
 fn inherent#Vec#Vec[T]#new__T_[i32;2]() -> Vec[[i32; 2]] {
-  let t963 = @intrinsic(vec.new)() in
-  t963
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_[i32;2](self/513: Vec[[i32; 2]], elem/514: [i32; 2]) -> Vec[
-  [i32; 2]
-] {
-  join inline_cont1177(t966: isize) -> Vec[[i32; 2]] {
-    let t967 = (t966 + 1) in
-    join inline_cont1175(result/515: Vec[[i32; 2]]) -> Vec[[i32; 2]] {
-      let index/516 = 0 in
-      join exit968() -> Vec[[i32; 2]] {
-        let inline1174 = @intrinsic(vec.push)(result/515, elem/514) in
-        result/515
+fn inherent#Vec#Vec[T]#pushed__T_[i32;2](self/0: Vec[[i32; 2]], elem/0: [i32; 2]) -> Vec[[i32; 2]] {
+  join inline_cont0(t0: isize) -> Vec[[i32; 2]] {
+    let t1 = (t0 + 1) in
+    join inline_cont1(result/0: Vec[[i32; 2]]) -> Vec[[i32; 2]] {
+      let index/0 = 0 in
+      join exit0() -> Vec[[i32; 2]] {
+        let inline0 = @intrinsic(vec.push)(result/0, elem/0) in
+        result/0
       } in
       joinrec {
-        join loop969() -> Vec[[i32; 2]] {
-          join inline_cont1171(t970: isize) -> Vec[[i32; 2]] {
-            let t971 = (index/516 < t970) in
-            if t971 {
-              let t972 = @intrinsic(vec.get)(self/513, index/516) in
-              join inline_cont1169(_wild574: unit) -> Vec[[i32; 2]] {
-                let compound_old575 = index/516 in
-                let compound_value576 = 1 in
-                let t973 = (compound_old575 + compound_value576) in
-                let t974 = index/516 = t973 in
-                jump loop969()
+        join loop0() -> Vec[[i32; 2]] {
+          join inline_cont2(t2: isize) -> Vec[[i32; 2]] {
+            let t3 = (index/0 < t2) in
+            if t3 {
+              let t4 = @intrinsic(vec.get)(self/0, index/0) in
+              join inline_cont3(_wild0: unit) -> Vec[[i32; 2]] {
+                let compound_old0 = index/0 in
+                let compound_value0 = 1 in
+                let t5 = (compound_old0 + compound_value0) in
+                let t6 = index/0 = t5 in
+                jump loop0()
               } in
-              let inline1170 = @intrinsic(vec.push)(result/515, t972) in
-              jump inline_cont1169(())
+              let inline1 = @intrinsic(vec.push)(result/0, t4) in
+              jump inline_cont3(())
             } else {
-              jump exit968()
+              jump exit0()
             }
           } in
-          let inline1172 = @intrinsic(vec.len)(self/513) in
-          jump inline_cont1171(inline1172)
+          let inline2 = @intrinsic(vec.len)(self/0) in
+          jump inline_cont2(inline2)
         } in
       } in
-      jump loop969()
+      jump loop0()
     } in
-    let inline1176 = @intrinsic(vec.with_capacity)(t967) in
-    jump inline_cont1175(inline1176)
+    let inline3 = @intrinsic(vec.with_capacity)(t1) in
+    jump inline_cont1(inline3)
   } in
-  let inline1178 = @intrinsic(vec.len)(self/513) in
-  jump inline_cont1177(inline1178)
+  let inline4 = @intrinsic(vec.len)(self/0) in
+  jump inline_cont0(inline4)
 }
 
-fn inherent#Ref#Ref[T]#new__T_[i32;2](value/684: [i32; 2]) -> Ref[[i32; 2]] {
-  let t977 = @intrinsic(ref.new)(value/684) in
-  t977
+fn inherent#Ref#Ref[T]#new__T_[i32;2](value/0: [i32; 2]) -> Ref[[i32; 2]] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#get__T_[i32;2](self/685: Ref[[i32; 2]]) -> [i32; 2] {
-  let t980 = @intrinsic(ref.get)(self/685) in
-  t980
+fn inherent#Ref#Ref[T]#get__T_[i32;2](self/0: Ref[[i32; 2]]) -> [i32; 2] {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
-  let inline1180 = (self/407 as i64) in
-  let inline1181 = signed_decimal_string(inline1180) in
-  inline1181
+fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  let inline1183 = (self/404 as i64) in
-  let inline1184 = signed_decimal_string(inline1183) in
-  inline1184
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
 }
 
-fn inherent#Vec#Vec[T]#len__T_isize(self/526: Vec[isize]) -> isize {
-  let t991 = @intrinsic(vec.len)(self/526) in
-  t991
+fn inherent#Vec#Vec[T]#len__T_isize(self/0: Vec[isize]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/510: isize) -> Vec[isize] {
-  let t994 = @intrinsic(vec.with_capacity)(capacity/510) in
-  t994
+fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/0: isize) -> Vec[isize] {
+  let t0 = @intrinsic(vec.with_capacity)(capacity/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/511: Vec[isize], elem/512: isize) -> unit {
-  let t996 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_i32(self/526: Vec[i32]) -> isize {
-  let t999 = @intrinsic(vec.len)(self/526) in
-  t999
+fn inherent#Vec#Vec[T]#len__T_i32(self/0: Vec[i32]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_i32(capacity/510: isize) -> Vec[i32] {
-  let t1002 = @intrinsic(vec.with_capacity)(capacity/510) in
-  t1002
+fn inherent#Vec#Vec[T]#with_capacity__T_i32(capacity/0: isize) -> Vec[i32] {
+  let t0 = @intrinsic(vec.with_capacity)(capacity/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#push__T_i32(self/511: Vec[i32], elem/512: i32) -> unit {
-  let t1004 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_i32(self/0: Vec[i32], elem/0: i32) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_[i32;2](self/526: Vec[[i32; 2]]) -> isize {
-  let t1007 = @intrinsic(vec.len)(self/526) in
-  t1007
+fn inherent#Vec#Vec[T]#len__T_[i32;2](self/0: Vec[[i32; 2]]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_[i32;2](capacity/510: isize) -> Vec[[i32; 2]] {
-  let t1010 = @intrinsic(vec.with_capacity)(capacity/510) in
-  t1010
+fn inherent#Vec#Vec[T]#with_capacity__T_[i32;2](capacity/0: isize) -> Vec[[i32; 2]] {
+  let t0 = @intrinsic(vec.with_capacity)(capacity/0) in
+  t0
 }
 
-fn inherent#Vec#Vec[T]#push__T_[i32;2](self/511: Vec[[i32; 2]], elem/512: [i32; 2]) -> unit {
-  let t1012 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_[i32;2](self/0: Vec[[i32; 2]], elem/0: [i32; 2]) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  let t1015 = (value/225 as i64) in
-  let inline1186 = (t1015 < 0) in
-  if inline1186 {
-    let inline1187 = (t1015 as u64) in
-    let inline1188 = (0 - inline1187) in
-    let inline1189 = decimal_string(inline1188) in
-    let inline1190 = ("-" + inline1189) in
-    inline1190
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
   } else {
-    let inline1191 = (t1015 as u64) in
-    let inline1192 = decimal_string(inline1191) in
-    inline1192
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
   }
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  let t1019 = (value/222 as i64) in
-  let inline1194 = (t1019 < 0) in
-  if inline1194 {
-    let inline1195 = (t1019 as u64) in
-    let inline1196 = (0 - inline1195) in
-    let inline1197 = decimal_string(inline1196) in
-    let inline1198 = ("-" + inline1197) in
-    inline1198
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
   } else {
-    let inline1199 = (t1019 as u64) in
-    let inline1200 = decimal_string(inline1199) in
-    inline1200
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
   }
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  let t1025 = (value/214 < 0) in
-  if t1025 {
-    let t1026 = (value/214 as u64) in
-    let t1027 = (0 - t1026) in
-    let t1028 = decimal_string(t1027) in
-    let t1029 = ("-" + t1028) in
-    t1029
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
   } else {
-    let t1030 = (value/214 as u64) in
-    let t1031 = decimal_string(t1030) in
-    t1031
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let t1054 = (value/208 == 0) in
-  join k1034() -> string {
-    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-    let remaining/210 = value/208 in
-    join exit1035() -> string {
-      join inline_cont1209(t1036: isize) -> string {
-        let bytes/211 = @intrinsic(vec.with_capacity)(t1036) in
-        let offset/212 = 0 in
-        join exit1037() -> string {
-          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-          let x364 = mtmp362.1 in
-          x364
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
         } in
         joinrec {
-          join loop1038() -> string {
-            join inline_cont1207(t1039: isize) -> string {
-              let t1040 = (offset/212 < t1039) in
-              if t1040 {
-                join inline_cont1205(t1041: isize) -> string {
-                  let t1042 = (t1041 - offset/212) in
-                  let t1043 = (t1042 - 1) in
-                  let t1044 = @intrinsic(vec.get)(reversed/209, t1043) in
-                  join inline_cont1203(_wild357: unit) -> string {
-                    let compound_old358 = offset/212 in
-                    let compound_value359 = 1 in
-                    let t1045 = (compound_old358 + compound_value359) in
-                    let t1046 = offset/212 = t1045 in
-                    jump loop1038()
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
                   } in
-                  let inline1204 = @intrinsic(vec.push)(bytes/211, t1044) in
-                  jump inline_cont1203(())
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
                 } in
-                let inline1206 = @intrinsic(vec.len)(reversed/209) in
-                jump inline_cont1205(inline1206)
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
               } else {
-                jump exit1037()
+                jump exit1()
               }
             } in
-            let inline1208 = @intrinsic(vec.len)(reversed/209) in
-            jump inline_cont1207(inline1208)
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
           } in
         } in
-        jump loop1038()
+        jump loop1()
       } in
-      let inline1210 = @intrinsic(vec.len)(reversed/209) in
-      jump inline_cont1209(inline1210)
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
     } in
     joinrec {
-      join loop1047() -> string {
-        let t1048 = (remaining/210 > 0) in
-        if t1048 {
-          let t1049 = (remaining/210 % 10) in
-          let t1050 = (t1049 as u8) in
-          let t1051 = (t1050 + 48) in
-          join inline_cont1201(_wild352: unit) -> string {
-            let compound_old353 = remaining/210 in
-            let compound_value354 = 10 in
-            let t1052 = (compound_old353 / compound_value354) in
-            let t1053 = remaining/210 = t1052 in
-            jump loop1047()
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
           } in
-          let inline1202 = @intrinsic(vec.push)(reversed/209, t1051) in
-          jump inline_cont1201(())
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
         } else {
-          jump exit1035()
+          jump exit0()
         }
       } in
     } in
-    jump loop1047()
+    jump loop0()
   } in
-  if t1054 {
+  if t0 {
     "0"
   } else {
-    jump k1034()
+    jump k0()
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  let t1056 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  let t1059 = @intrinsic(vec.len)(self/526) in
-  t1059
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
-  let t1062 = (self/434 == other/435) in
-  t1062
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#string#hash(self/462: string) -> u64 {
-  let t1065 = @runtime(core.string_hash)(self/462) in
-  t1065
+fn trait_impl#Hash#string#hash(self/0: string) -> u64 {
+  let t0 = @runtime(core.string_hash)(self/0) in
+  t0
 }
 
 fn trait_impl#PartialEq#[i32;2]#eq(self: [i32; 2], other: [i32; 2]) -> bool {
-  let t1070 = @intrinsic(array.get)(self, 0) in
-  let t1071 = @intrinsic(array.get)(other, 0) in
-  join inline_cont1213(t1072: bool) -> bool {
-    if t1072 {
-      let t1075 = @intrinsic(array.get)(self, 1) in
-      let t1076 = @intrinsic(array.get)(other, 1) in
-      join inline_cont1211(t1077: bool) -> bool {
-        if t1077 {
+  let t0 = @intrinsic(array.get)(self, 0) in
+  let t1 = @intrinsic(array.get)(other, 0) in
+  join inline_cont0(t2: bool) -> bool {
+    if t2 {
+      let t3 = @intrinsic(array.get)(self, 1) in
+      let t4 = @intrinsic(array.get)(other, 1) in
+      join inline_cont1(t5: bool) -> bool {
+        if t5 {
           true
         } else {
           false
         }
       } in
-      let inline1212 = (t1075 == t1076) in
-      jump inline_cont1211(inline1212)
+      let inline0 = (t3 == t4) in
+      jump inline_cont1(inline0)
     } else {
       false
     }
   } in
-  let inline1214 = (t1070 == t1071) in
-  jump inline_cont1213(inline1214)
+  let inline1 = (t0 == t1) in
+  jump inline_cont0(inline1)
 }
 
 fn trait_impl#Hash#[i32;2]#hash(self: [i32; 2]) -> u64 {
   let _structural_hash_0 = 14695981039346656037 in
-  let t1080 = (_structural_hash_0 * 1099511628211) in
-  let t1081 = @intrinsic(array.get)(self, 0) in
-  join inline_cont1217(t1082: u64) -> u64 {
-    let _structural_hash_1 = (t1080 + t1082) in
-    let t1083 = (_structural_hash_1 * 1099511628211) in
-    let t1084 = @intrinsic(array.get)(self, 1) in
-    join inline_cont1215(t1085: u64) -> u64 {
-      let _structural_hash_2 = (t1083 + t1085) in
+  let t0 = (_structural_hash_0 * 1099511628211) in
+  let t1 = @intrinsic(array.get)(self, 0) in
+  join inline_cont0(t2: u64) -> u64 {
+    let _structural_hash_1 = (t0 + t2) in
+    let t3 = (_structural_hash_1 * 1099511628211) in
+    let t4 = @intrinsic(array.get)(self, 1) in
+    join inline_cont1(t5: u64) -> u64 {
+      let _structural_hash_2 = (t3 + t5) in
       _structural_hash_2
     } in
-    let inline1216 = @runtime(core.int32_hash)(t1084) in
-    jump inline_cont1215(inline1216)
+    let inline0 = @runtime(core.int32_hash)(t4) in
+    jump inline_cont1(inline0)
   } in
-  let inline1218 = @runtime(core.int32_hash)(t1081) in
-  jump inline_cont1217(inline1218)
+  let inline1 = @runtime(core.int32_hash)(t1) in
+  jump inline_cont0(inline1)
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  let t1088 = (self/444 == other/445) in
-  t1088
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  let t1091 = @runtime(core.int32_hash)(self/467) in
-  t1091
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  let t0 = @runtime(core.int32_hash)(self/0) in
+  t0
 }

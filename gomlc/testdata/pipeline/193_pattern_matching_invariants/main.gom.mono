@@ -4,24 +4,24 @@ fn absurd(value/0: Never) -> i32 {
   }
 }
 
-fn absurd_loop(value/1: Loop) -> i32 {
+fn absurd_loop(value/0: Loop) -> i32 {
   {
     @intrinsic(compiler.missing)("")
   }
 }
 
-fn maybe_never(value/2: MaybeNever) -> i32 {
-  match value/2 {
+fn maybe_never(value/0: MaybeNever) -> i32 {
+  match value/0 {
     MaybeNever::Empty => {
       0
     },
   }
 }
 
-fn empty_never_vec(value/3: Vec[Never]) -> i32 {
+fn empty_never_vec(value/0: Vec[Never]) -> i32 {
   {
-    let match799 = value/3 in
-    if (@intrinsic(vec.len)(match799) == 0) {
+    let match0 = value/0 in
+    if (@intrinsic(vec.len)(match0) == 0) {
         0
     } else {
         @intrinsic(compiler.missing)("")
@@ -29,21 +29,21 @@ fn empty_never_vec(value/3: Vec[Never]) -> i32 {
   }
 }
 
-fn sequence_coverage(value/4: Vec[bool]) -> i32 {
+fn sequence_coverage(value/0: Vec[bool]) -> i32 {
   {
-    let match800 = value/4 in
-    if (@intrinsic(vec.len)(match800) == 0) {
+    let match0 = value/0 in
+    if (@intrinsic(vec.len)(match0) == 0) {
         0
     } else {
-        if (@intrinsic(vec.len)(match800) == 1) {
+        if (@intrinsic(vec.len)(match0) == 1) {
             1
         } else {
-            if (@intrinsic(vec.len)(match800) >= 2) {
-                if (@intrinsic(vec.get)(match800, 0) == true) {
+            if (@intrinsic(vec.len)(match0) >= 2) {
+                if (@intrinsic(vec.get)(match0, 0) == true) {
                     2
                 } else {
-                    if (@intrinsic(vec.len)(match800) >= 2) {
-                        if (@intrinsic(vec.get)(match800, 0) == false) {
+                    if (@intrinsic(vec.len)(match0) >= 2) {
+                        if (@intrinsic(vec.get)(match0, 0) == false) {
                             3
                         } else {
                             @intrinsic(compiler.missing)("")
@@ -53,8 +53,8 @@ fn sequence_coverage(value/4: Vec[bool]) -> i32 {
                     }
                 }
             } else {
-                if (@intrinsic(vec.len)(match800) >= 2) {
-                    if (@intrinsic(vec.get)(match800, 0) == false) {
+                if (@intrinsic(vec.len)(match0) >= 2) {
+                    if (@intrinsic(vec.get)(match0, 0) == false) {
                         3
                     } else {
                         @intrinsic(compiler.missing)("")
@@ -68,16 +68,16 @@ fn sequence_coverage(value/4: Vec[bool]) -> i32 {
   }
 }
 
-fn unwrap(value/5: Single) -> i32 {
-  let mtmp801 = value/5 in
-  match mtmp801 {
-    Single::Only(x802) => {
+fn unwrap(value/0: Single) -> i32 {
+  let mtmp0 = value/0 in
+  match mtmp0 {
+    Single::Only(x0) => {
       {
-        let x802 = Single::Only._0(mtmp801) in
+        let x0 = Single::Only._0(mtmp0) in
         {
-          let inner/6 = x802 in
+          let inner/0 = x0 in
           {
-            inner/6
+            inner/0
           }
         }
       }
@@ -85,8 +85,8 @@ fn unwrap(value/5: Single) -> i32 {
   }
 }
 
-fn decide(flag/7: bool) -> i32 {
-  match flag/7 {
+fn decide(flag/0: bool) -> i32 {
+  match flag/0 {
     true => {
       return 1
     },
@@ -96,8 +96,8 @@ fn decide(flag/7: bool) -> i32 {
   }
 }
 
-fn signed_zero(value/8: f64) -> string {
-  match value/8 {
+fn signed_zero(value/0: f64) -> string {
+  match value/0 {
     -0 => {
       "zero"
     },
@@ -106,55 +106,55 @@ fn signed_zero(value/8: f64) -> string {
 }
 
 fn main() -> unit {
-  let mtmp803 = (Single::Only(12)) in
+  let mtmp0 = (Single::Only(12)) in
   {
-    let x804 = mtmp803.0 in
+    let x0 = mtmp0.0 in
     {
-      let single/9 = x804 in
+      let single/0 = x0 in
       {
-        let _wild805 = println__T_i32(unwrap(single/9)) in
-        let _wild806 = println__T_i32(decide(true)) in
-        let _wild807 = println__T_string(signed_zero(0)) in
+        let _wild0 = println__T_i0(unwrap(single/0)) in
+        let _wild1 = println__T_i0(decide(true)) in
+        let _wild2 = println__T_string(signed_zero(0)) in
       }
     }
   }
 }
 
-fn println__T_i32(value/1: i32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
+fn println__T_i32(value/0: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
-  __goml_builtin_int32_to_string(self/407)
+fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -163,58 +163,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

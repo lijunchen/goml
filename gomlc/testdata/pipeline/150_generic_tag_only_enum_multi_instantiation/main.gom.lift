@@ -1,5 +1,5 @@
-fn show_int(x/1: Light__i32) -> string {
-  match x/1 {
+fn show_int(x/0: Light__i32) -> string {
+  match x/0 {
     Light__i32::Red => {
       "ri"
     },
@@ -9,8 +9,8 @@ fn show_int(x/1: Light__i32) -> string {
   }
 }
 
-fn show_string(x/2: Light__string) -> string {
-  match x/2 {
+fn show_string(x/0: Light__string) -> string {
+  match x/0 {
     Light__string::Red => {
       "rs"
     },
@@ -21,13 +21,13 @@ fn show_string(x/2: Light__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild796 = println__T_string(show_int(flip__T_i32(Light__i32::Red))) in
-  let _wild797 = println__T_string(show_string(flip__T_string(Light__string::Green))) in
+  let _wild0 = println__T_string(show_int(flip__T_i0(Light__i32::Red))) in
+  let _wild1 = println__T_string(show_string(flip__T_string(Light__string::Green))) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
 fn flip__T_i32(x/0: Light__i32) -> Light__i32 {
@@ -52,6 +52,6 @@ fn flip__T_string(x/0: Light__string) -> Light__string {
   }
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

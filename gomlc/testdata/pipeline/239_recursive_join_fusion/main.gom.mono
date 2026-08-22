@@ -1,21 +1,21 @@
 fn find(wanted/0: isize) -> Option__isize {
-  let current/1 = inherent#Ref#Ref[T]#new__T_isize(0) in
-  let _wild800 =
+  let current/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  let _wild0 =
     loop {
-      let value/2 = inherent#Ref#Ref[T]#get__T_isize(current/1) in
-      let _wild799 =
-        if (value/2 >= 5) {
+      let value/0 = inherent#Ref#Ref[T]#get__T_isize(current/0) in
+      let _wild1 =
+        if (value/0 >= 5) {
             {
-              let _wild796 = return Option__isize::None in
+              let _wild2 = return Option__isize::None in
             }
         } else {
-            if (value/2 == wanted/0) {
+            if (value/0 == wanted/0) {
                 {
-                  let _wild797 = return Option__isize::Some(value/2) in
+                  let _wild3 = return Option__isize::Some(value/0) in
                 }
             } else {
                 {
-                  let _wild798 = inherent#Ref#Ref[T]#set__T_isize(current/1, (value/2 + 1)) in
+                  let _wild4 = inherent#Ref#Ref[T]#set__T_isize(current/0, (value/0 + 1)) in
                 }
             }
         } in
@@ -23,14 +23,14 @@ fn find(wanted/0: isize) -> Option__isize {
   Option__isize::None
 }
 
-fn any(wanted/3: isize) -> bool {
+fn any(wanted/0: isize) -> bool {
   {
-    let mtmp801 = find(wanted/3) in
-    match mtmp801 {
+    let mtmp0 = find(wanted/0) in
+    match mtmp0 {
       Option__isize::None => {
         false
       },
-      Option__isize::Some(x802) => {
+      Option__isize::Some(x0) => {
         {
           true
         }
@@ -40,34 +40,34 @@ fn any(wanted/3: isize) -> bool {
 }
 
 fn main() -> unit {
-  let _wild803 = println__T_bool(any(3)) in
-  let _wild804 = println__T_bool(any(8)) in
+  let _wild0 = println__T_bool(any(3)) in
+  let _wild1 = println__T_bool(any(8)) in
 }
 
-fn inherent#Ref#Ref[T]#new__T_isize(value/684: isize) -> Ref[isize] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#get__T_isize(self/685: Ref[isize]) -> isize {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/686: Ref[isize], value/687: isize) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  (self/438 == other/439)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  @runtime(core.int_hash)(self/464)
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
 }

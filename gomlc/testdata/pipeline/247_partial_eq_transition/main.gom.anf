@@ -1,73 +1,73 @@
 fn trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(
-  self/12: Ordering,
-  other/13: Ordering
+  self/0: Ordering,
+  other/0: Ordering
 ) -> Option__Ordering {
-  join inline_cont1817(t812: bool) -> Option__Ordering {
-    join k809(jp810: Ordering) -> Option__Ordering {
-      let t811 = Option__Ordering::Some(jp810) in
-      t811
+  join inline_cont0(t0: bool) -> Option__Ordering {
+    join k0(jp0: Ordering) -> Option__Ordering {
+      let t1 = Option__Ordering::Some(jp0) in
+      t1
     } in
-    if t812 {
-      jump k809(Tag_1)
+    if t0 {
+      jump k0(Tag_1)
     } else {
-      match self/12 {
+      match self/0 {
         Tag_0 => {
-          jump k809(Tag_0)
+          jump k0(Tag_0)
         },
         Tag_1 => {
-          join inline_cont1816(t817: bool) -> Option__Ordering {
-            if t817 {
-              jump k809(Tag_0)
+          join inline_cont1(t2: bool) -> Option__Ordering {
+            if t2 {
+              jump k0(Tag_0)
             } else {
-              jump k809(Tag_2)
+              jump k0(Tag_2)
             }
           } in
-          match other/13 {
+          match other/0 {
             Tag_0 => {
-              jump inline_cont1816(false)
+              jump inline_cont1(false)
             },
             Tag_1 => {
-              jump inline_cont1816(false)
+              jump inline_cont1(false)
             },
             Tag_2 => {
-              jump inline_cont1816(true)
+              jump inline_cont1(true)
             },
           }
         },
         Tag_2 => {
-          jump k809(Tag_2)
+          jump k0(Tag_2)
         },
       }
     }
   } in
-  match self/12 {
+  match self/0 {
     Tag_0 => {
-      match other/13 {
+      match other/0 {
         Tag_0 => {
-          jump inline_cont1817(true)
+          jump inline_cont0(true)
         },
         _ => {
-          jump inline_cont1817(false)
+          jump inline_cont0(false)
         },
       }
     },
     Tag_1 => {
-      match other/13 {
+      match other/0 {
         Tag_1 => {
-          jump inline_cont1817(true)
+          jump inline_cont0(true)
         },
         _ => {
-          jump inline_cont1817(false)
+          jump inline_cont0(false)
         },
       }
     },
     Tag_2 => {
-      match other/13 {
+      match other/0 {
         Tag_2 => {
-          jump inline_cont1817(true)
+          jump inline_cont0(true)
         },
         _ => {
-          jump inline_cont1817(false)
+          jump inline_cont0(false)
         },
       }
     },
@@ -78,16 +78,15 @@ fn trait_impl#std::cmp::PartialOrd#Ordering#lt(
   default_arg0: Ordering,
   default_arg1: Ordering
 ) -> bool {
-  let inline1819 =
-    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
-  match inline1819 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1820 = Option__Ordering::Some._0(inline1819) in
-      let inline1822 = trait_impl#PartialEq#Ordering#eq(inline1820, Tag_0) in
-      inline1822
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
@@ -96,17 +95,16 @@ fn trait_impl#std::cmp::PartialOrd#Ordering#le(
   default_arg0: Ordering,
   default_arg1: Ordering
 ) -> bool {
-  let inline1824 =
-    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
-  match inline1824 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1825 = Option__Ordering::Some._0(inline1824) in
-      let inline1827 = trait_impl#PartialEq#Ordering#eq(inline1825, Tag_2) in
-      let inline1828 = (!inline1827) in
-      inline1828
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
@@ -115,16 +113,15 @@ fn trait_impl#std::cmp::PartialOrd#Ordering#gt(
   default_arg0: Ordering,
   default_arg1: Ordering
 ) -> bool {
-  let inline1830 =
-    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
-  match inline1830 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1831 = Option__Ordering::Some._0(inline1830) in
-      let inline1833 = trait_impl#PartialEq#Ordering#eq(inline1831, Tag_2) in
-      inline1833
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
@@ -133,47 +130,46 @@ fn trait_impl#std::cmp::PartialOrd#Ordering#ge(
   default_arg0: Ordering,
   default_arg1: Ordering
 ) -> bool {
-  let inline1835 =
-    trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
-  match inline1835 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Ordering#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1836 = Option__Ordering::Some._0(inline1835) in
-      let inline1838 = trait_impl#PartialEq#Ordering#eq(inline1836, Tag_0) in
-      let inline1839 = (!inline1838) in
-      inline1839
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#Ordering#cmp(self/14: Ordering, other/15: Ordering) -> Ordering {
-  join inline_cont1841(t834: bool) -> Ordering {
-    if t834 {
+fn trait_impl#std::cmp::Ord#Ordering#cmp(self/0: Ordering, other/0: Ordering) -> Ordering {
+  join inline_cont0(t0: bool) -> Ordering {
+    if t0 {
       Tag_1
     } else {
-      match self/14 {
+      match self/0 {
         Tag_0 => {
           Tag_0
         },
         Tag_1 => {
-          join inline_cont1840(t839: bool) -> Ordering {
-            if t839 {
+          join inline_cont1(t1: bool) -> Ordering {
+            if t1 {
               Tag_0
             } else {
               Tag_2
             }
           } in
-          match other/15 {
+          match other/0 {
             Tag_0 => {
-              jump inline_cont1840(false)
+              jump inline_cont1(false)
             },
             Tag_1 => {
-              jump inline_cont1840(false)
+              jump inline_cont1(false)
             },
             Tag_2 => {
-              jump inline_cont1840(true)
+              jump inline_cont1(true)
             },
           }
         },
@@ -183,116 +179,116 @@ fn trait_impl#std::cmp::Ord#Ordering#cmp(self/14: Ordering, other/15: Ordering) 
       }
     }
   } in
-  match self/14 {
+  match self/0 {
     Tag_0 => {
-      match other/15 {
+      match other/0 {
         Tag_0 => {
-          jump inline_cont1841(true)
+          jump inline_cont0(true)
         },
         _ => {
-          jump inline_cont1841(false)
+          jump inline_cont0(false)
         },
       }
     },
     Tag_1 => {
-      match other/15 {
+      match other/0 {
         Tag_1 => {
-          jump inline_cont1841(true)
+          jump inline_cont0(true)
         },
         _ => {
-          jump inline_cont1841(false)
+          jump inline_cont0(false)
         },
       }
     },
     Tag_2 => {
-      match other/15 {
+      match other/0 {
         Tag_2 => {
-          jump inline_cont1841(true)
+          jump inline_cont0(true)
         },
         _ => {
-          jump inline_cont1841(false)
+          jump inline_cont0(false)
         },
       }
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#unit#cmp(self/16: unit, other/17: unit) -> Ordering {
+fn trait_impl#std::cmp::Ord#unit#cmp(self/0: unit, other/0: unit) -> Ordering {
   Tag_1
 }
 
 fn trait_impl#std::cmp::PartialOrd#unit#partial_cmp(
-  self/18: unit,
-  other/19: unit
+  self/0: unit,
+  other/0: unit
 ) -> Option__Ordering {
-  let t844 = Option__Ordering::Some(Tag_1) in
-  t844
+  let t0 = Option__Ordering::Some(Tag_1) in
+  t0
 }
 
 fn trait_impl#std::cmp::PartialOrd#unit#lt(default_arg0: unit, default_arg1: unit) -> bool {
-  let inline1843 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
-  match inline1843 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1844 = Option__Ordering::Some._0(inline1843) in
-      let inline1846 = trait_impl#PartialEq#Ordering#eq(inline1844, Tag_0) in
-      inline1846
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#unit#le(default_arg0: unit, default_arg1: unit) -> bool {
-  let inline1848 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
-  match inline1848 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1849 = Option__Ordering::Some._0(inline1848) in
-      let inline1851 = trait_impl#PartialEq#Ordering#eq(inline1849, Tag_2) in
-      let inline1852 = (!inline1851) in
-      inline1852
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#unit#gt(default_arg0: unit, default_arg1: unit) -> bool {
-  let inline1854 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
-  match inline1854 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1855 = Option__Ordering::Some._0(inline1854) in
-      let inline1857 = trait_impl#PartialEq#Ordering#eq(inline1855, Tag_2) in
-      inline1857
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: unit) -> bool {
-  let inline1859 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
-  match inline1859 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1860 = Option__Ordering::Some._0(inline1859) in
-      let inline1862 = trait_impl#PartialEq#Ordering#eq(inline1860, Tag_0) in
-      let inline1863 = (!inline1862) in
-      inline1863
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#bool#cmp(self/20: bool, other/21: bool) -> Ordering {
-  let t861 = (self/20 == other/21) in
-  if t861 {
+fn trait_impl#std::cmp::Ord#bool#cmp(self/0: bool, other/0: bool) -> Ordering {
+  let t0 = (self/0 == other/0) in
+  if t0 {
     Tag_1
   } else {
-    if self/20 {
+    if self/0 {
       Tag_2
     } else {
       Tag_0
@@ -301,90 +297,90 @@ fn trait_impl#std::cmp::Ord#bool#cmp(self/20: bool, other/21: bool) -> Ordering 
 }
 
 fn trait_impl#std::cmp::PartialOrd#bool#partial_cmp(
-  self/22: bool,
-  other/23: bool
+  self/0: bool,
+  other/0: bool
 ) -> Option__Ordering {
-  let t869 = (self/22 == other/23) in
-  join k866(jp867: Ordering) -> Option__Ordering {
-    let t868 = Option__Ordering::Some(jp867) in
-    t868
+  let t0 = (self/0 == other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t869 {
-    jump k866(Tag_1)
+  if t0 {
+    jump k0(Tag_1)
   } else {
-    if self/22 {
-      jump k866(Tag_2)
+    if self/0 {
+      jump k0(Tag_2)
     } else {
-      jump k866(Tag_0)
+      jump k0(Tag_0)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#bool#lt(default_arg0: bool, default_arg1: bool) -> bool {
-  let inline1865 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
-  match inline1865 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1866 = Option__Ordering::Some._0(inline1865) in
-      let inline1868 = trait_impl#PartialEq#Ordering#eq(inline1866, Tag_0) in
-      inline1868
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#bool#le(default_arg0: bool, default_arg1: bool) -> bool {
-  let inline1870 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
-  match inline1870 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1871 = Option__Ordering::Some._0(inline1870) in
-      let inline1873 = trait_impl#PartialEq#Ordering#eq(inline1871, Tag_2) in
-      let inline1874 = (!inline1873) in
-      inline1874
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#bool#gt(default_arg0: bool, default_arg1: bool) -> bool {
-  let inline1876 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
-  match inline1876 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1877 = Option__Ordering::Some._0(inline1876) in
-      let inline1879 = trait_impl#PartialEq#Ordering#eq(inline1877, Tag_2) in
-      inline1879
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#bool#ge(default_arg0: bool, default_arg1: bool) -> bool {
-  let inline1881 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
-  match inline1881 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1882 = Option__Ordering::Some._0(inline1881) in
-      let inline1884 = trait_impl#PartialEq#Ordering#eq(inline1882, Tag_0) in
-      let inline1885 = (!inline1884) in
-      inline1885
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#string#cmp(self/24: string, other/25: string) -> Ordering {
-  let t888 = (self/24 < other/25) in
-  if t888 {
+fn trait_impl#std::cmp::Ord#string#cmp(self/0: string, other/0: string) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t891 = (self/24 > other/25) in
-    if t891 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -393,91 +389,91 @@ fn trait_impl#std::cmp::Ord#string#cmp(self/24: string, other/25: string) -> Ord
 }
 
 fn trait_impl#std::cmp::PartialOrd#string#partial_cmp(
-  self/26: string,
-  other/27: string
+  self/0: string,
+  other/0: string
 ) -> Option__Ordering {
-  let t897 = (self/26 < other/27) in
-  join k894(jp895: Ordering) -> Option__Ordering {
-    let t896 = Option__Ordering::Some(jp895) in
-    t896
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t897 {
-    jump k894(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t900 = (self/26 > other/27) in
-    if t900 {
-      jump k894(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k894(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#string#lt(default_arg0: string, default_arg1: string) -> bool {
-  let inline1887 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
-  match inline1887 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1888 = Option__Ordering::Some._0(inline1887) in
-      let inline1890 = trait_impl#PartialEq#Ordering#eq(inline1888, Tag_0) in
-      inline1890
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#string#le(default_arg0: string, default_arg1: string) -> bool {
-  let inline1892 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
-  match inline1892 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1893 = Option__Ordering::Some._0(inline1892) in
-      let inline1895 = trait_impl#PartialEq#Ordering#eq(inline1893, Tag_2) in
-      let inline1896 = (!inline1895) in
-      inline1896
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#string#gt(default_arg0: string, default_arg1: string) -> bool {
-  let inline1898 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
-  match inline1898 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1899 = Option__Ordering::Some._0(inline1898) in
-      let inline1901 = trait_impl#PartialEq#Ordering#eq(inline1899, Tag_2) in
-      inline1901
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#string#ge(default_arg0: string, default_arg1: string) -> bool {
-  let inline1903 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
-  match inline1903 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1904 = Option__Ordering::Some._0(inline1903) in
-      let inline1906 = trait_impl#PartialEq#Ordering#eq(inline1904, Tag_0) in
-      let inline1907 = (!inline1906) in
-      inline1907
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#char#cmp(self/28: char, other/29: char) -> Ordering {
-  let t917 = (self/28 < other/29) in
-  if t917 {
+fn trait_impl#std::cmp::Ord#char#cmp(self/0: char, other/0: char) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t920 = (self/28 > other/29) in
-    if t920 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -486,91 +482,91 @@ fn trait_impl#std::cmp::Ord#char#cmp(self/28: char, other/29: char) -> Ordering 
 }
 
 fn trait_impl#std::cmp::PartialOrd#char#partial_cmp(
-  self/30: char,
-  other/31: char
+  self/0: char,
+  other/0: char
 ) -> Option__Ordering {
-  let t926 = (self/30 < other/31) in
-  join k923(jp924: Ordering) -> Option__Ordering {
-    let t925 = Option__Ordering::Some(jp924) in
-    t925
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t926 {
-    jump k923(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t929 = (self/30 > other/31) in
-    if t929 {
-      jump k923(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k923(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#char#lt(default_arg0: char, default_arg1: char) -> bool {
-  let inline1909 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
-  match inline1909 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1910 = Option__Ordering::Some._0(inline1909) in
-      let inline1912 = trait_impl#PartialEq#Ordering#eq(inline1910, Tag_0) in
-      inline1912
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#char#le(default_arg0: char, default_arg1: char) -> bool {
-  let inline1914 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
-  match inline1914 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1915 = Option__Ordering::Some._0(inline1914) in
-      let inline1917 = trait_impl#PartialEq#Ordering#eq(inline1915, Tag_2) in
-      let inline1918 = (!inline1917) in
-      inline1918
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#char#gt(default_arg0: char, default_arg1: char) -> bool {
-  let inline1920 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
-  match inline1920 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1921 = Option__Ordering::Some._0(inline1920) in
-      let inline1923 = trait_impl#PartialEq#Ordering#eq(inline1921, Tag_2) in
-      inline1923
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#char#ge(default_arg0: char, default_arg1: char) -> bool {
-  let inline1925 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
-  match inline1925 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1926 = Option__Ordering::Some._0(inline1925) in
-      let inline1928 = trait_impl#PartialEq#Ordering#eq(inline1926, Tag_0) in
-      let inline1929 = (!inline1928) in
-      inline1929
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#isize#cmp(self/32: isize, other/33: isize) -> Ordering {
-  let t946 = (self/32 < other/33) in
-  if t946 {
+fn trait_impl#std::cmp::Ord#isize#cmp(self/0: isize, other/0: isize) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t949 = (self/32 > other/33) in
-    if t949 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -579,91 +575,91 @@ fn trait_impl#std::cmp::Ord#isize#cmp(self/32: isize, other/33: isize) -> Orderi
 }
 
 fn trait_impl#std::cmp::PartialOrd#isize#partial_cmp(
-  self/34: isize,
-  other/35: isize
+  self/0: isize,
+  other/0: isize
 ) -> Option__Ordering {
-  let t955 = (self/34 < other/35) in
-  join k952(jp953: Ordering) -> Option__Ordering {
-    let t954 = Option__Ordering::Some(jp953) in
-    t954
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t955 {
-    jump k952(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t958 = (self/34 > other/35) in
-    if t958 {
-      jump k952(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k952(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#isize#lt(default_arg0: isize, default_arg1: isize) -> bool {
-  let inline1931 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
-  match inline1931 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1932 = Option__Ordering::Some._0(inline1931) in
-      let inline1934 = trait_impl#PartialEq#Ordering#eq(inline1932, Tag_0) in
-      inline1934
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#isize#le(default_arg0: isize, default_arg1: isize) -> bool {
-  let inline1936 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
-  match inline1936 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1937 = Option__Ordering::Some._0(inline1936) in
-      let inline1939 = trait_impl#PartialEq#Ordering#eq(inline1937, Tag_2) in
-      let inline1940 = (!inline1939) in
-      inline1940
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#isize#gt(default_arg0: isize, default_arg1: isize) -> bool {
-  let inline1942 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
-  match inline1942 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1943 = Option__Ordering::Some._0(inline1942) in
-      let inline1945 = trait_impl#PartialEq#Ordering#eq(inline1943, Tag_2) in
-      inline1945
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#isize#ge(default_arg0: isize, default_arg1: isize) -> bool {
-  let inline1947 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
-  match inline1947 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#isize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1948 = Option__Ordering::Some._0(inline1947) in
-      let inline1950 = trait_impl#PartialEq#Ordering#eq(inline1948, Tag_0) in
-      let inline1951 = (!inline1950) in
-      inline1951
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#i8#cmp(self/36: i8, other/37: i8) -> Ordering {
-  let t975 = (self/36 < other/37) in
-  if t975 {
+fn trait_impl#std::cmp::Ord#i8#cmp(self/0: i8, other/0: i8) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t978 = (self/36 > other/37) in
-    if t978 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -671,89 +667,89 @@ fn trait_impl#std::cmp::Ord#i8#cmp(self/36: i8, other/37: i8) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#i8#partial_cmp(self/38: i8, other/39: i8) -> Option__Ordering {
-  let t984 = (self/38 < other/39) in
-  join k981(jp982: Ordering) -> Option__Ordering {
-    let t983 = Option__Ordering::Some(jp982) in
-    t983
+fn trait_impl#std::cmp::PartialOrd#i8#partial_cmp(self/0: i8, other/0: i8) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t984 {
-    jump k981(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t987 = (self/38 > other/39) in
-    if t987 {
-      jump k981(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k981(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i8#lt(default_arg0: i8, default_arg1: i8) -> bool {
-  let inline1953 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
-  match inline1953 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1954 = Option__Ordering::Some._0(inline1953) in
-      let inline1956 = trait_impl#PartialEq#Ordering#eq(inline1954, Tag_0) in
-      inline1956
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i8#le(default_arg0: i8, default_arg1: i8) -> bool {
-  let inline1958 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
-  match inline1958 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1959 = Option__Ordering::Some._0(inline1958) in
-      let inline1961 = trait_impl#PartialEq#Ordering#eq(inline1959, Tag_2) in
-      let inline1962 = (!inline1961) in
-      inline1962
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i8#gt(default_arg0: i8, default_arg1: i8) -> bool {
-  let inline1964 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
-  match inline1964 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1965 = Option__Ordering::Some._0(inline1964) in
-      let inline1967 = trait_impl#PartialEq#Ordering#eq(inline1965, Tag_2) in
-      inline1967
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i8#ge(default_arg0: i8, default_arg1: i8) -> bool {
-  let inline1969 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
-  match inline1969 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1970 = Option__Ordering::Some._0(inline1969) in
-      let inline1972 = trait_impl#PartialEq#Ordering#eq(inline1970, Tag_0) in
-      let inline1973 = (!inline1972) in
-      inline1973
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#i16#cmp(self/40: i16, other/41: i16) -> Ordering {
-  let t1004 = (self/40 < other/41) in
-  if t1004 {
+fn trait_impl#std::cmp::Ord#i16#cmp(self/0: i16, other/0: i16) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1007 = (self/40 > other/41) in
-    if t1007 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -761,92 +757,89 @@ fn trait_impl#std::cmp::Ord#i16#cmp(self/40: i16, other/41: i16) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#i16#partial_cmp(
-  self/42: i16,
-  other/43: i16
-) -> Option__Ordering {
-  let t1013 = (self/42 < other/43) in
-  join k1010(jp1011: Ordering) -> Option__Ordering {
-    let t1012 = Option__Ordering::Some(jp1011) in
-    t1012
+fn trait_impl#std::cmp::PartialOrd#i16#partial_cmp(self/0: i16, other/0: i16) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1013 {
-    jump k1010(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1016 = (self/42 > other/43) in
-    if t1016 {
-      jump k1010(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1010(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i16#lt(default_arg0: i16, default_arg1: i16) -> bool {
-  let inline1975 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
-  match inline1975 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1976 = Option__Ordering::Some._0(inline1975) in
-      let inline1978 = trait_impl#PartialEq#Ordering#eq(inline1976, Tag_0) in
-      inline1978
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i16#le(default_arg0: i16, default_arg1: i16) -> bool {
-  let inline1980 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
-  match inline1980 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1981 = Option__Ordering::Some._0(inline1980) in
-      let inline1983 = trait_impl#PartialEq#Ordering#eq(inline1981, Tag_2) in
-      let inline1984 = (!inline1983) in
-      inline1984
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i16#gt(default_arg0: i16, default_arg1: i16) -> bool {
-  let inline1986 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
-  match inline1986 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1987 = Option__Ordering::Some._0(inline1986) in
-      let inline1989 = trait_impl#PartialEq#Ordering#eq(inline1987, Tag_2) in
-      inline1989
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i16#ge(default_arg0: i16, default_arg1: i16) -> bool {
-  let inline1991 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
-  match inline1991 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1992 = Option__Ordering::Some._0(inline1991) in
-      let inline1994 = trait_impl#PartialEq#Ordering#eq(inline1992, Tag_0) in
-      let inline1995 = (!inline1994) in
-      inline1995
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#i32#cmp(self/44: i32, other/45: i32) -> Ordering {
-  let t1033 = (self/44 < other/45) in
-  if t1033 {
+fn trait_impl#std::cmp::Ord#i32#cmp(self/0: i32, other/0: i32) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1036 = (self/44 > other/45) in
-    if t1036 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -854,92 +847,89 @@ fn trait_impl#std::cmp::Ord#i32#cmp(self/44: i32, other/45: i32) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#i32#partial_cmp(
-  self/46: i32,
-  other/47: i32
-) -> Option__Ordering {
-  let t1042 = (self/46 < other/47) in
-  join k1039(jp1040: Ordering) -> Option__Ordering {
-    let t1041 = Option__Ordering::Some(jp1040) in
-    t1041
+fn trait_impl#std::cmp::PartialOrd#i32#partial_cmp(self/0: i32, other/0: i32) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1042 {
-    jump k1039(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1045 = (self/46 > other/47) in
-    if t1045 {
-      jump k1039(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1039(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i32#lt(default_arg0: i32, default_arg1: i32) -> bool {
-  let inline1997 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
-  match inline1997 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline1998 = Option__Ordering::Some._0(inline1997) in
-      let inline2000 = trait_impl#PartialEq#Ordering#eq(inline1998, Tag_0) in
-      inline2000
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i32#le(default_arg0: i32, default_arg1: i32) -> bool {
-  let inline2002 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
-  match inline2002 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2003 = Option__Ordering::Some._0(inline2002) in
-      let inline2005 = trait_impl#PartialEq#Ordering#eq(inline2003, Tag_2) in
-      let inline2006 = (!inline2005) in
-      inline2006
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i32#gt(default_arg0: i32, default_arg1: i32) -> bool {
-  let inline2008 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
-  match inline2008 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2009 = Option__Ordering::Some._0(inline2008) in
-      let inline2011 = trait_impl#PartialEq#Ordering#eq(inline2009, Tag_2) in
-      inline2011
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i32#ge(default_arg0: i32, default_arg1: i32) -> bool {
-  let inline2013 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
-  match inline2013 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2014 = Option__Ordering::Some._0(inline2013) in
-      let inline2016 = trait_impl#PartialEq#Ordering#eq(inline2014, Tag_0) in
-      let inline2017 = (!inline2016) in
-      inline2017
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#i64#cmp(self/48: i64, other/49: i64) -> Ordering {
-  let t1062 = (self/48 < other/49) in
-  if t1062 {
+fn trait_impl#std::cmp::Ord#i64#cmp(self/0: i64, other/0: i64) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1065 = (self/48 > other/49) in
-    if t1065 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -947,92 +937,89 @@ fn trait_impl#std::cmp::Ord#i64#cmp(self/48: i64, other/49: i64) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#i64#partial_cmp(
-  self/50: i64,
-  other/51: i64
-) -> Option__Ordering {
-  let t1071 = (self/50 < other/51) in
-  join k1068(jp1069: Ordering) -> Option__Ordering {
-    let t1070 = Option__Ordering::Some(jp1069) in
-    t1070
+fn trait_impl#std::cmp::PartialOrd#i64#partial_cmp(self/0: i64, other/0: i64) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1071 {
-    jump k1068(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1074 = (self/50 > other/51) in
-    if t1074 {
-      jump k1068(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1068(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i64#lt(default_arg0: i64, default_arg1: i64) -> bool {
-  let inline2019 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
-  match inline2019 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2020 = Option__Ordering::Some._0(inline2019) in
-      let inline2022 = trait_impl#PartialEq#Ordering#eq(inline2020, Tag_0) in
-      inline2022
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i64#le(default_arg0: i64, default_arg1: i64) -> bool {
-  let inline2024 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
-  match inline2024 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2025 = Option__Ordering::Some._0(inline2024) in
-      let inline2027 = trait_impl#PartialEq#Ordering#eq(inline2025, Tag_2) in
-      let inline2028 = (!inline2027) in
-      inline2028
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i64#gt(default_arg0: i64, default_arg1: i64) -> bool {
-  let inline2030 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
-  match inline2030 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2031 = Option__Ordering::Some._0(inline2030) in
-      let inline2033 = trait_impl#PartialEq#Ordering#eq(inline2031, Tag_2) in
-      inline2033
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#i64#ge(default_arg0: i64, default_arg1: i64) -> bool {
-  let inline2035 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
-  match inline2035 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#i64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2036 = Option__Ordering::Some._0(inline2035) in
-      let inline2038 = trait_impl#PartialEq#Ordering#eq(inline2036, Tag_0) in
-      let inline2039 = (!inline2038) in
-      inline2039
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#usize#cmp(self/52: usize, other/53: usize) -> Ordering {
-  let t1091 = (self/52 < other/53) in
-  if t1091 {
+fn trait_impl#std::cmp::Ord#usize#cmp(self/0: usize, other/0: usize) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1094 = (self/52 > other/53) in
-    if t1094 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -1041,91 +1028,91 @@ fn trait_impl#std::cmp::Ord#usize#cmp(self/52: usize, other/53: usize) -> Orderi
 }
 
 fn trait_impl#std::cmp::PartialOrd#usize#partial_cmp(
-  self/54: usize,
-  other/55: usize
+  self/0: usize,
+  other/0: usize
 ) -> Option__Ordering {
-  let t1100 = (self/54 < other/55) in
-  join k1097(jp1098: Ordering) -> Option__Ordering {
-    let t1099 = Option__Ordering::Some(jp1098) in
-    t1099
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1100 {
-    jump k1097(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1103 = (self/54 > other/55) in
-    if t1103 {
-      jump k1097(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1097(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#usize#lt(default_arg0: usize, default_arg1: usize) -> bool {
-  let inline2041 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
-  match inline2041 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2042 = Option__Ordering::Some._0(inline2041) in
-      let inline2044 = trait_impl#PartialEq#Ordering#eq(inline2042, Tag_0) in
-      inline2044
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#usize#le(default_arg0: usize, default_arg1: usize) -> bool {
-  let inline2046 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
-  match inline2046 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2047 = Option__Ordering::Some._0(inline2046) in
-      let inline2049 = trait_impl#PartialEq#Ordering#eq(inline2047, Tag_2) in
-      let inline2050 = (!inline2049) in
-      inline2050
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#usize#gt(default_arg0: usize, default_arg1: usize) -> bool {
-  let inline2052 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
-  match inline2052 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2053 = Option__Ordering::Some._0(inline2052) in
-      let inline2055 = trait_impl#PartialEq#Ordering#eq(inline2053, Tag_2) in
-      inline2055
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#usize#ge(default_arg0: usize, default_arg1: usize) -> bool {
-  let inline2057 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
-  match inline2057 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#usize#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2058 = Option__Ordering::Some._0(inline2057) in
-      let inline2060 = trait_impl#PartialEq#Ordering#eq(inline2058, Tag_0) in
-      let inline2061 = (!inline2060) in
-      inline2061
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#u8#cmp(self/56: u8, other/57: u8) -> Ordering {
-  let t1120 = (self/56 < other/57) in
-  if t1120 {
+fn trait_impl#std::cmp::Ord#u8#cmp(self/0: u8, other/0: u8) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1123 = (self/56 > other/57) in
-    if t1123 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -1133,89 +1120,89 @@ fn trait_impl#std::cmp::Ord#u8#cmp(self/56: u8, other/57: u8) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#u8#partial_cmp(self/58: u8, other/59: u8) -> Option__Ordering {
-  let t1129 = (self/58 < other/59) in
-  join k1126(jp1127: Ordering) -> Option__Ordering {
-    let t1128 = Option__Ordering::Some(jp1127) in
-    t1128
+fn trait_impl#std::cmp::PartialOrd#u8#partial_cmp(self/0: u8, other/0: u8) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1129 {
-    jump k1126(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1132 = (self/58 > other/59) in
-    if t1132 {
-      jump k1126(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1126(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u8#lt(default_arg0: u8, default_arg1: u8) -> bool {
-  let inline2063 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
-  match inline2063 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2064 = Option__Ordering::Some._0(inline2063) in
-      let inline2066 = trait_impl#PartialEq#Ordering#eq(inline2064, Tag_0) in
-      inline2066
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u8#le(default_arg0: u8, default_arg1: u8) -> bool {
-  let inline2068 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
-  match inline2068 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2069 = Option__Ordering::Some._0(inline2068) in
-      let inline2071 = trait_impl#PartialEq#Ordering#eq(inline2069, Tag_2) in
-      let inline2072 = (!inline2071) in
-      inline2072
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u8#gt(default_arg0: u8, default_arg1: u8) -> bool {
-  let inline2074 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
-  match inline2074 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2075 = Option__Ordering::Some._0(inline2074) in
-      let inline2077 = trait_impl#PartialEq#Ordering#eq(inline2075, Tag_2) in
-      inline2077
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u8#ge(default_arg0: u8, default_arg1: u8) -> bool {
-  let inline2079 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
-  match inline2079 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u8#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2080 = Option__Ordering::Some._0(inline2079) in
-      let inline2082 = trait_impl#PartialEq#Ordering#eq(inline2080, Tag_0) in
-      let inline2083 = (!inline2082) in
-      inline2083
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#u16#cmp(self/60: u16, other/61: u16) -> Ordering {
-  let t1149 = (self/60 < other/61) in
-  if t1149 {
+fn trait_impl#std::cmp::Ord#u16#cmp(self/0: u16, other/0: u16) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1152 = (self/60 > other/61) in
-    if t1152 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -1223,92 +1210,89 @@ fn trait_impl#std::cmp::Ord#u16#cmp(self/60: u16, other/61: u16) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#u16#partial_cmp(
-  self/62: u16,
-  other/63: u16
-) -> Option__Ordering {
-  let t1158 = (self/62 < other/63) in
-  join k1155(jp1156: Ordering) -> Option__Ordering {
-    let t1157 = Option__Ordering::Some(jp1156) in
-    t1157
+fn trait_impl#std::cmp::PartialOrd#u16#partial_cmp(self/0: u16, other/0: u16) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1158 {
-    jump k1155(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1161 = (self/62 > other/63) in
-    if t1161 {
-      jump k1155(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1155(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u16#lt(default_arg0: u16, default_arg1: u16) -> bool {
-  let inline2085 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
-  match inline2085 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2086 = Option__Ordering::Some._0(inline2085) in
-      let inline2088 = trait_impl#PartialEq#Ordering#eq(inline2086, Tag_0) in
-      inline2088
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u16#le(default_arg0: u16, default_arg1: u16) -> bool {
-  let inline2090 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
-  match inline2090 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2091 = Option__Ordering::Some._0(inline2090) in
-      let inline2093 = trait_impl#PartialEq#Ordering#eq(inline2091, Tag_2) in
-      let inline2094 = (!inline2093) in
-      inline2094
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u16#gt(default_arg0: u16, default_arg1: u16) -> bool {
-  let inline2096 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
-  match inline2096 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2097 = Option__Ordering::Some._0(inline2096) in
-      let inline2099 = trait_impl#PartialEq#Ordering#eq(inline2097, Tag_2) in
-      inline2099
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u16#ge(default_arg0: u16, default_arg1: u16) -> bool {
-  let inline2101 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
-  match inline2101 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u16#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2102 = Option__Ordering::Some._0(inline2101) in
-      let inline2104 = trait_impl#PartialEq#Ordering#eq(inline2102, Tag_0) in
-      let inline2105 = (!inline2104) in
-      inline2105
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#u32#cmp(self/64: u32, other/65: u32) -> Ordering {
-  let t1178 = (self/64 < other/65) in
-  if t1178 {
+fn trait_impl#std::cmp::Ord#u32#cmp(self/0: u32, other/0: u32) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1181 = (self/64 > other/65) in
-    if t1181 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -1316,92 +1300,89 @@ fn trait_impl#std::cmp::Ord#u32#cmp(self/64: u32, other/65: u32) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#u32#partial_cmp(
-  self/66: u32,
-  other/67: u32
-) -> Option__Ordering {
-  let t1187 = (self/66 < other/67) in
-  join k1184(jp1185: Ordering) -> Option__Ordering {
-    let t1186 = Option__Ordering::Some(jp1185) in
-    t1186
+fn trait_impl#std::cmp::PartialOrd#u32#partial_cmp(self/0: u32, other/0: u32) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1187 {
-    jump k1184(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1190 = (self/66 > other/67) in
-    if t1190 {
-      jump k1184(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1184(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u32#lt(default_arg0: u32, default_arg1: u32) -> bool {
-  let inline2107 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
-  match inline2107 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2108 = Option__Ordering::Some._0(inline2107) in
-      let inline2110 = trait_impl#PartialEq#Ordering#eq(inline2108, Tag_0) in
-      inline2110
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u32#le(default_arg0: u32, default_arg1: u32) -> bool {
-  let inline2112 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
-  match inline2112 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2113 = Option__Ordering::Some._0(inline2112) in
-      let inline2115 = trait_impl#PartialEq#Ordering#eq(inline2113, Tag_2) in
-      let inline2116 = (!inline2115) in
-      inline2116
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u32#gt(default_arg0: u32, default_arg1: u32) -> bool {
-  let inline2118 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
-  match inline2118 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2119 = Option__Ordering::Some._0(inline2118) in
-      let inline2121 = trait_impl#PartialEq#Ordering#eq(inline2119, Tag_2) in
-      inline2121
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u32#ge(default_arg0: u32, default_arg1: u32) -> bool {
-  let inline2123 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
-  match inline2123 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2124 = Option__Ordering::Some._0(inline2123) in
-      let inline2126 = trait_impl#PartialEq#Ordering#eq(inline2124, Tag_0) in
-      let inline2127 = (!inline2126) in
-      inline2127
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::Ord#u64#cmp(self/68: u64, other/69: u64) -> Ordering {
-  let t1207 = (self/68 < other/69) in
-  if t1207 {
+fn trait_impl#std::cmp::Ord#u64#cmp(self/0: u64, other/0: u64) -> Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
     Tag_0
   } else {
-    let t1210 = (self/68 > other/69) in
-    if t1210 {
+    let t1 = (self/0 > other/0) in
+    if t1 {
       Tag_2
     } else {
       Tag_1
@@ -1409,103 +1390,97 @@ fn trait_impl#std::cmp::Ord#u64#cmp(self/68: u64, other/69: u64) -> Ordering {
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#u64#partial_cmp(
-  self/70: u64,
-  other/71: u64
-) -> Option__Ordering {
-  let t1216 = (self/70 < other/71) in
-  join k1213(jp1214: Ordering) -> Option__Ordering {
-    let t1215 = Option__Ordering::Some(jp1214) in
-    t1215
+fn trait_impl#std::cmp::PartialOrd#u64#partial_cmp(self/0: u64, other/0: u64) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t1 = Option__Ordering::Some(jp0) in
+    t1
   } in
-  if t1216 {
-    jump k1213(Tag_0)
+  if t0 {
+    jump k0(Tag_0)
   } else {
-    let t1219 = (self/70 > other/71) in
-    if t1219 {
-      jump k1213(Tag_2)
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      jump k0(Tag_2)
     } else {
-      jump k1213(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u64#lt(default_arg0: u64, default_arg1: u64) -> bool {
-  let inline2129 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
-  match inline2129 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2130 = Option__Ordering::Some._0(inline2129) in
-      let inline2132 = trait_impl#PartialEq#Ordering#eq(inline2130, Tag_0) in
-      inline2132
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u64#le(default_arg0: u64, default_arg1: u64) -> bool {
-  let inline2134 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
-  match inline2134 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2135 = Option__Ordering::Some._0(inline2134) in
-      let inline2137 = trait_impl#PartialEq#Ordering#eq(inline2135, Tag_2) in
-      let inline2138 = (!inline2137) in
-      inline2138
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u64#gt(default_arg0: u64, default_arg1: u64) -> bool {
-  let inline2140 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
-  match inline2140 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2141 = Option__Ordering::Some._0(inline2140) in
-      let inline2143 = trait_impl#PartialEq#Ordering#eq(inline2141, Tag_2) in
-      inline2143
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#u64#ge(default_arg0: u64, default_arg1: u64) -> bool {
-  let inline2145 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
-  match inline2145 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#u64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2146 = Option__Ordering::Some._0(inline2145) in
-      let inline2148 = trait_impl#PartialEq#Ordering#eq(inline2146, Tag_0) in
-      let inline2149 = (!inline2148) in
-      inline2149
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#f32#partial_cmp(
-  self/72: f32,
-  other/73: f32
-) -> Option__Ordering {
-  let t1236 = (self/72 < other/73) in
-  if t1236 {
-    let t1237 = Option__Ordering::Some(Tag_0) in
-    t1237
+fn trait_impl#std::cmp::PartialOrd#f32#partial_cmp(self/0: f32, other/0: f32) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
+    let t1 = Option__Ordering::Some(Tag_0) in
+    t1
   } else {
-    let t1240 = (self/72 > other/73) in
-    if t1240 {
-      let t1241 = Option__Ordering::Some(Tag_2) in
-      t1241
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      let t3 = Option__Ordering::Some(Tag_2) in
+      t3
     } else {
-      let t1244 = (self/72 == other/73) in
-      if t1244 {
-        let t1245 = Option__Ordering::Some(Tag_1) in
-        t1245
+      let t4 = (self/0 == other/0) in
+      if t4 {
+        let t5 = Option__Ordering::Some(Tag_1) in
+        t5
       } else {
         Tag_0
       }
@@ -1514,81 +1489,78 @@ fn trait_impl#std::cmp::PartialOrd#f32#partial_cmp(
 }
 
 fn trait_impl#std::cmp::PartialOrd#f32#lt(default_arg0: f32, default_arg1: f32) -> bool {
-  let inline2151 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
-  match inline2151 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2152 = Option__Ordering::Some._0(inline2151) in
-      let inline2154 = trait_impl#PartialEq#Ordering#eq(inline2152, Tag_0) in
-      inline2154
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#f32#le(default_arg0: f32, default_arg1: f32) -> bool {
-  let inline2156 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
-  match inline2156 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2157 = Option__Ordering::Some._0(inline2156) in
-      let inline2159 = trait_impl#PartialEq#Ordering#eq(inline2157, Tag_2) in
-      let inline2160 = (!inline2159) in
-      inline2160
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#f32#gt(default_arg0: f32, default_arg1: f32) -> bool {
-  let inline2162 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
-  match inline2162 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2163 = Option__Ordering::Some._0(inline2162) in
-      let inline2165 = trait_impl#PartialEq#Ordering#eq(inline2163, Tag_2) in
-      inline2165
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#f32#ge(default_arg0: f32, default_arg1: f32) -> bool {
-  let inline2167 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
-  match inline2167 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f32#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2168 = Option__Ordering::Some._0(inline2167) in
-      let inline2170 = trait_impl#PartialEq#Ordering#eq(inline2168, Tag_0) in
-      let inline2171 = (!inline2170) in
-      inline2171
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#std::cmp::PartialOrd#f64#partial_cmp(
-  self/74: f64,
-  other/75: f64
-) -> Option__Ordering {
-  let t1262 = (self/74 < other/75) in
-  if t1262 {
-    let t1263 = Option__Ordering::Some(Tag_0) in
-    t1263
+fn trait_impl#std::cmp::PartialOrd#f64#partial_cmp(self/0: f64, other/0: f64) -> Option__Ordering {
+  let t0 = (self/0 < other/0) in
+  if t0 {
+    let t1 = Option__Ordering::Some(Tag_0) in
+    t1
   } else {
-    let t1266 = (self/74 > other/75) in
-    if t1266 {
-      let t1267 = Option__Ordering::Some(Tag_2) in
-      t1267
+    let t2 = (self/0 > other/0) in
+    if t2 {
+      let t3 = Option__Ordering::Some(Tag_2) in
+      t3
     } else {
-      let t1270 = (self/74 == other/75) in
-      if t1270 {
-        let t1271 = Option__Ordering::Some(Tag_1) in
-        t1271
+      let t4 = (self/0 == other/0) in
+      if t4 {
+        let t5 = Option__Ordering::Some(Tag_1) in
+        t5
       } else {
         Tag_0
       }
@@ -1597,319 +1569,317 @@ fn trait_impl#std::cmp::PartialOrd#f64#partial_cmp(
 }
 
 fn trait_impl#std::cmp::PartialOrd#f64#lt(default_arg0: f64, default_arg1: f64) -> bool {
-  let inline2173 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
-  match inline2173 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2174 = Option__Ordering::Some._0(inline2173) in
-      let inline2176 = trait_impl#PartialEq#Ordering#eq(inline2174, Tag_0) in
-      inline2176
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#f64#le(default_arg0: f64, default_arg1: f64) -> bool {
-  let inline2178 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
-  match inline2178 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2179 = Option__Ordering::Some._0(inline2178) in
-      let inline2181 = trait_impl#PartialEq#Ordering#eq(inline2179, Tag_2) in
-      let inline2182 = (!inline2181) in
-      inline2182
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#f64#gt(default_arg0: f64, default_arg1: f64) -> bool {
-  let inline2184 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
-  match inline2184 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2185 = Option__Ordering::Some._0(inline2184) in
-      let inline2187 = trait_impl#PartialEq#Ordering#eq(inline2185, Tag_2) in
-      inline2187
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#f64#ge(default_arg0: f64, default_arg1: f64) -> bool {
-  let inline2189 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
-  match inline2189 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#f64#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2190 = Option__Ordering::Some._0(inline2189) in
-      let inline2192 = trait_impl#PartialEq#Ordering#eq(inline2190, Tag_0) in
-      let inline2193 = (!inline2192) in
-      inline2193
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
-fn trait_impl#PartialEq#LegacyKey#eq(self/0: LegacyKey, other/1: LegacyKey) -> bool {
-  let t1288 = LegacyKey.value(self/0) in
-  let t1289 = LegacyKey.value(other/1) in
-  let inline2195 = (t1288 == t1289) in
-  inline2195
+fn trait_impl#PartialEq#LegacyKey#eq(self/0: LegacyKey, other/0: LegacyKey) -> bool {
+  let t0 = LegacyKey.value(self/0) in
+  let t1 = LegacyKey.value(other/0) in
+  let inline0 = (t0 == t1) in
+  inline0
 }
 
-fn trait_impl#Hash#LegacyKey#hash(self/2: LegacyKey) -> u64 {
-  let t1293 = (0 as u64) in
-  let h/3 = (t1293 + 14695981039346656037) in
-  let t1294 = (0 as u64) in
-  let t1295 = (t1294 + 1099511628211) in
-  let t1296 = (h/3 * t1295) in
-  let t1297 = LegacyKey.value(self/2) in
-  join inline_cont2196(t1298: u64) -> u64 {
-    let h/4 = (t1296 + t1298) in
-    h/4
+fn trait_impl#Hash#LegacyKey#hash(self/0: LegacyKey) -> u64 {
+  let t0 = (0 as u64) in
+  let h/0 = (t0 + 14695981039346656037) in
+  let t1 = (0 as u64) in
+  let t2 = (t1 + 1099511628211) in
+  let t3 = (h/0 * t2) in
+  let t4 = LegacyKey.value(self/0) in
+  join inline_cont0(t5: u64) -> u64 {
+    let h/1 = (t3 + t5) in
+    h/1
   } in
-  let inline2197 = @runtime(core.int_hash)(t1297) in
-  jump inline_cont2196(inline2197)
+  let inline0 = @runtime(core.int_hash)(t4) in
+  jump inline_cont0(inline0)
 }
 
-fn trait_impl#PartialEq#ModernKey#eq(self/5: ModernKey, other/6: ModernKey) -> bool {
-  let t1301 = ModernKey.value(self/5) in
-  let t1302 = (t1301 % 10) in
-  let t1303 = ModernKey.value(other/6) in
-  let t1304 = (t1303 % 10) in
-  let t1305 = (t1302 == t1304) in
-  t1305
+fn trait_impl#PartialEq#ModernKey#eq(self/0: ModernKey, other/0: ModernKey) -> bool {
+  let t0 = ModernKey.value(self/0) in
+  let t1 = (t0 % 10) in
+  let t2 = ModernKey.value(other/0) in
+  let t3 = (t2 % 10) in
+  let t4 = (t1 == t3) in
+  t4
 }
 
-fn trait_impl#Hash#ModernKey#hash(self/7: ModernKey) -> u64 {
-  let t1308 = ModernKey.value(self/7) in
-  let t1309 = (t1308 % 10) in
-  let t1310 = (t1309 as u64) in
-  t1310
+fn trait_impl#Hash#ModernKey#hash(self/0: ModernKey) -> u64 {
+  let t0 = ModernKey.value(self/0) in
+  let t1 = (t0 % 10) in
+  let t2 = (t1 as u64) in
+  t2
 }
 
-fn trait_impl#PartialEq#Rank#eq(self/8: Rank, other/9: Rank) -> bool {
-  let t1313 = Rank.value(self/8) in
-  let t1314 = Rank.value(other/9) in
-  let t1315 = (t1313 == t1314) in
-  t1315
+fn trait_impl#PartialEq#Rank#eq(self/0: Rank, other/0: Rank) -> bool {
+  let t0 = Rank.value(self/0) in
+  let t1 = Rank.value(other/0) in
+  let t2 = (t0 == t1) in
+  t2
 }
 
 fn trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(
-  self/10: Rank,
-  other/11: Rank
+  self/0: Rank,
+  other/0: Rank
 ) -> Option__Ordering {
-  let t1321 = Rank.value(self/10) in
-  let t1322 = Rank.value(other/11) in
-  let t1323 = (t1321 > t1322) in
-  join k1318(jp1319: Ordering) -> Option__Ordering {
-    let t1320 = Option__Ordering::Some(jp1319) in
-    t1320
+  let t0 = Rank.value(self/0) in
+  let t1 = Rank.value(other/0) in
+  let t2 = (t0 > t1) in
+  join k0(jp0: Ordering) -> Option__Ordering {
+    let t3 = Option__Ordering::Some(jp0) in
+    t3
   } in
-  if t1323 {
-    jump k1318(Tag_0)
+  if t2 {
+    jump k0(Tag_0)
   } else {
-    let t1326 = Rank.value(self/10) in
-    let t1327 = Rank.value(other/11) in
-    let t1328 = (t1326 < t1327) in
-    if t1328 {
-      jump k1318(Tag_2)
+    let t4 = Rank.value(self/0) in
+    let t5 = Rank.value(other/0) in
+    let t6 = (t4 < t5) in
+    if t6 {
+      jump k0(Tag_2)
     } else {
-      jump k1318(Tag_1)
+      jump k0(Tag_1)
     }
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#Rank#lt(default_arg0: Rank, default_arg1: Rank) -> bool {
-  let inline2199 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
-  match inline2199 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2200 = Option__Ordering::Some._0(inline2199) in
-      let inline2202 = trait_impl#PartialEq#Ordering#eq(inline2200, Tag_0) in
-      inline2202
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#Rank#le(default_arg0: Rank, default_arg1: Rank) -> bool {
-  let inline2204 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
-  match inline2204 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2205 = Option__Ordering::Some._0(inline2204) in
-      let inline2207 = trait_impl#PartialEq#Ordering#eq(inline2205, Tag_2) in
-      let inline2208 = (!inline2207) in
-      inline2208
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#Rank#gt(default_arg0: Rank, default_arg1: Rank) -> bool {
-  let inline2210 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
-  match inline2210 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2211 = Option__Ordering::Some._0(inline2210) in
-      let inline2213 = trait_impl#PartialEq#Ordering#eq(inline2211, Tag_2) in
-      inline2213
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_2) in
+      inline2
     },
   }
 }
 
 fn trait_impl#std::cmp::PartialOrd#Rank#ge(default_arg0: Rank, default_arg1: Rank) -> bool {
-  let inline2215 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
-  match inline2215 {
+  let inline0 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(default_arg0, default_arg1) in
+  match inline0 {
     Tag_0 => {
       false
     },
     Tag_1 => {
-      let inline2216 = Option__Ordering::Some._0(inline2215) in
-      let inline2218 = trait_impl#PartialEq#Ordering#eq(inline2216, Tag_0) in
-      let inline2219 = (!inline2218) in
-      inline2219
+      let inline1 = Option__Ordering::Some._0(inline0) in
+      let inline2 = trait_impl#PartialEq#Ordering#eq(inline1, Tag_0) in
+      let inline3 = (!inline2) in
+      inline3
     },
   }
 }
 
 fn main() -> unit {
-  let legacy/14 = LegacyKey { value: 7 } in
-  let modern/15 = ModernKey { value: 9 } in
-  let t1342 = LegacyKey { value: 7 } in
-  let t1343 = equal__T_LegacyKey(legacy/14, t1342) in
-  let _wild796 = println__T_bool(t1343) in
-  let t1344 = LegacyKey { value: 8 } in
-  let t1345 = trait_impl#PartialEq#LegacyKey#eq(legacy/14, t1344) in
-  let _wild797 = println__T_bool(t1345) in
-  let t1346 = ModernKey { value: 19 } in
-  let t1347 = equal__T_ModernKey(modern/15, t1346) in
-  let _wild798 = println__T_bool(t1347) in
-  let t1348 = ModernKey { value: 20 } in
-  let t1349 = trait_impl#PartialEq#ModernKey#eq(modern/15, t1348) in
-  let t1350 = (!t1349) in
-  let t1351 = trait_impl#ToString#bool#to_string(t1350) in
-  let _wild799 = println__T_string(t1351) in
-  let legacy_map/16 = inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() in
-  let _wild800 =
-    inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(legacy_map/16, legacy/14, "legacy") in
-  let t1352 = LegacyKey { value: 7 } in
-  join inline_cont2265(t1353: Option__string) -> unit {
-    let t1354 = inherent#Option#Option[T]#unwrap_or__T_string(t1353, "missing") in
-    join inline_cont2262(_wild801: unit) -> unit {
-      join inline_cont2260(modern_map/17: HashMap[ModernKey, string]) -> unit {
-        join inline_cont2257(_wild802: unit) -> unit {
-          let t1355 = ModernKey { value: 19 } in
-          join inline_cont2255(t1356: Option__string) -> unit {
-            join inline_cont2251(t1357: string) -> unit {
-              join inline_cont2248(_wild803: unit) -> unit {
-                let high/18 = Rank { value: 2 } in
-                let low/19 = Rank { value: 1 } in
-                join inline_cont2246(t1358: bool) -> unit {
-                  join inline_cont2244(t1359: string) -> unit {
-                    join inline_cont2241(_wild804: unit) -> unit {
-                      join inline_cont2239(t1360: bool) -> unit {
-                        join inline_cont2237(t1361: string) -> unit {
-                          join inline_cont2234(_wild805: unit) -> unit {
-                            join inline_cont2232(t1362: bool) -> unit {
-                              join inline_cont2230(t1363: string) -> unit {
-                                join inline_cont2227(_wild806: unit) -> unit {
-                                  join inline_cont2225(t1364: bool) -> unit {
-                                    join inline_cont2223(t1365: string) -> unit {
-                                      let inline2221 =
-                                        trait_impl#ToString#string#to_string(t1365) in
-                                      let inline2222 = @runtime(core.string_println)(inline2221) in
+  let legacy/0 = LegacyKey { value: 7 } in
+  let modern/0 = ModernKey { value: 9 } in
+  let t0 = LegacyKey { value: 7 } in
+  let t1 = equal__T_LegacyKey(legacy/0, t0) in
+  let _wild0 = println__T_bool(t1) in
+  let t2 = LegacyKey { value: 8 } in
+  let t3 = trait_impl#PartialEq#LegacyKey#eq(legacy/0, t2) in
+  let _wild1 = println__T_bool(t3) in
+  let t4 = ModernKey { value: 19 } in
+  let t5 = equal__T_ModernKey(modern/0, t4) in
+  let _wild2 = println__T_bool(t5) in
+  let t6 = ModernKey { value: 20 } in
+  let t7 = trait_impl#PartialEq#ModernKey#eq(modern/0, t6) in
+  let t8 = (!t7) in
+  let t9 = trait_impl#ToString#bool#to_string(t8) in
+  let _wild3 = println__T_string(t9) in
+  let legacy_map/0 = inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() in
+  let _wild4 =
+    inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(legacy_map/0, legacy/0, "legacy") in
+  let t10 = LegacyKey { value: 7 } in
+  join inline_cont0(t11: Option__string) -> unit {
+    let t12 = inherent#Option#Option[T]#unwrap_or__T_string(t11, "missing") in
+    join inline_cont1(_wild5: unit) -> unit {
+      join inline_cont2(modern_map/0: HashMap[ModernKey, string]) -> unit {
+        join inline_cont3(_wild6: unit) -> unit {
+          let t13 = ModernKey { value: 19 } in
+          join inline_cont4(t14: Option__string) -> unit {
+            join inline_cont5(t15: string) -> unit {
+              join inline_cont6(_wild7: unit) -> unit {
+                let high/0 = Rank { value: 2 } in
+                let low/0 = Rank { value: 1 } in
+                join inline_cont7(t16: bool) -> unit {
+                  join inline_cont8(t17: string) -> unit {
+                    join inline_cont9(_wild8: unit) -> unit {
+                      join inline_cont10(t18: bool) -> unit {
+                        join inline_cont11(t19: string) -> unit {
+                          join inline_cont12(_wild9: unit) -> unit {
+                            join inline_cont13(t20: bool) -> unit {
+                              join inline_cont14(t21: string) -> unit {
+                                join inline_cont15(_wild10: unit) -> unit {
+                                  join inline_cont16(t22: bool) -> unit {
+                                    join inline_cont17(t23: string) -> unit {
+                                      let inline0 = trait_impl#ToString#string#to_string(t23) in
+                                      let inline1 = @runtime(core.string_println)(inline0) in
                                       ()
                                     } in
-                                    let inline2224 = @runtime(core.bool_to_string)(t1364) in
-                                    jump inline_cont2223(inline2224)
+                                    let inline2 = @runtime(core.bool_to_string)(t22) in
+                                    jump inline_cont17(inline2)
                                   } in
-                                  let inline2226 =
+                                  let inline3 =
                                     std::cmp::trait_default#PartialOrd#ge__Self_Rank(
-                                      low/19,
-                                      low/19
+                                      low/0,
+                                      low/0
                                     ) in
-                                  jump inline_cont2225(inline2226)
+                                  jump inline_cont16(inline3)
                                 } in
-                                let inline2228 = trait_impl#ToString#string#to_string(t1363) in
-                                let inline2229 = @runtime(core.string_println)(inline2228) in
-                                jump inline_cont2227(())
+                                let inline4 = trait_impl#ToString#string#to_string(t21) in
+                                let inline5 = @runtime(core.string_println)(inline4) in
+                                jump inline_cont15(())
                               } in
-                              let inline2231 = @runtime(core.bool_to_string)(t1362) in
-                              jump inline_cont2230(inline2231)
+                              let inline6 = @runtime(core.bool_to_string)(t20) in
+                              jump inline_cont14(inline6)
                             } in
-                            let inline2233 =
-                              std::cmp::trait_default#PartialOrd#gt__Self_Rank(low/19, high/18) in
-                            jump inline_cont2232(inline2233)
+                            let inline7 =
+                              std::cmp::trait_default#PartialOrd#gt__Self_Rank(low/0, high/0) in
+                            jump inline_cont13(inline7)
                           } in
-                          let inline2235 = trait_impl#ToString#string#to_string(t1361) in
-                          let inline2236 = @runtime(core.string_println)(inline2235) in
-                          jump inline_cont2234(())
+                          let inline8 = trait_impl#ToString#string#to_string(t19) in
+                          let inline9 = @runtime(core.string_println)(inline8) in
+                          jump inline_cont12(())
                         } in
-                        let inline2238 = @runtime(core.bool_to_string)(t1360) in
-                        jump inline_cont2237(inline2238)
+                        let inline10 = @runtime(core.bool_to_string)(t18) in
+                        jump inline_cont11(inline10)
                       } in
-                      let inline2240 =
-                        std::cmp::trait_default#PartialOrd#le__Self_Rank(high/18, high/18) in
-                      jump inline_cont2239(inline2240)
+                      let inline11 =
+                        std::cmp::trait_default#PartialOrd#le__Self_Rank(high/0, high/0) in
+                      jump inline_cont10(inline11)
                     } in
-                    let inline2242 = trait_impl#ToString#string#to_string(t1359) in
-                    let inline2243 = @runtime(core.string_println)(inline2242) in
-                    jump inline_cont2241(())
+                    let inline12 = trait_impl#ToString#string#to_string(t17) in
+                    let inline13 = @runtime(core.string_println)(inline12) in
+                    jump inline_cont9(())
                   } in
-                  let inline2245 = @runtime(core.bool_to_string)(t1358) in
-                  jump inline_cont2244(inline2245)
+                  let inline14 = @runtime(core.bool_to_string)(t16) in
+                  jump inline_cont8(inline14)
                 } in
-                let inline2247 =
-                  std::cmp::trait_default#PartialOrd#lt__Self_Rank(high/18, low/19) in
-                jump inline_cont2246(inline2247)
+                let inline15 = std::cmp::trait_default#PartialOrd#lt__Self_Rank(high/0, low/0) in
+                jump inline_cont7(inline15)
               } in
-              let inline2249 = trait_impl#ToString#string#to_string(t1357) in
-              let inline2250 = @runtime(core.string_println)(inline2249) in
-              jump inline_cont2248(())
+              let inline16 = trait_impl#ToString#string#to_string(t15) in
+              let inline17 = @runtime(core.string_println)(inline16) in
+              jump inline_cont6(())
             } in
-            let inline2252 = "missing" in
-            match t1356 {
+            let inline18 = "missing" in
+            match t14 {
               Tag_0 => {
-                jump inline_cont2251(inline2252)
+                jump inline_cont5(inline18)
               },
               Tag_1 => {
-                let inline2253 = Option__string::Some._0(t1356) in
-                jump inline_cont2251(inline2253)
+                let inline19 = Option__string::Some._0(t14) in
+                jump inline_cont5(inline19)
               },
             }
           } in
-          let inline2256 = @intrinsic(hashmap.get)(modern_map/17, t1355) in
-          jump inline_cont2255(inline2256)
+          let inline20 = @intrinsic(hashmap.get)(modern_map/0, t13) in
+          jump inline_cont4(inline20)
         } in
-        let inline2258 = "modern" in
-        let inline2259 = @intrinsic(hashmap.set)(modern_map/17, modern/15, inline2258) in
-        jump inline_cont2257(())
+        let inline21 = "modern" in
+        let inline22 = @intrinsic(hashmap.set)(modern_map/0, modern/0, inline21) in
+        jump inline_cont3(())
       } in
-      let inline2261 = @intrinsic(hashmap.new)() in
-      jump inline_cont2260(inline2261)
+      let inline23 = @intrinsic(hashmap.new)() in
+      jump inline_cont2(inline23)
     } in
-    let inline2263 = trait_impl#ToString#string#to_string(t1354) in
-    let inline2264 = @runtime(core.string_println)(inline2263) in
-    jump inline_cont2262(())
+    let inline24 = trait_impl#ToString#string#to_string(t12) in
+    let inline25 = @runtime(core.string_println)(inline24) in
+    jump inline_cont1(())
   } in
-  let inline2266 = @intrinsic(hashmap.get)(legacy_map/16, t1352) in
-  jump inline_cont2265(inline2266)
+  let inline26 = @intrinsic(hashmap.get)(legacy_map/0, t10) in
+  jump inline_cont0(inline26)
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -> bool {
-  match self/1113 {
+fn trait_impl#PartialEq#Ordering#eq(self/0: Ordering, other/0: Ordering) -> bool {
+  match self/0 {
     Tag_0 => {
-      match other/1114 {
+      match other/0 {
         Tag_0 => {
           true
         },
@@ -1919,7 +1889,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -
       }
     },
     Tag_1 => {
-      match other/1114 {
+      match other/0 {
         Tag_1 => {
           true
         },
@@ -1929,7 +1899,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -
       }
     },
     Tag_2 => {
-      match other/1114 {
+      match other/0 {
         Tag_2 => {
           true
         },
@@ -1943,10 +1913,10 @@ fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -
 
 fn std::cmp::trait_default#PartialOrd#lt__Self_Ordering(
   self/0: Ordering,
-  other/1: Ordering
+  other/0: Ordering
 ) -> bool {
-  join commute_arm2790(commute_field2789: Ordering) -> bool {
-    match commute_field2789 {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -1958,85 +1928,85 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_Ordering(
       },
     }
   } in
-  let inline2269 = trait_impl#PartialEq#Ordering#eq(self/0, other/1) in
-  join inline_join2270(inline2271: Ordering) -> bool {
-    jump commute_arm2790(inline2271)
+  let inline0 = trait_impl#PartialEq#Ordering#eq(self/0, other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2269 {
-    jump inline_join2270(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
     match self/0 {
       Tag_0 => {
-        jump inline_join2270(Tag_0)
+        jump inline_join0(Tag_0)
       },
       Tag_1 => {
-        let inline2273 = trait_impl#PartialEq#Ordering#eq(other/1, Tag_2) in
-        if inline2273 {
-          jump inline_join2270(Tag_0)
+        let inline2 = trait_impl#PartialEq#Ordering#eq(other/0, Tag_2) in
+        if inline2 {
+          jump inline_join0(Tag_0)
         } else {
-          jump inline_join2270(Tag_2)
+          jump inline_join0(Tag_2)
         }
       },
       Tag_2 => {
-        jump inline_join2270(Tag_2)
+        jump inline_join0(Tag_2)
       },
     }
   }
 }
 
 fn std::cmp::trait_default#PartialOrd#le__Self_Ordering(
-  self/3: Ordering,
-  other/4: Ordering
+  self/0: Ordering,
+  other/0: Ordering
 ) -> bool {
-  join commute_arm2793(commute_field2792: Ordering) -> bool {
-    join inline_cont2274(t1386: bool) -> bool {
-      let t1387 = (!t1386) in
-      t1387
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2792 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2274(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2274(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2274(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2276 = trait_impl#PartialEq#Ordering#eq(self/3, other/4) in
-  join inline_join2277(inline2278: Ordering) -> bool {
-    jump commute_arm2793(inline2278)
+  let inline0 = trait_impl#PartialEq#Ordering#eq(self/0, other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2276 {
-    jump inline_join2277(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
-    match self/3 {
+    match self/0 {
       Tag_0 => {
-        jump inline_join2277(Tag_0)
+        jump inline_join0(Tag_0)
       },
       Tag_1 => {
-        let inline2280 = trait_impl#PartialEq#Ordering#eq(other/4, Tag_2) in
-        if inline2280 {
-          jump inline_join2277(Tag_0)
+        let inline2 = trait_impl#PartialEq#Ordering#eq(other/0, Tag_2) in
+        if inline2 {
+          jump inline_join0(Tag_0)
         } else {
-          jump inline_join2277(Tag_2)
+          jump inline_join0(Tag_2)
         }
       },
       Tag_2 => {
-        jump inline_join2277(Tag_2)
+        jump inline_join0(Tag_2)
       },
     }
   }
 }
 
 fn std::cmp::trait_default#PartialOrd#gt__Self_Ordering(
-  self/6: Ordering,
-  other/7: Ordering
+  self/0: Ordering,
+  other/0: Ordering
 ) -> bool {
-  join commute_arm2796(commute_field2795: Ordering) -> bool {
-    match commute_field2795 {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2048,82 +2018,82 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_Ordering(
       },
     }
   } in
-  let inline2283 = trait_impl#PartialEq#Ordering#eq(self/6, other/7) in
-  join inline_join2284(inline2285: Ordering) -> bool {
-    jump commute_arm2796(inline2285)
+  let inline0 = trait_impl#PartialEq#Ordering#eq(self/0, other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2283 {
-    jump inline_join2284(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
-    match self/6 {
+    match self/0 {
       Tag_0 => {
-        jump inline_join2284(Tag_0)
+        jump inline_join0(Tag_0)
       },
       Tag_1 => {
-        let inline2287 = trait_impl#PartialEq#Ordering#eq(other/7, Tag_2) in
-        if inline2287 {
-          jump inline_join2284(Tag_0)
+        let inline2 = trait_impl#PartialEq#Ordering#eq(other/0, Tag_2) in
+        if inline2 {
+          jump inline_join0(Tag_0)
         } else {
-          jump inline_join2284(Tag_2)
+          jump inline_join0(Tag_2)
         }
       },
       Tag_2 => {
-        jump inline_join2284(Tag_2)
+        jump inline_join0(Tag_2)
       },
     }
   }
 }
 
 fn std::cmp::trait_default#PartialOrd#ge__Self_Ordering(
-  self/9: Ordering,
-  other/10: Ordering
+  self/0: Ordering,
+  other/0: Ordering
 ) -> bool {
-  join commute_arm2799(commute_field2798: Ordering) -> bool {
-    join inline_cont2288(t1397: bool) -> bool {
-      let t1398 = (!t1397) in
-      t1398
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2798 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2288(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2288(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2288(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2290 = trait_impl#PartialEq#Ordering#eq(self/9, other/10) in
-  join inline_join2291(inline2292: Ordering) -> bool {
-    jump commute_arm2799(inline2292)
+  let inline0 = trait_impl#PartialEq#Ordering#eq(self/0, other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2290 {
-    jump inline_join2291(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
-    match self/9 {
+    match self/0 {
       Tag_0 => {
-        jump inline_join2291(Tag_0)
+        jump inline_join0(Tag_0)
       },
       Tag_1 => {
-        let inline2294 = trait_impl#PartialEq#Ordering#eq(other/10, Tag_2) in
-        if inline2294 {
-          jump inline_join2291(Tag_0)
+        let inline2 = trait_impl#PartialEq#Ordering#eq(other/0, Tag_2) in
+        if inline2 {
+          jump inline_join0(Tag_0)
         } else {
-          jump inline_join2291(Tag_2)
+          jump inline_join0(Tag_2)
         }
       },
       Tag_2 => {
-        jump inline_join2291(Tag_2)
+        jump inline_join0(Tag_2)
       },
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/1: unit) -> bool {
-  join commute_arm2802(commute_field2801: Ordering) -> bool {
-    match commute_field2801 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/0: unit) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2135,33 +2105,33 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/1: unit)
       },
     }
   } in
-  jump commute_arm2802(Tag_1)
+  jump commute_arm0(Tag_1)
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/3: unit, other/4: unit) -> bool {
-  join commute_arm2805(commute_field2804: Ordering) -> bool {
-    join inline_cont2298(t1408: bool) -> bool {
-      let t1409 = (!t1408) in
-      t1409
+fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/0: unit, other/0: unit) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2804 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2298(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2298(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2298(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  jump commute_arm2805(Tag_1)
+  jump commute_arm0(Tag_1)
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/6: unit, other/7: unit) -> bool {
-  join commute_arm2808(commute_field2807: Ordering) -> bool {
-    match commute_field2807 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/0: unit, other/0: unit) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2173,33 +2143,33 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/6: unit, other/7: unit)
       },
     }
   } in
-  jump commute_arm2808(Tag_1)
+  jump commute_arm0(Tag_1)
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/9: unit, other/10: unit) -> bool {
-  join commute_arm2811(commute_field2810: Ordering) -> bool {
-    join inline_cont2304(t1419: bool) -> bool {
-      let t1420 = (!t1419) in
-      t1420
+fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/0: unit, other/0: unit) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2810 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2304(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2304(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2304(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  jump commute_arm2811(Tag_1)
+  jump commute_arm0(Tag_1)
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_bool(self/0: bool, other/1: bool) -> bool {
-  join commute_arm2814(commute_field2813: Ordering) -> bool {
-    match commute_field2813 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_bool(self/0: bool, other/0: bool) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2211,57 +2181,57 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_bool(self/0: bool, other/1: bool)
       },
     }
   } in
-  let inline2309 = (self/0 == other/1) in
-  join inline_join2310(inline2311: Ordering) -> bool {
-    jump commute_arm2814(inline2311)
+  let inline0 = (self/0 == other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2309 {
-    jump inline_join2310(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
     if self/0 {
-      jump inline_join2310(Tag_2)
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2310(Tag_0)
+      jump inline_join0(Tag_0)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_bool(self/3: bool, other/4: bool) -> bool {
-  join commute_arm2817(commute_field2816: Ordering) -> bool {
-    join inline_cont2313(t1430: bool) -> bool {
-      let t1431 = (!t1430) in
-      t1431
+fn std::cmp::trait_default#PartialOrd#le__Self_bool(self/0: bool, other/0: bool) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2816 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2313(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2313(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2313(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2315 = (self/3 == other/4) in
-  join inline_join2316(inline2317: Ordering) -> bool {
-    jump commute_arm2817(inline2317)
+  let inline0 = (self/0 == other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2315 {
-    jump inline_join2316(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
-    if self/3 {
-      jump inline_join2316(Tag_2)
+    if self/0 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2316(Tag_0)
+      jump inline_join0(Tag_0)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_bool(self/6: bool, other/7: bool) -> bool {
-  join commute_arm2820(commute_field2819: Ordering) -> bool {
-    match commute_field2819 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_bool(self/0: bool, other/0: bool) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2273,57 +2243,57 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_bool(self/6: bool, other/7: bool)
       },
     }
   } in
-  let inline2321 = (self/6 == other/7) in
-  join inline_join2322(inline2323: Ordering) -> bool {
-    jump commute_arm2820(inline2323)
+  let inline0 = (self/0 == other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2321 {
-    jump inline_join2322(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
-    if self/6 {
-      jump inline_join2322(Tag_2)
+    if self/0 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2322(Tag_0)
+      jump inline_join0(Tag_0)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_bool(self/9: bool, other/10: bool) -> bool {
-  join commute_arm2823(commute_field2822: Ordering) -> bool {
-    join inline_cont2325(t1441: bool) -> bool {
-      let t1442 = (!t1441) in
-      t1442
+fn std::cmp::trait_default#PartialOrd#ge__Self_bool(self/0: bool, other/0: bool) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2822 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2325(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2325(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2325(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2327 = (self/9 == other/10) in
-  join inline_join2328(inline2329: Ordering) -> bool {
-    jump commute_arm2823(inline2329)
+  let inline0 = (self/0 == other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2327 {
-    jump inline_join2328(Tag_1)
+  if inline0 {
+    jump inline_join0(Tag_1)
   } else {
-    if self/9 {
-      jump inline_join2328(Tag_2)
+    if self/0 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2328(Tag_0)
+      jump inline_join0(Tag_0)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_string(self/0: string, other/1: string) -> bool {
-  join commute_arm2826(commute_field2825: Ordering) -> bool {
-    match commute_field2825 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_string(self/0: string, other/0: string) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2335,59 +2305,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_string(self/0: string, other/1: s
       },
     }
   } in
-  let inline2333 = (self/0 < other/1) in
-  join inline_join2334(inline2335: Ordering) -> bool {
-    jump commute_arm2826(inline2335)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2333 {
-    jump inline_join2334(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2337 = (self/0 > other/1) in
-    if inline2337 {
-      jump inline_join2334(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2334(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_string(self/3: string, other/4: string) -> bool {
-  join commute_arm2829(commute_field2828: Ordering) -> bool {
-    join inline_cont2338(t1452: bool) -> bool {
-      let t1453 = (!t1452) in
-      t1453
+fn std::cmp::trait_default#PartialOrd#le__Self_string(self/0: string, other/0: string) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2828 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2338(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2338(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2338(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2340 = (self/3 < other/4) in
-  join inline_join2341(inline2342: Ordering) -> bool {
-    jump commute_arm2829(inline2342)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2340 {
-    jump inline_join2341(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2344 = (self/3 > other/4) in
-    if inline2344 {
-      jump inline_join2341(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2341(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_string(self/6: string, other/7: string) -> bool {
-  join commute_arm2832(commute_field2831: Ordering) -> bool {
-    match commute_field2831 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_string(self/0: string, other/0: string) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2399,59 +2369,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_string(self/6: string, other/7: s
       },
     }
   } in
-  let inline2347 = (self/6 < other/7) in
-  join inline_join2348(inline2349: Ordering) -> bool {
-    jump commute_arm2832(inline2349)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2347 {
-    jump inline_join2348(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2351 = (self/6 > other/7) in
-    if inline2351 {
-      jump inline_join2348(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2348(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_string(self/9: string, other/10: string) -> bool {
-  join commute_arm2835(commute_field2834: Ordering) -> bool {
-    join inline_cont2352(t1463: bool) -> bool {
-      let t1464 = (!t1463) in
-      t1464
+fn std::cmp::trait_default#PartialOrd#ge__Self_string(self/0: string, other/0: string) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2834 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2352(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2352(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2352(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2354 = (self/9 < other/10) in
-  join inline_join2355(inline2356: Ordering) -> bool {
-    jump commute_arm2835(inline2356)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2354 {
-    jump inline_join2355(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2358 = (self/9 > other/10) in
-    if inline2358 {
-      jump inline_join2355(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2355(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_char(self/0: char, other/1: char) -> bool {
-  join commute_arm2838(commute_field2837: Ordering) -> bool {
-    match commute_field2837 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_char(self/0: char, other/0: char) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2463,59 +2433,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_char(self/0: char, other/1: char)
       },
     }
   } in
-  let inline2361 = (self/0 < other/1) in
-  join inline_join2362(inline2363: Ordering) -> bool {
-    jump commute_arm2838(inline2363)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2361 {
-    jump inline_join2362(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2365 = (self/0 > other/1) in
-    if inline2365 {
-      jump inline_join2362(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2362(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_char(self/3: char, other/4: char) -> bool {
-  join commute_arm2841(commute_field2840: Ordering) -> bool {
-    join inline_cont2366(t1474: bool) -> bool {
-      let t1475 = (!t1474) in
-      t1475
+fn std::cmp::trait_default#PartialOrd#le__Self_char(self/0: char, other/0: char) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2840 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2366(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2366(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2366(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2368 = (self/3 < other/4) in
-  join inline_join2369(inline2370: Ordering) -> bool {
-    jump commute_arm2841(inline2370)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2368 {
-    jump inline_join2369(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2372 = (self/3 > other/4) in
-    if inline2372 {
-      jump inline_join2369(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2369(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_char(self/6: char, other/7: char) -> bool {
-  join commute_arm2844(commute_field2843: Ordering) -> bool {
-    match commute_field2843 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_char(self/0: char, other/0: char) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2527,59 +2497,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_char(self/6: char, other/7: char)
       },
     }
   } in
-  let inline2375 = (self/6 < other/7) in
-  join inline_join2376(inline2377: Ordering) -> bool {
-    jump commute_arm2844(inline2377)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2375 {
-    jump inline_join2376(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2379 = (self/6 > other/7) in
-    if inline2379 {
-      jump inline_join2376(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2376(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_char(self/9: char, other/10: char) -> bool {
-  join commute_arm2847(commute_field2846: Ordering) -> bool {
-    join inline_cont2380(t1485: bool) -> bool {
-      let t1486 = (!t1485) in
-      t1486
+fn std::cmp::trait_default#PartialOrd#ge__Self_char(self/0: char, other/0: char) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2846 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2380(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2380(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2380(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2382 = (self/9 < other/10) in
-  join inline_join2383(inline2384: Ordering) -> bool {
-    jump commute_arm2847(inline2384)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2382 {
-    jump inline_join2383(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2386 = (self/9 > other/10) in
-    if inline2386 {
-      jump inline_join2383(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2383(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_isize(self/0: isize, other/1: isize) -> bool {
-  join commute_arm2850(commute_field2849: Ordering) -> bool {
-    match commute_field2849 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_isize(self/0: isize, other/0: isize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2591,59 +2561,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_isize(self/0: isize, other/1: isi
       },
     }
   } in
-  let inline2389 = (self/0 < other/1) in
-  join inline_join2390(inline2391: Ordering) -> bool {
-    jump commute_arm2850(inline2391)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2389 {
-    jump inline_join2390(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2393 = (self/0 > other/1) in
-    if inline2393 {
-      jump inline_join2390(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2390(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_isize(self/3: isize, other/4: isize) -> bool {
-  join commute_arm2853(commute_field2852: Ordering) -> bool {
-    join inline_cont2394(t1496: bool) -> bool {
-      let t1497 = (!t1496) in
-      t1497
+fn std::cmp::trait_default#PartialOrd#le__Self_isize(self/0: isize, other/0: isize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2852 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2394(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2394(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2394(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2396 = (self/3 < other/4) in
-  join inline_join2397(inline2398: Ordering) -> bool {
-    jump commute_arm2853(inline2398)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2396 {
-    jump inline_join2397(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2400 = (self/3 > other/4) in
-    if inline2400 {
-      jump inline_join2397(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2397(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_isize(self/6: isize, other/7: isize) -> bool {
-  join commute_arm2856(commute_field2855: Ordering) -> bool {
-    match commute_field2855 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_isize(self/0: isize, other/0: isize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2655,59 +2625,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_isize(self/6: isize, other/7: isi
       },
     }
   } in
-  let inline2403 = (self/6 < other/7) in
-  join inline_join2404(inline2405: Ordering) -> bool {
-    jump commute_arm2856(inline2405)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2403 {
-    jump inline_join2404(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2407 = (self/6 > other/7) in
-    if inline2407 {
-      jump inline_join2404(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2404(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_isize(self/9: isize, other/10: isize) -> bool {
-  join commute_arm2859(commute_field2858: Ordering) -> bool {
-    join inline_cont2408(t1507: bool) -> bool {
-      let t1508 = (!t1507) in
-      t1508
+fn std::cmp::trait_default#PartialOrd#ge__Self_isize(self/0: isize, other/0: isize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2858 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2408(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2408(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2408(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2410 = (self/9 < other/10) in
-  join inline_join2411(inline2412: Ordering) -> bool {
-    jump commute_arm2859(inline2412)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2410 {
-    jump inline_join2411(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2414 = (self/9 > other/10) in
-    if inline2414 {
-      jump inline_join2411(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2411(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_i8(self/0: i8, other/1: i8) -> bool {
-  join commute_arm2862(commute_field2861: Ordering) -> bool {
-    match commute_field2861 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_i8(self/0: i8, other/0: i8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2719,59 +2689,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_i8(self/0: i8, other/1: i8) -> bo
       },
     }
   } in
-  let inline2417 = (self/0 < other/1) in
-  join inline_join2418(inline2419: Ordering) -> bool {
-    jump commute_arm2862(inline2419)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2417 {
-    jump inline_join2418(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2421 = (self/0 > other/1) in
-    if inline2421 {
-      jump inline_join2418(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2418(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_i8(self/3: i8, other/4: i8) -> bool {
-  join commute_arm2865(commute_field2864: Ordering) -> bool {
-    join inline_cont2422(t1518: bool) -> bool {
-      let t1519 = (!t1518) in
-      t1519
+fn std::cmp::trait_default#PartialOrd#le__Self_i8(self/0: i8, other/0: i8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2864 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2422(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2422(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2422(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2424 = (self/3 < other/4) in
-  join inline_join2425(inline2426: Ordering) -> bool {
-    jump commute_arm2865(inline2426)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2424 {
-    jump inline_join2425(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2428 = (self/3 > other/4) in
-    if inline2428 {
-      jump inline_join2425(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2425(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_i8(self/6: i8, other/7: i8) -> bool {
-  join commute_arm2868(commute_field2867: Ordering) -> bool {
-    match commute_field2867 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_i8(self/0: i8, other/0: i8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2783,59 +2753,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_i8(self/6: i8, other/7: i8) -> bo
       },
     }
   } in
-  let inline2431 = (self/6 < other/7) in
-  join inline_join2432(inline2433: Ordering) -> bool {
-    jump commute_arm2868(inline2433)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2431 {
-    jump inline_join2432(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2435 = (self/6 > other/7) in
-    if inline2435 {
-      jump inline_join2432(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2432(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_i8(self/9: i8, other/10: i8) -> bool {
-  join commute_arm2871(commute_field2870: Ordering) -> bool {
-    join inline_cont2436(t1529: bool) -> bool {
-      let t1530 = (!t1529) in
-      t1530
+fn std::cmp::trait_default#PartialOrd#ge__Self_i8(self/0: i8, other/0: i8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2870 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2436(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2436(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2436(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2438 = (self/9 < other/10) in
-  join inline_join2439(inline2440: Ordering) -> bool {
-    jump commute_arm2871(inline2440)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2438 {
-    jump inline_join2439(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2442 = (self/9 > other/10) in
-    if inline2442 {
-      jump inline_join2439(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2439(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_i16(self/0: i16, other/1: i16) -> bool {
-  join commute_arm2874(commute_field2873: Ordering) -> bool {
-    match commute_field2873 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_i16(self/0: i16, other/0: i16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2847,59 +2817,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_i16(self/0: i16, other/1: i16) ->
       },
     }
   } in
-  let inline2445 = (self/0 < other/1) in
-  join inline_join2446(inline2447: Ordering) -> bool {
-    jump commute_arm2874(inline2447)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2445 {
-    jump inline_join2446(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2449 = (self/0 > other/1) in
-    if inline2449 {
-      jump inline_join2446(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2446(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_i16(self/3: i16, other/4: i16) -> bool {
-  join commute_arm2877(commute_field2876: Ordering) -> bool {
-    join inline_cont2450(t1540: bool) -> bool {
-      let t1541 = (!t1540) in
-      t1541
+fn std::cmp::trait_default#PartialOrd#le__Self_i16(self/0: i16, other/0: i16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2876 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2450(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2450(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2450(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2452 = (self/3 < other/4) in
-  join inline_join2453(inline2454: Ordering) -> bool {
-    jump commute_arm2877(inline2454)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2452 {
-    jump inline_join2453(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2456 = (self/3 > other/4) in
-    if inline2456 {
-      jump inline_join2453(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2453(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_i16(self/6: i16, other/7: i16) -> bool {
-  join commute_arm2880(commute_field2879: Ordering) -> bool {
-    match commute_field2879 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_i16(self/0: i16, other/0: i16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -2911,59 +2881,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_i16(self/6: i16, other/7: i16) ->
       },
     }
   } in
-  let inline2459 = (self/6 < other/7) in
-  join inline_join2460(inline2461: Ordering) -> bool {
-    jump commute_arm2880(inline2461)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2459 {
-    jump inline_join2460(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2463 = (self/6 > other/7) in
-    if inline2463 {
-      jump inline_join2460(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2460(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_i16(self/9: i16, other/10: i16) -> bool {
-  join commute_arm2883(commute_field2882: Ordering) -> bool {
-    join inline_cont2464(t1551: bool) -> bool {
-      let t1552 = (!t1551) in
-      t1552
+fn std::cmp::trait_default#PartialOrd#ge__Self_i16(self/0: i16, other/0: i16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2882 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2464(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2464(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2464(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2466 = (self/9 < other/10) in
-  join inline_join2467(inline2468: Ordering) -> bool {
-    jump commute_arm2883(inline2468)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2466 {
-    jump inline_join2467(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2470 = (self/9 > other/10) in
-    if inline2470 {
-      jump inline_join2467(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2467(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_i32(self/0: i32, other/1: i32) -> bool {
-  join commute_arm2886(commute_field2885: Ordering) -> bool {
-    match commute_field2885 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_i32(self/0: i32, other/0: i32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -2975,59 +2945,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_i32(self/0: i32, other/1: i32) ->
       },
     }
   } in
-  let inline2473 = (self/0 < other/1) in
-  join inline_join2474(inline2475: Ordering) -> bool {
-    jump commute_arm2886(inline2475)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2473 {
-    jump inline_join2474(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2477 = (self/0 > other/1) in
-    if inline2477 {
-      jump inline_join2474(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2474(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_i32(self/3: i32, other/4: i32) -> bool {
-  join commute_arm2889(commute_field2888: Ordering) -> bool {
-    join inline_cont2478(t1562: bool) -> bool {
-      let t1563 = (!t1562) in
-      t1563
+fn std::cmp::trait_default#PartialOrd#le__Self_i32(self/0: i32, other/0: i32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2888 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2478(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2478(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2478(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2480 = (self/3 < other/4) in
-  join inline_join2481(inline2482: Ordering) -> bool {
-    jump commute_arm2889(inline2482)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2480 {
-    jump inline_join2481(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2484 = (self/3 > other/4) in
-    if inline2484 {
-      jump inline_join2481(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2481(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_i32(self/6: i32, other/7: i32) -> bool {
-  join commute_arm2892(commute_field2891: Ordering) -> bool {
-    match commute_field2891 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_i32(self/0: i32, other/0: i32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3039,59 +3009,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_i32(self/6: i32, other/7: i32) ->
       },
     }
   } in
-  let inline2487 = (self/6 < other/7) in
-  join inline_join2488(inline2489: Ordering) -> bool {
-    jump commute_arm2892(inline2489)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2487 {
-    jump inline_join2488(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2491 = (self/6 > other/7) in
-    if inline2491 {
-      jump inline_join2488(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2488(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_i32(self/9: i32, other/10: i32) -> bool {
-  join commute_arm2895(commute_field2894: Ordering) -> bool {
-    join inline_cont2492(t1573: bool) -> bool {
-      let t1574 = (!t1573) in
-      t1574
+fn std::cmp::trait_default#PartialOrd#ge__Self_i32(self/0: i32, other/0: i32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2894 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2492(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2492(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2492(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2494 = (self/9 < other/10) in
-  join inline_join2495(inline2496: Ordering) -> bool {
-    jump commute_arm2895(inline2496)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2494 {
-    jump inline_join2495(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2498 = (self/9 > other/10) in
-    if inline2498 {
-      jump inline_join2495(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2495(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_i64(self/0: i64, other/1: i64) -> bool {
-  join commute_arm2898(commute_field2897: Ordering) -> bool {
-    match commute_field2897 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_i64(self/0: i64, other/0: i64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -3103,59 +3073,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_i64(self/0: i64, other/1: i64) ->
       },
     }
   } in
-  let inline2501 = (self/0 < other/1) in
-  join inline_join2502(inline2503: Ordering) -> bool {
-    jump commute_arm2898(inline2503)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2501 {
-    jump inline_join2502(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2505 = (self/0 > other/1) in
-    if inline2505 {
-      jump inline_join2502(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2502(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_i64(self/3: i64, other/4: i64) -> bool {
-  join commute_arm2901(commute_field2900: Ordering) -> bool {
-    join inline_cont2506(t1584: bool) -> bool {
-      let t1585 = (!t1584) in
-      t1585
+fn std::cmp::trait_default#PartialOrd#le__Self_i64(self/0: i64, other/0: i64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2900 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2506(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2506(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2506(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2508 = (self/3 < other/4) in
-  join inline_join2509(inline2510: Ordering) -> bool {
-    jump commute_arm2901(inline2510)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2508 {
-    jump inline_join2509(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2512 = (self/3 > other/4) in
-    if inline2512 {
-      jump inline_join2509(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2509(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_i64(self/6: i64, other/7: i64) -> bool {
-  join commute_arm2904(commute_field2903: Ordering) -> bool {
-    match commute_field2903 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_i64(self/0: i64, other/0: i64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3167,59 +3137,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_i64(self/6: i64, other/7: i64) ->
       },
     }
   } in
-  let inline2515 = (self/6 < other/7) in
-  join inline_join2516(inline2517: Ordering) -> bool {
-    jump commute_arm2904(inline2517)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2515 {
-    jump inline_join2516(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2519 = (self/6 > other/7) in
-    if inline2519 {
-      jump inline_join2516(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2516(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_i64(self/9: i64, other/10: i64) -> bool {
-  join commute_arm2907(commute_field2906: Ordering) -> bool {
-    join inline_cont2520(t1595: bool) -> bool {
-      let t1596 = (!t1595) in
-      t1596
+fn std::cmp::trait_default#PartialOrd#ge__Self_i64(self/0: i64, other/0: i64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2906 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2520(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2520(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2520(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2522 = (self/9 < other/10) in
-  join inline_join2523(inline2524: Ordering) -> bool {
-    jump commute_arm2907(inline2524)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2522 {
-    jump inline_join2523(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2526 = (self/9 > other/10) in
-    if inline2526 {
-      jump inline_join2523(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2523(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_usize(self/0: usize, other/1: usize) -> bool {
-  join commute_arm2910(commute_field2909: Ordering) -> bool {
-    match commute_field2909 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_usize(self/0: usize, other/0: usize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -3231,59 +3201,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_usize(self/0: usize, other/1: usi
       },
     }
   } in
-  let inline2529 = (self/0 < other/1) in
-  join inline_join2530(inline2531: Ordering) -> bool {
-    jump commute_arm2910(inline2531)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2529 {
-    jump inline_join2530(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2533 = (self/0 > other/1) in
-    if inline2533 {
-      jump inline_join2530(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2530(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_usize(self/3: usize, other/4: usize) -> bool {
-  join commute_arm2913(commute_field2912: Ordering) -> bool {
-    join inline_cont2534(t1606: bool) -> bool {
-      let t1607 = (!t1606) in
-      t1607
+fn std::cmp::trait_default#PartialOrd#le__Self_usize(self/0: usize, other/0: usize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2912 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2534(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2534(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2534(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2536 = (self/3 < other/4) in
-  join inline_join2537(inline2538: Ordering) -> bool {
-    jump commute_arm2913(inline2538)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2536 {
-    jump inline_join2537(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2540 = (self/3 > other/4) in
-    if inline2540 {
-      jump inline_join2537(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2537(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_usize(self/6: usize, other/7: usize) -> bool {
-  join commute_arm2916(commute_field2915: Ordering) -> bool {
-    match commute_field2915 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_usize(self/0: usize, other/0: usize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3295,59 +3265,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_usize(self/6: usize, other/7: usi
       },
     }
   } in
-  let inline2543 = (self/6 < other/7) in
-  join inline_join2544(inline2545: Ordering) -> bool {
-    jump commute_arm2916(inline2545)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2543 {
-    jump inline_join2544(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2547 = (self/6 > other/7) in
-    if inline2547 {
-      jump inline_join2544(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2544(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_usize(self/9: usize, other/10: usize) -> bool {
-  join commute_arm2919(commute_field2918: Ordering) -> bool {
-    join inline_cont2548(t1617: bool) -> bool {
-      let t1618 = (!t1617) in
-      t1618
+fn std::cmp::trait_default#PartialOrd#ge__Self_usize(self/0: usize, other/0: usize) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2918 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2548(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2548(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2548(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2550 = (self/9 < other/10) in
-  join inline_join2551(inline2552: Ordering) -> bool {
-    jump commute_arm2919(inline2552)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2550 {
-    jump inline_join2551(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2554 = (self/9 > other/10) in
-    if inline2554 {
-      jump inline_join2551(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2551(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_u8(self/0: u8, other/1: u8) -> bool {
-  join commute_arm2922(commute_field2921: Ordering) -> bool {
-    match commute_field2921 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_u8(self/0: u8, other/0: u8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -3359,59 +3329,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_u8(self/0: u8, other/1: u8) -> bo
       },
     }
   } in
-  let inline2557 = (self/0 < other/1) in
-  join inline_join2558(inline2559: Ordering) -> bool {
-    jump commute_arm2922(inline2559)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2557 {
-    jump inline_join2558(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2561 = (self/0 > other/1) in
-    if inline2561 {
-      jump inline_join2558(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2558(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_u8(self/3: u8, other/4: u8) -> bool {
-  join commute_arm2925(commute_field2924: Ordering) -> bool {
-    join inline_cont2562(t1628: bool) -> bool {
-      let t1629 = (!t1628) in
-      t1629
+fn std::cmp::trait_default#PartialOrd#le__Self_u8(self/0: u8, other/0: u8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2924 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2562(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2562(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2562(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2564 = (self/3 < other/4) in
-  join inline_join2565(inline2566: Ordering) -> bool {
-    jump commute_arm2925(inline2566)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2564 {
-    jump inline_join2565(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2568 = (self/3 > other/4) in
-    if inline2568 {
-      jump inline_join2565(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2565(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_u8(self/6: u8, other/7: u8) -> bool {
-  join commute_arm2928(commute_field2927: Ordering) -> bool {
-    match commute_field2927 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_u8(self/0: u8, other/0: u8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3423,59 +3393,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_u8(self/6: u8, other/7: u8) -> bo
       },
     }
   } in
-  let inline2571 = (self/6 < other/7) in
-  join inline_join2572(inline2573: Ordering) -> bool {
-    jump commute_arm2928(inline2573)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2571 {
-    jump inline_join2572(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2575 = (self/6 > other/7) in
-    if inline2575 {
-      jump inline_join2572(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2572(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_u8(self/9: u8, other/10: u8) -> bool {
-  join commute_arm2931(commute_field2930: Ordering) -> bool {
-    join inline_cont2576(t1639: bool) -> bool {
-      let t1640 = (!t1639) in
-      t1640
+fn std::cmp::trait_default#PartialOrd#ge__Self_u8(self/0: u8, other/0: u8) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2930 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2576(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2576(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2576(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2578 = (self/9 < other/10) in
-  join inline_join2579(inline2580: Ordering) -> bool {
-    jump commute_arm2931(inline2580)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2578 {
-    jump inline_join2579(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2582 = (self/9 > other/10) in
-    if inline2582 {
-      jump inline_join2579(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2579(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_u16(self/0: u16, other/1: u16) -> bool {
-  join commute_arm2934(commute_field2933: Ordering) -> bool {
-    match commute_field2933 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_u16(self/0: u16, other/0: u16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -3487,59 +3457,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_u16(self/0: u16, other/1: u16) ->
       },
     }
   } in
-  let inline2585 = (self/0 < other/1) in
-  join inline_join2586(inline2587: Ordering) -> bool {
-    jump commute_arm2934(inline2587)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2585 {
-    jump inline_join2586(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2589 = (self/0 > other/1) in
-    if inline2589 {
-      jump inline_join2586(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2586(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_u16(self/3: u16, other/4: u16) -> bool {
-  join commute_arm2937(commute_field2936: Ordering) -> bool {
-    join inline_cont2590(t1650: bool) -> bool {
-      let t1651 = (!t1650) in
-      t1651
+fn std::cmp::trait_default#PartialOrd#le__Self_u16(self/0: u16, other/0: u16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2936 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2590(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2590(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2590(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2592 = (self/3 < other/4) in
-  join inline_join2593(inline2594: Ordering) -> bool {
-    jump commute_arm2937(inline2594)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2592 {
-    jump inline_join2593(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2596 = (self/3 > other/4) in
-    if inline2596 {
-      jump inline_join2593(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2593(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_u16(self/6: u16, other/7: u16) -> bool {
-  join commute_arm2940(commute_field2939: Ordering) -> bool {
-    match commute_field2939 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_u16(self/0: u16, other/0: u16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3551,59 +3521,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_u16(self/6: u16, other/7: u16) ->
       },
     }
   } in
-  let inline2599 = (self/6 < other/7) in
-  join inline_join2600(inline2601: Ordering) -> bool {
-    jump commute_arm2940(inline2601)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2599 {
-    jump inline_join2600(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2603 = (self/6 > other/7) in
-    if inline2603 {
-      jump inline_join2600(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2600(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_u16(self/9: u16, other/10: u16) -> bool {
-  join commute_arm2943(commute_field2942: Ordering) -> bool {
-    join inline_cont2604(t1661: bool) -> bool {
-      let t1662 = (!t1661) in
-      t1662
+fn std::cmp::trait_default#PartialOrd#ge__Self_u16(self/0: u16, other/0: u16) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2942 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2604(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2604(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2604(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2606 = (self/9 < other/10) in
-  join inline_join2607(inline2608: Ordering) -> bool {
-    jump commute_arm2943(inline2608)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2606 {
-    jump inline_join2607(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2610 = (self/9 > other/10) in
-    if inline2610 {
-      jump inline_join2607(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2607(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_u32(self/0: u32, other/1: u32) -> bool {
-  join commute_arm2946(commute_field2945: Ordering) -> bool {
-    match commute_field2945 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_u32(self/0: u32, other/0: u32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -3615,59 +3585,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_u32(self/0: u32, other/1: u32) ->
       },
     }
   } in
-  let inline2613 = (self/0 < other/1) in
-  join inline_join2614(inline2615: Ordering) -> bool {
-    jump commute_arm2946(inline2615)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2613 {
-    jump inline_join2614(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2617 = (self/0 > other/1) in
-    if inline2617 {
-      jump inline_join2614(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2614(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_u32(self/3: u32, other/4: u32) -> bool {
-  join commute_arm2949(commute_field2948: Ordering) -> bool {
-    join inline_cont2618(t1672: bool) -> bool {
-      let t1673 = (!t1672) in
-      t1673
+fn std::cmp::trait_default#PartialOrd#le__Self_u32(self/0: u32, other/0: u32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2948 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2618(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2618(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2618(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2620 = (self/3 < other/4) in
-  join inline_join2621(inline2622: Ordering) -> bool {
-    jump commute_arm2949(inline2622)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2620 {
-    jump inline_join2621(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2624 = (self/3 > other/4) in
-    if inline2624 {
-      jump inline_join2621(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2621(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_u32(self/6: u32, other/7: u32) -> bool {
-  join commute_arm2952(commute_field2951: Ordering) -> bool {
-    match commute_field2951 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_u32(self/0: u32, other/0: u32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3679,59 +3649,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_u32(self/6: u32, other/7: u32) ->
       },
     }
   } in
-  let inline2627 = (self/6 < other/7) in
-  join inline_join2628(inline2629: Ordering) -> bool {
-    jump commute_arm2952(inline2629)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2627 {
-    jump inline_join2628(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2631 = (self/6 > other/7) in
-    if inline2631 {
-      jump inline_join2628(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2628(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_u32(self/9: u32, other/10: u32) -> bool {
-  join commute_arm2955(commute_field2954: Ordering) -> bool {
-    join inline_cont2632(t1683: bool) -> bool {
-      let t1684 = (!t1683) in
-      t1684
+fn std::cmp::trait_default#PartialOrd#ge__Self_u32(self/0: u32, other/0: u32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2954 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2632(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2632(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2632(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2634 = (self/9 < other/10) in
-  join inline_join2635(inline2636: Ordering) -> bool {
-    jump commute_arm2955(inline2636)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2634 {
-    jump inline_join2635(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2638 = (self/9 > other/10) in
-    if inline2638 {
-      jump inline_join2635(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2635(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_u64(self/0: u64, other/1: u64) -> bool {
-  join commute_arm2958(commute_field2957: Ordering) -> bool {
-    match commute_field2957 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_u64(self/0: u64, other/0: u64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -3743,59 +3713,59 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_u64(self/0: u64, other/1: u64) ->
       },
     }
   } in
-  let inline2641 = (self/0 < other/1) in
-  join inline_join2642(inline2643: Ordering) -> bool {
-    jump commute_arm2958(inline2643)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2641 {
-    jump inline_join2642(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2645 = (self/0 > other/1) in
-    if inline2645 {
-      jump inline_join2642(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2642(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_u64(self/3: u64, other/4: u64) -> bool {
-  join commute_arm2961(commute_field2960: Ordering) -> bool {
-    join inline_cont2646(t1694: bool) -> bool {
-      let t1695 = (!t1694) in
-      t1695
+fn std::cmp::trait_default#PartialOrd#le__Self_u64(self/0: u64, other/0: u64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2960 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2646(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2646(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2646(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2648 = (self/3 < other/4) in
-  join inline_join2649(inline2650: Ordering) -> bool {
-    jump commute_arm2961(inline2650)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2648 {
-    jump inline_join2649(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2652 = (self/3 > other/4) in
-    if inline2652 {
-      jump inline_join2649(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2649(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_u64(self/6: u64, other/7: u64) -> bool {
-  join commute_arm2964(commute_field2963: Ordering) -> bool {
-    match commute_field2963 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_u64(self/0: u64, other/0: u64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3807,59 +3777,59 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_u64(self/6: u64, other/7: u64) ->
       },
     }
   } in
-  let inline2655 = (self/6 < other/7) in
-  join inline_join2656(inline2657: Ordering) -> bool {
-    jump commute_arm2964(inline2657)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2655 {
-    jump inline_join2656(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2659 = (self/6 > other/7) in
-    if inline2659 {
-      jump inline_join2656(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2656(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_u64(self/9: u64, other/10: u64) -> bool {
-  join commute_arm2967(commute_field2966: Ordering) -> bool {
-    join inline_cont2660(t1705: bool) -> bool {
-      let t1706 = (!t1705) in
-      t1706
+fn std::cmp::trait_default#PartialOrd#ge__Self_u64(self/0: u64, other/0: u64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2966 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2660(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2660(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2660(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2662 = (self/9 < other/10) in
-  join inline_join2663(inline2664: Ordering) -> bool {
-    jump commute_arm2967(inline2664)
+  let inline0 = (self/0 < other/0) in
+  join inline_join0(inline1: Ordering) -> bool {
+    jump commute_arm0(inline1)
   } in
-  if inline2662 {
-    jump inline_join2663(Tag_0)
+  if inline0 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2666 = (self/9 > other/10) in
-    if inline2666 {
-      jump inline_join2663(Tag_2)
+    let inline2 = (self/0 > other/0) in
+    if inline2 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2663(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_f32(self/0: f32, other/1: f32) -> bool {
-  join commute_arm2970(commute_field2969: Ordering) -> bool {
-    match commute_field2969 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_f32(self/0: f32, other/0: f32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -3871,17 +3841,17 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_f32(self/0: f32, other/1: f32) ->
       },
     }
   } in
-  let inline2669 = (self/0 < other/1) in
-  if inline2669 {
-    jump commute_arm2970(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2671 = (self/0 > other/1) in
-    if inline2671 {
-      jump commute_arm2970(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2673 = (self/0 == other/1) in
-      if inline2673 {
-        jump commute_arm2970(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -3889,35 +3859,35 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_f32(self/0: f32, other/1: f32) ->
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_f32(self/3: f32, other/4: f32) -> bool {
-  join commute_arm2973(commute_field2972: Ordering) -> bool {
-    join inline_cont2675(t1716: bool) -> bool {
-      let t1717 = (!t1716) in
-      t1717
+fn std::cmp::trait_default#PartialOrd#le__Self_f32(self/0: f32, other/0: f32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2972 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2675(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2675(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2675(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2677 = (self/3 < other/4) in
-  if inline2677 {
-    jump commute_arm2973(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2679 = (self/3 > other/4) in
-    if inline2679 {
-      jump commute_arm2973(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2681 = (self/3 == other/4) in
-      if inline2681 {
-        jump commute_arm2973(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -3925,9 +3895,9 @@ fn std::cmp::trait_default#PartialOrd#le__Self_f32(self/3: f32, other/4: f32) ->
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_f32(self/6: f32, other/7: f32) -> bool {
-  join commute_arm2976(commute_field2975: Ordering) -> bool {
-    match commute_field2975 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_f32(self/0: f32, other/0: f32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -3939,17 +3909,17 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_f32(self/6: f32, other/7: f32) ->
       },
     }
   } in
-  let inline2685 = (self/6 < other/7) in
-  if inline2685 {
-    jump commute_arm2976(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2687 = (self/6 > other/7) in
-    if inline2687 {
-      jump commute_arm2976(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2689 = (self/6 == other/7) in
-      if inline2689 {
-        jump commute_arm2976(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -3957,35 +3927,35 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_f32(self/6: f32, other/7: f32) ->
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_f32(self/9: f32, other/10: f32) -> bool {
-  join commute_arm2979(commute_field2978: Ordering) -> bool {
-    join inline_cont2691(t1727: bool) -> bool {
-      let t1728 = (!t1727) in
-      t1728
+fn std::cmp::trait_default#PartialOrd#ge__Self_f32(self/0: f32, other/0: f32) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2978 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2691(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2691(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2691(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2693 = (self/9 < other/10) in
-  if inline2693 {
-    jump commute_arm2979(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2695 = (self/9 > other/10) in
-    if inline2695 {
-      jump commute_arm2979(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2697 = (self/9 == other/10) in
-      if inline2697 {
-        jump commute_arm2979(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -3993,9 +3963,9 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_f32(self/9: f32, other/10: f32) -
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_f64(self/0: f64, other/1: f64) -> bool {
-  join commute_arm2982(commute_field2981: Ordering) -> bool {
-    match commute_field2981 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_f64(self/0: f64, other/0: f64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -4007,17 +3977,17 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_f64(self/0: f64, other/1: f64) ->
       },
     }
   } in
-  let inline2701 = (self/0 < other/1) in
-  if inline2701 {
-    jump commute_arm2982(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2703 = (self/0 > other/1) in
-    if inline2703 {
-      jump commute_arm2982(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2705 = (self/0 == other/1) in
-      if inline2705 {
-        jump commute_arm2982(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -4025,35 +3995,35 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_f64(self/0: f64, other/1: f64) ->
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_f64(self/3: f64, other/4: f64) -> bool {
-  join commute_arm2985(commute_field2984: Ordering) -> bool {
-    join inline_cont2707(t1738: bool) -> bool {
-      let t1739 = (!t1738) in
-      t1739
+fn std::cmp::trait_default#PartialOrd#le__Self_f64(self/0: f64, other/0: f64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2984 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2707(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2707(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2707(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2709 = (self/3 < other/4) in
-  if inline2709 {
-    jump commute_arm2985(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2711 = (self/3 > other/4) in
-    if inline2711 {
-      jump commute_arm2985(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2713 = (self/3 == other/4) in
-      if inline2713 {
-        jump commute_arm2985(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -4061,9 +4031,9 @@ fn std::cmp::trait_default#PartialOrd#le__Self_f64(self/3: f64, other/4: f64) ->
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_f64(self/6: f64, other/7: f64) -> bool {
-  join commute_arm2988(commute_field2987: Ordering) -> bool {
-    match commute_field2987 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_f64(self/0: f64, other/0: f64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -4075,17 +4045,17 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_f64(self/6: f64, other/7: f64) ->
       },
     }
   } in
-  let inline2717 = (self/6 < other/7) in
-  if inline2717 {
-    jump commute_arm2988(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2719 = (self/6 > other/7) in
-    if inline2719 {
-      jump commute_arm2988(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2721 = (self/6 == other/7) in
-      if inline2721 {
-        jump commute_arm2988(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -4093,35 +4063,35 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_f64(self/6: f64, other/7: f64) ->
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_f64(self/9: f64, other/10: f64) -> bool {
-  join commute_arm2991(commute_field2990: Ordering) -> bool {
-    join inline_cont2723(t1749: bool) -> bool {
-      let t1750 = (!t1749) in
-      t1750
+fn std::cmp::trait_default#PartialOrd#ge__Self_f64(self/0: f64, other/0: f64) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2990 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2723(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2723(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2723(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2725 = (self/9 < other/10) in
-  if inline2725 {
-    jump commute_arm2991(Tag_0)
+  let inline0 = (self/0 < other/0) in
+  if inline0 {
+    jump commute_arm0(Tag_0)
   } else {
-    let inline2727 = (self/9 > other/10) in
-    if inline2727 {
-      jump commute_arm2991(Tag_2)
+    let inline1 = (self/0 > other/0) in
+    if inline1 {
+      jump commute_arm0(Tag_2)
     } else {
-      let inline2729 = (self/9 == other/10) in
-      if inline2729 {
-        jump commute_arm2991(Tag_1)
+      let inline2 = (self/0 == other/0) in
+      if inline2 {
+        jump commute_arm0(Tag_1)
       } else {
         false
       }
@@ -4129,19 +4099,19 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_f64(self/9: f64, other/10: f64) -
   }
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  let t1753 = (self/438 == other/439) in
-  t1753
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  let t1756 = @runtime(core.int_hash)(self/464) in
-  t1756
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  let t0 = @runtime(core.int_hash)(self/0) in
+  t0
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_Rank(self/0: Rank, other/1: Rank) -> bool {
-  join commute_arm2994(commute_field2993: Ordering) -> bool {
-    match commute_field2993 {
+fn std::cmp::trait_default#PartialOrd#lt__Self_Rank(self/0: Rank, other/0: Rank) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         true
       },
@@ -4153,67 +4123,67 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_Rank(self/0: Rank, other/1: Rank)
       },
     }
   } in
-  let inline2733 = Rank.value(self/0) in
-  let inline2734 = Rank.value(other/1) in
-  let inline2735 = (inline2733 > inline2734) in
-  join inline_join2736(inline2737: Ordering) -> bool {
-    jump commute_arm2994(inline2737)
+  let inline0 = Rank.value(self/0) in
+  let inline1 = Rank.value(other/0) in
+  let inline2 = (inline0 > inline1) in
+  join inline_join0(inline3: Ordering) -> bool {
+    jump commute_arm0(inline3)
   } in
-  if inline2735 {
-    jump inline_join2736(Tag_0)
+  if inline2 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2739 = Rank.value(self/0) in
-    let inline2740 = Rank.value(other/1) in
-    let inline2741 = (inline2739 < inline2740) in
-    if inline2741 {
-      jump inline_join2736(Tag_2)
+    let inline4 = Rank.value(self/0) in
+    let inline5 = Rank.value(other/0) in
+    let inline6 = (inline4 < inline5) in
+    if inline6 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2736(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_Rank(self/3: Rank, other/4: Rank) -> bool {
-  join commute_arm2997(commute_field2996: Ordering) -> bool {
-    join inline_cont2742(t1766: bool) -> bool {
-      let t1767 = (!t1766) in
-      t1767
+fn std::cmp::trait_default#PartialOrd#le__Self_Rank(self/0: Rank, other/0: Rank) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field2996 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2742(false)
+        jump inline_cont0(false)
       },
       Tag_1 => {
-        jump inline_cont2742(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2742(true)
+        jump inline_cont0(true)
       },
     }
   } in
-  let inline2744 = Rank.value(self/3) in
-  let inline2745 = Rank.value(other/4) in
-  let inline2746 = (inline2744 > inline2745) in
-  join inline_join2747(inline2748: Ordering) -> bool {
-    jump commute_arm2997(inline2748)
+  let inline0 = Rank.value(self/0) in
+  let inline1 = Rank.value(other/0) in
+  let inline2 = (inline0 > inline1) in
+  join inline_join0(inline3: Ordering) -> bool {
+    jump commute_arm0(inline3)
   } in
-  if inline2746 {
-    jump inline_join2747(Tag_0)
+  if inline2 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2750 = Rank.value(self/3) in
-    let inline2751 = Rank.value(other/4) in
-    let inline2752 = (inline2750 < inline2751) in
-    if inline2752 {
-      jump inline_join2747(Tag_2)
+    let inline4 = Rank.value(self/0) in
+    let inline5 = Rank.value(other/0) in
+    let inline6 = (inline4 < inline5) in
+    if inline6 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2747(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_Rank(self/6: Rank, other/7: Rank) -> bool {
-  join commute_arm3000(commute_field2999: Ordering) -> bool {
-    match commute_field2999 {
+fn std::cmp::trait_default#PartialOrd#gt__Self_Rank(self/0: Rank, other/0: Rank) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    match commute_field0 {
       Tag_0 => {
         false
       },
@@ -4225,161 +4195,161 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_Rank(self/6: Rank, other/7: Rank)
       },
     }
   } in
-  let inline2755 = Rank.value(self/6) in
-  let inline2756 = Rank.value(other/7) in
-  let inline2757 = (inline2755 > inline2756) in
-  join inline_join2758(inline2759: Ordering) -> bool {
-    jump commute_arm3000(inline2759)
+  let inline0 = Rank.value(self/0) in
+  let inline1 = Rank.value(other/0) in
+  let inline2 = (inline0 > inline1) in
+  join inline_join0(inline3: Ordering) -> bool {
+    jump commute_arm0(inline3)
   } in
-  if inline2757 {
-    jump inline_join2758(Tag_0)
+  if inline2 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2761 = Rank.value(self/6) in
-    let inline2762 = Rank.value(other/7) in
-    let inline2763 = (inline2761 < inline2762) in
-    if inline2763 {
-      jump inline_join2758(Tag_2)
+    let inline4 = Rank.value(self/0) in
+    let inline5 = Rank.value(other/0) in
+    let inline6 = (inline4 < inline5) in
+    if inline6 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2758(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_Rank(self/9: Rank, other/10: Rank) -> bool {
-  join commute_arm3003(commute_field3002: Ordering) -> bool {
-    join inline_cont2764(t1777: bool) -> bool {
-      let t1778 = (!t1777) in
-      t1778
+fn std::cmp::trait_default#PartialOrd#ge__Self_Rank(self/0: Rank, other/0: Rank) -> bool {
+  join commute_arm0(commute_field0: Ordering) -> bool {
+    join inline_cont0(t0: bool) -> bool {
+      let t1 = (!t0) in
+      t1
     } in
-    match commute_field3002 {
+    match commute_field0 {
       Tag_0 => {
-        jump inline_cont2764(true)
+        jump inline_cont0(true)
       },
       Tag_1 => {
-        jump inline_cont2764(false)
+        jump inline_cont0(false)
       },
       Tag_2 => {
-        jump inline_cont2764(false)
+        jump inline_cont0(false)
       },
     }
   } in
-  let inline2766 = Rank.value(self/9) in
-  let inline2767 = Rank.value(other/10) in
-  let inline2768 = (inline2766 > inline2767) in
-  join inline_join2769(inline2770: Ordering) -> bool {
-    jump commute_arm3003(inline2770)
+  let inline0 = Rank.value(self/0) in
+  let inline1 = Rank.value(other/0) in
+  let inline2 = (inline0 > inline1) in
+  join inline_join0(inline3: Ordering) -> bool {
+    jump commute_arm0(inline3)
   } in
-  if inline2768 {
-    jump inline_join2769(Tag_0)
+  if inline2 {
+    jump inline_join0(Tag_0)
   } else {
-    let inline2772 = Rank.value(self/9) in
-    let inline2773 = Rank.value(other/10) in
-    let inline2774 = (inline2772 < inline2773) in
-    if inline2774 {
-      jump inline_join2769(Tag_2)
+    let inline4 = Rank.value(self/0) in
+    let inline5 = Rank.value(other/0) in
+    let inline6 = (inline4 < inline5) in
+    if inline6 {
+      jump inline_join0(Tag_2)
     } else {
-      jump inline_join2769(Tag_1)
+      jump inline_join0(Tag_1)
     }
   }
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  join inline_cont2775(t1780: string) -> unit {
-    let t1781 = @runtime(core.string_println)(t1780) in
+fn println__T_bool(value/0: bool) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  let inline2776 = @runtime(core.bool_to_string)(value/1) in
-  jump inline_cont2775(inline2776)
+  let inline0 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont0(inline0)
 }
 
-fn equal__T_LegacyKey(left/12: LegacyKey, right/13: LegacyKey) -> bool {
-  let inline2778 = LegacyKey.value(left/12) in
-  let inline2779 = LegacyKey.value(right/13) in
-  let inline2780 = trait_impl#PartialEq#isize#eq(inline2778, inline2779) in
-  inline2780
+fn equal__T_LegacyKey(left/0: LegacyKey, right/0: LegacyKey) -> bool {
+  let inline0 = LegacyKey.value(left/0) in
+  let inline1 = LegacyKey.value(right/0) in
+  let inline2 = trait_impl#PartialEq#isize#eq(inline0, inline1) in
+  inline2
 }
 
-fn equal__T_ModernKey(left/12: ModernKey, right/13: ModernKey) -> bool {
-  let inline2782 = ModernKey.value(left/12) in
-  let inline2783 = (inline2782 % 10) in
-  let inline2784 = ModernKey.value(right/13) in
-  let inline2785 = (inline2784 % 10) in
-  let inline2786 = (inline2783 == inline2785) in
-  inline2786
+fn equal__T_ModernKey(left/0: ModernKey, right/0: ModernKey) -> bool {
+  let inline0 = ModernKey.value(left/0) in
+  let inline1 = (inline0 % 10) in
+  let inline2 = ModernKey.value(right/0) in
+  let inline3 = (inline2 % 10) in
+  let inline4 = (inline1 == inline3) in
+  inline4
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont2787(t1789: string) -> unit {
-    let t1790 = @runtime(core.string_println)(t1789) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont2787(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  let t1793 = @runtime(core.bool_to_string)(self/401) in
-  t1793
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  let t0 = @runtime(core.bool_to_string)(self/0) in
+  t0
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() -> HashMap[LegacyKey, string] {
-  let t1796 = @intrinsic(hashmap.new)() in
-  t1796
+  let t0 = @intrinsic(hashmap.new)() in
+  t0
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(
-  self/675: HashMap[LegacyKey, string],
-  key/676: LegacyKey,
-  value/677: string
+  self/0: HashMap[LegacyKey, string],
+  key/0: LegacyKey,
+  value/0: string
 ) -> unit {
-  let t1798 = @intrinsic(hashmap.set)(self/675, key/676, value/677) in
+  let t0 = @intrinsic(hashmap.set)(self/0, key/0, value/0) in
   ()
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
-  self/673: HashMap[LegacyKey, string],
-  key/674: LegacyKey
+  self/0: HashMap[LegacyKey, string],
+  key/0: LegacyKey
 ) -> Option__string {
-  let t1801 = @intrinsic(hashmap.get)(self/673, key/674) in
-  t1801
+  let t0 = @intrinsic(hashmap.get)(self/0, key/0) in
+  t0
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_string(
-  self/720: Option__string,
-  fallback/721: string
+  self/0: Option__string,
+  fallback/0: string
 ) -> string {
-  match self/720 {
+  match self/0 {
     Tag_0 => {
-      fallback/721
+      fallback/0
     },
     Tag_1 => {
-      let x775 = Option__string::Some._0(self/720) in
-      x775
+      let x0 = Option__string::Some._0(self/0) in
+      x0
     },
   }
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_ModernKey__V_string() -> HashMap[ModernKey, string] {
-  let t1808 = @intrinsic(hashmap.new)() in
-  t1808
+  let t0 = @intrinsic(hashmap.new)() in
+  t0
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(
-  self/675: HashMap[ModernKey, string],
-  key/676: ModernKey,
-  value/677: string
+  self/0: HashMap[ModernKey, string],
+  key/0: ModernKey,
+  value/0: string
 ) -> unit {
-  let t1810 = @intrinsic(hashmap.set)(self/675, key/676, value/677) in
+  let t0 = @intrinsic(hashmap.set)(self/0, key/0, value/0) in
   ()
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_ModernKey__V_string(
-  self/673: HashMap[ModernKey, string],
-  key/674: ModernKey
+  self/0: HashMap[ModernKey, string],
+  key/0: ModernKey
 ) -> Option__string {
-  let t1813 = @intrinsic(hashmap.get)(self/673, key/674) in
-  t1813
+  let t0 = @intrinsic(hashmap.get)(self/0, key/0) in
+  t0
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

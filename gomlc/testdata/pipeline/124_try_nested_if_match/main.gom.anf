@@ -1,279 +1,279 @@
 fn maybe_num(flag/0: bool) -> Option__i32 {
   if flag/0 {
-    let t808 = Option__i32::Some(8) in
-    t808
+    let t0 = Option__i32::Some(8) in
+    t0
   } else {
     Tag_0
   }
 }
 
-fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__i32 {
-  join k811(jp812: i32) -> Option__i32 {
-    let t813 = Option__i32::Some(jp812) in
-    t813
+fn nested(top/0: bool, mode/0: Mode, inner_flag/0: bool) -> Option__i32 {
+  join k0(jp0: i32) -> Option__i32 {
+    let t0 = Option__i32::Some(jp0) in
+    t0
   } in
-  if top/1 {
-    match mode/2 {
+  if top/0 {
+    match mode/0 {
       Tag_0 => {
-        join inline_cont886(mtmp796: Option__i32) -> Option__i32 {
-          join k816(jp817: i32) -> Option__i32 {
-            let t818 = (jp817 + 1) in
-            jump k811(t818)
+        join inline_cont0(mtmp0: Option__i32) -> Option__i32 {
+          join k1(jp1: i32) -> Option__i32 {
+            let t1 = (jp1 + 1) in
+            jump k0(t1)
           } in
-          match mtmp796 {
+          match mtmp0 {
             Tag_0 => {
               Tag_0
             },
             Tag_1 => {
-              let x797 = Option__i32::Some._0(mtmp796) in
-              jump k816(x797)
+              let x0 = Option__i32::Some._0(mtmp0) in
+              jump k1(x0)
             },
           }
         } in
-        if inner_flag/3 {
-          let inline887 = Option__i32::Some(8) in
-          jump inline_cont886(inline887)
+        if inner_flag/0 {
+          let inline0 = Option__i32::Some(8) in
+          jump inline_cont0(inline0)
         } else {
-          jump inline_cont886(Tag_0)
+          jump inline_cont0(Tag_0)
         }
       },
       Tag_1 => {
-        jump k811(20)
+        jump k0(20)
       },
     }
   } else {
-    join inline_cont888(mtmp798: Option__i32) -> Option__i32 {
-      join k819(jp820: i32) -> Option__i32 {
-        let t821 = (jp820 + 2) in
-        jump k811(t821)
+    join inline_cont1(mtmp1: Option__i32) -> Option__i32 {
+      join k2(jp2: i32) -> Option__i32 {
+        let t2 = (jp2 + 2) in
+        jump k0(t2)
       } in
-      match mtmp798 {
+      match mtmp1 {
         Tag_0 => {
           Tag_0
         },
         Tag_1 => {
-          let x799 = Option__i32::Some._0(mtmp798) in
-          jump k819(x799)
+          let x1 = Option__i32::Some._0(mtmp1) in
+          jump k2(x1)
         },
       }
     } in
-    if inner_flag/3 {
-      let inline889 = Option__i32::Some(8) in
-      jump inline_cont888(inline889)
+    if inner_flag/0 {
+      let inline1 = Option__i32::Some(8) in
+      jump inline_cont1(inline1)
     } else {
-      jump inline_cont888(Tag_0)
+      jump inline_cont1(Tag_0)
     }
   }
 }
 
-fn show(opt/7: Option__i32) -> string {
-  match opt/7 {
+fn show(opt/0: Option__i32) -> string {
+  match opt/0 {
     Tag_0 => {
       "none"
     },
     Tag_1 => {
-      let x800 = Option__i32::Some._0(opt/7) in
-      join inline_cont890(t826: string) -> string {
-        let t827 = ("some=" + t826) in
-        t827
+      let x0 = Option__i32::Some._0(opt/0) in
+      join inline_cont0(t0: string) -> string {
+        let t1 = ("some=" + t0) in
+        t1
       } in
-      let inline891 = __goml_builtin_int32_to_string(x800) in
-      jump inline_cont890(inline891)
+      let inline0 = __goml_builtin_int32_to_string(x0) in
+      jump inline_cont0(inline0)
     },
   }
 }
 
 fn main() -> unit {
-  let t829 = nested(true, Tag_0, true) in
-  join inline_cont911(t830: string) -> unit {
-    join inline_cont908(_wild801: unit) -> unit {
-      let t831 = nested(true, Tag_1, false) in
-      join inline_cont903(t832: string) -> unit {
-        join inline_cont900(_wild802: unit) -> unit {
-          let t833 = nested(false, Tag_0, false) in
-          join inline_cont895(t834: string) -> unit {
-            let inline893 = trait_impl#ToString#string#to_string(t834) in
-            let inline894 = @runtime(core.string_println)(inline893) in
+  let t0 = nested(true, Tag_0, true) in
+  join inline_cont0(t1: string) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      let t2 = nested(true, Tag_1, false) in
+      join inline_cont2(t3: string) -> unit {
+        join inline_cont3(_wild1: unit) -> unit {
+          let t4 = nested(false, Tag_0, false) in
+          join inline_cont4(t5: string) -> unit {
+            let inline0 = trait_impl#ToString#string#to_string(t5) in
+            let inline1 = @runtime(core.string_println)(inline0) in
             ()
           } in
-          match t833 {
+          match t4 {
             Tag_0 => {
-              jump inline_cont895("none")
+              jump inline_cont4("none")
             },
             Tag_1 => {
-              let inline896 = Option__i32::Some._0(t833) in
-              let inline898 = inherent#i32#i32#to_string(inline896) in
-              let inline899 = ("some=" + inline898) in
-              jump inline_cont895(inline899)
+              let inline2 = Option__i32::Some._0(t4) in
+              let inline3 = inherent#i32#i32#to_string(inline2) in
+              let inline4 = ("some=" + inline3) in
+              jump inline_cont4(inline4)
             },
           }
         } in
-        let inline901 = trait_impl#ToString#string#to_string(t832) in
-        let inline902 = @runtime(core.string_println)(inline901) in
-        jump inline_cont900(())
+        let inline5 = trait_impl#ToString#string#to_string(t3) in
+        let inline6 = @runtime(core.string_println)(inline5) in
+        jump inline_cont3(())
       } in
-      match t831 {
+      match t2 {
         Tag_0 => {
-          jump inline_cont903("none")
+          jump inline_cont2("none")
         },
         Tag_1 => {
-          let inline904 = Option__i32::Some._0(t831) in
-          let inline906 = inherent#i32#i32#to_string(inline904) in
-          let inline907 = ("some=" + inline906) in
-          jump inline_cont903(inline907)
+          let inline7 = Option__i32::Some._0(t2) in
+          let inline8 = inherent#i32#i32#to_string(inline7) in
+          let inline9 = ("some=" + inline8) in
+          jump inline_cont2(inline9)
         },
       }
     } in
-    let inline909 = trait_impl#ToString#string#to_string(t830) in
-    let inline910 = @runtime(core.string_println)(inline909) in
-    jump inline_cont908(())
+    let inline10 = trait_impl#ToString#string#to_string(t1) in
+    let inline11 = @runtime(core.string_println)(inline10) in
+    jump inline_cont1(())
   } in
-  match t829 {
+  match t0 {
     Tag_0 => {
-      jump inline_cont911("none")
+      jump inline_cont0("none")
     },
     Tag_1 => {
-      let inline912 = Option__i32::Some._0(t829) in
-      let inline914 = inherent#i32#i32#to_string(inline912) in
-      let inline915 = ("some=" + inline914) in
-      jump inline_cont911(inline915)
+      let inline12 = Option__i32::Some._0(t0) in
+      let inline13 = inherent#i32#i32#to_string(inline12) in
+      let inline14 = ("some=" + inline13) in
+      jump inline_cont0(inline14)
     },
   }
 }
 
-fn inherent#i32#i32#to_string(self/286: i32) -> string {
-  let inline917 = (self/286 as i64) in
-  let inline918 = signed_decimal_string(inline917) in
-  inline918
+fn inherent#i32#i32#to_string(self/0: i32) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont919(t839: string) -> unit {
-    let t840 = @runtime(core.string_println)(t839) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont919(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  let t843 = (value/225 as i64) in
-  let inline921 = (t843 < 0) in
-  if inline921 {
-    let inline922 = (t843 as u64) in
-    let inline923 = (0 - inline922) in
-    let inline924 = decimal_string(inline923) in
-    let inline925 = ("-" + inline924) in
-    inline925
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
   } else {
-    let inline926 = (t843 as u64) in
-    let inline927 = decimal_string(inline926) in
-    inline927
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
   }
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  let t851 = (value/214 < 0) in
-  if t851 {
-    let t852 = (value/214 as u64) in
-    let t853 = (0 - t852) in
-    let t854 = decimal_string(t853) in
-    let t855 = ("-" + t854) in
-    t855
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
   } else {
-    let t856 = (value/214 as u64) in
-    let t857 = decimal_string(t856) in
-    t857
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let t880 = (value/208 == 0) in
-  join k860() -> string {
-    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-    let remaining/210 = value/208 in
-    join exit861() -> string {
-      join inline_cont936(t862: isize) -> string {
-        let bytes/211 = @intrinsic(vec.with_capacity)(t862) in
-        let offset/212 = 0 in
-        join exit863() -> string {
-          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-          let x364 = mtmp362.1 in
-          x364
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
         } in
         joinrec {
-          join loop864() -> string {
-            join inline_cont934(t865: isize) -> string {
-              let t866 = (offset/212 < t865) in
-              if t866 {
-                join inline_cont932(t867: isize) -> string {
-                  let t868 = (t867 - offset/212) in
-                  let t869 = (t868 - 1) in
-                  let t870 = @intrinsic(vec.get)(reversed/209, t869) in
-                  join inline_cont930(_wild357: unit) -> string {
-                    let compound_old358 = offset/212 in
-                    let compound_value359 = 1 in
-                    let t871 = (compound_old358 + compound_value359) in
-                    let t872 = offset/212 = t871 in
-                    jump loop864()
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
                   } in
-                  let inline931 = @intrinsic(vec.push)(bytes/211, t870) in
-                  jump inline_cont930(())
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
                 } in
-                let inline933 = @intrinsic(vec.len)(reversed/209) in
-                jump inline_cont932(inline933)
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
               } else {
-                jump exit863()
+                jump exit1()
               }
             } in
-            let inline935 = @intrinsic(vec.len)(reversed/209) in
-            jump inline_cont934(inline935)
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
           } in
         } in
-        jump loop864()
+        jump loop1()
       } in
-      let inline937 = @intrinsic(vec.len)(reversed/209) in
-      jump inline_cont936(inline937)
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
     } in
     joinrec {
-      join loop873() -> string {
-        let t874 = (remaining/210 > 0) in
-        if t874 {
-          let t875 = (remaining/210 % 10) in
-          let t876 = (t875 as u8) in
-          let t877 = (t876 + 48) in
-          join inline_cont928(_wild352: unit) -> string {
-            let compound_old353 = remaining/210 in
-            let compound_value354 = 10 in
-            let t878 = (compound_old353 / compound_value354) in
-            let t879 = remaining/210 = t878 in
-            jump loop873()
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
           } in
-          let inline929 = @intrinsic(vec.push)(reversed/209, t877) in
-          jump inline_cont928(())
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
         } else {
-          jump exit861()
+          jump exit0()
         }
       } in
     } in
-    jump loop873()
+    jump loop0()
   } in
-  if t880 {
+  if t0 {
     "0"
   } else {
-    jump k860()
+    jump k0()
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  let t882 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  let t885 = @intrinsic(vec.len)(self/526) in
-  t885
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }

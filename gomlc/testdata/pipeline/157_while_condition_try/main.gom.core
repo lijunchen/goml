@@ -8,16 +8,16 @@ fn float_natural_one() -> FloatNatural {
   FloatNatural { words: words/0 }
 }
 
-fn float_natural_from_u64(value/1: u64) -> FloatNatural {
-  let result/2 = float_natural_zero() in
-  let _wild2 =
-    if (value/1 != 0) {
+fn float_natural_from_u64(value/0: u64) -> FloatNatural {
+  let result/0 = float_natural_zero() in
+  let _wild0 =
+    if (value/0 != 0) {
         {
-          let _wild1 = inherent#Vec#Vec[u32]#push(FloatNatural.words(result/2), (value/1 as u32)) in
-          let high/3 = ((value/1 >> 32) as u32) in
-          if (high/3 != 0) {
+          let _wild1 = inherent#Vec#Vec[u32]#push(FloatNatural.words(result/0), (value/0 as u32)) in
+          let high/0 = ((value/0 >> 32) as u32) in
+          if (high/0 != 0) {
               {
-                inherent#Vec#Vec[u32]#push(FloatNatural.words(result/2), high/3)
+                inherent#Vec#Vec[u32]#push(FloatNatural.words(result/0), high/0)
               }
           } else {
               {
@@ -30,36 +30,36 @@ fn float_natural_from_u64(value/1: u64) -> FloatNatural {
           ()
         }
     } in
-  result/2
+  result/0
 }
 
-fn float_natural_copy(value/4: FloatNatural) -> FloatNatural {
-  let result/5 = float_natural_zero() in
-  let index/6 = 0 in
-  let _wild7 =
-    while (index/6 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/4))) {
+fn float_natural_copy(value/0: FloatNatural) -> FloatNatural {
+  let result/0 = float_natural_zero() in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0))) {
         {
-          let _wild3 =
+          let _wild1 =
             inherent#Vec#Vec[u32]#push(
-              FloatNatural.words(result/5),
-              @intrinsic(vec.get)(FloatNatural.words(value/4), index/6)
+              FloatNatural.words(result/0),
+              @intrinsic(vec.get)(FloatNatural.words(value/0), index/0)
             ) in
-          let _wild6 =
+          let _wild2 =
             {
-              let compound_old4 = index/6 in
-              let compound_value5 = 1 in
-              index/6 = (compound_old4 + compound_value5)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  result/5
+  result/0
 }
 
-fn float_natural_trim(value/7: FloatNatural) -> unit {
-  while if (!inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/7))) {
+fn float_natural_trim(value/0: FloatNatural) -> unit {
+  while if (!inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/0))) {
       (@intrinsic(vec.get)(
-        FloatNatural.words(value/7),
-        (inherent#Vec#Vec[u32]#len(FloatNatural.words(value/7)) - 1)
+        FloatNatural.words(value/0),
+        (inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0)) - 1)
       ) ==
         0)
   } else {
@@ -67,20 +67,20 @@ fn float_natural_trim(value/7: FloatNatural) -> unit {
   } {
       {
         inherent#Vec#Vec[u32]#truncate(
-          FloatNatural.words(value/7),
-          (inherent#Vec#Vec[u32]#len(FloatNatural.words(value/7)) - 1)
+          FloatNatural.words(value/0),
+          (inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0)) - 1)
         )
       }
   }
 }
 
-fn float_natural_is_zero(value/8: FloatNatural) -> bool {
-  inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/8))
+fn float_natural_is_zero(value/0: FloatNatural) -> bool {
+  inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/0))
 }
 
-fn float_natural_bit_length(value/9: FloatNatural) -> isize {
-  let _wild8 =
-    if inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/9)) {
+fn float_natural_bit_length(value/0: FloatNatural) -> isize {
+  let _wild0 =
+    if inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/0)) {
         {
           return 0
         }
@@ -89,42 +89,42 @@ fn float_natural_bit_length(value/9: FloatNatural) -> isize {
           ()
         }
     } in
-  let high/10 =
+  let high/0 =
     @intrinsic(vec.get)(
-      FloatNatural.words(value/9),
-      (inherent#Vec#Vec[u32]#len(FloatNatural.words(value/9)) - 1)
+      FloatNatural.words(value/0),
+      (inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0)) - 1)
     ) in
-  let bits/11 = 0 in
-  let _wild15 =
-    while (high/10 != 0) {
+  let bits/0 = 0 in
+  let _wild1 =
+    while (high/0 != 0) {
         {
-          let _wild11 =
+          let _wild2 =
             {
-              let compound_old9 = high/10 in
-              let compound_value10 = 1 in
-              high/10 = (compound_old9 >> compound_value10)
+              let compound_old0 = high/0 in
+              let compound_value0 = 1 in
+              high/0 = (compound_old0 >> compound_value0)
             } in
-          let _wild14 =
+          let _wild3 =
             {
-              let compound_old12 = bits/11 in
-              let compound_value13 = 1 in
-              bits/11 = (compound_old12 + compound_value13)
+              let compound_old1 = bits/0 in
+              let compound_value1 = 1 in
+              bits/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  (((inherent#Vec#Vec[u32]#len(FloatNatural.words(value/9)) - 1) * 32) + bits/11)
+  (((inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0)) - 1) * 32) + bits/0)
 }
 
-fn float_natural_compare(left/12: FloatNatural, right/13: FloatNatural) -> isize {
-  let _wild16 =
-    if (inherent#Vec#Vec[u32]#len(FloatNatural.words(left/12)) <
-      inherent#Vec#Vec[u32]#len(FloatNatural.words(right/13))) {
+fn float_natural_compare(left/0: FloatNatural, right/0: FloatNatural) -> isize {
+  let _wild0 =
+    if (inherent#Vec#Vec[u32]#len(FloatNatural.words(left/0)) <
+      inherent#Vec#Vec[u32]#len(FloatNatural.words(right/0))) {
         {
           return -1
         }
     } else {
-        if (inherent#Vec#Vec[u32]#len(FloatNatural.words(left/12)) >
-          inherent#Vec#Vec[u32]#len(FloatNatural.words(right/13))) {
+        if (inherent#Vec#Vec[u32]#len(FloatNatural.words(left/0)) >
+          inherent#Vec#Vec[u32]#len(FloatNatural.words(right/0))) {
             {
               return 1
             }
@@ -134,24 +134,24 @@ fn float_natural_compare(left/12: FloatNatural, right/13: FloatNatural) -> isize
             }
         }
     } in
-  let index/14 = inherent#Vec#Vec[u32]#len(FloatNatural.words(left/12)) in
-  let _wild20 =
-    while (index/14 > 0) {
+  let index/0 = inherent#Vec#Vec[u32]#len(FloatNatural.words(left/0)) in
+  let _wild1 =
+    while (index/0 > 0) {
         {
-          let _wild19 =
+          let _wild2 =
             {
-              let compound_old17 = index/14 in
-              let compound_value18 = 1 in
-              index/14 = (compound_old17 - compound_value18)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 - compound_value0)
             } in
-          if (@intrinsic(vec.get)(FloatNatural.words(left/12), index/14) <
-            @intrinsic(vec.get)(FloatNatural.words(right/13), index/14)) {
+          if (@intrinsic(vec.get)(FloatNatural.words(left/0), index/0) <
+            @intrinsic(vec.get)(FloatNatural.words(right/0), index/0)) {
               {
                 return -1
               }
           } else {
-              if (@intrinsic(vec.get)(FloatNatural.words(left/12), index/14) >
-                @intrinsic(vec.get)(FloatNatural.words(right/13), index/14)) {
+              if (@intrinsic(vec.get)(FloatNatural.words(left/0), index/0) >
+                @intrinsic(vec.get)(FloatNatural.words(right/0), index/0)) {
                   {
                     return 1
                   }
@@ -166,11 +166,11 @@ fn float_natural_compare(left/12: FloatNatural, right/13: FloatNatural) -> isize
   0
 }
 
-fn float_natural_multiply_small(value/15: FloatNatural, factor/16: u32) -> unit {
-  let _wild22 =
-    if (factor/16 == 0) {
+fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
+  let _wild0 =
+    if (factor/0 == 0) {
         {
-          let _wild21 = inherent#Vec#Vec[u32]#clear(FloatNatural.words(value/15)) in
+          let _wild1 = inherent#Vec#Vec[u32]#clear(FloatNatural.words(value/0)) in
           return
         }
     } else {
@@ -178,36 +178,36 @@ fn float_natural_multiply_small(value/15: FloatNatural, factor/16: u32) -> unit 
           ()
         }
     } in
-  let carry/17 = 0 in
-  let index/18 = 0 in
-  let _wild33 =
-    while (index/18 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/15))) {
+  let carry/0 = 0 in
+  let index/0 = 0 in
+  let _wild2 =
+    while (index/0 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0))) {
         {
-          let product/19 =
-            (((@intrinsic(vec.get)(FloatNatural.words(value/15), index/18) as u64) *
-              (factor/16 as u64)) +
-              carry/17) in
-          let _wild28 =
+          let product/0 =
+            (((@intrinsic(vec.get)(FloatNatural.words(value/0), index/0) as u64) *
+              (factor/0 as u64)) +
+              carry/0) in
+          let _wild3 =
             {
-              let place_root23 = value/15 in
-              let place24 = FloatNatural.words(place_root23) in
-              let index25 = index/18 in
-              let place26 = @intrinsic(vec.get)(place24, index25) in
-              let value27 = (product/19 as u32) in
-              @intrinsic(vec.set)(place24, index25, value27)
+              let place_root0 = value/0 in
+              let place0 = FloatNatural.words(place_root0) in
+              let index0 = index/0 in
+              let place1 = @intrinsic(vec.get)(place0, index0) in
+              let value0 = (product/0 as u32) in
+              @intrinsic(vec.set)(place0, index0, value0)
             } in
-          let _wild29 = carry/17 = (product/19 >> 32) in
-          let _wild32 =
+          let _wild4 = carry/0 = (product/0 >> 32) in
+          let _wild5 =
             {
-              let compound_old30 = index/18 in
-              let compound_value31 = 1 in
-              index/18 = (compound_old30 + compound_value31)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  if (carry/17 != 0) {
+  if (carry/0 != 0) {
       {
-        inherent#Vec#Vec[u32]#push(FloatNatural.words(value/15), (carry/17 as u32))
+        inherent#Vec#Vec[u32]#push(FloatNatural.words(value/0), (carry/0 as u32))
       }
   } else {
       {
@@ -216,71 +216,71 @@ fn float_natural_multiply_small(value/15: FloatNatural, factor/16: u32) -> unit 
   }
 }
 
-fn float_natural_add_small(value/20: FloatNatural, addition/21: u32) -> unit {
-  let carry/22 = (addition/21 as u64) in
-  let index/23 = 0 in
-  while (carry/22 != 0) {
+fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> unit {
+  let carry/0 = (addition/0 as u64) in
+  let index/0 = 0 in
+  while (carry/0 != 0) {
       {
-        let _wild34 =
-          if (index/23 == inherent#Vec#Vec[u32]#len(FloatNatural.words(value/20))) {
+        let _wild0 =
+          if (index/0 == inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0))) {
               {
-                inherent#Vec#Vec[u32]#push(FloatNatural.words(value/20), 0)
+                inherent#Vec#Vec[u32]#push(FloatNatural.words(value/0), 0)
               }
           } else {
               {
                 ()
               }
           } in
-        let sum/24 =
-          ((@intrinsic(vec.get)(FloatNatural.words(value/20), index/23) as u64) + carry/22) in
-        let _wild40 =
+        let sum/0 =
+          ((@intrinsic(vec.get)(FloatNatural.words(value/0), index/0) as u64) + carry/0) in
+        let _wild1 =
           {
-            let place_root35 = value/20 in
-            let place36 = FloatNatural.words(place_root35) in
-            let index37 = index/23 in
-            let place38 = @intrinsic(vec.get)(place36, index37) in
-            let value39 = (sum/24 as u32) in
-            @intrinsic(vec.set)(place36, index37, value39)
+            let place_root0 = value/0 in
+            let place0 = FloatNatural.words(place_root0) in
+            let index0 = index/0 in
+            let place1 = @intrinsic(vec.get)(place0, index0) in
+            let value0 = (sum/0 as u32) in
+            @intrinsic(vec.set)(place0, index0, value0)
           } in
-        let _wild41 = carry/22 = (sum/24 >> 32) in
-        let _wild44 =
+        let _wild2 = carry/0 = (sum/0 >> 32) in
+        let _wild3 =
           {
-            let compound_old42 = index/23 in
-            let compound_value43 = 1 in
-            index/23 = (compound_old42 + compound_value43)
+            let compound_old0 = index/0 in
+            let compound_value0 = 1 in
+            index/0 = (compound_old0 + compound_value0)
           } in
       }
   }
 }
 
-fn float_natural_power5(exponent/25: isize) -> FloatNatural {
-  let result/26 = float_natural_one() in
-  let count/27 = 0 in
-  let _wild49 =
-    while (count/27 < exponent/25) {
+fn float_natural_power5(exponent/0: isize) -> FloatNatural {
+  let result/0 = float_natural_one() in
+  let count/0 = 0 in
+  let _wild0 =
+    while (count/0 < exponent/0) {
         {
-          let _wild45 = float_natural_multiply_small(result/26, 5) in
-          let _wild48 =
+          let _wild1 = float_natural_multiply_small(result/0, 5) in
+          let _wild2 =
             {
-              let compound_old46 = count/27 in
-              let compound_value47 = 1 in
-              count/27 = (compound_old46 + compound_value47)
+              let compound_old0 = count/0 in
+              let compound_value0 = 1 in
+              count/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  result/26
+  result/0
 }
 
-fn float_natural_shift_left(value/28: FloatNatural, bits/29: isize) -> FloatNatural {
-  let _wild50 =
-    if float_natural_is_zero(value/28) {
+fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatural {
+  let _wild0 =
+    if float_natural_is_zero(value/0) {
         {
           return float_natural_zero()
         }
     } else {
-        if (bits/29 == 0) {
+        if (bits/0 == 0) {
             {
-              return float_natural_copy(value/28)
+              return float_natural_copy(value/0)
             }
         } else {
             {
@@ -288,145 +288,145 @@ fn float_natural_shift_left(value/28: FloatNatural, bits/29: isize) -> FloatNatu
             }
         }
     } in
-  let result/30 = float_natural_zero() in
-  let word_shift/31 = (bits/29 / 32) in
-  let bit_shift/32 = (bits/29 % 32) in
-  let index/33 = 0 in
-  let _wild55 =
-    while (index/33 < word_shift/31) {
+  let result/0 = float_natural_zero() in
+  let word_shift/0 = (bits/0 / 32) in
+  let bit_shift/0 = (bits/0 % 32) in
+  let index/0 = 0 in
+  let _wild1 =
+    while (index/0 < word_shift/0) {
         {
-          let _wild51 = inherent#Vec#Vec[u32]#push(FloatNatural.words(result/30), 0) in
-          let _wild54 =
+          let _wild2 = inherent#Vec#Vec[u32]#push(FloatNatural.words(result/0), 0) in
+          let _wild3 =
             {
-              let compound_old52 = index/33 in
-              let compound_value53 = 1 in
-              index/33 = (compound_old52 + compound_value53)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  let carry/34 = 0 in
-  let _wild56 = index/33 = 0 in
-  let _wild62 =
-    while (index/33 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/28))) {
+  let carry/0 = 0 in
+  let _wild4 = index/0 = 0 in
+  let _wild5 =
+    while (index/0 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0))) {
         {
-          let word/35 = @intrinsic(vec.get)(FloatNatural.words(value/28), index/33) in
-          let shifted/36 = (((word/35 as u64) << bit_shift/32) | carry/34) in
-          let _wild57 =
-            inherent#Vec#Vec[u32]#push(FloatNatural.words(result/30), (shifted/36 as u32)) in
-          let _wild58 = carry/34 = (shifted/36 >> 32) in
-          let _wild61 =
+          let word/0 = @intrinsic(vec.get)(FloatNatural.words(value/0), index/0) in
+          let shifted/0 = (((word/0 as u64) << bit_shift/0) | carry/0) in
+          let _wild6 =
+            inherent#Vec#Vec[u32]#push(FloatNatural.words(result/0), (shifted/0 as u32)) in
+          let _wild7 = carry/0 = (shifted/0 >> 32) in
+          let _wild8 =
             {
-              let compound_old59 = index/33 in
-              let compound_value60 = 1 in
-              index/33 = (compound_old59 + compound_value60)
+              let compound_old1 = index/0 in
+              let compound_value1 = 1 in
+              index/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let _wild63 =
-    if (carry/34 != 0) {
+  let _wild9 =
+    if (carry/0 != 0) {
         {
-          inherent#Vec#Vec[u32]#push(FloatNatural.words(result/30), (carry/34 as u32))
+          inherent#Vec#Vec[u32]#push(FloatNatural.words(result/0), (carry/0 as u32))
         }
     } else {
         {
           ()
         }
     } in
-  result/30
+  result/0
 }
 
-fn float_natural_subtract(value/37: FloatNatural, other/38: FloatNatural) -> unit {
-  let base/39 = 4294967296 in
-  let borrow/40 = 0 in
-  let index/41 = 0 in
-  let _wild82 =
-    while (index/41 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/37))) {
+fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> unit {
+  let base/0 = 4294967296 in
+  let borrow/0 = 0 in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0))) {
         {
-          let right/42 =
-            (if (index/41 < inherent#Vec#Vec[u32]#len(FloatNatural.words(other/38))) {
+          let right/0 =
+            (if (index/0 < inherent#Vec#Vec[u32]#len(FloatNatural.words(other/0))) {
                 {
-                  (@intrinsic(vec.get)(FloatNatural.words(other/38), index/41) as u64)
+                  (@intrinsic(vec.get)(FloatNatural.words(other/0), index/0) as u64)
                 }
             } else {
                 {
                   0
                 }
             } +
-              borrow/40) in
-          let left/43 = (@intrinsic(vec.get)(FloatNatural.words(value/37), index/41) as u64) in
-          let _wild78 =
-            if (left/43 >= right/42) {
+              borrow/0) in
+          let left/0 = (@intrinsic(vec.get)(FloatNatural.words(value/0), index/0) as u64) in
+          let _wild1 =
+            if (left/0 >= right/0) {
                 {
-                  let _wild69 =
+                  let _wild2 =
                     {
-                      let place_root64 = value/37 in
-                      let place65 = FloatNatural.words(place_root64) in
-                      let index66 = index/41 in
-                      let place67 = @intrinsic(vec.get)(place65, index66) in
-                      let value68 = ((left/43 - right/42) as u32) in
-                      @intrinsic(vec.set)(place65, index66, value68)
+                      let place_root0 = value/0 in
+                      let place0 = FloatNatural.words(place_root0) in
+                      let index0 = index/0 in
+                      let place1 = @intrinsic(vec.get)(place0, index0) in
+                      let value0 = ((left/0 - right/0) as u32) in
+                      @intrinsic(vec.set)(place0, index0, value0)
                     } in
-                  let _wild70 = borrow/40 = 0 in
+                  let _wild3 = borrow/0 = 0 in
                 }
             } else {
                 {
-                  let _wild76 =
+                  let _wild4 =
                     {
-                      let place_root71 = value/37 in
-                      let place72 = FloatNatural.words(place_root71) in
-                      let index73 = index/41 in
-                      let place74 = @intrinsic(vec.get)(place72, index73) in
-                      let value75 = (((base/39 + left/43) - right/42) as u32) in
-                      @intrinsic(vec.set)(place72, index73, value75)
+                      let place_root1 = value/0 in
+                      let place2 = FloatNatural.words(place_root1) in
+                      let index1 = index/0 in
+                      let place3 = @intrinsic(vec.get)(place2, index1) in
+                      let value1 = (((base/0 + left/0) - right/0) as u32) in
+                      @intrinsic(vec.set)(place2, index1, value1)
                     } in
-                  let _wild77 = borrow/40 = 1 in
+                  let _wild5 = borrow/0 = 1 in
                 }
             } in
-          let _wild81 =
+          let _wild6 =
             {
-              let compound_old79 = index/41 in
-              let compound_value80 = 1 in
-              index/41 = (compound_old79 + compound_value80)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  float_natural_trim(value/37)
+  float_natural_trim(value/0)
 }
 
-fn float_natural_divide_small(value/44: FloatNatural, divisor/45: u32) -> u32 {
-  let remainder/46 = 0 in
-  let index/47 = inherent#Vec#Vec[u32]#len(FloatNatural.words(value/44)) in
-  let _wild93 =
-    while (index/47 > 0) {
+fn float_natural_divide_small(value/0: FloatNatural, divisor/0: u32) -> u32 {
+  let remainder/0 = 0 in
+  let index/0 = inherent#Vec#Vec[u32]#len(FloatNatural.words(value/0)) in
+  let _wild0 =
+    while (index/0 > 0) {
         {
-          let _wild85 =
+          let _wild1 =
             {
-              let compound_old83 = index/47 in
-              let compound_value84 = 1 in
-              index/47 = (compound_old83 - compound_value84)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 - compound_value0)
             } in
-          let current/48 =
-            ((remainder/46 << 32) |
-              (@intrinsic(vec.get)(FloatNatural.words(value/44), index/47) as u64)) in
-          let _wild91 =
+          let current/0 =
+            ((remainder/0 << 32) |
+              (@intrinsic(vec.get)(FloatNatural.words(value/0), index/0) as u64)) in
+          let _wild2 =
             {
-              let place_root86 = value/44 in
-              let place87 = FloatNatural.words(place_root86) in
-              let index88 = index/47 in
-              let place89 = @intrinsic(vec.get)(place87, index88) in
-              let value90 = ((current/48 / (divisor/45 as u64)) as u32) in
-              @intrinsic(vec.set)(place87, index88, value90)
+              let place_root0 = value/0 in
+              let place0 = FloatNatural.words(place_root0) in
+              let index0 = index/0 in
+              let place1 = @intrinsic(vec.get)(place0, index0) in
+              let value0 = ((current/0 / (divisor/0 as u64)) as u32) in
+              @intrinsic(vec.set)(place0, index0, value0)
             } in
-          let _wild92 = remainder/46 = (current/48 % (divisor/45 as u64)) in
+          let _wild3 = remainder/0 = (current/0 % (divisor/0 as u64)) in
         }
     } in
-  let _wild94 = float_natural_trim(value/44) in
-  (remainder/46 as u32)
+  let _wild4 = float_natural_trim(value/0) in
+  (remainder/0 as u32)
 }
 
-fn float_natural_decimal(value/49: FloatNatural) -> string {
-  let _wild95 =
-    if float_natural_is_zero(value/49) {
+fn float_natural_decimal(value/0: FloatNatural) -> string {
+  let _wild0 =
+    if float_natural_is_zero(value/0) {
         {
           return "0"
         }
@@ -435,125 +435,125 @@ fn float_natural_decimal(value/49: FloatNatural) -> string {
           ()
         }
     } in
-  let current/50 = float_natural_copy(value/49) in
-  let reversed/51 = @intrinsic(vec.new)() in
-  let _wild96 =
-    while (!float_natural_is_zero(current/50)) {
+  let current/0 = float_natural_copy(value/0) in
+  let reversed/0 = @intrinsic(vec.new)() in
+  let _wild1 =
+    while (!float_natural_is_zero(current/0)) {
         {
           inherent#Vec#Vec[u8]#push(
-            reversed/51,
-            ((float_natural_divide_small(current/50, 10) as u8) + 48)
+            reversed/0,
+            ((float_natural_divide_small(current/0, 10) as u8) + 48)
           )
         }
     } in
-  let output/52 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[u8]#len(reversed/51)) in
-  let offset/53 = 0 in
-  let _wild101 =
-    while (offset/53 < inherent#Vec#Vec[u8]#len(reversed/51)) {
+  let output/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[u8]#len(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild2 =
+    while (offset/0 < inherent#Vec#Vec[u8]#len(reversed/0)) {
         {
-          let _wild97 =
+          let _wild3 =
             inherent#Vec#Vec[u8]#push(
-              output/52,
+              output/0,
               @intrinsic(vec.get)(
-                reversed/51,
-                ((inherent#Vec#Vec[u8]#len(reversed/51) - offset/53) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[u8]#len(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild100 =
+          let _wild4 =
             {
-              let compound_old98 = offset/53 in
-              let compound_value99 = 1 in
-              offset/53 = (compound_old98 + compound_value99)
+              let compound_old0 = offset/0 in
+              let compound_value0 = 1 in
+              offset/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  let mtmp102 = @runtime(core.string_from_utf8)(output/52) in
+  let mtmp0 = @runtime(core.string_from_utf8)(output/0) in
   {
-    let x104 = mtmp102.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/54 = x104 in
+      let result/0 = x0 in
       {
-        result/54
+        result/0
       }
     }
   }
 }
 
 fn float_rational_quotient(
-  numerator/55: FloatNatural,
-  denominator/56: FloatNatural,
-  shift/57: isize
+  numerator/0: FloatNatural,
+  denominator/0: FloatNatural,
+  shift/0: isize
 ) -> u64 {
-  let remaining/58 =
-    if (shift/57 >= 0) {
+  let remaining/0 =
+    if (shift/0 >= 0) {
         {
-          float_natural_shift_left(numerator/55, shift/57)
+          float_natural_shift_left(numerator/0, shift/0)
         }
     } else {
         {
-          float_natural_copy(numerator/55)
+          float_natural_copy(numerator/0)
         }
     } in
-  let divisor/59 =
-    if (shift/57 >= 0) {
+  let divisor/0 =
+    if (shift/0 >= 0) {
         {
-          float_natural_copy(denominator/56)
+          float_natural_copy(denominator/0)
         }
     } else {
         {
-          float_natural_shift_left(denominator/56, (0 - shift/57))
+          float_natural_shift_left(denominator/0, (0 - shift/0))
         }
     } in
-  let quotient/60 = 0 in
-  let _wild114 =
-    while (float_natural_compare(remaining/58, divisor/59) >= 0) {
+  let quotient/0 = 0 in
+  let _wild0 =
+    while (float_natural_compare(remaining/0, divisor/0) >= 0) {
         {
-          let offset/61 =
-            (float_natural_bit_length(remaining/58) - float_natural_bit_length(divisor/59)) in
-          let part/62 = float_natural_shift_left(divisor/59, offset/61) in
-          let _wild109 =
-            if (float_natural_compare(remaining/58, part/62) < 0) {
+          let offset/0 =
+            (float_natural_bit_length(remaining/0) - float_natural_bit_length(divisor/0)) in
+          let part/0 = float_natural_shift_left(divisor/0, offset/0) in
+          let _wild1 =
+            if (float_natural_compare(remaining/0, part/0) < 0) {
                 {
-                  let _wild107 =
+                  let _wild2 =
                     {
-                      let compound_old105 = offset/61 in
-                      let compound_value106 = 1 in
-                      offset/61 = (compound_old105 - compound_value106)
+                      let compound_old0 = offset/0 in
+                      let compound_value0 = 1 in
+                      offset/0 = (compound_old0 - compound_value0)
                     } in
-                  let _wild108 = part/62 = float_natural_shift_left(divisor/59, offset/61) in
+                  let _wild3 = part/0 = float_natural_shift_left(divisor/0, offset/0) in
                 }
             } else {
                 {
                   ()
                 }
             } in
-          let _wild110 = float_natural_subtract(remaining/58, part/62) in
-          let _wild113 =
+          let _wild4 = float_natural_subtract(remaining/0, part/0) in
+          let _wild5 =
             {
-              let compound_old111 = quotient/60 in
-              let compound_value112 = (1 << offset/61) in
-              quotient/60 = (compound_old111 | compound_value112)
+              let compound_old1 = quotient/0 in
+              let compound_value1 = (1 << offset/0) in
+              quotient/0 = (compound_old1 | compound_value1)
             } in
         }
     } in
-  let doubled/63 = float_natural_shift_left(remaining/58, 1) in
-  let rounding/64 = float_natural_compare(doubled/63, divisor/59) in
-  let _wild118 =
-    if if (rounding/64 > 0) {
+  let doubled/0 = float_natural_shift_left(remaining/0, 1) in
+  let rounding/0 = float_natural_compare(doubled/0, divisor/0) in
+  let _wild6 =
+    if if (rounding/0 > 0) {
         true
     } else {
-        if (rounding/64 == 0) {
-            ((quotient/60 & 1) == 1)
+        if (rounding/0 == 0) {
+            ((quotient/0 & 1) == 1)
         } else {
             false
         }
     } {
         {
-          let _wild117 =
+          let _wild7 =
             {
-              let compound_old115 = quotient/60 in
-              let compound_value116 = 1 in
-              quotient/60 = (compound_old115 + compound_value116)
+              let compound_old2 = quotient/0 in
+              let compound_value2 = 1 in
+              quotient/0 = (compound_old2 + compound_value2)
             } in
         }
     } else {
@@ -561,18 +561,18 @@ fn float_rational_quotient(
           ()
         }
     } in
-  quotient/60
+  quotient/0
 }
 
 fn float_rational_bits(
-  numerator/65: FloatNatural,
-  denominator/66: FloatNatural,
-  binary_shift/67: isize,
-  mantissa_bits/68: isize,
-  exponent_bias/69: isize
+  numerator/0: FloatNatural,
+  denominator/0: FloatNatural,
+  binary_shift/0: isize,
+  mantissa_bits/0: isize,
+  exponent_bias/0: isize
 ) -> (u64, bool) {
-  let _wild119 =
-    if float_natural_is_zero(numerator/65) {
+  let _wild0 =
+    if float_natural_is_zero(numerator/0) {
         {
           return (0, false)
         }
@@ -581,53 +581,53 @@ fn float_rational_bits(
           ()
         }
     } in
-  let scaled_numerator/70 =
-    if (binary_shift/67 >= 0) {
+  let scaled_numerator/0 =
+    if (binary_shift/0 >= 0) {
         {
-          float_natural_shift_left(numerator/65, binary_shift/67)
+          float_natural_shift_left(numerator/0, binary_shift/0)
         }
     } else {
         {
-          float_natural_copy(numerator/65)
+          float_natural_copy(numerator/0)
         }
     } in
-  let scaled_denominator/71 =
-    if (binary_shift/67 >= 0) {
+  let scaled_denominator/0 =
+    if (binary_shift/0 >= 0) {
         {
-          float_natural_copy(denominator/66)
+          float_natural_copy(denominator/0)
         }
     } else {
         {
-          float_natural_shift_left(denominator/66, (0 - binary_shift/67))
+          float_natural_shift_left(denominator/0, (0 - binary_shift/0))
         }
     } in
-  let exponent/72 =
-    (float_natural_bit_length(scaled_numerator/70) -
-      float_natural_bit_length(scaled_denominator/71)) in
-  let exponent_comparison/73 =
-    if (exponent/72 >= 0) {
+  let exponent/0 =
+    (float_natural_bit_length(scaled_numerator/0) -
+      float_natural_bit_length(scaled_denominator/0)) in
+  let exponent_comparison/0 =
+    if (exponent/0 >= 0) {
         {
           float_natural_compare(
-            scaled_numerator/70,
-            float_natural_shift_left(scaled_denominator/71, exponent/72)
+            scaled_numerator/0,
+            float_natural_shift_left(scaled_denominator/0, exponent/0)
           )
         }
     } else {
         {
           float_natural_compare(
-            float_natural_shift_left(scaled_numerator/70, (0 - exponent/72)),
-            scaled_denominator/71
+            float_natural_shift_left(scaled_numerator/0, (0 - exponent/0)),
+            scaled_denominator/0
           )
         }
     } in
-  let _wild123 =
-    if (exponent_comparison/73 < 0) {
+  let _wild1 =
+    if (exponent_comparison/0 < 0) {
         {
-          let _wild122 =
+          let _wild2 =
             {
-              let compound_old120 = exponent/72 in
-              let compound_value121 = 1 in
-              exponent/72 = (compound_old120 - compound_value121)
+              let compound_old0 = exponent/0 in
+              let compound_value0 = 1 in
+              exponent/0 = (compound_old0 - compound_value0)
             } in
         }
     } else {
@@ -635,73 +635,70 @@ fn float_rational_bits(
           ()
         }
     } in
-  let minimum_exponent/74 = (1 - exponent_bias/69) in
-  let maximum_exponent/75 = exponent_bias/69 in
-  let _wild124 =
-    if (exponent/72 > maximum_exponent/75) {
+  let minimum_exponent/0 = (1 - exponent_bias/0) in
+  let maximum_exponent/0 = exponent_bias/0 in
+  let _wild3 =
+    if (exponent/0 > maximum_exponent/0) {
         {
-          return (
-            ((((maximum_exponent/75 + exponent_bias/69) + 1) as u64) << mantissa_bits/68),
-            true
-          )
+          return (((((maximum_exponent/0 + exponent_bias/0) + 1) as u64) << mantissa_bits/0), true)
         }
     } else {
         {
           ()
         }
     } in
-  let mantissa/76 =
-    if (exponent/72 < minimum_exponent/74) {
+  let mantissa/0 =
+    if (exponent/0 < minimum_exponent/0) {
         {
           float_rational_quotient(
-            scaled_numerator/70,
-            scaled_denominator/71,
-            (mantissa_bits/68 - minimum_exponent/74)
+            scaled_numerator/0,
+            scaled_denominator/0,
+            (mantissa_bits/0 - minimum_exponent/0)
           )
         }
     } else {
         {
           float_rational_quotient(
-            scaled_numerator/70,
-            scaled_denominator/71,
-            (mantissa_bits/68 - exponent/72)
+            scaled_numerator/0,
+            scaled_denominator/0,
+            (mantissa_bits/0 - exponent/0)
           )
         }
     } in
-  if (exponent/72 < minimum_exponent/74) {
+  if (exponent/0 < minimum_exponent/0) {
       {
-        if (mantissa/76 == 0) {
+        if (mantissa/0 == 0) {
             {
               (0, false)
             }
         } else {
-            if (mantissa/76 >= (1 << mantissa_bits/68)) {
+            if (mantissa/0 >= (1 << mantissa_bits/0)) {
                 {
-                  (((1 << mantissa_bits/68) | (mantissa/76 - (1 << mantissa_bits/68))), false)
+                  (((1 << mantissa_bits/0) | (mantissa/0 - (1 << mantissa_bits/0))), false)
                 }
             } else {
                 {
-                  (mantissa/76, false)
+                  (mantissa/0, false)
                 }
             }
         }
       }
   } else {
       {
-        let _wild131 =
-          if (mantissa/76 >= (1 << (mantissa_bits/68 + 1))) {
+        let _wild4 =
+          if (mantissa/0 >= (1 << (mantissa_bits/0 + 1))) {
               {
-                let _wild127 =
+                let _wild5 =
                   {
-                    let compound_old125 = mantissa/76 in
-                    let compound_value126 = 1 in
-                    mantissa/76 = (compound_old125 >> compound_value126)
+                    let compound_old1 = mantissa/0 in
+                    let compound_value1 = 1 in
+                    mantissa/0 = (compound_old1 >> compound_value1)
                   } in
-                let _wild130 =
+                let _wild6 =
                   {
-                    let compound_old128 = exponent/72 in
-                    let compound_value129 = 1 in
-                    exponent/72 = (compound_old128 + compound_value129)
+                    let compound_old2 = exponent/0 in
+                    let compound_value2 = 1 in
+                    exponent/0 = (compound_old2 + compound_value2)
                   } in
               }
           } else {
@@ -709,15 +706,15 @@ fn float_rational_bits(
                 ()
               }
           } in
-        if (exponent/72 > maximum_exponent/75) {
+        if (exponent/0 > maximum_exponent/0) {
             {
-              (((((maximum_exponent/75 + exponent_bias/69) + 1) as u64) << mantissa_bits/68), true)
+              (((((maximum_exponent/0 + exponent_bias/0) + 1) as u64) << mantissa_bits/0), true)
             }
         } else {
             {
               (
-                ((((exponent/72 + exponent_bias/69) as u64) << mantissa_bits/68) |
-                  (mantissa/76 - (1 << mantissa_bits/68))),
+                ((((exponent/0 + exponent_bias/0) as u64) << mantissa_bits/0) |
+                  (mantissa/0 - (1 << mantissa_bits/0))),
                 false
               )
             }
@@ -726,25 +723,25 @@ fn float_rational_bits(
   }
 }
 
-fn ascii_lower(value/77: u8) -> u8 {
-  if if (value/77 >= 65) {
-      (value/77 <= 90)
+fn ascii_lower(value/0: u8) -> u8 {
+  if if (value/0 >= 65) {
+      (value/0 <= 90)
   } else {
       false
   } {
       {
-        (value/77 + (97 - 65))
+        (value/0 + (97 - 65))
       }
   } else {
       {
-        value/77
+        value/0
       }
   }
 }
 
-fn string_equals_ascii_case(value/78: string, expected/79: string) -> bool {
-  let _wild132 =
-    if (inherent#string#string#byte_len(value/78) != inherent#string#string#byte_len(expected/79)) {
+fn string_equals_ascii_case(value/0: string, expected/0: string) -> bool {
+  let _wild0 =
+    if (inherent#string#string#byte_len(value/0) != inherent#string#string#byte_len(expected/0)) {
         {
           return false
         }
@@ -753,13 +750,13 @@ fn string_equals_ascii_case(value/78: string, expected/79: string) -> bool {
           ()
         }
     } in
-  let index/80 = 0 in
-  let _wild137 =
-    while (index/80 < inherent#string#string#byte_len(value/78)) {
+  let index/0 = 0 in
+  let _wild1 =
+    while (index/0 < inherent#string#string#byte_len(value/0)) {
         {
-          let _wild133 =
-            if (ascii_lower(inherent#string#string#byte_get(value/78, index/80)) !=
-              inherent#string#string#byte_get(expected/79, index/80)) {
+          let _wild2 =
+            if (ascii_lower(inherent#string#string#byte_get(value/0, index/0)) !=
+              inherent#string#string#byte_get(expected/0, index/0)) {
                 {
                   return false
                 }
@@ -768,35 +765,35 @@ fn string_equals_ascii_case(value/78: string, expected/79: string) -> bool {
                   ()
                 }
             } in
-          let _wild136 =
+          let _wild3 =
             {
-              let compound_old134 = index/80 in
-              let compound_value135 = 1 in
-              index/80 = (compound_old134 + compound_value135)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
   true
 }
 
-fn float_digit(value/81: u8, base/82: isize) -> (bool, isize) {
-  let digit/83 =
-    if if (value/81 >= 48) {
-        (value/81 <= 57)
+fn float_digit(value/0: u8, base/0: isize) -> (bool, isize) {
+  let digit/0 =
+    if if (value/0 >= 48) {
+        (value/0 <= 57)
     } else {
         false
     } {
         {
-          ((value/81 - 48) as isize)
+          ((value/0 - 48) as isize)
         }
     } else {
-        if if (ascii_lower(value/81) >= 97) {
-            (ascii_lower(value/81) <= 102)
+        if if (ascii_lower(value/0) >= 97) {
+            (ascii_lower(value/0) <= 102)
         } else {
             false
         } {
             {
-              (((ascii_lower(value/81) - 97) + 10) as isize)
+              (((ascii_lower(value/0) - 97) + 10) as isize)
             }
         } else {
             {
@@ -804,9 +801,9 @@ fn float_digit(value/81: u8, base/82: isize) -> (bool, isize) {
             }
         }
     } in
-  if (digit/83 < base/82) {
+  if (digit/0 < base/0) {
       {
-        (true, digit/83)
+        (true, digit/0)
       }
   } else {
       {
@@ -828,9 +825,9 @@ fn invalid_parsed_float() -> ParsedFloat {
   }
 }
 
-fn parse_float_text(value/84: string) -> ParsedFloat {
-  let _wild138 =
-    if string_equals_ascii_case(value/84, "nan") {
+fn parse_float_text(value/0: string) -> ParsedFloat {
+  let _wild0 =
+    if string_equals_ascii_case(value/0, "nan") {
         {
           return ParsedFloat {
             valid: true,
@@ -848,26 +845,25 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           ()
         }
     } in
-  let index/85 = 0 in
-  let negative/86 = false in
-  let _wild143 =
-    if if (index/85 < inherent#string#string#byte_len(value/84)) {
-        if (inherent#string#string#byte_get(value/84, index/85) == 43) {
+  let index/0 = 0 in
+  let negative/0 = false in
+  let _wild1 =
+    if if (index/0 < inherent#string#string#byte_len(value/0)) {
+        if (inherent#string#string#byte_get(value/0, index/0) == 43) {
             true
         } else {
-            (inherent#string#string#byte_get(value/84, index/85) == 45)
+            (inherent#string#string#byte_get(value/0, index/0) == 45)
         }
     } else {
         false
     } {
         {
-          let _wild139 =
-            negative/86 = (inherent#string#string#byte_get(value/84, index/85) == 45) in
-          let _wild142 =
+          let _wild2 = negative/0 = (inherent#string#string#byte_get(value/0, index/0) == 45) in
+          let _wild3 =
             {
-              let compound_old140 = index/85 in
-              let compound_value141 = 1 in
-              index/85 = (compound_old140 + compound_value141)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } else {
@@ -875,22 +871,18 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           ()
         }
     } in
-  let special_text/87 =
-    inherent#string#string#byte_slice(
-      value/84,
-      index/85,
-      inherent#string#string#byte_len(value/84)
-    ) in
-  let _wild144 =
-    if if string_equals_ascii_case(special_text/87, "inf") {
+  let special_text/0 =
+    inherent#string#string#byte_slice(value/0, index/0, inherent#string#string#byte_len(value/0)) in
+  let _wild4 =
+    if if string_equals_ascii_case(special_text/0, "inf") {
         true
     } else {
-        string_equals_ascii_case(special_text/87, "infinity")
+        string_equals_ascii_case(special_text/0, "infinity")
     } {
         {
           return ParsedFloat {
             valid: true,
-            negative: negative/86,
+            negative: negative/0,
             special: 1,
             numerator: float_natural_zero(),
             decimal_exponent: 0,
@@ -904,24 +896,24 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           ()
         }
     } in
-  let hexadecimal/88 =
-    if if ((index/85 + 2) <= inherent#string#string#byte_len(value/84)) {
-        (inherent#string#string#byte_get(value/84, index/85) == 48)
+  let hexadecimal/0 =
+    if if ((index/0 + 2) <= inherent#string#string#byte_len(value/0)) {
+        (inherent#string#string#byte_get(value/0, index/0) == 48)
     } else {
         false
     } {
-        (ascii_lower(inherent#string#string#byte_get(value/84, (index/85 + 1))) == 120)
+        (ascii_lower(inherent#string#string#byte_get(value/0, (index/0 + 1))) == 120)
     } else {
         false
     } in
-  let _wild148 =
-    if hexadecimal/88 {
+  let _wild5 =
+    if hexadecimal/0 {
         {
-          let _wild147 =
+          let _wild6 =
             {
-              let compound_old145 = index/85 in
-              let compound_value146 = 2 in
-              index/85 = (compound_old145 + compound_value146)
+              let compound_old1 = index/0 in
+              let compound_value1 = 2 in
+              index/0 = (compound_old1 + compound_value1)
             } in
         }
     } else {
@@ -929,9 +921,9 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           ()
         }
     } in
-  let mantissa_start/89 = index/85 in
-  let base/90 =
-    if hexadecimal/88 {
+  let mantissa_start/0 = index/0 in
+  let base/0 =
+    if hexadecimal/0 {
         {
           16
         }
@@ -940,40 +932,39 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           10
         }
     } in
-  let numerator/91 = float_natural_zero() in
-  let saw_digit/92 = false in
-  let saw_dot/93 = false in
-  let fraction_digits/94 = 0 in
-  let significant_digits/95 = 0 in
-  let previous_digit/96 = false in
-  let _wild181 =
-    while (index/85 < inherent#string#string#byte_len(value/84)) {
+  let numerator/0 = float_natural_zero() in
+  let saw_digit/0 = false in
+  let saw_dot/0 = false in
+  let fraction_digits/0 = 0 in
+  let significant_digits/0 = 0 in
+  let previous_digit/0 = false in
+  let _wild7 =
+    while (index/0 < inherent#string#string#byte_len(value/0)) {
         {
-          let current/97 = inherent#string#string#byte_get(value/84, index/85) in
-          let mtmp149 = float_digit(current/97, base/90) in
+          let current/0 = inherent#string#string#byte_get(value/0, index/0) in
+          let mtmp0 = float_digit(current/0, base/0) in
           {
-            let x150 = mtmp149.0 in
-            let x151 = mtmp149.1 in
+            let x0 = mtmp0.0 in
+            let x1 = mtmp0.1 in
             {
-              let digit/99 = x151 in
+              let digit/0 = x1 in
               {
-                let valid_digit/98 = x150 in
+                let valid_digit/0 = x0 in
                 {
-                  if valid_digit/98 {
+                  if valid_digit/0 {
                       {
-                        let _wild152 =
-                          float_natural_multiply_small(numerator/91, (base/90 as u32)) in
-                        let _wild153 = float_natural_add_small(numerator/91, (digit/99 as u32)) in
-                        let _wild154 = saw_digit/92 = true in
-                        let _wild155 = previous_digit/96 = true in
-                        let _wild159 =
-                          if saw_dot/93 {
+                        let _wild8 = float_natural_multiply_small(numerator/0, (base/0 as u32)) in
+                        let _wild9 = float_natural_add_small(numerator/0, (digit/0 as u32)) in
+                        let _wild10 = saw_digit/0 = true in
+                        let _wild11 = previous_digit/0 = true in
+                        let _wild12 =
+                          if saw_dot/0 {
                               {
-                                let _wild158 =
+                                let _wild13 =
                                   {
-                                    let compound_old156 = fraction_digits/94 in
-                                    let compound_value157 = 1 in
-                                    fraction_digits/94 = (compound_old156 + compound_value157)
+                                    let compound_old2 = fraction_digits/0 in
+                                    let compound_value2 = 1 in
+                                    fraction_digits/0 = (compound_old2 + compound_value2)
                                   } in
                               }
                           } else {
@@ -981,18 +972,18 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
                                 ()
                               }
                           } in
-                        let _wild163 =
-                          if if (significant_digits/95 > 0) {
+                        let _wild14 =
+                          if if (significant_digits/0 > 0) {
                               true
                           } else {
-                              (digit/99 != 0)
+                              (digit/0 != 0)
                           } {
                               {
-                                let _wild162 =
+                                let _wild15 =
                                   {
-                                    let compound_old160 = significant_digits/95 in
-                                    let compound_value161 = 1 in
-                                    significant_digits/95 = (compound_old160 + compound_value161)
+                                    let compound_old3 = significant_digits/0 in
+                                    let compound_value3 = 1 in
+                                    significant_digits/0 = (compound_old3 + compound_value3)
                                   } in
                               }
                           } else {
@@ -1000,18 +991,18 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
                                 ()
                               }
                           } in
-                        let _wild166 =
+                        let _wild16 =
                           {
-                            let compound_old164 = index/85 in
-                            let compound_value165 = 1 in
-                            index/85 = (compound_old164 + compound_value165)
+                            let compound_old4 = index/0 in
+                            let compound_value4 = 1 in
+                            index/0 = (compound_old4 + compound_value4)
                           } in
                       }
                   } else {
-                      if (current/97 == 95) {
+                      if (current/0 == 95) {
                           {
-                            let _wild167 =
-                              if ((index/85 + 1) >= inherent#string#string#byte_len(value/84)) {
+                            let _wild17 =
+                              if ((index/0 + 1) >= inherent#string#string#byte_len(value/0)) {
                                   {
                                     return invalid_parsed_float()
                                   }
@@ -1020,35 +1011,35 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
                                     ()
                                   }
                               } in
-                            let mtmp168 =
+                            let mtmp1 =
                               float_digit(
-                                inherent#string#string#byte_get(value/84, (index/85 + 1)),
-                                base/90
+                                inherent#string#string#byte_get(value/0, (index/0 + 1)),
+                                base/0
                               ) in
                             {
-                              let x169 = mtmp168.0 in
+                              let x2 = mtmp1.0 in
                               {
-                                let next_is_digit/100 = x169 in
+                                let next_is_digit/0 = x2 in
                                 {
-                                  let after_prefix/101 =
-                                    if if hexadecimal/88 {
-                                        (!saw_digit/92)
+                                  let after_prefix/0 =
+                                    if if hexadecimal/0 {
+                                        (!saw_digit/0)
                                     } else {
                                         false
                                     } {
-                                        (index/85 == mantissa_start/89)
+                                        (index/0 == mantissa_start/0)
                                     } else {
                                         false
                                     } in
-                                  let _wild171 =
-                                    if if if (!previous_digit/96) {
-                                        (!after_prefix/101)
+                                  let _wild18 =
+                                    if if if (!previous_digit/0) {
+                                        (!after_prefix/0)
                                     } else {
                                         false
                                     } {
                                         true
                                     } else {
-                                        (!next_is_digit/100)
+                                        (!next_is_digit/0)
                                     } {
                                         {
                                           return invalid_parsed_float()
@@ -1058,31 +1049,31 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
                                           ()
                                         }
                                     } in
-                                  let _wild172 = previous_digit/96 = false in
-                                  let _wild175 =
+                                  let _wild19 = previous_digit/0 = false in
+                                  let _wild20 =
                                     {
-                                      let compound_old173 = index/85 in
-                                      let compound_value174 = 1 in
-                                      index/85 = (compound_old173 + compound_value174)
+                                      let compound_old5 = index/0 in
+                                      let compound_value5 = 1 in
+                                      index/0 = (compound_old5 + compound_value5)
                                     } in
                                 }
                               }
                             }
                           }
                       } else {
-                          if if (current/97 == 46) {
-                              (!saw_dot/93)
+                          if if (current/0 == 46) {
+                              (!saw_dot/0)
                           } else {
                               false
                           } {
                               {
-                                let _wild176 = saw_dot/93 = true in
-                                let _wild177 = previous_digit/96 = false in
-                                let _wild180 =
+                                let _wild21 = saw_dot/0 = true in
+                                let _wild22 = previous_digit/0 = false in
+                                let _wild23 =
                                   {
-                                    let compound_old178 = index/85 in
-                                    let compound_value179 = 1 in
-                                    index/85 = (compound_old178 + compound_value179)
+                                    let compound_old6 = index/0 in
+                                    let compound_value6 = 1 in
+                                    index/0 = (compound_old6 + compound_value6)
                                   } in
                               }
                           } else {
@@ -1098,8 +1089,8 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           }
         }
     } in
-  let _wild182 =
-    if (!saw_digit/92) {
+  let _wild24 =
+    if (!saw_digit/0) {
         {
           return invalid_parsed_float()
         }
@@ -1108,8 +1099,8 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           ()
         }
     } in
-  let exponent_marker/102 =
-    if hexadecimal/88 {
+  let exponent_marker/0 =
+    if hexadecimal/0 {
         {
           112
         }
@@ -1118,40 +1109,40 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           101
         }
     } in
-  let exponent/103 = 0 in
-  let exponent_negative/104 = false in
-  let _wild205 =
-    if if (index/85 < inherent#string#string#byte_len(value/84)) {
-        (ascii_lower(inherent#string#string#byte_get(value/84, index/85)) == exponent_marker/102)
+  let exponent/0 = 0 in
+  let exponent_negative/0 = false in
+  let _wild25 =
+    if if (index/0 < inherent#string#string#byte_len(value/0)) {
+        (ascii_lower(inherent#string#string#byte_get(value/0, index/0)) == exponent_marker/0)
     } else {
         false
     } {
         {
-          let _wild185 =
+          let _wild26 =
             {
-              let compound_old183 = index/85 in
-              let compound_value184 = 1 in
-              index/85 = (compound_old183 + compound_value184)
+              let compound_old7 = index/0 in
+              let compound_value7 = 1 in
+              index/0 = (compound_old7 + compound_value7)
             } in
-          let _wild190 =
-            if if (index/85 < inherent#string#string#byte_len(value/84)) {
-                if (inherent#string#string#byte_get(value/84, index/85) == 43) {
+          let _wild27 =
+            if if (index/0 < inherent#string#string#byte_len(value/0)) {
+                if (inherent#string#string#byte_get(value/0, index/0) == 43) {
                     true
                 } else {
-                    (inherent#string#string#byte_get(value/84, index/85) == 45)
+                    (inherent#string#string#byte_get(value/0, index/0) == 45)
                 }
             } else {
                 false
             } {
                 {
-                  let _wild186 =
-                    exponent_negative/104 = (inherent#string#string#byte_get(value/84, index/85) ==
+                  let _wild28 =
+                    exponent_negative/0 = (inherent#string#string#byte_get(value/0, index/0) ==
                       45) in
-                  let _wild189 =
+                  let _wild29 =
                     {
-                      let compound_old187 = index/85 in
-                      let compound_value188 = 1 in
-                      index/85 = (compound_old187 + compound_value188)
+                      let compound_old8 = index/0 in
+                      let compound_value8 = 1 in
+                      index/0 = (compound_old8 + compound_value8)
                     } in
                 }
             } else {
@@ -1159,55 +1150,54 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
                   ()
                 }
             } in
-          let exponent_digits/105 = false in
-          let _wild191 = previous_digit/96 = false in
-          let _wild204 =
-            while (index/85 < inherent#string#string#byte_len(value/84)) {
+          let exponent_digits/0 = false in
+          let _wild30 = previous_digit/0 = false in
+          let _wild31 =
+            while (index/0 < inherent#string#string#byte_len(value/0)) {
                 {
-                  let current/106 = inherent#string#string#byte_get(value/84, index/85) in
-                  if if (current/106 >= 48) {
-                      (current/106 <= 57)
+                  let current/1 = inherent#string#string#byte_get(value/0, index/0) in
+                  if if (current/1 >= 48) {
+                      (current/1 <= 57)
                   } else {
                       false
                   } {
                       {
-                        let _wild192 = exponent_digits/105 = true in
-                        let _wild193 = previous_digit/96 = true in
-                        let _wild195 =
-                          if (exponent/103 < 1000000) {
+                        let _wild32 = exponent_digits/0 = true in
+                        let _wild33 = previous_digit/0 = true in
+                        let _wild34 =
+                          if (exponent/0 < 1000000) {
                               {
-                                let _wild194 =
-                                  exponent/103 = ((exponent/103 * 10) +
-                                    ((current/106 - 48) as isize)) in
+                                let _wild35 =
+                                  exponent/0 = ((exponent/0 * 10) + ((current/1 - 48) as isize)) in
                               }
                           } else {
                               {
                                 ()
                               }
                           } in
-                        let _wild198 =
+                        let _wild36 =
                           {
-                            let compound_old196 = index/85 in
-                            let compound_value197 = 1 in
-                            index/85 = (compound_old196 + compound_value197)
+                            let compound_old9 = index/0 in
+                            let compound_value9 = 1 in
+                            index/0 = (compound_old9 + compound_value9)
                           } in
                       }
                   } else {
-                      if (current/106 == 95) {
+                      if (current/1 == 95) {
                           {
-                            let _wild199 =
-                              if if if if (!previous_digit/96) {
+                            let _wild37 =
+                              if if if if (!previous_digit/0) {
                                   true
                               } else {
-                                  ((index/85 + 1) >= inherent#string#string#byte_len(value/84))
+                                  ((index/0 + 1) >= inherent#string#string#byte_len(value/0))
                               } {
                                   true
                               } else {
-                                  (inherent#string#string#byte_get(value/84, (index/85 + 1)) < 48)
+                                  (inherent#string#string#byte_get(value/0, (index/0 + 1)) < 48)
                               } {
                                   true
                               } else {
-                                  (inherent#string#string#byte_get(value/84, (index/85 + 1)) > 57)
+                                  (inherent#string#string#byte_get(value/0, (index/0 + 1)) > 57)
                               } {
                                   {
                                     return invalid_parsed_float()
@@ -1217,12 +1207,12 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
                                     ()
                                   }
                               } in
-                            let _wild200 = previous_digit/96 = false in
-                            let _wild203 =
+                            let _wild38 = previous_digit/0 = false in
+                            let _wild39 =
                               {
-                                let compound_old201 = index/85 in
-                                let compound_value202 = 1 in
-                                index/85 = (compound_old201 + compound_value202)
+                                let compound_old10 = index/0 in
+                                let compound_value10 = 1 in
+                                index/0 = (compound_old10 + compound_value10)
                               } in
                           }
                       } else {
@@ -1233,7 +1223,7 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
                   }
                 }
             } in
-          if (!exponent_digits/105) {
+          if (!exponent_digits/0) {
               {
                 return invalid_parsed_float()
               }
@@ -1244,7 +1234,7 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           }
         }
     } else {
-        if hexadecimal/88 {
+        if hexadecimal/0 {
             {
               return invalid_parsed_float()
             }
@@ -1254,8 +1244,8 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
             }
         }
     } in
-  let _wild206 =
-    if (index/85 != inherent#string#string#byte_len(value/84)) {
+  let _wild40 =
+    if (index/0 != inherent#string#string#byte_len(value/0)) {
         {
           return invalid_parsed_float()
         }
@@ -1264,10 +1254,10 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
           ()
         }
     } in
-  let _wild208 =
-    if exponent_negative/104 {
+  let _wild41 =
+    if exponent_negative/0 {
         {
-          let _wild207 = exponent/103 = (0 - exponent/103) in
+          let _wild42 = exponent/0 = (0 - exponent/0) in
         }
     } else {
         {
@@ -1276,39 +1266,39 @@ fn parse_float_text(value/84: string) -> ParsedFloat {
     } in
   ParsedFloat {
     valid: true,
-    negative: negative/86,
+    negative: negative/0,
     special: 0,
-    numerator: numerator/91,
-    decimal_exponent: if hexadecimal/88 {
+    numerator: numerator/0,
+    decimal_exponent: if hexadecimal/0 {
         {
           0
         }
     } else {
         {
-          (exponent/103 - fraction_digits/94)
+          (exponent/0 - fraction_digits/0)
         }
     },
-    binary_exponent: if hexadecimal/88 {
+    binary_exponent: if hexadecimal/0 {
         {
-          (exponent/103 - (fraction_digits/94 * 4))
+          (exponent/0 - (fraction_digits/0 * 4))
         }
     } else {
         {
           0
         }
     },
-    hexadecimal: hexadecimal/88,
-    significant_digits: significant_digits/95
+    hexadecimal: hexadecimal/0,
+    significant_digits: significant_digits/0
   }
 }
 
-fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/109: isize) -> (
+fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: isize) -> (
   bool,
   u64
 ) {
-  let parsed/110 = parse_float_text(value/107) in
-  let _wild209 =
-    if (!ParsedFloat.valid(parsed/110)) {
+  let parsed/0 = parse_float_text(value/0) in
+  let _wild0 =
+    if (!ParsedFloat.valid(parsed/0)) {
         {
           return (false, 0)
         }
@@ -1317,12 +1307,12 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
           ()
         }
     } in
-  let sign/111 =
-    if ParsedFloat.negative(parsed/110) {
+  let sign/0 =
+    if ParsedFloat.negative(parsed/0) {
         {
           (1 <<
-            (mantissa_bits/108 +
-              if (mantissa_bits/108 == 23) {
+            (mantissa_bits/0 +
+              if (mantissa_bits/0 == 23) {
                   {
                     8
                   }
@@ -1337,9 +1327,9 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
           0
         }
     } in
-  let exponent_mask/112 =
+  let exponent_mask/0 =
     (((1 <<
-      if (mantissa_bits/108 == 23) {
+      if (mantissa_bits/0 == 23) {
           {
             8
           }
@@ -1349,19 +1339,19 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
           }
       }) -
       1) <<
-      mantissa_bits/108) in
-  let _wild210 =
-    if (ParsedFloat.special(parsed/110) == 1) {
+      mantissa_bits/0) in
+  let _wild1 =
+    if (ParsedFloat.special(parsed/0) == 1) {
         {
-          return (true, (sign/111 | exponent_mask/112))
+          return (true, (sign/0 | exponent_mask/0))
         }
     } else {
-        if (ParsedFloat.special(parsed/110) == 2) {
+        if (ParsedFloat.special(parsed/0) == 2) {
             {
               return (
                 true,
-                ((exponent_mask/112 | (1 << (mantissa_bits/108 - 1))) |
-                  if (mantissa_bits/108 == 52) {
+                ((exponent_mask/0 | (1 << (mantissa_bits/0 - 1))) |
+                  if (mantissa_bits/0 == 52) {
                       {
                         1
                       }
@@ -1373,9 +1363,9 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
               )
             }
         } else {
-            if float_natural_is_zero(ParsedFloat.numerator(parsed/110)) {
+            if float_natural_is_zero(ParsedFloat.numerator(parsed/0)) {
                 {
-                  return (true, sign/111)
+                  return (true, sign/0)
                 }
             } else {
                 {
@@ -1384,14 +1374,13 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
             }
         }
     } in
-  let _wild211 =
-    if (!ParsedFloat.hexadecimal(parsed/110)) {
+  let _wild2 =
+    if (!ParsedFloat.hexadecimal(parsed/0)) {
         {
-          let decimal_position/113 =
-            (ParsedFloat.significant_digits(parsed/110) +
-              ParsedFloat.decimal_exponent(parsed/110)) in
-          let overflow_position/114 =
-            if (mantissa_bits/108 == 23) {
+          let decimal_position/0 =
+            (ParsedFloat.significant_digits(parsed/0) + ParsedFloat.decimal_exponent(parsed/0)) in
+          let overflow_position/0 =
+            if (mantissa_bits/0 == 23) {
                 {
                   40
                 }
@@ -1400,8 +1389,8 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
                   310
                 }
             } in
-          let underflow_position/115 =
-            if (mantissa_bits/108 == 23) {
+          let underflow_position/0 =
+            if (mantissa_bits/0 == 23) {
                 {
                   -46
                 }
@@ -1410,14 +1399,14 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
                   -325
                 }
             } in
-          if (decimal_position/113 > overflow_position/114) {
+          if (decimal_position/0 > overflow_position/0) {
               {
-                return (false, (sign/111 | exponent_mask/112))
+                return (false, (sign/0 | exponent_mask/0))
               }
           } else {
-              if (decimal_position/113 < underflow_position/115) {
+              if (decimal_position/0 < underflow_position/0) {
                   {
-                    return (true, sign/111)
+                    return (true, sign/0)
                   }
               } else {
                   {
@@ -1431,239 +1420,239 @@ fn parsed_float_bits(value/107: string, mantissa_bits/108: isize, exponent_bias/
           ()
         }
     } in
-  let denominator/116 =
-    if if (!ParsedFloat.hexadecimal(parsed/110)) {
-        (ParsedFloat.decimal_exponent(parsed/110) < 0)
+  let denominator/0 =
+    if if (!ParsedFloat.hexadecimal(parsed/0)) {
+        (ParsedFloat.decimal_exponent(parsed/0) < 0)
     } else {
         false
     } {
         {
-          float_natural_power5((0 - ParsedFloat.decimal_exponent(parsed/110)))
+          float_natural_power0((0 - ParsedFloat.decimal_exponent(parsed/0)))
         }
     } else {
         {
           float_natural_one()
         }
     } in
-  let numerator/119 =
-    if if (!ParsedFloat.hexadecimal(parsed/110)) {
-        (ParsedFloat.decimal_exponent(parsed/110) > 0)
+  let numerator/0 =
+    if if (!ParsedFloat.hexadecimal(parsed/0)) {
+        (ParsedFloat.decimal_exponent(parsed/0) > 0)
     } else {
         false
     } {
         {
-          let result/117 = float_natural_copy(ParsedFloat.numerator(parsed/110)) in
-          let count/118 = 0 in
-          let _wild216 =
-            while (count/118 < ParsedFloat.decimal_exponent(parsed/110)) {
+          let result/0 = float_natural_copy(ParsedFloat.numerator(parsed/0)) in
+          let count/0 = 0 in
+          let _wild3 =
+            while (count/0 < ParsedFloat.decimal_exponent(parsed/0)) {
                 {
-                  let _wild212 = float_natural_multiply_small(result/117, 5) in
-                  let _wild215 =
+                  let _wild4 = float_natural_multiply_small(result/0, 5) in
+                  let _wild5 =
                     {
-                      let compound_old213 = count/118 in
-                      let compound_value214 = 1 in
-                      count/118 = (compound_old213 + compound_value214)
+                      let compound_old0 = count/0 in
+                      let compound_value0 = 1 in
+                      count/0 = (compound_old0 + compound_value0)
                     } in
                 }
             } in
-          result/117
+          result/0
         }
     } else {
         {
-          ParsedFloat.numerator(parsed/110)
+          ParsedFloat.numerator(parsed/0)
         }
     } in
-  let binary_shift/120 =
-    if ParsedFloat.hexadecimal(parsed/110) {
+  let binary_shift/0 =
+    if ParsedFloat.hexadecimal(parsed/0) {
         {
-          ParsedFloat.binary_exponent(parsed/110)
+          ParsedFloat.binary_exponent(parsed/0)
         }
     } else {
         {
-          ParsedFloat.decimal_exponent(parsed/110)
+          ParsedFloat.decimal_exponent(parsed/0)
         }
     } in
-  let mtmp217 =
+  let mtmp0 =
     float_rational_bits(
-      numerator/119,
-      denominator/116,
-      binary_shift/120,
-      mantissa_bits/108,
-      exponent_bias/109
+      numerator/0,
+      denominator/0,
+      binary_shift/0,
+      mantissa_bits/0,
+      exponent_bias/0
     ) in
   {
-    let x218 = mtmp217.0 in
-    let x219 = mtmp217.1 in
+    let x0 = mtmp0.0 in
+    let x1 = mtmp0.1 in
     {
-      let overflow/122 = x219 in
+      let overflow/0 = x1 in
       {
-        let bits/121 = x218 in
+        let bits/0 = x0 in
         {
-          ((!overflow/122), (sign/111 | bits/121))
+          ((!overflow/0), (sign/0 | bits/0))
         }
       }
     }
   }
 }
 
-fn fixed_float_text(digits/137: string, decimal_point/138: isize, negative/139: bool) -> string {
-  let bytes/140 = @intrinsic(vec.new)() in
-  let _wild230 =
-    if negative/139 {
+fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) -> string {
+  let bytes/0 = @intrinsic(vec.new)() in
+  let _wild0 =
+    if negative/0 {
         {
-          inherent#Vec#Vec[u8]#push(bytes/140, 45)
+          inherent#Vec#Vec[u8]#push(bytes/0, 45)
         }
     } else {
         {
           ()
         }
     } in
-  let _wild262 =
-    if (decimal_point/138 <= 0) {
+  let _wild1 =
+    if (decimal_point/0 <= 0) {
         {
-          let _wild231 = inherent#Vec#Vec[u8]#push(bytes/140, 48) in
-          let _wild232 = inherent#Vec#Vec[u8]#push(bytes/140, 46) in
-          let index/141 = 0 in
-          let _wild237 =
-            while (index/141 < (0 - decimal_point/138)) {
+          let _wild2 = inherent#Vec#Vec[u8]#push(bytes/0, 48) in
+          let _wild3 = inherent#Vec#Vec[u8]#push(bytes/0, 46) in
+          let index/0 = 0 in
+          let _wild4 =
+            while (index/0 < (0 - decimal_point/0)) {
                 {
-                  let _wild233 = inherent#Vec#Vec[u8]#push(bytes/140, 48) in
-                  let _wild236 =
+                  let _wild5 = inherent#Vec#Vec[u8]#push(bytes/0, 48) in
+                  let _wild6 =
                     {
-                      let compound_old234 = index/141 in
-                      let compound_value235 = 1 in
-                      index/141 = (compound_old234 + compound_value235)
+                      let compound_old0 = index/0 in
+                      let compound_value0 = 1 in
+                      index/0 = (compound_old0 + compound_value0)
                     } in
                 }
             } in
-          let _wild238 = index/141 = 0 in
-          while (index/141 < inherent#string#string#byte_len(digits/137)) {
+          let _wild7 = index/0 = 0 in
+          while (index/0 < inherent#string#string#byte_len(digits/0)) {
               {
-                let _wild239 =
+                let _wild8 =
                   inherent#Vec#Vec[u8]#push(
-                    bytes/140,
-                    inherent#string#string#byte_get(digits/137, index/141)
+                    bytes/0,
+                    inherent#string#string#byte_get(digits/0, index/0)
                   ) in
-                let _wild242 =
+                let _wild9 =
                   {
-                    let compound_old240 = index/141 in
-                    let compound_value241 = 1 in
-                    index/141 = (compound_old240 + compound_value241)
+                    let compound_old1 = index/0 in
+                    let compound_value1 = 1 in
+                    index/0 = (compound_old1 + compound_value1)
                   } in
               }
           }
         }
     } else {
-        if (decimal_point/138 >= inherent#string#string#byte_len(digits/137)) {
+        if (decimal_point/0 >= inherent#string#string#byte_len(digits/0)) {
             {
-              let index/142 = 0 in
-              let _wild247 =
-                while (index/142 < inherent#string#string#byte_len(digits/137)) {
+              let index/1 = 0 in
+              let _wild10 =
+                while (index/1 < inherent#string#string#byte_len(digits/0)) {
                     {
-                      let _wild243 =
+                      let _wild11 =
                         inherent#Vec#Vec[u8]#push(
-                          bytes/140,
-                          inherent#string#string#byte_get(digits/137, index/142)
+                          bytes/0,
+                          inherent#string#string#byte_get(digits/0, index/1)
                         ) in
-                      let _wild246 =
+                      let _wild12 =
                         {
-                          let compound_old244 = index/142 in
-                          let compound_value245 = 1 in
-                          index/142 = (compound_old244 + compound_value245)
+                          let compound_old2 = index/1 in
+                          let compound_value2 = 1 in
+                          index/1 = (compound_old2 + compound_value2)
                         } in
                     }
                 } in
-              while (index/142 < decimal_point/138) {
+              while (index/1 < decimal_point/0) {
                   {
-                    let _wild248 = inherent#Vec#Vec[u8]#push(bytes/140, 48) in
-                    let _wild251 =
+                    let _wild13 = inherent#Vec#Vec[u8]#push(bytes/0, 48) in
+                    let _wild14 =
                       {
-                        let compound_old249 = index/142 in
-                        let compound_value250 = 1 in
-                        index/142 = (compound_old249 + compound_value250)
+                        let compound_old3 = index/1 in
+                        let compound_value3 = 1 in
+                        index/1 = (compound_old3 + compound_value3)
                       } in
                   }
               }
             }
         } else {
             {
-              let index/143 = 0 in
-              let _wild256 =
-                while (index/143 < decimal_point/138) {
+              let index/2 = 0 in
+              let _wild15 =
+                while (index/2 < decimal_point/0) {
                     {
-                      let _wild252 =
+                      let _wild16 =
                         inherent#Vec#Vec[u8]#push(
-                          bytes/140,
-                          inherent#string#string#byte_get(digits/137, index/143)
+                          bytes/0,
+                          inherent#string#string#byte_get(digits/0, index/2)
                         ) in
-                      let _wild255 =
+                      let _wild17 =
                         {
-                          let compound_old253 = index/143 in
-                          let compound_value254 = 1 in
-                          index/143 = (compound_old253 + compound_value254)
+                          let compound_old4 = index/2 in
+                          let compound_value4 = 1 in
+                          index/2 = (compound_old4 + compound_value4)
                         } in
                     }
                 } in
-              let _wild257 = inherent#Vec#Vec[u8]#push(bytes/140, 46) in
-              while (index/143 < inherent#string#string#byte_len(digits/137)) {
+              let _wild18 = inherent#Vec#Vec[u8]#push(bytes/0, 46) in
+              while (index/2 < inherent#string#string#byte_len(digits/0)) {
                   {
-                    let _wild258 =
+                    let _wild19 =
                       inherent#Vec#Vec[u8]#push(
-                        bytes/140,
-                        inherent#string#string#byte_get(digits/137, index/143)
+                        bytes/0,
+                        inherent#string#string#byte_get(digits/0, index/2)
                       ) in
-                    let _wild261 =
+                    let _wild20 =
                       {
-                        let compound_old259 = index/143 in
-                        let compound_value260 = 1 in
-                        index/143 = (compound_old259 + compound_value260)
+                        let compound_old5 = index/2 in
+                        let compound_value5 = 1 in
+                        index/2 = (compound_old5 + compound_value5)
                       } in
                   }
               }
             }
         }
     } in
-  let mtmp263 = @runtime(core.string_from_utf8)(bytes/140) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x265 = mtmp263.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/144 = x265 in
+      let result/0 = x0 in
       {
-        result/144
+        result/0
       }
     }
   }
 }
 
-fn rounded_float_digits(exact/145: string, count/146: isize) -> (string, bool) {
-  let output/147 = @intrinsic(vec.with_capacity)((count/146 + 1)) in
-  let index/148 = 0 in
-  let _wild270 =
-    while (index/148 < count/146) {
+fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
+  let output/0 = @intrinsic(vec.with_capacity)((count/0 + 1)) in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < count/0) {
         {
-          let _wild266 =
+          let _wild1 =
             inherent#Vec#Vec[u8]#push(
-              output/147,
-              inherent#string#string#byte_get(exact/145, index/148)
+              output/0,
+              inherent#string#string#byte_get(exact/0, index/0)
             ) in
-          let _wild269 =
+          let _wild2 =
             {
-              let compound_old267 = index/148 in
-              let compound_value268 = 1 in
-              index/148 = (compound_old267 + compound_value268)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  let _wild274 =
-    if (count/146 == inherent#string#string#byte_len(exact/145)) {
+  let _wild3 =
+    if (count/0 == inherent#string#string#byte_len(exact/0)) {
         {
-          let mtmp271 = @runtime(core.string_from_utf8)(output/147) in
+          let mtmp0 = @runtime(core.string_from_utf8)(output/0) in
           {
-            let x273 = mtmp271.1 in
+            let x0 = mtmp0.1 in
             {
-              let result/149 = x273 in
+              let result/0 = x0 in
               {
-                return (result/149, false)
+                return (result/0, false)
               }
             }
           }
@@ -1673,40 +1662,39 @@ fn rounded_float_digits(exact/145: string, count/146: isize) -> (string, bool) {
           ()
         }
     } in
-  let next/150 = inherent#string#string#byte_get(exact/145, count/146) in
-  let trailing/151 = false in
-  let _wild275 = index/148 = (count/146 + 1) in
-  let _wild281 =
-    while (index/148 < inherent#string#string#byte_len(exact/145)) {
+  let next/0 = inherent#string#string#byte_get(exact/0, count/0) in
+  let trailing/0 = false in
+  let _wild4 = index/0 = (count/0 + 1) in
+  let _wild5 =
+    while (index/0 < inherent#string#string#byte_len(exact/0)) {
         {
-          let _wild277 =
-            if (inherent#string#string#byte_get(exact/145, index/148) != 48) {
+          let _wild6 =
+            if (inherent#string#string#byte_get(exact/0, index/0) != 48) {
                 {
-                  let _wild276 = trailing/151 = true in
+                  let _wild7 = trailing/0 = true in
                 }
             } else {
                 {
                   ()
                 }
             } in
-          let _wild280 =
+          let _wild8 =
             {
-              let compound_old278 = index/148 in
-              let compound_value279 = 1 in
-              index/148 = (compound_old278 + compound_value279)
+              let compound_old1 = index/0 in
+              let compound_value1 = 1 in
+              index/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let round_up/152 =
-    if (next/150 > 53) {
+  let round_up/0 =
+    if (next/0 > 53) {
         true
     } else {
-        if (next/150 == 53) {
-            if trailing/151 {
+        if (next/0 == 53) {
+            if trailing/0 {
                 true
             } else {
-                (((@intrinsic(vec.get)(output/147, (inherent#Vec#Vec[u8]#len(output/147) - 1)) -
-                  48) %
+                (((@intrinsic(vec.get)(output/0, (inherent#Vec#Vec[u8]#len(output/0) - 1)) - 48) %
                   2) ==
                   1)
             }
@@ -1714,93 +1702,89 @@ fn rounded_float_digits(exact/145: string, count/146: isize) -> (string, bool) {
             false
         }
     } in
-  if round_up/152 {
+  if round_up/0 {
       {
-        let index/153 = inherent#Vec#Vec[u8]#len(output/147) in
-        let _wild298 =
-          while (index/153 > 0) {
+        let index/1 = inherent#Vec#Vec[u8]#len(output/0) in
+        let _wild9 =
+          while (index/1 > 0) {
               {
-                let _wild284 =
+                let _wild10 =
                   {
-                    let compound_old282 = index/153 in
-                    let compound_value283 = 1 in
-                    index/153 = (compound_old282 - compound_value283)
+                    let compound_old2 = index/1 in
+                    let compound_value2 = 1 in
+                    index/1 = (compound_old2 - compound_value2)
                   } in
-                if (@intrinsic(vec.get)(output/147, index/153) < 57) {
+                if (@intrinsic(vec.get)(output/0, index/1) < 57) {
                     {
-                      let _wild289 =
+                      let _wild11 =
                         {
-                          let place_root285 = output/147 in
-                          let index286 = index/153 in
-                          let place287 = @intrinsic(vec.get)(place_root285, index286) in
-                          let value288 = 1 in
-                          @intrinsic(vec.set)(place_root285, index286, (place287 + value288))
+                          let place_root0 = output/0 in
+                          let index0 = index/1 in
+                          let place0 = @intrinsic(vec.get)(place_root0, index0) in
+                          let value0 = 1 in
+                          @intrinsic(vec.set)(place_root0, index0, (place0 + value0))
                         } in
-                      let mtmp290 = @runtime(core.string_from_utf8)(output/147) in
+                      let mtmp1 = @runtime(core.string_from_utf8)(output/0) in
                       {
-                        let x292 = mtmp290.1 in
+                        let x1 = mtmp1.1 in
                         {
-                          let result/154 = x292 in
+                          let result/1 = x1 in
                           {
-                            return (result/154, false)
+                            return (result/1, false)
                           }
                         }
                       }
                     }
                 } else {
                     {
-                      let _wild297 =
+                      let _wild12 =
                         {
-                          let place_root293 = output/147 in
-                          let index294 = index/153 in
-                          let place295 = @intrinsic(vec.get)(place_root293, index294) in
-                          let value296 = 48 in
-                          @intrinsic(vec.set)(place_root293, index294, value296)
+                          let place_root1 = output/0 in
+                          let index1 = index/1 in
+                          let place1 = @intrinsic(vec.get)(place_root1, index1) in
+                          let value1 = 48 in
+                          @intrinsic(vec.set)(place_root1, index1, value1)
                         } in
                     }
                 }
               }
           } in
-        let carried/155 =
-          @intrinsic(vec.with_capacity)((inherent#Vec#Vec[u8]#len(output/147) + 1)) in
-        let _wild299 = inherent#Vec#Vec[u8]#push(carried/155, 49) in
-        let _wild300 = index/153 = 0 in
-        let _wild305 =
-          while (index/153 < inherent#Vec#Vec[u8]#len(output/147)) {
+        let carried/0 = @intrinsic(vec.with_capacity)((inherent#Vec#Vec[u8]#len(output/0) + 1)) in
+        let _wild13 = inherent#Vec#Vec[u8]#push(carried/0, 49) in
+        let _wild14 = index/1 = 0 in
+        let _wild15 =
+          while (index/1 < inherent#Vec#Vec[u8]#len(output/0)) {
               {
-                let _wild301 =
-                  inherent#Vec#Vec[u8]#push(
-                    carried/155,
-                    @intrinsic(vec.get)(output/147, index/153)
-                  ) in
-                let _wild304 =
+                let _wild16 =
+                  inherent#Vec#Vec[u8]#push(carried/0, @intrinsic(vec.get)(output/0, index/1)) in
+                let _wild17 =
                   {
-                    let compound_old302 = index/153 in
-                    let compound_value303 = 1 in
-                    index/153 = (compound_old302 + compound_value303)
+                    let compound_old3 = index/1 in
+                    let compound_value3 = 1 in
+                    index/1 = (compound_old3 + compound_value3)
                   } in
               }
           } in
-        let mtmp306 = @runtime(core.string_from_utf8)(carried/155) in
+        let mtmp2 = @runtime(core.string_from_utf8)(carried/0) in
         {
-          let x308 = mtmp306.1 in
+          let x2 = mtmp2.1 in
           {
-            let result/156 = x308 in
+            let result/2 = x2 in
             {
-              (result/156, true)
+              (result/2, true)
             }
           }
         }
       }
   } else {
       {
-        let mtmp309 = @runtime(core.string_from_utf8)(output/147) in
+        let mtmp3 = @runtime(core.string_from_utf8)(output/0) in
         {
-          let x311 = mtmp309.1 in
+          let x3 = mtmp3.1 in
           {
-            let result/157 = x311 in
+            let result/3 = x3 in
             {
-              (result/157, false)
+              (result/3, false)
             }
           }
         }
@@ -1808,43 +1792,43 @@ fn rounded_float_digits(exact/145: string, count/146: isize) -> (string, bool) {
   }
 }
 
-fn trim_float_digits(value/158: string) -> string {
-  let length/159 = inherent#string#string#byte_len(value/158) in
-  let _wild315 =
-    while if (length/159 > 1) {
-        (inherent#string#string#byte_get(value/158, (length/159 - 1)) == 48)
+fn trim_float_digits(value/0: string) -> string {
+  let length/0 = inherent#string#string#byte_len(value/0) in
+  let _wild0 =
+    while if (length/0 > 1) {
+        (inherent#string#string#byte_get(value/0, (length/0 - 1)) == 48)
     } else {
         false
     } {
         {
-          let _wild314 =
+          let _wild1 =
             {
-              let compound_old312 = length/159 in
-              let compound_value313 = 1 in
-              length/159 = (compound_old312 - compound_value313)
+              let compound_old0 = length/0 in
+              let compound_value0 = 1 in
+              length/0 = (compound_old0 - compound_value0)
             } in
         }
     } in
-  inherent#string#string#byte_slice(value/158, 0, length/159)
+  inherent#string#string#byte_slice(value/0, 0, length/0)
 }
 
 fn format_float_bits(
-  bits/160: u64,
-  mantissa_bits/161: isize,
-  exponent_bits/162: isize,
-  exponent_bias/163: isize
+  bits/0: u64,
+  mantissa_bits/0: isize,
+  exponent_bits/0: isize,
+  exponent_bias/0: isize
 ) -> string {
-  let sign_mask/164 = (1 << (mantissa_bits/161 + exponent_bits/162)) in
-  let negative/165 = ((bits/160 & sign_mask/164) != 0) in
-  let exponent_mask/166 = ((1 << exponent_bits/162) - 1) in
-  let exponent/167 = ((bits/160 >> mantissa_bits/161) & exponent_mask/166) in
-  let fraction/168 = (bits/160 & ((1 << mantissa_bits/161) - 1)) in
-  let _wild316 =
-    if (exponent/167 == exponent_mask/166) {
+  let sign_mask/0 = (1 << (mantissa_bits/0 + exponent_bits/0)) in
+  let negative/0 = ((bits/0 & sign_mask/0) != 0) in
+  let exponent_mask/0 = ((1 << exponent_bits/0) - 1) in
+  let exponent/0 = ((bits/0 >> mantissa_bits/0) & exponent_mask/0) in
+  let fraction/0 = (bits/0 & ((1 << mantissa_bits/0) - 1)) in
+  let _wild0 =
+    if (exponent/0 == exponent_mask/0) {
         {
-          if (fraction/168 == 0) {
+          if (fraction/0 == 0) {
               {
-                if negative/165 {
+                if negative/0 {
                     {
                       return "-inf"
                     }
@@ -1861,13 +1845,13 @@ fn format_float_bits(
           }
         }
     } else {
-        if if (exponent/167 == 0) {
-            (fraction/168 == 0)
+        if if (exponent/0 == 0) {
+            (fraction/0 == 0)
         } else {
             false
         } {
             {
-              if negative/165 {
+              if negative/0 {
                   {
                     return "-0"
                   }
@@ -1883,34 +1867,34 @@ fn format_float_bits(
             }
         }
     } in
-  let mantissa/169 =
-    if (exponent/167 == 0) {
+  let mantissa/0 =
+    if (exponent/0 == 0) {
         {
-          fraction/168
+          fraction/0
         }
     } else {
         {
-          (fraction/168 | (1 << mantissa_bits/161))
+          (fraction/0 | (1 << mantissa_bits/0))
         }
     } in
-  let binary_exponent/170 =
-    if (exponent/167 == 0) {
+  let binary_exponent/0 =
+    if (exponent/0 == 0) {
         {
-          ((1 - exponent_bias/163) - mantissa_bits/161)
+          ((1 - exponent_bias/0) - mantissa_bits/0)
         }
     } else {
         {
-          (((exponent/167 as isize) - exponent_bias/163) - mantissa_bits/161)
+          (((exponent/0 as isize) - exponent_bias/0) - mantissa_bits/0)
         }
     } in
-  let exact_value/171 = float_natural_from_u64(mantissa/169) in
-  let decimal_point/193 =
-    if (binary_exponent/170 >= 0) {
+  let exact_value/0 = float_natural_from_u0(mantissa/0) in
+  let decimal_point/0 =
+    if (binary_exponent/0 >= 0) {
         {
-          let shifted/172 = float_natural_shift_left(exact_value/171, binary_exponent/170) in
-          let digits/173 = float_natural_decimal(shifted/172) in
-          let maximum_digits/174 =
-            if (mantissa_bits/161 == 23) {
+          let shifted/0 = float_natural_shift_left(exact_value/0, binary_exponent/0) in
+          let digits/0 = float_natural_decimal(shifted/0) in
+          let maximum_digits/0 =
+            if (mantissa_bits/0 == 23) {
                 {
                   9
                 }
@@ -1919,33 +1903,33 @@ fn format_float_bits(
                   17
                 }
             } in
-          let limit/175 =
-            if (inherent#string#string#byte_len(digits/173) < maximum_digits/174) {
+          let limit/0 =
+            if (inherent#string#string#byte_len(digits/0) < maximum_digits/0) {
                 {
-                  inherent#string#string#byte_len(digits/173)
+                  inherent#string#string#byte_len(digits/0)
                 }
             } else {
                 {
-                  maximum_digits/174
+                  maximum_digits/0
                 }
             } in
-          let count/176 = 1 in
-          let _wild327 =
-            while (count/176 <= limit/175) {
+          let count/0 = 1 in
+          let _wild1 =
+            while (count/0 <= limit/0) {
                 {
-                  let mtmp317 = rounded_float_digits(digits/173, count/176) in
+                  let mtmp0 = rounded_float_digits(digits/0, count/0) in
                   {
-                    let x318 = mtmp317.0 in
-                    let x319 = mtmp317.1 in
+                    let x0 = mtmp0.0 in
+                    let x1 = mtmp0.1 in
                     {
-                      let carried/178 = x319 in
+                      let carried/0 = x1 in
                       {
-                        let rounded/177 = x318 in
+                        let rounded/0 = x0 in
                         {
-                          let rounded/179 = trim_float_digits(rounded/177) in
-                          let point/180 =
-                            (inherent#string#string#byte_len(digits/173) +
-                              if carried/178 {
+                          let rounded/1 = trim_float_digits(rounded/0) in
+                          let point/0 =
+                            (inherent#string#string#byte_len(digits/0) +
+                              if carried/0 {
                                   {
                                     1
                                   }
@@ -1954,34 +1938,29 @@ fn format_float_bits(
                                     0
                                   }
                               }) in
-                          let candidate/181 =
-                            fixed_float_text(rounded/179, point/180, negative/165) in
-                          let mtmp320 =
-                            parsed_float_bits(
-                              candidate/181,
-                              mantissa_bits/161,
-                              exponent_bias/163
-                            ) in
+                          let candidate/0 = fixed_float_text(rounded/1, point/0, negative/0) in
+                          let mtmp1 =
+                            parsed_float_bits(candidate/0, mantissa_bits/0, exponent_bias/0) in
                           {
-                            let x322 = mtmp320.1 in
+                            let x2 = mtmp1.1 in
                             {
-                              let parsed/182 = x322 in
+                              let parsed/0 = x2 in
                               {
-                                let _wild323 =
-                                  if (parsed/182 == bits/160) {
+                                let _wild2 =
+                                  if (parsed/0 == bits/0) {
                                       {
-                                        return candidate/181
+                                        return candidate/0
                                       }
                                   } else {
                                       {
                                         ()
                                       }
                                   } in
-                                let _wild326 =
+                                let _wild3 =
                                   {
-                                    let compound_old324 = count/176 in
-                                    let compound_value325 = 1 in
-                                    count/176 = (compound_old324 + compound_value325)
+                                    let compound_old0 = count/0 in
+                                    let compound_value0 = 1 in
+                                    count/0 = (compound_old0 + compound_value0)
                                   } in
                               }
                             }
@@ -1992,27 +1971,27 @@ fn format_float_bits(
                   }
                 }
             } in
-          inherent#string#string#byte_len(digits/173)
+          inherent#string#string#byte_len(digits/0)
         }
     } else {
         {
-          let count/183 = 0 in
-          let _wild332 =
-            while (count/183 < (0 - binary_exponent/170)) {
+          let count/1 = 0 in
+          let _wild4 =
+            while (count/1 < (0 - binary_exponent/0)) {
                 {
-                  let _wild328 = float_natural_multiply_small(exact_value/171, 5) in
-                  let _wild331 =
+                  let _wild5 = float_natural_multiply_small(exact_value/0, 5) in
+                  let _wild6 =
                     {
-                      let compound_old329 = count/183 in
-                      let compound_value330 = 1 in
-                      count/183 = (compound_old329 + compound_value330)
+                      let compound_old1 = count/1 in
+                      let compound_value1 = 1 in
+                      count/1 = (compound_old1 + compound_value1)
                     } in
                 }
             } in
-          let digits/184 = float_natural_decimal(exact_value/171) in
-          let point/185 = (inherent#string#string#byte_len(digits/184) + binary_exponent/170) in
-          let maximum_digits/186 =
-            if (mantissa_bits/161 == 23) {
+          let digits/1 = float_natural_decimal(exact_value/0) in
+          let point/1 = (inherent#string#string#byte_len(digits/1) + binary_exponent/0) in
+          let maximum_digits/1 =
+            if (mantissa_bits/0 == 23) {
                 {
                   9
                 }
@@ -2021,35 +2000,35 @@ fn format_float_bits(
                   17
                 }
             } in
-          let limit/187 =
-            if (inherent#string#string#byte_len(digits/184) < maximum_digits/186) {
+          let limit/1 =
+            if (inherent#string#string#byte_len(digits/1) < maximum_digits/1) {
                 {
-                  inherent#string#string#byte_len(digits/184)
+                  inherent#string#string#byte_len(digits/1)
                 }
             } else {
                 {
-                  maximum_digits/186
+                  maximum_digits/1
                 }
             } in
-          let _wild333 = count/183 = 1 in
-          let _wild344 =
-            while (count/183 <= limit/187) {
+          let _wild7 = count/1 = 1 in
+          let _wild8 =
+            while (count/1 <= limit/1) {
                 {
-                  let mtmp334 = rounded_float_digits(digits/184, count/183) in
+                  let mtmp2 = rounded_float_digits(digits/1, count/1) in
                   {
-                    let x335 = mtmp334.0 in
-                    let x336 = mtmp334.1 in
+                    let x3 = mtmp2.0 in
+                    let x4 = mtmp2.1 in
                     {
-                      let carried/189 = x336 in
+                      let carried/1 = x4 in
                       {
-                        let rounded/188 = x335 in
+                        let rounded/2 = x3 in
                         {
-                          let rounded/190 = trim_float_digits(rounded/188) in
-                          let candidate/191 =
+                          let rounded/3 = trim_float_digits(rounded/2) in
+                          let candidate/1 =
                             fixed_float_text(
-                              rounded/190,
-                              (point/185 +
-                                if carried/189 {
+                              rounded/3,
+                              (point/1 +
+                                if carried/1 {
                                     {
                                       1
                                     }
@@ -2058,34 +2037,30 @@ fn format_float_bits(
                                       0
                                     }
                                 }),
-                              negative/165
+                              negative/0
                             ) in
-                          let mtmp337 =
-                            parsed_float_bits(
-                              candidate/191,
-                              mantissa_bits/161,
-                              exponent_bias/163
-                            ) in
+                          let mtmp3 =
+                            parsed_float_bits(candidate/1, mantissa_bits/0, exponent_bias/0) in
                           {
-                            let x339 = mtmp337.1 in
+                            let x5 = mtmp3.1 in
                             {
-                              let parsed/192 = x339 in
+                              let parsed/1 = x5 in
                               {
-                                let _wild340 =
-                                  if (parsed/192 == bits/160) {
+                                let _wild9 =
+                                  if (parsed/1 == bits/0) {
                                       {
-                                        return candidate/191
+                                        return candidate/1
                                       }
                                   } else {
                                       {
                                         ()
                                       }
                                   } in
-                                let _wild343 =
+                                let _wild10 =
                                   {
-                                    let compound_old341 = count/183 in
-                                    let compound_value342 = 1 in
-                                    count/183 = (compound_old341 + compound_value342)
+                                    let compound_old2 = count/1 in
+                                    let compound_value2 = 1 in
+                                    count/1 = (compound_old2 + compound_value2)
                                   } in
                               }
                             }
@@ -2096,23 +2071,23 @@ fn format_float_bits(
                   }
                 }
             } in
-          point/185
+          point/1
         }
     } in
-  fixed_float_text(float_natural_decimal(exact_value/171), decimal_point/193, negative/165)
+  fixed_float_text(float_natural_decimal(exact_value/0), decimal_point/0, negative/0)
 }
 
-fn __goml_builtin_float32_to_string(value/194: f32) -> string {
-  format_float_bits((@go_ffi(math, Float32bits)(value/194) as u64), 23, 8, 127)
+fn __goml_builtin_float32_to_string(value/0: f32) -> string {
+  format_float_bits((@go_ffi(math, Float32bits)(value/0) as u64), 23, 8, 127)
 }
 
-fn __goml_builtin_float64_to_string(value/195: f64) -> string {
-  format_float_bits(@go_ffi(math, Float64bits)(value/195), 52, 11, 1023)
+fn __goml_builtin_float64_to_string(value/0: f64) -> string {
+  format_float_bits(@go_ffi(math, Float64bits)(value/0), 52, 11, 1023)
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -2121,123 +2096,122 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[u8]#push(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 = inherent#Vec#Vec[u8]#push(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[u8]#len(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[u8]#len(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[u8]#len(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[u8]#len(reversed/0)) {
         {
-          let _wild357 =
+          let _wild5 =
             inherent#Vec#Vec[u8]#push(
-              bytes/211,
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[u8]#len(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[u8]#len(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn __goml_builtin_int8_to_string(value/223: i8) -> string {
-  signed_decimal_string((value/223 as i64))
+fn __goml_builtin_int8_to_string(value/0: i8) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn __goml_builtin_int16_to_string(value/224: i16) -> string {
-  signed_decimal_string((value/224 as i64))
+fn __goml_builtin_int16_to_string(value/0: i16) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn __goml_builtin_int64_to_string(value/226: i64) -> string {
-  signed_decimal_string(value/226)
+fn __goml_builtin_int64_to_string(value/0: i64) -> string {
+  signed_decimal_string(value/0)
 }
 
-fn __goml_builtin_uint_to_string(value/227: usize) -> string {
-  decimal_string((value/227 as u64))
+fn __goml_builtin_uint_to_string(value/0: usize) -> string {
+  decimal_string((value/0 as u64))
 }
 
-fn __goml_builtin_uint8_to_string(value/228: u8) -> string {
-  decimal_string((value/228 as u64))
+fn __goml_builtin_uint8_to_string(value/0: u8) -> string {
+  decimal_string((value/0 as u64))
 }
 
-fn __goml_builtin_uint16_to_string(value/229: u16) -> string {
-  decimal_string((value/229 as u64))
+fn __goml_builtin_uint16_to_string(value/0: u16) -> string {
+  decimal_string((value/0 as u64))
 }
 
-fn __goml_builtin_uint32_to_string(value/230: u32) -> string {
-  decimal_string((value/230 as u64))
+fn __goml_builtin_uint32_to_string(value/0: u32) -> string {
+  decimal_string((value/0 as u64))
 }
 
-fn __goml_builtin_uint64_to_string(value/231: u64) -> string {
-  decimal_string(value/231)
+fn __goml_builtin_uint64_to_string(value/0: u64) -> string {
+  decimal_string(value/0)
 }
 
 fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
 
-fn utf8_valid_decode(value/253: u32, width/254: isize) -> (bool, char, isize) {
+fn utf8_valid_decode(value/0: u32, width/0: isize) -> (bool, char, isize) {
   {
-    let mtmp385 = __goml_builtin_char_from_uint32(value/253) in
-    match mtmp385 {
+    let mtmp0 = __goml_builtin_char_from_uint0(value/0) in
+    match mtmp0 {
       Option::None => {
         utf8_invalid_decode()
       },
-      Option::Some(x386) => {
+      Option::Some(x0) => {
         {
-          let x386 = Option::Some._0(mtmp385) in
+          let x0 = Option::Some._0(mtmp0) in
           {
-            let character/255 = x386 in
-            (true, character/255, width/254)
+            let character/0 = x0 in
+            (true, character/0, width/0)
           }
         }
       },
@@ -2245,18 +2219,18 @@ fn utf8_valid_decode(value/253: u32, width/254: isize) -> (bool, char, isize) {
   }
 }
 
-fn utf8_invalid_continuation(value/256: u32) -> bool {
-  if (value/256 < 128) {
+fn utf8_invalid_continuation(value/0: u32) -> bool {
+  if (value/0 < 128) {
       true
   } else {
-      (value/256 > 191)
+      (value/0 > 191)
   }
 }
 
-fn utf8_valid_scalar(value/257: u32) -> bool {
-  if (value/257 <= 1114111) {
-      (!if (value/257 >= 55296) {
-          (value/257 <= 57343)
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  if (value/0 <= 1114111) {
+      (!if (value/0 >= 55296) {
+          (value/0 <= 57343)
       } else {
           false
       })
@@ -2265,13 +2239,13 @@ fn utf8_valid_scalar(value/257: u32) -> bool {
   }
 }
 
-fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, isize) {
-  let length/260 = inherent#string#string#byte_len(value/258) in
-  let _wild387 =
-    if if (index/259 < 0) {
+fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
+  let length/0 = inherent#string#string#byte_len(value/0) in
+  let _wild0 =
+    if if (index/0 < 0) {
         true
     } else {
-        (index/259 >= length/260)
+        (index/0 >= length/0)
     } {
         {
           return utf8_invalid_decode()
@@ -2281,21 +2255,21 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
           ()
         }
     } in
-  let first/261 = (inherent#string#string#byte_get(value/258, index/259) as u32) in
-  if (first/261 < 128) {
+  let first/0 = (inherent#string#string#byte_get(value/0, index/0) as u32) in
+  if (first/0 < 128) {
       {
-        utf8_valid_decode(first/261, 1)
+        utf8_valid_decode(first/0, 1)
       }
   } else {
-      if (first/261 < 194) {
+      if (first/0 < 194) {
           {
             utf8_invalid_decode()
           }
       } else {
-          if (first/261 < 224) {
+          if (first/0 < 224) {
               {
-                let _wild388 =
-                  if ((length/260 - index/259) < 2) {
+                let _wild1 =
+                  if ((length/0 - index/0) < 2) {
                       {
                         return utf8_invalid_decode()
                       }
@@ -2304,23 +2278,22 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                         ()
                       }
                   } in
-                let second/262 =
-                  (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
-                if utf8_invalid_continuation(second/262) {
+                let second/0 = (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
+                if utf8_invalid_continuation(second/0) {
                     {
                       utf8_invalid_decode()
                     }
                 } else {
                     {
-                      utf8_valid_decode((((first/261 & 31) << 6) | (second/262 & 63)), 2)
+                      utf8_valid_decode((((first/0 & 31) << 6) | (second/0 & 63)), 2)
                     }
                 }
               }
           } else {
-              if (first/261 < 240) {
+              if (first/0 < 240) {
                   {
-                    let _wild389 =
-                      if ((length/260 - index/259) < 3) {
+                    let _wild2 =
+                      if ((length/0 - index/0) < 3) {
                           {
                             return utf8_invalid_decode()
                           }
@@ -2329,27 +2302,27 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                             ()
                           }
                       } in
-                    let second/263 =
-                      (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
-                    let third/264 =
-                      (inherent#string#string#byte_get(value/258, (index/259 + 2)) as u32) in
-                    if if if if utf8_invalid_continuation(second/263) {
+                    let second/1 =
+                      (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
+                    let third/0 =
+                      (inherent#string#string#byte_get(value/0, (index/0 + 2)) as u32) in
+                    if if if if utf8_invalid_continuation(second/1) {
                         true
                     } else {
-                        utf8_invalid_continuation(third/264)
+                        utf8_invalid_continuation(third/0)
                     } {
                         true
                     } else {
-                        if (first/261 == 224) {
-                            (second/263 < 160)
+                        if (first/0 == 224) {
+                            (second/1 < 160)
                         } else {
                             false
                         }
                     } {
                         true
                     } else {
-                        if (first/261 == 237) {
-                            (second/263 >= 160)
+                        if (first/0 == 237) {
+                            (second/1 >= 160)
                         } else {
                             false
                         }
@@ -2360,18 +2333,17 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                     } else {
                         {
                           utf8_valid_decode(
-                            ((((first/261 & 15) << 12) | ((second/263 & 63) << 6)) |
-                              (third/264 & 63)),
+                            ((((first/0 & 15) << 12) | ((second/1 & 63) << 6)) | (third/0 & 63)),
                             3
                           )
                         }
                     }
                   }
               } else {
-                  if (first/261 < 245) {
+                  if (first/0 < 245) {
                       {
-                        let _wild390 =
-                          if ((length/260 - index/259) < 4) {
+                        let _wild3 =
+                          if ((length/0 - index/0) < 4) {
                               {
                                 return utf8_invalid_decode()
                               }
@@ -2380,33 +2352,33 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                                 ()
                               }
                           } in
-                        let second/265 =
-                          (inherent#string#string#byte_get(value/258, (index/259 + 1)) as u32) in
-                        let third/266 =
-                          (inherent#string#string#byte_get(value/258, (index/259 + 2)) as u32) in
-                        let fourth/267 =
-                          (inherent#string#string#byte_get(value/258, (index/259 + 3)) as u32) in
-                        if if if if if utf8_invalid_continuation(second/265) {
+                        let second/2 =
+                          (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
+                        let third/1 =
+                          (inherent#string#string#byte_get(value/0, (index/0 + 2)) as u32) in
+                        let fourth/0 =
+                          (inherent#string#string#byte_get(value/0, (index/0 + 3)) as u32) in
+                        if if if if if utf8_invalid_continuation(second/2) {
                             true
                         } else {
-                            utf8_invalid_continuation(third/266)
+                            utf8_invalid_continuation(third/1)
                         } {
                             true
                         } else {
-                            utf8_invalid_continuation(fourth/267)
+                            utf8_invalid_continuation(fourth/0)
                         } {
                             true
                         } else {
-                            if (first/261 == 240) {
-                                (second/265 < 144)
+                            if (first/0 == 240) {
+                                (second/2 < 144)
                             } else {
                                 false
                             }
                         } {
                             true
                         } else {
-                            if (first/261 == 244) {
-                                (second/265 > 143)
+                            if (first/0 == 244) {
+                                (second/2 > 143)
                             } else {
                                 false
                             }
@@ -2417,9 +2389,9 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
                         } else {
                             {
                               utf8_valid_decode(
-                                (((((first/261 & 7) << 18) | ((second/265 & 63) << 12)) |
-                                  ((third/266 & 63) << 6)) |
-                                  (fourth/267 & 63)),
+                                (((((first/0 & 7) << 18) | ((second/2 & 63) << 12)) |
+                                  ((third/1 & 63) << 6)) |
+                                  (fourth/0 & 63)),
                                 4
                               )
                             }
@@ -2436,41 +2408,41 @@ fn string_decode_utf8_at(value/258: string, index/259: isize) -> (bool, char, is
   }
 }
 
-fn string_is_char_boundary(value/268: string, index/269: isize) -> bool {
-  if if (index/269 < 0) {
+fn string_is_char_boundary(value/0: string, index/0: isize) -> bool {
+  if if (index/0 < 0) {
       true
   } else {
-      (index/269 > inherent#string#string#byte_len(value/268))
+      (index/0 > inherent#string#string#byte_len(value/0))
   } {
       {
         false
       }
   } else {
-      if (index/269 == inherent#string#string#byte_len(value/268)) {
+      if (index/0 == inherent#string#string#byte_len(value/0)) {
           {
             true
           }
       } else {
           {
-            ((inherent#string#string#byte_get(value/268, index/269) & 192) != 128)
+            ((inherent#string#string#byte_get(value/0, index/0) & 192) != 128)
           }
       }
   }
 }
 
-fn string_get(value/270: string, index/271: isize) -> char {
-  let mtmp391 = string_decode_utf8_at(value/270, index/271) in
+fn string_get(value/0: string, index/0: isize) -> char {
+  let mtmp0 = string_decode_utf8_at(value/0, index/0) in
   {
-    let x392 = mtmp391.0 in
-    let x393 = mtmp391.1 in
+    let x0 = mtmp0.0 in
+    let x1 = mtmp0.1 in
     {
-      let character/273 = x393 in
+      let character/0 = x1 in
       {
-        let valid/272 = x392 in
+        let valid/0 = x0 in
         {
-          if valid/272 {
+          if valid/0 {
               {
-                character/273
+                character/0
               }
           } else {
               {
@@ -2483,30 +2455,30 @@ fn string_get(value/270: string, index/271: isize) -> char {
   }
 }
 
-fn string_byte_slice(value/274: string, start/275: isize, end/276: isize) -> string {
-  if if string_is_char_boundary(value/274, start/275) {
-      string_is_char_boundary(value/274, end/276)
+fn string_byte_slice(value/0: string, start/0: isize, end/0: isize) -> string {
+  if if string_is_char_boundary(value/0, start/0) {
+      string_is_char_boundary(value/0, end/0)
   } else {
       false
   } {
       {
-        @runtime(core.string_byte_slice)(value/274, start/275, end/276)
+        @runtime(core.string_byte_slice)(value/0, start/0, end/0)
       }
   } else {
       {
-        @runtime(core.string_byte_slice)(value/274, -1, -1)
+        @runtime(core.string_byte_slice)(value/0, -1, -1)
       }
   }
 }
 
-fn char_to_string(value/282: char) -> string {
-  if utf8_valid_scalar((value/282 as u32)) {
+fn char_to_string(value/0: char) -> string {
+  if utf8_valid_scalar((value/0 as u32)) {
       {
-        @runtime(core.char_to_string)(value/282)
+        @runtime(core.char_to_string)(value/0)
       }
   } else {
       {
-        let mtmp406 = @runtime(core.string_get)("", -1) in
+        let mtmp0 = @runtime(core.string_get)("", -1) in
         {
           ""
         }
@@ -2514,16 +2486,16 @@ fn char_to_string(value/282: char) -> string {
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/283: u32) -> Option[char] {
-  if utf8_valid_scalar(value/283) {
+fn __goml_builtin_char_from_uint32(value/0: u32) -> Option[char] {
+  if utf8_valid_scalar(value/0) {
       {
-        let mtmp407 = @runtime(core.char_from_uint32)(value/283) in
+        let mtmp0 = @runtime(core.char_from_uint32)(value/0) in
         {
-          let x409 = mtmp407.1 in
+          let x0 = mtmp0.1 in
           {
-            let character/284 = x409 in
+            let character/0 = x0 in
             {
-              Option::Some(character/284)
+              Option::Some(character/0)
             }
           }
         }
@@ -2535,99 +2507,99 @@ fn __goml_builtin_char_from_uint32(value/283: u32) -> Option[char] {
   }
 }
 
-fn inherent#isize#isize#to_string(self/285: isize) -> string {
-  __goml_builtin_int_to_string(self/285)
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn inherent#i32#i32#to_string(self/286: i32) -> string {
-  __goml_builtin_int32_to_string(self/286)
+fn inherent#i32#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn inherent#char#char#to_string(self/287: char) -> string {
-  char_to_string(self/287)
+fn inherent#char#char#to_string(self/0: char) -> string {
+  char_to_string(self/0)
 }
 
-fn inherent#string#string#len(self/288: string) -> isize {
-  @runtime(core.string_len)(self/288)
+fn inherent#string#string#len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
 }
 
-fn inherent#string#string#byte_len(self/289: string) -> isize {
-  @runtime(core.string_len)(self/289)
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
 }
 
-fn inherent#string#string#get(self/290: string, index/291: isize) -> char {
-  string_get(self/290, index/291)
+fn inherent#string#string#get(self/0: string, index/0: isize) -> char {
+  string_get(self/0, index/0)
 }
 
-fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
-  @runtime(core.string_byte_get)(self/292, index/293)
+fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
+  @runtime(core.string_byte_get)(self/0, index/0)
 }
 
-fn inherent#string#string#byte_slice(self/294: string, start/295: isize, end/296: isize) -> string {
-  string_byte_slice(self/294, start/295, end/296)
+fn inherent#string#string#byte_slice(self/0: string, start/0: isize, end/0: isize) -> string {
+  string_byte_slice(self/0, start/0, end/0)
 }
 
-fn trait_impl#ToString#unit#to_string(self/400: unit) -> string {
-  @runtime(core.unit_to_string)(self/400)
+fn trait_impl#ToString#unit#to_string(self/0: unit) -> string {
+  @runtime(core.unit_to_string)(self/0)
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#char#to_string(self/403: char) -> string {
-  char_to_string(self/403)
+fn trait_impl#ToString#char#to_string(self/0: char) -> string {
+  char_to_string(self/0)
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn trait_impl#ToString#i8#to_string(self/405: i8) -> string {
-  __goml_builtin_int8_to_string(self/405)
+fn trait_impl#ToString#i8#to_string(self/0: i8) -> string {
+  __goml_builtin_int8_to_string(self/0)
 }
 
-fn trait_impl#ToString#i16#to_string(self/406: i16) -> string {
-  __goml_builtin_int16_to_string(self/406)
+fn trait_impl#ToString#i16#to_string(self/0: i16) -> string {
+  __goml_builtin_int16_to_string(self/0)
 }
 
-fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
-  __goml_builtin_int32_to_string(self/407)
+fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn trait_impl#ToString#i64#to_string(self/408: i64) -> string {
-  __goml_builtin_int64_to_string(self/408)
+fn trait_impl#ToString#i64#to_string(self/0: i64) -> string {
+  __goml_builtin_int64_to_string(self/0)
 }
 
-fn trait_impl#ToString#u8#to_string(self/409: u8) -> string {
-  __goml_builtin_uint8_to_string(self/409)
+fn trait_impl#ToString#u8#to_string(self/0: u8) -> string {
+  __goml_builtin_uint8_to_string(self/0)
 }
 
-fn trait_impl#ToString#u16#to_string(self/410: u16) -> string {
-  __goml_builtin_uint16_to_string(self/410)
+fn trait_impl#ToString#u16#to_string(self/0: u16) -> string {
+  __goml_builtin_uint16_to_string(self/0)
 }
 
-fn trait_impl#ToString#u32#to_string(self/411: u32) -> string {
-  __goml_builtin_uint32_to_string(self/411)
+fn trait_impl#ToString#u32#to_string(self/0: u32) -> string {
+  __goml_builtin_uint32_to_string(self/0)
 }
 
-fn trait_impl#ToString#u64#to_string(self/412: u64) -> string {
-  __goml_builtin_uint64_to_string(self/412)
+fn trait_impl#ToString#u64#to_string(self/0: u64) -> string {
+  __goml_builtin_uint64_to_string(self/0)
 }
 
-fn trait_impl#ToString#f32#to_string(self/413: f32) -> string {
-  __goml_builtin_float32_to_string(self/413)
+fn trait_impl#ToString#f32#to_string(self/0: f32) -> string {
+  __goml_builtin_float32_to_string(self/0)
 }
 
-fn trait_impl#ToString#f64#to_string(self/414: f64) -> string {
-  __goml_builtin_float64_to_string(self/414)
+fn trait_impl#ToString#f64#to_string(self/0: f64) -> string {
+  __goml_builtin_float64_to_string(self/0)
 }
 
-fn trait_impl#PartialEq#unit#eq(self/430: unit, other/431: unit) -> bool {
+fn trait_impl#PartialEq#unit#eq(self/0: unit, other/0: unit) -> bool {
   true
 }
 
@@ -2635,116 +2607,116 @@ fn trait_impl#Eq#unit#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#bool#eq(self/432: bool, other/433: bool) -> bool {
-  (self/432 == other/433)
+fn trait_impl#PartialEq#bool#eq(self/0: bool, other/0: bool) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#bool#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
-  (self/434 == other/435)
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#string#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#char#eq(self/436: char, other/437: char) -> bool {
-  (self/436 == other/437)
+fn trait_impl#PartialEq#char#eq(self/0: char, other/0: char) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#char#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  (self/438 == other/439)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#isize#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i8#eq(self/440: i8, other/441: i8) -> bool {
-  (self/440 == other/441)
+fn trait_impl#PartialEq#i8#eq(self/0: i8, other/0: i8) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i8#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i16#eq(self/442: i16, other/443: i16) -> bool {
-  (self/442 == other/443)
+fn trait_impl#PartialEq#i16#eq(self/0: i16, other/0: i16) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i16#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  (self/444 == other/445)
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i32#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#i64#eq(self/446: i64, other/447: i64) -> bool {
-  (self/446 == other/447)
+fn trait_impl#PartialEq#i64#eq(self/0: i64, other/0: i64) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#i64#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u8#eq(self/448: u8, other/449: u8) -> bool {
-  (self/448 == other/449)
+fn trait_impl#PartialEq#u8#eq(self/0: u8, other/0: u8) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u8#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u16#eq(self/450: u16, other/451: u16) -> bool {
-  (self/450 == other/451)
+fn trait_impl#PartialEq#u16#eq(self/0: u16, other/0: u16) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u16#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u32#eq(self/452: u32, other/453: u32) -> bool {
-  (self/452 == other/453)
+fn trait_impl#PartialEq#u32#eq(self/0: u32, other/0: u32) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u32#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#u64#eq(self/454: u64, other/455: u64) -> bool {
-  (self/454 == other/455)
+fn trait_impl#PartialEq#u64#eq(self/0: u64, other/0: u64) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#u64#__marker() -> unit {
   ()
 }
 
-fn trait_impl#PartialEq#f32#eq(self/456: f32, other/457: f32) -> bool {
-  (self/456 == other/457)
+fn trait_impl#PartialEq#f32#eq(self/0: f32, other/0: f32) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#PartialEq#f64#eq(self/458: f64, other/459: f64) -> bool {
-  (self/458 == other/459)
+fn trait_impl#PartialEq#f64#eq(self/0: f64, other/0: f64) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#unit#hash(self/460: unit) -> u64 {
+fn trait_impl#Hash#unit#hash(self/0: unit) -> u64 {
   0
 }
 
-fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
-  if self/461 {
+fn trait_impl#Hash#bool#hash(self/0: bool) -> u64 {
+  if self/0 {
       {
         1
       }
@@ -2755,83 +2727,83 @@ fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
   }
 }
 
-fn trait_impl#Hash#string#hash(self/462: string) -> u64 {
-  @runtime(core.string_hash)(self/462)
+fn trait_impl#Hash#string#hash(self/0: string) -> u64 {
+  @runtime(core.string_hash)(self/0)
 }
 
-fn trait_impl#Hash#char#hash(self/463: char) -> u64 {
-  @runtime(core.char_hash)(self/463)
+fn trait_impl#Hash#char#hash(self/0: char) -> u64 {
+  @runtime(core.char_hash)(self/0)
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  @runtime(core.int_hash)(self/464)
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
 }
 
-fn trait_impl#Hash#i8#hash(self/465: i8) -> u64 {
-  @runtime(core.int8_hash)(self/465)
+fn trait_impl#Hash#i8#hash(self/0: i8) -> u64 {
+  @runtime(core.int8_hash)(self/0)
 }
 
-fn trait_impl#Hash#i16#hash(self/466: i16) -> u64 {
-  @runtime(core.int16_hash)(self/466)
+fn trait_impl#Hash#i16#hash(self/0: i16) -> u64 {
+  @runtime(core.int16_hash)(self/0)
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  @runtime(core.int32_hash)(self/467)
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  @runtime(core.int32_hash)(self/0)
 }
 
-fn trait_impl#Hash#i64#hash(self/468: i64) -> u64 {
-  @runtime(core.int64_hash)(self/468)
+fn trait_impl#Hash#i64#hash(self/0: i64) -> u64 {
+  @runtime(core.int64_hash)(self/0)
 }
 
-fn trait_impl#Hash#u8#hash(self/469: u8) -> u64 {
-  @runtime(core.uint8_hash)(self/469)
+fn trait_impl#Hash#u8#hash(self/0: u8) -> u64 {
+  @runtime(core.uint8_hash)(self/0)
 }
 
-fn trait_impl#Hash#u16#hash(self/470: u16) -> u64 {
-  @runtime(core.uint16_hash)(self/470)
+fn trait_impl#Hash#u16#hash(self/0: u16) -> u64 {
+  @runtime(core.uint16_hash)(self/0)
 }
 
-fn trait_impl#Hash#u32#hash(self/471: u32) -> u64 {
-  @runtime(core.uint32_hash)(self/471)
+fn trait_impl#Hash#u32#hash(self/0: u32) -> u64 {
+  @runtime(core.uint32_hash)(self/0)
 }
 
-fn trait_impl#Hash#u64#hash(self/472: u64) -> u64 {
-  self/472
+fn trait_impl#Hash#u64#hash(self/0: u64) -> u64 {
+  self/0
 }
 
-fn trait_impl#PartialEq#Ref[T]#eq[T](self/473: Ref[T], other/474: Ref[T]) -> bool {
-  @intrinsic(ref.ptr_eq)(self/473, other/474)
+fn trait_impl#PartialEq#Ref[T]#eq[T](self/0: Ref[T], other/0: Ref[T]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/0, other/0)
 }
 
 fn trait_impl#Eq#Ref[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Ref[T]#hash[T](self/475: Ref[T]) -> u64 {
-  @intrinsic(ref.ptr_hash)(self/475)
+fn trait_impl#Hash#Ref[T]#hash[T](self/0: Ref[T]) -> u64 {
+  @intrinsic(ref.ptr_hash)(self/0)
 }
 
-fn trait_impl#PartialEq#Vec[T]#eq[T](self/476: Vec[T], other/477: Vec[T]) -> bool {
-  if (inherent#Vec#Vec[T]#len(self/476) != inherent#Vec#Vec[T]#len(other/477)) {
+fn trait_impl#PartialEq#Vec[T]#eq[T](self/0: Vec[T], other/0: Vec[T]) -> bool {
+  if (inherent#Vec#Vec[T]#len(self/0) != inherent#Vec#Vec[T]#len(other/0)) {
       {
         false
       }
   } else {
       {
-        let index/478 = 0 in
-        let _wild541 =
-          while (index/478 < inherent#Vec#Vec[T]#len(self/476)) {
+        let index/0 = 0 in
+        let _wild0 =
+          while (index/0 < inherent#Vec#Vec[T]#len(self/0)) {
               {
                 if trait_call[PartialEq::eq](
-                  @intrinsic(vec.get)(self/476, index/478),
-                  @intrinsic(vec.get)(other/477, index/478)
+                  @intrinsic(vec.get)(self/0, index/0),
+                  @intrinsic(vec.get)(other/0, index/0)
                 ) {
                     {
-                      let _wild540 =
+                      let _wild1 =
                         {
-                          let compound_old538 = index/478 in
-                          let compound_value539 = 1 in
-                          index/478 = (compound_old538 + compound_value539)
+                          let compound_old0 = index/0 in
+                          let compound_value0 = 1 in
+                          index/0 = (compound_old0 + compound_value0)
                         } in
                     }
                 } else {
@@ -2850,47 +2822,47 @@ fn trait_impl#Eq#Vec[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Vec[T]#hash[T](self/479: Vec[T]) -> u64 {
-  let value/480 = 14695981039346656037 in
-  let index/481 = 0 in
-  let _wild546 =
-    while (index/481 < inherent#Vec#Vec[T]#len(self/479)) {
+fn trait_impl#Hash#Vec[T]#hash[T](self/0: Vec[T]) -> u64 {
+  let value/0 = 14695981039346656037 in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Vec#Vec[T]#len(self/0)) {
         {
-          let _wild542 =
-            value/480 = ((value/480 * 1099511628211) +
-              trait_call[Hash::hash](@intrinsic(vec.get)(self/479, index/481))) in
-          let _wild545 =
+          let _wild1 =
+            value/0 = ((value/0 * 1099511628211) +
+              trait_call[Hash::hash](@intrinsic(vec.get)(self/0, index/0))) in
+          let _wild2 =
             {
-              let compound_old543 = index/481 in
-              let compound_value544 = 1 in
-              index/481 = (compound_old543 + compound_value544)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  value/480
+  value/0
 }
 
-fn trait_impl#PartialEq#Slice[T]#eq[T](self/482: Slice[T], other/483: Slice[T]) -> bool {
-  if (inherent#Slice#Slice[T]#len(self/482) != inherent#Slice#Slice[T]#len(other/483)) {
+fn trait_impl#PartialEq#Slice[T]#eq[T](self/0: Slice[T], other/0: Slice[T]) -> bool {
+  if (inherent#Slice#Slice[T]#len(self/0) != inherent#Slice#Slice[T]#len(other/0)) {
       {
         false
       }
   } else {
       {
-        let index/484 = 0 in
-        let _wild550 =
-          while (index/484 < inherent#Slice#Slice[T]#len(self/482)) {
+        let index/0 = 0 in
+        let _wild0 =
+          while (index/0 < inherent#Slice#Slice[T]#len(self/0)) {
               {
                 if trait_call[PartialEq::eq](
-                  @intrinsic(slice.get)(self/482, index/484),
-                  @intrinsic(slice.get)(other/483, index/484)
+                  @intrinsic(slice.get)(self/0, index/0),
+                  @intrinsic(slice.get)(other/0, index/0)
                 ) {
                     {
-                      let _wild549 =
+                      let _wild1 =
                         {
-                          let compound_old547 = index/484 in
-                          let compound_value548 = 1 in
-                          index/484 = (compound_old547 + compound_value548)
+                          let compound_old0 = index/0 in
+                          let compound_value0 = 1 in
+                          index/0 = (compound_old0 + compound_value0)
                         } in
                     }
                 } else {
@@ -2909,53 +2881,53 @@ fn trait_impl#Eq#Slice[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Slice[T]#hash[T](self/485: Slice[T]) -> u64 {
-  let value/486 = 14695981039346656037 in
-  let index/487 = 0 in
-  let _wild555 =
-    while (index/487 < inherent#Slice#Slice[T]#len(self/485)) {
+fn trait_impl#Hash#Slice[T]#hash[T](self/0: Slice[T]) -> u64 {
+  let value/0 = 14695981039346656037 in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Slice#Slice[T]#len(self/0)) {
         {
-          let _wild551 =
-            value/486 = ((value/486 * 1099511628211) +
-              trait_call[Hash::hash](@intrinsic(slice.get)(self/485, index/487))) in
-          let _wild554 =
+          let _wild1 =
+            value/0 = ((value/0 * 1099511628211) +
+              trait_call[Hash::hash](@intrinsic(slice.get)(self/0, index/0))) in
+          let _wild2 =
             {
-              let compound_old552 = index/487 in
-              let compound_value553 = 1 in
-              index/487 = (compound_old552 + compound_value553)
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
             } in
         }
     } in
-  value/486
+  value/0
 }
 
-fn trait_impl#PartialEq#Option[T]#eq[T](self/488: Option[T], other/489: Option[T]) -> bool {
+fn trait_impl#PartialEq#Option[T]#eq[T](self/0: Option[T], other/0: Option[T]) -> bool {
   {
-    let mtmp556 = (self/488, other/489) in
+    let mtmp0 = (self/0, other/0) in
     {
-      let x557 = mtmp556.0 in
-      let x558 = mtmp556.1 in
-      match x558 {
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      match x1 {
         Option::None => {
-          match x557 {
+          match x0 {
             Option::None => {
               true
             },
             _ => false,
           }
         },
-        Option::Some(x559) => {
+        Option::Some(x2) => {
           {
-            let x559 = Option::Some._0(x558) in
-            match x557 {
-              Option::Some(x561) => {
+            let x2 = Option::Some._0(x1) in
+            match x0 {
+              Option::Some(x3) => {
                 {
-                  let x561 = Option::Some._0(x557) in
+                  let x3 = Option::Some._0(x0) in
                   {
-                    let left/490 = x561 in
+                    let left/0 = x3 in
                     {
-                      let right/491 = x559 in
-                      trait_call[PartialEq::eq](left/490, right/491)
+                      let right/0 = x2 in
+                      trait_call[PartialEq::eq](left/0, right/0)
                     }
                   }
                 }
@@ -2973,45 +2945,42 @@ fn trait_impl#Eq#Option[T]#__marker[T]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Option[T]#hash[T](self/492: Option[T]) -> u64 {
-  match self/492 {
+fn trait_impl#Hash#Option[T]#hash[T](self/0: Option[T]) -> u64 {
+  match self/0 {
     Option::None => {
       14695981039346656038
     },
-    Option::Some(x562) => {
+    Option::Some(x0) => {
       {
-        let x562 = Option::Some._0(self/492) in
+        let x0 = Option::Some._0(self/0) in
         {
-          let value/493 = x562 in
-          (14695981039346656039 + trait_call[Hash::hash](value/493))
+          let value/0 = x0 in
+          (14695981039346656039 + trait_call[Hash::hash](value/0))
         }
       }
     },
   }
 }
 
-fn trait_impl#PartialEq#Result[T,E]#eq[T, E](
-  self/494: Result[T, E],
-  other/495: Result[T, E]
-) -> bool {
+fn trait_impl#PartialEq#Result[T,E]#eq[T, E](self/0: Result[T, E], other/0: Result[T, E]) -> bool {
   {
-    let mtmp563 = (self/494, other/495) in
+    let mtmp0 = (self/0, other/0) in
     {
-      let x564 = mtmp563.0 in
-      let x565 = mtmp563.1 in
-      match x565 {
-        Result::Ok(x566) => {
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      match x1 {
+        Result::Ok(x2) => {
           {
-            let x566 = Result::Ok._0(x565) in
-            match x564 {
-              Result::Ok(x568) => {
+            let x2 = Result::Ok._0(x1) in
+            match x0 {
+              Result::Ok(x3) => {
                 {
-                  let x568 = Result::Ok._0(x564) in
+                  let x3 = Result::Ok._0(x0) in
                   {
-                    let left/496 = x568 in
+                    let left/0 = x3 in
                     {
-                      let right/497 = x566 in
-                      trait_call[PartialEq::eq](left/496, right/497)
+                      let right/0 = x2 in
+                      trait_call[PartialEq::eq](left/0, right/0)
                     }
                   }
                 }
@@ -3020,18 +2989,18 @@ fn trait_impl#PartialEq#Result[T,E]#eq[T, E](
             }
           }
         },
-        Result::Err(x567) => {
+        Result::Err(x4) => {
           {
-            let x567 = Result::Err._0(x565) in
-            match x564 {
-              Result::Err(x571) => {
+            let x4 = Result::Err._0(x1) in
+            match x0 {
+              Result::Err(x5) => {
                 {
-                  let x571 = Result::Err._0(x564) in
+                  let x5 = Result::Err._0(x0) in
                   {
-                    let left/498 = x571 in
+                    let left/1 = x5 in
                     {
-                      let right/499 = x567 in
-                      trait_call[PartialEq::eq](left/498, right/499)
+                      let right/1 = x4 in
+                      trait_call[PartialEq::eq](left/1, right/1)
                     }
                   }
                 }
@@ -3049,146 +3018,142 @@ fn trait_impl#Eq#Result[T,E]#__marker[T, E]() -> unit {
   ()
 }
 
-fn trait_impl#Hash#Result[T,E]#hash[T, E](self/500: Result[T, E]) -> u64 {
-  match self/500 {
-    Result::Ok(x572) => {
+fn trait_impl#Hash#Result[T,E]#hash[T, E](self/0: Result[T, E]) -> u64 {
+  match self/0 {
+    Result::Ok(x0) => {
       {
-        let x572 = Result::Ok._0(self/500) in
+        let x0 = Result::Ok._0(self/0) in
         {
-          let value/501 = x572 in
-          (14695981039346656038 + trait_call[Hash::hash](value/501))
+          let value/0 = x0 in
+          (14695981039346656038 + trait_call[Hash::hash](value/0))
         }
       }
     },
-    Result::Err(x573) => {
+    Result::Err(x1) => {
       {
-        let x573 = Result::Err._0(self/500) in
+        let x1 = Result::Err._0(self/0) in
         {
-          let value/502 = x573 in
-          (14695981039346656039 + trait_call[Hash::hash](value/502))
+          let value/1 = x1 in
+          (14695981039346656039 + trait_call[Hash::hash](value/1))
         }
       }
     },
   }
 }
 
-fn trait_impl#ToString#Ref[T]#to_string[T](self/503: Ref[T]) -> string {
-  let v/504 = inherent#Ref#Ref[T]#get(self/503) in
-  (("ref(" + trait_call[ToString::to_string](v/504)) + ")")
+fn trait_impl#ToString#Ref[T]#to_string[T](self/0: Ref[T]) -> string {
+  let v/0 = inherent#Ref#Ref[T]#get(self/0) in
+  (("ref(" + trait_call[ToString::to_string](v/0)) + ")")
 }
 
 fn inherent#Vec#Vec[T]#new[T]() -> Vec[T] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push[T](self/511: Vec[T], elem/512: T) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push[T](self/0: Vec[T], elem/0: T) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#get[T](self/521: Vec[T], index/522: isize) -> T {
-  @intrinsic(vec.get)(self/521, index/522)
+fn inherent#Vec#Vec[T]#get[T](self/0: Vec[T], index/0: isize) -> T {
+  @intrinsic(vec.get)(self/0, index/0)
 }
 
-fn inherent#Vec#Vec[T]#set[T](self/523: Vec[T], index/524: isize, elem/525: T) -> unit {
-  @intrinsic(vec.set)(self/523, index/524, elem/525)
+fn inherent#Vec#Vec[T]#set[T](self/0: Vec[T], index/0: isize, elem/0: T) -> unit {
+  @intrinsic(vec.set)(self/0, index/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len[T](self/526: Vec[T]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len[T](self/0: Vec[T]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
-fn inherent#Vec#Vec[T]#is_empty[T](self/528: Vec[T]) -> bool {
-  (@intrinsic(vec.len)(self/528) == 0)
+fn inherent#Vec#Vec[T]#is_empty[T](self/0: Vec[T]) -> bool {
+  (@intrinsic(vec.len)(self/0) == 0)
 }
 
-fn inherent#Vec#Vec[T]#truncate[T](self/531: Vec[T], len/532: isize) -> unit {
-  @intrinsic(vec.truncate)(self/531, len/532)
+fn inherent#Vec#Vec[T]#truncate[T](self/0: Vec[T], len/0: isize) -> unit {
+  @intrinsic(vec.truncate)(self/0, len/0)
 }
 
-fn inherent#Vec#Vec[T]#clear[T](self/533: Vec[T]) -> unit {
-  inherent#Vec#Vec[T]#truncate(self/533, 0)
+fn inherent#Vec#Vec[T]#clear[T](self/0: Vec[T]) -> unit {
+  inherent#Vec#Vec[T]#truncate(self/0, 0)
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#len[T](self/649: FrozenVec[T]) -> isize {
-  inherent#Vec#Vec[T]#len(FrozenVec.values(self/649))
+fn inherent#FrozenVec#FrozenVec[T]#len[T](self/0: FrozenVec[T]) -> isize {
+  inherent#Vec#Vec[T]#len(FrozenVec.values(self/0))
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#is_empty[T](self/650: FrozenVec[T]) -> bool {
-  inherent#Vec#Vec[T]#is_empty(FrozenVec.values(self/650))
+fn inherent#FrozenVec#FrozenVec[T]#is_empty[T](self/0: FrozenVec[T]) -> bool {
+  inherent#Vec#Vec[T]#is_empty(FrozenVec.values(self/0))
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#get[T](self/651: FrozenVec[T], index/652: isize) -> T {
-  @intrinsic(vec.get)(FrozenVec.values(self/651), index/652)
+fn inherent#FrozenVec#FrozenVec[T]#get[T](self/0: FrozenVec[T], index/0: isize) -> T {
+  @intrinsic(vec.get)(FrozenVec.values(self/0), index/0)
 }
 
 fn inherent#OnceCell#OnceCell[T]#new[T]() -> OnceCell[T] {
   @intrinsic(once_cell.new)()
 }
 
-fn inherent#Slice#Slice[T]#get[T](self/658: Slice[T], index/659: isize) -> T {
-  @intrinsic(slice.get)(self/658, index/659)
+fn inherent#Slice#Slice[T]#get[T](self/0: Slice[T], index/0: isize) -> T {
+  @intrinsic(slice.get)(self/0, index/0)
 }
 
-fn inherent#Slice#Slice[T]#len[T](self/660: Slice[T]) -> isize {
-  @intrinsic(slice.len)(self/660)
+fn inherent#Slice#Slice[T]#len[T](self/0: Slice[T]) -> isize {
+  @intrinsic(slice.len)(self/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get[K, V](self/673: HashMap[K, V], key/674: K) -> Option[V] {
-  @intrinsic(hashmap.get)(self/673, key/674)
+fn inherent#HashMap#HashMap[K,V]#get[K, V](self/0: HashMap[K, V], key/0: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/0, key/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set[K, V](
-  self/675: HashMap[K, V],
-  key/676: K,
-  value/677: V
-) -> unit {
-  @intrinsic(hashmap.set)(self/675, key/676, value/677)
+fn inherent#HashMap#HashMap[K,V]#set[K, V](self/0: HashMap[K, V], key/0: K, value/0: V) -> unit {
+  @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len[K, V](self/680: HashMap[K, V]) -> isize {
-  @intrinsic(hashmap.len)(self/680)
+fn inherent#HashMap#HashMap[K,V]#len[K, V](self/0: HashMap[K, V]) -> isize {
+  @intrinsic(hashmap.len)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#new[T](value/684: T) -> Ref[T] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new[T](value/0: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#get[T](self/685: Ref[T]) -> T {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get[T](self/0: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set[T](self/686: Ref[T], value/687: T) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set[T](self/0: Ref[T], value/0: T) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn inherent#Channel#Channel[T]#new[T](capacity/688: isize) -> Channel[T] {
-  @intrinsic(channel.new)(capacity/688)
+fn inherent#Channel#Channel[T]#new[T](capacity/0: isize) -> Channel[T] {
+  @intrinsic(channel.new)(capacity/0)
 }
 
-fn trait_impl#ToString#usize#to_string(self/704: usize) -> string {
-  __goml_builtin_uint_to_string(self/704)
+fn trait_impl#ToString#usize#to_string(self/0: usize) -> string {
+  __goml_builtin_uint_to_string(self/0)
 }
 
-fn trait_impl#PartialEq#usize#eq(self/706: usize, other/707: usize) -> bool {
-  (self/706 == other/707)
+fn trait_impl#PartialEq#usize#eq(self/0: usize, other/0: usize) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Eq#usize#__marker() -> unit {
   ()
 }
 
-fn trait_impl#Hash#usize#hash(self/708: usize) -> u64 {
-  @runtime(core.uint_hash)(self/708)
+fn trait_impl#Hash#usize#hash(self/0: usize) -> u64 {
+  @runtime(core.uint_hash)(self/0)
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -> bool {
-  match self/1113 {
+fn trait_impl#PartialEq#Ordering#eq(self/0: Ordering, other/0: Ordering) -> bool {
+  match self/0 {
     Ordering::Less => {
-      match other/1114 {
+      match other/0 {
         Ordering::Less => {
           true
         },
@@ -3196,7 +3161,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -
       }
     },
     Ordering::Equal => {
-      match other/1114 {
+      match other/0 {
         Ordering::Equal => {
           true
         },
@@ -3204,7 +3169,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/1113: Ordering, other/1114: Ordering) -
       }
     },
     Ordering::Greater => {
-      match other/1114 {
+      match other/0 {
         Ordering::Greater => {
           true
         },
@@ -3218,8 +3183,8 @@ fn trait_impl#Eq#Ordering#__marker() -> unit {
   ()
 }
 
-fn println(value/1: T) -> unit {
-  @runtime(core.string_println)(trait_call[ToString::to_string](value/1))
+fn println(value/0: T) -> unit {
+  @runtime(core.string_println)(trait_call[ToString::to_string](value/0))
 }
 
 fn step_some(i/0: i32) -> Option[bool] {
@@ -3234,8 +3199,8 @@ fn step_some(i/0: i32) -> Option[bool] {
   }
 }
 
-fn step_none(i/1: i32) -> Option[bool] {
-  if (i/1 < 2) {
+fn step_none(i/0: i32) -> Option[bool] {
+  if (i/0 < 2) {
       {
         Option::Some(true)
       }
@@ -3247,82 +3212,82 @@ fn step_none(i/1: i32) -> Option[bool] {
 }
 
 fn run_some() -> Option[i32] {
-  let i/2 = inherent#Ref#Ref[i32]#new(0) in
-  let total/3 = inherent#Ref#Ref[i32]#new(0) in
-  let _wild800 =
+  let i/0 = inherent#Ref#Ref[i32]#new(0) in
+  let total/0 = inherent#Ref#Ref[i32]#new(0) in
+  let _wild0 =
     while {
-      let mtmp796 = step_some(inherent#Ref#Ref[i32]#get(i/2)) in
-      match mtmp796 {
+      let mtmp0 = step_some(inherent#Ref#Ref[i32]#get(i/0)) in
+      match mtmp0 {
         Option::None => {
           return Option::None
         },
-        Option::Some(x797) => {
+        Option::Some(x0) => {
           {
-            let x797 = Option::Some._0(mtmp796) in
+            let x0 = Option::Some._0(mtmp0) in
             {
-              let try_value/31 = x797 in
-              try_value/31
+              let try_value/0 = x0 in
+              try_value/0
             }
           }
         },
       }
     } {
         {
-          let _wild798 =
+          let _wild1 =
             inherent#Ref#Ref[i32]#set(
-              total/3,
-              (inherent#Ref#Ref[i32]#get(total/3) + inherent#Ref#Ref[i32]#get(i/2))
+              total/0,
+              (inherent#Ref#Ref[i32]#get(total/0) + inherent#Ref#Ref[i32]#get(i/0))
             ) in
-          let _wild799 = inherent#Ref#Ref[i32]#set(i/2, (inherent#Ref#Ref[i32]#get(i/2) + 1)) in
+          let _wild2 = inherent#Ref#Ref[i32]#set(i/0, (inherent#Ref#Ref[i32]#get(i/0) + 1)) in
         }
     } in
-  Option::Some(inherent#Ref#Ref[i32]#get(total/3))
+  Option::Some(inherent#Ref#Ref[i32]#get(total/0))
 }
 
 fn run_none() -> Option[i32] {
-  let i/4 = inherent#Ref#Ref[i32]#new(0) in
-  let total/5 = inherent#Ref#Ref[i32]#new(0) in
-  let _wild805 =
+  let i/0 = inherent#Ref#Ref[i32]#new(0) in
+  let total/0 = inherent#Ref#Ref[i32]#new(0) in
+  let _wild0 =
     while {
-      let mtmp801 = step_none(inherent#Ref#Ref[i32]#get(i/4)) in
-      match mtmp801 {
+      let mtmp0 = step_none(inherent#Ref#Ref[i32]#get(i/0)) in
+      match mtmp0 {
         Option::None => {
           return Option::None
         },
-        Option::Some(x802) => {
+        Option::Some(x0) => {
           {
-            let x802 = Option::Some._0(mtmp801) in
+            let x0 = Option::Some._0(mtmp0) in
             {
-              let try_value/67 = x802 in
-              try_value/67
+              let try_value/0 = x0 in
+              try_value/0
             }
           }
         },
       }
     } {
         {
-          let _wild803 =
+          let _wild1 =
             inherent#Ref#Ref[i32]#set(
-              total/5,
-              (inherent#Ref#Ref[i32]#get(total/5) + inherent#Ref#Ref[i32]#get(i/4))
+              total/0,
+              (inherent#Ref#Ref[i32]#get(total/0) + inherent#Ref#Ref[i32]#get(i/0))
             ) in
-          let _wild804 = inherent#Ref#Ref[i32]#set(i/4, (inherent#Ref#Ref[i32]#get(i/4) + 1)) in
+          let _wild2 = inherent#Ref#Ref[i32]#set(i/0, (inherent#Ref#Ref[i32]#get(i/0) + 1)) in
         }
     } in
-  Option::Some(inherent#Ref#Ref[i32]#get(total/5))
+  Option::Some(inherent#Ref#Ref[i32]#get(total/0))
 }
 
-fn show(x/6: Option[i32]) -> string {
-  match x/6 {
+fn show(x/0: Option[i32]) -> string {
+  match x/0 {
     Option::None => {
       "none"
     },
-    Option::Some(x806) => {
+    Option::Some(x0) => {
       {
-        let x806 = Option::Some._0(x/6) in
+        let x0 = Option::Some._0(x/0) in
         {
-          let v/7 = x806 in
-          ("some=" + inherent#i32#i32#to_string(v/7))
+          let v/0 = x0 in
+          ("some=" + inherent#i32#i32#to_string(v/0))
         }
       }
     },
@@ -3330,6 +3295,6 @@ fn show(x/6: Option[i32]) -> string {
 }
 
 fn main() -> unit {
-  let _wild807 = println(show(run_some())) in
-  let _wild808 = println(show(run_none())) in
+  let _wild0 = println(show(run_some())) in
+  let _wild1 = println(show(run_none())) in
 }

@@ -1,20 +1,20 @@
 fn bounce_int(shape/0: Shape__i32) -> Shape__i32 {
   match shape/0 {
-    Shape__i32::Dot(x796) => {
+    Shape__i32::Dot(x0) => {
       {
-        let x796 = Shape__i32::Dot._0(shape/0) in
+        let x0 = Shape__i32::Dot._0(shape/0) in
         {
-          let point/1 = x796 in
-          Shape__i32::Dot(point/1)
+          let point/0 = x0 in
+          Shape__i32::Dot(point/0)
         }
       }
     },
-    Shape__i32::Wrapped(x797) => {
+    Shape__i32::Wrapped(x1) => {
       {
-        let x797 = Shape__i32::Wrapped._0(shape/0) in
+        let x1 = Shape__i32::Wrapped._0(shape/0) in
         {
-          let inner/2 = x797 in
-          Shape__i32::Wrapped(inner/2)
+          let inner/0 = x1 in
+          Shape__i32::Wrapped(inner/0)
         }
       }
     },
@@ -24,92 +24,91 @@ fn bounce_int(shape/0: Shape__i32) -> Shape__i32 {
   }
 }
 
-fn wrap_unit(value/3: Wrapper__unit) -> Shape__unit {
-  Shape__unit::Wrapped(value/3)
+fn wrap_unit(value/0: Wrapper__unit) -> Shape__unit {
+  Shape__unit::Wrapped(value/0)
 }
 
-fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper__i32) -> Shape__i32 {
-  match flag/4 {
+fn pick(flag/0: bool, point/0: Point, wrapper/0: Wrapper__i32) -> Shape__i32 {
+  match flag/0 {
     true => {
-      Shape__i32::Dot(point/5)
+      Shape__i32::Dot(point/0)
     },
     false => {
-      Shape__i32::Wrapped(wrapper/6)
+      Shape__i32::Wrapped(wrapper/0)
     },
   }
 }
 
-fn point32_to_string(point/8: Point) -> string {
-  let mtmp800 = point/8 in
+fn point32_to_string(point/0: Point) -> string {
+  let mtmp0 = point/0 in
   {
-    let x801 = Point.x(mtmp800) in
-    let x802 = Point.y(mtmp800) in
+    let x0 = Point.x(mtmp0) in
+    let x1 = Point.y(mtmp0) in
     {
-      let y/10 = x802 in
+      let y/0 = x1 in
       {
-        let x/9 = x801 in
+        let x/0 = x0 in
         {
-          let with_x/11 = ("Point { x: " + inherent#i32#i32#to_string(x/9)) in
-          let with_y_label/12 = (with_x/11 + ", y: ") in
-          let with_y/13 = (with_y_label/12 + inherent#i32#i32#to_string(y/10)) in
-          (with_y/13 + " }")
+          let with_x/0 = ("Point { x: " + inherent#i32#i32#to_string(x/0)) in
+          let with_y_label/0 = (with_x/0 + ", y: ") in
+          let with_y/0 = (with_y_label/0 + inherent#i32#i32#to_string(y/0)) in
+          (with_y/0 + " }")
         }
       }
     }
   }
 }
 
-fn wrapper_int32_to_string(wrapper/14: Wrapper__i32) -> string {
-  let mtmp803 = wrapper/14 in
+fn wrapper_int32_to_string(wrapper/0: Wrapper__i32) -> string {
+  let mtmp0 = wrapper/0 in
   {
-    let x804 = Wrapper__i32.value(mtmp803) in
+    let x0 = Wrapper__i32.value(mtmp0) in
     {
-      let value/15 = x804 in
+      let value/0 = x0 in
       {
-        let prefix/16 = ("Wrapper[i32] { value: " + inherent#i32#i32#to_string(value/15)) in
-        (prefix/16 + " }")
+        let prefix/0 = ("Wrapper[i32] { value: " + inherent#i32#i32#to_string(value/0)) in
+        (prefix/0 + " }")
       }
     }
   }
 }
 
-fn wrapper_unit_to_string(wrapper/17: Wrapper__unit) -> string {
-  let mtmp805 = wrapper/17 in
+fn wrapper_unit_to_string(wrapper/0: Wrapper__unit) -> string {
+  let mtmp0 = wrapper/0 in
   {
-    let x806 = Wrapper__unit.value(mtmp805) in
+    let x0 = Wrapper__unit.value(mtmp0) in
     {
-      let value/18 = x806 in
+      let value/0 = x0 in
       {
-        let prefix/19 =
-          ("Wrapper[unit] { value: " + trait_impl#ToString#unit#to_string(value/18)) in
-        (prefix/19 + " }")
+        let prefix/0 = ("Wrapper[unit] { value: " + trait_impl#ToString#unit#to_string(value/0)) in
+        (prefix/0 + " }")
       }
     }
   }
 }
 
-fn shape_int32_to_string(shape/20: Shape__i32) -> string {
-  match shape/20 {
-    Shape__i32::Dot(x807) => {
+fn shape_int32_to_string(shape/0: Shape__i32) -> string {
+  match shape/0 {
+    Shape__i32::Dot(x0) => {
       {
-        let x807 = Shape__i32::Dot._0(shape/20) in
+        let x0 = Shape__i32::Dot._0(shape/0) in
         {
-          let point/21 = x807 in
+          let point/0 = x0 in
           {
-            let prefix/22 = ("Shape::Dot(" + point32_to_string(point/21)) in
-            (prefix/22 + ")")
+            let prefix/0 = ("Shape::Dot(" + point32_to_string(point/0)) in
+            (prefix/0 + ")")
           }
         }
       }
     },
-    Shape__i32::Wrapped(x808) => {
+    Shape__i32::Wrapped(x1) => {
       {
-        let x808 = Shape__i32::Wrapped._0(shape/20) in
+        let x1 = Shape__i32::Wrapped._0(shape/0) in
         {
-          let wrapper/23 = x808 in
+          let wrapper/0 = x1 in
           {
-            let prefix/24 = ("Shape::Wrapped(" + wrapper_int32_to_string(wrapper/23)) in
-            (prefix/24 + ")")
+            let prefix/1 = ("Shape::Wrapped(" + wrapper_int32_to_string(wrapper/0)) in
+            (prefix/1 + ")")
           }
         }
       }
@@ -120,28 +119,28 @@ fn shape_int32_to_string(shape/20: Shape__i32) -> string {
   }
 }
 
-fn shape_unit_to_string(shape/25: Shape__unit) -> string {
-  match shape/25 {
-    Shape__unit::Dot(x809) => {
+fn shape_unit_to_string(shape/0: Shape__unit) -> string {
+  match shape/0 {
+    Shape__unit::Dot(x0) => {
       {
-        let x809 = Shape__unit::Dot._0(shape/25) in
+        let x0 = Shape__unit::Dot._0(shape/0) in
         {
-          let point/26 = x809 in
+          let point/0 = x0 in
           {
-            let prefix/27 = ("Shape::Dot(" + point32_to_string(point/26)) in
-            (prefix/27 + ")")
+            let prefix/0 = ("Shape::Dot(" + point32_to_string(point/0)) in
+            (prefix/0 + ")")
           }
         }
       }
     },
-    Shape__unit::Wrapped(x810) => {
+    Shape__unit::Wrapped(x1) => {
       {
-        let x810 = Shape__unit::Wrapped._0(shape/25) in
+        let x1 = Shape__unit::Wrapped._0(shape/0) in
         {
-          let wrapper/28 = x810 in
+          let wrapper/0 = x1 in
           {
-            let prefix/29 = ("Shape::Wrapped(" + wrapper_unit_to_string(wrapper/28)) in
-            (prefix/29 + ")")
+            let prefix/1 = ("Shape::Wrapped(" + wrapper_unit_to_string(wrapper/0)) in
+            (prefix/1 + ")")
           }
         }
       }
@@ -153,34 +152,34 @@ fn shape_unit_to_string(shape/25: Shape__unit) -> string {
 }
 
 fn main() -> unit {
-  let mtmp811 = println__T_string(point32_to_string(Point { x: 3, y: 4 })) in
+  let mtmp0 = println__T_string(point32_to_string(Point { x: 3, y: 4 })) in
   {
-    let mtmp812 = println__T_string(wrapper_int32_to_string(Wrapper__i32 { value: 7 })) in
+    let mtmp1 = println__T_string(wrapper_int32_to_string(Wrapper__i32 { value: 7 })) in
     {
-      let mtmp813 = println__T_string(wrapper_unit_to_string(Wrapper__unit { value: () })) in
+      let mtmp2 = println__T_string(wrapper_unit_to_string(Wrapper__unit { value: () })) in
       {
-        let bounced_origin/30 = bounce_int(Shape__i32::Origin) in
-        let mtmp814 =
+        let bounced_origin/0 = bounce_int(Shape__i32::Origin) in
+        let mtmp3 =
           println__T_string(shape_int32_to_string(Shape__i32::Dot(Point { x: 3, y: 4 }))) in
         {
-          let mtmp815 =
+          let mtmp4 =
             println__T_string(
               shape_int32_to_string(Shape__i32::Wrapped(Wrapper__i32 { value: 7 }))
             ) in
           {
-            let mtmp816 = println__T_string(shape_int32_to_string(bounced_origin/30)) in
+            let mtmp5 = println__T_string(shape_int32_to_string(bounced_origin/0)) in
             {
-              let mtmp817 =
+              let mtmp6 =
                 println__T_string(shape_unit_to_string(Shape__unit::Dot(Point { x: 3, y: 4 }))) in
               {
-                let mtmp818 =
+                let mtmp7 =
                   println__T_string(
                     shape_unit_to_string(Shape__unit::Wrapped(Wrapper__unit { value: () }))
                   ) in
                 {
-                  let mtmp819 = println__T_string(shape_unit_to_string(Shape__unit::Origin)) in
+                  let mtmp8 = println__T_string(shape_unit_to_string(Shape__unit::Origin)) in
                   {
-                    let mtmp820 = describe__T_i32(bounce_int(Shape__i32::Origin)) in
+                    let mtmp9 = describe__T_i0(bounce_int(Shape__i32::Origin)) in
                     {
                       println__T_string("struct enums!")
                     }
@@ -195,26 +194,26 @@ fn main() -> unit {
   }
 }
 
-fn inherent#i32#i32#to_string(self/286: i32) -> string {
-  __goml_builtin_int32_to_string(self/286)
+fn inherent#i32#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn trait_impl#ToString#unit#to_string(self/400: unit) -> string {
-  @runtime(core.unit_to_string)(self/400)
+fn trait_impl#ToString#unit#to_string(self/0: unit) -> string {
+  @runtime(core.unit_to_string)(self/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn describe__T_i32(shape/7: Shape__i32) -> i32 {
-  match shape/7 {
-    Shape__i32::Dot(x798) => {
+fn describe__T_i32(shape/0: Shape__i32) -> i32 {
+  match shape/0 {
+    Shape__i32::Dot(x0) => {
       {
         1
       }
     },
-    Shape__i32::Wrapped(x799) => {
+    Shape__i32::Wrapped(x1) => {
       {
         2
       }
@@ -225,29 +224,29 @@ fn describe__T_i32(shape/7: Shape__i32) -> i32 {
   }
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -256,58 +255,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

@@ -1,163 +1,163 @@
 fn main() -> unit {
   let minimum/0 = (-9223372036854775807 - 1) in
-  let maximum/1 = 9223372036854775807 in
-  let unsigned/2 = 18446744073709551615 in
-  let _wild796 = println__T_i64(minimum/0) in
-  let _wild797 = println__T_i64(maximum/1) in
-  let _wild798 = println__T_u64(unsigned/2) in
+  let maximum/0 = 9223372036854775807 in
+  let unsigned/0 = 18446744073709551615 in
+  let _wild0 = println__T_i0(minimum/0) in
+  let _wild1 = println__T_i0(maximum/0) in
+  let _wild2 = println__T_u0(unsigned/0) in
   println__T_string(string_concat(@intrinsic(vec.from_array)(["go", "ml", "!"])))
 }
 
-fn println__T_i64(value/1: i64) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#i64#to_string(value/1))
+fn println__T_i64(value/0: i64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i64#to_string(value/0))
 }
 
-fn println__T_u64(value/1: u64) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/1))
+fn println__T_u64(value/0: u64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/0))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn string_concat(values/242: Vec[string]) -> string {
-  __goml_builtin_string_concat(values/242)
+fn string_concat(values/0: Vec[string]) -> string {
+  __goml_builtin_string_concat(values/0)
 }
 
-fn trait_impl#ToString#i64#to_string(self/408: i64) -> string {
-  __goml_builtin_int64_to_string(self/408)
+fn trait_impl#ToString#i64#to_string(self/0: i64) -> string {
+  __goml_builtin_int64_to_string(self/0)
 }
 
-fn trait_impl#ToString#u64#to_string(self/412: u64) -> string {
-  __goml_builtin_uint64_to_string(self/412)
+fn trait_impl#ToString#u64#to_string(self/0: u64) -> string {
+  __goml_builtin_uint64_to_string(self/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn __goml_builtin_string_concat(values/215: Vec[string]) -> string {
-  let length/216 = 0 in
-  let value_index/217 = 0 in
-  let _wild371 =
-    while (value_index/217 < inherent#Vec#Vec[T]#len__T_string(values/215)) {
-        let _wild367 =
-          let compound_old365 = length/216 in
-          let compound_value366 =
-            inherent#string#string#byte_len(@intrinsic(vec.get)(values/215, value_index/217)) in
-          length/216 = (compound_old365 + compound_value366) in
-        let _wild370 =
-          let compound_old368 = value_index/217 in
-          let compound_value369 = 1 in
-          value_index/217 = (compound_old368 + compound_value369) in
+fn __goml_builtin_string_concat(values/0: Vec[string]) -> string {
+  let length/0 = 0 in
+  let value_index/0 = 0 in
+  let _wild0 =
+    while (value_index/0 < inherent#Vec#Vec[T]#len__T_string(values/0)) {
+        let _wild1 =
+          let compound_old0 = length/0 in
+          let compound_value0 =
+            inherent#string#string#byte_len(@intrinsic(vec.get)(values/0, value_index/0)) in
+          length/0 = (compound_old0 + compound_value0) in
+        let _wild2 =
+          let compound_old1 = value_index/0 in
+          let compound_value1 = 1 in
+          value_index/0 = (compound_old1 + compound_value1) in
         ()
     } in
-  let bytes/218 = @intrinsic(vec.with_capacity)(length/216) in
-  let _wild372 = value_index/217 = 0 in
-  let _wild381 =
-    while (value_index/217 < inherent#Vec#Vec[T]#len__T_string(values/215)) {
-        let value/219 = @intrinsic(vec.get)(values/215, value_index/217) in
-        let byte_index/220 = 0 in
-        let _wild377 =
-          while (byte_index/220 < inherent#string#string#byte_len(value/219)) {
-              let _wild373 =
-                inherent#Vec#Vec[T]#push__T_u8(
-                  bytes/218,
-                  inherent#string#string#byte_get(value/219, byte_index/220)
+  let bytes/0 = @intrinsic(vec.with_capacity)(length/0) in
+  let _wild3 = value_index/0 = 0 in
+  let _wild4 =
+    while (value_index/0 < inherent#Vec#Vec[T]#len__T_string(values/0)) {
+        let value/0 = @intrinsic(vec.get)(values/0, value_index/0) in
+        let byte_index/0 = 0 in
+        let _wild5 =
+          while (byte_index/0 < inherent#string#string#byte_len(value/0)) {
+              let _wild6 =
+                inherent#Vec#Vec[T]#push__T_u0(
+                  bytes/0,
+                  inherent#string#string#byte_get(value/0, byte_index/0)
                 ) in
-              let _wild376 =
-                let compound_old374 = byte_index/220 in
-                let compound_value375 = 1 in
-                byte_index/220 = (compound_old374 + compound_value375) in
+              let _wild7 =
+                let compound_old2 = byte_index/0 in
+                let compound_value2 = 1 in
+                byte_index/0 = (compound_old2 + compound_value2) in
               ()
           } in
-        let _wild380 =
-          let compound_old378 = value_index/217 in
-          let compound_value379 = 1 in
-          value_index/217 = (compound_old378 + compound_value379) in
+        let _wild8 =
+          let compound_old3 = value_index/0 in
+          let compound_value3 = 1 in
+          value_index/0 = (compound_old3 + compound_value3) in
         ()
     } in
-  let mtmp382 = @runtime(core.string_from_utf8)(bytes/218) in
-  let x384 = mtmp382.1 in
-  let result/221 = x384 in
-  result/221
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let result/0 = x0 in
+  result/0
 }
 
-fn __goml_builtin_int64_to_string(value/226: i64) -> string {
-  signed_decimal_string(value/226)
+fn __goml_builtin_int64_to_string(value/0: i64) -> string {
+  signed_decimal_string(value/0)
 }
 
-fn __goml_builtin_uint64_to_string(value/231: u64) -> string {
-  decimal_string(value/231)
+fn __goml_builtin_uint64_to_string(value/0: u64) -> string {
+  decimal_string(value/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/526: Vec[string]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_string(self/0: Vec[string]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
-fn inherent#string#string#byte_len(self/289: string) -> isize {
-  @runtime(core.string_len)(self/289)
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
 }
 
-fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
-  @runtime(core.string_byte_get)(self/292, index/293)
+fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
+  @runtime(core.string_byte_get)(self/0, index/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
-      ("-" + decimal_string((0 - (value/214 as u64))))
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      ("-" + decimal_string((0 - (value/0 as u64))))
   } else {
-      decimal_string((value/214 as u64))
+      decimal_string((value/0 as u64))
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         return "0"
     } else {
         ()
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
-        let _wild352 =
-          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-        let _wild355 =
-          let compound_old353 = remaining/210 in
-          let compound_value354 = 10 in
-          remaining/210 = (compound_old353 / compound_value354) in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        let _wild2 =
+          inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+        let _wild3 =
+          let compound_old0 = remaining/0 in
+          let compound_value0 = 10 in
+          remaining/0 = (compound_old0 / compound_value0) in
         ()
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
-        let _wild357 =
-          inherent#Vec#Vec[T]#push__T_u8(
-            bytes/211,
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        let _wild5 =
+          inherent#Vec#Vec[T]#push__T_u0(
+            bytes/0,
             @intrinsic(vec.get)(
-              reversed/209,
-              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              reversed/0,
+              ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
             )
           ) in
-        let _wild360 =
-          let compound_old358 = offset/212 in
-          let compound_value359 = 1 in
-          offset/212 = (compound_old358 + compound_value359) in
+        let _wild6 =
+          let compound_old1 = offset/0 in
+          let compound_value1 = 1 in
+          offset/0 = (compound_old1 + compound_value1) in
         ()
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-  let x364 = mtmp362.1 in
-  let result/213 = x364 in
-  result/213
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let result/0 = x0 in
+  result/0
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

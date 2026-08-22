@@ -1,373 +1,370 @@
-fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[isize]) -> Channel[isize] {
-  join inline_cont919(t809: string) -> Channel[isize] {
-    let t810 = (t809 + mark/1) in
-    let inline918 = @intrinsic(ref.set)(log/0, t810) in
-    channel/2
+fn mark_channel(log/0: Ref[string], mark/0: string, channel/0: Channel[isize]) -> Channel[isize] {
+  join inline_cont0(t0: string) -> Channel[isize] {
+    let t1 = (t0 + mark/0) in
+    let inline0 = @intrinsic(ref.set)(log/0, t1) in
+    channel/0
   } in
-  let inline920 = @intrinsic(ref.get)(log/0) in
-  jump inline_cont919(inline920)
+  let inline1 = @intrinsic(ref.get)(log/0) in
+  jump inline_cont0(inline1)
 }
 
-fn mark_value(log/3: Ref[string], mark/4: string, value/5: isize) -> isize {
-  join inline_cont923(t813: string) -> isize {
-    let t814 = (t813 + mark/4) in
-    let inline922 = @intrinsic(ref.set)(log/3, t814) in
-    value/5
+fn mark_value(log/0: Ref[string], mark/0: string, value/0: isize) -> isize {
+  join inline_cont0(t0: string) -> isize {
+    let t1 = (t0 + mark/0) in
+    let inline0 = @intrinsic(ref.set)(log/0, t1) in
+    value/0
   } in
-  let inline924 = @intrinsic(ref.get)(log/3) in
-  jump inline_cont923(inline924)
+  let inline1 = @intrinsic(ref.get)(log/0) in
+  jump inline_cont0(inline1)
 }
 
-fn mark_guard(log/6: Ref[string], mark/7: string, value/8: bool) -> bool {
-  join inline_cont927(t817: string) -> bool {
-    let t818 = (t817 + mark/7) in
-    let inline926 = @intrinsic(ref.set)(log/6, t818) in
-    value/8
+fn mark_guard(log/0: Ref[string], mark/0: string, value/0: bool) -> bool {
+  join inline_cont0(t0: string) -> bool {
+    let t1 = (t0 + mark/0) in
+    let inline0 = @intrinsic(ref.set)(log/0, t1) in
+    value/0
   } in
-  let inline928 = @intrinsic(ref.get)(log/6) in
-  jump inline_cont927(inline928)
+  let inline1 = @intrinsic(ref.get)(log/0) in
+  jump inline_cont0(inline1)
 }
 
 fn main() -> unit {
-  let log/9 = inherent#Ref#Ref[T]#new__T_string("") in
-  let disabled/10 = inherent#Channel#Channel[T]#new__T_isize(1) in
-  let _wild799 = inherent#Channel#Channel[T]#close__T_isize(disabled/10) in
-  join inline_cont981(t835: Channel[isize]) -> unit {
-    join inline_cont975(t836: isize) -> unit {
-      join inline_cont969(t837: bool) -> unit {
-        join k820(jp821: string) -> unit {
-          join inline_cont967(t822: string) -> unit {
-            join inline_cont964(_wild800: unit) -> unit {
-              join inline_cont961(_wild801: unit) -> unit {
-                join inline_cont958(first/12: Channel[isize]) -> unit {
-                  join inline_cont955(second/13: Channel[isize]) -> unit {
-                    join inline_cont952(_wild802: unit) -> unit {
-                      join inline_cont949(_wild803: unit) -> unit {
-                        join k823(jp824: isize) -> unit {
-                          join inline_cont946(_wild804: unit) -> unit {
-                            join inline_cont943(events/17: Channel[isize]) -> unit {
-                              join inline_cont940(_wild805: unit) -> unit {
-                                let t828 = (1 + 1) in
-                                let t829 = (t828 == 2) in
-                                join k825(jp826: isize) -> unit {
-                                  let inline938 = trait_impl#ToString#isize#to_string(jp826) in
-                                  let inline939 = @runtime(core.string_println)(inline938) in
+  let log/0 = inherent#Ref#Ref[T]#new__T_string("") in
+  let disabled/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let _wild0 = inherent#Channel#Channel[T]#close__T_isize(disabled/0) in
+  join inline_cont0(t0: Channel[isize]) -> unit {
+    join inline_cont1(t1: isize) -> unit {
+      join inline_cont2(t2: bool) -> unit {
+        join k0(jp0: string) -> unit {
+          join inline_cont3(t3: string) -> unit {
+            join inline_cont4(_wild1: unit) -> unit {
+              join inline_cont5(_wild2: unit) -> unit {
+                join inline_cont6(first/0: Channel[isize]) -> unit {
+                  join inline_cont7(second/0: Channel[isize]) -> unit {
+                    join inline_cont8(_wild3: unit) -> unit {
+                      join inline_cont9(_wild4: unit) -> unit {
+                        join k1(jp1: isize) -> unit {
+                          join inline_cont10(_wild5: unit) -> unit {
+                            join inline_cont11(events/0: Channel[isize]) -> unit {
+                              join inline_cont12(_wild6: unit) -> unit {
+                                let t4 = (1 + 1) in
+                                let t5 = (t4 == 2) in
+                                join k2(jp2: isize) -> unit {
+                                  let inline0 = trait_impl#ToString#isize#to_string(jp2) in
+                                  let inline1 = @runtime(core.string_println)(inline0) in
                                   ()
                                 } in
                                 select {
-                                  recv(events/17) when t829 as $select_recv_1186/18 => {
-                                    match $select_recv_1186/18 {
+                                  recv(events/0) when t5 as $select_recv_1186/0 => {
+                                    match $select_recv_1186/0 {
                                       Tag_0 => {
-                                        jump k825(0)
+                                        jump k2(0)
                                       },
                                       Tag_1 => {
-                                        let x806 = Option__isize::Some._0($select_recv_1186/18) in
-                                        let t832 = (x806 + 1) in
-                                        jump k825(t832)
+                                        let x0 = Option__isize::Some._0($select_recv_1186/0) in
+                                        let t6 = (x0 + 1) in
+                                        jump k2(t6)
                                       },
                                     }
                                   },
                                   default => {
-                                    jump k825(-1)
+                                    jump k2(-1)
                                   },
                                 }
                               } in
-                              let inline941 = 7 in
-                              let inline942 = @intrinsic(channel.send)(events/17, inline941) in
-                              jump inline_cont940(())
+                              let inline2 = 7 in
+                              let inline3 = @intrinsic(channel.send)(events/0, inline2) in
+                              jump inline_cont12(())
                             } in
-                            let inline944 = 1 in
-                            let inline945 = @intrinsic(channel.new)(inline944) in
-                            jump inline_cont943(inline945)
+                            let inline4 = 1 in
+                            let inline5 = @intrinsic(channel.new)(inline4) in
+                            jump inline_cont11(inline5)
                           } in
-                          let inline947 = trait_impl#ToString#isize#to_string(jp824) in
-                          let inline948 = @runtime(core.string_println)(inline947) in
-                          jump inline_cont946(())
+                          let inline6 = trait_impl#ToString#isize#to_string(jp1) in
+                          let inline7 = @runtime(core.string_println)(inline6) in
+                          jump inline_cont10(())
                         } in
                         select priority {
-                          recv(first/12) when true as value/14 => {
-                            let inline930 = -1 in
-                            match value/14 {
+                          recv(first/0) when true as value/0 => {
+                            let inline8 = -1 in
+                            match value/0 {
                               Tag_0 => {
-                                jump k823(inline930)
+                                jump k1(inline8)
                               },
                               Tag_1 => {
-                                let inline931 = Option__isize::Some._0(value/14) in
-                                jump k823(inline931)
+                                let inline9 = Option__isize::Some._0(value/0) in
+                                jump k1(inline9)
                               },
                             }
                           },
-                          recv(second/13) when true as value/15 => {
-                            let inline934 = -1 in
-                            match value/15 {
+                          recv(second/0) when true as value/1 => {
+                            let inline10 = -1 in
+                            match value/1 {
                               Tag_0 => {
-                                jump k823(inline934)
+                                jump k1(inline10)
                               },
                               Tag_1 => {
-                                let inline935 = Option__isize::Some._0(value/15) in
-                                jump k823(inline935)
+                                let inline11 = Option__isize::Some._0(value/1) in
+                                jump k1(inline11)
                               },
                             }
                           },
                           default => {
-                            jump k823(0)
+                            jump k1(0)
                           },
                         }
                       } in
-                      let inline950 = 20 in
-                      let inline951 = @intrinsic(channel.send)(second/13, inline950) in
-                      jump inline_cont949(())
+                      let inline12 = 20 in
+                      let inline13 = @intrinsic(channel.send)(second/0, inline12) in
+                      jump inline_cont9(())
                     } in
-                    let inline953 = 10 in
-                    let inline954 = @intrinsic(channel.send)(first/12, inline953) in
-                    jump inline_cont952(())
+                    let inline14 = 10 in
+                    let inline15 = @intrinsic(channel.send)(first/0, inline14) in
+                    jump inline_cont8(())
                   } in
-                  let inline956 = 1 in
-                  let inline957 = @intrinsic(channel.new)(inline956) in
-                  jump inline_cont955(inline957)
+                  let inline16 = 1 in
+                  let inline17 = @intrinsic(channel.new)(inline16) in
+                  jump inline_cont7(inline17)
                 } in
-                let inline959 = 1 in
-                let inline960 = @intrinsic(channel.new)(inline959) in
-                jump inline_cont958(inline960)
+                let inline18 = 1 in
+                let inline19 = @intrinsic(channel.new)(inline18) in
+                jump inline_cont6(inline19)
               } in
-              let inline962 = trait_impl#ToString#string#to_string(jp821) in
-              let inline963 = @runtime(core.string_println)(inline962) in
-              jump inline_cont961(())
+              let inline20 = trait_impl#ToString#string#to_string(jp0) in
+              let inline21 = @runtime(core.string_println)(inline20) in
+              jump inline_cont5(())
             } in
-            let inline965 = trait_impl#ToString#string#to_string(t822) in
-            let inline966 = @runtime(core.string_println)(inline965) in
-            jump inline_cont964(())
+            let inline22 = trait_impl#ToString#string#to_string(t3) in
+            let inline23 = @runtime(core.string_println)(inline22) in
+            jump inline_cont4(())
           } in
-          let inline968 = @intrinsic(ref.get)(log/9) in
-          jump inline_cont967(inline968)
+          let inline24 = @intrinsic(ref.get)(log/0) in
+          jump inline_cont3(inline24)
         } in
         select {
-          send(t835, t836) when t837 => {
-            jump k820("sent")
+          send(t0, t1) when t2 => {
+            jump k0("sent")
           },
           default => {
-            jump k820("default")
+            jump k0("default")
           },
         }
       } in
-      let inline970 = "g" in
-      let inline971 = false in
-      let inline972 = inherent#Ref#Ref[T]#get__T_string(log/9) in
-      let inline973 = (inline972 + inline970) in
-      let inline974 = inherent#Ref#Ref[T]#set__T_string(log/9, inline973) in
-      jump inline_cont969(inline971)
+      let inline25 = "g" in
+      let inline26 = false in
+      let inline27 = inherent#Ref#Ref[T]#get__T_string(log/0) in
+      let inline28 = (inline27 + inline25) in
+      let inline29 = inherent#Ref#Ref[T]#set__T_string(log/0, inline28) in
+      jump inline_cont2(inline26)
     } in
-    let inline976 = "v" in
-    let inline977 = 1 in
-    let inline978 = inherent#Ref#Ref[T]#get__T_string(log/9) in
-    let inline979 = (inline978 + inline976) in
-    let inline980 = inherent#Ref#Ref[T]#set__T_string(log/9, inline979) in
-    jump inline_cont975(inline977)
+    let inline30 = "v" in
+    let inline31 = 1 in
+    let inline32 = inherent#Ref#Ref[T]#get__T_string(log/0) in
+    let inline33 = (inline32 + inline30) in
+    let inline34 = inherent#Ref#Ref[T]#set__T_string(log/0, inline33) in
+    jump inline_cont1(inline31)
   } in
-  let inline982 = "c" in
-  let inline983 = inherent#Ref#Ref[T]#get__T_string(log/9) in
-  let inline984 = (inline983 + inline982) in
-  let inline985 = inherent#Ref#Ref[T]#set__T_string(log/9, inline984) in
-  jump inline_cont981(disabled/10)
+  let inline35 = "c" in
+  let inline36 = inherent#Ref#Ref[T]#get__T_string(log/0) in
+  let inline37 = (inline36 + inline35) in
+  let inline38 = inherent#Ref#Ref[T]#set__T_string(log/0, inline37) in
+  jump inline_cont0(disabled/0)
 }
 
-fn inherent#Ref#Ref[T]#get__T_string(self/685: Ref[string]) -> string {
-  let t840 = @intrinsic(ref.get)(self/685) in
-  t840
+fn inherent#Ref#Ref[T]#get__T_string(self/0: Ref[string]) -> string {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/686: Ref[string], value/687: string) -> unit {
-  let t842 = @intrinsic(ref.set)(self/686, value/687) in
+fn inherent#Ref#Ref[T]#set__T_string(self/0: Ref[string], value/0: string) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/684: string) -> Ref[string] {
-  let t845 = @intrinsic(ref.new)(value/684) in
-  t845
+fn inherent#Ref#Ref[T]#new__T_string(value/0: string) -> Ref[string] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
 }
 
-fn inherent#Channel#Channel[T]#new__T_isize(capacity/688: isize) -> Channel[isize] {
-  let t848 = @intrinsic(channel.new)(capacity/688) in
-  t848
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize] {
+  let t0 = @intrinsic(channel.new)(capacity/0) in
+  t0
 }
 
-fn inherent#Channel#Channel[T]#close__T_isize(self/694: Channel[isize]) -> unit {
-  let t850 = @intrinsic(channel.close)(self/694) in
+fn inherent#Channel#Channel[T]#close__T_isize(self/0: Channel[isize]) -> unit {
+  let t0 = @intrinsic(channel.close)(self/0) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont986(t852: string) -> unit {
-    let t853 = @runtime(core.string_println)(t852) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont986(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn inherent#Channel#Channel[T]#send__T_isize(self/689: Channel[isize], value/690: isize) -> unit {
-  let t855 = @intrinsic(channel.send)(self/689, value/690) in
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+  let t0 = @intrinsic(channel.send)(self/0, value/0) in
   ()
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_isize(
-  self/720: Option__isize,
-  fallback/721: isize
-) -> isize {
-  match self/720 {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/0: isize) -> isize {
+  match self/0 {
     Tag_0 => {
-      fallback/721
+      fallback/0
     },
     Tag_1 => {
-      let x775 = Option__isize::Some._0(self/720) in
-      x775
+      let x0 = Option__isize::Some._0(self/0) in
+      x0
     },
   }
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  join inline_cont987(t861: string) -> unit {
-    let t862 = @runtime(core.string_println)(t861) in
+fn println__T_isize(value/0: isize) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  let inline988 = __goml_builtin_int_to_string(value/1) in
-  jump inline_cont987(inline988)
+  let inline0 = __goml_builtin_int_to_string(value/0) in
+  jump inline_cont0(inline0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  let inline990 = (self/404 as i64) in
-  let inline991 = signed_decimal_string(inline990) in
-  inline991
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  let t870 = (value/222 as i64) in
-  let inline993 = (t870 < 0) in
-  if inline993 {
-    let inline994 = (t870 as u64) in
-    let inline995 = (0 - inline994) in
-    let inline996 = decimal_string(inline995) in
-    let inline997 = ("-" + inline996) in
-    inline997
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
   } else {
-    let inline998 = (t870 as u64) in
-    let inline999 = decimal_string(inline998) in
-    inline999
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
   }
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  let t876 = (value/214 < 0) in
-  if t876 {
-    let t877 = (value/214 as u64) in
-    let t878 = (0 - t877) in
-    let t879 = decimal_string(t878) in
-    let t880 = ("-" + t879) in
-    t880
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
   } else {
-    let t881 = (value/214 as u64) in
-    let t882 = decimal_string(t881) in
-    t882
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let t905 = (value/208 == 0) in
-  join k885() -> string {
-    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-    let remaining/210 = value/208 in
-    join exit886() -> string {
-      join inline_cont1008(t887: isize) -> string {
-        let bytes/211 = @intrinsic(vec.with_capacity)(t887) in
-        let offset/212 = 0 in
-        join exit888() -> string {
-          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-          let x364 = mtmp362.1 in
-          x364
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
         } in
         joinrec {
-          join loop889() -> string {
-            join inline_cont1006(t890: isize) -> string {
-              let t891 = (offset/212 < t890) in
-              if t891 {
-                join inline_cont1004(t892: isize) -> string {
-                  let t893 = (t892 - offset/212) in
-                  let t894 = (t893 - 1) in
-                  let t895 = @intrinsic(vec.get)(reversed/209, t894) in
-                  join inline_cont1002(_wild357: unit) -> string {
-                    let compound_old358 = offset/212 in
-                    let compound_value359 = 1 in
-                    let t896 = (compound_old358 + compound_value359) in
-                    let t897 = offset/212 = t896 in
-                    jump loop889()
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
                   } in
-                  let inline1003 = @intrinsic(vec.push)(bytes/211, t895) in
-                  jump inline_cont1002(())
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
                 } in
-                let inline1005 = @intrinsic(vec.len)(reversed/209) in
-                jump inline_cont1004(inline1005)
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
               } else {
-                jump exit888()
+                jump exit1()
               }
             } in
-            let inline1007 = @intrinsic(vec.len)(reversed/209) in
-            jump inline_cont1006(inline1007)
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
           } in
         } in
-        jump loop889()
+        jump loop1()
       } in
-      let inline1009 = @intrinsic(vec.len)(reversed/209) in
-      jump inline_cont1008(inline1009)
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
     } in
     joinrec {
-      join loop898() -> string {
-        let t899 = (remaining/210 > 0) in
-        if t899 {
-          let t900 = (remaining/210 % 10) in
-          let t901 = (t900 as u8) in
-          let t902 = (t901 + 48) in
-          join inline_cont1000(_wild352: unit) -> string {
-            let compound_old353 = remaining/210 in
-            let compound_value354 = 10 in
-            let t903 = (compound_old353 / compound_value354) in
-            let t904 = remaining/210 = t903 in
-            jump loop898()
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
           } in
-          let inline1001 = @intrinsic(vec.push)(reversed/209, t902) in
-          jump inline_cont1000(())
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
         } else {
-          jump exit886()
+          jump exit0()
         }
       } in
     } in
-    jump loop898()
+    jump loop0()
   } in
-  if t905 {
+  if t0 {
     "0"
   } else {
-    jump k885()
+    jump k0()
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  let t907 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  let t910 = @intrinsic(vec.len)(self/526) in
-  t910
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
-  let t913 = (self/434 == other/435) in
-  t913
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#string#hash(self/462: string) -> u64 {
-  let t916 = @runtime(core.string_hash)(self/462) in
-  t916
+fn trait_impl#Hash#string#hash(self/0: string) -> u64 {
+  let t0 = @runtime(core.string_hash)(self/0) in
+  t0
 }

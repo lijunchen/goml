@@ -1,56 +1,51 @@
 fn main() -> unit {
   let value/0 = "a你好z" in
-  let _wild796 = println__T_bool(inherent#string#string#starts_with(value/0, "a你")) in
-  let _wild797 = println__T_bool(inherent#string#string#starts_with(value/0, "你")) in
-  let _wild798 = println__T_bool(inherent#string#string#starts_with(value/0, "")) in
-  let _wild799 = println__T_bool(inherent#string#string#ends_with(value/0, "好z")) in
-  let _wild800 = println__T_bool(inherent#string#string#ends_with(value/0, "你好")) in
-  let _wild801 = println__T_bool(inherent#string#string#ends_with(value/0, "")) in
-  let _wild802 = println__T_bool(inherent#string#string#contains(value/0, "你好")) in
-  let _wild803 = println__T_bool(inherent#string#string#contains(value/0, "好z")) in
-  let _wild804 = println__T_bool(inherent#string#string#contains(value/0, "你z")) in
-  let _wild805 = println__T_bool(inherent#string#string#contains(value/0, "")) in
+  let _wild0 = println__T_bool(inherent#string#string#starts_with(value/0, "a你")) in
+  let _wild1 = println__T_bool(inherent#string#string#starts_with(value/0, "你")) in
+  let _wild2 = println__T_bool(inherent#string#string#starts_with(value/0, "")) in
+  let _wild3 = println__T_bool(inherent#string#string#ends_with(value/0, "好z")) in
+  let _wild4 = println__T_bool(inherent#string#string#ends_with(value/0, "你好")) in
+  let _wild5 = println__T_bool(inherent#string#string#ends_with(value/0, "")) in
+  let _wild6 = println__T_bool(inherent#string#string#contains(value/0, "你好")) in
+  let _wild7 = println__T_bool(inherent#string#string#contains(value/0, "好z")) in
+  let _wild8 = println__T_bool(inherent#string#string#contains(value/0, "你z")) in
+  let _wild9 = println__T_bool(inherent#string#string#contains(value/0, "")) in
   println__T_bool(inherent#string#string#contains(value/0, "a你好z!"))
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn inherent#string#string#starts_with(self/709: string, prefix/710: string) -> bool {
-  if if (inherent#string#string#byte_len(prefix/710) <= inherent#string#string#byte_len(self/709)) {
-      inherent#string#string#is_char_boundary(self/709, inherent#string#string#byte_len(prefix/710))
+fn inherent#string#string#starts_with(self/0: string, prefix/0: string) -> bool {
+  if if (inherent#string#string#byte_len(prefix/0) <= inherent#string#string#byte_len(self/0)) {
+      inherent#string#string#is_char_boundary(self/0, inherent#string#string#byte_len(prefix/0))
   } else {
       false
   } {
-      (inherent#string#string#byte_slice(
-        self/709,
-        0,
-        inherent#string#string#byte_len(prefix/710)
-      ) ==
-        prefix/710)
+      (inherent#string#string#byte_slice(self/0, 0, inherent#string#string#byte_len(prefix/0)) ==
+        prefix/0)
   } else {
       false
   }
 }
 
-fn inherent#string#string#ends_with(self/711: string, suffix/712: string) -> bool {
-  if (inherent#string#string#byte_len(suffix/712) > inherent#string#string#byte_len(self/711)) {
+fn inherent#string#string#ends_with(self/0: string, suffix/0: string) -> bool {
+  if (inherent#string#string#byte_len(suffix/0) > inherent#string#string#byte_len(self/0)) {
       {
         false
       }
   } else {
       {
-        let start/713 =
-          (inherent#string#string#byte_len(self/711) -
-            inherent#string#string#byte_len(suffix/712)) in
-        if inherent#string#string#is_char_boundary(self/711, start/713) {
+        let start/0 =
+          (inherent#string#string#byte_len(self/0) - inherent#string#string#byte_len(suffix/0)) in
+        if inherent#string#string#is_char_boundary(self/0, start/0) {
             (inherent#string#string#byte_slice(
-              self/711,
-              start/713,
-              inherent#string#string#byte_len(self/711)
+              self/0,
+              start/0,
+              inherent#string#string#byte_len(self/0)
             ) ==
-              suffix/712)
+              suffix/0)
         } else {
             false
         }
@@ -58,59 +53,51 @@ fn inherent#string#string#ends_with(self/711: string, suffix/712: string) -> boo
   }
 }
 
-fn inherent#string#string#contains(self/714: string, expected/715: string) -> bool {
-  if (inherent#string#string#byte_len(expected/715) == 0) {
+fn inherent#string#string#contains(self/0: string, expected/0: string) -> bool {
+  if (inherent#string#string#byte_len(expected/0) == 0) {
       {
         true
       }
   } else {
-      if (inherent#string#string#byte_len(expected/715) >
-        inherent#string#string#byte_len(self/714)) {
+      if (inherent#string#string#byte_len(expected/0) > inherent#string#string#byte_len(self/0)) {
           {
             false
           }
       } else {
           {
-            let _wild773 =
+            let _wild0 =
               {
-                let for_iter770 =
+                let for_iter0 =
                   trait_impl#IntoIterator#FnIterator__isize#into_iter(
                     __goml_builtin_range(
                       0,
-                      ((inherent#string#string#byte_len(self/714) -
-                        inherent#string#string#byte_len(expected/715)) +
+                      ((inherent#string#string#byte_len(self/0) -
+                        inherent#string#string#byte_len(expected/0)) +
                         1)
                     )
                   ) in
                 while true {
                     {
-                      let for_next771 = trait_impl#Iterator#FnIterator__isize#next(for_iter770) in
-                      match for_next771 {
+                      let for_next0 = trait_impl#Iterator#FnIterator__isize#next(for_iter0) in
+                      match for_next0 {
                         Option__isize::None => {
                           break
                         },
-                        Option__isize::Some(x772) => {
+                        Option__isize::Some(x0) => {
                           {
-                            let x772 = Option__isize::Some._0(for_next771) in
+                            let x0 = Option__isize::Some._0(for_next0) in
                             {
-                              let start/716 = x772 in
+                              let start/0 = x0 in
                               {
-                                let end/717 =
-                                  (start/716 + inherent#string#string#byte_len(expected/715)) in
-                                if if if inherent#string#string#is_char_boundary(
-                                  self/714,
-                                  start/716
-                                ) {
-                                    inherent#string#string#is_char_boundary(self/714, end/717)
+                                let end/0 =
+                                  (start/0 + inherent#string#string#byte_len(expected/0)) in
+                                if if if inherent#string#string#is_char_boundary(self/0, start/0) {
+                                    inherent#string#string#is_char_boundary(self/0, end/0)
                                 } else {
                                     false
                                 } {
-                                    (inherent#string#string#byte_slice(
-                                      self/714,
-                                      start/716,
-                                      end/717
-                                    ) ==
-                                      expected/715)
+                                    (inherent#string#string#byte_slice(self/0, start/0, end/0) ==
+                                      expected/0)
                                 } else {
                                     false
                                 } {
@@ -136,31 +123,31 @@ fn inherent#string#string#contains(self/714: string, expected/715: string) -> bo
   }
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn inherent#string#string#byte_len(self/289: string) -> isize {
-  @runtime(core.string_len)(self/289)
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
 }
 
-fn inherent#string#string#is_char_boundary(self/297: string, index/298: isize) -> bool {
-  string_is_char_boundary(self/297, index/298)
+fn inherent#string#string#is_char_boundary(self/0: string, index/0: isize) -> bool {
+  string_is_char_boundary(self/0, index/0)
 }
 
-fn inherent#string#string#byte_slice(self/294: string, start/295: isize, end/296: isize) -> string {
-  string_byte_slice(self/294, start/295, end/296)
+fn inherent#string#string#byte_slice(self/0: string, start/0: isize, end/0: isize) -> string {
+  string_byte_slice(self/0, start/0, end/0)
 }
 
-fn __goml_builtin_range(start/756: isize, end/757: isize) -> FnIterator__isize {
-  let current/758 = @intrinsic(ref.new)(start/756) in
+fn __goml_builtin_range(start/0: isize, end/0: isize) -> FnIterator__isize {
+  let current/0 = @intrinsic(ref.new)(start/0) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
     || {
-      let value/759 = @intrinsic(ref.get)(current/758) in
-      if (value/759 < end/757) {
+      let value/0 = @intrinsic(ref.get)(current/0) in
+      if (value/0 < end/0) {
           {
-            let _wild792 = @intrinsic(ref.set)(current/758, (value/759 + 1)) in
-            Option__isize::Some(value/759)
+            let _wild0 = @intrinsic(ref.set)(current/0, (value/0 + 1)) in
+            Option__isize::Some(value/0)
           }
       } else {
           {
@@ -172,67 +159,67 @@ fn __goml_builtin_range(start/756: isize, end/757: isize) -> FnIterator__isize {
 }
 
 fn trait_impl#IntoIterator#FnIterator__isize#into_iter(
-  self/509: FnIterator__isize
+  self/0: FnIterator__isize
 ) -> FnIterator__isize {
-  self/509
+  self/0
 }
 
-fn trait_impl#Iterator#FnIterator__isize#next(self/508: FnIterator__isize) -> Option__isize {
-  FnIterator__isize.next_fn(self/508)()
+fn trait_impl#Iterator#FnIterator__isize#next(self/0: FnIterator__isize) -> Option__isize {
+  FnIterator__isize.next_fn(self/0)()
 }
 
-fn string_is_char_boundary(value/268: string, index/269: isize) -> bool {
-  if if (index/269 < 0) {
+fn string_is_char_boundary(value/0: string, index/0: isize) -> bool {
+  if if (index/0 < 0) {
       true
   } else {
-      (index/269 > inherent#string#string#byte_len(value/268))
+      (index/0 > inherent#string#string#byte_len(value/0))
   } {
       {
         false
       }
   } else {
-      if (index/269 == inherent#string#string#byte_len(value/268)) {
+      if (index/0 == inherent#string#string#byte_len(value/0)) {
           {
             true
           }
       } else {
           {
-            ((inherent#string#string#byte_get(value/268, index/269) & 192) != 128)
+            ((inherent#string#string#byte_get(value/0, index/0) & 192) != 128)
           }
       }
   }
 }
 
-fn string_byte_slice(value/274: string, start/275: isize, end/276: isize) -> string {
-  if if string_is_char_boundary(value/274, start/275) {
-      string_is_char_boundary(value/274, end/276)
+fn string_byte_slice(value/0: string, start/0: isize, end/0: isize) -> string {
+  if if string_is_char_boundary(value/0, start/0) {
+      string_is_char_boundary(value/0, end/0)
   } else {
       false
   } {
       {
-        @runtime(core.string_byte_slice)(value/274, start/275, end/276)
+        @runtime(core.string_byte_slice)(value/0, start/0, end/0)
       }
   } else {
       {
-        @runtime(core.string_byte_slice)(value/274, -1, -1)
+        @runtime(core.string_byte_slice)(value/0, -1, -1)
       }
   }
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
-  next_fn/507: () -> Option__isize
+  next_fn/0: () -> Option__isize
 ) -> FnIterator__isize {
-  FnIterator__isize { next_fn: next_fn/507 }
+  FnIterator__isize { next_fn: next_fn/0 }
 }
 
-fn inherent#string#string#byte_get(self/292: string, index/293: isize) -> u8 {
-  @runtime(core.string_byte_get)(self/292, index/293)
+fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
+  @runtime(core.string_byte_get)(self/0, index/0)
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  (self/438 == other/439)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  @runtime(core.int_hash)(self/464)
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
 }

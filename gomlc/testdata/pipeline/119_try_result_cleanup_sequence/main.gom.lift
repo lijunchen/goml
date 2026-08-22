@@ -6,73 +6,73 @@ fn open_handle(ok/0: bool) -> Result__Handle__string {
   }
 }
 
-fn close_handle(handle/1: Handle, ok/2: bool) -> Result__unit__string {
-  if ok/2 {
+fn close_handle(handle/0: Handle, ok/0: bool) -> Result__unit__string {
+  if ok/0 {
       Result__unit__string::Ok(())
   } else {
-      Result__unit__string::Err(("close failed for " + Handle.name(handle/1)))
+      Result__unit__string::Err(("close failed for " + Handle.name(handle/0)))
   }
 }
 
-fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result__string__string {
-  let handle/5 =
-    let mtmp796 = open_handle(open_ok/3) in
-    match mtmp796 {
-      Result__Handle__string::Ok(x797) => {
-        let x797 = Result__Handle__string::Ok._0(mtmp796) in
-        let try_value/24 = x797 in
-        try_value/24
+fn use_handle(open_ok/0: bool, close_ok/0: bool) -> Result__string__string {
+  let handle/0 =
+    let mtmp0 = open_handle(open_ok/0) in
+    match mtmp0 {
+      Result__Handle__string::Ok(x0) => {
+        let x0 = Result__Handle__string::Ok._0(mtmp0) in
+        let try_value/0 = x0 in
+        try_value/0
       },
-      Result__Handle__string::Err(x798) => {
-        let x798 = Result__Handle__string::Err._0(mtmp796) in
-        let try_residual/24 = x798 in
-        return Result__string__string::Err(try_residual/24)
-      },
-    } in
-  let name/6 = Handle.name(handle/5) in
-  let _wild802 =
-    let mtmp799 = close_handle(handle/5, close_ok/4) in
-    match mtmp799 {
-      Result__unit__string::Ok(x800) => {
-        let x800 = Result__unit__string::Ok._0(mtmp799) in
-        let try_value/31 = x800 in
-        try_value/31
-      },
-      Result__unit__string::Err(x801) => {
-        let x801 = Result__unit__string::Err._0(mtmp799) in
-        let try_residual/31 = x801 in
-        return Result__string__string::Err(try_residual/31)
+      Result__Handle__string::Err(x1) => {
+        let x1 = Result__Handle__string::Err._0(mtmp0) in
+        let try_residual/0 = x1 in
+        return Result__string__string::Err(try_residual/0)
       },
     } in
-  Result__string__string::Ok(("closed " + name/6))
+  let name/0 = Handle.name(handle/0) in
+  let _wild0 =
+    let mtmp1 = close_handle(handle/0, close_ok/0) in
+    match mtmp1 {
+      Result__unit__string::Ok(x2) => {
+        let x2 = Result__unit__string::Ok._0(mtmp1) in
+        let try_value/1 = x2 in
+        try_value/1
+      },
+      Result__unit__string::Err(x3) => {
+        let x3 = Result__unit__string::Err._0(mtmp1) in
+        let try_residual/1 = x3 in
+        return Result__string__string::Err(try_residual/1)
+      },
+    } in
+  Result__string__string::Ok(("closed " + name/0))
 }
 
-fn show(res/7: Result__string__string) -> string {
-  match res/7 {
-    Result__string__string::Ok(x803) => {
-      let x803 = Result__string__string::Ok._0(res/7) in
-      let value/8 = x803 in
-      ("ok " + value/8)
+fn show(res/0: Result__string__string) -> string {
+  match res/0 {
+    Result__string__string::Ok(x0) => {
+      let x0 = Result__string__string::Ok._0(res/0) in
+      let value/0 = x0 in
+      ("ok " + value/0)
     },
-    Result__string__string::Err(x804) => {
-      let x804 = Result__string__string::Err._0(res/7) in
-      let err/9 = x804 in
-      ("err " + err/9)
+    Result__string__string::Err(x1) => {
+      let x1 = Result__string__string::Err._0(res/0) in
+      let err/0 = x1 in
+      ("err " + err/0)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild805 = println__T_string(show(use_handle(true, true))) in
-  let _wild806 = println__T_string(show(use_handle(false, true))) in
-  let _wild807 = println__T_string(show(use_handle(true, false))) in
+  let _wild0 = println__T_string(show(use_handle(true, true))) in
+  let _wild1 = println__T_string(show(use_handle(false, true))) in
+  let _wild2 = println__T_string(show(use_handle(true, false))) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

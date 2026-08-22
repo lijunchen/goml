@@ -3,71 +3,71 @@ fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
     Key::Empty => {
       "Key::Empty"
     },
-    Key::Point(x796, x797) => {
-      let x796 = Key::Point._0(self/0) in
-      let x797 = Key::Point._1(self/0) in
-      let #derive1_field/2 = x797 in
-      let #derive0_field/1 = x796 in
-      (((((("Key::Point { " + "x: ") + trait_impl#ToString#i32#to_string(#derive0_field/1)) +
+    Key::Point(x0, x1) => {
+      let x0 = Key::Point._0(self/0) in
+      let x1 = Key::Point._1(self/0) in
+      let #derive1_field/0 = x1 in
+      let #derive0_field/0 = x0 in
+      (((((("Key::Point { " + "x: ") + trait_impl#ToString#i32#to_string(#derive0_field/0)) +
         ", ") +
         "y: ") +
-        trait_impl#ToString#i32#to_string(#derive1_field/2)) +
+        trait_impl#ToString#i32#to_string(#derive1_field/0)) +
         " }")
     },
   }
 }
 
-fn trait_impl#Hash#Key#hash(self/3: Key) -> u64 {
-  match self/3 {
+fn trait_impl#Hash#Key#hash(self/0: Key) -> u64 {
+  match self/0 {
     Key::Empty => {
-      let h/4 = (((0 as u64) + 14695981039346656037) + 1) in
-      h/4
+      let h/0 = (((0 as u64) + 14695981039346656037) + 1) in
+      h/0
     },
-    Key::Point(x798, x799) => {
-      let x798 = Key::Point._0(self/3) in
-      let x799 = Key::Point._1(self/3) in
-      let #derive1_field/6 = x799 in
-      let #derive0_field/5 = x798 in
-      let h/7 = (((0 as u64) + 14695981039346656037) + 2) in
-      let h/8 =
-        ((h/7 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#i32#hash(#derive0_field/5)) in
-      let h/9 =
-        ((h/8 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#i32#hash(#derive1_field/6)) in
-      h/9
+    Key::Point(x0, x1) => {
+      let x0 = Key::Point._0(self/0) in
+      let x1 = Key::Point._1(self/0) in
+      let #derive1_field/0 = x1 in
+      let #derive0_field/0 = x0 in
+      let h/1 = (((0 as u64) + 14695981039346656037) + 2) in
+      let h/2 =
+        ((h/1 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#i32#hash(#derive0_field/0)) in
+      let h/3 =
+        ((h/2 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#i32#hash(#derive1_field/0)) in
+      h/3
     },
   }
 }
 
-fn trait_impl#PartialEq#Key#eq(self/10: Key, other/11: Key) -> bool {
-  let mtmp800 = (self/10, other/11) in
-  let x801 = mtmp800.0 in
-  let x802 = mtmp800.1 in
-  match x802 {
+fn trait_impl#PartialEq#Key#eq(self/0: Key, other/0: Key) -> bool {
+  let mtmp0 = (self/0, other/0) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  match x1 {
     Key::Empty => {
-      match x801 {
+      match x0 {
         Key::Empty => {
           true
         },
         _ => false,
       }
     },
-    Key::Point(x803, x804) => {
-      let x803 = Key::Point._0(x802) in
-      let x804 = Key::Point._1(x802) in
-      match x801 {
-        Key::Point(x807, x808) => {
-          let x807 = Key::Point._0(x801) in
-          let x808 = Key::Point._1(x801) in
-          let #derive2_left/13 = x808 in
-          let #derive0_left/12 = x807 in
-          let #derive3_right/15 = x804 in
-          let #derive1_right/14 = x803 in
+    Key::Point(x2, x3) => {
+      let x2 = Key::Point._0(x1) in
+      let x3 = Key::Point._1(x1) in
+      match x0 {
+        Key::Point(x4, x5) => {
+          let x4 = Key::Point._0(x0) in
+          let x5 = Key::Point._1(x0) in
+          let #derive2_left/0 = x5 in
+          let #derive0_left/0 = x4 in
+          let #derive3_right/0 = x3 in
+          let #derive1_right/0 = x2 in
           if if true {
-              trait_impl#PartialEq#i32#eq(#derive0_left/12, #derive1_right/14)
+              trait_impl#PartialEq#i32#eq(#derive0_left/0, #derive1_right/0)
           } else {
               false
           } {
-              trait_impl#PartialEq#i32#eq(#derive2_left/13, #derive3_right/15)
+              trait_impl#PartialEq#i32#eq(#derive2_left/0, #derive3_right/0)
           } else {
               false
           }
@@ -78,145 +78,145 @@ fn trait_impl#PartialEq#Key#eq(self/10: Key, other/11: Key) -> bool {
   }
 }
 
-fn score(value/16: Message__string) -> i32 {
-  match value/16 {
+fn score(value/0: Message__string) -> i32 {
+  match value/0 {
     Message__string::Quit => {
       0
     },
-    Message__string::Write(x809) => {
+    Message__string::Write(x0) => {
       1
     },
-    Message__string::Move(x810, x811, x812) => {
-      let x810 = Message__string::Move._0(value/16) in
-      let x811 = Message__string::Move._1(value/16) in
-      let vertical/18 = x811 in
-      let x/17 = x810 in
-      (x/17 + vertical/18)
+    Message__string::Move(x1, x2, x3) => {
+      let x1 = Message__string::Move._0(value/0) in
+      let x2 = Message__string::Move._1(value/0) in
+      let vertical/0 = x2 in
+      let x/0 = x1 in
+      (x/0 + vertical/0)
     },
   }
 }
 
-fn label(value/19: Message__string) -> string {
-  match value/19 {
+fn label(value/0: Message__string) -> string {
+  match value/0 {
     Message__string::Quit => {
       "quit"
     },
-    Message__string::Write(x813) => {
-      let x813 = Message__string::Write._0(value/19) in
-      let text/21 = x813 in
-      text/21
+    Message__string::Write(x0) => {
+      let x0 = Message__string::Write._0(value/0) in
+      let text/0 = x0 in
+      text/0
     },
-    Message__string::Move(x814, x815, x816) => {
-      let x816 = Message__string::Move._2(value/19) in
-      let label/20 = x816 in
-      label/20
+    Message__string::Move(x1, x2, x3) => {
+      let x3 = Message__string::Move._2(value/0) in
+      let label/0 = x3 in
+      label/0
     },
   }
 }
 
 fn main() -> unit {
-  let x/22 = 3 in
-  let direction/23 = "north" in
-  let first/24 = Message__string::Move(x/22, 4, direction/23) in
-  let second/25 = Message__string::Move(3, 4, "north") in
-  let _wild817 = println__T_i32(score(first/24)) in
-  let _wild818 = println__T_string(label(second/25)) in
-  let _wild819 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
-  let _wild820 = println__T_bool(trait_impl#PartialEq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
+  let x/0 = 3 in
+  let direction/0 = "north" in
+  let first/0 = Message__string::Move(x/0, 4, direction/0) in
+  let second/0 = Message__string::Move(3, 4, "north") in
+  let _wild0 = println__T_i0(score(first/0)) in
+  let _wild1 = println__T_string(label(second/0)) in
+  let _wild2 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
+  let _wild3 = println__T_bool(trait_impl#PartialEq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
   ()
 }
 
-fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
-  __goml_builtin_int32_to_string(self/407)
+fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  @runtime(core.int32_hash)(self/467)
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  @runtime(core.int32_hash)(self/0)
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  (self/444 == other/445)
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  (self/0 == other/0)
 }
 
-fn println__T_i32(value/1: i32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
+fn println__T_i32(value/0: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
-      ("-" + decimal_string((0 - (value/214 as u64))))
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      ("-" + decimal_string((0 - (value/0 as u64))))
   } else {
-      decimal_string((value/214 as u64))
+      decimal_string((value/0 as u64))
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         return "0"
     } else {
         ()
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
-        let _wild352 =
-          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-        let _wild355 =
-          let compound_old353 = remaining/210 in
-          let compound_value354 = 10 in
-          remaining/210 = (compound_old353 / compound_value354) in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        let _wild2 =
+          inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+        let _wild3 =
+          let compound_old0 = remaining/0 in
+          let compound_value0 = 10 in
+          remaining/0 = (compound_old0 / compound_value0) in
         ()
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
-        let _wild357 =
-          inherent#Vec#Vec[T]#push__T_u8(
-            bytes/211,
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        let _wild5 =
+          inherent#Vec#Vec[T]#push__T_u0(
+            bytes/0,
             @intrinsic(vec.get)(
-              reversed/209,
-              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              reversed/0,
+              ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
             )
           ) in
-        let _wild360 =
-          let compound_old358 = offset/212 in
-          let compound_value359 = 1 in
-          offset/212 = (compound_old358 + compound_value359) in
+        let _wild6 =
+          let compound_old1 = offset/0 in
+          let compound_value1 = 1 in
+          offset/0 = (compound_old1 + compound_value1) in
         ()
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-  let x364 = mtmp362.1 in
-  let result/213 = x364 in
-  result/213
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let result/0 = x0 in
+  result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

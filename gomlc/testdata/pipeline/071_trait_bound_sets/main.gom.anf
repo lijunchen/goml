@@ -2,50 +2,50 @@ fn trait_impl#A#S#foo(self/0: S) -> string {
   "A"
 }
 
-fn trait_impl#B#S#foo(self/1: S) -> string {
+fn trait_impl#B#S#foo(self/0: S) -> string {
   "B"
 }
 
-fn trait_impl#C#S#bar(self/2: S) -> string {
+fn trait_impl#C#S#bar(self/0: S) -> string {
   "C"
 }
 
 fn main() -> unit {
-  let s/5 = S {} in
-  join inline_cont826(t805: string) -> unit {
-    join inline_cont823(mtmp796: unit) -> unit {
-      join inline_cont821(t806: string) -> unit {
-        let inline819 = trait_impl#ToString#string#to_string(t806) in
-        let inline820 = @runtime(core.string_println)(inline819) in
+  let s/0 = S {} in
+  join inline_cont0(t0: string) -> unit {
+    join inline_cont1(mtmp0: unit) -> unit {
+      join inline_cont2(t1: string) -> unit {
+        let inline0 = trait_impl#ToString#string#to_string(t1) in
+        let inline1 = @runtime(core.string_println)(inline0) in
         ()
       } in
-      let inline822 = trait_impl#C#S#bar(s/5) in
-      jump inline_cont821(inline822)
+      let inline2 = trait_impl#C#S#bar(s/0) in
+      jump inline_cont2(inline2)
     } in
-    let inline824 = trait_impl#ToString#string#to_string(t805) in
-    let inline825 = @runtime(core.string_println)(inline824) in
-    jump inline_cont823(())
+    let inline3 = trait_impl#ToString#string#to_string(t0) in
+    let inline4 = @runtime(core.string_println)(inline3) in
+    jump inline_cont1(())
   } in
-  let inline827 = trait_impl#A#S#foo(s/5) in
-  jump inline_cont826(inline827)
+  let inline5 = trait_impl#A#S#foo(s/0) in
+  jump inline_cont0(inline5)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont828(t808: string) -> unit {
-    let t809 = @runtime(core.string_println)(t808) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont828(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn pick_a__T_S(x/3: S) -> string {
+fn pick_a__T_S(x/0: S) -> string {
   "A"
 }
 
-fn bar_it__T_S(x/4: S) -> string {
+fn bar_it__T_S(x/0: S) -> string {
   "C"
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

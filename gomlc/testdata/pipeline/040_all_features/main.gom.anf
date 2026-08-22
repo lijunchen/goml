@@ -1,60 +1,60 @@
 fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
-  let x797 = Tracker.label(self/0) in
-  let x798 = Tracker.count(self/0) in
-  let x799 = Tracker.toggled(self/0) in
-  join inline_cont1017(current/4: i32) -> string {
-    join inline_cont1015(flag/5: bool) -> string {
-      let with_label/6 = ("Tracker(" + x797) in
-      let with_count_label/7 = (with_label/6 + ", count: ") in
-      join inline_cont1013(t838: string) -> string {
-        let with_count/8 = (with_count_label/7 + t838) in
-        let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-        join inline_cont1011(t839: string) -> string {
-          let t840 = (with_flag_label/9 + t839) in
-          let t841 = (t840 + ")") in
-          t841
+  let x0 = Tracker.label(self/0) in
+  let x1 = Tracker.count(self/0) in
+  let x2 = Tracker.toggled(self/0) in
+  join inline_cont0(current/0: i32) -> string {
+    join inline_cont1(flag/0: bool) -> string {
+      let with_label/0 = ("Tracker(" + x0) in
+      let with_count_label/0 = (with_label/0 + ", count: ") in
+      join inline_cont2(t0: string) -> string {
+        let with_count/0 = (with_count_label/0 + t0) in
+        let with_flag_label/0 = (with_count/0 + ", toggled: ") in
+        join inline_cont3(t1: string) -> string {
+          let t2 = (with_flag_label/0 + t1) in
+          let t3 = (t2 + ")") in
+          t3
         } in
-        let inline1012 = @runtime(core.bool_to_string)(flag/5) in
-        jump inline_cont1011(inline1012)
+        let inline0 = @runtime(core.bool_to_string)(flag/0) in
+        jump inline_cont3(inline0)
       } in
-      let inline1014 = __goml_builtin_int32_to_string(current/4) in
-      jump inline_cont1013(inline1014)
+      let inline1 = __goml_builtin_int32_to_string(current/0) in
+      jump inline_cont2(inline1)
     } in
-    let inline1016 = @intrinsic(ref.get)(x799) in
-    jump inline_cont1015(inline1016)
+    let inline2 = @intrinsic(ref.get)(x2) in
+    jump inline_cont1(inline2)
   } in
-  let inline1018 = @intrinsic(ref.get)(x798) in
-  jump inline_cont1017(inline1018)
+  let inline3 = @intrinsic(ref.get)(x1) in
+  jump inline_cont0(inline3)
 }
 
-fn trait_impl#Describe#Record__i32#describe(self/10: Record__i32) -> string {
-  match self/10 {
+fn trait_impl#Describe#Record__i32#describe(self/0: Record__i32) -> string {
+  match self/0 {
     Tag_0 => {
-      let x800 = Record__i32::Value._0(self/10) in
-      join inline_cont1019(t846: string) -> string {
-        let t847 = ("Value(" + t846) in
-        let t848 = (t847 + ")") in
-        t848
+      let x0 = Record__i32::Value._0(self/0) in
+      join inline_cont0(t0: string) -> string {
+        let t1 = ("Value(" + t0) in
+        let t2 = (t1 + ")") in
+        t2
       } in
-      let inline1020 = __goml_builtin_int32_to_string(x800) in
-      jump inline_cont1019(inline1020)
+      let inline0 = __goml_builtin_int32_to_string(x0) in
+      jump inline_cont0(inline0)
     },
     Tag_1 => {
-      let x801 = Record__i32::Pair._0(self/10) in
-      let x802 = Record__i32::Pair._1(self/10) in
-      join inline_cont1023(t849: string) -> string {
-        let prefix/14 = ("Pair(" + t849) in
-        let t850 = (prefix/14 + ", ") in
-        join inline_cont1021(t851: string) -> string {
-          let t852 = (t850 + t851) in
-          let t853 = (t852 + ")") in
-          t853
+      let x1 = Record__i32::Pair._0(self/0) in
+      let x2 = Record__i32::Pair._1(self/0) in
+      join inline_cont1(t3: string) -> string {
+        let prefix/0 = ("Pair(" + t3) in
+        let t4 = (prefix/0 + ", ") in
+        join inline_cont2(t5: string) -> string {
+          let t6 = (t4 + t5) in
+          let t7 = (t6 + ")") in
+          t7
         } in
-        let inline1022 = __goml_builtin_int32_to_string(x802) in
-        jump inline_cont1021(inline1022)
+        let inline1 = __goml_builtin_int32_to_string(x2) in
+        jump inline_cont2(inline1)
       } in
-      let inline1024 = __goml_builtin_int32_to_string(x801) in
-      jump inline_cont1023(inline1024)
+      let inline2 = __goml_builtin_int32_to_string(x1) in
+      jump inline_cont1(inline2)
     },
     Tag_2 => {
       "Empty"
@@ -62,22 +62,22 @@ fn trait_impl#Describe#Record__i32#describe(self/10: Record__i32) -> string {
   }
 }
 
-fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> string {
-  match self/15 {
+fn trait_impl#Describe#Record__string#describe(self/0: Record__string) -> string {
+  match self/0 {
     Tag_0 => {
-      let x803 = Record__string::Value._0(self/15) in
-      let t858 = ("Value(" + x803) in
-      let t859 = (t858 + ")") in
-      t859
+      let x0 = Record__string::Value._0(self/0) in
+      let t0 = ("Value(" + x0) in
+      let t1 = (t0 + ")") in
+      t1
     },
     Tag_1 => {
-      let x804 = Record__string::Pair._0(self/15) in
-      let x805 = Record__string::Pair._1(self/15) in
-      let prefix/19 = ("Pair(" + x804) in
-      let t860 = (prefix/19 + ", ") in
-      let t861 = (t860 + x805) in
-      let t862 = (t861 + ")") in
-      t862
+      let x1 = Record__string::Pair._0(self/0) in
+      let x2 = Record__string::Pair._1(self/0) in
+      let prefix/0 = ("Pair(" + x1) in
+      let t2 = (prefix/0 + ", ") in
+      let t3 = (t2 + x2) in
+      let t4 = (t3 + ")") in
+      t4
     },
     Tag_2 => {
       "Empty"
@@ -85,58 +85,58 @@ fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> strin
   }
 }
 
-fn format_total(total/26: i32) -> string {
-  join inline_cont1025(t865: string) -> string {
-    let t866 = ("total: " + t865) in
-    t866
+fn format_total(total/0: i32) -> string {
+  join inline_cont0(t0: string) -> string {
+    let t1 = ("total: " + t0) in
+    t1
   } in
-  let inline1026 = __goml_builtin_int32_to_string(total/26) in
-  jump inline_cont1025(inline1026)
+  let inline0 = __goml_builtin_int32_to_string(total/0) in
+  jump inline_cont0(inline0)
 }
 
-fn increment(value/27: i32) -> i32 {
-  let t869 = (value/27 + 1) in
-  t869
+fn increment(value/0: i32) -> i32 {
+  let t0 = (value/0 + 1) in
+  t0
 }
 
-fn triple(value/28: i32) -> i32 {
-  let t872 = (value/28 * 3) in
-  t872
+fn triple(value/0: i32) -> i32 {
+  let t0 = (value/0 * 3) in
+  t0
 }
 
-fn pair_join(parts/29: (string, string)) -> string {
-  let x808 = parts/29.0 in
-  let x809 = parts/29.1 in
-  let t875 = (x808 + " -> ") in
-  let t876 = (t875 + x809) in
-  t876
+fn pair_join(parts/0: (string, string)) -> string {
+  let x0 = parts/0.0 in
+  let x1 = parts/0.1 in
+  let t0 = (x0 + " -> ") in
+  let t1 = (t0 + x1) in
+  t1
 }
 
-fn run_transforms(value/32: i32, transforms/33: [(i32) -> i32; 2]) -> [i32; 2] {
-  let first/34 = @intrinsic(array.get)(transforms/33, 0) in
-  let second/35 = @intrinsic(array.get)(transforms/33, 1) in
-  let first_result/36 = first/34(value/32) in
-  let second_result/37 = second/35(first_result/36) in
-  let results/38 = [first_result/36, value/32] in
-  let place_root810 = results/38 in
-  let index811 = 1 in
-  let place812 = @intrinsic(array.get)(place_root810, index811) in
-  let t879 = @intrinsic(array.set)(place_root810, index811, second_result/37) in
-  let t880 = results/38 = t879 in
-  results/38
+fn run_transforms(value/0: i32, transforms/0: [(i32) -> i32; 2]) -> [i32; 2] {
+  let first/0 = @intrinsic(array.get)(transforms/0, 0) in
+  let second/0 = @intrinsic(array.get)(transforms/0, 1) in
+  let first_result/0 = first/0(value/0) in
+  let second_result/0 = second/0(first_result/0) in
+  let results/0 = [first_result/0, value/0] in
+  let place_root0 = results/0 in
+  let index0 = 1 in
+  let place0 = @intrinsic(array.get)(place_root0, index0) in
+  let t0 = @intrinsic(array.set)(place_root0, index0, second_result/0) in
+  let t1 = results/0 = t0 in
+  results/0
 }
 
-fn gather(record/39: Record__i32) -> Maybe__i32 {
-  match record/39 {
+fn gather(record/0: Record__i32) -> Maybe__i32 {
+  match record/0 {
     Tag_0 => {
-      let x815 = Record__i32::Value._0(record/39) in
-      let t885 = Maybe__i32::Some(x815) in
-      t885
+      let x0 = Record__i32::Value._0(record/0) in
+      let t0 = Maybe__i32::Some(x0) in
+      t0
     },
     Tag_1 => {
-      let x817 = Record__i32::Pair._1(record/39) in
-      let t886 = Maybe__i32::Some(x817) in
-      t886
+      let x1 = Record__i32::Pair._1(record/0) in
+      let t1 = Maybe__i32::Some(x1) in
+      t1
     },
     Tag_2 => {
       Tag_1
@@ -144,209 +144,209 @@ fn gather(record/39: Record__i32) -> Maybe__i32 {
   }
 }
 
-fn build_counter(label/42: string, start/43: i32) -> (
+fn build_counter(label/0: string, start/0: i32) -> (
   Tracker,
   () -> Record__i32,
   (i32) -> Record__i32,
   () -> Record__string
 ) {
-  join inline_cont1030(count/44: Ref[i32]) -> (
+  join inline_cont0(count/0: Ref[i32]) -> (
     Tracker,
     () -> Record__i32,
     (i32) -> Record__i32,
     () -> Record__string
   ) {
-    join inline_cont1027(toggled/45: Ref[bool]) -> (
+    join inline_cont1(toggled/0: Ref[bool]) -> (
       Tracker,
       () -> Record__i32,
       (i32) -> Record__i32,
       () -> Record__string
     ) {
-      let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
-      let t889 = closure_env_snapshot_0 { count_0: count/44 } in
-      let snapshot/47 =
-        pack_closure[inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply](t889) in
-      let t890 = closure_env_bump_1 { count_0: count/44 } in
-      let bump/50 = pack_closure[inherent#closure_env_bump_1#closure_env_bump_1#apply](t890) in
-      let t891 = closure_env_flip_2 { toggled_0: toggled/45 } in
-      let flip/53 = pack_closure[inherent#closure_env_flip_2#closure_env_flip_2#apply](t891) in
-      let t892 = (tracker/46, snapshot/47, bump/50, flip/53) in
-      t892
+      let tracker/0 = Tracker { label: label/0, count: count/0, toggled: toggled/0 } in
+      let t0 = closure_env_snapshot_0 { count_0: count/0 } in
+      let snapshot/0 =
+        pack_closure[inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply](t0) in
+      let t1 = closure_env_bump_1 { count_0: count/0 } in
+      let bump/0 = pack_closure[inherent#closure_env_bump_1#closure_env_bump_1#apply](t1) in
+      let t2 = closure_env_flip_2 { toggled_0: toggled/0 } in
+      let flip/0 = pack_closure[inherent#closure_env_flip_2#closure_env_flip_2#apply](t2) in
+      let t3 = (tracker/0, snapshot/0, bump/0, flip/0) in
+      t3
     } in
-    let inline1028 = false in
-    let inline1029 = @intrinsic(ref.new)(inline1028) in
-    jump inline_cont1027(inline1029)
+    let inline0 = false in
+    let inline1 = @intrinsic(ref.new)(inline0) in
+    jump inline_cont1(inline1)
   } in
-  let inline1031 = @intrinsic(ref.new)(start/43) in
-  jump inline_cont1030(inline1031)
+  let inline2 = @intrinsic(ref.new)(start/0) in
+  jump inline_cont0(inline2)
 }
 
 fn main() -> unit {
-  let mtmp820 = build_counter("goml", 2) in
-  let x821 = mtmp820.0 in
-  let x822 = mtmp820.1 in
-  let x823 = mtmp820.2 in
-  let x824 = mtmp820.3 in
-  let tracker_info/58 = trait_impl#Describe#Tracker#describe(x821) in
-  let first_record/59 = x822() in
-  let bumped_record/60 = x823(5) in
-  let flipped_record/61 = x824() in
-  let maybe_first/62 = gather(first_record/59) in
-  let maybe_second/63 = gather(bumped_record/60) in
-  let chosen/64 = choose__T_Maybe[i32](true, maybe_second/63, maybe_first/62) in
-  let stringified/65 = map_maybe__T_i32__U_string(chosen/64, format_total) in
-  let transforms/66 = [increment, triple] in
-  join inline_cont1067(results/67: [i32; 2]) -> unit {
-    let first_result/68 = @intrinsic(array.get)(results/67, 0) in
-    let second_result/69 = @intrinsic(array.get)(results/67, 1) in
-    let t902 = (first_result/68 < second_result/69) in
-    join k894(jp895: bool) -> unit {
-      let first_text/71 = trait_impl#Describe#Record__i32#describe(first_record/59) in
-      let bumped_text/72 = trait_impl#Describe#Record__i32#describe(bumped_record/60) in
-      let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
-      join k896(jp897: string) -> unit {
-        join inline_cont1065(t898: string) -> unit {
-          join inline_cont1063(t899: string) -> unit {
-            join inline_cont1055(pair_text/76: string) -> unit {
-              join inline_cont1053(bool_text/77: string) -> unit {
-                join inline_cont1050(mtmp826: unit) -> unit {
-                  join inline_cont1047(mtmp827: unit) -> unit {
-                    join inline_cont1044(mtmp828: unit) -> unit {
-                      join inline_cont1041(mtmp829: unit) -> unit {
-                        join inline_cont1038(mtmp830: unit) -> unit {
-                          join inline_cont1035(mtmp831: unit) -> unit {
-                            let inline1033 = trait_impl#ToString#string#to_string(bool_text/77) in
-                            let inline1034 = @runtime(core.string_println)(inline1033) in
+  let mtmp0 = build_counter("goml", 2) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  let x2 = mtmp0.2 in
+  let x3 = mtmp0.3 in
+  let tracker_info/0 = trait_impl#Describe#Tracker#describe(x0) in
+  let first_record/0 = x1() in
+  let bumped_record/0 = x2(5) in
+  let flipped_record/0 = x3() in
+  let maybe_first/0 = gather(first_record/0) in
+  let maybe_second/0 = gather(bumped_record/0) in
+  let chosen/0 = choose__T_Maybe[i32](true, maybe_second/0, maybe_first/0) in
+  let stringified/0 = map_maybe__T_i32__U_string(chosen/0, format_total) in
+  let transforms/0 = [increment, triple] in
+  join inline_cont0(results/0: [i32; 2]) -> unit {
+    let first_result/0 = @intrinsic(array.get)(results/0, 0) in
+    let second_result/0 = @intrinsic(array.get)(results/0, 1) in
+    let t0 = (first_result/0 < second_result/0) in
+    join k0(jp0: bool) -> unit {
+      let first_text/0 = trait_impl#Describe#Record__i32#describe(first_record/0) in
+      let bumped_text/0 = trait_impl#Describe#Record__i32#describe(bumped_record/0) in
+      let flipped_text/0 = trait_impl#Describe#Record__string#describe(flipped_record/0) in
+      join k1(jp1: string) -> unit {
+        join inline_cont1(t1: string) -> unit {
+          join inline_cont2(t2: string) -> unit {
+            join inline_cont3(pair_text/0: string) -> unit {
+              join inline_cont4(bool_text/0: string) -> unit {
+                join inline_cont5(mtmp1: unit) -> unit {
+                  join inline_cont6(mtmp2: unit) -> unit {
+                    join inline_cont7(mtmp3: unit) -> unit {
+                      join inline_cont8(mtmp4: unit) -> unit {
+                        join inline_cont9(mtmp5: unit) -> unit {
+                          join inline_cont10(mtmp6: unit) -> unit {
+                            let inline0 = trait_impl#ToString#string#to_string(bool_text/0) in
+                            let inline1 = @runtime(core.string_println)(inline0) in
                             ()
                           } in
-                          let inline1036 = trait_impl#ToString#string#to_string(pair_text/76) in
-                          let inline1037 = @runtime(core.string_println)(inline1036) in
-                          jump inline_cont1035(())
+                          let inline2 = trait_impl#ToString#string#to_string(pair_text/0) in
+                          let inline3 = @runtime(core.string_println)(inline2) in
+                          jump inline_cont10(())
                         } in
-                        let inline1039 = trait_impl#ToString#string#to_string(jp897) in
-                        let inline1040 = @runtime(core.string_println)(inline1039) in
-                        jump inline_cont1038(())
+                        let inline4 = trait_impl#ToString#string#to_string(jp1) in
+                        let inline5 = @runtime(core.string_println)(inline4) in
+                        jump inline_cont9(())
                       } in
-                      let inline1042 = trait_impl#ToString#string#to_string(flipped_text/73) in
-                      let inline1043 = @runtime(core.string_println)(inline1042) in
-                      jump inline_cont1041(())
+                      let inline6 = trait_impl#ToString#string#to_string(flipped_text/0) in
+                      let inline7 = @runtime(core.string_println)(inline6) in
+                      jump inline_cont8(())
                     } in
-                    let inline1045 = trait_impl#ToString#string#to_string(bumped_text/72) in
-                    let inline1046 = @runtime(core.string_println)(inline1045) in
-                    jump inline_cont1044(())
+                    let inline8 = trait_impl#ToString#string#to_string(bumped_text/0) in
+                    let inline9 = @runtime(core.string_println)(inline8) in
+                    jump inline_cont7(())
                   } in
-                  let inline1048 = trait_impl#ToString#string#to_string(first_text/71) in
-                  let inline1049 = @runtime(core.string_println)(inline1048) in
-                  jump inline_cont1047(())
+                  let inline10 = trait_impl#ToString#string#to_string(first_text/0) in
+                  let inline11 = @runtime(core.string_println)(inline10) in
+                  jump inline_cont6(())
                 } in
-                let inline1051 = trait_impl#ToString#string#to_string(tracker_info/58) in
-                let inline1052 = @runtime(core.string_println)(inline1051) in
-                jump inline_cont1050(())
+                let inline12 = trait_impl#ToString#string#to_string(tracker_info/0) in
+                let inline13 = @runtime(core.string_println)(inline12) in
+                jump inline_cont5(())
               } in
-              let inline1054 = @runtime(core.bool_to_string)(jp895) in
-              jump inline_cont1053(inline1054)
+              let inline14 = @runtime(core.bool_to_string)(jp0) in
+              jump inline_cont4(inline14)
             } in
-            let inline1061 = (t898 + " -> ") in
-            let inline1062 = (inline1061 + t899) in
-            jump inline_cont1055(inline1062)
+            let inline15 = (t1 + " -> ") in
+            let inline16 = (inline15 + t2) in
+            jump inline_cont3(inline16)
           } in
-          let inline1064 = __goml_builtin_int32_to_string(second_result/69) in
-          jump inline_cont1063(inline1064)
+          let inline17 = __goml_builtin_int32_to_string(second_result/0) in
+          jump inline_cont2(inline17)
         } in
-        let inline1066 = __goml_builtin_int32_to_string(first_result/68) in
-        jump inline_cont1065(inline1066)
+        let inline18 = __goml_builtin_int32_to_string(first_result/0) in
+        jump inline_cont1(inline18)
       } in
-      match stringified/65 {
+      match stringified/0 {
         Tag_0 => {
-          let x825 = Maybe__string::Some._0(stringified/65) in
-          let t901 = ("Snapshot: " + x825) in
-          jump k896(t901)
+          let x4 = Maybe__string::Some._0(stringified/0) in
+          let t3 = ("Snapshot: " + x4) in
+          jump k1(t3)
         },
         Tag_1 => {
-          jump k896("Snapshot: none")
+          jump k1("Snapshot: none")
         },
       }
     } in
-    if t902 {
-      jump k894(true)
+    if t0 {
+      jump k0(true)
     } else {
-      jump k894(false)
+      jump k0(false)
     }
   } in
-  let inline1068 = 4 in
-  let inline1069 = @intrinsic(array.get)(transforms/66, 0) in
-  let inline1070 = @intrinsic(array.get)(transforms/66, 1) in
-  let inline1071 = inline1069(inline1068) in
-  let inline1072 = inline1070(inline1071) in
-  let inline1073 = [inline1071, inline1068] in
-  let inline1074 = inline1073 in
-  let inline1075 = 1 in
-  let inline1076 = @intrinsic(array.get)(inline1074, inline1075) in
-  let inline1078 = @intrinsic(array.set)(inline1074, inline1075, inline1072) in
-  let inline1079 = inline1073 = inline1078 in
-  jump inline_cont1067(inline1073)
+  let inline19 = 4 in
+  let inline20 = @intrinsic(array.get)(transforms/0, 0) in
+  let inline21 = @intrinsic(array.get)(transforms/0, 1) in
+  let inline22 = inline20(inline19) in
+  let inline23 = inline21(inline22) in
+  let inline24 = [inline22, inline19] in
+  let inline25 = inline24 in
+  let inline26 = 1 in
+  let inline27 = @intrinsic(array.get)(inline25, inline26) in
+  let inline28 = @intrinsic(array.set)(inline25, inline26, inline23) in
+  let inline29 = inline24 = inline28 in
+  jump inline_cont0(inline24)
 }
 
-fn inherent#Ref#Ref[T]#get__T_i32(self/685: Ref[i32]) -> i32 {
-  let t905 = @intrinsic(ref.get)(self/685) in
-  t905
+fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/685: Ref[bool]) -> bool {
-  let t908 = @intrinsic(ref.get)(self/685) in
-  t908
+fn inherent#Ref#Ref[T]#get__T_bool(self/0: Ref[bool]) -> bool {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
 }
 
-fn inherent#i32#i32#to_string(self/286: i32) -> string {
-  let inline1082 = (self/286 as i64) in
-  let inline1083 = signed_decimal_string(inline1082) in
-  inline1083
+fn inherent#i32#i32#to_string(self/0: i32) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  let t914 = @runtime(core.bool_to_string)(self/401) in
-  t914
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  let t0 = @runtime(core.bool_to_string)(self/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#new__T_i32(value/684: i32) -> Ref[i32] {
-  let t917 = @intrinsic(ref.new)(value/684) in
-  t917
+fn inherent#Ref#Ref[T]#new__T_i32(value/0: i32) -> Ref[i32] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/684: bool) -> Ref[bool] {
-  let t920 = @intrinsic(ref.new)(value/684) in
-  t920
+fn inherent#Ref#Ref[T]#new__T_bool(value/0: bool) -> Ref[bool] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/686: Ref[i32], value/687: i32) -> unit {
-  let t922 = @intrinsic(ref.set)(self/686, value/687) in
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/686: Ref[bool], value/687: bool) -> unit {
-  let t924 = @intrinsic(ref.set)(self/686, value/687) in
+fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
 fn choose__T_Maybe[i32](
-  flag/20: bool,
-  when_true/21: Maybe__i32,
-  when_false/22: Maybe__i32
+  flag/0: bool,
+  when_true/0: Maybe__i32,
+  when_false/0: Maybe__i32
 ) -> Maybe__i32 {
-  if flag/20 {
-    when_true/21
+  if flag/0 {
+    when_true/0
   } else {
-    when_false/22
+    when_false/0
   }
 }
 
-fn map_maybe__T_i32__U_string(value/23: Maybe__i32, f/24: (i32) -> string) -> Maybe__string {
-  match value/23 {
+fn map_maybe__T_i32__U_string(value/0: Maybe__i32, f/0: (i32) -> string) -> Maybe__string {
+  match value/0 {
     Tag_0 => {
-      let x806 = Maybe__i32::Some._0(value/23) in
-      let t933 = f/24(x806) in
-      let t934 = Maybe__string::Some(t933) in
-      t934
+      let x0 = Maybe__i32::Some._0(value/0) in
+      let t0 = f/0(x0) in
+      let t1 = Maybe__string::Some(t0) in
+      t1
     },
     Tag_1 => {
       Tag_1
@@ -354,154 +354,154 @@ fn map_maybe__T_i32__U_string(value/23: Maybe__i32, f/24: (i32) -> string) -> Ma
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont1084(t936: string) -> unit {
-    let t937 = @runtime(core.string_println)(t936) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont1084(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  let t940 = (value/225 as i64) in
-  let inline1086 = (t940 < 0) in
-  if inline1086 {
-    let inline1087 = (t940 as u64) in
-    let inline1088 = (0 - inline1087) in
-    let inline1089 = decimal_string(inline1088) in
-    let inline1090 = ("-" + inline1089) in
-    inline1090
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
   } else {
-    let inline1091 = (t940 as u64) in
-    let inline1092 = decimal_string(inline1091) in
-    inline1092
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
   }
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  let t948 = (value/214 < 0) in
-  if t948 {
-    let t949 = (value/214 as u64) in
-    let t950 = (0 - t949) in
-    let t951 = decimal_string(t950) in
-    let t952 = ("-" + t951) in
-    t952
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
   } else {
-    let t953 = (value/214 as u64) in
-    let t954 = decimal_string(t953) in
-    t954
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let t977 = (value/208 == 0) in
-  join k957() -> string {
-    let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-    let remaining/210 = value/208 in
-    join exit958() -> string {
-      join inline_cont1101(t959: isize) -> string {
-        let bytes/211 = @intrinsic(vec.with_capacity)(t959) in
-        let offset/212 = 0 in
-        join exit960() -> string {
-          let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-          let x364 = mtmp362.1 in
-          x364
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
         } in
         joinrec {
-          join loop961() -> string {
-            join inline_cont1099(t962: isize) -> string {
-              let t963 = (offset/212 < t962) in
-              if t963 {
-                join inline_cont1097(t964: isize) -> string {
-                  let t965 = (t964 - offset/212) in
-                  let t966 = (t965 - 1) in
-                  let t967 = @intrinsic(vec.get)(reversed/209, t966) in
-                  join inline_cont1095(_wild357: unit) -> string {
-                    let compound_old358 = offset/212 in
-                    let compound_value359 = 1 in
-                    let t968 = (compound_old358 + compound_value359) in
-                    let t969 = offset/212 = t968 in
-                    jump loop961()
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
                   } in
-                  let inline1096 = @intrinsic(vec.push)(bytes/211, t967) in
-                  jump inline_cont1095(())
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
                 } in
-                let inline1098 = @intrinsic(vec.len)(reversed/209) in
-                jump inline_cont1097(inline1098)
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
               } else {
-                jump exit960()
+                jump exit1()
               }
             } in
-            let inline1100 = @intrinsic(vec.len)(reversed/209) in
-            jump inline_cont1099(inline1100)
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
           } in
         } in
-        jump loop961()
+        jump loop1()
       } in
-      let inline1102 = @intrinsic(vec.len)(reversed/209) in
-      jump inline_cont1101(inline1102)
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
     } in
     joinrec {
-      join loop970() -> string {
-        let t971 = (remaining/210 > 0) in
-        if t971 {
-          let t972 = (remaining/210 % 10) in
-          let t973 = (t972 as u8) in
-          let t974 = (t973 + 48) in
-          join inline_cont1093(_wild352: unit) -> string {
-            let compound_old353 = remaining/210 in
-            let compound_value354 = 10 in
-            let t975 = (compound_old353 / compound_value354) in
-            let t976 = remaining/210 = t975 in
-            jump loop970()
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
           } in
-          let inline1094 = @intrinsic(vec.push)(reversed/209, t974) in
-          jump inline_cont1093(())
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
         } else {
-          jump exit958()
+          jump exit0()
         }
       } in
     } in
-    jump loop970()
+    jump loop0()
   } in
-  if t977 {
+  if t0 {
     "0"
   } else {
-    jump k957()
+    jump k0()
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  let t979 = @intrinsic(vec.push)(self/511, elem/512) in
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  let t982 = @intrinsic(vec.len)(self/526) in
-  t982
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  let t985 = (self/444 == other/445) in
-  t985
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  let t988 = @runtime(core.int32_hash)(self/467) in
-  t988
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  let t0 = @runtime(core.int32_hash)(self/0) in
+  t0
 }
 
-fn trait_impl#PartialEq#bool#eq(self/432: bool, other/433: bool) -> bool {
-  let t991 = (self/432 == other/433) in
-  t991
+fn trait_impl#PartialEq#bool#eq(self/0: bool, other/0: bool) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
 }
 
-fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
-  if self/461 {
+fn trait_impl#Hash#bool#hash(self/0: bool) -> u64 {
+  if self/0 {
     1
   } else {
     0
@@ -509,64 +509,64 @@ fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
 }
 
 fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(
-  env833: closure_env_snapshot_0
+  env0: closure_env_snapshot_0
 ) -> Record__i32 {
-  let count/44 = closure_env_snapshot_0.count_0(env833) in
-  join inline_cont1103(t998: i32) -> Record__i32 {
-    let t999 = Record__i32::Value(t998) in
-    t999
+  let count/0 = closure_env_snapshot_0.count_0(env0) in
+  join inline_cont0(t0: i32) -> Record__i32 {
+    let t1 = Record__i32::Value(t0) in
+    t1
   } in
-  let inline1104 = @intrinsic(ref.get)(count/44) in
-  jump inline_cont1103(inline1104)
+  let inline0 = @intrinsic(ref.get)(count/0) in
+  jump inline_cont0(inline0)
 }
 
 fn inherent#closure_env_bump_1#closure_env_bump_1#apply(
-  env834: closure_env_bump_1,
-  delta/48: i32
+  env0: closure_env_bump_1,
+  delta/0: i32
 ) -> Record__i32 {
-  let count/44 = closure_env_bump_1.count_0(env834) in
-  join inline_cont1109(before/49: i32) -> Record__i32 {
-    let t1002 = (before/49 + delta/48) in
-    join inline_cont1107(mtmp818: unit) -> Record__i32 {
-      join inline_cont1105(t1003: i32) -> Record__i32 {
-        let t1004 = Record__i32::Pair(before/49, t1003) in
-        t1004
+  let count/0 = closure_env_bump_1.count_0(env0) in
+  join inline_cont0(before/0: i32) -> Record__i32 {
+    let t0 = (before/0 + delta/0) in
+    join inline_cont1(mtmp0: unit) -> Record__i32 {
+      join inline_cont2(t1: i32) -> Record__i32 {
+        let t2 = Record__i32::Pair(before/0, t1) in
+        t2
       } in
-      let inline1106 = @intrinsic(ref.get)(count/44) in
-      jump inline_cont1105(inline1106)
+      let inline0 = @intrinsic(ref.get)(count/0) in
+      jump inline_cont2(inline0)
     } in
-    let inline1108 = @intrinsic(ref.set)(count/44, t1002) in
-    jump inline_cont1107(())
+    let inline1 = @intrinsic(ref.set)(count/0, t0) in
+    jump inline_cont1(())
   } in
-  let inline1110 = @intrinsic(ref.get)(count/44) in
-  jump inline_cont1109(inline1110)
+  let inline2 = @intrinsic(ref.get)(count/0) in
+  jump inline_cont0(inline2)
 }
 
 fn inherent#closure_env_flip_2#closure_env_flip_2#apply(
-  env835: closure_env_flip_2
+  env0: closure_env_flip_2
 ) -> Record__string {
-  let toggled/45 = closure_env_flip_2.toggled_0(env835) in
-  join inline_cont1119(before/51: bool) -> Record__string {
-    let t1007 = (!before/51) in
-    join inline_cont1117(mtmp819: unit) -> Record__string {
-      join inline_cont1115(after/52: bool) -> Record__string {
-        join inline_cont1113(t1008: string) -> Record__string {
-          join inline_cont1111(t1009: string) -> Record__string {
-            let t1010 = Record__string::Pair(t1008, t1009) in
-            t1010
+  let toggled/0 = closure_env_flip_2.toggled_0(env0) in
+  join inline_cont0(before/0: bool) -> Record__string {
+    let t0 = (!before/0) in
+    join inline_cont1(mtmp0: unit) -> Record__string {
+      join inline_cont2(after/0: bool) -> Record__string {
+        join inline_cont3(t1: string) -> Record__string {
+          join inline_cont4(t2: string) -> Record__string {
+            let t3 = Record__string::Pair(t1, t2) in
+            t3
           } in
-          let inline1112 = @runtime(core.bool_to_string)(after/52) in
-          jump inline_cont1111(inline1112)
+          let inline0 = @runtime(core.bool_to_string)(after/0) in
+          jump inline_cont4(inline0)
         } in
-        let inline1114 = @runtime(core.bool_to_string)(before/51) in
-        jump inline_cont1113(inline1114)
+        let inline1 = @runtime(core.bool_to_string)(before/0) in
+        jump inline_cont3(inline1)
       } in
-      let inline1116 = @intrinsic(ref.get)(toggled/45) in
-      jump inline_cont1115(inline1116)
+      let inline2 = @intrinsic(ref.get)(toggled/0) in
+      jump inline_cont2(inline2)
     } in
-    let inline1118 = @intrinsic(ref.set)(toggled/45, t1007) in
-    jump inline_cont1117(())
+    let inline3 = @intrinsic(ref.set)(toggled/0, t0) in
+    jump inline_cont1(())
   } in
-  let inline1120 = @intrinsic(ref.get)(toggled/45) in
-  jump inline_cont1119(inline1120)
+  let inline4 = @intrinsic(ref.get)(toggled/0) in
+  jump inline_cont0(inline4)
 }

@@ -10,8 +10,8 @@ fn is_flag8(value/0: u8) -> bool {
   }
 }
 
-fn is_flag16(value/1: u16) -> bool {
-  match value/1 {
+fn is_flag16(value/0: u16) -> bool {
+  match value/0 {
     1024 => {
       true
     },
@@ -22,8 +22,8 @@ fn is_flag16(value/1: u16) -> bool {
   }
 }
 
-fn is_flag32(value/2: u32) -> bool {
-  match value/2 {
+fn is_flag32(value/0: u32) -> bool {
+  match value/0 {
     4000000000 => {
       true
     },
@@ -34,8 +34,8 @@ fn is_flag32(value/2: u32) -> bool {
   }
 }
 
-fn is_flag64(value/3: u64) -> bool {
-  match value/3 {
+fn is_flag64(value/0: u64) -> bool {
+  match value/0 {
     900000000 => {
       true
     },
@@ -46,13 +46,13 @@ fn is_flag64(value/3: u64) -> bool {
   }
 }
 
-fn match_struct(counter/4: Counter) -> bool {
+fn match_struct(counter/0: Counter) -> bool {
   {
-    let x796 = Counter.start(counter/4) in
-    let x797 = Counter.end(counter/4) in
-    match x797 {
+    let x0 = Counter.start(counter/0) in
+    let x1 = Counter.end(counter/0) in
+    match x1 {
       900000000 => {
-        match x796 {
+        match x0 {
           4000000000 => {
             true
           },
@@ -67,37 +67,37 @@ fn match_struct(counter/4: Counter) -> bool {
   }
 }
 
-fn report(label/5: string, value/6: bool) -> string {
-  (label/5 + trait_impl#ToString#bool#to_string(value/6))
+fn report(label/0: string, value/0: bool) -> string {
+  (label/0 + trait_impl#ToString#bool#to_string(value/0))
 }
 
 fn main() -> unit {
-  let counter/7 = Counter { start: 4000000000, end: 900000000 } in
-  let alt_counter/8 = Counter { start: 12, end: 600000000 } in
-  let message/9 =
-    (((((((((report("u8_hit=", is_flag8(200)) + report(",u8_miss=", is_flag8(15))) +
-      report(",u16_hit=", is_flag16(65000))) +
-      report(",u16_miss=", is_flag16(42))) +
-      report(",u32_hit=", is_flag32(1234567890))) +
-      report(",u32_miss=", is_flag32(99))) +
-      report(",u64_hit=", is_flag64(900000000))) +
-      report(",u64_miss=", is_flag64(700000000))) +
-      report(",struct_first=", match_struct(counter/7))) +
-      report(",struct_second=", match_struct(alt_counter/8))) in
-  let mtmp798 = println__T_string(message/9) in
+  let counter/0 = Counter { start: 4000000000, end: 900000000 } in
+  let alt_counter/0 = Counter { start: 12, end: 600000000 } in
+  let message/0 =
+    (((((((((report("u8_hit=", is_flag0(200)) + report(",u8_miss=", is_flag0(15))) +
+      report(",u16_hit=", is_flag1(65000))) +
+      report(",u16_miss=", is_flag1(42))) +
+      report(",u32_hit=", is_flag2(1234567890))) +
+      report(",u32_miss=", is_flag2(99))) +
+      report(",u64_hit=", is_flag3(900000000))) +
+      report(",u64_miss=", is_flag3(700000000))) +
+      report(",struct_first=", match_struct(counter/0))) +
+      report(",struct_second=", match_struct(alt_counter/0))) in
+  let mtmp0 = println__T_string(message/0) in
   {
     ()
   }
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

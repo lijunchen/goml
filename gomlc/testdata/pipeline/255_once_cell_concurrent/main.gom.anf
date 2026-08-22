@@ -1,163 +1,160 @@
 static VALUE: OnceCell__isize = OnceCell::new();
 
 fn main() -> unit {
-  join inline_cont878(results/0: Channel[isize]) -> unit {
-    let t803 = closure_env_main_1 { results_0: results/0 } in
-    let t804 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t803) in
-    let _wild796 = go t804 in
-    let t805 = closure_env_main_3 { results_0: results/0 } in
-    let t806 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t805) in
-    let _wild797 = go t806 in
-    join inline_cont871(t807: Option__isize) -> unit {
-      join inline_cont867(first/1: isize) -> unit {
-        join inline_cont860(t808: Option__isize) -> unit {
-          join inline_cont856(second/2: isize) -> unit {
-            let t809 = (first/1 == second/2) in
-            join inline_cont854(t810: string) -> unit {
-              let inline852 = trait_impl#ToString#string#to_string(t810) in
-              let inline853 = @runtime(core.string_println)(inline852) in
+  join inline_cont0(results/0: Channel[isize]) -> unit {
+    let t0 = closure_env_main_1 { results_0: results/0 } in
+    let t1 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t0) in
+    let _wild0 = go t1 in
+    let t2 = closure_env_main_3 { results_0: results/0 } in
+    let t3 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t2) in
+    let _wild1 = go t3 in
+    join inline_cont1(t4: Option__isize) -> unit {
+      join inline_cont2(first/0: isize) -> unit {
+        join inline_cont3(t5: Option__isize) -> unit {
+          join inline_cont4(second/0: isize) -> unit {
+            let t6 = (first/0 == second/0) in
+            join inline_cont5(t7: string) -> unit {
+              let inline0 = trait_impl#ToString#string#to_string(t7) in
+              let inline1 = @runtime(core.string_println)(inline0) in
               ()
             } in
-            let inline855 = @runtime(core.bool_to_string)(t809) in
-            jump inline_cont854(inline855)
+            let inline2 = @runtime(core.bool_to_string)(t6) in
+            jump inline_cont5(inline2)
           } in
-          let inline857 = 0 in
-          match t808 {
+          let inline3 = 0 in
+          match t5 {
             Tag_0 => {
-              jump inline_cont856(inline857)
+              jump inline_cont4(inline3)
             },
             Tag_1 => {
-              let inline858 = Option__isize::Some._0(t808) in
-              jump inline_cont856(inline858)
+              let inline4 = Option__isize::Some._0(t5) in
+              jump inline_cont4(inline4)
             },
           }
         } in
-        let inline861 = @intrinsic(channel.recv)(results/0) in
-        let inline862 = inline861.0 in
-        let inline863 = inline861.1 in
-        if inline863 {
-          let inline866 = Option__isize::Some(inline862) in
-          jump inline_cont860(inline866)
+        let inline5 = @intrinsic(channel.recv)(results/0) in
+        let inline6 = inline5.0 in
+        let inline7 = inline5.1 in
+        if inline7 {
+          let inline8 = Option__isize::Some(inline6) in
+          jump inline_cont3(inline8)
         } else {
-          jump inline_cont860(Tag_0)
+          jump inline_cont3(Tag_0)
         }
       } in
-      let inline868 = 0 in
-      match t807 {
+      let inline9 = 0 in
+      match t4 {
         Tag_0 => {
-          jump inline_cont867(inline868)
+          jump inline_cont2(inline9)
         },
         Tag_1 => {
-          let inline869 = Option__isize::Some._0(t807) in
-          jump inline_cont867(inline869)
+          let inline10 = Option__isize::Some._0(t4) in
+          jump inline_cont2(inline10)
         },
       }
     } in
-    let inline872 = @intrinsic(channel.recv)(results/0) in
-    let inline873 = inline872.0 in
-    let inline874 = inline872.1 in
-    if inline874 {
-      let inline877 = Option__isize::Some(inline873) in
-      jump inline_cont871(inline877)
+    let inline11 = @intrinsic(channel.recv)(results/0) in
+    let inline12 = inline11.0 in
+    let inline13 = inline11.1 in
+    if inline13 {
+      let inline14 = Option__isize::Some(inline12) in
+      jump inline_cont1(inline14)
     } else {
-      jump inline_cont871(Tag_0)
+      jump inline_cont1(Tag_0)
     }
   } in
-  let inline879 = 2 in
-  let inline880 = @intrinsic(channel.new)(inline879) in
-  jump inline_cont878(inline880)
+  let inline15 = 2 in
+  let inline16 = @intrinsic(channel.new)(inline15) in
+  jump inline_cont0(inline16)
 }
 
-fn inherent#Channel#Channel[T]#new__T_isize(capacity/688: isize) -> Channel[isize] {
-  let t814 = @intrinsic(channel.new)(capacity/688) in
-  t814
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize] {
+  let t0 = @intrinsic(channel.new)(capacity/0) in
+  t0
 }
 
 fn inherent#OnceCell#OnceCell[T]#get_or_init__T_isize(
-  self/655: OnceCell__isize,
-  init/656: () -> isize
+  self/0: OnceCell__isize,
+  init/0: () -> isize
 ) -> isize {
-  let t817 = @intrinsic(once_cell.get_or_init)(self/655, init/656) in
-  t817
+  let t0 = @intrinsic(once_cell.get_or_init)(self/0, init/0) in
+  t0
 }
 
-fn inherent#Channel#Channel[T]#send__T_isize(self/689: Channel[isize], value/690: isize) -> unit {
-  let t819 = @intrinsic(channel.send)(self/689, value/690) in
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+  let t0 = @intrinsic(channel.send)(self/0, value/0) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#recv__T_isize(self/691: Channel[isize]) -> Option__isize {
-  let mtmp764 = @intrinsic(channel.recv)(self/691) in
-  let x765 = mtmp764.0 in
-  let x766 = mtmp764.1 in
-  if x766 {
-    let t824 = Option__isize::Some(x765) in
-    t824
+fn inherent#Channel#Channel[T]#recv__T_isize(self/0: Channel[isize]) -> Option__isize {
+  let mtmp0 = @intrinsic(channel.recv)(self/0) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  if x1 {
+    let t0 = Option__isize::Some(x0) in
+    t0
   } else {
     Tag_0
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_isize(
-  self/720: Option__isize,
-  fallback/721: isize
-) -> isize {
-  match self/720 {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/0: isize) -> isize {
+  match self/0 {
     Tag_0 => {
-      fallback/721
+      fallback/0
     },
     Tag_1 => {
-      let x775 = Option__isize::Some._0(self/720) in
-      x775
+      let x0 = Option__isize::Some._0(self/0) in
+      x0
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont881(t830: string) -> unit {
-    let t831 = @runtime(core.string_println)(t830) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont881(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  let t834 = @runtime(core.bool_to_string)(self/401) in
-  t834
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  let t0 = @runtime(core.bool_to_string)(self/0) in
+  t0
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env798: closure_env_main_0) -> isize {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env0: closure_env_main_0) -> isize {
   41
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(env799: closure_env_main_1) -> unit {
-  let results/0 = closure_env_main_1.results_0(env799) in
-  let t840 = closure_env_main_0 {} in
-  let t841 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t840) in
-  join inline_cont884(t842: isize) -> unit {
-    let inline883 = @intrinsic(channel.send)(results/0, t842) in
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env0: closure_env_main_1) -> unit {
+  let results/0 = closure_env_main_1.results_0(env0) in
+  let t0 = closure_env_main_0 {} in
+  let t1 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t0) in
+  join inline_cont0(t2: isize) -> unit {
+    let inline0 = @intrinsic(channel.send)(results/0, t2) in
     ()
   } in
-  let inline885 = @intrinsic(once_cell.get_or_init)(VALUE, t841) in
-  jump inline_cont884(inline885)
+  let inline1 = @intrinsic(once_cell.get_or_init)(VALUE, t1) in
+  jump inline_cont0(inline1)
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(env800: closure_env_main_2) -> isize {
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env0: closure_env_main_2) -> isize {
   42
 }
 
-fn inherent#closure_env_main_3#closure_env_main_3#apply(env801: closure_env_main_3) -> unit {
-  let results/0 = closure_env_main_3.results_0(env801) in
-  let t847 = closure_env_main_2 {} in
-  let t848 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t847) in
-  join inline_cont888(t849: isize) -> unit {
-    let inline887 = @intrinsic(channel.send)(results/0, t849) in
+fn inherent#closure_env_main_3#closure_env_main_3#apply(env0: closure_env_main_3) -> unit {
+  let results/0 = closure_env_main_3.results_0(env0) in
+  let t0 = closure_env_main_2 {} in
+  let t1 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t0) in
+  join inline_cont0(t2: isize) -> unit {
+    let inline0 = @intrinsic(channel.send)(results/0, t2) in
     ()
   } in
-  let inline889 = @intrinsic(once_cell.get_or_init)(VALUE, t848) in
-  jump inline_cont888(inline889)
+  let inline1 = @intrinsic(once_cell.get_or_init)(VALUE, t1) in
+  jump inline_cont0(inline1)
 }

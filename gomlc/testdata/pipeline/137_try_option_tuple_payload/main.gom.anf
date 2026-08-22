@@ -1,120 +1,120 @@
 fn cut_pair(ok/0: bool) -> Option__(string,string) {
   if ok/0 {
-    let t808 = ("alpha", "beta") in
-    let t809 = Option__(string,string)::Some(t808) in
-    t809
+    let t0 = ("alpha", "beta") in
+    let t1 = Option__(string,string)::Some(t0) in
+    t1
   } else {
     Tag_0
   }
 }
 
-fn describe(ok/1: bool) -> Option__string {
-  join inline_cont832(mtmp796: Option__(string,string)) -> Option__string {
-    join k812(jp813: (string, string)) -> Option__string {
-      let x799 = jp813.0 in
-      let x800 = jp813.1 in
-      let t814 = (x799 + "|") in
-      let t815 = (t814 + x800) in
-      let t816 = Option__string::Some(t815) in
-      t816
+fn describe(ok/0: bool) -> Option__string {
+  join inline_cont0(mtmp0: Option__(string,string)) -> Option__string {
+    join k0(jp0: (string, string)) -> Option__string {
+      let x0 = jp0.0 in
+      let x1 = jp0.1 in
+      let t0 = (x0 + "|") in
+      let t1 = (t0 + x1) in
+      let t2 = Option__string::Some(t1) in
+      t2
     } in
-    match mtmp796 {
+    match mtmp0 {
       Tag_0 => {
         Tag_0
       },
       Tag_1 => {
-        let x797 = Option__(string,string)::Some._0(mtmp796) in
-        jump k812(x797)
+        let x2 = Option__(string,string)::Some._0(mtmp0) in
+        jump k0(x2)
       },
     }
   } in
-  if ok/1 {
-    let inline833 = ("alpha", "beta") in
-    let inline834 = Option__(string,string)::Some(inline833) in
-    jump inline_cont832(inline834)
+  if ok/0 {
+    let inline0 = ("alpha", "beta") in
+    let inline1 = Option__(string,string)::Some(inline0) in
+    jump inline_cont0(inline1)
   } else {
-    jump inline_cont832(Tag_0)
+    jump inline_cont0(Tag_0)
   }
 }
 
-fn show(opt/4: Option__string) -> string {
-  match opt/4 {
+fn show(opt/0: Option__string) -> string {
+  match opt/0 {
     Tag_0 => {
       "none"
     },
     Tag_1 => {
-      let x801 = Option__string::Some._0(opt/4) in
-      let t821 = ("some " + x801) in
-      t821
+      let x0 = Option__string::Some._0(opt/0) in
+      let t0 = ("some " + x0) in
+      t0
     },
   }
 }
 
 fn main() -> unit {
-  let t823 = describe(true) in
-  join inline_cont860(t824: string) -> unit {
-    join inline_cont857(_wild802: unit) -> unit {
-      join inline_cont842(t825: Option__string) -> unit {
-        join inline_cont838(t826: string) -> unit {
-          let inline836 = trait_impl#ToString#string#to_string(t826) in
-          let inline837 = @runtime(core.string_println)(inline836) in
+  let t0 = describe(true) in
+  join inline_cont0(t1: string) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      join inline_cont2(t2: Option__string) -> unit {
+        join inline_cont3(t3: string) -> unit {
+          let inline0 = trait_impl#ToString#string#to_string(t3) in
+          let inline1 = @runtime(core.string_println)(inline0) in
           ()
         } in
-        match t825 {
+        match t2 {
           Tag_0 => {
-            jump inline_cont838("none")
+            jump inline_cont3("none")
           },
           Tag_1 => {
-            let inline839 = Option__string::Some._0(t825) in
-            let inline841 = ("some " + inline839) in
-            jump inline_cont838(inline841)
+            let inline2 = Option__string::Some._0(t2) in
+            let inline3 = ("some " + inline2) in
+            jump inline_cont3(inline3)
           },
         }
       } in
-      let inline843 = false in
-      let inline844 = cut_pair(inline843) in
-      join inline_join845(inline846: (string, string)) -> unit {
-        let inline848 = inline846.0 in
-        let inline849 = inline846.1 in
-        let inline852 = (inline848 + "|") in
-        let inline853 = (inline852 + inline849) in
-        let inline854 = Option__string::Some(inline853) in
-        jump inline_cont842(inline854)
+      let inline4 = false in
+      let inline5 = cut_pair(inline4) in
+      join inline_join0(inline6: (string, string)) -> unit {
+        let inline7 = inline6.0 in
+        let inline8 = inline6.1 in
+        let inline9 = (inline7 + "|") in
+        let inline10 = (inline9 + inline8) in
+        let inline11 = Option__string::Some(inline10) in
+        jump inline_cont2(inline11)
       } in
-      match inline844 {
+      match inline5 {
         Tag_0 => {
-          jump inline_cont842(Tag_0)
+          jump inline_cont2(Tag_0)
         },
         Tag_1 => {
-          let inline855 = Option__(string,string)::Some._0(inline844) in
-          jump inline_join845(inline855)
+          let inline12 = Option__(string,string)::Some._0(inline5) in
+          jump inline_join0(inline12)
         },
       }
     } in
-    let inline858 = trait_impl#ToString#string#to_string(t824) in
-    let inline859 = @runtime(core.string_println)(inline858) in
-    jump inline_cont857(())
+    let inline13 = trait_impl#ToString#string#to_string(t1) in
+    let inline14 = @runtime(core.string_println)(inline13) in
+    jump inline_cont1(())
   } in
-  match t823 {
+  match t0 {
     Tag_0 => {
-      jump inline_cont860("none")
+      jump inline_cont0("none")
     },
     Tag_1 => {
-      let inline861 = Option__string::Some._0(t823) in
-      let inline863 = ("some " + inline861) in
-      jump inline_cont860(inline863)
+      let inline15 = Option__string::Some._0(t0) in
+      let inline16 = ("some " + inline15) in
+      jump inline_cont0(inline16)
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont864(t828: string) -> unit {
-    let t829 = @runtime(core.string_println)(t828) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont864(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

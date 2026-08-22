@@ -1,14 +1,14 @@
-fn trait_impl#PartialEq#Settings#eq(self/0: Settings, other/1: Settings) -> bool {
+fn trait_impl#PartialEq#Settings#eq(self/0: Settings, other/0: Settings) -> bool {
   if if if true {
-      trait_impl#PartialEq#bool#eq(Settings.enabled(self/0), Settings.enabled(other/1))
+      trait_impl#PartialEq#bool#eq(Settings.enabled(self/0), Settings.enabled(other/0))
   } else {
       false
   } {
-      trait_impl#PartialEq#isize#eq(Settings.retries(self/0), Settings.retries(other/1))
+      trait_impl#PartialEq#isize#eq(Settings.retries(self/0), Settings.retries(other/0))
   } else {
       false
   } {
-      trait_impl#PartialEq#string#eq(Settings.label(self/0), Settings.label(other/1))
+      trait_impl#PartialEq#string#eq(Settings.label(self/0), Settings.label(other/0))
   } else {
       false
   }
@@ -22,20 +22,20 @@ fn trait_impl#Default#Settings#default() -> Settings {
   }
 }
 
-fn trait_impl#Debug#Settings#debug(self/2: Settings) -> string {
-  let mtmp796 = self/2 in
-  let x797 = Settings.enabled(mtmp796) in
-  let x798 = Settings.retries(mtmp796) in
-  let x799 = Settings.label(mtmp796) in
-  let #derive2_field/5 = x799 in
-  let #derive1_field/4 = x798 in
-  let #derive0_field/3 = x797 in
-  ((((((((("Settings { " + "enabled: ") + trait_impl#Debug#bool#debug(#derive0_field/3)) + ", ") +
+fn trait_impl#Debug#Settings#debug(self/0: Settings) -> string {
+  let mtmp0 = self/0 in
+  let x0 = Settings.enabled(mtmp0) in
+  let x1 = Settings.retries(mtmp0) in
+  let x2 = Settings.label(mtmp0) in
+  let #derive2_field/0 = x2 in
+  let #derive1_field/0 = x1 in
+  let #derive0_field/0 = x0 in
+  ((((((((("Settings { " + "enabled: ") + trait_impl#Debug#bool#debug(#derive0_field/0)) + ", ") +
     "retries: ") +
-    trait_impl#Debug#isize#debug(#derive1_field/4)) +
+    trait_impl#Debug#isize#debug(#derive1_field/0)) +
     ", ") +
     "label: ") +
-    trait_impl#Debug#string#debug(#derive2_field/5)) +
+    trait_impl#Debug#string#debug(#derive2_field/0)) +
     " }")
 }
 
@@ -43,7 +43,7 @@ fn trait_impl#Default#Empty#default() -> Empty {
   Empty {}
 }
 
-fn trait_impl#Debug#Empty#debug(self/6: Empty) -> string {
+fn trait_impl#Debug#Empty#debug(self/0: Empty) -> string {
   "Empty {}"
 }
 
@@ -51,15 +51,15 @@ fn trait_impl#Default#State#default() -> State {
   State::Idle
 }
 
-fn trait_impl#Debug#State#debug(self/7: State) -> string {
-  match self/7 {
+fn trait_impl#Debug#State#debug(self/0: State) -> string {
+  match self/0 {
     State::Idle => {
       "State::Idle"
     },
-    State::Running(x800) => {
-      let x800 = State::Running._0(self/7) in
-      let #derive0_field/8 = x800 in
-      (("State::Running(" + trait_impl#Debug#isize#debug(#derive0_field/8)) + ")")
+    State::Running(x0) => {
+      let x0 = State::Running._0(self/0) in
+      let #derive0_field/0 = x0 in
+      (("State::Running(" + trait_impl#Debug#isize#debug(#derive0_field/0)) + ")")
     },
   }
 }
@@ -68,15 +68,15 @@ fn trait_impl#Default#Message#default() -> Message {
   Message::Data(trait_impl#Default#string#default(), trait_impl#Default#isize#default())
 }
 
-fn trait_impl#Debug#Message#debug(self/9: Message) -> string {
-  match self/9 {
-    Message::Data(x801, x802) => {
-      let x801 = Message::Data._0(self/9) in
-      let x802 = Message::Data._1(self/9) in
-      let #derive1_field/11 = x802 in
-      let #derive0_field/10 = x801 in
-      (((("Message::Data(" + trait_impl#Debug#string#debug(#derive0_field/10)) + ", ") +
-        trait_impl#Debug#isize#debug(#derive1_field/11)) +
+fn trait_impl#Debug#Message#debug(self/0: Message) -> string {
+  match self/0 {
+    Message::Data(x0, x1) => {
+      let x0 = Message::Data._0(self/0) in
+      let x1 = Message::Data._1(self/0) in
+      let #derive1_field/0 = x1 in
+      let #derive0_field/0 = x0 in
+      (((("Message::Data(" + trait_impl#Debug#string#debug(#derive0_field/0)) + ", ") +
+        trait_impl#Debug#isize#debug(#derive1_field/0)) +
         ")")
     },
     Message::Empty => {
@@ -89,17 +89,17 @@ fn trait_impl#Default#Event#default() -> Event {
   Event::Data(trait_impl#Default#string#default(), trait_impl#Default#isize#default())
 }
 
-fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
-  match self/12 {
-    Event::Data(x803, x804) => {
-      let x803 = Event::Data._0(self/12) in
-      let x804 = Event::Data._1(self/12) in
-      let #derive1_field/14 = x804 in
-      let #derive0_field/13 = x803 in
-      (((((("Event::Data { " + "name: ") + trait_impl#Debug#string#debug(#derive0_field/13)) +
+fn trait_impl#Debug#Event#debug(self/0: Event) -> string {
+  match self/0 {
+    Event::Data(x0, x1) => {
+      let x0 = Event::Data._0(self/0) in
+      let x1 = Event::Data._1(self/0) in
+      let #derive1_field/0 = x1 in
+      let #derive0_field/0 = x0 in
+      (((((("Event::Data { " + "name: ") + trait_impl#Debug#string#debug(#derive0_field/0)) +
         ", ") +
         "count: ") +
-        trait_impl#Debug#isize#debug(#derive1_field/14)) +
+        trait_impl#Debug#isize#debug(#derive1_field/0)) +
         " }")
     },
     Event::Empty => {
@@ -109,77 +109,77 @@ fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
 }
 
 fn main() -> unit {
-  let settings/15 = trait_impl#Default#Settings#default() in
-  let _wild805 = println__T_string(trait_impl#Debug#Settings#debug(settings/15)) in
-  let _wild806 =
+  let settings/0 = trait_impl#Default#Settings#default() in
+  let _wild0 = println__T_string(trait_impl#Debug#Settings#debug(settings/0)) in
+  let _wild1 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
         trait_impl#PartialEq#Settings#eq(
-          settings/15,
+          settings/0,
           Settings { enabled: false, retries: 0, label: "" }
         )
       )
     ) in
-  let empty/16 = trait_impl#Default#Empty#default() in
-  let _wild807 = println__T_string(trait_impl#Debug#Empty#debug(empty/16)) in
-  let pair/17 = trait_impl#Default#PairDefaults__isize#default() in
-  let _wild808 =
+  let empty/0 = trait_impl#Default#Empty#default() in
+  let _wild2 = println__T_string(trait_impl#Debug#Empty#debug(empty/0)) in
+  let pair/0 = trait_impl#Default#PairDefaults__isize#default() in
+  let _wild3 =
     println__T_string(
       inherent#isize#isize#to_string(
-        (PairDefaults__isize.first(pair/17) + PairDefaults__isize.second(pair/17))
+        (PairDefaults__isize.first(pair/0) + PairDefaults__isize.second(pair/0))
       )
     ) in
-  let _wild809 =
+  let _wild4 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
-        inherent#Option#Option[T]#is_none__T_isize(PairDefaults__isize.nested(pair/17))
+        inherent#Option#Option[T]#is_none__T_isize(PairDefaults__isize.nested(pair/0))
       )
     ) in
-  let state/18 = trait_impl#Default#State#default() in
-  let _wild810 = println__T_string(trait_impl#Debug#State#debug(state/18)) in
-  let message/19 = trait_impl#Default#Message#default() in
-  let _wild811 = println__T_string(trait_impl#Debug#Message#debug(message/19)) in
-  let event/20 = trait_impl#Default#Event#default() in
-  let _wild812 = println__T_string(trait_impl#Debug#Event#debug(event/20)) in
-  let lazy/21 = trait_impl#Default#Lazy__NoDefault#default() in
-  let _wild814 =
+  let state/0 = trait_impl#Default#State#default() in
+  let _wild5 = println__T_string(trait_impl#Debug#State#debug(state/0)) in
+  let message/0 = trait_impl#Default#Message#default() in
+  let _wild6 = println__T_string(trait_impl#Debug#Message#debug(message/0)) in
+  let event/0 = trait_impl#Default#Event#default() in
+  let _wild7 = println__T_string(trait_impl#Debug#Event#debug(event/0)) in
+  let lazy/0 = trait_impl#Default#Lazy__NoDefault#default() in
+  let _wild8 =
     println__T_string(
-      match lazy/21 {
+      match lazy/0 {
         Lazy__NoDefault::Empty => {
           "empty"
         },
-        Lazy__NoDefault::Value(x813) => {
+        Lazy__NoDefault::Value(x0) => {
           "value"
         },
       }
     ) in
-  let selected/22 = trait_impl#Default#Selected__isize#default() in
+  let selected/0 = trait_impl#Default#Selected__isize#default() in
   println__T_string(
-    match selected/22 {
-      Selected__isize::Values(x815, x816) => {
-        let x815 = Selected__isize::Values._0(selected/22) in
-        let x816 = Selected__isize::Values._1(selected/22) in
-        let second/24 = x816 in
-        let first/23 = x815 in
-        inherent#isize#isize#to_string((first/23 + second/24))
+    match selected/0 {
+      Selected__isize::Values(x1, x2) => {
+        let x1 = Selected__isize::Values._0(selected/0) in
+        let x2 = Selected__isize::Values._1(selected/0) in
+        let second/0 = x2 in
+        let first/0 = x1 in
+        inherent#isize#isize#to_string((first/0 + second/0))
       },
-      Selected__isize::Ignored(x817) => {
+      Selected__isize::Ignored(x3) => {
         "ignored"
       },
     }
   )
 }
 
-fn trait_impl#PartialEq#bool#eq(self/432: bool, other/433: bool) -> bool {
-  (self/432 == other/433)
+fn trait_impl#PartialEq#bool#eq(self/0: bool, other/0: bool) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  (self/438 == other/439)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#PartialEq#string#eq(self/434: string, other/435: string) -> bool {
-  (self/434 == other/435)
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
+  (self/0 == other/0)
 }
 
 fn trait_impl#Default#bool#default() -> bool {
@@ -194,24 +194,24 @@ fn trait_impl#Default#string#default() -> string {
   ""
 }
 
-fn trait_impl#Debug#bool#debug(self/416: bool) -> string {
-  trait_impl#ToString#bool#to_string(self/416)
+fn trait_impl#Debug#bool#debug(self/0: bool) -> string {
+  trait_impl#ToString#bool#to_string(self/0)
 }
 
-fn trait_impl#Debug#isize#debug(self/419: isize) -> string {
-  trait_impl#ToString#isize#to_string(self/419)
+fn trait_impl#Debug#isize#debug(self/0: isize) -> string {
+  trait_impl#ToString#isize#to_string(self/0)
 }
 
-fn trait_impl#Debug#string#debug(self/417: string) -> string {
-  trait_impl#ToString#string#to_string(self/417)
+fn trait_impl#Debug#string#debug(self/0: string) -> string {
+  trait_impl#ToString#string#to_string(self/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
 fn trait_impl#Default#PairDefaults__isize#default() -> PairDefaults__isize {
@@ -222,12 +222,12 @@ fn trait_impl#Default#PairDefaults__isize#default() -> PairDefaults__isize {
   }
 }
 
-fn inherent#isize#isize#to_string(self/285: isize) -> string {
-  __goml_builtin_int_to_string(self/285)
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn inherent#Option#Option[T]#is_none__T_isize(self/719: Option__isize) -> bool {
-  (!inherent#Option#Option[T]#is_some__T_isize(self/719))
+fn inherent#Option#Option[T]#is_none__T_isize(self/0: Option__isize) -> bool {
+  (!inherent#Option#Option[T]#is_some__T_isize(self/0))
 }
 
 fn trait_impl#Default#Lazy__NoDefault#default() -> Lazy__NoDefault {
@@ -238,88 +238,88 @@ fn trait_impl#Default#Selected__isize#default() -> Selected__isize {
   Selected__isize::Values(trait_impl#Default#isize#default(), trait_impl#Default#isize#default())
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
 fn trait_impl#Default#Option__isize#default() -> Option__isize {
   Option__isize::None
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn inherent#Option#Option[T]#is_some__T_isize(self/718: Option__isize) -> bool {
-  match self/718 {
+fn inherent#Option#Option[T]#is_some__T_isize(self/0: Option__isize) -> bool {
+  match self/0 {
     Option__isize::None => {
       false
     },
-    Option__isize::Some(x774) => {
+    Option__isize::Some(x0) => {
       true
     },
   }
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
-      ("-" + decimal_string((0 - (value/214 as u64))))
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      ("-" + decimal_string((0 - (value/0 as u64))))
   } else {
-      decimal_string((value/214 as u64))
+      decimal_string((value/0 as u64))
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         return "0"
     } else {
         ()
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
-        let _wild352 =
-          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-        let _wild355 =
-          let compound_old353 = remaining/210 in
-          let compound_value354 = 10 in
-          remaining/210 = (compound_old353 / compound_value354) in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        let _wild2 =
+          inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+        let _wild3 =
+          let compound_old0 = remaining/0 in
+          let compound_value0 = 10 in
+          remaining/0 = (compound_old0 / compound_value0) in
         ()
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
-        let _wild357 =
-          inherent#Vec#Vec[T]#push__T_u8(
-            bytes/211,
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        let _wild5 =
+          inherent#Vec#Vec[T]#push__T_u0(
+            bytes/0,
             @intrinsic(vec.get)(
-              reversed/209,
-              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              reversed/0,
+              ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
             )
           ) in
-        let _wild360 =
-          let compound_old358 = offset/212 in
-          let compound_value359 = 1 in
-          offset/212 = (compound_old358 + compound_value359) in
+        let _wild6 =
+          let compound_old1 = offset/0 in
+          let compound_value1 = 1 in
+          offset/0 = (compound_old1 + compound_value1) in
         ()
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-  let x364 = mtmp362.1 in
-  let result/213 = x364 in
-  result/213
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let result/0 = x0 in
+  result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

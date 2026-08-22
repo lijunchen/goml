@@ -1,90 +1,90 @@
-fn trait_impl#Describe#DefaultValue#name(self/3: DefaultValue) -> string {
-  let t802 = DefaultValue.name(self/3) in
-  t802
+fn trait_impl#Describe#DefaultValue#name(self/0: DefaultValue) -> string {
+  let t0 = DefaultValue.name(self/0) in
+  t0
 }
 
 fn trait_impl#Describe#DefaultValue#describe(default_arg0: DefaultValue) -> string {
-  let inline832 = trait_impl#Describe#DefaultValue#name(default_arg0) in
-  let inline833 = ("default:" + inline832) in
-  inline833
+  let inline0 = trait_impl#Describe#DefaultValue#name(default_arg0) in
+  let inline1 = ("default:" + inline0) in
+  inline1
 }
 
-fn trait_impl#Describe#OverrideValue#name(self/4: OverrideValue) -> string {
+fn trait_impl#Describe#OverrideValue#name(self/0: OverrideValue) -> string {
   "override-name"
 }
 
-fn trait_impl#Describe#OverrideValue#describe(self/5: OverrideValue) -> string {
+fn trait_impl#Describe#OverrideValue#describe(self/0: OverrideValue) -> string {
   "override"
 }
 
-fn describe_dyn(value/6: dyn Describe) -> string {
-  let t812 = dyn_call[Describe::describe](value/6) in
-  t812
+fn describe_dyn(value/0: dyn Describe) -> string {
+  let t0 = dyn_call[Describe::describe](value/0) in
+  t0
 }
 
 fn main() -> unit {
-  let default_value/7 = DefaultValue { name: "value" } in
-  join inline_cont851(t814: string) -> unit {
-    join inline_cont848(_wild796: unit) -> unit {
-      join inline_cont846(t815: string) -> unit {
-        join inline_cont843(_wild797: unit) -> unit {
-          join inline_cont842(t817: string) -> unit {
-            join inline_cont839(_wild798: unit) -> unit {
-              let t818 = to_dyn[Describe]{DefaultValue}(default_value/7) in
-              join inline_cont837(t819: string) -> unit {
-                let inline835 = trait_impl#ToString#string#to_string(t819) in
-                let inline836 = @runtime(core.string_println)(inline835) in
+  let default_value/0 = DefaultValue { name: "value" } in
+  join inline_cont0(t0: string) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      join inline_cont2(t1: string) -> unit {
+        join inline_cont3(_wild1: unit) -> unit {
+          join inline_cont4(t2: string) -> unit {
+            join inline_cont5(_wild2: unit) -> unit {
+              let t3 = to_dyn[Describe]{DefaultValue}(default_value/0) in
+              join inline_cont6(t4: string) -> unit {
+                let inline0 = trait_impl#ToString#string#to_string(t4) in
+                let inline1 = @runtime(core.string_println)(inline0) in
                 ()
               } in
-              let inline838 = dyn_call[Describe::describe](t818) in
-              jump inline_cont837(inline838)
+              let inline2 = dyn_call[Describe::describe](t3) in
+              jump inline_cont6(inline2)
             } in
-            let inline840 = trait_impl#ToString#string#to_string(t817) in
-            let inline841 = @runtime(core.string_println)(inline840) in
-            jump inline_cont839(())
+            let inline3 = trait_impl#ToString#string#to_string(t2) in
+            let inline4 = @runtime(core.string_println)(inline3) in
+            jump inline_cont5(())
           } in
-          jump inline_cont842("override")
+          jump inline_cont4("override")
         } in
-        let inline844 = trait_impl#ToString#string#to_string(t815) in
-        let inline845 = @runtime(core.string_println)(inline844) in
-        jump inline_cont843(())
+        let inline5 = trait_impl#ToString#string#to_string(t1) in
+        let inline6 = @runtime(core.string_println)(inline5) in
+        jump inline_cont3(())
       } in
-      let inline847 = "generic" in
-      jump inline_cont846(inline847)
+      let inline7 = "generic" in
+      jump inline_cont2(inline7)
     } in
-    let inline849 = trait_impl#ToString#string#to_string(t814) in
-    let inline850 = @runtime(core.string_println)(inline849) in
-    jump inline_cont848(())
+    let inline8 = trait_impl#ToString#string#to_string(t0) in
+    let inline9 = @runtime(core.string_println)(inline8) in
+    jump inline_cont1(())
   } in
-  let inline852 = trait_impl#Describe#DefaultValue#name(default_value/7) in
-  let inline853 = ("default:" + inline852) in
-  jump inline_cont851(inline853)
+  let inline10 = trait_impl#Describe#DefaultValue#name(default_value/0) in
+  let inline11 = ("default:" + inline10) in
+  jump inline_cont0(inline11)
 }
 
 fn trait_default#Describe#describe__Self_DefaultValue(self/0: DefaultValue) -> string {
-  join inline_cont854(t822: string) -> string {
-    let t823 = ("default:" + t822) in
-    t823
+  join inline_cont0(t0: string) -> string {
+    let t1 = ("default:" + t0) in
+    t1
   } in
-  let inline855 = DefaultValue.name(self/0) in
-  jump inline_cont854(inline855)
+  let inline0 = DefaultValue.name(self/0) in
+  jump inline_cont0(inline0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont856(t825: string) -> unit {
-    let t826 = @runtime(core.string_println)(t825) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont856(value/1)
+  jump inline_cont0(value/0)
 }
 
 fn trait_default#Keep#keep__Self_DefaultValue__T_string(
-  self/1: DefaultValue,
-  value/2: string
+  self/0: DefaultValue,
+  value/0: string
 ) -> string {
-  value/2
+  value/0
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

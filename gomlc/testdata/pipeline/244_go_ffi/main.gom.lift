@@ -1,30 +1,30 @@
 fn main() -> unit {
-  let _wild796 = println__T_string(@go_ffi(strings, ToUpper)("goml")) in
-  let mtmp797 = @go_ffi(strings, Cut)("left:right", ":") in
-  let x798 = mtmp797.0 in
-  let x799 = mtmp797.1 in
-  let x800 = mtmp797.2 in
-  let found/2 = x800 in
-  let after/1 = x799 in
-  let before/0 = x798 in
-  let _wild801 = println__T_string(before/0) in
-  let _wild802 = println__T_string(after/1) in
-  let _wild803 = println__T_bool(found/2) in
+  let _wild0 = println__T_string(@go_ffi(strings, ToUpper)("goml")) in
+  let mtmp0 = @go_ffi(strings, Cut)("left:right", ":") in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  let x2 = mtmp0.2 in
+  let found/0 = x2 in
+  let after/0 = x1 in
+  let before/0 = x0 in
+  let _wild1 = println__T_string(before/0) in
+  let _wild2 = println__T_string(after/0) in
+  let _wild3 = println__T_bool(found/0) in
   @go_ffi(runtime, Gosched)()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }

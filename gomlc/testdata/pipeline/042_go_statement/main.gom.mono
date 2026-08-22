@@ -1,46 +1,46 @@
 fn child(signal/0: Ref[i32]) -> unit {
-  inherent#Ref#Ref[T]#set__T_i32(signal/0, 1)
+  inherent#Ref#Ref[T]#set__T_i0(signal/0, 1)
 }
 
 fn main() -> unit {
-  let signal/1 = inherent#Ref#Ref[T]#new__T_i32(0) in
-  let _wild796 =
+  let signal/0 = inherent#Ref#Ref[T]#new__T_i0(0) in
+  let _wild0 =
     go || {
-      child(signal/1)
+      child(signal/0)
     } in
-  let _wild797 =
-    while (inherent#Ref#Ref[T]#get__T_i32(signal/1) < 1) {
+  let _wild1 =
+    while (inherent#Ref#Ref[T]#get__T_i0(signal/0) < 1) {
         {
           ()
         }
     } in
-  let _wild798 = println__T_string("main") in
+  let _wild2 = println__T_string("main") in
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/686: Ref[i32], value/687: i32) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn inherent#Ref#Ref[T]#new__T_i32(value/684: i32) -> Ref[i32] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new__T_i32(value/0: i32) -> Ref[i32] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#get__T_i32(self/685: Ref[i32]) -> i32 {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  (self/444 == other/445)
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  @runtime(core.int32_hash)(self/467)
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  @runtime(core.int32_hash)(self/0)
 }

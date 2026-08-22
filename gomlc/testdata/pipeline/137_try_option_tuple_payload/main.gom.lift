@@ -6,49 +6,49 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
   }
 }
 
-fn describe(ok/1: bool) -> Option__string {
-  let mtmp798 =
-    let mtmp796 = cut_pair(ok/1) in
-    match mtmp796 {
+fn describe(ok/0: bool) -> Option__string {
+  let mtmp0 =
+    let mtmp1 = cut_pair(ok/0) in
+    match mtmp1 {
       Option__(string,string)::None => {
         return Option__string::None
       },
-      Option__(string,string)::Some(x797) => {
-        let x797 = Option__(string,string)::Some._0(mtmp796) in
-        let try_value/13 = x797 in
-        try_value/13
+      Option__(string,string)::Some(x0) => {
+        let x0 = Option__(string,string)::Some._0(mtmp1) in
+        let try_value/0 = x0 in
+        try_value/0
       },
     } in
-  let x799 = mtmp798.0 in
-  let x800 = mtmp798.1 in
-  let after/3 = x800 in
-  let before/2 = x799 in
-  Option__string::Some(((before/2 + "|") + after/3))
+  let x1 = mtmp0.0 in
+  let x2 = mtmp0.1 in
+  let after/0 = x2 in
+  let before/0 = x1 in
+  Option__string::Some(((before/0 + "|") + after/0))
 }
 
-fn show(opt/4: Option__string) -> string {
-  match opt/4 {
+fn show(opt/0: Option__string) -> string {
+  match opt/0 {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x801) => {
-      let x801 = Option__string::Some._0(opt/4) in
-      let value/5 = x801 in
-      ("some " + value/5)
+    Option__string::Some(x0) => {
+      let x0 = Option__string::Some._0(opt/0) in
+      let value/0 = x0 in
+      ("some " + value/0)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild802 = println__T_string(show(describe(true))) in
-  let _wild803 = println__T_string(show(describe(false))) in
+  let _wild0 = println__T_string(show(describe(true))) in
+  let _wild1 = println__T_string(show(describe(false))) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

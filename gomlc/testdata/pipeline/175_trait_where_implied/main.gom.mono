@@ -2,25 +2,25 @@ fn trait_impl#Ready#Worker#state(self/0: Worker) -> string {
   (Worker.name(self/0) + ":ready")
 }
 
-fn trait_impl#Service#[Worker]@Station#get(self/1: Station) -> Worker {
-  Station.worker(self/1)
+fn trait_impl#Service#[Worker]@Station#get(self/0: Station) -> Worker {
+  Station.worker(self/0)
 }
 
 fn main() -> unit {
-  let _wild796 =
+  let _wild0 =
     println__T_string(
       describe__S_Station__T_Worker(Station { worker: Worker { name: "build" } })
     ) in
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn describe__S_Station__T_Worker(service/2: Station) -> string {
-  trait_impl#Ready#Worker#state(trait_impl#Service#[Worker]@Station#get(service/2))
+fn describe__S_Station__T_Worker(service/0: Station) -> string {
+  trait_impl#Ready#Worker#state(trait_impl#Service#[Worker]@Station#get(service/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

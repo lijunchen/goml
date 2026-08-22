@@ -1,40 +1,40 @@
 fn trait_impl#PartialEq#AlwaysDifferent#eq(
   self/0: AlwaysDifferent,
-  other/1: AlwaysDifferent
+  other/0: AlwaysDifferent
 ) -> bool {
   false
 }
 
 fn main() -> unit {
-  let first/2 = AlwaysDifferent { value: 7 } in
-  let second/3 = AlwaysDifferent { value: 7 } in
-  let _wild796 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3)) in
-  let _wild797 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/2, second/3))) in
-  let left_tuple/4 = (AlwaysDifferent { value: 1 }, 2) in
-  let right_tuple/5 = (AlwaysDifferent { value: 1 }, 2) in
-  let _wild800 =
+  let first/0 = AlwaysDifferent { value: 7 } in
+  let second/0 = AlwaysDifferent { value: 7 } in
+  let _wild0 = println__T_bool(trait_impl#PartialEq#AlwaysDifferent#eq(first/0, second/0)) in
+  let _wild1 = println__T_bool((!trait_impl#PartialEq#AlwaysDifferent#eq(first/0, second/0))) in
+  let left_tuple/0 = (AlwaysDifferent { value: 1 }, 2) in
+  let right_tuple/0 = (AlwaysDifferent { value: 1 }, 2) in
+  let _wild2 =
     println__T_bool(
-      let _eq_lhs798 = left_tuple/4 in
-      let _eq_rhs799 = right_tuple/5 in
-      if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs798.0, _eq_rhs799.0) {
-          trait_impl#PartialEq#isize#eq(_eq_lhs798.1, _eq_rhs799.1)
+      let _eq_lhs0 = left_tuple/0 in
+      let _eq_rhs0 = right_tuple/0 in
+      if trait_impl#PartialEq#AlwaysDifferent#eq(_eq_lhs0.0, _eq_rhs0.0) {
+          trait_impl#PartialEq#isize#eq(_eq_lhs0.1, _eq_rhs0.1)
       } else {
           false
       }
     ) in
-  let left_array/6 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
-  let right_array/7 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
-  let _wild803 =
+  let left_array/0 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
+  let right_array/0 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
+  let _wild3 =
     println__T_bool(
-      let _eq_lhs801 = left_array/6 in
-      let _eq_rhs802 = right_array/7 in
+      let _eq_lhs1 = left_array/0 in
+      let _eq_rhs1 = right_array/0 in
       if trait_impl#PartialEq#AlwaysDifferent#eq(
-        @intrinsic(array.get)(_eq_lhs801, 0),
-        @intrinsic(array.get)(_eq_rhs802, 0)
+        @intrinsic(array.get)(_eq_lhs1, 0),
+        @intrinsic(array.get)(_eq_rhs1, 0)
       ) {
           trait_impl#PartialEq#AlwaysDifferent#eq(
-            @intrinsic(array.get)(_eq_lhs801, 1),
-            @intrinsic(array.get)(_eq_rhs802, 1)
+            @intrinsic(array.get)(_eq_lhs1, 1),
+            @intrinsic(array.get)(_eq_rhs1, 1)
           )
       } else {
           false
@@ -43,14 +43,14 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  (self/438 == other/439)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }

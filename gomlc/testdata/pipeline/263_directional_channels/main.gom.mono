@@ -1,32 +1,32 @@
 fn main() -> unit {
   let channel/0 = inherent#Channel#Channel[T]#new__T_isize(2) in
-  let mtmp796 = inherent#Channel#Channel[T]#split__T_isize(channel/0) in
+  let mtmp0 = inherent#Channel#Channel[T]#split__T_isize(channel/0) in
   {
-    let x797 = mtmp796.0 in
-    let x798 = mtmp796.1 in
+    let x0 = mtmp0.0 in
+    let x1 = mtmp0.1 in
     {
-      let receiver/2 = x798 in
+      let receiver/0 = x1 in
       {
-        let sender/1 = x797 in
+        let sender/0 = x0 in
         {
-          let _wild799 = inherent#Sender#Sender[T]#send__T_isize(sender/1, 7) in
-          let _wild800 =
+          let _wild0 = inherent#Sender#Sender[T]#send__T_isize(sender/0, 7) in
+          let _wild1 =
             select priority {
-              recv(receiver/2) as value/3 => {
-                println__T_isize(inherent#Option#Option[T]#unwrap_or__T_isize(value/3, 0))
+              recv(receiver/0) as value/0 => {
+                println__T_isize(inherent#Option#Option[T]#unwrap_or__T_isize(value/0, 0))
               },
               default => {
                 println__T_isize(1)
               },
             } in
-          let channel/4 = inherent#Channel#Channel[T]#new__T_isize(1) in
-          let sender/5 = inherent#Channel#Channel[T]#sender__T_isize(channel/4) in
-          let receiver/6 = inherent#Channel#Channel[T]#receiver__T_isize(channel/4) in
+          let channel/1 = inherent#Channel#Channel[T]#new__T_isize(1) in
+          let sender/1 = inherent#Channel#Channel[T]#sender__T_isize(channel/1) in
+          let receiver/1 = inherent#Channel#Channel[T]#receiver__T_isize(channel/1) in
           select priority {
-            send(sender/5, 9) => {
+            send(sender/1, 9) => {
               println__T_isize(
                 inherent#Option#Option[T]#unwrap_or__T_isize(
-                  inherent#Receiver#Receiver[T]#recv__T_isize(receiver/6),
+                  inherent#Receiver#Receiver[T]#recv__T_isize(receiver/1),
                   0
                 )
               )
@@ -41,66 +41,63 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Channel#Channel[T]#new__T_isize(capacity/688: isize) -> Channel[isize] {
-  @intrinsic(channel.new)(capacity/688)
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize] {
+  @intrinsic(channel.new)(capacity/0)
 }
 
-fn inherent#Channel#Channel[T]#split__T_isize(self/697: Channel[isize]) -> (
+fn inherent#Channel#Channel[T]#split__T_isize(self/0: Channel[isize]) -> (
   Sender[isize],
   Receiver[isize]
 ) {
-  @intrinsic(channel.split)(self/697)
+  @intrinsic(channel.split)(self/0)
 }
 
-fn inherent#Sender#Sender[T]#send__T_isize(self/698: Sender[isize], value/699: isize) -> unit {
-  @intrinsic(channel.send)(self/698, value/699)
+fn inherent#Sender#Sender[T]#send__T_isize(self/0: Sender[isize], value/0: isize) -> unit {
+  @intrinsic(channel.send)(self/0, value/0)
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
+fn println__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_isize(
-  self/720: Option__isize,
-  fallback/721: isize
-) -> isize {
-  match self/720 {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/0: isize) -> isize {
+  match self/0 {
     Option__isize::None => {
-      fallback/721
+      fallback/0
     },
-    Option__isize::Some(x775) => {
+    Option__isize::Some(x0) => {
       {
-        let x775 = Option__isize::Some._0(self/720) in
+        let x0 = Option__isize::Some._0(self/0) in
         {
-          let value/722 = x775 in
-          value/722
+          let value/0 = x0 in
+          value/0
         }
       }
     },
   }
 }
 
-fn inherent#Channel#Channel[T]#sender__T_isize(self/695: Channel[isize]) -> Sender[isize] {
-  @intrinsic(channel.sender)(self/695)
+fn inherent#Channel#Channel[T]#sender__T_isize(self/0: Channel[isize]) -> Sender[isize] {
+  @intrinsic(channel.sender)(self/0)
 }
 
-fn inherent#Channel#Channel[T]#receiver__T_isize(self/696: Channel[isize]) -> Receiver[isize] {
-  @intrinsic(channel.receiver)(self/696)
+fn inherent#Channel#Channel[T]#receiver__T_isize(self/0: Channel[isize]) -> Receiver[isize] {
+  @intrinsic(channel.receiver)(self/0)
 }
 
-fn inherent#Receiver#Receiver[T]#recv__T_isize(self/701: Receiver[isize]) -> Option__isize {
-  let mtmp767 = @intrinsic(channel.recv)(self/701) in
+fn inherent#Receiver#Receiver[T]#recv__T_isize(self/0: Receiver[isize]) -> Option__isize {
+  let mtmp0 = @intrinsic(channel.recv)(self/0) in
   {
-    let x768 = mtmp767.0 in
-    let x769 = mtmp767.1 in
+    let x0 = mtmp0.0 in
+    let x1 = mtmp0.1 in
     {
-      let ok/703 = x769 in
+      let ok/0 = x1 in
       {
-        let value/702 = x768 in
+        let value/0 = x0 in
         {
-          if ok/703 {
+          if ok/0 {
               {
-                Option__isize::Some(value/702)
+                Option__isize::Some(value/0)
               }
           } else {
               {
@@ -113,29 +110,29 @@ fn inherent#Receiver#Receiver[T]#recv__T_isize(self/701: Receiver[isize]) -> Opt
   }
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -144,58 +141,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

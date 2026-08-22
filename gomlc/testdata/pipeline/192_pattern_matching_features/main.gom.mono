@@ -1,20 +1,20 @@
 fn unwrap_either(value/0: Either) -> i32 {
   {
-    let match796 = value/0 in
+    let match0 = value/0 in
     {
-      let whole/1 = match796 in
-      match whole/1 {
-        Either::Left(p800) => {
+      let whole/0 = match0 in
+      match whole/0 {
+        Either::Left(p0) => {
           {
-            let shared/2 = Either::Left._0(whole/1) in
-            (shared/2 +
-              match whole/1 {
-                Either::Left(x797) => {
+            let shared/0 = Either::Left._0(whole/0) in
+            (shared/0 +
+              match whole/0 {
+                Either::Left(x0) => {
                   {
                     0
                   }
                 },
-                Either::Right(x798) => {
+                Either::Right(x1) => {
                   {
                     1
                   }
@@ -23,18 +23,18 @@ fn unwrap_either(value/0: Either) -> i32 {
           }
         },
         _ =>
-          match whole/1 {
-            Either::Right(p799) => {
+          match whole/0 {
+            Either::Right(p1) => {
               {
-                let shared/2 = Either::Right._0(whole/1) in
-                (shared/2 +
-                  match whole/1 {
-                    Either::Left(x797) => {
+                let shared/0 = Either::Right._0(whole/0) in
+                (shared/0 +
+                  match whole/0 {
+                    Either::Left(x0) => {
                       {
                         0
                       }
                     },
-                    Either::Right(x798) => {
+                    Either::Right(x1) => {
                       {
                         1
                       }
@@ -49,11 +49,11 @@ fn unwrap_either(value/0: Either) -> i32 {
   }
 }
 
-fn char_group(value/3: char) -> string {
+fn char_group(value/0: char) -> string {
   {
-    let match801 = value/3 in
-    if (match801 >= 'a') {
-        if (match801 <= 'c') {
+    let match0 = value/0 in
+    if (match0 >= 'a') {
+        if (match0 <= 'c') {
             "abc"
         } else {
             "other"
@@ -64,30 +64,30 @@ fn char_group(value/3: char) -> string {
   }
 }
 
-fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
-  let from_if/9 =
-    match value/4 {
-      Maybe::Some(x802) => {
+fn describe(value/0: Maybe, numbers/0: Vec[i32], view/0: Slice[i32]) -> string {
+  let from_if/0 =
+    match value/0 {
+      Maybe::Some(x0) => {
         {
-          let x802 = Maybe::Some._0(value/4) in
+          let x0 = Maybe::Some._0(value/0) in
           {
-            let n/7 = x802 in
+            let n/0 = x0 in
             {
               {
-                let match803 = n/7 in
-                if (match803 == 0) {
+                let match0 = n/0 in
+                if (match0 == 0) {
                     "small"
                 } else {
-                    if (match803 == 1) {
+                    if (match0 == 1) {
                         "small"
                     } else {
-                        if (match803 >= 2) {
-                            if (match803 <= 4) {
+                        if (match0 >= 2) {
+                            if (match0 <= 4) {
                                 "middle"
                             } else {
                                 {
-                                  let x/8 = match803 in
-                                  if (x/8 > 10) {
+                                  let x/0 = match0 in
+                                  if (x/0 > 10) {
                                       "large"
                                   } else {
                                       "other"
@@ -96,8 +96,8 @@ fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
                             }
                         } else {
                             {
-                              let x/8 = match803 in
-                              if (x/8 > 10) {
+                              let x/0 = match0 in
+                              if (x/0 > 10) {
                                   "large"
                               } else {
                                   "other"
@@ -116,21 +116,21 @@ fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
           "none"
         },
     } in
-  let from_vec/12 =
+  let from_vec/0 =
     {
-      let match804 = numbers/5 in
-      if (@intrinsic(vec.len)(match804) == 0) {
+      let match1 = numbers/0 in
+      if (@intrinsic(vec.len)(match1) == 0) {
           "empty"
       } else {
-          if (@intrinsic(vec.len)(match804) >= 1) {
+          if (@intrinsic(vec.len)(match1) >= 1) {
               {
-                let first/10 = @intrinsic(vec.get)(match804, 0) in
+                let first/0 = @intrinsic(vec.get)(match1, 0) in
                 {
-                  let tail/11 = @intrinsic(slice.new)(match804, 1, @intrinsic(vec.len)(match804)) in
-                  if (first/10 == (inherent#Slice#Slice[T]#len__T_i32(tail/11) as i32)) {
+                  let tail/0 = @intrinsic(slice.new)(match1, 1, @intrinsic(vec.len)(match1)) in
+                  if (first/0 == (inherent#Slice#Slice[T]#len__T_i0(tail/0) as i32)) {
                       "balanced"
                   } else {
-                      if (@intrinsic(vec.len)(match804) >= 1) {
+                      if (@intrinsic(vec.len)(match1) >= 1) {
                           "nonempty"
                       } else {
                           @intrinsic(compiler.missing)("")
@@ -139,7 +139,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
                 }
               }
           } else {
-              if (@intrinsic(vec.len)(match804) >= 1) {
+              if (@intrinsic(vec.len)(match1) >= 1) {
                   "nonempty"
               } else {
                   @intrinsic(compiler.missing)("")
@@ -147,16 +147,16 @@ fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
           }
       }
     } in
-  let from_slice/15 =
+  let from_slice/0 =
     {
-      let match805 = view/6 in
-      if (@intrinsic(slice.len)(match805) >= 2) {
+      let match2 = view/0 in
+      if (@intrinsic(slice.len)(match2) >= 2) {
           {
-            let first/13 = @intrinsic(slice.get)(match805, 0) in
+            let first/1 = @intrinsic(slice.get)(match2, 0) in
             {
-              let last/14 =
-                @intrinsic(slice.get)(match805, ((@intrinsic(slice.len)(match805) - 1) + 0)) in
-              if (first/13 == last/14) {
+              let last/0 =
+                @intrinsic(slice.get)(match2, ((@intrinsic(slice.len)(match2) - 1) + 0)) in
+              if (first/1 == last/0) {
                   "same ends"
               } else {
                   "different ends"
@@ -167,58 +167,53 @@ fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
           "different ends"
       }
     } in
-  ((((from_if/9 + "/") + from_vec/12) + "/") + from_slice/15)
+  ((((from_if/0 + "/") + from_vec/0) + "/") + from_slice/0)
 }
 
 fn main() -> unit {
-  let pair/16 = Pair { left: 3, right: 9 } in
-  let mtmp806 = pair/16 in
+  let pair/0 = Pair { left: 3, right: 9 } in
+  let mtmp0 = pair/0 in
   {
-    let x807 = Pair.left(mtmp806) in
+    let x0 = Pair.left(mtmp0) in
     {
-      let left/17 = x807 in
+      let left/0 = x0 in
       {
-        let values/18 = [1, 2, 3, 1] in
-        let mtmp809 = values/18 in
+        let values/0 = [1, 2, 3, 1] in
+        let mtmp1 = values/0 in
         {
-          let first/19 = @intrinsic(array.get)(mtmp809, 0) in
+          let first/0 = @intrinsic(array.get)(mtmp1, 0) in
           {
-            let last/21 = @intrinsic(array.get)(mtmp809, 3) in
+            let last/0 = @intrinsic(array.get)(mtmp1, 3) in
             {
-              let middle/20 =
-                [@intrinsic(array.get)(mtmp809, 1), @intrinsic(array.get)(mtmp809, 2)] in
+              let middle/0 = [@intrinsic(array.get)(mtmp1, 1), @intrinsic(array.get)(mtmp1, 2)] in
               {
-                let _wild810 = println__T_i32(left/17) in
-                let _wild811 =
-                  println__T_isize(((first/19 + @intrinsic(array.get)(middle/20, 0)) + last/21)) in
-                let numbers/22 = @intrinsic(vec.new)() in
-                let _wild812 = @intrinsic(vec.push)(numbers/22, 1) in
-                let _wild813 = @intrinsic(vec.push)(numbers/22, 8) in
-                let view/23 =
-                  @intrinsic(slice.new)(
-                    numbers/22,
-                    0,
-                    inherent#Vec#Vec[T]#len__T_i32(numbers/22)
-                  ) in
-                let _wild814 = println__T_string(describe(Maybe::Some(3), numbers/22, view/23)) in
-                let empty/24 = @intrinsic(vec.new)() in
-                let empty_view/25 = @intrinsic(slice.new)(empty/24, 0, 0) in
-                let _wild815 = println__T_string(describe(Maybe::None, empty/24, empty_view/25)) in
-                let state/26 = inherent#Ref#Ref[T]#new__T_Maybe(Maybe::Some(7)) in
-                let _wild820 =
+                let _wild0 = println__T_i0(left/0) in
+                let _wild1 =
+                  println__T_isize(((first/0 + @intrinsic(array.get)(middle/0, 0)) + last/0)) in
+                let numbers/0 = @intrinsic(vec.new)() in
+                let _wild2 = @intrinsic(vec.push)(numbers/0, 1) in
+                let _wild3 = @intrinsic(vec.push)(numbers/0, 8) in
+                let view/0 =
+                  @intrinsic(slice.new)(numbers/0, 0, inherent#Vec#Vec[T]#len__T_i0(numbers/0)) in
+                let _wild4 = println__T_string(describe(Maybe::Some(3), numbers/0, view/0)) in
+                let empty/0 = @intrinsic(vec.new)() in
+                let empty_view/0 = @intrinsic(slice.new)(empty/0, 0, 0) in
+                let _wild5 = println__T_string(describe(Maybe::None, empty/0, empty_view/0)) in
+                let state/0 = inherent#Ref#Ref[T]#new__T_Maybe(Maybe::Some(7)) in
+                let _wild6 =
                   while true {
                       {
-                        let mtmp816 = inherent#Ref#Ref[T]#get__T_Maybe(state/26) in
-                        match mtmp816 {
-                          Maybe::Some(x817) => {
+                        let mtmp2 = inherent#Ref#Ref[T]#get__T_Maybe(state/0) in
+                        match mtmp2 {
+                          Maybe::Some(x1) => {
                             {
-                              let x817 = Maybe::Some._0(mtmp816) in
+                              let x1 = Maybe::Some._0(mtmp2) in
                               {
-                                let n/27 = x817 in
+                                let n/0 = x1 in
                                 {
-                                  let _wild818 = println__T_i32(n/27) in
-                                  let _wild819 =
-                                    inherent#Ref#Ref[T]#set__T_Maybe(state/26, Maybe::None) in
+                                  let _wild7 = println__T_i0(n/0) in
+                                  let _wild8 =
+                                    inherent#Ref#Ref[T]#set__T_Maybe(state/0, Maybe::None) in
                                 }
                               }
                             }
@@ -227,17 +222,17 @@ fn main() -> unit {
                         }
                       }
                   } in
-                let _wild824 =
+                let _wild9 =
                   {
-                    let mtmp821 = Maybe::Some(6) in
-                    match mtmp821 {
-                      Maybe::Some(x822) => {
+                    let mtmp3 = Maybe::Some(6) in
+                    match mtmp3 {
+                      Maybe::Some(x2) => {
                         {
-                          let x822 = Maybe::Some._0(mtmp821) in
+                          let x2 = Maybe::Some._0(mtmp3) in
                           {
-                            let n/28 = x822 in
+                            let n/1 = x2 in
                             {
-                              let _wild823 = println__T_i32(n/28) in
+                              let _wild10 = println__T_i0(n/1) in
                             }
                           }
                         }
@@ -245,26 +240,26 @@ fn main() -> unit {
                       _ => (),
                     }
                   } in
-                let aliased/32 =
+                let aliased/0 =
                   {
-                    let match825 = Maybe::Some(5) in
+                    let match0 = Maybe::Some(5) in
                     {
-                      let whole/29 = match825 in
-                      match whole/29 {
-                        Maybe::Some(p827) => {
+                      let whole/0 = match0 in
+                      match whole/0 {
+                        Maybe::Some(p0) => {
                           {
-                            let value/30 = Maybe::Some._0(whole/29) in
-                            (value/30 +
-                              match whole/29 {
+                            let value/0 = Maybe::Some._0(whole/0) in
+                            (value/0 +
+                              match whole/0 {
                                 Maybe::None => {
                                   0
                                 },
-                                Maybe::Some(x826) => {
+                                Maybe::Some(x3) => {
                                   {
-                                    let x826 = Maybe::Some._0(whole/29) in
+                                    let x3 = Maybe::Some._0(whole/0) in
                                     {
-                                      let inner/31 = x826 in
-                                      inner/31
+                                      let inner/0 = x3 in
+                                      inner/0
                                     }
                                   }
                                 },
@@ -272,7 +267,7 @@ fn main() -> unit {
                           }
                         },
                         _ =>
-                          match match825 {
+                          match match0 {
                             Maybe::None => {
                               0
                             },
@@ -281,9 +276,9 @@ fn main() -> unit {
                       }
                     }
                   } in
-                let _wild828 = println__T_i32(aliased/32) in
-                let _wild829 = println__T_i32(unwrap_either(Either::Right(11))) in
-                let _wild830 = println__T_string(char_group('b')) in
+                let _wild11 = println__T_i0(aliased/0) in
+                let _wild12 = println__T_i0(unwrap_either(Either::Right(11))) in
+                let _wild13 = println__T_string(char_group('b')) in
               }
             }
           }
@@ -293,73 +288,73 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Slice#Slice[T]#len__T_i32(self/660: Slice[i32]) -> isize {
-  @intrinsic(slice.len)(self/660)
+fn inherent#Slice#Slice[T]#len__T_i32(self/0: Slice[i32]) -> isize {
+  @intrinsic(slice.len)(self/0)
 }
 
-fn println__T_i32(value/1: i32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
+fn println__T_i32(value/0: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
+fn println__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn inherent#Vec#Vec[T]#len__T_i32(self/526: Vec[i32]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_i32(self/0: Vec[i32]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn inherent#Ref#Ref[T]#new__T_Maybe(value/684: Maybe) -> Ref[Maybe] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new__T_Maybe(value/0: Maybe) -> Ref[Maybe] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Maybe(self/685: Ref[Maybe]) -> Maybe {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get__T_Maybe(self/0: Ref[Maybe]) -> Maybe {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Maybe(self/686: Ref[Maybe], value/687: Maybe) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set__T_Maybe(self/0: Ref[Maybe], value/0: Maybe) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn trait_impl#ToString#i32#to_string(self/407: i32) -> string {
-  __goml_builtin_int32_to_string(self/407)
+fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -368,58 +363,58 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }

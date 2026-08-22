@@ -2,62 +2,62 @@ fn trait_impl#Base#Value#base(self/0: Value) -> string {
   "B"
 }
 
-fn trait_impl#Left#Value#left(self/1: Value) -> string {
+fn trait_impl#Left#Value#left(self/0: Value) -> string {
   "L"
 }
 
-fn trait_impl#Right#Value#right(self/2: Value) -> string {
+fn trait_impl#Right#Value#right(self/0: Value) -> string {
   "R"
 }
 
-fn trait_impl#Diamond#Value#diamond(self/3: Value) -> string {
+fn trait_impl#Diamond#Value#diamond(self/0: Value) -> string {
   "D"
 }
 
 fn main() -> unit {
-  let t806 = Value {} in
-  join inline_cont825(t807: string) -> unit {
-    let inline823 = trait_impl#ToString#string#to_string(t807) in
-    let inline824 = @runtime(core.string_println)(inline823) in
+  let t0 = Value {} in
+  join inline_cont0(t1: string) -> unit {
+    let inline0 = trait_impl#ToString#string#to_string(t1) in
+    let inline1 = @runtime(core.string_println)(inline0) in
     ()
   } in
-  let inline826 = trait_impl#Base#Value#base(t806) in
-  let inline827 = trait_impl#Left#Value#left(t806) in
-  let inline828 = (inline826 + inline827) in
-  let inline829 = trait_impl#Right#Value#right(t806) in
-  let inline830 = (inline828 + inline829) in
-  let inline831 = trait_impl#Diamond#Value#diamond(t806) in
-  let inline832 = (inline830 + inline831) in
-  jump inline_cont825(inline832)
+  let inline2 = trait_impl#Base#Value#base(t0) in
+  let inline3 = trait_impl#Left#Value#left(t0) in
+  let inline4 = (inline2 + inline3) in
+  let inline5 = trait_impl#Right#Value#right(t0) in
+  let inline6 = (inline4 + inline5) in
+  let inline7 = trait_impl#Diamond#Value#diamond(t0) in
+  let inline8 = (inline6 + inline7) in
+  jump inline_cont0(inline8)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont833(t809: string) -> unit {
-    let t810 = @runtime(core.string_println)(t809) in
+fn println__T_string(value/0: string) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
-  jump inline_cont833(value/1)
+  jump inline_cont0(value/0)
 }
 
-fn describe__T_Value(value/4: Value) -> string {
-  join inline_cont837(t813: string) -> string {
-    join inline_cont836(t814: string) -> string {
-      let t815 = (t813 + t814) in
-      join inline_cont835(t816: string) -> string {
-        let t817 = (t815 + t816) in
-        join inline_cont834(t818: string) -> string {
-          let t819 = (t817 + t818) in
-          t819
+fn describe__T_Value(value/0: Value) -> string {
+  join inline_cont0(t0: string) -> string {
+    join inline_cont1(t1: string) -> string {
+      let t2 = (t0 + t1) in
+      join inline_cont2(t3: string) -> string {
+        let t4 = (t2 + t3) in
+        join inline_cont3(t5: string) -> string {
+          let t6 = (t4 + t5) in
+          t6
         } in
-        jump inline_cont834("D")
+        jump inline_cont3("D")
       } in
-      jump inline_cont835("R")
+      jump inline_cont2("R")
     } in
-    jump inline_cont836("L")
+    jump inline_cont1("L")
   } in
-  jump inline_cont837("B")
+  jump inline_cont0("B")
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }

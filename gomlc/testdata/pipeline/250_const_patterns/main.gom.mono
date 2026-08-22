@@ -18,8 +18,8 @@ fn make_enabled() -> bool {
 
 fn comptime_classify(value/0: isize) -> isize {
   {
-    let match796 = value/0 in
-    if (match796 == COMPUTED_ANSWER) {
+    let match0 = value/0 in
+    if (match0 == COMPUTED_ANSWER) {
         1
     } else {
         0
@@ -27,8 +27,8 @@ fn comptime_classify(value/0: isize) -> isize {
   }
 }
 
-fn classify(value/1: isize) -> string {
-  match value/1 {
+fn classify(value/0: isize) -> string {
+  match value/0 {
     42 => {
       "known"
     },
@@ -39,8 +39,8 @@ fn classify(value/1: isize) -> string {
   }
 }
 
-fn classify_bool(value/2: bool) -> string {
-  match value/2 {
+fn classify_bool(value/0: bool) -> string {
+  match value/0 {
     true => {
       "enabled"
     },
@@ -50,13 +50,13 @@ fn classify_bool(value/2: bool) -> string {
   }
 }
 
-fn classify_computed_bool(value/3: bool) -> string {
+fn classify_computed_bool(value/0: bool) -> string {
   {
-    let match797 = value/3 in
-    if (match797 == COMPUTED_ENABLED) {
+    let match0 = value/0 in
+    if (match0 == COMPUTED_ENABLED) {
         "enabled"
     } else {
-        if (match797 == false) {
+        if (match0 == false) {
             "disabled"
         } else {
             @intrinsic(compiler.missing)("")
@@ -65,38 +65,38 @@ fn classify_computed_bool(value/3: bool) -> string {
   }
 }
 
-fn classify_comptime_guard(value/4: bool) -> string {
-  let result/5 =
+fn classify_comptime_guard(value/0: bool) -> string {
+  let result/0 =
     {
-      let match798 = value/4 in
-      if (match798 == true) {
+      let match0 = value/0 in
+      if (match0 == true) {
           if true {
               "enabled"
           } else {
-              if (match798 == false) {
+              if (match0 == false) {
                   "disabled"
               } else {
                   @intrinsic(compiler.missing)("")
               }
           }
       } else {
-          if (match798 == false) {
+          if (match0 == false) {
               "disabled"
           } else {
               @intrinsic(compiler.missing)("")
           }
       }
     } in
-  result/5
+  result/0
 }
 
-fn classify_pair(value/6: (isize, u8)) -> bool {
+fn classify_pair(value/0: (isize, u8)) -> bool {
   {
-    let x799 = value/6.0 in
-    let x800 = value/6.1 in
-    match x800 {
+    let x0 = value/0.0 in
+    let x1 = value/0.1 in
+    match x1 {
       65 => {
-        match x799 {
+        match x0 {
           42 => {
             true
           },
@@ -108,8 +108,8 @@ fn classify_pair(value/6: (isize, u8)) -> bool {
   }
 }
 
-fn classify_string(value/7: string) -> bool {
-  match value/7 {
+fn classify_string(value/0: string) -> bool {
+  match value/0 {
     "hello" => {
       true
     },
@@ -117,10 +117,10 @@ fn classify_string(value/7: string) -> bool {
   }
 }
 
-fn classify_float(value/8: f64) -> bool {
+fn classify_float(value/0: f64) -> bool {
   {
-    let match801 = value/8 in
-    if (match801 == RATIO) {
+    let match0 = value/0 in
+    if (match0 == RATIO) {
         true
     } else {
         false
@@ -129,22 +129,22 @@ fn classify_float(value/8: f64) -> bool {
 }
 
 fn shadow_constant() -> isize {
-  let answer/9 = 9 in
-  answer/9
+  let answer/0 = 9 in
+  answer/0
 }
 
-fn explicit_binding(value/10: isize) -> isize {
+fn explicit_binding(value/0: isize) -> isize {
   {
-    let match802 = value/10 in
+    let match0 = value/0 in
     {
-      let answer/11 = match802 in
-      answer/11
+      let answer/0 = match0 in
+      answer/0
     }
   }
 }
 
-fn matches_if_let(value/12: isize) -> bool {
-  match value/12 {
+fn matches_if_let(value/0: isize) -> bool {
+  match value/0 {
     42 => {
       {
         true
@@ -157,9 +157,9 @@ fn matches_if_let(value/12: isize) -> bool {
   }
 }
 
-fn matches_let_else(value/13: isize) -> bool {
-  let mtmp803 = value/13 in
-  match mtmp803 {
+fn matches_let_else(value/0: isize) -> bool {
+  let mtmp0 = value/0 in
+  match mtmp0 {
     42 => {
       {
         true
@@ -173,110 +173,110 @@ fn matches_let_else(value/13: isize) -> bool {
 }
 
 fn for_binding() -> isize {
-  let total/14 = inherent#Ref#Ref[T]#new__T_isize(0) in
-  let _wild809 =
+  let total/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  let _wild0 =
     {
-      let for_source804 = [1, 2] in
-      let for_limit805 = 2 in
-      let for_index806 = 0 in
-      while (for_index806 < for_limit805) {
+      let for_source0 = [1, 2] in
+      let for_limit0 = 2 in
+      let for_index0 = 0 in
+      while (for_index0 < for_limit0) {
           {
-            let for_item807 = @intrinsic(array.get)(for_source804, for_index806) in
-            let _wild808 = for_index806 = (for_index806 + 1) in
+            let for_item0 = @intrinsic(array.get)(for_source0, for_index0) in
+            let _wild1 = for_index0 = (for_index0 + 1) in
             {
-              let answer/15 = for_item807 in
+              let answer/0 = for_item0 in
               {
                 inherent#Ref#Ref[T]#set__T_isize(
-                  total/14,
-                  (inherent#Ref#Ref[T]#get__T_isize(total/14) + answer/15)
+                  total/0,
+                  (inherent#Ref#Ref[T]#get__T_isize(total/0) + answer/0)
                 )
               }
             }
           }
       }
     } in
-  inherent#Ref#Ref[T]#get__T_isize(total/14)
+  inherent#Ref#Ref[T]#get__T_isize(total/0)
 }
 
 fn main() -> unit {
-  let _wild810 = println__T_string(classify(42)) in
-  let _wild811 = println__T_string(classify(7)) in
-  let _wild812 = println__T_string(classify(0)) in
-  let _wild813 = println__T_string(classify_bool(true)) in
-  let _wild814 = println__T_string(classify_bool(false)) in
-  let _wild815 = println__T_string(classify_computed_bool(true)) in
-  let _wild816 = println__T_string(classify_computed_bool(false)) in
-  let _wild817 = println__T_string(classify_comptime_guard(true)) in
-  let _wild818 = println__T_string(classify_comptime_guard(false)) in
-  let _wild819 = println__T_bool(classify_pair((42, 65))) in
-  let _wild820 = println__T_bool(classify_pair((42, 66))) in
-  let _wild821 = println__T_bool(classify_string("hello")) in
-  let _wild822 = println__T_bool(classify_float(1.5)) in
-  let _wild823 = println__T_isize(shadow_constant()) in
-  let _wild824 = println__T_isize(explicit_binding(11)) in
-  let _wild825 = println__T_bool(matches_if_let(42)) in
-  let _wild826 = println__T_bool(matches_if_let(41)) in
-  let _wild827 = println__T_bool(matches_let_else(42)) in
-  let _wild828 = println__T_bool(matches_let_else(41)) in
-  let _wild829 = println__T_isize(for_binding()) in
+  let _wild0 = println__T_string(classify(42)) in
+  let _wild1 = println__T_string(classify(7)) in
+  let _wild2 = println__T_string(classify(0)) in
+  let _wild3 = println__T_string(classify_bool(true)) in
+  let _wild4 = println__T_string(classify_bool(false)) in
+  let _wild5 = println__T_string(classify_computed_bool(true)) in
+  let _wild6 = println__T_string(classify_computed_bool(false)) in
+  let _wild7 = println__T_string(classify_comptime_guard(true)) in
+  let _wild8 = println__T_string(classify_comptime_guard(false)) in
+  let _wild9 = println__T_bool(classify_pair((42, 65))) in
+  let _wild10 = println__T_bool(classify_pair((42, 66))) in
+  let _wild11 = println__T_bool(classify_string("hello")) in
+  let _wild12 = println__T_bool(classify_float(1.5)) in
+  let _wild13 = println__T_isize(shadow_constant()) in
+  let _wild14 = println__T_isize(explicit_binding(11)) in
+  let _wild15 = println__T_bool(matches_if_let(42)) in
+  let _wild16 = println__T_bool(matches_if_let(41)) in
+  let _wild17 = println__T_bool(matches_let_else(42)) in
+  let _wild18 = println__T_bool(matches_let_else(41)) in
+  let _wild19 = println__T_isize(for_binding()) in
   println__T_isize(CLASSIFIED_AT_COMPILE_TIME)
 }
 
-fn inherent#Ref#Ref[T]#new__T_isize(value/684: isize) -> Ref[isize] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#get__T_isize(self/685: Ref[isize]) -> isize {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/686: Ref[isize], value/687: isize) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn println__T_isize(value/1: isize) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
+fn println__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn trait_impl#ToString#isize#to_string(self/404: isize) -> string {
-  __goml_builtin_int_to_string(self/404)
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
 }
 
-fn __goml_builtin_int_to_string(value/222: isize) -> string {
-  signed_decimal_string((value/222 as i64))
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -285,66 +285,66 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
-fn trait_impl#PartialEq#isize#eq(self/438: isize, other/439: isize) -> bool {
-  (self/438 == other/439)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#isize#hash(self/464: isize) -> u64 {
-  @runtime(core.int_hash)(self/464)
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
 }

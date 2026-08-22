@@ -1,99 +1,95 @@
 fn bump(cell/0: Ref[i32]) -> i32 {
-  let mtmp796 =
-    inherent#Ref#Ref[T]#set__T_i32(cell/0, (inherent#Ref#Ref[T]#get__T_i32(cell/0) + 1)) in
+  let mtmp0 = inherent#Ref#Ref[T]#set__T_i0(cell/0, (inherent#Ref#Ref[T]#get__T_i0(cell/0) + 1)) in
   {
-    inherent#Ref#Ref[T]#get__T_i32(cell/0)
+    inherent#Ref#Ref[T]#get__T_i0(cell/0)
   }
 }
 
-fn flip(flag/1: Ref[bool]) -> bool {
-  let current/2 = inherent#Ref#Ref[T]#get__T_bool(flag/1) in
-  let mtmp797 = inherent#Ref#Ref[T]#set__T_bool(flag/1, (!current/2)) in
+fn flip(flag/0: Ref[bool]) -> bool {
+  let current/0 = inherent#Ref#Ref[T]#get__T_bool(flag/0) in
+  let mtmp0 = inherent#Ref#Ref[T]#set__T_bool(flag/0, (!current/0)) in
   {
-    inherent#Ref#Ref[T]#get__T_bool(flag/1)
+    inherent#Ref#Ref[T]#get__T_bool(flag/0)
   }
 }
 
-fn nested_total(cell/3: Ref[Ref[i32]]) -> i32 {
-  let inner/4 = inherent#Ref#Ref[T]#get__T_Ref[i32](cell/3) in
-  let before/5 = inherent#Ref#Ref[T]#get__T_i32(inner/4) in
-  let mtmp798 = inherent#Ref#Ref[T]#set__T_i32(inner/4, (before/5 + 2)) in
+fn nested_total(cell/0: Ref[Ref[i32]]) -> i32 {
+  let inner/0 = inherent#Ref#Ref[T]#get__T_Ref[i32](cell/0) in
+  let before/0 = inherent#Ref#Ref[T]#get__T_i0(inner/0) in
+  let mtmp0 = inherent#Ref#Ref[T]#set__T_i0(inner/0, (before/0 + 2)) in
   {
-    (before/5 + inherent#Ref#Ref[T]#get__T_i32(inner/4))
+    (before/0 + inherent#Ref#Ref[T]#get__T_i0(inner/0))
   }
 }
 
-fn alias_bump(cell/6: Ref[i32]) -> i32 {
-  let alias/7 = cell/6 in
-  let mtmp799 =
-    inherent#Ref#Ref[T]#set__T_i32(alias/7, (inherent#Ref#Ref[T]#get__T_i32(alias/7) + 5)) in
+fn alias_bump(cell/0: Ref[i32]) -> i32 {
+  let alias/0 = cell/0 in
+  let mtmp0 =
+    inherent#Ref#Ref[T]#set__T_i0(alias/0, (inherent#Ref#Ref[T]#get__T_i0(alias/0) + 5)) in
   {
-    inherent#Ref#Ref[T]#get__T_i32(alias/7)
+    inherent#Ref#Ref[T]#get__T_i0(alias/0)
   }
 }
 
 fn pair_sum() -> i32 {
-  let first/8 = inherent#Ref#Ref[T]#new__T_i32(4) in
-  let second/9 = inherent#Ref#Ref[T]#new__T_i32(6) in
-  let mtmp800 =
-    inherent#Ref#Ref[T]#set__T_i32(
-      first/8,
-      (inherent#Ref#Ref[T]#get__T_i32(first/8) + inherent#Ref#Ref[T]#get__T_i32(second/9))
+  let first/0 = inherent#Ref#Ref[T]#new__T_i0(4) in
+  let second/0 = inherent#Ref#Ref[T]#new__T_i0(6) in
+  let mtmp0 =
+    inherent#Ref#Ref[T]#set__T_i0(
+      first/0,
+      (inherent#Ref#Ref[T]#get__T_i0(first/0) + inherent#Ref#Ref[T]#get__T_i0(second/0))
     ) in
   {
-    (inherent#Ref#Ref[T]#get__T_i32(first/8) + inherent#Ref#Ref[T]#get__T_i32(second/9))
+    (inherent#Ref#Ref[T]#get__T_i0(first/0) + inherent#Ref#Ref[T]#get__T_i0(second/0))
   }
 }
 
-fn reassign_nested(nested/10: Ref[Ref[i32]]) -> i32 {
-  let inner/11 = inherent#Ref#Ref[T]#get__T_Ref[i32](nested/10) in
-  let mtmp801 =
-    inherent#Ref#Ref[T]#set__T_i32(inner/11, (inherent#Ref#Ref[T]#get__T_i32(inner/11) + 7)) in
+fn reassign_nested(nested/0: Ref[Ref[i32]]) -> i32 {
+  let inner/0 = inherent#Ref#Ref[T]#get__T_Ref[i32](nested/0) in
+  let mtmp0 =
+    inherent#Ref#Ref[T]#set__T_i0(inner/0, (inherent#Ref#Ref[T]#get__T_i0(inner/0) + 7)) in
   {
-    inherent#Ref#Ref[T]#get__T_i32(inner/11)
+    inherent#Ref#Ref[T]#get__T_i0(inner/0)
   }
 }
 
 fn main() -> unit {
-  let counter/12 = inherent#Ref#Ref[T]#new__T_i32(39) in
-  let toggler/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let nested/14 = inherent#Ref#Ref[T]#new__T_Ref[i32](inherent#Ref#Ref[T]#new__T_i32(3)) in
-  let bumped/15 = bump(counter/12) in
-  let flipped/16 = flip(toggler/13) in
-  let flipped_again/17 = flip(toggler/13) in
-  let inner/18 = inherent#Ref#Ref[T]#get__T_Ref[i32](nested/14) in
-  let mtmp802 =
-    inherent#Ref#Ref[T]#set__T_i32(
-      inner/18,
-      (inherent#Ref#Ref[T]#get__T_i32(inner/18) + bumped/15)
-    ) in
+  let counter/0 = inherent#Ref#Ref[T]#new__T_i0(39) in
+  let toggler/0 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let nested/0 = inherent#Ref#Ref[T]#new__T_Ref[i32](inherent#Ref#Ref[T]#new__T_i0(3)) in
+  let bumped/0 = bump(counter/0) in
+  let flipped/0 = flip(toggler/0) in
+  let flipped_again/0 = flip(toggler/0) in
+  let inner/0 = inherent#Ref#Ref[T]#get__T_Ref[i32](nested/0) in
+  let mtmp0 =
+    inherent#Ref#Ref[T]#set__T_i0(inner/0, (inherent#Ref#Ref[T]#get__T_i0(inner/0) + bumped/0)) in
   {
-    let nested_total_val/19 = nested_total(nested/14) in
-    let alias_total/20 = alias_bump(counter/12) in
-    let pair_total/21 = pair_sum() in
-    let reassigned/22 = reassign_nested(nested/14) in
-    let bool_check/23 = (!false) in
-    let mtmp803 =
+    let nested_total_val/0 = nested_total(nested/0) in
+    let alias_total/0 = alias_bump(counter/0) in
+    let pair_total/0 = pair_sum() in
+    let reassigned/0 = reassign_nested(nested/0) in
+    let bool_check/0 = (!false) in
+    let mtmp1 =
       println__T_string(
-        inherent#i32#i32#to_string((bumped/15 + inherent#Ref#Ref[T]#get__T_i32(counter/12)))
+        inherent#i32#i32#to_string((bumped/0 + inherent#Ref#Ref[T]#get__T_i0(counter/0)))
       ) in
     {
-      let mtmp804 =
+      let mtmp2 =
         println__T_string(
-          inherent#i32#i32#to_string(((nested_total_val/19 + alias_total/20) + reassigned/22))
+          inherent#i32#i32#to_string(((nested_total_val/0 + alias_total/0) + reassigned/0))
         ) in
       {
-        let mtmp805 = println__T_string(inherent#i32#i32#to_string(pair_total/21)) in
+        let mtmp3 = println__T_string(inherent#i32#i32#to_string(pair_total/0)) in
         {
-          let mtmp806 =
+          let mtmp4 =
             println__T_string(
               trait_impl#ToString#bool#to_string(
-                if if flipped/16 {
-                    flipped_again/17
+                if if flipped/0 {
+                    flipped_again/0
                 } else {
                     false
                 } {
-                    bool_check/23
+                    bool_check/0
                 } else {
                     false
                 }
@@ -108,73 +104,73 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_i32(self/685: Ref[i32]) -> i32 {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/686: Ref[i32], value/687: i32) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/685: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get__T_bool(self/0: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/686: Ref[bool], value/687: bool) -> unit {
-  @intrinsic(ref.set)(self/686, value/687)
+fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Ref[i32](self/685: Ref[Ref[i32]]) -> Ref[i32] {
-  @intrinsic(ref.get)(self/685)
+fn inherent#Ref#Ref[T]#get__T_Ref[i32](self/0: Ref[Ref[i32]]) -> Ref[i32] {
+  @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#new__T_i32(value/684: i32) -> Ref[i32] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new__T_i32(value/0: i32) -> Ref[i32] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/684: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new__T_bool(value/0: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Ref[i32](value/684: Ref[i32]) -> Ref[Ref[i32]] {
-  @intrinsic(ref.new)(value/684)
+fn inherent#Ref#Ref[T]#new__T_Ref[i32](value/0: Ref[i32]) -> Ref[Ref[i32]] {
+  @intrinsic(ref.new)(value/0)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn inherent#i32#i32#to_string(self/286: i32) -> string {
-  __goml_builtin_int32_to_string(self/286)
+fn inherent#i32#i32#to_string(self/0: i32) -> string {
+  __goml_builtin_int32_to_string(self/0)
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn __goml_builtin_int32_to_string(value/225: i32) -> string {
-  signed_decimal_string((value/225 as i64))
+fn __goml_builtin_int32_to_string(value/0: i32) -> string {
+  signed_decimal_string((value/0 as i64))
 }
 
-fn signed_decimal_string(value/214: i64) -> string {
-  if (value/214 < 0) {
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
       {
-        ("-" + decimal_string((0 - (value/214 as u64))))
+        ("-" + decimal_string((0 - (value/0 as u64))))
       }
   } else {
       {
-        decimal_string((value/214 as u64))
+        decimal_string((value/0 as u64))
       }
   }
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         {
           return "0"
         }
@@ -183,76 +179,76 @@ fn decimal_string(value/208: u64) -> string {
           ()
         }
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
         {
-          let _wild352 =
-            inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-          let _wild355 =
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
             {
-              let compound_old353 = remaining/210 in
-              let compound_value354 = 10 in
-              remaining/210 = (compound_old353 / compound_value354)
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
             } in
         }
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
         {
-          let _wild357 =
-            inherent#Vec#Vec[T]#push__T_u8(
-              bytes/211,
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
               @intrinsic(vec.get)(
-                reversed/209,
-                ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
               )
             ) in
-          let _wild360 =
+          let _wild6 =
             {
-              let compound_old358 = offset/212 in
-              let compound_value359 = 1 in
-              offset/212 = (compound_old358 + compound_value359)
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
             } in
         }
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
-    let x364 = mtmp362.1 in
+    let x0 = mtmp0.1 in
     {
-      let result/213 = x364 in
+      let result/0 = x0 in
       {
-        result/213
+        result/0
       }
     }
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
-fn trait_impl#PartialEq#i32#eq(self/444: i32, other/445: i32) -> bool {
-  (self/444 == other/445)
+fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#i32#hash(self/467: i32) -> u64 {
-  @runtime(core.int32_hash)(self/467)
+fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
+  @runtime(core.int32_hash)(self/0)
 }
 
-fn trait_impl#PartialEq#bool#eq(self/432: bool, other/433: bool) -> bool {
-  (self/432 == other/433)
+fn trait_impl#PartialEq#bool#eq(self/0: bool, other/0: bool) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
-  if self/461 {
+fn trait_impl#Hash#bool#hash(self/0: bool) -> u64 {
+  if self/0 {
       {
         1
       }
@@ -263,10 +259,10 @@ fn trait_impl#Hash#bool#hash(self/461: bool) -> u64 {
   }
 }
 
-fn trait_impl#PartialEq#Ref[i32]#eq(self/473: Ref[i32], other/474: Ref[i32]) -> bool {
-  @intrinsic(ref.ptr_eq)(self/473, other/474)
+fn trait_impl#PartialEq#Ref[i32]#eq(self/0: Ref[i32], other/0: Ref[i32]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/0, other/0)
 }
 
-fn trait_impl#Hash#Ref[i32]#hash(self/475: Ref[i32]) -> u64 {
-  @intrinsic(ref.ptr_hash)(self/475)
+fn trait_impl#Hash#Ref[i32]#hash(self/0: Ref[i32]) -> u64 {
+  @intrinsic(ref.ptr_hash)(self/0)
 }

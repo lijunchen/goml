@@ -1,9 +1,9 @@
-fn combine(left/0: usize, right/1: usize) -> usize {
-  ((left/0 + right/1) * 2)
+fn combine(left/0: usize, right/0: usize) -> usize {
+  ((left/0 + right/0) * 2)
 }
 
-fn classify(value/2: usize) -> string {
-  match value/2 {
+fn classify(value/0: usize) -> string {
+  match value/0 {
     0 => {
       "zero"
     },
@@ -15,48 +15,47 @@ fn classify(value/2: usize) -> string {
 }
 
 fn main() -> unit {
-  let left/3 = 19 in
-  let right/4 = (2 as usize) in
-  let result/5 = combine(left/3, right/4) in
-  let _wild796 = println__T_usize(result/5) in
-  let _wild797 = println__T_string(trait_impl#ToString#usize#to_string(result/5)) in
-  let _wild798 = println__T_string(classify(result/5)) in
-  let _wild799 = println__T_bool((result/5 > left/3)) in
-  let _wild800 = println__T_u64(((result/5 & 15) as u64)) in
-  let values/6 = inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() in
-  let _wild801 =
-    inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(values/6, result/5, "stored") in
-  let mtmp802 = inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(values/6, 42) in
-  match mtmp802 {
+  let left/0 = 19 in
+  let right/0 = (2 as usize) in
+  let result/0 = combine(left/0, right/0) in
+  let _wild0 = println__T_usize(result/0) in
+  let _wild1 = println__T_string(trait_impl#ToString#usize#to_string(result/0)) in
+  let _wild2 = println__T_string(classify(result/0)) in
+  let _wild3 = println__T_bool((result/0 > left/0)) in
+  let _wild4 = println__T_u0(((result/0 & 15) as u64)) in
+  let values/0 = inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() in
+  let _wild5 = inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(values/0, result/0, "stored") in
+  let mtmp0 = inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(values/0, 42) in
+  match mtmp0 {
     Option__string::None => {
       println__T_string("missing")
     },
-    Option__string::Some(x803) => {
-      let x803 = Option__string::Some._0(mtmp802) in
-      let value/7 = x803 in
-      println__T_string(value/7)
+    Option__string::Some(x0) => {
+      let x0 = Option__string::Some._0(mtmp0) in
+      let value/0 = x0 in
+      println__T_string(value/0)
     },
   }
 }
 
-fn println__T_usize(value/1: usize) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#usize#to_string(value/1))
+fn println__T_usize(value/0: usize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#usize#to_string(value/0))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn trait_impl#ToString#usize#to_string(self/704: usize) -> string {
-  __goml_builtin_uint_to_string(self/704)
+fn trait_impl#ToString#usize#to_string(self/0: usize) -> string {
+  __goml_builtin_uint_to_string(self/0)
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn println__T_u64(value/1: u64) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/1))
+fn println__T_u64(value/0: u64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/0))
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() -> HashMap[usize, string] {
@@ -64,95 +63,95 @@ fn inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() -> HashMap[usize, stri
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(
-  self/675: HashMap[usize, string],
-  key/676: usize,
-  value/677: string
+  self/0: HashMap[usize, string],
+  key/0: usize,
+  value/0: string
 ) -> unit {
-  @intrinsic(hashmap.set)(self/675, key/676, value/677)
+  @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(
-  self/673: HashMap[usize, string],
-  key/674: usize
+  self/0: HashMap[usize, string],
+  key/0: usize
 ) -> Option__string {
-  @intrinsic(hashmap.get)(self/673, key/674)
+  @intrinsic(hashmap.get)(self/0, key/0)
 }
 
-fn trait_impl#ToString#string#to_string(self/402: string) -> string {
-  self/402
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
-fn __goml_builtin_uint_to_string(value/227: usize) -> string {
-  decimal_string((value/227 as u64))
+fn __goml_builtin_uint_to_string(value/0: usize) -> string {
+  decimal_string((value/0 as u64))
 }
 
-fn trait_impl#ToString#bool#to_string(self/401: bool) -> string {
-  @runtime(core.bool_to_string)(self/401)
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
 }
 
-fn trait_impl#ToString#u64#to_string(self/412: u64) -> string {
-  __goml_builtin_uint64_to_string(self/412)
+fn trait_impl#ToString#u64#to_string(self/0: u64) -> string {
+  __goml_builtin_uint64_to_string(self/0)
 }
 
-fn decimal_string(value/208: u64) -> string {
-  let _wild351 =
-    if (value/208 == 0) {
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
         return "0"
     } else {
         ()
     } in
-  let reversed/209 = @intrinsic(vec.with_capacity)(20) in
-  let remaining/210 = value/208 in
-  let _wild356 =
-    while (remaining/210 > 0) {
-        let _wild352 =
-          inherent#Vec#Vec[T]#push__T_u8(reversed/209, (((remaining/210 % 10) as u8) + 48)) in
-        let _wild355 =
-          let compound_old353 = remaining/210 in
-          let compound_value354 = 10 in
-          remaining/210 = (compound_old353 / compound_value354) in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        let _wild2 =
+          inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+        let _wild3 =
+          let compound_old0 = remaining/0 in
+          let compound_value0 = 10 in
+          remaining/0 = (compound_old0 / compound_value0) in
         ()
     } in
-  let bytes/211 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u8(reversed/209)) in
-  let offset/212 = 0 in
-  let _wild361 =
-    while (offset/212 < inherent#Vec#Vec[T]#len__T_u8(reversed/209)) {
-        let _wild357 =
-          inherent#Vec#Vec[T]#push__T_u8(
-            bytes/211,
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        let _wild5 =
+          inherent#Vec#Vec[T]#push__T_u0(
+            bytes/0,
             @intrinsic(vec.get)(
-              reversed/209,
-              ((inherent#Vec#Vec[T]#len__T_u8(reversed/209) - offset/212) - 1)
+              reversed/0,
+              ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
             )
           ) in
-        let _wild360 =
-          let compound_old358 = offset/212 in
-          let compound_value359 = 1 in
-          offset/212 = (compound_old358 + compound_value359) in
+        let _wild6 =
+          let compound_old1 = offset/0 in
+          let compound_value1 = 1 in
+          offset/0 = (compound_old1 + compound_value1) in
         ()
     } in
-  let mtmp362 = @runtime(core.string_from_utf8)(bytes/211) in
-  let x364 = mtmp362.1 in
-  let result/213 = x364 in
-  result/213
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  let x0 = mtmp0.1 in
+  let result/0 = x0 in
+  result/0
 }
 
-fn __goml_builtin_uint64_to_string(value/231: u64) -> string {
-  decimal_string(value/231)
+fn __goml_builtin_uint64_to_string(value/0: u64) -> string {
+  decimal_string(value/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/511: Vec[u8], elem/512: u8) -> unit {
-  @intrinsic(vec.push)(self/511, elem/512)
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_u8(self/526: Vec[u8]) -> isize {
-  @intrinsic(vec.len)(self/526)
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
 }
 
-fn trait_impl#PartialEq#usize#eq(self/706: usize, other/707: usize) -> bool {
-  (self/706 == other/707)
+fn trait_impl#PartialEq#usize#eq(self/0: usize, other/0: usize) -> bool {
+  (self/0 == other/0)
 }
 
-fn trait_impl#Hash#usize#hash(self/708: usize) -> u64 {
-  @runtime(core.uint_hash)(self/708)
+fn trait_impl#Hash#usize#hash(self/0: usize) -> u64 {
+  @runtime(core.uint_hash)(self/0)
 }
