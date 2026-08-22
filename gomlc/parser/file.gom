@@ -586,10 +586,41 @@ fn struct_def_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     } else {};
     if parser.at(lexer::TokenKind::LBrace) {
         struct_field_list(parser)
+    } else if parser.at(lexer::TokenKind::LParen) {
+        newtype_field(parser);
+        parser.expect(lexer::TokenKind::Semi)
     } else {
-        parser.error("struct declarations require a brace-delimited body")
+        parser.error(
+            "struct declarations require a brace-delimited body or one parenthesized field",
+        )
     };
     let _ = parser.close(marker, cst::NodeKind::STRUCT);
+}
+
+fn newtype_field(parser: Parser) -> unit {
+    parser.expect(lexer::TokenKind::LParen);
+    if parser.at(lexer::TokenKind::RParen) {
+        parser.error("newtype structs require exactly one field")
+    } else {
+        let marker = if parser.at(lexer::TokenKind::Pound) {
+            attribute_list(parser).precede(parser)
+        } else {
+            parser.open()
+        };
+        parser.eat(lexer::TokenKind::PubKeyword);
+        if is_type_first(parser.peek()) {
+            type_expr(parser)
+        } else {
+            parser.error("expected a newtype field type")
+        };
+        let _ = parser.close(marker, cst::NodeKind::NEWTYPE_FIELD);
+        parser.eat(lexer::TokenKind::Comma);
+        while !parser.at(lexer::TokenKind::RParen) && !parser.eof()
+            && !is_type_list_recovery(parser.peek()) {
+            parser.advance_with_error("newtype structs require exactly one field")
+        }
+    };
+    parser.expect(lexer::TokenKind::RParen)
 }
 
 fn variant_list(parser: Parser) -> unit {

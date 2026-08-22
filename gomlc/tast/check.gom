@@ -3992,9 +3992,12 @@ fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int) -> Expr {
                 push_global_diagnostic(ctx, INFERENCE_FAILURE_MESSAGE);
                 Expr::Proj { tuple: value, index, ty: fresh_unresolved_inference(ctx) }
             },
-            _ => {
-                push_diagnostic(ctx, "tuple required");
-                Expr::Proj { tuple: value, index, ty: Type::Error }
+            _ => match resolve_field_type(ctx, expr_type(value), "_" + index.to_string()) {
+                Some(ty) => Expr::Field { expr: value, field_name: "_" + index.to_string(), ty },
+                None => {
+                    push_diagnostic(ctx, "tuple or tuple struct required");
+                    Expr::Proj { tuple: value, index, ty: Type::Error }
+                },
             },
         }
     }
@@ -5022,7 +5025,17 @@ fn check_constructor_pattern(
                     ty: info.ty,
                 },
             );
-            if info.named {
+            if info.has_hidden_fields {
+                for value in args {
+                    mark_unresolved_pattern_locals(ctx, value)
+                }
+                push_diagnostic(
+                    ctx,
+                    "Struct " + info.constructor.name
+                        + " has private fields and cannot be destructured here",
+                );
+                return Pat::Wild { ty: expected }
+            } else if info.named {
                 for value in args {
                     mark_unresolved_pattern_locals(ctx, value)
                 }

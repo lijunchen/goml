@@ -411,6 +411,32 @@ fn pretty_enum_doc(value: EnumDef) -> doc::Doc {
 }
 
 fn pretty_struct_doc(value: StructDef) -> doc::Doc {
+    if value.newtype && !value.fields.is_empty() {
+        let field = value.fields[0];
+        return doc::concat(
+            Vec::from_array(
+                [
+                    pretty_attributes_doc(value.attrs),
+                    pretty_visibility_doc(value.visibility),
+                    doc::text("struct " + value.name),
+                    pretty_generics_doc(value.generics),
+                    doc::text("("),
+                    if !value.field_attrs.is_empty() {
+                        pretty_attributes_doc(value.field_attrs[0])
+                    } else {
+                        doc::nil()
+                    },
+                    if value.public_fields.contains("_0") {
+                        doc::text("pub ")
+                    } else {
+                        doc::nil()
+                    },
+                    pretty_type_doc(field.1),
+                    doc::text(");"),
+                ],
+            ),
+        )
+    } else {};
     let fields: Vec[doc::Doc] = Vec::with_capacity(value.fields.len());
     for index in 0..value.fields.len() {
         let field = value.fields[index];

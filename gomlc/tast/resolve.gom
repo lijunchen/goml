@@ -10,6 +10,7 @@ struct ResolvedConstructor {
     fields: Vec[Type],
     ty: Type,
     named: bool,
+    has_hidden_fields: bool,
 }
 
 struct ResolvedStruct {
@@ -277,6 +278,7 @@ fn resolve_user_constructor(ctx: Checker, value: EnumInfo, variant_index: int) -
                         Struct(_) => true,
                         _ => false,
                     },
+                    has_hidden_fields: false,
                 },
             )
         },
@@ -387,7 +389,9 @@ fn resolve_contextual_constructor(ctx: Checker, name: string, expected: Type) ->
                 }
                 Option::None
             },
-            None => if pattern_owner_is_builtin_enum(ctx, owner) {
+            None => if short_name(owner) == name {
+                resolve_positional_struct(ctx, owner)
+            } else if pattern_owner_is_builtin_enum(ctx, owner) {
                 resolve_builtin_constructor(ctx, f"{owner}::{name}")
             } else {
                 Option::None
@@ -405,8 +409,9 @@ fn resolve_pattern_constructor(ctx: Checker, head: hir::PatternHead, expected: T
             ctx,
             hir::ConstructorRef::Resolved { enum_def, variant_index },
         ),
-        Qualified { name, span: _ } => {
-            resolve_constructor(ctx, hir::ConstructorRef::Unresolved(name))
+        Qualified { name, span: _ } => match resolve_positional_struct(ctx, name) {
+            Some(value) => Option::Some(value),
+            None => resolve_constructor(ctx, hir::ConstructorRef::Unresolved(name)),
         },
         Contextual { name, span: _ } => {
             resolve_contextual_constructor(ctx, name, expected)
@@ -447,6 +452,26 @@ fn resolve_struct(ctx: Checker, name: string) -> Option[ResolvedStruct] {
         Some(value) => Option::Some(instantiate_struct(ctx, value)),
         None => Option::None,
     }
+}
+
+fn resolve_positional_struct(ctx: Checker, name: string) -> Option[ResolvedConstructor] {
+    let info = resolve_struct(ctx, name)?;
+    if !info.has_hidden_fields && (info.fields.len() != 1 || info.fields[0].0 != "_0") {
+        return Option::None
+    } else {};
+    let fields: Vec[Type] = Vec::with_capacity(info.fields.len());
+    for field in info.fields {
+        fields.push(field.1)
+    }
+    Option::Some(
+        ResolvedConstructor {
+            constructor: info.constructor,
+            fields,
+            ty: info.ty,
+            named: false,
+            has_hidden_fields: info.has_hidden_fields,
+        },
+    )
 }
 
 fn instantiate_named_variant(

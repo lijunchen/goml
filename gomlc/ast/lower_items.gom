@@ -332,6 +332,28 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
             let field_type_spans: Vec[Span] = Vec::from_array([]);
             let field_attrs: Vec[Vec[Attribute]] = Vec::from_array([]);
             let public_fields: Vec[string] = Vec::from_array([]);
+            let newtype = first_child(node, cst::NodeKind::NEWTYPE_FIELD).is_some();
+            match first_child(node, cst::NodeKind::NEWTYPE_FIELD) {
+                Some(field) => {
+                    let types = type_children(field);
+                    if !types.is_empty() {
+                        let type_node = types[0];
+                        match lower_ty(ctx, type_node) {
+                            Some(ty) => {
+                                field_type_spans.push(type_head_span(type_node));
+                                fields.push(("_0", ty));
+                                field_attrs.push(lower_attributes(field));
+                                match lower_visibility(field) {
+                                    Public => public_fields.push("_0"),
+                                    Private => (),
+                                }
+                            },
+                            None => (),
+                        }
+                    } else {}
+                },
+                None => (),
+            };
             match first_child(node, cst::NodeKind::STRUCT_FIELD_LIST) {
                 Some(list) => for field in children_of_kind(list, cst::NodeKind::STRUCT_FIELD) {
                     let field_name = first_token(field, lexer::TokenKind::Ident);
@@ -363,6 +385,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                     visibility: lower_visibility(node),
                     name: name_token.token.text,
                     generics,
+                    newtype,
                     fields,
                     field_type_spans,
                     field_attrs,

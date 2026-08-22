@@ -404,6 +404,15 @@ pub type Names = Vec[string];
 
 Aliases do not create nominally distinct types and recursive alias cycles are rejected.Public aliases can be referenced across packages.
 
+Use a single-field tuple struct when a value needs a distinct nominal type instead of an alias:
+
+```goml
+struct UserId(uint64);
+struct Box[T](T);
+```
+
+This form is the newtype pattern. Construct it with `UserId(value)`, access its field with `value.0`, and destructure it with `let UserId(inner) = value;`. The field is private by default. A public newtype that can be constructed and unwrapped across package boundaries marks both the type and field public: `pub struct UserId(pub uint64);`.
+
 ### Type syntax not currently available
 
 GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` to express read-only continuous views.
@@ -532,6 +541,18 @@ struct Box[T] {
     value: T,
 }
 ```
+
+A newtype is a nominal structure with exactly one unnamed field:
+
+```goml
+struct UserId(uint64);
+
+fn increment(value: UserId) -> UserId {
+    UserId(value.0 + 1)
+}
+```
+
+Unlike `type UserId = uint64;`, the newtype is not interchangeable with `uint64`. It must be explicitly constructed or destructured. Newtypes may be generic, their field is private by default, and a trailing comma inside the parentheses is accepted. This syntax requires exactly one field; tuple structs with zero or multiple fields are not supported.
 
 The type parameter list of structure and enumeration itself does not write bound.Put constraints on functions, traits, or impl that use the type.
 
@@ -711,7 +732,7 @@ fn run() -> unit {
 }
 ```
 
-`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them.
+`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, brace-delimited structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them. Newtype declarations such as `struct UserId(uint64);` do require the trailing semicolon.
 
 `defer expression;` registers a `unit` expression to run when the current lexical block is left. Deferred expressions run in last-in-first-out order on normal completion and when `return`, `?`, `break`, or `continue` crosses their block. A return or break value is evaluated before cleanup begins. Each loop-body block has its own cleanup stack, so a deferred expression registered during one iteration runs before that iteration exits.
 
@@ -1234,6 +1255,7 @@ Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
 | Single element tuple | `(value,)` |
 | exact structure | `Point { x, y: other }` |
 | partial structure | `Point { x, .. }` |
+| newtype | `UserId(inner)` |
 | Enum unit variant | `Color::Red` or contextual `Red` |
 | Enum tuple variant | `Option::Some(value)` or contextual `Some(value)` |
 | Enum struct-like variant | `Message::Named { value }` or contextual `Named { value }` |
@@ -2745,6 +2767,7 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 | `float_value.to_int32()` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
 | `dyn A + B` | Use one dyn-safe trait; multiple bounds are reserved syntax but not yet supported |
 | `dyn TraitWithAssociatedType` | Bind every associated type, for example `dyn Iterator[Item = int]` |
+| Use `type UserId = uint64;` when `UserId` must be distinct | Use `struct UserId(uint64);` and construct it explicitly |
 | `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
 | `mod`、`crate::`、`super::` | Directory packages, `module::path` for the current module, and canonical paths for dependencies |
 | `fn helper` inside function | Top-level function or local closure |
@@ -2766,6 +2789,7 @@ use_path      = path | "module" "::" path
 path          = ident ("::" ident)*
 
 item          = attribute* visibility? function
+              | attribute* visibility? type_alias
               | attribute* visibility? constant
               | attribute* visibility? static
               | attribute* visibility? struct_def
@@ -2783,6 +2807,7 @@ go_ffi_extern = go_ffi_attribute visibility? "extern" "fn" lower_ident
                 param_list return_type? ";"
 
 function      = "fn" lower_ident generic_params? param_list return_type? where_clause? block
+type_alias    = "type" upper_ident type_names? "=" type ";"
 constant      = "const" ident ":" type "=" expression ";"
 static        = "static" ident ":" type "=" expression ";"
 method        = visibility? "fn" lower_ident generic_params? param_list return_type? where_clause? block
@@ -2792,9 +2817,11 @@ param_list    = "(" (parameter ("," parameter)*)? ")"
 parameter     = lower_ident ":" type | "self"
 return_type   = "->" type
 
-struct_def    = "struct" upper_ident type_names? "{" struct_fields? "}"
+struct_def    = "struct" upper_ident type_names?
+                ("{" struct_fields? "}" | "(" newtype_field ","? ")" ";")
 struct_fields = struct_field ("," struct_field)* ","?
 struct_field  = visibility? lower_ident ":" type
+newtype_field = visibility? type
 enum_def      = "enum" upper_ident type_names? "{" variants? "}"
 variants      = variant ("," variant)* ","?
 variant       = upper_ident
