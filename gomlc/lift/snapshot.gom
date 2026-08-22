@@ -1,0 +1,191 @@
+package lift;
+
+use module::repr;
+use module::snapshot_names;
+
+fn snapshot_exprs(names: snapshot_names::Names, values: Vec[Expr]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(snapshot_expr(names, value))
+    }
+    result
+}
+
+fn snapshot_optional_expr(names: snapshot_names::Names, value: Option[Expr]) -> Option[Expr] {
+    match value {
+        Some(value) => Option::Some(snapshot_expr(names, value)),
+        None => Option::None,
+    }
+}
+
+fn snapshot_block(names: snapshot_names::Names, value: Block) -> Block {
+    let stmts: Vec[LetStmt] = Vec::with_capacity(value.stmts.len());
+    for stmt in value.stmts {
+        let name = snapshot_names::canonical(names, stmt.name);
+        stmts.push(LetStmt { name, value: snapshot_expr(names, stmt.value), ty: stmt.ty })
+    }
+    Block { stmts, tail: snapshot_optional_expr(names, value.tail) }
+}
+
+fn snapshot_arm(names: snapshot_names::Names, value: Arm) -> Arm {
+    Arm { lhs: snapshot_expr(names, value.lhs), body: snapshot_expr(names, value.body) }
+}
+
+fn snapshot_select_arm(names: snapshot_names::Names, value: SelectArm) -> SelectArm {
+    match value {
+        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
+            channel: snapshot_expr(names, channel),
+            guard: snapshot_optional_expr(names, guard),
+            binding: snapshot_names::canonical(names, binding),
+            binding_ty,
+            body: snapshot_expr(names, body),
+        },
+        Send { channel, value, guard, body } => SelectArm::Send {
+            channel: snapshot_expr(names, channel),
+            value: snapshot_expr(names, value),
+            guard: snapshot_optional_expr(names, guard),
+            body: snapshot_expr(names, body),
+        },
+    }
+}
+
+fn snapshot_expr(names: snapshot_names::Names, value: Expr) -> Expr {
+    match value {
+        Var { name, ty } => Expr::Var { name: snapshot_names::canonical(names, name), ty },
+        Callable { callable, ty } => Expr::Callable { callable, ty },
+        Prim { value, ty } => Expr::Prim { value, ty },
+        Constr { constructor, args, ty } => {
+            Expr::Constr { constructor, args: snapshot_exprs(names, args), ty }
+        },
+        Tuple { items, ty } => Expr::Tuple { items: snapshot_exprs(names, items), ty },
+        Array { items, ty } => Expr::Array { items: snapshot_exprs(names, items), ty },
+        Block { block, ty } => Expr::Block { block: snapshot_block(names, block), ty },
+        Match { expr, arms, default, ty } => {
+            let renamed: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                renamed.push(snapshot_arm(names, arm))
+            }
+            Expr::Match {
+                expr: snapshot_expr(names, expr),
+                arms: renamed,
+                default: snapshot_optional_expr(names, default),
+                ty,
+            }
+        },
+        Select { mode, arms, default, ty } => {
+            let renamed: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                renamed.push(snapshot_select_arm(names, arm))
+            }
+            Expr::Select {
+                mode,
+                arms: renamed,
+                default: snapshot_optional_expr(names, default),
+                ty,
+            }
+        },
+        If { cond, then_branch, else_branch, ty } => Expr::If {
+            cond: snapshot_expr(names, cond),
+            then_branch: snapshot_expr(names, then_branch),
+            else_branch: snapshot_expr(names, else_branch),
+            ty,
+        },
+        While { cond, body, ty } => Expr::While {
+            cond: snapshot_expr(names, cond),
+            body: snapshot_expr(names, body),
+            ty,
+        },
+        Loop { body, ty } => Expr::Loop { body: snapshot_expr(names, body), ty },
+        Break { target, value, ty } => {
+            Expr::Break { target, value: snapshot_optional_expr(names, value), ty }
+        },
+        Continue { target, ty } => Expr::Continue { target, ty },
+        Return { expr, ty } => {
+            Expr::Return { expr: snapshot_optional_expr(names, expr), ty }
+        },
+        Go { expr, ty } => Expr::Go { expr: snapshot_expr(names, expr), ty },
+        ConstrGet { expr, constructor, field_index, ty } => Expr::ConstrGet {
+            expr: snapshot_expr(names, expr),
+            constructor,
+            field_index,
+            ty,
+        },
+        Unary { op, expr, ty } => Expr::Unary { op, expr: snapshot_expr(names, expr), ty },
+        Cast { expr, ty } => Expr::Cast { expr: snapshot_expr(names, expr), ty },
+        Binary { op, lhs, rhs, ty } => Expr::Binary {
+            op,
+            lhs: snapshot_expr(names, lhs),
+            rhs: snapshot_expr(names, rhs),
+            ty,
+        },
+        Assign { name, value, target_ty, ty } => Expr::Assign {
+            name: snapshot_names::canonical(names, name),
+            value: snapshot_expr(names, value),
+            target_ty,
+            ty,
+        },
+        Call { func, args, ty } => Expr::Call {
+            func: snapshot_expr(names, func),
+            args: snapshot_exprs(names, args),
+            ty,
+        },
+        ToDyn { trait_name, for_ty, expr, ty } => Expr::ToDyn {
+            trait_name,
+            for_ty,
+            expr: snapshot_expr(names, expr),
+            ty,
+        },
+        DynCall { trait_name, method_name, receiver, args, ty } => Expr::DynCall {
+            trait_name,
+            method_name,
+            receiver: snapshot_expr(names, receiver),
+            args: snapshot_exprs(names, args),
+            ty,
+        },
+        Proj { tuple, index, ty } => {
+            Expr::Proj { tuple: snapshot_expr(names, tuple), index, ty }
+        },
+        PackClosure { environment, apply, ty } => Expr::PackClosure {
+            environment: snapshot_expr(names, environment),
+            apply,
+            ty,
+        },
+    }
+}
+
+fn snapshot_function(value: Function) -> Function {
+    let names = snapshot_names::names();
+    let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
+    for param in value.params {
+        params.push((snapshot_names::canonical(names, param.0), param.1))
+    }
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params,
+        ret_ty: value.ret_ty,
+        body: snapshot_block(names, value.body),
+    }
+}
+
+fn snapshot_file(value: File) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(snapshot_function(function))
+    }
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+        statics: value.statics,
+        closure_defs: value.closure_defs,
+    }
+}
+
+pub fn encode_snapshot(value: File) -> string {
+    encode(snapshot_file(value))
+}

@@ -1,0 +1,72 @@
+package snapshot_names;
+
+pub struct Names {
+    replacements: HashMap[string, string],
+    counters: HashMap[string, isize],
+}
+
+struct NameShape {
+    prefix: string,
+    separator: string,
+}
+
+pub fn names() -> Names {
+    Names { replacements: HashMap::from_array([]), counters: HashMap::from_array([]) }
+}
+
+fn is_digit(value: byte) -> bool {
+    value >= b'0' && value <= b'9'
+}
+
+fn slash_shape(value: string) -> Option[NameShape] {
+    for index in 0..value.byte_len() {
+        if value.byte_get(index) == b'/' && index + 1 < value.byte_len() {
+            for suffix_index in index + 1..value.byte_len() {
+                if !is_digit(value.byte_get(suffix_index)) {
+                    return Option::None
+                } else {}
+            }
+            return Option::Some(NameShape { prefix: value.byte_slice(0, index), separator: "/" })
+        } else {}
+    }
+    Option::None
+}
+
+fn trailing_shape(value: string) -> Option[NameShape] {
+    let mut start = value.byte_len();
+    while start > 0 && is_digit(value.byte_get(start - 1)) {
+        start = start - 1;
+    }
+    if start == 0 || start == value.byte_len() {
+        Option::None
+    } else {
+        Option::Some(NameShape { prefix: value.byte_slice(0, start), separator: "" })
+    }
+}
+
+fn name_shape(value: string) -> Option[NameShape] {
+    match slash_shape(value) {
+        Some(shape) => Option::Some(shape),
+        None => trailing_shape(value),
+    }
+}
+
+pub fn canonical(names: Names, value: string) -> string {
+    match names.replacements[value] {
+        Some(replacement) => replacement,
+        None => match name_shape(value) {
+            Some(shape) => {
+                let key = shape.separator + shape.prefix;
+                let index = match names.counters[key] {
+                    Some(index) => index,
+                    None => 0,
+                };
+                names.counters[key] = index + 1;
+                let replacement = shape.prefix + shape.separator + index.to_string();
+                names.replacements[value] = replacement;
+                replacement
+            },
+            None => value,
+        },
+    }
+}

@@ -1,0 +1,258 @@
+package anf;
+
+use module::repr;
+use module::snapshot_names;
+
+struct SnapshotNames {
+    locals: snapshot_names::Names,
+    joins: snapshot_names::Names,
+}
+
+fn snapshot_names_new() -> SnapshotNames {
+    SnapshotNames { locals: snapshot_names::names(), joins: snapshot_names::names() }
+}
+
+fn snapshot_imm(names: SnapshotNames, value: Imm) -> Imm {
+    match value {
+        Var { name, ty } => {
+            Imm::Var { name: snapshot_names::canonical(names.locals, name), ty }
+        },
+        Callable { callable, ty } => Imm::Callable { callable, ty },
+        Prim { value, ty } => Imm::Prim { value, ty },
+        Tag { index, ty } => Imm::Tag { index, ty },
+    }
+}
+
+fn snapshot_imms(names: SnapshotNames, values: Vec[Imm]) -> Vec[Imm] {
+    let result: Vec[Imm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(snapshot_imm(names, value))
+    }
+    result
+}
+
+fn snapshot_optional_imm(names: SnapshotNames, value: Option[Imm]) -> Option[Imm] {
+    match value {
+        Some(value) => Option::Some(snapshot_imm(names, value)),
+        None => Option::None,
+    }
+}
+
+fn snapshot_value(names: SnapshotNames, value: Value) -> Value {
+    match value {
+        Imm(value) => Value::Imm(snapshot_imm(names, value)),
+        Constr { constructor, args, ty } => {
+            Value::Constr { constructor, args: snapshot_imms(names, args), ty }
+        },
+        Tuple { items, ty } => Value::Tuple { items: snapshot_imms(names, items), ty },
+        Array { items, ty } => Value::Array { items: snapshot_imms(names, items), ty },
+        ConstrGet { expr, constructor, field_index, ty } => Value::ConstrGet {
+            expr: snapshot_imm(names, expr),
+            constructor,
+            field_index,
+            ty,
+        },
+        Unary { op, expr, ty } => Value::Unary { op, expr: snapshot_imm(names, expr), ty },
+        Cast { expr, ty } => Value::Cast { expr: snapshot_imm(names, expr), ty },
+        Binary { op, lhs, rhs, ty } => Value::Binary {
+            op,
+            lhs: snapshot_imm(names, lhs),
+            rhs: snapshot_imm(names, rhs),
+            ty,
+        },
+        Assign { name, value, target_ty, ty } => Value::Assign {
+            name: snapshot_names::canonical(names.locals, name),
+            value: snapshot_imm(names, value),
+            target_ty,
+            ty,
+        },
+        Call { func, args, ty } => Value::Call {
+            func: snapshot_imm(names, func),
+            args: snapshot_imms(names, args),
+            ty,
+        },
+        ToDyn { trait_name, for_ty, expr, ty } => Value::ToDyn {
+            trait_name,
+            for_ty,
+            expr: snapshot_imm(names, expr),
+            ty,
+        },
+        DynCall { trait_name, method_name, receiver, args, ty } => Value::DynCall {
+            trait_name,
+            method_name,
+            receiver: snapshot_imm(names, receiver),
+            args: snapshot_imms(names, args),
+            ty,
+        },
+        Go { closure, ty } => Value::Go { closure: snapshot_imm(names, closure), ty },
+        PackClosure { environment, apply, ty } => Value::PackClosure {
+            environment: snapshot_imm(names, environment),
+            apply,
+            ty,
+        },
+        Proj { tuple, index, ty } => {
+            Value::Proj { tuple: snapshot_imm(names, tuple), index, ty }
+        },
+    }
+}
+
+fn snapshot_join(names: SnapshotNames, value: JoinBind) -> JoinBind {
+    let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
+    for param in value.params {
+        params.push((snapshot_names::canonical(names.locals, param.0), param.1))
+    }
+    JoinBind {
+        name: snapshot_names::canonical(names.joins, value.name),
+        role: value.role,
+        params,
+        ret_ty: value.ret_ty,
+        body: snapshot_block(names, value.body),
+    }
+}
+
+fn observe_block_joins(names: SnapshotNames, value: Block) -> unit {
+    for binding in value.binds {
+        match binding {
+            Join(value) => {
+                let _ = snapshot_names::canonical(names.joins, value.name);
+            },
+            JoinRec(values) => for value in values {
+                let _ = snapshot_names::canonical(names.joins, value.name);
+            },
+            Let(_) => (),
+        }
+    }
+}
+
+fn snapshot_block(names: SnapshotNames, value: Block) -> Block {
+    observe_block_joins(names, value);
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for binding in value.binds {
+        match binding {
+            Let(value) => {
+                let name = snapshot_names::canonical(names.locals, value.name);
+                binds.push(
+                    Bind::Let(
+                        LetBind { name, value: snapshot_value(names, value.value), ty: value.ty },
+                    ),
+                )
+            },
+            Join(value) => binds.push(Bind::Join(snapshot_join(names, value))),
+            JoinRec(values) => {
+                let renamed: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    renamed.push(snapshot_join(names, value))
+                }
+                binds.push(Bind::JoinRec(renamed))
+            },
+        }
+    }
+    Block { binds, term: snapshot_term(names, value.term) }
+}
+
+fn snapshot_arm(names: SnapshotNames, value: Arm) -> Arm {
+    Arm { lhs: snapshot_imm(names, value.lhs), body: snapshot_block(names, value.body) }
+}
+
+fn snapshot_select_arm(names: SnapshotNames, value: SelectArm) -> SelectArm {
+    match value {
+        Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
+            channel: snapshot_imm(names, channel),
+            guard: snapshot_optional_imm(names, guard),
+            binding: snapshot_names::canonical(names.locals, binding),
+            binding_ty,
+            body: snapshot_block(names, body),
+        },
+        Send { channel, value, guard, body } => SelectArm::Send {
+            channel: snapshot_imm(names, channel),
+            value: snapshot_imm(names, value),
+            guard: snapshot_optional_imm(names, guard),
+            body: snapshot_block(names, body),
+        },
+    }
+}
+
+fn snapshot_term(names: SnapshotNames, value: Term) -> Term {
+    match value {
+        Return(value) => Term::Return(snapshot_imm(names, value)),
+        Jump { target, args, ret_ty } => Term::Jump {
+            target: snapshot_names::canonical(names.joins, target),
+            args: snapshot_imms(names, args),
+            ret_ty,
+        },
+        If { cond, then_, else_, ret_ty } => Term::If {
+            cond: snapshot_imm(names, cond),
+            then_: snapshot_block(names, then_),
+            else_: snapshot_block(names, else_),
+            ret_ty,
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let renamed: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                renamed.push(snapshot_arm(names, arm))
+            }
+            Term::Match {
+                scrutinee: snapshot_imm(names, scrutinee),
+                arms: renamed,
+                default: match default {
+                    Some(body) => Option::Some(snapshot_block(names, body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Select { mode, arms, default, ret_ty } => {
+            let renamed: Vec[SelectArm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                renamed.push(snapshot_select_arm(names, arm))
+            }
+            Term::Select {
+                mode,
+                arms: renamed,
+                default: match default {
+                    Some(body) => Option::Some(snapshot_block(names, body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn snapshot_function(value: Function) -> Function {
+    let names = snapshot_names_new();
+    let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
+    for param in value.params {
+        params.push((snapshot_names::canonical(names.locals, param.0), param.1))
+    }
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params,
+        ret_ty: value.ret_ty,
+        body: snapshot_block(names, value.body),
+    }
+}
+
+fn snapshot_file(value: File) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(snapshot_function(function))
+    }
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+        statics: value.statics,
+        closure_defs: value.closure_defs,
+    }
+}
+
+pub fn encode_snapshot(value: File) -> string {
+    encode(snapshot_file(value))
+}

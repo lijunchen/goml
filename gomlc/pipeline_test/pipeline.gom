@@ -225,10 +225,10 @@ fn test_one_case_with_go(compiler: compiler_driver::SourceCompiler, name: string
     assert_snapshot(base, "ast", ast::pretty(compilation.ast_value));
     assert_snapshot(base, "hir", hir::encode(compilation.hir_value));
     assert_snapshot(base, "tast", tast::encode(compilation.tast_value));
-    assert_snapshot(base, "core", core::encode(compilation.core_value));
-    assert_snapshot(base, "mono", mono::encode(compilation.mono_value));
-    assert_snapshot(base, "lift", lift::encode(compilation.lift_value));
-    assert_snapshot(base, "anf", anf::encode(compilation.anf_value));
+    assert_snapshot(base, "core", core::encode_snapshot(compilation.core_value));
+    assert_snapshot(base, "mono", mono::encode_snapshot(compilation.mono_value));
+    assert_snapshot(base, "lift", lift::encode_snapshot(compilation.lift_value));
+    assert_snapshot(base, "anf", anf::encode_snapshot(compilation.anf_value));
     assert_snapshot(base, "go", go_backend::encode(compilation.go_value));
     if can_run_go && (has_out_snapshot(base) || (update_expected() && new_fixture)) {
         let go_source = go_backend::encode(compilation.go_value);
