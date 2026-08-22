@@ -1,11 +1,11 @@
-fn trait_impl#Measure#Vec[int32]#measure(self/0: Vec[int32]) -> int {
+fn trait_impl#Measure#Vec[i32]#measure(self/0: Vec[i32]) -> isize {
   let inline433 = @intrinsic(vec.len)(self/0) in
   inline433
 }
 
 fn main() -> unit {
   let values/2 = @intrinsic(vec.new)() in
-  join inline_cont439(t415: int) -> unit {
+  join inline_cont439(t415: isize) -> unit {
     join inline_cont437(t416: string) -> unit {
       let inline435 = trait_impl#ToString#string#to_string(t416) in
       let inline436 = @runtime(core.string_println)(inline435) in
@@ -14,11 +14,11 @@ fn main() -> unit {
     let inline438 = @runtime(core.int_to_string)(t415) in
     jump inline_cont437(inline438)
   } in
-  let inline440 = trait_impl#Measure#Vec[int32]#measure(values/2) in
+  let inline440 = trait_impl#Measure#Vec[i32]#measure(values/2) in
   jump inline_cont439(inline440)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+fn inherent#Vec#Vec[T]#len__T_i32(self/273: Vec[i32]) -> isize {
   let t420 = @intrinsic(vec.len)(self/273) in
   t420
 }
@@ -31,12 +31,12 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont441(value/1)
 }
 
-fn read_measure__T_Vec[int32](value/1: Vec[int32]) -> int {
-  let inline443 = inherent#Vec#Vec[T]#len__T_int32(value/1) in
+fn read_measure__T_Vec[i32](value/1: Vec[i32]) -> isize {
+  let inline443 = inherent#Vec#Vec[T]#len__T_i32(value/1) in
   inline443
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   let t429 = @runtime(core.int_to_string)(self/32) in
   t429
 }

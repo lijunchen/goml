@@ -13,7 +13,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type closure_env_make_pairer_T_int_0 struct {
+type closure_env_make_pairer_T_isize_0 struct {
     x_0 int
 }
 
@@ -26,11 +26,11 @@ type Ordering int32
 func main0() struct{} {
     var int_pairer__2 func(string) string
     var inline455 int = 7
-    var inline456 closure_env_make_pairer_T_int_0 = closure_env_make_pairer_T_int_0{
+    var inline456 closure_env_make_pairer_T_isize_0 = closure_env_make_pairer_T_isize_0{
         x_0: inline455,
     }
     var inline457 func(string) string = func(p0 string) string {
-        return _goml_m_inherent_i_closure__en_h7caa8560de0ac6116c19c6efbb6b4ada__int__0_i_apply(inline456, p0)
+        return _goml_m_inherent_i_closure__en_he5793d1ba8a1f5ce312b0e3782c192b7_size__0_i_apply(inline456, p0)
     }
     int_pairer__2 = inline457
     var string_pairer__3 func(string) string
@@ -55,7 +55,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_inherent_i_closure__en_h7caa8560de0ac6116c19c6efbb6b4ada__int__0_i_apply(env413 closure_env_make_pairer_T_int_0, tag__1 string) string {
+func _goml_m_inherent_i_closure__en_he5793d1ba8a1f5ce312b0e3782c192b7_size__0_i_apply(env413 closure_env_make_pairer_T_isize_0, tag__1 string) string {
     var x__0 int = env413.x_0
     var t436 string = tag__1 + ":"
     var t437 string

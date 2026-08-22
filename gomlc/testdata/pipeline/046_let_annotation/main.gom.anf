@@ -4,7 +4,7 @@ fn main() -> unit {
   join inline_cont443(mtmp411: unit) -> unit {
     join inline_cont440(mtmp412: unit) -> unit {
       join inline_cont436(mtmp413: unit) -> unit {
-        let inline434 = trait_impl#ToString#int8#to_string(y/1) in
+        let inline434 = trait_impl#ToString#i8#to_string(y/1) in
         let inline435 = @runtime(core.string_println)(inline434) in
         ()
       } in
@@ -13,7 +13,7 @@ fn main() -> unit {
       let inline439 = @runtime(core.string_print)(inline438) in
       jump inline_cont436(())
     } in
-    let inline441 = trait_impl#ToString#int32#to_string(x/0) in
+    let inline441 = trait_impl#ToString#i32#to_string(x/0) in
     let inline442 = @runtime(core.string_println)(inline441) in
     jump inline_cont440(())
   } in
@@ -31,7 +31,7 @@ fn print__T_string(value/0: string) -> unit {
   jump inline_cont447(value/0)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont448(t420: string) -> unit {
     let t421 = @runtime(core.string_println)(t420) in
     ()
@@ -40,7 +40,7 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont448(inline449)
 }
 
-fn println__T_int8(value/1: int8) -> unit {
+fn println__T_i8(value/1: i8) -> unit {
   join inline_cont450(t423: string) -> unit {
     let t424 = @runtime(core.string_println)(t423) in
     ()
@@ -53,12 +53,12 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t429 = @runtime(core.int32_to_string)(self/154) in
   t429
 }
 
-fn trait_impl#ToString#int8#to_string(self/152: int8) -> string {
+fn trait_impl#ToString#i8#to_string(self/152: i8) -> string {
   let t432 = @runtime(core.int8_to_string)(self/152) in
   t432
 }

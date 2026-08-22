@@ -1,8 +1,8 @@
-fn sum_pair(value/0: (int32, int32)) -> int32 {
+fn sum_pair(value/0: (i32, i32)) -> i32 {
   (value/0.0 + value/0.1)
 }
 
-fn classify(value/1: uint8) -> string {
+fn classify(value/1: u8) -> string {
   {
     let match411 = value/1 in
     if (match411 == 10) {
@@ -25,38 +25,38 @@ fn main() -> unit {
   let user/2 = 255 in
   let pair/3 = (10, 10) in
   let marker/4 = 65 in
-  let _wild412 = println__T_uint64(user/2) in
-  let _wild413 = println__T_int32(sum_pair(pair/3)) in
-  let _wild414 = println__T_uint8(marker/4) in
+  let _wild412 = println__T_u64(user/2) in
+  let _wild413 = println__T_i32(sum_pair(pair/3)) in
+  let _wild414 = println__T_u8(marker/4) in
   let _wild415 = println__T_string(classify(marker/4)) in
   println__T_string(classify(10))
 }
 
-fn println__T_uint64(value/1: uint64) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint64#to_string(value/1))
+fn println__T_u64(value/1: u64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/1))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn println__T_uint8(value/1: uint8) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint8#to_string(value/1))
+fn println__T_u8(value/1: u8) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u8#to_string(value/1))
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#uint64#to_string(self/159: uint64) -> string {
+fn trait_impl#ToString#u64#to_string(self/159: u64) -> string {
   @runtime(core.uint64_to_string)(self/159)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#ToString#uint8#to_string(self/156: uint8) -> string {
+fn trait_impl#ToString#u8#to_string(self/156: u8) -> string {
   @runtime(core.uint8_to_string)(self/156)
 }
 

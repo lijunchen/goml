@@ -1,14 +1,14 @@
-fn print_opt_int(x/0: Option__int32) -> unit {
+fn print_opt_int(x/0: Option__i32) -> unit {
   match x/0 {
-    Option__int32::None => {
+    Option__i32::None => {
       println__T_string("none")
     },
-    Option__int32::Some(x411) => {
+    Option__i32::Some(x411) => {
       {
-        let x411 = Option__int32::Some._0(x/0) in
+        let x411 = Option__i32::Some._0(x/0) in
         {
           let v/1 = x411 in
-          println__T_int32(v/1)
+          println__T_i32(v/1)
         }
       }
     },
@@ -16,9 +16,9 @@ fn print_opt_int(x/0: Option__int32) -> unit {
 }
 
 fn main() -> unit {
-  let _wild412 = println__T_int(@intrinsic(array.get)([31, 32], 1)) in
+  let _wild412 = println__T_isize(@intrinsic(array.get)([31, 32], 1)) in
   let arr/2 = [1, 2, 3] in
-  let _wild413 = println__T_int(@intrinsic(array.get)(arr/2, 0)) in
+  let _wild413 = println__T_isize(@intrinsic(array.get)(arr/2, 0)) in
   let arr2/3 = [4, 5, 6] in
   let _wild418 =
     {
@@ -28,20 +28,20 @@ fn main() -> unit {
       let value417 = 50 in
       arr2/3 = @intrinsic(array.set)(place_root414, index415, value417)
     } in
-  let _wild419 = println__T_int(@intrinsic(array.get)(arr2/3, 1)) in
+  let _wild419 = println__T_isize(@intrinsic(array.get)(arr2/3, 1)) in
   let vec/4 =
-    inherent#Vec#Vec[T]#pushed__T_int(
-      inherent#Vec#Vec[T]#pushed__T_int(
-        inherent#Vec#Vec[T]#pushed__T_int(inherent#Vec#Vec[T]#new__T_int(), 7),
+    inherent#Vec#Vec[T]#pushed__T_isize(
+      inherent#Vec#Vec[T]#pushed__T_isize(
+        inherent#Vec#Vec[T]#pushed__T_isize(inherent#Vec#Vec[T]#new__T_isize(), 7),
         8
       ),
       9
     ) in
-  let _wild420 = println__T_int(@intrinsic(vec.get)(vec/4, 2)) in
+  let _wild420 = println__T_isize(@intrinsic(vec.get)(vec/4, 2)) in
   let vec2/5 =
-    inherent#Vec#Vec[T]#pushed__T_int32(
-      inherent#Vec#Vec[T]#pushed__T_int32(
-        inherent#Vec#Vec[T]#pushed__T_int32(inherent#Vec#Vec[T]#new__T_int32(), 10),
+    inherent#Vec#Vec[T]#pushed__T_i32(
+      inherent#Vec#Vec[T]#pushed__T_i32(
+        inherent#Vec#Vec[T]#pushed__T_i32(inherent#Vec#Vec[T]#new__T_i32(), 10),
         11
       ),
       12
@@ -54,10 +54,10 @@ fn main() -> unit {
       let value424 = 100 in
       @intrinsic(vec.set)(place_root421, index422, value424)
     } in
-  let _wild426 = println__T_int32(@intrinsic(vec.get)(vec2/5, 0)) in
-  let s/6 = inherent#Vec#Vec[T]#slice__T_int32(vec2/5, 0, 2) in
-  let _wild427 = println__T_int32(@intrinsic(slice.get)(s/6, 1)) in
-  let map/7 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
+  let _wild426 = println__T_i32(@intrinsic(vec.get)(vec2/5, 0)) in
+  let s/6 = inherent#Vec#Vec[T]#slice__T_i32(vec2/5, 0, 2) in
+  let _wild427 = println__T_i32(@intrinsic(slice.get)(s/6, 1)) in
+  let map/7 = inherent#HashMap#HashMap[K,V]#new__K_string__V_i32() in
   let _wild432 =
     {
       let place_root428 = map/7 in
@@ -83,7 +83,7 @@ fn main() -> unit {
         @intrinsic(array.set)(place437, index438, value440)
       )
     } in
-  let _wild442 = println__T_int32(@intrinsic(array.get)(@intrinsic(array.get)(matrix/8, 1), 0)) in
+  let _wild442 = println__T_i32(@intrinsic(array.get)(@intrinsic(array.get)(matrix/8, 1), 0)) in
   let pair/9 = ([14, 15], 0) in
   let _wild448 =
     {
@@ -94,12 +94,12 @@ fn main() -> unit {
       let value447 = 150 in
       pair/9 = (@intrinsic(array.set)(place444, index445, value447), place_root443.1)
     } in
-  let _wild449 = println__T_int(@intrinsic(array.get)(pair/9.0, 1)) in
+  let _wild449 = println__T_isize(@intrinsic(array.get)(pair/9.0, 1)) in
   let holder/10 =
     Holder {
       data: [16, 17],
-      vecs: inherent#Vec#Vec[T]#pushed__T_[int32;2](
-        inherent#Vec#Vec[T]#pushed__T_[int32;2](inherent#Vec#Vec[T]#new__T_[int32;2](), [18, 19]),
+      vecs: inherent#Vec#Vec[T]#pushed__T_[i32;2](
+        inherent#Vec#Vec[T]#pushed__T_[i32;2](inherent#Vec#Vec[T]#new__T_[i32;2](), [18, 19]),
         [20, 21]
       )
     } in
@@ -115,7 +115,7 @@ fn main() -> unit {
         vecs: Holder.vecs(place_root450)
       }
     } in
-  let _wild456 = println__T_int32(@intrinsic(array.get)(Holder.data(holder/10), 0)) in
+  let _wild456 = println__T_i32(@intrinsic(array.get)(Holder.data(holder/10), 0)) in
   let _wild464 =
     {
       let place_root457 = holder/10 in
@@ -128,8 +128,8 @@ fn main() -> unit {
       @intrinsic(vec.set)(place458, index459, @intrinsic(array.set)(place460, index461, value463))
     } in
   let _wild465 =
-    println__T_int32(@intrinsic(array.get)(@intrinsic(vec.get)(Holder.vecs(holder/10), 1), 0)) in
-  let r/11 = inherent#Ref#Ref[T]#new__T_[int32;2]([22, 23]) in
+    println__T_i32(@intrinsic(array.get)(@intrinsic(vec.get)(Holder.vecs(holder/10), 1), 0)) in
+  let r/11 = inherent#Ref#Ref[T]#new__T_[i32;2]([22, 23]) in
   let _wild471 =
     {
       let place_ref466 = r/11 in
@@ -140,59 +140,34 @@ fn main() -> unit {
       @intrinsic(ref.set)(place_ref466, @intrinsic(array.set)(place_root467, index468, value470))
     } in
   let _wild472 =
-    println__T_int32(@intrinsic(array.get)(inherent#Ref#Ref[T]#get__T_[int32;2](r/11), 1)) in
+    println__T_i32(@intrinsic(array.get)(inherent#Ref#Ref[T]#get__T_[i32;2](r/11), 1)) in
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
+fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_int(self/260: Vec[int], elem/261: int) -> Vec[int] {
+fn inherent#Vec#Vec[T]#pushed__T_isize(self/260: Vec[isize], elem/261: isize) -> Vec[isize] {
   let result/262 =
-    inherent#Vec#Vec[T]#with_capacity__T_int((inherent#Vec#Vec[T]#len__T_int(self/260) + 1)) in
+    inherent#Vec#Vec[T]#with_capacity__T_isize((inherent#Vec#Vec[T]#len__T_isize(self/260) + 1)) in
   let index/263 = 0 in
   let _wild193 =
-    while (index/263 < inherent#Vec#Vec[T]#len__T_int(self/260)) {
+    while (index/263 < inherent#Vec#Vec[T]#len__T_isize(self/260)) {
         {
           let _wild189 =
-            inherent#Vec#Vec[T]#push__T_int(result/262, @intrinsic(vec.get)(self/260, index/263)) in
-          let _wild192 =
-            {
-              let compound_old190 = index/263 in
-              let compound_value191 = 1 in
-              index/263 = (compound_old190 + compound_value191)
-            } in
-        }
-    } in
-  let _wild194 = inherent#Vec#Vec[T]#push__T_int(result/262, elem/261) in
-  result/262
-}
-
-fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
-  @intrinsic(vec.new)()
-}
-
-fn inherent#Vec#Vec[T]#pushed__T_int32(self/260: Vec[int32], elem/261: int32) -> Vec[int32] {
-  let result/262 =
-    inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/260) + 1)) in
-  let index/263 = 0 in
-  let _wild193 =
-    while (index/263 < inherent#Vec#Vec[T]#len__T_int32(self/260)) {
-        {
-          let _wild189 =
-            inherent#Vec#Vec[T]#push__T_int32(
+            inherent#Vec#Vec[T]#push__T_isize(
               result/262,
               @intrinsic(vec.get)(self/260, index/263)
             ) in
@@ -204,37 +179,62 @@ fn inherent#Vec#Vec[T]#pushed__T_int32(self/260: Vec[int32], elem/261: int32) ->
             } in
         }
     } in
-  let _wild194 = inherent#Vec#Vec[T]#push__T_int32(result/262, elem/261) in
+  let _wild194 = inherent#Vec#Vec[T]#push__T_isize(result/262, elem/261) in
   result/262
 }
 
-fn inherent#Vec#Vec[T]#slice__T_int32(self/311: Vec[int32], start/312: int, end/313: int) -> Slice[
-  int32
+fn inherent#Vec#Vec[T]#new__T_i32() -> Vec[i32] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#pushed__T_i32(self/260: Vec[i32], elem/261: i32) -> Vec[i32] {
+  let result/262 =
+    inherent#Vec#Vec[T]#with_capacity__T_i32((inherent#Vec#Vec[T]#len__T_i32(self/260) + 1)) in
+  let index/263 = 0 in
+  let _wild193 =
+    while (index/263 < inherent#Vec#Vec[T]#len__T_i32(self/260)) {
+        {
+          let _wild189 =
+            inherent#Vec#Vec[T]#push__T_i32(result/262, @intrinsic(vec.get)(self/260, index/263)) in
+          let _wild192 =
+            {
+              let compound_old190 = index/263 in
+              let compound_value191 = 1 in
+              index/263 = (compound_old190 + compound_value191)
+            } in
+        }
+    } in
+  let _wild194 = inherent#Vec#Vec[T]#push__T_i32(result/262, elem/261) in
+  result/262
+}
+
+fn inherent#Vec#Vec[T]#slice__T_i32(self/311: Vec[i32], start/312: isize, end/313: isize) -> Slice[
+  i32
 ] {
   @intrinsic(slice.new)(self/311, start/312, end/313)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_i32() -> HashMap[string, i32] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#Vec#Vec[T]#new__T_[int32;2]() -> Vec[[int32; 2]] {
+fn inherent#Vec#Vec[T]#new__T_[i32;2]() -> Vec[[i32; 2]] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_[int32;2](self/260: Vec[[int32; 2]], elem/261: [int32; 2]) -> Vec[
-  [int32; 2]
+fn inherent#Vec#Vec[T]#pushed__T_[i32;2](self/260: Vec[[i32; 2]], elem/261: [i32; 2]) -> Vec[
+  [i32; 2]
 ] {
   let result/262 =
-    inherent#Vec#Vec[T]#with_capacity__T_[int32;2](
-      (inherent#Vec#Vec[T]#len__T_[int32;2](self/260) + 1)
+    inherent#Vec#Vec[T]#with_capacity__T_[i32;2](
+      (inherent#Vec#Vec[T]#len__T_[i32;2](self/260) + 1)
     ) in
   let index/263 = 0 in
   let _wild193 =
-    while (index/263 < inherent#Vec#Vec[T]#len__T_[int32;2](self/260)) {
+    while (index/263 < inherent#Vec#Vec[T]#len__T_[i32;2](self/260)) {
         {
           let _wild189 =
-            inherent#Vec#Vec[T]#push__T_[int32;2](
+            inherent#Vec#Vec[T]#push__T_[i32;2](
               result/262,
               @intrinsic(vec.get)(self/260, index/263)
             ) in
@@ -246,15 +246,15 @@ fn inherent#Vec#Vec[T]#pushed__T_[int32;2](self/260: Vec[[int32; 2]], elem/261: 
             } in
         }
     } in
-  let _wild194 = inherent#Vec#Vec[T]#push__T_[int32;2](result/262, elem/261) in
+  let _wild194 = inherent#Vec#Vec[T]#push__T_[i32;2](result/262, elem/261) in
   result/262
 }
 
-fn inherent#Ref#Ref[T]#new__T_[int32;2](value/431: [int32; 2]) -> Ref[[int32; 2]] {
+fn inherent#Ref#Ref[T]#new__T_[i32;2](value/431: [i32; 2]) -> Ref[[i32; 2]] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_[int32;2](self/432: Ref[[int32; 2]]) -> [int32; 2] {
+fn inherent#Ref#Ref[T]#get__T_[i32;2](self/432: Ref[[i32; 2]]) -> [i32; 2] {
   @intrinsic(ref.get)(self/432)
 }
 
@@ -262,47 +262,47 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int(self/273: Vec[int]) -> int {
+fn inherent#Vec#Vec[T]#len__T_isize(self/273: Vec[isize]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int(capacity/257: int) -> Vec[int] {
+fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/257: isize) -> Vec[isize] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
-fn inherent#Vec#Vec[T]#push__T_int(self/258: Vec[int], elem/259: int) -> unit {
+fn inherent#Vec#Vec[T]#push__T_isize(self/258: Vec[isize], elem/259: isize) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+fn inherent#Vec#Vec[T]#len__T_i32(self/273: Vec[i32]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/257: int) -> Vec[int32] {
+fn inherent#Vec#Vec[T]#with_capacity__T_i32(capacity/257: isize) -> Vec[i32] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/258: Vec[int32], elem/259: int32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_i32(self/258: Vec[i32], elem/259: i32) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#len__T_[int32;2](self/273: Vec[[int32; 2]]) -> int {
+fn inherent#Vec#Vec[T]#len__T_[i32;2](self/273: Vec[[i32; 2]]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_[int32;2](capacity/257: int) -> Vec[[int32; 2]] {
+fn inherent#Vec#Vec[T]#with_capacity__T_[i32;2](capacity/257: isize) -> Vec[[i32; 2]] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
-fn inherent#Vec#Vec[T]#push__T_[int32;2](self/258: Vec[[int32; 2]], elem/259: [int32; 2]) -> unit {
+fn inherent#Vec#Vec[T]#push__T_[i32;2](self/258: Vec[[i32; 2]], elem/259: [i32; 2]) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
@@ -310,16 +310,13 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   (self/181 == other/182)
 }
 
-fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+fn trait_impl#Hash#string#hash(self/209: string) -> u64 {
   @runtime(core.string_hash)(self/209)
 }
 
-fn trait_impl#PartialEq#[int32;2]#eq(self: [int32; 2], other: [int32; 2]) -> bool {
-  if trait_impl#PartialEq#int32#eq(
-    @intrinsic(array.get)(self, 0),
-    @intrinsic(array.get)(other, 0)
-  ) {
-      if trait_impl#PartialEq#int32#eq(
+fn trait_impl#PartialEq#[i32;2]#eq(self: [i32; 2], other: [i32; 2]) -> bool {
+  if trait_impl#PartialEq#i32#eq(@intrinsic(array.get)(self, 0), @intrinsic(array.get)(other, 0)) {
+      if trait_impl#PartialEq#i32#eq(
         @intrinsic(array.get)(self, 1),
         @intrinsic(array.get)(other, 1)
       ) {
@@ -332,23 +329,23 @@ fn trait_impl#PartialEq#[int32;2]#eq(self: [int32; 2], other: [int32; 2]) -> boo
   }
 }
 
-fn trait_impl#Hash#[int32;2]#hash(self: [int32; 2]) -> uint64 {
+fn trait_impl#Hash#[i32;2]#hash(self: [i32; 2]) -> u64 {
   {
     let _structural_hash_0 = 14695981039346656037 in
     let _structural_hash_1 =
       ((_structural_hash_0 * 1099511628211) +
-        trait_impl#Hash#int32#hash(@intrinsic(array.get)(self, 0))) in
+        trait_impl#Hash#i32#hash(@intrinsic(array.get)(self, 0))) in
     let _structural_hash_2 =
       ((_structural_hash_1 * 1099511628211) +
-        trait_impl#Hash#int32#hash(@intrinsic(array.get)(self, 1))) in
+        trait_impl#Hash#i32#hash(@intrinsic(array.get)(self, 1))) in
     _structural_hash_2
   }
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }

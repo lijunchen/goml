@@ -1,10 +1,10 @@
 package main;
 struct Holder {
-    data: [int32; 2],
-    vecs: Vec[[int32; 2]],
+    data: [i32; 2],
+    vecs: Vec[[i32; 2]],
 }
 
-fn print_opt_int(x: Option[int32]) -> unit {
+fn print_opt_int(x: Option[i32]) -> unit {
     match x {
         Option::Some(v) => println(v),
         Option::None => println("none"),
@@ -23,13 +23,13 @@ fn main() -> unit {
     let mut vec2 = Vec::new().pushed(10).pushed(11).pushed(12);
     vec2[0] = 100;
     println(vec2[0]);
-    let s: Slice[int32] = vec2.slice(0, 2);
+    let s: Slice[i32] = vec2.slice(0, 2);
     println(s[1]);
     let map = HashMap::new();
     map["a"] = 13;
     print_opt_int(map["a"]);
     print_opt_int(map["missing"]);
-    let mut matrix: [[int32; 2]; 2] = [[1, 2], [3, 4]];
+    let mut matrix: [[i32; 2]; 2] = [[1, 2], [3, 4]];
     matrix[1][0] = 30;
     println(matrix[1][0]);
     let mut pair = ([14, 15], 0);
@@ -40,7 +40,7 @@ fn main() -> unit {
     println(holder.data[0]);
     holder.vecs[1][0] = 200;
     println(holder.vecs[1][0]);
-    let r: Ref[[int32; 2]] = Ref::new([22, 23]);
+    let r: Ref[[i32; 2]] = Ref::new([22, 23]);
     r.get()[1] = 230;
     println(r.get()[1]);
 }

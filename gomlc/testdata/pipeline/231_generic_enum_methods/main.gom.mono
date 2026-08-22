@@ -1,10 +1,10 @@
 fn main() -> unit {
-  let value/3 = Maybe__int::Some(3) in
+  let value/3 = Maybe__isize::Some(3) in
   {
     let mtmp412 =
-      inherent#Maybe#Maybe[T]#map__T_int__U_string(
+      inherent#Maybe#Maybe[T]#map__T_isize__U_string(
         value/3,
-        |item/4| inherent#int#int#to_string(item/4)
+        |item/4| inherent#isize#isize#to_string(item/4)
       ) in
     match mtmp412 {
       Maybe__string::None => {
@@ -23,21 +23,21 @@ fn main() -> unit {
   }
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Maybe#Maybe[T]#map__T_int__U_string(
-  self/0: Maybe__int,
-  map_fn/1: (int) -> string
+fn inherent#Maybe#Maybe[T]#map__T_isize__U_string(
+  self/0: Maybe__isize,
+  map_fn/1: (isize) -> string
 ) -> Maybe__string {
   match self/0 {
-    Maybe__int::None => {
+    Maybe__isize::None => {
       Maybe__string::None
     },
-    Maybe__int::Some(x411) => {
+    Maybe__isize::Some(x411) => {
       {
-        let x411 = Maybe__int::Some._0(self/0) in
+        let x411 = Maybe__isize::Some._0(self/0) in
         {
           let value/2 = x411 in
           Maybe__string::Some(map_fn/1(value/2))

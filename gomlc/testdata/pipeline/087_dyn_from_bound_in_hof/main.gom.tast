@@ -1,6 +1,6 @@
-impl Display for int32 {
-  fn show(self/0: int32) -> string {
-      (int32::to_string : (int32) -> string)((self/0 : int32))
+impl Display for i32 {
+  fn show(self/0: i32) -> string {
+      (i32::to_string : (i32) -> string)((self/0 : i32))
   }
 }
 
@@ -10,7 +10,7 @@ fn mk_renderer[T](x/1: T) -> () -> string where T: Display {
 }
 
 fn main() -> unit {
-    let value/3: int32 = 42;
-    let f/4: () -> string = (mk_renderer : (int32) -> () -> string)((value/3 : int32));
+    let value/3: i32 = 42;
+    let f/4: () -> string = (mk_renderer : (i32) -> () -> string)((value/3 : i32));
     (println : (string) -> unit)((f/4 : () -> string)());
 }

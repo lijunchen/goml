@@ -1,49 +1,49 @@
-fn maybe_value(flag/0: bool) -> Option__int32 {
+fn maybe_value(flag/0: bool) -> Option__i32 {
   if flag/0 {
       {
-        Option__int32::Some(41)
+        Option__i32::Some(41)
       }
   } else {
       {
-        Option__int32::None
+        Option__i32::None
       }
   }
 }
 
-fn compute(flag/1: bool) -> Option__int32 {
+fn compute(flag/1: bool) -> Option__i32 {
   let value/2 =
     {
       let mtmp411 = maybe_value(flag/1) in
       match mtmp411 {
-        Option__int32::Some(x412) => {
+        Option__i32::Some(x412) => {
           {
-            let x412 = Option__int32::Some._0(mtmp411) in
+            let x412 = Option__i32::Some._0(mtmp411) in
             {
               let try_value/11 = x412 in
               try_value/11
             }
           }
         },
-        Option__int32::None => {
-          return Option__int32::None
+        Option__i32::None => {
+          return Option__i32::None
         },
       }
     } in
-  Option__int32::Some((value/2 + 1))
+  Option__i32::Some((value/2 + 1))
 }
 
-fn show(value/3: Option__int32) -> string {
+fn show(value/3: Option__i32) -> string {
   match value/3 {
-    Option__int32::Some(x413) => {
+    Option__i32::Some(x413) => {
       {
-        let x413 = Option__int32::Some._0(value/3) in
+        let x413 = Option__i32::Some._0(value/3) in
         {
           let value/4 = x413 in
-          inherent#int32#int32#to_string(value/4)
+          inherent#i32#i32#to_string(value/4)
         }
       }
     },
-    Option__int32::None => {
+    Option__i32::None => {
       "none"
     },
   }
@@ -54,7 +54,7 @@ fn main() -> unit {
   println__T_string(show(compute(false)))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

@@ -1,5 +1,5 @@
-fn trait_impl#Mark#int32#mark(self/0: int32) -> string {
-  inherent#int32#int32#to_string(self/0)
+fn trait_impl#Mark#i32#mark(self/0: i32) -> string {
+  inherent#i32#i32#to_string(self/0)
 }
 
 fn trait_impl#Label#Box__string#label(self/2: Box__string) -> string {
@@ -9,11 +9,11 @@ fn trait_impl#Label#Box__string#label(self/2: Box__string) -> string {
 fn main() -> unit {
   let _wild411 =
     println__T_string(trait_impl#Label#Box__string#label(Box__string { value: "text" })) in
-  let value/3 = Box__int32 { value: 7 } in
-  let _wild412 = println__T_string(trait_impl#Label#Box__int32#label(value/3)) in
+  let value/3 = Box__i32 { value: 7 } in
+  let _wild412 = println__T_string(trait_impl#Label#Box__i32#label(value/3)) in
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -21,8 +21,8 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#Label#Box__int32#label(self/1: Box__int32) -> string {
-  ("blanket:" + trait_impl#Mark#int32#mark(Box__int32.value(self/1)))
+fn trait_impl#Label#Box__i32#label(self/1: Box__i32) -> string {
+  ("blanket:" + trait_impl#Mark#i32#mark(Box__i32.value(self/1)))
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

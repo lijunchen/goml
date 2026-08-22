@@ -9,7 +9,7 @@ fn show_dir(res/3: Result[Vec[string], string]) -> string {
     match (res/3 : Result[Vec[string], string]) {
         Result::Ok(names/4: Vec[string]) =>
           (ToString::to_string : (bool) -> string)(
-            (Vec[string]::len : (Vec[string]) -> int)((names/4 : Vec[string])) > 0
+            (Vec[string]::len : (Vec[string]) -> isize)((names/4 : Vec[string])) > 0
           ),
         Result::Err(err/5: string) => "err " + (err/5 : string),
     }

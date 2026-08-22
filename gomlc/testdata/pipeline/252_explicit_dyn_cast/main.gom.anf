@@ -4,7 +4,7 @@ fn trait_impl#Display#Number#display(self/0: Number) -> string {
   inline449
 }
 
-fn trait_impl#Source#Number#get(self/1: Number) -> int {
+fn trait_impl#Source#Number#get(self/1: Number) -> isize {
   let t420 = Number.value(self/1) in
   t420
 }
@@ -29,7 +29,7 @@ fn main() -> unit {
           let inline452 = @runtime(core.string_println)(inline451) in
           ()
         } in
-        let inline454 = trait_impl#ToString#int#to_string(t427) in
+        let inline454 = trait_impl#ToString#isize#to_string(t427) in
         let inline455 = @runtime(core.string_println)(inline454) in
         jump inline_cont453(())
       } in
@@ -45,7 +45,7 @@ fn main() -> unit {
   jump inline_cont461(())
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   let t433 = @runtime(core.int_to_string)(self/32) in
   t433
 }
@@ -63,7 +63,7 @@ fn erase__T_Number(value/2: Number) -> dyn Display {
   t439
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont465(t441: string) -> unit {
     let t442 = @runtime(core.string_println)(t441) in
     ()
@@ -76,7 +76,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t447 = @runtime(core.int_to_string)(self/151) in
   t447
 }

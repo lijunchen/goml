@@ -40,7 +40,7 @@ fn main() -> unit {
           join inline_cont513(_wild419: unit) -> unit {
             join inline_cont507(_wild420: unit) -> unit {
               join inline_cont504(_wild421: unit) -> unit {
-                join inline_cont502(t437: int) -> unit {
+                join inline_cont502(t437: isize) -> unit {
                   join inline_cont499(_wild422: unit) -> unit {
                     join inline_cont493(_wild423: unit) -> unit {
                       let inline488 =
@@ -74,7 +74,7 @@ fn main() -> unit {
                       },
                     }
                   } in
-                  let inline500 = trait_impl#ToString#int#to_string(t437) in
+                  let inline500 = trait_impl#ToString#isize#to_string(t437) in
                   let inline501 = @runtime(core.string_println)(inline500) in
                   jump inline_cont499(())
                 } in
@@ -163,7 +163,7 @@ fn trait_impl#PartialEq#Ref[Node]#eq(self/220: Ref[Node], other/221: Ref[Node]) 
   t453
 }
 
-fn trait_impl#Hash#Ref[Node]#hash(self/222: Ref[Node]) -> uint64 {
+fn trait_impl#Hash#Ref[Node]#hash(self/222: Ref[Node]) -> u64 {
   let t456 = @intrinsic(ref.ptr_hash)(self/222) in
   t456
 }
@@ -187,7 +187,7 @@ fn inherent#Ref#Ref[T]#set__T_Node(self/433: Ref[Node], value/434: Node) -> unit
   ()
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont532(t465: string) -> unit {
     let t466 = @runtime(core.string_println)(t465) in
     ()
@@ -198,7 +198,7 @@ fn println__T_int(value/1: int) -> unit {
 
 fn inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(
   self/427: HashMap[Ref[Node], string]
-) -> int {
+) -> isize {
   let t469 = @intrinsic(hashmap.len)(self/427) in
   t469
 }
@@ -212,7 +212,7 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   t474
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t477 = @runtime(core.int_to_string)(self/151) in
   t477
 }

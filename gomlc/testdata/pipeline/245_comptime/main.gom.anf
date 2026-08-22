@@ -1,6 +1,6 @@
-const ANSWER: int = 120;
+const ANSWER: isize = 120;
 
-fn factorial(value/0: int) -> int {
+fn factorial(value/0: isize) -> isize {
   let t429 = (value/0 < 2) in
   if t429 {
     1
@@ -12,14 +12,14 @@ fn factorial(value/0: int) -> int {
   }
 }
 
-fn accumulate(limit/1: int) -> int {
+fn accumulate(limit/1: isize) -> isize {
   let index/2 = 0 in
   let total/3 = 0 in
-  join exit435() -> int {
+  join exit435() -> isize {
     total/3
   } in
   joinrec {
-    join loop436() -> int {
+    join loop436() -> isize {
       let t437 = (index/2 < limit/1) in
       if t437 {
         let t438 = (total/3 + index/2) in
@@ -35,13 +35,13 @@ fn accumulate(limit/1: int) -> int {
   jump loop436()
 }
 
-fn make_pair(value/4: int) -> Pair {
+fn make_pair(value/4: isize) -> Pair {
   let t442 = (value/4 + 1) in
   let t443 = Pair { left: value/4, right: t442 } in
   t443
 }
 
-fn choose(value/5: int) -> Choice {
+fn choose(value/5: isize) -> Choice {
   let t448 = (value/5 > 0) in
   if t448 {
     let t449 = Choice::Value(value/5) in
@@ -51,9 +51,9 @@ fn choose(value/5: int) -> Choice {
   }
 }
 
-fn nonnegative(value/6: int) -> int {
+fn nonnegative(value/6: isize) -> isize {
   let t454 = (value/6 < 0) in
-  join k452(jp453: int) -> int {
+  join k452(jp453: isize) -> isize {
     jp453
   } in
   if t454 {
@@ -64,15 +64,15 @@ fn nonnegative(value/6: int) -> int {
   }
 }
 
-fn shadow(value/7: int) -> int {
+fn shadow(value/7: isize) -> isize {
   let base/9 = (value/7 + 1) in
   let t458 = (base/9 * 2) in
   let t459 = (base/9 + t458) in
   t459
 }
 
-fn widen_negative(value/11: int8) -> uint64 {
-  let t462 = (value/11 as uint64) in
+fn widen_negative(value/11: i8) -> u64 {
+  let t462 = (value/11 as u64) in
   t462
 }
 
@@ -95,15 +95,15 @@ fn main() -> unit {
               join inline_cont518(_wild421: unit) -> unit {
                 let shadowed/16 = 12 in
                 join inline_cont515(_wild422: unit) -> unit {
-                  join inline_cont508(t473: int) -> unit {
+                  join inline_cont508(t473: isize) -> unit {
                     let t474 = (t473 == shadowed/16) in
                     join inline_cont505(_wild423: unit) -> unit {
                       let widened/17 = 18446744073709551615 in
-                      join inline_cont502(t475: uint64) -> unit {
+                      join inline_cont502(t475: u64) -> unit {
                         let t476 = (widened/17 == t475) in
                         join inline_cont499(_wild424: unit) -> unit {
                           let t477 = factorial(4) in
-                          let inline497 = trait_impl#ToString#int#to_string(t477) in
+                          let inline497 = trait_impl#ToString#isize#to_string(t477) in
                           let inline498 = @runtime(core.string_println)(inline497) in
                           ()
                         } in
@@ -112,7 +112,7 @@ fn main() -> unit {
                         jump inline_cont499(())
                       } in
                       let inline503 = -1 in
-                      let inline504 = (inline503 as uint64) in
+                      let inline504 = (inline503 as u64) in
                       jump inline_cont502(inline504)
                     } in
                     let inline506 = trait_impl#ToString#bool#to_string(t474) in
@@ -125,7 +125,7 @@ fn main() -> unit {
                   let inline514 = (inline511 + inline512) in
                   jump inline_cont508(inline514)
                 } in
-                let inline516 = trait_impl#ToString#int#to_string(shadowed/16) in
+                let inline516 = trait_impl#ToString#isize#to_string(shadowed/16) in
                 let inline517 = @runtime(core.string_println)(inline516) in
                 jump inline_cont515(())
               } in
@@ -134,32 +134,32 @@ fn main() -> unit {
               jump inline_cont518(())
             } in
             let x419 = 9 in
-            let inline494 = trait_impl#ToString#int#to_string(x419) in
+            let inline494 = trait_impl#ToString#isize#to_string(x419) in
             let inline495 = @runtime(core.string_println)(inline494) in
             jump k470()
           } in
-          let inline522 = trait_impl#ToString#int#to_string(t469) in
+          let inline522 = trait_impl#ToString#isize#to_string(t469) in
           let inline523 = @runtime(core.string_println)(inline522) in
           jump inline_cont521(())
         } in
-        let inline525 = trait_impl#ToString#int#to_string(t466) in
+        let inline525 = trait_impl#ToString#isize#to_string(t466) in
         let inline526 = @runtime(core.string_println)(inline525) in
         jump inline_cont524(())
       } in
-      let inline528 = trait_impl#ToString#int#to_string(t465) in
+      let inline528 = trait_impl#ToString#isize#to_string(t465) in
       let inline529 = @runtime(core.string_println)(inline528) in
       jump inline_cont527(())
     } in
-    let inline531 = trait_impl#ToString#int#to_string(t464) in
+    let inline531 = trait_impl#ToString#isize#to_string(t464) in
     let inline532 = @runtime(core.string_println)(inline531) in
     jump inline_cont530(())
   } in
-  let inline534 = trait_impl#ToString#int#to_string(ANSWER) in
+  let inline534 = trait_impl#ToString#isize#to_string(ANSWER) in
   let inline535 = @runtime(core.string_println)(inline534) in
   jump inline_cont533(())
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont536(t482: string) -> unit {
     let t483 = @runtime(core.string_println)(t482) in
     ()
@@ -177,7 +177,7 @@ fn println__T_bool(value/1: bool) -> unit {
   jump inline_cont538(inline539)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t489 = @runtime(core.int_to_string)(self/151) in
   t489
 }

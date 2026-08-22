@@ -20,16 +20,16 @@ fn trait_impl#ToString#Point#to_string(self/1: Point) -> string {
   let #derive2_field/4 = x414 in
   let #derive1_field/3 = x413 in
   let #derive0_field/2 = x412 in
-  ((((((((("Point { " + "x: ") + trait_impl#ToString#int32#to_string(#derive0_field/2)) + ", ") +
+  ((((((((("Point { " + "x: ") + trait_impl#ToString#i32#to_string(#derive0_field/2)) + ", ") +
     "y: ") +
-    trait_impl#ToString#int32#to_string(#derive1_field/3)) +
+    trait_impl#ToString#i32#to_string(#derive1_field/3)) +
     ", ") +
     "color: ") +
     trait_impl#ToString#Color#to_string(#derive2_field/4)) +
     " }")
 }
 
-fn inherent#Point#Point#new(x/5: int32, y/6: int32, color/7: Color) -> Point {
+fn inherent#Point#Point#new(x/5: i32, y/6: i32, color/7: Color) -> Point {
   Point { x: x/5, y: y/6, color: color/7 }
 }
 
@@ -80,7 +80,7 @@ fn main() -> unit {
   ()
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 

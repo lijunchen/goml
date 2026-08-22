@@ -23,7 +23,7 @@ fn summarize(event/0: FloatEvent) -> string {
   }
 }
 
-fn compare(values/5: (float32, float64)) -> string {
+fn compare(values/5: (f32, f64)) -> string {
   let x415 = values/5.0 in
   let x416 = values/5.1 in
   let limit32/8 = 1 in
@@ -90,17 +90,17 @@ fn main() -> unit {
     jump inline_cont481(inline494)
   } in
   let inline502 = "f64=" in
-  let inline506 = trait_impl#ToString#float64#to_string(third_value/14) in
+  let inline506 = trait_impl#ToString#f64#to_string(third_value/14) in
   let inline507 = (inline502 + inline506) in
   jump inline_cont495(inline507)
 }
 
-fn trait_impl#ToString#float32#to_string(self/160: float32) -> string {
+fn trait_impl#ToString#f32#to_string(self/160: f32) -> string {
   let t444 = @runtime(core.float32_to_string)(self/160) in
   t444
 }
 
-fn trait_impl#ToString#float64#to_string(self/161: float64) -> string {
+fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
   let t447 = @runtime(core.float64_to_string)(self/161) in
   t447
 }

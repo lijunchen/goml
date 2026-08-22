@@ -1,5 +1,5 @@
-fn choose(flag/0: bool) -> int32 {
-    let value/1: int32 =
+fn choose(flag/0: bool) -> i32 {
+    let value/1: i32 =
       if (flag/0 : bool) {
           {
               return 10
@@ -9,19 +9,19 @@ fn choose(flag/0: bool) -> int32 {
               20
           }
       };
-    (value/1 : int32) + 1
+    (value/1 : i32) + 1
 }
 
 fn continue_branch() -> unit {
-    let count/2: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    while (Ref[int]::get : (Ref[int]) -> int)((count/2 : Ref[int])) < 2 {
+    let count/2: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    while (Ref[isize]::get : (Ref[isize]) -> isize)((count/2 : Ref[isize])) < 2 {
         {
-            (Ref[int]::set : (Ref[int], int) -> unit)(
-              (count/2 : Ref[int]),
-              (Ref[int]::get : (Ref[int]) -> int)((count/2 : Ref[int])) + 1
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (count/2 : Ref[isize]),
+              (Ref[isize]::get : (Ref[isize]) -> isize)((count/2 : Ref[isize])) + 1
             );
-            let value/3: int =
-              if (Ref[int]::get : (Ref[int]) -> int)((count/2 : Ref[int])) == 1 {
+            let value/3: isize =
+              if (Ref[isize]::get : (Ref[isize]) -> isize)((count/2 : Ref[isize])) == 1 {
                   {
                       continue
                   }
@@ -30,7 +30,7 @@ fn continue_branch() -> unit {
                       7
                   }
               };
-            (println : (int) -> unit)((value/3 : int))
+            (println : (isize) -> unit)((value/3 : isize))
         }
     }
 }
@@ -38,7 +38,7 @@ fn continue_branch() -> unit {
 fn break_branch(stop/4: bool) -> unit {
     while true {
         {
-            let value/5: int =
+            let value/5: isize =
               if (stop/4 : bool) {
                   {
                       break
@@ -48,15 +48,15 @@ fn break_branch(stop/4: bool) -> unit {
                       9
                   }
               };
-            (println : (int) -> unit)((value/5 : int));
+            (println : (isize) -> unit)((value/5 : isize));
             break
         }
     }
 }
 
 fn main() -> unit {
-    (println : (int32) -> unit)((choose : (bool) -> int32)(false));
-    (println : (int32) -> unit)((choose : (bool) -> int32)(true));
+    (println : (i32) -> unit)((choose : (bool) -> i32)(false));
+    (println : (i32) -> unit)((choose : (bool) -> i32)(true));
     (continue_branch : () -> unit)();
     (break_branch : (bool) -> unit)(false);
     (break_branch : (bool) -> unit)(true)

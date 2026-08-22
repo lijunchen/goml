@@ -1,12 +1,12 @@
-const NEGATIVE_ONE: int16 = -(1);
-const WRAPPED: uint8 = 255;
-const LETTER: uint32 = 65;
+const NEGATIVE_ONE: i16 = -(1);
+const WRAPPED: u8 = 255;
+const LETTER: u32 = 65;
 
-fn narrow_at_compile_time(value/0: int16) -> uint8 {
-  (value/0 as uint8)
+fn narrow_at_compile_time(value/0: i16) -> u8 {
+  (value/0 as u8)
 }
 
-fn exercise_int(value/1: int) -> unit {
+fn exercise_int(value/1: isize) -> unit {
   {
     {
       {
@@ -28,7 +28,7 @@ fn exercise_int(value/1: int) -> unit {
   }
 }
 
-fn exercise_int8(value/2: int8) -> unit {
+fn exercise_int8(value/2: i8) -> unit {
   {
     {
       {
@@ -50,7 +50,7 @@ fn exercise_int8(value/2: int8) -> unit {
   }
 }
 
-fn exercise_int16(value/3: int16) -> unit {
+fn exercise_int16(value/3: i16) -> unit {
   {
     {
       {
@@ -72,7 +72,7 @@ fn exercise_int16(value/3: int16) -> unit {
   }
 }
 
-fn exercise_int32(value/4: int32) -> unit {
+fn exercise_int32(value/4: i32) -> unit {
   {
     {
       {
@@ -94,7 +94,7 @@ fn exercise_int32(value/4: int32) -> unit {
   }
 }
 
-fn exercise_int64(value/5: int64) -> unit {
+fn exercise_int64(value/5: i64) -> unit {
   {
     {
       {
@@ -116,7 +116,7 @@ fn exercise_int64(value/5: int64) -> unit {
   }
 }
 
-fn exercise_uint(value/6: uint) -> unit {
+fn exercise_uint(value/6: usize) -> unit {
   {
     {
       {
@@ -138,7 +138,7 @@ fn exercise_uint(value/6: uint) -> unit {
   }
 }
 
-fn exercise_uint8(value/7: uint8) -> unit {
+fn exercise_uint8(value/7: u8) -> unit {
   {
     {
       {
@@ -160,7 +160,7 @@ fn exercise_uint8(value/7: uint8) -> unit {
   }
 }
 
-fn exercise_uint16(value/8: uint16) -> unit {
+fn exercise_uint16(value/8: u16) -> unit {
   {
     {
       {
@@ -182,7 +182,7 @@ fn exercise_uint16(value/8: uint16) -> unit {
   }
 }
 
-fn exercise_uint32(value/9: uint32) -> unit {
+fn exercise_uint32(value/9: u32) -> unit {
   {
     {
       {
@@ -204,7 +204,7 @@ fn exercise_uint32(value/9: uint32) -> unit {
   }
 }
 
-fn exercise_uint64(value/10: uint64) -> unit {
+fn exercise_uint64(value/10: u64) -> unit {
   {
     {
       {
@@ -238,34 +238,34 @@ fn main() -> unit {
   let _wild509 = exercise_uint32(1) in
   let _wild510 = exercise_uint64(1) in
   let value/11 = 511 in
-  let _wild511 = println__T_uint8((value/11 as uint8)) in
-  let _wild512 = println__T_uint8(WRAPPED) in
-  let _wild513 = println__T_uint32(LETTER) in
-  let _wild514 = println__T_uint8(narrow_at_compile_time(-1)) in
+  let _wild511 = println__T_u8((value/11 as u8)) in
+  let _wild512 = println__T_u8(WRAPPED) in
+  let _wild513 = println__T_u32(LETTER) in
+  let _wild514 = println__T_u8(narrow_at_compile_time(-1)) in
   let octet/12 = 255 in
-  println__T_int16((octet/12 as int16))
+  println__T_i16((octet/12 as i16))
 }
 
-fn println__T_uint8(value/1: uint8) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint8#to_string(value/1))
+fn println__T_u8(value/1: u8) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u8#to_string(value/1))
 }
 
-fn println__T_uint32(value/1: uint32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint32#to_string(value/1))
+fn println__T_u32(value/1: u32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u32#to_string(value/1))
 }
 
-fn println__T_int16(value/1: int16) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int16#to_string(value/1))
+fn println__T_i16(value/1: i16) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i16#to_string(value/1))
 }
 
-fn trait_impl#ToString#uint8#to_string(self/156: uint8) -> string {
+fn trait_impl#ToString#u8#to_string(self/156: u8) -> string {
   @runtime(core.uint8_to_string)(self/156)
 }
 
-fn trait_impl#ToString#uint32#to_string(self/158: uint32) -> string {
+fn trait_impl#ToString#u32#to_string(self/158: u32) -> string {
   @runtime(core.uint32_to_string)(self/158)
 }
 
-fn trait_impl#ToString#int16#to_string(self/153: int16) -> string {
+fn trait_impl#ToString#i16#to_string(self/153: i16) -> string {
   @runtime(core.int16_to_string)(self/153)
 }

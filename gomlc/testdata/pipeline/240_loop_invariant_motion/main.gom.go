@@ -82,18 +82,18 @@ func changing(count__12 int) int {
 
 func main0() struct{} {
     var t447 int = optimized(3, 4)
-    var inline463 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t447)
+    var inline463 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t447)
     _goml_runtime_core_string_println(inline463)
     var t448 int = guarded(0, 0)
-    var inline460 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t448)
+    var inline460 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t448)
     _goml_runtime_core_string_println(inline460)
     var t449 int = changing(3)
-    var inline457 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t449)
+    var inline457 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t449)
     _goml_runtime_core_string_println(inline457)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t455 string = _goml_runtime_core_int_to_string(self__151)
     return t455
 }

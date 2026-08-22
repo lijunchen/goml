@@ -71,15 +71,15 @@ func main0() struct{} {
     var threshold__27 float64 = 4
     var less64__28 bool = adjusted__26 < threshold__27
     var inline501 string = "mid32="
-    var inline502 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(mid32__17)
+    var inline502 string = _goml_m_trait__impl_i_ToString_i_f32_i_to__string(mid32__17)
     var inline503 string = inline501 + inline502
     println__T_string(inline503)
     var inline496 string = "neg_end32="
-    var inline497 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(neg_end32__18)
+    var inline497 string = _goml_m_trait__impl_i_ToString_i_f32_i_to__string(neg_end32__18)
     var inline498 string = inline496 + inline497
     println__T_string(inline498)
     var inline491 string = "ratio32="
-    var inline492 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(ratio32__19)
+    var inline492 string = _goml_m_trait__impl_i_ToString_i_f32_i_to__string(ratio32__19)
     var inline493 string = inline491 + inline492
     println__T_string(inline493)
     var t437 string
@@ -89,15 +89,15 @@ func main0() struct{} {
     var inline486 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t438)
     _goml_runtime_core_string_println(inline486)
     var inline481 string = "energy="
-    var inline482 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(energy__24)
+    var inline482 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(energy__24)
     var inline483 string = inline481 + inline482
     println__T_string(inline483)
     var inline476 string = "neg_dx="
-    var inline477 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(neg_dx__25)
+    var inline477 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(neg_dx__25)
     var inline478 string = inline476 + inline477
     println__T_string(inline478)
     var inline471 string = "adjusted="
-    var inline472 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(adjusted__26)
+    var inline472 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(adjusted__26)
     var inline473 string = inline471 + inline472
     println__T_string(inline473)
     var t439 string
@@ -109,7 +109,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__160 float32) string {
+func _goml_m_trait__impl_i_ToString_i_f32_i_to__string(self__160 float32) string {
     var t443 string = _goml_runtime_core_float32_to_string(self__160)
     return t443
 }
@@ -121,7 +121,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__161 float64) string {
+func _goml_m_trait__impl_i_ToString_i_f64_i_to__string(self__161 float64) string {
     var t449 string = _goml_runtime_core_float64_to_string(self__161)
     return t449
 }

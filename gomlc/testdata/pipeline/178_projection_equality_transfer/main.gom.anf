@@ -1,4 +1,4 @@
-fn trait_impl#Mark#int32#marked(self/0: int32) -> string {
+fn trait_impl#Mark#i32#marked(self/0: i32) -> string {
   join inline_cont442(t414: string) -> string {
     let t415 = ("m" + t414) in
     t415
@@ -7,12 +7,12 @@ fn trait_impl#Mark#int32#marked(self/0: int32) -> string {
   jump inline_cont442(inline443)
 }
 
-fn trait_impl#Source#LeftSource#get(self/1: LeftSource) -> int32 {
+fn trait_impl#Source#LeftSource#get(self/1: LeftSource) -> i32 {
   let t418 = LeftSource.value(self/1) in
   t418
 }
 
-fn trait_impl#Source#RightSource#get(self/2: RightSource) -> int32 {
+fn trait_impl#Source#RightSource#get(self/2: RightSource) -> i32 {
   let t421 = RightSource.value(self/2) in
   t421
 }
@@ -26,15 +26,15 @@ fn main() -> unit {
     ()
   } in
   let inline448 = trait_impl#Source#LeftSource#get(t423) in
-  let inline449 = trait_impl#Mark#int32#marked(inline448) in
+  let inline449 = trait_impl#Mark#i32#marked(inline448) in
   let inline450 = (inline449 + ":") in
   let inline451 = trait_impl#Source#RightSource#get(t424) in
-  let inline452 = trait_impl#Mark#int32#marked(inline451) in
+  let inline452 = trait_impl#Mark#i32#marked(inline451) in
   let inline453 = (inline450 + inline452) in
   jump inline_cont447(inline453)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t428 = @runtime(core.int32_to_string)(self/33) in
   t428
 }
@@ -48,22 +48,22 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn combine__A_LeftSource__B_RightSource(left/3: LeftSource, right/4: RightSource) -> string {
-  join inline_cont463(t434: int32) -> string {
+  join inline_cont463(t434: i32) -> string {
     join inline_cont460(t435: string) -> string {
       let t436 = (t435 + ":") in
-      join inline_cont458(t437: int32) -> string {
+      join inline_cont458(t437: i32) -> string {
         join inline_cont455(t438: string) -> string {
           let t439 = (t436 + t438) in
           t439
         } in
-        let inline456 = inherent#int32#int32#to_string(t437) in
+        let inline456 = inherent#i32#i32#to_string(t437) in
         let inline457 = ("m" + inline456) in
         jump inline_cont455(inline457)
       } in
       let inline459 = RightSource.value(right/4) in
       jump inline_cont458(inline459)
     } in
-    let inline461 = inherent#int32#int32#to_string(t434) in
+    let inline461 = inherent#i32#i32#to_string(t434) in
     let inline462 = ("m" + inline461) in
     jump inline_cont460(inline462)
   } in

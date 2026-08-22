@@ -8,7 +8,7 @@ fn summarize(event/0: FloatEvent) -> string {
           let value/2 = x412 in
           {
             let label/1 = x411 in
-            (label/1 + trait_impl#ToString#float32#to_string(value/2))
+            (label/1 + trait_impl#ToString#f32#to_string(value/2))
           }
         }
       }
@@ -21,7 +21,7 @@ fn summarize(event/0: FloatEvent) -> string {
           let value/4 = x414 in
           {
             let label/3 = x413 in
-            (label/3 + trait_impl#ToString#float64#to_string(value/4))
+            (label/3 + trait_impl#ToString#f64#to_string(value/4))
           }
         }
       }
@@ -29,7 +29,7 @@ fn summarize(event/0: FloatEvent) -> string {
   }
 }
 
-fn compare(values/5: (float32, float64)) -> string {
+fn compare(values/5: (f32, f64)) -> string {
   {
     let x415 = values/5.0 in
     let x416 = values/5.1 in
@@ -68,11 +68,11 @@ fn main() -> unit {
   }
 }
 
-fn trait_impl#ToString#float32#to_string(self/160: float32) -> string {
+fn trait_impl#ToString#f32#to_string(self/160: f32) -> string {
   @runtime(core.float32_to_string)(self/160)
 }
 
-fn trait_impl#ToString#float64#to_string(self/161: float64) -> string {
+fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
   @runtime(core.float64_to_string)(self/161)
 }
 

@@ -35,7 +35,7 @@ func main0() struct{} {
     var g__5 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(xs__3, 1)
     var t425 int32 = f__4(10)
     var t426 int32 = g__5(t425)
-    var inline459 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t426)
+    var inline459 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t426)
     _goml_runtime_core_string_println(inline459)
     var chosen__6 func(int32) int32
     var inline457 bool = true
@@ -66,7 +66,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t441 string = _goml_runtime_core_int32_to_string(self__154)
     return t441
 }

@@ -1,78 +1,74 @@
-fn answer() -> int {
+fn answer() -> isize {
     return {
-        let base/0: int = 40;
-        (base/0 : int) + 2
+        let base/0: isize = 40;
+        (base/0 : isize) + 2
     };
 }
 
-fn loop_answer() -> int {
+fn loop_answer() -> isize {
     loop {
         break {
-            let base/1: int = 6;
-            (base/1 : int) * 7
+            let base/1: isize = 6;
+            (base/1 : isize) * 7
         };
     }
 }
 
 fn main() -> unit {
-    let plain/2: Vec[uint8] = bytes[65, 10, 66];
-    let empty/3: Vec[uint8] = bytes[];
-    let raw/4: Vec[uint8] = bytes[114, 97, 119, 32, 92, 110, 32, 98, 121, 116, 101, 115];
-    let quoted/5: Vec[uint8] =
+    let plain/2: Vec[u8] = bytes[65, 10, 66];
+    let empty/3: Vec[u8] = bytes[];
+    let raw/4: Vec[u8] = bytes[114, 97, 119, 32, 92, 110, 32, 98, 121, 116, 101, 115];
+    let quoted/5: Vec[u8] =
       bytes[113, 117, 111, 116, 101, 100, 32, 34, 116, 101, 120, 116, 34, 32, 97, 110, 100, 32, 35];
-    let fixed/6: [uint8; 3] = [65, 66, 67];
-    let nested/8: int =
+    let fixed/6: [u8; 3] = [65, 66, 67];
+    let nested/8: isize =
       {
-          let value/7: int = (answer : () -> int)();
-          (value/7 : int) + (loop_answer : () -> int)()
+          let value/7: isize = (answer : () -> isize)();
+          (value/7 : isize) + (loop_answer : () -> isize)()
       };
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Vec[uint8]::len : (Vec[uint8]) -> int)((plain/2 : Vec[uint8]))
+      (isize::to_string : (isize) -> string)(
+        (Vec[u8]::len : (Vec[u8]) -> isize)((plain/2 : Vec[u8]))
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Vec[uint8]::len : (Vec[uint8]) -> int)((empty/3 : Vec[uint8]))
+      (isize::to_string : (isize) -> string)(
+        (Vec[u8]::len : (Vec[u8]) -> isize)((empty/3 : Vec[u8]))
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (uint8::to_int : (uint8) -> int)(
-          (Vec[uint8]::get : (Vec[uint8], int) -> uint8)((plain/2 : Vec[uint8]), 0)
+      (isize::to_string : (isize) -> string)(
+        (u8::to_int : (u8) -> isize)(
+          (Vec[u8]::get : (Vec[u8], isize) -> u8)((plain/2 : Vec[u8]), 0)
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (uint8::to_int : (uint8) -> int)(
-          (Vec[uint8]::get : (Vec[uint8], int) -> uint8)((plain/2 : Vec[uint8]), 1)
+      (isize::to_string : (isize) -> string)(
+        (u8::to_int : (u8) -> isize)(
+          (Vec[u8]::get : (Vec[u8], isize) -> u8)((plain/2 : Vec[u8]), 1)
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (uint8::to_int : (uint8) -> int)(
-          (Vec[uint8]::get : (Vec[uint8], int) -> uint8)((plain/2 : Vec[uint8]), 2)
+      (isize::to_string : (isize) -> string)(
+        (u8::to_int : (u8) -> isize)(
+          (Vec[u8]::get : (Vec[u8], isize) -> u8)((plain/2 : Vec[u8]), 2)
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Vec[uint8]::len : (Vec[uint8]) -> int)((raw/4 : Vec[uint8]))
+      (isize::to_string : (isize) -> string)((Vec[u8]::len : (Vec[u8]) -> isize)((raw/4 : Vec[u8])))
+    );
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)(
+        (Vec[u8]::len : (Vec[u8]) -> isize)((quoted/5 : Vec[u8]))
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Vec[uint8]::len : (Vec[uint8]) -> int)((quoted/5 : Vec[uint8]))
-      )
+      (isize::to_string : (isize) -> string)((u8::to_int : (u8) -> isize)((fixed/6 : [u8; 3])[2]))
     );
-    (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (uint8::to_int : (uint8) -> int)((fixed/6 : [uint8; 3])[2])
-      )
-    );
-    (println : (string) -> unit)((int::to_string : (int) -> string)((nested/8 : int)));
+    (println : (string) -> unit)((isize::to_string : (isize) -> string)((nested/8 : isize)));
     if {
         true
     } {

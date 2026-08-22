@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn early_return() -> int {
+  fn early_return() -> isize {
       defer println("return:outer");
       {
           defer println("return:inner");
@@ -9,7 +9,7 @@ file main.gom
       0
   }
 
-  fn maybe(local/1/0: Option[int]) -> Option[int] {
+  fn maybe(local/1/0: Option[isize]) -> Option[isize] {
       defer println("try:cleanup");
       let local/1/1 = value/0?;
       Option::Some(number/1)
@@ -37,7 +37,7 @@ file main.gom
       value/4.set("after")
   }
 
-  fn pattern_cleanup(local/1/5: Option[int]) -> int {
+  fn pattern_cleanup(local/1/5: Option[isize]) -> isize {
       defer println("pattern:cleanup");
       let Option::Some(local/1/6) =
         value/5 else

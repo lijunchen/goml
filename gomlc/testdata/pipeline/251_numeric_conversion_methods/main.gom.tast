@@ -1,147 +1,147 @@
-const NEGATIVE_ONE: int16 = -(1);
-const WRAPPED: uint8 = 255;
-const LETTER: uint32 = 65;
+const NEGATIVE_ONE: i16 = -(1);
+const WRAPPED: u8 = 255;
+const LETTER: u32 = 65;
 
-fn narrow_at_compile_time(value/0: int16) -> uint8 {
-    (int16::to_uint8 : (int16) -> uint8)((value/0 : int16))
+fn narrow_at_compile_time(value/0: i16) -> u8 {
+    (i16::to_uint8 : (i16) -> u8)((value/0 : i16))
 }
 
-fn exercise_int(value/1: int) -> unit {
-    let _ : int8 = (int::to_int8 : (int) -> int8)((value/1 : int));
-    let _ : int16 = (int::to_int16 : (int) -> int16)((value/1 : int));
-    let _ : int32 = (int::to_int32 : (int) -> int32)((value/1 : int));
-    let _ : int64 = (int::to_int64 : (int) -> int64)((value/1 : int));
-    let _ : uint = (int::to_uint : (int) -> uint)((value/1 : int));
-    let _ : uint8 = (int::to_uint8 : (int) -> uint8)((value/1 : int));
-    let _ : uint16 = (int::to_uint16 : (int) -> uint16)((value/1 : int));
-    let _ : uint32 = (int::to_uint32 : (int) -> uint32)((value/1 : int));
-    let _ : uint64 = (int::to_uint64 : (int) -> uint64)((value/1 : int));
+fn exercise_int(value/1: isize) -> unit {
+    let _ : i8 = (isize::to_int8 : (isize) -> i8)((value/1 : isize));
+    let _ : i16 = (isize::to_int16 : (isize) -> i16)((value/1 : isize));
+    let _ : i32 = (isize::to_int32 : (isize) -> i32)((value/1 : isize));
+    let _ : i64 = (isize::to_int64 : (isize) -> i64)((value/1 : isize));
+    let _ : usize = (isize::to_uint : (isize) -> usize)((value/1 : isize));
+    let _ : u8 = (isize::to_uint8 : (isize) -> u8)((value/1 : isize));
+    let _ : u16 = (isize::to_uint16 : (isize) -> u16)((value/1 : isize));
+    let _ : u32 = (isize::to_uint32 : (isize) -> u32)((value/1 : isize));
+    let _ : u64 = (isize::to_uint64 : (isize) -> u64)((value/1 : isize));
 }
 
-fn exercise_int8(value/2: int8) -> unit {
-    let _ : int = (int8::to_int : (int8) -> int)((value/2 : int8));
-    let _ : int16 = (int8::to_int16 : (int8) -> int16)((value/2 : int8));
-    let _ : int32 = (int8::to_int32 : (int8) -> int32)((value/2 : int8));
-    let _ : int64 = (int8::to_int64 : (int8) -> int64)((value/2 : int8));
-    let _ : uint = (int8::to_uint : (int8) -> uint)((value/2 : int8));
-    let _ : uint8 = (int8::to_uint8 : (int8) -> uint8)((value/2 : int8));
-    let _ : uint16 = (int8::to_uint16 : (int8) -> uint16)((value/2 : int8));
-    let _ : uint32 = (int8::to_uint32 : (int8) -> uint32)((value/2 : int8));
-    let _ : uint64 = (int8::to_uint64 : (int8) -> uint64)((value/2 : int8));
+fn exercise_int8(value/2: i8) -> unit {
+    let _ : isize = (i8::to_int : (i8) -> isize)((value/2 : i8));
+    let _ : i16 = (i8::to_int16 : (i8) -> i16)((value/2 : i8));
+    let _ : i32 = (i8::to_int32 : (i8) -> i32)((value/2 : i8));
+    let _ : i64 = (i8::to_int64 : (i8) -> i64)((value/2 : i8));
+    let _ : usize = (i8::to_uint : (i8) -> usize)((value/2 : i8));
+    let _ : u8 = (i8::to_uint8 : (i8) -> u8)((value/2 : i8));
+    let _ : u16 = (i8::to_uint16 : (i8) -> u16)((value/2 : i8));
+    let _ : u32 = (i8::to_uint32 : (i8) -> u32)((value/2 : i8));
+    let _ : u64 = (i8::to_uint64 : (i8) -> u64)((value/2 : i8));
 }
 
-fn exercise_int16(value/3: int16) -> unit {
-    let _ : int = (int16::to_int : (int16) -> int)((value/3 : int16));
-    let _ : int8 = (int16::to_int8 : (int16) -> int8)((value/3 : int16));
-    let _ : int32 = (int16::to_int32 : (int16) -> int32)((value/3 : int16));
-    let _ : int64 = (int16::to_int64 : (int16) -> int64)((value/3 : int16));
-    let _ : uint = (int16::to_uint : (int16) -> uint)((value/3 : int16));
-    let _ : uint8 = (int16::to_uint8 : (int16) -> uint8)((value/3 : int16));
-    let _ : uint16 = (int16::to_uint16 : (int16) -> uint16)((value/3 : int16));
-    let _ : uint32 = (int16::to_uint32 : (int16) -> uint32)((value/3 : int16));
-    let _ : uint64 = (int16::to_uint64 : (int16) -> uint64)((value/3 : int16));
+fn exercise_int16(value/3: i16) -> unit {
+    let _ : isize = (i16::to_int : (i16) -> isize)((value/3 : i16));
+    let _ : i8 = (i16::to_int8 : (i16) -> i8)((value/3 : i16));
+    let _ : i32 = (i16::to_int32 : (i16) -> i32)((value/3 : i16));
+    let _ : i64 = (i16::to_int64 : (i16) -> i64)((value/3 : i16));
+    let _ : usize = (i16::to_uint : (i16) -> usize)((value/3 : i16));
+    let _ : u8 = (i16::to_uint8 : (i16) -> u8)((value/3 : i16));
+    let _ : u16 = (i16::to_uint16 : (i16) -> u16)((value/3 : i16));
+    let _ : u32 = (i16::to_uint32 : (i16) -> u32)((value/3 : i16));
+    let _ : u64 = (i16::to_uint64 : (i16) -> u64)((value/3 : i16));
 }
 
-fn exercise_int32(value/4: int32) -> unit {
-    let _ : int = (int32::to_int : (int32) -> int)((value/4 : int32));
-    let _ : int8 = (int32::to_int8 : (int32) -> int8)((value/4 : int32));
-    let _ : int16 = (int32::to_int16 : (int32) -> int16)((value/4 : int32));
-    let _ : int64 = (int32::to_int64 : (int32) -> int64)((value/4 : int32));
-    let _ : uint = (int32::to_uint : (int32) -> uint)((value/4 : int32));
-    let _ : uint8 = (int32::to_uint8 : (int32) -> uint8)((value/4 : int32));
-    let _ : uint16 = (int32::to_uint16 : (int32) -> uint16)((value/4 : int32));
-    let _ : uint32 = (int32::to_uint32 : (int32) -> uint32)((value/4 : int32));
-    let _ : uint64 = (int32::to_uint64 : (int32) -> uint64)((value/4 : int32));
+fn exercise_int32(value/4: i32) -> unit {
+    let _ : isize = (i32::to_int : (i32) -> isize)((value/4 : i32));
+    let _ : i8 = (i32::to_int8 : (i32) -> i8)((value/4 : i32));
+    let _ : i16 = (i32::to_int16 : (i32) -> i16)((value/4 : i32));
+    let _ : i64 = (i32::to_int64 : (i32) -> i64)((value/4 : i32));
+    let _ : usize = (i32::to_uint : (i32) -> usize)((value/4 : i32));
+    let _ : u8 = (i32::to_uint8 : (i32) -> u8)((value/4 : i32));
+    let _ : u16 = (i32::to_uint16 : (i32) -> u16)((value/4 : i32));
+    let _ : u32 = (i32::to_uint32 : (i32) -> u32)((value/4 : i32));
+    let _ : u64 = (i32::to_uint64 : (i32) -> u64)((value/4 : i32));
 }
 
-fn exercise_int64(value/5: int64) -> unit {
-    let _ : int = (int64::to_int : (int64) -> int)((value/5 : int64));
-    let _ : int8 = (int64::to_int8 : (int64) -> int8)((value/5 : int64));
-    let _ : int16 = (int64::to_int16 : (int64) -> int16)((value/5 : int64));
-    let _ : int32 = (int64::to_int32 : (int64) -> int32)((value/5 : int64));
-    let _ : uint = (int64::to_uint : (int64) -> uint)((value/5 : int64));
-    let _ : uint8 = (int64::to_uint8 : (int64) -> uint8)((value/5 : int64));
-    let _ : uint16 = (int64::to_uint16 : (int64) -> uint16)((value/5 : int64));
-    let _ : uint32 = (int64::to_uint32 : (int64) -> uint32)((value/5 : int64));
-    let _ : uint64 = (int64::to_uint64 : (int64) -> uint64)((value/5 : int64));
+fn exercise_int64(value/5: i64) -> unit {
+    let _ : isize = (i64::to_int : (i64) -> isize)((value/5 : i64));
+    let _ : i8 = (i64::to_int8 : (i64) -> i8)((value/5 : i64));
+    let _ : i16 = (i64::to_int16 : (i64) -> i16)((value/5 : i64));
+    let _ : i32 = (i64::to_int32 : (i64) -> i32)((value/5 : i64));
+    let _ : usize = (i64::to_uint : (i64) -> usize)((value/5 : i64));
+    let _ : u8 = (i64::to_uint8 : (i64) -> u8)((value/5 : i64));
+    let _ : u16 = (i64::to_uint16 : (i64) -> u16)((value/5 : i64));
+    let _ : u32 = (i64::to_uint32 : (i64) -> u32)((value/5 : i64));
+    let _ : u64 = (i64::to_uint64 : (i64) -> u64)((value/5 : i64));
 }
 
-fn exercise_uint(value/6: uint) -> unit {
-    let _ : int = (uint::to_int : (uint) -> int)((value/6 : uint));
-    let _ : int8 = (uint::to_int8 : (uint) -> int8)((value/6 : uint));
-    let _ : int16 = (uint::to_int16 : (uint) -> int16)((value/6 : uint));
-    let _ : int32 = (uint::to_int32 : (uint) -> int32)((value/6 : uint));
-    let _ : int64 = (uint::to_int64 : (uint) -> int64)((value/6 : uint));
-    let _ : uint8 = (uint::to_uint8 : (uint) -> uint8)((value/6 : uint));
-    let _ : uint16 = (uint::to_uint16 : (uint) -> uint16)((value/6 : uint));
-    let _ : uint32 = (uint::to_uint32 : (uint) -> uint32)((value/6 : uint));
-    let _ : uint64 = (uint::to_uint64 : (uint) -> uint64)((value/6 : uint));
+fn exercise_uint(value/6: usize) -> unit {
+    let _ : isize = (usize::to_int : (usize) -> isize)((value/6 : usize));
+    let _ : i8 = (usize::to_int8 : (usize) -> i8)((value/6 : usize));
+    let _ : i16 = (usize::to_int16 : (usize) -> i16)((value/6 : usize));
+    let _ : i32 = (usize::to_int32 : (usize) -> i32)((value/6 : usize));
+    let _ : i64 = (usize::to_int64 : (usize) -> i64)((value/6 : usize));
+    let _ : u8 = (usize::to_uint8 : (usize) -> u8)((value/6 : usize));
+    let _ : u16 = (usize::to_uint16 : (usize) -> u16)((value/6 : usize));
+    let _ : u32 = (usize::to_uint32 : (usize) -> u32)((value/6 : usize));
+    let _ : u64 = (usize::to_uint64 : (usize) -> u64)((value/6 : usize));
 }
 
-fn exercise_uint8(value/7: uint8) -> unit {
-    let _ : int = (uint8::to_int : (uint8) -> int)((value/7 : uint8));
-    let _ : int8 = (uint8::to_int8 : (uint8) -> int8)((value/7 : uint8));
-    let _ : int16 = (uint8::to_int16 : (uint8) -> int16)((value/7 : uint8));
-    let _ : int32 = (uint8::to_int32 : (uint8) -> int32)((value/7 : uint8));
-    let _ : int64 = (uint8::to_int64 : (uint8) -> int64)((value/7 : uint8));
-    let _ : uint = (uint8::to_uint : (uint8) -> uint)((value/7 : uint8));
-    let _ : uint16 = (uint8::to_uint16 : (uint8) -> uint16)((value/7 : uint8));
-    let _ : uint32 = (uint8::to_uint32 : (uint8) -> uint32)((value/7 : uint8));
-    let _ : uint64 = (uint8::to_uint64 : (uint8) -> uint64)((value/7 : uint8));
+fn exercise_uint8(value/7: u8) -> unit {
+    let _ : isize = (u8::to_int : (u8) -> isize)((value/7 : u8));
+    let _ : i8 = (u8::to_int8 : (u8) -> i8)((value/7 : u8));
+    let _ : i16 = (u8::to_int16 : (u8) -> i16)((value/7 : u8));
+    let _ : i32 = (u8::to_int32 : (u8) -> i32)((value/7 : u8));
+    let _ : i64 = (u8::to_int64 : (u8) -> i64)((value/7 : u8));
+    let _ : usize = (u8::to_uint : (u8) -> usize)((value/7 : u8));
+    let _ : u16 = (u8::to_uint16 : (u8) -> u16)((value/7 : u8));
+    let _ : u32 = (u8::to_uint32 : (u8) -> u32)((value/7 : u8));
+    let _ : u64 = (u8::to_uint64 : (u8) -> u64)((value/7 : u8));
 }
 
-fn exercise_uint16(value/8: uint16) -> unit {
-    let _ : int = (uint16::to_int : (uint16) -> int)((value/8 : uint16));
-    let _ : int8 = (uint16::to_int8 : (uint16) -> int8)((value/8 : uint16));
-    let _ : int16 = (uint16::to_int16 : (uint16) -> int16)((value/8 : uint16));
-    let _ : int32 = (uint16::to_int32 : (uint16) -> int32)((value/8 : uint16));
-    let _ : int64 = (uint16::to_int64 : (uint16) -> int64)((value/8 : uint16));
-    let _ : uint = (uint16::to_uint : (uint16) -> uint)((value/8 : uint16));
-    let _ : uint8 = (uint16::to_uint8 : (uint16) -> uint8)((value/8 : uint16));
-    let _ : uint32 = (uint16::to_uint32 : (uint16) -> uint32)((value/8 : uint16));
-    let _ : uint64 = (uint16::to_uint64 : (uint16) -> uint64)((value/8 : uint16));
+fn exercise_uint16(value/8: u16) -> unit {
+    let _ : isize = (u16::to_int : (u16) -> isize)((value/8 : u16));
+    let _ : i8 = (u16::to_int8 : (u16) -> i8)((value/8 : u16));
+    let _ : i16 = (u16::to_int16 : (u16) -> i16)((value/8 : u16));
+    let _ : i32 = (u16::to_int32 : (u16) -> i32)((value/8 : u16));
+    let _ : i64 = (u16::to_int64 : (u16) -> i64)((value/8 : u16));
+    let _ : usize = (u16::to_uint : (u16) -> usize)((value/8 : u16));
+    let _ : u8 = (u16::to_uint8 : (u16) -> u8)((value/8 : u16));
+    let _ : u32 = (u16::to_uint32 : (u16) -> u32)((value/8 : u16));
+    let _ : u64 = (u16::to_uint64 : (u16) -> u64)((value/8 : u16));
 }
 
-fn exercise_uint32(value/9: uint32) -> unit {
-    let _ : int = (uint32::to_int : (uint32) -> int)((value/9 : uint32));
-    let _ : int8 = (uint32::to_int8 : (uint32) -> int8)((value/9 : uint32));
-    let _ : int16 = (uint32::to_int16 : (uint32) -> int16)((value/9 : uint32));
-    let _ : int32 = (uint32::to_int32 : (uint32) -> int32)((value/9 : uint32));
-    let _ : int64 = (uint32::to_int64 : (uint32) -> int64)((value/9 : uint32));
-    let _ : uint = (uint32::to_uint : (uint32) -> uint)((value/9 : uint32));
-    let _ : uint8 = (uint32::to_uint8 : (uint32) -> uint8)((value/9 : uint32));
-    let _ : uint16 = (uint32::to_uint16 : (uint32) -> uint16)((value/9 : uint32));
-    let _ : uint64 = (uint32::to_uint64 : (uint32) -> uint64)((value/9 : uint32));
+fn exercise_uint32(value/9: u32) -> unit {
+    let _ : isize = (u32::to_int : (u32) -> isize)((value/9 : u32));
+    let _ : i8 = (u32::to_int8 : (u32) -> i8)((value/9 : u32));
+    let _ : i16 = (u32::to_int16 : (u32) -> i16)((value/9 : u32));
+    let _ : i32 = (u32::to_int32 : (u32) -> i32)((value/9 : u32));
+    let _ : i64 = (u32::to_int64 : (u32) -> i64)((value/9 : u32));
+    let _ : usize = (u32::to_uint : (u32) -> usize)((value/9 : u32));
+    let _ : u8 = (u32::to_uint8 : (u32) -> u8)((value/9 : u32));
+    let _ : u16 = (u32::to_uint16 : (u32) -> u16)((value/9 : u32));
+    let _ : u64 = (u32::to_uint64 : (u32) -> u64)((value/9 : u32));
 }
 
-fn exercise_uint64(value/10: uint64) -> unit {
-    let _ : int = (uint64::to_int : (uint64) -> int)((value/10 : uint64));
-    let _ : int8 = (uint64::to_int8 : (uint64) -> int8)((value/10 : uint64));
-    let _ : int16 = (uint64::to_int16 : (uint64) -> int16)((value/10 : uint64));
-    let _ : int32 = (uint64::to_int32 : (uint64) -> int32)((value/10 : uint64));
-    let _ : int64 = (uint64::to_int64 : (uint64) -> int64)((value/10 : uint64));
-    let _ : uint = (uint64::to_uint : (uint64) -> uint)((value/10 : uint64));
-    let _ : uint8 = (uint64::to_uint8 : (uint64) -> uint8)((value/10 : uint64));
-    let _ : uint16 = (uint64::to_uint16 : (uint64) -> uint16)((value/10 : uint64));
-    let _ : uint32 = (uint64::to_uint32 : (uint64) -> uint32)((value/10 : uint64));
+fn exercise_uint64(value/10: u64) -> unit {
+    let _ : isize = (u64::to_int : (u64) -> isize)((value/10 : u64));
+    let _ : i8 = (u64::to_int8 : (u64) -> i8)((value/10 : u64));
+    let _ : i16 = (u64::to_int16 : (u64) -> i16)((value/10 : u64));
+    let _ : i32 = (u64::to_int32 : (u64) -> i32)((value/10 : u64));
+    let _ : i64 = (u64::to_int64 : (u64) -> i64)((value/10 : u64));
+    let _ : usize = (u64::to_uint : (u64) -> usize)((value/10 : u64));
+    let _ : u8 = (u64::to_uint8 : (u64) -> u8)((value/10 : u64));
+    let _ : u16 = (u64::to_uint16 : (u64) -> u16)((value/10 : u64));
+    let _ : u32 = (u64::to_uint32 : (u64) -> u32)((value/10 : u64));
 }
 
 fn main() -> unit {
-    (exercise_int : (int) -> unit)(1);
-    (exercise_int8 : (int8) -> unit)(1);
-    (exercise_int16 : (int16) -> unit)(1);
-    (exercise_int32 : (int32) -> unit)(1);
-    (exercise_int64 : (int64) -> unit)(1);
-    (exercise_uint : (uint) -> unit)(1);
-    (exercise_uint8 : (uint8) -> unit)(1);
-    (exercise_uint16 : (uint16) -> unit)(1);
-    (exercise_uint32 : (uint32) -> unit)(1);
-    (exercise_uint64 : (uint64) -> unit)(1);
-    let value/11: int16 = 511;
-    (println : (uint8) -> unit)((int16::to_uint8 : (int16) -> uint8)((value/11 : int16)));
-    (println : (uint8) -> unit)((WRAPPED : uint8));
-    (println : (uint32) -> unit)((LETTER : uint32));
-    (println : (uint8) -> unit)((narrow_at_compile_time : (int16) -> uint8)(-1));
-    let octet/12: uint8 = 255;
-    (println : (int16) -> unit)((uint8::to_int16 : (uint8) -> int16)((octet/12 : uint8)))
+    (exercise_int : (isize) -> unit)(1);
+    (exercise_int8 : (i8) -> unit)(1);
+    (exercise_int16 : (i16) -> unit)(1);
+    (exercise_int32 : (i32) -> unit)(1);
+    (exercise_int64 : (i64) -> unit)(1);
+    (exercise_uint : (usize) -> unit)(1);
+    (exercise_uint8 : (u8) -> unit)(1);
+    (exercise_uint16 : (u16) -> unit)(1);
+    (exercise_uint32 : (u32) -> unit)(1);
+    (exercise_uint64 : (u64) -> unit)(1);
+    let value/11: i16 = 511;
+    (println : (u8) -> unit)((i16::to_uint8 : (i16) -> u8)((value/11 : i16)));
+    (println : (u8) -> unit)((WRAPPED : u8));
+    (println : (u32) -> unit)((LETTER : u32));
+    (println : (u8) -> unit)((narrow_at_compile_time : (i16) -> u8)(-1));
+    let octet/12: u8 = 255;
+    (println : (i16) -> unit)((u8::to_int16 : (u8) -> i16)((octet/12 : u8)))
 }

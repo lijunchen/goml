@@ -1,4 +1,4 @@
-fn match_string(s/0: string) -> int32 {
+fn match_string(s/0: string) -> i32 {
     match (s/0 : string) {
         "hello" => 1,
         "world" => 2,
@@ -6,14 +6,14 @@ fn match_string(s/0: string) -> int32 {
     }
 }
 
-fn wildcard_position(s/1: string) -> int32 {
+fn wildcard_position(s/1: string) -> i32 {
     match (s/1 : string) {
         _ : string => 4,
         "world" => 5,
     }
 }
 
-fn repeated_string(s/2: string) -> int32 {
+fn repeated_string(s/2: string) -> i32 {
     match (s/2 : string) {
         "hello" => 6,
         "hello" => 7,
@@ -24,25 +24,25 @@ fn repeated_string(s/2: string) -> int32 {
 fn main() -> unit {
     let _ : unit =
       (println : (string) -> unit)(
-        (int32::to_string : (int32) -> string)((match_string : (string) -> int32)("hello"))
+        (i32::to_string : (i32) -> string)((match_string : (string) -> i32)("hello"))
       );
     let _ : unit =
       (println : (string) -> unit)(
-        (int32::to_string : (int32) -> string)((match_string : (string) -> int32)("planet"))
+        (i32::to_string : (i32) -> string)((match_string : (string) -> i32)("planet"))
       );
     let _ : unit =
       (println : (string) -> unit)(
-        (int32::to_string : (int32) -> string)((wildcard_position : (string) -> int32)("world"))
+        (i32::to_string : (i32) -> string)((wildcard_position : (string) -> i32)("world"))
       );
     let _ : unit =
       (println : (string) -> unit)(
-        (int32::to_string : (int32) -> string)((wildcard_position : (string) -> int32)("sun"))
+        (i32::to_string : (i32) -> string)((wildcard_position : (string) -> i32)("sun"))
       );
     let _ : unit =
       (println : (string) -> unit)(
-        (int32::to_string : (int32) -> string)((repeated_string : (string) -> int32)("hello"))
+        (i32::to_string : (i32) -> string)((repeated_string : (string) -> i32)("hello"))
       );
     (println : (string) -> unit)(
-      (int32::to_string : (int32) -> string)((repeated_string : (string) -> int32)("mars"))
+      (i32::to_string : (i32) -> string)((repeated_string : (string) -> i32)("mars"))
     )
 }

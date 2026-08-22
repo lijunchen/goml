@@ -14,7 +14,7 @@ fn loop_return_unit(flag/0: bool) -> unit {
   }
 }
 
-fn loop_return() -> int32 {
+fn loop_return() -> i32 {
   let _wild414 =
     while {
       return 5
@@ -28,21 +28,21 @@ fn loop_return() -> int32 {
 
 fn main() -> unit {
   let _wild415 = loop_return_unit(true) in
-  let _wild416 = println__T_int32(loop_return()) in
+  let _wild416 = println__T_i32(loop_return()) in
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }

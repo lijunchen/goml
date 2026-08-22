@@ -11,11 +11,11 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Light__int32 int32
+type Light__i32 int32
 
 const (
-    Light__int32_Red Light__int32 = 0
-    Light__int32_Green Light__int32 = 1
+    Light__i32_Red Light__i32 = 0
+    Light__i32_Green Light__i32 = 1
 )
 
 type Light__string int32
@@ -26,13 +26,13 @@ const (
 )
 
 func main0() struct{} {
-    var t422 Light__int32
-    t422 = Light__int32_Green
+    var t422 Light__i32
+    t422 = Light__i32_Green
     var t423 string
     switch t422 {
-    case Light__int32_Red:
+    case Light__i32_Red:
         t423 = "ri"
-    case Light__int32_Green:
+    case Light__i32_Green:
         t423 = "gi"
     default:
         panic("non-exhaustive match")

@@ -49,7 +49,7 @@ type Ordering int32
 
 func main0() struct{} {
     var counter__4 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit
-    var inline493 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    var inline493 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__i32(0)
     var inline494 closure_env_next_0 = closure_env_next_0{
         cell_0: inline493,
     }
@@ -74,7 +74,7 @@ func main0() struct{} {
     x415()
     var third__9 int32 = x414()
     var new_counter__10 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit
-    var inline486 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    var inline486 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__i32(0)
     var inline487 closure_env_next_0 = closure_env_next_0{
         cell_0: inline486,
     }
@@ -117,7 +117,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__431 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__i32(value__431 int32) *ref_int32_x {
     var t438 *ref_int32_x = ref__Ref_5int32(value__431)
     return t438
 }

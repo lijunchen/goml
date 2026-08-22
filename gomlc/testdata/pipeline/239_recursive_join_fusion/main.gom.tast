@@ -1,21 +1,21 @@
-fn find(wanted/0: int) -> Option[int] {
-    let current/1: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+fn find(wanted/0: isize) -> Option[isize] {
+    let current/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     loop {
-        let value/2: int = (Ref[int]::get : (Ref[int]) -> int)((current/1 : Ref[int]));
-        if (value/2 : int) >= 5 {
+        let value/2: isize = (Ref[isize]::get : (Ref[isize]) -> isize)((current/1 : Ref[isize]));
+        if (value/2 : isize) >= 5 {
             {
                 return Option::None;
             }
         } else {
-            if (value/2 : int) == (wanted/0 : int) {
+            if (value/2 : isize) == (wanted/0 : isize) {
                 {
-                    return Option::Some((value/2 : int));
+                    return Option::Some((value/2 : isize));
                 }
             } else {
                 {
-                    (Ref[int]::set : (Ref[int], int) -> unit)(
-                      (current/1 : Ref[int]),
-                      (value/2 : int) + 1
+                    (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+                      (current/1 : Ref[isize]),
+                      (value/2 : isize) + 1
                     );
                 }
             }
@@ -24,14 +24,14 @@ fn find(wanted/0: int) -> Option[int] {
     Option::None
 }
 
-fn any(wanted/3: int) -> bool {
-    match (find : (int) -> Option[int])((wanted/3 : int)) {
-        Option::Some(_ : int) => true,
+fn any(wanted/3: isize) -> bool {
+    match (find : (isize) -> Option[isize])((wanted/3 : isize)) {
+        Option::Some(_ : isize) => true,
         Option::None => false,
     }
 }
 
 fn main() -> unit {
-    (println : (bool) -> unit)((any : (int) -> bool)(3));
-    (println : (bool) -> unit)((any : (int) -> bool)(8));
+    (println : (bool) -> unit)((any : (isize) -> bool)(3));
+    (println : (bool) -> unit)((any : (isize) -> bool)(8));
 }

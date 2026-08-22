@@ -28,7 +28,7 @@ func main0() struct{} {
     var id__5 UserId = UserId{
         _0: raw__4,
     }
-    var inline464 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(raw__4)
+    var inline464 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(raw__4)
     _goml_runtime_core_string_println(inline464)
     var t430 UserId
     var inline455 UserId = id__5
@@ -44,7 +44,7 @@ func main0() struct{} {
     var t431 int32
     var inline452 int32 = t430._0
     t431 = inline452
-    var inline448 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t431)
+    var inline448 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t431)
     _goml_runtime_core_string_println(inline448)
     var x420 string = "wrapped"
     var inline445 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x420)
@@ -52,7 +52,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t441 string = _goml_runtime_core_int32_to_string(self__154)
     return t441
 }

@@ -1,5 +1,5 @@
 fn make_string_channel() -> Channel[string] {
-    (Channel[string]::new : (int) -> Channel[string])(0)
+    (Channel[string]::new : (isize) -> Channel[string])(0)
 }
 
 fn roundtrip[T](channel/0: Channel[T], value/1: T) -> Option[T] {
@@ -8,25 +8,31 @@ fn roundtrip[T](channel/0: Channel[T], value/1: T) -> Option[T] {
 }
 
 fn main() -> unit {
-    let buffered/2: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(2);
-    (Channel[int]::send : (Channel[int], int) -> unit)((buffered/2 : Channel[int]), 10);
-    (Channel[int]::send : (Channel[int], int) -> unit)((buffered/2 : Channel[int]), 20);
-    (Channel[int]::close : (Channel[int]) -> unit)((buffered/2 : Channel[int]));
-    (println : (int) -> unit)(
-      match (Channel[int]::recv : (Channel[int]) -> Option[int])((buffered/2 : Channel[int])) {
-          Option::Some(value/3: int) => (value/3 : int),
+    let buffered/2: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(2);
+    (Channel[isize]::send : (Channel[isize], isize) -> unit)((buffered/2 : Channel[isize]), 10);
+    (Channel[isize]::send : (Channel[isize], isize) -> unit)((buffered/2 : Channel[isize]), 20);
+    (Channel[isize]::close : (Channel[isize]) -> unit)((buffered/2 : Channel[isize]));
+    (println : (isize) -> unit)(
+      match (Channel[isize]::recv : (Channel[isize]) -> Option[isize])(
+        (buffered/2 : Channel[isize])
+      ) {
+          Option::Some(value/3: isize) => (value/3 : isize),
           Option::None => -1,
       }
     );
-    (println : (int) -> unit)(
-      match (Channel[int]::recv : (Channel[int]) -> Option[int])((buffered/2 : Channel[int])) {
-          Option::Some(value/4: int) => (value/4 : int),
+    (println : (isize) -> unit)(
+      match (Channel[isize]::recv : (Channel[isize]) -> Option[isize])(
+        (buffered/2 : Channel[isize])
+      ) {
+          Option::Some(value/4: isize) => (value/4 : isize),
           Option::None => -1,
       }
     );
     (println : (string) -> unit)(
-      match (Channel[int]::recv : (Channel[int]) -> Option[int])((buffered/2 : Channel[int])) {
-          Option::Some(_ : int) => "open",
+      match (Channel[isize]::recv : (Channel[isize]) -> Option[isize])(
+        (buffered/2 : Channel[isize])
+      ) {
+          Option::Some(_ : isize) => "open",
           Option::None => "closed",
       }
     );

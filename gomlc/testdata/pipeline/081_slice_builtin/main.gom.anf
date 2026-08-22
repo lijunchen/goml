@@ -1,25 +1,25 @@
 fn main() -> unit {
-  let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
+  let v/0 = inherent#Vec#Vec[T]#new__T_i32() in
   join inline_cont516(_wild411: unit) -> unit {
     join inline_cont513(_wild412: unit) -> unit {
       join inline_cont510(_wild413: unit) -> unit {
         join inline_cont507(_wild414: unit) -> unit {
-          join inline_cont503(s/1: Slice[int32]) -> unit {
-            join inline_cont501(t423: int) -> unit {
+          join inline_cont503(s/1: Slice[i32]) -> unit {
+            join inline_cont501(t423: isize) -> unit {
               join inline_cont498(_wild415: unit) -> unit {
-                join inline_cont495(t424: int32) -> unit {
+                join inline_cont495(t424: i32) -> unit {
                   join inline_cont492(_wild416: unit) -> unit {
-                    join inline_cont489(t425: int32) -> unit {
+                    join inline_cont489(t425: i32) -> unit {
                       join inline_cont486(_wild417: unit) -> unit {
-                        join inline_cont483(t426: int32) -> unit {
+                        join inline_cont483(t426: i32) -> unit {
                           join inline_cont480(_wild418: unit) -> unit {
-                            join inline_cont476(t/2: Slice[int32]) -> unit {
-                              join inline_cont474(t427: int) -> unit {
+                            join inline_cont476(t/2: Slice[i32]) -> unit {
+                              join inline_cont474(t427: isize) -> unit {
                                 join inline_cont471(_wild419: unit) -> unit {
-                                  join inline_cont468(t428: int32) -> unit {
+                                  join inline_cont468(t428: i32) -> unit {
                                     join inline_cont465(_wild420: unit) -> unit {
-                                      join inline_cont462(t429: int32) -> unit {
-                                        let inline460 = trait_impl#ToString#int32#to_string(t429) in
+                                      join inline_cont462(t429: i32) -> unit {
+                                        let inline460 = trait_impl#ToString#i32#to_string(t429) in
                                         let inline461 = @runtime(core.string_println)(inline460) in
                                         ()
                                       } in
@@ -27,7 +27,7 @@ fn main() -> unit {
                                       let inline464 = @intrinsic(slice.get)(t/2, inline463) in
                                       jump inline_cont462(inline464)
                                     } in
-                                    let inline466 = trait_impl#ToString#int32#to_string(t428) in
+                                    let inline466 = trait_impl#ToString#i32#to_string(t428) in
                                     let inline467 = @runtime(core.string_println)(inline466) in
                                     jump inline_cont465(())
                                   } in
@@ -35,7 +35,7 @@ fn main() -> unit {
                                   let inline470 = @intrinsic(slice.get)(t/2, inline469) in
                                   jump inline_cont468(inline470)
                                 } in
-                                let inline472 = trait_impl#ToString#int#to_string(t427) in
+                                let inline472 = trait_impl#ToString#isize#to_string(t427) in
                                 let inline473 = @runtime(core.string_println)(inline472) in
                                 jump inline_cont471(())
                               } in
@@ -47,7 +47,7 @@ fn main() -> unit {
                             let inline479 = @intrinsic(slice.sub)(s/1, inline477, inline478) in
                             jump inline_cont476(inline479)
                           } in
-                          let inline481 = trait_impl#ToString#int32#to_string(t426) in
+                          let inline481 = trait_impl#ToString#i32#to_string(t426) in
                           let inline482 = @runtime(core.string_println)(inline481) in
                           jump inline_cont480(())
                         } in
@@ -55,7 +55,7 @@ fn main() -> unit {
                         let inline485 = @intrinsic(slice.get)(s/1, inline484) in
                         jump inline_cont483(inline485)
                       } in
-                      let inline487 = trait_impl#ToString#int32#to_string(t425) in
+                      let inline487 = trait_impl#ToString#i32#to_string(t425) in
                       let inline488 = @runtime(core.string_println)(inline487) in
                       jump inline_cont486(())
                     } in
@@ -63,7 +63,7 @@ fn main() -> unit {
                     let inline491 = @intrinsic(slice.get)(s/1, inline490) in
                     jump inline_cont489(inline491)
                   } in
-                  let inline493 = trait_impl#ToString#int32#to_string(t424) in
+                  let inline493 = trait_impl#ToString#i32#to_string(t424) in
                   let inline494 = @runtime(core.string_println)(inline493) in
                   jump inline_cont492(())
                 } in
@@ -71,7 +71,7 @@ fn main() -> unit {
                 let inline497 = @intrinsic(slice.get)(s/1, inline496) in
                 jump inline_cont495(inline497)
               } in
-              let inline499 = trait_impl#ToString#int#to_string(t423) in
+              let inline499 = trait_impl#ToString#isize#to_string(t423) in
               let inline500 = @runtime(core.string_println)(inline499) in
               jump inline_cont498(())
             } in
@@ -100,24 +100,24 @@ fn main() -> unit {
   jump inline_cont516(())
 }
 
-fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+fn inherent#Vec#Vec[T]#new__T_i32() -> Vec[i32] {
   let t432 = @intrinsic(vec.new)() in
   t432
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/258: Vec[int32], elem/259: int32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_i32(self/258: Vec[i32], elem/259: i32) -> unit {
   let t434 = @intrinsic(vec.push)(self/258, elem/259) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_int32(self/311: Vec[int32], start/312: int, end/313: int) -> Slice[
-  int32
+fn inherent#Vec#Vec[T]#slice__T_i32(self/311: Vec[i32], start/312: isize, end/313: isize) -> Slice[
+  i32
 ] {
   let t437 = @intrinsic(slice.new)(self/311, start/312, end/313) in
   t437
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont519(t439: string) -> unit {
     let t440 = @runtime(core.string_println)(t439) in
     ()
@@ -126,12 +126,12 @@ fn println__T_int(value/1: int) -> unit {
   jump inline_cont519(inline520)
 }
 
-fn inherent#Slice#Slice[T]#len__T_int32(self/407: Slice[int32]) -> int {
+fn inherent#Slice#Slice[T]#len__T_i32(self/407: Slice[i32]) -> isize {
   let t443 = @intrinsic(slice.len)(self/407) in
   t443
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont521(t445: string) -> unit {
     let t446 = @runtime(core.string_println)(t445) in
     ()
@@ -140,26 +140,26 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont521(inline522)
 }
 
-fn inherent#Slice#Slice[T]#get__T_int32(self/405: Slice[int32], index/406: int) -> int32 {
+fn inherent#Slice#Slice[T]#get__T_i32(self/405: Slice[i32], index/406: isize) -> i32 {
   let t449 = @intrinsic(slice.get)(self/405, index/406) in
   t449
 }
 
-fn inherent#Slice#Slice[T]#sub__T_int32(
-  self/408: Slice[int32],
-  start/409: int,
-  end/410: int
-) -> Slice[int32] {
+fn inherent#Slice#Slice[T]#sub__T_i32(
+  self/408: Slice[i32],
+  start/409: isize,
+  end/410: isize
+) -> Slice[i32] {
   let t452 = @intrinsic(slice.sub)(self/408, start/409, end/410) in
   t452
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t455 = @runtime(core.int_to_string)(self/151) in
   t455
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t458 = @runtime(core.int32_to_string)(self/154) in
   t458
 }

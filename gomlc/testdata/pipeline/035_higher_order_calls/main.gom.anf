@@ -1,14 +1,14 @@
-fn double(x/0: int32) -> int32 {
+fn double(x/0: i32) -> i32 {
   let t416 = (x/0 * 2) in
   t416
 }
 
-fn increment(x/1: int32) -> int32 {
+fn increment(x/1: i32) -> i32 {
   let t419 = (x/1 + 1) in
   t419
 }
 
-fn chooser(flag/2: bool) -> (int32) -> int32 {
+fn chooser(flag/2: bool) -> (i32) -> i32 {
   if flag/2 {
     double
   } else {
@@ -23,9 +23,9 @@ fn main() -> unit {
   let t425 = f/4(10) in
   let t426 = g/5(t425) in
   join inline_cont458(mtmp411: unit) -> unit {
-    join inline_cont456(chosen/6: (int32) -> int32) -> unit {
+    join inline_cont456(chosen/6: (i32) -> i32) -> unit {
       let applied/7 = chosen/6(5) in
-      join inline_cont454(t427: (int32) -> int32) -> unit {
+      join inline_cont454(t427: (i32) -> i32) -> unit {
         let direct/8 = t427(5) in
         join inline_cont452(t428: string) -> unit {
           join inline_cont449(mtmp412: unit) -> unit {
@@ -58,12 +58,12 @@ fn main() -> unit {
       jump inline_cont456(increment)
     }
   } in
-  let inline459 = trait_impl#ToString#int32#to_string(t426) in
+  let inline459 = trait_impl#ToString#i32#to_string(t426) in
   let inline460 = @runtime(core.string_println)(inline459) in
   jump inline_cont458(())
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont461(t431: string) -> unit {
     let t432 = @runtime(core.string_println)(t431) in
     ()
@@ -80,12 +80,12 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont463(value/1)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t438 = @runtime(core.int32_to_string)(self/33) in
   t438
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t441 = @runtime(core.int32_to_string)(self/154) in
   t441
 }

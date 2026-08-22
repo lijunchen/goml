@@ -1,7 +1,7 @@
 fn point32_to_string(p/0: Point) -> string {
-    let Point { x: x/1: int32, y: y/2: int32 } = (p/0 : Point);
-    "Point { x: " + (int32::to_string : (int32) -> string)((x/1 : int32)) + ", y: " +
-      (int32::to_string : (int32) -> string)((y/2 : int32)) +
+    let Point { x: x/1: i32, y: y/2: i32 } = (p/0 : Point);
+    "Point { x: " + (i32::to_string : (i32) -> string)((x/1 : i32)) + ", y: " +
+      (i32::to_string : (i32) -> string)((y/2 : i32)) +
       " }"
 }
 
@@ -36,9 +36,9 @@ fn point_type(p/8: Point) -> string {
           {
               "right"
           },
-        Point { x: 0, y: y/9: int32 } =>
+        Point { x: 0, y: y/9: i32 } =>
           {
-              match 0 < (y/9 : int32) {
+              match 0 < (y/9 : i32) {
                   true => "above",
                   false => "below",
               }

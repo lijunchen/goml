@@ -2,31 +2,31 @@ fn trait_impl#Display#Point#show(self/0: Point) -> string {
   "Point"
 }
 
-fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
+fn trait_impl#Display#Maybe__i32#show(self/1: Maybe__i32) -> string {
   match self/1 {
-    Maybe__int32::Just(x411) => {
+    Maybe__i32::Just(x411) => {
       {
-        let x411 = Maybe__int32::Just._0(self/1) in
+        let x411 = Maybe__i32::Just._0(self/1) in
         {
           let value/2 = x411 in
-          (("Just(" + inherent#int32#int32#to_string(value/2)) + ")")
+          (("Just(" + inherent#i32#i32#to_string(value/2)) + ")")
         }
       }
     },
-    Maybe__int32::Nothing => {
+    Maybe__i32::Nothing => {
       "Nothing"
     },
   }
 }
 
-fn make_maybe(flag/3: bool) -> Maybe__int32 {
+fn make_maybe(flag/3: bool) -> Maybe__i32 {
   if flag/3 {
       {
-        Maybe__int32::Just(42)
+        Maybe__i32::Just(42)
       }
   } else {
       {
-        Maybe__int32::Nothing
+        Maybe__i32::Nothing
       }
   }
 }
@@ -37,9 +37,9 @@ fn main() -> unit {
   let none_number/6 = make_maybe(false) in
   let mtmp412 = println__T_string(trait_impl#Display#Point#show(point/4)) in
   {
-    let mtmp413 = println__T_string(trait_impl#Display#Maybe__int32#show(some_number/5)) in
+    let mtmp413 = println__T_string(trait_impl#Display#Maybe__i32#show(some_number/5)) in
     {
-      let mtmp414 = println__T_string(trait_impl#Display#Maybe__int32#show(none_number/6)) in
+      let mtmp414 = println__T_string(trait_impl#Display#Maybe__i32#show(none_number/6)) in
       {
         ()
       }
@@ -47,7 +47,7 @@ fn main() -> unit {
   }
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

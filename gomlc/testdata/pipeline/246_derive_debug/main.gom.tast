@@ -1,10 +1,9 @@
 impl Debug for Point {
   fn debug(self/0: Point) -> string {
       {
-          let Point { x: #derive0_field/1: int32, label: #derive1_field/2: string } =
+          let Point { x: #derive0_field/1: i32, label: #derive1_field/2: string } =
             (self/0 : Point);
-          "Point { " + "x: " + (Debug::debug : (int32) -> string)((#derive0_field/1 : int32)) +
-            ", " +
+          "Point { " + "x: " + (Debug::debug : (i32) -> string)((#derive0_field/1 : i32)) + ", " +
             "label: " +
             (Debug::debug : (string) -> string)((#derive1_field/2 : string)) +
             " }"
@@ -31,16 +30,16 @@ fn debug_dyn(value/6: dyn Debug) -> string {
 
 fn main() -> unit {
     let point/7: Point = Point { x: 3, label: "east" };
-    let idle/8: State[int32] = State::Idle;
+    let idle/8: State[i32] = State::Idle;
     let value/9: State[Point] = State::Value((point/7 : Point));
-    let named/10: State[int] = State::Named(7);
+    let named/10: State[isize] = State::Named(7);
     (println : (string) -> unit)((Debug::debug : (Point) -> string)((point/7 : Point)));
-    (println : (string) -> unit)(
-      (Debug::debug : (State[int32]) -> string)((idle/8 : State[int32]))
-    );
+    (println : (string) -> unit)((Debug::debug : (State[i32]) -> string)((idle/8 : State[i32])));
     (println : (string) -> unit)(
       (Debug::debug : (State[Point]) -> string)((value/9 : State[Point]))
     );
-    (println : (string) -> unit)((Debug::debug : (State[int]) -> string)((named/10 : State[int])));
-    (println : (string) -> unit)((debug_dyn : (dyn Debug) -> string)(to_dyn[Debug]{int}(9)))
+    (println : (string) -> unit)(
+      (Debug::debug : (State[isize]) -> string)((named/10 : State[isize]))
+    );
+    (println : (string) -> unit)((debug_dyn : (dyn Debug) -> string)(to_dyn[Debug]{isize}(9)))
 }

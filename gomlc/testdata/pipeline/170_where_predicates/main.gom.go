@@ -32,13 +32,13 @@ func vec_len__Vec_5int32(vec *_goml_vec_int32) int {
     return int(len(vec.items))
 }
 
-type Wrap__int32 struct {
+type Wrap__i32 struct {
     value int32
 }
 
 type Ordering int32
 
-func _goml_m_trait__impl_i_Render_i_Vec_l_int32_r__i_render(self__0 *_goml_vec_int32) string {
+func _goml_m_trait__impl_i_Render_i_Vec_l_i32_r__i_render(self__0 *_goml_vec_int32) string {
     var t418 int
     var inline450 int = vec_len__Vec_5int32(self__0)
     t418 = inline450
@@ -56,7 +56,7 @@ func main0() struct{} {
     var inline467 int32 = 2
     vec_push__Vec_5int32(values__5, inline467)
     var t422 string
-    var inline465 string = _goml_m_trait__impl_i_Render_i_Vec_l_int32_r__i_render(values__5)
+    var inline465 string = _goml_m_trait__impl_i_Render_i_Vec_l_i32_r__i_render(values__5)
     t422 = inline465
     var inline462 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t422)
     _goml_runtime_core_string_println(inline462)
@@ -65,11 +65,11 @@ func main0() struct{} {
     text__6 = inline460
     var inline457 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__6)
     _goml_runtime_core_string_println(inline457)
-    var selected__7 Wrap__int32 = Wrap__int32{
+    var selected__7 Wrap__i32 = Wrap__i32{
         value: 7,
     }
     var t423 string
-    var inline455 string = _goml_m_trait__impl_i_Selected_i_Wrap____int32_i_selected(selected__7)
+    var inline455 string = _goml_m_trait__impl_i_Selected_i_Wrap____i32_i_selected(selected__7)
     t423 = inline455
     var inline452 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t423)
     _goml_runtime_core_string_println(inline452)
@@ -80,7 +80,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_Selected_i_Wrap____int32_i_selected(self__1 Wrap__int32) string {
+func _goml_m_trait__impl_i_Selected_i_Wrap____i32_i_selected(self__1 Wrap__i32) string {
     return "selected"
 }
 

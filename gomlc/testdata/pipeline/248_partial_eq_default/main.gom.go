@@ -37,10 +37,10 @@ type NoDefault struct {
 
 type Empty struct {}
 
-type PairDefaults__int struct {
+type PairDefaults__isize struct {
     first int
     second int
-    nested Option__int
+    nested Option__isize
 }
 
 type Ordering int32
@@ -62,7 +62,7 @@ type Event struct {
     _v0_1 int
 }
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -72,7 +72,7 @@ type Lazy__NoDefault struct {
     _v1_0 NoDefault
 }
 
-type Selected__int struct {
+type Selected__isize struct {
     _tag int32
     _v0_0 int
     _v0_1 int
@@ -131,7 +131,7 @@ func _goml_m_trait__impl_i_Debug_i_Settings_i_debug(self__2 Settings) string {
     var t461 string = t460 + ", "
     var t462 string = t461 + "retries: "
     var t463 string
-    var inline612 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x413)
+    var inline612 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x413)
     t463 = inline612
     var t464 string = t462 + t463
     var t465 string = t464 + ", "
@@ -160,7 +160,7 @@ func _goml_m_trait__impl_i_Debug_i_State_i_debug(self__7 State) string {
     case 1:
         var x415 int = self__7._v1_0
         var t481 string
-        var inline616 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x415)
+        var inline616 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x415)
         t481 = inline616
         var t482 string = "State::Running(" + t481
         var t483 string = t482 + ")"
@@ -181,7 +181,7 @@ func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__9 Message) string {
         var t494 string = "Message::Data(" + t493
         var t495 string = t494 + ", "
         var t496 string
-        var inline620 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x417)
+        var inline620 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x417)
         t496 = inline620
         var t497 string = t495 + t496
         var t498 string = t497 + ")"
@@ -208,14 +208,14 @@ func main0() struct{} {
     var empty__16 Empty = _goml_m_trait__impl_i_Default_i_Empty_i_default()
     var t521 string = _goml_m_trait__impl_i_Debug_i_Empty_i_debug(empty__16)
     println__T_string(t521)
-    var pair__17 PairDefaults__int = _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default()
+    var pair__17 PairDefaults__isize = _goml_m_trait__impl_i_Default_i_PairDefaults____isize_i_default()
     var t522 int = pair__17.first
     var t523 int = pair__17.second
     var t524 int = t522 + t523
-    var t525 string = _goml_m_inherent_i_int_i_int_i_to__string(t524)
+    var t525 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t524)
     println__T_string(t525)
-    var t526 Option__int = pair__17.nested
-    var t527 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(t526)
+    var t526 Option__isize = pair__17.nested
+    var t527 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__isize(t526)
     var t528 string
     var inline674 string = _goml_runtime_core_bool_to_string(t527)
     t528 = inline674
@@ -229,7 +229,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline670)
     var message__19 Message
     var inline666 string = _goml_m_trait__impl_i_Default_i_string_i_default()
-    var inline667 int = _goml_m_trait__impl_i_Default_i_int_i_default()
+    var inline667 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
     var inline668 Message = Message{
         _tag: 0,
         _v0_0: inline666,
@@ -241,7 +241,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline663)
     var event__20 Event
     var inline659 string = _goml_m_trait__impl_i_Default_i_string_i_default()
-    var inline660 int = _goml_m_trait__impl_i_Default_i_int_i_default()
+    var inline660 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
     var inline661 Event = Event{
         _tag: 0,
         _v0_0: inline659,
@@ -258,7 +258,7 @@ func main0() struct{} {
         var inline652 string = inline650 + inline651
         var inline653 string = inline652 + ", "
         var inline654 string = inline653 + "count: "
-        var inline655 string = _goml_m_trait__impl_i_Debug_i_int_i_debug(inline647)
+        var inline655 string = _goml_m_trait__impl_i_Debug_i_isize_i_debug(inline647)
         var inline656 string = inline654 + inline655
         var inline657 string = inline656 + " }"
         t531 = inline657
@@ -284,10 +284,10 @@ func main0() struct{} {
     }
     var inline639 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp533)
     _goml_runtime_core_string_println(inline639)
-    var selected__22 Selected__int
-    var inline635 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline636 int = _goml_m_trait__impl_i_Default_i_int_i_default()
-    var inline637 Selected__int = Selected__int{
+    var selected__22 Selected__isize
+    var inline635 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
+    var inline636 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
+    var inline637 Selected__isize = Selected__isize{
         _tag: 0,
         _v0_0: inline635,
         _v0_1: inline636,
@@ -311,7 +311,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Default_i_int_i_default() int {
+func _goml_m_trait__impl_i_Default_i_isize_i_default() int {
     return 0
 }
 
@@ -319,7 +319,7 @@ func _goml_m_trait__impl_i_Default_i_string_i_default() string {
     return ""
 }
 
-func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__166 int) string {
+func _goml_m_trait__impl_i_Debug_i_isize_i_debug(self__166 int) string {
     var inline678 string = _goml_runtime_core_int_to_string(self__166)
     return inline678
 }
@@ -340,16 +340,16 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
     return t568
 }
 
-func _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default() PairDefaults__int {
+func _goml_m_trait__impl_i_Default_i_PairDefaults____isize_i_default() PairDefaults__isize {
     var t571 int
     t571 = 0
     var t572 int
     t572 = 0
-    var t573 Option__int
-    t573 = Option__int{
+    var t573 Option__isize
+    t573 = Option__isize{
         _tag: 0,
     }
-    var t574 PairDefaults__int = PairDefaults__int{
+    var t574 PairDefaults__isize = PairDefaults__isize{
         first: t571,
         second: t572,
         nested: t573,
@@ -357,12 +357,12 @@ func _goml_m_trait__impl_i_Default_i_PairDefaults____int_i_default() PairDefault
     return t574
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
     var t577 string = _goml_runtime_core_int_to_string(self__32)
     return t577
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__466 Option__int) bool {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__isize(self__466 Option__isize) bool {
     var t580 bool
     switch self__466._tag {
     case 0:
@@ -376,7 +376,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__int(self__466 Op
     return t581
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t591 string = _goml_runtime_core_int_to_string(self__151)
     return t591
 }

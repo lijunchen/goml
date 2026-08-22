@@ -1,7 +1,7 @@
 fn main() -> unit {
   let x/0 = 1 in
   let _wild411 = x/0 = (x/0 + 1) in
-  let _wild412 = println__T_string(inherent#int#int#to_string(x/0)) in
+  let _wild412 = println__T_string(inherent#isize#isize#to_string(x/0)) in
   ()
 }
 
@@ -9,7 +9,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 

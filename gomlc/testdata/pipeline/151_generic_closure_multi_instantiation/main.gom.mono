@@ -1,12 +1,12 @@
 fn main() -> unit {
-  let int_pairer/2 = make_pairer__T_int(7) in
+  let int_pairer/2 = make_pairer__T_isize(7) in
   let string_pairer/3 = make_pairer__T_string("ok") in
   let _wild411 = println__T_string(int_pairer/2("a")) in
   let _wild412 = println__T_string(string_pairer/3("b")) in
 }
 
-fn make_pairer__T_int(x/0: int) -> (string) -> string {
-  |tag/1| ((tag/1 + ":") + trait_impl#ToString#int#to_string(x/0))
+fn make_pairer__T_isize(x/0: isize) -> (string) -> string {
+  |tag/1| ((tag/1 + ":") + trait_impl#ToString#isize#to_string(x/0))
 }
 
 fn make_pairer__T_string(x/0: string) -> (string) -> string {
@@ -17,7 +17,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 

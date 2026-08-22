@@ -30,19 +30,19 @@ func main0() struct{} {
     var prod__7 int32 = diff__6 * 2
     var quot__8 int32 = prod__7 / 4
     var inline507 string = "sum="
-    var inline508 string = _goml_m_inherent_i_int32_i_int32_i_to__string(sum__5)
+    var inline508 string = _goml_m_inherent_i_i32_i_i32_i_to__string(sum__5)
     var inline509 string = inline507 + inline508
     println__T_string(inline509)
     var inline502 string = "diff="
-    var inline503 string = _goml_m_inherent_i_int32_i_int32_i_to__string(diff__6)
+    var inline503 string = _goml_m_inherent_i_i32_i_i32_i_to__string(diff__6)
     var inline504 string = inline502 + inline503
     println__T_string(inline504)
     var inline497 string = "prod="
-    var inline498 string = _goml_m_inherent_i_int32_i_int32_i_to__string(prod__7)
+    var inline498 string = _goml_m_inherent_i_i32_i_i32_i_to__string(prod__7)
     var inline499 string = inline497 + inline498
     println__T_string(inline499)
     var inline492 string = "quot="
-    var inline493 string = _goml_m_inherent_i_int32_i_int32_i_to__string(quot__8)
+    var inline493 string = _goml_m_inherent_i_i32_i_i32_i_to__string(quot__8)
     var inline494 string = inline492 + inline493
     println__T_string(inline494)
     var jp431 bool
@@ -110,7 +110,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t455 string = _goml_runtime_core_int32_to_string(self__33)
     return t455
 }

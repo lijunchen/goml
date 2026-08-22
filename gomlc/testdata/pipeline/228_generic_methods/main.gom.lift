@@ -1,75 +1,75 @@
 fn main() -> unit {
-  let first/4 = Box__int { value: 42 } in
+  let first/4 = Box__isize { value: 42 } in
   let text/6 =
-    inherent#Box#Box[T]#map__T_int__U_string(
+    inherent#Box#Box[T]#map__T_isize__U_string(
       first/4,
       pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](closure_env_main_0 {})
     ) in
   let _wild412 = println__T_string(Box__string.value(text/6)) in
-  let second/7 = Box__int { value: 7 } in
+  let second/7 = Box__isize { value: 7 } in
   let explicit/9 =
-    inherent#Box#Box[T]#map__T_int__U_string(
+    inherent#Box#Box[T]#map__T_isize__U_string(
       second/7,
       pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](closure_env_main_1 {})
     ) in
   let _wild413 = println__T_string(Box__string.value(explicit/9)) in
-  let third/10 = Box__int { value: 9 } in
+  let third/10 = Box__isize { value: 9 } in
   let static_call/12 =
-    inherent#Box#Box[T]#map__T_int__U_string(
+    inherent#Box#Box[T]#map__T_isize__U_string(
       third/10,
       pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](closure_env_main_2 {})
     ) in
   let _wild414 = println__T_string(Box__string.value(static_call/12)) in
   let rendered/13 =
-    inherent#Box#Box[T]#render__T_string__U_int(Box__string { value: "value" }, 5) in
+    inherent#Box#Box[T]#render__T_string__U_isize(Box__string { value: "value" }, 5) in
   let _wild415 = println__T_string(rendered/13) in
   ()
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Box#Box[T]#map__T_int__U_string(
-  self/0: Box__int,
-  map_fn/1: (int) -> string
+fn inherent#Box#Box[T]#map__T_isize__U_string(
+  self/0: Box__isize,
+  map_fn/1: (isize) -> string
 ) -> Box__string {
-  Box__string { value: map_fn/1(Box__int.value(self/0)) }
+  Box__string { value: map_fn/1(Box__isize.value(self/0)) }
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Box#Box[T]#render__T_string__U_int(self/2: Box__string, value/3: int) -> string {
-  ("value:" + trait_impl#ToString#int#to_string(value/3))
+fn inherent#Box#Box[T]#render__T_string__U_isize(self/2: Box__string, value/3: isize) -> string {
+  ("value:" + trait_impl#ToString#isize#to_string(value/3))
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
   env416: closure_env_main_0,
-  value/5: int
+  value/5: isize
 ) -> string {
-  inherent#int#int#to_string(value/5)
+  inherent#isize#isize#to_string(value/5)
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
   env417: closure_env_main_1,
-  value/8: int
+  value/8: isize
 ) -> string {
-  inherent#int#int#to_string(value/8)
+  inherent#isize#isize#to_string(value/8)
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
   env418: closure_env_main_2,
-  value/11: int
+  value/11: isize
 ) -> string {
-  inherent#int#int#to_string(value/11)
+  inherent#isize#isize#to_string(value/11)
 }

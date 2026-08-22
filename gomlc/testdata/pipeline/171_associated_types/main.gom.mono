@@ -1,15 +1,15 @@
-fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {
+fn trait_impl#Provider#Number#get(self/0: Number) -> i32 {
   Number.value(self/0)
 }
 
 fn main() -> unit {
   let _wild411 =
-    println__T_string(inherent#int32#int32#to_string(read__P_Number(Number { value: 42 }))) in
-  let value/4 = read_as__P_Number__T_int32(Number { value: 7 }) in
-  let _wild412 = println__T_string(inherent#int32#int32#to_string(value/4)) in
+    println__T_string(inherent#i32#i32#to_string(read__P_Number(Number { value: 42 }))) in
+  let value/4 = read_as__P_Number__T_i32(Number { value: 7 }) in
+  let _wild412 = println__T_string(inherent#i32#i32#to_string(value/4)) in
   let _wild413 = println__T_string(read__P_Box[string](Box__string { value: "generic" })) in
   println__T_string(
-    inherent#int32#int32#to_string(trait_impl#Provider#Number#get(Number { value: 11 }))
+    inherent#i32#i32#to_string(trait_impl#Provider#Number#get(Number { value: 11 }))
   )
 }
 
@@ -17,15 +17,15 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn read__P_Number(provider/2: Number) -> int32 {
+fn read__P_Number(provider/2: Number) -> i32 {
   trait_impl#Provider#Number#get(provider/2)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
-fn read_as__P_Number__T_int32(provider/3: Number) -> int32 {
+fn read_as__P_Number__T_i32(provider/3: Number) -> i32 {
   trait_impl#Provider#Number#get(provider/3)
 }
 

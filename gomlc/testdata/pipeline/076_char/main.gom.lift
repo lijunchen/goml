@@ -29,7 +29,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn char_to_string(value/29: char) -> string {
-  if utf8_valid_scalar((value/29 as uint32)) {
+  if utf8_valid_scalar((value/29 as u32)) {
       @runtime(core.char_to_string)(value/29)
   } else {
       let mtmp21 = @runtime(core.string_get)("", -1) in
@@ -37,7 +37,7 @@ fn char_to_string(value/29: char) -> string {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   if (value/4 <= 1114111) {
       (!if (value/4 >= 55296) {
           (value/4 <= 57343)

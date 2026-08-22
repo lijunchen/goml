@@ -8,7 +8,7 @@ fn is_digit(ch/0: char) -> bool {
   }
 }
 
-fn digit_value(ch/1: char) -> int32 {
+fn digit_value(ch/1: char) -> i32 {
   match ch/1 {
     '0' => {
       0
@@ -47,12 +47,12 @@ fn digit_value(ch/1: char) -> int32 {
 }
 
 fn is_int_text(text/2: string) -> bool {
-  join inline_cont1498(len/3: int) -> bool {
+  join inline_cont1498(len/3: isize) -> bool {
     let t561 = (len/3 == 0) in
     if t561 {
       false
     } else {
-      join inline_cont1495(i/4: Ref[int]) -> bool {
+      join inline_cont1495(i/4: Ref[isize]) -> bool {
         join inline_cont1492(saw_digit/5: Ref[bool]) -> bool {
           join inline_cont1489(ok/6: Ref[bool]) -> bool {
             join inline_cont1486(started/7: Ref[bool]) -> bool {
@@ -73,14 +73,14 @@ fn is_int_text(text/2: string) -> bool {
                   join inline_cont1480(t586: bool) -> bool {
                     join k568(jp569: bool) -> bool {
                       if jp569 {
-                        join inline_cont1478(t570: int) -> bool {
+                        join inline_cont1478(t570: isize) -> bool {
                           join inline_cont1476(ch/8: char) -> bool {
                             join inline_cont1474(t583: bool) -> bool {
                               let t584 = (!t583) in
                               join k572(jp573: bool) -> bool {
                                 if jp573 {
                                   join inline_cont1455(mtmp411: unit) -> bool {
-                                    join inline_cont1453(t574: int) -> bool {
+                                    join inline_cont1453(t574: isize) -> bool {
                                       let t575 = (t574 + 1) in
                                       let inline1452 = @intrinsic(ref.set)(i/4, t575) in
                                       jump loop567()
@@ -96,7 +96,7 @@ fn is_int_text(text/2: string) -> bool {
                                     if t578 {
                                       join inline_cont1465(mtmp412: unit) -> bool {
                                         join inline_cont1462(mtmp413: unit) -> bool {
-                                          join inline_cont1460(t579: int) -> bool {
+                                          join inline_cont1460(t579: isize) -> bool {
                                             let t580 = (t579 + 1) in
                                             let inline1459 = @intrinsic(ref.set)(i/4, t580) in
                                             jump loop567()
@@ -147,7 +147,7 @@ fn is_int_text(text/2: string) -> bool {
                       }
                     } in
                     if t586 {
-                      join inline_cont1449(t587: int) -> bool {
+                      join inline_cont1449(t587: isize) -> bool {
                         let t588 = (t587 < len/3) in
                         jump k568(t588)
                       } in
@@ -184,16 +184,16 @@ fn is_int_text(text/2: string) -> bool {
   jump inline_cont1498(inline1499)
 }
 
-fn parse_int32(text/9: string) -> int32 {
+fn parse_int32(text/9: string) -> i32 {
   let len/10 = inherent#string#string#len(text/9) in
-  let i/11 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let i/11 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  join inline_cont1539(started/13: Ref[bool]) -> int32 {
-    join inline_cont1536(acc/14: Ref[int32]) -> int32 {
-      join exit591() -> int32 {
-        join inline_cont1534(t594: bool) -> int32 {
+  join inline_cont1539(started/13: Ref[bool]) -> i32 {
+    join inline_cont1536(acc/14: Ref[i32]) -> i32 {
+      join exit591() -> i32 {
+        join inline_cont1534(t594: bool) -> i32 {
           if t594 {
-            join inline_cont1530(t595: int32) -> int32 {
+            join inline_cont1530(t595: i32) -> i32 {
               let t596 = (0 - t595) in
               t596
             } in
@@ -208,19 +208,19 @@ fn parse_int32(text/9: string) -> int32 {
         jump inline_cont1534(inline1535)
       } in
       joinrec {
-        join loop598() -> int32 {
-          join inline_cont1528(t599: int) -> int32 {
+        join loop598() -> i32 {
+          join inline_cont1528(t599: isize) -> i32 {
             let t600 = (t599 < len/10) in
             if t600 {
-              join inline_cont1526(t601: int) -> int32 {
-                join inline_cont1524(ch/15: char) -> int32 {
-                  join inline_cont1522(t614: bool) -> int32 {
+              join inline_cont1526(t601: isize) -> i32 {
+                join inline_cont1524(ch/15: char) -> i32 {
+                  join inline_cont1522(t614: bool) -> i32 {
                     let t615 = (!t614) in
-                    join k603(jp604: bool) -> int32 {
+                    join k603(jp604: bool) -> i32 {
                       if jp604 {
-                        join inline_cont1507(mtmp415: unit) -> int32 {
-                          join inline_cont1504(mtmp416: unit) -> int32 {
-                            join inline_cont1502(t605: int) -> int32 {
+                        join inline_cont1507(mtmp415: unit) -> i32 {
+                          join inline_cont1504(mtmp416: unit) -> i32 {
+                            join inline_cont1502(t605: isize) -> i32 {
                               let t606 = (t605 + 1) in
                               let inline1501 = @intrinsic(ref.set)(i/11, t606) in
                               jump loop598()
@@ -236,13 +236,13 @@ fn parse_int32(text/9: string) -> int32 {
                         let inline1509 = @intrinsic(ref.set)(started/13, inline1508) in
                         jump inline_cont1507(())
                       } else {
-                        join inline_cont1519(mtmp417: unit) -> int32 {
-                          join inline_cont1518(d/16: int32) -> int32 {
-                            join inline_cont1516(t608: int32) -> int32 {
+                        join inline_cont1519(mtmp417: unit) -> i32 {
+                          join inline_cont1518(d/16: i32) -> i32 {
+                            join inline_cont1516(t608: i32) -> i32 {
                               let t609 = (t608 * 10) in
                               let t610 = (t609 + d/16) in
-                              join inline_cont1514(mtmp418: unit) -> int32 {
-                                join inline_cont1512(t611: int) -> int32 {
+                              join inline_cont1514(mtmp418: unit) -> i32 {
+                                join inline_cont1512(t611: isize) -> i32 {
                                   let t612 = (t611 + 1) in
                                   let inline1511 = @intrinsic(ref.set)(i/11, t612) in
                                   jump loop598()
@@ -349,15 +349,15 @@ fn is_delim(ch/17: char) -> bool {
   }
 }
 
-fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
-  join inline_cont1581(len/20: int) -> (Token, int) {
-    join inline_cont1578(text/21: Ref[string]) -> (Token, int) {
-      join inline_cont1576(i/22: Ref[int]) -> (Token, int) {
-        join inline_cont1573(done/23: Ref[bool]) -> (Token, int) {
-          join exit628() -> (Token, int) {
-            join inline_cont1571(atom/25: string) -> (Token, int) {
-              join k629(jp630: Token) -> (Token, int) {
-                join inline_cont1569(t631: int) -> (Token, int) {
+fn lex_atom(source/18: string, start/19: isize) -> (Token, isize) {
+  join inline_cont1581(len/20: isize) -> (Token, isize) {
+    join inline_cont1578(text/21: Ref[string]) -> (Token, isize) {
+      join inline_cont1576(i/22: Ref[isize]) -> (Token, isize) {
+        join inline_cont1573(done/23: Ref[bool]) -> (Token, isize) {
+          join exit628() -> (Token, isize) {
+            join inline_cont1571(atom/25: string) -> (Token, isize) {
+              join k629(jp630: Token) -> (Token, isize) {
+                join inline_cont1569(t631: isize) -> (Token, isize) {
                   let t632 = (jp630, t631) in
                   t632
                 } in
@@ -390,24 +390,24 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
             jump inline_cont1571(inline1572)
           } in
           joinrec {
-            join loop641() -> (Token, int) {
-              join inline_cont1567(t654: bool) -> (Token, int) {
+            join loop641() -> (Token, isize) {
+              join inline_cont1567(t654: bool) -> (Token, isize) {
                 let t655 = (!t654) in
-                join k642(jp643: bool) -> (Token, int) {
+                join k642(jp643: bool) -> (Token, isize) {
                   if jp643 {
-                    join inline_cont1565(t644: int) -> (Token, int) {
-                      join inline_cont1563(ch/24: char) -> (Token, int) {
-                        join inline_cont1557(t646: bool) -> (Token, int) {
+                    join inline_cont1565(t644: isize) -> (Token, isize) {
+                      join inline_cont1563(ch/24: char) -> (Token, isize) {
+                        join inline_cont1557(t646: bool) -> (Token, isize) {
                           if t646 {
                             let inline1545 = true in
                             let inline1546 = @intrinsic(ref.set)(done/23, inline1545) in
                             jump loop641()
                           } else {
-                            join inline_cont1555(t648: string) -> (Token, int) {
-                              join inline_cont1553(t649: string) -> (Token, int) {
+                            join inline_cont1555(t648: string) -> (Token, isize) {
+                              join inline_cont1553(t649: string) -> (Token, isize) {
                                 let t650 = (t648 + t649) in
-                                join inline_cont1551(mtmp420: unit) -> (Token, int) {
-                                  join inline_cont1549(t651: int) -> (Token, int) {
+                                join inline_cont1551(mtmp420: unit) -> (Token, isize) {
+                                  join inline_cont1549(t651: isize) -> (Token, isize) {
                                     let t652 = (t651 + 1) in
                                     let inline1548 = @intrinsic(ref.set)(i/22, t652) in
                                     jump loop641()
@@ -426,7 +426,7 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
                           }
                         } in
                         let inline1558 = (ch/24 == '(') in
-                        join inline_join1559(inline1560: bool) -> (Token, int) {
+                        join inline_join1559(inline1560: bool) -> (Token, isize) {
                           if inline1560 {
                             jump inline_cont1557(true)
                           } else {
@@ -451,7 +451,7 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
                   }
                 } in
                 if t655 {
-                  join inline_cont1542(t656: int) -> (Token, int) {
+                  join inline_cont1542(t656: isize) -> (Token, isize) {
                     let t657 = (t656 < len/20) in
                     jump k642(t657)
                   } in
@@ -483,27 +483,27 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
 }
 
 fn lex(source/27: string) -> Vec[Token] {
-  join inline_cont1626(len/28: int) -> Vec[Token] {
+  join inline_cont1626(len/28: isize) -> Vec[Token] {
     join inline_cont1624(toks0/29: Vec[Token]) -> Vec[Token] {
       join inline_cont1622(toks/30: Ref[Vec[Token]]) -> Vec[Token] {
-        join inline_cont1619(i/31: Ref[int]) -> Vec[Token] {
+        join inline_cont1619(i/31: Ref[isize]) -> Vec[Token] {
           join exit660() -> Vec[Token] {
             let inline1618 = @intrinsic(ref.get)(toks/30) in
             inline1618
           } in
           joinrec {
             join loop662() -> Vec[Token] {
-              join inline_cont1615(t663: int) -> Vec[Token] {
+              join inline_cont1615(t663: isize) -> Vec[Token] {
                 let t664 = (t663 < len/28) in
                 if t664 {
-                  join inline_cont1613(t665: int) -> Vec[Token] {
+                  join inline_cont1613(t665: isize) -> Vec[Token] {
                     join inline_cont1611(ch/32: char) -> Vec[Token] {
                       let t667 = (ch/32 == '(') in
                       if t667 {
                         join inline_cont1589(t668: Vec[Token]) -> Vec[Token] {
                           let t669 = inherent#Vec#Vec[T]#pushed__T_Token(t668, Tag_0) in
                           join inline_cont1587(mtmp422: unit) -> Vec[Token] {
-                            join inline_cont1585(t670: int) -> Vec[Token] {
+                            join inline_cont1585(t670: isize) -> Vec[Token] {
                               let t671 = (t670 + 1) in
                               let inline1584 = @intrinsic(ref.set)(i/31, t671) in
                               jump loop662()
@@ -522,7 +522,7 @@ fn lex(source/27: string) -> Vec[Token] {
                           join inline_cont1597(t675: Vec[Token]) -> Vec[Token] {
                             let t676 = inherent#Vec#Vec[T]#pushed__T_Token(t675, Tag_1) in
                             join inline_cont1595(mtmp423: unit) -> Vec[Token] {
-                              join inline_cont1593(t677: int) -> Vec[Token] {
+                              join inline_cont1593(t677: isize) -> Vec[Token] {
                                 let t678 = (t677 + 1) in
                                 let inline1592 = @intrinsic(ref.set)(i/31, t678) in
                                 jump loop662()
@@ -538,7 +538,7 @@ fn lex(source/27: string) -> Vec[Token] {
                         } else {
                           let t681 = (ch/32 == ' ') in
                           if t681 {
-                            join inline_cont1601(t682: int) -> Vec[Token] {
+                            join inline_cont1601(t682: isize) -> Vec[Token] {
                               let t683 = (t682 + 1) in
                               let inline1600 = @intrinsic(ref.set)(i/31, t683) in
                               jump loop662()
@@ -546,7 +546,7 @@ fn lex(source/27: string) -> Vec[Token] {
                             let inline1602 = @intrinsic(ref.get)(i/31) in
                             jump inline_cont1601(inline1602)
                           } else {
-                            join inline_cont1609(t685: int) -> Vec[Token] {
+                            join inline_cont1609(t685: isize) -> Vec[Token] {
                               let mtmp424 = lex_atom(source/27, t685) in
                               let x425 = mtmp424.0 in
                               let x426 = mtmp424.1 in
@@ -598,9 +598,9 @@ fn lex(source/27: string) -> Vec[Token] {
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  join inline_cont1652(t691: int) -> Value {
+  join inline_cont1652(t691: isize) -> Value {
     let t692 = (t691 - 1) in
-    join inline_cont1650(i/37: Ref[int]) -> Value {
+    join inline_cont1650(i/37: Ref[isize]) -> Value {
       join inline_cont1648(result/38: Ref[Value]) -> Value {
         join inline_cont1645(done/39: Ref[bool]) -> Value {
           join exit693() -> Value {
@@ -613,7 +613,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
                 let t708 = (!t707) in
                 join k696(jp697: bool) -> Value {
                   if jp697 {
-                    join inline_cont1639(t698: int) -> Value {
+                    join inline_cont1639(t698: isize) -> Value {
                       let binding/40 = @intrinsic(vec.get)(env/35, t698) in
                       let t700 = Binding.name(binding/40) in
                       let t701 = (t700 == name/36) in
@@ -627,7 +627,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
                         let inline1634 = @intrinsic(ref.set)(result/38, t702) in
                         jump inline_cont1633(())
                       } else {
-                        join inline_cont1637(t704: int) -> Value {
+                        join inline_cont1637(t704: isize) -> Value {
                           let t705 = (t704 - 1) in
                           let inline1636 = @intrinsic(ref.set)(i/37, t705) in
                           jump loop695()
@@ -643,7 +643,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
                   }
                 } in
                 if t708 {
-                  join inline_cont1628(t709: int) -> Value {
+                  join inline_cont1628(t709: isize) -> Value {
                     let t710 = (t709 >= 0) in
                     jump k696(t710)
                   } in
@@ -686,14 +686,14 @@ fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> V
   }
 }
 
-fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
-  join inline_cont1688(acc/47: Vec[SExpr]) -> (Vec[SExpr], int) {
-    join inline_cont1686(exprs/48: Ref[Vec[SExpr]]) -> (Vec[SExpr], int) {
-      join inline_cont1684(i/49: Ref[int]) -> (Vec[SExpr], int) {
-        join inline_cont1681(done/50: Ref[bool]) -> (Vec[SExpr], int) {
-          join exit718() -> (Vec[SExpr], int) {
-            join inline_cont1679(t719: Vec[SExpr]) -> (Vec[SExpr], int) {
-              join inline_cont1677(t720: int) -> (Vec[SExpr], int) {
+fn parse_list(tokens/45: Vec[Token], start/46: isize) -> (Vec[SExpr], isize) {
+  join inline_cont1688(acc/47: Vec[SExpr]) -> (Vec[SExpr], isize) {
+    join inline_cont1686(exprs/48: Ref[Vec[SExpr]]) -> (Vec[SExpr], isize) {
+      join inline_cont1684(i/49: Ref[isize]) -> (Vec[SExpr], isize) {
+        join inline_cont1681(done/50: Ref[bool]) -> (Vec[SExpr], isize) {
+          join exit718() -> (Vec[SExpr], isize) {
+            join inline_cont1679(t719: Vec[SExpr]) -> (Vec[SExpr], isize) {
+              join inline_cont1677(t720: isize) -> (Vec[SExpr], isize) {
                 let t721 = (t719, t720) in
                 t721
               } in
@@ -704,17 +704,17 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
             jump inline_cont1679(inline1680)
           } in
           joinrec {
-            join loop722() -> (Vec[SExpr], int) {
-              join inline_cont1675(t734: bool) -> (Vec[SExpr], int) {
+            join loop722() -> (Vec[SExpr], isize) {
+              join inline_cont1675(t734: bool) -> (Vec[SExpr], isize) {
                 let t735 = (!t734) in
-                join k723(jp724: bool) -> (Vec[SExpr], int) {
+                join k723(jp724: bool) -> (Vec[SExpr], isize) {
                   if jp724 {
-                    join inline_cont1673(t725: int) -> (Vec[SExpr], int) {
+                    join inline_cont1673(t725: isize) -> (Vec[SExpr], isize) {
                       let mtmp435 = @intrinsic(vec.get)(tokens/45, t725) in
                       match mtmp435 {
                         Tag_1 => {
-                          join inline_cont1662(mtmp439: unit) -> (Vec[SExpr], int) {
-                            join inline_cont1660(t727: int) -> (Vec[SExpr], int) {
+                          join inline_cont1662(mtmp439: unit) -> (Vec[SExpr], isize) {
+                            join inline_cont1660(t727: isize) -> (Vec[SExpr], isize) {
                               let t728 = (t727 + 1) in
                               let inline1659 = @intrinsic(ref.set)(i/49, t728) in
                               jump loop722()
@@ -727,13 +727,13 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
                           jump inline_cont1662(())
                         },
                         _ => {
-                          join inline_cont1671(t730: int) -> (Vec[SExpr], int) {
+                          join inline_cont1671(t730: isize) -> (Vec[SExpr], isize) {
                             let mtmp440 = parse_expr(tokens/45, t730) in
                             let x441 = mtmp440.0 in
                             let x442 = mtmp440.1 in
-                            join inline_cont1669(t731: Vec[SExpr]) -> (Vec[SExpr], int) {
+                            join inline_cont1669(t731: Vec[SExpr]) -> (Vec[SExpr], isize) {
                               let t732 = inherent#Vec#Vec[T]#pushed__T_SExpr(t731, x441) in
-                              join inline_cont1667(mtmp443: unit) -> (Vec[SExpr], int) {
+                              join inline_cont1667(mtmp443: unit) -> (Vec[SExpr], isize) {
                                 let inline1666 = @intrinsic(ref.set)(i/49, x442) in
                                 jump loop722()
                               } in
@@ -755,8 +755,8 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
                   }
                 } in
                 if t735 {
-                  join inline_cont1656(t736: int) -> (Vec[SExpr], int) {
-                    join inline_cont1654(t737: int) -> (Vec[SExpr], int) {
+                  join inline_cont1656(t736: isize) -> (Vec[SExpr], isize) {
+                    join inline_cont1654(t737: isize) -> (Vec[SExpr], isize) {
                       let t738 = (t736 < t737) in
                       jump k723(t738)
                     } in
@@ -789,7 +789,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
   jump inline_cont1688(inline1689)
 }
 
-fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
+fn parse_expr(tokens/53: Vec[Token], start/54: isize) -> (SExpr, isize) {
   let mtmp445 = @intrinsic(vec.get)(tokens/53, start/54) in
   match mtmp445 {
     Tag_0 => {
@@ -832,7 +832,7 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
 }
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
-  join inline_cont1708(i/61: Ref[int]) -> Vec[SExpr] {
+  join inline_cont1708(i/61: Ref[isize]) -> Vec[SExpr] {
     join inline_cont1706(acc/62: Vec[SExpr]) -> Vec[SExpr] {
       join inline_cont1704(exprs/63: Ref[Vec[SExpr]]) -> Vec[SExpr] {
         join exit760() -> Vec[SExpr] {
@@ -841,11 +841,11 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
         } in
         joinrec {
           join loop762() -> Vec[SExpr] {
-            join inline_cont1700(t763: int) -> Vec[SExpr] {
-              join inline_cont1698(t764: int) -> Vec[SExpr] {
+            join inline_cont1700(t763: isize) -> Vec[SExpr] {
+              join inline_cont1698(t764: isize) -> Vec[SExpr] {
                 let t765 = (t763 < t764) in
                 if t765 {
-                  join inline_cont1696(t766: int) -> Vec[SExpr] {
+                  join inline_cont1696(t766: isize) -> Vec[SExpr] {
                     let mtmp452 = parse_expr(tokens/60, t766) in
                     let x453 = mtmp452.0 in
                     let x454 = mtmp452.1 in
@@ -984,7 +984,7 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  join inline_cont1735(t794: int) -> Value {
+  join inline_cont1735(t794: isize) -> Value {
     let t795 = (t794 == 0) in
     if t795 {
       Tag_3
@@ -1029,7 +1029,7 @@ fn eval_list_sym(
       t804
     },
     "define" => {
-      join inline_cont1741(t807: int) -> Value {
+      join inline_cont1741(t807: isize) -> Value {
         let t808 = (t807 == 3) in
         if t808 {
           let mtmp471 = @intrinsic(vec.get)(items/87, 1) in
@@ -1059,7 +1059,7 @@ fn eval_list_sym(
       jump inline_cont1741(inline1742)
     },
     "if" => {
-      join inline_cont1749(t815: int) -> Value {
+      join inline_cont1749(t815: isize) -> Value {
         let t816 = (t815 == 4) in
         if t816 {
           let t817 = @intrinsic(vec.get)(items/87, 1) in
@@ -1100,7 +1100,7 @@ fn eval_list_sym(
       jump inline_cont1749(inline1750)
     },
     "lambda" => {
-      join inline_cont1751(t827: int) -> Value {
+      join inline_cont1751(t827: isize) -> Value {
         let t828 = (t827 == 3) in
         if t828 {
           let mtmp477 = @intrinsic(vec.get)(items/87, 1) in
@@ -1170,11 +1170,11 @@ fn eval_list_sym(
 
 fn eval_begin(
   items/100: Vec[SExpr],
-  start/101: int,
+  start/101: isize,
   local/102: Vec[Binding],
   global/103: Ref[Vec[Binding]]
 ) -> Value {
-  join inline_cont1773(i/104: Ref[int]) -> Value {
+  join inline_cont1773(i/104: Ref[isize]) -> Value {
     join inline_cont1771(last/105: Ref[Value]) -> Value {
       join exit847() -> Value {
         let inline1770 = @intrinsic(ref.get)(last/105) in
@@ -1182,15 +1182,15 @@ fn eval_begin(
       } in
       joinrec {
         join loop849() -> Value {
-          join inline_cont1767(t850: int) -> Value {
-            join inline_cont1765(t851: int) -> Value {
+          join inline_cont1767(t850: isize) -> Value {
+            join inline_cont1765(t851: isize) -> Value {
               let t852 = (t850 < t851) in
               if t852 {
-                join inline_cont1763(t853: int) -> Value {
+                join inline_cont1763(t853: isize) -> Value {
                   let t854 = @intrinsic(vec.get)(items/100, t853) in
                   let v/106 = eval(t854, local/102, global/103) in
                   join inline_cont1761(mtmp482: unit) -> Value {
-                    join inline_cont1759(t855: int) -> Value {
+                    join inline_cont1759(t855: isize) -> Value {
                       let t856 = (t855 + 1) in
                       let inline1758 = @intrinsic(ref.set)(i/104, t856) in
                       jump loop849()
@@ -1224,7 +1224,7 @@ fn eval_begin(
 }
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
-  join inline_cont1799(i/108: Ref[int]) -> Vec[string] {
+  join inline_cont1799(i/108: Ref[isize]) -> Vec[string] {
     join inline_cont1797(acc/109: Vec[string]) -> Vec[string] {
       join inline_cont1795(params/110: Ref[Vec[string]]) -> Vec[string] {
         join exit860() -> Vec[string] {
@@ -1233,11 +1233,11 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
         } in
         joinrec {
           join loop862() -> Vec[string] {
-            join inline_cont1791(t863: int) -> Vec[string] {
-              join inline_cont1789(t864: int) -> Vec[string] {
+            join inline_cont1791(t863: isize) -> Vec[string] {
+              join inline_cont1789(t864: isize) -> Vec[string] {
                 let t865 = (t863 < t864) in
                 if t865 {
-                  join inline_cont1787(t866: int) -> Vec[string] {
+                  join inline_cont1787(t866: isize) -> Vec[string] {
                     let mtmp484 = @intrinsic(vec.get)(items/107, t866) in
                     match mtmp484 {
                       Tag_2 => {
@@ -1245,7 +1245,7 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
                         join inline_cont1781(t868: Vec[string]) -> Vec[string] {
                           let t869 = inherent#Vec#Vec[T]#pushed__T_string(t868, x487) in
                           join inline_cont1779(mtmp489: unit) -> Vec[string] {
-                            join inline_cont1777(t870: int) -> Vec[string] {
+                            join inline_cont1777(t870: isize) -> Vec[string] {
                               let t871 = (t870 + 1) in
                               let inline1776 = @intrinsic(ref.set)(i/108, t871) in
                               jump loop862()
@@ -1260,7 +1260,7 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
                         jump inline_cont1781(inline1782)
                       },
                       _ => {
-                        join inline_cont1785(t873: int) -> Vec[string] {
+                        join inline_cont1785(t873: isize) -> Vec[string] {
                           let t874 = (t873 + 1) in
                           let inline1784 = @intrinsic(ref.set)(i/108, t874) in
                           jump loop862()
@@ -1298,11 +1298,11 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
 
 fn eval_args(
   items/112: Vec[SExpr],
-  start/113: int,
+  start/113: isize,
   local/114: Vec[Binding],
   global/115: Ref[Vec[Binding]]
 ) -> Vec[Value] {
-  join inline_cont1822(i/116: Ref[int]) -> Vec[Value] {
+  join inline_cont1822(i/116: Ref[isize]) -> Vec[Value] {
     join inline_cont1820(acc/117: Vec[Value]) -> Vec[Value] {
       join inline_cont1818(args/118: Ref[Vec[Value]]) -> Vec[Value] {
         join exit878() -> Vec[Value] {
@@ -1311,17 +1311,17 @@ fn eval_args(
         } in
         joinrec {
           join loop880() -> Vec[Value] {
-            join inline_cont1814(t881: int) -> Vec[Value] {
-              join inline_cont1812(t882: int) -> Vec[Value] {
+            join inline_cont1814(t881: isize) -> Vec[Value] {
+              join inline_cont1812(t882: isize) -> Vec[Value] {
                 let t883 = (t881 < t882) in
                 if t883 {
-                  join inline_cont1810(t884: int) -> Vec[Value] {
+                  join inline_cont1810(t884: isize) -> Vec[Value] {
                     let t885 = @intrinsic(vec.get)(items/112, t884) in
                     let v/119 = eval(t885, local/114, global/115) in
                     join inline_cont1808(t886: Vec[Value]) -> Vec[Value] {
                       let t887 = inherent#Vec#Vec[T]#pushed__T_Value(t886, v/119) in
                       join inline_cont1806(mtmp491: unit) -> Vec[Value] {
-                        join inline_cont1804(t888: int) -> Vec[Value] {
+                        join inline_cont1804(t888: isize) -> Vec[Value] {
                           let t889 = (t888 + 1) in
                           let inline1803 = @intrinsic(ref.set)(i/116, t889) in
                           jump loop880()
@@ -1363,7 +1363,7 @@ fn eval_args(
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
   match name/120 {
     "=" => {
-      join inline_cont1824(t897: int) -> Value {
+      join inline_cont1824(t897: isize) -> Value {
         let t898 = (t897 == 2) in
         if t898 {
           let t899 = @intrinsic(vec.get)(args/121, 0) in
@@ -1413,10 +1413,10 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       jump inline_cont1824(inline1825)
     },
     "+" => {
-      join inline_cont1849(i/126: Ref[int]) -> Value {
-        join inline_cont1846(acc/127: Ref[int32]) -> Value {
+      join inline_cont1849(i/126: Ref[isize]) -> Value {
+        join inline_cont1846(acc/127: Ref[i32]) -> Value {
           join exit915() -> Value {
-            join inline_cont1844(t916: int32) -> Value {
+            join inline_cont1844(t916: i32) -> Value {
               let t917 = Value::Int(t916) in
               t917
             } in
@@ -1425,19 +1425,19 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           } in
           joinrec {
             join loop918() -> Value {
-              join inline_cont1842(t919: int) -> Value {
-                join inline_cont1840(t920: int) -> Value {
+              join inline_cont1842(t919: isize) -> Value {
+                join inline_cont1840(t920: isize) -> Value {
                   let t921 = (t919 < t920) in
                   if t921 {
-                    join inline_cont1838(t922: int) -> Value {
+                    join inline_cont1838(t922: isize) -> Value {
                       let mtmp505 = @intrinsic(vec.get)(args/121, t922) in
                       match mtmp505 {
                         Tag_0 => {
                           let x506 = Value::Int._0(mtmp505) in
-                          join inline_cont1832(t924: int32) -> Value {
+                          join inline_cont1832(t924: i32) -> Value {
                             let t925 = (t924 + x506) in
                             join inline_cont1830(mtmp509: unit) -> Value {
-                              join inline_cont1828(t926: int) -> Value {
+                              join inline_cont1828(t926: isize) -> Value {
                                 let t927 = (t926 + 1) in
                                 let inline1827 = @intrinsic(ref.set)(i/126, t927) in
                                 jump loop918()
@@ -1452,7 +1452,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                           jump inline_cont1832(inline1833)
                         },
                         _ => {
-                          join inline_cont1836(t929: int) -> Value {
+                          join inline_cont1836(t929: isize) -> Value {
                             let t930 = (t929 + 1) in
                             let inline1835 = @intrinsic(ref.set)(i/126, t930) in
                             jump loop918()
@@ -1486,10 +1486,10 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       jump inline_cont1849(inline1851)
     },
     "*" => {
-      let i/129 = inherent#Ref#Ref[T]#new__T_int(0) in
-      join inline_cont1872(acc/130: Ref[int32]) -> Value {
+      let i/129 = inherent#Ref#Ref[T]#new__T_isize(0) in
+      join inline_cont1872(acc/130: Ref[i32]) -> Value {
         join exit932() -> Value {
-          join inline_cont1870(t933: int32) -> Value {
+          join inline_cont1870(t933: i32) -> Value {
             let t934 = Value::Int(t933) in
             t934
           } in
@@ -1498,19 +1498,19 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
         } in
         joinrec {
           join loop935() -> Value {
-            join inline_cont1868(t936: int) -> Value {
-              join inline_cont1866(t937: int) -> Value {
+            join inline_cont1868(t936: isize) -> Value {
+              join inline_cont1866(t937: isize) -> Value {
                 let t938 = (t936 < t937) in
                 if t938 {
-                  join inline_cont1864(t939: int) -> Value {
+                  join inline_cont1864(t939: isize) -> Value {
                     let mtmp511 = @intrinsic(vec.get)(args/121, t939) in
                     match mtmp511 {
                       Tag_0 => {
                         let x512 = Value::Int._0(mtmp511) in
-                        join inline_cont1858(t941: int32) -> Value {
+                        join inline_cont1858(t941: i32) -> Value {
                           let t942 = (t941 * x512) in
                           join inline_cont1856(mtmp515: unit) -> Value {
-                            join inline_cont1854(t943: int) -> Value {
+                            join inline_cont1854(t943: isize) -> Value {
                               let t944 = (t943 + 1) in
                               let inline1853 = @intrinsic(ref.set)(i/129, t944) in
                               jump loop935()
@@ -1525,7 +1525,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                         jump inline_cont1858(inline1859)
                       },
                       _ => {
-                        join inline_cont1862(t946: int) -> Value {
+                        join inline_cont1862(t946: isize) -> Value {
                           let t947 = (t946 + 1) in
                           let inline1861 = @intrinsic(ref.set)(i/129, t947) in
                           jump loop935()
@@ -1650,7 +1650,7 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
   let t982 = Lambda.env(lambda/141) in
   join inline_cont1900(env/143: Ref[Vec[Binding]]) -> Value {
-    join inline_cont1897(i/144: Ref[int]) -> Value {
+    join inline_cont1897(i/144: Ref[isize]) -> Value {
       join exit983() -> Value {
         let t984 = Lambda.body(lambda/141) in
         join inline_cont1895(t985: Vec[Binding]) -> Value {
@@ -1663,22 +1663,22 @@ fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
       } in
       joinrec {
         join loop988() -> Value {
-          join inline_cont1893(t999: int) -> Value {
+          join inline_cont1893(t999: isize) -> Value {
             let t1000 = Lambda.params(lambda/141) in
-            join inline_cont1891(t1001: int) -> Value {
+            join inline_cont1891(t1001: isize) -> Value {
               let t1002 = (t999 < t1001) in
               join k989(jp990: bool) -> Value {
                 if jp990 {
                   let t991 = Lambda.params(lambda/141) in
-                  join inline_cont1889(t992: int) -> Value {
+                  join inline_cont1889(t992: isize) -> Value {
                     let name/145 = @intrinsic(vec.get)(t991, t992) in
-                    join inline_cont1887(t993: int) -> Value {
+                    join inline_cont1887(t993: isize) -> Value {
                       let value/146 = @intrinsic(vec.get)(args/142, t993) in
                       join inline_cont1885(t994: Vec[Binding]) -> Value {
                         let t995 = Binding { name: name/145, value: value/146 } in
                         let updated/147 = inherent#Vec#Vec[T]#pushed__T_Binding(t994, t995) in
                         join inline_cont1883(mtmp543: unit) -> Value {
-                          join inline_cont1881(t996: int) -> Value {
+                          join inline_cont1881(t996: isize) -> Value {
                             let t997 = (t996 + 1) in
                             let inline1880 = @intrinsic(ref.set)(i/144, t997) in
                             jump loop988()
@@ -1702,8 +1702,8 @@ fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
                 }
               } in
               if t1002 {
-                join inline_cont1877(t1003: int) -> Value {
-                  join inline_cont1875(t1004: int) -> Value {
+                join inline_cont1877(t1003: isize) -> Value {
+                  join inline_cont1875(t1004: isize) -> Value {
                     let t1005 = (t1003 < t1004) in
                     jump k989(t1005)
                   } in
@@ -1758,7 +1758,7 @@ fn main() -> unit {
               match result2/153 {
                 Tag_0 => {
                   let inline1906 = Value::Int._0(result2/153) in
-                  let inline1908 = inherent#int32#int32#to_string(inline1906) in
+                  let inline1908 = inherent#i32#i32#to_string(inline1906) in
                   jump inline_cont1905(inline1908)
                 },
                 Tag_1 => {
@@ -1784,7 +1784,7 @@ fn main() -> unit {
         match result/151 {
           Tag_0 => {
             let inline1918 = Value::Int._0(result/151) in
-            let inline1920 = inherent#int32#int32#to_string(inline1918) in
+            let inline1920 = inherent#i32#i32#to_string(inline1918) in
             jump inline_cont1917(inline1920)
           },
           Tag_1 => {
@@ -1810,12 +1810,12 @@ fn main() -> unit {
   jump inline_cont1928(inline1929)
 }
 
-fn inherent#string#string#len(self/35: string) -> int {
+fn inherent#string#string#len(self/35: string) -> isize {
   let t1018 = @runtime(core.string_len)(self/35) in
   t1018
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   let t1021 = @intrinsic(ref.new)(value/431) in
   t1021
 }
@@ -1830,12 +1830,12 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/432: Ref[bool]) -> bool {
   t1027
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   let t1030 = @intrinsic(ref.get)(self/432) in
   t1030
 }
 
-fn inherent#string#string#get(self/37: string, index/38: int) -> char {
+fn inherent#string#string#get(self/37: string, index/38: isize) -> char {
   let inline1931 = string_decode_utf8_at(self/37, index/38) in
   let inline1932 = inline1931.0 in
   let inline1933 = inline1931.1 in
@@ -1852,22 +1852,22 @@ fn inherent#Ref#Ref[T]#set__T_bool(self/433: Ref[bool], value/434: bool) -> unit
   ()
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   let t1037 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   let t1040 = @intrinsic(ref.new)(value/431) in
   t1040
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   let t1043 = @intrinsic(ref.get)(self/432) in
   t1043
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   let t1045 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
@@ -1883,7 +1883,7 @@ fn inherent#Ref#Ref[T]#get__T_string(self/432: Ref[string]) -> string {
 }
 
 fn inherent#char#char#to_string(self/34: char) -> string {
-  let inline1938 = (self/34 as uint32) in
+  let inline1938 = (self/34 as u32) in
   let inline1939 = utf8_valid_scalar(inline1938) in
   if inline1939 {
     let inline1940 = @runtime(core.char_to_string)(self/34) in
@@ -1915,7 +1915,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/432: Ref[Vec[Token]]) -> Vec[Token
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Token(self/260: Vec[Token], elem/261: Token) -> Vec[Token] {
-  join inline_cont1950(t1068: int) -> Vec[Token] {
+  join inline_cont1950(t1068: isize) -> Vec[Token] {
     let t1069 = (t1068 + 1) in
     join inline_cont1948(result/262: Vec[Token]) -> Vec[Token] {
       let index/263 = 0 in
@@ -1925,7 +1925,7 @@ fn inherent#Vec#Vec[T]#pushed__T_Token(self/260: Vec[Token], elem/261: Token) ->
       } in
       joinrec {
         join loop1071() -> Vec[Token] {
-          join inline_cont1944(t1072: int) -> Vec[Token] {
+          join inline_cont1944(t1072: isize) -> Vec[Token] {
             let t1073 = (index/263 < t1072) in
             if t1073 {
               let t1074 = @intrinsic(vec.get)(self/260, index/263) in
@@ -1960,7 +1960,7 @@ fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/433: Ref[Vec[Token]], value/434: V
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_Binding(self/273: Vec[Binding]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Binding(self/273: Vec[Binding]) -> isize {
   let t1081 = @intrinsic(vec.len)(self/273) in
   t1081
 }
@@ -1990,7 +1990,7 @@ fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/431: Vec[SExpr]) -> Ref[Vec[SExpr
   t1095
 }
 
-fn inherent#Vec#Vec[T]#len__T_Token(self/273: Vec[Token]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Token(self/273: Vec[Token]) -> isize {
   let t1098 = @intrinsic(vec.len)(self/273) in
   t1098
 }
@@ -2001,7 +2001,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/432: Ref[Vec[SExpr]]) -> Vec[SExpr
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/260: Vec[SExpr], elem/261: SExpr) -> Vec[SExpr] {
-  join inline_cont1960(t1104: int) -> Vec[SExpr] {
+  join inline_cont1960(t1104: isize) -> Vec[SExpr] {
     let t1105 = (t1104 + 1) in
     join inline_cont1958(result/262: Vec[SExpr]) -> Vec[SExpr] {
       let index/263 = 0 in
@@ -2011,7 +2011,7 @@ fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/260: Vec[SExpr], elem/261: SExpr) ->
       } in
       joinrec {
         join loop1107() -> Vec[SExpr] {
-          join inline_cont1954(t1108: int) -> Vec[SExpr] {
+          join inline_cont1954(t1108: isize) -> Vec[SExpr] {
             let t1109 = (index/263 < t1108) in
             if t1109 {
               let t1110 = @intrinsic(vec.get)(self/260, index/263) in
@@ -2046,7 +2046,7 @@ fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/433: Ref[Vec[SExpr]], value/434: V
   ()
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t1117 = @runtime(core.int32_to_string)(self/33) in
   t1117
 }
@@ -2061,7 +2061,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/432: Ref[Vec[Binding]]) -> Vec[B
   t1123
 }
 
-fn inherent#Vec#Vec[T]#len__T_SExpr(self/273: Vec[SExpr]) -> int {
+fn inherent#Vec#Vec[T]#len__T_SExpr(self/273: Vec[SExpr]) -> isize {
   let t1126 = @intrinsic(vec.len)(self/273) in
   t1126
 }
@@ -2069,7 +2069,7 @@ fn inherent#Vec#Vec[T]#len__T_SExpr(self/273: Vec[SExpr]) -> int {
 fn inherent#Vec#Vec[T]#pushed__T_Binding(self/260: Vec[Binding], elem/261: Binding) -> Vec[
   Binding
 ] {
-  join inline_cont1970(t1129: int) -> Vec[Binding] {
+  join inline_cont1970(t1129: isize) -> Vec[Binding] {
     let t1130 = (t1129 + 1) in
     join inline_cont1968(result/262: Vec[Binding]) -> Vec[Binding] {
       let index/263 = 0 in
@@ -2079,7 +2079,7 @@ fn inherent#Vec#Vec[T]#pushed__T_Binding(self/260: Vec[Binding], elem/261: Bindi
       } in
       joinrec {
         join loop1132() -> Vec[Binding] {
-          join inline_cont1964(t1133: int) -> Vec[Binding] {
+          join inline_cont1964(t1133: isize) -> Vec[Binding] {
             let t1134 = (index/263 < t1133) in
             if t1134 {
               let t1135 = @intrinsic(vec.get)(self/260, index/263) in
@@ -2133,7 +2133,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[string](self/432: Ref[Vec[string]]) -> Vec[str
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_string(self/260: Vec[string], elem/261: string) -> Vec[string] {
-  join inline_cont1980(t1151: int) -> Vec[string] {
+  join inline_cont1980(t1151: isize) -> Vec[string] {
     let t1152 = (t1151 + 1) in
     join inline_cont1978(result/262: Vec[string]) -> Vec[string] {
       let index/263 = 0 in
@@ -2143,7 +2143,7 @@ fn inherent#Vec#Vec[T]#pushed__T_string(self/260: Vec[string], elem/261: string)
       } in
       joinrec {
         join loop1154() -> Vec[string] {
-          join inline_cont1974(t1155: int) -> Vec[string] {
+          join inline_cont1974(t1155: isize) -> Vec[string] {
             let t1156 = (index/263 < t1155) in
             if t1156 {
               let t1157 = @intrinsic(vec.get)(self/260, index/263) in
@@ -2197,7 +2197,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/432: Ref[Vec[Value]]) -> Vec[Value
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_Value(self/260: Vec[Value], elem/261: Value) -> Vec[Value] {
-  join inline_cont1990(t1173: int) -> Vec[Value] {
+  join inline_cont1990(t1173: isize) -> Vec[Value] {
     let t1174 = (t1173 + 1) in
     join inline_cont1988(result/262: Vec[Value]) -> Vec[Value] {
       let index/263 = 0 in
@@ -2207,7 +2207,7 @@ fn inherent#Vec#Vec[T]#pushed__T_Value(self/260: Vec[Value], elem/261: Value) ->
       } in
       joinrec {
         join loop1176() -> Vec[Value] {
-          join inline_cont1984(t1177: int) -> Vec[Value] {
+          join inline_cont1984(t1177: isize) -> Vec[Value] {
             let t1178 = (index/263 < t1177) in
             if t1178 {
               let t1179 = @intrinsic(vec.get)(self/260, index/263) in
@@ -2242,7 +2242,7 @@ fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/433: Ref[Vec[Value]], value/434: V
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_Value(self/273: Vec[Value]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Value(self/273: Vec[Value]) -> isize {
   let t1186 = @intrinsic(vec.len)(self/273) in
   t1186
 }
@@ -2252,7 +2252,7 @@ fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/431: Vec[Binding]) -> Ref[Vec[B
   t1189
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> int {
+fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> isize {
   let t1192 = @intrinsic(vec.len)(self/273) in
   t1192
 }
@@ -2270,7 +2270,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont1992(value/1)
 }
 
-fn string_get(value/17: string, index/18: int) -> char {
+fn string_get(value/17: string, index/18: isize) -> char {
   let mtmp6 = string_decode_utf8_at(value/17, index/18) in
   let x7 = mtmp6.0 in
   let x8 = mtmp6.1 in
@@ -2283,7 +2283,7 @@ fn string_get(value/17: string, index/18: int) -> char {
 }
 
 fn char_to_string(value/29: char) -> string {
-  let t1208 = (value/29 as uint32) in
+  let t1208 = (value/29 as u32) in
   join inline_cont1993(t1209: bool) -> string {
     if t1209 {
       let t1210 = @runtime(core.char_to_string)(value/29) in
@@ -2311,7 +2311,7 @@ fn char_to_string(value/29: char) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_Token(capacity/257: int) -> Vec[Token] {
+fn inherent#Vec#Vec[T]#with_capacity__T_Token(capacity/257: isize) -> Vec[Token] {
   let t1213 = @intrinsic(vec.with_capacity)(capacity/257) in
   t1213
 }
@@ -2321,7 +2321,7 @@ fn inherent#Vec#Vec[T]#push__T_Token(self/258: Vec[Token], elem/259: Token) -> u
   ()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_SExpr(capacity/257: int) -> Vec[SExpr] {
+fn inherent#Vec#Vec[T]#with_capacity__T_SExpr(capacity/257: isize) -> Vec[SExpr] {
   let t1218 = @intrinsic(vec.with_capacity)(capacity/257) in
   t1218
 }
@@ -2331,7 +2331,7 @@ fn inherent#Vec#Vec[T]#push__T_SExpr(self/258: Vec[SExpr], elem/259: SExpr) -> u
   ()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_Binding(capacity/257: int) -> Vec[Binding] {
+fn inherent#Vec#Vec[T]#with_capacity__T_Binding(capacity/257: isize) -> Vec[Binding] {
   let t1223 = @intrinsic(vec.with_capacity)(capacity/257) in
   t1223
 }
@@ -2341,7 +2341,7 @@ fn inherent#Vec#Vec[T]#push__T_Binding(self/258: Vec[Binding], elem/259: Binding
   ()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/257: int) -> Vec[string] {
+fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/257: isize) -> Vec[string] {
   let t1228 = @intrinsic(vec.with_capacity)(capacity/257) in
   t1228
 }
@@ -2351,7 +2351,7 @@ fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -
   ()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_Value(capacity/257: int) -> Vec[Value] {
+fn inherent#Vec#Vec[T]#with_capacity__T_Value(capacity/257: isize) -> Vec[Value] {
   let t1233 = @intrinsic(vec.with_capacity)(capacity/257) in
   t1233
 }
@@ -2365,13 +2365,13 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
   let length/7 = inherent#string#string#byte_len(value/5) in
   let t1356 = (index/6 < 0) in
-  join k1353(jp1354: bool) -> (bool, char, int) {
-    join k1240() -> (bool, char, int) {
+  join k1353(jp1354: bool) -> (bool, char, isize) {
+    join k1240() -> (bool, char, isize) {
       let t1241 = inherent#string#string#byte_get(value/5, index/6) in
-      let first/8 = (t1241 as uint32) in
+      let first/8 = (t1241 as u32) in
       let t1244 = (first/8 < 128) in
       if t1244 {
         let inline2003 = 1 in
@@ -2397,11 +2397,11 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
           if t1252 {
             let t1265 = (length/7 - index/6) in
             let t1266 = (t1265 < 2) in
-            join k1253() -> (bool, char, int) {
+            join k1253() -> (bool, char, isize) {
               let t1254 = (index/6 + 1) in
-              join inline_cont2025(t1255: uint8) -> (bool, char, int) {
-                let second/9 = (t1255 as uint32) in
-                join inline_cont2022(t1258: bool) -> (bool, char, int) {
+              join inline_cont2025(t1255: u8) -> (bool, char, isize) {
+                let second/9 = (t1255 as u32) in
+                join inline_cont2022(t1258: bool) -> (bool, char, isize) {
                   if t1258 {
                     let inline2014 = (false, '\0', 0) in
                     inline2014
@@ -2447,17 +2447,17 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
             if t1270 {
               let t1303 = (length/7 - index/6) in
               let t1304 = (t1303 < 3) in
-              join k1271() -> (bool, char, int) {
+              join k1271() -> (bool, char, isize) {
                 let t1272 = (index/6 + 1) in
                 let t1273 = inherent#string#string#byte_get(value/5, t1272) in
-                let second/10 = (t1273 as uint32) in
+                let second/10 = (t1273 as u32) in
                 let t1274 = (index/6 + 2) in
                 let t1275 = inherent#string#string#byte_get(value/5, t1274) in
-                let third/11 = (t1275 as uint32) in
+                let third/11 = (t1275 as u32) in
                 let t1301 = utf8_invalid_continuation(second/10) in
-                join k1295(jp1296: bool) -> (bool, char, int) {
-                  join k1289(jp1290: bool) -> (bool, char, int) {
-                    join k1278(jp1279: bool) -> (bool, char, int) {
+                join k1295(jp1296: bool) -> (bool, char, isize) {
+                  join k1289(jp1290: bool) -> (bool, char, isize) {
+                    join k1278(jp1279: bool) -> (bool, char, isize) {
                       if jp1279 {
                         let inline2033 = (false, '\0', 0) in
                         inline2033
@@ -2531,21 +2531,21 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
               if t1308 {
                 let t1349 = (length/7 - index/6) in
                 let t1350 = (t1349 < 4) in
-                join k1309() -> (bool, char, int) {
+                join k1309() -> (bool, char, isize) {
                   let t1310 = (index/6 + 1) in
                   let t1311 = inherent#string#string#byte_get(value/5, t1310) in
-                  let second/12 = (t1311 as uint32) in
+                  let second/12 = (t1311 as u32) in
                   let t1312 = (index/6 + 2) in
                   let t1313 = inherent#string#string#byte_get(value/5, t1312) in
-                  let third/13 = (t1313 as uint32) in
+                  let third/13 = (t1313 as u32) in
                   let t1314 = (index/6 + 3) in
                   let t1315 = inherent#string#string#byte_get(value/5, t1314) in
-                  let fourth/14 = (t1315 as uint32) in
+                  let fourth/14 = (t1315 as u32) in
                   let t1347 = utf8_invalid_continuation(second/12) in
-                  join k1344(jp1345: bool) -> (bool, char, int) {
-                    join k1338(jp1339: bool) -> (bool, char, int) {
-                      join k1332(jp1333: bool) -> (bool, char, int) {
-                        join k1318(jp1319: bool) -> (bool, char, int) {
+                  join k1344(jp1345: bool) -> (bool, char, isize) {
+                    join k1338(jp1339: bool) -> (bool, char, isize) {
+                      join k1332(jp1333: bool) -> (bool, char, isize) {
+                        join k1318(jp1319: bool) -> (bool, char, isize) {
                           if jp1319 {
                             let t1320 = utf8_invalid_decode() in
                             t1320
@@ -2632,7 +2632,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   let t1362 = (value/4 <= 1114111) in
   if t1362 {
     let t1366 = (value/4 >= 55296) in
@@ -2651,27 +2651,27 @@ fn utf8_valid_scalar(value/4: uint32) -> bool {
   }
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> int {
+fn inherent#string#string#byte_len(self/36: string) -> isize {
   let t1370 = @runtime(core.string_len)(self/36) in
   t1370
 }
 
-fn utf8_invalid_decode() -> (bool, char, int) {
+fn utf8_invalid_decode() -> (bool, char, isize) {
   let t1373 = (false, '\0', 0) in
   t1373
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   let t1376 = @runtime(core.string_byte_get)(self/39, index/40) in
   t1376
 }
 
-fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
-  join commute_arm2068() -> (bool, char, int) {
+fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
+  join commute_arm2068() -> (bool, char, isize) {
     let inline2042 = (false, '\0', 0) in
     inline2042
   } in
-  join commute_arm2070(commute_field2069: char) -> (bool, char, int) {
+  join commute_arm2070(commute_field2069: char) -> (bool, char, isize) {
     let t1382 = (true, commute_field2069, width/1) in
     t1382
   } in
@@ -2685,7 +2685,7 @@ fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_invalid_continuation(value/3: uint32) -> bool {
+fn utf8_invalid_continuation(value/3: u32) -> bool {
   let t1387 = (value/3 < 128) in
   if t1387 {
     true
@@ -2695,7 +2695,7 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
   join inline_cont2049(t1393: bool) -> Option__char {
     if t1393 {
       let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
@@ -2724,12 +2724,12 @@ fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
   }
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   let t1397 = (self/185 == other/186) in
   t1397
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   let t1400 = @runtime(core.int_hash)(self/211) in
   t1400
 }
@@ -2739,7 +2739,7 @@ fn trait_impl#PartialEq#bool#eq(self/179: bool, other/180: bool) -> bool {
   t1403
 }
 
-fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
+fn trait_impl#Hash#bool#hash(self/208: bool) -> u64 {
   if self/208 {
     1
   } else {
@@ -2747,12 +2747,12 @@ fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
   }
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   let t1410 = (self/191 == other/192) in
   t1410
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   let t1413 = @runtime(core.int32_hash)(self/214) in
   t1413
 }
@@ -2762,14 +2762,14 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   t1416
 }
 
-fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+fn trait_impl#Hash#string#hash(self/209: string) -> u64 {
   let t1419 = @runtime(core.string_hash)(self/209) in
   t1419
 }
 
 fn trait_impl#PartialEq#Vec[string]#eq(self/223: Vec[string], other/224: Vec[string]) -> bool {
-  join inline_cont2062(t1424: int) -> bool {
-    join inline_cont2060(t1425: int) -> bool {
+  join inline_cont2062(t1424: isize) -> bool {
+    join inline_cont2060(t1425: isize) -> bool {
       let t1426 = (t1424 != t1425) in
       if t1426 {
         false
@@ -2780,7 +2780,7 @@ fn trait_impl#PartialEq#Vec[string]#eq(self/223: Vec[string], other/224: Vec[str
         } in
         joinrec {
           join loop1428() -> bool {
-            join inline_cont2058(t1429: int) -> bool {
+            join inline_cont2058(t1429: isize) -> bool {
               let t1430 = (index/225 < t1429) in
               if t1430 {
                 let t1432 = @intrinsic(vec.get)(self/223, index/225) in
@@ -2816,20 +2816,20 @@ fn trait_impl#PartialEq#Vec[string]#eq(self/223: Vec[string], other/224: Vec[str
   jump inline_cont2062(inline2063)
 }
 
-fn trait_impl#Hash#Vec[string]#hash(self/226: Vec[string]) -> uint64 {
+fn trait_impl#Hash#Vec[string]#hash(self/226: Vec[string]) -> u64 {
   let value/227 = 14695981039346656037 in
   let index/228 = 0 in
-  join exit1439() -> uint64 {
+  join exit1439() -> u64 {
     value/227
   } in
   joinrec {
-    join loop1440() -> uint64 {
-      join inline_cont2066(t1441: int) -> uint64 {
+    join loop1440() -> u64 {
+      join inline_cont2066(t1441: isize) -> u64 {
         let t1442 = (index/228 < t1441) in
         if t1442 {
           let t1443 = (value/227 * 1099511628211) in
           let t1444 = @intrinsic(vec.get)(self/226, index/228) in
-          join inline_cont2064(t1445: uint64) -> uint64 {
+          join inline_cont2064(t1445: u64) -> u64 {
             let t1446 = (t1443 + t1445) in
             let _wild157 = value/227 = t1446 in
             let compound_old158 = index/228 in

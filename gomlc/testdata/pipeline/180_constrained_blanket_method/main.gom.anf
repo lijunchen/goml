@@ -1,27 +1,27 @@
-fn trait_impl#Mark#int32#mark(self/0: int32) -> unit {
+fn trait_impl#Mark#i32#mark(self/0: i32) -> unit {
   ()
 }
 
 fn main() -> unit {
   let first/3 = 1 in
-  join inline_cont435(t415: int32) -> unit {
+  join inline_cont435(t415: i32) -> unit {
     join inline_cont432(_wild411: unit) -> unit {
-      join inline_cont431(t416: int32) -> unit {
-        let inline429 = trait_impl#ToString#int32#to_string(t416) in
+      join inline_cont431(t416: i32) -> unit {
+        let inline429 = trait_impl#ToString#i32#to_string(t416) in
         let inline430 = @runtime(core.string_println)(inline429) in
         ()
       } in
       jump inline_cont431(42)
     } in
-    let inline433 = trait_impl#ToString#int32#to_string(t415) in
+    let inline433 = trait_impl#ToString#i32#to_string(t415) in
     let inline434 = @runtime(core.string_println)(inline433) in
     jump inline_cont432(())
   } in
-  let inline436 = trait_impl#Extra#int32#extra(first/3) in
+  let inline436 = trait_impl#Extra#i32#extra(first/3) in
   jump inline_cont435(inline436)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont437(t418: string) -> unit {
     let t419 = @runtime(core.string_println)(t418) in
     ()
@@ -30,15 +30,15 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont437(inline438)
 }
 
-fn apply__T_int32(value/2: int32) -> int32 {
+fn apply__T_i32(value/2: i32) -> i32 {
   42
 }
 
-fn trait_impl#Extra#int32#extra(self/1: int32) -> int32 {
+fn trait_impl#Extra#i32#extra(self/1: i32) -> i32 {
   42
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t427 = @runtime(core.int32_to_string)(self/154) in
   t427
 }

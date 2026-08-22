@@ -1,9 +1,9 @@
-fn trait_impl#Show#Boxed__int32#show(self/0: Boxed__int32) -> string {
+fn trait_impl#Show#Boxed__i32#show(self/0: Boxed__i32) -> string {
   match self/0 {
-    Boxed__int32::One(x411) => {
-      let x411 = Boxed__int32::One._0(self/0) in
+    Boxed__i32::One(x411) => {
+      let x411 = Boxed__i32::One._0(self/0) in
       let value/1 = x411 in
-      inherent#int32#int32#to_string(value/1)
+      inherent#i32#i32#to_string(value/1)
     },
   }
 }
@@ -14,10 +14,10 @@ fn render(value/3: dyn Show) -> string {
 
 fn main() -> unit {
   let value/4 = 42 in
-  println__T_string(render(to_dyn[Show]{Boxed__int32}(make_boxed__T_int32(value/4))))
+  println__T_string(render(to_dyn[Show]{Boxed__i32}(make_boxed__T_i32(value/4))))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -25,8 +25,8 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn make_boxed__T_int32(value/2: int32) -> Boxed__int32 {
-  Boxed__int32::One(value/2)
+fn make_boxed__T_i32(value/2: i32) -> Boxed__i32 {
+  Boxed__i32::One(value/2)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

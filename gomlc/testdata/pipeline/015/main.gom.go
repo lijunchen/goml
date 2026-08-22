@@ -104,7 +104,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline534)
     println__T_string("Length: ")
     var inline529 int32 = int_list_length(x__11)
-    var inline530 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline529)
+    var inline530 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline529)
     println__T_string(inline530)
     var x__12 IntList = Cons{
         _0: 1,
@@ -116,7 +116,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline525)
     println__T_string("Length: ")
     var inline520 int32 = int_list_length(x__12)
-    var inline521 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline520)
+    var inline521 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline520)
     println__T_string(inline521)
     var t459 IntList = Cons{
         _0: 3,
@@ -136,7 +136,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline516)
     println__T_string("Length: ")
     var inline511 int32 = int_list_length(x__13)
-    var inline512 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline511)
+    var inline512 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline511)
     println__T_string(inline512)
     var y__14 IntList
     var inline508 IntList = int_list_rev_aux(x__13, Nil{})
@@ -155,7 +155,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t466 string = _goml_runtime_core_int32_to_string(self__33)
     return t466
 }

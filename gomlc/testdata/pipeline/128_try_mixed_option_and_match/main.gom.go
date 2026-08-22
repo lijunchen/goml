@@ -15,7 +15,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Option__int32 struct {
+type Option__i32 struct {
     _tag int32
     _v1_0 int32
 }
@@ -26,15 +26,15 @@ type Option__string struct {
 }
 
 func mixed(primary__2 bool, secondary__3 bool) Option__string {
-    var mtmp411 Option__int32
+    var mtmp411 Option__i32
     if primary__2 {
-        var inline469 Option__int32 = Option__int32{
+        var inline469 Option__i32 = Option__i32{
             _tag: 1,
             _v1_0: 4,
         }
         mtmp411 = inline469
     } else {
-        mtmp411 = Option__int32{
+        mtmp411 = Option__i32{
             _tag: 0,
         }
     }
@@ -47,15 +47,15 @@ func mixed(primary__2 bool, secondary__3 bool) Option__string {
     case 1:
         var x412 int32 = mtmp411._v1_0
         jp432 = x412
-        var mtmp413 Option__int32
+        var mtmp413 Option__i32
         if secondary__3 {
-            var inline467 Option__int32 = Option__int32{
+            var inline467 Option__i32 = Option__i32{
                 _tag: 1,
                 _v1_0: 9,
             }
             mtmp413 = inline467
         } else {
-            mtmp413 = Option__int32{
+            mtmp413 = Option__i32{
                 _tag: 0,
             }
         }

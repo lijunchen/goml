@@ -1,38 +1,38 @@
-fn classify(value/0: First__int) -> string {
+fn classify(value/0: First__isize) -> string {
   match value/0 {
-    First__int::Shared(x411) => {
-      let x411 = First__int::Shared._0(value/0) in
+    First__isize::Shared(x411) => {
+      let x411 = First__isize::Shared._0(value/0) in
       let number/1 = x411 in
-      ("shared:" + inherent#int#int#to_string(number/1))
+      ("shared:" + inherent#isize#isize#to_string(number/1))
     },
-    First__int::Idle => {
+    First__isize::Idle => {
       "idle"
     },
-    First__int::Data(x412, x413) => {
-      let x412 = First__int::Data._0(value/0) in
-      let x413 = First__int::Data._1(value/0) in
+    First__isize::Data(x412, x413) => {
+      let x412 = First__isize::Data._0(value/0) in
+      let x413 = First__isize::Data._1(value/0) in
       let label/3 = x413 in
       let value/2 = x412 in
-      ((label/3 + ":") + inherent#int#int#to_string(value/2))
+      ((label/3 + ":") + inherent#isize#isize#to_string(value/2))
     },
   }
 }
 
-fn nested(value/4: Option__Result__int__string) -> string {
+fn nested(value/4: Option__Result__isize__string) -> string {
   match value/4 {
-    Option__Result__int__string::None => {
+    Option__Result__isize__string::None => {
       "none"
     },
-    Option__Result__int__string::Some(x414) => {
-      let x414 = Option__Result__int__string::Some._0(value/4) in
+    Option__Result__isize__string::Some(x414) => {
+      let x414 = Option__Result__isize__string::Some._0(value/4) in
       match x414 {
-        Result__int__string::Ok(x415) => {
-          let x415 = Result__int__string::Ok._0(x414) in
+        Result__isize__string::Ok(x415) => {
+          let x415 = Result__isize__string::Ok._0(x414) in
           let number/5 = x415 in
-          ("ok:" + inherent#int#int#to_string(number/5))
+          ("ok:" + inherent#isize#isize#to_string(number/5))
         },
-        Result__int__string::Err(x416) => {
-          let x416 = Result__int__string::Err._0(x414) in
+        Result__isize__string::Err(x416) => {
+          let x416 = Result__isize__string::Err._0(x414) in
           let message/6 = x416 in
           ("err:" + message/6)
         },
@@ -41,10 +41,10 @@ fn nested(value/4: Option__Result__int__string) -> string {
   }
 }
 
-fn optional_number(value/7: Option__int) -> int {
+fn optional_number(value/7: Option__isize) -> isize {
   match value/7 {
-    Option__int::Some(x417) => {
-      let x417 = Option__int::Some._0(value/7) in
+    Option__isize::Some(x417) => {
+      let x417 = Option__isize::Some._0(value/7) in
       let number/8 = x417 in
       number/8
     },
@@ -52,53 +52,54 @@ fn optional_number(value/7: Option__int) -> int {
   }
 }
 
-fn is_non_shared(value/9: First__int) -> bool {
+fn is_non_shared(value/9: First__isize) -> bool {
   match value/9 {
-    First__int::Shared(x418) => {
+    First__isize::Shared(x418) => {
       false
     },
-    First__int::Idle => {
+    First__isize::Idle => {
       true
     },
-    First__int::Data(x419, x420) => {
+    First__isize::Data(x419, x420) => {
       true
     },
   }
 }
 
-fn take_once(value/10: Option__int) -> int {
-  let current/11 = inherent#Ref#Ref[T]#new__T_Option[int](value/10) in
-  let result/12 = inherent#Ref#Ref[T]#new__T_int(0) in
+fn take_once(value/10: Option__isize) -> isize {
+  let current/11 = inherent#Ref#Ref[T]#new__T_Option[isize](value/10) in
+  let result/12 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let _wild425 =
     while true {
-        let mtmp421 = inherent#Ref#Ref[T]#get__T_Option[int](current/11) in
+        let mtmp421 = inherent#Ref#Ref[T]#get__T_Option[isize](current/11) in
         match mtmp421 {
-          Option__int::Some(x422) => {
-            let x422 = Option__int::Some._0(mtmp421) in
+          Option__isize::Some(x422) => {
+            let x422 = Option__isize::Some._0(mtmp421) in
             let number/13 = x422 in
-            let _wild423 = inherent#Ref#Ref[T]#set__T_int(result/12, number/13) in
-            let _wild424 = inherent#Ref#Ref[T]#set__T_Option[int](current/11, Option__int::None) in
+            let _wild423 = inherent#Ref#Ref[T]#set__T_isize(result/12, number/13) in
+            let _wild424 =
+              inherent#Ref#Ref[T]#set__T_Option[isize](current/11, Option__isize::None) in
             ()
           },
           _ => break,
         }
     } in
-  inherent#Ref#Ref[T]#get__T_int(result/12)
+  inherent#Ref#Ref[T]#get__T_isize(result/12)
 }
 
-fn unbox(value/14: Boxed__int) -> int {
+fn unbox(value/14: Boxed__isize) -> isize {
   let mtmp426 = value/14 in
   match mtmp426 {
-    Boxed__int::Value(x427) => {
-      let x427 = Boxed__int::Value._0(mtmp426) in
+    Boxed__isize::Value(x427) => {
+      let x427 = Boxed__isize::Value._0(mtmp426) in
       let number/15 = x427 in
       number/15
     },
   }
 }
 
-fn sum_boxed(values/16: Vec[Boxed__int]) -> int {
-  let result/17 = inherent#Ref#Ref[T]#new__T_int(0) in
+fn sum_boxed(values/16: Vec[Boxed__isize]) -> isize {
+  let result/17 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let _wild435 =
     let for_source428 = values/16 in
     let for_limit429 = @intrinsic(vec.len)(for_source428) in
@@ -107,68 +108,70 @@ fn sum_boxed(values/16: Vec[Boxed__int]) -> int {
         let for_item431 = @intrinsic(vec.get)(for_source428, for_index430) in
         let _wild432 = for_index430 = (for_index430 + 1) in
         match for_item431 {
-          Boxed__int::Value(x433) => {
-            let x433 = Boxed__int::Value._0(for_item431) in
+          Boxed__isize::Value(x433) => {
+            let x433 = Boxed__isize::Value._0(for_item431) in
             let number/18 = x433 in
             let _wild434 =
-              inherent#Ref#Ref[T]#set__T_int(
+              inherent#Ref#Ref[T]#set__T_isize(
                 result/17,
-                (inherent#Ref#Ref[T]#get__T_int(result/17) + number/18)
+                (inherent#Ref#Ref[T]#get__T_isize(result/17) + number/18)
               ) in
             ()
           },
         }
     } in
-  inherent#Ref#Ref[T]#get__T_int(result/17)
+  inherent#Ref#Ref[T]#get__T_isize(result/17)
 }
 
 fn main() -> unit {
-  let boxed/19 = @intrinsic(vec.from_array)([Boxed__int::Value(19), Boxed__int::Value(23)]) in
-  let _wild436 = println__T_string(classify(First__int::Shared(7))) in
-  let _wild437 = println__T_string(classify(First__int::Idle)) in
-  let _wild438 = println__T_string(classify(First__int::Data(9, "data"))) in
+  let boxed/19 = @intrinsic(vec.from_array)([Boxed__isize::Value(19), Boxed__isize::Value(23)]) in
+  let _wild436 = println__T_string(classify(First__isize::Shared(7))) in
+  let _wild437 = println__T_string(classify(First__isize::Idle)) in
+  let _wild438 = println__T_string(classify(First__isize::Data(9, "data"))) in
   let _wild439 =
-    println__T_string(nested(Option__Result__int__string::Some(Result__int__string::Ok(11)))) in
+    println__T_string(nested(Option__Result__isize__string::Some(Result__isize__string::Ok(11)))) in
   let _wild440 =
-    println__T_string(nested(Option__Result__int__string::Some(Result__int__string::Err("bad")))) in
-  let _wild441 = println__T_string(nested(Option__Result__int__string::None)) in
-  let _wild442 = println__T_int(optional_number(Option__int::Some(13))) in
-  let _wild443 = println__T_int(optional_number(Option__int::None)) in
-  let _wild444 = println__T_bool(is_non_shared(First__int::Idle)) in
-  let _wild445 = println__T_bool(is_non_shared(First__int::Shared(1))) in
-  let _wild446 = println__T_int(take_once(Option__int::Some(15))) in
-  let _wild447 = println__T_int(unbox(Boxed__int::Value(17))) in
-  println__T_int(sum_boxed(boxed/19))
+    println__T_string(
+      nested(Option__Result__isize__string::Some(Result__isize__string::Err("bad")))
+    ) in
+  let _wild441 = println__T_string(nested(Option__Result__isize__string::None)) in
+  let _wild442 = println__T_isize(optional_number(Option__isize::Some(13))) in
+  let _wild443 = println__T_isize(optional_number(Option__isize::None)) in
+  let _wild444 = println__T_bool(is_non_shared(First__isize::Idle)) in
+  let _wild445 = println__T_bool(is_non_shared(First__isize::Shared(1))) in
+  let _wild446 = println__T_isize(take_once(Option__isize::Some(15))) in
+  let _wild447 = println__T_isize(unbox(Boxed__isize::Value(17))) in
+  println__T_isize(sum_boxed(boxed/19))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/431: Option__int) -> Ref[Option__int] {
+fn inherent#Ref#Ref[T]#new__T_Option[isize](value/431: Option__isize) -> Ref[Option__isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/432: Ref[Option__int]) -> Option__int {
+fn inherent#Ref#Ref[T]#get__T_Option[isize](self/432: Ref[Option__isize]) -> Option__isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/433: Ref[Option__int],
-  value/434: Option__int
+fn inherent#Ref#Ref[T]#set__T_Option[isize](
+  self/433: Ref[Option__isize],
+  value/434: Option__isize
 ) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/432)
 }
 
@@ -176,8 +179,8 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
 fn println__T_bool(value/1: bool) -> unit {
@@ -188,7 +191,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
@@ -196,27 +199,30 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option__int) -> bool {
+fn trait_impl#PartialEq#Option__isize#eq(
+  self/235: Option__isize,
+  other/236: Option__isize
+) -> bool {
   let mtmp171 = (self/235, other/236) in
   let x172 = mtmp171.0 in
   let x173 = mtmp171.1 in
   match x173 {
-    Option__int::None => {
+    Option__isize::None => {
       match x172 {
-        Option__int::None => {
+        Option__isize::None => {
           true
         },
         _ => false,
       }
     },
-    Option__int::Some(x174) => {
-      let x174 = Option__int::Some._0(x173) in
+    Option__isize::Some(x174) => {
+      let x174 = Option__isize::Some._0(x173) in
       match x172 {
-        Option__int::Some(x176) => {
-          let x176 = Option__int::Some._0(x172) in
+        Option__isize::Some(x176) => {
+          let x176 = Option__isize::Some._0(x172) in
           let left/237 = x176 in
           let right/238 = x174 in
-          trait_impl#PartialEq#int#eq(left/237, right/238)
+          trait_impl#PartialEq#isize#eq(left/237, right/238)
         },
         _ => false,
       }
@@ -224,23 +230,23 @@ fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option_
   }
 }
 
-fn trait_impl#Hash#Option__int#hash(self/239: Option__int) -> uint64 {
+fn trait_impl#Hash#Option__isize#hash(self/239: Option__isize) -> u64 {
   match self/239 {
-    Option__int::None => {
+    Option__isize::None => {
       14695981039346656038
     },
-    Option__int::Some(x177) => {
-      let x177 = Option__int::Some._0(self/239) in
+    Option__isize::Some(x177) => {
+      let x177 = Option__isize::Some._0(self/239) in
       let value/240 = x177 in
-      (14695981039346656039 + trait_impl#Hash#int#hash(value/240))
+      (14695981039346656039 + trait_impl#Hash#isize#hash(value/240))
     },
   }
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

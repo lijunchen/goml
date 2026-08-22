@@ -20,7 +20,7 @@ fn main() -> unit {
                 ()
               } in
               let inline463 = 5 in
-              let inline464 = trait_impl#ToString#int#to_string(inline463) in
+              let inline464 = trait_impl#ToString#isize#to_string(inline463) in
               let inline465 = ("value:" + inline464) in
               jump inline_cont462(inline465)
             } in
@@ -52,16 +52,16 @@ fn main() -> unit {
   jump inline_cont483(inline486)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   let t432 = @runtime(core.int_to_string)(self/32) in
   t432
 }
 
-fn inherent#Box#Box[T]#map__T_int__U_string(
-  self/0: Box__int,
-  map_fn/1: (int) -> string
+fn inherent#Box#Box[T]#map__T_isize__U_string(
+  self/0: Box__isize,
+  map_fn/1: (isize) -> string
 ) -> Box__string {
-  let t435 = Box__int.value(self/0) in
+  let t435 = Box__isize.value(self/0) in
   let t436 = map_fn/1(t435) in
   let t437 = Box__string { value: t436 } in
   t437
@@ -75,7 +75,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont487(value/1)
 }
 
-fn inherent#Box#Box[T]#render__T_string__U_int(self/2: Box__string, value/3: int) -> string {
+fn inherent#Box#Box[T]#render__T_string__U_isize(self/2: Box__string, value/3: isize) -> string {
   join inline_cont488(t443: string) -> string {
     let t444 = ("value:" + t443) in
     t444
@@ -88,14 +88,14 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t449 = @runtime(core.int_to_string)(self/151) in
   t449
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
   env416: closure_env_main_0,
-  value/5: int
+  value/5: isize
 ) -> string {
   let inline491 = @runtime(core.int_to_string)(value/5) in
   inline491
@@ -103,7 +103,7 @@ fn inherent#closure_env_main_0#closure_env_main_0#apply(
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
   env417: closure_env_main_1,
-  value/8: int
+  value/8: isize
 ) -> string {
   let inline493 = @runtime(core.int_to_string)(value/8) in
   inline493
@@ -111,7 +111,7 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
   env418: closure_env_main_2,
-  value/11: int
+  value/11: isize
 ) -> string {
   let inline495 = @runtime(core.int_to_string)(value/11) in
   inline495

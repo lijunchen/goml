@@ -22,7 +22,7 @@ type Ordering int32
 func main0() struct{} {
     var t419 string
     var inline434 int32 = 7
-    var inline435 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline434)
+    var inline435 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline434)
     var inline436 string = "S(" + inline435
     var inline437 string = inline436 + ")"
     t419 = inline437
@@ -31,7 +31,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t422 string = _goml_runtime_core_int32_to_string(self__33)
     return t422
 }

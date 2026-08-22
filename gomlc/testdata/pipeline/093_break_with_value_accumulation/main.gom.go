@@ -87,7 +87,7 @@ func main0() struct{} {
     var t421 int
     var inline486 int = ref_get__Ref_3int(sum__0)
     t421 = inline486
-    var inline483 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t421)
+    var inline483 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t421)
     _goml_runtime_core_string_println(inline483)
     var inline479 string = "i at break: "
     var inline480 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline479)
@@ -95,7 +95,7 @@ func main0() struct{} {
     var t422 int
     var inline477 int = ref_get__Ref_3int(i__1)
     t422 = inline477
-    var inline474 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t422)
+    var inline474 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t422)
     _goml_runtime_core_string_println(inline474)
     return struct{}{}
 }
@@ -104,7 +104,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t452 string = _goml_runtime_core_int_to_string(self__151)
     return t452
 }

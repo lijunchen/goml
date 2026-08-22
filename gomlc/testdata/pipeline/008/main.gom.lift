@@ -2,7 +2,7 @@ fn main() -> unit {
   let t/0 = T::B(true, ()) in
   match t/0 {
     T::A => {
-      println__T_string(inherent#int#int#to_string(1))
+      println__T_string(inherent#isize#isize#to_string(1))
     },
     T::B(x411, x412) => {
       let x411 = T::B._0(t/0) in
@@ -11,10 +11,10 @@ fn main() -> unit {
         () => {
           match x411 {
             true => {
-              println__T_string(inherent#int#int#to_string(2))
+              println__T_string(inherent#isize#isize#to_string(2))
             },
             false => {
-              println__T_string(inherent#int#int#to_string(3))
+              println__T_string(inherent#isize#isize#to_string(3))
             },
           }
         },
@@ -27,7 +27,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 

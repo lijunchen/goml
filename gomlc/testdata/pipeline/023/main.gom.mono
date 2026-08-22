@@ -1,4 +1,4 @@
-fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
+fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
   {
     let x411 = pair/0.0 in
     let x412 = pair/0.1 in
@@ -33,7 +33,7 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
   }
 }
 
-fn match_mixed_enum(value/1: Mixed) -> int32 {
+fn match_mixed_enum(value/1: Mixed) -> i32 {
   match value/1 {
     Mixed::OnlyInt(x413) => {
       {
@@ -84,59 +84,53 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
 }
 
 fn main() -> unit {
-  let mtmp417 = println__T_string(inherent#int32#int32#to_string(match_mixed_pair((0, "zero")))) in
+  let mtmp417 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((0, "zero")))) in
   {
-    let mtmp418 =
-      println__T_string(inherent#int32#int32#to_string(match_mixed_pair((0, "other")))) in
+    let mtmp418 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((0, "other")))) in
     {
-      let mtmp419 =
-        println__T_string(inherent#int32#int32#to_string(match_mixed_pair((1, "one")))) in
+      let mtmp419 = println__T_string(inherent#i32#i32#to_string(match_mixed_pair((1, "one")))) in
       {
         let mtmp420 =
-          println__T_string(inherent#int32#int32#to_string(match_mixed_pair((2, "zero")))) in
+          println__T_string(inherent#i32#i32#to_string(match_mixed_pair((2, "zero")))) in
         {
           let mtmp421 =
-            println__T_string(inherent#int32#int32#to_string(match_mixed_pair((2, "two")))) in
+            println__T_string(inherent#i32#i32#to_string(match_mixed_pair((2, "two")))) in
           {
             let mtmp422 =
-              println__T_string(
-                inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyInt(0)))
-              ) in
+              println__T_string(inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyInt(0)))) in
             {
               let mtmp423 =
                 println__T_string(
-                  inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyInt(5)))
+                  inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyInt(5)))
                 ) in
               {
                 let mtmp424 =
                   println__T_string(
-                    inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyStr("zero")))
+                    inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyStr("zero")))
                   ) in
                 {
                   let mtmp425 =
                     println__T_string(
-                      inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyStr("hello")))
+                      inherent#i32#i32#to_string(match_mixed_enum(Mixed::OnlyStr("hello")))
                     ) in
                   {
                     let mtmp426 =
                       println__T_string(
-                        inherent#int32#int32#to_string(match_mixed_enum(Mixed::Both(0, "zero")))
+                        inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(0, "zero")))
                       ) in
                     {
                       let mtmp427 =
                         println__T_string(
-                          inherent#int32#int32#to_string(match_mixed_enum(Mixed::Both(0, "hello")))
+                          inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(0, "hello")))
                         ) in
                       {
                         let mtmp428 =
                           println__T_string(
-                            inherent#int32#int32#to_string(match_mixed_enum(Mixed::Both(2, "zero")))
+                            inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(2, "zero")))
                           ) in
                         {
                           println__T_string(
-                            inherent#int32#int32#to_string(
-                              match_mixed_enum(Mixed::Both(3, "three"))
-                            )
+                            inherent#i32#i32#to_string(match_mixed_enum(Mixed::Both(3, "three")))
                           )
                         }
                       }
@@ -156,7 +150,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

@@ -1,10 +1,10 @@
 package main;
 struct PairData {
-    head: int32,
-    tail: int64,
+    head: i32,
+    tail: i64,
 }
 
-fn is_special8(value: int8) -> bool {
+fn is_special8(value: i8) -> bool {
     match value {
         5 => true,
         7 => true,
@@ -12,7 +12,7 @@ fn is_special8(value: int8) -> bool {
     }
 }
 
-fn is_special16(value: int16) -> bool {
+fn is_special16(value: i16) -> bool {
     match value {
         1024 => true,
         2048 => true,
@@ -20,7 +20,7 @@ fn is_special16(value: int16) -> bool {
     }
 }
 
-fn is_special32(value: int32) -> bool {
+fn is_special32(value: i32) -> bool {
     match value {
         4096 => true,
         8192 => true,
@@ -28,7 +28,7 @@ fn is_special32(value: int32) -> bool {
     }
 }
 
-fn is_special64(value: int64) -> bool {
+fn is_special64(value: i64) -> bool {
     match value {
         16384 => true,
         32768 => true,
@@ -36,7 +36,7 @@ fn is_special64(value: int64) -> bool {
     }
 }
 
-fn match_tuple(values: (int8, int16)) -> bool {
+fn match_tuple(values: (i8, i16)) -> bool {
     match values {
         (1, 2) => true,
         _ => false,
@@ -56,8 +56,8 @@ fn report(label: string, value: bool) -> string {
 }
 
 fn main() {
-    let tuple_first: int8 = 1;
-    let tuple_second: int16 = 2;
+    let tuple_first: i8 = 1;
+    let tuple_second: i16 = 2;
     let tuple_result_hit = match_tuple((tuple_first, tuple_second));
     let tuple_result_miss = match_tuple((3, 4));
     let pair_first = match_struct(PairData { head: 100, tail: 200 });

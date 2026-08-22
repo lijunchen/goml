@@ -34,12 +34,12 @@ func fib(x__0 int32) int32 {
 
 func main0() struct{} {
     var t423 int32 = fib(10)
-    var inline431 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t423)
+    var inline431 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t423)
     _goml_runtime_core_string_print(inline431)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t429 string = _goml_runtime_core_int32_to_string(self__154)
     return t429
 }

@@ -1,23 +1,23 @@
 impl PartialEq for LegacyKey {
   fn eq(self/0: LegacyKey, other/1: LegacyKey) -> bool {
       true &&
-        (PartialEq::eq : (int, int) -> bool)(
+        (PartialEq::eq : (isize, isize) -> bool)(
           (self/0 : LegacyKey).value,
           (other/1 : LegacyKey).value
         )
   }
 }
 
-impl Eq for LegacyKey where int: Eq, int: PartialEq {}
+impl Eq for LegacyKey where isize: Eq, isize: PartialEq {}
 
 impl Hash for LegacyKey {
-  fn hash(self/2: LegacyKey) -> uint64 {
+  fn hash(self/2: LegacyKey) -> u64 {
       {
-          let h/3: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037;
-          let h/4: uint64 =
-            (h/3 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-              (Hash::hash : (int) -> uint64)((self/2 : LegacyKey).value);
-          (h/4 : uint64)
+          let h/3: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037;
+          let h/4: u64 =
+            (h/3 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+              (Hash::hash : (isize) -> u64)((self/2 : LegacyKey).value);
+          (h/4 : u64)
       }
   }
 }
@@ -31,8 +31,8 @@ impl PartialEq for ModernKey {
 impl Eq for ModernKey {}
 
 impl Hash for ModernKey {
-  fn hash(self/7: ModernKey) -> uint64 {
-      (int::to_uint64 : (int) -> uint64)((self/7 : ModernKey).value % 10)
+  fn hash(self/7: ModernKey) -> u64 {
+      (isize::to_uint64 : (isize) -> u64)((self/7 : ModernKey).value % 10)
   }
 }
 

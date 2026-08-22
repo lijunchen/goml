@@ -1,7 +1,7 @@
 package main;
 enum IntList {
     Nil,
-    Cons(int32, IntList)
+    Cons(i32, IntList)
 }
 
 fn print_int_list(xs: IntList) {
@@ -30,7 +30,7 @@ fn int_list_rev(xs: IntList) -> IntList {
     int_list_rev_aux(xs, Nil)
 }
 
-fn int_list_length(xs: IntList) -> int32 {
+fn int_list_length(xs: IntList) -> i32 {
     match xs {
         Nil => 0,
         Cons(_, xs) => 1 + int_list_length(xs),

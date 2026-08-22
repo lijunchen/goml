@@ -2,13 +2,13 @@ package main;
 enum Message[T] {
     Quit,
     Write(T),
-    Move { x: int32, y: int32, label: T }
+    Move { x: i32, y: i32, label: T }
 }
 
 #[derive(ToString, Hash, PartialEq, Eq)]
 enum Key {
     Empty,
-    Point { x: int32, y: int32 }
+    Point { x: i32, y: i32 }
 }
 
 impl ToString for Key {
@@ -24,18 +24,18 @@ impl ToString for Key {
 }
 
 impl Hash for Key {
-  fn hash(self: Key) -> uint64 {
+  fn hash(self: Key) -> u64 {
       match self {
           Key::Empty =>
             {
-                let h = 0.to_uint64() + 14695981039346656037 + 1;
+                let h = 0.to_u64() + 14695981039346656037 + 1;
                 h
             },
           Key::Point { x: #derive0_field, y: #derive1_field } =>
             {
-                let h = 0.to_uint64() + 14695981039346656037 + 2;
-                let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(#derive0_field);
-                let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(#derive1_field);
+                let h = 0.to_u64() + 14695981039346656037 + 2;
+                let h = h * 0.to_u64() + 1099511628211 + Hash::hash(#derive0_field);
+                let h = h * 0.to_u64() + 1099511628211 + Hash::hash(#derive1_field);
                 h
             },
       }
@@ -57,9 +57,9 @@ impl PartialEq for Key {
   }
 }
 
-impl Eq for Key where int32: Eq {}
+impl Eq for Key where i32: Eq {}
 
-fn score(value: Message[string]) -> int32 {
+fn score(value: Message[string]) -> i32 {
     match value {
         Message::Quit => 0,
         Message::Write(_) => 1,

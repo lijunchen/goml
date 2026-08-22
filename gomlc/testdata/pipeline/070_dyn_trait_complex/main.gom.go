@@ -334,7 +334,7 @@ func main0() struct{} {
     var f2__36 Flag = Flag{
         value: false,
     }
-    var t521 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(10)
+    var t521 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__i32(10)
     var c__37 Counter = Counter{
         cell: t521,
     }
@@ -404,7 +404,7 @@ func main0() struct{} {
             var inline611 string = dc__42.vtable.show_with(dc__42.data, "[", "]")
             var inline612 string = inline611 + ":"
             var inline613 int32 = dc__42.vtable.bump(dc__42.data, jp526)
-            var inline614 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline613)
+            var inline614 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline613)
             var inline615 string = inline612 + inline614
             line__52 = inline615
             var inline607 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(line__52)
@@ -434,12 +434,12 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t539 string = _goml_runtime_core_int32_to_string(self__33)
     return t539
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__431 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__i32(value__431 int32) *ref_int32_x {
     var t547 *ref_int32_x = ref__Ref_5int32(value__431)
     return t547
 }

@@ -13,7 +13,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Point__int32__string struct {
+type Point__i32__string struct {
     x int32
     y string
 }
@@ -23,7 +23,7 @@ type Point__string__string struct {
     y string
 }
 
-type Point__string__int32 struct {
+type Point__string__i32 struct {
     x string
     y int32
 }
@@ -31,10 +31,10 @@ type Point__string__int32 struct {
 type Ordering int32
 
 func main0() struct{} {
-    var p1__4 Point__int32__string
+    var p1__4 Point__i32__string
     var inline456 int32 = 10
     var inline457 string = "hello"
-    var inline458 Point__int32__string = Point__int32__string{
+    var inline458 Point__i32__string = Point__i32__string{
         x: inline456,
         y: inline457,
     }
@@ -47,10 +47,10 @@ func main0() struct{} {
         y: inline453,
     }
     p2__5 = inline454
-    var p3__6 Point__string__int32
+    var p3__6 Point__string__i32
     var inline448 string = p1__4.y
     var inline449 int32 = p1__4.x
-    var inline450 Point__string__int32 = Point__string__int32{
+    var inline450 Point__string__i32 = Point__string__i32{
         x: inline448,
         y: inline449,
     }

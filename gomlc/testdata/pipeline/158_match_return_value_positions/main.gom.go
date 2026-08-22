@@ -37,7 +37,7 @@ func add_after_match(flag__0 bool) int32 {
 
 func main0() struct{} {
     var t433 int32 = add_after_match(false)
-    var inline502 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t433)
+    var inline502 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t433)
     _goml_runtime_core_string_println(inline502)
     var t434 int32
     var inline496 bool = true
@@ -45,7 +45,7 @@ func main0() struct{} {
     switch inline496 {
     case true:
         t434 = 5
-        var inline493 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t434)
+        var inline493 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t434)
         _goml_runtime_core_string_println(inline493)
         var t435 string
         var inline488 bool = false
@@ -71,7 +71,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -81,12 +81,12 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             case false:
                 inline482 = 7
-                var inline483 string = _goml_m_inherent_i_int_i_int_i_to__string(inline482)
+                var inline483 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline482)
                 t436 = inline483
                 var inline477 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t436)
                 _goml_runtime_core_string_println(inline477)
@@ -98,7 +98,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -108,7 +108,7 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             default:
@@ -116,7 +116,7 @@ func main0() struct{} {
             }
         case false:
             inline490 = 7
-            var inline491 string = _goml_m_inherent_i_int_i_int_i_to__string(inline490)
+            var inline491 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline490)
             t435 = inline491
             var inline485 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t435)
             _goml_runtime_core_string_println(inline485)
@@ -136,7 +136,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -146,12 +146,12 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             case false:
                 inline482 = 7
-                var inline483 string = _goml_m_inherent_i_int_i_int_i_to__string(inline482)
+                var inline483 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline482)
                 t436 = inline483
                 var inline477 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t436)
                 _goml_runtime_core_string_println(inline477)
@@ -163,7 +163,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -173,7 +173,7 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             default:
@@ -186,7 +186,7 @@ func main0() struct{} {
         inline498 = 7
         var inline500 int32 = inline498 + 1
         t434 = inline500
-        var inline493 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t434)
+        var inline493 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t434)
         _goml_runtime_core_string_println(inline493)
         var t435 string
         var inline488 bool = false
@@ -212,7 +212,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -222,12 +222,12 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             case false:
                 inline482 = 7
-                var inline483 string = _goml_m_inherent_i_int_i_int_i_to__string(inline482)
+                var inline483 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline482)
                 t436 = inline483
                 var inline477 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t436)
                 _goml_runtime_core_string_println(inline477)
@@ -239,7 +239,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -249,7 +249,7 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             default:
@@ -257,7 +257,7 @@ func main0() struct{} {
             }
         case false:
             inline490 = 7
-            var inline491 string = _goml_m_inherent_i_int_i_int_i_to__string(inline490)
+            var inline491 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline490)
             t435 = inline491
             var inline485 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t435)
             _goml_runtime_core_string_println(inline485)
@@ -277,7 +277,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -287,12 +287,12 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             case false:
                 inline482 = 7
-                var inline483 string = _goml_m_inherent_i_int_i_int_i_to__string(inline482)
+                var inline483 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline482)
                 t436 = inline483
                 var inline477 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t436)
                 _goml_runtime_core_string_println(inline477)
@@ -304,7 +304,7 @@ func main0() struct{} {
                 }
                 var inline475 int32 = inline474(inline472)
                 t437 = inline475
-                var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t437)
+                var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t437)
                 _goml_runtime_core_string_println(inline469)
                 var t438 int32
                 var inline464 bool = true
@@ -314,7 +314,7 @@ func main0() struct{} {
                 }
                 var inline467 int32 = inline466(inline464)
                 t438 = inline467
-                var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t438)
+                var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t438)
                 _goml_runtime_core_string_println(inline461)
                 return struct{}{}
             default:
@@ -328,12 +328,12 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
     var t441 string = _goml_runtime_core_int_to_string(self__32)
     return t441
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t450 string = _goml_runtime_core_int32_to_string(self__154)
     return t450
 }

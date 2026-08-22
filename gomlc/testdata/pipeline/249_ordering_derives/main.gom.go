@@ -79,7 +79,7 @@ func hashmap_lookup__HashMap_8Vec_3int_6string(m *hashmap_Vec_3int_string_x, key
         var zero string
         return zero, false
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_Vec_l_int_r__i_hash(key)
+    var h uint64 = _goml_m_trait__impl_i_Hash_i_Vec_l_isize_r__i_hash(key)
     var bucket []hashmap_Vec_3int_string_x_entry = m.buckets[h]
     var i int = 0
     for {
@@ -87,7 +87,7 @@ func hashmap_lookup__HashMap_8Vec_3int_6string(m *hashmap_Vec_3int_string_x, key
             break
         }
         var entry hashmap_Vec_3int_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_Vec_l_isize_r__i_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -116,7 +116,7 @@ func hashmap_set__HashMap_8Vec_3int_6string(m *hashmap_Vec_3int_string_x, key *_
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_Vec_l_int_r__i_hash(key)
+    var h uint64 = _goml_m_trait__impl_i_Hash_i_Vec_l_isize_r__i_hash(key)
     var bucket []hashmap_Vec_3int_string_x_entry = m.buckets[h]
     if len(bucket) == 0 {
         m.hashes = append(m.hashes, h)
@@ -127,7 +127,7 @@ func hashmap_set__HashMap_8Vec_3int_6string(m *hashmap_Vec_3int_string_x, key *_
             break
         }
         var entry hashmap_Vec_3int_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_Vec_l_isize_r__i_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -180,7 +180,7 @@ func hashmap_lookup__HashMap_19Tuple2_3int_6string_6string(m *hashmap_Tuple2_3in
         var zero string
         return zero, false
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i__o_int_c_string_q__i_hash(key)
+    var h uint64 = _goml_m_trait__impl_i_Hash_i__o_isize_c_string_q__i_hash(key)
     var bucket []hashmap_Tuple2_3int_6string_string_x_entry = m.buckets[h]
     var i int = 0
     for {
@@ -188,7 +188,7 @@ func hashmap_lookup__HashMap_19Tuple2_3int_6string_6string(m *hashmap_Tuple2_3in
             break
         }
         var entry hashmap_Tuple2_3int_6string_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i__o_int_c_string_q__i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i__o_isize_c_string_q__i_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -217,7 +217,7 @@ func hashmap_set__HashMap_19Tuple2_3int_6string_6string(m *hashmap_Tuple2_3int_6
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i__o_int_c_string_q__i_hash(key)
+    var h uint64 = _goml_m_trait__impl_i_Hash_i__o_isize_c_string_q__i_hash(key)
     var bucket []hashmap_Tuple2_3int_6string_string_x_entry = m.buckets[h]
     if len(bucket) == 0 {
         m.hashes = append(m.hashes, h)
@@ -228,7 +228,7 @@ func hashmap_set__HashMap_19Tuple2_3int_6string_6string(m *hashmap_Tuple2_3int_6
             break
         }
         var entry hashmap_Tuple2_3int_6string_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i__o_int_c_string_q__i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i__o_isize_c_string_q__i_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -281,7 +281,7 @@ func hashmap_lookup__HashMap_12Array_2_3int_6string(m *hashmap_Array_2_3int_stri
         var zero string
         return zero, false
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i__l_int_x3b_2_r__i_hash(key)
+    var h uint64 = _goml_m_trait__impl_i_Hash_i__l_isize_x3b_2_r__i_hash(key)
     var bucket []hashmap_Array_2_3int_string_x_entry = m.buckets[h]
     var i int = 0
     for {
@@ -289,7 +289,7 @@ func hashmap_lookup__HashMap_12Array_2_3int_6string(m *hashmap_Array_2_3int_stri
             break
         }
         var entry hashmap_Array_2_3int_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i__l_int_x3b_2_r__i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i__l_isize_x3b_2_r__i_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -318,7 +318,7 @@ func hashmap_set__HashMap_12Array_2_3int_6string(m *hashmap_Array_2_3int_string_
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i__l_int_x3b_2_r__i_hash(key)
+    var h uint64 = _goml_m_trait__impl_i_Hash_i__l_isize_x3b_2_r__i_hash(key)
     var bucket []hashmap_Array_2_3int_string_x_entry = m.buckets[h]
     if len(bucket) == 0 {
         m.hashes = append(m.hashes, h)
@@ -329,7 +329,7 @@ func hashmap_set__HashMap_12Array_2_3int_6string(m *hashmap_Array_2_3int_string_
             break
         }
         var entry hashmap_Array_2_3int_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i__l_int_x3b_2_r__i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i__l_isize_x3b_2_r__i_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -383,7 +383,7 @@ type MaybeNumber struct {
 
 type NoTraits struct {}
 
-type GenericPair__int struct {
+type GenericPair__isize struct {
     first int
     second int
     nested *_goml_vec_int
@@ -436,12 +436,12 @@ const (
     Second Phantom__NoTraits = 1
 )
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
 
-type Result__int__string struct {
+type Result__isize__string struct {
     _tag int32
     _v0_0 int
     _v1_0 string
@@ -452,7 +452,7 @@ type Option__string struct {
     _v1_0 string
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_int_i_cmp(self__32 int, other__33 int) Ordering {
+func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_isize_i_cmp(self__32 int, other__33 int) Ordering {
     var t707 bool = self__32 < other__33
     if t707 {
         return Less
@@ -917,10 +917,10 @@ func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_Level_i_cmp(self__39 Level, other__
                 case High:
                     var x497 int = self__39.(High)._0
                     var x498 int = self__39.(High)._1
-                    var _goml_m__i_derive13__ordering____53 Ordering = _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_int_i_cmp(x497, x485)
+                    var _goml_m__i_derive13__ordering____53 Ordering = _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_isize_i_cmp(x497, x485)
                     var t1218 bool = _goml_m_trait__impl_i_PartialEq_i_Ordering_i_eq(_goml_m__i_derive13__ordering____53, Equal)
                     if t1218 {
-                        var _goml_m__i_derive10__ordering____54 Ordering = _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_int_i_cmp(x498, x486)
+                        var _goml_m__i_derive10__ordering____54 Ordering = _goml_m_trait__impl_i_std_p_cmp_p_Ord_i_isize_i_cmp(x498, x486)
                         var t1221 bool
                         switch _goml_m__i_derive10__ordering____54 {
                         case Less:
@@ -1233,7 +1233,7 @@ func main0() struct{} {
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
     }(t1347)
-    var generic_first__107 GenericPair__int = GenericPair__int{
+    var generic_first__107 GenericPair__isize = GenericPair__isize{
         first: 1,
         second: 2,
         nested: t1348,
@@ -1248,12 +1248,12 @@ func main0() struct{} {
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
     }(t1349)
-    var generic_second__108 GenericPair__int = GenericPair__int{
+    var generic_second__108 GenericPair__isize = GenericPair__isize{
         first: 1,
         second: 3,
         nested: t1350,
     }
-    var t1351 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____int_i_lt(generic_first__107, generic_second__108)
+    var t1351 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____isize_i_lt(generic_first__107, generic_second__108)
     var t1352 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1351)
     println__T_string(t1352)
     var phantom_first__109 Phantom__NoTraits = First
@@ -1290,38 +1290,38 @@ func main0() struct{} {
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
     }(t1360)
-    var t1361 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_lt(first_values__112, second_values__113)
+    var t1361 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_isize_r__i_lt(first_values__112, second_values__113)
     var t1362 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1361)
     println__T_string(t1362)
-    var t1363 Option__int = Option__int{
+    var t1363 Option__isize = Option__isize{
         _tag: 1,
         _v1_0: 2,
     }
-    var t1364 Option__int = Option__int{
+    var t1364 Option__isize = Option__isize{
         _tag: 1,
         _v1_0: 3,
     }
-    var t1365 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_lt(t1363, t1364)
+    var t1365 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____isize_i_lt(t1363, t1364)
     var t1366 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1365)
     println__T_string(t1366)
-    var ok__114 Result__int__string = Result__int__string{
+    var ok__114 Result__isize__string = Result__isize__string{
         _tag: 0,
         _v0_0: 1,
     }
-    var error__115 Result__int__string = Result__int__string{
+    var error__115 Result__isize__string = Result__isize__string{
         _tag: 1,
         _v1_0: "error",
     }
-    var t1367 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Result____int____string_i_lt(ok__114, error__115)
+    var t1367 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Result____isize____string_i_lt(ok__114, error__115)
     var t1368 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1367)
     println__T_string(t1368)
-    var t1369 []int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int(first_values__112, 0, 2)
-    var t1370 []int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int(second_values__113, 0, 2)
-    var t1371 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_lt(t1369, t1370)
+    var t1369 []int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__isize(first_values__112, 0, 2)
+    var t1370 []int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__isize(second_values__113, 0, 2)
+    var t1371 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_isize_r__i_lt(t1369, t1370)
     var t1372 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1371)
     println__T_string(t1372)
-    var values__116 *hashmap_Vec_3int_string_x = _goml_m_inherent_i_HashMap_i_H_hb3faab5fbb375c42497e028b370acdb2_r_____V__string()
-    _goml_m_inherent_i_HashMap_i_H_h3b61239acaedb5e8f14c03ddfc2f1db6_r_____V__string(values__116, first_values__112, "vector")
+    var values__116 *hashmap_Vec_3int_string_x = _goml_m_inherent_i_HashMap_i_H_hca0cffb759e2572d7286850a43f94208_r_____V__string()
+    _goml_m_inherent_i_HashMap_i_H_hfc6d57fdfd8ace95a78adbd7155c7d4b_r_____V__string(values__116, first_values__112, "vector")
     var t1373 [2]int = [2]int{1, 2}
     var t1374 *_goml_vec_int = func(values [2]int) *_goml_vec_int {
         var storage struct {
@@ -1332,13 +1332,13 @@ func main0() struct{} {
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
     }(t1373)
-    var t1375 Option__string = _goml_m_inherent_i_HashMap_i_H_hb4451e8158a298bbb7da359694bb16fc_r_____V__string(values__116, t1374)
+    var t1375 Option__string = _goml_m_inherent_i_HashMap_i_H_h0069152d187f39ec37f55a9b6f59774d_r_____V__string(values__116, t1374)
     var t1376 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(t1375, "missing")
     println__T_string(t1376)
-    var default_tuple__117 Tuple2_3int_6string = _goml_m_trait__impl_i_Default_i__o_int_c_string_q__i_default()
+    var default_tuple__117 Tuple2_3int_6string = _goml_m_trait__impl_i_Default_i__o_isize_c_string_q__i_default()
     var t1415 int = default_tuple__117._0
     var t1416 int = 0
-    var t1417 bool = _goml_m_trait__impl_i_PartialEq_i_int_i_eq(t1415, t1416)
+    var t1417 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(t1415, t1416)
     var jp1378 bool
     if t1417 {
         var t1418 string = default_tuple__117._1
@@ -1350,11 +1350,11 @@ func main0() struct{} {
     }
     var t1379 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp1378)
     println__T_string(t1379)
-    var default_array__118 [3]int = _goml_m_trait__impl_i_Default_i__l_int_x3b_3_r__i_default()
+    var default_array__118 [3]int = _goml_m_trait__impl_i_Default_i__l_isize_x3b_3_r__i_default()
     var _eq_rhs560 [3]int = [3]int{0, 0, 0}
     var t1404 int = array_get__Array_3_3int(default_array__118, 0)
     var t1405 int = array_get__Array_3_3int(_eq_rhs560, 0)
-    var t1406 bool = _goml_m_trait__impl_i_PartialEq_i_int_i_eq(t1404, t1405)
+    var t1406 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(t1404, t1405)
     var jp1381 bool
     if t1406 {
         var t1409 int = array_get__Array_3_3int(default_array__118, 1)
@@ -1383,13 +1383,13 @@ func main0() struct{} {
         _0: 1,
         _1: 3,
     }
-    var t1385 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_int_c_int_q__i_lt(t1383, t1384)
+    var t1385 bool = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_isize_c_isize_q__i_lt(t1383, t1384)
     var t1386 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1385)
     var inline2869 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1386)
     _goml_runtime_core_string_println(inline2869)
     var t1387 [2]int = [2]int{1, 2}
     var t1388 [2]int = [2]int{1, 3}
-    var t1389 Ordering = _goml_m_trait__impl_i_std_p_cmp_p_Ord_i__l_int_x3b_2_r__i_cmp(t1387, t1388)
+    var t1389 Ordering = _goml_m_trait__impl_i_std_p_cmp_p_Ord_i__l_isize_x3b_2_r__i_cmp(t1387, t1388)
     var t1390 string = ordering_name(t1389)
     var inline2866 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1390)
     _goml_runtime_core_string_println(inline2866)
@@ -1398,7 +1398,7 @@ func main0() struct{} {
         _0: 0,
         _1: t1391,
     }
-    var t1392 Option__Ordering = _goml_m_trait__impl_i_std_p_cm_h13f72987621c6328b14d0237c229fa31__i_partial__cmp(tuple_nan__119, tuple_nan__119)
+    var t1392 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_isize_c_f64_q__i_partial__cmp(tuple_nan__119, tuple_nan__119)
     var t1393 bool
     var inline2863 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__Ordering(t1392)
     var inline2864 bool = !inline2863
@@ -1463,24 +1463,24 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Ordering_i_eq(self__854 Ordering, other__855 Ordering) bool {
-    switch self__854 {
+func _goml_m_trait__impl_i_PartialEq_i_Ordering_i_eq(self__945 Ordering, other__946 Ordering) bool {
+    switch self__945 {
     case Less:
-        switch other__855 {
+        switch other__946 {
         case Less:
             return true
         default:
             return false
         }
     case Equal:
-        switch other__855 {
+        switch other__946 {
         case Equal:
             return true
         default:
             return false
         }
     case Greater:
-        switch other__855 {
+        switch other__946 {
         case Greater:
             return true
         default:
@@ -1491,7 +1491,7 @@ func _goml_m_trait__impl_i_PartialEq_i_Ordering_i_eq(self__854 Ordering, other__
     }
 }
 
-func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__int(self__0 int, other__1 int) bool {
+func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__isize(self__0 int, other__1 int) bool {
     var commute_field3650 Ordering
     var inline2993 bool = self__0 < other__1
     var inline2995 Ordering
@@ -1518,7 +1518,7 @@ func _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__int(self__0 i
     }
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__185 int, other__186 int) bool {
+func _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(self__185 int, other__186 int) bool {
     var t1807 bool = self__185 == other__186
     return t1807
 }
@@ -1549,8 +1549,8 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__Ordering(self__4
     return t1911
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____int_i_lt(default_arg0 GenericPair__int, default_arg1 GenericPair__int) bool {
-    var inline3388 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____int_i_partial__cmp(default_arg0, default_arg1)
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____isize_i_lt(default_arg0 GenericPair__isize, default_arg1 GenericPair__isize) bool {
+    var inline3388 Option__Ordering = _goml_m_trait__impl_i_std_p_cm_hf6de147f382a0c7851836d0995f09328__i_partial__cmp(default_arg0, default_arg1)
     switch inline3388._tag {
     case 0:
         return false
@@ -1577,8 +1577,8 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Phantom____NoTraits_i_lt(def
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_lt(default_arg0 *_goml_vec_int, default_arg1 *_goml_vec_int) bool {
-    var inline3398 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(default_arg0, default_arg1)
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_isize_r__i_lt(default_arg0 *_goml_vec_int, default_arg1 *_goml_vec_int) bool {
+    var inline3398 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_isize_r__i_partial__cmp(default_arg0, default_arg1)
     switch inline3398._tag {
     case 0:
         return false
@@ -1591,8 +1591,8 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_lt(default_ar
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_lt(default_arg0 Option__int, default_arg1 Option__int) bool {
-    var inline3403 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_partial__cmp(default_arg0, default_arg1)
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____isize_i_lt(default_arg0 Option__isize, default_arg1 Option__isize) bool {
+    var inline3403 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____isize_i_partial__cmp(default_arg0, default_arg1)
     switch inline3403._tag {
     case 0:
         return false
@@ -1605,8 +1605,8 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_lt(default_a
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Result____int____string_i_lt(default_arg0 Result__int__string, default_arg1 Result__int__string) bool {
-    var inline3408 Option__Ordering = _goml_m_trait__impl_i_std_p_cm_hfc86bc8120f8982d8d0ed6b909b6f353__i_partial__cmp(default_arg0, default_arg1)
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Result____isize____string_i_lt(default_arg0 Result__isize__string, default_arg1 Result__isize__string) bool {
+    var inline3408 Option__Ordering = _goml_m_trait__impl_i_std_p_cm_hc3f80c466e4f303ea6e82f1783f2c793__i_partial__cmp(default_arg0, default_arg1)
     switch inline3408._tag {
     case 0:
         return false
@@ -1619,13 +1619,13 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Result____int____string_i_lt
     }
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int(self__311 *_goml_vec_int, start__312 int, end__313 int) []int {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__isize(self__311 *_goml_vec_int, start__312 int, end__313 int) []int {
     var t1929 []int = self__311.items[start__312:end__313]
     return t1929
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_lt(default_arg0 []int, default_arg1 []int) bool {
-    var inline3413 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cmp(default_arg0, default_arg1)
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_isize_r__i_lt(default_arg0 []int, default_arg1 []int) bool {
+    var inline3413 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_isize_r__i_partial__cmp(default_arg0, default_arg1)
     switch inline3413._tag {
     case 0:
         return false
@@ -1638,17 +1638,17 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_lt(default_
     }
 }
 
-func _goml_m_inherent_i_HashMap_i_H_hb3faab5fbb375c42497e028b370acdb2_r_____V__string() *hashmap_Vec_3int_string_x {
+func _goml_m_inherent_i_HashMap_i_H_hca0cffb759e2572d7286850a43f94208_r_____V__string() *hashmap_Vec_3int_string_x {
     var t1935 *hashmap_Vec_3int_string_x = hashmap_new__HashMap_8Vec_3int_6string()
     return t1935
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h3b61239acaedb5e8f14c03ddfc2f1db6_r_____V__string(self__422 *hashmap_Vec_3int_string_x, key__423 *_goml_vec_int, value__424 string) struct{} {
+func _goml_m_inherent_i_HashMap_i_H_hfc6d57fdfd8ace95a78adbd7155c7d4b_r_____V__string(self__422 *hashmap_Vec_3int_string_x, key__423 *_goml_vec_int, value__424 string) struct{} {
     hashmap_set__HashMap_8Vec_3int_6string(self__422, key__423, value__424)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_hb4451e8158a298bbb7da359694bb16fc_r_____V__string(self__420 *hashmap_Vec_3int_string_x, key__421 *_goml_vec_int) Option__string {
+func _goml_m_inherent_i_HashMap_i_H_h0069152d187f39ec37f55a9b6f59774d_r_____V__string(self__420 *hashmap_Vec_3int_string_x, key__421 *_goml_vec_int) Option__string {
     var t1940 Option__string = hashmap_get__HashMap_8Vec_3int_6string(self__420, key__421)
     return t1940
 }
@@ -1665,7 +1665,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__4
     }
 }
 
-func _goml_m_trait__impl_i_Default_i__o_int_c_string_q__i_default() Tuple2_3int_6string {
+func _goml_m_trait__impl_i_Default_i__o_isize_c_string_q__i_default() Tuple2_3int_6string {
     var t1947 int
     t1947 = 0
     var t1948 string
@@ -1677,7 +1677,7 @@ func _goml_m_trait__impl_i_Default_i__o_int_c_string_q__i_default() Tuple2_3int_
     return t1949
 }
 
-func _goml_m_trait__impl_i_Default_i__l_int_x3b_3_r__i_default() [3]int {
+func _goml_m_trait__impl_i_Default_i__l_isize_x3b_3_r__i_default() [3]int {
     var t1955 int
     t1955 = 0
     var t1956 int
@@ -1688,7 +1688,7 @@ func _goml_m_trait__impl_i_Default_i__l_int_x3b_3_r__i_default() [3]int {
     return t1958
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_int_c_int_q__i_lt(self Tuple2_3int_3int, other Tuple2_3int_3int) bool {
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_isize_c_isize_q__i_lt(self Tuple2_3int_3int, other Tuple2_3int_3int) bool {
     var t1963 int = self._0
     var t1964 int = other._0
     var t1965 bool
@@ -1705,18 +1705,18 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_int_c_int_q__i_lt(self Tu
         } else {
             var t1971 int = self._1
             var t1972 int = other._1
-            var inline3423 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__int(t1971, t1972)
+            var inline3423 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__isize(t1971, t1972)
             return inline3423
         }
     } else {
         var t1974 int = self._0
         var t1975 int = other._0
-        var inline3427 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__int(t1974, t1975)
+        var inline3427 bool = _goml_m_std_p_cmp_p_trait__default_i_PartialOrd_i_lt____Self__isize(t1974, t1975)
         return inline3427
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i__l_int_x3b_2_r__i_cmp(self [2]int, other [2]int) Ordering {
+func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i__l_isize_x3b_2_r__i_cmp(self [2]int, other [2]int) Ordering {
     var t1979 int = array_get__Array_2_3int(self, 0)
     var t1980 int = array_get__Array_2_3int(other, 0)
     var _structural_ordering_0 Ordering
@@ -1778,7 +1778,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_Ord_i__l_int_x3b_2_r__i_cmp(self [2]int, 
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cm_h13f72987621c6328b14d0237c229fa31__i_partial__cmp(self Tuple2_3int_7float64, other Tuple2_3int_7float64) Option__Ordering {
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_isize_c_f64_q__i_partial__cmp(self Tuple2_3int_7float64, other Tuple2_3int_7float64) Option__Ordering {
     var t1991 int = self._0
     var t1992 int = other._0
     var _structural_partial_ordering_0 Option__Ordering
@@ -1930,7 +1930,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__some____T__Ordering(self__4
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____int_i_partial__cmp(self__67 GenericPair__int, other__68 GenericPair__int) Option__Ordering {
+func _goml_m_trait__impl_i_std_p_cm_hf6de147f382a0c7851836d0995f09328__i_partial__cmp(self__67 GenericPair__isize, other__68 GenericPair__isize) Option__Ordering {
     var t2067 int = self__67.first
     var t2068 int = other__68.first
     var commute_field3815 Ordering
@@ -1969,7 +1969,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_GenericPair____int_i_partial
         case Equal:
             var t2079 *_goml_vec_int = self__67.nested
             var t2080 *_goml_vec_int = other__68.nested
-            var mtmp509 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(t2079, t2080)
+            var mtmp509 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_isize_r__i_partial__cmp(t2079, t2080)
             switch mtmp509._tag {
             case 0:
                 return Option__Ordering{
@@ -2083,7 +2083,7 @@ func _goml_m_trait__impl_i_std_p_cm_h70a1f5151189c8228387cc52486880c2__i_partial
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(self__76 *_goml_vec_int, other__77 *_goml_vec_int) Option__Ordering {
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_isize_r__i_partial__cmp(self__76 *_goml_vec_int, other__77 *_goml_vec_int) Option__Ordering {
     var t2130 int
     var inline3494 int = vec_len__Vec_3int(self__76)
     t2130 = inline3494
@@ -2163,7 +2163,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Vec_l_int_r__i_partial__cmp(
     return inline3485
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_partial__cmp(self__96 Option__int, other__97 Option__int) Option__Ordering {
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____isize_i_partial__cmp(self__96 Option__isize, other__97 Option__isize) Option__Ordering {
     switch other__97._tag {
     case 0:
         switch self__96._tag {
@@ -2218,7 +2218,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Option____int_i_partial__cmp
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cm_hfc86bc8120f8982d8d0ed6b909b6f353__i_partial__cmp(self__104 Result__int__string, other__105 Result__int__string) Option__Ordering {
+func _goml_m_trait__impl_i_std_p_cm_hc3f80c466e4f303ea6e82f1783f2c793__i_partial__cmp(self__104 Result__isize__string, other__105 Result__isize__string) Option__Ordering {
     switch other__105._tag {
     case 0:
         var x45 int = other__105._v0_0
@@ -2287,7 +2287,7 @@ func _goml_m_trait__impl_i_std_p_cm_hfc86bc8120f8982d8d0ed6b909b6f353__i_partial
     }
 }
 
-func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cmp(self__86 []int, other__87 []int) Option__Ordering {
+func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_isize_r__i_partial__cmp(self__86 []int, other__87 []int) Option__Ordering {
     var t2176 int
     var inline3536 int = len(self__86)
     t2176 = inline3536
@@ -2367,7 +2367,7 @@ func _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i_Slice_l_int_r__i_partial__cm
     return inline3527
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(self__223 *_goml_vec_int, other__224 *_goml_vec_int) bool {
+func _goml_m_trait__impl_i_PartialEq_i_Vec_l_isize_r__i_eq(self__223 *_goml_vec_int, other__224 *_goml_vec_int) bool {
     var t2191 int
     var inline3544 int = vec_len__Vec_3int(self__223)
     t2191 = inline3544
@@ -2408,7 +2408,7 @@ func _goml_m_trait__impl_i_PartialEq_i_Vec_l_int_r__i_eq(self__223 *_goml_vec_in
     }
 }
 
-func _goml_m_trait__impl_i_Hash_i_Vec_l_int_r__i_hash(self__226 *_goml_vec_int) uint64 {
+func _goml_m_trait__impl_i_Hash_i_Vec_l_isize_r__i_hash(self__226 *_goml_vec_int) uint64 {
     var value__227 uint64 = 14695981039346656037
     var index__228 int = 0
     Loop_loop2207:
@@ -2437,7 +2437,7 @@ func _goml_m_trait__impl_i_Hash_i_Vec_l_int_r__i_hash(self__226 *_goml_vec_int) 
     return value__227
 }
 
-func _goml_m_trait__impl_i_PartialEq_i__o_int_c_string_q__i_eq(self Tuple2_3int_6string, other Tuple2_3int_6string) bool {
+func _goml_m_trait__impl_i_PartialEq_i__o_isize_c_string_q__i_eq(self Tuple2_3int_6string, other Tuple2_3int_6string) bool {
     var t2220 int = self._0
     var t2221 int = other._0
     var t2222 bool
@@ -2459,7 +2459,7 @@ func _goml_m_trait__impl_i_PartialEq_i__o_int_c_string_q__i_eq(self Tuple2_3int_
     }
 }
 
-func _goml_m_trait__impl_i_Hash_i__o_int_c_string_q__i_hash(self Tuple2_3int_6string) uint64 {
+func _goml_m_trait__impl_i_Hash_i__o_isize_c_string_q__i_hash(self Tuple2_3int_6string) uint64 {
     var _structural_hash_0 uint64 = 14695981039346656037
     var t2230 uint64 = _structural_hash_0 * 1099511628211
     var t2231 int = self._0
@@ -2476,7 +2476,7 @@ func _goml_m_trait__impl_i_Hash_i__o_int_c_string_q__i_hash(self Tuple2_3int_6st
     return _structural_hash_2
 }
 
-func _goml_m_trait__impl_i_PartialEq_i__l_int_x3b_2_r__i_eq(self [2]int, other [2]int) bool {
+func _goml_m_trait__impl_i_PartialEq_i__l_isize_x3b_2_r__i_eq(self [2]int, other [2]int) bool {
     var t2240 int = array_get__Array_2_3int(self, 0)
     var t2241 int = array_get__Array_2_3int(other, 0)
     var t2242 bool
@@ -2498,7 +2498,7 @@ func _goml_m_trait__impl_i_PartialEq_i__l_int_x3b_2_r__i_eq(self [2]int, other [
     }
 }
 
-func _goml_m_trait__impl_i_Hash_i__l_int_x3b_2_r__i_hash(self [2]int) uint64 {
+func _goml_m_trait__impl_i_Hash_i__l_isize_x3b_2_r__i_hash(self [2]int) uint64 {
     var _structural_hash_0 uint64 = 14695981039346656037
     var t2250 uint64 = _structural_hash_0 * 1099511628211
     var t2251 int = array_get__Array_2_3int(self, 0)

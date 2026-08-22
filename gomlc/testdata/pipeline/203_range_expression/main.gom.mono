@@ -1,10 +1,10 @@
-fn range(start/0: int32, end/1: int32) -> int32 {
+fn range(start/0: i32, end/1: i32) -> i32 {
   (start/0 + end/1)
 }
 
-fn endpoint(calls/2: Ref[int], value/3: int) -> int {
+fn endpoint(calls/2: Ref[isize], value/3: isize) -> isize {
   let _wild411 =
-    inherent#Ref#Ref[T]#set__T_int(calls/2, (inherent#Ref#Ref[T]#get__T_int(calls/2) + 1)) in
+    inherent#Ref#Ref[T]#set__T_isize(calls/2, (inherent#Ref#Ref[T]#get__T_isize(calls/2) + 1)) in
   value/3
 }
 
@@ -20,13 +20,13 @@ fn main() -> unit {
             {
               let value/4 = for_item414 in
               {
-                let _wild416 = println__T_int(value/4) in
+                let _wild416 = println__T_isize(value/4) in
               }
             }
           }
       }
     } in
-  let calls/5 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let calls/5 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let _wild424 =
     {
       let for_index418 = endpoint(calls/5, 4) in
@@ -44,7 +44,7 @@ fn main() -> unit {
             {
               let value/6 = for_item421 in
               {
-                let _wild423 = println__T_int(value/6) in
+                let _wild423 = println__T_isize(value/6) in
               }
             }
           }
@@ -67,7 +67,7 @@ fn main() -> unit {
             {
               let value/7 = for_item428 in
               {
-                let _wild430 = println__T_int(value/7) in
+                let _wild430 = println__T_isize(value/7) in
               }
             }
           }
@@ -91,7 +91,7 @@ fn main() -> unit {
             {
               let value/9 = for_item435 in
               {
-                let _wild437 = println__T_int(value/9) in
+                let _wild437 = println__T_isize(value/9) in
               }
             }
           }
@@ -100,46 +100,46 @@ fn main() -> unit {
   let iterator/10 = __goml_builtin_range_inclusive(8, 8) in
   let _wild441 =
     {
-      let mtmp439 = trait_impl#Iterator#FnIterator__int#next(iterator/10) in
+      let mtmp439 = trait_impl#Iterator#FnIterator__isize#next(iterator/10) in
       match mtmp439 {
-        Option__int::None => {
+        Option__isize::None => {
           println__T_string("missing")
         },
-        Option__int::Some(x440) => {
+        Option__isize::Some(x440) => {
           {
-            let x440 = Option__int::Some._0(mtmp439) in
+            let x440 = Option__isize::Some._0(mtmp439) in
             {
               let value/11 = x440 in
-              println__T_int(value/11)
+              println__T_isize(value/11)
             }
           }
         },
       }
     } in
-  let _wild442 = println__T_int(inherent#Ref#Ref[T]#get__T_int(calls/5)) in
-  let _wild443 = println__T_int32(range(10, 20)) in
+  let _wild442 = println__T_isize(inherent#Ref#Ref[T]#get__T_isize(calls/5)) in
+  let _wild443 = println__T_i32(range(10, 20)) in
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn __goml_builtin_range_inclusive(start/507: int, end/508: int) -> FnIterator__int {
+fn __goml_builtin_range_inclusive(start/507: isize, end/508: isize) -> FnIterator__isize {
   let current/509 = @intrinsic(ref.new)(start/507) in
   let finished/510 = @intrinsic(ref.new)(false) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_int(
+  inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
     || {
       if if @intrinsic(ref.get)(finished/510) {
           true
@@ -147,7 +147,7 @@ fn __goml_builtin_range_inclusive(start/507: int, end/508: int) -> FnIterator__i
           (@intrinsic(ref.get)(current/509) > end/508)
       } {
           {
-            Option__int::None
+            Option__isize::None
           }
       } else {
           {
@@ -162,48 +162,48 @@ fn __goml_builtin_range_inclusive(start/507: int, end/508: int) -> FnIterator__i
                     let _wild409 = @intrinsic(ref.set)(current/509, (value/511 + 1)) in
                   }
               } in
-            Option__int::Some(value/511)
+            Option__isize::Some(value/511)
           }
       }
     }
   )
 }
 
-fn trait_impl#Iterator#FnIterator__int#next(self/255: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/255)()
+fn trait_impl#Iterator#FnIterator__isize#next(self/255: FnIterator__isize) -> Option__isize {
+  FnIterator__isize.next_fn(self/255)()
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-  next_fn/254: () -> Option__int
-) -> FnIterator__int {
-  FnIterator__int { next_fn: next_fn/254 }
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
+  next_fn/254: () -> Option__isize
+) -> FnIterator__isize {
+  FnIterator__isize { next_fn: next_fn/254 }
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }
 
@@ -211,7 +211,7 @@ fn trait_impl#PartialEq#bool#eq(self/179: bool, other/180: bool) -> bool {
   (self/179 == other/180)
 }
 
-fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
+fn trait_impl#Hash#bool#hash(self/208: bool) -> u64 {
   if self/208 {
       {
         1

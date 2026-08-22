@@ -1,0 +1,298 @@
+fn signed_sum(first/0: i8, second/1: i16, third/2: i32, fourth/3: i64, fifth/4: isize) -> isize {
+  let t417 = (first/0 as isize) in
+  let t418 = (second/1 as isize) in
+  let t419 = (t417 + t418) in
+  let t420 = (third/2 as isize) in
+  let t421 = (t419 + t420) in
+  let t422 = (fourth/3 as isize) in
+  let t423 = (t421 + t422) in
+  let t424 = (t423 + fifth/4) in
+  t424
+}
+
+fn unsigned_sum(first/5: u8, second/6: u16, third/7: u32, fourth/8: u64, fifth/9: usize) -> usize {
+  let t427 = (first/5 as usize) in
+  let t428 = (second/6 as usize) in
+  let t429 = (t427 + t428) in
+  let t430 = (third/7 as usize) in
+  let t431 = (t429 + t430) in
+  let t432 = (fourth/8 as usize) in
+  let t433 = (t431 + t432) in
+  let t434 = (t433 + fifth/9) in
+  t434
+}
+
+fn main() -> unit {
+  let small/10 = 1.5 in
+  let large/11 = 2.25 in
+  let value/12 = 65 in
+  join inline_cont551(t436: isize) -> unit {
+    join inline_cont548(_wild411: unit) -> unit {
+      join inline_cont534(t437: usize) -> unit {
+        join inline_cont531(_wild412: unit) -> unit {
+          join inline_cont529(t438: string) -> unit {
+            let t439 = (t438 + ",") in
+            join inline_cont527(t440: string) -> unit {
+              let t441 = (t439 + t440) in
+              join inline_cont524(_wild413: unit) -> unit {
+                let t442 = (value/12 as u16) in
+                join inline_cont521(_wild414: unit) -> unit {
+                  join inline_cont518(t443: Option__char) -> unit {
+                    join inline_cont514(t444: char) -> unit {
+                      let inline512 = trait_impl#ToString#char#to_string(t444) in
+                      let inline513 = @runtime(core.string_println)(inline512) in
+                      ()
+                    } in
+                    let inline515 = '?' in
+                    match t443 {
+                      Tag_0 => {
+                        jump inline_cont514(inline515)
+                      },
+                      Tag_1 => {
+                        let inline516 = Option__char::Some._0(t443) in
+                        jump inline_cont514(inline516)
+                      },
+                    }
+                  } in
+                  let inline519 = 65 in
+                  let inline520 = __goml_builtin_char_from_uint32(inline519) in
+                  jump inline_cont518(inline520)
+                } in
+                let inline522 = trait_impl#ToString#u16#to_string(t442) in
+                let inline523 = @runtime(core.string_println)(inline522) in
+                jump inline_cont521(())
+              } in
+              let inline525 = trait_impl#ToString#string#to_string(t441) in
+              let inline526 = @runtime(core.string_println)(inline525) in
+              jump inline_cont524(())
+            } in
+            let inline528 = @runtime(core.float64_to_string)(large/11) in
+            jump inline_cont527(inline528)
+          } in
+          let inline530 = @runtime(core.float32_to_string)(small/10) in
+          jump inline_cont529(inline530)
+        } in
+        let inline532 = trait_impl#ToString#usize#to_string(t437) in
+        let inline533 = @runtime(core.string_println)(inline532) in
+        jump inline_cont531(())
+      } in
+      let inline535 = 1 in
+      let inline536 = 2 in
+      let inline537 = 3 in
+      let inline538 = 4 in
+      let inline539 = 5 in
+      let inline540 = (inline535 as usize) in
+      let inline541 = (inline536 as usize) in
+      let inline542 = (inline540 + inline541) in
+      let inline543 = (inline537 as usize) in
+      let inline544 = (inline542 + inline543) in
+      let inline545 = (inline538 as usize) in
+      let inline546 = (inline544 + inline545) in
+      let inline547 = (inline546 + inline539) in
+      jump inline_cont534(inline547)
+    } in
+    let inline549 = trait_impl#ToString#isize#to_string(t436) in
+    let inline550 = @runtime(core.string_println)(inline549) in
+    jump inline_cont548(())
+  } in
+  let inline552 = -1 in
+  let inline553 = 2 in
+  let inline554 = 3 in
+  let inline555 = 4 in
+  let inline556 = 5 in
+  let inline557 = (inline552 as isize) in
+  let inline558 = (inline553 as isize) in
+  let inline559 = (inline557 + inline558) in
+  let inline560 = (inline554 as isize) in
+  let inline561 = (inline559 + inline560) in
+  let inline562 = (inline555 as isize) in
+  let inline563 = (inline561 + inline562) in
+  let inline564 = (inline563 + inline556) in
+  jump inline_cont551(inline564)
+}
+
+fn println__T_isize(value/1: isize) -> unit {
+  join inline_cont565(t447: string) -> unit {
+    let t448 = @runtime(core.string_println)(t447) in
+    ()
+  } in
+  let inline566 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont565(inline566)
+}
+
+fn println__T_usize(value/1: usize) -> unit {
+  join inline_cont567(t450: string) -> unit {
+    let t451 = @runtime(core.string_println)(t450) in
+    ()
+  } in
+  let inline568 = @runtime(core.uint_to_string)(value/1) in
+  jump inline_cont567(inline568)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont569(t453: string) -> unit {
+    let t454 = @runtime(core.string_println)(t453) in
+    ()
+  } in
+  jump inline_cont569(value/1)
+}
+
+fn trait_impl#ToString#f32#to_string(self/160: f32) -> string {
+  let t457 = @runtime(core.float32_to_string)(self/160) in
+  t457
+}
+
+fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
+  let t460 = @runtime(core.float64_to_string)(self/161) in
+  t460
+}
+
+fn println__T_u16(value/1: u16) -> unit {
+  join inline_cont570(t462: string) -> unit {
+    let t463 = @runtime(core.string_println)(t462) in
+    ()
+  } in
+  let inline571 = @runtime(core.uint16_to_string)(value/1) in
+  jump inline_cont570(inline571)
+}
+
+fn println__T_char(value/1: char) -> unit {
+  join inline_cont572(t465: string) -> unit {
+    let t466 = @runtime(core.string_println)(t465) in
+    ()
+  } in
+  let inline573 = char_to_string(value/1) in
+  jump inline_cont572(inline573)
+}
+
+fn char_from_u32(value/3: u32) -> Option__char {
+  let inline575 = utf8_valid_scalar(value/3) in
+  if inline575 {
+    let inline576 = @runtime(core.char_from_uint32)(value/3) in
+    let inline577 = inline576.1 in
+    let inline579 = Option__char::Some(inline577) in
+    inline579
+  } else {
+    Tag_0
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_char(self/467: Option__char, fallback/468: char) -> char {
+  match self/467 {
+    Tag_0 => {
+      fallback/468
+    },
+    Tag_1 => {
+      let x390 = Option__char::Some._0(self/467) in
+      x390
+    },
+  }
+}
+
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
+  let t476 = @runtime(core.int_to_string)(self/151) in
+  t476
+}
+
+fn trait_impl#ToString#usize#to_string(self/451: usize) -> string {
+  let t479 = @runtime(core.uint_to_string)(self/451) in
+  t479
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}
+
+fn trait_impl#ToString#u16#to_string(self/157: u16) -> string {
+  let t484 = @runtime(core.uint16_to_string)(self/157) in
+  t484
+}
+
+fn trait_impl#ToString#char#to_string(self/150: char) -> string {
+  let inline581 = (self/150 as u32) in
+  let inline582 = utf8_valid_scalar(inline581) in
+  if inline582 {
+    let inline583 = @runtime(core.char_to_string)(self/150) in
+    inline583
+  } else {
+    let inline584 = @runtime(core.string_get)("", -1) in
+    ""
+  }
+}
+
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
+  join inline_cont585(t492: bool) -> Option__char {
+    if t492 {
+      let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
+      let x24 = mtmp22.1 in
+      let t493 = Option__char::Some(x24) in
+      t493
+    } else {
+      Tag_0
+    }
+  } in
+  let inline586 = (value/30 <= 1114111) in
+  if inline586 {
+    let inline587 = (value/30 >= 55296) in
+    join inline_join588(inline589: bool) -> Option__char {
+      let inline590 = (!inline589) in
+      jump inline_cont585(inline590)
+    } in
+    if inline587 {
+      let inline591 = (value/30 <= 57343) in
+      jump inline_join588(inline591)
+    } else {
+      jump inline_join588(false)
+    }
+  } else {
+    jump inline_cont585(false)
+  }
+}
+
+fn char_to_string(value/29: char) -> string {
+  let t498 = (value/29 as u32) in
+  join inline_cont592(t499: bool) -> string {
+    if t499 {
+      let t500 = @runtime(core.char_to_string)(value/29) in
+      t500
+    } else {
+      let mtmp21 = @runtime(core.string_get)("", -1) in
+      ""
+    }
+  } in
+  let inline593 = (t498 <= 1114111) in
+  if inline593 {
+    let inline594 = (t498 >= 55296) in
+    join inline_join595(inline596: bool) -> string {
+      let inline597 = (!inline596) in
+      jump inline_cont592(inline597)
+    } in
+    if inline594 {
+      let inline598 = (t498 <= 57343) in
+      jump inline_join595(inline598)
+    } else {
+      jump inline_join595(false)
+    }
+  } else {
+    jump inline_cont592(false)
+  }
+}
+
+fn utf8_valid_scalar(value/4: u32) -> bool {
+  let t505 = (value/4 <= 1114111) in
+  if t505 {
+    let t509 = (value/4 >= 55296) in
+    join k506(jp507: bool) -> bool {
+      let t508 = (!jp507) in
+      t508
+    } in
+    if t509 {
+      let t510 = (value/4 <= 57343) in
+      jump k506(t510)
+    } else {
+      jump k506(false)
+    }
+  } else {
+    false
+  }
+}

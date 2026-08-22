@@ -10,19 +10,19 @@ fn main() -> unit {
     };
     match 1 {
         1 => (println : (string) -> unit)("match"),
-        _ : int => (),
+        _ : isize => (),
     };
-    let index/0: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    while (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int])) < 2 {
+    let index/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    while (Ref[isize]::get : (Ref[isize]) -> isize)((index/0 : Ref[isize])) < 2 {
         {
             (println : (string) -> unit)(
-              (int::to_string : (int) -> string)(
-                (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int]))
+              (isize::to_string : (isize) -> string)(
+                (Ref[isize]::get : (Ref[isize]) -> isize)((index/0 : Ref[isize]))
               )
             );
-            (Ref[int]::set : (Ref[int], int) -> unit)(
-              (index/0 : Ref[int]),
-              (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int])) + 1
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (index/0 : Ref[isize]),
+              (Ref[isize]::get : (Ref[isize]) -> isize)((index/0 : Ref[isize])) + 1
             )
         }
     };

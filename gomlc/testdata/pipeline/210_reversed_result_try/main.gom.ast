@@ -4,7 +4,7 @@ enum Result[T, E] {
     Ok(T)
 }
 
-fn parse(flag: bool) -> Result[int32, string] {
+fn parse(flag: bool) -> Result[i32, string] {
     if flag {
         {
             Result::Ok(41)
@@ -16,12 +16,12 @@ fn parse(flag: bool) -> Result[int32, string] {
     }
 }
 
-fn compute(flag: bool) -> Result[int32, string] {
+fn compute(flag: bool) -> Result[i32, string] {
     let value = parse(flag)?;
     Result::Ok(value + 1)
 }
 
-fn show(value: Result[int32, string]) -> string {
+fn show(value: Result[i32, string]) -> string {
     match value {
         Result::Ok(value) => value.to_string(),
         Result::Err(error) => error,

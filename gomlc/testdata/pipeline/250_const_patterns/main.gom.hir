@@ -1,8 +1,8 @@
 package main
 file main.gom
-  const ANSWER: int = 40 + 2;
+  const ANSWER: isize = 40 + 2;
 
-  const ALTERNATE: int = 7;
+  const ALTERNATE: isize = 7;
 
   const ENABLED: bool = true;
 
@@ -10,16 +10,16 @@ file main.gom
 
   const MARKER: byte = b'\x41';
 
-  const RATIO: float64 = 1.5;
+  const RATIO: f64 = 1.5;
 
-  const CLASSIFIED_AT_COMPILE_TIME: int = def/1/11(42);
+  const CLASSIFIED_AT_COMPILE_TIME: isize = def/1/11(42);
 
-  const COMPUTED_ANSWER: int = def/1/9();
+  const COMPUTED_ANSWER: isize = def/1/9();
 
   const COMPUTED_ENABLED: bool = def/1/10();
 
   #[comptime]
-  fn make_answer() -> int {
+  fn make_answer() -> isize {
       42
   }
 
@@ -29,14 +29,14 @@ file main.gom
   }
 
   #[comptime]
-  fn comptime_classify(local/1/0: int) -> int {
+  fn comptime_classify(local/1/0: isize) -> isize {
       match value/0 {
           def/1/7 => 1,
           _ => 0,
       }
   }
 
-  fn classify(local/1/1: int) -> string {
+  fn classify(local/1/1: isize) -> string {
       match value/1 {
           def/1/0 | def/1/1 => "known",
           _ => "other",
@@ -69,7 +69,7 @@ file main.gom
       result/5
   }
 
-  fn classify_pair(local/1/6: (int, byte)) -> bool {
+  fn classify_pair(local/1/6: (isize, byte)) -> bool {
       match value/6 {
           (def/1/0, def/1/4) => true,
           _ => false,
@@ -83,25 +83,25 @@ file main.gom
       }
   }
 
-  fn classify_float(local/1/8: float64) -> bool {
+  fn classify_float(local/1/8: f64) -> bool {
       match value/8 {
           def/1/5 => true,
           _ => false,
       }
   }
 
-  fn shadow_constant() -> int {
+  fn shadow_constant() -> isize {
       let local/1/9 = 9;
       answer/9
   }
 
-  fn explicit_binding(local/1/10: int) -> int {
+  fn explicit_binding(local/1/10: isize) -> isize {
       match value/10 {
           local/1/11 @ _ => answer/11,
       }
   }
 
-  fn matches_if_let(local/1/12: int) -> bool {
+  fn matches_if_let(local/1/12: isize) -> bool {
       match value/12 {
           def/1/0 =>
             {
@@ -114,7 +114,7 @@ file main.gom
       }
   }
 
-  fn matches_let_else(local/1/13: int) -> bool {
+  fn matches_let_else(local/1/13: isize) -> bool {
       let def/1/0 =
         value/13 else
         {
@@ -123,7 +123,7 @@ file main.gom
       true
   }
 
-  fn for_binding() -> int {
+  fn for_binding() -> isize {
       let local/1/14 = Ref::new(0);
       for local/1/15 in
         [1, 2] {

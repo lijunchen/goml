@@ -1,16 +1,16 @@
-fn double(x/0: int32) -> int32 {
+fn double(x/0: i32) -> i32 {
   (x/0 * 2)
 }
 
-fn increment(x/1: int32) -> int32 {
+fn increment(x/1: i32) -> i32 {
   (x/1 + 1)
 }
 
-fn apply_once(f/2: (int32) -> int32, value/3: int32) -> int32 {
+fn apply_once(f/2: (i32) -> i32, value/3: i32) -> i32 {
   f/2(value/3)
 }
 
-fn compose(f/4: (int32) -> int32, g/5: (int32) -> int32, value/6: int32) -> int32 {
+fn compose(f/4: (i32) -> i32, g/5: (i32) -> i32, value/6: i32) -> i32 {
   f/4(g/5(value/6))
 }
 
@@ -34,10 +34,10 @@ fn main() -> unit {
     ) in
   let composed_by_closure/19 = composer_closure/18(5) in
   let printer/20 = println__T_string in
-  let mtmp411 = printer/20(inherent#int32#int32#to_string(composed/9)) in
-  let mtmp412 = printer/20(inherent#int32#int32#to_string(closure_result/12)) in
-  let mtmp413 = printer/20(inherent#int32#int32#to_string(invoked_with_global/16)) in
-  let mtmp414 = printer/20(inherent#int32#int32#to_string(composed_by_closure/19)) in
+  let mtmp411 = printer/20(inherent#i32#i32#to_string(composed/9)) in
+  let mtmp412 = printer/20(inherent#i32#i32#to_string(closure_result/12)) in
+  let mtmp413 = printer/20(inherent#i32#i32#to_string(invoked_with_global/16)) in
+  let mtmp414 = printer/20(inherent#i32#i32#to_string(composed_by_closure/19)) in
   ()
 }
 
@@ -45,7 +45,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -55,22 +55,22 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 
 fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(
   env415: closure_env_closure_apply_0,
-  value/10: int32
-) -> int32 {
+  value/10: i32
+) -> i32 {
   apply_once(increment, value/10)
 }
 
 fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(
   env416: closure_env_global_invoker_1,
-  func_to_call/13: (int32) -> int32,
-  value/14: int32
-) -> int32 {
+  func_to_call/13: (i32) -> i32,
+  value/14: i32
+) -> i32 {
   apply_once(func_to_call/13, value/14)
 }
 
 fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(
   env417: closure_env_composer_closure_2,
-  value/17: int32
-) -> int32 {
+  value/17: i32
+) -> i32 {
   compose(double, increment, value/17)
 }

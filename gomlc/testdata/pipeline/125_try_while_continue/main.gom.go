@@ -34,12 +34,12 @@ func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
 
 type Ordering int32
 
-type Option__int32 struct {
+type Option__i32 struct {
     _tag int32
     _v1_0 int32
 }
 
-func accumulate(limit__1 int32) Option__int32 {
+func accumulate(limit__1 int32) Option__i32 {
     var sum__2 *ref_int32_x
     var inline495 int32 = 0
     var inline496 *ref_int32_x = ref__Ref_5int32(inline495)
@@ -64,15 +64,15 @@ func accumulate(limit__1 int32) Option__int32 {
             if t441 {
                 continue
             } else {
-                var mtmp413 Option__int32
+                var mtmp413 Option__i32
                 var inline480 bool = cur__4 == 2
                 if inline480 {
-                    mtmp413 = Option__int32{
+                    mtmp413 = Option__i32{
                         _tag: 0,
                     }
                 } else {
                     var inline481 int32 = cur__4 + 10
-                    var inline482 Option__int32 = Option__int32{
+                    var inline482 Option__i32 = Option__i32{
                         _tag: 1,
                         _v1_0: inline481,
                     }
@@ -81,7 +81,7 @@ func accumulate(limit__1 int32) Option__int32 {
                 var jp438 int32
                 switch mtmp413._tag {
                 case 0:
-                    return Option__int32{
+                    return Option__i32{
                         _tag: 0,
                     }
                 case 1:
@@ -104,7 +104,7 @@ func accumulate(limit__1 int32) Option__int32 {
     var t430 int32
     var inline490 int32 = ref_get__Ref_5int32(sum__2)
     t430 = inline490
-    var t431 Option__int32 = Option__int32{
+    var t431 Option__i32 = Option__i32{
         _tag: 1,
         _v1_0: t430,
     }
@@ -112,14 +112,14 @@ func accumulate(limit__1 int32) Option__int32 {
 }
 
 func main0() struct{} {
-    var t449 Option__int32 = accumulate(2)
+    var t449 Option__i32 = accumulate(2)
     var t450 string
     switch t449._tag {
     case 0:
         t450 = "none"
     case 1:
         var inline511 int32 = t449._v1_0
-        var inline513 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline511)
+        var inline513 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline511)
         var inline514 string = "some=" + inline513
         t450 = inline514
     default:
@@ -127,14 +127,14 @@ func main0() struct{} {
     }
     var inline508 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t450)
     _goml_runtime_core_string_println(inline508)
-    var t451 Option__int32 = accumulate(4)
+    var t451 Option__i32 = accumulate(4)
     var t452 string
     switch t451._tag {
     case 0:
         t452 = "none"
     case 1:
         var inline503 int32 = t451._v1_0
-        var inline505 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline503)
+        var inline505 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline503)
         var inline506 string = "some=" + inline505
         t452 = inline506
     default:
@@ -145,7 +145,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t463 string = _goml_runtime_core_int32_to_string(self__33)
     return t463
 }

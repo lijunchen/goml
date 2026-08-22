@@ -1,4 +1,4 @@
-fn parse(flag/0: bool) -> Result[int32, string] {
+fn parse(flag/0: bool) -> Result[i32, string] {
     if (flag/0 : bool) {
         {
             Result::Ok(5)
@@ -10,12 +10,12 @@ fn parse(flag/0: bool) -> Result[int32, string] {
     }
 }
 
-fn bump(flag/1: bool, fallback/2: bool) -> Result[int32, string] {
-    let value/3: int32 =
+fn bump(flag/1: bool, fallback/2: bool) -> Result[i32, string] {
+    let value/3: i32 =
       if (flag/1 : bool) {
           {
-              match (parse : (bool) -> Result[int32, string])((fallback/2 : bool)) {
-                  Result::Ok(try_value/13: int32) => (try_value/13 : int32),
+              match (parse : (bool) -> Result[i32, string])((fallback/2 : bool)) {
+                  Result::Ok(try_value/13: i32) => (try_value/13 : i32),
                   Result::Err(try_residual/13: string) =>
                     return Result::Err((try_residual/13 : string)),
               }
@@ -25,31 +25,30 @@ fn bump(flag/1: bool, fallback/2: bool) -> Result[int32, string] {
               10
           }
       };
-    Result::Ok((value/3 : int32) + 1)
+    Result::Ok((value/3 : i32) + 1)
 }
 
-fn show(res/4: Result[int32, string]) -> string {
-    match (res/4 : Result[int32, string]) {
-        Result::Ok(value/5: int32) =>
-          "ok=" + (int32::to_string : (int32) -> string)((value/5 : int32)),
+fn show(res/4: Result[i32, string]) -> string {
+    match (res/4 : Result[i32, string]) {
+        Result::Ok(value/5: i32) => "ok=" + (i32::to_string : (i32) -> string)((value/5 : i32)),
         Result::Err(err/6: string) => "err=" + (err/6 : string),
     }
 }
 
 fn main() -> unit {
     (println : (string) -> unit)(
-      (show : (Result[int32, string]) -> string)(
-        (bump : (bool, bool) -> Result[int32, string])(true, true)
+      (show : (Result[i32, string]) -> string)(
+        (bump : (bool, bool) -> Result[i32, string])(true, true)
       )
     );
     (println : (string) -> unit)(
-      (show : (Result[int32, string]) -> string)(
-        (bump : (bool, bool) -> Result[int32, string])(true, false)
+      (show : (Result[i32, string]) -> string)(
+        (bump : (bool, bool) -> Result[i32, string])(true, false)
       )
     );
     (println : (string) -> unit)(
-      (show : (Result[int32, string]) -> string)(
-        (bump : (bool, bool) -> Result[int32, string])(false, false)
+      (show : (Result[i32, string]) -> string)(
+        (bump : (bool, bool) -> Result[i32, string])(false, false)
       )
     );
 }

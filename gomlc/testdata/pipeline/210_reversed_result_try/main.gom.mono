@@ -1,32 +1,32 @@
-fn parse(flag/0: bool) -> Result__int32__string {
+fn parse(flag/0: bool) -> Result__i32__string {
   if flag/0 {
       {
-        Result__int32__string::Ok(41)
+        Result__i32__string::Ok(41)
       }
   } else {
       {
-        Result__int32__string::Err("bad")
+        Result__i32__string::Err("bad")
       }
   }
 }
 
-fn compute(flag/1: bool) -> Result__int32__string {
+fn compute(flag/1: bool) -> Result__i32__string {
   let value/2 =
     {
       let mtmp411 = parse(flag/1) in
       match mtmp411 {
-        Result__int32__string::Err(x412) => {
+        Result__i32__string::Err(x412) => {
           {
-            let x412 = Result__int32__string::Err._0(mtmp411) in
+            let x412 = Result__i32__string::Err._0(mtmp411) in
             {
               let try_residual/12 = x412 in
-              return Result__int32__string::Err(try_residual/12)
+              return Result__i32__string::Err(try_residual/12)
             }
           }
         },
-        Result__int32__string::Ok(x413) => {
+        Result__i32__string::Ok(x413) => {
           {
-            let x413 = Result__int32__string::Ok._0(mtmp411) in
+            let x413 = Result__i32__string::Ok._0(mtmp411) in
             {
               let try_value/12 = x413 in
               try_value/12
@@ -35,26 +35,26 @@ fn compute(flag/1: bool) -> Result__int32__string {
         },
       }
     } in
-  Result__int32__string::Ok((value/2 + 1))
+  Result__i32__string::Ok((value/2 + 1))
 }
 
-fn show(value/3: Result__int32__string) -> string {
+fn show(value/3: Result__i32__string) -> string {
   match value/3 {
-    Result__int32__string::Err(x414) => {
+    Result__i32__string::Err(x414) => {
       {
-        let x414 = Result__int32__string::Err._0(value/3) in
+        let x414 = Result__i32__string::Err._0(value/3) in
         {
           let error/5 = x414 in
           error/5
         }
       }
     },
-    Result__int32__string::Ok(x415) => {
+    Result__i32__string::Ok(x415) => {
       {
-        let x415 = Result__int32__string::Ok._0(value/3) in
+        let x415 = Result__i32__string::Ok._0(value/3) in
         {
           let value/4 = x415 in
-          inherent#int32#int32#to_string(value/4)
+          inherent#i32#i32#to_string(value/4)
         }
       }
     },
@@ -66,7 +66,7 @@ fn main() -> unit {
   println__T_string(show(compute(false)))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

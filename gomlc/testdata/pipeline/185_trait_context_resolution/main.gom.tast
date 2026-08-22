@@ -1,6 +1,6 @@
-impl Put[int32] for Target {
-  fn put(self/0: Target, value/1: int32) -> string {
-      "number:" + (int32::to_string : (int32) -> string)((value/1 : int32))
+impl Put[i32] for Target {
+  fn put(self/0: Target, value/1: i32) -> string {
+      "number:" + (i32::to_string : (i32) -> string)((value/1 : i32))
   }
 }
 
@@ -10,20 +10,20 @@ impl Put[string] for Target {
   }
 }
 
-impl Convert[int32] for Convertible {
+impl Convert[i32] for Convertible {
   fn convert(self/4: Convertible) -> string {
       "converted"
   }
 }
 
 impl Convert[string] for Convertible {
-  fn convert(self/5: Convertible) -> int32 {
+  fn convert(self/5: Convertible) -> i32 {
       7
   }
 }
 
-impl Source[int32] for Number {
-  fn get(self/6: Number) -> int32 {
+impl Source[i32] for Number {
+  fn get(self/6: Number) -> i32 {
       (self/6 : Number).value
   }
 }
@@ -39,7 +39,7 @@ impl[S, T] Select[T] for S where S: ItemSource, S::Item = T {
 }
 
 impl ItemSource for Selected {
-  fn item(self/9: Selected) -> int32 {
+  fn item(self/9: Selected) -> i32 {
       (self/9 : Selected).value
   }
 }
@@ -53,14 +53,14 @@ fn select_item[S](source/11: S) -> S::Item where S: ItemSource {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((Put[int32]::put : (Target, int32) -> string)(Target {}, 3));
+    (println : (string) -> unit)((Put[i32]::put : (Target, i32) -> string)(Target {}, 3));
     (println : (string) -> unit)(
       (Put[string]::put : (Target, string) -> string)(Target {}, "goml")
     );
-    let text/12: string = (Convert[int32]::convert : (Convertible) -> string)(Convertible {});
-    let number/13: int32 = (Convert[string]::convert : (Convertible) -> int32)(Convertible {});
+    let text/12: string = (Convert[i32]::convert : (Convertible) -> string)(Convertible {});
+    let number/13: i32 = (Convert[string]::convert : (Convertible) -> i32)(Convertible {});
     (println : (string) -> unit)((text/12 : string));
-    (println : (int32) -> unit)((number/13 : int32));
-    (println : (int32) -> unit)((read : (Number) -> int32)(Number { value: 8 }));
-    (println : (int32) -> unit)((select_item : (Selected) -> int32)(Selected { value: 9 }));
+    (println : (i32) -> unit)((number/13 : i32));
+    (println : (i32) -> unit)((read : (Number) -> i32)(Number { value: 8 }));
+    (println : (i32) -> unit)((select_item : (Selected) -> i32)(Selected { value: 9 }));
 }

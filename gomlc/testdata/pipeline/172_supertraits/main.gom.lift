@@ -1,26 +1,24 @@
 fn main() -> unit {
-  let _wild411 = println__T_string(describe__B_Box[int]__T_int(Box__int { value: 5 })) in
-  let value/4 = Box__int32 { value: 6 } in
-  println__T_string(
-    inherent#int32#int32#to_string(trait_impl#Parent#[int32]@Box__int32#parent(value/4))
-  )
+  let _wild411 = println__T_string(describe__B_Box[isize]__T_isize(Box__isize { value: 5 })) in
+  let value/4 = Box__i32 { value: 6 } in
+  println__T_string(inherent#i32#i32#to_string(trait_impl#Parent#[i32]@Box__i32#parent(value/4)))
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn describe__B_Box[int]__T_int(value/3: Box__int) -> string {
-  ((trait_impl#ToString#int#to_string(trait_impl#Parent#[int]@Box__int#parent(value/3)) +
-    trait_impl#Render#Box__int#render(value/3)) +
-    trait_impl#Child#[int]@Box__int#child(value/3))
+fn describe__B_Box[isize]__T_isize(value/3: Box__isize) -> string {
+  ((trait_impl#ToString#isize#to_string(trait_impl#Parent#[isize]@Box__isize#parent(value/3)) +
+    trait_impl#Render#Box__isize#render(value/3)) +
+    trait_impl#Child#[isize]@Box__isize#child(value/3))
 }
 
-fn trait_impl#Parent#[int32]@Box__int32#parent(self/0: Box__int32) -> int32 {
-  Box__int32.value(self/0)
+fn trait_impl#Parent#[i32]@Box__i32#parent(self/0: Box__i32) -> i32 {
+  Box__i32.value(self/0)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -28,18 +26,18 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#Parent#[int]@Box__int#parent(self/0: Box__int) -> int {
-  Box__int.value(self/0)
+fn trait_impl#Parent#[isize]@Box__isize#parent(self/0: Box__isize) -> isize {
+  Box__isize.value(self/0)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
-fn trait_impl#Render#Box__int#render(self/1: Box__int) -> string {
+fn trait_impl#Render#Box__isize#render(self/1: Box__isize) -> string {
   ":render"
 }
 
-fn trait_impl#Child#[int]@Box__int#child(self/2: Box__int) -> string {
+fn trait_impl#Child#[isize]@Box__isize#child(self/2: Box__isize) -> string {
   ":child"
 }

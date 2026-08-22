@@ -1,50 +1,50 @@
 impl Hash for Point {
-  fn hash(self/0: Point) -> uint64 {
+  fn hash(self/0: Point) -> u64 {
       {
-          let h/1: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037;
-          let h/2: uint64 =
-            (h/1 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-              (Hash::hash : (int32) -> uint64)((self/0 : Point).x);
-          let h/3: uint64 =
-            (h/2 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-              (Hash::hash : (int32) -> uint64)((self/0 : Point).y);
-          (h/3 : uint64)
+          let h/1: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037;
+          let h/2: u64 =
+            (h/1 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+              (Hash::hash : (i32) -> u64)((self/0 : Point).x);
+          let h/3: u64 =
+            (h/2 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+              (Hash::hash : (i32) -> u64)((self/0 : Point).y);
+          (h/3 : u64)
       }
   }
 }
 
 impl PartialEq for Point {
   fn eq(self/4: Point, other/5: Point) -> bool {
-      true && (PartialEq::eq : (int32, int32) -> bool)((self/4 : Point).x, (other/5 : Point).x) &&
-        (PartialEq::eq : (int32, int32) -> bool)((self/4 : Point).y, (other/5 : Point).y)
+      true && (PartialEq::eq : (i32, i32) -> bool)((self/4 : Point).x, (other/5 : Point).x) &&
+        (PartialEq::eq : (i32, i32) -> bool)((self/4 : Point).y, (other/5 : Point).y)
   }
 }
 
-impl Eq for Point where int32: Eq, int32: PartialEq {}
+impl Eq for Point where i32: Eq, i32: PartialEq {}
 
 impl Hash for Key {
-  fn hash(self/6: Key) -> uint64 {
+  fn hash(self/6: Key) -> u64 {
       match (self/6 : Key) {
           Key::A =>
             {
-                let h/7: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
-                (h/7 : uint64)
+                let h/7: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 1;
+                (h/7 : u64)
             },
-          Key::B(#derive0_field/8: int32) =>
+          Key::B(#derive0_field/8: i32) =>
             {
-                let h/9: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
-                let h/10: uint64 =
-                  (h/9 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-                    (Hash::hash : (int32) -> uint64)((#derive0_field/8 : int32));
-                (h/10 : uint64)
+                let h/9: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 2;
+                let h/10: u64 =
+                  (h/9 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+                    (Hash::hash : (i32) -> u64)((#derive0_field/8 : i32));
+                (h/10 : u64)
             },
           Key::P(#derive1_field/11: Point) =>
             {
-                let h/12: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 3;
-                let h/13: uint64 =
-                  (h/12 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-                    (Hash::hash : (Point) -> uint64)((#derive1_field/11 : Point));
-                (h/13 : uint64)
+                let h/12: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 3;
+                let h/13: u64 =
+                  (h/12 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+                    (Hash::hash : (Point) -> u64)((#derive1_field/11 : Point));
+                (h/13 : u64)
             },
       }
   }
@@ -54,11 +54,11 @@ impl PartialEq for Key {
   fn eq(self/14: Key, other/15: Key) -> bool {
       match ((self/14 : Key), (other/15 : Key)) {
           (Key::A, Key::A) => true,
-          (Key::B(#derive0_left/16: int32), Key::B(#derive1_right/17: int32)) =>
+          (Key::B(#derive0_left/16: i32), Key::B(#derive1_right/17: i32)) =>
             true &&
-              (PartialEq::eq : (int32, int32) -> bool)(
-                (#derive0_left/16 : int32),
-                (#derive1_right/17 : int32)
+              (PartialEq::eq : (i32, i32) -> bool)(
+                (#derive0_left/16 : i32),
+                (#derive1_right/17 : i32)
               ),
           (Key::P(#derive2_left/18: Point), Key::P(#derive3_right/19: Point)) =>
             true &&
@@ -71,98 +71,98 @@ impl PartialEq for Key {
   }
 }
 
-impl Eq for Key where int32: Eq, Point: Eq, int32: PartialEq, Point: PartialEq {}
+impl Eq for Key where i32: Eq, Point: Eq, i32: PartialEq, Point: PartialEq {}
 
-fn print_opt_int(x/20: Option[int32]) -> unit {
-    match (x/20 : Option[int32]) {
-        Option::Some(v/21: int32) => (println : (int32) -> unit)((v/21 : int32)),
+fn print_opt_int(x/20: Option[i32]) -> unit {
+    match (x/20 : Option[i32]) {
+        Option::Some(v/21: i32) => (println : (i32) -> unit)((v/21 : i32)),
         Option::None => (println : (string) -> unit)("none"),
     }
 }
 
 fn main() -> unit {
-    let m1/22: HashMap[Key, int32] = (HashMap[Key, int32]::new : () -> HashMap[Key, int32])();
-    (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)(
-      (m1/22 : HashMap[Key, int32]),
+    let m1/22: HashMap[Key, i32] = (HashMap[Key, i32]::new : () -> HashMap[Key, i32])();
+    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> unit)(
+      (m1/22 : HashMap[Key, i32]),
       Key::A,
       10
     );
-    (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)(
-      (m1/22 : HashMap[Key, int32]),
+    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> unit)(
+      (m1/22 : HashMap[Key, i32]),
       Key::B(1),
       20
     );
-    (println : (int) -> unit)(
-      (HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m1/22 : HashMap[Key, int32]))
+    (println : (isize) -> unit)(
+      (HashMap[Key, i32]::len : (HashMap[Key, i32]) -> isize)((m1/22 : HashMap[Key, i32]))
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[Key, int32]::get : (HashMap[Key, int32], Key) -> Option[int32])(
-        (m1/22 : HashMap[Key, int32]),
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[Key, i32]::get : (HashMap[Key, i32], Key) -> Option[i32])(
+        (m1/22 : HashMap[Key, i32]),
         Key::A
       )
     );
     (println : (bool) -> unit)(
-      (HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)(
-        (m1/22 : HashMap[Key, int32]),
+      (HashMap[Key, i32]::contains : (HashMap[Key, i32], Key) -> bool)(
+        (m1/22 : HashMap[Key, i32]),
         Key::B(1)
       )
     );
-    (HashMap[Key, int32]::remove : (HashMap[Key, int32], Key) -> unit)(
-      (m1/22 : HashMap[Key, int32]),
+    (HashMap[Key, i32]::remove : (HashMap[Key, i32], Key) -> unit)(
+      (m1/22 : HashMap[Key, i32]),
       Key::B(1)
     );
     (println : (bool) -> unit)(
-      (HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)(
-        (m1/22 : HashMap[Key, int32]),
+      (HashMap[Key, i32]::contains : (HashMap[Key, i32], Key) -> bool)(
+        (m1/22 : HashMap[Key, i32]),
         Key::B(1)
       )
     );
-    (println : (int) -> unit)(
-      (HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m1/22 : HashMap[Key, int32]))
+    (println : (isize) -> unit)(
+      (HashMap[Key, i32]::len : (HashMap[Key, i32]) -> isize)((m1/22 : HashMap[Key, i32]))
     );
-    let m2/23: HashMap[Ref[Point], int32] =
-      (HashMap[Ref[Point], int32]::new : () -> HashMap[Ref[Point], int32])();
+    let m2/23: HashMap[Ref[Point], i32] =
+      (HashMap[Ref[Point], i32]::new : () -> HashMap[Ref[Point], i32])();
     let p1/24: Ref[Point] = (Ref[Point]::new : (Point) -> Ref[Point])(Point { x: 1, y: 2 });
     let p2/25: Ref[Point] = (Ref[Point]::new : (Point) -> Ref[Point])(Point { x: 1, y: 2 });
-    (HashMap[Ref[Point], int32]::set : (HashMap[Ref[Point], int32], Ref[Point], int32) -> unit)(
-      (m2/23 : HashMap[Ref[Point], int32]),
+    (HashMap[Ref[Point], i32]::set : (HashMap[Ref[Point], i32], Ref[Point], i32) -> unit)(
+      (m2/23 : HashMap[Ref[Point], i32]),
       (p1/24 : Ref[Point]),
       99
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[Ref[Point], int32]::get : (HashMap[Ref[Point], int32], Ref[Point]) -> Option[int32])(
-        (m2/23 : HashMap[Ref[Point], int32]),
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[Ref[Point], i32]::get : (HashMap[Ref[Point], i32], Ref[Point]) -> Option[i32])(
+        (m2/23 : HashMap[Ref[Point], i32]),
         (p1/24 : Ref[Point])
       )
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[Ref[Point], int32]::get : (HashMap[Ref[Point], int32], Ref[Point]) -> Option[int32])(
-        (m2/23 : HashMap[Ref[Point], int32]),
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[Ref[Point], i32]::get : (HashMap[Ref[Point], i32], Ref[Point]) -> Option[i32])(
+        (m2/23 : HashMap[Ref[Point], i32]),
         (p2/25 : Ref[Point])
       )
     );
     (Ref[Point]::set : (Ref[Point], Point) -> unit)((p1/24 : Ref[Point]), Point { x: 9, y: 8 });
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[Ref[Point], int32]::get : (HashMap[Ref[Point], int32], Ref[Point]) -> Option[int32])(
-        (m2/23 : HashMap[Ref[Point], int32]),
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[Ref[Point], i32]::get : (HashMap[Ref[Point], i32], Ref[Point]) -> Option[i32])(
+        (m2/23 : HashMap[Ref[Point], i32]),
         (p1/24 : Ref[Point])
       )
     );
     (println : (bool) -> unit)(
       (PartialEq::eq : (Ref[Point], Ref[Point]) -> bool)((p1/24 : Ref[Point]), (p2/25 : Ref[Point]))
     );
-    let m3/26: HashMap[Ref[Key], int32] =
-      (HashMap[Ref[Key], int32]::new : () -> HashMap[Ref[Key], int32])();
+    let m3/26: HashMap[Ref[Key], i32] =
+      (HashMap[Ref[Key], i32]::new : () -> HashMap[Ref[Key], i32])();
     let k1/27: Ref[Key] = (Ref[Key]::new : (Key) -> Ref[Key])(Key::B(7));
     let k2/28: Ref[Key] = (k1/27 : Ref[Key]);
-    (HashMap[Ref[Key], int32]::set : (HashMap[Ref[Key], int32], Ref[Key], int32) -> unit)(
-      (m3/26 : HashMap[Ref[Key], int32]),
+    (HashMap[Ref[Key], i32]::set : (HashMap[Ref[Key], i32], Ref[Key], i32) -> unit)(
+      (m3/26 : HashMap[Ref[Key], i32]),
       (k1/27 : Ref[Key]),
       123
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[Ref[Key], int32]::get : (HashMap[Ref[Key], int32], Ref[Key]) -> Option[int32])(
-        (m3/26 : HashMap[Ref[Key], int32]),
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[Ref[Key], i32]::get : (HashMap[Ref[Key], i32], Ref[Key]) -> Option[i32])(
+        (m3/26 : HashMap[Ref[Key], i32]),
         (k2/28 : Ref[Key])
       )
     );

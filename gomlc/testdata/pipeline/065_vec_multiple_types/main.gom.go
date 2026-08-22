@@ -97,7 +97,7 @@ func vec_len__Vec_4bool(vec *_goml_vec_bool) int {
 type Ordering int32
 
 func main0() struct{} {
-    var vi__0 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
+    var vi__0 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__i32()
     var inline517 int32 = 42
     vec_push__Vec_5int32(vi__0, inline517)
     var val_i__1 int32 = vec_get__Vec_5int32(vi__0, 0)
@@ -156,7 +156,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__i32() *_goml_vec_int32 {
     var t430 *_goml_vec_int32 = vec_new__Vec_5int32()
     return t430
 }

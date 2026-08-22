@@ -1,32 +1,32 @@
-fn take_u8(x/0: uint8) -> uint8 {
-    (x/0 : uint8)
+fn take_u8(x/0: u8) -> u8 {
+    (x/0 : u8)
 }
 
-fn take_f32(x/1: float32) -> float32 {
-    (x/1 : float32)
+fn take_f32(x/1: f32) -> f32 {
+    (x/1 : f32)
 }
 
 fn main() -> unit {
-    let a/2: uint8 = 1;
-    let b/3: int8 = 2;
-    let c/4: int16 = 3;
-    let d/5: uint16 = 4;
-    let e/6: uint32 = 5;
-    let f/7: int64 = 6;
-    let g/8: uint64 = 7;
-    let h/9: float32 = 1;
-    (println : (string) -> unit)((ToString::to_string : (uint8) -> string)((a/2 : uint8)));
-    (println : (string) -> unit)((ToString::to_string : (int8) -> string)((b/3 : int8)));
-    (println : (string) -> unit)((ToString::to_string : (int16) -> string)((c/4 : int16)));
-    (println : (string) -> unit)((ToString::to_string : (uint16) -> string)((d/5 : uint16)));
-    (println : (string) -> unit)((ToString::to_string : (uint32) -> string)((e/6 : uint32)));
-    (println : (string) -> unit)((ToString::to_string : (int64) -> string)((f/7 : int64)));
-    (println : (string) -> unit)((ToString::to_string : (uint64) -> string)((g/8 : uint64)));
-    (println : (string) -> unit)((ToString::to_string : (float32) -> string)((h/9 : float32)));
+    let a/2: u8 = 1;
+    let b/3: i8 = 2;
+    let c/4: i16 = 3;
+    let d/5: u16 = 4;
+    let e/6: u32 = 5;
+    let f/7: i64 = 6;
+    let g/8: u64 = 7;
+    let h/9: f32 = 1;
+    (println : (string) -> unit)((ToString::to_string : (u8) -> string)((a/2 : u8)));
+    (println : (string) -> unit)((ToString::to_string : (i8) -> string)((b/3 : i8)));
+    (println : (string) -> unit)((ToString::to_string : (i16) -> string)((c/4 : i16)));
+    (println : (string) -> unit)((ToString::to_string : (u16) -> string)((d/5 : u16)));
+    (println : (string) -> unit)((ToString::to_string : (u32) -> string)((e/6 : u32)));
+    (println : (string) -> unit)((ToString::to_string : (i64) -> string)((f/7 : i64)));
+    (println : (string) -> unit)((ToString::to_string : (u64) -> string)((g/8 : u64)));
+    (println : (string) -> unit)((ToString::to_string : (f32) -> string)((h/9 : f32)));
     (println : (string) -> unit)(
-      (ToString::to_string : (uint8) -> string)((take_u8 : (uint8) -> uint8)(10))
+      (ToString::to_string : (u8) -> string)((take_u8 : (u8) -> u8)(10))
     );
     (println : (string) -> unit)(
-      (ToString::to_string : (float32) -> string)((take_f32 : (float32) -> float32)(2.5))
+      (ToString::to_string : (f32) -> string)((take_f32 : (f32) -> f32)(2.5))
     );
 }

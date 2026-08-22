@@ -147,12 +147,12 @@ func main0() struct{} {
     var inline539 string = "sum_to(5)="
     var inline540 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline539)
     _goml_runtime_core_string_print(inline540)
-    var inline536 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(first__10)
+    var inline536 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(first__10)
     _goml_runtime_core_string_println(inline536)
     var inline532 string = "sum_even(6)="
     var inline533 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline532)
     _goml_runtime_core_string_print(inline533)
-    var inline529 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(evens__11)
+    var inline529 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(evens__11)
     _goml_runtime_core_string_println(inline529)
     return struct{}{}
 }
@@ -161,7 +161,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t471 string = _goml_runtime_core_int32_to_string(self__154)
     return t471
 }

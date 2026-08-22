@@ -1,46 +1,48 @@
-fn range(start/0: int32, end/1: int32) -> int32 {
-    (start/0 : int32) + (end/1 : int32)
+fn range(start/0: i32, end/1: i32) -> i32 {
+    (start/0 : i32) + (end/1 : i32)
 }
 
-fn endpoint(calls/2: Ref[int], value/3: int) -> int {
-    (Ref[int]::set : (Ref[int], int) -> unit)(
-      (calls/2 : Ref[int]),
-      (Ref[int]::get : (Ref[int]) -> int)((calls/2 : Ref[int])) + 1
+fn endpoint(calls/2: Ref[isize], value/3: isize) -> isize {
+    (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+      (calls/2 : Ref[isize]),
+      (Ref[isize]::get : (Ref[isize]) -> isize)((calls/2 : Ref[isize])) + 1
     );
-    (value/3 : int)
+    (value/3 : isize)
 }
 
 fn main() -> unit {
-    for value/4: int in
-      (__goml_builtin_range : (int, int) -> FnIterator[int])(1, 4) {
-        (println : (int) -> unit)((value/4 : int));
+    for value/4: isize in
+      (__goml_builtin_range : (isize, isize) -> FnIterator[isize])(1, 4) {
+        (println : (isize) -> unit)((value/4 : isize));
     };
-    let calls/5: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    for value/6: int in
-      (__goml_builtin_range_inclusive : (int, int) -> FnIterator[int])(
-        (endpoint : (Ref[int], int) -> int)((calls/5 : Ref[int]), 4),
-        (endpoint : (Ref[int], int) -> int)((calls/5 : Ref[int]), 6)
+    let calls/5: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    for value/6: isize in
+      (__goml_builtin_range_inclusive : (isize, isize) -> FnIterator[isize])(
+        (endpoint : (Ref[isize], isize) -> isize)((calls/5 : Ref[isize]), 4),
+        (endpoint : (Ref[isize], isize) -> isize)((calls/5 : Ref[isize]), 6)
       ) {
-        (println : (int) -> unit)((value/6 : int));
+        (println : (isize) -> unit)((value/6 : isize));
     };
-    for value/7: int in
-      (__goml_builtin_range_inclusive : (int, int) -> FnIterator[int])(3, 1) {
-        (println : (int) -> unit)((value/7 : int));
+    for value/7: isize in
+      (__goml_builtin_range_inclusive : (isize, isize) -> FnIterator[isize])(3, 1) {
+        (println : (isize) -> unit)((value/7 : isize));
     };
-    let maximum/8: int = 9223372036854775807;
-    for value/9: int in
-      (__goml_builtin_range_inclusive : (int, int) -> FnIterator[int])(
-        (maximum/8 : int),
-        (maximum/8 : int)
+    let maximum/8: isize = 9223372036854775807;
+    for value/9: isize in
+      (__goml_builtin_range_inclusive : (isize, isize) -> FnIterator[isize])(
+        (maximum/8 : isize),
+        (maximum/8 : isize)
       ) {
-        (println : (int) -> unit)((value/9 : int));
+        (println : (isize) -> unit)((value/9 : isize));
     };
-    let iterator/10: FnIterator[int] =
-      (__goml_builtin_range_inclusive : (int, int) -> FnIterator[int])(8, 8);
-    match (Iterator::next : (FnIterator[int]) -> Option[int])((iterator/10 : FnIterator[int])) {
-        Option::Some(value/11: int) => (println : (int) -> unit)((value/11 : int)),
+    let iterator/10: FnIterator[isize] =
+      (__goml_builtin_range_inclusive : (isize, isize) -> FnIterator[isize])(8, 8);
+    match (Iterator::next : (FnIterator[isize]) -> Option[isize])(
+      (iterator/10 : FnIterator[isize])
+    ) {
+        Option::Some(value/11: isize) => (println : (isize) -> unit)((value/11 : isize)),
         Option::None => (println : (string) -> unit)("missing"),
     };
-    (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((calls/5 : Ref[int])));
-    (println : (int32) -> unit)((range : (int32, int32) -> int32)(10, 20));
+    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((calls/5 : Ref[isize])));
+    (println : (i32) -> unit)((range : (i32, i32) -> i32)(10, 20));
 }

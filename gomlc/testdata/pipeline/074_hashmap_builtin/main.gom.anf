@@ -1,17 +1,17 @@
-fn trait_impl#Hash#Point#hash(self/0: Point) -> uint64 {
-  let t443 = (0 as uint64) in
+fn trait_impl#Hash#Point#hash(self/0: Point) -> u64 {
+  let t443 = (0 as u64) in
   let h/1 = (t443 + 14695981039346656037) in
-  let t444 = (0 as uint64) in
+  let t444 = (0 as u64) in
   let t445 = (t444 + 1099511628211) in
   let t446 = (h/1 * t445) in
   let t447 = Point.x(self/0) in
-  join inline_cont606(t448: uint64) -> uint64 {
+  join inline_cont606(t448: u64) -> u64 {
     let h/2 = (t446 + t448) in
-    let t449 = (0 as uint64) in
+    let t449 = (0 as u64) in
     let t450 = (t449 + 1099511628211) in
     let t451 = (h/2 * t450) in
     let t452 = Point.y(self/0) in
-    join inline_cont604(t453: uint64) -> uint64 {
+    join inline_cont604(t453: u64) -> u64 {
       let h/3 = (t451 + t453) in
       h/3
     } in
@@ -39,23 +39,23 @@ fn trait_impl#PartialEq#Point#eq(self/4: Point, other/5: Point) -> bool {
   jump k458(inline609)
 }
 
-fn trait_impl#Hash#Key#hash(self/6: Key) -> uint64 {
+fn trait_impl#Hash#Key#hash(self/6: Key) -> u64 {
   match self/6 {
     Tag_0 => {
-      let t470 = (0 as uint64) in
+      let t470 = (0 as u64) in
       let t471 = (t470 + 14695981039346656037) in
       let h/7 = (t471 + 1) in
       h/7
     },
     Tag_1 => {
       let x411 = Key::B._0(self/6) in
-      let t472 = (0 as uint64) in
+      let t472 = (0 as u64) in
       let t473 = (t472 + 14695981039346656037) in
       let h/9 = (t473 + 2) in
-      let t474 = (0 as uint64) in
+      let t474 = (0 as u64) in
       let t475 = (t474 + 1099511628211) in
       let t476 = (h/9 * t475) in
-      join inline_cont612(t477: uint64) -> uint64 {
+      join inline_cont612(t477: u64) -> u64 {
         let h/10 = (t476 + t477) in
         h/10
       } in
@@ -64,29 +64,29 @@ fn trait_impl#Hash#Key#hash(self/6: Key) -> uint64 {
     },
     Tag_2 => {
       let x412 = Key::P._0(self/6) in
-      let t478 = (0 as uint64) in
+      let t478 = (0 as u64) in
       let t479 = (t478 + 14695981039346656037) in
       let h/12 = (t479 + 3) in
-      let t480 = (0 as uint64) in
+      let t480 = (0 as u64) in
       let t481 = (t480 + 1099511628211) in
       let t482 = (h/12 * t481) in
-      join inline_cont614(t483: uint64) -> uint64 {
+      join inline_cont614(t483: u64) -> u64 {
         let h/13 = (t482 + t483) in
         h/13
       } in
-      let inline615 = (0 as uint64) in
+      let inline615 = (0 as u64) in
       let inline616 = (inline615 + 14695981039346656037) in
-      let inline617 = (0 as uint64) in
+      let inline617 = (0 as u64) in
       let inline618 = (inline617 + 1099511628211) in
       let inline619 = (inline616 * inline618) in
       let inline620 = Point.x(x412) in
-      let inline621 = trait_impl#Hash#int32#hash(inline620) in
+      let inline621 = trait_impl#Hash#i32#hash(inline620) in
       let inline622 = (inline619 + inline621) in
-      let inline623 = (0 as uint64) in
+      let inline623 = (0 as u64) in
       let inline624 = (inline623 + 1099511628211) in
       let inline625 = (inline622 * inline624) in
       let inline626 = Point.y(x412) in
-      let inline627 = trait_impl#Hash#int32#hash(inline626) in
+      let inline627 = trait_impl#Hash#i32#hash(inline626) in
       let inline628 = (inline625 + inline627) in
       jump inline_cont614(inline628)
     },
@@ -127,7 +127,7 @@ fn trait_impl#PartialEq#Key#eq(self/14: Key, other/15: Key) -> bool {
             if inline633 {
               let inline634 = Point.y(x423) in
               let inline635 = Point.y(x417) in
-              let inline636 = trait_impl#PartialEq#int32#eq(inline634, inline635) in
+              let inline636 = trait_impl#PartialEq#i32#eq(inline634, inline635) in
               inline636
             } else {
               false
@@ -135,7 +135,7 @@ fn trait_impl#PartialEq#Key#eq(self/14: Key, other/15: Key) -> bool {
           } in
           let inline637 = Point.x(x423) in
           let inline638 = Point.x(x417) in
-          let inline639 = trait_impl#PartialEq#int32#eq(inline637, inline638) in
+          let inline639 = trait_impl#PartialEq#i32#eq(inline637, inline638) in
           jump inline_join632(inline639)
         },
         _ => {
@@ -146,7 +146,7 @@ fn trait_impl#PartialEq#Key#eq(self/14: Key, other/15: Key) -> bool {
   }
 }
 
-fn print_opt_int(x/20: Option__int32) -> unit {
+fn print_opt_int(x/20: Option__i32) -> unit {
   match x/20 {
     Tag_0 => {
       let inline641 = "none" in
@@ -155,8 +155,8 @@ fn print_opt_int(x/20: Option__int32) -> unit {
       ()
     },
     Tag_1 => {
-      let x424 = Option__int32::Some._0(x/20) in
-      let inline645 = trait_impl#ToString#int32#to_string(x424) in
+      let x424 = Option__i32::Some._0(x/20) in
+      let inline645 = trait_impl#ToString#i32#to_string(x424) in
       let inline646 = @runtime(core.string_println)(inline645) in
       ()
     },
@@ -164,53 +164,53 @@ fn print_opt_int(x/20: Option__int32) -> unit {
 }
 
 fn main() -> unit {
-  let m1/22 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() in
-  let _wild425 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m1/22, Tag_0, 10) in
+  let m1/22 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_i32() in
+  let _wild425 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_i32(m1/22, Tag_0, 10) in
   let t505 = Key::B(1) in
-  let _wild426 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m1/22, t505, 20) in
-  let t506 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m1/22) in
-  let _wild427 = println__T_int(t506) in
-  let t507 = inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m1/22, Tag_0) in
+  let _wild426 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_i32(m1/22, t505, 20) in
+  let t506 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_i32(m1/22) in
+  let _wild427 = println__T_isize(t506) in
+  let t507 = inherent#HashMap#HashMap[K,V]#get__K_Key__V_i32(m1/22, Tag_0) in
   let _wild428 = print_opt_int(t507) in
   let t508 = Key::B(1) in
-  let t509 = inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m1/22, t508) in
+  let t509 = inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i32(m1/22, t508) in
   let _wild429 = println__T_bool(t509) in
   let t510 = Key::B(1) in
-  let _wild430 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m1/22, t510) in
+  let _wild430 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_i32(m1/22, t510) in
   let t511 = Key::B(1) in
-  let t512 = inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m1/22, t511) in
+  let t512 = inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i32(m1/22, t511) in
   let _wild431 = println__T_bool(t512) in
-  let t513 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m1/22) in
-  let _wild432 = println__T_int(t513) in
-  let m2/23 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Point]__V_int32() in
+  let t513 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_i32(m1/22) in
+  let _wild432 = println__T_isize(t513) in
+  let m2/23 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Point]__V_i32() in
   let t514 = Point { x: 1, y: 2 } in
   let p1/24 = inherent#Ref#Ref[T]#new__T_Point(t514) in
   let t515 = Point { x: 1, y: 2 } in
   let p2/25 = inherent#Ref#Ref[T]#new__T_Point(t515) in
-  let _wild433 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_int32(m2/23, p1/24, 99) in
-  let t516 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p1/24) in
+  let _wild433 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_i32(m2/23, p1/24, 99) in
+  let t516 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_i32(m2/23, p1/24) in
   join inline_cont682(_wild434: unit) -> unit {
-    join inline_cont680(t517: Option__int32) -> unit {
+    join inline_cont680(t517: Option__i32) -> unit {
       join inline_cont675(_wild435: unit) -> unit {
         let t518 = Point { x: 9, y: 8 } in
         join inline_cont673(_wild436: unit) -> unit {
-          join inline_cont671(t519: Option__int32) -> unit {
+          join inline_cont671(t519: Option__i32) -> unit {
             join inline_cont666(_wild437: unit) -> unit {
               join inline_cont664(t520: bool) -> unit {
                 join inline_cont661(_wild438: unit) -> unit {
-                  join inline_cont659(m3/26: HashMap[Ref[Key], int32]) -> unit {
+                  join inline_cont659(m3/26: HashMap[Ref[Key], i32]) -> unit {
                     let t521 = Key::B(7) in
                     join inline_cont657(k1/27: Ref[Key]) -> unit {
                       join inline_cont654(_wild439: unit) -> unit {
-                        join inline_cont652(t522: Option__int32) -> unit {
+                        join inline_cont652(t522: Option__i32) -> unit {
                           match t522 {
                             Tag_0 => {
                               let inline648 = println__T_string("none") in
                               ()
                             },
                             Tag_1 => {
-                              let inline649 = Option__int32::Some._0(t522) in
-                              let inline651 = println__T_int32(inline649) in
+                              let inline649 = Option__i32::Some._0(t522) in
+                              let inline651 = println__T_i32(inline649) in
                               ()
                             },
                           }
@@ -241,8 +241,8 @@ fn main() -> unit {
                 jump inline_cont666(())
               },
               Tag_1 => {
-                let inline668 = Option__int32::Some._0(t519) in
-                let inline670 = println__T_int32(inline668) in
+                let inline668 = Option__i32::Some._0(t519) in
+                let inline670 = println__T_i32(inline668) in
                 jump inline_cont666(())
               },
             }
@@ -259,8 +259,8 @@ fn main() -> unit {
           jump inline_cont675(())
         },
         Tag_1 => {
-          let inline677 = Option__int32::Some._0(t517) in
-          let inline679 = println__T_int32(inline677) in
+          let inline677 = Option__i32::Some._0(t517) in
+          let inline679 = println__T_i32(inline677) in
           jump inline_cont675(())
         },
       }
@@ -274,19 +274,19 @@ fn main() -> unit {
       jump inline_cont682(())
     },
     Tag_1 => {
-      let inline684 = Option__int32::Some._0(t516) in
-      let inline686 = println__T_int32(inline684) in
+      let inline684 = Option__i32::Some._0(t516) in
+      let inline686 = println__T_i32(inline684) in
       jump inline_cont682(())
     },
   }
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   let t525 = @runtime(core.int32_hash)(self/214) in
   t525
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   let t528 = (self/191 == other/192) in
   t528
 }
@@ -299,7 +299,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont687(value/1)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont688(t533: string) -> unit {
     let t534 = @runtime(core.string_println)(t533) in
     ()
@@ -308,21 +308,21 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont688(inline689)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() -> HashMap[Key, int32] {
+fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_i32() -> HashMap[Key, i32] {
   let t537 = @intrinsic(hashmap.new)() in
   t537
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(
-  self/422: HashMap[Key, int32],
+fn inherent#HashMap#HashMap[K,V]#set__K_Key__V_i32(
+  self/422: HashMap[Key, i32],
   key/423: Key,
-  value/424: int32
+  value/424: i32
 ) -> unit {
   let t539 = @intrinsic(hashmap.set)(self/422, key/423, value/424) in
   ()
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont690(t541: string) -> unit {
     let t542 = @runtime(core.string_println)(t541) in
     ()
@@ -331,15 +331,15 @@ fn println__T_int(value/1: int) -> unit {
   jump inline_cont690(inline691)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(self/427: HashMap[Key, int32]) -> int {
+fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_i32(self/427: HashMap[Key, i32]) -> isize {
   let t545 = @intrinsic(hashmap.len)(self/427) in
   t545
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(
-  self/420: HashMap[Key, int32],
+fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_i32(
+  self/420: HashMap[Key, i32],
   key/421: Key
-) -> Option__int32 {
+) -> Option__i32 {
   let t548 = @intrinsic(hashmap.get)(self/420, key/421) in
   t548
 }
@@ -353,23 +353,23 @@ fn println__T_bool(value/1: bool) -> unit {
   jump inline_cont692(inline693)
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(
-  self/428: HashMap[Key, int32],
+fn inherent#HashMap#HashMap[K,V]#contains__K_Key__V_i32(
+  self/428: HashMap[Key, i32],
   key/429: Key
 ) -> bool {
   let t554 = @intrinsic(hashmap.contains)(self/428, key/429) in
   t554
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(
-  self/425: HashMap[Key, int32],
+fn inherent#HashMap#HashMap[K,V]#remove__K_Key__V_i32(
+  self/425: HashMap[Key, i32],
   key/426: Key
 ) -> unit {
   let t556 = @intrinsic(hashmap.remove)(self/425, key/426) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Point]__V_int32() -> HashMap[Ref[Point], int32] {
+fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Point]__V_i32() -> HashMap[Ref[Point], i32] {
   let t559 = @intrinsic(hashmap.new)() in
   t559
 }
@@ -379,19 +379,19 @@ fn inherent#Ref#Ref[T]#new__T_Point(value/431: Point) -> Ref[Point] {
   t562
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_int32(
-  self/422: HashMap[Ref[Point], int32],
+fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_i32(
+  self/422: HashMap[Ref[Point], i32],
   key/423: Ref[Point],
-  value/424: int32
+  value/424: i32
 ) -> unit {
   let t564 = @intrinsic(hashmap.set)(self/422, key/423, value/424) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(
-  self/420: HashMap[Ref[Point], int32],
+fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_i32(
+  self/420: HashMap[Ref[Point], i32],
   key/421: Ref[Point]
-) -> Option__int32 {
+) -> Option__i32 {
   let t567 = @intrinsic(hashmap.get)(self/420, key/421) in
   t567
 }
@@ -406,7 +406,7 @@ fn trait_impl#PartialEq#Ref[Point]#eq(self/220: Ref[Point], other/221: Ref[Point
   t572
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Key]__V_int32() -> HashMap[Ref[Key], int32] {
+fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Key]__V_i32() -> HashMap[Ref[Key], i32] {
   let t575 = @intrinsic(hashmap.new)() in
   t575
 }
@@ -416,19 +416,19 @@ fn inherent#Ref#Ref[T]#new__T_Key(value/431: Key) -> Ref[Key] {
   t578
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Key]__V_int32(
-  self/422: HashMap[Ref[Key], int32],
+fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Key]__V_i32(
+  self/422: HashMap[Ref[Key], i32],
   key/423: Ref[Key],
-  value/424: int32
+  value/424: i32
 ) -> unit {
   let t580 = @intrinsic(hashmap.set)(self/422, key/423, value/424) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Key]__V_int32(
-  self/420: HashMap[Ref[Key], int32],
+fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Key]__V_i32(
+  self/420: HashMap[Ref[Key], i32],
   key/421: Ref[Key]
-) -> Option__int32 {
+) -> Option__i32 {
   let t583 = @intrinsic(hashmap.get)(self/420, key/421) in
   t583
 }
@@ -437,12 +437,12 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t588 = @runtime(core.int32_to_string)(self/154) in
   t588
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t591 = @runtime(core.int_to_string)(self/151) in
   t591
 }
@@ -452,7 +452,7 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   t594
 }
 
-fn trait_impl#Hash#Ref[Point]#hash(self/222: Ref[Point]) -> uint64 {
+fn trait_impl#Hash#Ref[Point]#hash(self/222: Ref[Point]) -> u64 {
   let t597 = @intrinsic(ref.ptr_hash)(self/222) in
   t597
 }
@@ -462,7 +462,7 @@ fn trait_impl#PartialEq#Ref[Key]#eq(self/220: Ref[Key], other/221: Ref[Key]) -> 
   t600
 }
 
-fn trait_impl#Hash#Ref[Key]#hash(self/222: Ref[Key]) -> uint64 {
+fn trait_impl#Hash#Ref[Key]#hash(self/222: Ref[Key]) -> u64 {
   let t603 = @intrinsic(ref.ptr_hash)(self/222) in
   t603
 }

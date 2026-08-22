@@ -1,4 +1,4 @@
-fn maybe_value(flag/0: bool) -> Option[int32] {
+fn maybe_value(flag/0: bool) -> Option[i32] {
     if (flag/0 : bool) {
         {
             Option::Some(41)
@@ -10,27 +10,27 @@ fn maybe_value(flag/0: bool) -> Option[int32] {
     }
 }
 
-fn compute(flag/1: bool) -> Option[int32] {
-    let value/2: int32 =
-      match (maybe_value : (bool) -> Option[int32])((flag/1 : bool)) {
-          Option::Some(try_value/11: int32) => (try_value/11 : int32),
+fn compute(flag/1: bool) -> Option[i32] {
+    let value/2: i32 =
+      match (maybe_value : (bool) -> Option[i32])((flag/1 : bool)) {
+          Option::Some(try_value/11: i32) => (try_value/11 : i32),
           Option::None => return Option::None,
       };
-    Option::Some((value/2 : int32) + 1)
+    Option::Some((value/2 : i32) + 1)
 }
 
-fn show(value/3: Option[int32]) -> string {
-    match (value/3 : Option[int32]) {
-        Option::Some(value/4: int32) => (int32::to_string : (int32) -> string)((value/4 : int32)),
+fn show(value/3: Option[i32]) -> string {
+    match (value/3 : Option[i32]) {
+        Option::Some(value/4: i32) => (i32::to_string : (i32) -> string)((value/4 : i32)),
         Option::None => "none",
     }
 }
 
 fn main() -> unit {
     (println : (string) -> unit)(
-      (show : (Option[int32]) -> string)((compute : (bool) -> Option[int32])(true))
+      (show : (Option[i32]) -> string)((compute : (bool) -> Option[i32])(true))
     );
     (println : (string) -> unit)(
-      (show : (Option[int32]) -> string)((compute : (bool) -> Option[int32])(false))
+      (show : (Option[i32]) -> string)((compute : (bool) -> Option[i32])(false))
     )
 }

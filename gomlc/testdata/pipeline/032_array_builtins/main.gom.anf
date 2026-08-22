@@ -1,4 +1,4 @@
-fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
+fn update_array(arr/0: [i32; 3]) -> [i32; 3] {
   let arr/1 = arr/0 in
   let place_root411 = arr/1 in
   let index412 = 1 in
@@ -9,15 +9,15 @@ fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
   arr/1
 }
 
-fn read_array(arr/2: [int32; 3]) -> int32 {
+fn read_array(arr/2: [i32; 3]) -> i32 {
   let t423 = @intrinsic(array.get)(arr/2, 1) in
   t423
 }
 
 fn main() -> unit {
   let arr/3 = [1, 2, 3] in
-  join inline_cont441(updated/4: [int32; 3]) -> unit {
-    join inline_cont439(value/5: int32) -> unit {
+  join inline_cont441(updated/4: [i32; 3]) -> unit {
+    join inline_cont439(value/5: i32) -> unit {
       join inline_cont437(t425: string) -> unit {
         let inline435 = trait_impl#ToString#string#to_string(t425) in
         let inline436 = @runtime(core.string_println)(inline435) in
@@ -47,7 +47,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont450(value/1)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t431 = @runtime(core.int32_to_string)(self/33) in
   t431
 }

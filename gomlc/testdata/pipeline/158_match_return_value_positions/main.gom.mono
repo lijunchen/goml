@@ -1,4 +1,4 @@
-fn add_after_match(flag/0: bool) -> int32 {
+fn add_after_match(flag/0: bool) -> i32 {
   let value/1 =
     match flag/0 {
       true => {
@@ -12,7 +12,7 @@ fn add_after_match(flag/0: bool) -> int32 {
 }
 
 fn receiver_after_match(flag/2: bool) -> string {
-  inherent#int#int#to_string(
+  inherent#isize#isize#to_string(
     match flag/2 {
       true => {
         return "early"
@@ -24,7 +24,7 @@ fn receiver_after_match(flag/2: bool) -> string {
   )
 }
 
-fn closure_after_match(flag/3: bool) -> int32 {
+fn closure_after_match(flag/3: bool) -> i32 {
   let f/6 =
     |inner/4| {
       let value/5 =
@@ -42,27 +42,27 @@ fn closure_after_match(flag/3: bool) -> int32 {
 }
 
 fn main() -> unit {
-  let _wild411 = println__T_int32(add_after_match(false)) in
-  let _wild412 = println__T_int32(add_after_match(true)) in
+  let _wild411 = println__T_i32(add_after_match(false)) in
+  let _wild412 = println__T_i32(add_after_match(true)) in
   let _wild413 = println__T_string(receiver_after_match(false)) in
   let _wild414 = println__T_string(receiver_after_match(true)) in
-  let _wild415 = println__T_int32(closure_after_match(false)) in
-  let _wild416 = println__T_int32(closure_after_match(true)) in
+  let _wild415 = println__T_i32(closure_after_match(false)) in
+  let _wild416 = println__T_i32(closure_after_match(true)) in
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 

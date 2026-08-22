@@ -1,4 +1,4 @@
-fn choose(flag/0: bool) -> int32 {
+fn choose(flag/0: bool) -> i32 {
   let value/1 =
     if flag/0 {
         {
@@ -13,13 +13,16 @@ fn choose(flag/0: bool) -> int32 {
 }
 
 fn continue_branch() -> unit {
-  let count/2 = inherent#Ref#Ref[T]#new__T_int(0) in
-  while (inherent#Ref#Ref[T]#get__T_int(count/2) < 2) {
+  let count/2 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  while (inherent#Ref#Ref[T]#get__T_isize(count/2) < 2) {
       {
         let _wild411 =
-          inherent#Ref#Ref[T]#set__T_int(count/2, (inherent#Ref#Ref[T]#get__T_int(count/2) + 1)) in
+          inherent#Ref#Ref[T]#set__T_isize(
+            count/2,
+            (inherent#Ref#Ref[T]#get__T_isize(count/2) + 1)
+          ) in
         let value/3 =
-          if (inherent#Ref#Ref[T]#get__T_int(count/2) == 1) {
+          if (inherent#Ref#Ref[T]#get__T_isize(count/2) == 1) {
               {
                 continue
               }
@@ -28,7 +31,7 @@ fn continue_branch() -> unit {
                 7
               }
           } in
-        println__T_int(value/3)
+        println__T_isize(value/3)
       }
   }
 }
@@ -46,52 +49,52 @@ fn break_branch(stop/4: bool) -> unit {
                 9
               }
           } in
-        let _wild412 = println__T_int(value/5) in
+        let _wild412 = println__T_isize(value/5) in
         break
       }
   }
 }
 
 fn main() -> unit {
-  let _wild413 = println__T_int32(choose(false)) in
-  let _wild414 = println__T_int32(choose(true)) in
+  let _wild413 = println__T_i32(choose(false)) in
+  let _wild414 = println__T_i32(choose(true)) in
   let _wild415 = continue_branch() in
   let _wild416 = break_branch(false) in
   break_branch(true)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

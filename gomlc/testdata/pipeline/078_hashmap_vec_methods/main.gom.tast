@@ -1,18 +1,18 @@
 impl Hash for Key {
-  fn hash(self/0: Key) -> uint64 {
+  fn hash(self/0: Key) -> u64 {
       match (self/0 : Key) {
           Key::A =>
             {
-                let h/1: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
-                (h/1 : uint64)
+                let h/1: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 1;
+                (h/1 : u64)
             },
-          Key::B(#derive0_field/2: int32) =>
+          Key::B(#derive0_field/2: i32) =>
             {
-                let h/3: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
-                let h/4: uint64 =
-                  (h/3 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-                    (Hash::hash : (int32) -> uint64)((#derive0_field/2 : int32));
-                (h/4 : uint64)
+                let h/3: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 2;
+                let h/4: u64 =
+                  (h/3 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+                    (Hash::hash : (i32) -> u64)((#derive0_field/2 : i32));
+                (h/4 : u64)
             },
       }
   }
@@ -22,72 +22,78 @@ impl PartialEq for Key {
   fn eq(self/5: Key, other/6: Key) -> bool {
       match ((self/5 : Key), (other/6 : Key)) {
           (Key::A, Key::A) => true,
-          (Key::B(#derive0_left/7: int32), Key::B(#derive1_right/8: int32)) =>
+          (Key::B(#derive0_left/7: i32), Key::B(#derive1_right/8: i32)) =>
             true &&
-              (PartialEq::eq : (int32, int32) -> bool)(
-                (#derive0_left/7 : int32),
-                (#derive1_right/8 : int32)
+              (PartialEq::eq : (i32, i32) -> bool)(
+                (#derive0_left/7 : i32),
+                (#derive1_right/8 : i32)
               ),
           _ : (Key, Key) => false,
       }
   }
 }
 
-impl Eq for Key where int32: Eq, int32: PartialEq {}
+impl Eq for Key where i32: Eq, i32: PartialEq {}
 
-fn print_opt_int(x/9: Option[int32]) -> unit {
-    match (x/9 : Option[int32]) {
-        Option::Some(v/10: int32) => (println : (int32) -> unit)((v/10 : int32)),
+fn print_opt_int(x/9: Option[i32]) -> unit {
+    match (x/9 : Option[i32]) {
+        Option::Some(v/10: i32) => (println : (i32) -> unit)((v/10 : i32)),
         Option::None => (println : (string) -> unit)("none"),
     }
 }
 
 fn main() -> unit {
-    let v/11: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-    (Vec[int]::push : (Vec[int], int) -> unit)((v/11 : Vec[int]), 10);
-    (Vec[int]::push : (Vec[int], int) -> unit)((v/11 : Vec[int]), 20);
-    (Vec[int]::push : (Vec[int], int) -> unit)((v/11 : Vec[int]), 30);
-    (println : (int) -> unit)((Vec[int]::get : (Vec[int], int) -> int)((v/11 : Vec[int]), 0));
-    (println : (int) -> unit)((Vec[int]::get : (Vec[int], int) -> int)((v/11 : Vec[int]), 1));
-    (println : (int) -> unit)((Vec[int]::get : (Vec[int], int) -> int)((v/11 : Vec[int]), 2));
-    (println : (int) -> unit)((Vec[int]::len : (Vec[int]) -> int)((v/11 : Vec[int])));
-    let m/12: HashMap[Key, int32] = (HashMap[Key, int32]::new : () -> HashMap[Key, int32])();
-    (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)(
-      (m/12 : HashMap[Key, int32]),
+    let v/11: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
+    (Vec[isize]::push : (Vec[isize], isize) -> unit)((v/11 : Vec[isize]), 10);
+    (Vec[isize]::push : (Vec[isize], isize) -> unit)((v/11 : Vec[isize]), 20);
+    (Vec[isize]::push : (Vec[isize], isize) -> unit)((v/11 : Vec[isize]), 30);
+    (println : (isize) -> unit)(
+      (Vec[isize]::get : (Vec[isize], isize) -> isize)((v/11 : Vec[isize]), 0)
+    );
+    (println : (isize) -> unit)(
+      (Vec[isize]::get : (Vec[isize], isize) -> isize)((v/11 : Vec[isize]), 1)
+    );
+    (println : (isize) -> unit)(
+      (Vec[isize]::get : (Vec[isize], isize) -> isize)((v/11 : Vec[isize]), 2)
+    );
+    (println : (isize) -> unit)((Vec[isize]::len : (Vec[isize]) -> isize)((v/11 : Vec[isize])));
+    let m/12: HashMap[Key, i32] = (HashMap[Key, i32]::new : () -> HashMap[Key, i32])();
+    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> unit)(
+      (m/12 : HashMap[Key, i32]),
       Key::A,
       10
     );
-    (HashMap[Key, int32]::set : (HashMap[Key, int32], Key, int32) -> unit)(
-      (m/12 : HashMap[Key, int32]),
+    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> unit)(
+      (m/12 : HashMap[Key, i32]),
       Key::B(1),
       20
     );
-    (println : (int) -> unit)(
-      (HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m/12 : HashMap[Key, int32]))
+    (println : (isize) -> unit)(
+      (HashMap[Key, i32]::len : (HashMap[Key, i32]) -> isize)((m/12 : HashMap[Key, i32]))
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[Key, int32]::get : (HashMap[Key, int32], Key) -> Option[int32])(
-        (m/12 : HashMap[Key, int32]),
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[Key, i32]::get : (HashMap[Key, i32], Key) -> Option[i32])(
+        (m/12 : HashMap[Key, i32]),
         Key::A
       )
     );
     (println : (bool) -> unit)(
-      (HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)(
-        (m/12 : HashMap[Key, int32]),
+      (HashMap[Key, i32]::contains : (HashMap[Key, i32], Key) -> bool)(
+        (m/12 : HashMap[Key, i32]),
         Key::B(1)
       )
     );
-    (HashMap[Key, int32]::remove : (HashMap[Key, int32], Key) -> unit)(
-      (m/12 : HashMap[Key, int32]),
+    (HashMap[Key, i32]::remove : (HashMap[Key, i32], Key) -> unit)(
+      (m/12 : HashMap[Key, i32]),
       Key::B(1)
     );
     (println : (bool) -> unit)(
-      (HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)(
-        (m/12 : HashMap[Key, int32]),
+      (HashMap[Key, i32]::contains : (HashMap[Key, i32], Key) -> bool)(
+        (m/12 : HashMap[Key, i32]),
         Key::B(1)
       )
     );
-    (println : (int) -> unit)(
-      (HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int)((m/12 : HashMap[Key, int32]))
+    (println : (isize) -> unit)(
+      (HashMap[Key, i32]::len : (HashMap[Key, i32]) -> isize)((m/12 : HashMap[Key, i32]))
     );
 }

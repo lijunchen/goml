@@ -23,7 +23,7 @@ fn test() -> unit {
   jump inline_cont484(inline485)
 }
 
-fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
+fn call_int_id(f/4: (i32) -> i32, v/5: i32) -> i32 {
   let t436 = f/4(v/5) in
   t436
 }
@@ -61,10 +61,10 @@ fn main() -> unit {
       let inline489 = closure_env_f_0 { y_0: inline487, z_1: inline488 } in
       let inline490 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](inline489) in
       let inline491 = inline490(2) in
-      let inline492 = inherent#int32#int32#to_string(inline491) in
+      let inline492 = inherent#i32#i32#to_string(inline491) in
       let inline493 = println__T_string(inline492) in
       let inline494 = inline490(3) in
-      let inline495 = inherent#int32#int32#to_string(inline494) in
+      let inline495 = inherent#i32#i32#to_string(inline494) in
       let inline496 = println__T_string(inline495) in
       jump inline_cont486(())
     } in
@@ -84,7 +84,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont502(value/1)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t450 = @runtime(core.int32_to_string)(self/33) in
   t450
 }
@@ -93,7 +93,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env422: closure_env_f_0, x/2: int32) -> int32 {
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env422: closure_env_f_0, x/2: i32) -> i32 {
   let y/0 = closure_env_f_0.y_0(env422) in
   let z/1 = closure_env_f_0.z_1(env422) in
   let t455 = (x/2 * y/0) in
@@ -103,8 +103,8 @@ fn inherent#closure_env_f_0#closure_env_f_0#apply(env422: closure_env_f_0, x/2: 
 
 fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
   env423: closure_env_add_base_1,
-  x/7: int32
-) -> int32 {
+  x/7: i32
+) -> i32 {
   let base/6 = closure_env_add_base_1.base_0(env423) in
   let t459 = (x/7 + base/6) in
   t459
@@ -113,7 +113,7 @@ fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
 fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
   env424: closure_env_printer_2,
   prefix/10: string,
-  value/11: int32
+  value/11: i32
 ) -> unit {
   join inline_cont506(t461: string) -> unit {
     let message/12 = (prefix/10 + t461) in
@@ -127,8 +127,8 @@ fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
 
 fn inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(
   env425: closure_env_no_capture_3,
-  z/16: int32
-) -> int32 {
+  z/16: i32
+) -> i32 {
   let t465 = (z/16 * 2) in
   t465
 }

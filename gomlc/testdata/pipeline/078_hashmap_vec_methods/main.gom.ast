@@ -2,21 +2,21 @@ package main;
 #[derive(Hash, PartialEq, Eq)]
 enum Key {
     A,
-    B(int32)
+    B(i32)
 }
 
 impl Hash for Key {
-  fn hash(self: Key) -> uint64 {
+  fn hash(self: Key) -> u64 {
       match self {
           Key::A =>
             {
-                let h = 0.to_uint64() + 14695981039346656037 + 1;
+                let h = 0.to_u64() + 14695981039346656037 + 1;
                 h
             },
           Key::B(#derive0_field) =>
             {
-                let h = 0.to_uint64() + 14695981039346656037 + 2;
-                let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(#derive0_field);
+                let h = 0.to_u64() + 14695981039346656037 + 2;
+                let h = h * 0.to_u64() + 1099511628211 + Hash::hash(#derive0_field);
                 h
             },
       }
@@ -34,9 +34,9 @@ impl PartialEq for Key {
   }
 }
 
-impl Eq for Key where int32: Eq {}
+impl Eq for Key where i32: Eq {}
 
-fn print_opt_int(x: Option[int32]) -> unit {
+fn print_opt_int(x: Option[i32]) -> unit {
     match x {
         Option::Some(v) => println(v),
         Option::None => println("none"),

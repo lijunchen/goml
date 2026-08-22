@@ -16,12 +16,12 @@ file main.gom
   }
 
   struct Value {
-      value: int32,
+      value: i32,
   }
 
   impl Source for Value {
-    type Item = int32;
-    fn get(local/1/1: Value) -> int32 {
+    type Item = i32;
+    fn get(local/1/1: Value) -> i32 {
         self/1.value
     }
   }
@@ -33,7 +33,7 @@ file main.gom
   }
 
   fn main() -> unit {
-      let local/1/6: int32 = Value { value: 41 }.pick();
+      let local/1/6: i32 = Value { value: 41 }.pick();
       println(direct/6);
       println(def/1/5(Value { value: 42 }));
   }

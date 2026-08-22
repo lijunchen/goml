@@ -1,11 +1,11 @@
 package main
 file main.gom
   struct Holder {
-      data: [int32; 2],
-      vecs: Vec[[int32; 2]],
+      data: [i32; 2],
+      vecs: Vec[[i32; 2]],
   }
 
-  fn print_opt_int(local/1/0: Option[int32]) -> unit {
+  fn print_opt_int(local/1/0: Option[i32]) -> unit {
       match x/0 {
           Option::Some(local/1/1) => println(v/1),
           Option::None => println("none"),
@@ -24,13 +24,13 @@ file main.gom
       let mut local/1/5 = Vec::new().pushed(10).pushed(11).pushed(12);
       vec2/5[0] = 100;
       println(vec2/5[0]);
-      let local/1/6: Slice[int32] = vec2/5.slice(0, 2);
+      let local/1/6: Slice[i32] = vec2/5.slice(0, 2);
       println(s/6[1]);
       let local/1/7 = HashMap::new();
       map/7["a"] = 13;
       def/1/1(map/7["a"]);
       def/1/1(map/7["missing"]);
-      let mut local/1/8: [[int32; 2]; 2] = [[1, 2], [3, 4]];
+      let mut local/1/8: [[i32; 2]; 2] = [[1, 2], [3, 4]];
       matrix/8[1][0] = 30;
       println(matrix/8[1][0]);
       let mut local/1/9 = ([14, 15], 0);
@@ -42,7 +42,7 @@ file main.gom
       println(holder/10.data[0]);
       holder/10.vecs[1][0] = 200;
       println(holder/10.vecs[1][0]);
-      let local/1/11: Ref[[int32; 2]] = Ref::new([22, 23]);
+      let local/1/11: Ref[[i32; 2]] = Ref::new([22, 23]);
       r/11.get()[1] = 230;
       println(r/11.get()[1]);
   }

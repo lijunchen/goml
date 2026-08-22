@@ -1,6 +1,6 @@
 package main;
 struct NoTraits {
-    value: int,
+    value: isize,
 }
 
 struct Wrapper[T] {
@@ -22,7 +22,7 @@ impl[T] PartialEq for Wrapper[T] {
 impl[T] Eq for Wrapper[T] {}
 
 impl[T] Hash for Wrapper[T] {
-  fn hash(self: Wrapper[T]) -> uint64 {
+  fn hash(self: Wrapper[T]) -> u64 {
       7
   }
 }
@@ -53,11 +53,11 @@ impl[T, Marker] PartialEq for Generic[T, Marker] where Wrapper[T]: PartialEq {
 impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq {}
 
 impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
-  fn hash(self: Generic[T, Marker]) -> uint64 {
+  fn hash(self: Generic[T, Marker]) -> u64 {
       {
-          let h = 0.to_uint64() + 14695981039346656037;
-          let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(self.first);
-          let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(self.second);
+          let h = 0.to_u64() + 14695981039346656037;
+          let h = h * 0.to_u64() + 1099511628211 + Hash::hash(self.first);
+          let h = h * 0.to_u64() + 1099511628211 + Hash::hash(self.second);
           h
       }
   }
@@ -93,17 +93,17 @@ impl[T, Marker] PartialEq for GenericChoice[T, Marker] where Wrapper[T]: Partial
 impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {}
 
 impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
-  fn hash(self: GenericChoice[T, Marker]) -> uint64 {
+  fn hash(self: GenericChoice[T, Marker]) -> u64 {
       match self {
           GenericChoice::Empty =>
             {
-                let h = 0.to_uint64() + 14695981039346656037 + 1;
+                let h = 0.to_u64() + 14695981039346656037 + 1;
                 h
             },
           GenericChoice::Value(#derive0_field) =>
             {
-                let h = 0.to_uint64() + 14695981039346656037 + 2;
-                let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(#derive0_field);
+                let h = 0.to_u64() + 14695981039346656037 + 2;
+                let h = h * 0.to_u64() + 1099511628211 + Hash::hash(#derive0_field);
                 h
             },
       }

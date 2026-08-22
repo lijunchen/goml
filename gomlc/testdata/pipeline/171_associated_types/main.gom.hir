@@ -6,7 +6,7 @@ file main.gom
   }
 
   struct Number {
-      value: int32,
+      value: i32,
   }
 
   struct Box[T] {
@@ -14,8 +14,8 @@ file main.gom
   }
 
   impl Provider for Number {
-    type Item = int32;
-    fn get(local/1/0: Number) -> int32 {
+    type Item = i32;
+    fn get(local/1/0: Number) -> i32 {
         self/0.value
     }
   }
@@ -37,7 +37,7 @@ file main.gom
 
   fn main() -> unit {
       println(def/1/5(Number { value: 42 }).to_string());
-      let local/1/4: int32 = def/1/6(Number { value: 7 });
+      let local/1/4: i32 = def/1/6(Number { value: 7 });
       println(value/4.to_string());
       println(def/1/5(Box { value: "generic" }));
       println(Provider::get(Number { value: 11 }).to_string())

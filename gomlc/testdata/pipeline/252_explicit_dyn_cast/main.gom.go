@@ -99,7 +99,7 @@ func main0() struct{} {
         vtable: dyn__Source__vtable__Number(),
     }
     var t427 int = source__5.vtable.get(source__5.data)
-    var inline454 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t427)
+    var inline454 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t427)
     _goml_runtime_core_string_println(inline454)
     var t428 Number = Number{
         value: 13,
@@ -118,7 +118,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t447 string = _goml_runtime_core_int_to_string(self__151)
     return t447
 }

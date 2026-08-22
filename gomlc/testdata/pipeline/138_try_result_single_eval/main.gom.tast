@@ -1,11 +1,11 @@
-fn bump(counter/0: Ref[int32], ok/1: bool) -> Result[int32, string] {
-    (Ref[int32]::set : (Ref[int32], int32) -> unit)(
-      (counter/0 : Ref[int32]),
-      (Ref[int32]::get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) + 1
+fn bump(counter/0: Ref[i32], ok/1: bool) -> Result[i32, string] {
+    (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+      (counter/0 : Ref[i32]),
+      (Ref[i32]::get : (Ref[i32]) -> i32)((counter/0 : Ref[i32])) + 1
     );
     if (ok/1 : bool) {
         {
-            Result::Ok((Ref[int32]::get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])))
+            Result::Ok((Ref[i32]::get : (Ref[i32]) -> i32)((counter/0 : Ref[i32])))
         }
     } else {
         {
@@ -14,38 +14,32 @@ fn bump(counter/0: Ref[int32], ok/1: bool) -> Result[int32, string] {
     }
 }
 
-fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result[int32, string] {
-    let value/4: int32 =
-      match (bump : (Ref[int32], bool) -> Result[int32, string])(
-        (counter/2 : Ref[int32]),
+fn use_try(counter/2: Ref[i32], ok/3: bool) -> Result[i32, string] {
+    let value/4: i32 =
+      match (bump : (Ref[i32], bool) -> Result[i32, string])(
+        (counter/2 : Ref[i32]),
         (ok/3 : bool)
       ) {
-          Result::Ok(try_value/23: int32) => (try_value/23 : int32),
+          Result::Ok(try_value/23: i32) => (try_value/23 : i32),
           Result::Err(try_residual/23: string) => return Result::Err((try_residual/23 : string)),
       };
-    Result::Ok(
-      (value/4 : int32) + (Ref[int32]::get : (Ref[int32]) -> int32)((counter/2 : Ref[int32]))
-    )
+    Result::Ok((value/4 : i32) + (Ref[i32]::get : (Ref[i32]) -> i32)((counter/2 : Ref[i32])))
 }
 
-fn show(res/5: Result[int32, string]) -> string {
-    match (res/5 : Result[int32, string]) {
-        Result::Ok(value/6: int32) =>
-          "ok " + (int32::to_string : (int32) -> string)((value/6 : int32)),
+fn show(res/5: Result[i32, string]) -> string {
+    match (res/5 : Result[i32, string]) {
+        Result::Ok(value/6: i32) => "ok " + (i32::to_string : (i32) -> string)((value/6 : i32)),
         Result::Err(err/7: string) => "err " + (err/7 : string),
     }
 }
 
 fn run(ok/8: bool) -> string {
-    let counter/9: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    let result/10: Result[int32, string] =
-      (use_try : (Ref[int32], bool) -> Result[int32, string])(
-        (counter/9 : Ref[int32]),
-        (ok/8 : bool)
-      );
-    (show : (Result[int32, string]) -> string)((result/10 : Result[int32, string])) + " count=" +
-      (int32::to_string : (int32) -> string)(
-        (Ref[int32]::get : (Ref[int32]) -> int32)((counter/9 : Ref[int32]))
+    let counter/9: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
+    let result/10: Result[i32, string] =
+      (use_try : (Ref[i32], bool) -> Result[i32, string])((counter/9 : Ref[i32]), (ok/8 : bool));
+    (show : (Result[i32, string]) -> string)((result/10 : Result[i32, string])) + " count=" +
+      (i32::to_string : (i32) -> string)(
+        (Ref[i32]::get : (Ref[i32]) -> i32)((counter/9 : Ref[i32]))
       )
 }
 

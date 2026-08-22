@@ -5,17 +5,17 @@ trait Source {
 }
 
 struct NumberSource {
-    value: int,
+    value: isize,
 }
 
 impl Source for NumberSource {
-  type Item = int;
-  fn get(self: NumberSource) -> int {
+  type Item = isize;
+  fn get(self: NumberSource) -> isize {
       self.value
   }
 }
 
-fn read(source: dyn Source[Item = int]) -> int {
+fn read(source: dyn Source[Item = isize]) -> isize {
     source.get()
 }
 
@@ -30,7 +30,7 @@ fn labeled_cleanup() -> unit {
 }
 
 fn main() -> unit {
-    println(read(NumberSource { value: 11 } as dyn Source[Item = int]));
+    println(read(NumberSource { value: 11 } as dyn Source[Item = isize]));
     let (mut index, value) = (1, 2);
     index += value;
     println(index);

@@ -1,17 +1,17 @@
-fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[int]) -> Channel[int] {
+fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[isize]) -> Channel[isize] {
     (Ref[string]::set : (Ref[string], string) -> unit)(
       (log/0 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/0 : Ref[string])) + (mark/1 : string)
     );
-    (channel/2 : Channel[int])
+    (channel/2 : Channel[isize])
 }
 
-fn mark_value(log/3: Ref[string], mark/4: string, value/5: int) -> int {
+fn mark_value(log/3: Ref[string], mark/4: string, value/5: isize) -> isize {
     (Ref[string]::set : (Ref[string], string) -> unit)(
       (log/3 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/3 : Ref[string])) + (mark/4 : string)
     );
-    (value/5 : int)
+    (value/5 : isize)
 }
 
 fn mark_guard(log/6: Ref[string], mark/7: string, value/8: bool) -> bool {
@@ -24,15 +24,15 @@ fn mark_guard(log/6: Ref[string], mark/7: string, value/8: bool) -> bool {
 
 fn main() -> unit {
     let log/9: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("");
-    let disabled/10: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
-    (Channel[int]::close : (Channel[int]) -> unit)((disabled/10 : Channel[int]));
+    let disabled/10: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
+    (Channel[isize]::close : (Channel[isize]) -> unit)((disabled/10 : Channel[isize]));
     let fallback/11: string =
       select {
-          send((mark_channel : (Ref[string], string, Channel[int]) -> Channel[int])(
+          send((mark_channel : (Ref[string], string, Channel[isize]) -> Channel[isize])(
             (log/9 : Ref[string]),
             "c",
-            (disabled/10 : Channel[int])
-          ), (mark_value : (Ref[string], string, int) -> int)(
+            (disabled/10 : Channel[isize])
+          ), (mark_value : (Ref[string], string, isize) -> isize)(
             (log/9 : Ref[string]),
             "v",
             1
@@ -48,29 +48,35 @@ fn main() -> unit {
       (Ref[string]::get : (Ref[string]) -> string)((log/9 : Ref[string]))
     );
     (println : (string) -> unit)((fallback/11 : string));
-    let first/12: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
-    let second/13: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
-    (Channel[int]::send : (Channel[int], int) -> unit)((first/12 : Channel[int]), 10);
-    (Channel[int]::send : (Channel[int], int) -> unit)((second/13 : Channel[int]), 20);
-    let selected/16: int =
+    let first/12: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
+    let second/13: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
+    (Channel[isize]::send : (Channel[isize], isize) -> unit)((first/12 : Channel[isize]), 10);
+    (Channel[isize]::send : (Channel[isize], isize) -> unit)((second/13 : Channel[isize]), 20);
+    let selected/16: isize =
       select priority {
-          recv((first/12 : Channel[int])) when true as value/14 =>
-            (Option[int]::unwrap_or : (Option[int], int) -> int)((value/14 : Option[int]), -1),
-          recv((second/13 : Channel[int])) when true as value/15 =>
-            (Option[int]::unwrap_or : (Option[int], int) -> int)((value/15 : Option[int]), -1),
+          recv((first/12 : Channel[isize])) when true as value/14 =>
+            (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+              (value/14 : Option[isize]),
+              -1
+            ),
+          recv((second/13 : Channel[isize])) when true as value/15 =>
+            (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+              (value/15 : Option[isize]),
+              -1
+            ),
           default => 0,
       };
-    (println : (int) -> unit)((selected/16 : int));
-    let events/17: Channel[int] = (Channel[int]::new : (int) -> Channel[int])(1);
-    (Channel[int]::send : (Channel[int], int) -> unit)((events/17 : Channel[int]), 7);
-    let matched/20: int =
+    (println : (isize) -> unit)((selected/16 : isize));
+    let events/17: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
+    (Channel[isize]::send : (Channel[isize], isize) -> unit)((events/17 : Channel[isize]), 7);
+    let matched/20: isize =
       select {
-          recv((events/17 : Channel[int])) when 1 + 1 == 2 as $select_recv_1170/18 =>
-            match ($select_recv_1170/18 : Option[int]) {
-                Option::Some(value/19: int) => (value/19 : int) + 1,
+          recv((events/17 : Channel[isize])) when 1 + 1 == 2 as $select_recv_1170/18 =>
+            match ($select_recv_1170/18 : Option[isize]) {
+                Option::Some(value/19: isize) => (value/19 : isize) + 1,
                 Option::None => 0,
             },
           default => -1,
       };
-    (println : (int) -> unit)((matched/20 : int))
+    (println : (isize) -> unit)((matched/20 : isize))
 }

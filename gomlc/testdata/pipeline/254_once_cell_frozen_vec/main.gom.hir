@@ -1,8 +1,8 @@
 package main
 file main.gom
-  static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
+  static VALUES: OnceCell[FrozenVec[isize]] = OnceCell::new();
 
-  fn values() -> FrozenVec[int] {
+  fn values() -> FrozenVec[isize] {
       def/1/0.get_or_init(|| Vec::from_array([1, 2, 3]).freeze())
   }
 

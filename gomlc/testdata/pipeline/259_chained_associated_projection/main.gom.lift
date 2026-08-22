@@ -1,15 +1,15 @@
 fn main() -> unit {
-  println__T_int32(preserve__T_Numbers(Numbers {}, 42))
+  println__T_i32(preserve__T_Numbers(Numbers {}, 42))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn preserve__T_Numbers(owner/0: Numbers, value/1: int32) -> int32 {
+fn preserve__T_Numbers(owner/0: Numbers, value/1: i32) -> i32 {
   value/1
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }

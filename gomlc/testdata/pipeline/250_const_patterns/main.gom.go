@@ -225,12 +225,12 @@ func main0() struct{} {
     var t539 int
     var inline626 int = 9
     t539 = inline626
-    var inline623 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t539)
+    var inline623 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t539)
     _goml_runtime_core_string_println(inline623)
     var t540 int
     var inline619 int = 11
     t540 = inline619
-    var inline616 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t540)
+    var inline616 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t540)
     _goml_runtime_core_string_println(inline616)
     var t541 bool
     var inline614 int = 42
@@ -273,9 +273,9 @@ func main0() struct{} {
     var inline594 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t544)
     _goml_runtime_core_string_println(inline594)
     var t545 int = for_binding()
-    var inline591 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t545)
+    var inline591 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t545)
     _goml_runtime_core_string_println(inline591)
-    var inline588 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(CLASSIFIED_AT_COMPILE_TIME)
+    var inline588 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(CLASSIFIED_AT_COMPILE_TIME)
     _goml_runtime_core_string_println(inline588)
     return struct{}{}
 }
@@ -300,7 +300,7 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
     return t568
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t571 string = _goml_runtime_core_int_to_string(self__151)
     return t571
 }

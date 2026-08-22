@@ -11,7 +11,7 @@ fn main() -> unit {
           } in
           let inline443 = 12 in
           let inline444 = "ufcs:" in
-          let inline445 = trait_impl#ToString#int#to_string(inline443) in
+          let inline445 = trait_impl#ToString#isize#to_string(inline443) in
           let inline446 = (inline444 + inline445) in
           jump inline_cont442(inline446)
         } in
@@ -53,12 +53,12 @@ fn println__T_string(value/1: string) -> unit {
 fn render_generic__T_Prefix(renderer/2: Prefix) -> string {
   let inline463 = 11 in
   let inline464 = Prefix.value(renderer/2) in
-  let inline465 = trait_impl#ToString#int#to_string(inline463) in
+  let inline465 = trait_impl#ToString#isize#to_string(inline463) in
   let inline466 = (inline464 + inline465) in
   inline466
 }
 
-fn trait_impl#RenderValue#Prefix#render__mono2(self/0: Prefix, value/1: int) -> string {
+fn trait_impl#RenderValue#Prefix#render__mono2(self/0: Prefix, value/1: isize) -> string {
   let t431 = Prefix.value(self/0) in
   join inline_cont467(t432: string) -> string {
     let t433 = (t431 + t432) in
@@ -72,7 +72,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t438 = @runtime(core.int_to_string)(self/151) in
   t438
 }

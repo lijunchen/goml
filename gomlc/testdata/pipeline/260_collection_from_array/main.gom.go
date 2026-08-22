@@ -138,17 +138,17 @@ func hashmap_lookup__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key Log
     return zero, false
 }
 
-func hashmap_get__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key LoggedKey) Option__int {
+func hashmap_get__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key LoggedKey) Option__isize {
     var value int
     var ok bool
     value, ok = hashmap_lookup__HashMap_9LoggedKey_3int(m, key)
     if ok {
-        return Option__int{
+        return Option__isize{
             _tag: 1,
             _v1_0: value,
         }
     }
-    return Option__int{
+    return Option__isize{
         _tag: 0,
     }
 }
@@ -296,17 +296,17 @@ func hashmap_lookup__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key
     return zero, false
 }
 
-func hashmap_get__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string) _goml_m_Option____Vec_l_int_r_ {
+func hashmap_get__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string) _goml_m_Option____Vec_l_isize_r_ {
     var value *_goml_vec_int
     var ok bool
     value, ok = hashmap_lookup__HashMap_6string_8Vec_3int(m, key)
     if ok {
-        return _goml_m_Option____Vec_l_int_r_{
+        return _goml_m_Option____Vec_l_isize_r_{
             _tag: 1,
             _v1_0: value,
         }
     }
-    return _goml_m_Option____Vec_l_int_r_{
+    return _goml_m_Option____Vec_l_isize_r_{
         _tag: 0,
     }
 }
@@ -370,12 +370,12 @@ type LoggedKey struct {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
 
-type _goml_m_Option____Vec_l_int_r_ struct {
+type _goml_m_Option____Vec_l_isize_r_ struct {
     _tag int32
     _v1_0 *_goml_vec_int
 }
@@ -432,16 +432,16 @@ func main0() struct{} {
     }
     var t461 [3]int = [3]int{1, 2, 3}
     var values__10 *_goml_vec_int = make_vec__9(t461)
-    var t462 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int(values__10)
-    var t463 string = _goml_m_inherent_i_int_i_int_i_to__string(t462)
+    var t462 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(values__10)
+    var t463 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t462)
     var t464 string = "" + t463
     var t465 string = t464 + ":"
     var t466 int = vec_get__Vec_3int(values__10, 0)
-    var t467 string = _goml_m_inherent_i_int_i_int_i_to__string(t466)
+    var t467 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t466)
     var t468 string = t465 + t467
     var t469 string = t468 + ":"
     var t470 int = vec_get__Vec_3int(values__10, 2)
-    var t471 string = _goml_m_inherent_i_int_i_int_i_to__string(t470)
+    var t471 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t470)
     var t472 string = t469 + t471
     println__T_string(t472)
     var t473 [0]int = [0]int{}
@@ -450,18 +450,18 @@ func main0() struct{} {
             items: values[0:len(values)],
         }
     }(t473)
-    var t474 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int(empty__11)
-    println__T_int(t474)
+    var t474 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(empty__11)
+    println__T_isize(t474)
     var t475 [0]int = [0]int{}
     var inferred_empty__12 *_goml_vec_int = func(values [0]int) *_goml_vec_int {
         return &_goml_vec_int{
             items: values[0:len(values)],
         }
     }(t475)
-    var t476 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int(inferred_empty__12)
-    println__T_int(t476)
-    var t477 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(1)
-    var t478 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(2)
+    var t476 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(inferred_empty__12)
+    println__T_isize(t476)
+    var t477 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(1)
+    var t478 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(2)
     var source__13 [2]*ref_int_x = [2]*ref_int_x{t477, t478}
     var copied__14 *_goml_vec_Ref_3int = func(values [2]*ref_int_x) *_goml_vec_Ref_3int {
         var storage struct {
@@ -473,21 +473,21 @@ func main0() struct{} {
         return &storage.vector
     }(source__13)
     var t479 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(t479, 5)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t479, 5)
     var place_root419 [2]*ref_int_x = source__13
     var index420 int = 0
     array_get__Array_2_8Ref_3int(place_root419, index420)
-    var value422 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(9)
+    var value422 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(9)
     var t480 [2]*ref_int_x = array_set__Array_2_8Ref_3int(place_root419, index420, value422)
     source__13 = t480
     var t482 *ref_int_x = vec_get__Vec_8Ref_3int(copied__14, 0)
-    var t483 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(t482)
-    var t484 string = _goml_m_inherent_i_int_i_int_i_to__string(t483)
+    var t483 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t482)
+    var t484 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t483)
     var t485 string = "" + t484
     var t486 string = t485 + ":"
     var t487 *ref_int_x = array_get__Array_2_8Ref_3int(source__13, 0)
-    var t488 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(t487)
-    var t489 string = _goml_m_inherent_i_int_i_int_i_to__string(t488)
+    var t488 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t487)
+    var t489 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t488)
     var t490 string = t486 + t489
     println__T_string(t490)
     var log__15 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("")
@@ -542,8 +542,8 @@ func main0() struct{} {
         id: 1,
         log: log__15,
     }
-    var mtmp426 Option__int
-    var inline636 Option__int = hashmap_get__HashMap_9LoggedKey_3int(table__16, t499)
+    var mtmp426 Option__isize
+    var inline636 Option__isize = hashmap_get__HashMap_9LoggedKey_3int(table__16, t499)
     mtmp426 = inline636
     var jp501 int
     switch mtmp426._tag {
@@ -555,7 +555,7 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline633 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp501)
+    var inline633 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp501)
     _goml_runtime_core_string_println(inline633)
     var make_map__18 func([2]Tuple2_6string_3int) *hashmap_string_int_x = func(values [2]Tuple2_6string_3int) *hashmap_string_int_x {
         var result *hashmap_string_int_x = hashmap_new__HashMap_6string_3int()
@@ -577,7 +577,7 @@ func main0() struct{} {
     var t505 int
     var inline631 int = hashmap_len__HashMap_6string_3int(words__19)
     t505 = inline631
-    var inline628 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t505)
+    var inline628 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t505)
     _goml_runtime_core_string_println(inline628)
     var t506 [0]Tuple2_6string_3int = [0]Tuple2_6string_3int{}
     var no_words__20 *hashmap_string_int_x = func(values [0]Tuple2_6string_3int) *hashmap_string_int_x {
@@ -590,7 +590,7 @@ func main0() struct{} {
     var t507 int
     var inline626 int = hashmap_len__HashMap_6string_3int(no_words__20)
     t507 = inline626
-    var inline623 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t507)
+    var inline623 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t507)
     _goml_runtime_core_string_println(inline623)
     var t508 [0]Tuple2_6string_3int = [0]Tuple2_6string_3int{}
     var inferred_no_words__21 *hashmap_string_int_x = func(values [0]Tuple2_6string_3int) *hashmap_string_int_x {
@@ -603,7 +603,7 @@ func main0() struct{} {
     var t509 int
     var inline621 int = hashmap_len__HashMap_6string_3int(inferred_no_words__21)
     t509 = inline621
-    var inline618 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t509)
+    var inline618 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t509)
     _goml_runtime_core_string_println(inline618)
     var t510 Tuple2_3int_6string = Tuple2_3int_6string{
         _0: 1,
@@ -675,9 +675,9 @@ func main0() struct{} {
         }
         return result
     }(t521)
-    var mtmp432 _goml_m_Option____Vec_l_int_r_
+    var mtmp432 _goml_m_Option____Vec_l_isize_r_
     var inline615 string = "values"
-    var inline616 _goml_m_Option____Vec_l_int_r_ = hashmap_get__HashMap_6string_8Vec_3int(nested_map__24, inline615)
+    var inline616 _goml_m_Option____Vec_l_isize_r_ = hashmap_get__HashMap_6string_8Vec_3int(nested_map__24, inline615)
     mtmp432 = inline616
     var jp523 int
     switch mtmp432._tag {
@@ -727,17 +727,17 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int(self__273 *_goml_vec_int) int {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(self__273 *_goml_vec_int) int {
     var t547 int = vec_len__Vec_3int(self__273)
     return t547
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
     var t550 string = _goml_runtime_core_int_to_string(self__32)
     return t550
 }
 
-func println__T_int(value__1 int) struct{} {
+func println__T_isize(value__1 int) struct{} {
     var t552 string
     var inline663 string = _goml_runtime_core_int_to_string(value__1)
     t552 = inline663
@@ -745,17 +745,17 @@ func println__T_int(value__1 int) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__431 int) *ref_int_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(value__431 int) *ref_int_x {
     var t556 *ref_int_x = ref__Ref_3int(value__431)
     return t556
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__433 *ref_int_x, value__434 int) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(self__433 *ref_int_x, value__434 int) struct{} {
     ref_set__Ref_3int(self__433, value__434)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__432 *ref_int_x) int {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(self__432 *ref_int_x) int {
     var t561 int = ref_get__Ref_3int(self__432)
     return t561
 }
@@ -769,7 +769,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t578 string = _goml_runtime_core_int_to_string(self__151)
     return t578
 }

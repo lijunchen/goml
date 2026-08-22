@@ -7,14 +7,14 @@ file main.gom
   }
 
   enum Second {
-      Shared(int)
+      Shared(isize)
   }
 
   enum Boxed[T] {
       Value(T)
   }
 
-  type FirstInt = First[int];
+  type FirstInt = First[isize];
 
   fn classify(local/1/0: FirstInt) -> string {
       match value/0 {
@@ -24,7 +24,7 @@ file main.gom
       }
   }
 
-  fn nested(local/1/4: Option[Result[int, string]]) -> string {
+  fn nested(local/1/4: Option[Result[isize, string]]) -> string {
       match value/4 {
           Some(Ok(local/1/5)) => "ok:" + number/5.to_string(),
           Some(Err(local/1/6)) => "err:" + message/6,
@@ -32,7 +32,7 @@ file main.gom
       }
   }
 
-  fn optional_number(local/1/7: Option[int]) -> int {
+  fn optional_number(local/1/7: Option[isize]) -> isize {
       match value/7 {
           Some(local/1/8) =>
             {
@@ -52,7 +52,7 @@ file main.gom
       }
   }
 
-  fn take_once(local/1/10: Option[int]) -> int {
+  fn take_once(local/1/10: Option[isize]) -> isize {
       let local/1/11 = Ref::new(value/10);
       let local/1/12 = Ref::new(0);
       while true {
@@ -68,12 +68,12 @@ file main.gom
       result/12.get()
   }
 
-  fn unbox(local/1/14: Boxed[int]) -> int {
+  fn unbox(local/1/14: Boxed[isize]) -> isize {
       let Value(local/1/15) = value/14;
       number/15
   }
 
-  fn sum_boxed(local/1/16: Vec[Boxed[int]]) -> int {
+  fn sum_boxed(local/1/16: Vec[Boxed[isize]]) -> isize {
       let local/1/17 = Ref::new(0);
       for Value(local/1/18) in
         values/16 {
@@ -83,7 +83,7 @@ file main.gom
   }
 
   fn main() -> unit {
-      let local/1/19: Vec[Boxed[int]] =
+      let local/1/19: Vec[Boxed[isize]] =
         Vec::from_array([ctor(def/1/2::v0)(19), ctor(def/1/2::v0)(23)]);
       println(def/1/4(ctor(def/1/0::v0)(7)));
       println(def/1/4(ctor(def/1/0::v1)));

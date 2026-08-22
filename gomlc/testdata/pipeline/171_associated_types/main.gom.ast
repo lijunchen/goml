@@ -5,7 +5,7 @@ trait Provider {
 }
 
 struct Number {
-    value: int32,
+    value: i32,
 }
 
 struct Box[T] {
@@ -13,8 +13,8 @@ struct Box[T] {
 }
 
 impl Provider for Number {
-  type Item = int32;
-  fn get(self: Number) -> int32 {
+  type Item = i32;
+  fn get(self: Number) -> i32 {
       self.value
   }
 }
@@ -36,7 +36,7 @@ fn read_as[P, T](provider: P) -> T where P: Provider, P::Item = T {
 
 fn main() -> unit {
     println(read(Number { value: 42 }).to_string());
-    let value: int32 = read_as(Number { value: 7 });
+    let value: i32 = read_as(Number { value: 7 });
     println(value.to_string());
     println(read(Box { value: "generic" }));
     println(Provider::get(Number { value: 11 }).to_string())

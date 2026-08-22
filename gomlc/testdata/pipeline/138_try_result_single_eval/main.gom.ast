@@ -1,5 +1,5 @@
 package main;
-fn bump(counter: Ref[int32], ok: bool) -> Result[int32, string] {
+fn bump(counter: Ref[i32], ok: bool) -> Result[i32, string] {
     counter.set(counter.get() + 1);
     if ok {
         {
@@ -12,12 +12,12 @@ fn bump(counter: Ref[int32], ok: bool) -> Result[int32, string] {
     }
 }
 
-fn use_try(counter: Ref[int32], ok: bool) -> Result[int32, string] {
+fn use_try(counter: Ref[i32], ok: bool) -> Result[i32, string] {
     let value = bump(counter, ok)?;
     Result::Ok(value + counter.get())
 }
 
-fn show(res: Result[int32, string]) -> string {
+fn show(res: Result[i32, string]) -> string {
     match res {
         Result::Ok(value) => "ok " + value.to_string(),
         Result::Err(err) => "err " + err,

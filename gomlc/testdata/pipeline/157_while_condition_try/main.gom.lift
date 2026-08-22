@@ -1,4 +1,4 @@
-fn step_some(i/0: int32) -> Option__bool {
+fn step_some(i/0: i32) -> Option__bool {
   if (i/0 < 3) {
       Option__bool::Some(true)
   } else {
@@ -6,7 +6,7 @@ fn step_some(i/0: int32) -> Option__bool {
   }
 }
 
-fn step_none(i/1: int32) -> Option__bool {
+fn step_none(i/1: i32) -> Option__bool {
   if (i/1 < 2) {
       Option__bool::Some(true)
   } else {
@@ -14,14 +14,14 @@ fn step_none(i/1: int32) -> Option__bool {
   }
 }
 
-fn run_some() -> Option__int32 {
-  let i/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let total/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
+fn run_some() -> Option__i32 {
+  let i/2 = inherent#Ref#Ref[T]#new__T_i32(0) in
+  let total/3 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let _wild415 =
-    while let mtmp411 = step_some(inherent#Ref#Ref[T]#get__T_int32(i/2)) in
+    while let mtmp411 = step_some(inherent#Ref#Ref[T]#get__T_i32(i/2)) in
     match mtmp411 {
       Option__bool::None => {
-        return Option__int32::None
+        return Option__i32::None
       },
       Option__bool::Some(x412) => {
         let x412 = Option__bool::Some._0(mtmp411) in
@@ -30,25 +30,25 @@ fn run_some() -> Option__int32 {
       },
     } {
         let _wild413 =
-          inherent#Ref#Ref[T]#set__T_int32(
+          inherent#Ref#Ref[T]#set__T_i32(
             total/3,
-            (inherent#Ref#Ref[T]#get__T_int32(total/3) + inherent#Ref#Ref[T]#get__T_int32(i/2))
+            (inherent#Ref#Ref[T]#get__T_i32(total/3) + inherent#Ref#Ref[T]#get__T_i32(i/2))
           ) in
         let _wild414 =
-          inherent#Ref#Ref[T]#set__T_int32(i/2, (inherent#Ref#Ref[T]#get__T_int32(i/2) + 1)) in
+          inherent#Ref#Ref[T]#set__T_i32(i/2, (inherent#Ref#Ref[T]#get__T_i32(i/2) + 1)) in
         ()
     } in
-  Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(total/3))
+  Option__i32::Some(inherent#Ref#Ref[T]#get__T_i32(total/3))
 }
 
-fn run_none() -> Option__int32 {
-  let i/4 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let total/5 = inherent#Ref#Ref[T]#new__T_int32(0) in
+fn run_none() -> Option__i32 {
+  let i/4 = inherent#Ref#Ref[T]#new__T_i32(0) in
+  let total/5 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let _wild420 =
-    while let mtmp416 = step_none(inherent#Ref#Ref[T]#get__T_int32(i/4)) in
+    while let mtmp416 = step_none(inherent#Ref#Ref[T]#get__T_i32(i/4)) in
     match mtmp416 {
       Option__bool::None => {
-        return Option__int32::None
+        return Option__i32::None
       },
       Option__bool::Some(x417) => {
         let x417 = Option__bool::Some._0(mtmp416) in
@@ -57,26 +57,26 @@ fn run_none() -> Option__int32 {
       },
     } {
         let _wild418 =
-          inherent#Ref#Ref[T]#set__T_int32(
+          inherent#Ref#Ref[T]#set__T_i32(
             total/5,
-            (inherent#Ref#Ref[T]#get__T_int32(total/5) + inherent#Ref#Ref[T]#get__T_int32(i/4))
+            (inherent#Ref#Ref[T]#get__T_i32(total/5) + inherent#Ref#Ref[T]#get__T_i32(i/4))
           ) in
         let _wild419 =
-          inherent#Ref#Ref[T]#set__T_int32(i/4, (inherent#Ref#Ref[T]#get__T_int32(i/4) + 1)) in
+          inherent#Ref#Ref[T]#set__T_i32(i/4, (inherent#Ref#Ref[T]#get__T_i32(i/4) + 1)) in
         ()
     } in
-  Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(total/5))
+  Option__i32::Some(inherent#Ref#Ref[T]#get__T_i32(total/5))
 }
 
-fn show(x/6: Option__int32) -> string {
+fn show(x/6: Option__i32) -> string {
   match x/6 {
-    Option__int32::None => {
+    Option__i32::None => {
       "none"
     },
-    Option__int32::Some(x421) => {
-      let x421 = Option__int32::Some._0(x/6) in
+    Option__i32::Some(x421) => {
+      let x421 = Option__i32::Some._0(x/6) in
       let v/7 = x421 in
-      ("some=" + inherent#int32#int32#to_string(v/7))
+      ("some=" + inherent#i32#i32#to_string(v/7))
     },
   }
 }
@@ -87,19 +87,19 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -111,10 +111,10 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }

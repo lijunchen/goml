@@ -1,16 +1,16 @@
-fn trait_impl#Batch#Numbers#items(self/0: Numbers) -> Vec[int32] {
+fn trait_impl#Batch#Numbers#items(self/0: Numbers) -> Vec[i32] {
   let t423 = Numbers.values(self/0) in
   t423
 }
 
 fn main() -> unit {
-  join inline_cont504(values/3: Vec[int32]) -> unit {
+  join inline_cont504(values/3: Vec[i32]) -> unit {
     join inline_cont501(_wild416: unit) -> unit {
       join inline_cont498(_wild417: unit) -> unit {
         join inline_cont495(_wild418: unit) -> unit {
           let t425 = Numbers { values: values/3 } in
           let t426 = count__B_Numbers(t425) in
-          let inline493 = trait_impl#ToString#int32#to_string(t426) in
+          let inline493 = trait_impl#ToString#i32#to_string(t426) in
           let inline494 = @runtime(core.string_println)(inline493) in
           ()
         } in
@@ -30,17 +30,17 @@ fn main() -> unit {
   jump inline_cont504(inline505)
 }
 
-fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+fn inherent#Vec#Vec[T]#new__T_i32() -> Vec[i32] {
   let t429 = @intrinsic(vec.new)() in
   t429
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/258: Vec[int32], elem/259: int32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_i32(self/258: Vec[i32], elem/259: i32) -> unit {
   let t431 = @intrinsic(vec.push)(self/258, elem/259) in
   ()
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont506(t433: string) -> unit {
     let t434 = @runtime(core.string_println)(t433) in
     ()
@@ -49,23 +49,23 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont506(inline507)
 }
 
-fn count__B_Numbers(batch/1: Numbers) -> int32 {
-  join inline_cont521(total/2: Ref[int32]) -> int32 {
-    join inline_cont519(t437: Vec[int32]) -> int32 {
-      join inline_cont517(for_iter411: FnIterator__int32) -> int32 {
-        join exit438() -> int32 {
+fn count__B_Numbers(batch/1: Numbers) -> i32 {
+  join inline_cont521(total/2: Ref[i32]) -> i32 {
+    join inline_cont519(t437: Vec[i32]) -> i32 {
+      join inline_cont517(for_iter411: FnIterator__i32) -> i32 {
+        join exit438() -> i32 {
           let inline516 = @intrinsic(ref.get)(total/2) in
           inline516
         } in
         joinrec {
-          join loop440() -> int32 {
-            join inline_cont512(for_next412: Option__int32) -> int32 {
+          join loop440() -> i32 {
+            join inline_cont512(for_next412: Option__i32) -> i32 {
               match for_next412 {
                 Tag_0 => {
                   jump exit438()
                 },
                 Tag_1 => {
-                  join inline_cont510(t442: int32) -> int32 {
+                  join inline_cont510(t442: i32) -> i32 {
                     let t443 = (t442 + 1) in
                     let inline509 = @intrinsic(ref.set)(total/2, t443) in
                     jump loop440()
@@ -75,14 +75,14 @@ fn count__B_Numbers(batch/1: Numbers) -> int32 {
                 },
               }
             } in
-            let inline513 = FnIterator__int32.next_fn(for_iter411) in
+            let inline513 = FnIterator__i32.next_fn(for_iter411) in
             let inline514 = inline513() in
             jump inline_cont512(inline514)
           } in
         } in
         jump loop440()
       } in
-      let inline518 = inherent#Vec#Vec[T]#iter__T_int32(t437) in
+      let inline518 = inherent#Vec#Vec[T]#iter__T_i32(t437) in
       jump inline_cont517(inline518)
     } in
     let inline520 = Numbers.values(batch/1) in
@@ -93,114 +93,114 @@ fn count__B_Numbers(batch/1: Numbers) -> int32 {
   jump inline_cont521(inline523)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t446 = @runtime(core.int32_to_string)(self/154) in
   t446
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   let t449 = @intrinsic(ref.new)(value/431) in
   t449
 }
 
-fn trait_impl#IntoIterator#Vec[int32]#into_iter(self/404: Vec[int32]) -> FnIterator__int32 {
+fn trait_impl#IntoIterator#Vec[i32]#into_iter(self/404: Vec[i32]) -> FnIterator__i32 {
   let inline525 = @intrinsic(ref.new)(0) in
-  let inline526 = inherent#Vec#Vec[T]#len__T_int32(self/404) in
+  let inline526 = inherent#Vec#Vec[T]#len__T_i32(self/404) in
   let inline527 =
-    closure_env_inherent_Vec_Vec_T_iter_T_int32_0 {
+    closure_env_inherent_Vec_Vec_T_iter_T_i32_0 {
       index_0: inline525,
       len_1: inline526,
       self_2: self/404
     } in
   let inline528 =
-    pack_closure[inherent#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#apply](
+    pack_closure[inherent#closure_env_inherent_Vec_Vec_T_iter_T_i32_0#closure_env_inherent_Vec_Vec_T_iter_T_i32_0#apply](
       inline527
     ) in
-  let inline529 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(inline528) in
+  let inline529 = inherent#FnIterator#FnIterator[T]#from_fn__T_i32(inline528) in
   inline529
 }
 
-fn trait_impl#Iterator#FnIterator__int32#next(self/255: FnIterator__int32) -> Option__int32 {
-  let t455 = FnIterator__int32.next_fn(self/255) in
+fn trait_impl#Iterator#FnIterator__i32#next(self/255: FnIterator__i32) -> Option__i32 {
+  let t455 = FnIterator__i32.next_fn(self/255) in
   let t456 = t455() in
   t456
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   let t459 = @intrinsic(ref.get)(self/432) in
   t459
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   let t461 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#iter__T_int32(self/314: Vec[int32]) -> FnIterator__int32 {
+fn inherent#Vec#Vec[T]#iter__T_i32(self/314: Vec[i32]) -> FnIterator__i32 {
   let index/315 = @intrinsic(ref.new)(0) in
-  join inline_cont532(len/316: int) -> FnIterator__int32 {
+  join inline_cont532(len/316: isize) -> FnIterator__i32 {
     let t464 =
-      closure_env_inherent_Vec_Vec_T_iter_T_int32_0 {
+      closure_env_inherent_Vec_Vec_T_iter_T_i32_0 {
         index_0: index/315,
         len_1: len/316,
         self_2: self/314
       } in
     let t465 =
-      pack_closure[inherent#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#apply](
+      pack_closure[inherent#closure_env_inherent_Vec_Vec_T_iter_T_i32_0#closure_env_inherent_Vec_Vec_T_iter_T_i32_0#apply](
         t464
       ) in
-    let inline531 = FnIterator__int32 { next_fn: t465 } in
+    let inline531 = FnIterator__i32 { next_fn: t465 } in
     inline531
   } in
   let inline533 = @intrinsic(vec.len)(self/314) in
   jump inline_cont532(inline533)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+fn inherent#Vec#Vec[T]#len__T_i32(self/273: Vec[i32]) -> isize {
   let t469 = @intrinsic(vec.len)(self/273) in
   t469
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
-  next_fn/254: () -> Option__int32
-) -> FnIterator__int32 {
-  let t472 = FnIterator__int32 { next_fn: next_fn/254 } in
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_i32(
+  next_fn/254: () -> Option__i32
+) -> FnIterator__i32 {
+  let t472 = FnIterator__i32 { next_fn: next_fn/254 } in
   t472
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   let t475 = (self/191 == other/192) in
   t475
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   let t478 = @runtime(core.int32_hash)(self/214) in
   t478
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   let t481 = (self/185 == other/186) in
   t481
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   let t484 = @runtime(core.int_hash)(self/211) in
   t484
 }
 
-fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#closure_env_inherent_Vec_Vec_T_iter_T_int32_0#apply(
-  env420: closure_env_inherent_Vec_Vec_T_iter_T_int32_0
-) -> Option__int32 {
-  let index/315 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.index_0(env420) in
-  let len/316 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.len_1(env420) in
-  let self/314 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0.self_2(env420) in
+fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_i32_0#closure_env_inherent_Vec_Vec_T_iter_T_i32_0#apply(
+  env420: closure_env_inherent_Vec_Vec_T_iter_T_i32_0
+) -> Option__i32 {
+  let index/315 = closure_env_inherent_Vec_Vec_T_iter_T_i32_0.index_0(env420) in
+  let len/316 = closure_env_inherent_Vec_Vec_T_iter_T_i32_0.len_1(env420) in
+  let self/314 = closure_env_inherent_Vec_Vec_T_iter_T_i32_0.self_2(env420) in
   let current/317 = @intrinsic(ref.get)(index/315) in
   let t489 = (current/317 < len/316) in
   if t489 {
     let value/318 = @intrinsic(vec.get)(self/314, current/317) in
     let t490 = (current/317 + 1) in
     let _wild256 = @intrinsic(ref.set)(index/315, t490) in
-    let t491 = Option__int32::Some(value/318) in
+    let t491 = Option__i32::Some(value/318) in
     t491
   } else {
     Tag_0

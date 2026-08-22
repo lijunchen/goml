@@ -13,7 +13,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Wrap__int struct {
+type Wrap__isize struct {
     value int
 }
 

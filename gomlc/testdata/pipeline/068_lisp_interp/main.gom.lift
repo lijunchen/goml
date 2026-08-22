@@ -6,7 +6,7 @@ fn is_digit(ch/0: char) -> bool {
   }
 }
 
-fn digit_value(ch/1: char) -> int32 {
+fn digit_value(ch/1: char) -> i32 {
   match ch/1 {
     '0' => {
       0
@@ -47,29 +47,32 @@ fn is_int_text(text/2: string) -> bool {
   if (len/3 == 0) {
       false
   } else {
-      let i/4 = inherent#Ref#Ref[T]#new__T_int(0) in
+      let i/4 = inherent#Ref#Ref[T]#new__T_isize(0) in
       let saw_digit/5 = inherent#Ref#Ref[T]#new__T_bool(false) in
       let ok/6 = inherent#Ref#Ref[T]#new__T_bool(true) in
       let started/7 = inherent#Ref#Ref[T]#new__T_bool(false) in
       let mtmp414 =
         while if inherent#Ref#Ref[T]#get__T_bool(ok/6) {
-            (inherent#Ref#Ref[T]#get__T_int(i/4) < len/3)
+            (inherent#Ref#Ref[T]#get__T_isize(i/4) < len/3)
         } else {
             false
         } {
-            let ch/8 = inherent#string#string#get(text/2, inherent#Ref#Ref[T]#get__T_int(i/4)) in
+            let ch/8 = inherent#string#string#get(text/2, inherent#Ref#Ref[T]#get__T_isize(i/4)) in
             if if (!inherent#Ref#Ref[T]#get__T_bool(started/7)) {
                 (ch/8 == '-')
             } else {
                 false
             } {
                 let mtmp411 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
-                inherent#Ref#Ref[T]#set__T_int(i/4, (inherent#Ref#Ref[T]#get__T_int(i/4) + 1))
+                inherent#Ref#Ref[T]#set__T_isize(i/4, (inherent#Ref#Ref[T]#get__T_isize(i/4) + 1))
             } else {
                 if is_digit(ch/8) {
                     let mtmp412 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
                     let mtmp413 = inherent#Ref#Ref[T]#set__T_bool(saw_digit/5, true) in
-                    inherent#Ref#Ref[T]#set__T_int(i/4, (inherent#Ref#Ref[T]#get__T_int(i/4) + 1))
+                    inherent#Ref#Ref[T]#set__T_isize(
+                      i/4,
+                      (inherent#Ref#Ref[T]#get__T_isize(i/4) + 1)
+                    )
                 } else {
                     inherent#Ref#Ref[T]#set__T_bool(ok/6, false)
                 }
@@ -83,15 +86,15 @@ fn is_int_text(text/2: string) -> bool {
   }
 }
 
-fn parse_int32(text/9: string) -> int32 {
+fn parse_int32(text/9: string) -> i32 {
   let len/10 = inherent#string#string#len(text/9) in
-  let i/11 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let i/11 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let started/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
-  let acc/14 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let acc/14 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let mtmp419 =
-    while (inherent#Ref#Ref[T]#get__T_int(i/11) < len/10) {
-        let ch/15 = inherent#string#string#get(text/9, inherent#Ref#Ref[T]#get__T_int(i/11)) in
+    while (inherent#Ref#Ref[T]#get__T_isize(i/11) < len/10) {
+        let ch/15 = inherent#string#string#get(text/9, inherent#Ref#Ref[T]#get__T_isize(i/11)) in
         if if (!inherent#Ref#Ref[T]#get__T_bool(started/13)) {
             (ch/15 == '-')
         } else {
@@ -99,22 +102,22 @@ fn parse_int32(text/9: string) -> int32 {
         } {
             let mtmp415 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
             let mtmp416 = inherent#Ref#Ref[T]#set__T_bool(negative/12, true) in
-            inherent#Ref#Ref[T]#set__T_int(i/11, (inherent#Ref#Ref[T]#get__T_int(i/11) + 1))
+            inherent#Ref#Ref[T]#set__T_isize(i/11, (inherent#Ref#Ref[T]#get__T_isize(i/11) + 1))
         } else {
             let mtmp417 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
             let d/16 = digit_value(ch/15) in
             let mtmp418 =
-              inherent#Ref#Ref[T]#set__T_int32(
+              inherent#Ref#Ref[T]#set__T_i32(
                 acc/14,
-                ((inherent#Ref#Ref[T]#get__T_int32(acc/14) * 10) + d/16)
+                ((inherent#Ref#Ref[T]#get__T_i32(acc/14) * 10) + d/16)
               ) in
-            inherent#Ref#Ref[T]#set__T_int(i/11, (inherent#Ref#Ref[T]#get__T_int(i/11) + 1))
+            inherent#Ref#Ref[T]#set__T_isize(i/11, (inherent#Ref#Ref[T]#get__T_isize(i/11) + 1))
         }
     } in
   if inherent#Ref#Ref[T]#get__T_bool(negative/12) {
-      (0 - inherent#Ref#Ref[T]#get__T_int32(acc/14))
+      (0 - inherent#Ref#Ref[T]#get__T_i32(acc/14))
   } else {
-      inherent#Ref#Ref[T]#get__T_int32(acc/14)
+      inherent#Ref#Ref[T]#get__T_i32(acc/14)
   }
 }
 
@@ -130,18 +133,18 @@ fn is_delim(ch/17: char) -> bool {
   }
 }
 
-fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
+fn lex_atom(source/18: string, start/19: isize) -> (Token, isize) {
   let len/20 = inherent#string#string#len(source/18) in
   let text/21 = inherent#Ref#Ref[T]#new__T_string("") in
-  let i/22 = inherent#Ref#Ref[T]#new__T_int(start/19) in
+  let i/22 = inherent#Ref#Ref[T]#new__T_isize(start/19) in
   let done/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let mtmp421 =
     while if (!inherent#Ref#Ref[T]#get__T_bool(done/23)) {
-        (inherent#Ref#Ref[T]#get__T_int(i/22) < len/20)
+        (inherent#Ref#Ref[T]#get__T_isize(i/22) < len/20)
     } else {
         false
     } {
-        let ch/24 = inherent#string#string#get(source/18, inherent#Ref#Ref[T]#get__T_int(i/22)) in
+        let ch/24 = inherent#string#string#get(source/18, inherent#Ref#Ref[T]#get__T_isize(i/22)) in
         if is_delim(ch/24) {
             inherent#Ref#Ref[T]#set__T_bool(done/23, true)
         } else {
@@ -150,7 +153,7 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
                 text/21,
                 (inherent#Ref#Ref[T]#get__T_string(text/21) + inherent#char#char#to_string(ch/24))
               ) in
-            inherent#Ref#Ref[T]#set__T_int(i/22, (inherent#Ref#Ref[T]#get__T_int(i/22) + 1))
+            inherent#Ref#Ref[T]#set__T_isize(i/22, (inherent#Ref#Ref[T]#get__T_isize(i/22) + 1))
         }
     } in
   let atom/25 = inherent#Ref#Ref[T]#get__T_string(text/21) in
@@ -169,17 +172,17 @@ fn lex_atom(source/18: string, start/19: int) -> (Token, int) {
             Token::Sym(atom/25)
         },
     } in
-  (token/26, inherent#Ref#Ref[T]#get__T_int(i/22))
+  (token/26, inherent#Ref#Ref[T]#get__T_isize(i/22))
 }
 
 fn lex(source/27: string) -> Vec[Token] {
   let len/28 = inherent#string#string#len(source/27) in
   let toks0/29 = inherent#Vec#Vec[T]#new__T_Token() in
   let toks/30 = inherent#Ref#Ref[T]#new__T_Vec[Token](toks0/29) in
-  let i/31 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let i/31 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let mtmp428 =
-    while (inherent#Ref#Ref[T]#get__T_int(i/31) < len/28) {
-        let ch/32 = inherent#string#string#get(source/27, inherent#Ref#Ref[T]#get__T_int(i/31)) in
+    while (inherent#Ref#Ref[T]#get__T_isize(i/31) < len/28) {
+        let ch/32 = inherent#string#string#get(source/27, inherent#Ref#Ref[T]#get__T_isize(i/31)) in
         if (ch/32 == '(') {
             let mtmp422 =
               inherent#Ref#Ref[T]#set__T_Vec[Token](
@@ -189,7 +192,7 @@ fn lex(source/27: string) -> Vec[Token] {
                   Token::LParen
                 )
               ) in
-            inherent#Ref#Ref[T]#set__T_int(i/31, (inherent#Ref#Ref[T]#get__T_int(i/31) + 1))
+            inherent#Ref#Ref[T]#set__T_isize(i/31, (inherent#Ref#Ref[T]#get__T_isize(i/31) + 1))
         } else {
             if (ch/32 == ')') {
                 let mtmp423 =
@@ -200,12 +203,15 @@ fn lex(source/27: string) -> Vec[Token] {
                       Token::RParen
                     )
                   ) in
-                inherent#Ref#Ref[T]#set__T_int(i/31, (inherent#Ref#Ref[T]#get__T_int(i/31) + 1))
+                inherent#Ref#Ref[T]#set__T_isize(i/31, (inherent#Ref#Ref[T]#get__T_isize(i/31) + 1))
             } else {
                 if (ch/32 == ' ') {
-                    inherent#Ref#Ref[T]#set__T_int(i/31, (inherent#Ref#Ref[T]#get__T_int(i/31) + 1))
+                    inherent#Ref#Ref[T]#set__T_isize(
+                      i/31,
+                      (inherent#Ref#Ref[T]#get__T_isize(i/31) + 1)
+                    )
                 } else {
-                    let mtmp424 = lex_atom(source/27, inherent#Ref#Ref[T]#get__T_int(i/31)) in
+                    let mtmp424 = lex_atom(source/27, inherent#Ref#Ref[T]#get__T_isize(i/31)) in
                     let x425 = mtmp424.0 in
                     let x426 = mtmp424.1 in
                     let next/34 = x426 in
@@ -218,7 +224,7 @@ fn lex(source/27: string) -> Vec[Token] {
                           tok/33
                         )
                       ) in
-                    inherent#Ref#Ref[T]#set__T_int(i/31, next/34)
+                    inherent#Ref#Ref[T]#set__T_isize(i/31, next/34)
                 }
             }
         }
@@ -227,21 +233,21 @@ fn lex(source/27: string) -> Vec[Token] {
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  let i/37 = inherent#Ref#Ref[T]#new__T_int((inherent#Vec#Vec[T]#len__T_Binding(env/35) - 1)) in
+  let i/37 = inherent#Ref#Ref[T]#new__T_isize((inherent#Vec#Vec[T]#len__T_Binding(env/35) - 1)) in
   let result/38 = inherent#Ref#Ref[T]#new__T_Value(Value::Nil) in
   let done/39 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let mtmp430 =
     while if (!inherent#Ref#Ref[T]#get__T_bool(done/39)) {
-        (inherent#Ref#Ref[T]#get__T_int(i/37) >= 0)
+        (inherent#Ref#Ref[T]#get__T_isize(i/37) >= 0)
     } else {
         false
     } {
-        let binding/40 = @intrinsic(vec.get)(env/35, inherent#Ref#Ref[T]#get__T_int(i/37)) in
+        let binding/40 = @intrinsic(vec.get)(env/35, inherent#Ref#Ref[T]#get__T_isize(i/37)) in
         if (Binding.name(binding/40) == name/36) {
             let mtmp429 = inherent#Ref#Ref[T]#set__T_Value(result/38, Binding.value(binding/40)) in
             inherent#Ref#Ref[T]#set__T_bool(done/39, true)
         } else {
-            inherent#Ref#Ref[T]#set__T_int(i/37, (inherent#Ref#Ref[T]#get__T_int(i/37) - 1))
+            inherent#Ref#Ref[T]#set__T_isize(i/37, (inherent#Ref#Ref[T]#get__T_isize(i/37) - 1))
         }
     } in
   inherent#Ref#Ref[T]#get__T_Value(result/38)
@@ -259,25 +265,25 @@ fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> V
   }
 }
 
-fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
+fn parse_list(tokens/45: Vec[Token], start/46: isize) -> (Vec[SExpr], isize) {
   let acc/47 = inherent#Vec#Vec[T]#new__T_SExpr() in
   let exprs/48 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/47) in
-  let i/49 = inherent#Ref#Ref[T]#new__T_int(start/46) in
+  let i/49 = inherent#Ref#Ref[T]#new__T_isize(start/46) in
   let done/50 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let mtmp444 =
     while if (!inherent#Ref#Ref[T]#get__T_bool(done/50)) {
-        (inherent#Ref#Ref[T]#get__T_int(i/49) < inherent#Vec#Vec[T]#len__T_Token(tokens/45))
+        (inherent#Ref#Ref[T]#get__T_isize(i/49) < inherent#Vec#Vec[T]#len__T_Token(tokens/45))
     } else {
         false
     } {
-        let mtmp435 = @intrinsic(vec.get)(tokens/45, inherent#Ref#Ref[T]#get__T_int(i/49)) in
+        let mtmp435 = @intrinsic(vec.get)(tokens/45, inherent#Ref#Ref[T]#get__T_isize(i/49)) in
         match mtmp435 {
           Token::RParen => {
             let mtmp439 = inherent#Ref#Ref[T]#set__T_bool(done/50, true) in
-            inherent#Ref#Ref[T]#set__T_int(i/49, (inherent#Ref#Ref[T]#get__T_int(i/49) + 1))
+            inherent#Ref#Ref[T]#set__T_isize(i/49, (inherent#Ref#Ref[T]#get__T_isize(i/49) + 1))
           },
           _ =>
-            let mtmp440 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_int(i/49)) in
+            let mtmp440 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_isize(i/49)) in
             let x441 = mtmp440.0 in
             let x442 = mtmp440.1 in
             let next/52 = x442 in
@@ -290,13 +296,13 @@ fn parse_list(tokens/45: Vec[Token], start/46: int) -> (Vec[SExpr], int) {
                   expr/51
                 )
               ) in
-            inherent#Ref#Ref[T]#set__T_int(i/49, next/52),
+            inherent#Ref#Ref[T]#set__T_isize(i/49, next/52),
         }
     } in
-  (inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48), inherent#Ref#Ref[T]#get__T_int(i/49))
+  (inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48), inherent#Ref#Ref[T]#get__T_isize(i/49))
 }
 
-fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
+fn parse_expr(tokens/53: Vec[Token], start/54: isize) -> (SExpr, isize) {
   let mtmp445 = @intrinsic(vec.get)(tokens/53, start/54) in
   match mtmp445 {
     Token::LParen => {
@@ -329,12 +335,12 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int) -> (SExpr, int) {
 }
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
-  let i/61 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let i/61 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let acc/62 = inherent#Vec#Vec[T]#new__T_SExpr() in
   let exprs/63 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/62) in
   let mtmp456 =
-    while (inherent#Ref#Ref[T]#get__T_int(i/61) < inherent#Vec#Vec[T]#len__T_Token(tokens/60)) {
-        let mtmp452 = parse_expr(tokens/60, inherent#Ref#Ref[T]#get__T_int(i/61)) in
+    while (inherent#Ref#Ref[T]#get__T_isize(i/61) < inherent#Vec#Vec[T]#len__T_Token(tokens/60)) {
+        let mtmp452 = parse_expr(tokens/60, inherent#Ref#Ref[T]#get__T_isize(i/61)) in
         let x453 = mtmp452.0 in
         let x454 = mtmp452.1 in
         let next/65 = x454 in
@@ -347,7 +353,7 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
               expr/64
             )
           ) in
-        inherent#Ref#Ref[T]#set__T_int(i/61, next/65)
+        inherent#Ref#Ref[T]#set__T_isize(i/61, next/65)
     } in
   inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/63)
 }
@@ -357,7 +363,7 @@ fn value_to_string(value/66: Value) -> string {
     Value::Int(x457) => {
       let x457 = Value::Int._0(value/66) in
       let n/67 = x457 in
-      inherent#int32#int32#to_string(n/67)
+      inherent#i32#i32#to_string(n/67)
     },
     Value::Bool(x458) => {
       let x458 = Value::Bool._0(value/66) in
@@ -526,33 +532,33 @@ fn eval_list_sym(
 
 fn eval_begin(
   items/100: Vec[SExpr],
-  start/101: int,
+  start/101: isize,
   local/102: Vec[Binding],
   global/103: Ref[Vec[Binding]]
 ) -> Value {
-  let i/104 = inherent#Ref#Ref[T]#new__T_int(start/101) in
+  let i/104 = inherent#Ref#Ref[T]#new__T_isize(start/101) in
   let last/105 = inherent#Ref#Ref[T]#new__T_Value(Value::Nil) in
   let mtmp483 =
-    while (inherent#Ref#Ref[T]#get__T_int(i/104) < inherent#Vec#Vec[T]#len__T_SExpr(items/100)) {
+    while (inherent#Ref#Ref[T]#get__T_isize(i/104) < inherent#Vec#Vec[T]#len__T_SExpr(items/100)) {
         let v/106 =
           eval(
-            @intrinsic(vec.get)(items/100, inherent#Ref#Ref[T]#get__T_int(i/104)),
+            @intrinsic(vec.get)(items/100, inherent#Ref#Ref[T]#get__T_isize(i/104)),
             local/102,
             global/103
           ) in
         let mtmp482 = inherent#Ref#Ref[T]#set__T_Value(last/105, v/106) in
-        inherent#Ref#Ref[T]#set__T_int(i/104, (inherent#Ref#Ref[T]#get__T_int(i/104) + 1))
+        inherent#Ref#Ref[T]#set__T_isize(i/104, (inherent#Ref#Ref[T]#get__T_isize(i/104) + 1))
     } in
   inherent#Ref#Ref[T]#get__T_Value(last/105)
 }
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
-  let i/108 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let i/108 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let acc/109 = inherent#Vec#Vec[T]#new__T_string() in
   let params/110 = inherent#Ref#Ref[T]#new__T_Vec[string](acc/109) in
   let mtmp490 =
-    while (inherent#Ref#Ref[T]#get__T_int(i/108) < inherent#Vec#Vec[T]#len__T_SExpr(items/107)) {
-        let mtmp484 = @intrinsic(vec.get)(items/107, inherent#Ref#Ref[T]#get__T_int(i/108)) in
+    while (inherent#Ref#Ref[T]#get__T_isize(i/108) < inherent#Vec#Vec[T]#len__T_SExpr(items/107)) {
+        let mtmp484 = @intrinsic(vec.get)(items/107, inherent#Ref#Ref[T]#get__T_isize(i/108)) in
         match mtmp484 {
           SExpr::Sym(x487) => {
             let x487 = SExpr::Sym._0(mtmp484) in
@@ -565,9 +571,10 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
                   name/111
                 )
               ) in
-            inherent#Ref#Ref[T]#set__T_int(i/108, (inherent#Ref#Ref[T]#get__T_int(i/108) + 1))
+            inherent#Ref#Ref[T]#set__T_isize(i/108, (inherent#Ref#Ref[T]#get__T_isize(i/108) + 1))
           },
-          _ => inherent#Ref#Ref[T]#set__T_int(i/108, (inherent#Ref#Ref[T]#get__T_int(i/108) + 1)),
+          _ =>
+            inherent#Ref#Ref[T]#set__T_isize(i/108, (inherent#Ref#Ref[T]#get__T_isize(i/108) + 1)),
         }
     } in
   inherent#Ref#Ref[T]#get__T_Vec[string](params/110)
@@ -575,18 +582,18 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
 
 fn eval_args(
   items/112: Vec[SExpr],
-  start/113: int,
+  start/113: isize,
   local/114: Vec[Binding],
   global/115: Ref[Vec[Binding]]
 ) -> Vec[Value] {
-  let i/116 = inherent#Ref#Ref[T]#new__T_int(start/113) in
+  let i/116 = inherent#Ref#Ref[T]#new__T_isize(start/113) in
   let acc/117 = inherent#Vec#Vec[T]#new__T_Value() in
   let args/118 = inherent#Ref#Ref[T]#new__T_Vec[Value](acc/117) in
   let mtmp492 =
-    while (inherent#Ref#Ref[T]#get__T_int(i/116) < inherent#Vec#Vec[T]#len__T_SExpr(items/112)) {
+    while (inherent#Ref#Ref[T]#get__T_isize(i/116) < inherent#Vec#Vec[T]#len__T_SExpr(items/112)) {
         let v/119 =
           eval(
-            @intrinsic(vec.get)(items/112, inherent#Ref#Ref[T]#get__T_int(i/116)),
+            @intrinsic(vec.get)(items/112, inherent#Ref#Ref[T]#get__T_isize(i/116)),
             local/114,
             global/115
           ) in
@@ -598,7 +605,7 @@ fn eval_args(
               v/119
             )
           ) in
-        inherent#Ref#Ref[T]#set__T_int(i/116, (inherent#Ref#Ref[T]#get__T_int(i/116) + 1))
+        inherent#Ref#Ref[T]#set__T_isize(i/116, (inherent#Ref#Ref[T]#get__T_isize(i/116) + 1))
     } in
   inherent#Ref#Ref[T]#get__T_Vec[Value](args/118)
 }
@@ -642,50 +649,64 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       }
     },
     "+" => {
-      let i/126 = inherent#Ref#Ref[T]#new__T_int(0) in
-      let acc/127 = inherent#Ref#Ref[T]#new__T_int32(0) in
+      let i/126 = inherent#Ref#Ref[T]#new__T_isize(0) in
+      let acc/127 = inherent#Ref#Ref[T]#new__T_i32(0) in
       let mtmp510 =
-        while (inherent#Ref#Ref[T]#get__T_int(i/126) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
-            let mtmp505 = @intrinsic(vec.get)(args/121, inherent#Ref#Ref[T]#get__T_int(i/126)) in
+        while (inherent#Ref#Ref[T]#get__T_isize(i/126) <
+          inherent#Vec#Vec[T]#len__T_Value(args/121)) {
+            let mtmp505 = @intrinsic(vec.get)(args/121, inherent#Ref#Ref[T]#get__T_isize(i/126)) in
             match mtmp505 {
               Value::Int(x506) => {
                 let x506 = Value::Int._0(mtmp505) in
                 let n/128 = x506 in
                 let mtmp509 =
-                  inherent#Ref#Ref[T]#set__T_int32(
+                  inherent#Ref#Ref[T]#set__T_i32(
                     acc/127,
-                    (inherent#Ref#Ref[T]#get__T_int32(acc/127) + n/128)
+                    (inherent#Ref#Ref[T]#get__T_i32(acc/127) + n/128)
                   ) in
-                inherent#Ref#Ref[T]#set__T_int(i/126, (inherent#Ref#Ref[T]#get__T_int(i/126) + 1))
+                inherent#Ref#Ref[T]#set__T_isize(
+                  i/126,
+                  (inherent#Ref#Ref[T]#get__T_isize(i/126) + 1)
+                )
               },
               _ =>
-                inherent#Ref#Ref[T]#set__T_int(i/126, (inherent#Ref#Ref[T]#get__T_int(i/126) + 1)),
+                inherent#Ref#Ref[T]#set__T_isize(
+                  i/126,
+                  (inherent#Ref#Ref[T]#get__T_isize(i/126) + 1)
+                ),
             }
         } in
-      Value::Int(inherent#Ref#Ref[T]#get__T_int32(acc/127))
+      Value::Int(inherent#Ref#Ref[T]#get__T_i32(acc/127))
     },
     "*" => {
-      let i/129 = inherent#Ref#Ref[T]#new__T_int(0) in
-      let acc/130 = inherent#Ref#Ref[T]#new__T_int32(1) in
+      let i/129 = inherent#Ref#Ref[T]#new__T_isize(0) in
+      let acc/130 = inherent#Ref#Ref[T]#new__T_i32(1) in
       let mtmp516 =
-        while (inherent#Ref#Ref[T]#get__T_int(i/129) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
-            let mtmp511 = @intrinsic(vec.get)(args/121, inherent#Ref#Ref[T]#get__T_int(i/129)) in
+        while (inherent#Ref#Ref[T]#get__T_isize(i/129) <
+          inherent#Vec#Vec[T]#len__T_Value(args/121)) {
+            let mtmp511 = @intrinsic(vec.get)(args/121, inherent#Ref#Ref[T]#get__T_isize(i/129)) in
             match mtmp511 {
               Value::Int(x512) => {
                 let x512 = Value::Int._0(mtmp511) in
                 let n/131 = x512 in
                 let mtmp515 =
-                  inherent#Ref#Ref[T]#set__T_int32(
+                  inherent#Ref#Ref[T]#set__T_i32(
                     acc/130,
-                    (inherent#Ref#Ref[T]#get__T_int32(acc/130) * n/131)
+                    (inherent#Ref#Ref[T]#get__T_i32(acc/130) * n/131)
                   ) in
-                inherent#Ref#Ref[T]#set__T_int(i/129, (inherent#Ref#Ref[T]#get__T_int(i/129) + 1))
+                inherent#Ref#Ref[T]#set__T_isize(
+                  i/129,
+                  (inherent#Ref#Ref[T]#get__T_isize(i/129) + 1)
+                )
               },
               _ =>
-                inherent#Ref#Ref[T]#set__T_int(i/129, (inherent#Ref#Ref[T]#get__T_int(i/129) + 1)),
+                inherent#Ref#Ref[T]#set__T_isize(
+                  i/129,
+                  (inherent#Ref#Ref[T]#get__T_isize(i/129) + 1)
+                ),
             }
         } in
-      Value::Int(inherent#Ref#Ref[T]#get__T_int32(acc/130))
+      Value::Int(inherent#Ref#Ref[T]#get__T_i32(acc/130))
     },
     "-" => {
       let mtmp517 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
@@ -765,24 +786,24 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
   let env/143 = inherent#Ref#Ref[T]#new__T_Vec[Binding](Lambda.env(lambda/141)) in
-  let i/144 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let i/144 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let mtmp544 =
-    while if (inherent#Ref#Ref[T]#get__T_int(i/144) <
+    while if (inherent#Ref#Ref[T]#get__T_isize(i/144) <
       inherent#Vec#Vec[T]#len__T_string(Lambda.params(lambda/141))) {
-        (inherent#Ref#Ref[T]#get__T_int(i/144) < inherent#Vec#Vec[T]#len__T_Value(args/142))
+        (inherent#Ref#Ref[T]#get__T_isize(i/144) < inherent#Vec#Vec[T]#len__T_Value(args/142))
     } else {
         false
     } {
         let name/145 =
-          @intrinsic(vec.get)(Lambda.params(lambda/141), inherent#Ref#Ref[T]#get__T_int(i/144)) in
-        let value/146 = @intrinsic(vec.get)(args/142, inherent#Ref#Ref[T]#get__T_int(i/144)) in
+          @intrinsic(vec.get)(Lambda.params(lambda/141), inherent#Ref#Ref[T]#get__T_isize(i/144)) in
+        let value/146 = @intrinsic(vec.get)(args/142, inherent#Ref#Ref[T]#get__T_isize(i/144)) in
         let updated/147 =
           inherent#Vec#Vec[T]#pushed__T_Binding(
             inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143),
             Binding { name: name/145, value: value/146 }
           ) in
         let mtmp543 = inherent#Ref#Ref[T]#set__T_Vec[Binding](env/143, updated/147) in
-        inherent#Ref#Ref[T]#set__T_int(i/144, (inherent#Ref#Ref[T]#get__T_int(i/144) + 1))
+        inherent#Ref#Ref[T]#set__T_isize(i/144, (inherent#Ref#Ref[T]#get__T_isize(i/144) + 1))
     } in
   eval(
     Lambda.body(lambda/141),
@@ -806,11 +827,11 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#string#string#len(self/35: string) -> int {
+fn inherent#string#string#len(self/35: string) -> isize {
   @runtime(core.string_len)(self/35)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/431)
 }
 
@@ -822,11 +843,11 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/432: Ref[bool]) -> bool {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#string#string#get(self/37: string, index/38: int) -> char {
+fn inherent#string#string#get(self/37: string, index/38: isize) -> char {
   string_get(self/37, index/38)
 }
 
@@ -834,19 +855,19 @@ fn inherent#Ref#Ref[T]#set__T_bool(self/433: Ref[bool], value/434: bool) -> unit
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
@@ -900,7 +921,7 @@ fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/433: Ref[Vec[Token]], value/434: V
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Vec#Vec[T]#len__T_Binding(self/273: Vec[Binding]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Binding(self/273: Vec[Binding]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -924,7 +945,7 @@ fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/431: Vec[SExpr]) -> Ref[Vec[SExpr
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Vec#Vec[T]#len__T_Token(self/273: Vec[Token]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Token(self/273: Vec[Token]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -954,7 +975,7 @@ fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/433: Ref[Vec[SExpr]], value/434: V
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -966,7 +987,7 @@ fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/432: Ref[Vec[Binding]]) -> Vec[B
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Vec#Vec[T]#len__T_SExpr(self/273: Vec[SExpr]) -> int {
+fn inherent#Vec#Vec[T]#len__T_SExpr(self/273: Vec[SExpr]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -1078,7 +1099,7 @@ fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/433: Ref[Vec[Value]], value/434: V
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Vec#Vec[T]#len__T_Value(self/273: Vec[Value]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Value(self/273: Vec[Value]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -1086,7 +1107,7 @@ fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/431: Vec[Binding]) -> Ref[Vec[B
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> int {
+fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -1098,7 +1119,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn string_get(value/17: string, index/18: int) -> char {
+fn string_get(value/17: string, index/18: isize) -> char {
   let mtmp6 = string_decode_utf8_at(value/17, index/18) in
   let x7 = mtmp6.0 in
   let x8 = mtmp6.1 in
@@ -1112,7 +1133,7 @@ fn string_get(value/17: string, index/18: int) -> char {
 }
 
 fn char_to_string(value/29: char) -> string {
-  if utf8_valid_scalar((value/29 as uint32)) {
+  if utf8_valid_scalar((value/29 as u32)) {
       @runtime(core.char_to_string)(value/29)
   } else {
       let mtmp21 = @runtime(core.string_get)("", -1) in
@@ -1120,7 +1141,7 @@ fn char_to_string(value/29: char) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_Token(capacity/257: int) -> Vec[Token] {
+fn inherent#Vec#Vec[T]#with_capacity__T_Token(capacity/257: isize) -> Vec[Token] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
@@ -1128,7 +1149,7 @@ fn inherent#Vec#Vec[T]#push__T_Token(self/258: Vec[Token], elem/259: Token) -> u
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_SExpr(capacity/257: int) -> Vec[SExpr] {
+fn inherent#Vec#Vec[T]#with_capacity__T_SExpr(capacity/257: isize) -> Vec[SExpr] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
@@ -1136,7 +1157,7 @@ fn inherent#Vec#Vec[T]#push__T_SExpr(self/258: Vec[SExpr], elem/259: SExpr) -> u
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_Binding(capacity/257: int) -> Vec[Binding] {
+fn inherent#Vec#Vec[T]#with_capacity__T_Binding(capacity/257: isize) -> Vec[Binding] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
@@ -1144,7 +1165,7 @@ fn inherent#Vec#Vec[T]#push__T_Binding(self/258: Vec[Binding], elem/259: Binding
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/257: int) -> Vec[string] {
+fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/257: isize) -> Vec[string] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
@@ -1152,7 +1173,7 @@ fn inherent#Vec#Vec[T]#push__T_string(self/258: Vec[string], elem/259: string) -
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_Value(capacity/257: int) -> Vec[Value] {
+fn inherent#Vec#Vec[T]#with_capacity__T_Value(capacity/257: isize) -> Vec[Value] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
@@ -1164,7 +1185,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
   let length/7 = inherent#string#string#byte_len(value/5) in
   let _wild2 =
     if if (index/6 < 0) {
@@ -1176,7 +1197,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
     } else {
         ()
     } in
-  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as u32) in
   if (first/8 < 128) {
       utf8_valid_decode(first/8, 1)
   } else {
@@ -1190,7 +1211,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                 } else {
                     ()
                 } in
-              let second/9 = (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+              let second/9 = (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
               if utf8_invalid_continuation(second/9) {
                   utf8_invalid_decode()
               } else {
@@ -1205,9 +1226,8 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         ()
                     } in
                   let second/10 =
-                    (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
-                  let third/11 =
-                    (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                    (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
+                  let third/11 = (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                   if if if if utf8_invalid_continuation(second/10) {
                       true
                   } else {
@@ -1245,11 +1265,11 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                             ()
                         } in
                       let second/12 =
-                        (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                        (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                       let third/13 =
-                        (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                        (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                       let fourth/14 =
-                        (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                        (inherent#string#string#byte_get(value/5, (index/6 + 3)) as u32) in
                       if if if if if utf8_invalid_continuation(second/12) {
                           true
                       } else {
@@ -1293,7 +1313,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   if (value/4 <= 1114111) {
       (!if (value/4 >= 55296) {
           (value/4 <= 57343)
@@ -1305,19 +1325,19 @@ fn utf8_valid_scalar(value/4: uint32) -> bool {
   }
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> int {
+fn inherent#string#string#byte_len(self/36: string) -> isize {
   @runtime(core.string_len)(self/36)
 }
 
-fn utf8_invalid_decode() -> (bool, char, int) {
+fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   @runtime(core.string_byte_get)(self/39, index/40)
 }
 
-fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
   let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
   match mtmp0 {
     Option__char::None => {
@@ -1331,7 +1351,7 @@ fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_invalid_continuation(value/3: uint32) -> bool {
+fn utf8_invalid_continuation(value/3: u32) -> bool {
   if (value/3 < 128) {
       true
   } else {
@@ -1339,7 +1359,7 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
   if utf8_valid_scalar(value/30) {
       let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
       let x24 = mtmp22.1 in
@@ -1350,11 +1370,11 @@ fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
   }
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }
 
@@ -1362,7 +1382,7 @@ fn trait_impl#PartialEq#bool#eq(self/179: bool, other/180: bool) -> bool {
   (self/179 == other/180)
 }
 
-fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
+fn trait_impl#Hash#bool#hash(self/208: bool) -> u64 {
   if self/208 {
       1
   } else {
@@ -1370,11 +1390,11 @@ fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
   }
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }
 
@@ -1382,7 +1402,7 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   (self/181 == other/182)
 }
 
-fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+fn trait_impl#Hash#string#hash(self/209: string) -> u64 {
   @runtime(core.string_hash)(self/209)
 }
 
@@ -1410,7 +1430,7 @@ fn trait_impl#PartialEq#Vec[string]#eq(self/223: Vec[string], other/224: Vec[str
   }
 }
 
-fn trait_impl#Hash#Vec[string]#hash(self/226: Vec[string]) -> uint64 {
+fn trait_impl#Hash#Vec[string]#hash(self/226: Vec[string]) -> u64 {
   let value/227 = 14695981039346656037 in
   let index/228 = 0 in
   let _wild161 =

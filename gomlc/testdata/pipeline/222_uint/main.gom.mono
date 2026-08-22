@@ -1,8 +1,8 @@
-fn combine(left/0: uint, right/1: uint) -> uint {
+fn combine(left/0: usize, right/1: usize) -> usize {
   ((left/0 + right/1) * 2)
 }
 
-fn classify(value/2: uint) -> string {
+fn classify(value/2: usize) -> string {
   match value/2 {
     0 => {
       "zero"
@@ -16,18 +16,18 @@ fn classify(value/2: uint) -> string {
 
 fn main() -> unit {
   let left/3 = 19 in
-  let right/4 = (2 as uint) in
+  let right/4 = (2 as usize) in
   let result/5 = combine(left/3, right/4) in
-  let _wild411 = println__T_uint(result/5) in
-  let _wild412 = println__T_string(trait_impl#ToString#uint#to_string(result/5)) in
+  let _wild411 = println__T_usize(result/5) in
+  let _wild412 = println__T_string(trait_impl#ToString#usize#to_string(result/5)) in
   let _wild413 = println__T_string(classify(result/5)) in
   let _wild414 = println__T_bool((result/5 > left/3)) in
-  let _wild415 = println__T_uint64(((result/5 & 15) as uint64)) in
-  let values/6 = inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() in
+  let _wild415 = println__T_u64(((result/5 & 15) as u64)) in
+  let values/6 = inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() in
   let _wild416 =
-    inherent#HashMap#HashMap[K,V]#set__K_uint__V_string(values/6, result/5, "stored") in
+    inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(values/6, result/5, "stored") in
   {
-    let mtmp417 = inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(values/6, 42) in
+    let mtmp417 = inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(values/6, 42) in
     match mtmp417 {
       Option__string::None => {
         println__T_string("missing")
@@ -45,15 +45,15 @@ fn main() -> unit {
   }
 }
 
-fn println__T_uint(value/1: uint) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint#to_string(value/1))
+fn println__T_usize(value/1: usize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#usize#to_string(value/1))
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#uint#to_string(self/451: uint) -> string {
+fn trait_impl#ToString#usize#to_string(self/451: usize) -> string {
   @runtime(core.uint_to_string)(self/451)
 }
 
@@ -61,25 +61,25 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn println__T_uint64(value/1: uint64) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint64#to_string(value/1))
+fn println__T_u64(value/1: u64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/1))
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() -> HashMap[uint, string] {
+fn inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() -> HashMap[usize, string] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_uint__V_string(
-  self/422: HashMap[uint, string],
-  key/423: uint,
+fn inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(
+  self/422: HashMap[usize, string],
+  key/423: usize,
   value/424: string
 ) -> unit {
   @intrinsic(hashmap.set)(self/422, key/423, value/424)
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(
-  self/420: HashMap[uint, string],
-  key/421: uint
+fn inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(
+  self/420: HashMap[usize, string],
+  key/421: usize
 ) -> Option__string {
   @intrinsic(hashmap.get)(self/420, key/421)
 }
@@ -92,14 +92,14 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn trait_impl#ToString#uint64#to_string(self/159: uint64) -> string {
+fn trait_impl#ToString#u64#to_string(self/159: u64) -> string {
   @runtime(core.uint64_to_string)(self/159)
 }
 
-fn trait_impl#PartialEq#uint#eq(self/453: uint, other/454: uint) -> bool {
+fn trait_impl#PartialEq#usize#eq(self/453: usize, other/454: usize) -> bool {
   (self/453 == other/454)
 }
 
-fn trait_impl#Hash#uint#hash(self/455: uint) -> uint64 {
+fn trait_impl#Hash#usize#hash(self/455: usize) -> u64 {
   @runtime(core.uint_hash)(self/455)
 }

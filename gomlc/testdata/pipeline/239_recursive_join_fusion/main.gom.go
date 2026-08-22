@@ -38,12 +38,12 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
 
-func find(wanted__0 int) Option__int {
+func find(wanted__0 int) Option__isize {
     var current__1 *ref_int_x
     var inline463 int = 0
     var inline464 *ref_int_x = ref__Ref_3int(inline463)
@@ -54,13 +54,13 @@ func find(wanted__0 int) Option__int {
         value__2 = inline461
         var t426 bool = value__2 >= 5
         if t426 {
-            return Option__int{
+            return Option__isize{
                 _tag: 0,
             }
         } else {
             var t428 bool = value__2 == wanted__0
             if t428 {
-                var t429 Option__int = Option__int{
+                var t429 Option__isize = Option__isize{
                     _tag: 1,
                     _v1_0: value__2,
                 }
@@ -77,7 +77,7 @@ func find(wanted__0 int) Option__int {
 func main0() struct{} {
     var t436 bool
     var inline486 int = 3
-    var inline487 Option__int = find(inline486)
+    var inline487 Option__isize = find(inline486)
     switch inline487._tag {
     case 0:
         t436 = false
@@ -90,7 +90,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline483)
     var t437 bool
     var inline480 int = 8
-    var inline481 Option__int = find(inline480)
+    var inline481 Option__isize = find(inline480)
     switch inline481._tag {
     case 0:
         t437 = false

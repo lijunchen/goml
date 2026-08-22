@@ -2,35 +2,35 @@ impl ToString for Key {
   fn to_string(self/0: Key) -> string {
       match (self/0 : Key) {
           Key::Empty => "Key::Empty",
-          Key::Point(#derive0_field/1: int32, #derive1_field/2: int32) =>
+          Key::Point(#derive0_field/1: i32, #derive1_field/2: i32) =>
             "Key::Point { " + "x: " +
-              (ToString::to_string : (int32) -> string)((#derive0_field/1 : int32)) +
+              (ToString::to_string : (i32) -> string)((#derive0_field/1 : i32)) +
               ", " +
               "y: " +
-              (ToString::to_string : (int32) -> string)((#derive1_field/2 : int32)) +
+              (ToString::to_string : (i32) -> string)((#derive1_field/2 : i32)) +
               " }",
       }
   }
 }
 
 impl Hash for Key {
-  fn hash(self/3: Key) -> uint64 {
+  fn hash(self/3: Key) -> u64 {
       match (self/3 : Key) {
           Key::Empty =>
             {
-                let h/4: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
-                (h/4 : uint64)
+                let h/4: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 1;
+                (h/4 : u64)
             },
-          Key::Point(#derive0_field/5: int32, #derive1_field/6: int32) =>
+          Key::Point(#derive0_field/5: i32, #derive1_field/6: i32) =>
             {
-                let h/7: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
-                let h/8: uint64 =
-                  (h/7 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-                    (Hash::hash : (int32) -> uint64)((#derive0_field/5 : int32));
-                let h/9: uint64 =
-                  (h/8 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-                    (Hash::hash : (int32) -> uint64)((#derive1_field/6 : int32));
-                (h/9 : uint64)
+                let h/7: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 2;
+                let h/8: u64 =
+                  (h/7 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+                    (Hash::hash : (i32) -> u64)((#derive0_field/5 : i32));
+                let h/9: u64 =
+                  (h/8 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+                    (Hash::hash : (i32) -> u64)((#derive1_field/6 : i32));
+                (h/9 : u64)
             },
       }
   }
@@ -41,48 +41,48 @@ impl PartialEq for Key {
       match ((self/10 : Key), (other/11 : Key)) {
           (Key::Empty, Key::Empty) => true,
           (
-            Key::Point(#derive0_left/12: int32, #derive2_left/13: int32),
-            Key::Point(#derive1_right/14: int32, #derive3_right/15: int32)
+            Key::Point(#derive0_left/12: i32, #derive2_left/13: i32),
+            Key::Point(#derive1_right/14: i32, #derive3_right/15: i32)
           ) =>
             true &&
-              (PartialEq::eq : (int32, int32) -> bool)(
-                (#derive0_left/12 : int32),
-                (#derive1_right/14 : int32)
+              (PartialEq::eq : (i32, i32) -> bool)(
+                (#derive0_left/12 : i32),
+                (#derive1_right/14 : i32)
               ) &&
-              (PartialEq::eq : (int32, int32) -> bool)(
-                (#derive2_left/13 : int32),
-                (#derive3_right/15 : int32)
+              (PartialEq::eq : (i32, i32) -> bool)(
+                (#derive2_left/13 : i32),
+                (#derive3_right/15 : i32)
               ),
           _ : (Key, Key) => false,
       }
   }
 }
 
-impl Eq for Key where int32: Eq, int32: PartialEq {}
+impl Eq for Key where i32: Eq, i32: PartialEq {}
 
-fn score(value/16: Message[string]) -> int32 {
+fn score(value/16: Message[string]) -> i32 {
     match (value/16 : Message[string]) {
         Message::Quit => 0,
         Message::Write(_ : string) => 1,
-        Message::Move(x/17: int32, vertical/18: int32, _ : string) =>
-          (x/17 : int32) + (vertical/18 : int32),
+        Message::Move(x/17: i32, vertical/18: i32, _ : string) =>
+          (x/17 : i32) + (vertical/18 : i32),
     }
 }
 
 fn label(value/19: Message[string]) -> string {
     match (value/19 : Message[string]) {
-        Message::Move(_ : int32, _ : int32, label/20: string) => (label/20 : string),
+        Message::Move(_ : i32, _ : i32, label/20: string) => (label/20 : string),
         Message::Write(text/21: string) => (text/21 : string),
         Message::Quit => "quit",
     }
 }
 
 fn main() -> unit {
-    let x/22: int32 = 3;
+    let x/22: i32 = 3;
     let direction/23: string = "north";
-    let first/24: Message[string] = Message::Move((x/22 : int32), 4, (direction/23 : string));
+    let first/24: Message[string] = Message::Move((x/22 : i32), 4, (direction/23 : string));
     let second/25: Message[string] = Message::Move(3, 4, "north");
-    (println : (int32) -> unit)((score : (Message[string]) -> int32)((first/24 : Message[string])));
+    (println : (i32) -> unit)((score : (Message[string]) -> i32)((first/24 : Message[string])));
     (println : (string) -> unit)(
       (label : (Message[string]) -> string)((second/25 : Message[string]))
     );

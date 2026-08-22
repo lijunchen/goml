@@ -1,48 +1,48 @@
-fn optimized(base/0: int, count/1: int) -> int {
-    let mut index/2: int = 0;
-    let mut result/3: int = 0;
-    while (index/2 : int) < (count/1 : int) {
+fn optimized(base/0: isize, count/1: isize) -> isize {
+    let mut index/2: isize = 0;
+    let mut result/3: isize = 0;
+    while (index/2 : isize) < (count/1 : isize) {
         {
-            let square/4: int = (base/0 : int) * (base/0 : int);
-            let scaled/5: int = (square/4 : int) * 17;
-            let offset/6: int = (scaled/5 : int) + (base/0 : int);
-            (result/3 : int) = (result/3 : int) + (offset/6 : int);
-            (index/2 : int) = (index/2 : int) + 1;
+            let square/4: isize = (base/0 : isize) * (base/0 : isize);
+            let scaled/5: isize = (square/4 : isize) * 17;
+            let offset/6: isize = (scaled/5 : isize) + (base/0 : isize);
+            (result/3 : isize) = (result/3 : isize) + (offset/6 : isize);
+            (index/2 : isize) = (index/2 : isize) + 1;
         }
     };
-    (result/3 : int)
+    (result/3 : isize)
 }
 
-fn guarded(divisor/7: int, count/8: int) -> int {
-    let mut index/9: int = 0;
-    let mut result/10: int = 0;
-    while (index/9 : int) < (count/8 : int) {
+fn guarded(divisor/7: isize, count/8: isize) -> isize {
+    let mut index/9: isize = 0;
+    let mut result/10: isize = 0;
+    while (index/9 : isize) < (count/8 : isize) {
         {
-            let quotient/11: int = 100 / (divisor/7 : int);
-            (result/10 : int) = (result/10 : int) + (quotient/11 : int);
-            (index/9 : int) = (index/9 : int) + 1;
+            let quotient/11: isize = 100 / (divisor/7 : isize);
+            (result/10 : isize) = (result/10 : isize) + (quotient/11 : isize);
+            (index/9 : isize) = (index/9 : isize) + 1;
         }
     };
-    (result/10 : int)
+    (result/10 : isize)
 }
 
-fn changing(count/12: int) -> int {
-    let mut index/13: int = 0;
-    let mut value/14: int = 1;
-    let mut result/15: int = 0;
-    while (index/13 : int) < (count/12 : int) {
+fn changing(count/12: isize) -> isize {
+    let mut index/13: isize = 0;
+    let mut value/14: isize = 1;
+    let mut result/15: isize = 0;
+    while (index/13 : isize) < (count/12 : isize) {
         {
-            let derived/16: int = (value/14 : int) + 1;
-            (result/15 : int) = (result/15 : int) + (derived/16 : int);
-            (value/14 : int) = (value/14 : int) + 1;
-            (index/13 : int) = (index/13 : int) + 1;
+            let derived/16: isize = (value/14 : isize) + 1;
+            (result/15 : isize) = (result/15 : isize) + (derived/16 : isize);
+            (value/14 : isize) = (value/14 : isize) + 1;
+            (index/13 : isize) = (index/13 : isize) + 1;
         }
     };
-    (result/15 : int)
+    (result/15 : isize)
 }
 
 fn main() -> unit {
-    (println : (int) -> unit)((optimized : (int, int) -> int)(3, 4));
-    (println : (int) -> unit)((guarded : (int, int) -> int)(0, 0));
-    (println : (int) -> unit)((changing : (int) -> int)(3));
+    (println : (isize) -> unit)((optimized : (isize, isize) -> isize)(3, 4));
+    (println : (isize) -> unit)((guarded : (isize, isize) -> isize)(0, 0));
+    (println : (isize) -> unit)((changing : (isize) -> isize)(3));
 }

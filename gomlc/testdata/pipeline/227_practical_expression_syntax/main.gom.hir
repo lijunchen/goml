@@ -1,11 +1,11 @@
 package main
 file main.gom
   struct Point {
-      x: int,
-      y: int,
+      x: isize,
+      y: isize,
   }
 
-  fn record(local/1/0: Ref[string], local/1/1: string, local/1/2: int) -> int {
+  fn record(local/1/0: Ref[string], local/1/1: string, local/1/2: isize) -> isize {
       log/0.set(log/0.get() + label/1);
       value/2
   }
@@ -15,7 +15,7 @@ file main.gom
       value/5
   }
 
-  fn record_vec(local/1/6: Ref[string], local/1/7: string, local/1/8: Vec[int]) -> Vec[int] {
+  fn record_vec(local/1/6: Ref[string], local/1/7: string, local/1/8: Vec[isize]) -> Vec[isize] {
       log/6.set(log/6.get() + label/7);
       value/8
   }
@@ -58,7 +58,7 @@ file main.gom
             Option::None => "missing",
         }
       );
-      let local/1/18: Vec[int] = Vec::from_array([]);
-      let local/1/19: HashMap[string, int] = HashMap::from_array([]);
+      let local/1/18: Vec[isize] = Vec::from_array([]);
+      let local/1/19: HashMap[string, isize] = HashMap::from_array([]);
       println(f"empty={empty_values/18.len() + empty_table/19.len()} {{ok}}");
   }

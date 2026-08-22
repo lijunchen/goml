@@ -1,12 +1,12 @@
-fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
-  join inline_cont714(expected_length/2: int) -> unit {
+fn check_utf8(bytes/0: Vec[u8], expected/1: bool) -> unit {
+  join inline_cont714(expected_length/2: isize) -> unit {
     let mtmp411 = string_from_utf8(bytes/0) in
     let x412 = mtmp411.0 in
     let x413 = mtmp411.1 in
     let t452 = (x412 == expected/1) in
     join inline_cont711(_wild414: unit) -> unit {
       if x412 {
-        join inline_cont706(t454: int) -> unit {
+        join inline_cont706(t454: isize) -> unit {
           let t455 = (t454 == expected_length/2) in
           let inline704 = trait_impl#ToString#bool#to_string(t455) in
           let inline705 = @runtime(core.string_println)(inline704) in
@@ -29,7 +29,7 @@ fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
   jump inline_cont714(inline715)
 }
 
-fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) -> unit {
+fn check_scalar(bytes/5: Vec[u8], expected/6: u32, expected_width/7: isize) -> unit {
   let mtmp415 = string_from_utf8(bytes/5) in
   let x416 = mtmp415.0 in
   let x417 = mtmp415.1 in
@@ -46,10 +46,10 @@ fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) 
       let inline723 = @runtime(core.string_println)(inline722) in
       jump inline_cont720(())
     } in
-    join commute_arm851(commute_field850: (char, int)) -> unit {
+    join commute_arm851(commute_field850: (char, isize)) -> unit {
       let x423 = commute_field850.0 in
       let x424 = commute_field850.1 in
-      let t462 = (x423 as uint32) in
+      let t462 = (x423 as u32) in
       let t463 = (t462 == expected/6) in
       join inline_cont727(_wild425: unit) -> unit {
         let t464 = (x424 == expected_width/7) in
@@ -157,7 +157,7 @@ fn main() -> unit {
       let t517 = [245, 128, 128, 128] in
       let t518 = @intrinsic(vec.from_array)(t517) in
       let inline745 = false in
-      let inline746 = inherent#Vec#Vec[T]#len__T_uint8(t518) in
+      let inline746 = inherent#Vec#Vec[T]#len__T_u8(t518) in
       let inline747 = string_from_utf8(t518) in
       let inline748 = inline747.0 in
       let inline749 = inline747.1 in
@@ -175,7 +175,7 @@ fn main() -> unit {
       }
     } in
     let inline760 = false in
-    let inline761 = inherent#Vec#Vec[T]#len__T_uint8(t516) in
+    let inline761 = inherent#Vec#Vec[T]#len__T_u8(t516) in
     let inline762 = string_from_utf8(t516) in
     let inline763 = inline762.0 in
     let inline764 = inline762.1 in
@@ -193,7 +193,7 @@ fn main() -> unit {
     }
   } in
   let inline775 = false in
-  let inline776 = inherent#Vec#Vec[T]#len__T_uint8(t514) in
+  let inline776 = inherent#Vec#Vec[T]#len__T_u8(t514) in
   let inline777 = string_from_utf8(t514) in
   let inline778 = inline777.0 in
   let inline779 = inline777.1 in
@@ -211,12 +211,12 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/273: Vec[uint8]) -> int {
+fn inherent#Vec#Vec[T]#len__T_u8(self/273: Vec[u8]) -> isize {
   let t522 = @intrinsic(vec.len)(self/273) in
   t522
 }
 
-fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+fn string_from_utf8(bytes/24: Vec[u8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   let x12 = mtmp10.1 in
   let index/26 = 0 in
@@ -226,7 +226,7 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   } in
   joinrec {
     join loop527() -> (bool, string) {
-      join inline_cont789(t528: int) -> (bool, string) {
+      join inline_cont789(t528: isize) -> (bool, string) {
         let t529 = (index/26 < t528) in
         if t529 {
           let mtmp13 = string_decode_utf8_at(x12, index/26) in
@@ -261,32 +261,32 @@ fn println__T_bool(value/1: bool) -> unit {
   jump inline_cont791(inline792)
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> int {
+fn inherent#string#string#byte_len(self/36: string) -> isize {
   let t539 = @runtime(core.string_len)(self/36) in
   t539
 }
 
-fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(char,int) {
+fn inherent#string#string#decode_at(self/46: string, index/47: isize) -> Option__(char,isize) {
   let mtmp25 = string_decode_utf8_at(self/46, index/47) in
   let x26 = mtmp25.0 in
   let x27 = mtmp25.1 in
   let x28 = mtmp25.2 in
   if x26 {
     let t544 = (x27, x28) in
-    let t545 = Option__(char,int)::Some(t544) in
+    let t545 = Option__(char,isize)::Some(t544) in
     t545
   } else {
     Tag_0
   }
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
   let length/7 = inherent#string#string#byte_len(value/5) in
   let t664 = (index/6 < 0) in
-  join k661(jp662: bool) -> (bool, char, int) {
-    join k548() -> (bool, char, int) {
+  join k661(jp662: bool) -> (bool, char, isize) {
+    join k548() -> (bool, char, isize) {
       let t549 = inherent#string#string#byte_get(value/5, index/6) in
-      let first/8 = (t549 as uint32) in
+      let first/8 = (t549 as u32) in
       let t552 = (first/8 < 128) in
       if t552 {
         let inline796 = 1 in
@@ -312,11 +312,11 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
           if t560 {
             let t573 = (length/7 - index/6) in
             let t574 = (t573 < 2) in
-            join k561() -> (bool, char, int) {
+            join k561() -> (bool, char, isize) {
               let t562 = (index/6 + 1) in
-              join inline_cont818(t563: uint8) -> (bool, char, int) {
-                let second/9 = (t563 as uint32) in
-                join inline_cont815(t566: bool) -> (bool, char, int) {
+              join inline_cont818(t563: u8) -> (bool, char, isize) {
+                let second/9 = (t563 as u32) in
+                join inline_cont815(t566: bool) -> (bool, char, isize) {
                   if t566 {
                     let inline807 = (false, '\0', 0) in
                     inline807
@@ -362,17 +362,17 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
             if t578 {
               let t611 = (length/7 - index/6) in
               let t612 = (t611 < 3) in
-              join k579() -> (bool, char, int) {
+              join k579() -> (bool, char, isize) {
                 let t580 = (index/6 + 1) in
                 let t581 = inherent#string#string#byte_get(value/5, t580) in
-                let second/10 = (t581 as uint32) in
+                let second/10 = (t581 as u32) in
                 let t582 = (index/6 + 2) in
                 let t583 = inherent#string#string#byte_get(value/5, t582) in
-                let third/11 = (t583 as uint32) in
+                let third/11 = (t583 as u32) in
                 let t609 = utf8_invalid_continuation(second/10) in
-                join k603(jp604: bool) -> (bool, char, int) {
-                  join k597(jp598: bool) -> (bool, char, int) {
-                    join k586(jp587: bool) -> (bool, char, int) {
+                join k603(jp604: bool) -> (bool, char, isize) {
+                  join k597(jp598: bool) -> (bool, char, isize) {
+                    join k586(jp587: bool) -> (bool, char, isize) {
                       if jp587 {
                         let inline826 = (false, '\0', 0) in
                         inline826
@@ -446,21 +446,21 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
               if t616 {
                 let t657 = (length/7 - index/6) in
                 let t658 = (t657 < 4) in
-                join k617() -> (bool, char, int) {
+                join k617() -> (bool, char, isize) {
                   let t618 = (index/6 + 1) in
                   let t619 = inherent#string#string#byte_get(value/5, t618) in
-                  let second/12 = (t619 as uint32) in
+                  let second/12 = (t619 as u32) in
                   let t620 = (index/6 + 2) in
                   let t621 = inherent#string#string#byte_get(value/5, t620) in
-                  let third/13 = (t621 as uint32) in
+                  let third/13 = (t621 as u32) in
                   let t622 = (index/6 + 3) in
                   let t623 = inherent#string#string#byte_get(value/5, t622) in
-                  let fourth/14 = (t623 as uint32) in
+                  let fourth/14 = (t623 as u32) in
                   let t655 = utf8_invalid_continuation(second/12) in
-                  join k652(jp653: bool) -> (bool, char, int) {
-                    join k646(jp647: bool) -> (bool, char, int) {
-                      join k640(jp641: bool) -> (bool, char, int) {
-                        join k626(jp627: bool) -> (bool, char, int) {
+                  join k652(jp653: bool) -> (bool, char, isize) {
+                    join k646(jp647: bool) -> (bool, char, isize) {
+                      join k640(jp641: bool) -> (bool, char, isize) {
+                        join k626(jp627: bool) -> (bool, char, isize) {
                           if jp627 {
                             let t628 = utf8_invalid_decode() in
                             t628
@@ -552,22 +552,22 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   t668
 }
 
-fn utf8_invalid_decode() -> (bool, char, int) {
+fn utf8_invalid_decode() -> (bool, char, isize) {
   let t671 = (false, '\0', 0) in
   t671
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   let t674 = @runtime(core.string_byte_get)(self/39, index/40) in
   t674
 }
 
-fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
-  join commute_arm852() -> (bool, char, int) {
+fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
+  join commute_arm852() -> (bool, char, isize) {
     let inline835 = (false, '\0', 0) in
     inline835
   } in
-  join commute_arm854(commute_field853: char) -> (bool, char, int) {
+  join commute_arm854(commute_field853: char) -> (bool, char, isize) {
     let t680 = (true, commute_field853, width/1) in
     t680
   } in
@@ -581,7 +581,7 @@ fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_invalid_continuation(value/3: uint32) -> bool {
+fn utf8_invalid_continuation(value/3: u32) -> bool {
   let t685 = (value/3 < 128) in
   if t685 {
     true
@@ -591,7 +591,7 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
   join inline_cont842(t691: bool) -> Option__char {
     if t691 {
       let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
@@ -620,7 +620,7 @@ fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   let t697 = (value/4 <= 1114111) in
   if t697 {
     let t701 = (value/4 >= 55296) in

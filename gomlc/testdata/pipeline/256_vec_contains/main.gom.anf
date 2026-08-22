@@ -18,10 +18,10 @@ fn trait_impl#PartialEq#Pair#eq(self/0: Pair, other/1: Pair) -> bool {
 fn main() -> unit {
   let t429 = [1, 2, 3] in
   let values/4 = @intrinsic(vec.from_array)(t429) in
-  let t430 = inherent#Vec#Vec[T]#contains__T_int(values/4, 2) in
+  let t430 = inherent#Vec#Vec[T]#contains__T_isize(values/4, 2) in
   join inline_cont542(t431: string) -> unit {
     join inline_cont539(_wild411: unit) -> unit {
-      let t432 = inherent#Vec#Vec[T]#contains__T_int(values/4, 9) in
+      let t432 = inherent#Vec#Vec[T]#contains__T_isize(values/4, 9) in
       join inline_cont537(t433: string) -> unit {
         join inline_cont534(_wild412: unit) -> unit {
           let t434 = ["alpha", "beta"] in
@@ -58,7 +58,7 @@ fn main() -> unit {
                     jump inline_cont519(inline520)
                   } in
                   let inline522 = 3 in
-                  let inline523 = inherent#Vec#Vec[T]#contains__T_int(values/4, inline522) in
+                  let inline523 = inherent#Vec#Vec[T]#contains__T_isize(values/4, inline522) in
                   jump inline_cont521(inline523)
                 } in
                 let inline525 = trait_impl#ToString#string#to_string(t441) in
@@ -90,7 +90,7 @@ fn main() -> unit {
   jump inline_cont542(inline543)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   let t450 = (self/185 == other/186) in
   t450
 }
@@ -103,14 +103,14 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont544(value/1)
 }
 
-fn inherent#Vec#Vec[T]#contains__T_int(self/384: Vec[int], expected/385: int) -> bool {
+fn inherent#Vec#Vec[T]#contains__T_isize(self/384: Vec[isize], expected/385: isize) -> bool {
   let index/386 = 0 in
   join exit456() -> bool {
     false
   } in
   joinrec {
     join loop457() -> bool {
-      join inline_cont547(t458: int) -> bool {
+      join inline_cont547(t458: isize) -> bool {
         let t459 = (index/386 < t458) in
         if t459 {
           let t463 = @intrinsic(vec.get)(self/384, index/386) in
@@ -153,7 +153,7 @@ fn inherent#Vec#Vec[T]#contains__T_string(self/384: Vec[string], expected/385: s
   } in
   joinrec {
     join loop471() -> bool {
-      join inline_cont551(t472: int) -> bool {
+      join inline_cont551(t472: isize) -> bool {
         let t473 = (index/386 < t472) in
         if t473 {
           let t477 = @intrinsic(vec.get)(self/384, index/386) in
@@ -191,7 +191,7 @@ fn inherent#Vec#Vec[T]#contains__T_Pair(self/384: Vec[Pair], expected/385: Pair)
   } in
   joinrec {
     join loop482() -> bool {
-      join inline_cont562(t483: int) -> bool {
+      join inline_cont562(t483: isize) -> bool {
         let t484 = (index/386 < t483) in
         if t484 {
           let t488 = @intrinsic(vec.get)(self/384, index/386) in
@@ -213,7 +213,7 @@ fn inherent#Vec#Vec[T]#contains__T_Pair(self/384: Vec[Pair], expected/385: Pair)
             if inline555 {
               let inline556 = Pair.right(t488) in
               let inline557 = Pair.right(expected/385) in
-              let inline558 = trait_impl#PartialEq#int#eq(inline556, inline557) in
+              let inline558 = trait_impl#PartialEq#isize#eq(inline556, inline557) in
               jump inline_cont553(inline558)
             } else {
               jump inline_cont553(false)
@@ -221,7 +221,7 @@ fn inherent#Vec#Vec[T]#contains__T_Pair(self/384: Vec[Pair], expected/385: Pair)
           } in
           let inline559 = Pair.left(t488) in
           let inline560 = Pair.left(expected/385) in
-          let inline561 = trait_impl#PartialEq#int#eq(inline559, inline560) in
+          let inline561 = trait_impl#PartialEq#isize#eq(inline559, inline560) in
           jump inline_join554(inline561)
         } else {
           jump exit481()
@@ -234,8 +234,8 @@ fn inherent#Vec#Vec[T]#contains__T_Pair(self/384: Vec[Pair], expected/385: Pair)
   jump loop482()
 }
 
-fn contains_any__T_int(values/2: Vec[int], expected/3: int) -> bool {
-  let t492 = inherent#Vec#Vec[T]#contains__T_int(values/2, expected/3) in
+fn contains_any__T_isize(values/2: Vec[isize], expected/3: isize) -> bool {
+  let t492 = inherent#Vec#Vec[T]#contains__T_isize(values/2, expected/3) in
   t492
 }
 
@@ -243,12 +243,12 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#Vec#Vec[T]#len__T_int(self/273: Vec[int]) -> int {
+fn inherent#Vec#Vec[T]#len__T_isize(self/273: Vec[isize]) -> isize {
   let t497 = @intrinsic(vec.len)(self/273) in
   t497
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> int {
+fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> isize {
   let t500 = @intrinsic(vec.len)(self/273) in
   t500
 }
@@ -258,7 +258,7 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   t503
 }
 
-fn inherent#Vec#Vec[T]#len__T_Pair(self/273: Vec[Pair]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Pair(self/273: Vec[Pair]) -> isize {
   let t506 = @intrinsic(vec.len)(self/273) in
   t506
 }

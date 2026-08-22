@@ -1,5 +1,5 @@
-fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
-  let expected_length/2 = inherent#Vec#Vec[T]#len__T_uint8(bytes/0) in
+fn check_utf8(bytes/0: Vec[u8], expected/1: bool) -> unit {
+  let expected_length/2 = inherent#Vec#Vec[T]#len__T_u8(bytes/0) in
   let mtmp411 = string_from_utf8(bytes/0) in
   {
     let x412 = mtmp411.0 in
@@ -25,7 +25,7 @@ fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
   }
 }
 
-fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) -> unit {
+fn check_scalar(bytes/5: Vec[u8], expected/6: u32, expected_width/7: isize) -> unit {
   let mtmp415 = string_from_utf8(bytes/5) in
   {
     let x416 = mtmp415.0 in
@@ -39,15 +39,15 @@ fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) 
           {
             let mtmp419 = inherent#string#string#decode_at(value/9, 0) in
             match mtmp419 {
-              Option__(char,int)::None => {
+              Option__(char,isize)::None => {
                 {
                   let _wild421 = println__T_bool(false) in
                   println__T_bool(false)
                 }
               },
-              Option__(char,int)::Some(x420) => {
+              Option__(char,isize)::Some(x420) => {
                 {
-                  let x420 = Option__(char,int)::Some._0(mtmp419) in
+                  let x420 = Option__(char,isize)::Some._0(mtmp419) in
                   {
                     let decoded/10 = x420 in
                     {
@@ -61,7 +61,7 @@ fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) 
                             let character/11 = x423 in
                             {
                               let _wild425 =
-                                println__T_bool(((character/11 as uint32) == expected/6)) in
+                                println__T_bool(((character/11 as u32) == expected/6)) in
                               println__T_bool((width/12 == expected_width/7))
                             }
                           }
@@ -108,11 +108,11 @@ fn main() -> unit {
   check_utf8(@intrinsic(vec.from_array)([245, 128, 128, 128]), false)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/273: Vec[uint8]) -> int {
+fn inherent#Vec#Vec[T]#len__T_u8(self/273: Vec[u8]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+fn string_from_utf8(bytes/24: Vec[u8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   {
     let x12 = mtmp10.1 in
@@ -162,11 +162,11 @@ fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> int {
+fn inherent#string#string#byte_len(self/36: string) -> isize {
   @runtime(core.string_len)(self/36)
 }
 
-fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(char,int) {
+fn inherent#string#string#decode_at(self/46: string, index/47: isize) -> Option__(char,isize) {
   let mtmp25 = string_decode_utf8_at(self/46, index/47) in
   {
     let x26 = mtmp25.0 in
@@ -181,11 +181,11 @@ fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(
           {
             if valid/48 {
                 {
-                  Option__(char,int)::Some((value/49, width/50))
+                  Option__(char,isize)::Some((value/49, width/50))
                 }
             } else {
                 {
-                  Option__(char,int)::None
+                  Option__(char,isize)::None
                 }
             }
           }
@@ -195,7 +195,7 @@ fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(
   }
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
   let length/7 = inherent#string#string#byte_len(value/5) in
   let _wild2 =
     if if (index/6 < 0) {
@@ -211,7 +211,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
           ()
         }
     } in
-  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as u32) in
   if (first/8 < 128) {
       {
         utf8_valid_decode(first/8, 1)
@@ -234,8 +234,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         ()
                       }
                   } in
-                let second/9 =
-                  (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                let second/9 = (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                 if utf8_invalid_continuation(second/9) {
                     {
                       utf8_invalid_decode()
@@ -260,9 +259,9 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                           }
                       } in
                     let second/10 =
-                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                     let third/11 =
-                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                     if if if if utf8_invalid_continuation(second/10) {
                         true
                     } else {
@@ -310,11 +309,11 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                               }
                           } in
                         let second/12 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                         let third/13 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                         let fourth/14 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as u32) in
                         if if if if if utf8_invalid_continuation(second/12) {
                             true
                         } else {
@@ -369,15 +368,15 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn utf8_invalid_decode() -> (bool, char, int) {
+fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   @runtime(core.string_byte_get)(self/39, index/40)
 }
 
-fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
   {
     let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
     match mtmp0 {
@@ -397,7 +396,7 @@ fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_invalid_continuation(value/3: uint32) -> bool {
+fn utf8_invalid_continuation(value/3: u32) -> bool {
   if (value/3 < 128) {
       true
   } else {
@@ -405,7 +404,7 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
   if utf8_valid_scalar(value/30) {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
@@ -426,7 +425,7 @@ fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   if (value/4 <= 1114111) {
       (!if (value/4 >= 55296) {
           (value/4 <= 57343)

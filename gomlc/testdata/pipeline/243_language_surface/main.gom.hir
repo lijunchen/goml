@@ -6,17 +6,17 @@ file main.gom
   }
 
   struct NumberSource {
-      value: int,
+      value: isize,
   }
 
   impl Source for NumberSource {
-    type Item = int;
-    fn get(local/1/0: NumberSource) -> int {
+    type Item = isize;
+    fn get(local/1/0: NumberSource) -> isize {
         self/0.value
     }
   }
 
-  fn read(local/1/1: dyn Source[Item = int]) -> int {
+  fn read(local/1/1: dyn Source[Item = isize]) -> isize {
       source/1.get()
   }
 
@@ -31,7 +31,7 @@ file main.gom
   }
 
   fn main() -> unit {
-      println(def/1/3(NumberSource { value: 11 } as dyn Source[Item = int]));
+      println(def/1/3(NumberSource { value: 11 } as dyn Source[Item = isize]));
       let (mut local/1/2, local/1/3) = (1, 2);
       index/2 += value/3;
       println(index/2);

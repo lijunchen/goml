@@ -290,7 +290,7 @@ type _goml_m_std_p_io_p_ErrorDetails struct {
     kind_value _goml_m_std_p_io_p_ErrorKind
     operation_value string
     context_value Option__string
-    raw_os_code_value Option__int
+    raw_os_code_value Option__isize
     message_value string
 }
 
@@ -325,7 +325,7 @@ type _goml_m_std_p_io_p_ErrorKind int32
 
 type _goml_m_std_p_fs_p_FileType int32
 
-type Option__uint8 struct {
+type Option__u8 struct {
     _tag int32
     _v1_0 uint8
 }
@@ -341,7 +341,7 @@ type Option__string struct {
     _v1_0 string
 }
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }

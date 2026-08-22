@@ -15,7 +15,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Option__uint8 struct {
+type Option__u8 struct {
     _tag int32
     _v0_0 uint8
 }

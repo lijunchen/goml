@@ -1,7 +1,7 @@
 package main;
-static VALUES: OnceCell[FrozenVec[int]] = OnceCell::new();
+static VALUES: OnceCell[FrozenVec[isize]] = OnceCell::new();
 
-fn values() -> FrozenVec[int] {
+fn values() -> FrozenVec[isize] {
     VALUES.get_or_init(|| Vec::from_array([1, 2, 3]).freeze())
 }
 

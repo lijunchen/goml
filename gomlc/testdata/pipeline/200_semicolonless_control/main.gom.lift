@@ -13,12 +13,14 @@ fn main() -> unit {
       },
       _ => (),
     } in
-  let index/0 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let index/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let _wild415 =
-    while (inherent#Ref#Ref[T]#get__T_int(index/0) < 2) {
+    while (inherent#Ref#Ref[T]#get__T_isize(index/0) < 2) {
         let _wild414 =
-          println__T_string(inherent#int#int#to_string(inherent#Ref#Ref[T]#get__T_int(index/0))) in
-        inherent#Ref#Ref[T]#set__T_int(index/0, (inherent#Ref#Ref[T]#get__T_int(index/0) + 1))
+          println__T_string(
+            inherent#isize#isize#to_string(inherent#Ref#Ref[T]#get__T_isize(index/0))
+          ) in
+        inherent#Ref#Ref[T]#set__T_isize(index/0, (inherent#Ref#Ref[T]#get__T_isize(index/0) + 1))
     } in
   let values/1 = inherent#Vec#Vec[T]#new__T_string() in
   let _wild416 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
@@ -39,19 +41,19 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
@@ -67,10 +69,10 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

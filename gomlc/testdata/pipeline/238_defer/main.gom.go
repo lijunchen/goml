@@ -55,7 +55,7 @@ type closure_env_run_0 struct {}
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -71,11 +71,11 @@ func early_return() int {
     return defer_return411
 }
 
-func maybe(value__0 Option__int) Option__int {
+func maybe(value__0 Option__isize) Option__isize {
     var jp466 int
     switch value__0._tag {
     case 0:
-        var defer_return420 Option__int = Option__int{
+        var defer_return420 Option__isize = Option__isize{
             _tag: 0,
         }
         var inline546 string = "try:cleanup"
@@ -85,7 +85,7 @@ func maybe(value__0 Option__int) Option__int {
     case 1:
         var x419 int = value__0._v1_0
         jp466 = x419
-        var defer_result422 Option__int = Option__int{
+        var defer_result422 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: jp466,
         }
@@ -151,7 +151,7 @@ func loop_cleanup() struct{} {
     return struct{}{}
 }
 
-func pattern_cleanup(value__5 Option__int) int {
+func pattern_cleanup(value__5 Option__isize) int {
     switch value__5._tag {
     case 1:
         var x435 int = value__5._v1_0
@@ -179,7 +179,7 @@ func main0() struct{} {
     t494 = inline651
     var inline648 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t494)
     _goml_runtime_core_string_println(inline648)
-    maybe(Option__int{
+    maybe(Option__isize{
         _tag: 0,
     })
     loop_cleanup()
@@ -188,7 +188,7 @@ func main0() struct{} {
     var inline644 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(inline642)
     var inline645 string = "observed:" + inline644
     println__T_string(inline645)
-    var t495 Option__int = Option__int{
+    var t495 Option__isize = Option__isize{
         _tag: 1,
         _v1_0: 3,
     }

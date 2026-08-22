@@ -35,7 +35,7 @@ type closure_env_main_7 struct {}
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -45,13 +45,13 @@ type Option__string struct {
     _v1_0 string
 }
 
-type Result__int__string struct {
+type Result__isize__string struct {
     _tag int32
     _v0_0 int
     _v1_0 string
 }
 
-type Result__int__int struct {
+type Result__isize__isize struct {
     _tag int32
     _v0_0 int
     _v1_0 int
@@ -64,7 +64,7 @@ type Result__string__string struct {
 }
 
 func main0() struct{} {
-    var some__0 Option__int = Option__int{
+    var some__0 Option__isize = Option__isize{
         _tag: 1,
         _v1_0: 3,
     }
@@ -72,34 +72,34 @@ func main0() struct{} {
     var t428 func(int) string = func(p0 int) string {
         return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t427, p0)
     }
-    var mapped__2 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(some__0, t428)
+    var mapped__2 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__isize____U__string(some__0, t428)
     var t429 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(mapped__2, "missing")
     println__T_string(t429)
     var t430 closure_env_main_1 = closure_env_main_1{}
     var t431 func(int) string = func(p0 int) string {
         return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t430, p0)
     }
-    var static_mapped__4 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(some__0, t431)
+    var static_mapped__4 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__isize____U__string(some__0, t431)
     var t432 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(static_mapped__4, "missing")
     println__T_string(t432)
     var t433 closure_env_main_2 = closure_env_main_2{}
     var t434 func(int) Option__string = func(p0 int) Option__string {
         return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t433, p0)
     }
-    var chained__6 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__string(some__0, t434)
+    var chained__6 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__isize____U__string(some__0, t434)
     var t435 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(chained__6, "missing")
     println__T_string(t435)
-    var none__7 Option__int = Option__int{
+    var none__7 Option__isize = Option__isize{
         _tag: 0,
     }
-    var converted__8 Result__int__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_ok__or____E__string____T__int(none__7, "none")
+    var converted__8 Result__isize__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_ok__or____E__string____T__isize(none__7, "none")
     var t436 closure_env_main_3 = closure_env_main_3{}
     var t437 func(string) int = func(p0 string) int {
         return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t436, p0)
     }
-    var t438 int = _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(converted__8, t437)
-    println__T_int(t438)
-    var ok__10 Result__int__string = Result__int__string{
+    var t438 int = _goml_m_inherent_i_Result_i_Re_had11e393bde0ae88c9d8324ffd70f925_ing____T__isize(converted__8, t437)
+    println__T_isize(t438)
+    var ok__10 Result__isize__string = Result__isize__string{
         _tag: 0,
         _v0_0: 5,
     }
@@ -107,7 +107,7 @@ func main0() struct{} {
     var t440 func(int) int = func(p0 int) int {
         return _goml_m_inherent_i_closure__env__main__4_i_closure__env__main__4_i_apply(t439, p0)
     }
-    var t441 Result__int__string = _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(ok__10, t440)
+    var t441 Result__isize__string = _goml_m_inherent_i_Result_i_Re_hf15fd215f39b8121388b37682eabc3c0_ize____U__isize(ok__10, t440)
     var t442 int
     var inline590 int = 0
     switch t441._tag {
@@ -119,16 +119,16 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline587 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t442)
+    var inline587 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t442)
     _goml_runtime_core_string_println(inline587)
     var t443 closure_env_main_5 = closure_env_main_5{}
     var t444 func(string) int = func(p0 string) int {
         return _goml_m_inherent_i_closure__env__main__5_i_closure__env__main__5_i_apply(t443, p0)
     }
-    var mapped_error__14 Result__int__int
+    var mapped_error__14 Result__isize__isize
     var inline582 string = "bad"
     var inline584 int = t444(inline582)
-    var inline585 Result__int__int = Result__int__int{
+    var inline585 Result__isize__isize = Result__isize__isize{
         _tag: 1,
         _v1_0: inline584,
     }
@@ -149,7 +149,7 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline570 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t447)
+    var inline570 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t447)
     _goml_runtime_core_string_println(inline570)
     var t448 closure_env_main_7 = closure_env_main_7{}
     var t449 func(int) Result__string__string = func(p0 int) Result__string__string {
@@ -175,7 +175,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(self__482 Option__int, map_fn__483 func(int) string) Option__string {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__isize____U__string(self__482 Option__isize, map_fn__483 func(int) string) Option__string {
     switch self__482._tag {
     case 0:
         return Option__string{
@@ -213,7 +213,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__4
     }
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__string(self__485 Option__int, next__486 func(int) Option__string) Option__string {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__isize____U__string(self__485 Option__isize, next__486 func(int) Option__string) Option__string {
     switch self__485._tag {
     case 0:
         return Option__string{
@@ -228,17 +228,17 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__strin
     }
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_ok__or____E__string____T__int(self__488 Option__int, error__489 string) Result__int__string {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_ok__or____E__string____T__isize(self__488 Option__isize, error__489 string) Result__isize__string {
     switch self__488._tag {
     case 0:
-        var t476 Result__int__string = Result__int__string{
+        var t476 Result__isize__string = Result__isize__string{
             _tag: 1,
             _v1_0: error__489,
         }
         return t476
     case 1:
         var x400 int = self__488._v1_0
-        var t477 Result__int__string = Result__int__string{
+        var t477 Result__isize__string = Result__isize__string{
             _tag: 0,
             _v0_0: x400,
         }
@@ -248,7 +248,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_ok__or____E__string____T__int(s
     }
 }
 
-func println__T_int(value__1 int) struct{} {
+func println__T_isize(value__1 int) struct{} {
     var t479 string
     var inline595 string = _goml_runtime_core_int_to_string(value__1)
     t479 = inline595
@@ -256,7 +256,7 @@ func println__T_int(value__1 int) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(self__478 Result__int__string, fallback__479 func(string) int) int {
+func _goml_m_inherent_i_Result_i_Re_had11e393bde0ae88c9d8324ffd70f925_ing____T__isize(self__478 Result__isize__string, fallback__479 func(string) int) int {
     switch self__478._tag {
     case 0:
         var x396 int = self__478._v0_0
@@ -270,19 +270,19 @@ func _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(self__491 Result__int__string, map_fn__492 func(int) int) Result__int__string {
+func _goml_m_inherent_i_Result_i_Re_hf15fd215f39b8121388b37682eabc3c0_ize____U__isize(self__491 Result__isize__string, map_fn__492 func(int) int) Result__isize__string {
     switch self__491._tag {
     case 0:
         var x401 int = self__491._v0_0
         var t493 int = map_fn__492(x401)
-        var t494 Result__int__string = Result__int__string{
+        var t494 Result__isize__string = Result__isize__string{
             _tag: 0,
             _v0_0: t493,
         }
         return t494
     case 1:
         var x402 string = self__491._v1_0
-        var t495 Result__int__string = Result__int__string{
+        var t495 Result__isize__string = Result__isize__string{
             _tag: 1,
             _v1_0: x402,
         }
@@ -296,7 +296,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t526 string = _goml_runtime_core_int_to_string(self__151)
     return t526
 }

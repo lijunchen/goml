@@ -1,7 +1,8 @@
 impl PartialEq for Pair {
   fn eq(self/0: Pair, other/1: Pair) -> bool {
-      true && (PartialEq::eq : (int, int) -> bool)((self/0 : Pair).left, (other/1 : Pair).left) &&
-        (PartialEq::eq : (int, int) -> bool)((self/0 : Pair).right, (other/1 : Pair).right)
+      true &&
+        (PartialEq::eq : (isize, isize) -> bool)((self/0 : Pair).left, (other/1 : Pair).left) &&
+        (PartialEq::eq : (isize, isize) -> bool)((self/0 : Pair).right, (other/1 : Pair).right)
   }
 }
 
@@ -10,15 +11,15 @@ fn contains_any[T](values/2: Vec[T], expected/3: T) -> bool where T: PartialEq {
 }
 
 fn main() -> unit {
-    let values/4: Vec[int] = (@intrinsic(vec.from_array) : ([int; 3]) -> Vec[int])([1, 2, 3]);
+    let values/4: Vec[isize] = (@intrinsic(vec.from_array) : ([isize; 3]) -> Vec[isize])([1, 2, 3]);
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (Vec[int]::contains : (Vec[int], int) -> bool)((values/4 : Vec[int]), 2)
+        (Vec[isize]::contains : (Vec[isize], isize) -> bool)((values/4 : Vec[isize]), 2)
       )
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (Vec[int]::contains : (Vec[int], int) -> bool)((values/4 : Vec[int]), 9)
+        (Vec[isize]::contains : (Vec[isize], isize) -> bool)((values/4 : Vec[isize]), 9)
       )
     );
     let names/5: Vec[string] =
@@ -40,7 +41,7 @@ fn main() -> unit {
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (contains_any : (Vec[int], int) -> bool)((values/4 : Vec[int]), 3)
+        (contains_any : (Vec[isize], isize) -> bool)((values/4 : Vec[isize]), 3)
       )
     );
     let empty/7: Vec[string] = (@intrinsic(vec.from_array) : ([string; 0]) -> Vec[string])([]);

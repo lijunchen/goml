@@ -4,7 +4,7 @@ file main.gom
       LParen,
       RParen,
       Sym(string),
-      Int(int32),
+      Int(i32),
       Bool(bool)
   }
 
@@ -21,14 +21,14 @@ file main.gom
   }
 
   enum Value {
-      Int(int32),
+      Int(i32),
       Bool(bool),
       Func(Lambda),
       Nil
   }
 
   enum SExpr {
-      Int(int32),
+      Int(i32),
       Bool(bool),
       Sym(string),
       List(Vec[SExpr])
@@ -38,7 +38,7 @@ file main.gom
       ch/0 >= '0' && ch/0 <= '9'
   }
 
-  fn digit_value(local/1/1: char) -> int32 {
+  fn digit_value(local/1/1: char) -> i32 {
       match ch/1 {
           '0' => 0,
           '1' => 1,
@@ -83,7 +83,7 @@ file main.gom
       }
   }
 
-  fn parse_int32(local/1/9: string) -> int32 {
+  fn parse_int32(local/1/9: string) -> i32 {
       let local/1/10 = text/9.len();
       let local/1/11 = Ref::new(0);
       let local/1/12 = Ref::new(false);
@@ -116,7 +116,7 @@ file main.gom
       ch/17 == '(' || ch/17 == ')' || ch/17 == ' '
   }
 
-  fn lex_atom(local/1/18: string, local/1/19: int) -> (Token, int) {
+  fn lex_atom(local/1/18: string, local/1/19: isize) -> (Token, isize) {
       let local/1/20 = source/18.len();
       let local/1/21 = Ref::new("");
       let local/1/22 = Ref::new(start/19);
@@ -201,7 +201,7 @@ file main.gom
       }
   }
 
-  fn parse_list(local/1/45: Vec[Token], local/1/46: int) -> (Vec[SExpr], int) {
+  fn parse_list(local/1/45: Vec[Token], local/1/46: isize) -> (Vec[SExpr], isize) {
       let local/1/47: Vec[SExpr] = Vec::new();
       let local/1/48 = Ref::new(acc/47);
       let local/1/49 = Ref::new(start/46);
@@ -227,7 +227,7 @@ file main.gom
       (exprs/48.get(), i/49.get())
   }
 
-  fn parse_expr(local/1/53: Vec[Token], local/1/54: int) -> (SExpr, int) {
+  fn parse_expr(local/1/53: Vec[Token], local/1/54: isize) -> (SExpr, isize) {
       match tokens/53[start/54] {
           ctor(def/1/0::v0) =>
             {
@@ -383,7 +383,7 @@ file main.gom
 
   fn eval_begin(
     local/1/100: Vec[SExpr],
-    local/1/101: int,
+    local/1/101: isize,
     local/1/102: Vec[Binding],
     local/1/103: Ref[Vec[Binding]]
   ) -> Value {
@@ -422,7 +422,7 @@ file main.gom
 
   fn eval_args(
     local/1/112: Vec[SExpr],
-    local/1/113: int,
+    local/1/113: isize,
     local/1/114: Vec[Binding],
     local/1/115: Ref[Vec[Binding]]
   ) -> Vec[Value] {

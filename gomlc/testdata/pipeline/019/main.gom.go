@@ -18,7 +18,7 @@ type Point struct {
     y int32
 }
 
-type Wrapper__int32 struct {
+type Wrapper__i32 struct {
     value int32
 }
 
@@ -100,10 +100,10 @@ func main0() struct{} {
     var t492 string
     var inline554 int32 = a__29.x
     var inline555 int32 = a__29.y
-    var inline558 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline554)
+    var inline558 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline554)
     var inline559 string = "Point { x: " + inline558
     var inline560 string = inline559 + ", y: "
-    var inline561 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline555)
+    var inline561 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline555)
     var inline562 string = inline560 + inline561
     var inline563 string = inline562 + "}"
     t492 = inline563
@@ -129,10 +129,10 @@ func main0() struct{} {
     var t494 string
     var inline524 int32 = a__30.x
     var inline525 int32 = a__30.y
-    var inline528 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline524)
+    var inline528 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline524)
     var inline529 string = "Point { x: " + inline528
     var inline530 string = inline529 + ", y: "
-    var inline531 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline525)
+    var inline531 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline525)
     var inline532 string = inline530 + inline531
     var inline533 string = inline532 + "}"
     t494 = inline533
@@ -141,7 +141,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t497 string = _goml_runtime_core_int32_to_string(self__33)
     return t497
 }

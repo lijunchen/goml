@@ -26,62 +26,62 @@ fn std::internal::host::write_file(path/2: string, content/3: string) -> (bool, 
   @runtime(std.fs.write_file)(path/2, content/3)
 }
 
-fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[uint8], string) {
+fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[u8], string) {
   @runtime(std.fs.read_bytes)(path/4)
 }
 
 fn std::internal::host::read_bytes_v2(path/5: string) -> (
   bool,
-  Vec[uint8],
-  int,
+  Vec[u8],
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.read_bytes.v2)(path/5)
 }
 
-fn std::internal::host::write_bytes(path/6: string, data/7: Vec[uint8]) -> (bool, string) {
+fn std::internal::host::write_bytes(path/6: string, data/7: Vec[u8]) -> (bool, string) {
   @runtime(std.fs.write_bytes)(path/6, data/7)
 }
 
-fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[uint8]) -> (
+fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[u8]) -> (
   bool,
-  int,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.write_bytes.v2)(path/8, data/9)
 }
 
 fn std::internal::host::fs_path_operation_v2(
-  operation/10: int,
+  operation/10: isize,
   first/11: string,
   second/12: string
-) -> (bool, int, bool, int, string) {
+) -> (bool, isize, bool, isize, string) {
   @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12)
 }
 
 fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
   bool,
-  int,
-  int64,
-  uint32,
-  int64,
-  int,
+  isize,
+  i64,
+  u32,
+  i64,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.metadata.v2)(path/13, follow/14)
 }
 
-fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[uint8]) -> (
+fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[u8]) -> (
   bool,
-  int,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.atomic_write.v2)(path/15, data/16)
@@ -122,9 +122,9 @@ fn std::internal::host::read_dir(path/24: string) -> (bool, Vec[string], string)
 fn std::internal::host::read_dir_v2(path/25: string) -> (
   bool,
   Vec[string],
-  int,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.read_dir.v2)(path/25)
@@ -146,42 +146,42 @@ fn std::internal::host::eprint(value/29: string) -> unit {
   @runtime(std.io.eprint)(value/29)
 }
 
-fn std::internal::host::read_stdin() -> (bool, Vec[uint8], string) {
+fn std::internal::host::read_stdin() -> (bool, Vec[u8], string) {
   @runtime(std.io.read_stdin)()
 }
 
-fn std::internal::host::read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+fn std::internal::host::read_stdin_v2() -> (bool, Vec[u8], isize, bool, isize, string) {
   @runtime(std.io.read_stdin.v2)()
 }
 
-fn std::internal::host::read_stdin_exact(length/30: int) -> (bool, Vec[uint8], string) {
+fn std::internal::host::read_stdin_exact(length/30: isize) -> (bool, Vec[u8], string) {
   @runtime(std.io.read_stdin_exact)(length/30)
 }
 
-fn std::internal::host::read_stdin_exact_v2(length/31: int) -> (
+fn std::internal::host::read_stdin_exact_v2(length/31: isize) -> (
   bool,
-  Vec[uint8],
-  int,
+  Vec[u8],
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.io.read_stdin_exact.v2)(length/31)
 }
 
-fn std::internal::host::write_stdout(data/32: Vec[uint8]) -> (bool, string) {
+fn std::internal::host::write_stdout(data/32: Vec[u8]) -> (bool, string) {
   @runtime(std.io.write_stdout)(data/32)
 }
 
-fn std::internal::host::write_stdout_v2(data/33: Vec[uint8]) -> (bool, int, bool, int, string) {
+fn std::internal::host::write_stdout_v2(data/33: Vec[u8]) -> (bool, isize, bool, isize, string) {
   @runtime(std.io.write_stdout.v2)(data/33)
 }
 
-fn std::internal::host::write_stderr(data/34: Vec[uint8]) -> (bool, string) {
+fn std::internal::host::write_stderr(data/34: Vec[u8]) -> (bool, string) {
   @runtime(std.io.write_stderr)(data/34)
 }
 
-fn std::internal::host::write_stderr_v2(data/35: Vec[uint8]) -> (bool, int, bool, int, string) {
+fn std::internal::host::write_stderr_v2(data/35: Vec[u8]) -> (bool, isize, bool, isize, string) {
   @runtime(std.io.write_stderr.v2)(data/35)
 }
 
@@ -233,7 +233,7 @@ fn std::internal::host::path_separator() -> string {
   @runtime(std.path.separator)()
 }
 
-fn std::internal::host::exit(code/49: int) -> unit {
+fn std::internal::host::exit(code/49: isize) -> unit {
   @runtime(std.process.exit)(code/49)
 }
 
@@ -248,8 +248,8 @@ fn std::internal::host::process_output(
   directory/54: string,
   environment/55: Vec[(string, string)],
   has_input/56: bool,
-  input/57: Vec[uint8]
-) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+  input/57: Vec[u8]
+) -> (bool, isize, Vec[u8], Vec[u8], string) {
   @runtime(std.process.output)(
     program/51,
     arguments/52,
@@ -268,9 +268,9 @@ fn std::internal::host::process_output_timeout(
   directory/61: string,
   environment/62: Vec[(string, string)],
   has_input/63: bool,
-  input/64: Vec[uint8],
-  timeout_ms/65: int
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  input/64: Vec[u8],
+  timeout_ms/65: isize
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
   @runtime(std.process.output_timeout)(
     program/58,
     arguments/59,
@@ -290,9 +290,9 @@ fn std::internal::host::process_output_cancel(
   directory/69: string,
   environment/70: Vec[(string, string)],
   has_input/71: bool,
-  input/72: Vec[uint8],
-  scope_id/73: int64
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  input/72: Vec[u8],
+  scope_id/73: i64
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
   @runtime(std.process.output_cancel)(
     program/66,
     arguments/67,
@@ -311,7 +311,7 @@ fn std::internal::host::process_status(
   has_directory/76: bool,
   directory/77: string,
   environment/78: Vec[(string, string)]
-) -> (bool, int, string) {
+) -> (bool, isize, string) {
   @runtime(std.process.status)(
     program/74,
     arguments/75,
@@ -327,8 +327,8 @@ fn std::internal::host::process_status_timeout(
   has_directory/81: bool,
   directory/82: string,
   environment/83: Vec[(string, string)],
-  timeout_ms/84: int
-) -> (bool, int, string, bool) {
+  timeout_ms/84: isize
+) -> (bool, isize, string, bool) {
   @runtime(std.process.status_timeout)(
     program/79,
     arguments/80,
@@ -345,8 +345,8 @@ fn std::internal::host::process_status_cancel(
   has_directory/87: bool,
   directory/88: string,
   environment/89: Vec[(string, string)],
-  scope_id/90: int64
-) -> (bool, int, string, bool) {
+  scope_id/90: i64
+) -> (bool, isize, string, bool) {
   @runtime(std.process.status_cancel)(
     program/85,
     arguments/86,
@@ -361,51 +361,51 @@ fn std::internal::host::test_fail(message/91: string) -> unit {
   @runtime(std.testing.fail)(message/91)
 }
 
-fn std::internal::host::parse_int(value/92: string, radix/93: int) -> (bool, int, string) {
+fn std::internal::host::parse_int(value/92: string, radix/93: isize) -> (bool, isize, string) {
   @runtime(std.num.parse_int)(value/92, radix/93)
 }
 
-fn std::internal::host::parse_uint(value/94: string, radix/95: int) -> (bool, uint, string) {
+fn std::internal::host::parse_uint(value/94: string, radix/95: isize) -> (bool, usize, string) {
   @runtime(std.num.parse_uint)(value/94, radix/95)
 }
 
-fn std::internal::host::parse_float32(value/96: string) -> (bool, float32, string) {
+fn std::internal::host::parse_float32(value/96: string) -> (bool, f32, string) {
   @runtime(std.num.parse_float32)(value/96)
 }
 
-fn std::internal::host::parse_float64(value/97: string) -> (bool, float64, string) {
+fn std::internal::host::parse_float64(value/97: string) -> (bool, f64, string) {
   @runtime(std.num.parse_float64)(value/97)
 }
 
-fn std::internal::host::monotonic_nanoseconds() -> int64 {
+fn std::internal::host::monotonic_nanoseconds() -> i64 {
   @runtime(std.time.monotonic_nanoseconds)()
 }
 
-fn std::internal::host::unix_nanoseconds() -> int64 {
+fn std::internal::host::unix_nanoseconds() -> i64 {
   @runtime(std.time.unix_nanoseconds)()
 }
 
-fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
+fn std::internal::host::sleep_nanoseconds(value/98: i64) -> unit {
   @runtime(std.time.sleep_nanoseconds)(value/98)
 }
 
-fn std::internal::host::timer_new(value/99: int64) -> (int64, Receiver[unit]) {
+fn std::internal::host::timer_new(value/99: i64) -> (i64, Receiver[unit]) {
   @runtime(std.time.timer_new)(value/99)
 }
 
-fn std::internal::host::timer_stop(id/100: int64) -> bool {
+fn std::internal::host::timer_stop(id/100: i64) -> bool {
   @runtime(std.time.timer_stop)(id/100)
 }
 
-fn std::internal::host::math_float32_unary(operation/101: int, value/102: float32) -> float32 {
+fn std::internal::host::math_float32_unary(operation/101: isize, value/102: f32) -> f32 {
   @runtime(std.math.float32_unary)(operation/101, value/102)
 }
 
-fn std::internal::host::math_float32_pow(value/103: float32, exponent/104: float32) -> float32 {
+fn std::internal::host::math_float32_pow(value/103: f32, exponent/104: f32) -> f32 {
   @runtime(std.math.float32_pow)(value/103, exponent/104)
 }
 
-fn std::internal::host::crypto_random_bytes(length/105: int) -> (bool, Vec[uint8], string) {
+fn std::internal::host::crypto_random_bytes(length/105: isize) -> (bool, Vec[u8], string) {
   @runtime(std.crypto.rand.bytes)(length/105)
 }
 
@@ -414,14 +414,12 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
-  capacity/0: int
+  capacity/0: isize
 ) -> std::bytes::Bytes {
-  std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0) }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
-  values/1: Vec[uint8]
-) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[u8]) -> std::bytes::Bytes {
   std::bytes::Bytes { values: values/1 }
 }
 
@@ -429,29 +427,29 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> 
   std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
-  inherent#Vec#Vec[T]#len__T_uint8(std::bytes::Bytes.values(self/3))
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> isize {
+  inherent#Vec#Vec[T]#len__T_u8(std::bytes::Bytes.values(self/3))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
-  inherent#Vec#Vec[T]#capacity__T_uint8(std::bytes::Bytes.values(self/4))
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> isize {
+  inherent#Vec#Vec[T]#capacity__T_u8(std::bytes::Bytes.values(self/4))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
-  inherent#Vec#Vec[T]#is_empty__T_uint8(std::bytes::Bytes.values(self/5))
+  inherent#Vec#Vec[T]#is_empty__T_u8(std::bytes::Bytes.values(self/5))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
   self/6: std::bytes::Bytes,
-  index/7: int
-) -> uint8 {
+  index/7: isize
+) -> u8 {
   @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/8: std::bytes::Bytes,
-  index/9: int,
-  value/10: uint8
+  index/9: isize,
+  value/10: u8
 ) -> unit {
   let _wild5 =
     {
@@ -466,42 +464,42 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
   self/11: std::bytes::Bytes,
-  value/12: uint8
+  value/12: u8
 ) -> unit {
-  inherent#Vec#Vec[T]#push__T_uint8(std::bytes::Bytes.values(self/11), value/12)
+  inherent#Vec#Vec[T]#push__T_u8(std::bytes::Bytes.values(self/11), value/12)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
-  inherent#Vec#Vec[T]#pop__T_uint8(std::bytes::Bytes.values(self/13))
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__u8 {
+  inherent#Vec#Vec[T]#pop__T_u8(std::bytes::Bytes.values(self/13))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/14: std::bytes::Bytes,
-  additional/15: int
+  additional/15: isize
 ) -> unit {
-  inherent#Vec#Vec[T]#reserve__T_uint8(std::bytes::Bytes.values(self/14), additional/15)
+  inherent#Vec#Vec[T]#reserve__T_u8(std::bytes::Bytes.values(self/14), additional/15)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/16: std::bytes::Bytes,
-  len/17: int
+  len/17: isize
 ) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(std::bytes::Bytes.values(self/16), len/17)
+  inherent#Vec#Vec[T]#truncate__T_u8(std::bytes::Bytes.values(self/16), len/17)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
-  inherent#Vec#Vec[T]#clear__T_uint8(std::bytes::Bytes.values(self/18))
+  inherent#Vec#Vec[T]#clear__T_u8(std::bytes::Bytes.values(self/18))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
   self/19: std::bytes::Bytes,
-  start/20: int,
-  end/21: int
-) -> Slice[uint8] {
-  inherent#Vec#Vec[T]#slice__T_uint8(std::bytes::Bytes.values(self/19), start/20, end/21)
+  start/20: isize,
+  end/21: isize
+) -> Slice[u8] {
+  inherent#Vec#Vec[T]#slice__T_u8(std::bytes::Bytes.values(self/19), start/20, end/21)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[u8] {
   std::bytes::Bytes.values(self/22)
 }
 
@@ -587,7 +585,7 @@ fn trait_impl#PartialEq#std::io::ErrorKind#eq(
   (std::io::kind_code(self/2) == std::io::kind_code(other/3))
 }
 
-fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
+fn std::io::kind_from_code(code/4: isize) -> std::io::ErrorKind {
   match code/4 {
     1 => {
       std::io::ErrorKind::NotFound
@@ -629,7 +627,7 @@ fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
   }
 }
 
-fn std::io::kind_code(kind/5: std::io::ErrorKind) -> int {
+fn std::io::kind_code(kind/5: std::io::ErrorKind) -> isize {
   match kind/5 {
     std::io::ErrorKind::NotFound => {
       1
@@ -677,7 +675,7 @@ fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
   kind/6: std::io::ErrorKind,
   operation/7: string,
   context/8: Option__string,
-  raw_os_code/9: Option__int,
+  raw_os_code/9: Option__isize,
   message/10: string
 ) -> std::io::ErrorDetails {
   std::io::ErrorDetails {
@@ -709,7 +707,7 @@ fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
 
 fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
   self/14: std::io::ErrorDetails
-) -> Option__int {
+) -> Option__isize {
   std::io::ErrorDetails.raw_os_code_value(self/14)
 }
 
@@ -765,7 +763,7 @@ fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
   } else {
       false
   } {
-      trait_impl#PartialEq#Option__int#eq(
+      trait_impl#PartialEq#Option__isize#eq(
         std::io::ErrorDetails.raw_os_code_value(self/19),
         std::io::ErrorDetails.raw_os_code_value(other/20)
       )
@@ -783,7 +781,7 @@ fn inherent#std::io::Error#std::io::Error#new(
   kind/21: std::io::ErrorKind,
   operation/22: string,
   context/23: Option__string,
-  raw_os_code/24: Option__int,
+  raw_os_code/24: Option__isize,
   message/25: string
 ) -> std::io::Error {
   std::io::Error {
@@ -809,7 +807,7 @@ fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Op
   inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::io::Error.details(self/28))
 }
 
-fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__int {
+fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__isize {
   inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::io::Error.details(self/29))
 }
 
@@ -837,9 +835,9 @@ fn trait_impl#PartialEq#std::io::Error#eq(
 
 fn std::io::structured_error(
   operation/35: string,
-  kind_code/36: int,
+  kind_code/36: isize,
   has_raw_code/37: bool,
-  raw_code/38: int,
+  raw_code/38: isize,
   message/39: string
 ) -> std::io::Error {
   inherent#std::io::Error#std::io::Error#new(
@@ -848,11 +846,11 @@ fn std::io::structured_error(
     Option__string::None,
     if has_raw_code/37 {
         {
-          Option__int::Some(raw_code/38)
+          Option__isize::Some(raw_code/38)
         }
     } else {
         {
-          Option__int::None
+          Option__isize::None
         }
     },
     message/39
@@ -941,7 +939,7 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
                           std::io::ErrorKind::InvalidData,
                           "read stdin",
                           Option__string::None,
-                          Option__int::None,
+                          Option__isize::None,
                           message/48
                         )
                       )
@@ -967,7 +965,7 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
 }
 
 fn std::io::read_stdin_exact_structured(
-  length/50: int
+  length/50: isize
 ) -> Result__std::bytes::Bytes__std::io::Error {
   if (length/50 < 0) {
       {
@@ -976,7 +974,7 @@ fn std::io::read_stdin_exact_structured(
             std::io::ErrorKind::InvalidInput,
             "read stdin exact",
             Option__string::None,
-            Option__int::None,
+            Option__isize::None,
             "read length must be non-negative"
           )
         )
@@ -1200,7 +1198,7 @@ fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
   }
 }
 
-fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__string {
+fn std::io::read_stdin_exact(length/80: isize) -> Result__std::bytes::Bytes__string {
   if (length/80 < 0) {
       {
         Result__std::bytes::Bytes__string::Err("read length must be non-negative")
@@ -1239,11 +1237,11 @@ fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__strin
   }
 }
 
-fn std::ascii::is_ascii(value/0: uint8) -> bool {
+fn std::ascii::is_ascii(value/0: u8) -> bool {
   (value/0 <= 127)
 }
 
-fn std::ascii::is_uppercase(value/1: uint8) -> bool {
+fn std::ascii::is_uppercase(value/1: u8) -> bool {
   if (value/1 >= 65) {
       (value/1 <= 90)
   } else {
@@ -1251,7 +1249,7 @@ fn std::ascii::is_uppercase(value/1: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_lowercase(value/2: uint8) -> bool {
+fn std::ascii::is_lowercase(value/2: u8) -> bool {
   if (value/2 >= 97) {
       (value/2 <= 122)
   } else {
@@ -1259,7 +1257,7 @@ fn std::ascii::is_lowercase(value/2: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_alphabetic(value/3: uint8) -> bool {
+fn std::ascii::is_alphabetic(value/3: u8) -> bool {
   if std::ascii::is_uppercase(value/3) {
       true
   } else {
@@ -1267,7 +1265,7 @@ fn std::ascii::is_alphabetic(value/3: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_digit(value/4: uint8) -> bool {
+fn std::ascii::is_digit(value/4: u8) -> bool {
   if (value/4 >= 48) {
       (value/4 <= 57)
   } else {
@@ -1275,7 +1273,7 @@ fn std::ascii::is_digit(value/4: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_hexdigit(value/5: uint8) -> bool {
+fn std::ascii::is_hexdigit(value/5: u8) -> bool {
   if if std::ascii::is_digit(value/5) {
       true
   } else {
@@ -1295,7 +1293,7 @@ fn std::ascii::is_hexdigit(value/5: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_alphanumeric(value/6: uint8) -> bool {
+fn std::ascii::is_alphanumeric(value/6: u8) -> bool {
   if std::ascii::is_alphabetic(value/6) {
       true
   } else {
@@ -1303,7 +1301,7 @@ fn std::ascii::is_alphanumeric(value/6: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_whitespace(value/7: uint8) -> bool {
+fn std::ascii::is_whitespace(value/7: u8) -> bool {
   if if if if if (value/7 == 9) {
       true
   } else {
@@ -1327,7 +1325,7 @@ fn std::ascii::is_whitespace(value/7: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_control(value/8: uint8) -> bool {
+fn std::ascii::is_control(value/8: u8) -> bool {
   if (value/8 <= 31) {
       true
   } else {
@@ -1335,7 +1333,7 @@ fn std::ascii::is_control(value/8: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_graphic(value/9: uint8) -> bool {
+fn std::ascii::is_graphic(value/9: u8) -> bool {
   if (value/9 >= 33) {
       (value/9 <= 126)
   } else {
@@ -1343,7 +1341,7 @@ fn std::ascii::is_graphic(value/9: uint8) -> bool {
   }
 }
 
-fn std::ascii::is_punctuation(value/10: uint8) -> bool {
+fn std::ascii::is_punctuation(value/10: u8) -> bool {
   if std::ascii::is_graphic(value/10) {
       (!std::ascii::is_alphanumeric(value/10))
   } else {
@@ -1351,7 +1349,7 @@ fn std::ascii::is_punctuation(value/10: uint8) -> bool {
   }
 }
 
-fn std::ascii::to_lowercase(value/11: uint8) -> uint8 {
+fn std::ascii::to_lowercase(value/11: u8) -> u8 {
   if std::ascii::is_uppercase(value/11) {
       {
         (value/11 + (97 - 65))
@@ -1363,7 +1361,7 @@ fn std::ascii::to_lowercase(value/11: uint8) -> uint8 {
   }
 }
 
-fn std::ascii::to_uppercase(value/12: uint8) -> uint8 {
+fn std::ascii::to_uppercase(value/12: u8) -> u8 {
   if std::ascii::is_lowercase(value/12) {
       {
         (value/12 - (97 - 65))
@@ -1375,15 +1373,15 @@ fn std::ascii::to_uppercase(value/12: uint8) -> uint8 {
   }
 }
 
-fn std::ascii::eq_ignore_case(left/13: uint8, right/14: uint8) -> bool {
+fn std::ascii::eq_ignore_case(left/13: u8, right/14: u8) -> bool {
   (std::ascii::to_lowercase(left/13) == std::ascii::to_lowercase(right/14))
 }
 
-fn std::ascii::hex_digit(value/15: uint8) -> char {
-  inherent#string#string#get("0123456789abcdef", (value/15 as int))
+fn std::ascii::hex_digit(value/15: u8) -> char {
+  inherent#string#string#get("0123456789abcdef", (value/15 as isize))
 }
 
-fn std::ascii::escape_default(value/16: uint8) -> string {
+fn std::ascii::escape_default(value/16: u8) -> string {
   match value/16 {
     9 => {
       "\\t"
@@ -1435,21 +1433,21 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
-  capacity/0: int
+  capacity/0: isize
 ) -> std::text::StringBuilder {
-  std::text::StringBuilder { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
+  std::text::StringBuilder { values: inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0) }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#len(
   self/1: std::text::StringBuilder
-) -> int {
-  inherent#Vec#Vec[T]#len__T_uint8(std::text::StringBuilder.values(self/1))
+) -> isize {
+  inherent#Vec#Vec[T]#len__T_u8(std::text::StringBuilder.values(self/1))
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(
   self/2: std::text::StringBuilder
 ) -> bool {
-  inherent#Vec#Vec[T]#is_empty__T_uint8(std::text::StringBuilder.values(self/2))
+  inherent#Vec#Vec[T]#is_empty__T_u8(std::text::StringBuilder.values(self/2))
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
@@ -1458,7 +1456,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
 ) -> unit {
   let length/5 = inherent#string#string#byte_len(value/4) in
   let _wild0 =
-    inherent#Vec#Vec[T]#reserve__T_uint8(std::text::StringBuilder.values(self/3), length/5) in
+    inherent#Vec#Vec[T]#reserve__T_u8(std::text::StringBuilder.values(self/3), length/5) in
   {
     let for_index1 = 0 in
     let for_limit2 = length/5 in
@@ -1469,7 +1467,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
           {
             let index/6 = for_item3 in
             {
-              inherent#Vec#Vec[T]#push__T_uint8(
+              inherent#Vec#Vec[T]#push__T_u8(
                 std::text::StringBuilder.values(self/3),
                 inherent#string#string#byte_get(value/4, index/6)
               )
@@ -1538,7 +1536,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(
   self/15: std::text::StringBuilder
 ) -> unit {
-  inherent#Vec#Vec[T]#clear__T_uint8(std::text::StringBuilder.values(self/15))
+  inherent#Vec#Vec[T]#clear__T_u8(std::text::StringBuilder.values(self/15))
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(
@@ -1562,31 +1560,31 @@ fn trait_impl#ToString#std::text::StringBuilder#to_string(
   inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/18)
 }
 
-fn std::text::starts_with_at(value/19: string, start/20: int, prefix/21: string) -> bool {
+fn std::text::starts_with_at(value/19: string, start/20: isize, prefix/21: string) -> bool {
   inherent#string#string#starts_with_at(value/19, start/20, prefix/21)
 }
 
-fn std::text::find(value/22: string, expected/23: string) -> Option__int {
+fn std::text::find(value/22: string, expected/23: string) -> Option__isize {
   inherent#string#string#find(value/22, expected/23)
 }
 
-fn std::text::find_bytes(value/24: string, expected/25: string) -> Option__int {
+fn std::text::find_bytes(value/24: string, expected/25: string) -> Option__isize {
   inherent#string#string#find_bytes(value/24, expected/25)
 }
 
-fn std::text::char_indices(value/26: string) -> FnIterator__(int,char) {
+fn std::text::char_indices(value/26: string) -> FnIterator__(isize,char) {
   inherent#string#string#char_indices(value/26)
 }
 
-fn std::text::char_count(value/27: string) -> int {
+fn std::text::char_count(value/27: string) -> isize {
   inherent#string#string#char_count(value/27)
 }
 
-fn std::text::slice_chars(value/28: string, start/29: int, end/30: int) -> Option__string {
+fn std::text::slice_chars(value/28: string, start/29: isize, end/30: isize) -> Option__string {
   inherent#string#string#slice_chars(value/28, start/29, end/30)
 }
 
-fn std::text::rfind(value/31: string, expected/32: string) -> Option__int {
+fn std::text::rfind(value/31: string, expected/32: string) -> Option__isize {
   inherent#string#string#rfind(value/31, expected/32)
 }
 
@@ -1622,7 +1620,7 @@ fn std::text::join(values/44: Vec[string], separator/45: string) -> string {
   inherent#Vec#Vec[T]#join__T_string(values/44, separator/45)
 }
 
-fn std::text::repeat(value/46: string, count/47: int) -> string {
+fn std::text::repeat(value/46: string, count/47: isize) -> string {
   inherent#string#string#repeat(value/46, count/47)
 }
 
@@ -1647,7 +1645,7 @@ fn std::env::operation_error(operation/0: string, message/1: string) -> std::io:
     std::io::ErrorKind::Other,
     operation/0,
     Option__string::None,
-    Option__int::None,
+    Option__isize::None,
     message/1
   )
 }
@@ -1870,7 +1868,7 @@ fn inherent#std::env::VarError#std::env::VarError#new(
       kind/20,
       "read environment variable",
       Option__string::Some(name/21),
-      Option__int::None,
+      Option__isize::None,
       message/22
     )
   }
@@ -1902,7 +1900,7 @@ fn inherent#std::env::VarError#std::env::VarError#context(
 
 fn inherent#std::env::VarError#std::env::VarError#raw_os_code(
   self/27: std::env::VarError
-) -> Option__int {
+) -> Option__isize {
   inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
     std::env::VarError.details(self/27)
   )
@@ -1936,64 +1934,64 @@ fn main() -> unit {
   )
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/257: int) -> Vec[uint8] {
+fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/257: isize) -> Vec[u8] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
-fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
+fn inherent#string#string#to_bytes(self/51: string) -> Vec[u8] {
   @runtime(core.string_to_bytes)(self/51)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/273: Vec[uint8]) -> int {
+fn inherent#Vec#Vec[T]#len__T_u8(self/273: Vec[u8]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/274: Vec[uint8]) -> int {
+fn inherent#Vec#Vec[T]#capacity__T_u8(self/274: Vec[u8]) -> isize {
   @intrinsic(vec.capacity)(self/274)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/275: Vec[uint8]) -> bool {
+fn inherent#Vec#Vec[T]#is_empty__T_u8(self/275: Vec[u8]) -> bool {
   (@intrinsic(vec.len)(self/275) == 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/258: Vec[uint8], elem/259: uint8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/258: Vec[u8], elem/259: u8) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/283: Vec[uint8]) -> Option__uint8 {
-  let len/284 = inherent#Vec#Vec[T]#len__T_uint8(self/283) in
+fn inherent#Vec#Vec[T]#pop__T_u8(self/283: Vec[u8]) -> Option__u8 {
+  let len/284 = inherent#Vec#Vec[T]#len__T_u8(self/283) in
   if (len/284 == 0) {
       {
-        Option__uint8::None
+        Option__u8::None
       }
   } else {
       {
         let value/285 = @intrinsic(vec.get)(self/283, (len/284 - 1)) in
-        let _wild200 = inherent#Vec#Vec[T]#truncate__T_uint8(self/283, (len/284 - 1)) in
-        Option__uint8::Some(value/285)
+        let _wild200 = inherent#Vec#Vec[T]#truncate__T_u8(self/283, (len/284 - 1)) in
+        Option__u8::Some(value/285)
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/276: Vec[uint8], additional/277: int) -> unit {
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/276: Vec[u8], additional/277: isize) -> unit {
   @intrinsic(vec.reserve)(self/276, additional/277)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/278: Vec[uint8], len/279: int) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u8(self/278: Vec[u8], len/279: isize) -> unit {
   @intrinsic(vec.truncate)(self/278, len/279)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/280: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/280, 0)
+fn inherent#Vec#Vec[T]#clear__T_u8(self/280: Vec[u8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_u8(self/280, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/311: Vec[uint8], start/312: int, end/313: int) -> Slice[
-  uint8
+fn inherent#Vec#Vec[T]#slice__T_u8(self/311: Vec[u8], start/312: isize, end/313: isize) -> Slice[
+  u8
 ] {
   @intrinsic(slice.new)(self/311, start/312, end/313)
 }
 
-fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+fn string_from_utf8(bytes/24: Vec[u8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   {
     let x12 = mtmp10.1 in
@@ -2082,33 +2080,36 @@ fn trait_impl#PartialEq#Option__string#eq(
   }
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option__int) -> bool {
+fn trait_impl#PartialEq#Option__isize#eq(
+  self/235: Option__isize,
+  other/236: Option__isize
+) -> bool {
   {
     let mtmp171 = (self/235, other/236) in
     {
       let x172 = mtmp171.0 in
       let x173 = mtmp171.1 in
       match x173 {
-        Option__int::None => {
+        Option__isize::None => {
           match x172 {
-            Option__int::None => {
+            Option__isize::None => {
               true
             },
             _ => false,
           }
         },
-        Option__int::Some(x174) => {
+        Option__isize::Some(x174) => {
           {
-            let x174 = Option__int::Some._0(x173) in
+            let x174 = Option__isize::Some._0(x173) in
             match x172 {
-              Option__int::Some(x176) => {
+              Option__isize::Some(x176) => {
                 {
-                  let x176 = Option__int::Some._0(x172) in
+                  let x176 = Option__isize::Some._0(x172) in
                   {
                     let left/237 = x176 in
                     {
                       let right/238 = x174 in
-                      trait_impl#PartialEq#int#eq(left/237, right/238)
+                      trait_impl#PartialEq#isize#eq(left/237, right/238)
                     }
                   }
                 }
@@ -2122,7 +2123,7 @@ fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option_
   }
 }
 
-fn inherent#string#string#get(self/37: string, index/38: int) -> char {
+fn inherent#string#string#get(self/37: string, index/38: isize) -> char {
   string_get(self/37, index/38)
 }
 
@@ -2130,17 +2131,17 @@ fn inherent#char#char#to_string(self/34: char) -> string {
   char_to_string(self/34)
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> int {
+fn inherent#string#string#byte_len(self/36: string) -> isize {
   @runtime(core.string_len)(self/36)
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   @runtime(core.string_byte_get)(self/39, index/40)
 }
 
 fn inherent#string#string#starts_with_at(
   self/63: string,
-  start/64: int,
+  start/64: isize,
   prefix/65: string
 ) -> bool {
   let value_len/66 = inherent#string#string#byte_len(self/63) in
@@ -2173,28 +2174,28 @@ fn inherent#string#string#starts_with_at(
   }
 }
 
-fn inherent#string#string#find(self/69: string, expected/70: string) -> Option__int {
+fn inherent#string#string#find(self/69: string, expected/70: string) -> Option__isize {
   string_find_from(self/69, expected/70, 0)
 }
 
-fn inherent#string#string#find_bytes(self/71: string, expected/72: string) -> Option__int {
+fn inherent#string#string#find_bytes(self/71: string, expected/72: string) -> Option__isize {
   inherent#string#string#find(self/71, expected/72)
 }
 
-fn inherent#string#string#char_indices(self/57: string) -> FnIterator__(int,char) {
+fn inherent#string#string#char_indices(self/57: string) -> FnIterator__(isize,char) {
   let index/58 = @intrinsic(ref.new)(0) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(
+  inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(
     || {
       let current/59 = @intrinsic(ref.get)(index/58) in
       {
         let mtmp37 = inherent#string#string#decode_at(self/57, current/59) in
         match mtmp37 {
-          Option__(char,int)::None => {
-            Option__(int,char)::None
+          Option__(char,isize)::None => {
+            Option__(isize,char)::None
           },
-          Option__(char,int)::Some(x38) => {
+          Option__(char,isize)::Some(x38) => {
             {
-              let x38 = Option__(char,int)::Some._0(mtmp37) in
+              let x38 = Option__(char,isize)::Some._0(mtmp37) in
               {
                 let decoded/60 = x38 in
                 {
@@ -2208,7 +2209,7 @@ fn inherent#string#string#char_indices(self/57: string) -> FnIterator__(int,char
                         let value/61 = x40 in
                         {
                           let _wild42 = @intrinsic(ref.set)(index/58, (current/59 + width/62)) in
-                          Option__(int,char)::Some((current/59, value/61))
+                          Option__(isize,char)::Some((current/59, value/61))
                         }
                       }
                     }
@@ -2223,7 +2224,7 @@ fn inherent#string#string#char_indices(self/57: string) -> FnIterator__(int,char
   )
 }
 
-fn inherent#string#string#char_count(self/73: string) -> int {
+fn inherent#string#string#char_count(self/73: string) -> isize {
   let count/74 = 0 in
   let _wild49 =
     {
@@ -2257,8 +2258,8 @@ fn inherent#string#string#char_count(self/73: string) -> int {
 
 fn inherent#string#string#slice_chars(
   self/75: string,
-  start/76: int,
-  end/77: int
+  start/76: isize,
+  end/77: isize
 ) -> Option__string {
   if if (start/76 < 0) {
       true
@@ -2274,39 +2275,39 @@ fn inherent#string#string#slice_chars(
         let start_byte/79 =
           if (start/76 == 0) {
               {
-                Option__int::Some(0)
+                Option__isize::Some(0)
               }
           } else {
               {
-                Option__int::None
+                Option__isize::None
               }
           } in
         let end_byte/80 =
           if (end/77 == 0) {
               {
-                Option__int::Some(0)
+                Option__isize::Some(0)
               }
           } else {
               {
-                Option__int::None
+                Option__isize::None
               }
           } in
         let _wild63 =
           {
             let for_iter50 =
-              trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(
+              trait_impl#IntoIterator#FnIterator__(isize,char)#into_iter(
                 inherent#string#string#char_indices(self/75)
               ) in
             while true {
                 {
-                  let for_next51 = trait_impl#Iterator#FnIterator__(int,char)#next(for_iter50) in
+                  let for_next51 = trait_impl#Iterator#FnIterator__(isize,char)#next(for_iter50) in
                   match for_next51 {
-                    Option__(int,char)::None => {
+                    Option__(isize,char)::None => {
                       break
                     },
-                    Option__(int,char)::Some(x52) => {
+                    Option__(isize,char)::Some(x52) => {
                       {
-                        let x52 = Option__(int,char)::Some._0(for_next51) in
+                        let x52 = Option__(isize,char)::Some._0(for_next51) in
                         {
                           let item/81 = x52 in
                           {
@@ -2320,7 +2321,7 @@ fn inherent#string#string#slice_chars(
                                     if (char_index/78 == start/76) {
                                         {
                                           let _wild56 =
-                                            start_byte/79 = Option__int::Some(byte_index/82) in
+                                            start_byte/79 = Option__isize::Some(byte_index/82) in
                                         }
                                     } else {
                                         {
@@ -2331,7 +2332,7 @@ fn inherent#string#string#slice_chars(
                                     if (char_index/78 == end/77) {
                                         {
                                           let _wild58 =
-                                            end_byte/80 = Option__int::Some(byte_index/82) in
+                                            end_byte/80 = Option__isize::Some(byte_index/82) in
                                         }
                                     } else {
                                         {
@@ -2359,7 +2360,7 @@ fn inherent#string#string#slice_chars(
           if (char_index/78 == start/76) {
               {
                 let _wild64 =
-                  start_byte/79 = Option__int::Some(inherent#string#string#byte_len(self/75)) in
+                  start_byte/79 = Option__isize::Some(inherent#string#string#byte_len(self/75)) in
               }
           } else {
               {
@@ -2370,7 +2371,7 @@ fn inherent#string#string#slice_chars(
           if (char_index/78 == end/77) {
               {
                 let _wild66 =
-                  end_byte/80 = Option__int::Some(inherent#string#string#byte_len(self/75)) in
+                  end_byte/80 = Option__isize::Some(inherent#string#string#byte_len(self/75)) in
               }
           } else {
               {
@@ -2383,13 +2384,13 @@ fn inherent#string#string#slice_chars(
             let x69 = mtmp68.0 in
             let x70 = mtmp68.1 in
             match x70 {
-              Option__int::Some(x71) => {
+              Option__isize::Some(x71) => {
                 {
-                  let x71 = Option__int::Some._0(x70) in
+                  let x71 = Option__isize::Some._0(x70) in
                   match x69 {
-                    Option__int::Some(x72) => {
+                    Option__isize::Some(x72) => {
                       {
-                        let x72 = Option__int::Some._0(x69) in
+                        let x72 = Option__isize::Some._0(x69) in
                         {
                           let first/83 = x72 in
                           {
@@ -2413,12 +2414,12 @@ fn inherent#string#string#slice_chars(
   }
 }
 
-fn inherent#string#string#rfind(self/85: string, expected/86: string) -> Option__int {
+fn inherent#string#string#rfind(self/85: string, expected/86: string) -> Option__isize {
   let value_len/87 = inherent#string#string#byte_len(self/85) in
   let expected_len/88 = inherent#string#string#byte_len(expected/86) in
   if (expected_len/88 > value_len/87) {
       {
-        Option__int::None
+        Option__isize::None
       }
   } else {
       {
@@ -2428,7 +2429,7 @@ fn inherent#string#string#rfind(self/85: string, expected/86: string) -> Option_
               {
                 if inherent#string#string#starts_with_at(self/85, start/89, expected/86) {
                     {
-                      return Option__int::Some(start/89)
+                      return Option__isize::Some(start/89)
                     }
                 } else {
                     {
@@ -2442,7 +2443,7 @@ fn inherent#string#string#rfind(self/85: string, expected/86: string) -> Option_
                 }
               }
           } in
-        Option__int::None
+        Option__isize::None
       }
   }
 }
@@ -2512,7 +2513,7 @@ fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[st
       {
         let mtmp87 = string_find_from(self/95, separator/96, start/100) in
         match mtmp87 {
-          Option__int::None => {
+          Option__isize::None => {
             {
               let _wild89 =
                 inherent#Vec#Vec[T]#push__T_string(
@@ -2522,9 +2523,9 @@ fn inherent#string#string#split(self/95: string, separator/96: string) -> Vec[st
               break
             }
           },
-          Option__int::Some(x88) => {
+          Option__isize::Some(x88) => {
             {
-              let x88 = Option__int::Some._0(mtmp87) in
+              let x88 = Option__isize::Some._0(mtmp87) in
               {
                 let index/101 = x88 in
                 {
@@ -2559,12 +2560,12 @@ fn inherent#string#string#split_once(
         {
           let mtmp93 = inherent#string#string#find(self/102, separator/103) in
           match mtmp93 {
-            Option__int::None => {
+            Option__isize::None => {
               Option__(string,string)::None
             },
-            Option__int::Some(x94) => {
+            Option__isize::Some(x94) => {
               {
-                let x94 = Option__int::Some._0(mtmp93) in
+                let x94 = Option__isize::Some._0(mtmp93) in
                 {
                   let index/106 = x94 in
                   Option__(string,string)::Some(
@@ -2608,19 +2609,19 @@ fn inherent#string#string#lines(self/107: string) -> Vec[string] {
   let _wild105 =
     {
       let for_iter97 =
-        trait_impl#IntoIterator#FnIterator__int#into_iter(
+        trait_impl#IntoIterator#FnIterator__isize#into_iter(
           __goml_builtin_range(0, inherent#Vec#Vec[T]#len__T_string(result/108))
         ) in
       while true {
           {
-            let for_next98 = trait_impl#Iterator#FnIterator__int#next(for_iter97) in
+            let for_next98 = trait_impl#Iterator#FnIterator__isize#next(for_iter97) in
             match for_next98 {
-              Option__int::None => {
+              Option__isize::None => {
                 break
               },
-              Option__int::Some(x99) => {
+              Option__isize::Some(x99) => {
                 {
-                  let x99 = Option__int::Some._0(for_next98) in
+                  let x99 = Option__isize::Some._0(for_next98) in
                   {
                     let index/109 = x99 in
                     {
@@ -2683,7 +2684,7 @@ fn inherent#string#string#replace(
             {
               let mtmp106 = string_find_from(self/111, expected/112, start/115) in
               match mtmp106 {
-                Option__int::None => {
+                Option__isize::None => {
                   {
                     let _wild108 =
                       inherent#Vec#Vec[T]#push__T_string(
@@ -2697,9 +2698,9 @@ fn inherent#string#string#replace(
                     break
                   }
                 },
-                Option__int::Some(x107) => {
+                Option__isize::Some(x107) => {
                   {
-                    let x107 = Option__int::Some._0(mtmp106) in
+                    let x107 = Option__isize::Some._0(mtmp106) in
                     {
                       let index/116 = x107 in
                       {
@@ -2730,19 +2731,19 @@ fn inherent#Vec#Vec[T]#join__T_string(self/378: Vec[string], separator/379: stri
   let _wild352 =
     {
       let for_iter349 =
-        trait_impl#IntoIterator#FnIterator__int#into_iter(
+        trait_impl#IntoIterator#FnIterator__isize#into_iter(
           __goml_builtin_range(0, inherent#Vec#Vec[T]#len__T_string(self/378))
         ) in
       while true {
           {
-            let for_next350 = trait_impl#Iterator#FnIterator__int#next(for_iter349) in
+            let for_next350 = trait_impl#Iterator#FnIterator__isize#next(for_iter349) in
             match for_next350 {
-              Option__int::None => {
+              Option__isize::None => {
                 break
               },
-              Option__int::Some(x351) => {
+              Option__isize::Some(x351) => {
                 {
-                  let x351 = Option__int::Some._0(for_next350) in
+                  let x351 = Option__isize::Some._0(for_next350) in
                   {
                     let index/381 = x351 in
                     {
@@ -2767,19 +2768,19 @@ fn inherent#Vec#Vec[T]#join__T_string(self/378: Vec[string], separator/379: stri
   let _wild357 =
     {
       let for_iter353 =
-        trait_impl#IntoIterator#FnIterator__int#into_iter(
+        trait_impl#IntoIterator#FnIterator__isize#into_iter(
           __goml_builtin_range(0, inherent#Vec#Vec[T]#len__T_string(parts/380))
         ) in
       while true {
           {
-            let for_next354 = trait_impl#Iterator#FnIterator__int#next(for_iter353) in
+            let for_next354 = trait_impl#Iterator#FnIterator__isize#next(for_iter353) in
             match for_next354 {
-              Option__int::None => {
+              Option__isize::None => {
                 break
               },
-              Option__int::Some(x355) => {
+              Option__isize::Some(x355) => {
                 {
-                  let x355 = Option__int::Some._0(for_next354) in
+                  let x355 = Option__isize::Some._0(for_next354) in
                   {
                     let index/383 = x355 in
                     {
@@ -2808,7 +2809,7 @@ fn inherent#Vec#Vec[T]#join__T_string(self/378: Vec[string], separator/379: stri
   @runtime(core.string_concat)(result/382)
 }
 
-fn inherent#string#string#repeat(self/117: string, count/118: int) -> string {
+fn inherent#string#string#repeat(self/117: string, count/118: isize) -> string {
   if if (count/118 <= 0) {
       true
   } else {
@@ -2823,17 +2824,17 @@ fn inherent#string#string#repeat(self/117: string, count/118: int) -> string {
         let _wild116 =
           {
             let for_iter113 =
-              trait_impl#IntoIterator#FnIterator__int#into_iter(
+              trait_impl#IntoIterator#FnIterator__isize#into_iter(
                 __goml_builtin_range(0, count/118)
               ) in
             while true {
                 {
-                  let for_next114 = trait_impl#Iterator#FnIterator__int#next(for_iter113) in
+                  let for_next114 = trait_impl#Iterator#FnIterator__isize#next(for_iter113) in
                   match for_next114 {
-                    Option__int::None => {
+                    Option__isize::None => {
                       break
                     },
-                    Option__int::Some(x115) => {
+                    Option__isize::Some(x115) => {
                       {
                         {
                           inherent#Vec#Vec[T]#push__T_string(parts/119, self/117)
@@ -2853,19 +2854,19 @@ fn inherent#string#string#is_ascii(self/120: string) -> bool {
   let _wild120 =
     {
       let for_iter117 =
-        trait_impl#IntoIterator#FnIterator__int#into_iter(
+        trait_impl#IntoIterator#FnIterator__isize#into_iter(
           __goml_builtin_range(0, inherent#string#string#byte_len(self/120))
         ) in
       while true {
           {
-            let for_next118 = trait_impl#Iterator#FnIterator__int#next(for_iter117) in
+            let for_next118 = trait_impl#Iterator#FnIterator__isize#next(for_iter117) in
             match for_next118 {
-              Option__int::None => {
+              Option__isize::None => {
                 break
               },
-              Option__int::Some(x119) => {
+              Option__isize::Some(x119) => {
                 {
-                  let x119 = Option__int::Some._0(for_next118) in
+                  let x119 = Option__isize::Some._0(for_next118) in
                   {
                     let index/121 = x119 in
                     {
@@ -2899,19 +2900,19 @@ fn inherent#string#string#eq_ignore_ascii_case(self/122: string, other/123: stri
         let _wild124 =
           {
             let for_iter121 =
-              trait_impl#IntoIterator#FnIterator__int#into_iter(
+              trait_impl#IntoIterator#FnIterator__isize#into_iter(
                 __goml_builtin_range(0, inherent#string#string#byte_len(self/122))
               ) in
             while true {
                 {
-                  let for_next122 = trait_impl#Iterator#FnIterator__int#next(for_iter121) in
+                  let for_next122 = trait_impl#Iterator#FnIterator__isize#next(for_iter121) in
                   match for_next122 {
-                    Option__int::None => {
+                    Option__isize::None => {
                       break
                     },
-                    Option__int::Some(x123) => {
+                    Option__isize::Some(x123) => {
                       {
-                        let x123 = Option__int::Some._0(for_next122) in
+                        let x123 = Option__isize::Some._0(for_next122) in
                         {
                           let index/124 = x123 in
                           {
@@ -2945,19 +2946,19 @@ fn inherent#string#string#to_ascii_lowercase(self/125: string) -> string {
   let _wild133 =
     {
       let for_iter125 =
-        trait_impl#IntoIterator#FnIterator__int#into_iter(
-          __goml_builtin_range(0, inherent#Vec#Vec[T]#len__T_uint8(values/126))
+        trait_impl#IntoIterator#FnIterator__isize#into_iter(
+          __goml_builtin_range(0, inherent#Vec#Vec[T]#len__T_u8(values/126))
         ) in
       while true {
           {
-            let for_next126 = trait_impl#Iterator#FnIterator__int#next(for_iter125) in
+            let for_next126 = trait_impl#Iterator#FnIterator__isize#next(for_iter125) in
             match for_next126 {
-              Option__int::None => {
+              Option__isize::None => {
                 break
               },
-              Option__int::Some(x127) => {
+              Option__isize::Some(x127) => {
                 {
-                  let x127 = Option__int::Some._0(for_next126) in
+                  let x127 = Option__isize::Some._0(for_next126) in
                   {
                     let index/127 = x127 in
                     {
@@ -2995,19 +2996,19 @@ fn inherent#string#string#to_ascii_uppercase(self/129: string) -> string {
   let _wild145 =
     {
       let for_iter137 =
-        trait_impl#IntoIterator#FnIterator__int#into_iter(
-          __goml_builtin_range(0, inherent#Vec#Vec[T]#len__T_uint8(values/130))
+        trait_impl#IntoIterator#FnIterator__isize#into_iter(
+          __goml_builtin_range(0, inherent#Vec#Vec[T]#len__T_u8(values/130))
         ) in
       while true {
           {
-            let for_next138 = trait_impl#Iterator#FnIterator__int#next(for_iter137) in
+            let for_next138 = trait_impl#Iterator#FnIterator__isize#next(for_iter137) in
             match for_next138 {
-              Option__int::None => {
+              Option__isize::None => {
                 break
               },
-              Option__int::Some(x139) => {
+              Option__isize::Some(x139) => {
                 {
-                  let x139 = Option__int::Some._0(for_next138) in
+                  let x139 = Option__isize::Some._0(for_next138) in
                   {
                     let index/131 = x139 in
                     {
@@ -3051,7 +3052,7 @@ fn std::io::println__T_string(value/68: string) -> unit {
   std::internal::host::println(trait_impl#ToString#string#to_string(value/68))
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> int {
+fn inherent#Vec#Vec[T]#len__T_string(self/273: Vec[string]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -3059,7 +3060,7 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
   let length/7 = inherent#string#string#byte_len(value/5) in
   let _wild2 =
     if if (index/6 < 0) {
@@ -3075,7 +3076,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
           ()
         }
     } in
-  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as u32) in
   if (first/8 < 128) {
       {
         utf8_valid_decode(first/8, 1)
@@ -3098,8 +3099,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         ()
                       }
                   } in
-                let second/9 =
-                  (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                let second/9 = (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                 if utf8_invalid_continuation(second/9) {
                     {
                       utf8_invalid_decode()
@@ -3124,9 +3124,9 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                           }
                       } in
                     let second/10 =
-                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                     let third/11 =
-                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                     if if if if utf8_invalid_continuation(second/10) {
                         true
                     } else {
@@ -3174,11 +3174,11 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                               }
                           } in
                         let second/12 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                         let third/13 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                         let fourth/14 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as u32) in
                         if if if if if utf8_invalid_continuation(second/12) {
                             true
                         } else {
@@ -3233,11 +3233,11 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   (self/181 == other/182)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn string_get(value/17: string, index/18: int) -> char {
+fn string_get(value/17: string, index/18: isize) -> char {
   let mtmp6 = string_decode_utf8_at(value/17, index/18) in
   {
     let x7 = mtmp6.0 in
@@ -3263,7 +3263,7 @@ fn string_get(value/17: string, index/18: int) -> char {
 }
 
 fn char_to_string(value/29: char) -> string {
-  if utf8_valid_scalar((value/29 as uint32)) {
+  if utf8_valid_scalar((value/29 as u32)) {
       {
         @runtime(core.char_to_string)(value/29)
       }
@@ -3277,15 +3277,15 @@ fn char_to_string(value/29: char) -> string {
   }
 }
 
-fn inherent#string#string#is_char_boundary(self/44: string, index/45: int) -> bool {
+fn inherent#string#string#is_char_boundary(self/44: string, index/45: isize) -> bool {
   string_is_char_boundary(self/44, index/45)
 }
 
-fn inherent#string#string#byte_slice(self/41: string, start/42: int, end/43: int) -> string {
+fn inherent#string#string#byte_slice(self/41: string, start/42: isize, end/43: isize) -> string {
   string_byte_slice(self/41, start/42, end/43)
 }
 
-fn string_find_from(value/133: string, expected/134: string, start/135: int) -> Option__int {
+fn string_find_from(value/133: string, expected/134: string, start/135: isize) -> Option__isize {
   let value_len/136 = inherent#string#string#byte_len(value/133) in
   let expected_len/137 = inherent#string#string#byte_len(expected/134) in
   if if (start/135 < 0) {
@@ -3294,17 +3294,17 @@ fn string_find_from(value/133: string, expected/134: string, start/135: int) -> 
       (start/135 > value_len/136)
   } {
       {
-        Option__int::None
+        Option__isize::None
       }
   } else {
       if (expected_len/137 == 0) {
           {
-            Option__int::Some(start/135)
+            Option__isize::Some(start/135)
           }
       } else {
           if (expected_len/137 > (value_len/136 - start/135)) {
               {
-                Option__int::None
+                Option__isize::None
               }
           } else {
               {
@@ -3319,7 +3319,7 @@ fn string_find_from(value/133: string, expected/134: string, start/135: int) -> 
                           expected/134
                         ) {
                             {
-                              return Option__int::Some(index/139)
+                              return Option__isize::Some(index/139)
                             }
                         } else {
                             {
@@ -3333,14 +3333,14 @@ fn string_find_from(value/133: string, expected/134: string, start/135: int) -> 
                         }
                       }
                   } in
-                Option__int::None
+                Option__isize::None
               }
           }
       }
   }
 }
 
-fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(char,int) {
+fn inherent#string#string#decode_at(self/46: string, index/47: isize) -> Option__(char,isize) {
   let mtmp25 = string_decode_utf8_at(self/46, index/47) in
   {
     let x26 = mtmp25.0 in
@@ -3355,11 +3355,11 @@ fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(
           {
             if valid/48 {
                 {
-                  Option__(char,int)::Some((value/49, width/50))
+                  Option__(char,isize)::Some((value/49, width/50))
                 }
             } else {
                 {
-                  Option__(char,int)::None
+                  Option__(char,isize)::None
                 }
             }
           }
@@ -3369,10 +3369,10 @@ fn inherent#string#string#decode_at(self/46: string, index/47: int) -> Option__(
   }
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(
-  next_fn/254: () -> Option__(int,char)
-) -> FnIterator__(int,char) {
-  FnIterator__(int,char) { next_fn: next_fn/254 }
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_(isize,char)(
+  next_fn/254: () -> Option__(isize,char)
+) -> FnIterator__(isize,char) {
+  FnIterator__(isize,char) { next_fn: next_fn/254 }
 }
 
 fn inherent#string#string#chars(self/52: string) -> FnIterator__char {
@@ -3382,12 +3382,12 @@ fn inherent#string#string#chars(self/52: string) -> FnIterator__char {
       {
         let mtmp29 = inherent#string#string#decode_at(self/52, @intrinsic(ref.get)(index/53)) in
         match mtmp29 {
-          Option__(char,int)::None => {
+          Option__(char,isize)::None => {
             Option__char::None
           },
-          Option__(char,int)::Some(x30) => {
+          Option__(char,isize)::Some(x30) => {
             {
-              let x30 = Option__(char,int)::Some._0(mtmp29) in
+              let x30 = Option__(char,isize)::Some._0(mtmp29) in
               {
                 let decoded/54 = x30 in
                 {
@@ -3431,19 +3431,19 @@ fn trait_impl#Iterator#FnIterator__char#next(self/255: FnIterator__char) -> Opti
   FnIterator__char.next_fn(self/255)()
 }
 
-fn trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(
-  self/256: FnIterator__(int,char)
-) -> FnIterator__(int,char) {
+fn trait_impl#IntoIterator#FnIterator__(isize,char)#into_iter(
+  self/256: FnIterator__(isize,char)
+) -> FnIterator__(isize,char) {
   self/256
 }
 
-fn trait_impl#Iterator#FnIterator__(int,char)#next(
-  self/255: FnIterator__(int,char)
-) -> Option__(int,char) {
-  FnIterator__(int,char).next_fn(self/255)()
+fn trait_impl#Iterator#FnIterator__(isize,char)#next(
+  self/255: FnIterator__(isize,char)
+) -> Option__(isize,char) {
+  FnIterator__(isize,char).next_fn(self/255)()
 }
 
-fn ascii_is_whitespace(value/140: uint8) -> bool {
+fn ascii_is_whitespace(value/140: u8) -> bool {
   if if if if if (value/140 == 9) {
       true
   } else {
@@ -3494,34 +3494,36 @@ fn inherent#Vec#Vec[T]#pop__T_string(self/283: Vec[string]) -> Option__string {
   }
 }
 
-fn __goml_builtin_range(start/503: int, end/504: int) -> FnIterator__int {
+fn __goml_builtin_range(start/503: isize, end/504: isize) -> FnIterator__isize {
   let current/505 = @intrinsic(ref.new)(start/503) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_int(
+  inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
     || {
       let value/506 = @intrinsic(ref.get)(current/505) in
       if (value/506 < end/504) {
           {
             let _wild407 = @intrinsic(ref.set)(current/505, (value/506 + 1)) in
-            Option__int::Some(value/506)
+            Option__isize::Some(value/506)
           }
       } else {
           {
-            Option__int::None
+            Option__isize::None
           }
       }
     }
   )
 }
 
-fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/256: FnIterator__int) -> FnIterator__int {
+fn trait_impl#IntoIterator#FnIterator__isize#into_iter(
+  self/256: FnIterator__isize
+) -> FnIterator__isize {
   self/256
 }
 
-fn trait_impl#Iterator#FnIterator__int#next(self/255: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/255)()
+fn trait_impl#Iterator#FnIterator__isize#next(self/255: FnIterator__isize) -> Option__isize {
+  FnIterator__isize.next_fn(self/255)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/257: int) -> Vec[string] {
+fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/257: isize) -> Vec[string] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
@@ -3529,11 +3531,11 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn ascii_eq_ignore_case(left/145: uint8, right/146: uint8) -> bool {
+fn ascii_eq_ignore_case(left/145: u8, right/146: u8) -> bool {
   (ascii_to_lowercase(left/145) == ascii_to_lowercase(right/146))
 }
 
-fn ascii_to_lowercase(value/143: uint8) -> uint8 {
+fn ascii_to_lowercase(value/143: u8) -> u8 {
   if ascii_is_uppercase(value/143) {
       {
         (value/143 + (97 - 65))
@@ -3545,7 +3547,7 @@ fn ascii_to_lowercase(value/143: uint8) -> uint8 {
   }
 }
 
-fn ascii_to_uppercase(value/144: uint8) -> uint8 {
+fn ascii_to_uppercase(value/144: u8) -> u8 {
   if ascii_is_lowercase(value/144) {
       {
         (value/144 - (97 - 65))
@@ -3557,11 +3559,11 @@ fn ascii_to_uppercase(value/144: uint8) -> uint8 {
   }
 }
 
-fn utf8_invalid_decode() -> (bool, char, int) {
+fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
 
-fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
   {
     let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
     match mtmp0 {
@@ -3581,7 +3583,7 @@ fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_invalid_continuation(value/3: uint32) -> bool {
+fn utf8_invalid_continuation(value/3: u32) -> bool {
   if (value/3 < 128) {
       true
   } else {
@@ -3589,7 +3591,7 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   if (value/4 <= 1114111) {
       (!if (value/4 >= 55296) {
           (value/4 <= 57343)
@@ -3601,7 +3603,7 @@ fn utf8_valid_scalar(value/4: uint32) -> bool {
   }
 }
 
-fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
+fn string_is_char_boundary(value/15: string, index/16: isize) -> bool {
   if if (index/16 < 0) {
       true
   } else {
@@ -3623,7 +3625,7 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
   }
 }
 
-fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
+fn string_byte_slice(value/21: string, start/22: isize, end/23: isize) -> string {
   if if string_is_char_boundary(value/21, start/22) {
       string_is_char_boundary(value/21, end/23)
   } else {
@@ -3645,17 +3647,17 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_char(
   FnIterator__char { next_fn: next_fn/254 }
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_string(self/278: Vec[string], len/279: int) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_string(self/278: Vec[string], len/279: isize) -> unit {
   @intrinsic(vec.truncate)(self/278, len/279)
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-  next_fn/254: () -> Option__int
-) -> FnIterator__int {
-  FnIterator__int { next_fn: next_fn/254 }
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
+  next_fn/254: () -> Option__isize
+) -> FnIterator__isize {
+  FnIterator__isize { next_fn: next_fn/254 }
 }
 
-fn ascii_is_uppercase(value/141: uint8) -> bool {
+fn ascii_is_uppercase(value/141: u8) -> bool {
   if (value/141 >= 65) {
       (value/141 <= 90)
   } else {
@@ -3663,7 +3665,7 @@ fn ascii_is_uppercase(value/141: uint8) -> bool {
   }
 }
 
-fn ascii_is_lowercase(value/142: uint8) -> bool {
+fn ascii_is_lowercase(value/142: u8) -> bool {
   if (value/142 >= 97) {
       (value/142 <= 122)
   } else {
@@ -3671,7 +3673,7 @@ fn ascii_is_lowercase(value/142: uint8) -> bool {
   }
 }
 
-fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
   if utf8_valid_scalar(value/30) {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
@@ -3692,6 +3694,6 @@ fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
   }
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

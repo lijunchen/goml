@@ -1,11 +1,11 @@
 impl Display for Number {
   fn display(self/0: Number) -> string {
-      (int::to_string : (int) -> string)((self/0 : Number).value)
+      (isize::to_string : (isize) -> string)((self/0 : Number).value)
   }
 }
 
 impl Source for Number {
-  fn get(self/1: Number) -> int {
+  fn get(self/1: Number) -> isize {
       (self/1 : Number).value
   }
 }
@@ -23,9 +23,9 @@ fn main() -> unit {
     (println : (string) -> unit)(
       (dyn Display::display : (dyn Display) -> string)((erased/4 : dyn Display))
     );
-    let source/5: dyn Source[Item = int] = to_dyn[Source]{Number}(Number { value: 11 });
-    (println : (int) -> unit)(
-      (dyn Source::get : (dyn Source[Item = int]) -> int)((source/5 : dyn Source[Item = int]))
+    let source/5: dyn Source[Item = isize] = to_dyn[Source]{Number}(Number { value: 11 });
+    (println : (isize) -> unit)(
+      (dyn Source::get : (dyn Source[Item = isize]) -> isize)((source/5 : dyn Source[Item = isize]))
     );
     let same/6: dyn Display = to_dyn[Display]{Number}(Number { value: 13 });
     (println : (string) -> unit)(

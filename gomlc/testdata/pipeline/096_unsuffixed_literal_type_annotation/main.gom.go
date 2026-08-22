@@ -60,7 +60,7 @@ func main0() struct{} {
     var f__7 int64 = 6
     var g__8 uint64 = 7
     var h__9 float32 = 1
-    var t426 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(a__2)
+    var t426 string = _goml_m_trait__impl_i_ToString_i_u8_i_to__string(a__2)
     println__T_string(t426)
     var t427 string
     var inline515 string = _goml_runtime_core_int8_to_string(b__3)
@@ -123,7 +123,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__156 uint8) string {
+func _goml_m_trait__impl_i_ToString_i_u8_i_to__string(self__156 uint8) string {
     var t443 string = _goml_runtime_core_uint8_to_string(self__156)
     return t443
 }

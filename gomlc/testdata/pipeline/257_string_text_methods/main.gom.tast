@@ -25,54 +25,56 @@ fn main() -> unit {
       ).1
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Vec[string]::len : (Vec[string]) -> int)(
+      (isize::to_string : (isize) -> string)(
+        (Vec[string]::len : (Vec[string]) -> isize)(
           (string::lines : (string) -> Vec[string])((text/0 : string))
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (string::find : (string, string) -> Option[int])((text/0 : string), "World"),
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (string::find : (string, string) -> Option[isize])((text/0 : string), "World"),
           -1
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (string::rfind : (string, string) -> Option[int])((text/0 : string), "l"),
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (string::rfind : (string, string) -> Option[isize])((text/0 : string), "l"),
           -1
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (string::find_bytes : (string, string) -> Option[int])((text/0 : string), "lo"),
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (string::find_bytes : (string, string) -> Option[isize])((text/0 : string), "lo"),
           -1
         )
       )
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (string::starts_with_at : (string, int, string) -> bool)((text/0 : string), 2, "Hé")
+        (string::starts_with_at : (string, isize, string) -> bool)((text/0 : string), 2, "Hé")
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)((string::char_count : (string) -> int)((text/0 : string)))
+      (isize::to_string : (isize) -> string)(
+        (string::char_count : (string) -> isize)((text/0 : string))
+      )
     );
     (println : (string) -> unit)(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
-        (string::slice_chars : (string, int, int) -> Option[string])((text/0 : string), 2, 7),
+        (string::slice_chars : (string, isize, isize) -> Option[string])((text/0 : string), 2, 7),
         "none"
       )
     );
     (println : (string) -> unit)(
       (string::replace : (string, string, string) -> string)((text/0 : string), "l", "L")
     );
-    (println : (string) -> unit)((string::repeat : (string, int) -> string)("ab", 3));
+    (println : (string) -> unit)((string::repeat : (string, isize) -> string)("ab", 3));
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (string::is_ascii : (string) -> bool)((text/0 : string))

@@ -1,4 +1,4 @@
-fn accepts_array_length(value/0: [int32; 10]) -> unit {
+fn accepts_array_length(value/0: [i32; 10]) -> unit {
   {
     ()
   }
@@ -9,10 +9,10 @@ fn main() -> unit {
   let unsigned/2 = 4294967296 in
   let float/3 = 125 in
   let small/4 = 2.5 in
-  let _wild412 = println__T_int32(integer/1) in
-  let _wild413 = println__T_uint64(unsigned/2) in
-  let _wild414 = println__T_float64(float/3) in
-  let _wild415 = println__T_float32(small/4) in
+  let _wild412 = println__T_i32(integer/1) in
+  let _wild413 = println__T_u64(unsigned/2) in
+  let _wild414 = println__T_f64(float/3) in
+  let _wild415 = println__T_f32(small/4) in
   match integer/1 {
     1000 => {
       println__T_string("matched")
@@ -21,39 +21,39 @@ fn main() -> unit {
   }
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn println__T_uint64(value/1: uint64) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint64#to_string(value/1))
+fn println__T_u64(value/1: u64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/1))
 }
 
-fn println__T_float64(value/1: float64) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#float64#to_string(value/1))
+fn println__T_f64(value/1: f64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#f64#to_string(value/1))
 }
 
-fn println__T_float32(value/1: float32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#float32#to_string(value/1))
+fn println__T_f32(value/1: f32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#f32#to_string(value/1))
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#ToString#uint64#to_string(self/159: uint64) -> string {
+fn trait_impl#ToString#u64#to_string(self/159: u64) -> string {
   @runtime(core.uint64_to_string)(self/159)
 }
 
-fn trait_impl#ToString#float64#to_string(self/161: float64) -> string {
+fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
   @runtime(core.float64_to_string)(self/161)
 }
 
-fn trait_impl#ToString#float32#to_string(self/160: float32) -> string {
+fn trait_impl#ToString#f32#to_string(self/160: f32) -> string {
   @runtime(core.float32_to_string)(self/160)
 }
 

@@ -1,5 +1,5 @@
 package main;
-fn match_mixed_pair(pair: (int32, string)) -> int32 {
+fn match_mixed_pair(pair: (i32, string)) -> i32 {
     match pair {
         (0, "zero") => 1,
         (0, _) => 2,
@@ -10,12 +10,12 @@ fn match_mixed_pair(pair: (int32, string)) -> int32 {
 }
 
 enum Mixed {
-    OnlyInt(int32),
+    OnlyInt(i32),
     OnlyStr(string),
-    Both(int32, string)
+    Both(i32, string)
 }
 
-fn match_mixed_enum(value: Mixed) -> int32 {
+fn match_mixed_enum(value: Mixed) -> i32 {
     match value {
         OnlyInt(0) => 6,
         OnlyInt(_) => 7,

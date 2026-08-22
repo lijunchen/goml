@@ -3,7 +3,7 @@ fn trait_impl#Named#Point#name(self/0: Point) -> string {
 }
 
 fn trait_impl#Display#Point#show(self/1: Point, prefix/2: string) -> string {
-  (prefix/2 + inherent#int32#int32#to_string(Point.value(self/1)))
+  (prefix/2 + inherent#i32#i32#to_string(Point.value(self/1)))
 }
 
 fn render(value/3: dyn Display) -> unit {
@@ -19,7 +19,7 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

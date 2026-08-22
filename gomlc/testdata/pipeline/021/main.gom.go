@@ -28,7 +28,7 @@ func match_int(n__0 int32) int32 {
 
 func main0() struct{} {
     var t433 int32 = match_int(0)
-    var t434 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t433)
+    var t434 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t433)
     println__T_string(t434)
     var t435 int32 = match_int(5)
     var t436 string
@@ -115,7 +115,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t455 string = _goml_runtime_core_int32_to_string(self__33)
     return t455
 }

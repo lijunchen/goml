@@ -12,16 +12,15 @@ impl ToString for Point {
   fn to_string(self/1: Point) -> string {
       {
           let Point {
-            x: #derive0_field/2: int32,
-            y: #derive1_field/3: int32,
+            x: #derive0_field/2: i32,
+            y: #derive1_field/3: i32,
             color: #derive2_field/4: Color
           } =
             (self/1 : Point);
-          "Point { " + "x: " +
-            (ToString::to_string : (int32) -> string)((#derive0_field/2 : int32)) +
+          "Point { " + "x: " + (ToString::to_string : (i32) -> string)((#derive0_field/2 : i32)) +
             ", " +
             "y: " +
-            (ToString::to_string : (int32) -> string)((#derive1_field/3 : int32)) +
+            (ToString::to_string : (i32) -> string)((#derive1_field/3 : i32)) +
             ", " +
             "color: " +
             (ToString::to_string : (Color) -> string)((#derive2_field/4 : Color)) +
@@ -31,8 +30,8 @@ impl ToString for Point {
 }
 
 impl Point {
-  fn new(x/5: int32, y/6: int32, color/7: Color) -> Point {
-      Point { x: (x/5 : int32), y: (y/6 : int32), color: (color/7 : Color) }
+  fn new(x/5: i32, y/6: i32, color/7: Color) -> Point {
+      Point { x: (x/5 : i32), y: (y/6 : i32), color: (color/7 : Color) }
   }
 }
 
@@ -79,8 +78,8 @@ impl ToString for LineList {
 }
 
 fn main() -> unit {
-    let from/18: Point = (Point::new : (int32, int32, Color) -> Point)(10, 20, Color::Red);
-    let to/19: Point = (Point::new : (int32, int32, Color) -> Point)(30, 40, Color::Green);
+    let from/18: Point = (Point::new : (i32, i32, Color) -> Point)(10, 20, Color::Red);
+    let to/19: Point = (Point::new : (i32, i32, Color) -> Point)(30, 40, Color::Green);
     let line/20: Line =
       (Line::new : (Point, Point, Color) -> Line)((from/18 : Point), (to/19 : Point), Color::Blue);
     let lines/21: LineList = LineList::Cons((line/20 : Line), LineList::Nil);

@@ -24,7 +24,7 @@ type Point struct {
 
 type Ordering int32
 
-type State__int32 struct {
+type State__i32 struct {
     _tag int32
     _v1_0 int32
     _v2_0 int32
@@ -50,7 +50,7 @@ type State__Point_Named struct {
 
 func (_ State__Point_Named) isState__Point() {}
 
-type State__int struct {
+type State__isize struct {
     _tag int32
     _v1_0 int
     _v2_0 int
@@ -66,7 +66,7 @@ type dyn__Debug struct {
 }
 
 func dyn__Debug__wrap__int__debug(self any) string {
-    return _goml_m_trait__impl_i_Debug_i_int_i_debug(self.(int))
+    return _goml_m_trait__impl_i_Debug_i_isize_i_debug(self.(int))
 }
 
 func dyn__Debug__vtable__int() *dyn__Debug_vtable {
@@ -80,7 +80,7 @@ func _goml_m_trait__impl_i_Debug_i_Point_i_debug(self__0 Point) string {
     var x413 string = self__0.label
     var t422 string = "Point { " + "x: "
     var t423 string
-    var inline497 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x412)
+    var inline497 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x412)
     t423 = inline497
     var t424 string = t422 + t423
     var t425 string = t424 + ", "
@@ -98,13 +98,13 @@ func main0() struct{} {
         x: 3,
         label: "east",
     }
-    var idle__8 State__int32 = State__int32{
+    var idle__8 State__i32 = State__i32{
         _tag: 0,
     }
     var t434 string = _goml_m_trait__impl_i_Debug_i_Point_i_debug(point__7)
     var inline537 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t434)
     _goml_runtime_core_string_println(inline537)
-    var t435 string = _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(idle__8)
+    var t435 string = _goml_m_trait__impl_i_Debug_i_State____i32_i_debug(idle__8)
     var inline534 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t435)
     _goml_runtime_core_string_println(inline534)
     var t436 string
@@ -117,7 +117,7 @@ func main0() struct{} {
     var t437 string
     var inline512 int = 7
     var inline514 string = "State::Named { " + "value: "
-    var inline515 string = _goml_m_trait__impl_i_Debug_i_int_i_debug(inline512)
+    var inline515 string = _goml_m_trait__impl_i_Debug_i_isize_i_debug(inline512)
     var inline516 string = inline514 + inline515
     var inline517 string = inline516 + " }"
     t437 = inline517
@@ -135,14 +135,14 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(self__3 State__int32) string {
+func _goml_m_trait__impl_i_Debug_i_State____i32_i_debug(self__3 State__i32) string {
     switch self__3._tag {
     case 0:
         return "State::Idle"
     case 1:
         var x414 int32 = self__3._v1_0
         var t454 string
-        var inline544 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x414)
+        var inline544 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x414)
         t454 = inline544
         var t455 string = "State::Value(" + t454
         var t456 string = t455 + ")"
@@ -151,7 +151,7 @@ func _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(self__3 State__int32) 
         var x415 int32 = self__3._v2_0
         var t457 string = "State::Named { " + "value: "
         var t458 string
-        var inline546 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x415)
+        var inline546 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x415)
         t458 = inline546
         var t459 string = t457 + t458
         var t460 string = t459 + " }"
@@ -161,12 +161,12 @@ func _goml_m_trait__impl_i_Debug_i_State____int32_i_debug(self__3 State__int32) 
     }
 }
 
-func _goml_m_trait__impl_i_Debug_i_int_i_debug(self__166 int) string {
+func _goml_m_trait__impl_i_Debug_i_isize_i_debug(self__166 int) string {
     var inline580 string = _goml_runtime_core_int_to_string(self__166)
     return inline580
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t488 string = _goml_runtime_core_int32_to_string(self__154)
     return t488
 }

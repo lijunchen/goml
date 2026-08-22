@@ -1,12 +1,12 @@
-fn maybe_num(flag/0: bool) -> Option__int32 {
+fn maybe_num(flag/0: bool) -> Option__i32 {
   if flag/0 {
-      Option__int32::Some(8)
+      Option__i32::Some(8)
   } else {
-      Option__int32::None
+      Option__i32::None
   }
 }
 
-fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
+fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__i32 {
   let value/6 =
     if top/1 {
         match mode/2 {
@@ -14,11 +14,11 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
             let inner/4 =
               let mtmp411 = maybe_num(inner_flag/3) in
               match mtmp411 {
-                Option__int32::None => {
-                  return Option__int32::None
+                Option__i32::None => {
+                  return Option__i32::None
                 },
-                Option__int32::Some(x412) => {
-                  let x412 = Option__int32::Some._0(mtmp411) in
+                Option__i32::Some(x412) => {
+                  let x412 = Option__i32::Some._0(mtmp411) in
                   let try_value/13 = x412 in
                   try_value/13
                 },
@@ -33,29 +33,29 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
         let inner/5 =
           let mtmp413 = maybe_num(inner_flag/3) in
           match mtmp413 {
-            Option__int32::None => {
-              return Option__int32::None
+            Option__i32::None => {
+              return Option__i32::None
             },
-            Option__int32::Some(x414) => {
-              let x414 = Option__int32::Some._0(mtmp413) in
+            Option__i32::Some(x414) => {
+              let x414 = Option__i32::Some._0(mtmp413) in
               let try_value/24 = x414 in
               try_value/24
             },
           } in
         (inner/5 + 2)
     } in
-  Option__int32::Some(value/6)
+  Option__i32::Some(value/6)
 }
 
-fn show(opt/7: Option__int32) -> string {
+fn show(opt/7: Option__i32) -> string {
   match opt/7 {
-    Option__int32::None => {
+    Option__i32::None => {
       "none"
     },
-    Option__int32::Some(x415) => {
-      let x415 = Option__int32::Some._0(opt/7) in
+    Option__i32::Some(x415) => {
+      let x415 = Option__i32::Some._0(opt/7) in
       let value/8 = x415 in
-      ("some=" + inherent#int32#int32#to_string(value/8))
+      ("some=" + inherent#i32#i32#to_string(value/8))
     },
   }
 }
@@ -67,7 +67,7 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

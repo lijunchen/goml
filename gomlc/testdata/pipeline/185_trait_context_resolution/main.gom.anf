@@ -1,4 +1,4 @@
-fn trait_impl#Put#[int32]@Target#put(self/0: Target, value/1: int32) -> string {
+fn trait_impl#Put#[i32]@Target#put(self/0: Target, value/1: i32) -> string {
   join inline_cont471(t419: string) -> string {
     let t420 = ("number:" + t419) in
     t420
@@ -12,20 +12,20 @@ fn trait_impl#Put#[string]@Target#put(self/2: Target, value/3: string) -> string
   t423
 }
 
-fn trait_impl#Convert#[int32]@Convertible#convert(self/4: Convertible) -> string {
+fn trait_impl#Convert#[i32]@Convertible#convert(self/4: Convertible) -> string {
   "converted"
 }
 
-fn trait_impl#Convert#[string]@Convertible#convert(self/5: Convertible) -> int32 {
+fn trait_impl#Convert#[string]@Convertible#convert(self/5: Convertible) -> i32 {
   7
 }
 
-fn trait_impl#Source#[int32]@Number#get(self/6: Number) -> int32 {
+fn trait_impl#Source#[i32]@Number#get(self/6: Number) -> i32 {
   let t430 = Number.value(self/6) in
   t430
 }
 
-fn trait_impl#ItemSource#Selected#item(self/9: Selected) -> int32 {
+fn trait_impl#ItemSource#Selected#item(self/9: Selected) -> i32 {
   let t433 = Selected.value(self/9) in
   t433
 }
@@ -36,29 +36,29 @@ fn main() -> unit {
       join inline_cont494(t438: string) -> unit {
         join inline_cont491(_wild412: unit) -> unit {
           join inline_cont490(text/12: string) -> unit {
-            join inline_cont489(number/13: int32) -> unit {
+            join inline_cont489(number/13: i32) -> unit {
               join inline_cont486(_wild413: unit) -> unit {
                 join inline_cont483(_wild414: unit) -> unit {
                   let t441 = Number { value: 8 } in
-                  join inline_cont481(t442: int32) -> unit {
+                  join inline_cont481(t442: i32) -> unit {
                     join inline_cont478(_wild415: unit) -> unit {
                       let t443 = Selected { value: 9 } in
-                      join inline_cont476(t444: int32) -> unit {
-                        let inline474 = trait_impl#ToString#int32#to_string(t444) in
+                      join inline_cont476(t444: i32) -> unit {
+                        let inline474 = trait_impl#ToString#i32#to_string(t444) in
                         let inline475 = @runtime(core.string_println)(inline474) in
                         ()
                       } in
-                      let inline477 = invoke__S_Selected__T_int32(t443) in
+                      let inline477 = invoke__S_Selected__T_i32(t443) in
                       jump inline_cont476(inline477)
                     } in
-                    let inline479 = trait_impl#ToString#int32#to_string(t442) in
+                    let inline479 = trait_impl#ToString#i32#to_string(t442) in
                     let inline480 = @runtime(core.string_println)(inline479) in
                     jump inline_cont478(())
                   } in
-                  let inline482 = trait_impl#Source#[int32]@Number#get(t441) in
+                  let inline482 = trait_impl#Source#[i32]@Number#get(t441) in
                   jump inline_cont481(inline482)
                 } in
-                let inline484 = trait_impl#ToString#int32#to_string(number/13) in
+                let inline484 = trait_impl#ToString#i32#to_string(number/13) in
                 let inline485 = @runtime(core.string_println)(inline484) in
                 jump inline_cont483(())
               } in
@@ -83,12 +83,12 @@ fn main() -> unit {
     jump inline_cont497(())
   } in
   let inline501 = 3 in
-  let inline502 = inherent#int32#int32#to_string(inline501) in
+  let inline502 = inherent#i32#i32#to_string(inline501) in
   let inline503 = ("number:" + inline502) in
   jump inline_cont500(inline503)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t447 = @runtime(core.int32_to_string)(self/33) in
   t447
 }
@@ -101,7 +101,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont504(value/1)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont505(t452: string) -> unit {
     let t453 = @runtime(core.string_println)(t452) in
     ()
@@ -110,13 +110,13 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont505(inline506)
 }
 
-fn read__S_Number__T_int32(source/7: Number) -> int32 {
+fn read__S_Number__T_i32(source/7: Number) -> i32 {
   let inline508 = Number.value(source/7) in
   inline508
 }
 
-fn select_item__S_Selected(source/11: Selected) -> int32 {
-  let inline510 = trait_impl#Select#[int32]@Selected#select(source/11) in
+fn select_item__S_Selected(source/11: Selected) -> i32 {
+  let inline510 = trait_impl#Select#[i32]@Selected#select(source/11) in
   inline510
 }
 
@@ -124,17 +124,17 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t464 = @runtime(core.int32_to_string)(self/154) in
   t464
 }
 
-fn invoke__S_Selected__T_int32(source/10: Selected) -> int32 {
+fn invoke__S_Selected__T_i32(source/10: Selected) -> i32 {
   let inline512 = trait_impl#ItemSource#Selected#item(source/10) in
   inline512
 }
 
-fn trait_impl#Select#[int32]@Selected#select(self/8: Selected) -> int32 {
+fn trait_impl#Select#[i32]@Selected#select(self/8: Selected) -> i32 {
   let inline514 = Selected.value(self/8) in
   inline514
 }

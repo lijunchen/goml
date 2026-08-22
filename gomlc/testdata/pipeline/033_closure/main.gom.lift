@@ -5,11 +5,11 @@ fn test() -> unit {
     pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](
       closure_env_f_0 { y_0: y/0, z_1: z/1 }
     ) in
-  let mtmp411 = println__T_string(inherent#int32#int32#to_string(f/3(2))) in
-  println__T_string(inherent#int32#int32#to_string(f/3(3)))
+  let mtmp411 = println__T_string(inherent#i32#i32#to_string(f/3(2))) in
+  println__T_string(inherent#i32#i32#to_string(f/3(3)))
 }
 
-fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
+fn call_int_id(f/4: (i32) -> i32, v/5: i32) -> i32 {
   f/4(v/5)
 }
 
@@ -30,7 +30,7 @@ fn main() -> unit {
       closure_env_no_capture_3 {}
     ) in
   let doubled/18 = no_capture/17(3) in
-  let mtmp413 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
+  let mtmp413 = println__T_string(inherent#i32#i32#to_string(doubled/18)) in
   let mtmp414 = test() in
   let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
   let point/20 = Point { x: 10, y: 20 } in
@@ -46,7 +46,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -54,7 +54,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env422: closure_env_f_0, x/2: int32) -> int32 {
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env422: closure_env_f_0, x/2: i32) -> i32 {
   let y/0 = closure_env_f_0.y_0(env422) in
   let z/1 = closure_env_f_0.z_1(env422) in
   ((x/2 * y/0) * z/1)
@@ -62,8 +62,8 @@ fn inherent#closure_env_f_0#closure_env_f_0#apply(env422: closure_env_f_0, x/2: 
 
 fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
   env423: closure_env_add_base_1,
-  x/7: int32
-) -> int32 {
+  x/7: i32
+) -> i32 {
   let base/6 = closure_env_add_base_1.base_0(env423) in
   (x/7 + base/6)
 }
@@ -71,16 +71,16 @@ fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
 fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
   env424: closure_env_printer_2,
   prefix/10: string,
-  value/11: int32
+  value/11: i32
 ) -> unit {
-  let message/12 = (prefix/10 + inherent#int32#int32#to_string(value/11)) in
+  let message/12 = (prefix/10 + inherent#i32#i32#to_string(value/11)) in
   println__T_string(message/12)
 }
 
 fn inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(
   env425: closure_env_no_capture_3,
-  z/16: int32
-) -> int32 {
+  z/16: i32
+) -> i32 {
   (z/16 * 2)
 }
 
@@ -96,15 +96,15 @@ fn inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#
     IntList::Cons(x415, x416) => {
       let x415 = IntList::Cons._0(list123/19) in
       let head/21 = x415 in
-      let mtmp417 = println__T_string(inherent#int32#int32#to_string(head/21)) in
+      let mtmp417 = println__T_string(inherent#i32#i32#to_string(head/21)) in
       let x418 = Point.x(point/20) in
       let x419 = Point.y(point/20) in
       let y/24 = x419 in
       let x/23 = x418 in
       let mtmp420 =
         println__T_string(
-          (((("Point: (" + inherent#int32#int32#to_string(x/23)) + ", ") +
-            inherent#int32#int32#to_string(y/24)) +
+          (((("Point: (" + inherent#i32#i32#to_string(x/23)) + ", ") +
+            inherent#i32#i32#to_string(y/24)) +
             ")")
         ) in
       ()

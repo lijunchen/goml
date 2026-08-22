@@ -8,17 +8,17 @@ trait Container[T: Mark] {
 }
 
 struct NumberBox {
-    value: int32,
+    value: i32,
 }
 
-impl Mark for int32 {
-  fn mark(self: int32) -> string {
+impl Mark for i32 {
+  fn mark(self: i32) -> string {
       "marked:" + self.to_string()
   }
 }
 
-impl Container[int32] for NumberBox {
-  fn value(self: NumberBox) -> int32 {
+impl Container[i32] for NumberBox {
+  fn value(self: NumberBox) -> i32 {
       self.value
   }
 }

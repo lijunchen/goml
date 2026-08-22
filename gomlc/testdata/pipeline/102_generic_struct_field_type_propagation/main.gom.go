@@ -25,7 +25,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Pair__uint8__float32 struct {
+type Pair__u8__f32 struct {
     first uint8
     second float32
 }

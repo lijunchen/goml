@@ -4,7 +4,7 @@ type Values struct {}
 
 type Ordering int32
 
-type Option__int32 struct {
+type Option__i32 struct {
     _tag int32
     _v1_0 int32
 }

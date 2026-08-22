@@ -237,7 +237,7 @@ func main0() struct{} {
     var t437 int
     var inline503 int = hashmap_len__HashMap_9Ref_4Node_6string(map__6)
     t437 = inline503
-    var inline500 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t437)
+    var inline500 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t437)
     _goml_runtime_core_string_println(inline500)
     var inline494 Option__string = _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(map__6, first__3)
     switch inline494._tag {
@@ -307,7 +307,7 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
     return t474
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t477 string = _goml_runtime_core_int_to_string(self__151)
     return t477
 }

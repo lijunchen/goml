@@ -5,8 +5,8 @@ fn flip[T](x/0: Light[T]) -> Light[T] {
     }
 }
 
-fn show_int(x/1: Light[int32]) -> string {
-    match (x/1 : Light[int32]) {
+fn show_int(x/1: Light[i32]) -> string {
+    match (x/1 : Light[i32]) {
         Light::Red => "ri",
         Light::Green => "gi",
     }
@@ -21,7 +21,7 @@ fn show_string(x/2: Light[string]) -> string {
 
 fn main() -> unit {
     (println : (string) -> unit)(
-      (show_int : (Light[int32]) -> string)((flip : (Light[int32]) -> Light[int32])(Light::Red))
+      (show_int : (Light[i32]) -> string)((flip : (Light[i32]) -> Light[i32])(Light::Red))
     );
     (println : (string) -> unit)(
       (show_string : (Light[string]) -> string)(

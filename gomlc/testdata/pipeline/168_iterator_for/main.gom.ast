@@ -1,5 +1,5 @@
 package main;
-fn countdown(start: int32) -> FnIterator[int32] {
+fn countdown(start: i32) -> FnIterator[i32] {
     let current = Ref::new(start);
     FnIterator::from_fn(
       || {
@@ -18,12 +18,12 @@ fn countdown(start: int32) -> FnIterator[int32] {
     )
 }
 
-fn counted_range(calls: Ref[int32]) -> FnIterator[int] {
+fn counted_range(calls: Ref[i32]) -> FnIterator[isize] {
     calls.set(calls.get() + 1);
     range(1, 5)
 }
 
-fn first_even(values: FnIterator[int]) -> int {
+fn first_even(values: FnIterator[isize]) -> isize {
     for value in
       values {
         if value / 2 * 2 == value {
@@ -38,7 +38,7 @@ fn first_even(values: FnIterator[int]) -> int {
 }
 
 fn main() -> unit {
-    let values: Vec[int32] = Vec::new();
+    let values: Vec[i32] = Vec::new();
     values.push(10);
     values.push(20);
     values.push(30);
@@ -55,7 +55,7 @@ fn main() -> unit {
         sum.set(sum.get() + value);
     };
     println(sum.get());
-    let pairs: Vec[(int32, string)] = Vec::new();
+    let pairs: Vec[(i32, string)] = Vec::new();
     pairs.push((1, "a"));
     pairs.push((2, "b"));
     for (number, text) in

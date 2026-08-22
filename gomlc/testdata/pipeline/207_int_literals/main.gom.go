@@ -101,12 +101,12 @@ func main0() struct{} {
     var jp434 uint8
     jp434 = 1
     var values__7 [2]uint16 = [2]uint16{10, 20}
-    var delayed__8 *ref_uint32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(0)
+    var delayed__8 *ref_uint32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__u32(0)
     var byte__9 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get("A", 0)
     var t435 int = default_integer__2 + 2
-    var t436 string = _goml_m_inherent_i_int_i_int_i_to__string(t435)
+    var t436 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t435)
     println__T_string(t436)
-    var t437 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(default_float__3)
+    var t437 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(default_float__3)
     println__T_string(t437)
     var t438 uint8 = increment(small__4)
     var t439 string
@@ -146,7 +146,7 @@ func main0() struct{} {
     var inline517 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t448)
     _goml_runtime_core_string_println(inline517)
     var t449 uint32
-    var inline515 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(delayed__8)
+    var inline515 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__u32(delayed__8)
     t449 = inline515
     var t450 string
     var inline513 string = _goml_runtime_core_uint32_to_string(t449)
@@ -171,12 +171,12 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__432 *ref_uint32_x) uint32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__u32(self__432 *ref_uint32_x) uint32 {
     var t457 uint32 = ref_get__Ref_6uint32(self__432)
     return t457
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__431 uint32) *ref_uint32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__u32(value__431 uint32) *ref_uint32_x {
     var t460 *ref_uint32_x = ref__Ref_6uint32(value__431)
     return t460
 }
@@ -193,12 +193,12 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
     var t469 string = _goml_runtime_core_int_to_string(self__32)
     return t469
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__161 float64) string {
+func _goml_m_trait__impl_i_ToString_i_f64_i_to__string(self__161 float64) string {
     var t472 string = _goml_runtime_core_float64_to_string(self__161)
     return t472
 }

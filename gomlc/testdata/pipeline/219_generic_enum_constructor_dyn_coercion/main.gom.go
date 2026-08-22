@@ -15,7 +15,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Boxed__int32 struct {
+type Boxed__i32 struct {
     _tag int32
     _v0_0 int32
 }
@@ -29,22 +29,22 @@ type dyn__Show struct {
     vtable *dyn__Show_vtable
 }
 
-func dyn__Show__wrap__Boxed__int32__show(self any) string {
+func dyn__Show__wrap__Boxed__i32__show(self any) string {
     switch v := self.(type) {
-    case Boxed__int32:
-        return _goml_m_trait__impl_i_Show_i_Boxed____int32_i_show(v)
+    case Boxed__i32:
+        return _goml_m_trait__impl_i_Show_i_Boxed____i32_i_show(v)
     default:
         panic("unexpected type")
     }
 }
 
-func dyn__Show__vtable__Boxed__int32() *dyn__Show_vtable {
+func dyn__Show__vtable__Boxed__i32() *dyn__Show_vtable {
     return &dyn__Show_vtable{
-        show: dyn__Show__wrap__Boxed__int32__show,
+        show: dyn__Show__wrap__Boxed__i32__show,
     }
 }
 
-func _goml_m_trait__impl_i_Show_i_Boxed____int32_i_show(self__0 Boxed__int32) string {
+func _goml_m_trait__impl_i_Show_i_Boxed____i32_i_show(self__0 Boxed__i32) string {
     switch self__0._tag {
     case 0:
         var x411 int32 = self__0._v0_0
@@ -57,13 +57,13 @@ func _goml_m_trait__impl_i_Show_i_Boxed____int32_i_show(self__0 Boxed__int32) st
 
 func main0() struct{} {
     var value__3 int32 = 42
-    var t421 Boxed__int32 = Boxed__int32{
+    var t421 Boxed__i32 = Boxed__i32{
         _tag: 0,
         _v0_0: value__3,
     }
     var t422 dyn__Show = dyn__Show{
         data: t421,
-        vtable: dyn__Show__vtable__Boxed__int32(),
+        vtable: dyn__Show__vtable__Boxed__i32(),
     }
     var t423 string
     var inline439 string = t422.vtable.show(t422.data)

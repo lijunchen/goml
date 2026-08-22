@@ -400,7 +400,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__185 int, other__186 int) bool {
+func _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(self__185 int, other__186 int) bool {
     var t1368 bool = self__185 == other__186
     return t1368
 }
@@ -546,7 +546,7 @@ func println__T_bool(value__1 bool) struct{} {
 func equal__T_LegacyKey(left__12 LegacyKey, right__13 LegacyKey) bool {
     var inline2393 int = left__12.value
     var inline2394 int = right__13.value
-    var inline2395 bool = _goml_m_trait__impl_i_PartialEq_i_int_i_eq(inline2393, inline2394)
+    var inline2395 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline2393, inline2394)
     return inline2395
 }
 

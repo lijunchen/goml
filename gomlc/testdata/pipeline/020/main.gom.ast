@@ -1,7 +1,7 @@
 package main;
 struct Point {
-    x: int32,
-    y: int32,
+    x: i32,
+    y: i32,
 }
 
 struct Wrapper[T] {
@@ -14,7 +14,7 @@ enum Shape[T] {
     Origin
 }
 
-fn bounce_int(shape: Shape[int32]) -> Shape[int32] {
+fn bounce_int(shape: Shape[i32]) -> Shape[i32] {
     match shape {
         Dot(point) => Dot(point),
         Wrapped(inner) => Wrapped(inner),
@@ -26,14 +26,14 @@ fn wrap_unit(value: Wrapper[unit]) -> Shape[unit] {
     Wrapped(value)
 }
 
-fn pick(flag: bool, point: Point, wrapper: Wrapper[int32]) -> Shape[int32] {
+fn pick(flag: bool, point: Point, wrapper: Wrapper[i32]) -> Shape[i32] {
     match flag {
         true => Dot(point),
         false => Wrapped(wrapper),
     }
 }
 
-fn describe[T](shape: Shape[T]) -> int32 {
+fn describe[T](shape: Shape[T]) -> i32 {
     match shape {
         Dot(_) => 1,
         Wrapped(_) => 2,
@@ -49,7 +49,7 @@ fn point32_to_string(point: Point) -> string {
     with_y + " }"
 }
 
-fn wrapper_int32_to_string(wrapper: Wrapper[int32]) -> string {
+fn wrapper_int32_to_string(wrapper: Wrapper[i32]) -> string {
     let Wrapper { value: value } = wrapper;
     let prefix = "Wrapper[int32] { value: " + value.to_string();
     prefix + " }"
@@ -61,7 +61,7 @@ fn wrapper_unit_to_string(wrapper: Wrapper[unit]) -> string {
     prefix + " }"
 }
 
-fn shape_int32_to_string(shape: Shape[int32]) -> string {
+fn shape_int32_to_string(shape: Shape[i32]) -> string {
     match shape {
         Dot(point) =>
           {

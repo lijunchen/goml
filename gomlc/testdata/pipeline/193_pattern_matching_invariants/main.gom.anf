@@ -1,14 +1,14 @@
-fn absurd(value/0: Never) -> int32 {
+fn absurd(value/0: Never) -> i32 {
   let t425 = @intrinsic(compiler.missing)("") in
   t425
 }
 
-fn absurd_loop(value/1: Loop) -> int32 {
+fn absurd_loop(value/1: Loop) -> i32 {
   let t428 = @intrinsic(compiler.missing)("") in
   t428
 }
 
-fn maybe_never(value/2: MaybeNever) -> int32 {
+fn maybe_never(value/2: MaybeNever) -> i32 {
   match value/2 {
     Tag_0 => {
       0
@@ -16,7 +16,7 @@ fn maybe_never(value/2: MaybeNever) -> int32 {
   }
 }
 
-fn empty_never_vec(value/3: Vec[Never]) -> int32 {
+fn empty_never_vec(value/3: Vec[Never]) -> i32 {
   let t437 = @intrinsic(vec.len)(value/3) in
   let t438 = (t437 == 0) in
   if t438 {
@@ -27,7 +27,7 @@ fn empty_never_vec(value/3: Vec[Never]) -> int32 {
   }
 }
 
-fn sequence_coverage(value/4: Vec[bool]) -> int32 {
+fn sequence_coverage(value/4: Vec[bool]) -> i32 {
   let t444 = @intrinsic(vec.len)(value/4) in
   let t445 = (t444 == 0) in
   if t445 {
@@ -83,7 +83,7 @@ fn sequence_coverage(value/4: Vec[bool]) -> int32 {
   }
 }
 
-fn unwrap(value/5: Single) -> int32 {
+fn unwrap(value/5: Single) -> i32 {
   match value/5 {
     Tag_0 => {
       let x417 = Single::Only._0(value/5) in
@@ -92,7 +92,7 @@ fn unwrap(value/5: Single) -> int32 {
   }
 }
 
-fn decide(flag/7: bool) -> int32 {
+fn decide(flag/7: bool) -> i32 {
   match flag/7 {
     true => {
       1
@@ -103,7 +103,7 @@ fn decide(flag/7: bool) -> int32 {
   }
 }
 
-fn signed_zero(value/8: float64) -> string {
+fn signed_zero(value/8: f64) -> string {
   match value/8 {
     -0 => {
       "zero"
@@ -115,9 +115,9 @@ fn signed_zero(value/8: float64) -> string {
 }
 
 fn main() -> unit {
-  join inline_cont519(t492: int32) -> unit {
+  join inline_cont519(t492: i32) -> unit {
     join inline_cont516(_wild420: unit) -> unit {
-      join inline_cont514(t493: int32) -> unit {
+      join inline_cont514(t493: i32) -> unit {
         join inline_cont511(_wild421: unit) -> unit {
           join inline_cont509(t494: string) -> unit {
             let inline507 = trait_impl#ToString#string#to_string(t494) in
@@ -134,7 +134,7 @@ fn main() -> unit {
             },
           }
         } in
-        let inline512 = trait_impl#ToString#int32#to_string(t493) in
+        let inline512 = trait_impl#ToString#i32#to_string(t493) in
         let inline513 = @runtime(core.string_println)(inline512) in
         jump inline_cont511(())
       } in
@@ -148,7 +148,7 @@ fn main() -> unit {
         },
       }
     } in
-    let inline517 = trait_impl#ToString#int32#to_string(t492) in
+    let inline517 = trait_impl#ToString#i32#to_string(t492) in
     let inline518 = @runtime(core.string_println)(inline517) in
     jump inline_cont516(())
   } in
@@ -156,7 +156,7 @@ fn main() -> unit {
   jump inline_cont519(inline521)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont523(t496: string) -> unit {
     let t497 = @runtime(core.string_println)(t496) in
     ()
@@ -173,7 +173,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont525(value/1)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t503 = @runtime(core.int32_to_string)(self/154) in
   t503
 }

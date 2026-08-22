@@ -121,8 +121,8 @@ type Tuple2_5int32_4bool struct {
     _1 bool
 }
 
-type FnIterator__int struct {
-    next_fn func() Option__int
+type FnIterator__isize struct {
+    next_fn func() Option__isize
 }
 
 type closure_env_main_0 struct {}
@@ -134,7 +134,7 @@ type closure_env_goml_builtin_range_1 struct {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -198,16 +198,16 @@ func main0() struct{} {
             close(p0)
             return struct{}{}
         }(channel__9)
-        var t432 FnIterator__int
+        var t432 FnIterator__isize
         var inline547 int = 0
         var inline548 int = 3
-        var inline549 FnIterator__int = __goml_builtin_range(inline547, inline548)
+        var inline549 FnIterator__isize = __goml_builtin_range(inline547, inline548)
         t432 = inline549
         var t433 closure_env_main_0 = closure_env_main_0{}
         var t434 func(int, int) int = func(p0 int, p1 int) int {
             return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t433, p0, p1)
         }
-        var total__13 int = _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(t432, 0, t434)
+        var total__13 int = _goml_m_std_p_iter_p_fold____A__isize____I__FnIterator_l_isize_r_____T__isize(t432, 0, t434)
         var t435 string
         var inline545 string = _goml_runtime_core_bool_to_string(same__5)
         t435 = inline545
@@ -267,16 +267,16 @@ func main0() struct{} {
             close(p0)
             return struct{}{}
         }(channel__9)
-        var t432 FnIterator__int
+        var t432 FnIterator__isize
         var inline547 int = 0
         var inline548 int = 3
-        var inline549 FnIterator__int = __goml_builtin_range(inline547, inline548)
+        var inline549 FnIterator__isize = __goml_builtin_range(inline547, inline548)
         t432 = inline549
         var t433 closure_env_main_0 = closure_env_main_0{}
         var t434 func(int, int) int = func(p0 int, p1 int) int {
             return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t433, p0, p1)
         }
-        var total__13 int = _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(t432, 0, t434)
+        var total__13 int = _goml_m_std_p_iter_p_fold____A__isize____I__FnIterator_l_isize_r_____T__isize(t432, 0, t434)
         var t435 string
         var inline545 string = _goml_runtime_core_bool_to_string(same__5)
         t435 = inline545
@@ -301,13 +301,13 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_std_p_iter_p_fold____A__int____I__FnIterator_l_int_r_____T__int(iterator__48 FnIterator__int, initial__49 int, combine__50 func(int, int) int) int {
+func _goml_m_std_p_iter_p_fold____A__isize____I__FnIterator_l_isize_r_____T__isize(iterator__48 FnIterator__isize, initial__49 int, combine__50 func(int, int) int) int {
     var accumulator__51 int = initial__49
     Loop_loop_expr459:
     for {
-        var mtmp43 Option__int
-        var inline561 func() Option__int = iterator__48.next_fn
-        var inline562 Option__int = inline561()
+        var mtmp43 Option__isize
+        var inline561 func() Option__isize = iterator__48.next_fn
+        var inline562 Option__isize = inline561()
         mtmp43 = inline562
         switch mtmp43._tag {
         case 0:
@@ -357,16 +357,16 @@ func string_is_char_boundary(value__15 string, index__16 int) bool {
     }
 }
 
-func __goml_builtin_range(start__503 int, end__504 int) FnIterator__int {
+func __goml_builtin_range(start__503 int, end__504 int) FnIterator__isize {
     var current__505 *ref_int_x = ref__Ref_3int(start__503)
     var t499 closure_env_goml_builtin_range_1 = closure_env_goml_builtin_range_1{
         current_0: current__505,
         end_1: end__504,
     }
-    var t500 func() Option__int = func() Option__int {
+    var t500 func() Option__isize = func() Option__isize {
         return _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(t499)
     }
-    var inline576 FnIterator__int = FnIterator__int{
+    var inline576 FnIterator__isize = FnIterator__isize{
         next_fn: t500,
     }
     return inline576
@@ -381,7 +381,7 @@ func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(en
     return t527
 }
 
-func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(env419 closure_env_goml_builtin_range_1) Option__int {
+func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(env419 closure_env_goml_builtin_range_1) Option__isize {
     var current__505 *ref_int_x = env419.current_0
     var end__504 int = env419.end_1
     var value__506 int = ref_get__Ref_3int(current__505)
@@ -389,13 +389,13 @@ func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_
     if t532 {
         var t533 int = value__506 + 1
         ref_set__Ref_3int(current__505, t533)
-        var t534 Option__int = Option__int{
+        var t534 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: value__506,
         }
         return t534
     } else {
-        return Option__int{
+        return Option__isize{
             _tag: 0,
         }
     }

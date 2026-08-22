@@ -1,21 +1,21 @@
 package main
 file main.gom
   struct Pair {
-      left: int32,
-      right: int32,
+      left: i32,
+      right: i32,
   }
 
   enum Maybe {
       None,
-      Some(int32)
+      Some(i32)
   }
 
   enum Either {
-      Left(int32),
-      Right(int32)
+      Left(i32),
+      Right(i32)
   }
 
-  fn unwrap_either(local/1/0: Either) -> int32 {
+  fn unwrap_either(local/1/0: Either) -> i32 {
       match value/0 {
           local/1/1 @ (ctor(def/1/2::v0)(local/1/2) | ctor(def/1/2::v1)(local/1/2)) =>
             shared/2 +
@@ -33,7 +33,7 @@ file main.gom
       }
   }
 
-  fn describe(local/1/4: Maybe, local/1/5: Vec[int32], local/1/6: Slice[int32]) -> string {
+  fn describe(local/1/4: Maybe, local/1/5: Vec[i32], local/1/6: Slice[i32]) -> string {
       let local/1/9 =
         match value/4 {
             ctor(def/1/1::v1)(local/1/7) =>

@@ -50,10 +50,10 @@ func _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(self__4 Shape) string {
         var t429 string
         var inline456 int32 = x414.x
         var inline457 int32 = x414.y
-        var inline460 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline456)
+        var inline460 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline456)
         var inline461 string = "Point(" + inline460
         var inline462 string = inline461 + ", "
-        var inline463 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline457)
+        var inline463 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline457)
         var inline464 string = inline462 + inline463
         var inline465 string = inline464 + ")"
         t429 = inline465
@@ -98,7 +98,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t444 string = _goml_runtime_core_int32_to_string(self__33)
     return t444
 }

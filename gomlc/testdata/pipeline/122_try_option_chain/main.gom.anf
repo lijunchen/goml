@@ -1,30 +1,30 @@
-fn maybe_seed(flag/0: bool) -> Option__int32 {
+fn maybe_seed(flag/0: bool) -> Option__i32 {
   if flag/0 {
-    let t422 = Option__int32::Some(3) in
+    let t422 = Option__i32::Some(3) in
     t422
   } else {
     Tag_0
   }
 }
 
-fn maybe_double(value/1: int32) -> Option__int32 {
+fn maybe_double(value/1: i32) -> Option__i32 {
   let t427 = (value/1 > 0) in
   if t427 {
     let t428 = (value/1 * 2) in
-    let t429 = Option__int32::Some(t428) in
+    let t429 = Option__i32::Some(t428) in
     t429
   } else {
     Tag_0
   }
 }
 
-fn maybe_total(flag/2: bool) -> Option__int32 {
-  join inline_cont461(mtmp411: Option__int32) -> Option__int32 {
-    join k432(jp433: int32) -> Option__int32 {
-      join inline_cont457(mtmp413: Option__int32) -> Option__int32 {
-        join k434(jp435: int32) -> Option__int32 {
+fn maybe_total(flag/2: bool) -> Option__i32 {
+  join inline_cont461(mtmp411: Option__i32) -> Option__i32 {
+    join k432(jp433: i32) -> Option__i32 {
+      join inline_cont457(mtmp413: Option__i32) -> Option__i32 {
+        join k434(jp435: i32) -> Option__i32 {
           let t436 = (jp433 + jp435) in
-          let t437 = Option__int32::Some(t436) in
+          let t437 = Option__i32::Some(t436) in
           t437
         } in
         match mtmp413 {
@@ -32,7 +32,7 @@ fn maybe_total(flag/2: bool) -> Option__int32 {
             Tag_0
           },
           Tag_1 => {
-            let x414 = Option__int32::Some._0(mtmp413) in
+            let x414 = Option__i32::Some._0(mtmp413) in
             jump k434(x414)
           },
         }
@@ -40,7 +40,7 @@ fn maybe_total(flag/2: bool) -> Option__int32 {
       let inline458 = (jp433 > 0) in
       if inline458 {
         let inline459 = (jp433 * 2) in
-        let inline460 = Option__int32::Some(inline459) in
+        let inline460 = Option__i32::Some(inline459) in
         jump inline_cont457(inline460)
       } else {
         jump inline_cont457(Tag_0)
@@ -51,26 +51,26 @@ fn maybe_total(flag/2: bool) -> Option__int32 {
         Tag_0
       },
       Tag_1 => {
-        let x412 = Option__int32::Some._0(mtmp411) in
+        let x412 = Option__i32::Some._0(mtmp411) in
         jump k432(x412)
       },
     }
   } in
   if flag/2 {
-    let inline462 = Option__int32::Some(3) in
+    let inline462 = Option__i32::Some(3) in
     jump inline_cont461(inline462)
   } else {
     jump inline_cont461(Tag_0)
   }
 }
 
-fn show(opt/5: Option__int32) -> string {
+fn show(opt/5: Option__i32) -> string {
   match opt/5 {
     Tag_0 => {
       "none"
     },
     Tag_1 => {
-      let x415 = Option__int32::Some._0(opt/5) in
+      let x415 = Option__i32::Some._0(opt/5) in
       join inline_cont463(t442: string) -> string {
         let t443 = ("some=" + t442) in
         t443
@@ -96,8 +96,8 @@ fn main() -> unit {
           jump inline_cont468("none")
         },
         Tag_1 => {
-          let inline469 = Option__int32::Some._0(t447) in
-          let inline471 = inherent#int32#int32#to_string(inline469) in
+          let inline469 = Option__i32::Some._0(t447) in
+          let inline471 = inherent#i32#i32#to_string(inline469) in
           let inline472 = ("some=" + inline471) in
           jump inline_cont468(inline472)
         },
@@ -112,15 +112,15 @@ fn main() -> unit {
       jump inline_cont476("none")
     },
     Tag_1 => {
-      let inline477 = Option__int32::Some._0(t445) in
-      let inline479 = inherent#int32#int32#to_string(inline477) in
+      let inline477 = Option__i32::Some._0(t445) in
+      let inline479 = inherent#i32#i32#to_string(inline477) in
       let inline480 = ("some=" + inline479) in
       jump inline_cont476(inline480)
     },
   }
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t451 = @runtime(core.int32_to_string)(self/33) in
   t451
 }

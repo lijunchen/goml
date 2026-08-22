@@ -19,12 +19,12 @@ type Boxed struct {
 
 type Ordering int32
 
-func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
+func _goml_m_trait__impl_i_Display_i_i32_i_show(self__0 int32) string {
     var inline584 string = _goml_runtime_core_int32_to_string(self__0)
     return inline584
 }
 
-func _goml_m_trait__impl_i_Debug_i_int32_i_show(self__1 int32) string {
+func _goml_m_trait__impl_i_Debug_i_i32_i_show(self__1 int32) string {
     var t420 string
     var inline586 string = _goml_runtime_core_int32_to_string(self__1)
     t420 = inline586
@@ -33,18 +33,18 @@ func _goml_m_trait__impl_i_Debug_i_int32_i_show(self__1 int32) string {
     return t422
 }
 
-func _goml_m_trait__impl_i_MyHash_i_int32_i_hash(self__4 int32) int32 {
+func _goml_m_trait__impl_i_MyHash_i_i32_i_hash(self__4 int32) int32 {
     var t428 int32 = self__4 * 16777619
     var t429 int32 = t428 + 216613626
     return t429
 }
 
-func _goml_m_trait__impl_i_Add_i_int32_i_add(self__5 int32, other__6 int32) int32 {
+func _goml_m_trait__impl_i_Add_i_i32_i_add(self__5 int32, other__6 int32) int32 {
     var t432 int32 = self__5 + other__6
     return t432
 }
 
-func _goml_m_trait__impl_i_Inspect_i_int32_i_inspect(self__9 int32) string {
+func _goml_m_trait__impl_i_Inspect_i_i32_i_inspect(self__9 int32) string {
     var t438 string
     var inline588 string = _goml_runtime_core_int32_to_string(self__9)
     t438 = inline588
@@ -110,8 +110,8 @@ func main0() struct{} {
     var second__50 int32 = 2
     var third__51 int32 = 3
     var t486 string
-    var inline633 int32 = combine_scaled__T_int32(left__46, right__47, 2)
-    var inline634 string = report_pair__Q_int32__T_int32(tag__45, left__46, right__47, inline633)
+    var inline633 int32 = combine_scaled__T_i32(left__46, right__47, 2)
+    var inline634 string = report_pair__Q_i32__T_i32(tag__45, left__46, right__47, inline633)
     t486 = inline634
     var inline630 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t486)
     _goml_runtime_core_string_println(inline630)
@@ -131,14 +131,14 @@ func main0() struct{} {
     var inline624 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t490)
     _goml_runtime_core_string_println(inline624)
     var t491 string
-    var inline613 int32 = _goml_m_trait__impl_i_Add_i_int32_i_add(first__49, second__50)
-    var inline614 int32 = _goml_m_trait__impl_i_Add_i_int32_i_add(inline613, third__51)
-    var inline615 string = tag_text__Q_int32(sum_tag__48)
-    var inline616 int32 = _goml_m_trait__impl_i_MyHash_i_int32_i_hash(inline614)
+    var inline613 int32 = _goml_m_trait__impl_i_Add_i_i32_i_add(first__49, second__50)
+    var inline614 int32 = _goml_m_trait__impl_i_Add_i_i32_i_add(inline613, third__51)
+    var inline615 string = tag_text__Q_i32(sum_tag__48)
+    var inline616 int32 = _goml_m_trait__impl_i_MyHash_i_i32_i_hash(inline614)
     var inline617 string = inline615 + " "
-    var inline618 string = _goml_m_trait__impl_i_Inspect_i_int32_i_inspect(inline614)
+    var inline618 string = _goml_m_trait__impl_i_Inspect_i_i32_i_inspect(inline614)
     var inline619 string = inline617 + inline618
-    var inline620 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline616)
+    var inline620 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline616)
     var inline621 string = " @" + inline620
     var inline622 string = inline619 + inline621
     t491 = inline622
@@ -164,7 +164,7 @@ func main0() struct{} {
     var inline603 string = inline601 + " "
     var inline604 string = _goml_m_trait__impl_i_Inspect_i_Boxed_i_inspect(inline600)
     var inline605 string = inline603 + inline604
-    var inline606 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline602)
+    var inline606 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline602)
     var inline607 string = " @" + inline606
     var inline608 string = inline605 + inline607
     t496 = inline608
@@ -173,7 +173,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t499 string = _goml_runtime_core_int32_to_string(self__33)
     return t499
 }
@@ -182,7 +182,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func combine_scaled__T_int32(a__23 int32, b__24 int32, factor__25 int32) int32 {
+func combine_scaled__T_i32(a__23 int32, b__24 int32, factor__25 int32) int32 {
     var t531 int32
     var inline720 int32 = a__23 + b__24
     t531 = inline720
@@ -190,21 +190,21 @@ func combine_scaled__T_int32(a__23 int32, b__24 int32, factor__25 int32) int32 {
     return inline718
 }
 
-func report_pair__Q_int32__T_int32(tag__26 int32, a__27 int32, b__28 int32, combined__29 int32) string {
+func report_pair__Q_i32__T_i32(tag__26 int32, a__27 int32, b__28 int32, combined__29 int32) string {
     var same__30 bool
     var inline739 bool = a__27 == b__28
     same__30 = inline739
     var header__31 string
-    var inline733 string = _goml_m_trait__impl_i_Debug_i_int32_i_show(tag__26)
+    var inline733 string = _goml_m_trait__impl_i_Debug_i_i32_i_show(tag__26)
     var inline734 string = inline733 + "#"
-    var inline735 int32 = _goml_m_trait__impl_i_MyHash_i_int32_i_hash(tag__26)
-    var inline736 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline735)
+    var inline735 int32 = _goml_m_trait__impl_i_MyHash_i_i32_i_hash(tag__26)
+    var inline736 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline735)
     var inline737 string = inline734 + inline736
     header__31 = inline737
     var repr__32 string
-    var inline728 string = _goml_m_trait__impl_i_Debug_i_int32_i_show(combined__29)
+    var inline728 string = _goml_m_trait__impl_i_Debug_i_i32_i_show(combined__29)
     var inline729 string = inline728 + " / "
-    var inline730 string = _goml_m_trait__impl_i_Display_i_int32_i_show(combined__29)
+    var inline730 string = _goml_m_trait__impl_i_Display_i_i32_i_show(combined__29)
     var inline731 string = inline729 + inline730
     repr__32 = inline731
     var h__33 int32
@@ -256,7 +256,7 @@ func report_pair__Q_Boxed__T_Boxed(tag__26 Boxed, a__27 Boxed, b__28 Boxed, comb
     var inline763 string = _goml_m_trait__impl_i_Debug_i_Boxed_i_show(tag__26)
     var inline764 string = inline763 + "#"
     var inline765 int32 = _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(tag__26)
-    var inline766 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline765)
+    var inline766 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline765)
     var inline767 string = inline764 + inline766
     header__31 = inline767
     var repr__32 string
@@ -289,9 +289,9 @@ func report_pair__Q_Boxed__T_Boxed(tag__26 Boxed, a__27 Boxed, b__28 Boxed, comb
     return t556
 }
 
-func tag_text__Q_int32(tag__22 int32) string {
+func tag_text__Q_i32(tag__22 int32) string {
     var t559 string
-    var inline778 string = _goml_m_inherent_i_int32_i_int32_i_to__string(tag__22)
+    var inline778 string = _goml_m_inherent_i_i32_i_i32_i_to__string(tag__22)
     var inline779 string = "i32(" + inline778
     var inline780 string = inline779 + ")"
     t559 = inline780
@@ -310,7 +310,7 @@ func tag_text__Q_int32(tag__22 int32) string {
 func tag_text__Q_Boxed(tag__22 Boxed) string {
     var t566 string
     var inline789 int32 = tag__22.value
-    var inline790 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline789)
+    var inline790 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline789)
     var inline791 string = "Boxed{value=" + inline790
     var inline792 string = inline791 + "}"
     t566 = inline792

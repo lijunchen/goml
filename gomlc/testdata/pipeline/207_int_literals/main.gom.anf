@@ -1,17 +1,17 @@
-fn increment(value/0: uint8) -> uint8 {
+fn increment(value/0: u8) -> u8 {
   let t424 = (value/0 + 1) in
   t424
 }
 
-fn one_float32() -> float32 {
+fn one_float32() -> f32 {
   1
 }
 
-fn two_int16() -> int16 {
+fn two_int16() -> i16 {
   2
 }
 
-fn read_uint32(value/1: Ref[uint32]) -> uint32 {
+fn read_uint32(value/1: Ref[u32]) -> u32 {
   let inline500 = @intrinsic(ref.get)(value/1) in
   inline500
 }
@@ -21,14 +21,14 @@ fn main() -> unit {
   let default_float/3 = 0.5 in
   let small/4 = 41 in
   let inferred/5 = [small/4, 2] in
-  join k433(jp434: uint8) -> unit {
+  join k433(jp434: u8) -> unit {
     let values/7 = [10, 20] in
-    let delayed/8 = inherent#Ref#Ref[T]#new__T_uint32(0) in
+    let delayed/8 = inherent#Ref#Ref[T]#new__T_u32(0) in
     let byte/9 = inherent#string#string#byte_get("A", 0) in
     let t435 = (default_integer/2 + 2) in
-    let t436 = inherent#int#int#to_string(t435) in
+    let t436 = inherent#isize#isize#to_string(t435) in
     let _wild411 = println__T_string(t436) in
-    let t437 = trait_impl#ToString#float64#to_string(default_float/3) in
+    let t437 = trait_impl#ToString#f64#to_string(default_float/3) in
     let _wild412 = println__T_string(t437) in
     let t438 = increment(small/4) in
     join inline_cont546(t439: string) -> unit {
@@ -41,13 +41,13 @@ fn main() -> unit {
                 let t443 = @intrinsic(array.get)(values/7, 1) in
                 join inline_cont531(t444: string) -> unit {
                   join inline_cont528(_wild416: unit) -> unit {
-                    join inline_cont527(t445: float32) -> unit {
+                    join inline_cont527(t445: f32) -> unit {
                       join inline_cont525(t446: string) -> unit {
                         join inline_cont522(_wild417: unit) -> unit {
-                          join inline_cont521(t447: int16) -> unit {
+                          join inline_cont521(t447: i16) -> unit {
                             join inline_cont519(t448: string) -> unit {
                               join inline_cont516(_wild418: unit) -> unit {
-                                join inline_cont514(t449: uint32) -> unit {
+                                join inline_cont514(t449: u32) -> unit {
                                   join inline_cont512(t450: string) -> unit {
                                     join inline_cont509(_wild419: unit) -> unit {
                                       let t451 = (byte/9 == 65) in
@@ -84,7 +84,7 @@ fn main() -> unit {
                                   let inline513 = @runtime(core.uint32_to_string)(t449) in
                                   jump inline_cont512(inline513)
                                 } in
-                                let inline515 = inherent#Ref#Ref[T]#get__T_uint32(delayed/8) in
+                                let inline515 = inherent#Ref#Ref[T]#get__T_u32(delayed/8) in
                                 jump inline_cont514(inline515)
                               } in
                               let inline517 = trait_impl#ToString#string#to_string(t448) in
@@ -136,17 +136,17 @@ fn main() -> unit {
   jump k433(1)
 }
 
-fn inherent#Ref#Ref[T]#get__T_uint32(self/432: Ref[uint32]) -> uint32 {
+fn inherent#Ref#Ref[T]#get__T_u32(self/432: Ref[u32]) -> u32 {
   let t457 = @intrinsic(ref.get)(self/432) in
   t457
 }
 
-fn inherent#Ref#Ref[T]#new__T_uint32(value/431: uint32) -> Ref[uint32] {
+fn inherent#Ref#Ref[T]#new__T_u32(value/431: u32) -> Ref[u32] {
   let t460 = @intrinsic(ref.new)(value/431) in
   t460
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   let t463 = @runtime(core.string_byte_get)(self/39, index/40) in
   t463
 }
@@ -159,37 +159,37 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont548(value/1)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   let t469 = @runtime(core.int_to_string)(self/32) in
   t469
 }
 
-fn trait_impl#ToString#float64#to_string(self/161: float64) -> string {
+fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
   let t472 = @runtime(core.float64_to_string)(self/161) in
   t472
 }
 
-fn trait_impl#ToString#uint8#to_string(self/156: uint8) -> string {
+fn trait_impl#ToString#u8#to_string(self/156: u8) -> string {
   let t475 = @runtime(core.uint8_to_string)(self/156) in
   t475
 }
 
-fn trait_impl#ToString#uint16#to_string(self/157: uint16) -> string {
+fn trait_impl#ToString#u16#to_string(self/157: u16) -> string {
   let t478 = @runtime(core.uint16_to_string)(self/157) in
   t478
 }
 
-fn trait_impl#ToString#float32#to_string(self/160: float32) -> string {
+fn trait_impl#ToString#f32#to_string(self/160: f32) -> string {
   let t481 = @runtime(core.float32_to_string)(self/160) in
   t481
 }
 
-fn trait_impl#ToString#int16#to_string(self/153: int16) -> string {
+fn trait_impl#ToString#i16#to_string(self/153: i16) -> string {
   let t484 = @runtime(core.int16_to_string)(self/153) in
   t484
 }
 
-fn trait_impl#ToString#uint32#to_string(self/158: uint32) -> string {
+fn trait_impl#ToString#u32#to_string(self/158: u32) -> string {
   let t487 = @runtime(core.uint32_to_string)(self/158) in
   t487
 }
@@ -203,12 +203,12 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#uint32#eq(self/199: uint32, other/200: uint32) -> bool {
+fn trait_impl#PartialEq#u32#eq(self/199: u32, other/200: u32) -> bool {
   let t495 = (self/199 == other/200) in
   t495
 }
 
-fn trait_impl#Hash#uint32#hash(self/218: uint32) -> uint64 {
+fn trait_impl#Hash#u32#hash(self/218: u32) -> u64 {
   let t498 = @runtime(core.uint32_hash)(self/218) in
   t498
 }

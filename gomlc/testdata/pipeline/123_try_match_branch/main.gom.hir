@@ -3,10 +3,10 @@ file main.gom
   enum Choice {
       Left(bool),
       Right(bool),
-      Keep(int32)
+      Keep(i32)
   }
 
-  fn read_left(local/1/0: bool) -> Result[int32, string] {
+  fn read_left(local/1/0: bool) -> Result[i32, string] {
       if ok/0 {
           Result::Ok(10)
       } else {
@@ -14,7 +14,7 @@ file main.gom
       }
   }
 
-  fn read_right(local/1/1: bool) -> Result[int32, string] {
+  fn read_right(local/1/1: bool) -> Result[i32, string] {
       if ok/1 {
           Result::Ok(20)
       } else {
@@ -22,7 +22,7 @@ file main.gom
       }
   }
 
-  fn choose(local/1/2: Choice) -> Result[int32, string] {
+  fn choose(local/1/2: Choice) -> Result[i32, string] {
       let local/1/6 =
         match choice/2 {
             ctor(def/1/0::v0)(local/1/3) => def/1/1(ok/3)?,
@@ -32,7 +32,7 @@ file main.gom
       Result::Ok(value/6)
   }
 
-  fn show(local/1/7: Result[int32, string]) -> string {
+  fn show(local/1/7: Result[i32, string]) -> string {
       match res/7 {
           Result::Ok(local/1/8) => "ok " + value/8.to_string(),
           Result::Err(local/1/9) => "err " + err/9,

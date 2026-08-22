@@ -2,10 +2,10 @@ fn trait_impl#Display#Point#show(self/0: Point) -> string {
   "Point"
 }
 
-fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
+fn trait_impl#Display#Maybe__i32#show(self/1: Maybe__i32) -> string {
   match self/1 {
     Tag_0 => {
-      let x411 = Maybe__int32::Just._0(self/1) in
+      let x411 = Maybe__i32::Just._0(self/1) in
       join inline_cont441(t421: string) -> string {
         let t422 = ("Just(" + t421) in
         let t423 = (t422 + ")") in
@@ -20,9 +20,9 @@ fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
   }
 }
 
-fn make_maybe(flag/3: bool) -> Maybe__int32 {
+fn make_maybe(flag/3: bool) -> Maybe__i32 {
   if flag/3 {
-    let t428 = Maybe__int32::Just(42) in
+    let t428 = Maybe__i32::Just(42) in
     t428
   } else {
     Tag_1
@@ -30,8 +30,8 @@ fn make_maybe(flag/3: bool) -> Maybe__int32 {
 }
 
 fn main() -> unit {
-  join inline_cont468(some_number/5: Maybe__int32) -> unit {
-    join inline_cont465(none_number/6: Maybe__int32) -> unit {
+  join inline_cont468(some_number/5: Maybe__i32) -> unit {
+    join inline_cont465(none_number/6: Maybe__i32) -> unit {
       join inline_cont464(t430: string) -> unit {
         join inline_cont461(mtmp412: unit) -> unit {
           join inline_cont455(t431: string) -> unit {
@@ -43,8 +43,8 @@ fn main() -> unit {
               } in
               match none_number/6 {
                 Tag_0 => {
-                  let inline447 = Maybe__int32::Just._0(none_number/6) in
-                  let inline449 = inherent#int32#int32#to_string(inline447) in
+                  let inline447 = Maybe__i32::Just._0(none_number/6) in
+                  let inline449 = inherent#i32#i32#to_string(inline447) in
                   let inline450 = ("Just(" + inline449) in
                   let inline451 = (inline450 + ")") in
                   jump inline_cont446(inline451)
@@ -60,8 +60,8 @@ fn main() -> unit {
           } in
           match some_number/5 {
             Tag_0 => {
-              let inline456 = Maybe__int32::Just._0(some_number/5) in
-              let inline458 = inherent#int32#int32#to_string(inline456) in
+              let inline456 = Maybe__i32::Just._0(some_number/5) in
+              let inline458 = inherent#i32#i32#to_string(inline456) in
               let inline459 = ("Just(" + inline458) in
               let inline460 = (inline459 + ")") in
               jump inline_cont455(inline460)
@@ -79,7 +79,7 @@ fn main() -> unit {
     } in
     let inline466 = false in
     if inline466 {
-      let inline467 = Maybe__int32::Just(42) in
+      let inline467 = Maybe__i32::Just(42) in
       jump inline_cont465(inline467)
     } else {
       jump inline_cont465(Tag_1)
@@ -87,14 +87,14 @@ fn main() -> unit {
   } in
   let inline469 = true in
   if inline469 {
-    let inline470 = Maybe__int32::Just(42) in
+    let inline470 = Maybe__i32::Just(42) in
     jump inline_cont468(inline470)
   } else {
     jump inline_cont468(Tag_1)
   }
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t435 = @runtime(core.int32_to_string)(self/33) in
   t435
 }

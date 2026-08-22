@@ -13,7 +13,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Box__int struct {
+type Box__isize struct {
     value int
 }
 
@@ -74,7 +74,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline467)
     var rendered__13 string
     var inline463 int = 5
-    var inline464 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline463)
+    var inline464 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline463)
     var inline465 string = "value:" + inline464
     rendered__13 = inline465
     var inline460 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(rendered__13)
@@ -86,7 +86,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t449 string = _goml_runtime_core_int_to_string(self__151)
     return t449
 }

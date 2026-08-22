@@ -6,8 +6,8 @@ file main.gom
 
   struct Target {}
 
-  impl Put[int32] for Target {
-    fn put(local/1/0: Target, local/1/1: int32) -> string {
+  impl Put[i32] for Target {
+    fn put(local/1/0: Target, local/1/1: i32) -> string {
         "number:" + value/1.to_string()
     }
   }
@@ -25,7 +25,7 @@ file main.gom
 
   struct Convertible {}
 
-  impl Convert[int32] for Convertible {
+  impl Convert[i32] for Convertible {
     type Output = string;
     fn convert(local/1/4: Convertible) -> string {
         "converted"
@@ -33,8 +33,8 @@ file main.gom
   }
 
   impl Convert[string] for Convertible {
-    type Output = int32;
-    fn convert(local/1/5: Convertible) -> int32 {
+    type Output = i32;
+    fn convert(local/1/5: Convertible) -> i32 {
         7
     }
   }
@@ -45,12 +45,12 @@ file main.gom
   }
 
   struct Number {
-      value: int32,
+      value: i32,
   }
 
-  impl Source[int32] for Number {
-    type Item = int32;
-    fn get(local/1/6: Number) -> int32 {
+  impl Source[i32] for Number {
+    type Item = i32;
+    fn get(local/1/6: Number) -> i32 {
         self/6.value
     }
   }
@@ -75,12 +75,12 @@ file main.gom
   }
 
   struct Selected {
-      value: int32,
+      value: i32,
   }
 
   impl ItemSource for Selected {
-    type Item = int32;
-    fn item(local/1/9: Selected) -> int32 {
+    type Item = i32;
+    fn item(local/1/9: Selected) -> i32 {
         self/9.value
     }
   }
@@ -97,7 +97,7 @@ file main.gom
       println(Target {}.put(3));
       println(Target {}.put("goml"));
       let local/1/12: string = Convertible {}.convert();
-      let local/1/13: int32 = Convertible {}.convert();
+      let local/1/13: i32 = Convertible {}.convert();
       println(text/12);
       println(number/13);
       println(def/1/11(Number { value: 8 }));

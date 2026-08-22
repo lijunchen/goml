@@ -37,13 +37,13 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-func once_cell_new__OnceCell__int() *OnceCell__int {
-    var cell *OnceCell__int = &OnceCell__int{}
+func once_cell_new__OnceCell__isize() *OnceCell__isize {
+    var cell *OnceCell__isize = &OnceCell__isize{}
     cell.cond = _goml_sync.NewCond(&cell.mutex)
     return cell
 }
 
-func once_cell_get_or_init__OnceCell__int(cell *OnceCell__int, init func() int) int {
+func once_cell_get_or_init__OnceCell__isize(cell *OnceCell__isize, init func() int) int {
     cell.mutex.Lock()
     for {
         if cell.state == 2 {
@@ -90,7 +90,7 @@ type closure_env_main_3 struct {
     results_0 chan int
 }
 
-type OnceCell__int struct {
+type OnceCell__isize struct {
     mutex _goml_sync.Mutex
     cond *_goml_sync.Cond
     state int
@@ -101,13 +101,13 @@ type OnceCell__int struct {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
 
-var VALUE *OnceCell__int = func() *OnceCell__int {
-    var cell *OnceCell__int = once_cell_new__OnceCell__int()
+var VALUE *OnceCell__isize = func() *OnceCell__isize {
+    var cell *OnceCell__isize = once_cell_new__OnceCell__isize()
     cell.name = "VALUE"
     return cell
 }()
@@ -133,7 +133,7 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t420)
     }
     go t421()
-    var t422 Option__int
+    var t422 Option__isize
     var inline487 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
@@ -146,13 +146,13 @@ func main0() struct{} {
     var inline488 int = inline487._0
     var inline489 bool = inline487._1
     if inline489 {
-        var inline492 Option__int = Option__int{
+        var inline492 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: inline488,
         }
         t422 = inline492
     } else {
-        t422 = Option__int{
+        t422 = Option__isize{
             _tag: 0,
         }
     }
@@ -167,7 +167,7 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var t423 Option__int
+    var t423 Option__isize
     var inline476 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
@@ -180,13 +180,13 @@ func main0() struct{} {
     var inline477 int = inline476._0
     var inline478 bool = inline476._1
     if inline478 {
-        var inline481 Option__int = Option__int{
+        var inline481 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: inline477,
         }
         t423 = inline481
     } else {
-        t423 = Option__int{
+        t423 = Option__isize{
             _tag: 0,
         }
     }
@@ -225,7 +225,7 @@ func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(en
         return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t455)
     }
     var t457 int
-    var inline500 int = once_cell_get_or_init__OnceCell__int(VALUE, t456)
+    var inline500 int = once_cell_get_or_init__OnceCell__isize(VALUE, t456)
     t457 = inline500
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
@@ -245,7 +245,7 @@ func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(en
         return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t462)
     }
     var t464 int
-    var inline504 int = once_cell_get_or_init__OnceCell__int(VALUE, t463)
+    var inline504 int = once_cell_get_or_init__OnceCell__isize(VALUE, t463)
     t464 = inline504
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1

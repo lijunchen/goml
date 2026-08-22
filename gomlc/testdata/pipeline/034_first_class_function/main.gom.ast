@@ -1,17 +1,17 @@
 package main;
-fn double(x: int32) -> int32 {
+fn double(x: i32) -> i32 {
     x * 2
 }
 
-fn increment(x: int32) -> int32 {
+fn increment(x: i32) -> i32 {
     x + 1
 }
 
-fn apply_once(f: (int32) -> int32, value: int32) -> int32 {
+fn apply_once(f: (i32) -> i32, value: i32) -> i32 {
     f(value)
 }
 
-fn compose(f: (int32) -> int32, g: (int32) -> int32, value: int32) -> int32 {
+fn compose(f: (i32) -> i32, g: (i32) -> i32, value: i32) -> i32 {
     f(g(value))
 }
 
@@ -19,12 +19,11 @@ fn main() {
     let local = double;
     let first = apply_once(local, 4);
     let composed = compose(double, increment, first);
-    let closure_apply = |value: int32| apply_once(increment, value);
+    let closure_apply = |value: i32| apply_once(increment, value);
     let closure_result = closure_apply(composed);
-    let global_invoker =
-      |func_to_call: (int32) -> int32, value: int32| apply_once(func_to_call, value);
+    let global_invoker = |func_to_call: (i32) -> i32, value: i32| apply_once(func_to_call, value);
     let invoked_with_global = global_invoker(double, 3);
-    let composer_closure = |value: int32| compose(double, increment, value);
+    let composer_closure = |value: i32| compose(double, increment, value);
     let composed_by_closure = composer_closure(5);
     let printer = println;
     let _ = printer(composed.to_string());

@@ -10,8 +10,8 @@ fn flip(point/0: Point) -> Point {
   t444
 }
 
-fn wrap_int(x/3: int32) -> Wrapper__int32 {
-  let t447 = Wrapper__int32 { value: x/3 } in
+fn wrap_int(x/3: i32) -> Wrapper__i32 {
+  let t447 = Wrapper__i32 { value: x/3 } in
   t447
 }
 
@@ -23,12 +23,12 @@ fn x_add_1(p/4: Point) -> Point {
   t451
 }
 
-fn get_x(p/7: Point) -> int32 {
+fn get_x(p/7: Point) -> i32 {
   let x418 = Point.x(p/7) in
   x418
 }
 
-fn get_y(p/10: Point) -> int32 {
+fn get_y(p/10: Point) -> i32 {
   let x422 = Point.y(p/10) in
   x422
 }
@@ -113,7 +113,7 @@ fn main() -> unit {
   let swapped/26 = flip(t490) in
   let t491 = point32_to_string2(swapped/26) in
   let mtmp436 = println__T_string(t491) in
-  join inline_cont564(boxed/27: Wrapper__int32) -> unit {
+  join inline_cont564(boxed/27: Wrapper__i32) -> unit {
     let a/29 = x_add_1(start/25) in
     join inline_cont552(t492: string) -> unit {
       join inline_cont549(mtmp437: unit) -> unit {
@@ -126,10 +126,10 @@ fn main() -> unit {
             } in
             let inline524 = Point.x(a/30) in
             let inline525 = Point.y(a/30) in
-            let inline528 = inherent#int32#int32#to_string(inline524) in
+            let inline528 = inherent#i32#i32#to_string(inline524) in
             let inline529 = ("Point { x: " + inline528) in
             let inline530 = (inline529 + ", y: ") in
-            let inline531 = inherent#int32#int32#to_string(inline525) in
+            let inline531 = inherent#i32#i32#to_string(inline525) in
             let inline532 = (inline530 + inline531) in
             let inline533 = (inline532 + "}") in
             jump inline_cont522(inline533)
@@ -151,20 +151,20 @@ fn main() -> unit {
     } in
     let inline554 = Point.x(a/29) in
     let inline555 = Point.y(a/29) in
-    let inline558 = inherent#int32#int32#to_string(inline554) in
+    let inline558 = inherent#i32#i32#to_string(inline554) in
     let inline559 = ("Point { x: " + inline558) in
     let inline560 = (inline559 + ", y: ") in
-    let inline561 = inherent#int32#int32#to_string(inline555) in
+    let inline561 = inherent#i32#i32#to_string(inline555) in
     let inline562 = (inline560 + inline561) in
     let inline563 = (inline562 + "}") in
     jump inline_cont552(inline563)
   } in
   let inline565 = 3 in
-  let inline566 = Wrapper__int32 { value: inline565 } in
+  let inline566 = Wrapper__i32 { value: inline565 } in
   jump inline_cont564(inline566)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t497 = @runtime(core.int32_to_string)(self/33) in
   t497
 }

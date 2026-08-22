@@ -1,4 +1,4 @@
-fn show_scalar(value/0: uint32) -> unit {
+fn show_scalar(value/0: u32) -> unit {
   {
     let mtmp411 = char_from_uint32(value/0) in
     match mtmp411 {
@@ -10,7 +10,7 @@ fn show_scalar(value/0: uint32) -> unit {
           let x412 = Option__char::Some._0(mtmp411) in
           {
             let result/1 = x412 in
-            println__T_uint32((result/1 as uint32))
+            println__T_u32((result/1 as u32))
           }
         }
       },
@@ -46,7 +46,7 @@ fn main() -> unit {
   }
 }
 
-fn char_from_uint32(value/2: uint32) -> Option__char {
+fn char_from_uint32(value/2: u32) -> Option__char {
   __goml_builtin_char_from_uint32(value/2)
 }
 
@@ -54,15 +54,15 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_uint32(value/1: uint32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#uint32#to_string(value/1))
+fn println__T_u32(value/1: u32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u32#to_string(value/1))
 }
 
 fn inherent#char#char#to_string(self/34: char) -> string {
   char_to_string(self/34)
 }
 
-fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
   if utf8_valid_scalar(value/30) {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
@@ -87,12 +87,12 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#uint32#to_string(self/158: uint32) -> string {
+fn trait_impl#ToString#u32#to_string(self/158: u32) -> string {
   @runtime(core.uint32_to_string)(self/158)
 }
 
 fn char_to_string(value/29: char) -> string {
-  if utf8_valid_scalar((value/29 as uint32)) {
+  if utf8_valid_scalar((value/29 as u32)) {
       {
         @runtime(core.char_to_string)(value/29)
       }
@@ -106,7 +106,7 @@ fn char_to_string(value/29: char) -> string {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   if (value/4 <= 1114111) {
       (!if (value/4 >= 55296) {
           (value/4 <= 57343)

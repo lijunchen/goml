@@ -4,17 +4,17 @@ fn increment(value/0: UserId) -> UserId {
     (result/1 : UserId)
 }
 
-fn unwrap(value/2: UserId) -> int32 {
-    let UserId { _0: inner/3: int32 } = (value/2 : UserId);
-    (inner/3 : int32)
+fn unwrap(value/2: UserId) -> i32 {
+    let UserId { _0: inner/3: i32 } = (value/2 : UserId);
+    (inner/3 : i32)
 }
 
 fn main() -> unit {
-    let raw/4: int32 = 40;
-    let id/5: UserId = UserId { _0: (raw/4 : int32) };
-    (println : (int32) -> unit)((id/5 : UserId)._0);
-    (println : (int32) -> unit)(
-      (unwrap : (UserId) -> int32)((increment : (UserId) -> UserId)((id/5 : UserId)))
+    let raw/4: i32 = 40;
+    let id/5: UserId = UserId { _0: (raw/4 : i32) };
+    (println : (i32) -> unit)((id/5 : UserId)._0);
+    (println : (i32) -> unit)(
+      (unwrap : (UserId) -> i32)((increment : (UserId) -> UserId)((id/5 : UserId)))
     );
     let boxed/6: Box[string] = Box { _0: "wrapped" };
     let Box { _0: text/7: string } = (boxed/6 : Box[string]);

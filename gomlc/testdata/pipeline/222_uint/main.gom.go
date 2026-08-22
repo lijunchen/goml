@@ -127,7 +127,7 @@ func main0() struct{} {
     var inline507 uint = left__3 + right__4
     var inline508 uint = inline507 * 2
     result__5 = inline508
-    var inline504 string = _goml_m_trait__impl_i_ToString_i_uint_i_to__string(result__5)
+    var inline504 string = _goml_m_trait__impl_i_ToString_i_usize_i_to__string(result__5)
     _goml_runtime_core_string_println(inline504)
     var t428 string
     var inline502 string = _goml_runtime_core_uint_to_string(result__5)
@@ -151,7 +151,7 @@ func main0() struct{} {
     var t431_rhs uint = 15
     var t431 uint = result__5 & t431_rhs
     var t432 uint64 = uint64(uint(t431))
-    var inline489 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(t432)
+    var inline489 string = _goml_m_trait__impl_i_ToString_i_u64_i_to__string(t432)
     _goml_runtime_core_string_println(inline489)
     var values__6 *hashmap_uint_string_x
     var inline487 *hashmap_uint_string_x = hashmap_new__HashMap_4uint_6string()
@@ -178,7 +178,7 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__451 uint) string {
+func _goml_m_trait__impl_i_ToString_i_usize_i_to__string(self__451 uint) string {
     var t444 string = _goml_runtime_core_uint_to_string(self__451)
     return t444
 }
@@ -192,7 +192,7 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
     return t463
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__159 uint64) string {
+func _goml_m_trait__impl_i_ToString_i_u64_i_to__string(self__159 uint64) string {
     var t466 string = _goml_runtime_core_uint64_to_string(self__159)
     return t466
 }

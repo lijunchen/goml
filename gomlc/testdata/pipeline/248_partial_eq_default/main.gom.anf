@@ -27,7 +27,7 @@ fn trait_impl#PartialEq#Settings#eq(self/0: Settings, other/1: Settings) -> bool
 
 fn trait_impl#Default#Settings#default() -> Settings {
   join inline_cont608(t452: bool) -> Settings {
-    join inline_cont607(t453: int) -> Settings {
+    join inline_cont607(t453: isize) -> Settings {
       join inline_cont606(t454: string) -> Settings {
         let t455 = Settings { enabled: t452, retries: t453, label: t454 } in
         t455
@@ -60,7 +60,7 @@ fn trait_impl#Debug#Settings#debug(self/2: Settings) -> string {
       let inline610 = trait_impl#ToString#string#to_string(x414) in
       jump inline_cont609(inline610)
     } in
-    let inline612 = trait_impl#ToString#int#to_string(x413) in
+    let inline612 = trait_impl#ToString#isize#to_string(x413) in
     jump inline_cont611(inline612)
   } in
   let inline614 = trait_impl#ToString#bool#to_string(x412) in
@@ -92,7 +92,7 @@ fn trait_impl#Debug#State#debug(self/7: State) -> string {
         let t483 = (t482 + ")") in
         t483
       } in
-      let inline616 = trait_impl#ToString#int#to_string(x415) in
+      let inline616 = trait_impl#ToString#isize#to_string(x415) in
       jump inline_cont615(inline616)
     },
   }
@@ -100,7 +100,7 @@ fn trait_impl#Debug#State#debug(self/7: State) -> string {
 
 fn trait_impl#Default#Message#default() -> Message {
   join inline_cont618(t486: string) -> Message {
-    join inline_cont617(t487: int) -> Message {
+    join inline_cont617(t487: isize) -> Message {
       let t488 = Message::Data(t486, t487) in
       t488
     } in
@@ -122,7 +122,7 @@ fn trait_impl#Debug#Message#debug(self/9: Message) -> string {
           let t498 = (t497 + ")") in
           t498
         } in
-        let inline620 = trait_impl#ToString#int#to_string(x417) in
+        let inline620 = trait_impl#ToString#isize#to_string(x417) in
         jump inline_cont619(inline620)
       } in
       let inline622 = trait_impl#ToString#string#to_string(x416) in
@@ -136,7 +136,7 @@ fn trait_impl#Debug#Message#debug(self/9: Message) -> string {
 
 fn trait_impl#Default#Event#default() -> Event {
   join inline_cont624(t501: string) -> Event {
-    join inline_cont623(t502: int) -> Event {
+    join inline_cont623(t502: isize) -> Event {
       let t503 = Event::Data(t501, t502) in
       t503
     } in
@@ -160,7 +160,7 @@ fn trait_impl#Debug#Event#debug(self/12: Event) -> string {
           let t515 = (t514 + " }") in
           t515
         } in
-        let inline626 = trait_impl#ToString#int#to_string(x419) in
+        let inline626 = trait_impl#ToString#isize#to_string(x419) in
         jump inline_cont625(inline626)
       } in
       let inline628 = trait_impl#ToString#string#to_string(x418) in
@@ -183,14 +183,14 @@ fn main() -> unit {
   let empty/16 = trait_impl#Default#Empty#default() in
   let t521 = trait_impl#Debug#Empty#debug(empty/16) in
   let _wild422 = println__T_string(t521) in
-  let pair/17 = trait_impl#Default#PairDefaults__int#default() in
-  let t522 = PairDefaults__int.first(pair/17) in
-  let t523 = PairDefaults__int.second(pair/17) in
+  let pair/17 = trait_impl#Default#PairDefaults__isize#default() in
+  let t522 = PairDefaults__isize.first(pair/17) in
+  let t523 = PairDefaults__isize.second(pair/17) in
   let t524 = (t522 + t523) in
-  let t525 = inherent#int#int#to_string(t524) in
+  let t525 = inherent#isize#isize#to_string(t524) in
   let _wild423 = println__T_string(t525) in
-  let t526 = PairDefaults__int.nested(pair/17) in
-  let t527 = inherent#Option#Option[T]#is_none__T_int(t526) in
+  let t526 = PairDefaults__isize.nested(pair/17) in
+  let t527 = inherent#Option#Option[T]#is_none__T_isize(t526) in
   join inline_cont673(t528: string) -> unit {
     let _wild424 = println__T_string(t528) in
     join inline_cont672(state/18: State) -> unit {
@@ -205,7 +205,7 @@ fn main() -> unit {
                   join inline_cont641(lazy/21: Lazy__NoDefault) -> unit {
                     join k532(jp533: string) -> unit {
                       join inline_cont638(_wild429: unit) -> unit {
-                        join inline_cont634(selected/22: Selected__int) -> unit {
+                        join inline_cont634(selected/22: Selected__isize) -> unit {
                           join k534(jp535: string) -> unit {
                             let inline632 = trait_impl#ToString#string#to_string(jp535) in
                             let inline633 = @runtime(core.string_println)(inline632) in
@@ -213,8 +213,8 @@ fn main() -> unit {
                           } in
                           match selected/22 {
                             Tag_0 => {
-                              let x430 = Selected__int::Values._0(selected/22) in
-                              let x431 = Selected__int::Values._1(selected/22) in
+                              let x430 = Selected__isize::Values._0(selected/22) in
+                              let x431 = Selected__isize::Values._1(selected/22) in
                               let t537 = (x430 + x431) in
                               let inline630 = @runtime(core.int_to_string)(t537) in
                               jump k534(inline630)
@@ -224,9 +224,9 @@ fn main() -> unit {
                             },
                           }
                         } in
-                        let inline635 = trait_impl#Default#int#default() in
-                        let inline636 = trait_impl#Default#int#default() in
-                        let inline637 = Selected__int::Values(inline635, inline636) in
+                        let inline635 = trait_impl#Default#isize#default() in
+                        let inline636 = trait_impl#Default#isize#default() in
+                        let inline637 = Selected__isize::Values(inline635, inline636) in
                         jump inline_cont634(inline637)
                       } in
                       let inline639 = trait_impl#ToString#string#to_string(jp533) in
@@ -257,7 +257,7 @@ fn main() -> unit {
                   let inline652 = (inline650 + inline651) in
                   let inline653 = (inline652 + ", ") in
                   let inline654 = (inline653 + "count: ") in
-                  let inline655 = trait_impl#Debug#int#debug(inline647) in
+                  let inline655 = trait_impl#Debug#isize#debug(inline647) in
                   let inline656 = (inline654 + inline655) in
                   let inline657 = (inline656 + " }") in
                   jump inline_cont645(inline657)
@@ -268,7 +268,7 @@ fn main() -> unit {
               }
             } in
             let inline659 = trait_impl#Default#string#default() in
-            let inline660 = trait_impl#Default#int#default() in
+            let inline660 = trait_impl#Default#isize#default() in
             let inline661 = Event::Data(inline659, inline660) in
             jump inline_cont658(inline661)
           } in
@@ -277,7 +277,7 @@ fn main() -> unit {
           jump inline_cont662(())
         } in
         let inline666 = trait_impl#Default#string#default() in
-        let inline667 = trait_impl#Default#int#default() in
+        let inline667 = trait_impl#Default#isize#default() in
         let inline668 = Message::Data(inline666, inline667) in
         jump inline_cont665(inline668)
       } in
@@ -296,7 +296,7 @@ fn trait_impl#PartialEq#bool#eq(self/179: bool, other/180: bool) -> bool {
   t541
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   let t544 = (self/185 == other/186) in
   t544
 }
@@ -310,7 +310,7 @@ fn trait_impl#Default#bool#default() -> bool {
   false
 }
 
-fn trait_impl#Default#int#default() -> int {
+fn trait_impl#Default#isize#default() -> isize {
   0
 }
 
@@ -323,7 +323,7 @@ fn trait_impl#Debug#bool#debug(self/163: bool) -> string {
   inline676
 }
 
-fn trait_impl#Debug#int#debug(self/166: int) -> string {
+fn trait_impl#Debug#isize#debug(self/166: isize) -> string {
   let inline678 = @runtime(core.int_to_string)(self/166) in
   inline678
 }
@@ -345,11 +345,11 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   t568
 }
 
-fn trait_impl#Default#PairDefaults__int#default() -> PairDefaults__int {
-  join inline_cont683(t571: int) -> PairDefaults__int {
-    join inline_cont682(t572: int) -> PairDefaults__int {
-      join inline_cont681(t573: Option__int) -> PairDefaults__int {
-        let t574 = PairDefaults__int { first: t571, second: t572, nested: t573 } in
+fn trait_impl#Default#PairDefaults__isize#default() -> PairDefaults__isize {
+  join inline_cont683(t571: isize) -> PairDefaults__isize {
+    join inline_cont682(t572: isize) -> PairDefaults__isize {
+      join inline_cont681(t573: Option__isize) -> PairDefaults__isize {
+        let t574 = PairDefaults__isize { first: t571, second: t572, nested: t573 } in
         t574
       } in
       jump inline_cont681(Tag_0)
@@ -359,12 +359,12 @@ fn trait_impl#Default#PairDefaults__int#default() -> PairDefaults__int {
   jump inline_cont683(0)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   let t577 = @runtime(core.int_to_string)(self/32) in
   t577
 }
 
-fn inherent#Option#Option[T]#is_none__T_int(self/466: Option__int) -> bool {
+fn inherent#Option#Option[T]#is_none__T_isize(self/466: Option__isize) -> bool {
   join inline_cont684(t580: bool) -> bool {
     let t581 = (!t580) in
     t581
@@ -383,10 +383,10 @@ fn trait_impl#Default#Lazy__NoDefault#default() -> Lazy__NoDefault {
   Tag_0
 }
 
-fn trait_impl#Default#Selected__int#default() -> Selected__int {
-  join inline_cont686(t586: int) -> Selected__int {
-    join inline_cont685(t587: int) -> Selected__int {
-      let t588 = Selected__int::Values(t586, t587) in
+fn trait_impl#Default#Selected__isize#default() -> Selected__isize {
+  join inline_cont686(t586: isize) -> Selected__isize {
+    join inline_cont685(t587: isize) -> Selected__isize {
+      let t588 = Selected__isize::Values(t586, t587) in
       t588
     } in
     jump inline_cont685(0)
@@ -394,7 +394,7 @@ fn trait_impl#Default#Selected__int#default() -> Selected__int {
   jump inline_cont686(0)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t591 = @runtime(core.int_to_string)(self/151) in
   t591
 }
@@ -403,11 +403,11 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#Default#Option__int#default() -> Option__int {
+fn trait_impl#Default#Option__isize#default() -> Option__isize {
   Tag_0
 }
 
-fn inherent#Option#Option[T]#is_some__T_int(self/465: Option__int) -> bool {
+fn inherent#Option#Option[T]#is_some__T_isize(self/465: Option__isize) -> bool {
   match self/465 {
     Tag_0 => {
       false

@@ -9,7 +9,7 @@ fn main() -> unit {
         let valid/0 = x412 in
         {
           let _wild414 = println__T_string(trait_impl#ToString#bool#to_string(valid/0)) in
-          let _wild415 = println__T_string(trait_impl#ToString#float64#to_string(value/1)) in
+          let _wild415 = println__T_string(trait_impl#ToString#f64#to_string(value/1)) in
           let mtmp416 = @runtime(core.string_parse_float32)("3.14") in
           {
             let x417 = mtmp416.0 in
@@ -21,8 +21,7 @@ fn main() -> unit {
                 {
                   let _wild419 =
                     println__T_string(trait_impl#ToString#bool#to_string(rounded_valid/2)) in
-                  let _wild420 =
-                    println__T_string(trait_impl#ToString#float64#to_string(rounded/3)) in
+                  let _wild420 = println__T_string(trait_impl#ToString#f64#to_string(rounded/3)) in
                   let mtmp421 = @runtime(core.string_parse_float64)("not-a-number") in
                   {
                     let x422 = mtmp421.0 in
@@ -34,7 +33,7 @@ fn main() -> unit {
                         {
                           let _wild424 =
                             println__T_string(trait_impl#ToString#bool#to_string(invalid/4)) in
-                          println__T_string(trait_impl#ToString#float64#to_string(fallback/5))
+                          println__T_string(trait_impl#ToString#f64#to_string(fallback/5))
                         }
                       }
                     }
@@ -57,7 +56,7 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn trait_impl#ToString#float64#to_string(self/161: float64) -> string {
+fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
   @runtime(core.float64_to_string)(self/161)
 }
 

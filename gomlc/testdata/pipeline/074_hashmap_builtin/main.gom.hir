@@ -2,16 +2,16 @@ package main
 file main.gom
   #[derive(Hash, PartialEq, Eq)]
   struct Point {
-      x: int32,
-      y: int32,
+      x: i32,
+      y: i32,
   }
 
   impl Hash for Point {
-    fn hash(local/1/0: Point) -> uint64 {
+    fn hash(local/1/0: Point) -> u64 {
         {
-            let local/1/1 = 0.to_uint64() + 14695981039346656037;
-            let local/1/2 = h/1 * 0.to_uint64() + 1099511628211 + Hash::hash(self/0.x);
-            let local/1/3 = h/2 * 0.to_uint64() + 1099511628211 + Hash::hash(self/0.y);
+            let local/1/1 = 0.to_u64() + 14695981039346656037;
+            let local/1/2 = h/1 * 0.to_u64() + 1099511628211 + Hash::hash(self/0.x);
+            let local/1/3 = h/2 * 0.to_u64() + 1099511628211 + Hash::hash(self/0.y);
             h/3
         }
     }
@@ -23,35 +23,34 @@ file main.gom
     }
   }
 
-  impl Eq for Point where int32: Eq {}
+  impl Eq for Point where i32: Eq {}
 
   #[derive(Hash, PartialEq, Eq)]
   enum Key {
       A,
-      B(int32),
+      B(i32),
       P(Point)
   }
 
   impl Hash for Key {
-    fn hash(local/1/6: Key) -> uint64 {
+    fn hash(local/1/6: Key) -> u64 {
         match self/6 {
             ctor(def/1/4::v0) =>
               {
-                  let local/1/7 = 0.to_uint64() + 14695981039346656037 + 1;
+                  let local/1/7 = 0.to_u64() + 14695981039346656037 + 1;
                   h/7
               },
             ctor(def/1/4::v1)(local/1/8) =>
               {
-                  let local/1/9 = 0.to_uint64() + 14695981039346656037 + 2;
-                  let local/1/10 =
-                    h/9 * 0.to_uint64() + 1099511628211 + Hash::hash(#derive0_field/8);
+                  let local/1/9 = 0.to_u64() + 14695981039346656037 + 2;
+                  let local/1/10 = h/9 * 0.to_u64() + 1099511628211 + Hash::hash(#derive0_field/8);
                   h/10
               },
             ctor(def/1/4::v2)(local/1/11) =>
               {
-                  let local/1/12 = 0.to_uint64() + 14695981039346656037 + 3;
+                  let local/1/12 = 0.to_u64() + 14695981039346656037 + 3;
                   let local/1/13 =
-                    h/12 * 0.to_uint64() + 1099511628211 + Hash::hash(#derive1_field/11);
+                    h/12 * 0.to_u64() + 1099511628211 + Hash::hash(#derive1_field/11);
                   h/13
               },
         }
@@ -71,9 +70,9 @@ file main.gom
     }
   }
 
-  impl Eq for Key where int32: Eq, Point: Eq {}
+  impl Eq for Key where i32: Eq, Point: Eq {}
 
-  fn print_opt_int(local/1/20: Option[int32]) -> unit {
+  fn print_opt_int(local/1/20: Option[i32]) -> unit {
       match x/20 {
           Option::Some(local/1/21) => println(v/21),
           Option::None => println("none"),

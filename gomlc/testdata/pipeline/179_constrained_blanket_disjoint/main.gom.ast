@@ -11,8 +11,8 @@ struct Box[T] {
     value: T,
 }
 
-impl Mark for int32 {
-  fn mark(self: int32) -> string {
+impl Mark for i32 {
+  fn mark(self: i32) -> string {
       self.to_string()
   }
 }
@@ -31,7 +31,7 @@ impl Label for Box[string] {
 
 fn main() -> unit {
     println(Box { value: "text" }.label());
-    let value: Box[int32] = Box { value: 7 };
+    let value: Box[i32] = Box { value: 7 };
     println(value.label());
 }
 

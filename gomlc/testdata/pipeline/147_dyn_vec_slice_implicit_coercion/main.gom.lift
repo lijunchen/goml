@@ -1,5 +1,5 @@
-fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  inherent#int32#int32#to_string(self/0)
+fn trait_impl#Display#i32#show(self/0: i32) -> string {
+  inherent#i32#i32#to_string(self/0)
 }
 
 fn render(x/1: dyn Display) -> string {
@@ -10,8 +10,8 @@ fn main() -> unit {
   let v/2 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
   let first/3 = 10 in
   let second/4 = 20 in
-  let _wild411 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(first/3)) in
-  let _wild412 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(second/4)) in
+  let _wild411 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{i32}(first/3)) in
+  let _wild412 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{i32}(second/4)) in
   let s/5 = inherent#Vec#Vec[T]#slice__T_dynDisplay(v/2, 0, 2) in
   let _wild413 = println__T_string(render(@intrinsic(slice.get)(s/5, 0))) in
   let t/6 = inherent#Slice#Slice[T]#sub__T_dynDisplay(s/5, 1, 2) in
@@ -19,7 +19,7 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -36,8 +36,8 @@ fn inherent#Vec#Vec[T]#push__T_dynDisplay(
 
 fn inherent#Vec#Vec[T]#slice__T_dynDisplay(
   self/311: Vec[dyn Display],
-  start/312: int,
-  end/313: int
+  start/312: isize,
+  end/313: isize
 ) -> Slice[dyn Display] {
   @intrinsic(slice.new)(self/311, start/312, end/313)
 }
@@ -48,8 +48,8 @@ fn println__T_string(value/1: string) -> unit {
 
 fn inherent#Slice#Slice[T]#sub__T_dynDisplay(
   self/408: Slice[dyn Display],
-  start/409: int,
-  end/410: int
+  start/409: isize,
+  end/410: isize
 ) -> Slice[dyn Display] {
   @intrinsic(slice.sub)(self/408, start/409, end/410)
 }

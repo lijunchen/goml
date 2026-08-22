@@ -5,7 +5,7 @@ impl RenderValue for Prefix {
 }
 
 fn render_generic[T](renderer/2: T) -> string where T: RenderValue {
-    (RenderValue::render : (T, int) -> string)((renderer/2 : T), 11)
+    (RenderValue::render : (T, isize) -> string)((renderer/2 : T), 11)
 }
 
 fn main() -> unit {
@@ -15,6 +15,6 @@ fn main() -> unit {
     let generic/4: string = (render_generic : (Prefix) -> string)(Prefix { value: "generic:" });
     (println : (string) -> unit)((generic/4 : string));
     let ufcs/5: string =
-      (RenderValue::render : (Prefix, int) -> string)(Prefix { value: "ufcs:" }, 12);
+      (RenderValue::render : (Prefix, isize) -> string)(Prefix { value: "ufcs:" }, 12);
     (println : (string) -> unit)((ufcs/5 : string));
 }

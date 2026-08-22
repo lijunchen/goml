@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn bump(local/1/0: Ref[int32], local/1/1: bool) -> Result[int32, string] {
+  fn bump(local/1/0: Ref[i32], local/1/1: bool) -> Result[i32, string] {
       counter/0.set(counter/0.get() + 1);
       if ok/1 {
           Result::Ok(counter/0.get())
@@ -9,12 +9,12 @@ file main.gom
       }
   }
 
-  fn use_try(local/1/2: Ref[int32], local/1/3: bool) -> Result[int32, string] {
+  fn use_try(local/1/2: Ref[i32], local/1/3: bool) -> Result[i32, string] {
       let local/1/4 = def/1/0(counter/2, ok/3)?;
       Result::Ok(value/4 + counter/2.get())
   }
 
-  fn show(local/1/5: Result[int32, string]) -> string {
+  fn show(local/1/5: Result[i32, string]) -> string {
       match res/5 {
           Result::Ok(local/1/6) => "ok " + value/6.to_string(),
           Result::Err(local/1/7) => "err " + err/7,

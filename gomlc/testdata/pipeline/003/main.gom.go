@@ -38,7 +38,7 @@ func main0() struct{} {
     var inline440 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline439)
     _goml_runtime_core_string_print(inline440)
     var inline435 int = 123
-    var inline436 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline435)
+    var inline436 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline435)
     _goml_runtime_core_string_print(inline436)
     return struct{}{}
 }
@@ -53,7 +53,7 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__148 bool) string {
     return t430
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t433 string = _goml_runtime_core_int_to_string(self__151)
     return t433
 }

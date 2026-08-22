@@ -1,5 +1,5 @@
-fn trait_impl#Show#int32#show(self/0: int32) -> string {
-  inherent#int32#int32#to_string(self/0)
+fn trait_impl#Show#i32#show(self/0: i32) -> string {
+  inherent#i32#i32#to_string(self/0)
 }
 
 fn trait_impl#Show#Wrap#show(self/1: Wrap) -> string {
@@ -9,14 +9,14 @@ fn trait_impl#Show#Wrap#show(self/1: Wrap) -> string {
 fn main() -> unit {
   let values/2 = inherent#Vec#Vec[T]#new__T_dynShow() in
   let value/3 = 10 in
-  let _wild411 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{int32}(value/3)) in
+  let _wild411 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{i32}(value/3)) in
   let _wild412 =
     inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{Wrap}(Wrap { value: "ok" })) in
   let _wild413 = println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 0))) in
   println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 1)))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

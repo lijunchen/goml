@@ -37,7 +37,7 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn inherent#char#char#to_string(self/34: char) -> string {
-  let inline452 = (self/34 as uint32) in
+  let inline452 = (self/34 as u32) in
   let inline453 = utf8_valid_scalar(inline452) in
   if inline453 {
     let inline454 = @runtime(core.char_to_string)(self/34) in
@@ -53,7 +53,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 }
 
 fn char_to_string(value/29: char) -> string {
-  let t429 = (value/29 as uint32) in
+  let t429 = (value/29 as u32) in
   join inline_cont456(t430: bool) -> string {
     if t430 {
       let t431 = @runtime(core.char_to_string)(value/29) in
@@ -81,7 +81,7 @@ fn char_to_string(value/29: char) -> string {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   let t436 = (value/4 <= 1114111) in
   if t436 {
     let t440 = (value/4 >= 55296) in

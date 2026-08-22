@@ -1,16 +1,16 @@
-fn trait_impl#ToString#(int,int)#to_string(self/0: (int, int)) -> string {
+fn trait_impl#ToString#(isize,isize)#to_string(self/0: (isize, isize)) -> string {
   "(?, ?)"
 }
 
 fn main() -> unit {
   let x/1 = 123 in
-  let mtmp411 = println__T_string(trait_impl#ToString#int#to_string(x/1)) in
+  let mtmp411 = println__T_string(trait_impl#ToString#isize#to_string(x/1)) in
   {
     let x/2 = true in
     let mtmp412 = println__T_string(trait_impl#ToString#bool#to_string(x/2)) in
     {
       let x/3 = (3, 4) in
-      let mtmp413 = println__T_string(trait_impl#ToString#(int,int)#to_string(x/3)) in
+      let mtmp413 = println__T_string(trait_impl#ToString#(isize,isize)#to_string(x/3)) in
       {
         ()
       }
@@ -22,7 +22,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 

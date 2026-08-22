@@ -13,7 +13,7 @@ impl[T] PartialEq for Wrapper[T] {
 impl[T] Eq for Wrapper[T] {}
 
 impl[T] Hash for Wrapper[T] {
-  fn hash(self/3: Wrapper[T]) -> uint64 {
+  fn hash(self/3: Wrapper[T]) -> u64 {
       7
   }
 }
@@ -53,16 +53,16 @@ impl[T, Marker] PartialEq for Generic[T, Marker] where Wrapper[T]: PartialEq {
 impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {}
 
 impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
-  fn hash(self/9: Generic[T, Marker]) -> uint64 {
+  fn hash(self/9: Generic[T, Marker]) -> u64 {
       {
-          let h/10: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037;
-          let h/11: uint64 =
-            (h/10 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-              (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).first);
-          let h/12: uint64 =
-            (h/11 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-              (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).second);
-          (h/12 : uint64)
+          let h/10: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037;
+          let h/11: u64 =
+            (h/10 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+              (Hash::hash : (Wrapper[T]) -> u64)((self/9 : Generic[T, Marker]).first);
+          let h/12: u64 =
+            (h/11 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+              (Hash::hash : (Wrapper[T]) -> u64)((self/9 : Generic[T, Marker]).second);
+          (h/12 : u64)
       }
   }
 }
@@ -100,20 +100,20 @@ impl[T, Marker] PartialEq for GenericChoice[T, Marker] where Wrapper[T]: Partial
 impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {}
 
 impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
-  fn hash(self/19: GenericChoice[T, Marker]) -> uint64 {
+  fn hash(self/19: GenericChoice[T, Marker]) -> u64 {
       match (self/19 : GenericChoice[T, Marker]) {
           GenericChoice::Empty =>
             {
-                let h/20: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 1;
-                (h/20 : uint64)
+                let h/20: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 1;
+                (h/20 : u64)
             },
           GenericChoice::Value(#derive0_field/21: Wrapper[T]) =>
             {
-                let h/22: uint64 = (int::to_uint64 : (int) -> uint64)(0) + 14695981039346656037 + 2;
-                let h/23: uint64 =
-                  (h/22 : uint64) * (int::to_uint64 : (int) -> uint64)(0) + 1099511628211 +
-                    (Hash::hash : (Wrapper[T]) -> uint64)((#derive0_field/21 : Wrapper[T]));
-                (h/23 : uint64)
+                let h/22: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037 + 2;
+                let h/23: u64 =
+                  (h/22 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
+                    (Hash::hash : (Wrapper[T]) -> u64)((#derive0_field/21 : Wrapper[T]));
+                (h/23 : u64)
             },
       }
   }
@@ -134,10 +134,10 @@ fn main() -> unit {
       (left/25 : Generic[NoTraits, NoTraits]) == (right/26 : Generic[NoTraits, NoTraits])
     );
     (println : (bool) -> unit)(
-      (Hash::hash : (Generic[NoTraits, NoTraits]) -> uint64)(
+      (Hash::hash : (Generic[NoTraits, NoTraits]) -> u64)(
         (left/25 : Generic[NoTraits, NoTraits])
       ) ==
-        (Hash::hash : (Generic[NoTraits, NoTraits]) -> uint64)(
+        (Hash::hash : (Generic[NoTraits, NoTraits]) -> u64)(
           (right/26 : Generic[NoTraits, NoTraits])
         )
     );
@@ -159,10 +159,10 @@ fn main() -> unit {
         (value/28 : GenericChoice[NoTraits, NoTraits])
     );
     (println : (bool) -> unit)(
-      (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> uint64)(
+      (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> u64)(
         (value/28 : GenericChoice[NoTraits, NoTraits])
       ) ==
-        (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> uint64)(
+        (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> u64)(
           (value/28 : GenericChoice[NoTraits, NoTraits])
         )
     )

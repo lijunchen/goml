@@ -1,139 +1,156 @@
-fn print_selection(value/0: std::channel::Selection__int) -> unit {
+fn print_selection(value/0: std::channel::Selection__isize) -> unit {
   match value/0 {
-    std::channel::Selection__int::Received(x411, x412) => {
-      let x411 = std::channel::Selection__int::Received._0(value/0) in
-      let x412 = std::channel::Selection__int::Received._1(value/0) in
+    std::channel::Selection__isize::Received(x411, x412) => {
+      let x411 = std::channel::Selection__isize::Received._0(value/0) in
+      let x412 = std::channel::Selection__isize::Received._1(value/0) in
       let value/2 = x412 in
       let index/1 = x411 in
-      let _wild414 = println__T_int(index/1) in
-      println__T_int(inherent#Option#Option[T]#unwrap_or__T_int(value/2, -1))
+      let _wild414 = println__T_isize(index/1) in
+      println__T_isize(inherent#Option#Option[T]#unwrap_or__T_isize(value/2, -1))
     },
-    std::channel::Selection__int::Sent(x413) => {
-      let x413 = std::channel::Selection__int::Sent._0(value/0) in
+    std::channel::Selection__isize::Sent(x413) => {
+      let x413 = std::channel::Selection__isize::Sent._0(value/0) in
       let index/3 = x413 in
-      println__T_int(index/3)
+      println__T_isize(index/3)
     },
   }
 }
 
 fn main() -> unit {
-  let first/4 = inherent#Channel#Channel[T]#new__T_int(1) in
-  let second/5 = inherent#Channel#Channel[T]#new__T_int(1) in
-  let _wild415 = inherent#Channel#Channel[T]#send__T_int(first/4, 10) in
-  let _wild416 = inherent#Channel#Channel[T]#send__T_int(second/5, 20) in
+  let first/4 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let second/5 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let _wild415 = inherent#Channel#Channel[T]#send__T_isize(first/4, 10) in
+  let _wild416 = inherent#Channel#Channel[T]#send__T_isize(second/5, 20) in
   let operations/6 =
     @intrinsic(vec.from_array)(
       [
-        std::channel::Operation__int::Receive(inherent#Channel#Channel[T]#receiver__T_int(first/4)),
-        std::channel::Operation__int::Receive(inherent#Channel#Channel[T]#receiver__T_int(second/5))
+        std::channel::Operation__isize::Receive(
+          inherent#Channel#Channel[T]#receiver__T_isize(first/4)
+        ),
+        std::channel::Operation__isize::Receive(
+          inherent#Channel#Channel[T]#receiver__T_isize(second/5)
+        )
       ]
     ) in
   let _wild421 =
     let mtmp417 =
-      std::channel::try_select_priority__T_int(
+      std::channel::try_select_priority__T_isize(
         @intrinsic(slice.new)(
           operations/6,
           0,
-          inherent#Vec#Vec[T]#len__T_std::channel::Operation[int](operations/6)
+          inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](operations/6)
         )
       ) in
     match mtmp417 {
-      Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok(x418) => {
+      Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(x418) => {
         let x418 =
-          Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok._0(mtmp417) in
+          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(
+            mtmp417
+          ) in
         match x418 {
-          Option__std::channel::Selection__int::Some(x420) => {
-            let x420 = Option__std::channel::Selection__int::Some._0(x418) in
+          Option__std::channel::Selection__isize::Some(x420) => {
+            let x420 = Option__std::channel::Selection__isize::Some._0(x418) in
             let value/7 = x420 in
             print_selection(value/7)
           },
-          _ => println__T_int(-1),
+          _ => println__T_isize(-1),
         }
       },
-      _ => println__T_int(-1),
+      _ => println__T_isize(-1),
     } in
   let _wild426 =
     let mtmp422 =
-      std::channel::try_select__T_int(
+      std::channel::try_select__T_isize(
         @intrinsic(slice.new)(
           operations/6,
           0,
-          inherent#Vec#Vec[T]#len__T_std::channel::Operation[int](operations/6)
+          inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](operations/6)
         )
       ) in
     match mtmp422 {
-      Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok(x423) => {
+      Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(x423) => {
         let x423 =
-          Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok._0(mtmp422) in
+          Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(
+            mtmp422
+          ) in
         match x423 {
-          Option__std::channel::Selection__int::Some(x425) => {
-            let x425 = Option__std::channel::Selection__int::Some._0(x423) in
+          Option__std::channel::Selection__isize::Some(x425) => {
+            let x425 = Option__std::channel::Selection__isize::Some._0(x423) in
             let value/8 = x425 in
             print_selection(value/8)
           },
-          _ => println__T_int(-2),
+          _ => println__T_isize(-2),
         }
       },
-      _ => println__T_int(-2),
+      _ => println__T_isize(-2),
     } in
-  let empty/9 = inherent#Channel#Channel[T]#new__T_int(0) in
-  let target/10 = inherent#Channel#Channel[T]#new__T_int(1) in
+  let empty/9 = inherent#Channel#Channel[T]#new__T_isize(0) in
+  let target/10 = inherent#Channel#Channel[T]#new__T_isize(1) in
   let mixed/11 =
     @intrinsic(vec.from_array)(
       [
-        std::channel::Operation__int::Receive(inherent#Channel#Channel[T]#receiver__T_int(empty/9)),
-        std::channel::Operation__int::Send(inherent#Channel#Channel[T]#sender__T_int(target/10), 30)
+        std::channel::Operation__isize::Receive(
+          inherent#Channel#Channel[T]#receiver__T_isize(empty/9)
+        ),
+        std::channel::Operation__isize::Send(
+          inherent#Channel#Channel[T]#sender__T_isize(target/10),
+          30
+        )
       ]
     ) in
   let _wild430 =
     let mtmp427 =
-      std::channel::select__T_int(
+      std::channel::select__T_isize(
         @intrinsic(slice.new)(
           mixed/11,
           0,
-          inherent#Vec#Vec[T]#len__T_std::channel::Operation[int](mixed/11)
+          inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](mixed/11)
         )
       ) in
     match mtmp427 {
-      Result__std::channel::Selection__int__std::channel::SelectError::Ok(x428) => {
+      Result__std::channel::Selection__isize__std::channel::SelectError::Ok(x428) => {
         let x428 =
-          Result__std::channel::Selection__int__std::channel::SelectError::Ok._0(mtmp427) in
+          Result__std::channel::Selection__isize__std::channel::SelectError::Ok._0(mtmp427) in
         let value/12 = x428 in
         print_selection(value/12)
       },
-      Result__std::channel::Selection__int__std::channel::SelectError::Err(x429) => {
-        println__T_int(-3)
+      Result__std::channel::Selection__isize__std::channel::SelectError::Err(x429) => {
+        println__T_isize(-3)
       },
     } in
   let _wild431 =
-    println__T_int(
-      inherent#Option#Option[T]#unwrap_or__T_int(
-        inherent#Channel#Channel[T]#recv__T_int(target/10),
+    println__T_isize(
+      inherent#Option#Option[T]#unwrap_or__T_isize(
+        inherent#Channel#Channel[T]#recv__T_isize(target/10),
         -4
       )
     ) in
   let none/13 =
     @intrinsic(vec.from_array)(
-      [std::channel::Operation__int::Receive(inherent#Channel#Channel[T]#receiver__T_int(empty/9))]
+      [
+        std::channel::Operation__isize::Receive(
+          inherent#Channel#Channel[T]#receiver__T_isize(empty/9)
+        )
+      ]
     ) in
   let _wild436 =
-    println__T_int(
+    println__T_isize(
       let mtmp432 =
-        std::channel::try_select__T_int(
+        std::channel::try_select__T_isize(
           @intrinsic(slice.new)(
             none/13,
             0,
-            inherent#Vec#Vec[T]#len__T_std::channel::Operation[int](none/13)
+            inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](none/13)
           )
         ) in
       match mtmp432 {
-        Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok(x433) => {
+        Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(x433) => {
           let x433 =
-            Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok._0(
+            Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok._0(
               mtmp432
             ) in
           match x433 {
-            Option__std::channel::Selection__int::None => {
+            Option__std::channel::Selection__isize::None => {
               40
             },
             _ => -5,
@@ -142,20 +159,20 @@ fn main() -> unit {
         _ => -5,
       }
     ) in
-  let no_operations/14 = inherent#Vec#Vec[T]#new__T_std::channel::Operation[int]() in
-  println__T_int(
+  let no_operations/14 = inherent#Vec#Vec[T]#new__T_std::channel::Operation[isize]() in
+  println__T_isize(
     let mtmp437 =
-      std::channel::select__T_int(
+      std::channel::select__T_isize(
         @intrinsic(slice.new)(
           no_operations/14,
           0,
-          inherent#Vec#Vec[T]#len__T_std::channel::Operation[int](no_operations/14)
+          inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](no_operations/14)
         )
       ) in
     match mtmp437 {
-      Result__std::channel::Selection__int__std::channel::SelectError::Err(x439) => {
+      Result__std::channel::Selection__isize__std::channel::SelectError::Err(x439) => {
         let x439 =
-          Result__std::channel::Selection__int__std::channel::SelectError::Err._0(mtmp437) in
+          Result__std::channel::Selection__isize__std::channel::SelectError::Err._0(mtmp437) in
         match x439 {
           std::channel::SelectError::Empty => {
             50
@@ -167,45 +184,48 @@ fn main() -> unit {
   )
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_int(self/467: Option__int, fallback/468: int) -> int {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(
+  self/467: Option__isize,
+  fallback/468: isize
+) -> isize {
   match self/467 {
-    Option__int::None => {
+    Option__isize::None => {
       fallback/468
     },
-    Option__int::Some(x390) => {
-      let x390 = Option__int::Some._0(self/467) in
+    Option__isize::Some(x390) => {
+      let x390 = Option__isize::Some._0(self/467) in
       let value/469 = x390 in
       value/469
     },
   }
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/435: isize) -> Channel[isize] {
   @intrinsic(channel.new)(capacity/435)
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/436: Channel[int], value/437: int) -> unit {
+fn inherent#Channel#Channel[T]#send__T_isize(self/436: Channel[isize], value/437: isize) -> unit {
   @intrinsic(channel.send)(self/436, value/437)
 }
 
-fn inherent#Channel#Channel[T]#receiver__T_int(self/443: Channel[int]) -> Receiver[int] {
+fn inherent#Channel#Channel[T]#receiver__T_isize(self/443: Channel[isize]) -> Receiver[isize] {
   @intrinsic(channel.receiver)(self/443)
 }
 
-fn std::channel::try_select_priority__T_int(
-  operations/35: Slice[std::channel::Operation__int]
-) -> Result__Option__std::channel::Selection__int__std::channel::SelectError {
-  if (inherent#Slice#Slice[T]#len__T_std::channel::Operation[int](operations/35) == 0) {
-      Result__Option__std::channel::Selection__int__std::channel::SelectError::Err(
+fn std::channel::try_select_priority__T_isize(
+  operations/35: Slice[std::channel::Operation__isize]
+) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
+  if (inherent#Slice#Slice[T]#len__T_std::channel::Operation[isize](operations/35) == 0) {
+      Result__Option__std::channel::Selection__isize__std::channel::SelectError::Err(
         std::channel::SelectError::Empty
       )
   } else {
-      let prepared/36 = std::channel::prepare__T_int(operations/35) in
-      let mtmp34 = std::channel::prepared_slices__T_int(prepared/36) in
+      let prepared/36 = std::channel::prepare__T_isize(operations/35) in
+      let mtmp34 = std::channel::prepared_slices__T_isize(prepared/36) in
       let x35 = mtmp34.0 in
       let x36 = mtmp34.1 in
       let x37 = mtmp34.2 in
@@ -231,34 +251,34 @@ fn std::channel::try_select_priority__T_int(
       let value/43 = x42 in
       let kind/42 = x41 in
       let index/41 = x40 in
-      Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok(
+      Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(
         if selected/45 {
-            Option__std::channel::Selection__int::Some(
-              std::channel::selection__T_int(index/41, kind/42, value/43, open/44)
+            Option__std::channel::Selection__isize::Some(
+              std::channel::selection__T_isize(index/41, kind/42, value/43, open/44)
             )
         } else {
-            Option__std::channel::Selection__int::None
+            Option__std::channel::Selection__isize::None
         }
       )
   }
 }
 
-fn inherent#Vec#Vec[T]#len__T_std::channel::Operation[int](
-  self/273: Vec[std::channel::Operation__int]
-) -> int {
+fn inherent#Vec#Vec[T]#len__T_std::channel::Operation[isize](
+  self/273: Vec[std::channel::Operation__isize]
+) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn std::channel::try_select__T_int(
-  operations/24: Slice[std::channel::Operation__int]
-) -> Result__Option__std::channel::Selection__int__std::channel::SelectError {
-  if (inherent#Slice#Slice[T]#len__T_std::channel::Operation[int](operations/24) == 0) {
-      Result__Option__std::channel::Selection__int__std::channel::SelectError::Err(
+fn std::channel::try_select__T_isize(
+  operations/24: Slice[std::channel::Operation__isize]
+) -> Result__Option__std::channel::Selection__isize__std::channel::SelectError {
+  if (inherent#Slice#Slice[T]#len__T_std::channel::Operation[isize](operations/24) == 0) {
+      Result__Option__std::channel::Selection__isize__std::channel::SelectError::Err(
         std::channel::SelectError::Empty
       )
   } else {
-      let prepared/25 = std::channel::prepare__T_int(operations/24) in
-      let mtmp23 = std::channel::prepared_slices__T_int(prepared/25) in
+      let prepared/25 = std::channel::prepare__T_isize(operations/24) in
+      let mtmp23 = std::channel::prepared_slices__T_isize(prepared/25) in
       let x24 = mtmp23.0 in
       let x25 = mtmp23.1 in
       let x26 = mtmp23.2 in
@@ -279,32 +299,32 @@ fn std::channel::try_select__T_int(
       let value/32 = x31 in
       let kind/31 = x30 in
       let index/30 = x29 in
-      Result__Option__std::channel::Selection__int__std::channel::SelectError::Ok(
+      Result__Option__std::channel::Selection__isize__std::channel::SelectError::Ok(
         if selected/34 {
-            Option__std::channel::Selection__int::Some(
-              std::channel::selection__T_int(index/30, kind/31, value/32, open/33)
+            Option__std::channel::Selection__isize::Some(
+              std::channel::selection__T_isize(index/30, kind/31, value/32, open/33)
             )
         } else {
-            Option__std::channel::Selection__int::None
+            Option__std::channel::Selection__isize::None
         }
       )
   }
 }
 
-fn inherent#Channel#Channel[T]#sender__T_int(self/442: Channel[int]) -> Sender[int] {
+fn inherent#Channel#Channel[T]#sender__T_isize(self/442: Channel[isize]) -> Sender[isize] {
   @intrinsic(channel.sender)(self/442)
 }
 
-fn std::channel::select__T_int(
-  operations/14: Slice[std::channel::Operation__int]
-) -> Result__std::channel::Selection__int__std::channel::SelectError {
-  if (inherent#Slice#Slice[T]#len__T_std::channel::Operation[int](operations/14) == 0) {
-      Result__std::channel::Selection__int__std::channel::SelectError::Err(
+fn std::channel::select__T_isize(
+  operations/14: Slice[std::channel::Operation__isize]
+) -> Result__std::channel::Selection__isize__std::channel::SelectError {
+  if (inherent#Slice#Slice[T]#len__T_std::channel::Operation[isize](operations/14) == 0) {
+      Result__std::channel::Selection__isize__std::channel::SelectError::Err(
         std::channel::SelectError::Empty
       )
   } else {
-      let prepared/15 = std::channel::prepare__T_int(operations/14) in
-      let mtmp12 = std::channel::prepared_slices__T_int(prepared/15) in
+      let prepared/15 = std::channel::prepare__T_isize(operations/14) in
+      let mtmp12 = std::channel::prepared_slices__T_isize(prepared/15) in
       let x13 = mtmp12.0 in
       let x14 = mtmp12.1 in
       let x15 = mtmp12.2 in
@@ -323,49 +343,51 @@ fn std::channel::select__T_int(
       let value/22 = x20 in
       let kind/21 = x19 in
       let index/20 = x18 in
-      Result__std::channel::Selection__int__std::channel::SelectError::Ok(
-        std::channel::selection__T_int(index/20, kind/21, value/22, open/23)
+      Result__std::channel::Selection__isize__std::channel::SelectError::Ok(
+        std::channel::selection__T_isize(index/20, kind/21, value/22, open/23)
       )
   }
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/438: Channel[int]) -> Option__int {
+fn inherent#Channel#Channel[T]#recv__T_isize(self/438: Channel[isize]) -> Option__isize {
   let mtmp379 = @intrinsic(channel.recv)(self/438) in
   let x380 = mtmp379.0 in
   let x381 = mtmp379.1 in
   let ok/440 = x381 in
   let value/439 = x380 in
   if ok/440 {
-      Option__int::Some(value/439)
+      Option__isize::Some(value/439)
   } else {
-      Option__int::None
+      Option__isize::None
   }
 }
 
-fn inherent#Vec#Vec[T]#new__T_std::channel::Operation[int]() -> Vec[std::channel::Operation__int] {
+fn inherent#Vec#Vec[T]#new__T_std::channel::Operation[isize]() -> Vec[
+  std::channel::Operation__isize
+] {
   @intrinsic(vec.new)()
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
-fn inherent#Slice#Slice[T]#len__T_std::channel::Operation[int](
-  self/407: Slice[std::channel::Operation__int]
-) -> int {
+fn inherent#Slice#Slice[T]#len__T_std::channel::Operation[isize](
+  self/407: Slice[std::channel::Operation__isize]
+) -> isize {
   @intrinsic(slice.len)(self/407)
 }
 
-fn std::channel::prepare__T_int(
-  operations/0: Slice[std::channel::Operation__int]
-) -> std::channel::PreparedOperations__int {
+fn std::channel::prepare__T_isize(
+  operations/0: Slice[std::channel::Operation__isize]
+) -> std::channel::PreparedOperations__isize {
   let kinds/1 =
-    inherent#Vec#Vec[T]#with_capacity__T_int(
-      inherent#Slice#Slice[T]#len__T_std::channel::Operation[int](operations/0)
+    inherent#Vec#Vec[T]#with_capacity__T_isize(
+      inherent#Slice#Slice[T]#len__T_std::channel::Operation[isize](operations/0)
     ) in
-  let receivers/2 = inherent#Vec#Vec[T]#new__T_Receiver[int]() in
-  let senders/3 = inherent#Vec#Vec[T]#new__T_Sender[int]() in
-  let values/4 = inherent#Vec#Vec[T]#new__T_int() in
+  let receivers/2 = inherent#Vec#Vec[T]#new__T_Receiver[isize]() in
+  let senders/3 = inherent#Vec#Vec[T]#new__T_Sender[isize]() in
+  let values/4 = inherent#Vec#Vec[T]#new__T_isize() in
   let _wild11 =
     let for_source0 = operations/0 in
     let for_limit1 = @intrinsic(slice.len)(for_source0) in
@@ -375,24 +397,24 @@ fn std::channel::prepare__T_int(
         let _wild4 = for_index2 = (for_index2 + 1) in
         let operation/5 = for_item3 in
         match operation/5 {
-          std::channel::Operation__int::Receive(x5) => {
-            let x5 = std::channel::Operation__int::Receive._0(operation/5) in
+          std::channel::Operation__isize::Receive(x5) => {
+            let x5 = std::channel::Operation__isize::Receive._0(operation/5) in
             let receiver/6 = x5 in
-            let _wild8 = inherent#Vec#Vec[T]#push__T_int(kinds/1, 0) in
-            inherent#Vec#Vec[T]#push__T_Receiver[int](receivers/2, receiver/6)
+            let _wild8 = inherent#Vec#Vec[T]#push__T_isize(kinds/1, 0) in
+            inherent#Vec#Vec[T]#push__T_Receiver[isize](receivers/2, receiver/6)
           },
-          std::channel::Operation__int::Send(x6, x7) => {
-            let x6 = std::channel::Operation__int::Send._0(operation/5) in
-            let x7 = std::channel::Operation__int::Send._1(operation/5) in
+          std::channel::Operation__isize::Send(x6, x7) => {
+            let x6 = std::channel::Operation__isize::Send._0(operation/5) in
+            let x7 = std::channel::Operation__isize::Send._1(operation/5) in
             let value/8 = x7 in
             let sender/7 = x6 in
-            let _wild9 = inherent#Vec#Vec[T]#push__T_int(kinds/1, 1) in
-            let _wild10 = inherent#Vec#Vec[T]#push__T_Sender[int](senders/3, sender/7) in
-            inherent#Vec#Vec[T]#push__T_int(values/4, value/8)
+            let _wild9 = inherent#Vec#Vec[T]#push__T_isize(kinds/1, 1) in
+            let _wild10 = inherent#Vec#Vec[T]#push__T_Sender[isize](senders/3, sender/7) in
+            inherent#Vec#Vec[T]#push__T_isize(values/4, value/8)
           },
         }
     } in
-  std::channel::PreparedOperations__int {
+  std::channel::PreparedOperations__isize {
     kinds: kinds/1,
     receivers: receivers/2,
     senders: senders/3,
@@ -400,102 +422,102 @@ fn std::channel::prepare__T_int(
   }
 }
 
-fn std::channel::prepared_slices__T_int(prepared/9: std::channel::PreparedOperations__int) -> (
-  Slice[int],
-  Slice[Receiver[int]],
-  Slice[Sender[int]],
-  Slice[int]
+fn std::channel::prepared_slices__T_isize(prepared/9: std::channel::PreparedOperations__isize) -> (
+  Slice[isize],
+  Slice[Receiver[isize]],
+  Slice[Sender[isize]],
+  Slice[isize]
 ) {
   (
     @intrinsic(slice.new)(
-      std::channel::PreparedOperations__int.kinds(prepared/9),
+      std::channel::PreparedOperations__isize.kinds(prepared/9),
       0,
-      inherent#Vec#Vec[T]#len__T_int(std::channel::PreparedOperations__int.kinds(prepared/9))
+      inherent#Vec#Vec[T]#len__T_isize(std::channel::PreparedOperations__isize.kinds(prepared/9))
     ),
     @intrinsic(slice.new)(
-      std::channel::PreparedOperations__int.receivers(prepared/9),
+      std::channel::PreparedOperations__isize.receivers(prepared/9),
       0,
-      inherent#Vec#Vec[T]#len__T_Receiver[int](
-        std::channel::PreparedOperations__int.receivers(prepared/9)
+      inherent#Vec#Vec[T]#len__T_Receiver[isize](
+        std::channel::PreparedOperations__isize.receivers(prepared/9)
       )
     ),
     @intrinsic(slice.new)(
-      std::channel::PreparedOperations__int.senders(prepared/9),
+      std::channel::PreparedOperations__isize.senders(prepared/9),
       0,
-      inherent#Vec#Vec[T]#len__T_Sender[int](
-        std::channel::PreparedOperations__int.senders(prepared/9)
+      inherent#Vec#Vec[T]#len__T_Sender[isize](
+        std::channel::PreparedOperations__isize.senders(prepared/9)
       )
     ),
     @intrinsic(slice.new)(
-      std::channel::PreparedOperations__int.values(prepared/9),
+      std::channel::PreparedOperations__isize.values(prepared/9),
       0,
-      inherent#Vec#Vec[T]#len__T_int(std::channel::PreparedOperations__int.values(prepared/9))
+      inherent#Vec#Vec[T]#len__T_isize(std::channel::PreparedOperations__isize.values(prepared/9))
     )
   )
 }
 
-fn std::channel::selection__T_int(
-  index/10: int,
-  kind/11: int,
-  value/12: int,
+fn std::channel::selection__T_isize(
+  index/10: isize,
+  kind/11: isize,
+  value/12: isize,
   open/13: bool
-) -> std::channel::Selection__int {
+) -> std::channel::Selection__isize {
   if (kind/11 == 0) {
-      std::channel::Selection__int::Received(
+      std::channel::Selection__isize::Received(
         index/10,
         if open/13 {
-            Option__int::Some(value/12)
+            Option__isize::Some(value/12)
         } else {
-            Option__int::None
+            Option__isize::None
         }
       )
   } else {
-      std::channel::Selection__int::Sent(index/10)
+      std::channel::Selection__isize::Sent(index/10)
   }
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int(capacity/257: int) -> Vec[int] {
+fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/257: isize) -> Vec[isize] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
-fn inherent#Vec#Vec[T]#new__T_Receiver[int]() -> Vec[Receiver[int]] {
+fn inherent#Vec#Vec[T]#new__T_Receiver[isize]() -> Vec[Receiver[isize]] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#new__T_Sender[int]() -> Vec[Sender[int]] {
+fn inherent#Vec#Vec[T]#new__T_Sender[isize]() -> Vec[Sender[isize]] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
+fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int(self/258: Vec[int], elem/259: int) -> unit {
+fn inherent#Vec#Vec[T]#push__T_isize(self/258: Vec[isize], elem/259: isize) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#push__T_Receiver[int](
-  self/258: Vec[Receiver[int]],
-  elem/259: Receiver[int]
+fn inherent#Vec#Vec[T]#push__T_Receiver[isize](
+  self/258: Vec[Receiver[isize]],
+  elem/259: Receiver[isize]
 ) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#push__T_Sender[int](
-  self/258: Vec[Sender[int]],
-  elem/259: Sender[int]
+fn inherent#Vec#Vec[T]#push__T_Sender[isize](
+  self/258: Vec[Sender[isize]],
+  elem/259: Sender[isize]
 ) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int(self/273: Vec[int]) -> int {
+fn inherent#Vec#Vec[T]#len__T_isize(self/273: Vec[isize]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#len__T_Receiver[int](self/273: Vec[Receiver[int]]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Receiver[isize](self/273: Vec[Receiver[isize]]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#len__T_Sender[int](self/273: Vec[Sender[int]]) -> int {
+fn inherent#Vec#Vec[T]#len__T_Sender[isize](self/273: Vec[Sender[isize]]) -> isize {
   @intrinsic(vec.len)(self/273)
 }

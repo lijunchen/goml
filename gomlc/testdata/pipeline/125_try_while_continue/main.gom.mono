@@ -1,23 +1,23 @@
-fn step(i/0: int32) -> Option__int32 {
+fn step(i/0: i32) -> Option__i32 {
   if (i/0 == 2) {
       {
-        Option__int32::None
+        Option__i32::None
       }
   } else {
       {
-        Option__int32::Some((i/0 + 10))
+        Option__i32::Some((i/0 + 10))
       }
   }
 }
 
-fn accumulate(limit/1: int32) -> Option__int32 {
-  let sum/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let i/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
+fn accumulate(limit/1: i32) -> Option__i32 {
+  let sum/2 = inherent#Ref#Ref[T]#new__T_i32(0) in
+  let i/3 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let _wild416 =
-    while (inherent#Ref#Ref[T]#get__T_int32(i/3) < limit/1) {
+    while (inherent#Ref#Ref[T]#get__T_i32(i/3) < limit/1) {
         {
-          let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
-          let _wild411 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
+          let cur/4 = inherent#Ref#Ref[T]#get__T_i32(i/3) in
+          let _wild411 = inherent#Ref#Ref[T]#set__T_i32(i/3, (cur/4 + 1)) in
           let _wild412 =
             if (cur/4 == 1) {
                 {
@@ -32,12 +32,12 @@ fn accumulate(limit/1: int32) -> Option__int32 {
             {
               let mtmp413 = step(cur/4) in
               match mtmp413 {
-                Option__int32::None => {
-                  return Option__int32::None
+                Option__i32::None => {
+                  return Option__i32::None
                 },
-                Option__int32::Some(x414) => {
+                Option__i32::Some(x414) => {
                   {
-                    let x414 = Option__int32::Some._0(mtmp413) in
+                    let x414 = Option__i32::Some._0(mtmp413) in
                     {
                       let try_value/42 = x414 in
                       try_value/42
@@ -47,26 +47,26 @@ fn accumulate(limit/1: int32) -> Option__int32 {
               }
             } in
           let _wild415 =
-            inherent#Ref#Ref[T]#set__T_int32(
+            inherent#Ref#Ref[T]#set__T_i32(
               sum/2,
-              (inherent#Ref#Ref[T]#get__T_int32(sum/2) + value/5)
+              (inherent#Ref#Ref[T]#get__T_i32(sum/2) + value/5)
             ) in
         }
     } in
-  Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(sum/2))
+  Option__i32::Some(inherent#Ref#Ref[T]#get__T_i32(sum/2))
 }
 
-fn show(opt/6: Option__int32) -> string {
+fn show(opt/6: Option__i32) -> string {
   match opt/6 {
-    Option__int32::None => {
+    Option__i32::None => {
       "none"
     },
-    Option__int32::Some(x417) => {
+    Option__i32::Some(x417) => {
       {
-        let x417 = Option__int32::Some._0(opt/6) in
+        let x417 = Option__i32::Some._0(opt/6) in
         {
           let value/7 = x417 in
-          ("some=" + inherent#int32#int32#to_string(value/7))
+          ("some=" + inherent#i32#i32#to_string(value/7))
         }
       }
     },
@@ -78,19 +78,19 @@ fn main() -> unit {
   let _wild419 = println__T_string(show(accumulate(4))) in
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -102,10 +102,10 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }

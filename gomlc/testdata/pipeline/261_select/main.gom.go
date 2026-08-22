@@ -38,12 +38,12 @@ type Tuple2_6string_4bool struct {
 }
 
 type closure_env_read_0 struct {
-    value_0 Option__int
+    value_0 Option__isize
 }
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -54,18 +54,18 @@ type Option__string struct {
 }
 
 func main0() struct{} {
-    var received__6 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(1)
-    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(received__6, 7)
+    var received__6 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(1)
+    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(received__6, 7)
     var jp433 int
     var _goml_m_value____7_i_select__value int
     var _goml_m_value____7_i_select__open bool
-    var value__7 Option__int = Option__int{
+    var value__7 Option__isize = Option__isize{
         _tag: 0,
     }
     select {
     case _goml_m_value____7_i_select__value, _goml_m_value____7_i_select__open = <-received__6:
         if _goml_m_value____7_i_select__open {
-            value__7 = Option__int{
+            value__7 = Option__isize{
                 _tag: 1,
                 _v1_0: _goml_m_value____7_i_select__value,
             }
@@ -81,7 +81,7 @@ func main0() struct{} {
     default:
         jp433 = 0
     }
-    println__T_int(jp433)
+    println__T_isize(jp433)
     var sent__10 chan string = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(1)
     var jp435 string
     select {
@@ -121,7 +121,7 @@ func main0() struct{} {
     default:
         jp439 = 42
     }
-    var inline554 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp439)
+    var inline554 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp439)
     _goml_runtime_core_string_println(inline554)
     var log__15 *ref_string_x
     var inline551 string = ""
@@ -182,13 +182,13 @@ func main0() struct{} {
     var jp443 string
     var _goml_m_value____18_i_select__value int
     var _goml_m_value____18_i_select__open bool
-    var value__18 Option__int = Option__int{
+    var value__18 Option__isize = Option__isize{
         _tag: 0,
     }
     select {
     case _goml_m_value____18_i_select__value, _goml_m_value____18_i_select__open = <-received__6:
         if _goml_m_value____18_i_select__open {
-            value__18 = Option__int{
+            value__18 = Option__isize{
                 _tag: 1,
                 _v1_0: _goml_m_value____18_i_select__value,
             }
@@ -217,14 +217,14 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__433 *ref_strin
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__435 int) chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(capacity__435 int) chan int {
     var t460 chan int = func(p0 int) chan int {
         return make(chan int, p0)
     }(capacity__435)
     return t460
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__436 chan int, value__437 int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(self__436 chan int, value__437 int) struct{} {
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
@@ -232,7 +232,7 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__436 chan
     return struct{}{}
 }
 
-func println__T_int(value__1 int) struct{} {
+func println__T_isize(value__1 int) struct{} {
     var t468 string
     var inline570 string = _goml_runtime_core_int_to_string(value__1)
     t468 = inline570
@@ -272,7 +272,7 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__438 c
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t492 string = _goml_runtime_core_int_to_string(self__151)
     return t492
 }
@@ -282,7 +282,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 }
 
 func _goml_m_inherent_i_closure__env__read__0_i_closure__env__read__0_i_apply(env422 closure_env_read_0) int {
-    var value__7 Option__int = env422.value_0
+    var value__7 Option__isize = env422.value_0
     var inline573 int = -1
     switch value__7._tag {
     case 0:

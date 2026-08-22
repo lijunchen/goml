@@ -144,9 +144,9 @@ type Tuple2_6string_6string struct {
     _1 string
 }
 
-type Tuple2_11Option__int_11Option__int struct {
-    _0 Option__int
-    _1 Option__int
+type Tuple2_13Option__isize_13Option__isize struct {
+    _0 Option__isize
+    _1 Option__isize
 }
 
 type Tuple2_3int_4char struct {
@@ -175,16 +175,16 @@ type Tuple2_4bool_4char struct {
     _1 rune
 }
 
-type FnIterator__int struct {
-    next_fn func() Option__int
+type FnIterator__isize struct {
+    next_fn func() Option__isize
 }
 
 type FnIterator__char struct {
     next_fn func() Option__char
 }
 
-type _goml_m_FnIterator_____o_int_c_char_q_ struct {
-    next_fn func() _goml_m_Option_____o_int_c_char_q_
+type _goml_m_FnIterator_____o_isize_c_char_q_ struct {
+    next_fn func() _goml_m_Option_____o_isize_c_char_q_
 }
 
 type closure_env_goml_builtin_range_0 struct {
@@ -209,7 +209,7 @@ type _goml_m_Option_____o_string_c_string_q_ struct {
     _v1_0 Tuple2_6string_6string
 }
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -224,12 +224,12 @@ type Option__char struct {
     _v1_0 rune
 }
 
-type _goml_m_Option_____o_int_c_char_q_ struct {
+type _goml_m_Option_____o_isize_c_char_q_ struct {
     _tag int32
     _v1_0 Tuple2_3int_4char
 }
 
-type _goml_m_Option_____o_char_c_int_q_ struct {
+type _goml_m_Option_____o_char_c_isize_q_ struct {
     _tag int32
     _v1_0 Tuple2_4char_3int
 }
@@ -261,21 +261,21 @@ func main0() struct{} {
     println__T_string(t446)
     var t447 *_goml_vec_string = _goml_m_inherent_i_string_i_string_i_lines(text__0)
     var t448 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(t447)
-    var t449 string = _goml_m_inherent_i_int_i_int_i_to__string(t448)
+    var t449 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t448)
     println__T_string(t449)
-    var t450 Option__int = _goml_m_inherent_i_string_i_string_i_find(text__0, "World")
-    var t451 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__int(t450, -1)
-    var t452 string = _goml_m_inherent_i_int_i_int_i_to__string(t451)
+    var t450 Option__isize = _goml_m_inherent_i_string_i_string_i_find(text__0, "World")
+    var t451 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t450, -1)
+    var t452 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t451)
     println__T_string(t452)
-    var t453 Option__int = _goml_m_inherent_i_string_i_string_i_rfind(text__0, "l")
-    var t454 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__int(t453, -1)
-    var t455 string = _goml_m_inherent_i_int_i_int_i_to__string(t454)
+    var t453 Option__isize = _goml_m_inherent_i_string_i_string_i_rfind(text__0, "l")
+    var t454 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t453, -1)
+    var t455 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t454)
     println__T_string(t455)
-    var t456 Option__int
+    var t456 Option__isize
     var inline1191 string = "lo"
-    var inline1192 Option__int = _goml_m_inherent_i_string_i_string_i_find(text__0, inline1191)
+    var inline1192 Option__isize = _goml_m_inherent_i_string_i_string_i_find(text__0, inline1191)
     t456 = inline1192
-    var t457 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__int(t456, -1)
+    var t457 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t456, -1)
     var t458 string
     var inline1189 string = _goml_runtime_core_int_to_string(t457)
     t458 = inline1189
@@ -433,7 +433,7 @@ func _goml_m_inherent_i_string_i_string_i_split(self__95 string, separator__96 s
         var start__100 int = 0
         Loop_loop_expr512:
         for {
-            var mtmp87 Option__int = string_find_from(self__95, separator__96, start__100)
+            var mtmp87 Option__isize = string_find_from(self__95, separator__96, start__100)
             switch mtmp87._tag {
             case 0:
                 var t514 string
@@ -468,25 +468,25 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__378 *_goml_ve
     var t521 int
     var inline1259 int = vec_len__Vec_6string(self__378)
     t521 = inline1259
-    var t522 FnIterator__int
+    var t522 FnIterator__isize
     var inline1253 int = 0
     var inline1254 *ref_int_x = ref__Ref_3int(inline1253)
     var inline1255 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
         current_0: inline1254,
         end_1: t521,
     }
-    var inline1256 func() Option__int = func() Option__int {
+    var inline1256 func() Option__isize = func() Option__isize {
         return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1255)
     }
-    var inline1257 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1256)
+    var inline1257 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1256)
     t522 = inline1257
-    var for_iter349 FnIterator__int
+    var for_iter349 FnIterator__isize
     for_iter349 = t522
     Loop_loop537:
     for {
-        var for_next350 Option__int
-        var inline1229 func() Option__int = for_iter349.next_fn
-        var inline1230 Option__int = inline1229()
+        var for_next350 Option__isize
+        var inline1229 func() Option__isize = for_iter349.next_fn
+        var inline1230 Option__isize = inline1229()
         for_next350 = inline1230
         switch for_next350._tag {
         case 0:
@@ -512,25 +512,25 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_join____T__string(self__378 *_goml_ve
     var t526 int
     var inline1246 int = vec_len__Vec_6string(parts__380)
     t526 = inline1246
-    var t527 FnIterator__int
+    var t527 FnIterator__isize
     var inline1240 int = 0
     var inline1241 *ref_int_x = ref__Ref_3int(inline1240)
     var inline1242 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
         current_0: inline1241,
         end_1: t526,
     }
-    var inline1243 func() Option__int = func() Option__int {
+    var inline1243 func() Option__isize = func() Option__isize {
         return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1242)
     }
-    var inline1244 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1243)
+    var inline1244 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1243)
     t527 = inline1244
-    var for_iter353 FnIterator__int
+    var for_iter353 FnIterator__isize
     for_iter353 = t527
     Loop_loop530:
     for {
-        var for_next354 Option__int
-        var inline1236 func() Option__int = for_iter353.next_fn
-        var inline1237 Option__int = inline1236()
+        var for_next354 Option__isize
+        var inline1236 func() Option__isize = for_iter353.next_fn
+        var inline1237 Option__isize = inline1236()
         for_next354 = inline1237
         switch for_next354._tag {
         case 0:
@@ -565,8 +565,8 @@ func _goml_m_inherent_i_string_i_string_i_split__once(self__102 string, separato
             _tag: 0,
         }
     } else {
-        var mtmp93 Option__int
-        var inline1270 Option__int = string_find_from(self__102, separator__103, 0)
+        var mtmp93 Option__isize
+        var inline1270 Option__isize = string_find_from(self__102, separator__103, 0)
         mtmp93 = inline1270
         switch mtmp93._tag {
         case 0:
@@ -642,25 +642,25 @@ func _goml_m_inherent_i_string_i_string_i_lines(self__107 string) *_goml_vec_str
     var t561 int
     var inline1307 int = vec_len__Vec_6string(result__108)
     t561 = inline1307
-    var t562 FnIterator__int
+    var t562 FnIterator__isize
     var inline1301 int = 0
     var inline1302 *ref_int_x = ref__Ref_3int(inline1301)
     var inline1303 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
         current_0: inline1302,
         end_1: t561,
     }
-    var inline1304 func() Option__int = func() Option__int {
+    var inline1304 func() Option__isize = func() Option__isize {
         return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1303)
     }
-    var inline1305 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1304)
+    var inline1305 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1304)
     t562 = inline1305
-    var for_iter97 FnIterator__int
+    var for_iter97 FnIterator__isize
     for_iter97 = t562
     Loop_loop564:
     for {
-        var for_next98 Option__int
-        var inline1297 func() Option__int = for_iter97.next_fn
-        var inline1298 Option__int = inline1297()
+        var for_next98 Option__isize
+        var inline1297 func() Option__isize = for_iter97.next_fn
+        var inline1298 Option__isize = inline1297()
         for_next98 = inline1298
         switch for_next98._tag {
         case 0:
@@ -713,17 +713,17 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__273 *_goml_vec
     return t588
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
     var t591 string = _goml_runtime_core_int_to_string(self__32)
     return t591
 }
 
-func _goml_m_inherent_i_string_i_string_i_find(self__69 string, expected__70 string) Option__int {
-    var t594 Option__int = string_find_from(self__69, expected__70, 0)
+func _goml_m_inherent_i_string_i_string_i_find(self__69 string, expected__70 string) Option__isize {
+    var t594 Option__isize = string_find_from(self__69, expected__70, 0)
     return t594
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__int(self__467 Option__int, fallback__468 int) int {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(self__467 Option__isize, fallback__468 int) int {
     switch self__467._tag {
     case 0:
         return fallback__468
@@ -735,7 +735,7 @@ func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__int(self__467 
     }
 }
 
-func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 string) Option__int {
+func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 string) Option__isize {
     var value_len__87 int
     var inline1314 int = _goml_runtime_core_string_len(self__85)
     value_len__87 = inline1314
@@ -744,7 +744,7 @@ func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 st
     expected_len__88 = inline1312
     var t603 bool = expected_len__88 > value_len__87
     if t603 {
-        return Option__int{
+        return Option__isize{
             _tag: 0,
         }
     } else {
@@ -755,7 +755,7 @@ func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 st
             if t606 {
                 var t608 bool = _goml_m_inherent_i_string_i_string_i_starts__with__at(self__85, start__89, expected__86)
                 if t608 {
-                    var t609 Option__int = Option__int{
+                    var t609 Option__isize = Option__isize{
                         _tag: 1,
                         _v1_0: start__89,
                     }
@@ -771,7 +771,7 @@ func _goml_m_inherent_i_string_i_string_i_rfind(self__85 string, expected__86 st
                 break Loop_loop605
             }
         }
-        return Option__int{
+        return Option__isize{
             _tag: 0,
         }
     }
@@ -879,51 +879,51 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
     } else {
         var char_index__78 int = 0
         var t684 bool = start__76 == 0
-        var jp653 Option__int
+        var jp653 Option__isize
         if t684 {
-            var t685 Option__int = Option__int{
+            var t685 Option__isize = Option__isize{
                 _tag: 1,
                 _v1_0: 0,
             }
             jp653 = t685
         } else {
-            jp653 = Option__int{
+            jp653 = Option__isize{
                 _tag: 0,
             }
         }
-        var start_byte__79 Option__int = jp653
+        var start_byte__79 Option__isize = jp653
         var t682 bool = end__77 == 0
-        var jp655 Option__int
+        var jp655 Option__isize
         if t682 {
-            var t683 Option__int = Option__int{
+            var t683 Option__isize = Option__isize{
                 _tag: 1,
                 _v1_0: 0,
             }
             jp655 = t683
         } else {
-            jp655 = Option__int{
+            jp655 = Option__isize{
                 _tag: 0,
             }
         }
-        var end_byte__80 Option__int = jp655
-        var t656 _goml_m_FnIterator_____o_int_c_char_q_
+        var end_byte__80 Option__isize = jp655
+        var t656 _goml_m_FnIterator_____o_isize_c_char_q_
         var inline1347 *ref_int_x = ref__Ref_3int(0)
         var inline1348 closure_env_inherent_string_string_char_indices_2 = closure_env_inherent_string_string_char_indices_2{
             index_0: inline1347,
             self_1: self__75,
         }
-        var inline1349 func() _goml_m_Option_____o_int_c_char_q_ = func() _goml_m_Option_____o_int_c_char_q_ {
+        var inline1349 func() _goml_m_Option_____o_isize_c_char_q_ = func() _goml_m_Option_____o_isize_c_char_q_ {
             return _goml_m_inherent_i_closure__en_hce113b295882d0c03e72873edb11c646_ices__2_i_apply(inline1348)
         }
-        var inline1350 _goml_m_FnIterator_____o_int_c_char_q_ = _goml_m_inherent_i_FnIterator__h559d57d5b56469d45e6c7f16383d3a50_o_int_c_char_q_(inline1349)
+        var inline1350 _goml_m_FnIterator_____o_isize_c_char_q_ = _goml_m_inherent_i_FnIterator__hae8fa7fd40ba2a3681525fbecfca8da7_isize_c_char_q_(inline1349)
         t656 = inline1350
-        var for_iter50 _goml_m_FnIterator_____o_int_c_char_q_
+        var for_iter50 _goml_m_FnIterator_____o_isize_c_char_q_
         for_iter50 = t656
         Loop_loop672:
         for {
-            var for_next51 _goml_m_Option_____o_int_c_char_q_
-            var inline1337 func() _goml_m_Option_____o_int_c_char_q_ = for_iter50.next_fn
-            var inline1338 _goml_m_Option_____o_int_c_char_q_ = inline1337()
+            var for_next51 _goml_m_Option_____o_isize_c_char_q_
+            var inline1337 func() _goml_m_Option_____o_isize_c_char_q_ = for_iter50.next_fn
+            var inline1338 _goml_m_Option_____o_isize_c_char_q_ = inline1337()
             for_next51 = inline1338
             switch for_next51._tag {
             case 0:
@@ -933,7 +933,7 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
                 var x54 int = x52._0
                 var t680 bool = char_index__78 == start__76
                 if t680 {
-                    var t681 Option__int = Option__int{
+                    var t681 Option__isize = Option__isize{
                         _tag: 1,
                         _v1_0: x54,
                     }
@@ -941,7 +941,7 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
                 } else {}
                 var t678 bool = char_index__78 == end__77
                 if t678 {
-                    var t679 Option__int = Option__int{
+                    var t679 Option__isize = Option__isize{
                         _tag: 1,
                         _v1_0: x54,
                     }
@@ -961,7 +961,7 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
             var t670 int
             var inline1340 int = _goml_runtime_core_string_len(self__75)
             t670 = inline1340
-            var t671 Option__int = Option__int{
+            var t671 Option__isize = Option__isize{
                 _tag: 1,
                 _v1_0: t670,
             }
@@ -972,18 +972,18 @@ func _goml_m_inherent_i_string_i_string_i_slice__chars(self__75 string, start__7
             var t667 int
             var inline1342 int = _goml_runtime_core_string_len(self__75)
             t667 = inline1342
-            var t668 Option__int = Option__int{
+            var t668 Option__isize = Option__isize{
                 _tag: 1,
                 _v1_0: t667,
             }
             end_byte__80 = t668
         } else {}
-        var mtmp68 Tuple2_11Option__int_11Option__int = Tuple2_11Option__int_11Option__int{
+        var mtmp68 Tuple2_13Option__isize_13Option__isize = Tuple2_13Option__isize_13Option__isize{
             _0: start_byte__79,
             _1: end_byte__80,
         }
-        var x69 Option__int = mtmp68._0
-        var x70 Option__int = mtmp68._1
+        var x69 Option__isize = mtmp68._0
+        var x70 Option__isize = mtmp68._1
         switch x70._tag {
         case 1:
             var x71 int = x70._v1_0
@@ -1025,7 +1025,7 @@ func _goml_m_inherent_i_string_i_string_i_replace(self__111 string, expected__11
         var start__115 int = 0
         Loop_loop_expr700:
         for {
-            var mtmp106 Option__int = string_find_from(self__111, expected__112, start__115)
+            var mtmp106 Option__isize = string_find_from(self__111, expected__112, start__115)
             switch mtmp106._tag {
             case 0:
                 var t702 int
@@ -1076,25 +1076,25 @@ func _goml_m_inherent_i_string_i_string_i_repeat(self__117 string, count__118 in
         var parts__119 *_goml_vec_string
         var inline1384 *_goml_vec_string = vec_with_capacity__Vec_6string(count__118)
         parts__119 = inline1384
-        var t713 FnIterator__int
+        var t713 FnIterator__isize
         var inline1378 int = 0
         var inline1379 *ref_int_x = ref__Ref_3int(inline1378)
         var inline1380 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
             current_0: inline1379,
             end_1: count__118,
         }
-        var inline1381 func() Option__int = func() Option__int {
+        var inline1381 func() Option__isize = func() Option__isize {
             return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1380)
         }
-        var inline1382 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1381)
+        var inline1382 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1381)
         t713 = inline1382
-        var for_iter113 FnIterator__int
+        var for_iter113 FnIterator__isize
         for_iter113 = t713
         Loop_loop716:
         for {
-            var for_next114 Option__int
-            var inline1374 func() Option__int = for_iter113.next_fn
-            var inline1375 Option__int = inline1374()
+            var for_next114 Option__isize
+            var inline1374 func() Option__isize = for_iter113.next_fn
+            var inline1375 Option__isize = inline1374()
             for_next114 = inline1375
             switch for_next114._tag {
             case 0:
@@ -1115,25 +1115,25 @@ func _goml_m_inherent_i_string_i_string_i_is__ascii(self__120 string) bool {
     var t724 int
     var inline1398 int = _goml_runtime_core_string_len(self__120)
     t724 = inline1398
-    var t725 FnIterator__int
+    var t725 FnIterator__isize
     var inline1392 int = 0
     var inline1393 *ref_int_x = ref__Ref_3int(inline1392)
     var inline1394 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
         current_0: inline1393,
         end_1: t724,
     }
-    var inline1395 func() Option__int = func() Option__int {
+    var inline1395 func() Option__isize = func() Option__isize {
         return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1394)
     }
-    var inline1396 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1395)
+    var inline1396 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1395)
     t725 = inline1396
-    var for_iter117 FnIterator__int
+    var for_iter117 FnIterator__isize
     for_iter117 = t725
     Loop_loop727:
     for {
-        var for_next118 Option__int
-        var inline1388 func() Option__int = for_iter117.next_fn
-        var inline1389 Option__int = inline1388()
+        var for_next118 Option__isize
+        var inline1388 func() Option__isize = for_iter117.next_fn
+        var inline1389 Option__isize = inline1388()
         for_next118 = inline1389
         switch for_next118._tag {
         case 0:
@@ -1170,25 +1170,25 @@ func _goml_m_inherent_i_string_i_string_i_eq__ignore__ascii__case(self__122 stri
         var t739 int
         var inline1418 int = _goml_runtime_core_string_len(self__122)
         t739 = inline1418
-        var t740 FnIterator__int
+        var t740 FnIterator__isize
         var inline1412 int = 0
         var inline1413 *ref_int_x = ref__Ref_3int(inline1412)
         var inline1414 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
             current_0: inline1413,
             end_1: t739,
         }
-        var inline1415 func() Option__int = func() Option__int {
+        var inline1415 func() Option__isize = func() Option__isize {
             return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1414)
         }
-        var inline1416 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1415)
+        var inline1416 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1415)
         t740 = inline1416
-        var for_iter121 FnIterator__int
+        var for_iter121 FnIterator__isize
         for_iter121 = t740
         Loop_loop742:
         for {
-            var for_next122 Option__int
-            var inline1408 func() Option__int = for_iter121.next_fn
-            var inline1409 Option__int = inline1408()
+            var for_next122 Option__isize
+            var inline1408 func() Option__isize = for_iter121.next_fn
+            var inline1409 Option__isize = inline1408()
             for_next122 = inline1409
             switch for_next122._tag {
             case 0:
@@ -1227,26 +1227,26 @@ func _goml_m_inherent_i_string_i_string_i_to__ascii__lowercase(self__125 string)
     var t751 int
     var inline1438 int = vec_len__Vec_5uint8(values__126)
     t751 = inline1438
-    var t752 FnIterator__int
+    var t752 FnIterator__isize
     var inline1432 int = 0
     var inline1433 *ref_int_x = ref__Ref_3int(inline1432)
     var inline1434 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
         current_0: inline1433,
         end_1: t751,
     }
-    var inline1435 func() Option__int = func() Option__int {
+    var inline1435 func() Option__isize = func() Option__isize {
         return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1434)
     }
-    var inline1436 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1435)
+    var inline1436 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1435)
     t752 = inline1436
-    var for_iter125 FnIterator__int
+    var for_iter125 FnIterator__isize
     for_iter125 = t752
     var inline1425 uint8 = 97 - 65
     Loop_loop754:
     for {
-        var for_next126 Option__int
-        var inline1428 func() Option__int = for_iter125.next_fn
-        var inline1429 Option__int = inline1428()
+        var for_next126 Option__isize
+        var inline1428 func() Option__isize = for_iter125.next_fn
+        var inline1429 Option__isize = inline1428()
         for_next126 = inline1429
         switch for_next126._tag {
         case 0:
@@ -1281,26 +1281,26 @@ func _goml_m_inherent_i_string_i_string_i_to__ascii__uppercase(self__129 string)
     var t760 int
     var inline1456 int = vec_len__Vec_5uint8(values__130)
     t760 = inline1456
-    var t761 FnIterator__int
+    var t761 FnIterator__isize
     var inline1450 int = 0
     var inline1451 *ref_int_x = ref__Ref_3int(inline1450)
     var inline1452 closure_env_goml_builtin_range_0 = closure_env_goml_builtin_range_0{
         current_0: inline1451,
         end_1: t760,
     }
-    var inline1453 func() Option__int = func() Option__int {
+    var inline1453 func() Option__isize = func() Option__isize {
         return _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(inline1452)
     }
-    var inline1454 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(inline1453)
+    var inline1454 FnIterator__isize = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(inline1453)
     t761 = inline1454
-    var for_iter137 FnIterator__int
+    var for_iter137 FnIterator__isize
     for_iter137 = t761
     var inline1443 uint8 = 97 - 65
     Loop_loop763:
     for {
-        var for_next138 Option__int
-        var inline1446 func() Option__int = for_iter137.next_fn
-        var inline1447 Option__int = inline1446()
+        var for_next138 Option__isize
+        var inline1446 func() Option__isize = for_iter137.next_fn
+        var inline1447 Option__isize = inline1446()
         for_next138 = inline1447
         switch for_next138._tag {
         case 0:
@@ -1380,7 +1380,7 @@ func _goml_m_inherent_i_string_i_string_i_byte__get(self__39 string, index__40 i
     return t792
 }
 
-func string_find_from(value__133 string, expected__134 string, start__135 int) Option__int {
+func string_find_from(value__133 string, expected__134 string, start__135 int) Option__isize {
     var value_len__136 int
     var inline1469 int = _goml_runtime_core_string_len(value__133)
     value_len__136 = inline1469
@@ -1396,13 +1396,13 @@ func string_find_from(value__133 string, expected__134 string, start__135 int) O
         jp806 = t824
     }
     if jp806 {
-        return Option__int{
+        return Option__isize{
             _tag: 0,
         }
     } else {
         var t809 bool = expected_len__137 == 0
         if t809 {
-            var t810 Option__int = Option__int{
+            var t810 Option__isize = Option__isize{
                 _tag: 1,
                 _v1_0: start__135,
             }
@@ -1411,7 +1411,7 @@ func string_find_from(value__133 string, expected__134 string, start__135 int) O
             var t813 int = value_len__136 - start__135
             var t814 bool = expected_len__137 > t813
             if t814 {
-                return Option__int{
+                return Option__isize{
                     _tag: 0,
                 }
             } else {
@@ -1423,7 +1423,7 @@ func string_find_from(value__133 string, expected__134 string, start__135 int) O
                     if t817 {
                         var t819 bool = _goml_m_inherent_i_string_i_string_i_starts__with__at(value__133, index__139, expected__134)
                         if t819 {
-                            var t820 Option__int = Option__int{
+                            var t820 Option__isize = Option__isize{
                                 _tag: 1,
                                 _v1_0: index__139,
                             }
@@ -1439,7 +1439,7 @@ func string_find_from(value__133 string, expected__134 string, start__135 int) O
                         break Loop_loop816
                     }
                 }
-                return Option__int{
+                return Option__isize{
                     _tag: 0,
                 }
             }
@@ -1520,8 +1520,8 @@ func string_byte_slice(value__21 string, start__22 int, end__23 int) string {
     }
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__254 func() Option__int) FnIterator__int {
-    var t924 FnIterator__int = FnIterator__int{
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__isize(next_fn__254 func() Option__isize) FnIterator__isize {
+    var t924 FnIterator__isize = FnIterator__isize{
         next_fn: next_fn__254,
     }
     return t924
@@ -1572,8 +1572,8 @@ func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__char(nex
     return t951
 }
 
-func _goml_m_inherent_i_FnIterator__h559d57d5b56469d45e6c7f16383d3a50_o_int_c_char_q_(next_fn__254 func() _goml_m_Option_____o_int_c_char_q_) _goml_m_FnIterator_____o_int_c_char_q_ {
-    var t954 _goml_m_FnIterator_____o_int_c_char_q_ = _goml_m_FnIterator_____o_int_c_char_q_{
+func _goml_m_inherent_i_FnIterator__hae8fa7fd40ba2a3681525fbecfca8da7_isize_c_char_q_(next_fn__254 func() _goml_m_Option_____o_isize_c_char_q_) _goml_m_FnIterator_____o_isize_c_char_q_ {
+    var t954 _goml_m_FnIterator_____o_isize_c_char_q_ = _goml_m_FnIterator_____o_isize_c_char_q_{
         next_fn: next_fn__254,
     }
     return t954
@@ -1987,7 +1987,7 @@ func utf8_valid_scalar(value__4 uint32) bool {
     }
 }
 
-func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(env428 closure_env_goml_builtin_range_0) Option__int {
+func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_apply(env428 closure_env_goml_builtin_range_0) Option__isize {
     var current__505 *ref_int_x = env428.current_0
     var end__504 int = env428.end_1
     var value__506 int = ref_get__Ref_3int(current__505)
@@ -1995,13 +1995,13 @@ func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_
     if t1128 {
         var t1129 int = value__506 + 1
         ref_set__Ref_3int(current__505, t1129)
-        var t1130 Option__int = Option__int{
+        var t1130 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: value__506,
         }
         return t1130
     } else {
-        return Option__int{
+        return Option__isize{
             _tag: 0,
         }
     }
@@ -2039,7 +2039,7 @@ func _goml_m_inherent_i_closure__en_h6cc414bec6b61ab808929b69f0900e8f_hars__1_i_
     }
 }
 
-func _goml_m_inherent_i_closure__en_hce113b295882d0c03e72873edb11c646_ices__2_i_apply(env430 closure_env_inherent_string_string_char_indices_2) _goml_m_Option_____o_int_c_char_q_ {
+func _goml_m_inherent_i_closure__en_hce113b295882d0c03e72873edb11c646_ices__2_i_apply(env430 closure_env_inherent_string_string_char_indices_2) _goml_m_Option_____o_isize_c_char_q_ {
     var index__58 *ref_int_x = env430.index_0
     var self__57 string = env430.self_1
     var current__59 int = ref_get__Ref_3int(index__58)
@@ -2062,13 +2062,13 @@ func _goml_m_inherent_i_closure__en_hce113b295882d0c03e72873edb11c646_ices__2_i_
             _0: current__59,
             _1: x40,
         }
-        var t1145 _goml_m_Option_____o_int_c_char_q_ = _goml_m_Option_____o_int_c_char_q_{
+        var t1145 _goml_m_Option_____o_isize_c_char_q_ = _goml_m_Option_____o_isize_c_char_q_{
             _tag: 1,
             _v1_0: t1144,
         }
         return t1145
     } else {
-        return _goml_m_Option_____o_int_c_char_q_{
+        return _goml_m_Option_____o_isize_c_char_q_{
             _tag: 0,
         }
     }

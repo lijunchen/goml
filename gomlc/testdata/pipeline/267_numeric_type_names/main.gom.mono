@@ -1,0 +1,141 @@
+fn signed_sum(first/0: i8, second/1: i16, third/2: i32, fourth/3: i64, fifth/4: isize) -> isize {
+  (((((first/0 as isize) + (second/1 as isize)) + (third/2 as isize)) + (fourth/3 as isize)) +
+    fifth/4)
+}
+
+fn unsigned_sum(first/5: u8, second/6: u16, third/7: u32, fourth/8: u64, fifth/9: usize) -> usize {
+  (((((first/5 as usize) + (second/6 as usize)) + (third/7 as usize)) + (fourth/8 as usize)) +
+    fifth/9)
+}
+
+fn main() -> unit {
+  let small/10 = 1.5 in
+  let large/11 = 2.25 in
+  let value/12 = 65 in
+  let _wild411 = println__T_isize(signed_sum(-1, 2, 3, 4, 5)) in
+  let _wild412 = println__T_usize(unsigned_sum(1, 2, 3, 4, 5)) in
+  let _wild413 =
+    println__T_string(
+      ((trait_impl#ToString#f32#to_string(small/10) + ",") +
+        trait_impl#ToString#f64#to_string(large/11))
+    ) in
+  let _wild414 = println__T_u16((value/12 as u16)) in
+  println__T_char(inherent#Option#Option[T]#unwrap_or__T_char(char_from_u32(65), '?'))
+}
+
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
+}
+
+fn println__T_usize(value/1: usize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#usize#to_string(value/1))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#f32#to_string(self/160: f32) -> string {
+  @runtime(core.float32_to_string)(self/160)
+}
+
+fn trait_impl#ToString#f64#to_string(self/161: f64) -> string {
+  @runtime(core.float64_to_string)(self/161)
+}
+
+fn println__T_u16(value/1: u16) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u16#to_string(value/1))
+}
+
+fn println__T_char(value/1: char) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#char#to_string(value/1))
+}
+
+fn char_from_u32(value/3: u32) -> Option__char {
+  __goml_builtin_char_from_uint32(value/3)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_char(self/467: Option__char, fallback/468: char) -> char {
+  match self/467 {
+    Option__char::None => {
+      fallback/468
+    },
+    Option__char::Some(x390) => {
+      {
+        let x390 = Option__char::Some._0(self/467) in
+        {
+          let value/469 = x390 in
+          value/469
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
+  @runtime(core.int_to_string)(self/151)
+}
+
+fn trait_impl#ToString#usize#to_string(self/451: usize) -> string {
+  @runtime(core.uint_to_string)(self/451)
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}
+
+fn trait_impl#ToString#u16#to_string(self/157: u16) -> string {
+  @runtime(core.uint16_to_string)(self/157)
+}
+
+fn trait_impl#ToString#char#to_string(self/150: char) -> string {
+  char_to_string(self/150)
+}
+
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
+  if utf8_valid_scalar(value/30) {
+      {
+        let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
+        {
+          let x24 = mtmp22.1 in
+          {
+            let character/31 = x24 in
+            {
+              Option__char::Some(character/31)
+            }
+          }
+        }
+      }
+  } else {
+      {
+        Option__char::None
+      }
+  }
+}
+
+fn char_to_string(value/29: char) -> string {
+  if utf8_valid_scalar((value/29 as u32)) {
+      {
+        @runtime(core.char_to_string)(value/29)
+      }
+  } else {
+      {
+        let mtmp21 = @runtime(core.string_get)("", -1) in
+        {
+          ""
+        }
+      }
+  }
+}
+
+fn utf8_valid_scalar(value/4: u32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
+}

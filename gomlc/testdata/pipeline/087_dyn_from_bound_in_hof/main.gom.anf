@@ -1,4 +1,4 @@
-fn trait_impl#Display#int32#show(self/0: int32) -> string {
+fn trait_impl#Display#i32#show(self/0: i32) -> string {
   let inline434 = @runtime(core.int32_to_string)(self/0) in
   inline434
 }
@@ -11,25 +11,25 @@ fn main() -> unit {
     let inline437 = @runtime(core.string_println)(inline436) in
     ()
   } in
-  let inline439 = to_dyn[Display]{int32}(value/3) in
-  let inline440 = closure_env_mk_renderer_T_int32_0 { d_0: inline439 } in
+  let inline439 = to_dyn[Display]{i32}(value/3) in
+  let inline440 = closure_env_mk_renderer_T_i32_0 { d_0: inline439 } in
   let inline441 =
-    pack_closure[inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply](
+    pack_closure[inherent#closure_env_mk_renderer_T_i32_0#closure_env_mk_renderer_T_i32_0#apply](
       inline440
     ) in
   jump inline_cont438(inline441)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t420 = @runtime(core.int32_to_string)(self/33) in
   t420
 }
 
-fn mk_renderer__T_int32(x/1: int32) -> () -> string {
-  let d/2 = to_dyn[Display]{int32}(x/1) in
-  let t423 = closure_env_mk_renderer_T_int32_0 { d_0: d/2 } in
+fn mk_renderer__T_i32(x/1: i32) -> () -> string {
+  let d/2 = to_dyn[Display]{i32}(x/1) in
+  let t423 = closure_env_mk_renderer_T_i32_0 { d_0: d/2 } in
   let t424 =
-    pack_closure[inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply](
+    pack_closure[inherent#closure_env_mk_renderer_T_i32_0#closure_env_mk_renderer_T_i32_0#apply](
       t423
     ) in
   t424
@@ -47,10 +47,10 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(
-  env412: closure_env_mk_renderer_T_int32_0
+fn inherent#closure_env_mk_renderer_T_i32_0#closure_env_mk_renderer_T_i32_0#apply(
+  env412: closure_env_mk_renderer_T_i32_0
 ) -> string {
-  let d/2 = closure_env_mk_renderer_T_int32_0.d_0(env412) in
+  let d/2 = closure_env_mk_renderer_T_i32_0.d_0(env412) in
   let t432 = dyn_call[Display::show](d/2) in
   t432
 }

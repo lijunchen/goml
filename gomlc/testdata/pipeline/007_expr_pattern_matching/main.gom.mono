@@ -9,20 +9,20 @@ fn main() -> unit {
           Expr::Zero => {
             match x412 {
               Expr::Zero => {
-                print__T_int(0)
+                print__T_isize(0)
               },
               Expr::Succ(x421) => {
                 {
                   {
                     {
-                      print__T_int(2)
+                      print__T_isize(2)
                     }
                   }
                 }
               },
               _ =>
                 {
-                  print__T_int(5)
+                  print__T_isize(5)
                 },
             }
           },
@@ -32,14 +32,14 @@ fn main() -> unit {
                 {
                   {
                     {
-                      print__T_int(2)
+                      print__T_isize(2)
                     }
                   }
                 }
               },
               _ =>
                 {
-                  print__T_int(6)
+                  print__T_isize(6)
                 },
             },
         }
@@ -52,7 +52,7 @@ fn main() -> unit {
         match x414 {
           Expr::Zero => {
             {
-              print__T_int(1)
+              print__T_isize(1)
             }
           },
           Expr::Add(x432, x433) => {
@@ -60,14 +60,14 @@ fn main() -> unit {
               match x415 {
                 Expr::Zero => {
                   {
-                    print__T_int(3)
+                    print__T_isize(3)
                   }
                 },
                 _ =>
                   {
                     {
                       {
-                        print__T_int(4)
+                        print__T_isize(4)
                       }
                     }
                   },
@@ -78,12 +78,12 @@ fn main() -> unit {
             match x415 {
               Expr::Zero => {
                 {
-                  print__T_int(3)
+                  print__T_isize(3)
                 }
               },
               _ =>
                 {
-                  print__T_int(6)
+                  print__T_isize(6)
                 },
             },
         }
@@ -91,15 +91,15 @@ fn main() -> unit {
     },
     _ =>
       {
-        print__T_int(6)
+        print__T_isize(6)
       },
   }
 }
 
-fn print__T_int(value/0: int) -> unit {
-  @runtime(core.string_print)(trait_impl#ToString#int#to_string(value/0))
+fn print__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }

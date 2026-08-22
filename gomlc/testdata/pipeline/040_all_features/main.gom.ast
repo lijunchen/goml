@@ -1,7 +1,7 @@
 package main;
 struct Tracker {
     label: string,
-    count: Ref[int32],
+    count: Ref[i32],
     toggled: Ref[bool],
 }
 
@@ -33,8 +33,8 @@ impl Describe for Tracker {
   }
 }
 
-impl Describe for Record[int32] {
-  fn describe(self: Record[int32]) -> string {
+impl Describe for Record[i32] {
+  fn describe(self: Record[i32]) -> string {
       match self {
           Value(value) => "Value(" + value.to_string() + ")",
           Pair(before, after) =>
@@ -80,15 +80,15 @@ fn map_maybe[T, U](value: Maybe[T], f: (T) -> U) -> Maybe[U] {
     }
 }
 
-fn format_total(total: int32) -> string {
+fn format_total(total: i32) -> string {
     "total: " + total.to_string()
 }
 
-fn increment(value: int32) -> int32 {
+fn increment(value: i32) -> i32 {
     value + 1
 }
 
-fn triple(value: int32) -> int32 {
+fn triple(value: i32) -> i32 {
     value * 3
 }
 
@@ -97,7 +97,7 @@ fn pair_join(parts: (string, string)) -> string {
     left + " -> " + right
 }
 
-fn run_transforms(value: int32, transforms: [(int32) -> int32; 2]) -> [int32; 2] {
+fn run_transforms(value: i32, transforms: [(i32) -> i32; 2]) -> [i32; 2] {
     let first = transforms[0];
     let second = transforms[1];
     let first_result = first(value);
@@ -107,7 +107,7 @@ fn run_transforms(value: int32, transforms: [(int32) -> int32; 2]) -> [int32; 2]
     results
 }
 
-fn gather(record: Record[int32]) -> Maybe[int32] {
+fn gather(record: Record[i32]) -> Maybe[i32] {
     match record {
         Value(value) => Some(value),
         Pair(_, after) => Some(after),
@@ -115,10 +115,10 @@ fn gather(record: Record[int32]) -> Maybe[int32] {
     }
 }
 
-fn build_counter(label: string, start: int32) -> (
+fn build_counter(label: string, start: i32) -> (
   Tracker,
-  () -> Record[int32],
-  (int32) -> Record[int32],
+  () -> Record[i32],
+  (i32) -> Record[i32],
   () -> Record[string]
 ) {
     let count = Ref::new(start);
@@ -129,7 +129,7 @@ fn build_counter(label: string, start: int32) -> (
           Value(count.get())
       };
     let bump =
-      |delta: int32| {
+      |delta: i32| {
           let before = count.get();
           let _ = count.set(before + delta);
           Pair(before, count.get())
@@ -155,7 +155,7 @@ fn main() {
     let chosen = choose(true, maybe_second, maybe_first);
     let stringified = map_maybe(chosen, format_total);
     let transforms = [increment, triple];
-    let results: [int32; 2] = run_transforms(4, transforms);
+    let results: [i32; 2] = run_transforms(4, transforms);
     let first_result = results[0];
     let second_result = results[1];
     let order_check = first_result < second_result && true;

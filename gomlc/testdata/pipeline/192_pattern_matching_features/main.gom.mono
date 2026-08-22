@@ -1,4 +1,4 @@
-fn unwrap_either(value/0: Either) -> int32 {
+fn unwrap_either(value/0: Either) -> i32 {
   {
     let match411 = value/0 in
     {
@@ -64,7 +64,7 @@ fn char_group(value/3: char) -> string {
   }
 }
 
-fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> string {
+fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
   let from_if/9 =
     match value/4 {
       Maybe::Some(x417) => {
@@ -127,7 +127,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
                 let first/10 = @intrinsic(vec.get)(match419, 0) in
                 {
                   let tail/11 = @intrinsic(slice.new)(match419, 1, @intrinsic(vec.len)(match419)) in
-                  if (first/10 == (inherent#Slice#Slice[T]#len__T_int32(tail/11) as int32)) {
+                  if (first/10 == (inherent#Slice#Slice[T]#len__T_i32(tail/11) as i32)) {
                       "balanced"
                   } else {
                       if (@intrinsic(vec.len)(match419) >= 1) {
@@ -188,9 +188,9 @@ fn main() -> unit {
               let middle/20 =
                 [@intrinsic(array.get)(mtmp424, 1), @intrinsic(array.get)(mtmp424, 2)] in
               {
-                let _wild425 = println__T_int32(left/17) in
+                let _wild425 = println__T_i32(left/17) in
                 let _wild426 =
-                  println__T_int(((first/19 + @intrinsic(array.get)(middle/20, 0)) + last/21)) in
+                  println__T_isize(((first/19 + @intrinsic(array.get)(middle/20, 0)) + last/21)) in
                 let numbers/22 = @intrinsic(vec.new)() in
                 let _wild427 = @intrinsic(vec.push)(numbers/22, 1) in
                 let _wild428 = @intrinsic(vec.push)(numbers/22, 8) in
@@ -198,7 +198,7 @@ fn main() -> unit {
                   @intrinsic(slice.new)(
                     numbers/22,
                     0,
-                    inherent#Vec#Vec[T]#len__T_int32(numbers/22)
+                    inherent#Vec#Vec[T]#len__T_i32(numbers/22)
                   ) in
                 let _wild429 = println__T_string(describe(Maybe::Some(3), numbers/22, view/23)) in
                 let empty/24 = @intrinsic(vec.new)() in
@@ -216,7 +216,7 @@ fn main() -> unit {
                               {
                                 let n/27 = x432 in
                                 {
-                                  let _wild433 = println__T_int32(n/27) in
+                                  let _wild433 = println__T_i32(n/27) in
                                   let _wild434 =
                                     inherent#Ref#Ref[T]#set__T_Maybe(state/26, Maybe::None) in
                                 }
@@ -237,7 +237,7 @@ fn main() -> unit {
                           {
                             let n/28 = x437 in
                             {
-                              let _wild438 = println__T_int32(n/28) in
+                              let _wild438 = println__T_i32(n/28) in
                             }
                           }
                         }
@@ -281,8 +281,8 @@ fn main() -> unit {
                       }
                     }
                   } in
-                let _wild443 = println__T_int32(aliased/32) in
-                let _wild444 = println__T_int32(unwrap_either(Either::Right(11))) in
+                let _wild443 = println__T_i32(aliased/32) in
+                let _wild444 = println__T_i32(unwrap_either(Either::Right(11))) in
                 let _wild445 = println__T_string(char_group('b')) in
               }
             }
@@ -293,19 +293,19 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Slice#Slice[T]#len__T_int32(self/407: Slice[int32]) -> int {
+fn inherent#Slice#Slice[T]#len__T_i32(self/407: Slice[i32]) -> isize {
   @intrinsic(slice.len)(self/407)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+fn inherent#Vec#Vec[T]#len__T_i32(self/273: Vec[i32]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -325,11 +325,11 @@ fn inherent#Ref#Ref[T]#set__T_Maybe(self/433: Ref[Maybe], value/434: Maybe) -> u
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 

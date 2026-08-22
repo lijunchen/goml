@@ -7,35 +7,35 @@ fn main() -> unit {
       Color::Red => {
         match x411 {
           Color::Red => {
-            print__T_int(1)
+            print__T_isize(1)
           },
-          _ => print__T_int(3),
+          _ => print__T_isize(3),
         }
       },
       Color::Green => {
         match x411 {
           Color::Red => {
-            print__T_int(0)
+            print__T_isize(0)
           },
-          _ => print__T_int(3),
+          _ => print__T_isize(3),
         }
       },
       Color::Blue => {
         match x411 {
           Color::Blue => {
-            print__T_int(2)
+            print__T_isize(2)
           },
-          _ => print__T_int(3),
+          _ => print__T_isize(3),
         }
       },
     }
   }
 }
 
-fn print__T_int(value/0: int) -> unit {
-  @runtime(core.string_print)(trait_impl#ToString#int#to_string(value/0))
+fn print__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }

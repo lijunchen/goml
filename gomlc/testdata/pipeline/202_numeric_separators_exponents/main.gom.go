@@ -47,13 +47,13 @@ func main0() struct{} {
     var unsigned__2 uint64 = 4294967296
     var float__3 float64 = 125
     var small__4 float32 = 2.5
-    var inline468 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(integer__1)
+    var inline468 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(integer__1)
     _goml_runtime_core_string_println(inline468)
-    var inline465 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(unsigned__2)
+    var inline465 string = _goml_m_trait__impl_i_ToString_i_u64_i_to__string(unsigned__2)
     _goml_runtime_core_string_println(inline465)
-    var inline462 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(float__3)
+    var inline462 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(float__3)
     _goml_runtime_core_string_println(inline462)
-    var inline459 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(small__4)
+    var inline459 string = _goml_m_trait__impl_i_ToString_i_f32_i_to__string(small__4)
     _goml_runtime_core_string_println(inline459)
     switch integer__1 {
     case 1000:
@@ -69,22 +69,22 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t438 string = _goml_runtime_core_int32_to_string(self__154)
     return t438
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__159 uint64) string {
+func _goml_m_trait__impl_i_ToString_i_u64_i_to__string(self__159 uint64) string {
     var t441 string = _goml_runtime_core_uint64_to_string(self__159)
     return t441
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__161 float64) string {
+func _goml_m_trait__impl_i_ToString_i_f64_i_to__string(self__161 float64) string {
     var t444 string = _goml_runtime_core_float64_to_string(self__161)
     return t444
 }
 
-func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__160 float32) string {
+func _goml_m_trait__impl_i_ToString_i_f32_i_to__string(self__160 float32) string {
     var t447 string = _goml_runtime_core_float32_to_string(self__160)
     return t447
 }

@@ -1,39 +1,42 @@
-fn unwrap_or_negative(value/0: Option[int]) -> int {
-    let Option::Some(result/1: int) =
-      (value/0 : Option[int]) else
+fn unwrap_or_negative(value/0: Option[isize]) -> isize {
+    let Option::Some(result/1: isize) =
+      (value/0 : Option[isize]) else
       {
           return -1;
       };
-    (result/1 : int)
+    (result/1 : isize)
 }
 
-fn count_to(limit/2: int) -> int {
-    let counter/3: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+fn count_to(limit/2: isize) -> isize {
+    let counter/3: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     loop {
-        let current/4: int = (Ref[int]::get : (Ref[int]) -> int)((counter/3 : Ref[int]));
-        if (current/4 : int) >= (limit/2 : int) {
+        let current/4: isize = (Ref[isize]::get : (Ref[isize]) -> isize)((counter/3 : Ref[isize]));
+        if (current/4 : isize) >= (limit/2 : isize) {
             {
-                break (current/4 : int);
+                break (current/4 : isize);
             }
         } else {
             ()
         };
-        (Ref[int]::set : (Ref[int], int) -> unit)((counter/3 : Ref[int]), (current/4 : int) + 1);
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+          (counter/3 : Ref[isize]),
+          (current/4 : isize) + 1
+        );
     }
 }
 
-fn loop_option(value/5: Option[int]) -> int {
+fn loop_option(value/5: Option[isize]) -> isize {
     loop {
-        let Option::Some(item/6: int) =
-          (value/5 : Option[int]) else
+        let Option::Some(item/6: isize) =
+          (value/5 : Option[isize]) else
           {
               break -2;
           };
-        break (item/6 : int);
+        break (item/6 : isize);
     }
 }
 
-fn nested_loop_value() -> int {
+fn nested_loop_value() -> isize {
     loop {
         loop {
             break;
@@ -42,7 +45,7 @@ fn nested_loop_value() -> int {
     }
 }
 
-fn never_returns() -> int {
+fn never_returns() -> isize {
     loop {}
 }
 
@@ -57,22 +60,28 @@ fn main() -> unit {
     (println : (string) -> unit)("C:\\tmp\\\"quoted\\\"");
     (println : (string) -> unit)("" + "}");
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (unwrap_or_negative : (Option[int]) -> int)(Option::Some(11))
+      (isize::to_string : (isize) -> string)(
+        (unwrap_or_negative : (Option[isize]) -> isize)(Option::Some(11))
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)((unwrap_or_negative : (Option[int]) -> int)(Option::None))
-    );
-    (println : (string) -> unit)((int::to_string : (int) -> string)((count_to : (int) -> int)(4)));
-    (println : (string) -> unit)(
-      (int::to_string : (int) -> string)((loop_option : (Option[int]) -> int)(Option::Some(9)))
+      (isize::to_string : (isize) -> string)(
+        (unwrap_or_negative : (Option[isize]) -> isize)(Option::None)
+      )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)((loop_option : (Option[int]) -> int)(Option::None))
+      (isize::to_string : (isize) -> string)((count_to : (isize) -> isize)(4))
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)((nested_loop_value : () -> int)())
+      (isize::to_string : (isize) -> string)(
+        (loop_option : (Option[isize]) -> isize)(Option::Some(9))
+      )
+    );
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)((loop_option : (Option[isize]) -> isize)(Option::None))
+    );
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)((nested_loop_value : () -> isize)())
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)((matches_raw_path : (string) -> bool)("C:\\tmp"))

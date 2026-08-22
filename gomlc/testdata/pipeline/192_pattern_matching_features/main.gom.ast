@@ -1,20 +1,20 @@
 package main;
 struct Pair {
-    left: int32,
-    right: int32,
+    left: i32,
+    right: i32,
 }
 
 enum Maybe {
     None,
-    Some(int32)
+    Some(i32)
 }
 
 enum Either {
-    Left(int32),
-    Right(int32)
+    Left(i32),
+    Right(i32)
 }
 
-fn unwrap_either(value: Either) -> int32 {
+fn unwrap_either(value: Either) -> i32 {
     match value {
         whole @ (Either::Left(shared) | Either::Right(shared)) =>
           shared +
@@ -32,7 +32,7 @@ fn char_group(value: char) -> string {
     }
 }
 
-fn describe(value: Maybe, numbers: Vec[int32], view: Slice[int32]) -> string {
+fn describe(value: Maybe, numbers: Vec[i32], view: Slice[i32]) -> string {
     let from_if =
       match value {
           Maybe::Some(n) =>

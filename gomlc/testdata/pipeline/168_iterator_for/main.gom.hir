@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn countdown(local/1/0: int32) -> FnIterator[int32] {
+  fn countdown(local/1/0: i32) -> FnIterator[i32] {
       let local/1/1 = Ref::new(start/0);
       FnIterator::from_fn(
         || {
@@ -15,12 +15,12 @@ file main.gom
       )
   }
 
-  fn counted_range(local/1/3: Ref[int32]) -> FnIterator[int] {
+  fn counted_range(local/1/3: Ref[i32]) -> FnIterator[isize] {
       calls/3.set(calls/3.get() + 1);
       range(1, 5)
   }
 
-  fn first_even(local/1/4: FnIterator[int]) -> int {
+  fn first_even(local/1/4: FnIterator[isize]) -> isize {
       for local/1/5 in
         values/4 {
           if value/5 / 2 * 2 == value/5 {
@@ -31,7 +31,7 @@ file main.gom
   }
 
   fn main() -> unit {
-      let local/1/6: Vec[int32] = Vec::new();
+      let local/1/6: Vec[i32] = Vec::new();
       values/6.push(10);
       values/6.push(20);
       values/6.push(30);
@@ -44,7 +44,7 @@ file main.gom
           sum/7.set(sum/7.get() + value/8);
       };
       println(sum/7.get());
-      let local/1/9: Vec[(int32, string)] = Vec::new();
+      let local/1/9: Vec[(i32, string)] = Vec::new();
       pairs/9.push((1, "a"));
       pairs/9.push((2, "b"));
       for (local/1/10, local/1/11) in

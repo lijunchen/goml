@@ -29,7 +29,7 @@ func vec_len__Vec_5int32(vec *_goml_vec_int32) int {
 
 type Ordering int32
 
-func _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(self__0 *_goml_vec_int32) int {
+func _goml_m_trait__impl_i_Measure_i_Vec_l_i32_r__i_measure(self__0 *_goml_vec_int32) int {
     var inline433 int = vec_len__Vec_5int32(self__0)
     return inline433
 }
@@ -37,7 +37,7 @@ func _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(self__0 *_goml_vec
 func main0() struct{} {
     var values__2 *_goml_vec_int32 = vec_new__Vec_5int32()
     var t415 int
-    var inline440 int = _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(values__2)
+    var inline440 int = _goml_m_trait__impl_i_Measure_i_Vec_l_i32_r__i_measure(values__2)
     t415 = inline440
     var t416 string
     var inline438 string = _goml_runtime_core_int_to_string(t415)

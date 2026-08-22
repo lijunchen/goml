@@ -1,14 +1,14 @@
-impl Display for int32 {
-  fn show(self/0: int32) -> string {
-      (int32::to_string : (int32) -> string)((self/0 : int32))
+impl Display for i32 {
+  fn show(self/0: i32) -> string {
+      (i32::to_string : (i32) -> string)((self/0 : i32))
   }
 }
 
-fn build() -> int32 {
+fn build() -> i32 {
     let _ : Boxed = Boxed::One(return 9);
     0
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((build : () -> int32)()))
+    (println : (string) -> unit)((i32::to_string : (i32) -> string)((build : () -> i32)()))
 }

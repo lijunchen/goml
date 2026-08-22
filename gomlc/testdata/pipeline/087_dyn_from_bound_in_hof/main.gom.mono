@@ -1,19 +1,19 @@
-fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  inherent#int32#int32#to_string(self/0)
+fn trait_impl#Display#i32#show(self/0: i32) -> string {
+  inherent#i32#i32#to_string(self/0)
 }
 
 fn main() -> unit {
   let value/3 = 42 in
-  let f/4 = mk_renderer__T_int32(value/3) in
+  let f/4 = mk_renderer__T_i32(value/3) in
   let _wild411 = println__T_string(f/4()) in
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
-fn mk_renderer__T_int32(x/1: int32) -> () -> string {
-  let d/2 = to_dyn[Display]{int32}(x/1) in
+fn mk_renderer__T_i32(x/1: i32) -> () -> string {
+  let d/2 = to_dyn[Display]{i32}(x/1) in
   || dyn_call[Display::show](d/2)
 }
 

@@ -1,15 +1,15 @@
-fn add_after_match(flag/0: bool) -> int32 {
-    let value/1: int32 =
+fn add_after_match(flag/0: bool) -> i32 {
+    let value/1: i32 =
       match (flag/0 : bool) {
           true => return 5,
           false => 7,
       };
-    (value/1 : int32) + 1
+    (value/1 : i32) + 1
 }
 
 fn receiver_after_match(flag/2: bool) -> string {
-    (int::to_string : (
-      int
+    (isize::to_string : (
+      isize
     ) -> string)(
       match (flag/2 : bool) {
           true => return "early",
@@ -18,25 +18,25 @@ fn receiver_after_match(flag/2: bool) -> string {
     )
 }
 
-fn closure_after_match(flag/3: bool) -> int32 {
-    let f/6: (bool) -> int32 =
+fn closure_after_match(flag/3: bool) -> i32 {
+    let f/6: (bool) -> i32 =
       |inner/4: bool| =>
         {
-            let value/5: int32 =
+            let value/5: i32 =
               match (inner/4 : bool) {
                   true => return 2,
                   false => 4,
               };
-            (value/5 : int32) + 3
+            (value/5 : i32) + 3
         };
-    (f/6 : (bool) -> int32)((flag/3 : bool))
+    (f/6 : (bool) -> i32)((flag/3 : bool))
 }
 
 fn main() -> unit {
-    (println : (int32) -> unit)((add_after_match : (bool) -> int32)(false));
-    (println : (int32) -> unit)((add_after_match : (bool) -> int32)(true));
+    (println : (i32) -> unit)((add_after_match : (bool) -> i32)(false));
+    (println : (i32) -> unit)((add_after_match : (bool) -> i32)(true));
     (println : (string) -> unit)((receiver_after_match : (bool) -> string)(false));
     (println : (string) -> unit)((receiver_after_match : (bool) -> string)(true));
-    (println : (int32) -> unit)((closure_after_match : (bool) -> int32)(false));
-    (println : (int32) -> unit)((closure_after_match : (bool) -> int32)(true));
+    (println : (i32) -> unit)((closure_after_match : (bool) -> i32)(false));
+    (println : (i32) -> unit)((closure_after_match : (bool) -> i32)(true));
 }

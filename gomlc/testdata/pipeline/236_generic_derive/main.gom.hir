@@ -1,7 +1,7 @@
 package main
 file main.gom
   struct NoTraits {
-      value: int,
+      value: isize,
   }
 
   struct Wrapper[T] {
@@ -23,7 +23,7 @@ file main.gom
   impl[T] Eq for Wrapper[T] {}
 
   impl[T] Hash for Wrapper[T] {
-    fn hash(local/1/3: Wrapper[T]) -> uint64 {
+    fn hash(local/1/3: Wrapper[T]) -> u64 {
         7
     }
   }
@@ -55,11 +55,11 @@ file main.gom
   impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq {}
 
   impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
-    fn hash(local/1/9: Generic[T, Marker]) -> uint64 {
+    fn hash(local/1/9: Generic[T, Marker]) -> u64 {
         {
-            let local/1/10 = 0.to_uint64() + 14695981039346656037;
-            let local/1/11 = h/10 * 0.to_uint64() + 1099511628211 + Hash::hash(self/9.first);
-            let local/1/12 = h/11 * 0.to_uint64() + 1099511628211 + Hash::hash(self/9.second);
+            let local/1/10 = 0.to_u64() + 14695981039346656037;
+            let local/1/11 = h/10 * 0.to_u64() + 1099511628211 + Hash::hash(self/9.first);
+            let local/1/12 = h/11 * 0.to_u64() + 1099511628211 + Hash::hash(self/9.second);
             h/12
         }
     }
@@ -95,18 +95,18 @@ file main.gom
   impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {}
 
   impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
-    fn hash(local/1/19: GenericChoice[T, Marker]) -> uint64 {
+    fn hash(local/1/19: GenericChoice[T, Marker]) -> u64 {
         match self/19 {
             ctor(def/1/11::v0) =>
               {
-                  let local/1/20 = 0.to_uint64() + 14695981039346656037 + 1;
+                  let local/1/20 = 0.to_u64() + 14695981039346656037 + 1;
                   h/20
               },
             ctor(def/1/11::v1)(local/1/21) =>
               {
-                  let local/1/22 = 0.to_uint64() + 14695981039346656037 + 2;
+                  let local/1/22 = 0.to_u64() + 14695981039346656037 + 2;
                   let local/1/23 =
-                    h/22 * 0.to_uint64() + 1099511628211 + Hash::hash(#derive0_field/21);
+                    h/22 * 0.to_u64() + 1099511628211 + Hash::hash(#derive0_field/21);
                   h/23
               },
         }

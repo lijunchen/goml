@@ -30,7 +30,7 @@ type closure_env_roundtrip_T_string_0 struct {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -41,11 +41,11 @@ type Option__string struct {
 }
 
 func main0() struct{} {
-    var buffered__2 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(2)
-    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(buffered__2, 10)
-    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(buffered__2, 20)
-    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(buffered__2)
-    var mtmp415 Option__int
+    var buffered__2 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(2)
+    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(buffered__2, 10)
+    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(buffered__2, 20)
+    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__isize(buffered__2)
+    var mtmp415 Option__isize
     var inline523 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
@@ -58,13 +58,13 @@ func main0() struct{} {
     var inline524 int = inline523._0
     var inline525 bool = inline523._1
     if inline525 {
-        var inline528 Option__int = Option__int{
+        var inline528 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: inline524,
         }
         mtmp415 = inline528
     } else {
-        mtmp415 = Option__int{
+        mtmp415 = Option__isize{
             _tag: 0,
         }
     }
@@ -78,9 +78,9 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline520 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp434)
+    var inline520 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp434)
     _goml_runtime_core_string_println(inline520)
-    var mtmp418 Option__int
+    var mtmp418 Option__isize
     var inline513 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
@@ -93,13 +93,13 @@ func main0() struct{} {
     var inline514 int = inline513._0
     var inline515 bool = inline513._1
     if inline515 {
-        var inline518 Option__int = Option__int{
+        var inline518 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: inline514,
         }
         mtmp418 = inline518
     } else {
-        mtmp418 = Option__int{
+        mtmp418 = Option__isize{
             _tag: 0,
         }
     }
@@ -113,9 +113,9 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline510 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp436)
+    var inline510 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp436)
     _goml_runtime_core_string_println(inline510)
-    var mtmp421 Option__int
+    var mtmp421 Option__isize
     var inline503 Tuple2_3int_4bool = func(p0 chan int) Tuple2_3int_4bool {
         var value int
         var ok bool
@@ -128,13 +128,13 @@ func main0() struct{} {
     var inline504 int = inline503._0
     var inline505 bool = inline503._1
     if inline505 {
-        var inline508 Option__int = Option__int{
+        var inline508 Option__isize = Option__isize{
             _tag: 1,
             _v1_0: inline504,
         }
         mtmp421 = inline508
     } else {
-        mtmp421 = Option__int{
+        mtmp421 = Option__isize{
             _tag: 0,
         }
     }
@@ -190,14 +190,14 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(capacity__43
     return t443
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__435 int) chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(capacity__435 int) chan int {
     var t446 chan int = func(p0 int) chan int {
         return make(chan int, p0)
     }(capacity__435)
     return t446
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__436 chan int, value__437 int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__isize(self__436 chan int, value__437 int) struct{} {
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
@@ -205,7 +205,7 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__436 chan
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__441 chan int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__isize(self__441 chan int) struct{} {
     func(p0 chan int) struct{} {
         close(p0)
         return struct{}{}
@@ -213,7 +213,7 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__441 cha
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t471 string = _goml_runtime_core_int_to_string(self__151)
     return t471
 }

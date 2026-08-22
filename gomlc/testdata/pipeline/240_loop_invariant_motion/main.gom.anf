@@ -1,14 +1,14 @@
-fn optimized(base/0: int, count/1: int) -> int {
+fn optimized(base/0: isize, count/1: isize) -> isize {
   let index/2 = 0 in
   let result/3 = 0 in
-  join exit426() -> int {
+  join exit426() -> isize {
     result/3
   } in
   let square/4 = (base/0 * base/0) in
   let scaled/5 = (square/4 * 17) in
   let offset/6 = (scaled/5 + base/0) in
   joinrec {
-    join loop427() -> int {
+    join loop427() -> isize {
       let t428 = (index/2 < count/1) in
       if t428 {
         let t429 = (result/3 + offset/6) in
@@ -24,14 +24,14 @@ fn optimized(base/0: int, count/1: int) -> int {
   jump loop427()
 }
 
-fn guarded(divisor/7: int, count/8: int) -> int {
+fn guarded(divisor/7: isize, count/8: isize) -> isize {
   let index/9 = 0 in
   let result/10 = 0 in
-  join exit433() -> int {
+  join exit433() -> isize {
     result/10
   } in
   joinrec {
-    join loop434() -> int {
+    join loop434() -> isize {
       let t435 = (index/9 < count/8) in
       if t435 {
         let quotient/11 = (100 / divisor/7) in
@@ -48,15 +48,15 @@ fn guarded(divisor/7: int, count/8: int) -> int {
   jump loop434()
 }
 
-fn changing(count/12: int) -> int {
+fn changing(count/12: isize) -> isize {
   let index/13 = 0 in
   let value/14 = 1 in
   let result/15 = 0 in
-  join exit440() -> int {
+  join exit440() -> isize {
     result/15
   } in
   joinrec {
-    join loop441() -> int {
+    join loop441() -> isize {
       let t442 = (index/13 < count/12) in
       if t442 {
         let derived/16 = (value/14 + 1) in
@@ -81,20 +81,20 @@ fn main() -> unit {
     let t448 = guarded(0, 0) in
     join inline_cont459(_wild422: unit) -> unit {
       let t449 = changing(3) in
-      let inline457 = trait_impl#ToString#int#to_string(t449) in
+      let inline457 = trait_impl#ToString#isize#to_string(t449) in
       let inline458 = @runtime(core.string_println)(inline457) in
       ()
     } in
-    let inline460 = trait_impl#ToString#int#to_string(t448) in
+    let inline460 = trait_impl#ToString#isize#to_string(t448) in
     let inline461 = @runtime(core.string_println)(inline460) in
     jump inline_cont459(())
   } in
-  let inline463 = trait_impl#ToString#int#to_string(t447) in
+  let inline463 = trait_impl#ToString#isize#to_string(t447) in
   let inline464 = @runtime(core.string_println)(inline463) in
   jump inline_cont462(())
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont465(t451: string) -> unit {
     let t452 = @runtime(core.string_println)(t451) in
     ()
@@ -103,7 +103,7 @@ fn println__T_int(value/1: int) -> unit {
   jump inline_cont465(inline466)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t455 = @runtime(core.int_to_string)(self/151) in
   t455
 }

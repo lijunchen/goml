@@ -6,8 +6,8 @@ file main.gom
 
   struct Token {}
 
-  impl Convert[int32] for Token {
-    fn convert(local/1/0: Token) -> int32 {
+  impl Convert[i32] for Token {
+    fn convert(local/1/0: Token) -> i32 {
         7
     }
   }
@@ -35,19 +35,19 @@ file main.gom
   }
 
   struct Counter {
-      current: Ref[int32],
-      end: int32,
+      current: Ref[i32],
+      end: i32,
   }
 
   impl Counter {
-    fn new(local/1/4: int32, local/1/5: int32) -> Self {
+    fn new(local/1/4: i32, local/1/5: i32) -> Self {
         Counter { current: Ref::new(start/4), end: end/5 }
     }
   }
 
   impl Iterator for Counter {
-    type Item = int32;
-    fn next(local/1/6: Self) -> Option[int32] {
+    type Item = i32;
+    fn next(local/1/6: Self) -> Option[i32] {
         let local/1/7 = self/6.current.get();
         if current/7 < self/6.end {
             self/6.current.set(current/7 + 1);
@@ -59,15 +59,15 @@ file main.gom
   }
 
   fn main() -> unit {
-      println(Convert[int32]::convert(Token {}));
+      println(Convert[i32]::convert(Token {}));
       println(Convert[string]::convert(Token {}));
-      let local/1/8: int32 = def/1/4(Token {});
+      let local/1/8: i32 = def/1/4(Token {});
       println(converted/8);
-      println(Marker[int32]::marker(Any {}));
+      println(Marker[i32]::marker(Any {}));
       println(Marker[string]::marker(Any {}));
-      println(Marker[Vec[int32]]::marker(Any {}));
-      let local/1/10 = iter::map(Counter::new(0, 8), |local/1/9: int32| value/9 * 2);
-      let local/1/12 = iter::filter(mapped/10, |local/1/11: int32| value/11 > 4);
+      println(Marker[Vec[i32]]::marker(Any {}));
+      let local/1/10 = iter::map(Counter::new(0, 8), |local/1/9: i32| value/9 * 2);
+      let local/1/12 = iter::filter(mapped/10, |local/1/11: i32| value/11 > 4);
       let local/1/13 = iter::take(filtered/12, 3);
       for local/1/14 in
         limited/13 {
@@ -77,13 +77,13 @@ file main.gom
         iter::fold(
           range(1, 5),
           0,
-          |local/1/15: int, local/1/16: int| {
+          |local/1/15: isize, local/1/16: isize| {
               total/15 + value/16
           }
         );
       println(sum/17);
       let local/1/19: Vec[string] =
-        iter::collect(iter::map(range(1, 4), |local/1/18: int| "v" + value/18.to_string()));
+        iter::collect(iter::map(range(1, 4), |local/1/18: isize| "v" + value/18.to_string()));
       for local/1/20 in
         texts/19 {
           println(text/20);

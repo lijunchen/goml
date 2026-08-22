@@ -1,12 +1,12 @@
-fn trait_impl#Mark#int32#marked(self/0: int32) -> string {
-  ("m" + inherent#int32#int32#to_string(self/0))
+fn trait_impl#Mark#i32#marked(self/0: i32) -> string {
+  ("m" + inherent#i32#i32#to_string(self/0))
 }
 
-fn trait_impl#Source#LeftSource#get(self/1: LeftSource) -> int32 {
+fn trait_impl#Source#LeftSource#get(self/1: LeftSource) -> i32 {
   LeftSource.value(self/1)
 }
 
-fn trait_impl#Source#RightSource#get(self/2: RightSource) -> int32 {
+fn trait_impl#Source#RightSource#get(self/2: RightSource) -> i32 {
   RightSource.value(self/2)
 }
 
@@ -18,7 +18,7 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -27,8 +27,8 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn combine__A_LeftSource__B_RightSource(left/3: LeftSource, right/4: RightSource) -> string {
-  ((trait_impl#Mark#int32#marked(trait_impl#Source#LeftSource#get(left/3)) + ":") +
-    trait_impl#Mark#int32#marked(trait_impl#Source#RightSource#get(right/4)))
+  ((trait_impl#Mark#i32#marked(trait_impl#Source#LeftSource#get(left/3)) + ":") +
+    trait_impl#Mark#i32#marked(trait_impl#Source#RightSource#get(right/4)))
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {

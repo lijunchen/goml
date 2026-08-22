@@ -33,30 +33,30 @@ func main0() struct{} {
     var direct__6 int32
     var inline448 int32 = _goml_m_trait__impl_i_Source_i_Value_i_get(t418)
     direct__6 = inline448
-    var inline445 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(direct__6)
+    var inline445 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(direct__6)
     _goml_runtime_core_string_println(inline445)
     var t419 Value = Value{
         value: 42,
     }
     var t420 int32
-    var inline440 int32 = _goml_m_trait__impl_i_Pick_i__l_int32_r__x40_Value_i_pick(t419)
+    var inline440 int32 = _goml_m_trait__impl_i_Pick_i__l_i32_r__x40_Value_i_pick(t419)
     var inline441 closure_env_identity_0 = closure_env_identity_0{}
     var inline442 func(int32) int32 = func(p0 int32) int32 {
         return _goml_m_inherent_i_closure__env__identity__0_i_closure__env__identity__0_i_apply(inline441, p0)
     }
     var inline443 int32 = inline442(inline440)
     t420 = inline443
-    var inline437 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t420)
+    var inline437 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t420)
     _goml_runtime_core_string_println(inline437)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Pick_i__l_int32_r__x40_Value_i_pick(self__0 Value) int32 {
+func _goml_m_trait__impl_i_Pick_i__l_i32_r__x40_Value_i_pick(self__0 Value) int32 {
     var inline450 int32 = self__0.value
     return inline450
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t433 string = _goml_runtime_core_int32_to_string(self__154)
     return t433
 }

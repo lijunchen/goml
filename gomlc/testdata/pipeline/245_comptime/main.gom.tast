@@ -1,37 +1,37 @@
-const ANSWER: int = 120;
+const ANSWER: isize = 120;
 
-fn factorial(value/0: int) -> int {
-    if (value/0 : int) < 2 {
+fn factorial(value/0: isize) -> isize {
+    if (value/0 : isize) < 2 {
         {
             1
         }
     } else {
         {
-            (value/0 : int) * (factorial : (int) -> int)((value/0 : int) - 1)
+            (value/0 : isize) * (factorial : (isize) -> isize)((value/0 : isize) - 1)
         }
     }
 }
 
-fn accumulate(limit/1: int) -> int {
-    let mut index/2: int = 0;
-    let mut total/3: int = 0;
-    while (index/2 : int) < (limit/1 : int) {
+fn accumulate(limit/1: isize) -> isize {
+    let mut index/2: isize = 0;
+    let mut total/3: isize = 0;
+    while (index/2 : isize) < (limit/1 : isize) {
         {
-            (total/3 : int) = (total/3 : int) + (index/2 : int);
-            (index/2 : int) = (index/2 : int) + 1;
+            (total/3 : isize) = (total/3 : isize) + (index/2 : isize);
+            (index/2 : isize) = (index/2 : isize) + 1;
         }
     };
-    (total/3 : int)
+    (total/3 : isize)
 }
 
-fn make_pair(value/4: int) -> Pair {
-    Pair { left: (value/4 : int), right: (value/4 : int) + 1 }
+fn make_pair(value/4: isize) -> Pair {
+    Pair { left: (value/4 : isize), right: (value/4 : isize) + 1 }
 }
 
-fn choose(value/5: int) -> Choice {
-    if (value/5 : int) > 0 {
+fn choose(value/5: isize) -> Choice {
+    if (value/5 : isize) > 0 {
         {
-            Choice::Value((value/5 : int))
+            Choice::Value((value/5 : isize))
         }
     } else {
         {
@@ -40,50 +40,50 @@ fn choose(value/5: int) -> Choice {
     }
 }
 
-fn nonnegative(value/6: int) -> int {
-    if (value/6 : int) < 0 {
+fn nonnegative(value/6: isize) -> isize {
+    if (value/6 : isize) < 0 {
         {
             (@intrinsic(compile_error) : (string) -> never)("value must be non-negative")
         }
     } else {
         {
-            (value/6 : int)
+            (value/6 : isize)
         }
     }
 }
 
-fn shadow(value/7: int) -> int {
-    let base/8: int = (value/7 : int);
-    let nested/10: int =
+fn shadow(value/7: isize) -> isize {
+    let base/8: isize = (value/7 : isize);
+    let nested/10: isize =
       {
-          let base/9: int = (base/8 : int) + 1;
-          (base/9 : int) * 2
+          let base/9: isize = (base/8 : isize) + 1;
+          (base/9 : isize) * 2
       };
-    (base/9 : int) + (nested/10 : int)
+    (base/9 : isize) + (nested/10 : isize)
 }
 
-fn widen_negative(value/11: int8) -> uint64 {
-    (int8::to_uint64 : (int8) -> uint64)((value/11 : int8))
+fn widen_negative(value/11: i8) -> u64 {
+    (i8::to_uint64 : (i8) -> u64)((value/11 : i8))
 }
 
 fn main() -> unit {
-    let values/12: [int; 3] = [6, 10, 4];
+    let values/12: [isize; 3] = [6, 10, 4];
     let pair/13: Pair = Pair { left: 7, right: 8 };
     let choice/14: Choice = Choice::Value(9);
-    (println : (int) -> unit)((ANSWER : int));
-    (println : (int) -> unit)((values/12 : [int; 3])[0]);
-    (println : (int) -> unit)((values/12 : [int; 3])[1]);
-    (println : (int) -> unit)((values/12 : [int; 3])[2]);
-    (println : (int) -> unit)((pair/13 : Pair).left + (pair/13 : Pair).right);
+    (println : (isize) -> unit)((ANSWER : isize));
+    (println : (isize) -> unit)((values/12 : [isize; 3])[0]);
+    (println : (isize) -> unit)((values/12 : [isize; 3])[1]);
+    (println : (isize) -> unit)((values/12 : [isize; 3])[2]);
+    (println : (isize) -> unit)((pair/13 : Pair).left + (pair/13 : Pair).right);
     match (choice/14 : Choice) {
-        Choice::Value(value/15: int) => (println : (int) -> unit)((value/15 : int)),
-        Choice::Empty => (println : (int) -> unit)(0),
+        Choice::Value(value/15: isize) => (println : (isize) -> unit)((value/15 : isize)),
+        Choice::Empty => (println : (isize) -> unit)(0),
     };
-    (println : (bool) -> unit)((factorial : (int) -> int)(5) == (ANSWER : int));
-    let shadowed/16: int = 12;
-    (println : (int) -> unit)((shadowed/16 : int));
-    (println : (bool) -> unit)((shadow : (int) -> int)(3) == (shadowed/16 : int));
-    let widened/17: uint64 = 18446744073709551615;
-    (println : (bool) -> unit)((widened/17 : uint64) == (widen_negative : (int8) -> uint64)(-1));
-    (println : (int) -> unit)((factorial : (int) -> int)(4))
+    (println : (bool) -> unit)((factorial : (isize) -> isize)(5) == (ANSWER : isize));
+    let shadowed/16: isize = 12;
+    (println : (isize) -> unit)((shadowed/16 : isize));
+    (println : (bool) -> unit)((shadow : (isize) -> isize)(3) == (shadowed/16 : isize));
+    let widened/17: u64 = 18446744073709551615;
+    (println : (bool) -> unit)((widened/17 : u64) == (widen_negative : (i8) -> u64)(-1));
+    (println : (isize) -> unit)((factorial : (isize) -> isize)(4))
 }

@@ -64,7 +64,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__433 *ref_int32_x, value__434 int32) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(self__433 *ref_int32_x, value__434 int32) struct{} {
     ref_set__Ref_5int32(self__433, value__434)
     return struct{}{}
 }
@@ -75,7 +75,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env414 closure_env_main_0) struct{} {
     var signal__1 *ref_int32_x = env414.signal_0
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(signal__1, 1)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(signal__1, 1)
     return struct{}{}
 }
 

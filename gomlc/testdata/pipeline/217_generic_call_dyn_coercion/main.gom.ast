@@ -7,8 +7,8 @@ struct Wrap[T] {
     value: T,
 }
 
-impl Show for Wrap[int32] {
-  fn show(self: Wrap[int32]) -> string {
+impl Show for Wrap[i32] {
+  fn show(self: Wrap[i32]) -> string {
       self.value.to_string()
   }
 }
@@ -22,7 +22,7 @@ fn render(value: dyn Show) -> string {
 }
 
 fn main() -> unit {
-    let value: int32 = 42;
+    let value: i32 = 42;
     println(render(make_wrap(value) as dyn Show))
 }
 

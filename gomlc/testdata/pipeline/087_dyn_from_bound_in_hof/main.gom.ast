@@ -3,8 +3,8 @@ trait Display {
   fn show(self: Self) -> string;
 }
 
-impl Display for int32 {
-  fn show(self: int32) -> string {
+impl Display for i32 {
+  fn show(self: i32) -> string {
       self.to_string()
   }
 }
@@ -15,7 +15,7 @@ fn mk_renderer[T: Display](x: T) -> () -> string {
 }
 
 fn main() {
-    let value: int32 = 42;
+    let value: i32 = 42;
     let f = mk_renderer(value);
     println(f());
 }

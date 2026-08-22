@@ -1,5 +1,5 @@
 impl Parent for Count {
-  fn get(self/0: Count) -> int32 {
+  fn get(self/0: Count) -> i32 {
       (self/0 : Count).value
   }
 }
@@ -13,5 +13,5 @@ fn get_from_child[C](value/2: C) -> C::Item where C: Child, C: Parent {
 }
 
 fn main() -> unit {
-    (println : (int32) -> unit)((get_from_child : (Count) -> int32)(Count { value: 42 }));
+    (println : (i32) -> unit)((get_from_child : (Count) -> i32)(Count { value: 42 }));
 }

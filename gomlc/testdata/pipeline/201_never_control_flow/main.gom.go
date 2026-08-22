@@ -64,7 +64,7 @@ func continue_branch() struct{} {
                 continue
             } else {
                 jp430 = 7
-                var inline470 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp430)
+                var inline470 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp430)
                 _goml_runtime_core_string_println(inline470)
                 continue
             }
@@ -81,7 +81,7 @@ func break_branch(stop__4 bool) struct{} {
         return struct{}{}
     } else {
         jp438 = 9
-        var inline484 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp438)
+        var inline484 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp438)
         _goml_runtime_core_string_println(inline484)
         return struct{}{}
     }
@@ -93,14 +93,14 @@ func main0() struct{} {
     var inline501 int32
     if inline499 {
         t440 = 10
-        var inline496 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t440)
+        var inline496 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t440)
         _goml_runtime_core_string_println(inline496)
         var t441 int32
         var inline490 bool = true
         var inline492 int32
         if inline490 {
             t441 = 10
-            var inline487 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t441)
+            var inline487 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t441)
             _goml_runtime_core_string_println(inline487)
             continue_branch()
             break_branch(false)
@@ -110,7 +110,7 @@ func main0() struct{} {
             inline492 = 20
             var inline494 int32 = inline492 + 1
             t441 = inline494
-            var inline487 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t441)
+            var inline487 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t441)
             _goml_runtime_core_string_println(inline487)
             continue_branch()
             break_branch(false)
@@ -121,14 +121,14 @@ func main0() struct{} {
         inline501 = 20
         var inline503 int32 = inline501 + 1
         t440 = inline503
-        var inline496 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t440)
+        var inline496 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t440)
         _goml_runtime_core_string_println(inline496)
         var t441 int32
         var inline490 bool = true
         var inline492 int32
         if inline490 {
             t441 = 10
-            var inline487 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t441)
+            var inline487 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t441)
             _goml_runtime_core_string_println(inline487)
             continue_branch()
             break_branch(false)
@@ -138,7 +138,7 @@ func main0() struct{} {
             inline492 = 20
             var inline494 int32 = inline492 + 1
             t441 = inline494
-            var inline487 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t441)
+            var inline487 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t441)
             _goml_runtime_core_string_println(inline487)
             continue_branch()
             break_branch(false)
@@ -148,12 +148,12 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t459 string = _goml_runtime_core_int_to_string(self__151)
     return t459
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t462 string = _goml_runtime_core_int32_to_string(self__154)
     return t462
 }

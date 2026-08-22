@@ -1,15 +1,15 @@
-fn maybe_primary(flag/0: bool) -> Option__int32 {
+fn maybe_primary(flag/0: bool) -> Option__i32 {
   if flag/0 {
-    let t423 = Option__int32::Some(4) in
+    let t423 = Option__i32::Some(4) in
     t423
   } else {
     Tag_0
   }
 }
 
-fn maybe_secondary(flag/1: bool) -> Option__int32 {
+fn maybe_secondary(flag/1: bool) -> Option__i32 {
   if flag/1 {
-    let t428 = Option__int32::Some(9) in
+    let t428 = Option__i32::Some(9) in
     t428
   } else {
     Tag_0
@@ -17,9 +17,9 @@ fn maybe_secondary(flag/1: bool) -> Option__int32 {
 }
 
 fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
-  join inline_cont468(mtmp411: Option__int32) -> Option__string {
-    join k431(jp432: int32) -> Option__string {
-      join inline_cont466(mtmp413: Option__int32) -> Option__string {
+  join inline_cont468(mtmp411: Option__i32) -> Option__string {
+    join k431(jp432: i32) -> Option__string {
+      join inline_cont466(mtmp413: Option__i32) -> Option__string {
         join k433(jp434: string) -> Option__string {
           join inline_cont464(t435: string) -> Option__string {
             let t436 = ("value=" + t435) in
@@ -36,7 +36,7 @@ fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
             jump k433("extra=none")
           },
           Tag_1 => {
-            let x414 = Option__int32::Some._0(mtmp413) in
+            let x414 = Option__i32::Some._0(mtmp413) in
             join inline_cont462(t440: string) -> Option__string {
               let t441 = ("extra=" + t440) in
               jump k433(t441)
@@ -47,7 +47,7 @@ fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
         }
       } in
       if secondary/3 {
-        let inline467 = Option__int32::Some(9) in
+        let inline467 = Option__i32::Some(9) in
         jump inline_cont466(inline467)
       } else {
         jump inline_cont466(Tag_0)
@@ -58,13 +58,13 @@ fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
         Tag_0
       },
       Tag_1 => {
-        let x412 = Option__int32::Some._0(mtmp411) in
+        let x412 = Option__i32::Some._0(mtmp411) in
         jump k431(x412)
       },
     }
   } in
   if primary/2 {
-    let inline469 = Option__int32::Some(4) in
+    let inline469 = Option__i32::Some(4) in
     jump inline_cont468(inline469)
   } else {
     jump inline_cont468(Tag_0)
@@ -139,7 +139,7 @@ fn main() -> unit {
   }
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t456 = @runtime(core.int32_to_string)(self/33) in
   t456
 }

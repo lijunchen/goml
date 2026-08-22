@@ -1,59 +1,55 @@
-fn step(i/0: int32) -> Option[int32] {
-    if (i/0 : int32) == 2 {
+fn step(i/0: i32) -> Option[i32] {
+    if (i/0 : i32) == 2 {
         {
             Option::None
         }
     } else {
         {
-            Option::Some((i/0 : int32) + 10)
+            Option::Some((i/0 : i32) + 10)
         }
     }
 }
 
-fn accumulate(limit/1: int32) -> Option[int32] {
-    let sum/2: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    let i/3: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    while (Ref[int32]::get : (Ref[int32]) -> int32)((i/3 : Ref[int32])) < (limit/1 : int32) {
+fn accumulate(limit/1: i32) -> Option[i32] {
+    let sum/2: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
+    let i/3: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
+    while (Ref[i32]::get : (Ref[i32]) -> i32)((i/3 : Ref[i32])) < (limit/1 : i32) {
         {
-            let cur/4: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((i/3 : Ref[int32]));
-            (Ref[int32]::set : (Ref[int32], int32) -> unit)(
-              (i/3 : Ref[int32]),
-              (cur/4 : int32) + 1
-            );
-            if (cur/4 : int32) == 1 {
+            let cur/4: i32 = (Ref[i32]::get : (Ref[i32]) -> i32)((i/3 : Ref[i32]));
+            (Ref[i32]::set : (Ref[i32], i32) -> unit)((i/3 : Ref[i32]), (cur/4 : i32) + 1);
+            if (cur/4 : i32) == 1 {
                 {
                     continue
                 }
             } else {
                 {}
             };
-            let value/5: int32 =
-              match (step : (int32) -> Option[int32])((cur/4 : int32)) {
-                  Option::Some(try_value/42: int32) => (try_value/42 : int32),
+            let value/5: i32 =
+              match (step : (i32) -> Option[i32])((cur/4 : i32)) {
+                  Option::Some(try_value/42: i32) => (try_value/42 : i32),
                   Option::None => return Option::None,
               };
-            (Ref[int32]::set : (Ref[int32], int32) -> unit)(
-              (sum/2 : Ref[int32]),
-              (Ref[int32]::get : (Ref[int32]) -> int32)((sum/2 : Ref[int32])) + (value/5 : int32)
+            (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+              (sum/2 : Ref[i32]),
+              (Ref[i32]::get : (Ref[i32]) -> i32)((sum/2 : Ref[i32])) + (value/5 : i32)
             );
         }
     };
-    Option::Some((Ref[int32]::get : (Ref[int32]) -> int32)((sum/2 : Ref[int32])))
+    Option::Some((Ref[i32]::get : (Ref[i32]) -> i32)((sum/2 : Ref[i32])))
 }
 
-fn show(opt/6: Option[int32]) -> string {
-    match (opt/6 : Option[int32]) {
-        Option::Some(value/7: int32) =>
-          "some=" + (int32::to_string : (int32) -> string)((value/7 : int32)),
+fn show(opt/6: Option[i32]) -> string {
+    match (opt/6 : Option[i32]) {
+        Option::Some(value/7: i32) => "some=" + (i32::to_string : (i32) -> string)((value/7 : i32)),
         Option::None => "none",
     }
 }
 
 fn main() -> unit {
     (println : (string) -> unit)(
-      (show : (Option[int32]) -> string)((accumulate : (int32) -> Option[int32])(2))
+      (show : (Option[i32]) -> string)((accumulate : (i32) -> Option[i32])(2))
     );
     (println : (string) -> unit)(
-      (show : (Option[int32]) -> string)((accumulate : (int32) -> Option[int32])(4))
+      (show : (Option[i32]) -> string)((accumulate : (i32) -> Option[i32])(4))
     );
 }

@@ -11,8 +11,8 @@ struct Wrap[T] {
     value: T,
 }
 
-impl Render for Vec[int32] {
-  fn render(self: Vec[int32]) -> string {
+impl Render for Vec[i32] {
+  fn render(self: Vec[i32]) -> string {
       "items=" + self.len().to_string()
   }
 }
@@ -36,13 +36,13 @@ fn require[T: Selected](value: T) -> string {
 }
 
 fn main() -> unit {
-    let values: Vec[int32] = vec_new();
+    let values: Vec[i32] = vec_new();
     values.push(1);
     values.push(2);
     println(render_all(values));
     let text: string = same("equal");
     println(text);
-    let selected: Wrap[int32] = Wrap { value: 7 };
+    let selected: Wrap[i32] = Wrap { value: 7 };
     println(require(selected));
 }
 

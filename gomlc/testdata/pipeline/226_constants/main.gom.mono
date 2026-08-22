@@ -1,12 +1,12 @@
-const BASE: int = 16;
-const ANSWER: int = ((BASE * 2) + 10);
-const MASK: uint8 = 240;
+const BASE: isize = 16;
+const ANSWER: isize = ((BASE * 2) + 10);
+const MASK: u8 = 240;
 const GREETING: string = ("constant" + " value");
 const ENABLED: bool = true;
 
 fn main() -> unit {
-  let _wild411 = println__T_string(inherent#int#int#to_string(ANSWER)) in
-  let _wild412 = println__T_string(trait_impl#ToString#uint8#to_string(MASK)) in
+  let _wild411 = println__T_string(inherent#isize#isize#to_string(ANSWER)) in
+  let _wild412 = println__T_string(trait_impl#ToString#u8#to_string(MASK)) in
   let _wild413 = println__T_string(GREETING) in
   println__T_string(trait_impl#ToString#bool#to_string(ENABLED))
 }
@@ -15,11 +15,11 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn trait_impl#ToString#uint8#to_string(self/156: uint8) -> string {
+fn trait_impl#ToString#u8#to_string(self/156: u8) -> string {
   @runtime(core.uint8_to_string)(self/156)
 }
 

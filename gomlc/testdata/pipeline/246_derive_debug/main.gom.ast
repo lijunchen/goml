@@ -1,7 +1,7 @@
 package main;
 #[derive(Debug)]
 struct Point {
-    x: int32,
+    x: i32,
     label: string,
 }
 
@@ -40,7 +40,7 @@ fn debug_dyn(value: dyn Debug) -> string {
 
 fn main() -> unit {
     let point = Point { x: 3, label: "east" };
-    let idle: State[int32] = State::Idle;
+    let idle: State[i32] = State::Idle;
     let value = State::Value(point);
     let named = State::Named { value: 7 };
     println(point.debug());

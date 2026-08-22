@@ -1,11 +1,11 @@
-fn answer() -> int {
+fn answer() -> isize {
   let _wild411 =
     return let base/0 = 40 in
     (base/0 + 2) in
   ()
 }
 
-fn loop_answer() -> int {
+fn loop_answer() -> isize {
   loop let _wild412 =
     break let base/1 = 6 in
     (base/1 * 7) in
@@ -23,28 +23,30 @@ fn main() -> unit {
     let value/7 = answer() in
     (value/7 + loop_answer()) in
   let _wild413 =
-    println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(plain/2))) in
+    println__T_string(inherent#isize#isize#to_string(inherent#Vec#Vec[T]#len__T_u8(plain/2))) in
   let _wild414 =
-    println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(empty/3))) in
+    println__T_string(inherent#isize#isize#to_string(inherent#Vec#Vec[T]#len__T_u8(empty/3))) in
   let _wild415 =
     println__T_string(
-      inherent#int#int#to_string((inherent#Vec#Vec[T]#get__T_uint8(plain/2, 0) as int))
+      inherent#isize#isize#to_string((inherent#Vec#Vec[T]#get__T_u8(plain/2, 0) as isize))
     ) in
   let _wild416 =
     println__T_string(
-      inherent#int#int#to_string((inherent#Vec#Vec[T]#get__T_uint8(plain/2, 1) as int))
+      inherent#isize#isize#to_string((inherent#Vec#Vec[T]#get__T_u8(plain/2, 1) as isize))
     ) in
   let _wild417 =
     println__T_string(
-      inherent#int#int#to_string((inherent#Vec#Vec[T]#get__T_uint8(plain/2, 2) as int))
+      inherent#isize#isize#to_string((inherent#Vec#Vec[T]#get__T_u8(plain/2, 2) as isize))
     ) in
   let _wild418 =
-    println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(raw/4))) in
+    println__T_string(inherent#isize#isize#to_string(inherent#Vec#Vec[T]#len__T_u8(raw/4))) in
   let _wild419 =
-    println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#len__T_uint8(quoted/5))) in
+    println__T_string(inherent#isize#isize#to_string(inherent#Vec#Vec[T]#len__T_u8(quoted/5))) in
   let _wild420 =
-    println__T_string(inherent#int#int#to_string((@intrinsic(array.get)(fixed/6, 2) as int))) in
-  let _wild421 = println__T_string(inherent#int#int#to_string(nested/8)) in
+    println__T_string(
+      inherent#isize#isize#to_string((@intrinsic(array.get)(fixed/6, 2) as isize))
+    ) in
+  let _wild421 = println__T_string(inherent#isize#isize#to_string(nested/8)) in
   if true {
       println__T_string("block condition")
   } else {
@@ -56,15 +58,15 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/273: Vec[uint8]) -> int {
+fn inherent#Vec#Vec[T]#len__T_u8(self/273: Vec[u8]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Vec#Vec[T]#get__T_uint8(self/268: Vec[uint8], index/269: int) -> uint8 {
+fn inherent#Vec#Vec[T]#get__T_u8(self/268: Vec[u8], index/269: isize) -> u8 {
   @intrinsic(vec.get)(self/268, index/269)
 }
 

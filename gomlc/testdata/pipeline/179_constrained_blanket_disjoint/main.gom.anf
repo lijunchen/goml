@@ -1,4 +1,4 @@
-fn trait_impl#Mark#int32#mark(self/0: int32) -> string {
+fn trait_impl#Mark#i32#mark(self/0: i32) -> string {
   let inline438 = @runtime(core.int32_to_string)(self/0) in
   inline438
 }
@@ -18,7 +18,7 @@ fn main() -> unit {
         ()
       } in
       let inline443 = 7 in
-      let inline444 = trait_impl#Mark#int32#mark(inline443) in
+      let inline444 = trait_impl#Mark#i32#mark(inline443) in
       let inline445 = ("blanket:" + inline444) in
       jump inline_cont442(inline445)
     } in
@@ -31,7 +31,7 @@ fn main() -> unit {
   jump inline_cont449(inline451)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t426 = @runtime(core.int32_to_string)(self/33) in
   t426
 }
@@ -44,13 +44,13 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont452(value/1)
 }
 
-fn trait_impl#Label#Box__int32#label(self/1: Box__int32) -> string {
-  let t432 = Box__int32.value(self/1) in
+fn trait_impl#Label#Box__i32#label(self/1: Box__i32) -> string {
+  let t432 = Box__i32.value(self/1) in
   join inline_cont453(t433: string) -> string {
     let t434 = ("blanket:" + t433) in
     t434
   } in
-  let inline454 = inherent#int32#int32#to_string(t432) in
+  let inline454 = inherent#i32#i32#to_string(t432) in
   jump inline_cont453(inline454)
 }
 

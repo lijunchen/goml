@@ -3,7 +3,7 @@ use std::cmp;
 
 #[derive(PartialEq, Eq, Hash)]
 struct LegacyKey {
-    value: int,
+    value: isize,
 }
 
 impl PartialEq for LegacyKey {
@@ -12,20 +12,20 @@ impl PartialEq for LegacyKey {
   }
 }
 
-impl Eq for LegacyKey where int: Eq {}
+impl Eq for LegacyKey where isize: Eq {}
 
 impl Hash for LegacyKey {
-  fn hash(self: LegacyKey) -> uint64 {
+  fn hash(self: LegacyKey) -> u64 {
       {
-          let h = 0.to_uint64() + 14695981039346656037;
-          let h = h * 0.to_uint64() + 1099511628211 + Hash::hash(self.value);
+          let h = 0.to_u64() + 14695981039346656037;
+          let h = h * 0.to_u64() + 1099511628211 + Hash::hash(self.value);
           h
       }
   }
 }
 
 struct ModernKey {
-    value: int,
+    value: isize,
 }
 
 impl PartialEq for ModernKey {
@@ -37,13 +37,13 @@ impl PartialEq for ModernKey {
 impl Eq for ModernKey {}
 
 impl Hash for ModernKey {
-  fn hash(self: ModernKey) -> uint64 {
+  fn hash(self: ModernKey) -> u64 {
       self.value % 10.to_uint64()
   }
 }
 
 struct Rank {
-    value: int,
+    value: isize,
 }
 
 impl PartialEq for Rank {

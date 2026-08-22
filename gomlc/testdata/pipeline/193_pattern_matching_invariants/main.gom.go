@@ -62,7 +62,7 @@ func main0() struct{} {
     var t492 int32
     var inline521 int32 = 12
     t492 = inline521
-    var inline517 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t492)
+    var inline517 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t492)
     _goml_runtime_core_string_println(inline517)
     var t493 int32
     var inline515 bool = true
@@ -74,7 +74,7 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var inline512 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t493)
+    var inline512 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t493)
     _goml_runtime_core_string_println(inline512)
     var t494 string
     var inline510 float64 = 0
@@ -89,7 +89,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t503 string = _goml_runtime_core_int32_to_string(self__154)
     return t503
 }

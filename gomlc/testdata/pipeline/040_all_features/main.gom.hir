@@ -2,7 +2,7 @@ package main
 file main.gom
   struct Tracker {
       label: string,
-      count: Ref[int32],
+      count: Ref[i32],
       toggled: Ref[bool],
   }
 
@@ -34,8 +34,8 @@ file main.gom
     }
   }
 
-  impl Describe for Record[int32] {
-    fn describe(local/1/10: Record[int32]) -> string {
+  impl Describe for Record[i32] {
+    fn describe(local/1/10: Record[i32]) -> string {
         match self/10 {
             Value(local/1/11) => "Value(" + value/11.to_string() + ")",
             Pair(local/1/12, local/1/13) =>
@@ -77,15 +77,15 @@ file main.gom
       }
   }
 
-  fn format_total(local/1/26: int32) -> string {
+  fn format_total(local/1/26: i32) -> string {
       "total: " + total/26.to_string()
   }
 
-  fn increment(local/1/27: int32) -> int32 {
+  fn increment(local/1/27: i32) -> i32 {
       value/27 + 1
   }
 
-  fn triple(local/1/28: int32) -> int32 {
+  fn triple(local/1/28: i32) -> i32 {
       value/28 * 3
   }
 
@@ -94,7 +94,7 @@ file main.gom
       left/30 + " -> " + right/31
   }
 
-  fn run_transforms(local/1/32: int32, local/1/33: [(int32) -> int32; 2]) -> [int32; 2] {
+  fn run_transforms(local/1/32: i32, local/1/33: [(i32) -> i32; 2]) -> [i32; 2] {
       let local/1/34 = transforms/33[0];
       let local/1/35 = transforms/33[1];
       let local/1/36 = first/34(value/32);
@@ -104,7 +104,7 @@ file main.gom
       results/38
   }
 
-  fn gather(local/1/39: Record[int32]) -> Maybe[int32] {
+  fn gather(local/1/39: Record[i32]) -> Maybe[i32] {
       match record/39 {
           Value(local/1/40) => ctor(def/1/2::v0)(value/40),
           Pair(_, local/1/41) => ctor(def/1/2::v0)(after/41),
@@ -112,10 +112,10 @@ file main.gom
       }
   }
 
-  fn build_counter(local/1/42: string, local/1/43: int32) -> (
+  fn build_counter(local/1/42: string, local/1/43: i32) -> (
     Tracker,
-    () -> Record[int32],
-    (int32) -> Record[int32],
+    () -> Record[i32],
+    (i32) -> Record[i32],
     () -> Record[string]
   ) {
       let local/1/44 = Ref::new(start/43);
@@ -126,7 +126,7 @@ file main.gom
             ctor(def/1/1::v0)(count/44.get())
         };
       let local/1/50 =
-        |local/1/48: int32| {
+        |local/1/48: i32| {
             let local/1/49 = count/44.get();
             let _ = count/44.set(before/49 + delta/48);
             ctor(def/1/1::v1)(before/49, count/44.get())
@@ -152,7 +152,7 @@ file main.gom
       let local/1/64 = def/1/7(true, maybe_second/63, maybe_first/62);
       let local/1/65 = def/1/8(chosen/64, def/1/9);
       let local/1/66 = [def/1/10, def/1/11];
-      let local/1/67: [int32; 2] = def/1/13(4, transforms/66);
+      let local/1/67: [i32; 2] = def/1/13(4, transforms/66);
       let local/1/68 = results/67[0];
       let local/1/69 = results/67[1];
       let local/1/70 = first_result/68 < second_result/69 && true;

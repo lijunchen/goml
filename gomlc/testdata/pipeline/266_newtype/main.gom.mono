@@ -10,7 +10,7 @@ fn increment(value/0: UserId) -> UserId {
   result/1
 }
 
-fn unwrap(value/2: UserId) -> int32 {
+fn unwrap(value/2: UserId) -> i32 {
   let mtmp415 = value/2 in
   {
     let x416 = UserId._0(mtmp415) in
@@ -26,8 +26,8 @@ fn unwrap(value/2: UserId) -> int32 {
 fn main() -> unit {
   let raw/4 = 40 in
   let id/5 = UserId { _0: raw/4 } in
-  let _wild417 = println__T_int32(UserId._0(id/5)) in
-  let _wild418 = println__T_int32(unwrap(increment(id/5))) in
+  let _wild417 = println__T_i32(UserId._0(id/5)) in
+  let _wild418 = println__T_i32(unwrap(increment(id/5))) in
   let boxed/6 = Box__string { _0: "wrapped" } in
   let mtmp419 = boxed/6 in
   {
@@ -41,15 +41,15 @@ fn main() -> unit {
   }
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 

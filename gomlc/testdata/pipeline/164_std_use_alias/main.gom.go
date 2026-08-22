@@ -181,9 +181,9 @@ type Tuple3_4bool_4char_3int struct {
     _2 int
 }
 
-type Tuple2_11Option__int_11Option__int struct {
-    _0 Option__int
-    _1 Option__int
+type Tuple2_13Option__isize_13Option__isize struct {
+    _0 Option__isize
+    _1 Option__isize
 }
 
 type Tuple2_3int_4char struct {
@@ -209,7 +209,7 @@ type _goml_m_std_p_io_p_ErrorDetails struct {
     kind_value _goml_m_std_p_io_p_ErrorKind
     operation_value string
     context_value Option__string
-    raw_os_code_value Option__int
+    raw_os_code_value Option__isize
     message_value string
 }
 
@@ -225,16 +225,16 @@ type _goml_m_std_p_env_p_VarError struct {
     details _goml_m_std_p_io_p_ErrorDetails
 }
 
-type _goml_m_FnIterator_____o_int_c_char_q_ struct {
-    next_fn func() _goml_m_Option_____o_int_c_char_q_
+type _goml_m_FnIterator_____o_isize_c_char_q_ struct {
+    next_fn func() _goml_m_Option_____o_isize_c_char_q_
 }
 
 type FnIterator__char struct {
     next_fn func() Option__char
 }
 
-type FnIterator__int struct {
-    next_fn func() Option__int
+type FnIterator__isize struct {
+    next_fn func() Option__isize
 }
 
 type closure_env_inherent_string_string_char_indices_0 struct {
@@ -256,7 +256,7 @@ type Ordering int32
 
 type _goml_m_std_p_io_p_ErrorKind int32
 
-type Option__uint8 struct {
+type Option__u8 struct {
     _tag int32
     _v1_0 uint8
 }
@@ -272,7 +272,7 @@ type Option__string struct {
     _v1_0 string
 }
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -337,7 +337,7 @@ type Result__unit__string struct {
     _v1_0 string
 }
 
-type _goml_m_Option_____o_int_c_char_q_ struct {
+type _goml_m_Option_____o_isize_c_char_q_ struct {
     _tag int32
     _v1_0 Tuple2_3int_4char
 }
@@ -363,7 +363,7 @@ type _goml_m_Result____string____std_p_env_p_VarError_Err struct {
 
 func (_ _goml_m_Result____string____std_p_env_p_VarError_Err) is_goml_m_Result____string____std_p_env_p_VarError() {}
 
-type _goml_m_Option_____o_char_c_int_q_ struct {
+type _goml_m_Option_____o_char_c_isize_q_ struct {
     _tag int32
     _v1_0 Tuple2_4char_3int
 }

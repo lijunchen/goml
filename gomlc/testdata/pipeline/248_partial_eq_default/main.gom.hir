@@ -3,7 +3,7 @@ file main.gom
   #[derive(PartialEq, Default, Debug)]
   struct Settings {
       enabled: bool,
-      retries: int,
+      retries: isize,
       label: string,
   }
 
@@ -40,7 +40,7 @@ file main.gom
   }
 
   struct NoDefault {
-      value: int,
+      value: isize,
   }
 
   #[derive(Default, Debug)]
@@ -78,7 +78,7 @@ file main.gom
   #[derive(Default, Debug)]
   enum State {
       Idle,
-      Running(int)
+      Running(isize)
   }
 
   impl Default for State {
@@ -99,7 +99,7 @@ file main.gom
 
   #[derive(Default, Debug)]
   enum Message {
-      Data(string, int),
+      Data(string, isize),
       Empty
   }
 
@@ -123,7 +123,7 @@ file main.gom
 
   #[derive(Default, Debug)]
   enum Event {
-      Data { name: string, count: int },
+      Data { name: string, count: isize },
       Empty
   }
 
@@ -175,7 +175,7 @@ file main.gom
       println(settings/15 == Settings { enabled: false, retries: 0, label: "" }.to_string());
       let local/1/16: Empty = Default::default();
       println(empty/16.debug());
-      let local/1/17: PairDefaults[int] = Default::default();
+      let local/1/17: PairDefaults[isize] = Default::default();
       println(pair/17.first + pair/17.second.to_string());
       println(pair/17.nested.is_none().to_string());
       let local/1/18: State = Default::default();
@@ -191,7 +191,7 @@ file main.gom
             ctor(def/1/19::v1)(_) => "value",
         }
       );
-      let local/1/22: Selected[int] = Default::default();
+      let local/1/22: Selected[isize] = Default::default();
       println(
         match selected/22 {
             ctor(def/1/21::v0)(local/1/23, local/1/24) => first/23 + second/24.to_string(),

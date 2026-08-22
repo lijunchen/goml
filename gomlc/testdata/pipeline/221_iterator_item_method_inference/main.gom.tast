@@ -1,12 +1,12 @@
 impl Iterator for Values {
-  fn next(self/0: Values) -> Option[int32] {
+  fn next(self/0: Values) -> Option[i32] {
       Option::None
   }
 }
 
 fn main() -> unit {
-    for value/1: int32 in
+    for value/1: i32 in
       Values {} {
-        (println : (string) -> unit)((int32::to_string : (int32) -> string)((value/1 : int32)));
+        (println : (string) -> unit)((i32::to_string : (i32) -> string)((value/1 : i32)));
     }
 }

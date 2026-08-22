@@ -31,7 +31,8 @@ fn main() -> unit {
   let _wild420 = print_lookup(map/6, first/3) in
   let _wild421 =
     inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, distinct/5, "distinct") in
-  let _wild422 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(map/6)) in
+  let _wild422 =
+    println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(map/6)) in
   let _wild423 = print_lookup(map/6, first/3) in
   print_lookup(map/6, distinct/5)
 }
@@ -59,7 +60,7 @@ fn trait_impl#PartialEq#Ref[Node]#eq(self/220: Ref[Node], other/221: Ref[Node]) 
   @intrinsic(ref.ptr_eq)(self/220, other/221)
 }
 
-fn trait_impl#Hash#Ref[Node]#hash(self/222: Ref[Node]) -> uint64 {
+fn trait_impl#Hash#Ref[Node]#hash(self/222: Ref[Node]) -> u64 {
   @intrinsic(ref.ptr_hash)(self/222)
 }
 
@@ -79,13 +80,13 @@ fn inherent#Ref#Ref[T]#set__T_Node(self/433: Ref[Node], value/434: Node) -> unit
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
 fn inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(
   self/427: HashMap[Ref[Node], string]
-) -> int {
+) -> isize {
   @intrinsic(hashmap.len)(self/427)
 }
 
@@ -97,6 +98,6 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }

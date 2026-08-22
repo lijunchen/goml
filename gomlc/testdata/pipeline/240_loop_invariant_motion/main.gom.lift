@@ -1,4 +1,4 @@
-fn optimized(base/0: int, count/1: int) -> int {
+fn optimized(base/0: isize, count/1: isize) -> isize {
   let index/2 = 0 in
   let result/3 = 0 in
   let _wild413 =
@@ -13,7 +13,7 @@ fn optimized(base/0: int, count/1: int) -> int {
   result/3
 }
 
-fn guarded(divisor/7: int, count/8: int) -> int {
+fn guarded(divisor/7: isize, count/8: isize) -> isize {
   let index/9 = 0 in
   let result/10 = 0 in
   let _wild416 =
@@ -26,7 +26,7 @@ fn guarded(divisor/7: int, count/8: int) -> int {
   result/10
 }
 
-fn changing(count/12: int) -> int {
+fn changing(count/12: isize) -> isize {
   let index/13 = 0 in
   let value/14 = 1 in
   let result/15 = 0 in
@@ -42,16 +42,16 @@ fn changing(count/12: int) -> int {
 }
 
 fn main() -> unit {
-  let _wild421 = println__T_int(optimized(3, 4)) in
-  let _wild422 = println__T_int(guarded(0, 0)) in
-  let _wild423 = println__T_int(changing(3)) in
+  let _wild421 = println__T_isize(optimized(3, 4)) in
+  let _wild422 = println__T_isize(guarded(0, 0)) in
+  let _wild423 = println__T_isize(changing(3)) in
   ()
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }

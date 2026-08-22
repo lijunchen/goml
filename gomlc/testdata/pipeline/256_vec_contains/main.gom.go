@@ -71,13 +71,13 @@ func main0() struct{} {
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
     }(t429)
-    var t430 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__int(values__4, 2)
+    var t430 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, 2)
     var t431 string
     var inline543 string = _goml_runtime_core_bool_to_string(t430)
     t431 = inline543
     var inline540 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t431)
     _goml_runtime_core_string_println(inline540)
-    var t432 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__int(values__4, 9)
+    var t432 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, 9)
     var t433 string
     var inline538 string = _goml_runtime_core_bool_to_string(t432)
     t433 = inline538
@@ -125,7 +125,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline525)
     var t442 bool
     var inline522 int = 3
-    var inline523 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__int(values__4, inline522)
+    var inline523 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(values__4, inline522)
     t442 = inline523
     var t443 string
     var inline520 string = _goml_runtime_core_bool_to_string(t442)
@@ -147,12 +147,12 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__185 int, other__186 int) bool {
+func _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(self__185 int, other__186 int) bool {
     var t450 bool = self__185 == other__186
     return t450
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__int(self__384 *_goml_vec_int, expected__385 int) bool {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__isize(self__384 *_goml_vec_int, expected__385 int) bool {
     var index__386 int = 0
     Loop_loop457:
     for {
@@ -224,12 +224,12 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_contains____T__Pair(self__384 *_goml_
             var inline555 bool
             var inline559 int = t488.left
             var inline560 int = expected__385.left
-            var inline561 bool = _goml_m_trait__impl_i_PartialEq_i_int_i_eq(inline559, inline560)
+            var inline561 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline559, inline560)
             inline555 = inline561
             if inline555 {
                 var inline556 int = t488.right
                 var inline557 int = expected__385.right
-                var inline558 bool = _goml_m_trait__impl_i_PartialEq_i_int_i_eq(inline556, inline557)
+                var inline558 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline556, inline557)
                 t489 = inline558
                 if t489 {
                     return true

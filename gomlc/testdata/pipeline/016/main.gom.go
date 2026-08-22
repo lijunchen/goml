@@ -15,35 +15,35 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type List__int32 interface {
-    isList__int32()
+type List__i32 interface {
+    isList__i32()
 }
 
-type List__int32_Nil struct {}
+type List__i32_Nil struct {}
 
-func (_ List__int32_Nil) isList__int32() {}
+func (_ List__i32_Nil) isList__i32() {}
 
-type List__int32_Cons struct {
+type List__i32_Cons struct {
     _0 int32
-    _1 List__int32
+    _1 List__i32
 }
 
-func (_ List__int32_Cons) isList__int32() {}
+func (_ List__i32_Cons) isList__i32() {}
 
-type List__int interface {
-    isList__int()
+type List__isize interface {
+    isList__isize()
 }
 
-type List__int_Nil struct {}
+type List__isize_Nil struct {}
 
-func (_ List__int_Nil) isList__int() {}
+func (_ List__isize_Nil) isList__isize() {}
 
-type List__int_Cons struct {
+type List__isize_Cons struct {
     _0 int
-    _1 List__int
+    _1 List__isize
 }
 
-func (_ List__int_Cons) isList__int() {}
+func (_ List__isize_Cons) isList__isize() {}
 
 type List__unit interface {
     isList__unit()
@@ -75,12 +75,12 @@ type List__bool_Cons struct {
 
 func (_ List__bool_Cons) isList__bool() {}
 
-func int_list_length(xs__2 List__int32) int32 {
+func int_list_length(xs__2 List__i32) int32 {
     switch xs__2.(type) {
-    case List__int32_Nil:
+    case List__i32_Nil:
         return 0
-    case List__int32_Cons:
-        var x414 List__int32 = xs__2.(List__int32_Cons)._1
+    case List__i32_Cons:
+        var x414 List__i32 = xs__2.(List__i32_Cons)._1
         var t425 int32 = int_list_length(x414)
         var t426 int32 = 1 + t425
         return t426
@@ -90,45 +90,45 @@ func int_list_length(xs__2 List__int32) int32 {
 }
 
 func main0() struct{} {
-    var x__4 List__int = List__int_Cons{
+    var x__4 List__isize = List__isize_Cons{
         _0: 1,
-        _1: List__int_Nil{},
+        _1: List__isize_Nil{},
     }
-    var length__5 int32 = list_length__T_int(x__4)
-    var inline473 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__5)
+    var length__5 int32 = list_length__T_isize(x__4)
+    var inline473 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__5)
     _goml_runtime_core_string_println(inline473)
-    var t428 List__int = List__int_Cons{
+    var t428 List__isize = List__isize_Cons{
         _0: 2,
-        _1: List__int_Nil{},
+        _1: List__isize_Nil{},
     }
-    var x__6 List__int = List__int_Cons{
+    var x__6 List__isize = List__isize_Cons{
         _0: 1,
         _1: t428,
     }
-    var length__7 int32 = list_length__T_int(x__6)
-    var inline470 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__7)
+    var length__7 int32 = list_length__T_isize(x__6)
+    var inline470 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__7)
     _goml_runtime_core_string_println(inline470)
-    var t429 List__int32 = List__int32_Cons{
+    var t429 List__i32 = List__i32_Cons{
         _0: 2,
-        _1: List__int32_Nil{},
+        _1: List__i32_Nil{},
     }
-    var t430 List__int32 = List__int32_Cons{
+    var t430 List__i32 = List__i32_Cons{
         _0: 1,
         _1: t429,
     }
-    var x__8 List__int32 = List__int32_Cons{
+    var x__8 List__i32 = List__i32_Cons{
         _0: 0,
         _1: t430,
     }
     var length__9 int32 = int_list_length(x__8)
-    var inline467 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__9)
+    var inline467 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__9)
     _goml_runtime_core_string_println(inline467)
     var x__10 List__unit = List__unit_Cons{
         _0: struct{}{},
         _1: List__unit_Nil{},
     }
     var length__11 int32 = list_length__T_unit(x__10)
-    var inline464 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__11)
+    var inline464 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__11)
     _goml_runtime_core_string_println(inline464)
     var t431 List__unit = List__unit_Cons{
         _0: struct{}{},
@@ -139,7 +139,7 @@ func main0() struct{} {
         _1: t431,
     }
     var length__13 int32 = list_length__T_unit(x__12)
-    var inline461 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__13)
+    var inline461 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__13)
     _goml_runtime_core_string_println(inline461)
     var t432 List__bool = List__bool_Cons{
         _0: false,
@@ -150,18 +150,18 @@ func main0() struct{} {
         _1: t432,
     }
     var length__15 int32 = list_length__T_bool(x__14)
-    var inline458 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__15)
+    var inline458 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__15)
     _goml_runtime_core_string_println(inline458)
     return struct{}{}
 }
 
-func list_length__T_int(xs__0 List__int) int32 {
+func list_length__T_isize(xs__0 List__isize) int32 {
     switch xs__0.(type) {
-    case List__int_Nil:
+    case List__isize_Nil:
         return 0
-    case List__int_Cons:
-        var x412 List__int = xs__0.(List__int_Cons)._1
-        var t437 int32 = list_length__T_int(x412)
+    case List__isize_Cons:
+        var x412 List__isize = xs__0.(List__isize_Cons)._1
+        var t437 int32 = list_length__T_isize(x412)
         var t438 int32 = 1 + t437
         return t438
     default:
@@ -197,7 +197,7 @@ func list_length__T_bool(xs__0 List__bool) int32 {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t456 string = _goml_runtime_core_int32_to_string(self__154)
     return t456
 }

@@ -1,11 +1,11 @@
 fn main() -> unit {
-    let mut x/0: int = 0;
-    let inc/1: () -> int =
+    let mut x/0: isize = 0;
+    let inc/1: () -> isize =
       || =>
         {
-            (x/0 : int) = (x/0 : int) + 1;
-            (x/0 : int)
+            (x/0 : isize) = (x/0 : isize) + 1;
+            (x/0 : isize)
         };
-    let _ : int = (inc/1 : () -> int)();
-    (println : (string) -> unit)((int::to_string : (int) -> string)((x/0 : int)));
+    let _ : isize = (inc/1 : () -> isize)();
+    (println : (string) -> unit)((isize::to_string : (isize) -> string)((x/0 : isize)));
 }

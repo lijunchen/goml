@@ -16,7 +16,7 @@ fn print_int_list(xs/0: IntList) -> unit {
               {
                 let mtmp414 = println__T_string("(") in
                 {
-                  let mtmp415 = println__T_string(inherent#int32#int32#to_string(x/1)) in
+                  let mtmp415 = println__T_string(inherent#i32#i32#to_string(x/1)) in
                   {
                     let mtmp416 = println__T_string(", ") in
                     {
@@ -64,7 +64,7 @@ fn int_list_rev(xs/7: IntList) -> IntList {
   int_list_rev_aux(xs/7, IntList::Nil)
 }
 
-fn int_list_length(xs/8: IntList) -> int32 {
+fn int_list_length(xs/8: IntList) -> i32 {
   match xs/8 {
     IntList::Nil => {
       0
@@ -84,7 +84,7 @@ fn int_list_length(xs/8: IntList) -> int32 {
 fn print_int_list_length(xs/10: IntList) -> unit {
   let mtmp423 = println__T_string("Length: ") in
   {
-    let mtmp424 = println__T_string(inherent#int32#int32#to_string(int_list_length(xs/10))) in
+    let mtmp424 = println__T_string(inherent#i32#i32#to_string(int_list_length(xs/10))) in
     {
       ()
     }
@@ -136,7 +136,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

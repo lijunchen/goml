@@ -15,21 +15,21 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Result__int32__string struct {
+type Result__i32__string struct {
     _tag int32
     _v0_0 int32
     _v1_0 string
 }
 
-func parse(flag__0 bool) Result__int32__string {
+func parse(flag__0 bool) Result__i32__string {
     if flag__0 {
-        var t423 Result__int32__string = Result__int32__string{
+        var t423 Result__i32__string = Result__i32__string{
             _tag: 0,
             _v0_0: 5,
         }
         return t423
     } else {
-        var t424 Result__int32__string = Result__int32__string{
+        var t424 Result__i32__string = Result__i32__string{
             _tag: 1,
             _v1_0: "bad-branch",
         }
@@ -37,7 +37,7 @@ func parse(flag__0 bool) Result__int32__string {
     }
 }
 
-func bump(flag__1 bool, fallback__2 bool) Result__int32__string {
+func bump(flag__1 bool, fallback__2 bool) Result__i32__string {
     var jp428 int32
     if flag__1 {
         var commute_field501 int32
@@ -46,14 +46,14 @@ func bump(flag__1 bool, fallback__2 bool) Result__int32__string {
             commute_field501 = 5
             jp428 = commute_field501
             var t429 int32 = jp428 + 1
-            var t430 Result__int32__string = Result__int32__string{
+            var t430 Result__i32__string = Result__i32__string{
                 _tag: 0,
                 _v0_0: t429,
             }
             return t430
         } else {
             commute_field503 = "bad-branch"
-            var t433 Result__int32__string = Result__int32__string{
+            var t433 Result__i32__string = Result__i32__string{
                 _tag: 1,
                 _v1_0: commute_field503,
             }
@@ -62,7 +62,7 @@ func bump(flag__1 bool, fallback__2 bool) Result__int32__string {
     } else {
         jp428 = 10
         var t429 int32 = jp428 + 1
-        var t430 Result__int32__string = Result__int32__string{
+        var t430 Result__i32__string = Result__i32__string{
             _tag: 0,
             _v0_0: t429,
         }
@@ -70,7 +70,7 @@ func bump(flag__1 bool, fallback__2 bool) Result__int32__string {
     }
 }
 
-func show(res__4 Result__int32__string) string {
+func show(res__4 Result__i32__string) string {
     switch res__4._tag {
     case 0:
         var x414 int32 = res__4._v0_0
@@ -89,16 +89,16 @@ func show(res__4 Result__int32__string) string {
 }
 
 func main0() struct{} {
-    var t442 Result__int32__string = bump(true, true)
+    var t442 Result__i32__string = bump(true, true)
     var t443 string = show(t442)
     var inline498 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t443)
     _goml_runtime_core_string_println(inline498)
-    var t444 Result__int32__string = bump(true, false)
+    var t444 Result__i32__string = bump(true, false)
     var t445 string
     switch t444._tag {
     case 0:
         var inline490 int32 = t444._v0_0
-        var inline492 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline490)
+        var inline492 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline490)
         var inline493 string = "ok=" + inline492
         t445 = inline493
     case 1:
@@ -110,18 +110,18 @@ func main0() struct{} {
     }
     var inline487 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t445)
     _goml_runtime_core_string_println(inline487)
-    var t446 Result__int32__string
+    var t446 Result__i32__string
     var inline473 bool = false
     var inline474 bool = false
     var inline476 int32
     if inline473 {
-        var inline480 Result__int32__string = parse(inline474)
+        var inline480 Result__i32__string = parse(inline474)
         switch inline480._tag {
         case 0:
             var inline481 int32 = inline480._v0_0
             inline476 = inline481
             var inline478 int32 = inline476 + 1
-            var inline479 Result__int32__string = Result__int32__string{
+            var inline479 Result__i32__string = Result__i32__string{
                 _tag: 0,
                 _v0_0: inline478,
             }
@@ -130,7 +130,7 @@ func main0() struct{} {
             switch t446._tag {
             case 0:
                 var inline465 int32 = t446._v0_0
-                var inline467 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline465)
+                var inline467 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline465)
                 var inline468 string = "ok=" + inline467
                 t447 = inline468
             case 1:
@@ -145,7 +145,7 @@ func main0() struct{} {
             return struct{}{}
         case 1:
             var inline483 string = inline480._v1_0
-            var inline485 Result__int32__string = Result__int32__string{
+            var inline485 Result__i32__string = Result__i32__string{
                 _tag: 1,
                 _v1_0: inline483,
             }
@@ -154,7 +154,7 @@ func main0() struct{} {
             switch t446._tag {
             case 0:
                 var inline465 int32 = t446._v0_0
-                var inline467 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline465)
+                var inline467 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline465)
                 var inline468 string = "ok=" + inline467
                 t447 = inline468
             case 1:
@@ -173,7 +173,7 @@ func main0() struct{} {
     } else {
         inline476 = 10
         var inline478 int32 = inline476 + 1
-        var inline479 Result__int32__string = Result__int32__string{
+        var inline479 Result__i32__string = Result__i32__string{
             _tag: 0,
             _v0_0: inline478,
         }
@@ -182,7 +182,7 @@ func main0() struct{} {
         switch t446._tag {
         case 0:
             var inline465 int32 = t446._v0_0
-            var inline467 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline465)
+            var inline467 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline465)
             var inline468 string = "ok=" + inline467
             t447 = inline468
         case 1:
@@ -198,7 +198,7 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t450 string = _goml_runtime_core_int32_to_string(self__33)
     return t450
 }

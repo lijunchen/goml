@@ -9,7 +9,7 @@ fn trait_impl#Debug#Point#debug(self/0: Point) -> string {
         {
           let #derive0_field/1 = x412 in
           {
-            (((((("Point { " + "x: ") + trait_impl#Debug#int32#debug(#derive0_field/1)) + ", ") +
+            (((((("Point { " + "x: ") + trait_impl#Debug#i32#debug(#derive0_field/1)) + ", ") +
               "label: ") +
               trait_impl#Debug#string#debug(#derive1_field/2)) +
               " }")
@@ -26,18 +26,18 @@ fn debug_dyn(value/6: dyn Debug) -> string {
 
 fn main() -> unit {
   let point/7 = Point { x: 3, label: "east" } in
-  let idle/8 = State__int32::Idle in
+  let idle/8 = State__i32::Idle in
   let value/9 = State__Point::Value(point/7) in
-  let named/10 = State__int::Named(7) in
+  let named/10 = State__isize::Named(7) in
   let _wild416 = println__T_string(trait_impl#Debug#Point#debug(point/7)) in
-  let _wild417 = println__T_string(trait_impl#Debug#State__int32#debug(idle/8)) in
+  let _wild417 = println__T_string(trait_impl#Debug#State__i32#debug(idle/8)) in
   let _wild418 = println__T_string(trait_impl#Debug#State__Point#debug(value/9)) in
-  let _wild419 = println__T_string(trait_impl#Debug#State__int#debug(named/10)) in
-  println__T_string(debug_dyn(to_dyn[Debug]{int}(9)))
+  let _wild419 = println__T_string(trait_impl#Debug#State__isize#debug(named/10)) in
+  println__T_string(debug_dyn(to_dyn[Debug]{isize}(9)))
 }
 
-fn trait_impl#Debug#int32#debug(self/169: int32) -> string {
-  trait_impl#ToString#int32#to_string(self/169)
+fn trait_impl#Debug#i32#debug(self/169: i32) -> string {
+  trait_impl#ToString#i32#to_string(self/169)
 }
 
 fn trait_impl#Debug#string#debug(self/164: string) -> string {
@@ -48,27 +48,26 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#Debug#State__int32#debug(self/3: State__int32) -> string {
+fn trait_impl#Debug#State__i32#debug(self/3: State__i32) -> string {
   match self/3 {
-    State__int32::Idle => {
+    State__i32::Idle => {
       "State::Idle"
     },
-    State__int32::Value(x414) => {
+    State__i32::Value(x414) => {
       {
-        let x414 = State__int32::Value._0(self/3) in
+        let x414 = State__i32::Value._0(self/3) in
         {
           let #derive0_field/4 = x414 in
-          (("State::Value(" + trait_impl#Debug#int32#debug(#derive0_field/4)) + ")")
+          (("State::Value(" + trait_impl#Debug#i32#debug(#derive0_field/4)) + ")")
         }
       }
     },
-    State__int32::Named(x415) => {
+    State__i32::Named(x415) => {
       {
-        let x415 = State__int32::Named._0(self/3) in
+        let x415 = State__i32::Named._0(self/3) in
         {
           let #derive1_field/5 = x415 in
-          ((("State::Named { " + "value: ") + trait_impl#Debug#int32#debug(#derive1_field/5)) +
-            " }")
+          ((("State::Named { " + "value: ") + trait_impl#Debug#i32#debug(#derive1_field/5)) + " }")
         }
       }
     },
@@ -102,37 +101,38 @@ fn trait_impl#Debug#State__Point#debug(self/3: State__Point) -> string {
   }
 }
 
-fn trait_impl#Debug#State__int#debug(self/3: State__int) -> string {
+fn trait_impl#Debug#State__isize#debug(self/3: State__isize) -> string {
   match self/3 {
-    State__int::Idle => {
+    State__isize::Idle => {
       "State::Idle"
     },
-    State__int::Value(x414) => {
+    State__isize::Value(x414) => {
       {
-        let x414 = State__int::Value._0(self/3) in
+        let x414 = State__isize::Value._0(self/3) in
         {
           let #derive0_field/4 = x414 in
-          (("State::Value(" + trait_impl#Debug#int#debug(#derive0_field/4)) + ")")
+          (("State::Value(" + trait_impl#Debug#isize#debug(#derive0_field/4)) + ")")
         }
       }
     },
-    State__int::Named(x415) => {
+    State__isize::Named(x415) => {
       {
-        let x415 = State__int::Named._0(self/3) in
+        let x415 = State__isize::Named._0(self/3) in
         {
           let #derive1_field/5 = x415 in
-          ((("State::Named { " + "value: ") + trait_impl#Debug#int#debug(#derive1_field/5)) + " }")
+          ((("State::Named { " + "value: ") + trait_impl#Debug#isize#debug(#derive1_field/5)) +
+            " }")
         }
       }
     },
   }
 }
 
-fn trait_impl#Debug#int#debug(self/166: int) -> string {
-  trait_impl#ToString#int#to_string(self/166)
+fn trait_impl#Debug#isize#debug(self/166: isize) -> string {
+  trait_impl#ToString#isize#to_string(self/166)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
@@ -140,6 +140,6 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }

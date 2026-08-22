@@ -1,27 +1,27 @@
 fn main() -> unit {
-    let vi/0: Vec[int32] = (Vec[int32]::new : () -> Vec[int32])();
-    (Vec[int32]::push : (Vec[int32], int32) -> unit)((vi/0 : Vec[int32]), 42);
-    let val_i/1: int32 = (vi/0 : Vec[int32])[0];
-    let len_i/2: int = (Vec[int32]::len : (Vec[int32]) -> int)((vi/0 : Vec[int32]));
+    let vi/0: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
+    (Vec[i32]::push : (Vec[i32], i32) -> unit)((vi/0 : Vec[i32]), 42);
+    let val_i/1: i32 = (vi/0 : Vec[i32])[0];
+    let len_i/2: isize = (Vec[i32]::len : (Vec[i32]) -> isize)((vi/0 : Vec[i32]));
     let vs/3: Vec[string] = (Vec[string]::new : () -> Vec[string])();
     (Vec[string]::push : (Vec[string], string) -> unit)((vs/3 : Vec[string]), "hello");
     (Vec[string]::push : (Vec[string], string) -> unit)((vs/3 : Vec[string]), "world");
     let val_s/4: string = (vs/3 : Vec[string])[1];
-    let len_s/5: int = (Vec[string]::len : (Vec[string]) -> int)((vs/3 : Vec[string]));
+    let len_s/5: isize = (Vec[string]::len : (Vec[string]) -> isize)((vs/3 : Vec[string]));
     let vb/6: Vec[bool] = (Vec[bool]::new : () -> Vec[bool])();
     (Vec[bool]::push : (Vec[bool], bool) -> unit)((vb/6 : Vec[bool]), true);
     (Vec[bool]::push : (Vec[bool], bool) -> unit)((vb/6 : Vec[bool]), false);
     let val_b/7: bool = (vb/6 : Vec[bool])[0];
-    let len_b/8: int = (Vec[bool]::len : (Vec[bool]) -> int)((vb/6 : Vec[bool]));
+    let len_b/8: isize = (Vec[bool]::len : (Vec[bool]) -> isize)((vb/6 : Vec[bool]));
     let _ : unit =
-      (println : (string) -> unit)((int32::to_string : (int32) -> string)((val_i/1 : int32)));
+      (println : (string) -> unit)((i32::to_string : (i32) -> string)((val_i/1 : i32)));
     let _ : unit =
-      (println : (string) -> unit)((int::to_string : (int) -> string)((len_i/2 : int)));
+      (println : (string) -> unit)((isize::to_string : (isize) -> string)((len_i/2 : isize)));
     let _ : unit = (println : (string) -> unit)((val_s/4 : string));
     let _ : unit =
-      (println : (string) -> unit)((int::to_string : (int) -> string)((len_s/5 : int)));
+      (println : (string) -> unit)((isize::to_string : (isize) -> string)((len_s/5 : isize)));
     let _ : unit =
       (println : (string) -> unit)((ToString::to_string : (bool) -> string)((val_b/7 : bool)));
     let _ : unit =
-      (println : (string) -> unit)((int::to_string : (int) -> string)((len_b/8 : int)));
+      (println : (string) -> unit)((isize::to_string : (isize) -> string)((len_b/8 : isize)));
 }

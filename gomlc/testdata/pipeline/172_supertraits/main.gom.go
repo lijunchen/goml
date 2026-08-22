@@ -17,26 +17,26 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Box__int struct {
+type Box__isize struct {
     value int
 }
 
-type Box__int32 struct {
+type Box__i32 struct {
     value int32
 }
 
 type Ordering int32
 
 func main0() struct{} {
-    var t413 Box__int = Box__int{
+    var t413 Box__isize = Box__isize{
         value: 5,
     }
     var t414 string
-    var inline458 int = _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(t413)
-    var inline459 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline458)
-    var inline460 string = _goml_m_trait__impl_i_Render_i_Box____int_i_render(t413)
+    var inline458 int = _goml_m_trait__impl_i_Parent_i__l_isize_r__x40_Box____isize_i_parent(t413)
+    var inline459 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline458)
+    var inline460 string = _goml_m_trait__impl_i_Render_i_Box____isize_i_render(t413)
     var inline461 string = inline459 + inline460
-    var inline462 string = _goml_m_trait__impl_i_Child_i__l_int_r__x40_Box____int_i_child(t413)
+    var inline462 string = _goml_m_trait__impl_i_Child_i__l_isize_r__x40_Box____isize_i_child(t413)
     var inline463 string = inline461 + inline462
     t414 = inline463
     var inline455 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t414)
@@ -56,21 +56,21 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(self__0 Box__int) int {
+func _goml_m_trait__impl_i_Parent_i__l_isize_r__x40_Box____isize_i_parent(self__0 Box__isize) int {
     var t439 int = self__0.value
     return t439
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t442 string = _goml_runtime_core_int_to_string(self__151)
     return t442
 }
 
-func _goml_m_trait__impl_i_Render_i_Box____int_i_render(self__1 Box__int) string {
+func _goml_m_trait__impl_i_Render_i_Box____isize_i_render(self__1 Box__isize) string {
     return ":render"
 }
 
-func _goml_m_trait__impl_i_Child_i__l_int_r__x40_Box____int_i_child(self__2 Box__int) string {
+func _goml_m_trait__impl_i_Child_i__l_isize_r__x40_Box____isize_i_child(self__2 Box__isize) string {
     return ":child"
 }
 

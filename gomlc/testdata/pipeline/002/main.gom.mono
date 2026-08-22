@@ -45,20 +45,20 @@ fn main() -> unit {
           true => {
             match x416 {
               true => {
-                println__T_string(inherent#int#int#to_string(3))
+                println__T_string(inherent#isize#isize#to_string(3))
               },
               false => {
-                println__T_string(inherent#int#int#to_string(1))
+                println__T_string(inherent#isize#isize#to_string(1))
               },
             }
           },
           false => {
             match x416 {
               true => {
-                println__T_string(inherent#int#int#to_string(2))
+                println__T_string(inherent#isize#isize#to_string(2))
               },
               false => {
-                println__T_string(inherent#int#int#to_string(0))
+                println__T_string(inherent#isize#isize#to_string(0))
               },
             }
           },
@@ -72,7 +72,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 

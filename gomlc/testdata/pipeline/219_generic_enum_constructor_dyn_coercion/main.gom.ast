@@ -7,8 +7,8 @@ enum Boxed[T] {
     One(T)
 }
 
-impl Show for Boxed[int32] {
-  fn show(self: Boxed[int32]) -> string {
+impl Show for Boxed[i32] {
+  fn show(self: Boxed[i32]) -> string {
       match self {
           Boxed::One(value) => value.to_string(),
       }
@@ -20,7 +20,7 @@ fn render(value: dyn Show) -> string {
 }
 
 fn main() -> unit {
-    let value: int32 = 42;
+    let value: i32 = 42;
     println(render(Boxed::One(value) as dyn Show))
 }
 

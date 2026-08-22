@@ -1,6 +1,6 @@
-impl Show for Wrap[int32] {
-  fn show(self/0: Wrap[int32]) -> string {
-      (int32::to_string : (int32) -> string)((self/0 : Wrap[int32]).value)
+impl Show for Wrap[i32] {
+  fn show(self/0: Wrap[i32]) -> string {
+      (i32::to_string : (i32) -> string)((self/0 : Wrap[i32]).value)
   }
 }
 
@@ -13,10 +13,10 @@ fn render(value/2: dyn Show) -> string {
 }
 
 fn main() -> unit {
-    let value/3: int32 = 42;
+    let value/3: i32 = 42;
     (println : (string) -> unit)(
       (render : (dyn Show) -> string)(
-        to_dyn[Show]{Wrap[int32]}((make_wrap : (int32) -> Wrap[int32])((value/3 : int32)))
+        to_dyn[Show]{Wrap[i32]}((make_wrap : (i32) -> Wrap[i32])((value/3 : i32)))
       )
     )
 }

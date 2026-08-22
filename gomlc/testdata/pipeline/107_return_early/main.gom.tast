@@ -1,35 +1,35 @@
-fn early(x/0: int32) -> int32 {
-    if (x/0 : int32) < 0 {
+fn early(x/0: i32) -> i32 {
+    if (x/0 : i32) < 0 {
         {
             return 0
         }
     } else {
         {}
     };
-    if (x/0 : int32) == 0 {
+    if (x/0 : i32) == 0 {
         {
             return 1
         }
     } else {
         {}
     };
-    (x/0 : int32) + 2
+    (x/0 : i32) + 2
 }
 
-fn closure_early(x/1: int32) -> int32 {
-    let f/3: (int32) -> int32 =
-      |y/2: int32| =>
+fn closure_early(x/1: i32) -> i32 {
+    let f/3: (i32) -> i32 =
+      |y/2: i32| =>
         {
-            if (y/2 : int32) > 5 {
+            if (y/2 : i32) > 5 {
                 {
-                    return (y/2 : int32)
+                    return (y/2 : i32)
                 }
             } else {
                 {}
             };
-            (y/2 : int32) + 10
+            (y/2 : i32) + 10
         };
-    (f/3 : (int32) -> int32)((x/1 : int32))
+    (f/3 : (i32) -> i32)((x/1 : i32))
 }
 
 fn unit_ret(flag/4: bool) -> unit {
@@ -45,15 +45,15 @@ fn unit_ret(flag/4: bool) -> unit {
 
 fn main() -> unit {
     let _ : unit = (print : (string) -> unit)("e-1: ");
-    let _ : unit = (println : (int32) -> unit)((early : (int32) -> int32)(-1));
+    let _ : unit = (println : (i32) -> unit)((early : (i32) -> i32)(-1));
     let _ : unit = (print : (string) -> unit)("e0: ");
-    let _ : unit = (println : (int32) -> unit)((early : (int32) -> int32)(0));
+    let _ : unit = (println : (i32) -> unit)((early : (i32) -> i32)(0));
     let _ : unit = (print : (string) -> unit)("e3: ");
-    let _ : unit = (println : (int32) -> unit)((early : (int32) -> int32)(3));
+    let _ : unit = (println : (i32) -> unit)((early : (i32) -> i32)(3));
     let _ : unit = (print : (string) -> unit)("c7: ");
-    let _ : unit = (println : (int32) -> unit)((closure_early : (int32) -> int32)(7));
+    let _ : unit = (println : (i32) -> unit)((closure_early : (i32) -> i32)(7));
     let _ : unit = (print : (string) -> unit)("c2: ");
-    let _ : unit = (println : (int32) -> unit)((closure_early : (int32) -> int32)(2));
+    let _ : unit = (println : (i32) -> unit)((closure_early : (i32) -> i32)(2));
     (unit_ret : (bool) -> unit)(true);
     (unit_ret : (bool) -> unit)(false);
 }

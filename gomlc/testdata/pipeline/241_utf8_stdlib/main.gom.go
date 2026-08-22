@@ -70,7 +70,7 @@ type Tuple2_4bool_4char struct {
 
 type Ordering int32
 
-type _goml_m_Option_____o_char_c_int_q_ struct {
+type _goml_m_Option_____o_char_c_isize_q_ struct {
     _tag int32
     _v1_0 Tuple2_4char_3int
 }
@@ -406,7 +406,7 @@ func main0() struct{} {
         return &storage.vector
     }(t513)
     var inline775 bool = false
-    var inline776 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(t514)
+    var inline776 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__u8(t514)
     var inline777 Tuple2_4bool_6string = string_from_utf8(t514)
     var inline778 bool = inline777._0
     var inline779 string = inline777._1
@@ -431,7 +431,7 @@ func main0() struct{} {
         return &storage.vector
     }(t515)
     var inline760 bool = false
-    var inline761 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(t516)
+    var inline761 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__u8(t516)
     var inline762 Tuple2_4bool_6string = string_from_utf8(t516)
     var inline763 bool = inline762._0
     var inline764 string = inline762._1
@@ -456,7 +456,7 @@ func main0() struct{} {
         return &storage.vector
     }(t517)
     var inline745 bool = false
-    var inline746 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(t518)
+    var inline746 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__u8(t518)
     var inline747 Tuple2_4bool_6string = string_from_utf8(t518)
     var inline748 bool = inline747._0
     var inline749 string = inline747._1
@@ -474,7 +474,7 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__273 *_goml_vec_uint8) int {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__u8(self__273 *_goml_vec_uint8) int {
     var t522 int = vec_len__Vec_5uint8(self__273)
     return t522
 }

@@ -1,4 +1,4 @@
-fn record(log/0: Ref[string], label/1: string, value/2: int) -> int {
+fn record(log/0: Ref[string], label/1: string, value/2: isize) -> isize {
   let _wild411 =
     inherent#Ref#Ref[T]#set__T_string(
       log/0,
@@ -16,7 +16,7 @@ fn record_point(log/3: Ref[string], label/4: string, value/5: Point) -> Point {
   value/5
 }
 
-fn record_vec(log/6: Ref[string], label/7: string, value/8: Vec[int]) -> Vec[int] {
+fn record_vec(log/6: Ref[string], label/7: string, value/8: Vec[isize]) -> Vec[isize] {
   let _wild413 =
     inherent#Ref#Ref[T]#set__T_string(
       log/6,
@@ -39,7 +39,7 @@ fn main() -> unit {
     let compound_old420 = number/9 in
     let compound_value421 = 1 in
     number/9 = (compound_old420 >> compound_value421) in
-  let _wild423 = println__T_string(inherent#int#int#to_string(number/9)) in
+  let _wild423 = println__T_string(inherent#isize#isize#to_string(number/9)) in
   let direct/10 = Point { x: 3, y: 4 } in
   let _wild427 =
     let place_root424 = direct/10 in
@@ -48,8 +48,8 @@ fn main() -> unit {
     direct/10 = Point { x: (place425 + value426), y: Point.y(place_root424) } in
   let _wild428 =
     println__T_string(
-      ((("" + inherent#int#int#to_string(Point.x(direct/10))) + ",") +
-        inherent#int#int#to_string(Point.y(direct/10)))
+      ((("" + inherent#isize#isize#to_string(Point.x(direct/10))) + ",") +
+        inherent#isize#isize#to_string(Point.y(direct/10)))
     ) in
   let pair/11 = (2, 9) in
   let _wild432 =
@@ -59,7 +59,8 @@ fn main() -> unit {
     pair/11 = ((place430 * value431), place_root429.1) in
   let _wild433 =
     println__T_string(
-      ((("" + inherent#int#int#to_string(pair/11.0)) + ",") + inherent#int#int#to_string(pair/11.1))
+      ((("" + inherent#isize#isize#to_string(pair/11.0)) + ",") +
+        inherent#isize#isize#to_string(pair/11.1))
     ) in
   let log/12 = inherent#Ref#Ref[T]#new__T_string("") in
   let base/13 = Point { x: 1, y: 2 } in
@@ -70,8 +71,8 @@ fn main() -> unit {
   let _wild434 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
   let _wild435 =
     println__T_string(
-      ((("" + inherent#int#int#to_string(Point.x(updated/14))) + ",") +
-        inherent#int#int#to_string(Point.y(updated/14)))
+      ((("" + inherent#isize#isize#to_string(Point.x(updated/14))) + ",") +
+        inherent#isize#isize#to_string(Point.y(updated/14)))
     ) in
   let _wild436 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
   let values/15 = @intrinsic(vec.from_array)([record(log/12, "A", 10), record(log/12, "B", 20)]) in
@@ -84,15 +85,16 @@ fn main() -> unit {
   let _wild442 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
   let _wild443 =
     println__T_string(
-      ((("" + inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 0))) + ",") +
-        inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 1)))
+      ((("" + inherent#isize#isize#to_string(inherent#Vec#Vec[T]#get__T_isize(values/15, 0))) +
+        ",") +
+        inherent#isize#isize#to_string(inherent#Vec#Vec[T]#get__T_isize(values/15, 1)))
     ) in
   let _wild444 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
   let table/16 =
     @intrinsic(hashmap.from_array)(
       [
         (
-          (("" + "k") + inherent#int#int#to_string(record(log/12, "K", 1))),
+          (("" + "k") + inherent#isize#isize#to_string(record(log/12, "K", 1))),
           record(log/12, "V", 11)
         ),
         ("same", record(log/12, "A", 1)),
@@ -102,15 +104,15 @@ fn main() -> unit {
   let _wild445 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
   let _wild448 =
     println__T_string(
-      let mtmp446 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int(table/16, "same") in
+      let mtmp446 = inherent#HashMap#HashMap[K,V]#get__K_string__V_isize(table/16, "same") in
       match mtmp446 {
-        Option__int::None => {
+        Option__isize::None => {
           "missing"
         },
-        Option__int::Some(x447) => {
-          let x447 = Option__int::Some._0(mtmp446) in
+        Option__isize::Some(x447) => {
+          let x447 = Option__isize::Some._0(mtmp446) in
           let value/17 = x447 in
-          inherent#int#int#to_string(value/17)
+          inherent#isize#isize#to_string(value/17)
         },
       }
     ) in
@@ -119,9 +121,9 @@ fn main() -> unit {
   let _wild449 =
     println__T_string(
       ((("" + "empty=") +
-        inherent#int#int#to_string(
-          (inherent#Vec#Vec[T]#len__T_int(empty_values/18) +
-            inherent#HashMap#HashMap[K,V]#len__K_string__V_int(empty_table/19))
+        inherent#isize#isize#to_string(
+          (inherent#Vec#Vec[T]#len__T_isize(empty_values/18) +
+            inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(empty_table/19))
         )) +
         " {ok}")
     ) in
@@ -140,7 +142,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
@@ -148,22 +150,22 @@ fn inherent#Ref#Ref[T]#new__T_string(value/431: string) -> Ref[string] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Vec#Vec[T]#get__T_int(self/268: Vec[int], index/269: int) -> int {
+fn inherent#Vec#Vec[T]#get__T_isize(self/268: Vec[isize], index/269: isize) -> isize {
   @intrinsic(vec.get)(self/268, index/269)
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int(
-  self/420: HashMap[string, int],
+fn inherent#HashMap#HashMap[K,V]#get__K_string__V_isize(
+  self/420: HashMap[string, isize],
   key/421: string
-) -> Option__int {
+) -> Option__isize {
   @intrinsic(hashmap.get)(self/420, key/421)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int(self/273: Vec[int]) -> int {
+fn inherent#Vec#Vec[T]#len__T_isize(self/273: Vec[isize]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_string__V_int(self/427: HashMap[string, int]) -> int {
+fn inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(self/427: HashMap[string, isize]) -> isize {
   @intrinsic(hashmap.len)(self/427)
 }
 
@@ -175,6 +177,6 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   (self/181 == other/182)
 }
 
-fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+fn trait_impl#Hash#string#hash(self/209: string) -> u64 {
   @runtime(core.string_hash)(self/209)
 }

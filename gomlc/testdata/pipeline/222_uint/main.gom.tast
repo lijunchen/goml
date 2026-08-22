@@ -1,33 +1,33 @@
-fn combine(left/0: uint, right/1: uint) -> uint {
-    (left/0 : uint) + (right/1 : uint) * 2
+fn combine(left/0: usize, right/1: usize) -> usize {
+    (left/0 : usize) + (right/1 : usize) * 2
 }
 
-fn classify(value/2: uint) -> string {
-    match (value/2 : uint) {
+fn classify(value/2: usize) -> string {
+    match (value/2 : usize) {
         0 => "zero",
         42 => "answer",
-        _ : uint => "other",
+        _ : usize => "other",
     }
 }
 
 fn main() -> unit {
-    let left/3: uint = 19;
-    let right/4: uint = (int::to_uint : (int) -> uint)(2);
-    let result/5: uint = (combine : (uint, uint) -> uint)((left/3 : uint), (right/4 : uint));
-    (println : (uint) -> unit)((result/5 : uint));
-    (println : (string) -> unit)((ToString::to_string : (uint) -> string)((result/5 : uint)));
-    (println : (string) -> unit)((classify : (uint) -> string)((result/5 : uint)));
-    (println : (bool) -> unit)((result/5 : uint) > (left/3 : uint));
-    (println : (uint64) -> unit)((uint::to_uint64 : (uint) -> uint64)((result/5 : uint) & 15));
-    let values/6: HashMap[uint, string] =
-      (HashMap[uint, string]::new : () -> HashMap[uint, string])();
-    (HashMap[uint, string]::set : (HashMap[uint, string], uint, string) -> unit)(
-      (values/6 : HashMap[uint, string]),
-      (result/5 : uint),
+    let left/3: usize = 19;
+    let right/4: usize = (isize::to_uint : (isize) -> usize)(2);
+    let result/5: usize = (combine : (usize, usize) -> usize)((left/3 : usize), (right/4 : usize));
+    (println : (usize) -> unit)((result/5 : usize));
+    (println : (string) -> unit)((ToString::to_string : (usize) -> string)((result/5 : usize)));
+    (println : (string) -> unit)((classify : (usize) -> string)((result/5 : usize)));
+    (println : (bool) -> unit)((result/5 : usize) > (left/3 : usize));
+    (println : (u64) -> unit)((usize::to_uint64 : (usize) -> u64)((result/5 : usize) & 15));
+    let values/6: HashMap[usize, string] =
+      (HashMap[usize, string]::new : () -> HashMap[usize, string])();
+    (HashMap[usize, string]::set : (HashMap[usize, string], usize, string) -> unit)(
+      (values/6 : HashMap[usize, string]),
+      (result/5 : usize),
       "stored"
     );
-    match (HashMap[uint, string]::get : (HashMap[uint, string], uint) -> Option[string])(
-      (values/6 : HashMap[uint, string]),
+    match (HashMap[usize, string]::get : (HashMap[usize, string], usize) -> Option[string])(
+      (values/6 : HashMap[usize, string]),
       42
     ) {
         Option::Some(value/7: string) => (println : (string) -> unit)((value/7 : string)),

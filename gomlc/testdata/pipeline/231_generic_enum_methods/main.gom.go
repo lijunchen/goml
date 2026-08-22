@@ -17,7 +17,7 @@ type closure_env_main_0 struct {}
 
 type Ordering int32
 
-type Maybe__int struct {
+type Maybe__isize struct {
     _tag int32
     _v1_0 int
 }

@@ -1,10 +1,10 @@
-fn int_list_length(xs/2: List__int32) -> int32 {
+fn int_list_length(xs/2: List__i32) -> i32 {
   match xs/2 {
-    List__int32::Nil => {
+    List__i32::Nil => {
       0
     },
-    List__int32::Cons(x413, x414) => {
-      let x414 = List__int32::Cons._1(xs/2) in
+    List__i32::Cons(x413, x414) => {
+      let x414 = List__i32::Cons._1(xs/2) in
       let tail/3 = x414 in
       (1 + int_list_length(tail/3))
     },
@@ -12,45 +12,45 @@ fn int_list_length(xs/2: List__int32) -> int32 {
 }
 
 fn main() -> unit {
-  let x/4 = List__int::Cons(1, List__int::Nil) in
-  let length/5 = list_length__T_int(x/4) in
-  let mtmp415 = println__T_int32(length/5) in
-  let x/6 = List__int::Cons(1, List__int::Cons(2, List__int::Nil)) in
-  let length/7 = list_length__T_int(x/6) in
-  let mtmp416 = println__T_int32(length/7) in
-  let x/8 = List__int32::Cons(0, List__int32::Cons(1, List__int32::Cons(2, List__int32::Nil))) in
+  let x/4 = List__isize::Cons(1, List__isize::Nil) in
+  let length/5 = list_length__T_isize(x/4) in
+  let mtmp415 = println__T_i32(length/5) in
+  let x/6 = List__isize::Cons(1, List__isize::Cons(2, List__isize::Nil)) in
+  let length/7 = list_length__T_isize(x/6) in
+  let mtmp416 = println__T_i32(length/7) in
+  let x/8 = List__i32::Cons(0, List__i32::Cons(1, List__i32::Cons(2, List__i32::Nil))) in
   let length/9 = int_list_length(x/8) in
-  let mtmp417 = println__T_int32(length/9) in
+  let mtmp417 = println__T_i32(length/9) in
   let x/10 = List__unit::Cons((), List__unit::Nil) in
   let length/11 = list_length__T_unit(x/10) in
-  let mtmp418 = println__T_int32(length/11) in
+  let mtmp418 = println__T_i32(length/11) in
   let x/12 = List__unit::Cons((), List__unit::Cons((), List__unit::Nil)) in
   let length/13 = list_length__T_unit(x/12) in
-  let mtmp419 = println__T_int32(length/13) in
+  let mtmp419 = println__T_i32(length/13) in
   let x/14 = List__bool::Cons(true, List__bool::Cons(false, List__bool::Nil)) in
   let length/15 = list_length__T_bool(x/14) in
-  let mtmp420 = println__T_int32(length/15) in
+  let mtmp420 = println__T_i32(length/15) in
   ()
 }
 
-fn list_length__T_int(xs/0: List__int) -> int32 {
+fn list_length__T_isize(xs/0: List__isize) -> i32 {
   match xs/0 {
-    List__int::Nil => {
+    List__isize::Nil => {
       0
     },
-    List__int::Cons(x411, x412) => {
-      let x412 = List__int::Cons._1(xs/0) in
+    List__isize::Cons(x411, x412) => {
+      let x412 = List__isize::Cons._1(xs/0) in
       let tail/1 = x412 in
-      (1 + list_length__T_int(tail/1))
+      (1 + list_length__T_isize(tail/1))
     },
   }
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn list_length__T_unit(xs/0: List__unit) -> int32 {
+fn list_length__T_unit(xs/0: List__unit) -> i32 {
   match xs/0 {
     List__unit::Nil => {
       0
@@ -63,7 +63,7 @@ fn list_length__T_unit(xs/0: List__unit) -> int32 {
   }
 }
 
-fn list_length__T_bool(xs/0: List__bool) -> int32 {
+fn list_length__T_bool(xs/0: List__bool) -> i32 {
   match xs/0 {
     List__bool::Nil => {
       0
@@ -76,6 +76,6 @@ fn list_length__T_bool(xs/0: List__bool) -> int32 {
   }
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }

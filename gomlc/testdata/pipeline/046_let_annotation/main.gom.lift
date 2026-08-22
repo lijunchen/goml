@@ -2,9 +2,9 @@ fn main() -> unit {
   let x/0 = 1 in
   let y/1 = 1 in
   let mtmp411 = print__T_string("int32: ") in
-  let mtmp412 = println__T_int32(x/0) in
+  let mtmp412 = println__T_i32(x/0) in
   let mtmp413 = print__T_string("int8: ") in
-  let mtmp414 = println__T_int8(y/1) in
+  let mtmp414 = println__T_i8(y/1) in
   ()
 }
 
@@ -12,22 +12,22 @@ fn print__T_string(value/0: string) -> unit {
   @runtime(core.string_print)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn println__T_int8(value/1: int8) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int8#to_string(value/1))
+fn println__T_i8(value/1: i8) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i8#to_string(value/1))
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn trait_impl#ToString#int8#to_string(self/152: int8) -> string {
+fn trait_impl#ToString#i8#to_string(self/152: i8) -> string {
   @runtime(core.int8_to_string)(self/152)
 }

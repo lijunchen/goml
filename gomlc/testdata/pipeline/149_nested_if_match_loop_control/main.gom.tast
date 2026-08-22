@@ -1,32 +1,35 @@
 fn main() -> unit {
-    let i/0: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    let sum/1: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    while (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) < 7 {
+    let i/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    let sum/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    while (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize])) < 7 {
         {
-            let cur/2: int = (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int]));
-            (Ref[int]::set : (Ref[int], int) -> unit)((i/0 : Ref[int]), (cur/2 : int) + 1);
+            let cur/2: isize = (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize]));
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (i/0 : Ref[isize]),
+              (cur/2 : isize) + 1
+            );
             let _ : unit =
-              if (cur/2 : int) < 5 {
+              if (cur/2 : isize) < 5 {
                   {
-                      match (cur/2 : int) {
+                      match (cur/2 : isize) {
                           1 => continue,
                           3 => continue,
-                          _ : int => (),
+                          _ : isize => (),
                       }
                   }
               } else {
                   {
-                      match (cur/2 : int) {
+                      match (cur/2 : isize) {
                           5 => break,
-                          _ : int => (),
+                          _ : isize => (),
                       }
                   }
               };
-            (Ref[int]::set : (Ref[int], int) -> unit)(
-              (sum/1 : Ref[int]),
-              (Ref[int]::get : (Ref[int]) -> int)((sum/1 : Ref[int])) + (cur/2 : int)
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (sum/1 : Ref[isize]),
+              (Ref[isize]::get : (Ref[isize]) -> isize)((sum/1 : Ref[isize])) + (cur/2 : isize)
             );
         }
     };
-    (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((sum/1 : Ref[int])));
+    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((sum/1 : Ref[isize])));
 }

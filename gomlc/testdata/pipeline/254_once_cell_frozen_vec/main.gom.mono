@@ -1,43 +1,49 @@
-static VALUES: OnceCell__FrozenVec__int = OnceCell::new();
+static VALUES: OnceCell__FrozenVec__isize = OnceCell::new();
 
-fn values() -> FrozenVec__int {
-  inherent#OnceCell#OnceCell[T]#get_or_init__T_FrozenVec[int](
+fn values() -> FrozenVec__isize {
+  inherent#OnceCell#OnceCell[T]#get_or_init__T_FrozenVec[isize](
     VALUES,
-    || inherent#Vec#Vec[T]#freeze__T_int(@intrinsic(vec.from_array)([1, 2, 3]))
+    || inherent#Vec#Vec[T]#freeze__T_isize(@intrinsic(vec.from_array)([1, 2, 3]))
   )
 }
 
 fn main() -> unit {
   let frozen/0 = values() in
-  let copy/1 = inherent#FrozenVec#FrozenVec[T]#to_vec__T_int(frozen/0) in
-  let _wild411 = inherent#Vec#Vec[T]#set__T_int(copy/1, 0, 9) in
+  let copy/1 = inherent#FrozenVec#FrozenVec[T]#to_vec__T_isize(frozen/0) in
+  let _wild411 = inherent#Vec#Vec[T]#set__T_isize(copy/1, 0, 9) in
   let _wild412 =
     println__T_string(
-      inherent#int#int#to_string(inherent#FrozenVec#FrozenVec[T]#get__T_int(frozen/0, 0))
+      inherent#isize#isize#to_string(inherent#FrozenVec#FrozenVec[T]#get__T_isize(frozen/0, 0))
     ) in
   let _wild413 =
-    println__T_string(inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(copy/1, 0))) in
+    println__T_string(
+      inherent#isize#isize#to_string(inherent#Vec#Vec[T]#get__T_isize(copy/1, 0))
+    ) in
   println__T_string(
-    inherent#int#int#to_string(inherent#FrozenVec#FrozenVec[T]#get__T_int(values(), 1))
+    inherent#isize#isize#to_string(inherent#FrozenVec#FrozenVec[T]#get__T_isize(values(), 1))
   )
 }
 
-fn inherent#Vec#Vec[T]#freeze__T_int(self/267: Vec[int]) -> FrozenVec__int {
-  FrozenVec__int { values: inherent#Vec#Vec[T]#copy__T_int(self/267) }
+fn inherent#Vec#Vec[T]#freeze__T_isize(self/267: Vec[isize]) -> FrozenVec__isize {
+  FrozenVec__isize { values: inherent#Vec#Vec[T]#copy__T_isize(self/267) }
 }
 
-fn inherent#OnceCell#OnceCell[T]#get_or_init__T_FrozenVec[int](
-  self/402: OnceCell__FrozenVec__int,
-  init/403: () -> FrozenVec__int
-) -> FrozenVec__int {
+fn inherent#OnceCell#OnceCell[T]#get_or_init__T_FrozenVec[isize](
+  self/402: OnceCell__FrozenVec__isize,
+  init/403: () -> FrozenVec__isize
+) -> FrozenVec__isize {
   @intrinsic(once_cell.get_or_init)(self/402, init/403)
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#to_vec__T_int(self/400: FrozenVec__int) -> Vec[int] {
-  inherent#Vec#Vec[T]#copy__T_int(FrozenVec__int.values(self/400))
+fn inherent#FrozenVec#FrozenVec[T]#to_vec__T_isize(self/400: FrozenVec__isize) -> Vec[isize] {
+  inherent#Vec#Vec[T]#copy__T_isize(FrozenVec__isize.values(self/400))
 }
 
-fn inherent#Vec#Vec[T]#set__T_int(self/270: Vec[int], index/271: int, elem/272: int) -> unit {
+fn inherent#Vec#Vec[T]#set__T_isize(
+  self/270: Vec[isize],
+  index/271: isize,
+  elem/272: isize
+) -> unit {
   @intrinsic(vec.set)(self/270, index/271, elem/272)
 }
 
@@ -45,27 +51,33 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#FrozenVec#FrozenVec[T]#get__T_int(self/398: FrozenVec__int, index/399: int) -> int {
-  @intrinsic(vec.get)(FrozenVec__int.values(self/398), index/399)
+fn inherent#FrozenVec#FrozenVec[T]#get__T_isize(
+  self/398: FrozenVec__isize,
+  index/399: isize
+) -> isize {
+  @intrinsic(vec.get)(FrozenVec__isize.values(self/398), index/399)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
-fn inherent#Vec#Vec[T]#get__T_int(self/268: Vec[int], index/269: int) -> int {
+fn inherent#Vec#Vec[T]#get__T_isize(self/268: Vec[isize], index/269: isize) -> isize {
   @intrinsic(vec.get)(self/268, index/269)
 }
 
-fn inherent#Vec#Vec[T]#copy__T_int(self/264: Vec[int]) -> Vec[int] {
+fn inherent#Vec#Vec[T]#copy__T_isize(self/264: Vec[isize]) -> Vec[isize] {
   let result/265 =
-    inherent#Vec#Vec[T]#with_capacity__T_int(inherent#Vec#Vec[T]#len__T_int(self/264)) in
+    inherent#Vec#Vec[T]#with_capacity__T_isize(inherent#Vec#Vec[T]#len__T_isize(self/264)) in
   let index/266 = 0 in
   let _wild199 =
-    while (index/266 < inherent#Vec#Vec[T]#len__T_int(self/264)) {
+    while (index/266 < inherent#Vec#Vec[T]#len__T_isize(self/264)) {
         {
           let _wild195 =
-            inherent#Vec#Vec[T]#push__T_int(result/265, @intrinsic(vec.get)(self/264, index/266)) in
+            inherent#Vec#Vec[T]#push__T_isize(
+              result/265,
+              @intrinsic(vec.get)(self/264, index/266)
+            ) in
           let _wild198 =
             {
               let compound_old196 = index/266 in
@@ -81,14 +93,14 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#Vec#Vec[T]#len__T_int(self/273: Vec[int]) -> int {
+fn inherent#Vec#Vec[T]#len__T_isize(self/273: Vec[isize]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int(capacity/257: int) -> Vec[int] {
+fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/257: isize) -> Vec[isize] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
-fn inherent#Vec#Vec[T]#push__T_int(self/258: Vec[int], elem/259: int) -> unit {
+fn inherent#Vec#Vec[T]#push__T_isize(self/258: Vec[isize], elem/259: isize) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }

@@ -77,7 +77,7 @@ type Option__char struct {
 }
 
 func show_u8(value__0 uint8) struct{} {
-    var inline679 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__0)
+    var inline679 string = _goml_m_trait__impl_i_ToString_i_u8_i_to__string(value__0)
     _goml_runtime_core_string_println(inline679)
     return struct{}{}
 }
@@ -106,95 +106,95 @@ func unsigned_ops() struct{} {
     var t501_lhs uint8 = 128
     var t501_rhs int = 7
     var t501 uint8 = t501_lhs >> t501_rhs
-    println__T_uint8(t501)
+    println__T_u8(t501)
     var t502_operand uint8 = 0
     var t502 uint8 = ^t502_operand
-    println__T_uint8(t502)
+    println__T_u8(t502)
     var t503_lhs uint8 = 1
     var t503_rhs int = 8
     var t503 uint8 = t503_lhs << t503_rhs
-    println__T_uint8(t503)
+    println__T_u8(t503)
     var t504_lhs uint16 = 513
     var t504_rhs uint16 = 256
     var t504 uint16 = t504_lhs % t504_rhs
-    println__T_uint16(t504)
+    println__T_u16(t504)
     var t505_lhs uint16 = 3855
     var t505_rhs uint16 = 255
     var t505 uint16 = t505_lhs & t505_rhs
-    println__T_uint16(t505)
+    println__T_u16(t505)
     var t506_lhs uint16 = 3840
     var t506_rhs uint16 = 15
     var t506 uint16 = t506_lhs | t506_rhs
-    println__T_uint16(t506)
+    println__T_u16(t506)
     var t507_lhs uint16 = 43690
     var t507_rhs uint16 = 3855
     var t507 uint16 = t507_lhs ^ t507_rhs
-    println__T_uint16(t507)
+    println__T_u16(t507)
     var t508_lhs uint16 = 1
     var t508_rhs int = 15
     var t508 uint16 = t508_lhs << t508_rhs
-    println__T_uint16(t508)
+    println__T_u16(t508)
     var t509_lhs uint16 = 32768
     var t509_rhs int = 15
     var t509 uint16 = t509_lhs >> t509_rhs
-    println__T_uint16(t509)
+    println__T_u16(t509)
     var t510_operand uint16 = 0
     var t510 uint16 = ^t510_operand
-    println__T_uint16(t510)
+    println__T_u16(t510)
     var t511_lhs uint32 = 1000000001
     var t511_rhs uint32 = 1000
     var t511 uint32 = t511_lhs % t511_rhs
-    println__T_uint32(t511)
+    println__T_u32(t511)
     var t512_lhs uint32 = 4042322160
     var t512_rhs uint32 = 252645135
     var t512 uint32 = t512_lhs & t512_rhs
-    println__T_uint32(t512)
+    println__T_u32(t512)
     var t513_lhs uint32 = 4042322160
     var t513_rhs uint32 = 252645135
     var t513 uint32 = t513_lhs | t513_rhs
-    println__T_uint32(t513)
+    println__T_u32(t513)
     var t514_lhs uint32 = 4042322160
     var t514_rhs uint32 = 252645135
     var t514 uint32 = t514_lhs ^ t514_rhs
-    println__T_uint32(t514)
+    println__T_u32(t514)
     var t515_lhs uint32 = 1
     var t515_rhs int = 31
     var t515 uint32 = t515_lhs << t515_rhs
-    println__T_uint32(t515)
+    println__T_u32(t515)
     var t516_lhs uint32 = 2147483648
     var t516_rhs int = 31
     var t516 uint32 = t516_lhs >> t516_rhs
-    println__T_uint32(t516)
+    println__T_u32(t516)
     var t517_operand uint32 = 0
     var t517 uint32 = ^t517_operand
-    println__T_uint32(t517)
+    println__T_u32(t517)
     var t518_lhs uint64 = 1000000000001
     var t518_rhs uint64 = 1000
     var t518 uint64 = t518_lhs % t518_rhs
-    println__T_uint64(t518)
+    println__T_u64(t518)
     var t519_lhs uint64 = 17361641481138401520
     var t519_rhs uint64 = 1085102592571150095
     var t519 uint64 = t519_lhs & t519_rhs
-    println__T_uint64(t519)
+    println__T_u64(t519)
     var t520_lhs uint64 = 17361641481138401520
     var t520_rhs uint64 = 1085102592571150095
     var t520 uint64 = t520_lhs | t520_rhs
-    println__T_uint64(t520)
+    println__T_u64(t520)
     var t521_lhs uint64 = 17361641481138401520
     var t521_rhs uint64 = 1085102592571150095
     var t521 uint64 = t521_lhs ^ t521_rhs
-    println__T_uint64(t521)
+    println__T_u64(t521)
     var t522_lhs uint64 = 1
     var t522_rhs int = 63
     var t522 uint64 = t522_lhs << t522_rhs
-    println__T_uint64(t522)
+    println__T_u64(t522)
     var t523_lhs uint64 = 9223372036854775808
     var t523_rhs int = 63
     var t523 uint64 = t523_lhs >> t523_rhs
-    println__T_uint64(t523)
+    println__T_u64(t523)
     var t524_operand uint64 = 0
     var t524 uint64 = ^t524_operand
-    println__T_uint64(t524)
+    println__T_u64(t524)
     return struct{}{}
 }
 
@@ -202,67 +202,67 @@ func signed_ops() struct{} {
     var t527_lhs int8 = -13
     var t527_rhs int8 = 5
     var t527 int8 = t527_lhs % t527_rhs
-    println__T_int8(t527)
+    println__T_i8(t527)
     var t528_lhs int8 = -8
     var t528_rhs int = 2
     var t528 int8 = t528_lhs >> t528_rhs
-    println__T_int8(t528)
+    println__T_i8(t528)
     var t529_lhs int8 = 1
     var t529_rhs int = 6
     var t529 int8 = t529_lhs << t529_rhs
-    println__T_int8(t529)
+    println__T_i8(t529)
     var t530_operand int8 = 0
     var t530 int8 = ^t530_operand
-    println__T_int8(t530)
+    println__T_i8(t530)
     var t531_lhs int8 = -1
     var t531_rhs int = 7
     var t531 int8 = t531_lhs >> t531_rhs
-    println__T_int8(t531)
+    println__T_i8(t531)
     var t532_lhs int16 = -513
     var t532_rhs int16 = 256
     var t532 int16 = t532_lhs % t532_rhs
-    println__T_int16(t532)
+    println__T_i16(t532)
     var t533 int16 = -32767 - 1
     var t534_rhs int = 15
     var t534 int16 = t533 >> t534_rhs
-    println__T_int16(t534)
+    println__T_i16(t534)
     var t535_lhs int16 = 1
     var t535_rhs int = 14
     var t535 int16 = t535_lhs << t535_rhs
-    println__T_int16(t535)
+    println__T_i16(t535)
     var t536_operand int16 = 255
     var t536 int16 = ^t536_operand
-    println__T_int16(t536)
+    println__T_i16(t536)
     var t537_lhs int32 = -1000000001
     var t537_rhs int32 = 1000
     var t537 int32 = t537_lhs % t537_rhs
-    println__T_int32(t537)
+    println__T_i32(t537)
     var t538 int32 = -2147483647 - 1
     var t539_rhs int = 31
     var t539 int32 = t538 >> t539_rhs
-    println__T_int32(t539)
+    println__T_i32(t539)
     var t540_lhs int32 = 1
     var t540_rhs int = 30
     var t540 int32 = t540_lhs << t540_rhs
-    println__T_int32(t540)
+    println__T_i32(t540)
     var t541_operand int32 = 65535
     var t541 int32 = ^t541_operand
-    println__T_int32(t541)
+    println__T_i32(t541)
     var t542_lhs int64 = -1000000000001
     var t542_rhs int64 = 1000
     var t542 int64 = t542_lhs % t542_rhs
-    println__T_int64(t542)
+    println__T_i64(t542)
     var t543_lhs int64 = -9223372036854775807
     var t543_rhs int = 62
     var t543 int64 = t543_lhs >> t543_rhs
-    println__T_int64(t543)
+    println__T_i64(t543)
     var t544_lhs int64 = 1
     var t544_rhs int = 62
     var t544 int64 = t544_lhs << t544_rhs
-    println__T_int64(t544)
+    println__T_i64(t544)
     var t545_operand int64 = 4294967295
     var t545 int64 = ^t545_operand
-    println__T_int64(t545)
+    println__T_i64(t545)
     return struct{}{}
 }
 
@@ -274,11 +274,11 @@ func precedence() struct{} {
     var t549 uint8 = t549_lhs ^ t548
     var t550_lhs uint8 = 1
     var t550 uint8 = t550_lhs | t549
-    println__T_uint8(t550)
+    println__T_u8(t550)
     var t551 int = 2 + 1
     var t552_lhs uint8 = 1
     var t552 uint8 = t552_lhs << t551
-    println__T_uint8(t552)
+    println__T_u8(t552)
     var t553_lhs int = 1
     var t553_rhs int = 2
     var t553 int = t553_lhs | t553_rhs
@@ -301,7 +301,7 @@ func precedence() struct{} {
     var t559 uint8 = ^t559_operand
     var t560_rhs uint8 = 15
     var t560 uint8 = t559 & t560_rhs
-    println__T_uint8(t560)
+    println__T_u8(t560)
     return struct{}{}
 }
 
@@ -320,32 +320,32 @@ func casts() struct{} {
     var max_u32__19 uint32 = 4294967295
     var three_hundred__20 uint16 = 300
     var t563 uint8 = uint8(uint16(five_eleven__8))
-    println__T_uint8(t563)
+    println__T_u8(t563)
     var t564 uint8 = uint8(uint16(two_fifty_six__9))
-    println__T_uint8(t564)
+    println__T_u8(t564)
     var t565 uint8 = uint8(int16(negative_one_i16__10))
-    println__T_uint8(t565)
+    println__T_u8(t565)
     var t566 int8 = int8(uint8(two_fifty_five__11))
-    println__T_int8(t566)
+    println__T_i8(t566)
     var t567 int8 = int8(uint8(one_twenty_eight__12))
-    println__T_int8(t567)
+    println__T_i8(t567)
     var t568 int8 = int8(int16(negative_one_twenty_nine__13))
-    println__T_int8(t568)
+    println__T_i8(t568)
     var t569 int16 = int16(uint16(max_u16__14))
-    println__T_int16(t569)
+    println__T_i16(t569)
     var t570 uint16 = uint16(int32(negative_one_i32__15))
-    println__T_uint16(t570)
+    println__T_u16(t570)
     var t571 uint64 = uint64(int8(negative_one_i8__16))
-    println__T_uint64(t571)
+    println__T_u64(t571)
     var t572 int32 = int32(uint64(max_u64__17))
-    println__T_int32(t572)
+    println__T_i32(t572)
     var t573 uint32 = uint32(uint8(sixty_five__18))
-    println__T_uint32(t573)
+    println__T_u32(t573)
     var t574 int64 = int64(uint32(max_u32__19))
-    println__T_int64(t574)
+    println__T_i64(t574)
     var t575_source rune = 65
     var t575 uint32 = uint32(rune(t575_source))
-    println__T_uint32(t575)
+    println__T_u32(t575)
     var mtmp472 Option__char
     var inline812 uint32 = 128512
     var inline813 Option__char = __goml_builtin_char_from_uint32(inline812)
@@ -367,7 +367,7 @@ func casts() struct{} {
     }
     var t577 uint8 = uint8(uint16(three_hundred__20))
     var t578 uint32 = uint32(uint8(t577))
-    println__T_uint32(t578)
+    println__T_u32(t578)
     return struct{}{}
 }
 
@@ -388,11 +388,11 @@ func main0() struct{} {
     var inline847 uint8 = inline846 % inline847_rhs
     var inline848 uint8 = inline845 | inline847
     t591 = inline848
-    println__T_uint8(t591)
+    println__T_u8(t591)
     return struct{}{}
 }
 
-func println__T_uint8(value__1 uint8) struct{} {
+func println__T_u8(value__1 uint8) struct{} {
     var t594 string
     var inline850 string = _goml_runtime_core_uint8_to_string(value__1)
     t594 = inline850
@@ -400,7 +400,7 @@ func println__T_uint8(value__1 uint8) struct{} {
     return struct{}{}
 }
 
-func println__T_uint16(value__1 uint16) struct{} {
+func println__T_u16(value__1 uint16) struct{} {
     var t597 string
     var inline852 string = _goml_runtime_core_uint16_to_string(value__1)
     t597 = inline852
@@ -408,7 +408,7 @@ func println__T_uint16(value__1 uint16) struct{} {
     return struct{}{}
 }
 
-func println__T_uint32(value__1 uint32) struct{} {
+func println__T_u32(value__1 uint32) struct{} {
     var t600 string
     var inline854 string = _goml_runtime_core_uint32_to_string(value__1)
     t600 = inline854
@@ -416,7 +416,7 @@ func println__T_uint32(value__1 uint32) struct{} {
     return struct{}{}
 }
 
-func println__T_uint64(value__1 uint64) struct{} {
+func println__T_u64(value__1 uint64) struct{} {
     var t603 string
     var inline856 string = _goml_runtime_core_uint64_to_string(value__1)
     t603 = inline856
@@ -424,7 +424,7 @@ func println__T_uint64(value__1 uint64) struct{} {
     return struct{}{}
 }
 
-func println__T_int8(value__1 int8) struct{} {
+func println__T_i8(value__1 int8) struct{} {
     var t606 string
     var inline858 string = _goml_runtime_core_int8_to_string(value__1)
     t606 = inline858
@@ -432,7 +432,7 @@ func println__T_int8(value__1 int8) struct{} {
     return struct{}{}
 }
 
-func println__T_int16(value__1 int16) struct{} {
+func println__T_i16(value__1 int16) struct{} {
     var t609 string
     var inline860 string = _goml_runtime_core_int16_to_string(value__1)
     t609 = inline860
@@ -440,7 +440,7 @@ func println__T_int16(value__1 int16) struct{} {
     return struct{}{}
 }
 
-func println__T_int32(value__1 int32) struct{} {
+func println__T_i32(value__1 int32) struct{} {
     var t612 string
     var inline862 string = _goml_runtime_core_int32_to_string(value__1)
     t612 = inline862
@@ -448,7 +448,7 @@ func println__T_int32(value__1 int32) struct{} {
     return struct{}{}
 }
 
-func println__T_int64(value__1 int64) struct{} {
+func println__T_i64(value__1 int64) struct{} {
     var t615 string
     var inline864 string = _goml_runtime_core_int64_to_string(value__1)
     t615 = inline864
@@ -456,7 +456,7 @@ func println__T_int64(value__1 int64) struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__156 uint8) string {
+func _goml_m_trait__impl_i_ToString_i_u8_i_to__string(self__156 uint8) string {
     var t631 string = _goml_runtime_core_uint8_to_string(self__156)
     return t631
 }

@@ -1,18 +1,18 @@
-impl Measure for Vec[int32] {
-  fn measure(self/0: Vec[int32]) -> int {
-      (Vec[int32]::len : (Vec[int32]) -> int)((self/0 : Vec[int32]))
+impl Measure for Vec[i32] {
+  fn measure(self/0: Vec[i32]) -> isize {
+      (Vec[i32]::len : (Vec[i32]) -> isize)((self/0 : Vec[i32]))
   }
 }
 
-fn read_measure[T](value/1: T) -> int where T: Measure {
-    (Measure::measure : (T) -> int)((value/1 : T))
+fn read_measure[T](value/1: T) -> isize where T: Measure {
+    (Measure::measure : (T) -> isize)((value/1 : T))
 }
 
 fn main() -> unit {
-    let values/2: Vec[int32] = (@intrinsic(vec.new) : () -> Vec[int32])();
+    let values/2: Vec[i32] = (@intrinsic(vec.new) : () -> Vec[i32])();
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (read_measure : (Vec[int32]) -> int)((values/2 : Vec[int32]))
+      (isize::to_string : (isize) -> string)(
+        (read_measure : (Vec[i32]) -> isize)((values/2 : Vec[i32]))
       )
     )
 }

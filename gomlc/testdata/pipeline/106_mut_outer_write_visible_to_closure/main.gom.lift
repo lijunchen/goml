@@ -5,7 +5,7 @@ fn main() -> unit {
       closure_env_get_0 { x_0: x/0 }
     ) in
   let _wild411 = @intrinsic(ref.set)(x/0, 41) in
-  let _wild412 = println__T_string(inherent#int#int#to_string(get/1())) in
+  let _wild412 = println__T_string(inherent#isize#isize#to_string(get/1())) in
   ()
 }
 
@@ -13,7 +13,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
@@ -21,15 +21,15 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }
 
-fn inherent#closure_env_get_0#closure_env_get_0#apply(env413: closure_env_get_0) -> int {
+fn inherent#closure_env_get_0#closure_env_get_0#apply(env413: closure_env_get_0) -> isize {
   let x/0 = closure_env_get_0.x_0(env413) in
   @intrinsic(ref.get)(x/0)
 }

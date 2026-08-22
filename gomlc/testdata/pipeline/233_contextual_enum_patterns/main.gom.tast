@@ -1,104 +1,108 @@
-fn classify(value/0: First[int]) -> string {
-    match (value/0 : First[int]) {
-        First::Shared(number/1: int) =>
-          "shared:" + (int::to_string : (int) -> string)((number/1 : int)),
+fn classify(value/0: First[isize]) -> string {
+    match (value/0 : First[isize]) {
+        First::Shared(number/1: isize) =>
+          "shared:" + (isize::to_string : (isize) -> string)((number/1 : isize)),
         First::Idle => "idle",
-        First::Data(value/2: int, label/3: string) =>
-          (label/3 : string) + ":" + (int::to_string : (int) -> string)((value/2 : int)),
+        First::Data(value/2: isize, label/3: string) =>
+          (label/3 : string) + ":" + (isize::to_string : (isize) -> string)((value/2 : isize)),
     }
 }
 
-fn nested(value/4: Option[Result[int, string]]) -> string {
-    match (value/4 : Option[Result[int, string]]) {
-        Option::Some(Result::Ok(number/5: int)) =>
-          "ok:" + (int::to_string : (int) -> string)((number/5 : int)),
+fn nested(value/4: Option[Result[isize, string]]) -> string {
+    match (value/4 : Option[Result[isize, string]]) {
+        Option::Some(Result::Ok(number/5: isize)) =>
+          "ok:" + (isize::to_string : (isize) -> string)((number/5 : isize)),
         Option::Some(Result::Err(message/6: string)) => "err:" + (message/6 : string),
         Option::None => "none",
     }
 }
 
-fn optional_number(value/7: Option[int]) -> int {
-    match (value/7 : Option[int]) {
-        Option::Some(number/8: int) =>
+fn optional_number(value/7: Option[isize]) -> isize {
+    match (value/7 : Option[isize]) {
+        Option::Some(number/8: isize) =>
           {
-              (number/8 : int)
+              (number/8 : isize)
           },
-        _ : Option[int] =>
+        _ : Option[isize] =>
           {
               0
           },
     }
 }
 
-fn is_non_shared(value/9: First[int]) -> bool {
-    match (value/9 : First[int]) {
-        First::Idle | First::Data(_ : int, _ : string) => true,
-        First::Shared(_ : int) => false,
+fn is_non_shared(value/9: First[isize]) -> bool {
+    match (value/9 : First[isize]) {
+        First::Idle | First::Data(_ : isize, _ : string) => true,
+        First::Shared(_ : isize) => false,
     }
 }
 
-fn take_once(value/10: Option[int]) -> int {
-    let current/11: Ref[Option[int]] =
-      (Ref[Option[int]]::new : (Option[int]) -> Ref[Option[int]])((value/10 : Option[int]));
-    let result/12: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+fn take_once(value/10: Option[isize]) -> isize {
+    let current/11: Ref[Option[isize]] =
+      (Ref[Option[isize]]::new : (Option[isize]) -> Ref[Option[isize]])((value/10 : Option[isize]));
+    let result/12: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while true {
-        match (Ref[Option[int]]::get : (Ref[Option[int]]) -> Option[int])(
-          (current/11 : Ref[Option[int]])
+        match (Ref[Option[isize]]::get : (Ref[Option[isize]]) -> Option[isize])(
+          (current/11 : Ref[Option[isize]])
         ) {
-            Option::Some(number/13: int) =>
+            Option::Some(number/13: isize) =>
               {
-                  (Ref[int]::set : (Ref[int], int) -> unit)(
-                    (result/12 : Ref[int]),
-                    (number/13 : int)
+                  (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+                    (result/12 : Ref[isize]),
+                    (number/13 : isize)
                   );
-                  (Ref[Option[int]]::set : (Ref[Option[int]], Option[int]) -> unit)(
-                    (current/11 : Ref[Option[int]]),
+                  (Ref[Option[isize]]::set : (Ref[Option[isize]], Option[isize]) -> unit)(
+                    (current/11 : Ref[Option[isize]]),
                     Option::None
                   );
               },
-            _ : Option[int] => break,
+            _ : Option[isize] => break,
         }
     };
-    (Ref[int]::get : (Ref[int]) -> int)((result/12 : Ref[int]))
+    (Ref[isize]::get : (Ref[isize]) -> isize)((result/12 : Ref[isize]))
 }
 
-fn unbox(value/14: Boxed[int]) -> int {
-    let Boxed::Value(number/15: int) = (value/14 : Boxed[int]);
-    (number/15 : int)
+fn unbox(value/14: Boxed[isize]) -> isize {
+    let Boxed::Value(number/15: isize) = (value/14 : Boxed[isize]);
+    (number/15 : isize)
 }
 
-fn sum_boxed(values/16: Vec[Boxed[int]]) -> int {
-    let result/17: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    for Boxed::Value(number/18: int) in
-      (values/16 : Vec[Boxed[int]]) {
-        (Ref[int]::set : (Ref[int], int) -> unit)(
-          (result/17 : Ref[int]),
-          (Ref[int]::get : (Ref[int]) -> int)((result/17 : Ref[int])) + (number/18 : int)
+fn sum_boxed(values/16: Vec[Boxed[isize]]) -> isize {
+    let result/17: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    for Boxed::Value(number/18: isize) in
+      (values/16 : Vec[Boxed[isize]]) {
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+          (result/17 : Ref[isize]),
+          (Ref[isize]::get : (Ref[isize]) -> isize)((result/17 : Ref[isize])) + (number/18 : isize)
         );
     };
-    (Ref[int]::get : (Ref[int]) -> int)((result/17 : Ref[int]))
+    (Ref[isize]::get : (Ref[isize]) -> isize)((result/17 : Ref[isize]))
 }
 
 fn main() -> unit {
-    let boxed/19: Vec[Boxed[int]] =
-      (@intrinsic(vec.from_array) : ([Boxed[int]; 2]) -> Vec[Boxed[int]])(
+    let boxed/19: Vec[Boxed[isize]] =
+      (@intrinsic(vec.from_array) : ([Boxed[isize]; 2]) -> Vec[Boxed[isize]])(
         [Boxed::Value(19), Boxed::Value(23)]
       );
-    (println : (string) -> unit)((classify : (First[int]) -> string)(First::Shared(7)));
-    (println : (string) -> unit)((classify : (First[int]) -> string)(First::Idle));
-    (println : (string) -> unit)((classify : (First[int]) -> string)(First::Data(9, "data")));
+    (println : (string) -> unit)((classify : (First[isize]) -> string)(First::Shared(7)));
+    (println : (string) -> unit)((classify : (First[isize]) -> string)(First::Idle));
+    (println : (string) -> unit)((classify : (First[isize]) -> string)(First::Data(9, "data")));
     (println : (string) -> unit)(
-      (nested : (Option[Result[int, string]]) -> string)(Option::Some(Result::Ok(11)))
+      (nested : (Option[Result[isize, string]]) -> string)(Option::Some(Result::Ok(11)))
     );
     (println : (string) -> unit)(
-      (nested : (Option[Result[int, string]]) -> string)(Option::Some(Result::Err("bad")))
+      (nested : (Option[Result[isize, string]]) -> string)(Option::Some(Result::Err("bad")))
     );
-    (println : (string) -> unit)((nested : (Option[Result[int, string]]) -> string)(Option::None));
-    (println : (int) -> unit)((optional_number : (Option[int]) -> int)(Option::Some(13)));
-    (println : (int) -> unit)((optional_number : (Option[int]) -> int)(Option::None));
-    (println : (bool) -> unit)((is_non_shared : (First[int]) -> bool)(First::Idle));
-    (println : (bool) -> unit)((is_non_shared : (First[int]) -> bool)(First::Shared(1)));
-    (println : (int) -> unit)((take_once : (Option[int]) -> int)(Option::Some(15)));
-    (println : (int) -> unit)((unbox : (Boxed[int]) -> int)(Boxed::Value(17)));
-    (println : (int) -> unit)((sum_boxed : (Vec[Boxed[int]]) -> int)((boxed/19 : Vec[Boxed[int]])))
+    (println : (string) -> unit)(
+      (nested : (Option[Result[isize, string]]) -> string)(Option::None)
+    );
+    (println : (isize) -> unit)((optional_number : (Option[isize]) -> isize)(Option::Some(13)));
+    (println : (isize) -> unit)((optional_number : (Option[isize]) -> isize)(Option::None));
+    (println : (bool) -> unit)((is_non_shared : (First[isize]) -> bool)(First::Idle));
+    (println : (bool) -> unit)((is_non_shared : (First[isize]) -> bool)(First::Shared(1)));
+    (println : (isize) -> unit)((take_once : (Option[isize]) -> isize)(Option::Some(15)));
+    (println : (isize) -> unit)((unbox : (Boxed[isize]) -> isize)(Boxed::Value(17)));
+    (println : (isize) -> unit)(
+      (sum_boxed : (Vec[Boxed[isize]]) -> isize)((boxed/19 : Vec[Boxed[isize]]))
+    )
 }

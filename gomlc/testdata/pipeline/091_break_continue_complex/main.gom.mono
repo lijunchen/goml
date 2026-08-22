@@ -1,11 +1,11 @@
 fn main() -> unit {
-  let sum/0 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let i/1 = inherent#Ref#Ref[T]#new__T_int(1) in
+  let sum/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  let i/1 = inherent#Ref#Ref[T]#new__T_isize(1) in
   let _wild414 =
-    while (inherent#Ref#Ref[T]#get__T_int(i/1) <= 100) {
+    while (inherent#Ref#Ref[T]#get__T_isize(i/1) <= 100) {
         {
           let _wild411 =
-            if (inherent#Ref#Ref[T]#get__T_int(i/1) == 50) {
+            if (inherent#Ref#Ref[T]#get__T_isize(i/1) == 50) {
                 {
                   break
                 }
@@ -15,32 +15,32 @@ fn main() -> unit {
                 }
             } in
           let _wild412 =
-            inherent#Ref#Ref[T]#set__T_int(
+            inherent#Ref#Ref[T]#set__T_isize(
               sum/0,
-              (inherent#Ref#Ref[T]#get__T_int(sum/0) + inherent#Ref#Ref[T]#get__T_int(i/1))
+              (inherent#Ref#Ref[T]#get__T_isize(sum/0) + inherent#Ref#Ref[T]#get__T_isize(i/1))
             ) in
           let _wild413 =
-            inherent#Ref#Ref[T]#set__T_int(i/1, (inherent#Ref#Ref[T]#get__T_int(i/1) + 1)) in
+            inherent#Ref#Ref[T]#set__T_isize(i/1, (inherent#Ref#Ref[T]#get__T_isize(i/1) + 1)) in
         }
     } in
   let mtmp415 = print__T_string("sum up to break: ") in
   {
-    let mtmp416 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/0)) in
+    let mtmp416 = println__T_isize(inherent#Ref#Ref[T]#get__T_isize(sum/0)) in
     {
-      let even_sum/2 = inherent#Ref#Ref[T]#new__T_int(0) in
-      let j/3 = inherent#Ref#Ref[T]#new__T_int(1) in
+      let even_sum/2 = inherent#Ref#Ref[T]#new__T_isize(0) in
+      let j/3 = inherent#Ref#Ref[T]#new__T_isize(1) in
       let _wild420 =
-        while (inherent#Ref#Ref[T]#get__T_int(j/3) <= 10) {
+        while (inherent#Ref#Ref[T]#get__T_isize(j/3) <= 10) {
             {
-              let cur/4 = inherent#Ref#Ref[T]#get__T_int(j/3) in
-              let _wild417 = inherent#Ref#Ref[T]#set__T_int(j/3, (cur/4 + 1)) in
+              let cur/4 = inherent#Ref#Ref[T]#get__T_isize(j/3) in
+              let _wild417 = inherent#Ref#Ref[T]#set__T_isize(j/3, (cur/4 + 1)) in
               let _wild419 =
                 if (cur/4 == ((cur/4 / 2) * 2)) {
                     {
                       let _wild418 =
-                        inherent#Ref#Ref[T]#set__T_int(
+                        inherent#Ref#Ref[T]#set__T_isize(
                           even_sum/2,
-                          (inherent#Ref#Ref[T]#get__T_int(even_sum/2) + cur/4)
+                          (inherent#Ref#Ref[T]#get__T_isize(even_sum/2) + cur/4)
                         ) in
                       continue
                     }
@@ -53,7 +53,7 @@ fn main() -> unit {
         } in
       let mtmp421 = print__T_string("even sum: ") in
       {
-        let mtmp422 = println__T_int(inherent#Ref#Ref[T]#get__T_int(even_sum/2)) in
+        let mtmp422 = println__T_isize(inherent#Ref#Ref[T]#get__T_isize(even_sum/2)) in
         {
           ()
         }
@@ -62,15 +62,15 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
@@ -78,22 +78,22 @@ fn print__T_string(value/0: string) -> unit {
   @runtime(core.string_print)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

@@ -87,10 +87,10 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline489, p0)
     }
     var inline491 int32 = inline490(2)
-    var inline492 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline491)
+    var inline492 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline491)
     println__T_string(inline492)
     var inline494 int32 = inline490(3)
-    var inline495 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline494)
+    var inline495 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline494)
     println__T_string(inline495)
     var t442 IntList = Cons{
         _0: 3,
@@ -126,7 +126,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t450 string = _goml_runtime_core_int32_to_string(self__33)
     return t450
 }

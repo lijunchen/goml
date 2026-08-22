@@ -1,4 +1,4 @@
-fn trait_impl#Show#int32#show(self/0: int32) -> string {
+fn trait_impl#Show#i32#show(self/0: i32) -> string {
   let inline443 = @runtime(core.int32_to_string)(self/0) in
   inline443
 }
@@ -11,7 +11,7 @@ fn trait_impl#Show#Wrap#show(self/1: Wrap) -> string {
 fn main() -> unit {
   join inline_cont454(values/2: Vec[dyn Show]) -> unit {
     let value/3 = 10 in
-    let t421 = to_dyn[Show]{int32}(value/3) in
+    let t421 = to_dyn[Show]{i32}(value/3) in
     join inline_cont452(_wild411: unit) -> unit {
       let t422 = Wrap { value: "ok" } in
       let t423 = to_dyn[Show]{Wrap}(t422) in
@@ -39,7 +39,7 @@ fn main() -> unit {
   jump inline_cont454(inline455)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t431 = @runtime(core.int32_to_string)(self/33) in
   t431
 }

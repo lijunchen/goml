@@ -105,7 +105,7 @@ func main0() struct{} {
     var t436 string = t434 + t435
     var t437 string
     var inline502 string = "f64="
-    var inline506 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(third_value__14)
+    var inline506 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(third_value__14)
     var inline507 string = inline502 + inline506
     t437 = inline507
     var t438 string = t436 + t437
@@ -142,7 +142,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__161 float64) string {
+func _goml_m_trait__impl_i_ToString_i_f64_i_to__string(self__161 float64) string {
     var t447 string = _goml_runtime_core_float64_to_string(self__161)
     return t447
 }

@@ -2,13 +2,13 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = |x/2| ((x/2 * y/0) * z/1) in
-  let mtmp411 = println__T_string(inherent#int32#int32#to_string(f/3(2))) in
+  let mtmp411 = println__T_string(inherent#i32#i32#to_string(f/3(2))) in
   {
-    println__T_string(inherent#int32#int32#to_string(f/3(3)))
+    println__T_string(inherent#i32#i32#to_string(f/3(3)))
   }
 }
 
-fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
+fn call_int_id(f/4: (i32) -> i32, v/5: i32) -> i32 {
   f/4(v/5)
 }
 
@@ -19,14 +19,14 @@ fn main() -> unit {
   let printer/13 =
     |prefix/10,
     value/11| {
-      let message/12 = (prefix/10 + inherent#int32#int32#to_string(value/11)) in
+      let message/12 = (prefix/10 + inherent#i32#i32#to_string(value/11)) in
       println__T_string(message/12)
     } in
   let mtmp412 = printer/13("result: ", result/9) in
   {
     let no_capture/17 = |z/16| (z/16 * 2) in
     let doubled/18 = no_capture/17(3) in
-    let mtmp413 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
+    let mtmp413 = println__T_string(inherent#i32#i32#to_string(doubled/18)) in
     {
       let mtmp414 = test() in
       {
@@ -45,7 +45,7 @@ fn main() -> unit {
                     {
                       let head/21 = x415 in
                       {
-                        let mtmp417 = println__T_string(inherent#int32#int32#to_string(head/21)) in
+                        let mtmp417 = println__T_string(inherent#i32#i32#to_string(head/21)) in
                         {
                           {
                             let x418 = Point.x(point/20) in
@@ -57,9 +57,8 @@ fn main() -> unit {
                                 {
                                   let mtmp420 =
                                     println__T_string(
-                                      (((("Point: (" + inherent#int32#int32#to_string(x/23)) +
-                                        ", ") +
-                                        inherent#int32#int32#to_string(y/24)) +
+                                      (((("Point: (" + inherent#i32#i32#to_string(x/23)) + ", ") +
+                                        inherent#i32#i32#to_string(y/24)) +
                                         ")")
                                     ) in
                                   {
@@ -90,7 +89,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

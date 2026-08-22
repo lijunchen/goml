@@ -1,7 +1,7 @@
 package main;
 struct Point {
-    x: int32,
-    y: int32,
+    x: i32,
+    y: i32,
 }
 
 enum Maybe[T] {
@@ -19,8 +19,8 @@ impl Display for Point {
   }
 }
 
-impl Display for Maybe[int32] {
-  fn show(self: Maybe[int32]) -> string {
+impl Display for Maybe[i32] {
+  fn show(self: Maybe[i32]) -> string {
       match self {
           Just(value) => "Just(" + value.to_string() + ")",
           Nothing => "Nothing",
@@ -28,7 +28,7 @@ impl Display for Maybe[int32] {
   }
 }
 
-fn make_maybe(flag: bool) -> Maybe[int32] {
+fn make_maybe(flag: bool) -> Maybe[i32] {
     if flag {
         {
             Just(42)

@@ -1,27 +1,27 @@
-fn double(x/0: int32) -> int32 {
+fn double(x/0: i32) -> i32 {
   let t420 = (x/0 * 2) in
   t420
 }
 
-fn increment(x/1: int32) -> int32 {
+fn increment(x/1: i32) -> i32 {
   let t423 = (x/1 + 1) in
   t423
 }
 
-fn apply_once(f/2: (int32) -> int32, value/3: int32) -> int32 {
+fn apply_once(f/2: (i32) -> i32, value/3: i32) -> i32 {
   let t426 = f/2(value/3) in
   t426
 }
 
-fn compose(f/4: (int32) -> int32, g/5: (int32) -> int32, value/6: int32) -> int32 {
+fn compose(f/4: (i32) -> i32, g/5: (i32) -> i32, value/6: i32) -> i32 {
   let t429 = g/5(value/6) in
   let t430 = f/4(t429) in
   t430
 }
 
 fn main() -> unit {
-  join inline_cont479(first/8: int32) -> unit {
-    join inline_cont476(composed/9: int32) -> unit {
+  join inline_cont479(first/8: i32) -> unit {
+    join inline_cont476(composed/9: i32) -> unit {
       let t432 = closure_env_closure_apply_0 {} in
       let closure_apply/11 =
         pack_closure[inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply](
@@ -92,7 +92,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont482(value/1)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t444 = @runtime(core.int32_to_string)(self/33) in
   t444
 }
@@ -103,25 +103,25 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 
 fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(
   env415: closure_env_closure_apply_0,
-  value/10: int32
-) -> int32 {
+  value/10: i32
+) -> i32 {
   let inline484 = increment(value/10) in
   inline484
 }
 
 fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(
   env416: closure_env_global_invoker_1,
-  func_to_call/13: (int32) -> int32,
-  value/14: int32
-) -> int32 {
+  func_to_call/13: (i32) -> i32,
+  value/14: i32
+) -> i32 {
   let inline486 = func_to_call/13(value/14) in
   inline486
 }
 
 fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(
   env417: closure_env_composer_closure_2,
-  value/17: int32
-) -> int32 {
+  value/17: i32
+) -> i32 {
   let inline488 = increment(value/17) in
   let inline489 = double(inline488) in
   inline489

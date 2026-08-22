@@ -1,17 +1,17 @@
 fn main() -> unit {
-  let x/0 = Option__uint8::Some(42) in
+  let x/0 = Option__u8::Some(42) in
   let _wild412 =
     match x/0 {
-      Option__uint8::Some(x411) => {
+      Option__u8::Some(x411) => {
         {
-          let x411 = Option__uint8::Some._0(x/0) in
+          let x411 = Option__u8::Some._0(x/0) in
           {
             let v/1 = x411 in
-            println__T_string(trait_impl#ToString#uint8#to_string(v/1))
+            println__T_string(trait_impl#ToString#u8#to_string(v/1))
           }
         }
       },
-      Option__uint8::None => {
+      Option__u8::None => {
         println__T_string("none")
       },
     } in
@@ -21,7 +21,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#uint8#to_string(self/156: uint8) -> string {
+fn trait_impl#ToString#u8#to_string(self/156: u8) -> string {
   @runtime(core.uint8_to_string)(self/156)
 }
 

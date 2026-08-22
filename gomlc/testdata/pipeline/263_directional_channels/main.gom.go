@@ -25,7 +25,7 @@ type Tuple2_3int_4bool struct {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -54,13 +54,13 @@ func main0() struct{} {
     }(x412, inline492)
     var _goml_m_value____3_i_select__value int
     var _goml_m_value____3_i_select__open bool
-    var value__3 Option__int = Option__int{
+    var value__3 Option__isize = Option__isize{
         _tag: 0,
     }
     select {
     case _goml_m_value____3_i_select__value, _goml_m_value____3_i_select__open = <-x413:
         if _goml_m_value____3_i_select__open {
-            value__3 = Option__int{
+            value__3 = Option__isize{
                 _tag: 1,
                 _v1_0: _goml_m_value____3_i_select__value,
             }
@@ -76,11 +76,11 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        var inline456 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t423)
+        var inline456 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t423)
         _goml_runtime_core_string_println(inline456)
     default:
         var inline463 int = 1
-        var inline464 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline463)
+        var inline464 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline463)
         _goml_runtime_core_string_println(inline464)
     }
     var channel__4 chan int
@@ -101,7 +101,7 @@ func main0() struct{} {
     receiver__6 = inline485
     select {
     case sender__5 <- 9:
-        var t419 Option__int
+        var t419 Option__isize
         var inline474 Tuple2_3int_4bool = func(p0 <-chan int) Tuple2_3int_4bool {
             var value int
             var ok bool
@@ -114,13 +114,13 @@ func main0() struct{} {
         var inline475 int = inline474._0
         var inline476 bool = inline474._1
         if inline476 {
-            var inline479 Option__int = Option__int{
+            var inline479 Option__isize = Option__isize{
                 _tag: 1,
                 _v1_0: inline475,
             }
             t419 = inline479
         } else {
-            t419 = Option__int{
+            t419 = Option__isize{
                 _tag: 0,
             }
         }
@@ -135,18 +135,18 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        var inline467 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t420)
+        var inline467 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t420)
         _goml_runtime_core_string_println(inline467)
         return struct{}{}
     default:
         var inline481 int = 2
-        var inline482 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline481)
+        var inline482 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline481)
         _goml_runtime_core_string_println(inline482)
         return struct{}{}
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t454 string = _goml_runtime_core_int_to_string(self__151)
     return t454
 }

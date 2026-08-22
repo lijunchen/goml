@@ -1,8 +1,8 @@
 package main
 file main.gom
   struct Point {
-      x: int32,
-      y: int32,
+      x: i32,
+      y: i32,
   }
 
   struct Flag {
@@ -10,14 +10,14 @@ file main.gom
   }
 
   struct Counter {
-      cell: Ref[int32],
+      cell: Ref[i32],
   }
 
   trait Display {
     fn show(Self) -> string;
     fn show_with(Self, string, string) -> string;
     fn tick(Self) -> unit;
-    fn bump(Self, int32) -> int32;
+    fn bump(Self, i32) -> i32;
   }
 
   impl Display for Point {
@@ -28,7 +28,7 @@ file main.gom
         prefix/2 + "Point(" + self/1.x.to_string() + "," + self/1.y.to_string() + ")" + suffix/3
     }
     fn tick(local/1/4: Point) -> unit {}
-    fn bump(local/1/5: Point, local/1/6: int32) -> int32 {
+    fn bump(local/1/5: Point, local/1/6: i32) -> i32 {
         self/5.x + self/5.y + delta/6
     }
   }
@@ -49,7 +49,7 @@ file main.gom
         }
     }
     fn tick(local/1/11: Flag) -> unit {}
-    fn bump(local/1/12: Flag, local/1/13: int32) -> int32 {
+    fn bump(local/1/12: Flag, local/1/13: i32) -> i32 {
         if self/12.value {
             delta/13
         } else {
@@ -69,7 +69,7 @@ file main.gom
         let local/1/19 = self/18.cell.get() + 1;
         let _ = self/18.cell.set(next/19);
     }
-    fn bump(local/1/20: Counter, local/1/21: int32) -> int32 {
+    fn bump(local/1/20: Counter, local/1/21: i32) -> i32 {
         let local/1/22 = self/20.cell.get() + delta/21;
         let _ = self/20.cell.set(next/22);
         next/22
@@ -90,7 +90,7 @@ file main.gom
       |local/1/30: dyn Display| Display::show_with(x/30, tag/29, tag/29)
   }
 
-  fn bump_and_show(local/1/31: dyn Display, local/1/32: int32) -> string {
+  fn bump_and_show(local/1/31: dyn Display, local/1/32: i32) -> string {
       let _ = Display::tick(x/31);
       Display::show_with(x/31, "[", "]") + ":" + Display::bump(x/31, delta/32).to_string()
   }
@@ -124,7 +124,7 @@ file main.gom
       let _ = println(s0/45);
       let _ = println(s1/46);
       let _ = println(s2/47);
-      let local/1/51: Ref[int32] = Ref::new(0);
+      let local/1/51: Ref[i32] = Ref::new(0);
       let _ =
         while i/51.get() < 3 {
             {

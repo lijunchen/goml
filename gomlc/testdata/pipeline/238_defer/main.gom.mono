@@ -1,4 +1,4 @@
-fn early_return() -> int {
+fn early_return() -> isize {
   let _wild416 =
     {
       let _wild414 =
@@ -15,19 +15,19 @@ fn early_return() -> int {
   defer_result417
 }
 
-fn maybe(value/0: Option__int) -> Option__int {
+fn maybe(value/0: Option__isize) -> Option__isize {
   let number/1 =
     match value/0 {
-      Option__int::None => {
+      Option__isize::None => {
         {
-          let defer_return420 = Option__int::None in
+          let defer_return420 = Option__isize::None in
           let _defer421 = println__T_string("try:cleanup") in
           return defer_return420
         }
       },
-      Option__int::Some(x419) => {
+      Option__isize::Some(x419) => {
         {
-          let x419 = Option__int::Some._0(value/0) in
+          let x419 = Option__isize::Some._0(value/0) in
           {
             let try_value/15 = x419 in
             try_value/15
@@ -35,24 +35,24 @@ fn maybe(value/0: Option__int) -> Option__int {
         }
       },
     } in
-  let defer_result422 = Option__int::Some(number/1) in
+  let defer_result422 = Option__isize::Some(number/1) in
   let _defer423 = println__T_string("try:cleanup") in
   defer_result422
 }
 
 fn loop_cleanup() -> unit {
-  let index/2 = inherent#Ref#Ref[T]#new__T_int(0) in
-  while (inherent#Ref#Ref[T]#get__T_int(index/2) < 3) {
+  let index/2 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  while (inherent#Ref#Ref[T]#get__T_isize(index/2) < 3) {
       {
-        let current/3 = inherent#Ref#Ref[T]#get__T_int(index/2) in
-        let _wild424 = inherent#Ref#Ref[T]#set__T_int(index/2, (current/3 + 1)) in
+        let current/3 = inherent#Ref#Ref[T]#get__T_isize(index/2) in
+        let _wild424 = inherent#Ref#Ref[T]#set__T_isize(index/2, (current/3 + 1)) in
         let defer_result425 =
           if (current/3 == 0) {
               {
                 let _wild427 =
                   {
                     let _defer426 =
-                      println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
+                      println__T_string(("loop:" + inherent#isize#isize#to_string(current/3))) in
                     continue
                   } in
               }
@@ -62,7 +62,9 @@ fn loop_cleanup() -> unit {
                     let _wild429 =
                       {
                         let _defer428 =
-                          println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
+                          println__T_string(
+                            ("loop:" + inherent#isize#isize#to_string(current/3))
+                          ) in
                         break
                       } in
                   }
@@ -72,7 +74,7 @@ fn loop_cleanup() -> unit {
                   }
               }
           } in
-        let _defer430 = println__T_string(("loop:" + inherent#int#int#to_string(current/3))) in
+        let _defer430 = println__T_string(("loop:" + inherent#isize#isize#to_string(current/3))) in
         defer_result425
       }
   }
@@ -85,12 +87,12 @@ fn observed_at_exit() -> unit {
   defer_result431
 }
 
-fn pattern_cleanup(value/5: Option__int) -> int {
+fn pattern_cleanup(value/5: Option__isize) -> isize {
   let mtmp433 = value/5 in
   match mtmp433 {
-    Option__int::Some(x435) => {
+    Option__isize::Some(x435) => {
       {
-        let x435 = Option__int::Some._0(mtmp433) in
+        let x435 = Option__isize::Some._0(mtmp433) in
         {
           let number/6 = x435 in
           {
@@ -148,15 +150,15 @@ fn main() -> unit {
       let _defer449 = println__T_string("block") in
       defer_result448
     } in
-  let _wild451 = println__T_string(inherent#int#int#to_string(early_return())) in
-  let mtmp452 = maybe(Option__int::None) in
+  let _wild451 = println__T_string(inherent#isize#isize#to_string(early_return())) in
+  let mtmp452 = maybe(Option__isize::None) in
   {
     let _wild454 = loop_cleanup() in
     let _wild455 = observed_at_exit() in
     let _wild456 =
-      println__T_string(inherent#int#int#to_string(pattern_cleanup(Option__int::Some(3)))) in
+      println__T_string(inherent#isize#isize#to_string(pattern_cleanup(Option__isize::Some(3)))) in
     let _wild457 =
-      println__T_string(inherent#int#int#to_string(pattern_cleanup(Option__int::None))) in
+      println__T_string(inherent#isize#isize#to_string(pattern_cleanup(Option__isize::None))) in
     {
       let defer_tast_result453 = closure_cleanup() in
       let _wild458 = println__T_string("main:second") in
@@ -170,19 +172,19 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
@@ -202,11 +204,11 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }
 
@@ -214,6 +216,6 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   (self/181 == other/182)
 }
 
-fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+fn trait_impl#Hash#string#hash(self/209: string) -> u64 {
   @runtime(core.string_hash)(self/209)
 }

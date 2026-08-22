@@ -1,29 +1,29 @@
-fn parse_flag(flag/0: bool) -> Result__int32__string {
+fn parse_flag(flag/0: bool) -> Result__i32__string {
   if flag/0 {
-    let t423 = Result__int32__string::Ok(7) in
+    let t423 = Result__i32__string::Ok(7) in
     t423
   } else {
-    let t424 = Result__int32__string::Err("nope") in
+    let t424 = Result__i32__string::Err("nope") in
     t424
   }
 }
 
-fn add(a/1: int32, b/2: int32) -> int32 {
+fn add(a/1: i32, b/2: i32) -> i32 {
   let t427 = (a/1 + b/2) in
   t427
 }
 
-fn plus_one(flag/3: bool) -> Result__int32__string {
+fn plus_one(flag/3: bool) -> Result__i32__string {
   let t430 = closure_env_run_0 { flag_0: flag/3 } in
   let run/5 = pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](t430) in
   let t431 = run/5() in
   t431
 }
 
-fn show(res/6: Result__int32__string) -> string {
+fn show(res/6: Result__i32__string) -> string {
   match res/6 {
     Tag_0 => {
-      let x414 = Result__int32__string::Ok._0(res/6) in
+      let x414 = Result__i32__string::Ok._0(res/6) in
       join inline_cont459(t436: string) -> string {
         let t437 = ("ok=" + t436) in
         t437
@@ -32,7 +32,7 @@ fn show(res/6: Result__int32__string) -> string {
       jump inline_cont459(inline460)
     },
     Tag_1 => {
-      let x415 = Result__int32__string::Err._0(res/6) in
+      let x415 = Result__i32__string::Err._0(res/6) in
       let t438 = ("err=" + x415) in
       t438
     },
@@ -40,10 +40,10 @@ fn show(res/6: Result__int32__string) -> string {
 }
 
 fn main() -> unit {
-  join inline_cont488(t440: Result__int32__string) -> unit {
+  join inline_cont488(t440: Result__i32__string) -> unit {
     join inline_cont480(t441: string) -> unit {
       join inline_cont477(_wild416: unit) -> unit {
-        join inline_cont472(t442: Result__int32__string) -> unit {
+        join inline_cont472(t442: Result__i32__string) -> unit {
           join inline_cont464(t443: string) -> unit {
             let inline462 = trait_impl#ToString#string#to_string(t443) in
             let inline463 = @runtime(core.string_println)(inline462) in
@@ -51,13 +51,13 @@ fn main() -> unit {
           } in
           match t442 {
             Tag_0 => {
-              let inline465 = Result__int32__string::Ok._0(t442) in
-              let inline467 = inherent#int32#int32#to_string(inline465) in
+              let inline465 = Result__i32__string::Ok._0(t442) in
+              let inline467 = inherent#i32#i32#to_string(inline465) in
               let inline468 = ("ok=" + inline467) in
               jump inline_cont464(inline468)
             },
             Tag_1 => {
-              let inline469 = Result__int32__string::Err._0(t442) in
+              let inline469 = Result__i32__string::Err._0(t442) in
               let inline471 = ("err=" + inline469) in
               jump inline_cont464(inline471)
             },
@@ -76,13 +76,13 @@ fn main() -> unit {
     } in
     match t440 {
       Tag_0 => {
-        let inline481 = Result__int32__string::Ok._0(t440) in
-        let inline483 = inherent#int32#int32#to_string(inline481) in
+        let inline481 = Result__i32__string::Ok._0(t440) in
+        let inline483 = inherent#i32#i32#to_string(inline481) in
         let inline484 = ("ok=" + inline483) in
         jump inline_cont480(inline484)
       },
       Tag_1 => {
-        let inline485 = Result__int32__string::Err._0(t440) in
+        let inline485 = Result__i32__string::Err._0(t440) in
         let inline487 = ("err=" + inline485) in
         jump inline_cont480(inline487)
       },
@@ -95,7 +95,7 @@ fn main() -> unit {
   jump inline_cont488(inline492)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t446 = @runtime(core.int32_to_string)(self/33) in
   t446
 }
@@ -114,12 +114,12 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(
   env418: closure_env_run_0
-) -> Result__int32__string {
+) -> Result__i32__string {
   let flag/3 = closure_env_run_0.flag_0(env418) in
-  join inline_cont497(mtmp411: Result__int32__string) -> Result__int32__string {
-    join k454(jp455: int32) -> Result__int32__string {
-      join inline_cont494(t456: int32) -> Result__int32__string {
-        let t457 = Result__int32__string::Ok(t456) in
+  join inline_cont497(mtmp411: Result__i32__string) -> Result__i32__string {
+    join k454(jp455: i32) -> Result__i32__string {
+      join inline_cont494(t456: i32) -> Result__i32__string {
+        let t457 = Result__i32__string::Ok(t456) in
         t457
       } in
       let inline495 = 1 in
@@ -128,21 +128,21 @@ fn inherent#closure_env_run_0#closure_env_run_0#apply(
     } in
     match mtmp411 {
       Tag_0 => {
-        let x412 = Result__int32__string::Ok._0(mtmp411) in
+        let x412 = Result__i32__string::Ok._0(mtmp411) in
         jump k454(x412)
       },
       Tag_1 => {
-        let x413 = Result__int32__string::Err._0(mtmp411) in
-        let t458 = Result__int32__string::Err(x413) in
+        let x413 = Result__i32__string::Err._0(mtmp411) in
+        let t458 = Result__i32__string::Err(x413) in
         t458
       },
     }
   } in
   if flag/3 {
-    let inline498 = Result__int32__string::Ok(7) in
+    let inline498 = Result__i32__string::Ok(7) in
     jump inline_cont497(inline498)
   } else {
-    let inline499 = Result__int32__string::Err("nope") in
+    let inline499 = Result__i32__string::Err("nope") in
     jump inline_cont497(inline499)
   }
 }

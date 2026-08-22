@@ -78,11 +78,11 @@ type Numbers struct {
     values *_goml_vec_int32
 }
 
-type FnIterator__int32 struct {
-    next_fn func() Option__int32
+type FnIterator__i32 struct {
+    next_fn func() Option__i32
 }
 
-type closure_env_inherent_Vec_Vec_T_iter_T_int32_0 struct {
+type closure_env_inherent_Vec_Vec_T_iter_T_i32_0 struct {
     index_0 *ref_int_x
     len_1 int
     self_2 *_goml_vec_int32
@@ -90,7 +90,7 @@ type closure_env_inherent_Vec_Vec_T_iter_T_int32_0 struct {
 
 type Ordering int32
 
-type Option__int32 struct {
+type Option__i32 struct {
     _tag int32
     _v1_0 int32
 }
@@ -109,7 +109,7 @@ func main0() struct{} {
         values: values__3,
     }
     var t426 int32 = count__B_Numbers(t425)
-    var inline493 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t426)
+    var inline493 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t426)
     _goml_runtime_core_string_println(inline493)
     return struct{}{}
 }
@@ -122,14 +122,14 @@ func count__B_Numbers(batch__1 Numbers) int32 {
     var t437 *_goml_vec_int32
     var inline520 *_goml_vec_int32 = batch__1.values
     t437 = inline520
-    var for_iter411 FnIterator__int32
-    var inline518 FnIterator__int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(t437)
+    var for_iter411 FnIterator__i32
+    var inline518 FnIterator__i32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__i32(t437)
     for_iter411 = inline518
     Loop_loop440:
     for {
-        var for_next412 Option__int32
-        var inline513 func() Option__int32 = for_iter411.next_fn
-        var inline514 Option__int32 = inline513()
+        var for_next412 Option__i32
+        var inline513 func() Option__i32 = for_iter411.next_fn
+        var inline514 Option__i32 = inline513()
         for_next412 = inline514
         switch for_next412._tag {
         case 0:
@@ -149,31 +149,31 @@ func count__B_Numbers(batch__1 Numbers) int32 {
     return inline516
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t446 string = _goml_runtime_core_int32_to_string(self__154)
     return t446
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__314 *_goml_vec_int32) FnIterator__int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__i32(self__314 *_goml_vec_int32) FnIterator__i32 {
     var index__315 *ref_int_x = ref__Ref_3int(0)
     var len__316 int
     var inline533 int = vec_len__Vec_5int32(self__314)
     len__316 = inline533
-    var t464 closure_env_inherent_Vec_Vec_T_iter_T_int32_0 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0{
+    var t464 closure_env_inherent_Vec_Vec_T_iter_T_i32_0 = closure_env_inherent_Vec_Vec_T_iter_T_i32_0{
         index_0: index__315,
         len_1: len__316,
         self_2: self__314,
     }
-    var t465 func() Option__int32 = func() Option__int32 {
-        return _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(t464)
+    var t465 func() Option__i32 = func() Option__i32 {
+        return _goml_m_inherent_i_closure__en_h1275f72f5de770912182f2a5cc7ddfae__i32__0_i_apply(t464)
     }
-    var inline531 FnIterator__int32 = FnIterator__int32{
+    var inline531 FnIterator__i32 = FnIterator__i32{
         next_fn: t465,
     }
     return inline531
 }
 
-func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(env420 closure_env_inherent_Vec_Vec_T_iter_T_int32_0) Option__int32 {
+func _goml_m_inherent_i_closure__en_h1275f72f5de770912182f2a5cc7ddfae__i32__0_i_apply(env420 closure_env_inherent_Vec_Vec_T_iter_T_i32_0) Option__i32 {
     var index__315 *ref_int_x = env420.index_0
     var len__316 int = env420.len_1
     var self__314 *_goml_vec_int32 = env420.self_2
@@ -183,13 +183,13 @@ func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_
         var value__318 int32 = vec_get__Vec_5int32(self__314, current__317)
         var t490 int = current__317 + 1
         ref_set__Ref_3int(index__315, t490)
-        var t491 Option__int32 = Option__int32{
+        var t491 Option__i32 = Option__i32{
             _tag: 1,
             _v1_0: value__318,
         }
         return t491
     } else {
-        return Option__int32{
+        return Option__i32{
             _tag: 0,
         }
     }

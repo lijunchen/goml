@@ -48,18 +48,18 @@ func main0() struct{} {
     switch x415.(type) {
     case Zero:
         var inline473 int = 3
-        var inline474 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline473)
+        var inline474 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline473)
         _goml_runtime_core_string_print(inline474)
         return struct{}{}
     default:
         var inline477 int = 4
-        var inline478 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline477)
+        var inline478 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline477)
         _goml_runtime_core_string_print(inline478)
         return struct{}{}
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t471 string = _goml_runtime_core_int_to_string(self__151)
     return t471
 }

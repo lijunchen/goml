@@ -1,5 +1,5 @@
-fn cut_prefix(case_id/0: int32) -> Option[string] {
-    if (case_id/0 : int32) == 0 {
+fn cut_prefix(case_id/0: i32) -> Option[string] {
+    if (case_id/0 : i32) == 0 {
         {
             Option::Some("ml")
         }
@@ -10,9 +10,9 @@ fn cut_prefix(case_id/0: int32) -> Option[string] {
     }
 }
 
-fn trim_go(case_id/1: int32) -> Option[string] {
+fn trim_go(case_id/1: i32) -> Option[string] {
     let suffix/2: string =
-      match (cut_prefix : (int32) -> Option[string])((case_id/1 : int32)) {
+      match (cut_prefix : (i32) -> Option[string])((case_id/1 : i32)) {
           Option::Some(try_value/13: string) => (try_value/13 : string),
           Option::None => return Option::None,
       };
@@ -28,9 +28,9 @@ fn show(opt/3: Option[string]) -> string {
 
 fn main() -> unit {
     (println : (string) -> unit)(
-      (show : (Option[string]) -> string)((trim_go : (int32) -> Option[string])(0))
+      (show : (Option[string]) -> string)((trim_go : (i32) -> Option[string])(0))
     );
     (println : (string) -> unit)(
-      (show : (Option[string]) -> string)((trim_go : (int32) -> Option[string])(1))
+      (show : (Option[string]) -> string)((trim_go : (i32) -> Option[string])(1))
     );
 }

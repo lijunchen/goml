@@ -39,12 +39,12 @@ func sum(n__2 int32) int32 {
 
 func main0() struct{} {
     var t428 int32 = sum(100)
-    var inline443 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t428)
+    var inline443 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t428)
     _goml_runtime_core_string_println(inline443)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t435 string = _goml_runtime_core_int32_to_string(self__154)
     return t435
 }

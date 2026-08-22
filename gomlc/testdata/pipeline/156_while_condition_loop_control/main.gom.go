@@ -35,8 +35,8 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 type Ordering int32
 
 func main0() struct{} {
-    var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    var total__1 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
+    var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(0)
+    var total__1 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(0)
     Loop_loop440:
     for {
         var t451 int
@@ -91,7 +91,7 @@ func main0() struct{} {
     var t428 int
     var inline530 int = ref_get__Ref_3int(total__1)
     t428 = inline530
-    var inline527 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t428)
+    var inline527 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t428)
     _goml_runtime_core_string_println(inline527)
     var j__2 *ref_int_x
     var inline524 int = 0
@@ -146,17 +146,17 @@ func main0() struct{} {
     var t430 int
     var inline519 int = ref_get__Ref_3int(total2__3)
     t430 = inline519
-    var inline516 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t430)
+    var inline516 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t430)
     _goml_runtime_core_string_println(inline516)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__431 int) *ref_int_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(value__431 int) *ref_int_x {
     var t459 *ref_int_x = ref__Ref_3int(value__431)
     return t459
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t470 string = _goml_runtime_core_int_to_string(self__151)
     return t470
 }

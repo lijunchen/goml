@@ -618,7 +618,7 @@ func is_int_text(text__2 string) bool {
 
 func parse_int32(text__9 string) int32 {
     var len__10 int = _goml_m_inherent_i_string_i_string_i_len(text__9)
-    var i__11 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
+    var i__11 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(0)
     var negative__12 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
     var started__13 *ref_bool_x
     var inline1540 bool = false
@@ -1628,7 +1628,7 @@ func apply_builtin(name__120 string, args__121 *_goml_vec_Value) Value {
         }
         return t917
     case "*":
-        var i__129 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
+        var i__129 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(0)
         var acc__130 *ref_int32_x
         var inline1873 int32 = 1
         var inline1874 *ref_int32_x = ref__Ref_5int32(inline1873)
@@ -1850,7 +1850,7 @@ func main0() struct{} {
     switch result__151.(type) {
     case Value_Int:
         var inline1918 int32 = result__151.(Value_Int)._0
-        var inline1920 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline1918)
+        var inline1920 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline1918)
         t1011 = inline1920
     case Value_Bool:
         var inline1921 bool = result__151.(Value_Bool)._0
@@ -1876,7 +1876,7 @@ func main0() struct{} {
     switch result2__153.(type) {
     case Value_Int:
         var inline1906 int32 = result2__153.(Value_Int)._0
-        var inline1908 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline1906)
+        var inline1908 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline1906)
         t1015 = inline1908
     case Value_Bool:
         var inline1909 bool = result2__153.(Value_Bool)._0
@@ -1899,7 +1899,7 @@ func _goml_m_inherent_i_string_i_string_i_len(self__35 string) int {
     return t1018
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__431 int) *ref_int_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__isize(value__431 int) *ref_int_x {
     var t1021 *ref_int_x = ref__Ref_3int(value__431)
     return t1021
 }
@@ -1971,7 +1971,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(self__260 *_goml_v
     return result__262
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t1117 string = _goml_runtime_core_int32_to_string(self__33)
     return t1117
 }

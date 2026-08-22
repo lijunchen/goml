@@ -1,16 +1,16 @@
-fn trait_impl#Convert#[int32]@Value#convert(self/0: Value) -> string {
+fn trait_impl#Convert#[i32]@Value#convert(self/0: Value) -> string {
   "int"
 }
 
-fn trait_impl#Convert#[string]@Value#convert(self/1: Value) -> int32 {
+fn trait_impl#Convert#[string]@Value#convert(self/1: Value) -> i32 {
   7
 }
 
 fn main() -> unit {
-  let text/2 = trait_impl#Convert#[int32]@Value#convert(Value {}) in
+  let text/2 = trait_impl#Convert#[i32]@Value#convert(Value {}) in
   let number/3 = trait_impl#Convert#[string]@Value#convert(Value {}) in
   let _wild411 = println__T_string(text/2) in
-  let _wild412 = println__T_int32(number/3) in
+  let _wild412 = println__T_i32(number/3) in
   ()
 }
 
@@ -18,14 +18,14 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }

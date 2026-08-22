@@ -1,49 +1,49 @@
-fn parse(flag/0: bool) -> Result__int32__string {
+fn parse(flag/0: bool) -> Result__i32__string {
   if flag/0 {
-    let t421 = Result__int32__string::Ok(41) in
+    let t421 = Result__i32__string::Ok(41) in
     t421
   } else {
-    let t422 = Result__int32__string::Err("bad") in
+    let t422 = Result__i32__string::Err("bad") in
     t422
   }
 }
 
-fn compute(flag/1: bool) -> Result__int32__string {
-  join inline_cont449(mtmp411: Result__int32__string) -> Result__int32__string {
-    join k425(jp426: int32) -> Result__int32__string {
+fn compute(flag/1: bool) -> Result__i32__string {
+  join inline_cont449(mtmp411: Result__i32__string) -> Result__i32__string {
+    join k425(jp426: i32) -> Result__i32__string {
       let t427 = (jp426 + 1) in
-      let t428 = Result__int32__string::Ok(t427) in
+      let t428 = Result__i32__string::Ok(t427) in
       t428
     } in
     match mtmp411 {
       Tag_0 => {
-        let x412 = Result__int32__string::Err._0(mtmp411) in
-        let t429 = Result__int32__string::Err(x412) in
+        let x412 = Result__i32__string::Err._0(mtmp411) in
+        let t429 = Result__i32__string::Err(x412) in
         t429
       },
       Tag_1 => {
-        let x413 = Result__int32__string::Ok._0(mtmp411) in
+        let x413 = Result__i32__string::Ok._0(mtmp411) in
         jump k425(x413)
       },
     }
   } in
   if flag/1 {
-    let inline450 = Result__int32__string::Ok(41) in
+    let inline450 = Result__i32__string::Ok(41) in
     jump inline_cont449(inline450)
   } else {
-    let inline451 = Result__int32__string::Err("bad") in
+    let inline451 = Result__i32__string::Err("bad") in
     jump inline_cont449(inline451)
   }
 }
 
-fn show(value/3: Result__int32__string) -> string {
+fn show(value/3: Result__i32__string) -> string {
   match value/3 {
     Tag_0 => {
-      let x414 = Result__int32__string::Err._0(value/3) in
+      let x414 = Result__i32__string::Err._0(value/3) in
       x414
     },
     Tag_1 => {
-      let x415 = Result__int32__string::Ok._0(value/3) in
+      let x415 = Result__i32__string::Ok._0(value/3) in
       let inline453 = @runtime(core.int32_to_string)(x415) in
       inline453
     },
@@ -54,7 +54,7 @@ fn main() -> unit {
   let t436 = compute(true) in
   join inline_cont479(t437: string) -> unit {
     join inline_cont476(_wild416: unit) -> unit {
-      join inline_cont463(t438: Result__int32__string) -> unit {
+      join inline_cont463(t438: Result__i32__string) -> unit {
         join inline_cont457(t439: string) -> unit {
           let inline455 = trait_impl#ToString#string#to_string(t439) in
           let inline456 = @runtime(core.string_println)(inline455) in
@@ -62,31 +62,31 @@ fn main() -> unit {
         } in
         match t438 {
           Tag_0 => {
-            let inline458 = Result__int32__string::Err._0(t438) in
+            let inline458 = Result__i32__string::Err._0(t438) in
             jump inline_cont457(inline458)
           },
           Tag_1 => {
-            let inline460 = Result__int32__string::Ok._0(t438) in
-            let inline462 = inherent#int32#int32#to_string(inline460) in
+            let inline460 = Result__i32__string::Ok._0(t438) in
+            let inline462 = inherent#i32#i32#to_string(inline460) in
             jump inline_cont457(inline462)
           },
         }
       } in
       let inline464 = false in
       let inline465 = parse(inline464) in
-      join inline_join466(inline467: int32) -> unit {
+      join inline_join466(inline467: i32) -> unit {
         let inline469 = (inline467 + 1) in
-        let inline470 = Result__int32__string::Ok(inline469) in
+        let inline470 = Result__i32__string::Ok(inline469) in
         jump inline_cont463(inline470)
       } in
       match inline465 {
         Tag_0 => {
-          let inline471 = Result__int32__string::Err._0(inline465) in
-          let inline473 = Result__int32__string::Err(inline471) in
+          let inline471 = Result__i32__string::Err._0(inline465) in
+          let inline473 = Result__i32__string::Err(inline471) in
           jump inline_cont463(inline473)
         },
         Tag_1 => {
-          let inline474 = Result__int32__string::Ok._0(inline465) in
+          let inline474 = Result__i32__string::Ok._0(inline465) in
           jump inline_join466(inline474)
         },
       }
@@ -97,18 +97,18 @@ fn main() -> unit {
   } in
   match t436 {
     Tag_0 => {
-      let inline480 = Result__int32__string::Err._0(t436) in
+      let inline480 = Result__i32__string::Err._0(t436) in
       jump inline_cont479(inline480)
     },
     Tag_1 => {
-      let inline482 = Result__int32__string::Ok._0(t436) in
-      let inline484 = inherent#int32#int32#to_string(inline482) in
+      let inline482 = Result__i32__string::Ok._0(t436) in
+      let inline484 = inherent#i32#i32#to_string(inline482) in
       jump inline_cont479(inline484)
     },
   }
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t443 = @runtime(core.int32_to_string)(self/33) in
   t443
 }

@@ -1,8 +1,8 @@
-fn early(x/0: int32) -> int32 {
+fn early(x/0: i32) -> i32 {
   let t435 = (x/0 < 0) in
-  join k431() -> int32 {
+  join k431() -> i32 {
     let t434 = (x/0 == 0) in
-    join k432() -> int32 {
+    join k432() -> i32 {
       let t433 = (x/0 + 2) in
       t433
     } in
@@ -19,7 +19,7 @@ fn early(x/0: int32) -> int32 {
   }
 }
 
-fn closure_early(x/1: int32) -> int32 {
+fn closure_early(x/1: i32) -> i32 {
   let t438 = closure_env_f_0 {} in
   let f/3 = pack_closure[inherent#closure_env_f_0#closure_env_f_0#apply](t438) in
   let t439 = f/3(x/1) in
@@ -43,7 +43,7 @@ fn unit_ret(flag/4: bool) -> unit {
 fn main() -> unit {
   let mtmp416 = print__T_string("e-1: ") in
   let t443 = early(-1) in
-  let mtmp417 = println__T_int32(t443) in
+  let mtmp417 = println__T_i32(t443) in
   join inline_cont515(mtmp418: unit) -> unit {
     let t444 = early(0) in
     join inline_cont512(mtmp419: unit) -> unit {
@@ -51,10 +51,10 @@ fn main() -> unit {
         let t445 = early(3) in
         join inline_cont505(mtmp421: unit) -> unit {
           join inline_cont501(mtmp422: unit) -> unit {
-            join inline_cont496(t446: int32) -> unit {
+            join inline_cont496(t446: i32) -> unit {
               join inline_cont493(mtmp423: unit) -> unit {
                 join inline_cont489(mtmp424: unit) -> unit {
-                  join inline_cont484(t447: int32) -> unit {
+                  join inline_cont484(t447: i32) -> unit {
                     join inline_cont481(mtmp425: unit) -> unit {
                       join inline_cont476(_wild426: unit) -> unit {
                         let inline472 = false in
@@ -79,7 +79,7 @@ fn main() -> unit {
                         jump inline_join478()
                       }
                     } in
-                    let inline482 = trait_impl#ToString#int32#to_string(t447) in
+                    let inline482 = trait_impl#ToString#i32#to_string(t447) in
                     let inline483 = @runtime(core.string_println)(inline482) in
                     jump inline_cont481(())
                   } in
@@ -95,7 +95,7 @@ fn main() -> unit {
                 let inline492 = @runtime(core.string_print)(inline491) in
                 jump inline_cont489(())
               } in
-              let inline494 = trait_impl#ToString#int32#to_string(t446) in
+              let inline494 = trait_impl#ToString#i32#to_string(t446) in
               let inline495 = @runtime(core.string_println)(inline494) in
               jump inline_cont493(())
             } in
@@ -111,7 +111,7 @@ fn main() -> unit {
           let inline504 = @runtime(core.string_print)(inline503) in
           jump inline_cont501(())
         } in
-        let inline506 = trait_impl#ToString#int32#to_string(t445) in
+        let inline506 = trait_impl#ToString#i32#to_string(t445) in
         let inline507 = @runtime(core.string_println)(inline506) in
         jump inline_cont505(())
       } in
@@ -120,7 +120,7 @@ fn main() -> unit {
       let inline511 = @runtime(core.string_print)(inline510) in
       jump inline_cont508(())
     } in
-    let inline513 = trait_impl#ToString#int32#to_string(t444) in
+    let inline513 = trait_impl#ToString#i32#to_string(t444) in
     let inline514 = @runtime(core.string_println)(inline513) in
     jump inline_cont512(())
   } in
@@ -146,7 +146,7 @@ fn print__T_string(value/0: string) -> unit {
   jump inline_cont520(value/0)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont521(t455: string) -> unit {
     let t456 = @runtime(core.string_println)(t455) in
     ()
@@ -159,14 +159,14 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t461 = @runtime(core.int32_to_string)(self/154) in
   t461
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env428: closure_env_f_0, y/2: int32) -> int32 {
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env428: closure_env_f_0, y/2: i32) -> i32 {
   let t466 = (y/2 > 5) in
-  join k464() -> int32 {
+  join k464() -> i32 {
     let t465 = (y/2 + 10) in
     t465
   } in

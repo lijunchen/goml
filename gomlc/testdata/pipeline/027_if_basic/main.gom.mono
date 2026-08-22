@@ -1,4 +1,4 @@
-fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
+fn choose(flag/0: bool, x/1: i32, y/2: i32) -> i32 {
   if flag/0 {
       {
         x/1
@@ -13,9 +13,9 @@ fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
 fn main() -> unit {
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
-  let mtmp411 = println__T_string(("yes=" + inherent#int32#int32#to_string(yes/3))) in
+  let mtmp411 = println__T_string(("yes=" + inherent#i32#i32#to_string(yes/3))) in
   {
-    let mtmp412 = println__T_string(("no=" + inherent#int32#int32#to_string(no/4))) in
+    let mtmp412 = println__T_string(("no=" + inherent#i32#i32#to_string(no/4))) in
     {
       ()
     }
@@ -26,7 +26,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

@@ -1,11 +1,11 @@
 impl Source for NumberSource {
-  fn get(self/0: NumberSource) -> int {
+  fn get(self/0: NumberSource) -> isize {
       (self/0 : NumberSource).value
   }
 }
 
-fn read(source/1: dyn Source[Item = int]) -> int {
-    (dyn Source::get : (dyn Source[Item = int]) -> int)((source/1 : dyn Source[Item = int]))
+fn read(source/1: dyn Source[Item = isize]) -> isize {
+    (dyn Source::get : (dyn Source[Item = isize]) -> isize)((source/1 : dyn Source[Item = isize]))
 }
 
 fn labeled_cleanup() -> unit {
@@ -19,61 +19,61 @@ fn labeled_cleanup() -> unit {
 }
 
 fn main() -> unit {
-    (println : (int) -> unit)(
-      (read : (dyn Source[Item = int]) -> int)(
+    (println : (isize) -> unit)(
+      (read : (dyn Source[Item = isize]) -> isize)(
         to_dyn[Source]{NumberSource}(NumberSource { value: 11 })
       )
     );
-    let (mut index/2: int, value/3: int) = (1, 2);
-    (index/2 : int) += (value/3 : int);
-    (println : (int) -> unit)((index/2 : int));
-    let (mut captured/4: int, _ : int) = (3, 0);
+    let (mut index/2: isize, value/3: isize) = (1, 2);
+    (index/2 : isize) += (value/3 : isize);
+    (println : (isize) -> unit)((index/2 : isize));
+    let (mut captured/4: isize, _ : isize) = (3, 0);
     let increment/5: () -> unit =
       || =>
         {
-            (captured/4 : int) += 1;
+            (captured/4 : isize) += 1;
         };
     (increment/5 : () -> unit)();
-    (println : (int) -> unit)((captured/4 : int));
+    (println : (isize) -> unit)((captured/4 : isize));
     match Option::Some(4) {
-        Option::Some(mut count/6: int) =>
+        Option::Some(mut count/6: isize) =>
           {
-              (count/6 : int) += 1;
-              (println : (int) -> unit)((count/6 : int))
+              (count/6 : isize) += 1;
+              (println : (isize) -> unit)((count/6 : isize))
           },
         Option::None => (),
     };
-    let values/7: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-    (Vec[int]::push : (Vec[int], int) -> unit)((values/7 : Vec[int]), 6);
-    for mut item/8: int in
-      (values/7 : Vec[int]) {
-        (item/8 : int) += 1;
-        (println : (int) -> unit)((item/8 : int))
+    let values/7: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
+    (Vec[isize]::push : (Vec[isize], isize) -> unit)((values/7 : Vec[isize]), 6);
+    for mut item/8: isize in
+      (values/7 : Vec[isize]) {
+        (item/8 : isize) += 1;
+        (println : (isize) -> unit)((item/8 : isize))
     };
-    let mut legacy/9: (int, int) = (8, 9);
-    (legacy/9 : (int, int)).0 += 1;
-    (legacy/9 : (int, int)).1 += 1;
-    (println : (int) -> unit)((legacy/9 : (int, int)).0 + (legacy/9 : (int, int)).1);
-    let mut steps/10: int = 0;
-    while (steps/10 : int) < 3 {
+    let mut legacy/9: (isize, isize) = (8, 9);
+    (legacy/9 : (isize, isize)).0 += 1;
+    (legacy/9 : (isize, isize)).1 += 1;
+    (println : (isize) -> unit)((legacy/9 : (isize, isize)).0 + (legacy/9 : (isize, isize)).1);
+    let mut steps/10: isize = 0;
+    while (steps/10 : isize) < 3 {
         {
-            (steps/10 : int) += 1;
+            (steps/10 : isize) += 1;
             loop {
                 continue@1;
             }
         }
     };
-    (println : (int) -> unit)((steps/10 : int));
-    let seen/11: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    for row/12: int in
-      (range : (int, int) -> FnIterator[int])(0, 3) {
-        for column/13: int in
-          (range : (int, int) -> FnIterator[int])(0, 3) {
-            (Ref[int]::set : (Ref[int], int) -> unit)(
-              (seen/11 : Ref[int]),
-              (Ref[int]::get : (Ref[int]) -> int)((seen/11 : Ref[int])) + 1
+    (println : (isize) -> unit)((steps/10 : isize));
+    let seen/11: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    for row/12: isize in
+      (range : (isize, isize) -> FnIterator[isize])(0, 3) {
+        for column/13: isize in
+          (range : (isize, isize) -> FnIterator[isize])(0, 3) {
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (seen/11 : Ref[isize]),
+              (Ref[isize]::get : (Ref[isize]) -> isize)((seen/11 : Ref[isize])) + 1
             );
-            if (row/12 : int) == 1 && (column/13 : int) == 1 {
+            if (row/12 : isize) == 1 && (column/13 : isize) == 1 {
                 {
                     break@1;
                 }
@@ -84,13 +84,13 @@ fn main() -> unit {
             }
         }
     };
-    (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((seen/11 : Ref[int])));
-    let answer/14: int =
+    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((seen/11 : Ref[isize])));
+    let answer/14: isize =
       loop {
           loop {
               break@1 42;
           }
       };
-    (println : (int) -> unit)((answer/14 : int));
+    (println : (isize) -> unit)((answer/14 : isize));
     (labeled_cleanup : () -> unit)()
 }

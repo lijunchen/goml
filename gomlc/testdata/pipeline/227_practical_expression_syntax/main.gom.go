@@ -96,17 +96,17 @@ func hashmap_lookup__HashMap_6string_3int(m *hashmap_string_int_x, key string) (
     return zero, false
 }
 
-func hashmap_get__HashMap_6string_3int(m *hashmap_string_int_x, key string) Option__int {
+func hashmap_get__HashMap_6string_3int(m *hashmap_string_int_x, key string) Option__isize {
     var value int
     var ok bool
     value, ok = hashmap_lookup__HashMap_6string_3int(m, key)
     if ok {
-        return Option__int{
+        return Option__isize{
             _tag: 1,
             _v1_0: value,
         }
     }
-    return Option__int{
+    return Option__isize{
         _tag: 0,
     }
 }
@@ -160,7 +160,7 @@ type Point struct {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
@@ -206,7 +206,7 @@ func main0() struct{} {
     var compound_value421 int = 1
     var t467 int = compound_old420 >> compound_value421
     number__9 = t467
-    var t469 string = _goml_m_inherent_i_int_i_int_i_to__string(number__9)
+    var t469 string = _goml_m_inherent_i_isize_i_isize_i_to__string(number__9)
     println__T_string(t469)
     var direct__10 Point = Point{
         x: 3,
@@ -223,11 +223,11 @@ func main0() struct{} {
     }
     direct__10 = t472
     var t474 int = direct__10.x
-    var t475 string = _goml_m_inherent_i_int_i_int_i_to__string(t474)
+    var t475 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t474)
     var t476 string = "" + t475
     var t477 string = t476 + ","
     var t478 int = direct__10.y
-    var t479 string = _goml_m_inherent_i_int_i_int_i_to__string(t478)
+    var t479 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t478)
     var t480 string = t477 + t479
     println__T_string(t480)
     var pair__11 Tuple2_3int_3int = Tuple2_3int_3int{
@@ -245,11 +245,11 @@ func main0() struct{} {
     }
     pair__11 = t483
     var t485 int = pair__11._0
-    var t486 string = _goml_m_inherent_i_int_i_int_i_to__string(t485)
+    var t486 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t485)
     var t487 string = "" + t486
     var t488 string = t487 + ","
     var t489 int = pair__11._1
-    var t490 string = _goml_m_inherent_i_int_i_int_i_to__string(t489)
+    var t490 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t489)
     var t491 string = t488 + t490
     println__T_string(t491)
     var log__12 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("")
@@ -262,10 +262,10 @@ func main0() struct{} {
     var t492 int = struct_update_base__777.y
     var t494 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__12)
     println__T_string(t494)
-    var t496 string = _goml_m_inherent_i_int_i_int_i_to__string(struct_update_field__777__0)
+    var t496 string = _goml_m_inherent_i_isize_i_isize_i_to__string(struct_update_field__777__0)
     var t497 string = "" + t496
     var t498 string = t497 + ","
-    var t500 string = _goml_m_inherent_i_int_i_int_i_to__string(t492)
+    var t500 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t492)
     var t501 string = t498 + t500
     println__T_string(t501)
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(log__12, "")
@@ -289,8 +289,8 @@ func main0() struct{} {
     vec_set__Vec_3int(place_root437, index438, t505)
     var t507 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__12)
     println__T_string(t507)
-    var t508 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int(values__15, 0)
-    var t509 string = _goml_m_inherent_i_int_i_int_i_to__string(t508)
+    var t508 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__isize(values__15, 0)
+    var t509 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t508)
     var t510 string = "" + t509
     var t511 string = t510 + ","
     var t512 int
@@ -363,9 +363,9 @@ func main0() struct{} {
     t526 = inline606
     var inline603 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t526)
     _goml_runtime_core_string_println(inline603)
-    var mtmp446 Option__int
+    var mtmp446 Option__isize
     var inline600 string = "same"
-    var inline601 Option__int = hashmap_get__HashMap_6string_3int(table__16, inline600)
+    var inline601 Option__isize = hashmap_get__HashMap_6string_3int(table__16, inline600)
     mtmp446 = inline601
     var jp528 string
     switch mtmp446._tag {
@@ -429,7 +429,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
     var t549 string = _goml_runtime_core_int_to_string(self__32)
     return t549
 }
@@ -439,7 +439,7 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__431 string) *
     return t552
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int(self__268 *_goml_vec_int, index__269 int) int {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__isize(self__268 *_goml_vec_int, index__269 int) int {
     var t555 int = vec_get__Vec_3int(self__268, index__269)
     return t555
 }

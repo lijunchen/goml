@@ -62,11 +62,11 @@ func main0() struct{} {
     var value__7 int = answer()
     var t432 int = loop_answer()
     var t433 int = value__7 + t432
-    var t434 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(plain__2)
-    var t435 string = _goml_m_inherent_i_int_i_int_i_to__string(t434)
+    var t434 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__u8(plain__2)
+    var t435 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t434)
     println__T_string(t435)
-    var t436 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(empty__3)
-    var t437 string = _goml_m_inherent_i_int_i_int_i_to__string(t436)
+    var t436 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__u8(empty__3)
+    var t437 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t436)
     println__T_string(t437)
     var t438 uint8
     var inline521 int = 0
@@ -139,12 +139,12 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__273 *_goml_vec_uint8) int {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__u8(self__273 *_goml_vec_uint8) int {
     var t462 int = vec_len__Vec_5uint8(self__273)
     return t462
 }
 
-func _goml_m_inherent_i_int_i_int_i_to__string(self__32 int) string {
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__32 int) string {
     var t465 string = _goml_runtime_core_int_to_string(self__32)
     return t465
 }

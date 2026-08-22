@@ -1,22 +1,22 @@
 impl ToString for S {
   fn to_string(self/0: S) -> string {
-      "S(" + (int32::to_string : (int32) -> string)((self/0 : S).value) + ")"
+      "S(" + (i32::to_string : (i32) -> string)((self/0 : S).value) + ")"
   }
 }
 
 fn main() -> unit {
-    (println : (int) -> unit)(1);
+    (println : (isize) -> unit)(1);
     (println : (bool) -> unit)(true);
     (println : (string) -> unit)("hi");
     (println : (unit) -> unit)(());
-    (println : (string) -> unit)((ToString::to_string : (int) -> string)(2));
-    (println : (string) -> unit)((int::to_string : (int) -> string)(2));
+    (println : (string) -> unit)((ToString::to_string : (isize) -> string)(2));
+    (println : (string) -> unit)((isize::to_string : (isize) -> string)(2));
     let s/1: S = S { value: 9 };
     (println : (S) -> unit)((s/1 : S));
     let d/2: dyn ToString = to_dyn[ToString]{S}((s/1 : S));
     (println : (dyn ToString) -> unit)((d/2 : dyn ToString));
-    let r/3: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(5);
-    (println : (Ref[int]) -> unit)((r/3 : Ref[int]));
+    let r/3: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(5);
+    (println : (Ref[isize]) -> unit)((r/3 : Ref[isize]));
     (print : (string) -> unit)("no-newline");
     (println : (string) -> unit)("!");
 }

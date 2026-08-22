@@ -1,80 +1,80 @@
 fn main() -> unit {
-    let values/0: Vec[int] =
-      (@intrinsic(vec.from_array) : ([int; 8]) -> Vec[int])([3, 1, 4, 1, 5, 9, 2, 6]);
+    let values/0: Vec[isize] =
+      (@intrinsic(vec.from_array) : ([isize; 8]) -> Vec[isize])([3, 1, 4, 1, 5, 9, 2, 6]);
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (Vec[int]::position : (Vec[int], (int) -> bool) -> Option[int])(
-            (values/0 : Vec[int]),
-            |value/1: int| => (value/1 : int) == 5
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (Vec[isize]::position : (Vec[isize], (isize) -> bool) -> Option[isize])(
+            (values/0 : Vec[isize]),
+            |value/1: isize| => (value/1 : isize) == 5
           ),
           -1
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (Vec[int]::position : (Vec[int], (int) -> bool) -> Option[int])(
-            (values/0 : Vec[int]),
-            |value/2: int| => (value/2 : int) == 99
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (Vec[isize]::position : (Vec[isize], (isize) -> bool) -> Option[isize])(
+            (values/0 : Vec[isize]),
+            |value/2: isize| => (value/2 : isize) == 99
           ),
           -1
         )
       )
     );
-    (Vec[int]::sort_by : (Vec[int], (int, int) -> int) -> unit)(
-      (values/0 : Vec[int]),
-      |left/3: int, right/4: int| => (left/3 : int) - (right/4 : int)
+    (Vec[isize]::sort_by : (Vec[isize], (isize, isize) -> isize) -> unit)(
+      (values/0 : Vec[isize]),
+      |left/3: isize, right/4: isize| => (left/3 : isize) - (right/4 : isize)
     );
     (println : (string) -> unit)(
-      (Vec[int]::join : (Vec[int], string) -> string)((values/0 : Vec[int]), ",")
+      (Vec[isize]::join : (Vec[isize], string) -> string)((values/0 : Vec[isize]), ",")
     );
-    (Vec[int]::dedup : (Vec[int]) -> unit)((values/0 : Vec[int]));
+    (Vec[isize]::dedup : (Vec[isize]) -> unit)((values/0 : Vec[isize]));
     (println : (string) -> unit)(
-      (Vec[int]::join : (Vec[int], string) -> string)((values/0 : Vec[int]), ",")
+      (Vec[isize]::join : (Vec[isize], string) -> string)((values/0 : Vec[isize]), ",")
     );
-    let ordered/5: Vec[int] =
-      (@intrinsic(vec.from_array) : ([int; 5]) -> Vec[int])([1, 2, 4, 4, 5]);
+    let ordered/5: Vec[isize] =
+      (@intrinsic(vec.from_array) : ([isize; 5]) -> Vec[isize])([1, 2, 4, 4, 5]);
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (Vec[int]::binary_search_by : (Vec[int], (int) -> int) -> Option[int])(
-            (ordered/5 : Vec[int]),
-            |value/6: int| => (value/6 : int) - 4
-          ),
-          -1
-        )
-      )
-    );
-    (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (Vec[int]::binary_search_by : (Vec[int], (int) -> int) -> Option[int])(
-            (ordered/5 : Vec[int]),
-            |value/7: int| => (value/7 : int) - 3
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (Vec[isize]::binary_search_by : (Vec[isize], (isize) -> isize) -> Option[isize])(
+            (ordered/5 : Vec[isize]),
+            |value/6: isize| => (value/6 : isize) - 4
           ),
           -1
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (Vec[int]::min_by : (Vec[int], (int, int) -> int) -> Option[int])(
-            (ordered/5 : Vec[int]),
-            |left/8: int, right/9: int| => (left/8 : int) - (right/9 : int)
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (Vec[isize]::binary_search_by : (Vec[isize], (isize) -> isize) -> Option[isize])(
+            (ordered/5 : Vec[isize]),
+            |value/7: isize| => (value/7 : isize) - 3
+          ),
+          -1
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (Vec[isize]::min_by : (Vec[isize], (isize, isize) -> isize) -> Option[isize])(
+            (ordered/5 : Vec[isize]),
+            |left/8: isize, right/9: isize| => (left/8 : isize) - (right/9 : isize)
           ),
           0
         )
       )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Option[int]::unwrap_or : (Option[int], int) -> int)(
-          (Vec[int]::max_by : (Vec[int], (int, int) -> int) -> Option[int])(
-            (ordered/5 : Vec[int]),
-            |left/10: int, right/11: int| => (left/10 : int) - (right/11 : int)
+      (isize::to_string : (isize) -> string)(
+        (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
+          (Vec[isize]::max_by : (Vec[isize], (isize, isize) -> isize) -> Option[isize])(
+            (ordered/5 : Vec[isize]),
+            |left/10: isize, right/11: isize| => (left/10 : isize) - (right/11 : isize)
           ),
           0
         )
@@ -90,64 +90,74 @@ fn main() -> unit {
     (println : (string) -> unit)(
       (Vec[string]::join : (Vec[string], string) -> string)((names/12 : Vec[string]), "|")
     );
-    let pairs/15: Vec[(int, int)] =
-      (@intrinsic(vec.from_array) : ([(int, int); 3]) -> Vec[(int, int)])([(1, 2), (1, 1), (0, 9)]);
-    (Vec[(int, int)]::sort_by_ordering : (
-      Vec[(int, int)],
-      ((int, int), (int, int)) -> Ordering
+    let pairs/15: Vec[(isize, isize)] =
+      (@intrinsic(vec.from_array) : ([(isize, isize); 3]) -> Vec[(isize, isize)])(
+        [(1, 2), (1, 1), (0, 9)]
+      );
+    (Vec[(isize, isize)]::sort_by_ordering : (
+      Vec[(isize, isize)],
+      ((isize, isize), (isize, isize)) -> Ordering
     ) -> unit)(
-      (pairs/15 : Vec[(int, int)]),
-      |left/16: (int, int), right/17: (int, int)| =>
-        (std::cmp::compare : (int, int) -> Ordering)(
-          (left/16 : (int, int)).0,
-          (right/17 : (int, int)).0
+      (pairs/15 : Vec[(isize, isize)]),
+      |left/16: (isize, isize), right/17: (isize, isize)| =>
+        (std::cmp::compare : (isize, isize) -> Ordering)(
+          (left/16 : (isize, isize)).0,
+          (right/17 : (isize, isize)).0
         )
     );
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (Vec[(int, int)]::len : (Vec[(int, int)]) -> int)((pairs/15 : Vec[(int, int)]))
+      (isize::to_string : (isize) -> string)(
+        (Vec[(isize, isize)]::len : (Vec[(isize, isize)]) -> isize)(
+          (pairs/15 : Vec[(isize, isize)])
+        )
       )
     );
-    let view/18: Slice[int] =
-      (Vec[int]::slice : (Vec[int], int, int) -> Slice[int])(
-        (@intrinsic(vec.from_array) : ([int; 3]) -> Vec[int])([7, 8, 9]),
+    let view/18: Slice[isize] =
+      (Vec[isize]::slice : (Vec[isize], isize, isize) -> Slice[isize])(
+        (@intrinsic(vec.from_array) : ([isize; 3]) -> Vec[isize])([7, 8, 9]),
         0,
         2
       );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (Slice[int]::contains : (Slice[int], int) -> bool)((view/18 : Slice[int]), 8)
+        (Slice[isize]::contains : (Slice[isize], isize) -> bool)((view/18 : Slice[isize]), 8)
       )
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (Slice[int]::contains : (Slice[int], int) -> bool)((view/18 : Slice[int]), 9)
+        (Slice[isize]::contains : (Slice[isize], isize) -> bool)((view/18 : Slice[isize]), 9)
       )
     );
-    let frozen/19: FrozenVec[int] =
-      (Vec[int]::freeze : (Vec[int]) -> FrozenVec[int])(
-        (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([1, 2])
+    let frozen/19: FrozenVec[isize] =
+      (Vec[isize]::freeze : (Vec[isize]) -> FrozenVec[isize])(
+        (@intrinsic(vec.from_array) : ([isize; 2]) -> Vec[isize])([1, 2])
       );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (FrozenVec[int]::contains : (FrozenVec[int], int) -> bool)((frozen/19 : FrozenVec[int]), 1)
+        (FrozenVec[isize]::contains : (FrozenVec[isize], isize) -> bool)(
+          (frozen/19 : FrozenVec[isize]),
+          1
+        )
       )
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (FrozenVec[int]::contains : (FrozenVec[int], int) -> bool)((frozen/19 : FrozenVec[int]), 3)
+        (FrozenVec[isize]::contains : (FrozenVec[isize], isize) -> bool)(
+          (frozen/19 : FrozenVec[isize]),
+          3
+        )
       )
     );
-    let empty/20: Vec[int] = (@intrinsic(vec.from_array) : ([int; 0]) -> Vec[int])([]);
+    let empty/20: Vec[isize] = (@intrinsic(vec.from_array) : ([isize; 0]) -> Vec[isize])([]);
     (println : (string) -> unit)(
-      (Vec[int]::join : (Vec[int], string) -> string)((empty/20 : Vec[int]), ",")
+      (Vec[isize]::join : (Vec[isize], string) -> string)((empty/20 : Vec[isize]), ",")
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (Option[int]::is_none : (Option[int]) -> bool)(
-          (Vec[int]::min_by : (Vec[int], (int, int) -> int) -> Option[int])(
-            (empty/20 : Vec[int]),
-            |left/21: int, right/22: int| => (left/21 : int) - (right/22 : int)
+        (Option[isize]::is_none : (Option[isize]) -> bool)(
+          (Vec[isize]::min_by : (Vec[isize], (isize, isize) -> isize) -> Option[isize])(
+            (empty/20 : Vec[isize]),
+            |left/21: isize, right/22: isize| => (left/21 : isize) - (right/22 : isize)
           )
         )
       )

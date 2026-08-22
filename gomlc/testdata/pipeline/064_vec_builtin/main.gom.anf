@@ -1,12 +1,12 @@
 fn main() -> unit {
-  join inline_cont473(v/0: Vec[int32]) -> unit {
+  join inline_cont473(v/0: Vec[i32]) -> unit {
     join inline_cont470(_wild411: unit) -> unit {
       join inline_cont467(_wild412: unit) -> unit {
         join inline_cont464(_wild413: unit) -> unit {
           let first/1 = @intrinsic(vec.get)(v/0, 0) in
           let second/2 = @intrinsic(vec.get)(v/0, 1) in
           let third/3 = @intrinsic(vec.get)(v/0, 2) in
-          join inline_cont462(len/4: int) -> unit {
+          join inline_cont462(len/4: isize) -> unit {
             join inline_cont460(t419: string) -> unit {
               join inline_cont457(mtmp414: unit) -> unit {
                 join inline_cont455(t420: string) -> unit {
@@ -61,17 +61,17 @@ fn main() -> unit {
   jump inline_cont473(inline474)
 }
 
-fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+fn inherent#Vec#Vec[T]#new__T_i32() -> Vec[i32] {
   let t425 = @intrinsic(vec.new)() in
   t425
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/258: Vec[int32], elem/259: int32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_i32(self/258: Vec[i32], elem/259: i32) -> unit {
   let t427 = @intrinsic(vec.push)(self/258, elem/259) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+fn inherent#Vec#Vec[T]#len__T_i32(self/273: Vec[i32]) -> isize {
   let t430 = @intrinsic(vec.len)(self/273) in
   t430
 }
@@ -84,12 +84,12 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont475(value/1)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t436 = @runtime(core.int32_to_string)(self/33) in
   t436
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   let t439 = @runtime(core.int_to_string)(self/32) in
   t439
 }

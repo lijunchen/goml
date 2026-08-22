@@ -1,16 +1,13 @@
 impl PartialEq for FloatKey {
   fn eq(self/0: FloatKey, other/1: FloatKey) -> bool {
       true &&
-        (PartialEq::eq : (float64, float64) -> bool)(
-          (self/0 : FloatKey).value,
-          (other/1 : FloatKey).value
-        )
+        (PartialEq::eq : (f64, f64) -> bool)((self/0 : FloatKey).value, (other/1 : FloatKey).value)
   }
 }
 
 impl std::cmp::PartialOrd for FloatKey {
   fn partial_cmp(self/2: FloatKey, other/3: FloatKey) -> Option[Ordering] {
-      match (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[Ordering])(
+      match (std::cmp::PartialOrd::partial_cmp : (f64, f64) -> Option[Ordering])(
         (self/2 : FloatKey).value,
         (other/3 : FloatKey).value
       ) {
@@ -55,7 +52,7 @@ impl PartialEq for CollisionKey {
 impl Eq for CollisionKey {}
 
 impl Hash for CollisionKey {
-  fn hash(self/7: CollisionKey) -> uint64 {
+  fn hash(self/7: CollisionKey) -> u64 {
       1
   }
 }
@@ -67,44 +64,39 @@ fn print_opt_string(value/8: Option[string]) -> unit {
     }
 }
 
-fn print_opt_int(value/10: Option[int32]) -> unit {
-    match (value/10 : Option[int32]) {
-        Option::Some(number/11: int32) => (println : (int32) -> unit)((number/11 : int32)),
+fn print_opt_int(value/10: Option[i32]) -> unit {
+    match (value/10 : Option[i32]) {
+        Option::Some(number/11: i32) => (println : (i32) -> unit)((number/11 : i32)),
         Option::None => (println : (string) -> unit)("none"),
     }
 }
 
 fn float_comparison_contracts() -> unit {
-    let zero32/12: float32 = 0;
-    let negative_zero32/13: float32 = -(zero32/12 : float32);
+    let zero32/12: f32 = 0;
+    let negative_zero32/13: f32 = -(zero32/12 : f32);
     (println : (string) -> unit)(
-      (ToString::to_string : (bool) -> string)(
-        (zero32/12 : float32) == (negative_zero32/13 : float32)
-      )
+      (ToString::to_string : (bool) -> string)((zero32/12 : f32) == (negative_zero32/13 : f32))
     );
-    let zero64/14: float64 = 0;
-    let negative_zero64/15: float64 = -(zero64/14 : float64);
+    let zero64/14: f64 = 0;
+    let negative_zero64/15: f64 = -(zero64/14 : f64);
     (println : (string) -> unit)(
-      (ToString::to_string : (bool) -> string)(
-        (zero64/14 : float64) == (negative_zero64/15 : float64)
-      )
+      (ToString::to_string : (bool) -> string)((zero64/14 : f64) == (negative_zero64/15 : f64))
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        FloatKey { value: (zero64/14 : float64) } ==
-          FloatKey { value: (negative_zero64/15 : float64) }
+        FloatKey { value: (zero64/14 : f64) } == FloatKey { value: (negative_zero64/15 : f64) }
       )
     );
-    let nan/16: float64 = (zero64/14 : float64) / (zero64/14 : float64);
+    let nan/16: f64 = (zero64/14 : f64) / (zero64/14 : f64);
     (println : (string) -> unit)(
-      (ToString::to_string : (bool) -> string)((nan/16 : float64) == (nan/16 : float64))
+      (ToString::to_string : (bool) -> string)((nan/16 : f64) == (nan/16 : f64))
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (Option[Ordering]::is_none : (Option[Ordering]) -> bool)(
-          (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[Ordering])(
-            (nan/16 : float64),
-            (nan/16 : float64)
+          (std::cmp::PartialOrd::partial_cmp : (f64, f64) -> Option[Ordering])(
+            (nan/16 : f64),
+            (nan/16 : f64)
           )
         )
       )
@@ -112,114 +104,119 @@ fn float_comparison_contracts() -> unit {
 }
 
 fn collision_contracts() -> unit {
-    let values/17: HashMap[CollisionKey, int32] =
-      (HashMap[CollisionKey, int32]::new : () -> HashMap[CollisionKey, int32])();
-    (HashMap[CollisionKey, int32]::set : (
-      HashMap[CollisionKey, int32],
-      CollisionKey,
-      int32
-    ) -> unit)((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 1 }, 10);
-    (HashMap[CollisionKey, int32]::set : (
-      HashMap[CollisionKey, int32],
-      CollisionKey,
-      int32
-    ) -> unit)((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 2 }, 20);
-    (HashMap[CollisionKey, int32]::set : (
-      HashMap[CollisionKey, int32],
-      CollisionKey,
-      int32
-    ) -> unit)((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 3 }, 30);
-    (HashMap[CollisionKey, int32]::remove : (HashMap[CollisionKey, int32], CollisionKey) -> unit)(
-      (values/17 : HashMap[CollisionKey, int32]),
+    let values/17: HashMap[CollisionKey, i32] =
+      (HashMap[CollisionKey, i32]::new : () -> HashMap[CollisionKey, i32])();
+    (HashMap[CollisionKey, i32]::set : (HashMap[CollisionKey, i32], CollisionKey, i32) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
+      CollisionKey { value: 1 },
+      10
+    );
+    (HashMap[CollisionKey, i32]::set : (HashMap[CollisionKey, i32], CollisionKey, i32) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
+      CollisionKey { value: 2 },
+      20
+    );
+    (HashMap[CollisionKey, i32]::set : (HashMap[CollisionKey, i32], CollisionKey, i32) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
+      CollisionKey { value: 3 },
+      30
+    );
+    (HashMap[CollisionKey, i32]::remove : (HashMap[CollisionKey, i32], CollisionKey) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
       CollisionKey { value: 2 }
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[CollisionKey, int32]::get : (HashMap[CollisionKey, int32], CollisionKey) -> Option[
-        int32
-      ])((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 1 })
-    );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[CollisionKey, int32]::get : (HashMap[CollisionKey, int32], CollisionKey) -> Option[
-        int32
-      ])((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 2 })
-    );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[CollisionKey, int32]::get : (HashMap[CollisionKey, int32], CollisionKey) -> Option[
-        int32
-      ])((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 3 })
-    );
-    (HashMap[CollisionKey, int32]::set : (
-      HashMap[CollisionKey, int32],
-      CollisionKey,
-      int32
-    ) -> unit)((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 4 }, 40);
-    (println : (int) -> unit)(
-      (HashMap[CollisionKey, int32]::len : (HashMap[CollisionKey, int32]) -> int)(
-        (values/17 : HashMap[CollisionKey, int32])
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[CollisionKey, i32]::get : (HashMap[CollisionKey, i32], CollisionKey) -> Option[i32])(
+        (values/17 : HashMap[CollisionKey, i32]),
+        CollisionKey { value: 1 }
       )
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[CollisionKey, int32]::get : (HashMap[CollisionKey, int32], CollisionKey) -> Option[
-        int32
-      ])((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 4 })
-    );
-    (HashMap[CollisionKey, int32]::set : (
-      HashMap[CollisionKey, int32],
-      CollisionKey,
-      int32
-    ) -> unit)((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 4 }, 41);
-    (println : (int) -> unit)(
-      (HashMap[CollisionKey, int32]::len : (HashMap[CollisionKey, int32]) -> int)(
-        (values/17 : HashMap[CollisionKey, int32])
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[CollisionKey, i32]::get : (HashMap[CollisionKey, i32], CollisionKey) -> Option[i32])(
+        (values/17 : HashMap[CollisionKey, i32]),
+        CollisionKey { value: 2 }
       )
     );
-    (print_opt_int : (Option[int32]) -> unit)(
-      (HashMap[CollisionKey, int32]::get : (HashMap[CollisionKey, int32], CollisionKey) -> Option[
-        int32
-      ])((values/17 : HashMap[CollisionKey, int32]), CollisionKey { value: 4 })
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[CollisionKey, i32]::get : (HashMap[CollisionKey, i32], CollisionKey) -> Option[i32])(
+        (values/17 : HashMap[CollisionKey, i32]),
+        CollisionKey { value: 3 }
+      )
     );
-    (HashMap[CollisionKey, int32]::remove : (HashMap[CollisionKey, int32], CollisionKey) -> unit)(
-      (values/17 : HashMap[CollisionKey, int32]),
+    (HashMap[CollisionKey, i32]::set : (HashMap[CollisionKey, i32], CollisionKey, i32) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
+      CollisionKey { value: 4 },
+      40
+    );
+    (println : (isize) -> unit)(
+      (HashMap[CollisionKey, i32]::len : (HashMap[CollisionKey, i32]) -> isize)(
+        (values/17 : HashMap[CollisionKey, i32])
+      )
+    );
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[CollisionKey, i32]::get : (HashMap[CollisionKey, i32], CollisionKey) -> Option[i32])(
+        (values/17 : HashMap[CollisionKey, i32]),
+        CollisionKey { value: 4 }
+      )
+    );
+    (HashMap[CollisionKey, i32]::set : (HashMap[CollisionKey, i32], CollisionKey, i32) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
+      CollisionKey { value: 4 },
+      41
+    );
+    (println : (isize) -> unit)(
+      (HashMap[CollisionKey, i32]::len : (HashMap[CollisionKey, i32]) -> isize)(
+        (values/17 : HashMap[CollisionKey, i32])
+      )
+    );
+    (print_opt_int : (Option[i32]) -> unit)(
+      (HashMap[CollisionKey, i32]::get : (HashMap[CollisionKey, i32], CollisionKey) -> Option[i32])(
+        (values/17 : HashMap[CollisionKey, i32]),
+        CollisionKey { value: 4 }
+      )
+    );
+    (HashMap[CollisionKey, i32]::remove : (HashMap[CollisionKey, i32], CollisionKey) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
       CollisionKey { value: 99 }
     );
-    (HashMap[CollisionKey, int32]::remove : (HashMap[CollisionKey, int32], CollisionKey) -> unit)(
-      (values/17 : HashMap[CollisionKey, int32]),
+    (HashMap[CollisionKey, i32]::remove : (HashMap[CollisionKey, i32], CollisionKey) -> unit)(
+      (values/17 : HashMap[CollisionKey, i32]),
       CollisionKey { value: 99 }
     );
-    (println : (int) -> unit)(
-      (HashMap[CollisionKey, int32]::len : (HashMap[CollisionKey, int32]) -> int)(
-        (values/17 : HashMap[CollisionKey, int32])
+    (println : (isize) -> unit)(
+      (HashMap[CollisionKey, i32]::len : (HashMap[CollisionKey, i32]) -> isize)(
+        (values/17 : HashMap[CollisionKey, i32])
       )
     );
-    let index/18: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
-    while (Ref[int32]::get : (Ref[int32]) -> int32)((index/18 : Ref[int32])) < 2000 {
+    let index/18: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
+    while (Ref[i32]::get : (Ref[i32]) -> i32)((index/18 : Ref[i32])) < 2000 {
         {
             let key/19: CollisionKey =
               CollisionKey {
-                value: 1000 + (Ref[int32]::get : (Ref[int32]) -> int32)((index/18 : Ref[int32]))
+                value: 1000 + (Ref[i32]::get : (Ref[i32]) -> i32)((index/18 : Ref[i32]))
               };
-            (HashMap[CollisionKey, int32]::set : (
-              HashMap[CollisionKey, int32],
+            (HashMap[CollisionKey, i32]::set : (
+              HashMap[CollisionKey, i32],
               CollisionKey,
-              int32
+              i32
             ) -> unit)(
-              (values/17 : HashMap[CollisionKey, int32]),
+              (values/17 : HashMap[CollisionKey, i32]),
               (key/19 : CollisionKey),
-              (Ref[int32]::get : (Ref[int32]) -> int32)((index/18 : Ref[int32]))
+              (Ref[i32]::get : (Ref[i32]) -> i32)((index/18 : Ref[i32]))
             );
-            (HashMap[CollisionKey, int32]::remove : (
-              HashMap[CollisionKey, int32],
+            (HashMap[CollisionKey, i32]::remove : (
+              HashMap[CollisionKey, i32],
               CollisionKey
-            ) -> unit)((values/17 : HashMap[CollisionKey, int32]), (key/19 : CollisionKey));
-            (Ref[int32]::set : (Ref[int32], int32) -> unit)(
-              (index/18 : Ref[int32]),
-              (Ref[int32]::get : (Ref[int32]) -> int32)((index/18 : Ref[int32])) + 1
+            ) -> unit)((values/17 : HashMap[CollisionKey, i32]), (key/19 : CollisionKey));
+            (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+              (index/18 : Ref[i32]),
+              (Ref[i32]::get : (Ref[i32]) -> i32)((index/18 : Ref[i32])) + 1
             );
         }
     };
-    (println : (int) -> unit)(
-      (HashMap[CollisionKey, int32]::len : (HashMap[CollisionKey, int32]) -> int)(
-        (values/17 : HashMap[CollisionKey, int32])
+    (println : (isize) -> unit)(
+      (HashMap[CollisionKey, i32]::len : (HashMap[CollisionKey, i32]) -> isize)(
+        (values/17 : HashMap[CollisionKey, i32])
       )
     );
 }
@@ -254,8 +251,8 @@ fn reference_contracts() -> unit {
       )
     );
     (println : (bool) -> unit)(
-      (Hash::hash : (Ref[CollisionKey]) -> uint64)((key/21 : Ref[CollisionKey])) ==
-        (Hash::hash : (Ref[CollisionKey]) -> uint64)((alias/22 : Ref[CollisionKey]))
+      (Hash::hash : (Ref[CollisionKey]) -> u64)((key/21 : Ref[CollisionKey])) ==
+        (Hash::hash : (Ref[CollisionKey]) -> u64)((alias/22 : Ref[CollisionKey]))
     );
     (print_opt_string : (Option[string]) -> unit)(
       (HashMap[Ref[CollisionKey], string]::get : (

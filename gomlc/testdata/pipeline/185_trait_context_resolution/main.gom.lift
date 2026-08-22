@@ -1,40 +1,40 @@
-fn trait_impl#Put#[int32]@Target#put(self/0: Target, value/1: int32) -> string {
-  ("number:" + inherent#int32#int32#to_string(value/1))
+fn trait_impl#Put#[i32]@Target#put(self/0: Target, value/1: i32) -> string {
+  ("number:" + inherent#i32#i32#to_string(value/1))
 }
 
 fn trait_impl#Put#[string]@Target#put(self/2: Target, value/3: string) -> string {
   ("text:" + value/3)
 }
 
-fn trait_impl#Convert#[int32]@Convertible#convert(self/4: Convertible) -> string {
+fn trait_impl#Convert#[i32]@Convertible#convert(self/4: Convertible) -> string {
   "converted"
 }
 
-fn trait_impl#Convert#[string]@Convertible#convert(self/5: Convertible) -> int32 {
+fn trait_impl#Convert#[string]@Convertible#convert(self/5: Convertible) -> i32 {
   7
 }
 
-fn trait_impl#Source#[int32]@Number#get(self/6: Number) -> int32 {
+fn trait_impl#Source#[i32]@Number#get(self/6: Number) -> i32 {
   Number.value(self/6)
 }
 
-fn trait_impl#ItemSource#Selected#item(self/9: Selected) -> int32 {
+fn trait_impl#ItemSource#Selected#item(self/9: Selected) -> i32 {
   Selected.value(self/9)
 }
 
 fn main() -> unit {
-  let _wild411 = println__T_string(trait_impl#Put#[int32]@Target#put(Target {}, 3)) in
+  let _wild411 = println__T_string(trait_impl#Put#[i32]@Target#put(Target {}, 3)) in
   let _wild412 = println__T_string(trait_impl#Put#[string]@Target#put(Target {}, "goml")) in
-  let text/12 = trait_impl#Convert#[int32]@Convertible#convert(Convertible {}) in
+  let text/12 = trait_impl#Convert#[i32]@Convertible#convert(Convertible {}) in
   let number/13 = trait_impl#Convert#[string]@Convertible#convert(Convertible {}) in
   let _wild413 = println__T_string(text/12) in
-  let _wild414 = println__T_int32(number/13) in
-  let _wild415 = println__T_int32(read__S_Number__T_int32(Number { value: 8 })) in
-  let _wild416 = println__T_int32(select_item__S_Selected(Selected { value: 9 })) in
+  let _wild414 = println__T_i32(number/13) in
+  let _wild415 = println__T_i32(read__S_Number__T_i32(Number { value: 8 })) in
+  let _wild416 = println__T_i32(select_item__S_Selected(Selected { value: 9 })) in
   ()
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -42,30 +42,30 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn read__S_Number__T_int32(source/7: Number) -> int32 {
-  trait_impl#Source#[int32]@Number#get(source/7)
+fn read__S_Number__T_i32(source/7: Number) -> i32 {
+  trait_impl#Source#[i32]@Number#get(source/7)
 }
 
-fn select_item__S_Selected(source/11: Selected) -> int32 {
-  invoke__S_Selected__T_int32(source/11)
+fn select_item__S_Selected(source/11: Selected) -> i32 {
+  invoke__S_Selected__T_i32(source/11)
 }
 
 fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn invoke__S_Selected__T_int32(source/10: Selected) -> int32 {
-  trait_impl#Select#[int32]@Selected#select(source/10)
+fn invoke__S_Selected__T_i32(source/10: Selected) -> i32 {
+  trait_impl#Select#[i32]@Selected#select(source/10)
 }
 
-fn trait_impl#Select#[int32]@Selected#select(self/8: Selected) -> int32 {
+fn trait_impl#Select#[i32]@Selected#select(self/8: Selected) -> i32 {
   trait_impl#ItemSource#Selected#item(self/8)
 }

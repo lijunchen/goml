@@ -1,40 +1,40 @@
-fn std::internal::task::scope_new(parent/0: int64) -> int64 {
+fn std::internal::task::scope_new(parent/0: i64) -> i64 {
   @runtime(std.task.scope_new)(parent/0)
 }
 
-fn std::internal::task::scope_spawn(scope/1: int64, body/2: () -> unit) -> bool {
+fn std::internal::task::scope_spawn(scope/1: i64, body/2: () -> unit) -> bool {
   @runtime(std.task.scope_spawn)(scope/1, body/2)
 }
 
-fn std::internal::task::scope_run(scope/3: int64, body/4: () -> unit) -> unit {
+fn std::internal::task::scope_run(scope/3: i64, body/4: () -> unit) -> unit {
   @runtime(std.task.scope_run)(scope/3, body/4)
 }
 
-fn std::internal::task::scope_try_spawn(scope/5: int64, body/6: () -> unit) -> bool {
+fn std::internal::task::scope_try_spawn(scope/5: i64, body/6: () -> unit) -> bool {
   @runtime(std.task.scope_try_spawn)(scope/5, body/6)
 }
 
-fn std::internal::task::scope_cancel(scope/7: int64) -> unit {
+fn std::internal::task::scope_cancel(scope/7: i64) -> unit {
   @runtime(std.task.scope_cancel)(scope/7)
 }
 
-fn std::internal::task::scope_finish(scope/8: int64) -> unit {
+fn std::internal::task::scope_finish(scope/8: i64) -> unit {
   @runtime(std.task.scope_finish)(scope/8)
 }
 
-fn std::internal::task::scope_cancelled(scope/9: int64) -> bool {
+fn std::internal::task::scope_cancelled(scope/9: i64) -> bool {
   @runtime(std.task.scope_cancelled)(scope/9)
 }
 
-fn std::internal::task::scope_done(scope/10: int64) -> Receiver[unit] {
+fn std::internal::task::scope_done(scope/10: i64) -> Receiver[unit] {
   @runtime(std.task.scope_done)(scope/10)
 }
 
-fn std::internal::task::scope_sleep(scope/11: int64, nanoseconds/12: int64) -> bool {
+fn std::internal::task::scope_sleep(scope/11: i64, nanoseconds/12: i64) -> bool {
   @runtime(std.task.sleep)(scope/11, nanoseconds/12)
 }
 
-fn std::internal::task::scope_count() -> int {
+fn std::internal::task::scope_count() -> isize {
   @runtime(std.task.active_scope_count)()
 }
 
@@ -93,16 +93,16 @@ fn std::internal::task::token(
 
 fn std::internal::task::sleep_with(
   cancel/28: std::internal::task::CancelToken,
-  nanoseconds/29: int64
+  nanoseconds/29: i64
 ) -> bool {
   std::internal::task::scope_sleep(std::internal::task::CancelToken.id(cancel/28), nanoseconds/29)
 }
 
-fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> int64 {
+fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> i64 {
   std::internal::task::CancelToken.id(cancel/30)
 }
 
-fn std::internal::task::active_scope_count() -> int {
+fn std::internal::task::active_scope_count() -> isize {
   std::internal::task::scope_count()
 }
 
@@ -119,7 +119,7 @@ fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#do
 }
 
 fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
-  limit/2: int
+  limit/2: isize
 ) -> std::task::ConcurrencyLimit {
   let count/3 =
     if (limit/2 > 0) {
@@ -148,7 +148,7 @@ fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
   std::task::ConcurrencyLimit { slots: slots/4 }
 }
 
-fn std::task::active_scope_count() -> int {
+fn std::task::active_scope_count() -> isize {
   std::internal::task::active_scope_count()
 }
 
@@ -172,7 +172,7 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#is_cancelled(
 
 fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
   self/42: std::task::CancelToken
-) -> int64 {
+) -> i64 {
   std::internal::task::id(std::task::CancelToken.value(self/42))
 }
 
@@ -186,7 +186,7 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#done(
 
 fn std::task::sleep_nanoseconds_with(
   cancel/52: std::task::CancelToken,
-  nanoseconds/53: int64
+  nanoseconds/53: i64
 ) -> std::task::WaitResult__unit {
   if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/52), nanoseconds/53) {
       {
@@ -227,62 +227,62 @@ fn std::internal::host::write_file(path/2: string, content/3: string) -> (bool, 
   @runtime(std.fs.write_file)(path/2, content/3)
 }
 
-fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[uint8], string) {
+fn std::internal::host::read_bytes(path/4: string) -> (bool, Vec[u8], string) {
   @runtime(std.fs.read_bytes)(path/4)
 }
 
 fn std::internal::host::read_bytes_v2(path/5: string) -> (
   bool,
-  Vec[uint8],
-  int,
+  Vec[u8],
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.read_bytes.v2)(path/5)
 }
 
-fn std::internal::host::write_bytes(path/6: string, data/7: Vec[uint8]) -> (bool, string) {
+fn std::internal::host::write_bytes(path/6: string, data/7: Vec[u8]) -> (bool, string) {
   @runtime(std.fs.write_bytes)(path/6, data/7)
 }
 
-fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[uint8]) -> (
+fn std::internal::host::write_bytes_v2(path/8: string, data/9: Vec[u8]) -> (
   bool,
-  int,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.write_bytes.v2)(path/8, data/9)
 }
 
 fn std::internal::host::fs_path_operation_v2(
-  operation/10: int,
+  operation/10: isize,
   first/11: string,
   second/12: string
-) -> (bool, int, bool, int, string) {
+) -> (bool, isize, bool, isize, string) {
   @runtime(std.fs.path_operation.v2)(operation/10, first/11, second/12)
 }
 
 fn std::internal::host::fs_metadata_v2(path/13: string, follow/14: bool) -> (
   bool,
-  int,
-  int64,
-  uint32,
-  int64,
-  int,
+  isize,
+  i64,
+  u32,
+  i64,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.metadata.v2)(path/13, follow/14)
 }
 
-fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[uint8]) -> (
+fn std::internal::host::fs_atomic_write_v2(path/15: string, data/16: Vec[u8]) -> (
   bool,
-  int,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.atomic_write.v2)(path/15, data/16)
@@ -323,9 +323,9 @@ fn std::internal::host::read_dir(path/24: string) -> (bool, Vec[string], string)
 fn std::internal::host::read_dir_v2(path/25: string) -> (
   bool,
   Vec[string],
-  int,
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.fs.read_dir.v2)(path/25)
@@ -347,42 +347,42 @@ fn std::internal::host::eprint(value/29: string) -> unit {
   @runtime(std.io.eprint)(value/29)
 }
 
-fn std::internal::host::read_stdin() -> (bool, Vec[uint8], string) {
+fn std::internal::host::read_stdin() -> (bool, Vec[u8], string) {
   @runtime(std.io.read_stdin)()
 }
 
-fn std::internal::host::read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+fn std::internal::host::read_stdin_v2() -> (bool, Vec[u8], isize, bool, isize, string) {
   @runtime(std.io.read_stdin.v2)()
 }
 
-fn std::internal::host::read_stdin_exact(length/30: int) -> (bool, Vec[uint8], string) {
+fn std::internal::host::read_stdin_exact(length/30: isize) -> (bool, Vec[u8], string) {
   @runtime(std.io.read_stdin_exact)(length/30)
 }
 
-fn std::internal::host::read_stdin_exact_v2(length/31: int) -> (
+fn std::internal::host::read_stdin_exact_v2(length/31: isize) -> (
   bool,
-  Vec[uint8],
-  int,
+  Vec[u8],
+  isize,
   bool,
-  int,
+  isize,
   string
 ) {
   @runtime(std.io.read_stdin_exact.v2)(length/31)
 }
 
-fn std::internal::host::write_stdout(data/32: Vec[uint8]) -> (bool, string) {
+fn std::internal::host::write_stdout(data/32: Vec[u8]) -> (bool, string) {
   @runtime(std.io.write_stdout)(data/32)
 }
 
-fn std::internal::host::write_stdout_v2(data/33: Vec[uint8]) -> (bool, int, bool, int, string) {
+fn std::internal::host::write_stdout_v2(data/33: Vec[u8]) -> (bool, isize, bool, isize, string) {
   @runtime(std.io.write_stdout.v2)(data/33)
 }
 
-fn std::internal::host::write_stderr(data/34: Vec[uint8]) -> (bool, string) {
+fn std::internal::host::write_stderr(data/34: Vec[u8]) -> (bool, string) {
   @runtime(std.io.write_stderr)(data/34)
 }
 
-fn std::internal::host::write_stderr_v2(data/35: Vec[uint8]) -> (bool, int, bool, int, string) {
+fn std::internal::host::write_stderr_v2(data/35: Vec[u8]) -> (bool, isize, bool, isize, string) {
   @runtime(std.io.write_stderr.v2)(data/35)
 }
 
@@ -434,7 +434,7 @@ fn std::internal::host::path_separator() -> string {
   @runtime(std.path.separator)()
 }
 
-fn std::internal::host::exit(code/49: int) -> unit {
+fn std::internal::host::exit(code/49: isize) -> unit {
   @runtime(std.process.exit)(code/49)
 }
 
@@ -449,8 +449,8 @@ fn std::internal::host::process_output(
   directory/54: string,
   environment/55: Vec[(string, string)],
   has_input/56: bool,
-  input/57: Vec[uint8]
-) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+  input/57: Vec[u8]
+) -> (bool, isize, Vec[u8], Vec[u8], string) {
   @runtime(std.process.output)(
     program/51,
     arguments/52,
@@ -469,9 +469,9 @@ fn std::internal::host::process_output_timeout(
   directory/61: string,
   environment/62: Vec[(string, string)],
   has_input/63: bool,
-  input/64: Vec[uint8],
-  timeout_ms/65: int
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  input/64: Vec[u8],
+  timeout_ms/65: isize
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
   @runtime(std.process.output_timeout)(
     program/58,
     arguments/59,
@@ -491,9 +491,9 @@ fn std::internal::host::process_output_cancel(
   directory/69: string,
   environment/70: Vec[(string, string)],
   has_input/71: bool,
-  input/72: Vec[uint8],
-  scope_id/73: int64
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+  input/72: Vec[u8],
+  scope_id/73: i64
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
   @runtime(std.process.output_cancel)(
     program/66,
     arguments/67,
@@ -512,7 +512,7 @@ fn std::internal::host::process_status(
   has_directory/76: bool,
   directory/77: string,
   environment/78: Vec[(string, string)]
-) -> (bool, int, string) {
+) -> (bool, isize, string) {
   @runtime(std.process.status)(
     program/74,
     arguments/75,
@@ -528,8 +528,8 @@ fn std::internal::host::process_status_timeout(
   has_directory/81: bool,
   directory/82: string,
   environment/83: Vec[(string, string)],
-  timeout_ms/84: int
-) -> (bool, int, string, bool) {
+  timeout_ms/84: isize
+) -> (bool, isize, string, bool) {
   @runtime(std.process.status_timeout)(
     program/79,
     arguments/80,
@@ -546,8 +546,8 @@ fn std::internal::host::process_status_cancel(
   has_directory/87: bool,
   directory/88: string,
   environment/89: Vec[(string, string)],
-  scope_id/90: int64
-) -> (bool, int, string, bool) {
+  scope_id/90: i64
+) -> (bool, isize, string, bool) {
   @runtime(std.process.status_cancel)(
     program/85,
     arguments/86,
@@ -562,51 +562,51 @@ fn std::internal::host::test_fail(message/91: string) -> unit {
   @runtime(std.testing.fail)(message/91)
 }
 
-fn std::internal::host::parse_int(value/92: string, radix/93: int) -> (bool, int, string) {
+fn std::internal::host::parse_int(value/92: string, radix/93: isize) -> (bool, isize, string) {
   @runtime(std.num.parse_int)(value/92, radix/93)
 }
 
-fn std::internal::host::parse_uint(value/94: string, radix/95: int) -> (bool, uint, string) {
+fn std::internal::host::parse_uint(value/94: string, radix/95: isize) -> (bool, usize, string) {
   @runtime(std.num.parse_uint)(value/94, radix/95)
 }
 
-fn std::internal::host::parse_float32(value/96: string) -> (bool, float32, string) {
+fn std::internal::host::parse_float32(value/96: string) -> (bool, f32, string) {
   @runtime(std.num.parse_float32)(value/96)
 }
 
-fn std::internal::host::parse_float64(value/97: string) -> (bool, float64, string) {
+fn std::internal::host::parse_float64(value/97: string) -> (bool, f64, string) {
   @runtime(std.num.parse_float64)(value/97)
 }
 
-fn std::internal::host::monotonic_nanoseconds() -> int64 {
+fn std::internal::host::monotonic_nanoseconds() -> i64 {
   @runtime(std.time.monotonic_nanoseconds)()
 }
 
-fn std::internal::host::unix_nanoseconds() -> int64 {
+fn std::internal::host::unix_nanoseconds() -> i64 {
   @runtime(std.time.unix_nanoseconds)()
 }
 
-fn std::internal::host::sleep_nanoseconds(value/98: int64) -> unit {
+fn std::internal::host::sleep_nanoseconds(value/98: i64) -> unit {
   @runtime(std.time.sleep_nanoseconds)(value/98)
 }
 
-fn std::internal::host::timer_new(value/99: int64) -> (int64, Receiver[unit]) {
+fn std::internal::host::timer_new(value/99: i64) -> (i64, Receiver[unit]) {
   @runtime(std.time.timer_new)(value/99)
 }
 
-fn std::internal::host::timer_stop(id/100: int64) -> bool {
+fn std::internal::host::timer_stop(id/100: i64) -> bool {
   @runtime(std.time.timer_stop)(id/100)
 }
 
-fn std::internal::host::math_float32_unary(operation/101: int, value/102: float32) -> float32 {
+fn std::internal::host::math_float32_unary(operation/101: isize, value/102: f32) -> f32 {
   @runtime(std.math.float32_unary)(operation/101, value/102)
 }
 
-fn std::internal::host::math_float32_pow(value/103: float32, exponent/104: float32) -> float32 {
+fn std::internal::host::math_float32_pow(value/103: f32, exponent/104: f32) -> f32 {
   @runtime(std.math.float32_pow)(value/103, exponent/104)
 }
 
-fn std::internal::host::crypto_random_bytes(length/105: int) -> (bool, Vec[uint8], string) {
+fn std::internal::host::crypto_random_bytes(length/105: isize) -> (bool, Vec[u8], string) {
   @runtime(std.crypto.rand.bytes)(length/105)
 }
 
@@ -615,14 +615,12 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
-  capacity/0: int
+  capacity/0: isize
 ) -> std::bytes::Bytes {
-  std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0) }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
-  values/1: Vec[uint8]
-) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[u8]) -> std::bytes::Bytes {
   std::bytes::Bytes { values: values/1 }
 }
 
@@ -630,29 +628,29 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> 
   std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
-  inherent#Vec#Vec[T]#len__T_uint8(std::bytes::Bytes.values(self/3))
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> isize {
+  inherent#Vec#Vec[T]#len__T_u8(std::bytes::Bytes.values(self/3))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
-  inherent#Vec#Vec[T]#capacity__T_uint8(std::bytes::Bytes.values(self/4))
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> isize {
+  inherent#Vec#Vec[T]#capacity__T_u8(std::bytes::Bytes.values(self/4))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
-  inherent#Vec#Vec[T]#is_empty__T_uint8(std::bytes::Bytes.values(self/5))
+  inherent#Vec#Vec[T]#is_empty__T_u8(std::bytes::Bytes.values(self/5))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
   self/6: std::bytes::Bytes,
-  index/7: int
-) -> uint8 {
+  index/7: isize
+) -> u8 {
   @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/8: std::bytes::Bytes,
-  index/9: int,
-  value/10: uint8
+  index/9: isize,
+  value/10: u8
 ) -> unit {
   let _wild5 =
     {
@@ -667,42 +665,42 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
   self/11: std::bytes::Bytes,
-  value/12: uint8
+  value/12: u8
 ) -> unit {
-  inherent#Vec#Vec[T]#push__T_uint8(std::bytes::Bytes.values(self/11), value/12)
+  inherent#Vec#Vec[T]#push__T_u8(std::bytes::Bytes.values(self/11), value/12)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
-  inherent#Vec#Vec[T]#pop__T_uint8(std::bytes::Bytes.values(self/13))
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__u8 {
+  inherent#Vec#Vec[T]#pop__T_u8(std::bytes::Bytes.values(self/13))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/14: std::bytes::Bytes,
-  additional/15: int
+  additional/15: isize
 ) -> unit {
-  inherent#Vec#Vec[T]#reserve__T_uint8(std::bytes::Bytes.values(self/14), additional/15)
+  inherent#Vec#Vec[T]#reserve__T_u8(std::bytes::Bytes.values(self/14), additional/15)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/16: std::bytes::Bytes,
-  len/17: int
+  len/17: isize
 ) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(std::bytes::Bytes.values(self/16), len/17)
+  inherent#Vec#Vec[T]#truncate__T_u8(std::bytes::Bytes.values(self/16), len/17)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
-  inherent#Vec#Vec[T]#clear__T_uint8(std::bytes::Bytes.values(self/18))
+  inherent#Vec#Vec[T]#clear__T_u8(std::bytes::Bytes.values(self/18))
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
   self/19: std::bytes::Bytes,
-  start/20: int,
-  end/21: int
-) -> Slice[uint8] {
-  inherent#Vec#Vec[T]#slice__T_uint8(std::bytes::Bytes.values(self/19), start/20, end/21)
+  start/20: isize,
+  end/21: isize
+) -> Slice[u8] {
+  inherent#Vec#Vec[T]#slice__T_u8(std::bytes::Bytes.values(self/19), start/20, end/21)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[u8] {
   std::bytes::Bytes.values(self/22)
 }
 
@@ -788,7 +786,7 @@ fn trait_impl#PartialEq#std::io::ErrorKind#eq(
   (std::io::kind_code(self/2) == std::io::kind_code(other/3))
 }
 
-fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
+fn std::io::kind_from_code(code/4: isize) -> std::io::ErrorKind {
   match code/4 {
     1 => {
       std::io::ErrorKind::NotFound
@@ -830,7 +828,7 @@ fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
   }
 }
 
-fn std::io::kind_code(kind/5: std::io::ErrorKind) -> int {
+fn std::io::kind_code(kind/5: std::io::ErrorKind) -> isize {
   match kind/5 {
     std::io::ErrorKind::NotFound => {
       1
@@ -878,7 +876,7 @@ fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
   kind/6: std::io::ErrorKind,
   operation/7: string,
   context/8: Option__string,
-  raw_os_code/9: Option__int,
+  raw_os_code/9: Option__isize,
   message/10: string
 ) -> std::io::ErrorDetails {
   std::io::ErrorDetails {
@@ -910,7 +908,7 @@ fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
 
 fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
   self/14: std::io::ErrorDetails
-) -> Option__int {
+) -> Option__isize {
   std::io::ErrorDetails.raw_os_code_value(self/14)
 }
 
@@ -966,7 +964,7 @@ fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
   } else {
       false
   } {
-      trait_impl#PartialEq#Option__int#eq(
+      trait_impl#PartialEq#Option__isize#eq(
         std::io::ErrorDetails.raw_os_code_value(self/19),
         std::io::ErrorDetails.raw_os_code_value(other/20)
       )
@@ -984,7 +982,7 @@ fn inherent#std::io::Error#std::io::Error#new(
   kind/21: std::io::ErrorKind,
   operation/22: string,
   context/23: Option__string,
-  raw_os_code/24: Option__int,
+  raw_os_code/24: Option__isize,
   message/25: string
 ) -> std::io::Error {
   std::io::Error {
@@ -1010,7 +1008,7 @@ fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Op
   inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::io::Error.details(self/28))
 }
 
-fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__int {
+fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__isize {
   inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::io::Error.details(self/29))
 }
 
@@ -1038,9 +1036,9 @@ fn trait_impl#PartialEq#std::io::Error#eq(
 
 fn std::io::structured_error(
   operation/35: string,
-  kind_code/36: int,
+  kind_code/36: isize,
   has_raw_code/37: bool,
-  raw_code/38: int,
+  raw_code/38: isize,
   message/39: string
 ) -> std::io::Error {
   inherent#std::io::Error#std::io::Error#new(
@@ -1049,11 +1047,11 @@ fn std::io::structured_error(
     Option__string::None,
     if has_raw_code/37 {
         {
-          Option__int::Some(raw_code/38)
+          Option__isize::Some(raw_code/38)
         }
     } else {
         {
-          Option__int::None
+          Option__isize::None
         }
     },
     message/39
@@ -1142,7 +1140,7 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
                           std::io::ErrorKind::InvalidData,
                           "read stdin",
                           Option__string::None,
-                          Option__int::None,
+                          Option__isize::None,
                           message/48
                         )
                       )
@@ -1168,7 +1166,7 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
 }
 
 fn std::io::read_stdin_exact_structured(
-  length/50: int
+  length/50: isize
 ) -> Result__std::bytes::Bytes__std::io::Error {
   if (length/50 < 0) {
       {
@@ -1177,7 +1175,7 @@ fn std::io::read_stdin_exact_structured(
             std::io::ErrorKind::InvalidInput,
             "read stdin exact",
             Option__string::None,
-            Option__int::None,
+            Option__isize::None,
             "read length must be non-negative"
           )
         )
@@ -1401,7 +1399,7 @@ fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
   }
 }
 
-fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__string {
+fn std::io::read_stdin_exact(length/80: isize) -> Result__std::bytes::Bytes__string {
   if (length/80 < 0) {
       {
         Result__std::bytes::Bytes__string::Err("read length must be non-negative")
@@ -1449,7 +1447,7 @@ fn inherent#std::time::Error#std::time::Error#new(
       std::io::ErrorKind::InvalidInput,
       operation/0,
       Option__string::None,
-      Option__int::None,
+      Option__isize::None,
       message/1
     )
   }
@@ -1467,7 +1465,9 @@ fn inherent#std::time::Error#std::time::Error#context(self/4: std::time::Error) 
   inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::time::Error.details(self/4))
 }
 
-fn inherent#std::time::Error#std::time::Error#raw_os_code(self/5: std::time::Error) -> Option__int {
+fn inherent#std::time::Error#std::time::Error#raw_os_code(
+  self/5: std::time::Error
+) -> Option__isize {
   inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::time::Error.details(self/5))
 }
 
@@ -1498,7 +1498,7 @@ fn inherent#std::time::Duration#std::time::Duration#zero() -> std::time::Duratio
 }
 
 fn inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
-  value/11: int64
+  value/11: i64
 ) -> std::time::Duration {
   std::time::Duration {
     nanoseconds: if (value/11 < 0) {
@@ -1514,44 +1514,44 @@ fn inherent#std::time::Duration#std::time::Duration#from_nanoseconds(
 }
 
 fn inherent#std::time::Duration#std::time::Duration#from_microseconds(
-  value/12: int64
+  value/12: i64
 ) -> std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#from_nanoseconds((value/12 * 1000))
 }
 
 fn inherent#std::time::Duration#std::time::Duration#from_milliseconds(
-  value/13: int64
+  value/13: i64
 ) -> std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#from_nanoseconds((value/13 * 1000000))
 }
 
 fn inherent#std::time::Duration#std::time::Duration#from_seconds(
-  value/14: int64
+  value/14: i64
 ) -> std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#from_nanoseconds((value/14 * 1000000000))
 }
 
 fn inherent#std::time::Duration#std::time::Duration#checked_from_microseconds(
-  value/15: int64
+  value/15: i64
 ) -> Option__std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#checked_scaled(value/15, 1000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#checked_from_milliseconds(
-  value/16: int64
+  value/16: i64
 ) -> Option__std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#checked_scaled(value/16, 1000000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#checked_from_seconds(
-  value/17: int64
+  value/17: i64
 ) -> Option__std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#checked_scaled(value/17, 1000000000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#checked_scaled(
-  value/18: int64,
-  scale/19: int64
+  value/18: i64,
+  scale/19: i64
 ) -> Option__std::time::Duration {
   if if (value/18 < 0) {
       true
@@ -1571,26 +1571,26 @@ fn inherent#std::time::Duration#std::time::Duration#checked_scaled(
 }
 
 fn inherent#std::time::Duration#std::time::Duration#saturating_from_microseconds(
-  value/20: int64
+  value/20: i64
 ) -> std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#saturating_scaled(value/20, 1000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#saturating_from_milliseconds(
-  value/21: int64
+  value/21: i64
 ) -> std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#saturating_scaled(value/21, 1000000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#saturating_from_seconds(
-  value/22: int64
+  value/22: i64
 ) -> std::time::Duration {
   inherent#std::time::Duration#std::time::Duration#saturating_scaled(value/22, 1000000000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#saturating_scaled(
-  value/23: int64,
-  scale/24: int64
+  value/23: i64,
+  scale/24: i64
 ) -> std::time::Duration {
   {
     let mtmp0 =
@@ -1622,25 +1622,25 @@ fn inherent#std::time::Duration#std::time::Duration#saturating_scaled(
 
 fn inherent#std::time::Duration#std::time::Duration#as_nanoseconds(
   self/26: std::time::Duration
-) -> int64 {
+) -> i64 {
   std::time::Duration.nanoseconds(self/26)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#as_microseconds(
   self/27: std::time::Duration
-) -> int64 {
+) -> i64 {
   (std::time::Duration.nanoseconds(self/27) / 1000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#as_milliseconds(
   self/28: std::time::Duration
-) -> int64 {
+) -> i64 {
   (std::time::Duration.nanoseconds(self/28) / 1000000)
 }
 
 fn inherent#std::time::Duration#std::time::Duration#as_seconds(
   self/29: std::time::Duration
-) -> int64 {
+) -> i64 {
   (std::time::Duration.nanoseconds(self/29) / 1000000000)
 }
 
@@ -1727,7 +1727,7 @@ fn inherent#std::time::Duration#std::time::Duration#saturating_subtract(
 
 fn inherent#std::time::Duration#std::time::Duration#checked_multiply(
   self/43: std::time::Duration,
-  factor/44: int64
+  factor/44: i64
 ) -> Option__std::time::Duration {
   if if (factor/44 < 0) {
       true
@@ -1754,7 +1754,7 @@ fn inherent#std::time::Duration#std::time::Duration#checked_multiply(
 
 fn inherent#std::time::Duration#std::time::Duration#saturating_multiply(
   self/45: std::time::Duration,
-  factor/46: int64
+  factor/46: i64
 ) -> std::time::Duration {
   {
     let mtmp2 =
@@ -1787,7 +1787,7 @@ fn inherent#std::time::Duration#std::time::Duration#saturating_multiply(
 fn inherent#std::time::Duration#std::time::Duration#compare(
   self/48: std::time::Duration,
   other/49: std::time::Duration
-) -> int {
+) -> isize {
   if (std::time::Duration.nanoseconds(self/48) < std::time::Duration.nanoseconds(other/49)) {
       {
         -1
@@ -1856,7 +1856,7 @@ fn inherent#std::time::Instant#std::time::Instant#checked_duration_since(
 fn inherent#std::time::Instant#std::time::Instant#compare(
   self/57: std::time::Instant,
   other/58: std::time::Instant
-) -> int {
+) -> isize {
   if (std::time::Instant.nanoseconds(self/57) < std::time::Instant.nanoseconds(other/58)) {
       {
         -1
@@ -1886,13 +1886,13 @@ fn inherent#std::time::SystemTime#std::time::SystemTime#now() -> std::time::Syst
 }
 
 fn inherent#std::time::SystemTime#std::time::SystemTime#from_unix_nanoseconds(
-  value/61: int64
+  value/61: i64
 ) -> std::time::SystemTime {
   std::time::SystemTime { unix_nanoseconds: value/61 }
 }
 
 fn inherent#std::time::SystemTime#std::time::SystemTime#checked_from_unix_milliseconds(
-  value/62: int64
+  value/62: i64
 ) -> Result__std::time::SystemTime__std::time::Error {
   if if (value/62 > 9223372036854) {
       true
@@ -1919,7 +1919,7 @@ fn inherent#std::time::SystemTime#std::time::SystemTime#checked_from_unix_millis
 }
 
 fn inherent#std::time::SystemTime#std::time::SystemTime#checked_from_unix_seconds(
-  value/63: int64
+  value/63: i64
 ) -> Result__std::time::SystemTime__std::time::Error {
   if if (value/63 > 9223372036) {
       true
@@ -1973,26 +1973,26 @@ fn inherent#std::time::SystemTime#std::time::SystemTime#duration_since(
 
 fn inherent#std::time::SystemTime#std::time::SystemTime#unix_nanoseconds(
   self/66: std::time::SystemTime
-) -> int64 {
+) -> i64 {
   std::time::SystemTime.unix_nanoseconds(self/66)
 }
 
 fn inherent#std::time::SystemTime#std::time::SystemTime#unix_milliseconds(
   self/67: std::time::SystemTime
-) -> int64 {
+) -> i64 {
   (std::time::SystemTime.unix_nanoseconds(self/67) / 1000000)
 }
 
 fn inherent#std::time::SystemTime#std::time::SystemTime#unix_seconds(
   self/68: std::time::SystemTime
-) -> int64 {
+) -> i64 {
   (std::time::SystemTime.unix_nanoseconds(self/68) / 1000000000)
 }
 
 fn inherent#std::time::SystemTime#std::time::SystemTime#compare(
   self/69: std::time::SystemTime,
   other/70: std::time::SystemTime
-) -> int {
+) -> isize {
   if (std::time::SystemTime.unix_nanoseconds(self/69) <
     std::time::SystemTime.unix_nanoseconds(other/70)) {
       {
@@ -2080,7 +2080,7 @@ fn main() -> unit {
   let _wild411 =
     select {
       recv(inherent#std::time::Timer#std::time::Timer#done(timer/0)) as _/1 => {
-        println__T_int(1)
+        println__T_isize(1)
       },
     } in
   let stopped/2 =
@@ -2091,19 +2091,19 @@ fn main() -> unit {
   let _wild413 =
     select priority {
       recv(inherent#std::time::Timer#std::time::Timer#done(stopped/2)) as _/3 => {
-        println__T_int(2)
+        println__T_isize(2)
       },
       default => {
-        println__T_int(3)
+        println__T_isize(3)
       },
     } in
   let _wild414 =
     std::task::scope__T_unit(
       |scope/4| {
-        let work/6 = inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/4, |_/5| 42) in
+        let work/6 = inherent#std::task::Scope#std::task::Scope#spawn__T_isize(scope/4, |_/5| 42) in
         select {
-          recv(inherent#std::task::Task#std::task::Task[T]#done__T_int(work/6)) as _/7 => {
-            println__T_int(inherent#std::task::Task#std::task::Task[T]#join__T_int(work/6))
+          recv(inherent#std::task::Task#std::task::Task[T]#done__T_isize(work/6)) as _/7 => {
+            println__T_isize(inherent#std::task::Task#std::task::Task[T]#join__T_isize(work/6))
           },
         }
       }
@@ -2114,14 +2114,14 @@ fn main() -> unit {
       let _wild415 = inherent#std::task::Scope#std::task::Scope#cancel(scope/8) in
       select {
         recv(inherent#std::task::CancelToken#std::task::CancelToken#done(cancel/9)) as _/10 => {
-          println__T_int(4)
+          println__T_isize(4)
         },
       }
     }
   )
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: int) -> Channel[unit] {
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: isize) -> Channel[unit] {
   @intrinsic(channel.new)(capacity/435)
 }
 
@@ -2129,64 +2129,64 @@ fn inherent#Channel#Channel[T]#send__T_unit(self/436: Channel[unit], value/437: 
   @intrinsic(channel.send)(self/436, value/437)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/257: int) -> Vec[uint8] {
+fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/257: isize) -> Vec[u8] {
   @intrinsic(vec.with_capacity)(capacity/257)
 }
 
-fn inherent#string#string#to_bytes(self/51: string) -> Vec[uint8] {
+fn inherent#string#string#to_bytes(self/51: string) -> Vec[u8] {
   @runtime(core.string_to_bytes)(self/51)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/273: Vec[uint8]) -> int {
+fn inherent#Vec#Vec[T]#len__T_u8(self/273: Vec[u8]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/274: Vec[uint8]) -> int {
+fn inherent#Vec#Vec[T]#capacity__T_u8(self/274: Vec[u8]) -> isize {
   @intrinsic(vec.capacity)(self/274)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/275: Vec[uint8]) -> bool {
+fn inherent#Vec#Vec[T]#is_empty__T_u8(self/275: Vec[u8]) -> bool {
   (@intrinsic(vec.len)(self/275) == 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/258: Vec[uint8], elem/259: uint8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/258: Vec[u8], elem/259: u8) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/283: Vec[uint8]) -> Option__uint8 {
-  let len/284 = inherent#Vec#Vec[T]#len__T_uint8(self/283) in
+fn inherent#Vec#Vec[T]#pop__T_u8(self/283: Vec[u8]) -> Option__u8 {
+  let len/284 = inherent#Vec#Vec[T]#len__T_u8(self/283) in
   if (len/284 == 0) {
       {
-        Option__uint8::None
+        Option__u8::None
       }
   } else {
       {
         let value/285 = @intrinsic(vec.get)(self/283, (len/284 - 1)) in
-        let _wild200 = inherent#Vec#Vec[T]#truncate__T_uint8(self/283, (len/284 - 1)) in
-        Option__uint8::Some(value/285)
+        let _wild200 = inherent#Vec#Vec[T]#truncate__T_u8(self/283, (len/284 - 1)) in
+        Option__u8::Some(value/285)
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/276: Vec[uint8], additional/277: int) -> unit {
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/276: Vec[u8], additional/277: isize) -> unit {
   @intrinsic(vec.reserve)(self/276, additional/277)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/278: Vec[uint8], len/279: int) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u8(self/278: Vec[u8], len/279: isize) -> unit {
   @intrinsic(vec.truncate)(self/278, len/279)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/280: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/280, 0)
+fn inherent#Vec#Vec[T]#clear__T_u8(self/280: Vec[u8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_u8(self/280, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/311: Vec[uint8], start/312: int, end/313: int) -> Slice[
-  uint8
+fn inherent#Vec#Vec[T]#slice__T_u8(self/311: Vec[u8], start/312: isize, end/313: isize) -> Slice[
+  u8
 ] {
   @intrinsic(slice.new)(self/311, start/312, end/313)
 }
 
-fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+fn string_from_utf8(bytes/24: Vec[u8]) -> (bool, string) {
   let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
   {
     let x12 = mtmp10.1 in
@@ -2275,33 +2275,36 @@ fn trait_impl#PartialEq#Option__string#eq(
   }
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option__int) -> bool {
+fn trait_impl#PartialEq#Option__isize#eq(
+  self/235: Option__isize,
+  other/236: Option__isize
+) -> bool {
   {
     let mtmp171 = (self/235, other/236) in
     {
       let x172 = mtmp171.0 in
       let x173 = mtmp171.1 in
       match x173 {
-        Option__int::None => {
+        Option__isize::None => {
           match x172 {
-            Option__int::None => {
+            Option__isize::None => {
               true
             },
             _ => false,
           }
         },
-        Option__int::Some(x174) => {
+        Option__isize::Some(x174) => {
           {
-            let x174 = Option__int::Some._0(x173) in
+            let x174 = Option__isize::Some._0(x173) in
             match x172 {
-              Option__int::Some(x176) => {
+              Option__isize::Some(x176) => {
                 {
-                  let x176 = Option__int::Some._0(x172) in
+                  let x176 = Option__isize::Some._0(x172) in
                   {
                     let left/237 = x176 in
                     {
                       let right/238 = x174 in
-                      trait_impl#PartialEq#int#eq(left/237, right/238)
+                      trait_impl#PartialEq#isize#eq(left/237, right/238)
                     }
                   }
                 }
@@ -2335,8 +2338,8 @@ fn inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
   }
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
 fn println__T_bool(value/1: bool) -> unit {
@@ -2357,11 +2360,11 @@ fn std::task::scope__T_unit(body/9: (std::task::Scope) -> unit) -> unit {
   std::task::completed_scope_value__T_unit(result/11)
 }
 
-fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
   self/25: std::task::Scope,
-  body/26: (std::task::CancelToken) -> int
-) -> std::task::Task__int {
-  let result/27 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  body/26: (std::task::CancelToken) -> isize
+) -> std::task::Task__isize {
+  let result/27 = inherent#Ref#Ref[T]#new__T_Option[isize](Option__isize::None) in
   let ready/28 = inherent#Channel#Channel[T]#new__T_unit(0) in
   let token/29 =
     std::task::CancelToken {
@@ -2372,32 +2375,38 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
       std::task::Scope.handle(self/25),
       || {
         let _wild17 =
-          inherent#Ref#Ref[T]#set__T_Option[int](result/27, Option__int::Some(body/26(token/29))) in
+          inherent#Ref#Ref[T]#set__T_Option[isize](
+            result/27,
+            Option__isize::Some(body/26(token/29))
+          ) in
         inherent#Channel#Channel[T]#close__T_unit(ready/28)
       }
     ) in
-  std::task::Task__int { result: result/27, ready: ready/28 }
+  std::task::Task__isize { result: result/27, ready: ready/28 }
 }
 
-fn inherent#std::task::Task#std::task::Task[T]#done__T_int(
-  self/54: std::task::Task__int
+fn inherent#std::task::Task#std::task::Task[T]#done__T_isize(
+  self/54: std::task::Task__isize
 ) -> Receiver[unit] {
-  inherent#Channel#Channel[T]#receiver__T_unit(std::task::Task__int.ready(self/54))
+  inherent#Channel#Channel[T]#receiver__T_unit(std::task::Task__isize.ready(self/54))
 }
 
-fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/55: std::task::Task__int) -> int {
+fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
+  self/55: std::task::Task__isize
+) -> isize {
   loop {
-    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__int.ready(self/55)) in
+    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__isize.ready(self/55)) in
     {
       {
-        let mtmp26 = inherent#Ref#Ref[T]#get__T_Option[int](std::task::Task__int.result(self/55)) in
+        let mtmp26 =
+          inherent#Ref#Ref[T]#get__T_Option[isize](std::task::Task__isize.result(self/55)) in
         match mtmp26 {
-          Option__int::None => {
+          Option__isize::None => {
             ()
           },
-          Option__int::Some(x27) => {
+          Option__isize::Some(x27) => {
             {
-              let x27 = Option__int::Some._0(mtmp26) in
+              let x27 = Option__isize::Some._0(mtmp26) in
               {
                 let value/56 = x27 in
                 {
@@ -2412,11 +2421,11 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/55: std::task::T
   }
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> int {
+fn inherent#string#string#byte_len(self/36: string) -> isize {
   @runtime(core.string_len)(self/36)
 }
 
-fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+fn string_decode_utf8_at(value/5: string, index/6: isize) -> (bool, char, isize) {
   let length/7 = inherent#string#string#byte_len(value/5) in
   let _wild2 =
     if if (index/6 < 0) {
@@ -2432,7 +2441,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
           ()
         }
     } in
-  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as u32) in
   if (first/8 < 128) {
       {
         utf8_valid_decode(first/8, 1)
@@ -2455,8 +2464,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         ()
                       }
                   } in
-                let second/9 =
-                  (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                let second/9 = (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                 if utf8_invalid_continuation(second/9) {
                     {
                       utf8_invalid_decode()
@@ -2481,9 +2489,9 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                           }
                       } in
                     let second/10 =
-                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                     let third/11 =
-                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                     if if if if utf8_invalid_continuation(second/10) {
                         true
                     } else {
@@ -2531,11 +2539,11 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                               }
                           } in
                         let second/12 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as u32) in
                         let third/13 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as u32) in
                         let fourth/14 =
-                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as u32) in
                         if if if if if utf8_invalid_continuation(second/12) {
                             true
                         } else {
@@ -2590,11 +2598,11 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   (self/181 == other/182)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
@@ -2635,13 +2643,13 @@ fn std::task::completed_scope_value__T_unit(result/0: Ref[Option__unit]) -> unit
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/431: Option__int) -> Ref[Option__int] {
+fn inherent#Ref#Ref[T]#new__T_Option[isize](value/431: Option__isize) -> Ref[Option__isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/433: Ref[Option__int],
-  value/434: Option__int
+fn inherent#Ref#Ref[T]#set__T_Option[isize](
+  self/433: Ref[Option__isize],
+  value/434: Option__isize
 ) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
@@ -2679,19 +2687,19 @@ fn inherent#Channel#Channel[T]#recv__T_unit(self/438: Channel[unit]) -> Option__
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/432: Ref[Option__int]) -> Option__int {
+fn inherent#Ref#Ref[T]#get__T_Option[isize](self/432: Ref[Option__isize]) -> Option__isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn utf8_invalid_decode() -> (bool, char, int) {
+fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   @runtime(core.string_byte_get)(self/39, index/40)
 }
 
-fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+fn utf8_valid_decode(value/0: u32, width/1: isize) -> (bool, char, isize) {
   {
     let mtmp0 = __goml_builtin_char_from_uint32(value/0) in
     match mtmp0 {
@@ -2711,7 +2719,7 @@ fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
   }
 }
 
-fn utf8_invalid_continuation(value/3: uint32) -> bool {
+fn utf8_invalid_continuation(value/3: u32) -> bool {
   if (value/3 < 128) {
       true
   } else {
@@ -2723,7 +2731,7 @@ fn inherent#Ref#Ref[T]#get__T_Option[unit](self/432: Ref[Option__unit]) -> Optio
   @intrinsic(ref.get)(self/432)
 }
 
-fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
+fn __goml_builtin_char_from_uint32(value/30: u32) -> Option__char {
   if utf8_valid_scalar(value/30) {
       {
         let mtmp22 = @runtime(core.char_from_uint32)(value/30) in
@@ -2744,7 +2752,7 @@ fn __goml_builtin_char_from_uint32(value/30: uint32) -> Option__char {
   }
 }
 
-fn utf8_valid_scalar(value/4: uint32) -> bool {
+fn utf8_valid_scalar(value/4: u32) -> bool {
   if (value/4 <= 1114111) {
       (!if (value/4 >= 55296) {
           (value/4 <= 57343)
@@ -2796,7 +2804,7 @@ fn trait_impl#PartialEq#Option__unit#eq(self/235: Option__unit, other/236: Optio
   }
 }
 
-fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> uint64 {
+fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> u64 {
   match self/239 {
     Option__unit::None => {
       14695981039346656038
@@ -2813,17 +2821,17 @@ fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> uint64 {
   }
 }
 
-fn trait_impl#Hash#Option__int#hash(self/239: Option__int) -> uint64 {
+fn trait_impl#Hash#Option__isize#hash(self/239: Option__isize) -> u64 {
   match self/239 {
-    Option__int::None => {
+    Option__isize::None => {
       14695981039346656038
     },
-    Option__int::Some(x177) => {
+    Option__isize::Some(x177) => {
       {
-        let x177 = Option__int::Some._0(self/239) in
+        let x177 = Option__isize::Some._0(self/239) in
         {
           let value/240 = x177 in
-          (14695981039346656039 + trait_impl#Hash#int#hash(value/240))
+          (14695981039346656039 + trait_impl#Hash#isize#hash(value/240))
         }
       }
     },
@@ -2834,10 +2842,10 @@ fn trait_impl#PartialEq#unit#eq(self/177: unit, other/178: unit) -> bool {
   true
 }
 
-fn trait_impl#Hash#unit#hash(self/207: unit) -> uint64 {
+fn trait_impl#Hash#unit#hash(self/207: unit) -> u64 {
   0
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

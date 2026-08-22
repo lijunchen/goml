@@ -10,7 +10,7 @@ file main.gom
   }
 
   struct Number {
-      value: int,
+      value: isize,
   }
 
   impl Display for Number {
@@ -20,8 +20,8 @@ file main.gom
   }
 
   impl Source for Number {
-    type Item = int;
-    fn get(local/1/1: Number) -> int {
+    type Item = isize;
+    fn get(local/1/1: Number) -> isize {
         self/1.value
     }
   }
@@ -35,7 +35,7 @@ file main.gom
       println(display/3.display());
       let local/1/4 = def/1/5(Number { value: 7 });
       println(erased/4.display());
-      let local/1/5 = Number { value: 11 } as dyn Source[Item = int];
+      let local/1/5 = Number { value: 11 } as dyn Source[Item = isize];
       println(source/5.get());
       let local/1/6 = Number { value: 13 } as dyn Display as dyn Display;
       println(same/6.display())

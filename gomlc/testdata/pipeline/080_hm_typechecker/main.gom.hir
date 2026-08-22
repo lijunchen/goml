@@ -14,13 +14,13 @@ file main.gom
   }
 
   enum Tv {
-      Unbound(string, int32),
+      Unbound(string, i32),
       Link(Typ)
   }
 
   struct CheckerState {
-      gensym_counter: Ref[int32],
-      current_level: Ref[int32],
+      gensym_counter: Ref[i32],
+      current_level: Ref[i32],
   }
 
   struct EnvEntry {
@@ -60,7 +60,7 @@ file main.gom
       let _ = st/5.current_level.set(l/6 - 1);
   }
 
-  fn min_i32(local/1/7: int32, local/1/8: int32) -> int32 {
+  fn min_i32(local/1/7: i32, local/1/8: i32) -> i32 {
       if a/7 < b/8 {
           a/7
       } else {
@@ -68,7 +68,7 @@ file main.gom
       }
   }
 
-  fn nth_letter(local/1/9: int32) -> char {
+  fn nth_letter(local/1/9: i32) -> char {
       match n/9 {
           0 => 'a',
           1 => 'b',

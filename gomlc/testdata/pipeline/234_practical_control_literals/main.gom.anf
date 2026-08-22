@@ -1,7 +1,7 @@
-fn unwrap_or_negative(value/0: Option__int) -> int {
+fn unwrap_or_negative(value/0: Option__isize) -> isize {
   match value/0 {
     Tag_1 => {
-      let x412 = Option__int::Some._0(value/0) in
+      let x412 = Option__isize::Some._0(value/0) in
       x412
     },
     _ => {
@@ -10,16 +10,16 @@ fn unwrap_or_negative(value/0: Option__int) -> int {
   }
 }
 
-fn count_to(limit/2: int) -> int {
-  join inline_cont514(counter/3: Ref[int]) -> int {
-    join exit439(jp440: int) -> int {
+fn count_to(limit/2: isize) -> isize {
+  join inline_cont514(counter/3: Ref[isize]) -> isize {
+    join exit439(jp440: isize) -> isize {
       jp440
     } in
     joinrec {
-      join loop_expr441() -> int {
-        join inline_cont512(current/4: int) -> int {
+      join loop_expr441() -> isize {
+        join inline_cont512(current/4: isize) -> isize {
           let t444 = (current/4 >= limit/2) in
-          join k442() -> int {
+          join k442() -> isize {
             let t443 = (current/4 + 1) in
             let inline511 = @intrinsic(ref.set)(counter/3, t443) in
             jump loop_expr441()
@@ -41,15 +41,15 @@ fn count_to(limit/2: int) -> int {
   jump inline_cont514(inline516)
 }
 
-fn loop_option(value/5: Option__int) -> int {
-  join exit447(jp448: int) -> int {
+fn loop_option(value/5: Option__isize) -> isize {
+  join exit447(jp448: isize) -> isize {
     jp448
   } in
   joinrec {
-    join loop_expr449() -> int {
+    join loop_expr449() -> isize {
       match value/5 {
         Tag_1 => {
-          let x418 = Option__int::Some._0(value/5) in
+          let x418 = Option__isize::Some._0(value/5) in
           jump exit447(x418)
         },
         _ => {
@@ -61,17 +61,17 @@ fn loop_option(value/5: Option__int) -> int {
   jump loop_expr449()
 }
 
-fn nested_loop_value() -> int {
-  join exit453(jp454: int) -> int {
+fn nested_loop_value() -> isize {
+  join exit453(jp454: isize) -> isize {
     jp454
   } in
   joinrec {
-    join loop_expr455() -> int {
-      join exit456() -> int {
+    join loop_expr455() -> isize {
+      join exit456() -> isize {
         jump exit453(7)
       } in
       joinrec {
-        join loop_expr457() -> int {
+        join loop_expr457() -> isize {
           jump exit456()
         } in
       } in
@@ -81,9 +81,9 @@ fn nested_loop_value() -> int {
   jump loop_expr455()
 }
 
-fn never_returns() -> int {
+fn never_returns() -> isize {
   joinrec {
-    join loop_expr462() -> int {
+    join loop_expr462() -> isize {
       jump loop_expr462()
     } in
   } in
@@ -105,17 +105,17 @@ fn main() -> unit {
   let _wild424 = println__T_string("C:\\tmp\\\"quoted\\\"") in
   let t468 = ("" + "}") in
   join inline_cont558(_wild425: unit) -> unit {
-    let t469 = Option__int::Some(11) in
+    let t469 = Option__isize::Some(11) in
     let t470 = unwrap_or_negative(t469) in
     join inline_cont556(t471: string) -> unit {
       join inline_cont553(_wild426: unit) -> unit {
-        join inline_cont549(t472: int) -> unit {
+        join inline_cont549(t472: isize) -> unit {
           join inline_cont547(t473: string) -> unit {
             join inline_cont544(_wild427: unit) -> unit {
               let t474 = count_to(4) in
               join inline_cont542(t475: string) -> unit {
                 join inline_cont539(_wild428: unit) -> unit {
-                  let t476 = Option__int::Some(9) in
+                  let t476 = Option__isize::Some(9) in
                   let t477 = loop_option(t476) in
                   join inline_cont537(t478: string) -> unit {
                     join inline_cont534(_wild429: unit) -> unit {
@@ -193,17 +193,17 @@ fn main() -> unit {
   jump inline_cont558(())
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   let t487 = @intrinsic(ref.new)(value/431) in
   t487
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   let t490 = @intrinsic(ref.get)(self/432) in
   t490
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   let t492 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
@@ -216,7 +216,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont561(value/1)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   let t498 = @runtime(core.int_to_string)(self/32) in
   t498
 }
@@ -230,12 +230,12 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   let t506 = (self/185 == other/186) in
   t506
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   let t509 = @runtime(core.int_hash)(self/211) in
   t509
 }

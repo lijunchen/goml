@@ -1,5 +1,5 @@
-fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[int]) -> Channel[int] {
-  join inline_cont506(t425: string) -> Channel[int] {
+fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[isize]) -> Channel[isize] {
+  join inline_cont506(t425: string) -> Channel[isize] {
     let t426 = (t425 + mark/1) in
     let inline505 = @intrinsic(ref.set)(log/0, t426) in
     channel/2
@@ -8,8 +8,8 @@ fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[int]) -> 
   jump inline_cont506(inline507)
 }
 
-fn mark_value(log/3: Ref[string], mark/4: string, value/5: int) -> int {
-  join inline_cont510(t429: string) -> int {
+fn mark_value(log/3: Ref[string], mark/4: string, value/5: isize) -> isize {
+  join inline_cont510(t429: string) -> isize {
     let t430 = (t429 + mark/4) in
     let inline509 = @intrinsic(ref.set)(log/3, t430) in
     value/5
@@ -19,26 +19,26 @@ fn mark_value(log/3: Ref[string], mark/4: string, value/5: int) -> int {
 }
 
 fn main() -> unit {
-  let received/6 = inherent#Channel#Channel[T]#new__T_int(1) in
-  let _wild413 = inherent#Channel#Channel[T]#send__T_int(received/6, 7) in
-  join k432(jp433: int) -> unit {
-    let _wild414 = println__T_int(jp433) in
+  let received/6 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let _wild413 = inherent#Channel#Channel[T]#send__T_isize(received/6, 7) in
+  join k432(jp433: isize) -> unit {
+    let _wild414 = println__T_isize(jp433) in
     let sent/10 = inherent#Channel#Channel[T]#new__T_string(1) in
     join k434(jp435: string) -> unit {
       join inline_cont566(_wild415: unit) -> unit {
         let t436 = inherent#Channel#Channel[T]#recv__T_string(sent/10) in
         join inline_cont562(t437: string) -> unit {
           join inline_cont559(_wild416: unit) -> unit {
-            join inline_cont556(empty/12: Channel[int]) -> unit {
-              join k438(jp439: int) -> unit {
+            join inline_cont556(empty/12: Channel[isize]) -> unit {
+              join k438(jp439: isize) -> unit {
                 join inline_cont553(_wild417: unit) -> unit {
                   join inline_cont550(log/15: Ref[string]) -> unit {
-                    join inline_cont547(left/16: Channel[int]) -> unit {
-                      join inline_cont544(right/17: Channel[int]) -> unit {
-                        join inline_cont539(t447: Channel[int]) -> unit {
-                          join inline_cont533(t448: int) -> unit {
-                            join inline_cont528(t449: Channel[int]) -> unit {
-                              join inline_cont522(t450: int) -> unit {
+                    join inline_cont547(left/16: Channel[isize]) -> unit {
+                      join inline_cont544(right/17: Channel[isize]) -> unit {
+                        join inline_cont539(t447: Channel[isize]) -> unit {
+                          join inline_cont533(t448: isize) -> unit {
+                            join inline_cont528(t449: Channel[isize]) -> unit {
+                              join inline_cont522(t450: isize) -> unit {
                                 join k440() -> unit {
                                   join inline_cont520(t441: string) -> unit {
                                     join inline_cont517(_wild419: unit) -> unit {
@@ -124,7 +124,7 @@ fn main() -> unit {
                   let inline552 = @intrinsic(ref.new)(inline551) in
                   jump inline_cont550(inline552)
                 } in
-                let inline554 = trait_impl#ToString#int#to_string(jp439) in
+                let inline554 = trait_impl#ToString#isize#to_string(jp439) in
                 let inline555 = @runtime(core.string_println)(inline554) in
                 jump inline_cont553(())
               } in
@@ -192,29 +192,32 @@ fn inherent#Ref#Ref[T]#set__T_string(self/433: Ref[string], value/434: string) -
   ()
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/435: isize) -> Channel[isize] {
   let t460 = @intrinsic(channel.new)(capacity/435) in
   t460
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/436: Channel[int], value/437: int) -> unit {
+fn inherent#Channel#Channel[T]#send__T_isize(self/436: Channel[isize], value/437: isize) -> unit {
   let t462 = @intrinsic(channel.send)(self/436, value/437) in
   ()
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_int(self/467: Option__int, fallback/468: int) -> int {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(
+  self/467: Option__isize,
+  fallback/468: isize
+) -> isize {
   match self/467 {
     Tag_0 => {
       fallback/468
     },
     Tag_1 => {
-      let x390 = Option__int::Some._0(self/467) in
+      let x390 = Option__isize::Some._0(self/467) in
       x390
     },
   }
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont569(t468: string) -> unit {
     let t469 = @runtime(core.string_println)(t468) in
     ()
@@ -223,7 +226,7 @@ fn println__T_int(value/1: int) -> unit {
   jump inline_cont569(inline570)
 }
 
-fn inherent#Channel#Channel[T]#new__T_string(capacity/435: int) -> Channel[string] {
+fn inherent#Channel#Channel[T]#new__T_string(capacity/435: isize) -> Channel[string] {
   let t472 = @intrinsic(channel.new)(capacity/435) in
   t472
 }
@@ -268,12 +271,12 @@ fn inherent#Ref#Ref[T]#new__T_string(value/431: string) -> Ref[string] {
   t487
 }
 
-fn inherent#Channel#Channel[T]#close__T_int(self/441: Channel[int]) -> unit {
+fn inherent#Channel#Channel[T]#close__T_isize(self/441: Channel[isize]) -> unit {
   let t489 = @intrinsic(channel.close)(self/441) in
   ()
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t492 = @runtime(core.int_to_string)(self/151) in
   t492
 }
@@ -287,12 +290,12 @@ fn trait_impl#PartialEq#string#eq(self/181: string, other/182: string) -> bool {
   t497
 }
 
-fn trait_impl#Hash#string#hash(self/209: string) -> uint64 {
+fn trait_impl#Hash#string#hash(self/209: string) -> u64 {
   let t500 = @runtime(core.string_hash)(self/209) in
   t500
 }
 
-fn inherent#closure_env_read_0#closure_env_read_0#apply(env422: closure_env_read_0) -> int {
+fn inherent#closure_env_read_0#closure_env_read_0#apply(env422: closure_env_read_0) -> isize {
   let value/7 = closure_env_read_0.value_0(env422) in
   let inline573 = -1 in
   match value/7 {
@@ -300,7 +303,7 @@ fn inherent#closure_env_read_0#closure_env_read_0#apply(env422: closure_env_read
       inline573
     },
     Tag_1 => {
-      let inline574 = Option__int::Some._0(value/7) in
+      let inline574 = Option__isize::Some._0(value/7) in
       inline574
     },
   }

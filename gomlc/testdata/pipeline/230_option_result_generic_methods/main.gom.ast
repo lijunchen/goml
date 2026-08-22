@@ -1,22 +1,23 @@
 package main;
 fn main() {
-    let some: Option[int] = Option::Some(3);
-    let mapped = some.map(|value: int| value.to_string());
+    let some: Option[isize] = Option::Some(3);
+    let mapped = some.map(|value: isize| value.to_string());
     println(mapped.unwrap_or("missing"));
     let static_mapped =
-      Option::[int]::map::[string](some, |value: int| "static:" + value.to_string());
+      Option::[isize]::map::[string](some, |value: isize| "static:" + value.to_string());
     println(static_mapped.unwrap_or("missing"));
-    let chained = some.and_then::[string](|value: int| Option::Some("value:" + value.to_string()));
+    let chained =
+      some.and_then::[string](|value: isize| Option::Some("value:" + value.to_string()));
     println(chained.unwrap_or("missing"));
-    let none: Option[int] = Option::None;
-    let converted: Result[int, string] = none.ok_or("none");
+    let none: Option[isize] = Option::None;
+    let converted: Result[isize, string] = none.ok_or("none");
     println(converted.unwrap_or_else(|error: string| error.len()));
-    let ok: Result[int, string] = Result::Ok(5);
-    println(ok.map(|value: int| value + 2).unwrap_or(0));
-    let error: Result[int, string] = Result::Err("bad");
-    let mapped_error = error.map_err::[int](|value: string| value.len());
-    println(mapped_error.unwrap_or_else(|value: int| value));
-    let next = ok.and_then::[string](|value: int| Result::Ok("next:" + value.to_string()));
+    let ok: Result[isize, string] = Result::Ok(5);
+    println(ok.map(|value: isize| value + 2).unwrap_or(0));
+    let error: Result[isize, string] = Result::Err("bad");
+    let mapped_error = error.map_err::[isize](|value: string| value.len());
+    println(mapped_error.unwrap_or_else(|value: isize| value));
+    let next = ok.and_then::[string](|value: isize| Result::Ok("next:" + value.to_string()));
     println(next.unwrap_or("missing"));
 }
 

@@ -1,13 +1,13 @@
 package main
 file main.gom
-  fn mark_channel(local/1/0: Ref[string], local/1/1: string, local/1/2: Channel[int]) -> Channel[
-    int
+  fn mark_channel(local/1/0: Ref[string], local/1/1: string, local/1/2: Channel[isize]) -> Channel[
+    isize
   ] {
       log/0.set(log/0.get() + mark/1);
       channel/2
   }
 
-  fn mark_value(local/1/3: Ref[string], local/1/4: string, local/1/5: int) -> int {
+  fn mark_value(local/1/3: Ref[string], local/1/4: string, local/1/5: isize) -> isize {
       log/3.set(log/3.get() + mark/4);
       value/5
   }
@@ -19,7 +19,7 @@ file main.gom
 
   fn main() -> unit {
       let local/1/9 = Ref::new("");
-      let local/1/10 = Channel[int]::new(1);
+      let local/1/10 = Channel[isize]::new(1);
       disabled/10.close();
       let local/1/11 =
         select {
@@ -33,8 +33,8 @@ file main.gom
         };
       println(log/9.get());
       println(fallback/11);
-      let local/1/12 = Channel[int]::new(1);
-      let local/1/13 = Channel[int]::new(1);
+      let local/1/12 = Channel[isize]::new(1);
+      let local/1/13 = Channel[isize]::new(1);
       first/12.send(10);
       second/13.send(20);
       let local/1/16 =
@@ -44,7 +44,7 @@ file main.gom
             default => 0,
         };
       println(selected/16);
-      let local/1/17 = Channel[int]::new(1);
+      let local/1/17 = Channel[isize]::new(1);
       events/17.send(7);
       let local/1/20 =
         select {

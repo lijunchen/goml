@@ -121,28 +121,28 @@ func main0() struct{} {
         _1: "zero",
     }
     var t455 int32 = match_mixed_pair(t454)
-    var t456 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t455)
+    var t456 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t455)
     println__T_string(t456)
     var t457 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 0,
         _1: "other",
     }
     var t458 int32 = match_mixed_pair(t457)
-    var t459 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t458)
+    var t459 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t458)
     println__T_string(t459)
     var t460 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 1,
         _1: "one",
     }
     var t461 int32 = match_mixed_pair(t460)
-    var t462 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t461)
+    var t462 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t461)
     println__T_string(t462)
     var t463 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 2,
         _1: "zero",
     }
     var t464 int32 = match_mixed_pair(t463)
-    var t465 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t464)
+    var t465 string = _goml_m_inherent_i_i32_i_i32_i_to__string(t464)
     var inline548 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t465)
     _goml_runtime_core_string_println(inline548)
     var t466 Tuple2_5int32_6string = Tuple2_5int32_6string{
@@ -241,7 +241,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t499 string = _goml_runtime_core_int32_to_string(self__33)
     return t499
 }

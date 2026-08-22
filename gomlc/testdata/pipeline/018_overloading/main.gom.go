@@ -33,7 +33,7 @@ func main0() struct{} {
     var c__9 int32
     var inline472 int32 = a__7 + b__8
     c__9 = inline472
-    var inline469 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(c__9)
+    var inline469 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(c__9)
     println__T_string(inline469)
     var a__10 int32
     var inline467 int32 = 3
@@ -56,7 +56,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t433 string = _goml_runtime_core_int32_to_string(self__154)
     return t433
 }

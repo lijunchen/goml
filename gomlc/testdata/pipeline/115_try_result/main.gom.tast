@@ -1,4 +1,4 @@
-fn parse_flag(flag/0: bool) -> Result[int32, string] {
+fn parse_flag(flag/0: bool) -> Result[i32, string] {
     if (flag/0 : bool) {
         {
             Result::Ok(7)
@@ -10,40 +10,37 @@ fn parse_flag(flag/0: bool) -> Result[int32, string] {
     }
 }
 
-fn add(a/1: int32, b/2: int32) -> int32 {
-    (a/1 : int32) + (b/2 : int32)
+fn add(a/1: i32, b/2: i32) -> i32 {
+    (a/1 : i32) + (b/2 : i32)
 }
 
-fn plus_one(flag/3: bool) -> Result[int32, string] {
-    let run/5: () -> Result[int32, string] =
+fn plus_one(flag/3: bool) -> Result[i32, string] {
+    let run/5: () -> Result[i32, string] =
       || =>
         {
-            let value/4: int32 =
-              match (parse_flag : (bool) -> Result[int32, string])((flag/3 : bool)) {
-                  Result::Ok(try_value/15: int32) => (try_value/15 : int32),
+            let value/4: i32 =
+              match (parse_flag : (bool) -> Result[i32, string])((flag/3 : bool)) {
+                  Result::Ok(try_value/15: i32) => (try_value/15 : i32),
                   Result::Err(try_residual/15: string) =>
                     return Result::Err((try_residual/15 : string)),
               };
-            Result::Ok((add : (int32, int32) -> int32)((value/4 : int32), 1))
+            Result::Ok((add : (i32, i32) -> i32)((value/4 : i32), 1))
         };
-    (run/5 : () -> Result[int32, string])()
+    (run/5 : () -> Result[i32, string])()
 }
 
-fn show(res/6: Result[int32, string]) -> string {
-    match (res/6 : Result[int32, string]) {
-        Result::Ok(value/7: int32) =>
-          "ok=" + (int32::to_string : (int32) -> string)((value/7 : int32)),
+fn show(res/6: Result[i32, string]) -> string {
+    match (res/6 : Result[i32, string]) {
+        Result::Ok(value/7: i32) => "ok=" + (i32::to_string : (i32) -> string)((value/7 : i32)),
         Result::Err(err/8: string) => "err=" + (err/8 : string),
     }
 }
 
 fn main() -> unit {
     (println : (string) -> unit)(
-      (show : (Result[int32, string]) -> string)((plus_one : (bool) -> Result[int32, string])(true))
+      (show : (Result[i32, string]) -> string)((plus_one : (bool) -> Result[i32, string])(true))
     );
     (println : (string) -> unit)(
-      (show : (Result[int32, string]) -> string)(
-        (plus_one : (bool) -> Result[int32, string])(false)
-      )
+      (show : (Result[i32, string]) -> string)((plus_one : (bool) -> Result[i32, string])(false))
     );
 }

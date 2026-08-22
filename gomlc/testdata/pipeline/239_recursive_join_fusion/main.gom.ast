@@ -1,5 +1,5 @@
 package main;
-fn find(wanted: int) -> Option[int] {
+fn find(wanted: isize) -> Option[isize] {
     let current = Ref::new(0);
     loop {
         let value = current.get();
@@ -22,7 +22,7 @@ fn find(wanted: int) -> Option[int] {
     Option::None
 }
 
-fn any(wanted: int) -> bool {
+fn any(wanted: isize) -> bool {
     match find(wanted) {
         Some(_) => true,
         None => false,

@@ -7,11 +7,11 @@ fn main() -> unit {
         recv((std::time::Timer::done : (std::time::Timer) -> Receiver[unit])(
           (timer/0 : std::time::Timer)
         )) as _/1 =>
-          (println : (int) -> unit)(1),
+          (println : (isize) -> unit)(1),
     };
     let stopped/2: std::time::Timer =
       (std::time::Timer::new : (std::time::Duration) -> std::time::Timer)(
-        (std::time::Duration::from_seconds : (int64) -> std::time::Duration)(60)
+        (std::time::Duration::from_seconds : (i64) -> std::time::Duration)(60)
       );
     (println : (bool) -> unit)(
       (std::time::Timer::stop : (std::time::Timer) -> bool)((stopped/2 : std::time::Timer))
@@ -20,29 +20,29 @@ fn main() -> unit {
         recv((std::time::Timer::done : (std::time::Timer) -> Receiver[unit])(
           (stopped/2 : std::time::Timer)
         )) as _/3 =>
-          (println : (int) -> unit)(2),
-        default => (println : (int) -> unit)(3),
+          (println : (isize) -> unit)(2),
+        default => (println : (isize) -> unit)(3),
     };
     (std::task::scope : (
       (std::task::Scope) -> unit
     ) -> unit)(
       |scope/4: std::task::Scope| =>
         {
-            let work/6: std::task::Task[int] =
+            let work/6: std::task::Task[isize] =
               (std::task::Scope::spawn : (
                 std::task::Scope,
-                (std::task::CancelToken) -> int
-              ) -> std::task::Task[int])(
+                (std::task::CancelToken) -> isize
+              ) -> std::task::Task[isize])(
                 (scope/4 : std::task::Scope),
                 |_/5: std::task::CancelToken| => 42
               );
             select {
-                recv((std::task::Task[int]::done : (std::task::Task[int]) -> Receiver[unit])(
-                  (work/6 : std::task::Task[int])
+                recv((std::task::Task[isize]::done : (std::task::Task[isize]) -> Receiver[unit])(
+                  (work/6 : std::task::Task[isize])
                 )) as _/7 =>
-                  (println : (int) -> unit)(
-                    (std::task::Task[int]::join : (std::task::Task[int]) -> int)(
-                      (work/6 : std::task::Task[int])
+                  (println : (isize) -> unit)(
+                    (std::task::Task[isize]::join : (std::task::Task[isize]) -> isize)(
+                      (work/6 : std::task::Task[isize])
                     )
                   ),
             }
@@ -62,7 +62,7 @@ fn main() -> unit {
                 recv((std::task::CancelToken::done : (std::task::CancelToken) -> Receiver[unit])(
                   (cancel/9 : std::task::CancelToken)
                 )) as _/10 =>
-                  (println : (int) -> unit)(4),
+                  (println : (isize) -> unit)(4),
             }
         }
     )

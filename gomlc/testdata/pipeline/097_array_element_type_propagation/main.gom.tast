@@ -1,31 +1,23 @@
 fn main() -> unit {
-    let arr/0: [uint8; 3] = [10, 20, 30];
-    let i/1: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    while (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) < 3 {
+    let arr/0: [u8; 3] = [10, 20, 30];
+    let i/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    while (Ref[isize]::get : (Ref[isize]) -> isize)((i/1 : Ref[isize])) < 3 {
         {
             (println : (string) -> unit)(
-              (ToString::to_string : (uint8) -> string)(
-                (arr/0 : [uint8; 3])[(Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int]))]
+              (ToString::to_string : (u8) -> string)(
+                (arr/0 : [u8; 3])[(Ref[isize]::get : (Ref[isize]) -> isize)((i/1 : Ref[isize]))]
               )
             );
-            (Ref[int]::set : (Ref[int], int) -> unit)(
-              (i/1 : Ref[int]),
-              (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) + 1
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (i/1 : Ref[isize]),
+              (Ref[isize]::get : (Ref[isize]) -> isize)((i/1 : Ref[isize])) + 1
             );
         }
     };
-    let floats/2: [float32; 2] = [1.5, 2.5];
-    (println : (string) -> unit)(
-      (ToString::to_string : (float32) -> string)((floats/2 : [float32; 2])[0])
-    );
-    (println : (string) -> unit)(
-      (ToString::to_string : (float32) -> string)((floats/2 : [float32; 2])[1])
-    );
-    let longs/3: [int64; 2] = [100, 200];
-    (println : (string) -> unit)(
-      (ToString::to_string : (int64) -> string)((longs/3 : [int64; 2])[0])
-    );
-    (println : (string) -> unit)(
-      (ToString::to_string : (int64) -> string)((longs/3 : [int64; 2])[1])
-    );
+    let floats/2: [f32; 2] = [1.5, 2.5];
+    (println : (string) -> unit)((ToString::to_string : (f32) -> string)((floats/2 : [f32; 2])[0]));
+    (println : (string) -> unit)((ToString::to_string : (f32) -> string)((floats/2 : [f32; 2])[1]));
+    let longs/3: [i64; 2] = [100, 200];
+    (println : (string) -> unit)((ToString::to_string : (i64) -> string)((longs/3 : [i64; 2])[0]));
+    (println : (string) -> unit)((ToString::to_string : (i64) -> string)((longs/3 : [i64; 2])[1]));
 }

@@ -7,7 +7,7 @@ type Point struct {
 
 type Ordering int32
 
-type Maybe__int32 struct {
+type Maybe__i32 struct {
     _tag int32
     _v0_0 int32
 }

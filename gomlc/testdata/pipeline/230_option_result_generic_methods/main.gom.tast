@@ -1,9 +1,9 @@
 fn main() -> unit {
-    let some/0: Option[int] = Option::Some(3);
+    let some/0: Option[isize] = Option::Some(3);
     let mapped/2: Option[string] =
-      (Option[int]::map : (Option[int], (int) -> string) -> Option[string])(
-        (some/0 : Option[int]),
-        |value/1: int| => (int::to_string : (int) -> string)((value/1 : int))
+      (Option[isize]::map : (Option[isize], (isize) -> string) -> Option[string])(
+        (some/0 : Option[isize]),
+        |value/1: isize| => (isize::to_string : (isize) -> string)((value/1 : isize))
       );
     (println : (string) -> unit)(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
@@ -12,9 +12,9 @@ fn main() -> unit {
       )
     );
     let static_mapped/4: Option[string] =
-      (Option[int]::map : (Option[int], (int) -> string) -> Option[string])(
-        (some/0 : Option[int]),
-        |value/3: int| => "static:" + (int::to_string : (int) -> string)((value/3 : int))
+      (Option[isize]::map : (Option[isize], (isize) -> string) -> Option[string])(
+        (some/0 : Option[isize]),
+        |value/3: isize| => "static:" + (isize::to_string : (isize) -> string)((value/3 : isize))
       );
     (println : (string) -> unit)(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
@@ -23,10 +23,10 @@ fn main() -> unit {
       )
     );
     let chained/6: Option[string] =
-      (Option[int]::and_then : (Option[int], (int) -> Option[string]) -> Option[string])(
-        (some/0 : Option[int]),
-        |value/5: int| =>
-          Option::Some("value:" + (int::to_string : (int) -> string)((value/5 : int)))
+      (Option[isize]::and_then : (Option[isize], (isize) -> Option[string]) -> Option[string])(
+        (some/0 : Option[isize]),
+        |value/5: isize| =>
+          Option::Some("value:" + (isize::to_string : (isize) -> string)((value/5 : isize)))
       );
     (println : (string) -> unit)(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
@@ -34,48 +34,51 @@ fn main() -> unit {
         "missing"
       )
     );
-    let none/7: Option[int] = Option::None;
-    let converted/8: Result[int, string] =
-      (Option[int]::ok_or : (Option[int], string) -> Result[int, string])(
-        (none/7 : Option[int]),
+    let none/7: Option[isize] = Option::None;
+    let converted/8: Result[isize, string] =
+      (Option[isize]::ok_or : (Option[isize], string) -> Result[isize, string])(
+        (none/7 : Option[isize]),
         "none"
       );
-    (println : (int) -> unit)(
-      (Result[int, string]::unwrap_or_else : (Result[int, string], (string) -> int) -> int)(
-        (converted/8 : Result[int, string]),
-        |error/9: string| => (string::len : (string) -> int)((error/9 : string))
+    (println : (isize) -> unit)(
+      (Result[isize, string]::unwrap_or_else : (Result[isize, string], (string) -> isize) -> isize)(
+        (converted/8 : Result[isize, string]),
+        |error/9: string| => (string::len : (string) -> isize)((error/9 : string))
       )
     );
-    let ok/10: Result[int, string] = Result::Ok(5);
-    (println : (int) -> unit)(
-      (Result[int, string]::unwrap_or : (Result[int, string], int) -> int)(
-        (Result[int, string]::map : (Result[int, string], (int) -> int) -> Result[int, string])(
-          (ok/10 : Result[int, string]),
-          |value/11: int| => (value/11 : int) + 2
-        ),
+    let ok/10: Result[isize, string] = Result::Ok(5);
+    (println : (isize) -> unit)(
+      (Result[isize, string]::unwrap_or : (Result[isize, string], isize) -> isize)(
+        (Result[isize, string]::map : (Result[isize, string], (isize) -> isize) -> Result[
+          isize,
+          string
+        ])((ok/10 : Result[isize, string]), |value/11: isize| => (value/11 : isize) + 2),
         0
       )
     );
-    let error/12: Result[int, string] = Result::Err("bad");
-    let mapped_error/14: Result[int, int] =
-      (Result[int, string]::map_err : (Result[int, string], (string) -> int) -> Result[int, int])(
-        (error/12 : Result[int, string]),
-        |value/13: string| => (string::len : (string) -> int)((value/13 : string))
+    let error/12: Result[isize, string] = Result::Err("bad");
+    let mapped_error/14: Result[isize, isize] =
+      (Result[isize, string]::map_err : (Result[isize, string], (string) -> isize) -> Result[
+        isize,
+        isize
+      ])(
+        (error/12 : Result[isize, string]),
+        |value/13: string| => (string::len : (string) -> isize)((value/13 : string))
       );
-    (println : (int) -> unit)(
-      (Result[int, int]::unwrap_or_else : (Result[int, int], (int) -> int) -> int)(
-        (mapped_error/14 : Result[int, int]),
-        |value/15: int| => (value/15 : int)
+    (println : (isize) -> unit)(
+      (Result[isize, isize]::unwrap_or_else : (Result[isize, isize], (isize) -> isize) -> isize)(
+        (mapped_error/14 : Result[isize, isize]),
+        |value/15: isize| => (value/15 : isize)
       )
     );
     let next/17: Result[string, string] =
-      (Result[int, string]::and_then : (
-        Result[int, string],
-        (int) -> Result[string, string]
+      (Result[isize, string]::and_then : (
+        Result[isize, string],
+        (isize) -> Result[string, string]
       ) -> Result[string, string])(
-        (ok/10 : Result[int, string]),
-        |value/16: int| =>
-          Result::Ok("next:" + (int::to_string : (int) -> string)((value/16 : int)))
+        (ok/10 : Result[isize, string]),
+        |value/16: isize| =>
+          Result::Ok("next:" + (isize::to_string : (isize) -> string)((value/16 : isize)))
       );
     (println : (string) -> unit)(
       (Result[string, string]::unwrap_or : (Result[string, string], string) -> string)(

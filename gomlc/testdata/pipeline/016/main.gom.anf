@@ -1,10 +1,10 @@
-fn int_list_length(xs/2: List__int32) -> int32 {
+fn int_list_length(xs/2: List__i32) -> i32 {
   match xs/2 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x414 = List__int32::Cons._1(xs/2) in
+      let x414 = List__i32::Cons._1(xs/2) in
       let t425 = int_list_length(x414) in
       let t426 = (1 + t425) in
       t426
@@ -13,16 +13,16 @@ fn int_list_length(xs/2: List__int32) -> int32 {
 }
 
 fn main() -> unit {
-  let x/4 = List__int::Cons(1, Tag_0) in
-  let length/5 = list_length__T_int(x/4) in
+  let x/4 = List__isize::Cons(1, Tag_0) in
+  let length/5 = list_length__T_isize(x/4) in
   join inline_cont472(mtmp415: unit) -> unit {
-    let t428 = List__int::Cons(2, Tag_0) in
-    let x/6 = List__int::Cons(1, t428) in
-    let length/7 = list_length__T_int(x/6) in
+    let t428 = List__isize::Cons(2, Tag_0) in
+    let x/6 = List__isize::Cons(1, t428) in
+    let length/7 = list_length__T_isize(x/6) in
     join inline_cont469(mtmp416: unit) -> unit {
-      let t429 = List__int32::Cons(2, Tag_0) in
-      let t430 = List__int32::Cons(1, t429) in
-      let x/8 = List__int32::Cons(0, t430) in
+      let t429 = List__i32::Cons(2, Tag_0) in
+      let t430 = List__i32::Cons(1, t429) in
+      let x/8 = List__i32::Cons(0, t430) in
       let length/9 = int_list_length(x/8) in
       join inline_cont466(mtmp417: unit) -> unit {
         let x/10 = List__unit::Cons((), Tag_0) in
@@ -35,46 +35,46 @@ fn main() -> unit {
             let t432 = List__bool::Cons(false, Tag_0) in
             let x/14 = List__bool::Cons(true, t432) in
             let length/15 = list_length__T_bool(x/14) in
-            let inline458 = trait_impl#ToString#int32#to_string(length/15) in
+            let inline458 = trait_impl#ToString#i32#to_string(length/15) in
             let inline459 = @runtime(core.string_println)(inline458) in
             ()
           } in
-          let inline461 = trait_impl#ToString#int32#to_string(length/13) in
+          let inline461 = trait_impl#ToString#i32#to_string(length/13) in
           let inline462 = @runtime(core.string_println)(inline461) in
           jump inline_cont460(())
         } in
-        let inline464 = trait_impl#ToString#int32#to_string(length/11) in
+        let inline464 = trait_impl#ToString#i32#to_string(length/11) in
         let inline465 = @runtime(core.string_println)(inline464) in
         jump inline_cont463(())
       } in
-      let inline467 = trait_impl#ToString#int32#to_string(length/9) in
+      let inline467 = trait_impl#ToString#i32#to_string(length/9) in
       let inline468 = @runtime(core.string_println)(inline467) in
       jump inline_cont466(())
     } in
-    let inline470 = trait_impl#ToString#int32#to_string(length/7) in
+    let inline470 = trait_impl#ToString#i32#to_string(length/7) in
     let inline471 = @runtime(core.string_println)(inline470) in
     jump inline_cont469(())
   } in
-  let inline473 = trait_impl#ToString#int32#to_string(length/5) in
+  let inline473 = trait_impl#ToString#i32#to_string(length/5) in
   let inline474 = @runtime(core.string_println)(inline473) in
   jump inline_cont472(())
 }
 
-fn list_length__T_int(xs/0: List__int) -> int32 {
+fn list_length__T_isize(xs/0: List__isize) -> i32 {
   match xs/0 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x412 = List__int::Cons._1(xs/0) in
-      let t437 = list_length__T_int(x412) in
+      let x412 = List__isize::Cons._1(xs/0) in
+      let t437 = list_length__T_isize(x412) in
       let t438 = (1 + t437) in
       t438
     },
   }
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont475(t440: string) -> unit {
     let t441 = @runtime(core.string_println)(t440) in
     ()
@@ -83,7 +83,7 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont475(inline476)
 }
 
-fn list_length__T_unit(xs/0: List__unit) -> int32 {
+fn list_length__T_unit(xs/0: List__unit) -> i32 {
   match xs/0 {
     Tag_0 => {
       0
@@ -97,7 +97,7 @@ fn list_length__T_unit(xs/0: List__unit) -> int32 {
   }
 }
 
-fn list_length__T_bool(xs/0: List__bool) -> int32 {
+fn list_length__T_bool(xs/0: List__bool) -> i32 {
   match xs/0 {
     Tag_0 => {
       0
@@ -111,7 +111,7 @@ fn list_length__T_bool(xs/0: List__bool) -> int32 {
   }
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t456 = @runtime(core.int32_to_string)(self/154) in
   t456
 }

@@ -58,7 +58,7 @@ func dyn__Show__vtable__Wrap() *dyn__Show_vtable {
 }
 
 func dyn__Show__wrap__int32__show(self any) string {
-    return _goml_m_trait__impl_i_Show_i_int32_i_show(self.(int32))
+    return _goml_m_trait__impl_i_Show_i_i32_i_show(self.(int32))
 }
 
 func dyn__Show__vtable__int32() *dyn__Show_vtable {
@@ -67,7 +67,7 @@ func dyn__Show__vtable__int32() *dyn__Show_vtable {
     }
 }
 
-func _goml_m_trait__impl_i_Show_i_int32_i_show(self__0 int32) string {
+func _goml_m_trait__impl_i_Show_i_i32_i_show(self__0 int32) string {
     var inline443 string = _goml_runtime_core_int32_to_string(self__0)
     return inline443
 }

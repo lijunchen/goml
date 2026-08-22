@@ -1,5 +1,5 @@
 package main;
-fn unwrap_or_negative(value: Option[int]) -> int {
+fn unwrap_or_negative(value: Option[isize]) -> isize {
     let Some(result) =
       value else
       {
@@ -8,7 +8,7 @@ fn unwrap_or_negative(value: Option[int]) -> int {
     result
 }
 
-fn count_to(limit: int) -> int {
+fn count_to(limit: isize) -> isize {
     let counter = Ref::new(0);
     loop {
         let current = counter.get();
@@ -23,7 +23,7 @@ fn count_to(limit: int) -> int {
     }
 }
 
-fn loop_option(value: Option[int]) -> int {
+fn loop_option(value: Option[isize]) -> isize {
     loop {
         let Some(item) =
           value else
@@ -34,7 +34,7 @@ fn loop_option(value: Option[int]) -> int {
     }
 }
 
-fn nested_loop_value() -> int {
+fn nested_loop_value() -> isize {
     loop {
         loop {
             break;
@@ -43,7 +43,7 @@ fn nested_loop_value() -> int {
     }
 }
 
-fn never_returns() -> int {
+fn never_returns() -> isize {
     loop {}
 }
 

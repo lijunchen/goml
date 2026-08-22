@@ -1,8 +1,8 @@
 fn main() -> unit {
-  let t413 = Box__int { value: 5 } in
+  let t413 = Box__isize { value: 5 } in
   join inline_cont457(t414: string) -> unit {
     join inline_cont454(_wild411: unit) -> unit {
-      join inline_cont452(t415: int32) -> unit {
+      join inline_cont452(t415: i32) -> unit {
         join inline_cont450(t416: string) -> unit {
           let inline448 = trait_impl#ToString#string#to_string(t416) in
           let inline449 = @runtime(core.string_println)(inline448) in
@@ -18,11 +18,11 @@ fn main() -> unit {
     let inline456 = @runtime(core.string_println)(inline455) in
     jump inline_cont454(())
   } in
-  let inline458 = trait_impl#Parent#[int]@Box__int#parent(t413) in
-  let inline459 = trait_impl#ToString#int#to_string(inline458) in
-  let inline460 = trait_impl#Render#Box__int#render(t413) in
+  let inline458 = trait_impl#Parent#[isize]@Box__isize#parent(t413) in
+  let inline459 = trait_impl#ToString#isize#to_string(inline458) in
+  let inline460 = trait_impl#Render#Box__isize#render(t413) in
   let inline461 = (inline459 + inline460) in
-  let inline462 = trait_impl#Child#[int]@Box__int#child(t413) in
+  let inline462 = trait_impl#Child#[isize]@Box__isize#child(t413) in
   let inline463 = (inline461 + inline462) in
   jump inline_cont457(inline463)
 }
@@ -35,8 +35,8 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont464(value/1)
 }
 
-fn describe__B_Box[int]__T_int(value/3: Box__int) -> string {
-  join inline_cont469(t423: int) -> string {
+fn describe__B_Box[isize]__T_isize(value/3: Box__isize) -> string {
+  join inline_cont469(t423: isize) -> string {
     join inline_cont467(t424: string) -> string {
       join inline_cont466(t425: string) -> string {
         let t426 = (t424 + t425) in
@@ -51,16 +51,16 @@ fn describe__B_Box[int]__T_int(value/3: Box__int) -> string {
     let inline468 = @runtime(core.int_to_string)(t423) in
     jump inline_cont467(inline468)
   } in
-  let inline470 = Box__int.value(value/3) in
+  let inline470 = Box__isize.value(value/3) in
   jump inline_cont469(inline470)
 }
 
-fn trait_impl#Parent#[int32]@Box__int32#parent(self/0: Box__int32) -> int32 {
-  let t431 = Box__int32.value(self/0) in
+fn trait_impl#Parent#[i32]@Box__i32#parent(self/0: Box__i32) -> i32 {
+  let t431 = Box__i32.value(self/0) in
   t431
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t434 = @runtime(core.int32_to_string)(self/33) in
   t434
 }
@@ -69,20 +69,20 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#Parent#[int]@Box__int#parent(self/0: Box__int) -> int {
-  let t439 = Box__int.value(self/0) in
+fn trait_impl#Parent#[isize]@Box__isize#parent(self/0: Box__isize) -> isize {
+  let t439 = Box__isize.value(self/0) in
   t439
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t442 = @runtime(core.int_to_string)(self/151) in
   t442
 }
 
-fn trait_impl#Render#Box__int#render(self/1: Box__int) -> string {
+fn trait_impl#Render#Box__isize#render(self/1: Box__isize) -> string {
   ":render"
 }
 
-fn trait_impl#Child#[int]@Box__int#child(self/2: Box__int) -> string {
+fn trait_impl#Child#[isize]@Box__isize#child(self/2: Box__isize) -> string {
   ":child"
 }

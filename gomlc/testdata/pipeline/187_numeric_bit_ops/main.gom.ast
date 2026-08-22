@@ -1,33 +1,33 @@
 package main;
-fn show_u8(value: uint8) -> unit {
+fn show_u8(value: u8) -> unit {
     println(value)
 }
 
-fn show_u16(value: uint16) -> unit {
+fn show_u16(value: u16) -> unit {
     println(value)
 }
 
-fn show_u32(value: uint32) -> unit {
+fn show_u32(value: u32) -> unit {
     println(value)
 }
 
-fn show_u64(value: uint64) -> unit {
+fn show_u64(value: u64) -> unit {
     println(value)
 }
 
-fn show_i8(value: int8) -> unit {
+fn show_i8(value: i8) -> unit {
     println(value)
 }
 
-fn show_i16(value: int16) -> unit {
+fn show_i16(value: i16) -> unit {
     println(value)
 }
 
-fn show_i32(value: int32) -> unit {
+fn show_i32(value: i32) -> unit {
     println(value)
 }
 
-fn show_i64(value: int64) -> unit {
+fn show_i64(value: i64) -> unit {
     println(value)
 }
 
@@ -92,19 +92,19 @@ fn precedence() -> unit {
 }
 
 fn casts() -> unit {
-    let five_eleven: uint16 = 511;
-    let two_fifty_six: uint16 = 256;
-    let negative_one_i16: int16 = -1;
-    let two_fifty_five: uint8 = 255;
-    let one_twenty_eight: uint8 = 128;
-    let negative_one_twenty_nine: int16 = -129;
-    let max_u16: uint16 = 65535;
-    let negative_one_i32: int32 = -1;
-    let negative_one_i8: int8 = -1;
-    let max_u64: uint64 = 18446744073709551615;
-    let sixty_five: uint8 = 65;
-    let max_u32: uint32 = 4294967295;
-    let three_hundred: uint16 = 300;
+    let five_eleven: u16 = 511;
+    let two_fifty_six: u16 = 256;
+    let negative_one_i16: i16 = -1;
+    let two_fifty_five: u8 = 255;
+    let one_twenty_eight: u8 = 128;
+    let negative_one_twenty_nine: i16 = -129;
+    let max_u16: u16 = 65535;
+    let negative_one_i32: i32 = -1;
+    let negative_one_i8: i8 = -1;
+    let max_u64: u64 = 18446744073709551615;
+    let sixty_five: u8 = 65;
+    let max_u32: u32 = 4294967295;
+    let three_hundred: u16 = 300;
     show_u8(five_eleven.to_uint8());
     show_u8(two_fifty_six.to_uint8());
     show_u8(negative_one_i16.to_uint8());
@@ -125,7 +125,7 @@ fn casts() -> unit {
     show_u32(three_hundred.to_uint8().to_uint32())
 }
 
-fn contextual(value: uint8) -> uint8 {
+fn contextual(value: u8) -> u8 {
     ~value & 15 | 1 << 4 % 31
 }
 

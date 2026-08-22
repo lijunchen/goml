@@ -1,13 +1,13 @@
-fn trait_impl#Arith#int32#add(self/0: int32, other/1: int32) -> int32 {
+fn trait_impl#Arith#i32#add(self/0: i32, other/1: i32) -> i32 {
   (self/0 + other/1)
 }
 
-fn trait_impl#Arith#int32#less(self/2: int32, other/3: int32) -> bool {
+fn trait_impl#Arith#i32#less(self/2: i32, other/3: i32) -> bool {
   (self/2 < other/3)
 }
 
-fn trait_impl#Output#int32#output(self/4: int32) -> unit {
-  println__T_string(trait_impl#ToString#int32#to_string(self/4))
+fn trait_impl#Output#i32#output(self/4: i32) -> unit {
+  println__T_string(trait_impl#ToString#i32#to_string(self/4))
 }
 
 fn trait_impl#Output#bool#output(self/5: bool) -> unit {
@@ -15,14 +15,14 @@ fn trait_impl#Output#bool#output(self/5: bool) -> unit {
 }
 
 fn main() -> unit {
-  let a/7 = id__T_int32(1) in
-  let b/8 = id__T_int32(2) in
-  let c/9 = trait_impl#Arith#int32#add(a/7, b/8) in
-  let mtmp411 = trait_impl#Output#int32#output(c/9) in
+  let a/7 = id__T_i32(1) in
+  let b/8 = id__T_i32(2) in
+  let c/9 = trait_impl#Arith#i32#add(a/7, b/8) in
+  let mtmp411 = trait_impl#Output#i32#output(c/9) in
   {
-    let a/10 = id__T_int32(3) in
-    let b/11 = id__T_int32(4) in
-    let c/12 = trait_impl#Arith#int32#less(a/10, b/11) in
+    let a/10 = id__T_i32(3) in
+    let b/11 = id__T_i32(4) in
+    let c/12 = trait_impl#Arith#i32#less(a/10, b/11) in
     let mtmp412 = trait_impl#Output#bool#output(c/12) in
     {
       let mtmp413 = id__T_string("abc") in
@@ -40,7 +40,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
@@ -48,7 +48,7 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn id__T_int32(x/6: int32) -> int32 {
+fn id__T_i32(x/6: i32) -> i32 {
   x/6
 }
 

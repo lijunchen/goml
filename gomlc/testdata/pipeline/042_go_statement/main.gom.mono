@@ -1,15 +1,15 @@
-fn child(signal/0: Ref[int32]) -> unit {
-  inherent#Ref#Ref[T]#set__T_int32(signal/0, 1)
+fn child(signal/0: Ref[i32]) -> unit {
+  inherent#Ref#Ref[T]#set__T_i32(signal/0, 1)
 }
 
 fn main() -> unit {
-  let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let signal/1 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let _wild411 =
     go || {
       child(signal/1)
     } in
   let _wild412 =
-    while (inherent#Ref#Ref[T]#get__T_int32(signal/1) < 1) {
+    while (inherent#Ref#Ref[T]#get__T_i32(signal/1) < 1) {
         {
           ()
         }
@@ -17,15 +17,15 @@ fn main() -> unit {
   let _wild413 = println__T_string("main") in
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/432)
 }
 
@@ -37,10 +37,10 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }

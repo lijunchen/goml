@@ -85,7 +85,7 @@ func _goml_m_trait__impl_i_ToString_i_S_i_to__string(self__0 S) string {
 
 func main0() struct{} {
     var inline536 int = 1
-    var inline537 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline536)
+    var inline537 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline536)
     _goml_runtime_core_string_println(inline537)
     var inline532 bool = true
     var inline533 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline532)
@@ -123,7 +123,7 @@ func main0() struct{} {
     var inline503 int = 5
     var inline504 *ref_int_x = ref__Ref_3int(inline503)
     r__3 = inline504
-    var inline500 string = _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(r__3)
+    var inline500 string = _goml_m_trait__impl_i_ToString_i_Ref_l_isize_r__i_to__string(r__3)
     _goml_runtime_core_string_println(inline500)
     var inline496 string = "no-newline"
     var inline497 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline496)
@@ -134,7 +134,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t448 string = _goml_runtime_core_int_to_string(self__151)
     return t448
 }
@@ -153,7 +153,7 @@ func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__147 struct{}) stri
     return t474
 }
 
-func _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(self__250 *ref_int_x) string {
+func _goml_m_trait__impl_i_ToString_i_Ref_l_isize_r__i_to__string(self__250 *ref_int_x) string {
     var v__251 int
     var inline560 int = ref_get__Ref_3int(self__250)
     v__251 = inline560

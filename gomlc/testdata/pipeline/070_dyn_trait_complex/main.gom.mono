@@ -1,12 +1,12 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  (((("Point(" + inherent#int32#int32#to_string(Point.x(self/0))) + ",") +
-    inherent#int32#int32#to_string(Point.y(self/0))) +
+  (((("Point(" + inherent#i32#i32#to_string(Point.x(self/0))) + ",") +
+    inherent#i32#i32#to_string(Point.y(self/0))) +
     ")")
 }
 
 fn trait_impl#Display#Point#show_with(self/1: Point, prefix/2: string, suffix/3: string) -> string {
-  ((((((prefix/2 + "Point(") + inherent#int32#int32#to_string(Point.x(self/1))) + ",") +
-    inherent#int32#int32#to_string(Point.y(self/1))) +
+  ((((((prefix/2 + "Point(") + inherent#i32#i32#to_string(Point.x(self/1))) + ",") +
+    inherent#i32#i32#to_string(Point.y(self/1))) +
     ")") +
     suffix/3)
 }
@@ -15,7 +15,7 @@ fn trait_impl#Display#Point#tick(self/4: Point) -> unit {
   ()
 }
 
-fn trait_impl#Display#Point#bump(self/5: Point, delta/6: int32) -> int32 {
+fn trait_impl#Display#Point#bump(self/5: Point, delta/6: i32) -> i32 {
   ((Point.x(self/5) + Point.y(self/5)) + delta/6)
 }
 
@@ -47,7 +47,7 @@ fn trait_impl#Display#Flag#tick(self/11: Flag) -> unit {
   ()
 }
 
-fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
+fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: i32) -> i32 {
   if Flag.value(self/12) {
       {
         delta/13
@@ -61,7 +61,7 @@ fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
 
 fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
   (("Counter(" +
-    inherent#int32#int32#to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/14)))) +
+    inherent#i32#i32#to_string(inherent#Ref#Ref[T]#get__T_i32(Counter.cell(self/14)))) +
     ")")
 }
 
@@ -71,22 +71,22 @@ fn trait_impl#Display#Counter#show_with(
   suffix/17: string
 ) -> string {
   ((((prefix/16 + "Counter(") +
-    inherent#int32#int32#to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/15)))) +
+    inherent#i32#i32#to_string(inherent#Ref#Ref[T]#get__T_i32(Counter.cell(self/15)))) +
     ")") +
     suffix/17)
 }
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
-  let next/19 = (inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/18)) + 1) in
-  let mtmp411 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/18), next/19) in
+  let next/19 = (inherent#Ref#Ref[T]#get__T_i32(Counter.cell(self/18)) + 1) in
+  let mtmp411 = inherent#Ref#Ref[T]#set__T_i32(Counter.cell(self/18), next/19) in
   {
     ()
   }
 }
 
-fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: int32) -> int32 {
-  let next/22 = (inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/20)) + delta/21) in
-  let mtmp412 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/20), next/22) in
+fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: i32) -> i32 {
+  let next/22 = (inherent#Ref#Ref[T]#get__T_i32(Counter.cell(self/20)) + delta/21) in
+  let mtmp412 = inherent#Ref#Ref[T]#set__T_i32(Counter.cell(self/20), next/22) in
   {
     next/22
   }
@@ -105,11 +105,11 @@ fn make_renderer(tag/29: string) -> (dyn Display) -> string {
   |x/30| dyn_call[Display::show_with](x/30, tag/29, tag/29)
 }
 
-fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
+fn bump_and_show(x/31: dyn Display, delta/32: i32) -> string {
   let mtmp413 = dyn_call[Display::tick](x/31) in
   {
     ((dyn_call[Display::show_with](x/31, "[", "]") + ":") +
-      inherent#int32#int32#to_string(dyn_call[Display::bump](x/31, delta/32)))
+      inherent#i32#i32#to_string(dyn_call[Display::bump](x/31, delta/32)))
   }
 }
 
@@ -118,7 +118,7 @@ fn main() -> unit {
   let p2/34 = Point { x: 3, y: 4 } in
   let f1/35 = Flag { value: true } in
   let f2/36 = Flag { value: false } in
-  let c/37 = Counter { cell: inherent#Ref#Ref[T]#new__T_int32(10) } in
+  let c/37 = Counter { cell: inherent#Ref#Ref[T]#new__T_i32(10) } in
   let dp1/38 = to_dyn[Display]{Point}(p1/33) in
   let dp2/39 = to_dyn[Display]{Point}(p2/34) in
   let df1/40 = to_dyn[Display]{Flag}(f1/35) in
@@ -147,16 +147,16 @@ fn main() -> unit {
     {
       let mtmp419 = println__T_string(s2/47) in
       {
-        let i/51 = inherent#Ref#Ref[T]#new__T_int32(0) in
+        let i/51 = inherent#Ref#Ref[T]#new__T_i32(0) in
         let mtmp422 =
-          while (inherent#Ref#Ref[T]#get__T_int32(i/51) < 3) {
+          while (inherent#Ref#Ref[T]#get__T_i32(i/51) < 3) {
               {
                 let line/52 = bump_and_show(dc/42, delta/50) in
                 let _wild420 = println__T_string(line/52) in
                 let mtmp421 =
-                  inherent#Ref#Ref[T]#set__T_int32(
+                  inherent#Ref#Ref[T]#set__T_i32(
                     i/51,
-                    (inherent#Ref#Ref[T]#get__T_int32(i/51) + 1)
+                    (inherent#Ref#Ref[T]#get__T_i32(i/51) + 1)
                   ) in
                 {
                   ()
@@ -164,10 +164,9 @@ fn main() -> unit {
               }
           } in
         {
-          let mtmp423 = println__T_string(("len:" + inherent#int#int#to_string(vlen/49))) in
+          let mtmp423 = println__T_string(("len:" + inherent#isize#isize#to_string(vlen/49))) in
           {
-            let mtmp424 =
-              println__T_string(("delta:" + inherent#int32#int32#to_string(delta/50))) in
+            let mtmp424 = println__T_string(("delta:" + inherent#i32#i32#to_string(delta/50))) in
             {
               ()
             }
@@ -178,19 +177,19 @@ fn main() -> unit {
   }
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   @intrinsic(ref.new)(value/431)
 }
 
@@ -205,7 +204,7 @@ fn inherent#Vec#Vec[T]#push__T_dynDisplay(
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/273: Vec[dyn Display]) -> int {
+fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/273: Vec[dyn Display]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -213,7 +212,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 
@@ -221,10 +220,10 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }

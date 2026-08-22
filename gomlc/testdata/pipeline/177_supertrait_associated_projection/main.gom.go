@@ -31,12 +31,12 @@ func main0() struct{} {
     var t418 int32
     var inline432 int32 = _goml_m_trait__impl_i_Parent_i_Count_i_get(t417)
     t418 = inline432
-    var inline429 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t418)
+    var inline429 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t418)
     _goml_runtime_core_string_println(inline429)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t427 string = _goml_runtime_core_int32_to_string(self__154)
     return t427
 }

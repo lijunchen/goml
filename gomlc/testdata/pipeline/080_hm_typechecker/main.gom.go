@@ -307,9 +307,9 @@ func state_new() CheckerState {
 
 func reset_type_variables(st__2 CheckerState) struct{} {
     var inline1190 *ref_int32_x = st__2.gensym_counter
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1190, 0)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1190, 0)
     var inline1187 *ref_int32_x = st__2.current_level
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1187, 1)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1187, 1)
     return struct{}{}
 }
 
@@ -981,7 +981,7 @@ func inst_loop(st__83 CheckerState, subst__84 *_goml_vec_SubstEntry, ty__85 Typ)
             var tv__88 Typ
             var inline1314 string = gensym(st__83)
             var inline1315 *ref_int32_x = st__83.current_level
-            var inline1316 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1315)
+            var inline1316 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1315)
             var inline1317 Tv = Unbound{
                 _0: inline1314,
                 _1: inline1316,
@@ -1075,7 +1075,7 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
                 var ty_res__119 Typ
                 var inline1328 string = gensym(st__102)
                 var inline1329 *ref_int32_x = st__102.current_level
-                var inline1330 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1329)
+                var inline1330 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1329)
                 var inline1331 Tv = Unbound{
                     _0: inline1328,
                     _1: inline1330,
@@ -1133,7 +1133,7 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
         var ty_x__109 Typ
         var inline1335 string = gensym(st__102)
         var inline1336 *ref_int32_x = st__102.current_level
-        var inline1337 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1336)
+        var inline1337 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1336)
         var inline1338 Tv = Unbound{
             _0: inline1335,
             _1: inline1337,
@@ -1176,16 +1176,16 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
         var x544 Exp = e__104.(Let)._1
         var x545 Exp = e__104.(Let)._2
         var inline1348 *ref_int32_x = st__102.current_level
-        var inline1349 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1348)
+        var inline1349 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1348)
         var inline1350 *ref_int32_x = st__102.current_level
         var inline1351 int32 = inline1349 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1350, inline1351)
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1350, inline1351)
         var ty_e__125 Result__Typ__string = typeof(st__102, env__103, x544)
         var inline1342 *ref_int32_x = st__102.current_level
-        var inline1343 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(inline1342)
+        var inline1343 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1342)
         var inline1344 *ref_int32_x = st__102.current_level
         var inline1345 int32 = inline1343 - 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1344, inline1345)
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1344, inline1345)
         switch ty_e__125._tag {
         case 0:
             var x562 Typ = ty_e__125._v0_0
@@ -1466,7 +1466,7 @@ func main0() struct{} {
     var t1033 Result__Typ__string = typeof(st__141, t1026, t1032)
     show_result("sound_gen_occurs", t1033)
     var inline1407 *ref_int32_x = st__141.gensym_counter
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(inline1407, 0)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1407, 0)
     var t1034 *_goml_vec_EnvEntry
     var inline1405 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
     t1034 = inline1405
@@ -1546,12 +1546,12 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__433 *ref_int32_x, value__434 int32) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(self__433 *ref_int32_x, value__434 int32) struct{} {
     ref_set__Ref_5int32(self__433, value__434)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__432 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(self__432 *ref_int32_x) int32 {
     var t1050 int32 = ref_get__Ref_5int32(self__432)
     return t1050
 }

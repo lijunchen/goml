@@ -52,12 +52,12 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__f1__3_i_closure__env__f1__3_i_apply(t416, p0)
     }
     var result__12 int32 = f1__11(1)
-    var inline446 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(result__12)
+    var inline446 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(result__12)
     _goml_runtime_core_string_println(inline446)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t423 string = _goml_runtime_core_int32_to_string(self__154)
     return t423
 }

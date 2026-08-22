@@ -1,4 +1,4 @@
-fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
+fn match_mixed_pair(pair/0: (i32, string)) -> i32 {
   let x411 = pair/0.0 in
   let x412 = pair/0.1 in
   match x412 {
@@ -38,7 +38,7 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
   }
 }
 
-fn match_mixed_enum(value/1: Mixed) -> int32 {
+fn match_mixed_enum(value/1: Mixed) -> i32 {
   match value/1 {
     Tag_0 => {
       let x413 = Mixed::OnlyInt._0(value/1) in
@@ -94,19 +94,19 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
 fn main() -> unit {
   let t454 = (0, "zero") in
   let t455 = match_mixed_pair(t454) in
-  let t456 = inherent#int32#int32#to_string(t455) in
+  let t456 = inherent#i32#i32#to_string(t455) in
   let mtmp417 = println__T_string(t456) in
   let t457 = (0, "other") in
   let t458 = match_mixed_pair(t457) in
-  let t459 = inherent#int32#int32#to_string(t458) in
+  let t459 = inherent#i32#i32#to_string(t458) in
   let mtmp418 = println__T_string(t459) in
   let t460 = (1, "one") in
   let t461 = match_mixed_pair(t460) in
-  let t462 = inherent#int32#int32#to_string(t461) in
+  let t462 = inherent#i32#i32#to_string(t461) in
   let mtmp419 = println__T_string(t462) in
   let t463 = (2, "zero") in
   let t464 = match_mixed_pair(t463) in
-  let t465 = inherent#int32#int32#to_string(t464) in
+  let t465 = inherent#i32#i32#to_string(t464) in
   join inline_cont547(mtmp420: unit) -> unit {
     let t466 = (2, "two") in
     let t467 = match_mixed_pair(t466) in
@@ -219,7 +219,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont550(value/1)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t499 = @runtime(core.int32_to_string)(self/33) in
   t499
 }

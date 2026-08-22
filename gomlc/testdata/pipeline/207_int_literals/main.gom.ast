@@ -1,24 +1,24 @@
 package main;
-fn increment(value: uint8) -> uint8 {
+fn increment(value: u8) -> u8 {
     value + 1
 }
 
-fn one_float32() -> float32 {
+fn one_float32() -> f32 {
     1
 }
 
-fn two_int16() -> int16 {
+fn two_int16() -> i16 {
     2
 }
 
-fn read_uint32(value: Ref[uint32]) -> uint32 {
+fn read_uint32(value: Ref[u32]) -> u32 {
     value.get()
 }
 
 fn main() -> unit {
     let default_integer = 40;
     let default_float = 0.5;
-    let small: uint8 = 41;
+    let small: u8 = 41;
     let inferred = [small, 2];
     let branch =
       if true {
@@ -30,7 +30,7 @@ fn main() -> unit {
               small
           }
       };
-    let values: [uint16; 2] = [10, 20];
+    let values: [u16; 2] = [10, 20];
     let delayed = Ref::new(0);
     let byte = "A".byte_get(0);
     println(default_integer + 2.to_string());

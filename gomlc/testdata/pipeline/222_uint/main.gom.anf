@@ -1,10 +1,10 @@
-fn combine(left/0: uint, right/1: uint) -> uint {
+fn combine(left/0: usize, right/1: usize) -> usize {
   let t421 = (left/0 + right/1) in
   let t422 = (t421 * 2) in
   t422
 }
 
-fn classify(value/2: uint) -> string {
+fn classify(value/2: usize) -> string {
   match value/2 {
     0 => {
       "zero"
@@ -20,8 +20,8 @@ fn classify(value/2: uint) -> string {
 
 fn main() -> unit {
   let left/3 = 19 in
-  let right/4 = (2 as uint) in
-  join inline_cont506(result/5: uint) -> unit {
+  let right/4 = (2 as usize) in
+  join inline_cont506(result/5: usize) -> unit {
     join inline_cont503(_wild411: unit) -> unit {
       join inline_cont501(t428: string) -> unit {
         join inline_cont498(_wild412: unit) -> unit {
@@ -30,9 +30,9 @@ fn main() -> unit {
               let t430 = (result/5 > left/3) in
               join inline_cont491(_wild414: unit) -> unit {
                 let t431 = (result/5 & 15) in
-                let t432 = (t431 as uint64) in
+                let t432 = (t431 as u64) in
                 join inline_cont488(_wild415: unit) -> unit {
-                  join inline_cont486(values/6: HashMap[uint, string]) -> unit {
+                  join inline_cont486(values/6: HashMap[usize, string]) -> unit {
                     join inline_cont483(_wild416: unit) -> unit {
                       join inline_cont480(mtmp417: Option__string) -> unit {
                         match mtmp417 {
@@ -61,7 +61,7 @@ fn main() -> unit {
                   let inline487 = @intrinsic(hashmap.new)() in
                   jump inline_cont486(inline487)
                 } in
-                let inline489 = trait_impl#ToString#uint64#to_string(t432) in
+                let inline489 = trait_impl#ToString#u64#to_string(t432) in
                 let inline490 = @runtime(core.string_println)(inline489) in
                 jump inline_cont488(())
               } in
@@ -92,7 +92,7 @@ fn main() -> unit {
       let inline502 = @runtime(core.uint_to_string)(result/5) in
       jump inline_cont501(inline502)
     } in
-    let inline504 = trait_impl#ToString#uint#to_string(result/5) in
+    let inline504 = trait_impl#ToString#usize#to_string(result/5) in
     let inline505 = @runtime(core.string_println)(inline504) in
     jump inline_cont503(())
   } in
@@ -101,7 +101,7 @@ fn main() -> unit {
   jump inline_cont506(inline508)
 }
 
-fn println__T_uint(value/1: uint) -> unit {
+fn println__T_usize(value/1: usize) -> unit {
   join inline_cont509(t437: string) -> unit {
     let t438 = @runtime(core.string_println)(t437) in
     ()
@@ -118,7 +118,7 @@ fn println__T_string(value/1: string) -> unit {
   jump inline_cont511(value/1)
 }
 
-fn trait_impl#ToString#uint#to_string(self/451: uint) -> string {
+fn trait_impl#ToString#usize#to_string(self/451: usize) -> string {
   let t444 = @runtime(core.uint_to_string)(self/451) in
   t444
 }
@@ -132,7 +132,7 @@ fn println__T_bool(value/1: bool) -> unit {
   jump inline_cont512(inline513)
 }
 
-fn println__T_uint64(value/1: uint64) -> unit {
+fn println__T_u64(value/1: u64) -> unit {
   join inline_cont514(t449: string) -> unit {
     let t450 = @runtime(core.string_println)(t449) in
     ()
@@ -141,23 +141,23 @@ fn println__T_uint64(value/1: uint64) -> unit {
   jump inline_cont514(inline515)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() -> HashMap[uint, string] {
+fn inherent#HashMap#HashMap[K,V]#new__K_usize__V_string() -> HashMap[usize, string] {
   let t453 = @intrinsic(hashmap.new)() in
   t453
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_uint__V_string(
-  self/422: HashMap[uint, string],
-  key/423: uint,
+fn inherent#HashMap#HashMap[K,V]#set__K_usize__V_string(
+  self/422: HashMap[usize, string],
+  key/423: usize,
   value/424: string
 ) -> unit {
   let t455 = @intrinsic(hashmap.set)(self/422, key/423, value/424) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(
-  self/420: HashMap[uint, string],
-  key/421: uint
+fn inherent#HashMap#HashMap[K,V]#get__K_usize__V_string(
+  self/420: HashMap[usize, string],
+  key/421: usize
 ) -> Option__string {
   let t458 = @intrinsic(hashmap.get)(self/420, key/421) in
   t458
@@ -172,17 +172,17 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   t463
 }
 
-fn trait_impl#ToString#uint64#to_string(self/159: uint64) -> string {
+fn trait_impl#ToString#u64#to_string(self/159: u64) -> string {
   let t466 = @runtime(core.uint64_to_string)(self/159) in
   t466
 }
 
-fn trait_impl#PartialEq#uint#eq(self/453: uint, other/454: uint) -> bool {
+fn trait_impl#PartialEq#usize#eq(self/453: usize, other/454: usize) -> bool {
   let t469 = (self/453 == other/454) in
   t469
 }
 
-fn trait_impl#Hash#uint#hash(self/455: uint) -> uint64 {
+fn trait_impl#Hash#usize#hash(self/455: usize) -> u64 {
   let t472 = @runtime(core.uint_hash)(self/455) in
   t472
 }

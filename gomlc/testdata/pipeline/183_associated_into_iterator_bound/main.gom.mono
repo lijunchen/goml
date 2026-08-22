@@ -1,47 +1,47 @@
-fn trait_impl#Batch#Numbers#items(self/0: Numbers) -> Vec[int32] {
+fn trait_impl#Batch#Numbers#items(self/0: Numbers) -> Vec[i32] {
   Numbers.values(self/0)
 }
 
 fn main() -> unit {
-  let values/3 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild416 = inherent#Vec#Vec[T]#push__T_int32(values/3, 10) in
-  let _wild417 = inherent#Vec#Vec[T]#push__T_int32(values/3, 20) in
-  let _wild418 = inherent#Vec#Vec[T]#push__T_int32(values/3, 30) in
-  let _wild419 = println__T_int32(count__B_Numbers(Numbers { values: values/3 })) in
+  let values/3 = inherent#Vec#Vec[T]#new__T_i32() in
+  let _wild416 = inherent#Vec#Vec[T]#push__T_i32(values/3, 10) in
+  let _wild417 = inherent#Vec#Vec[T]#push__T_i32(values/3, 20) in
+  let _wild418 = inherent#Vec#Vec[T]#push__T_i32(values/3, 30) in
+  let _wild419 = println__T_i32(count__B_Numbers(Numbers { values: values/3 })) in
 }
 
-fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+fn inherent#Vec#Vec[T]#new__T_i32() -> Vec[i32] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/258: Vec[int32], elem/259: int32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_i32(self/258: Vec[i32], elem/259: i32) -> unit {
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_i32(value/1: i32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/1))
 }
 
-fn count__B_Numbers(batch/1: Numbers) -> int32 {
-  let total/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
+fn count__B_Numbers(batch/1: Numbers) -> i32 {
+  let total/2 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let _wild415 =
     {
       let for_iter411 =
-        trait_impl#IntoIterator#Vec[int32]#into_iter(trait_impl#Batch#Numbers#items(batch/1)) in
+        trait_impl#IntoIterator#Vec[i32]#into_iter(trait_impl#Batch#Numbers#items(batch/1)) in
       while true {
           {
-            let for_next412 = trait_impl#Iterator#FnIterator__int32#next(for_iter411) in
+            let for_next412 = trait_impl#Iterator#FnIterator__i32#next(for_iter411) in
             match for_next412 {
-              Option__int32::None => {
+              Option__i32::None => {
                 break
               },
-              Option__int32::Some(x413) => {
+              Option__i32::Some(x413) => {
                 {
                   {
                     let _wild414 =
-                      inherent#Ref#Ref[T]#set__T_int32(
+                      inherent#Ref#Ref[T]#set__T_i32(
                         total/2,
-                        (inherent#Ref#Ref[T]#get__T_int32(total/2) + 1)
+                        (inherent#Ref#Ref[T]#get__T_i32(total/2) + 1)
                       ) in
                   }
                 }
@@ -50,76 +50,76 @@ fn count__B_Numbers(batch/1: Numbers) -> int32 {
           }
       }
     } in
-  inherent#Ref#Ref[T]#get__T_int32(total/2)
+  inherent#Ref#Ref[T]#get__T_i32(total/2)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn trait_impl#IntoIterator#Vec[int32]#into_iter(self/404: Vec[int32]) -> FnIterator__int32 {
-  inherent#Vec#Vec[T]#iter__T_int32(self/404)
+fn trait_impl#IntoIterator#Vec[i32]#into_iter(self/404: Vec[i32]) -> FnIterator__i32 {
+  inherent#Vec#Vec[T]#iter__T_i32(self/404)
 }
 
-fn trait_impl#Iterator#FnIterator__int32#next(self/255: FnIterator__int32) -> Option__int32 {
-  FnIterator__int32.next_fn(self/255)()
+fn trait_impl#Iterator#FnIterator__i32#next(self/255: FnIterator__i32) -> Option__i32 {
+  FnIterator__i32.next_fn(self/255)()
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn inherent#Vec#Vec[T]#iter__T_int32(self/314: Vec[int32]) -> FnIterator__int32 {
+fn inherent#Vec#Vec[T]#iter__T_i32(self/314: Vec[i32]) -> FnIterator__i32 {
   let index/315 = @intrinsic(ref.new)(0) in
-  let len/316 = inherent#Vec#Vec[T]#len__T_int32(self/314) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
+  let len/316 = inherent#Vec#Vec[T]#len__T_i32(self/314) in
+  inherent#FnIterator#FnIterator[T]#from_fn__T_i32(
     || {
       let current/317 = @intrinsic(ref.get)(index/315) in
       if (current/317 < len/316) {
           {
             let value/318 = @intrinsic(vec.get)(self/314, current/317) in
             let _wild256 = @intrinsic(ref.set)(index/315, (current/317 + 1)) in
-            Option__int32::Some(value/318)
+            Option__i32::Some(value/318)
           }
       } else {
           {
-            Option__int32::None
+            Option__i32::None
           }
       }
     }
   )
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+fn inherent#Vec#Vec[T]#len__T_i32(self/273: Vec[i32]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(
-  next_fn/254: () -> Option__int32
-) -> FnIterator__int32 {
-  FnIterator__int32 { next_fn: next_fn/254 }
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_i32(
+  next_fn/254: () -> Option__i32
+) -> FnIterator__i32 {
+  FnIterator__i32 { next_fn: next_fn/254 }
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

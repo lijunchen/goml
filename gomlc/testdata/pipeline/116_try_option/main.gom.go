@@ -15,20 +15,20 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 type Ordering int32
 
-type Option__int32 struct {
+type Option__i32 struct {
     _tag int32
     _v1_0 int32
 }
 
-func maybe_value(flag__0 bool) Option__int32 {
+func maybe_value(flag__0 bool) Option__i32 {
     if flag__0 {
-        var t420 Option__int32 = Option__int32{
+        var t420 Option__i32 = Option__i32{
             _tag: 1,
             _v1_0: 4,
         }
         return t420
     } else {
-        return Option__int32{
+        return Option__i32{
             _tag: 0,
         }
     }
@@ -40,13 +40,13 @@ func add(a__1 int32, b__2 int32) int32 {
 }
 
 func main0() struct{} {
-    var t437 Option__int32
+    var t437 Option__i32
     var inline482 bool = true
-    var inline483 Option__int32 = maybe_value(inline482)
+    var inline483 Option__i32 = maybe_value(inline482)
     var inline485 int32
     switch inline483._tag {
     case 0:
-        t437 = Option__int32{
+        t437 = Option__i32{
             _tag: 0,
         }
         var t438 string
@@ -55,7 +55,7 @@ func main0() struct{} {
             t438 = "none"
         case 1:
             var inline477 int32 = t437._v1_0
-            var inline479 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline477)
+            var inline479 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline477)
             var inline480 string = "some=" + inline479
             t438 = inline480
         default:
@@ -63,13 +63,13 @@ func main0() struct{} {
         }
         var inline474 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t438)
         _goml_runtime_core_string_println(inline474)
-        var t439 Option__int32
+        var t439 Option__i32
         var inline465 bool = false
-        var inline466 Option__int32 = maybe_value(inline465)
+        var inline466 Option__i32 = maybe_value(inline465)
         var inline468 int32
         switch inline466._tag {
         case 0:
-            t439 = Option__int32{
+            t439 = Option__i32{
                 _tag: 0,
             }
             var t440 string
@@ -78,7 +78,7 @@ func main0() struct{} {
                 t440 = "none"
             case 1:
                 var inline460 int32 = t439._v1_0
-                var inline462 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline460)
+                var inline462 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline460)
                 var inline463 string = "some=" + inline462
                 t440 = inline463
             default:
@@ -91,7 +91,7 @@ func main0() struct{} {
             var inline471 int32 = inline466._v1_0
             inline468 = inline471
             var inline469 int32 = add(inline468, 2)
-            var inline470 Option__int32 = Option__int32{
+            var inline470 Option__i32 = Option__i32{
                 _tag: 1,
                 _v1_0: inline469,
             }
@@ -102,7 +102,7 @@ func main0() struct{} {
                 t440 = "none"
             case 1:
                 var inline460 int32 = t439._v1_0
-                var inline462 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline460)
+                var inline462 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline460)
                 var inline463 string = "some=" + inline462
                 t440 = inline463
             default:
@@ -118,7 +118,7 @@ func main0() struct{} {
         var inline488 int32 = inline483._v1_0
         inline485 = inline488
         var inline486 int32 = add(inline485, 2)
-        var inline487 Option__int32 = Option__int32{
+        var inline487 Option__i32 = Option__i32{
             _tag: 1,
             _v1_0: inline486,
         }
@@ -129,7 +129,7 @@ func main0() struct{} {
             t438 = "none"
         case 1:
             var inline477 int32 = t437._v1_0
-            var inline479 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline477)
+            var inline479 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline477)
             var inline480 string = "some=" + inline479
             t438 = inline480
         default:
@@ -137,13 +137,13 @@ func main0() struct{} {
         }
         var inline474 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t438)
         _goml_runtime_core_string_println(inline474)
-        var t439 Option__int32
+        var t439 Option__i32
         var inline465 bool = false
-        var inline466 Option__int32 = maybe_value(inline465)
+        var inline466 Option__i32 = maybe_value(inline465)
         var inline468 int32
         switch inline466._tag {
         case 0:
-            t439 = Option__int32{
+            t439 = Option__i32{
                 _tag: 0,
             }
             var t440 string
@@ -152,7 +152,7 @@ func main0() struct{} {
                 t440 = "none"
             case 1:
                 var inline460 int32 = t439._v1_0
-                var inline462 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline460)
+                var inline462 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline460)
                 var inline463 string = "some=" + inline462
                 t440 = inline463
             default:
@@ -165,7 +165,7 @@ func main0() struct{} {
             var inline471 int32 = inline466._v1_0
             inline468 = inline471
             var inline469 int32 = add(inline468, 2)
-            var inline470 Option__int32 = Option__int32{
+            var inline470 Option__i32 = Option__i32{
                 _tag: 1,
                 _v1_0: inline469,
             }
@@ -176,7 +176,7 @@ func main0() struct{} {
                 t440 = "none"
             case 1:
                 var inline460 int32 = t439._v1_0
-                var inline462 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline460)
+                var inline462 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline460)
                 var inline463 string = "some=" + inline462
                 t440 = inline463
             default:
@@ -193,7 +193,7 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t443 string = _goml_runtime_core_int32_to_string(self__33)
     return t443
 }

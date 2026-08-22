@@ -1,18 +1,18 @@
 package main;
 struct Point {
-    x: int32,
-    y: int32,
+    x: i32,
+    y: i32,
 }
 
-fn make_point(base: int32) -> Point {
+fn make_point(base: i32) -> Point {
     Point { x: base, y: base + 1 }
 }
 
-fn sum_point(p: Point) -> int32 {
+fn sum_point(p: Point) -> i32 {
     p.x + p.y
 }
 
-fn main() -> int32 {
+fn main() -> i32 {
     let p = make_point(5);
     let shifted = Point { x: p.x + 1, y: p.y - 2 };
     shifted.x + sum_point(shifted)

@@ -1,12 +1,12 @@
-fn maybe_value(flag/0: bool) -> Option__int32 {
+fn maybe_value(flag/0: bool) -> Option__i32 {
   if flag/0 {
-      Option__int32::Some(4)
+      Option__i32::Some(4)
   } else {
-      Option__int32::None
+      Option__i32::None
   }
 }
 
-fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
+fn with_base(base/1: i32, flag/2: bool) -> Option__i32 {
   let run/4 =
     pack_closure[inherent#closure_env_run_0#closure_env_run_0#apply](
       closure_env_run_0 { flag_0: flag/2, base_1: base/1 }
@@ -14,15 +14,15 @@ fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
   run/4()
 }
 
-fn show(opt/5: Option__int32) -> string {
+fn show(opt/5: Option__i32) -> string {
   match opt/5 {
-    Option__int32::None => {
+    Option__i32::None => {
       "none"
     },
-    Option__int32::Some(x413) => {
-      let x413 = Option__int32::Some._0(opt/5) in
+    Option__i32::Some(x413) => {
+      let x413 = Option__i32::Some._0(opt/5) in
       let value/6 = x413 in
-      ("some=" + inherent#int32#int32#to_string(value/6))
+      ("some=" + inherent#i32#i32#to_string(value/6))
     },
   }
 }
@@ -33,7 +33,7 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -45,20 +45,20 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#closure_env_run_0#closure_env_run_0#apply(env416: closure_env_run_0) -> Option__int32 {
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env416: closure_env_run_0) -> Option__i32 {
   let flag/2 = closure_env_run_0.flag_0(env416) in
   let base/1 = closure_env_run_0.base_1(env416) in
   let value/3 =
     let mtmp411 = maybe_value(flag/2) in
     match mtmp411 {
-      Option__int32::None => {
-        return Option__int32::None
+      Option__i32::None => {
+        return Option__i32::None
       },
-      Option__int32::Some(x412) => {
-        let x412 = Option__int32::Some._0(mtmp411) in
+      Option__i32::Some(x412) => {
+        let x412 = Option__i32::Some._0(mtmp411) in
         let try_value/11 = x412 in
         try_value/11
       },
     } in
-  Option__int32::Some((value/3 + base/1))
+  Option__i32::Some((value/3 + base/1))
 }

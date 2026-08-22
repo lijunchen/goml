@@ -1,17 +1,17 @@
-static VALUE: OnceCell__int = OnceCell::new();
+static VALUE: OnceCell__isize = OnceCell::new();
 
 fn main() -> unit {
-  join inline_cont493(results/0: Channel[int]) -> unit {
+  join inline_cont493(results/0: Channel[isize]) -> unit {
     let t418 = closure_env_main_1 { results_0: results/0 } in
     let t419 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t418) in
     let _wild411 = go t419 in
     let t420 = closure_env_main_3 { results_0: results/0 } in
     let t421 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t420) in
     let _wild412 = go t421 in
-    join inline_cont486(t422: Option__int) -> unit {
-      join inline_cont482(first/1: int) -> unit {
-        join inline_cont475(t423: Option__int) -> unit {
-          join inline_cont471(second/2: int) -> unit {
+    join inline_cont486(t422: Option__isize) -> unit {
+      join inline_cont482(first/1: isize) -> unit {
+        join inline_cont475(t423: Option__isize) -> unit {
+          join inline_cont471(second/2: isize) -> unit {
             let t424 = (first/1 == second/2) in
             join inline_cont469(t425: string) -> unit {
               let inline467 = trait_impl#ToString#string#to_string(t425) in
@@ -27,7 +27,7 @@ fn main() -> unit {
               jump inline_cont471(inline472)
             },
             Tag_1 => {
-              let inline473 = Option__int::Some._0(t423) in
+              let inline473 = Option__isize::Some._0(t423) in
               jump inline_cont471(inline473)
             },
           }
@@ -36,7 +36,7 @@ fn main() -> unit {
         let inline477 = inline476.0 in
         let inline478 = inline476.1 in
         if inline478 {
-          let inline481 = Option__int::Some(inline477) in
+          let inline481 = Option__isize::Some(inline477) in
           jump inline_cont475(inline481)
         } else {
           jump inline_cont475(Tag_0)
@@ -48,7 +48,7 @@ fn main() -> unit {
           jump inline_cont482(inline483)
         },
         Tag_1 => {
-          let inline484 = Option__int::Some._0(t422) in
+          let inline484 = Option__isize::Some._0(t422) in
           jump inline_cont482(inline484)
         },
       }
@@ -57,7 +57,7 @@ fn main() -> unit {
     let inline488 = inline487.0 in
     let inline489 = inline487.1 in
     if inline489 {
-      let inline492 = Option__int::Some(inline488) in
+      let inline492 = Option__isize::Some(inline488) in
       jump inline_cont486(inline492)
     } else {
       jump inline_cont486(Tag_0)
@@ -68,43 +68,46 @@ fn main() -> unit {
   jump inline_cont493(inline495)
 }
 
-fn inherent#Channel#Channel[T]#new__T_int(capacity/435: int) -> Channel[int] {
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/435: isize) -> Channel[isize] {
   let t429 = @intrinsic(channel.new)(capacity/435) in
   t429
 }
 
-fn inherent#OnceCell#OnceCell[T]#get_or_init__T_int(
-  self/402: OnceCell__int,
-  init/403: () -> int
-) -> int {
+fn inherent#OnceCell#OnceCell[T]#get_or_init__T_isize(
+  self/402: OnceCell__isize,
+  init/403: () -> isize
+) -> isize {
   let t432 = @intrinsic(once_cell.get_or_init)(self/402, init/403) in
   t432
 }
 
-fn inherent#Channel#Channel[T]#send__T_int(self/436: Channel[int], value/437: int) -> unit {
+fn inherent#Channel#Channel[T]#send__T_isize(self/436: Channel[isize], value/437: isize) -> unit {
   let t434 = @intrinsic(channel.send)(self/436, value/437) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#recv__T_int(self/438: Channel[int]) -> Option__int {
+fn inherent#Channel#Channel[T]#recv__T_isize(self/438: Channel[isize]) -> Option__isize {
   let mtmp379 = @intrinsic(channel.recv)(self/438) in
   let x380 = mtmp379.0 in
   let x381 = mtmp379.1 in
   if x381 {
-    let t439 = Option__int::Some(x380) in
+    let t439 = Option__isize::Some(x380) in
     t439
   } else {
     Tag_0
   }
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_int(self/467: Option__int, fallback/468: int) -> int {
+fn inherent#Option#Option[T]#unwrap_or__T_isize(
+  self/467: Option__isize,
+  fallback/468: isize
+) -> isize {
   match self/467 {
     Tag_0 => {
       fallback/468
     },
     Tag_1 => {
-      let x390 = Option__int::Some._0(self/467) in
+      let x390 = Option__isize::Some._0(self/467) in
       x390
     },
   }
@@ -127,7 +130,7 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env413: closure_env_main_0) -> int {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env413: closure_env_main_0) -> isize {
   41
 }
 
@@ -135,7 +138,7 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(env414: closure_env_main
   let results/0 = closure_env_main_1.results_0(env414) in
   let t455 = closure_env_main_0 {} in
   let t456 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t455) in
-  join inline_cont499(t457: int) -> unit {
+  join inline_cont499(t457: isize) -> unit {
     let inline498 = @intrinsic(channel.send)(results/0, t457) in
     ()
   } in
@@ -143,7 +146,7 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(env414: closure_env_main
   jump inline_cont499(inline500)
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(env415: closure_env_main_2) -> int {
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env415: closure_env_main_2) -> isize {
   42
 }
 
@@ -151,7 +154,7 @@ fn inherent#closure_env_main_3#closure_env_main_3#apply(env416: closure_env_main
   let results/0 = closure_env_main_3.results_0(env416) in
   let t462 = closure_env_main_2 {} in
   let t463 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t462) in
-  join inline_cont503(t464: int) -> unit {
+  join inline_cont503(t464: isize) -> unit {
     let inline502 = @intrinsic(channel.send)(results/0, t464) in
     ()
   } in

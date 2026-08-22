@@ -37,35 +37,35 @@ func main0() struct{} {
     var neg__11 int8 = -b__5
     var less__12 bool = b__5 < a__4
     var inline497 string = "a="
-    var inline498 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(a__4)
+    var inline498 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(a__4)
     var inline499 string = inline497 + inline498
     println__T_string(inline499)
     var inline492 string = "b="
-    var inline493 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(b__5)
+    var inline493 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(b__5)
     var inline494 string = inline492 + inline493
     println__T_string(inline494)
     var inline487 string = "c="
-    var inline488 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(c__6)
+    var inline488 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(c__6)
     var inline489 string = inline487 + inline488
     println__T_string(inline489)
     var inline482 string = "sum="
-    var inline483 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(sum__7)
+    var inline483 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(sum__7)
     var inline484 string = inline482 + inline483
     println__T_string(inline484)
     var inline477 string = "diff="
-    var inline478 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(diff__8)
+    var inline478 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(diff__8)
     var inline479 string = inline477 + inline478
     println__T_string(inline479)
     var inline472 string = "prod="
-    var inline473 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(prod__9)
+    var inline473 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(prod__9)
     var inline474 string = inline472 + inline473
     println__T_string(inline474)
     var inline467 string = "quot="
-    var inline468 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(quot__10)
+    var inline468 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(quot__10)
     var inline469 string = inline467 + inline468
     println__T_string(inline469)
     var inline462 string = "neg="
-    var inline463 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(neg__11)
+    var inline463 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(neg__11)
     var inline464 string = inline462 + inline463
     println__T_string(inline464)
     var inline457 string = "b<a="
@@ -82,7 +82,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__152 int8) string {
+func _goml_m_trait__impl_i_ToString_i_i8_i_to__string(self__152 int8) string {
     var t440 string = _goml_runtime_core_int8_to_string(self__152)
     return t440
 }

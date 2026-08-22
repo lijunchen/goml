@@ -3,7 +3,7 @@ use std::cmp;
 
 #[derive(PartialEq, PartialOrd)]
 struct FloatKey {
-    value: float64,
+    value: f64,
 }
 
 impl PartialEq for FloatKey {
@@ -23,7 +23,7 @@ impl std::cmp::PartialOrd for FloatKey {
 }
 
 struct CollisionKey {
-    value: int32,
+    value: i32,
 }
 
 impl PartialEq for CollisionKey {
@@ -35,7 +35,7 @@ impl PartialEq for CollisionKey {
 impl Eq for CollisionKey {}
 
 impl Hash for CollisionKey {
-  fn hash(self: CollisionKey) -> uint64 {
+  fn hash(self: CollisionKey) -> u64 {
       1
   }
 }
@@ -47,7 +47,7 @@ fn print_opt_string(value: Option[string]) -> unit {
     }
 }
 
-fn print_opt_int(value: Option[int32]) -> unit {
+fn print_opt_int(value: Option[i32]) -> unit {
     match value {
         Option::Some(number) => println(number),
         Option::None => println("none"),
@@ -55,10 +55,10 @@ fn print_opt_int(value: Option[int32]) -> unit {
 }
 
 fn float_comparison_contracts() -> unit {
-    let zero32: float32 = 0;
+    let zero32: f32 = 0;
     let negative_zero32 = -zero32;
     println(zero32 == negative_zero32.to_string());
-    let zero64: float64 = 0;
+    let zero64: f64 = 0;
     let negative_zero64 = -zero64;
     println(zero64 == negative_zero64.to_string());
     println(FloatKey { value: zero64 } == FloatKey { value: negative_zero64 }.to_string());
@@ -68,7 +68,7 @@ fn float_comparison_contracts() -> unit {
 }
 
 fn collision_contracts() -> unit {
-    let values: HashMap[CollisionKey, int32] = HashMap::new();
+    let values: HashMap[CollisionKey, i32] = HashMap::new();
     values.set(CollisionKey { value: 1 }, 10);
     values.set(CollisionKey { value: 2 }, 20);
     values.set(CollisionKey { value: 3 }, 30);

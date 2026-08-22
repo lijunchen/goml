@@ -1,7 +1,7 @@
-fn trait_impl#Show#Boxed__int32#show(self/0: Boxed__int32) -> string {
+fn trait_impl#Show#Boxed__i32#show(self/0: Boxed__i32) -> string {
   match self/0 {
     Tag_0 => {
-      let x411 = Boxed__int32::One._0(self/0) in
+      let x411 = Boxed__i32::One._0(self/0) in
       let inline434 = @runtime(core.int32_to_string)(x411) in
       inline434
     },
@@ -15,8 +15,8 @@ fn render(value/2: dyn Show) -> string {
 
 fn main() -> unit {
   let value/3 = 42 in
-  let t421 = Boxed__int32::One(value/3) in
-  let t422 = to_dyn[Show]{Boxed__int32}(t421) in
+  let t421 = Boxed__i32::One(value/3) in
+  let t422 = to_dyn[Show]{Boxed__i32}(t421) in
   join inline_cont438(t423: string) -> unit {
     let inline436 = trait_impl#ToString#string#to_string(t423) in
     let inline437 = @runtime(core.string_println)(inline436) in
@@ -26,7 +26,7 @@ fn main() -> unit {
   jump inline_cont438(inline439)
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   let t427 = @runtime(core.int32_to_string)(self/33) in
   t427
 }

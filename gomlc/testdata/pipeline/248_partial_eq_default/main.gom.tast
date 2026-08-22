@@ -5,7 +5,7 @@ impl PartialEq for Settings {
           (self/0 : Settings).enabled,
           (other/1 : Settings).enabled
         ) &&
-        (PartialEq::eq : (int, int) -> bool)(
+        (PartialEq::eq : (isize, isize) -> bool)(
           (self/0 : Settings).retries,
           (other/1 : Settings).retries
         ) &&
@@ -20,7 +20,7 @@ impl Default for Settings {
   fn default() -> Settings {
       Settings {
         enabled: (Default::default : () -> bool)(),
-        retries: (Default::default : () -> int)(),
+        retries: (Default::default : () -> isize)(),
         label: (Default::default : () -> string)()
       }
   }
@@ -31,7 +31,7 @@ impl Debug for Settings {
       {
           let Settings {
             enabled: #derive0_field/3: bool,
-            retries: #derive1_field/4: int,
+            retries: #derive1_field/4: isize,
             label: #derive2_field/5: string
           } =
             (self/2 : Settings);
@@ -39,7 +39,7 @@ impl Debug for Settings {
             (Debug::debug : (bool) -> string)((#derive0_field/3 : bool)) +
             ", " +
             "retries: " +
-            (Debug::debug : (int) -> string)((#derive1_field/4 : int)) +
+            (Debug::debug : (isize) -> string)((#derive1_field/4 : isize)) +
             ", " +
             "label: " +
             (Debug::debug : (string) -> string)((#derive2_field/5 : string)) +
@@ -80,25 +80,26 @@ impl Debug for State {
   fn debug(self/7: State) -> string {
       match (self/7 : State) {
           State::Idle => "State::Idle",
-          State::Running(#derive0_field/8: int) =>
-            "State::Running(" + (Debug::debug : (int) -> string)((#derive0_field/8 : int)) + ")",
+          State::Running(#derive0_field/8: isize) =>
+            "State::Running(" + (Debug::debug : (isize) -> string)((#derive0_field/8 : isize)) +
+              ")",
       }
   }
 }
 
 impl Default for Message {
   fn default() -> Message {
-      Message::Data((Default::default : () -> string)(), (Default::default : () -> int)())
+      Message::Data((Default::default : () -> string)(), (Default::default : () -> isize)())
   }
 }
 
 impl Debug for Message {
   fn debug(self/9: Message) -> string {
       match (self/9 : Message) {
-          Message::Data(#derive0_field/10: string, #derive1_field/11: int) =>
+          Message::Data(#derive0_field/10: string, #derive1_field/11: isize) =>
             "Message::Data(" + (Debug::debug : (string) -> string)((#derive0_field/10 : string)) +
               ", " +
-              (Debug::debug : (int) -> string)((#derive1_field/11 : int)) +
+              (Debug::debug : (isize) -> string)((#derive1_field/11 : isize)) +
               ")",
           Message::Empty => "Message::Empty",
       }
@@ -107,19 +108,19 @@ impl Debug for Message {
 
 impl Default for Event {
   fn default() -> Event {
-      Event::Data((Default::default : () -> string)(), (Default::default : () -> int)())
+      Event::Data((Default::default : () -> string)(), (Default::default : () -> isize)())
   }
 }
 
 impl Debug for Event {
   fn debug(self/12: Event) -> string {
       match (self/12 : Event) {
-          Event::Data(#derive0_field/13: string, #derive1_field/14: int) =>
+          Event::Data(#derive0_field/13: string, #derive1_field/14: isize) =>
             "Event::Data { " + "name: " +
               (Debug::debug : (string) -> string)((#derive0_field/13 : string)) +
               ", " +
               "count: " +
-              (Debug::debug : (int) -> string)((#derive1_field/14 : int)) +
+              (Debug::debug : (isize) -> string)((#derive1_field/14 : isize)) +
               " }",
           Event::Empty => "Event::Empty",
       }
@@ -148,15 +149,15 @@ fn main() -> unit {
     );
     let empty/16: Empty = (Default::default : () -> Empty)();
     (println : (string) -> unit)((Debug::debug : (Empty) -> string)((empty/16 : Empty)));
-    let pair/17: PairDefaults[int] = (Default::default : () -> PairDefaults[int])();
+    let pair/17: PairDefaults[isize] = (Default::default : () -> PairDefaults[isize])();
     (println : (string) -> unit)(
-      (int::to_string : (int) -> string)(
-        (pair/17 : PairDefaults[int]).first + (pair/17 : PairDefaults[int]).second
+      (isize::to_string : (isize) -> string)(
+        (pair/17 : PairDefaults[isize]).first + (pair/17 : PairDefaults[isize]).second
       )
     );
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
-        (Option[int]::is_none : (Option[int]) -> bool)((pair/17 : PairDefaults[int]).nested)
+        (Option[isize]::is_none : (Option[isize]) -> bool)((pair/17 : PairDefaults[isize]).nested)
       )
     );
     let state/18: State = (Default::default : () -> State)();
@@ -174,13 +175,13 @@ fn main() -> unit {
           Lazy::Value(_ : NoDefault) => "value",
       }
     );
-    let selected/22: Selected[int] = (Default::default : () -> Selected[int])();
+    let selected/22: Selected[isize] = (Default::default : () -> Selected[isize])();
     (println : (
       string
     ) -> unit)(
-      match (selected/22 : Selected[int]) {
-          Selected::Values(first/23: int, second/24: int) =>
-            (int::to_string : (int) -> string)((first/23 : int) + (second/24 : int)),
+      match (selected/22 : Selected[isize]) {
+          Selected::Values(first/23: isize, second/24: isize) =>
+            (isize::to_string : (isize) -> string)((first/23 : isize) + (second/24 : isize)),
           Selected::Ignored(_ : Ref[NoDefault]) => "ignored",
       }
     )

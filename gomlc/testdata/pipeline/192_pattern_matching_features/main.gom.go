@@ -252,12 +252,12 @@ func main0() struct{} {
     var t528 int = array_get__Array_4_3int(values__18, 1)
     var t529 int = array_get__Array_4_3int(values__18, 2)
     var middle__20 [2]int = [2]int{t528, t529}
-    var inline624 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x422)
+    var inline624 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x422)
     _goml_runtime_core_string_println(inline624)
     var t530 int = array_get__Array_2_3int(middle__20, 0)
     var t531 int = first__19 + t530
     var t532 int = t531 + last__21
-    var inline621 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t532)
+    var inline621 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t532)
     _goml_runtime_core_string_println(inline621)
     var numbers__22 *_goml_vec_int32 = vec_new__Vec_5int32()
     vec_push__Vec_5int32(numbers__22, 1)
@@ -295,7 +295,7 @@ func main0() struct{} {
         switch mtmp431._tag {
         case 1:
             var x432 int32 = mtmp431._v1_0
-            var inline589 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x432)
+            var inline589 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x432)
             _goml_runtime_core_string_println(inline589)
             ref_set__Ref_5Maybe(state__26, Maybe{
                 _tag: 0,
@@ -306,7 +306,7 @@ func main0() struct{} {
         }
     }
     var x437 int32 = 6
-    var inline594 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x437)
+    var inline594 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x437)
     _goml_runtime_core_string_println(inline594)
     var jp541 int32
     var value__30 int32 = 5
@@ -315,14 +315,14 @@ func main0() struct{} {
     jp546 = x441
     var t547 int32 = value__30 + jp546
     jp541 = t547
-    var inline608 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(jp541)
+    var inline608 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(jp541)
     _goml_runtime_core_string_println(inline608)
     var t542 Either = Either{
         _tag: 1,
         _v1_0: 11,
     }
     var t543 int32 = unwrap_either(t542)
-    var inline605 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t543)
+    var inline605 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t543)
     _goml_runtime_core_string_println(inline605)
     var t544 string
     var inline600 rune = 98
@@ -342,12 +342,12 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t578 string = _goml_runtime_core_int32_to_string(self__154)
     return t578
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t581 string = _goml_runtime_core_int_to_string(self__151)
     return t581
 }

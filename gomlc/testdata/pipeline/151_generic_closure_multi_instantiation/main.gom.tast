@@ -3,7 +3,7 @@ fn make_pairer[T](x/0: T) -> (string) -> string where T: ToString {
 }
 
 fn main() -> unit {
-    let int_pairer/2: (string) -> string = (make_pairer : (int) -> (string) -> string)(7);
+    let int_pairer/2: (string) -> string = (make_pairer : (isize) -> (string) -> string)(7);
     let string_pairer/3: (string) -> string = (make_pairer : (string) -> (string) -> string)("ok");
     (println : (string) -> unit)((int_pairer/2 : (string) -> string)("a"));
     (println : (string) -> unit)((string_pairer/3 : (string) -> string)("b"));

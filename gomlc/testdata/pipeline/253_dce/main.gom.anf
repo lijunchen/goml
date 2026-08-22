@@ -1,5 +1,5 @@
-fn touch(counter/0: Ref[int]) -> int {
-  join inline_cont441(t415: int) -> int {
+fn touch(counter/0: Ref[isize]) -> isize {
+  join inline_cont441(t415: isize) -> isize {
     let next/1 = (t415 + 1) in
     let inline440 = @intrinsic(ref.set)(counter/0, next/1) in
     next/1
@@ -9,21 +9,21 @@ fn touch(counter/0: Ref[int]) -> int {
 }
 
 fn main() -> unit {
-  join inline_cont452(counter/8: Ref[int]) -> unit {
-    join inline_cont448(ignored/9: int) -> unit {
+  join inline_cont452(counter/8: Ref[isize]) -> unit {
+    join inline_cont448(ignored/9: isize) -> unit {
       let divisor/10 = 2 in
       let quotient/11 = (8 / divisor/10) in
-      join inline_cont446(t417: int) -> unit {
-        let inline444 = trait_impl#ToString#int#to_string(t417) in
+      join inline_cont446(t417: isize) -> unit {
+        let inline444 = trait_impl#ToString#isize#to_string(t417) in
         let inline445 = @runtime(core.string_println)(inline444) in
         ()
       } in
       let inline447 = @intrinsic(ref.get)(counter/8) in
       jump inline_cont446(inline447)
     } in
-    let inline449 = inherent#Ref#Ref[T]#get__T_int(counter/8) in
+    let inline449 = inherent#Ref#Ref[T]#get__T_isize(counter/8) in
     let inline450 = (inline449 + 1) in
-    let inline451 = inherent#Ref#Ref[T]#set__T_int(counter/8, inline450) in
+    let inline451 = inherent#Ref#Ref[T]#set__T_isize(counter/8, inline450) in
     jump inline_cont448(inline450)
   } in
   let inline453 = 0 in
@@ -31,22 +31,22 @@ fn main() -> unit {
   jump inline_cont452(inline454)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/432: Ref[int]) -> int {
+fn inherent#Ref#Ref[T]#get__T_isize(self/432: Ref[isize]) -> isize {
   let t421 = @intrinsic(ref.get)(self/432) in
   t421
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/433: Ref[int], value/434: int) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/433: Ref[isize], value/434: isize) -> unit {
   let t423 = @intrinsic(ref.set)(self/433, value/434) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/431: int) -> Ref[int] {
+fn inherent#Ref#Ref[T]#new__T_isize(value/431: isize) -> Ref[isize] {
   let t426 = @intrinsic(ref.new)(value/431) in
   t426
 }
 
-fn println__T_int(value/1: int) -> unit {
+fn println__T_isize(value/1: isize) -> unit {
   join inline_cont455(t428: string) -> unit {
     let t429 = @runtime(core.string_println)(t428) in
     ()
@@ -55,17 +55,17 @@ fn println__T_int(value/1: int) -> unit {
   jump inline_cont455(inline456)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   let t432 = @runtime(core.int_to_string)(self/151) in
   t432
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   let t435 = (self/185 == other/186) in
   t435
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   let t438 = @runtime(core.int_hash)(self/211) in
   t438
 }

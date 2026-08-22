@@ -5,17 +5,17 @@ trait Batch {
 }
 
 struct Numbers {
-    values: Vec[int32],
+    values: Vec[i32],
 }
 
 impl Batch for Numbers {
-  type Items = Vec[int32];
-  fn items(self: Numbers) -> Vec[int32] {
+  type Items = Vec[i32];
+  fn items(self: Numbers) -> Vec[i32] {
       self.values
   }
 }
 
-fn count[B: Batch](batch: B) -> int32 {
+fn count[B: Batch](batch: B) -> i32 {
     let total = Ref::new(0);
     for _ in
       Batch::items(batch) {
@@ -25,7 +25,7 @@ fn count[B: Batch](batch: B) -> int32 {
 }
 
 fn main() -> unit {
-    let values: Vec[int32] = Vec::new();
+    let values: Vec[i32] = Vec::new();
     values.push(10);
     values.push(20);
     values.push(30);

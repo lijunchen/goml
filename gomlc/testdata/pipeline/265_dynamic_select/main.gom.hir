@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn print_selection(local/1/0: channel::Selection[int]) -> unit {
+  fn print_selection(local/1/0: channel::Selection[isize]) -> unit {
       match value/0 {
           channel::Selection::Received { index: local/1/1, value: local/1/2 } =>
             {
@@ -12,8 +12,8 @@ file main.gom
   }
 
   fn main() -> unit {
-      let local/1/4: Channel[int] = Channel::new(1);
-      let local/1/5: Channel[int] = Channel::new(1);
+      let local/1/4: Channel[isize] = Channel::new(1);
+      let local/1/5: Channel[isize] = Channel::new(1);
       first/4.send(10);
       second/5.send(20);
       let local/1/6 =
@@ -31,8 +31,8 @@ file main.gom
           Ok(Some(local/1/8)) => def/1/0(value/8),
           _ => println(-2),
       };
-      let local/1/9: Channel[int] = Channel::new(0);
-      let local/1/10: Channel[int] = Channel::new(1);
+      let local/1/9: Channel[isize] = Channel::new(0);
+      let local/1/10: Channel[isize] = Channel::new(1);
       let local/1/11 =
         Vec::from_array(
           [
@@ -52,7 +52,7 @@ file main.gom
             _ => -5,
         }
       );
-      let local/1/14: Vec[channel::Operation[int]] = Vec::new();
+      let local/1/14: Vec[channel::Operation[isize]] = Vec::new();
       println(
         match channel::select(slice(no_operations/14, 0, no_operations/14.len())) {
             Err(channel::SelectError::Empty) => 50,

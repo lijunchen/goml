@@ -34,15 +34,15 @@ func ref_set__Ref_6string(reference *ref_string_x, value string) struct{} {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
 
 func main0() struct{} {
     var log__9 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("")
-    var disabled__10 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(1)
-    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(disabled__10)
+    var disabled__10 chan int = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(1)
+    _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__isize(disabled__10)
     var t450 chan int
     var inline554 string = "c"
     var inline555 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__9)
@@ -106,7 +106,7 @@ func main0() struct{} {
     var jp439 int
     var _goml_m_value____14_i_select__value int
     var _goml_m_value____14_i_select__open bool
-    var value__14 Option__int = Option__int{
+    var value__14 Option__isize = Option__isize{
         _tag: 0,
     }
     var select_channel_1_0 chan int
@@ -115,7 +115,7 @@ func main0() struct{} {
     }
     var _goml_m_value____15_i_select__value int
     var _goml_m_value____15_i_select__open bool
-    var value__15 Option__int = Option__int{
+    var value__15 Option__isize = Option__isize{
         _tag: 0,
     }
     var select_channel_1_1 chan int
@@ -125,7 +125,7 @@ func main0() struct{} {
     select {
     case _goml_m_value____14_i_select__value, _goml_m_value____14_i_select__open = <-select_channel_1_0:
         if _goml_m_value____14_i_select__open {
-            value__14 = Option__int{
+            value__14 = Option__isize{
                 _tag: 1,
                 _v1_0: _goml_m_value____14_i_select__value,
             }
@@ -144,7 +144,7 @@ func main0() struct{} {
         select {
         case _goml_m_value____15_i_select__value, _goml_m_value____15_i_select__open = <-select_channel_1_1:
             if _goml_m_value____15_i_select__open {
-                value__15 = Option__int{
+                value__15 = Option__isize{
                     _tag: 1,
                     _v1_0: _goml_m_value____15_i_select__value,
                 }
@@ -163,7 +163,7 @@ func main0() struct{} {
             jp439 = 0
         }
     }
-    var inline519 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp439)
+    var inline519 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp439)
     _goml_runtime_core_string_println(inline519)
     var events__17 chan int
     var inline516 int = 1
@@ -181,7 +181,7 @@ func main0() struct{} {
     var jp441 int
     var _goml_m__d_select__recv__1170____18_i_select__value int
     var _goml_m__d_select__recv__1170____18_i_select__open bool
-    var _goml_m__d_select__recv__1170____18 Option__int = Option__int{
+    var _goml_m__d_select__recv__1170____18 Option__isize = Option__isize{
         _tag: 0,
     }
     var select_channel_2_0 chan int
@@ -191,7 +191,7 @@ func main0() struct{} {
     select {
     case _goml_m__d_select__recv__1170____18_i_select__value, _goml_m__d_select__recv__1170____18_i_select__open = <-select_channel_2_0:
         if _goml_m__d_select__recv__1170____18_i_select__open {
-            _goml_m__d_select__recv__1170____18 = Option__int{
+            _goml_m__d_select__recv__1170____18 = Option__isize{
                 _tag: 1,
                 _v1_0: _goml_m__d_select__recv__1170____18_i_select__value,
             }
@@ -209,7 +209,7 @@ func main0() struct{} {
     default:
         jp441 = -1
     }
-    var inline510 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp441)
+    var inline510 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(jp441)
     _goml_runtime_core_string_println(inline510)
     return struct{}{}
 }
@@ -229,14 +229,14 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__431 string) *
     return t460
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__435 int) chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__isize(capacity__435 int) chan int {
     var t463 chan int = func(p0 int) chan int {
         return make(chan int, p0)
     }(capacity__435)
     return t463
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__441 chan int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__isize(self__441 chan int) struct{} {
     func(p0 chan int) struct{} {
         close(p0)
         return struct{}{}
@@ -248,7 +248,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t482 string = _goml_runtime_core_int_to_string(self__151)
     return t482
 }

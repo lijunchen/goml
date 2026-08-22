@@ -90,12 +90,12 @@ func main0() struct{} {
     var t418 int
     var inline463 int = ref_get__Ref_3int(sum__1)
     t418 = inline463
-    var inline460 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t418)
+    var inline460 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t418)
     _goml_runtime_core_string_println(inline460)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t442 string = _goml_runtime_core_int_to_string(self__151)
     return t442
 }

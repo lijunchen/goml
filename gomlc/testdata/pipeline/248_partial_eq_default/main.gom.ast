@@ -2,7 +2,7 @@ package main;
 #[derive(PartialEq, Default, Debug)]
 struct Settings {
     enabled: bool,
-    retries: int,
+    retries: isize,
     label: string,
 }
 
@@ -40,7 +40,7 @@ impl Debug for Settings {
 }
 
 struct NoDefault {
-    value: int,
+    value: isize,
 }
 
 #[derive(Default, Debug)]
@@ -78,7 +78,7 @@ impl[T] Default for PairDefaults[T] where T: Default, Option[T]: Default {
 #[derive(Default, Debug)]
 enum State {
     Idle,
-    Running(int)
+    Running(isize)
 }
 
 impl Default for State {
@@ -98,7 +98,7 @@ impl Debug for State {
 
 #[derive(Default, Debug)]
 enum Message {
-    Data(string, int),
+    Data(string, isize),
     Empty
 }
 
@@ -121,7 +121,7 @@ impl Debug for Message {
 
 #[derive(Default, Debug)]
 enum Event {
-    Data { name: string, count: int },
+    Data { name: string, count: isize },
     Empty
 }
 
@@ -173,7 +173,7 @@ fn main() -> unit {
     println(settings == Settings { enabled: false, retries: 0, label: "" }.to_string());
     let empty: Empty = Default::default();
     println(empty.debug());
-    let pair: PairDefaults[int] = Default::default();
+    let pair: PairDefaults[isize] = Default::default();
     println(pair.first + pair.second.to_string());
     println(pair.nested.is_none().to_string());
     let state: State = Default::default();
@@ -189,7 +189,7 @@ fn main() -> unit {
           Lazy::Value(_) => "value",
       }
     );
-    let selected: Selected[int] = Default::default();
+    let selected: Selected[isize] = Default::default();
     println(
       match selected {
           Selected::Values(first, second) => first + second.to_string(),

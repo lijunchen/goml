@@ -11,137 +11,152 @@ impl PartialEq for LoggedKey {
 impl Eq for LoggedKey {}
 
 impl Hash for LoggedKey {
-  fn hash(self/2: LoggedKey) -> uint64 {
+  fn hash(self/2: LoggedKey) -> u64 {
       (Ref[string]::set : (Ref[string], string) -> unit)(
         (self/2 : LoggedKey).log,
         (Ref[string]::get : (Ref[string]) -> string)((self/2 : LoggedKey).log) + "H"
       );
-      (int::to_uint64 : (int) -> uint64)((self/2 : LoggedKey).id)
+      (isize::to_uint64 : (isize) -> u64)((self/2 : LoggedKey).id)
   }
 }
 
-fn logged_key(log/3: Ref[string], label/4: string, id/5: int) -> LoggedKey {
+fn logged_key(log/3: Ref[string], label/4: string, id/5: isize) -> LoggedKey {
     (Ref[string]::set : (Ref[string], string) -> unit)(
       (log/3 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/3 : Ref[string])) + (label/4 : string)
     );
-    LoggedKey { id: (id/5 : int), log: (log/3 : Ref[string]) }
+    LoggedKey { id: (id/5 : isize), log: (log/3 : Ref[string]) }
 }
 
-fn logged_value(log/6: Ref[string], label/7: string, value/8: int) -> int {
+fn logged_value(log/6: Ref[string], label/7: string, value/8: isize) -> isize {
     (Ref[string]::set : (Ref[string], string) -> unit)(
       (log/6 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/6 : Ref[string])) + (label/7 : string)
     );
-    (value/8 : int)
+    (value/8 : isize)
 }
 
 fn main() -> unit {
-    let make_vec/9: ([int; 3]) -> Vec[int] = (@intrinsic(vec.from_array) : ([int; 3]) -> Vec[int]);
-    let values/10: Vec[int] = (make_vec/9 : ([int; 3]) -> Vec[int])([1, 2, 3]);
+    let make_vec/9: ([isize; 3]) -> Vec[isize] =
+      (@intrinsic(vec.from_array) : ([isize; 3]) -> Vec[isize]);
+    let values/10: Vec[isize] = (make_vec/9 : ([isize; 3]) -> Vec[isize])([1, 2, 3]);
     (println : (string) -> unit)(
       "" +
-        (int::to_string : (int) -> string)(
-          (Vec[int]::len : (Vec[int]) -> int)((values/10 : Vec[int]))
+        (isize::to_string : (isize) -> string)(
+          (Vec[isize]::len : (Vec[isize]) -> isize)((values/10 : Vec[isize]))
         ) +
         ":" +
-        (int::to_string : (int) -> string)((values/10 : Vec[int])[0]) +
+        (isize::to_string : (isize) -> string)((values/10 : Vec[isize])[0]) +
         ":" +
-        (int::to_string : (int) -> string)((values/10 : Vec[int])[2])
+        (isize::to_string : (isize) -> string)((values/10 : Vec[isize])[2])
     );
-    let empty/11: Vec[int] = (@intrinsic(vec.from_array) : ([int; 0]) -> Vec[int])([]);
-    (println : (int) -> unit)((Vec[int]::len : (Vec[int]) -> int)((empty/11 : Vec[int])));
-    let inferred_empty/12: Vec[int] = (@intrinsic(vec.from_array) : ([int; 0]) -> Vec[int])([]);
-    (println : (int) -> unit)((Vec[int]::len : (Vec[int]) -> int)((inferred_empty/12 : Vec[int])));
-    let mut source/13: [Ref[int]; 2] =
-      [(Ref[int]::new : (int) -> Ref[int])(1), (Ref[int]::new : (int) -> Ref[int])(2)];
-    let copied/14: Vec[Ref[int]] =
-      (@intrinsic(vec.from_array) : ([Ref[int]; 2]) -> Vec[Ref[int]])((source/13 : [Ref[int]; 2]));
-    (Ref[int]::set : (Ref[int], int) -> unit)((source/13 : [Ref[int]; 2])[0], 5);
-    (source/13 : [Ref[int]; 2])[0] = (Ref[int]::new : (int) -> Ref[int])(9);
+    let empty/11: Vec[isize] = (@intrinsic(vec.from_array) : ([isize; 0]) -> Vec[isize])([]);
+    (println : (isize) -> unit)((Vec[isize]::len : (Vec[isize]) -> isize)((empty/11 : Vec[isize])));
+    let inferred_empty/12: Vec[isize] =
+      (@intrinsic(vec.from_array) : ([isize; 0]) -> Vec[isize])([]);
+    (println : (isize) -> unit)(
+      (Vec[isize]::len : (Vec[isize]) -> isize)((inferred_empty/12 : Vec[isize]))
+    );
+    let mut source/13: [Ref[isize]; 2] =
+      [(Ref[isize]::new : (isize) -> Ref[isize])(1), (Ref[isize]::new : (isize) -> Ref[isize])(2)];
+    let copied/14: Vec[Ref[isize]] =
+      (@intrinsic(vec.from_array) : ([Ref[isize]; 2]) -> Vec[Ref[isize]])(
+        (source/13 : [Ref[isize]; 2])
+      );
+    (Ref[isize]::set : (Ref[isize], isize) -> unit)((source/13 : [Ref[isize]; 2])[0], 5);
+    (source/13 : [Ref[isize]; 2])[0] = (Ref[isize]::new : (isize) -> Ref[isize])(9);
     (println : (string) -> unit)(
       "" +
-        (int::to_string : (int) -> string)(
-          (Ref[int]::get : (Ref[int]) -> int)((copied/14 : Vec[Ref[int]])[0])
+        (isize::to_string : (isize) -> string)(
+          (Ref[isize]::get : (Ref[isize]) -> isize)((copied/14 : Vec[Ref[isize]])[0])
         ) +
         ":" +
-        (int::to_string : (int) -> string)(
-          (Ref[int]::get : (Ref[int]) -> int)((source/13 : [Ref[int]; 2])[0])
+        (isize::to_string : (isize) -> string)(
+          (Ref[isize]::get : (Ref[isize]) -> isize)((source/13 : [Ref[isize]; 2])[0])
         )
     );
     let log/15: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("");
-    let table/16: HashMap[LoggedKey, int] =
-      (@intrinsic(hashmap.from_array) : ([(LoggedKey, int); 2]) -> HashMap[LoggedKey, int])(
+    let table/16: HashMap[LoggedKey, isize] =
+      (@intrinsic(hashmap.from_array) : ([(LoggedKey, isize); 2]) -> HashMap[LoggedKey, isize])(
         [
           (
-            (logged_key : (Ref[string], string, int) -> LoggedKey)((log/15 : Ref[string]), "A", 1),
-            (logged_value : (Ref[string], string, int) -> int)((log/15 : Ref[string]), "a", 10)
+            (logged_key : (Ref[string], string, isize) -> LoggedKey)(
+              (log/15 : Ref[string]),
+              "A",
+              1
+            ),
+            (logged_value : (Ref[string], string, isize) -> isize)((log/15 : Ref[string]), "a", 10)
           ),
           (
-            (logged_key : (Ref[string], string, int) -> LoggedKey)((log/15 : Ref[string]), "B", 1),
-            (logged_value : (Ref[string], string, int) -> int)((log/15 : Ref[string]), "b", 20)
+            (logged_key : (Ref[string], string, isize) -> LoggedKey)(
+              (log/15 : Ref[string]),
+              "B",
+              1
+            ),
+            (logged_value : (Ref[string], string, isize) -> isize)((log/15 : Ref[string]), "b", 20)
           )
         ]
       );
     (println : (string) -> unit)(
       (Ref[string]::get : (Ref[string]) -> string)((log/15 : Ref[string]))
     );
-    (println : (int) -> unit)(
-      match (HashMap[LoggedKey, int]::get : (HashMap[LoggedKey, int], LoggedKey) -> Option[int])(
-        (table/16 : HashMap[LoggedKey, int]),
-        LoggedKey { id: 1, log: (log/15 : Ref[string]) }
-      ) {
-          Option::Some(value/17: int) => (value/17 : int),
+    (println : (isize) -> unit)(
+      match (HashMap[LoggedKey, isize]::get : (HashMap[LoggedKey, isize], LoggedKey) -> Option[
+        isize
+      ])((table/16 : HashMap[LoggedKey, isize]), LoggedKey { id: 1, log: (log/15 : Ref[string]) }) {
+          Option::Some(value/17: isize) => (value/17 : isize),
           Option::None => 0,
       }
     );
-    let make_map/18: ([(string, int); 2]) -> HashMap[string, int] =
-      (@intrinsic(hashmap.from_array) : ([(string, int); 2]) -> HashMap[string, int]);
-    let words/19: HashMap[string, int] =
-      (make_map/18 : ([(string, int); 2]) -> HashMap[string, int])([("a", 1), ("b", 2)]);
-    (println : (int) -> unit)(
-      (HashMap[string, int]::len : (HashMap[string, int]) -> int)((words/19 : HashMap[string, int]))
-    );
-    let no_words/20: HashMap[string, int] =
-      (@intrinsic(hashmap.from_array) : ([(string, int); 0]) -> HashMap[string, int])([]);
-    (println : (int) -> unit)(
-      (HashMap[string, int]::len : (HashMap[string, int]) -> int)(
-        (no_words/20 : HashMap[string, int])
+    let make_map/18: ([(string, isize); 2]) -> HashMap[string, isize] =
+      (@intrinsic(hashmap.from_array) : ([(string, isize); 2]) -> HashMap[string, isize]);
+    let words/19: HashMap[string, isize] =
+      (make_map/18 : ([(string, isize); 2]) -> HashMap[string, isize])([("a", 1), ("b", 2)]);
+    (println : (isize) -> unit)(
+      (HashMap[string, isize]::len : (HashMap[string, isize]) -> isize)(
+        (words/19 : HashMap[string, isize])
       )
     );
-    let inferred_no_words/21: HashMap[string, int] =
-      (@intrinsic(hashmap.from_array) : ([(string, int); 0]) -> HashMap[string, int])([]);
-    (println : (int) -> unit)(
-      (HashMap[string, int]::len : (HashMap[string, int]) -> int)(
-        (inferred_no_words/21 : HashMap[string, int])
+    let no_words/20: HashMap[string, isize] =
+      (@intrinsic(hashmap.from_array) : ([(string, isize); 0]) -> HashMap[string, isize])([]);
+    (println : (isize) -> unit)(
+      (HashMap[string, isize]::len : (HashMap[string, isize]) -> isize)(
+        (no_words/20 : HashMap[string, isize])
       )
     );
-    let pairs/22: Vec[(int, string)] =
-      (@intrinsic(vec.from_array) : ([(int, string); 2]) -> Vec[(int, string)])(
+    let inferred_no_words/21: HashMap[string, isize] =
+      (@intrinsic(hashmap.from_array) : ([(string, isize); 0]) -> HashMap[string, isize])([]);
+    (println : (isize) -> unit)(
+      (HashMap[string, isize]::len : (HashMap[string, isize]) -> isize)(
+        (inferred_no_words/21 : HashMap[string, isize])
+      )
+    );
+    let pairs/22: Vec[(isize, string)] =
+      (@intrinsic(vec.from_array) : ([(isize, string); 2]) -> Vec[(isize, string)])(
         [(1, "a"), (2, "b")]
       );
-    let nested/23: Vec[Vec[int]] =
-      (@intrinsic(vec.from_array) : ([Vec[int]; 2]) -> Vec[Vec[int]])(
+    let nested/23: Vec[Vec[isize]] =
+      (@intrinsic(vec.from_array) : ([Vec[isize]; 2]) -> Vec[Vec[isize]])(
         [
-          (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([1, 2]),
-          (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([3, 4])
+          (@intrinsic(vec.from_array) : ([isize; 2]) -> Vec[isize])([1, 2]),
+          (@intrinsic(vec.from_array) : ([isize; 2]) -> Vec[isize])([3, 4])
         ]
       );
-    let nested_map/24: HashMap[string, Vec[int]] =
-      (@intrinsic(hashmap.from_array) : ([(string, Vec[int]); 1]) -> HashMap[string, Vec[int]])(
-        [("values", (@intrinsic(vec.from_array) : ([int; 2]) -> Vec[int])([5, 6]))]
+    let nested_map/24: HashMap[string, Vec[isize]] =
+      (@intrinsic(hashmap.from_array) : ([(string, Vec[isize]); 1]) -> HashMap[string, Vec[isize]])(
+        [("values", (@intrinsic(vec.from_array) : ([isize; 2]) -> Vec[isize])([5, 6]))]
       );
-    let nested_value/26: int =
-      match (HashMap[string, Vec[int]]::get : (HashMap[string, Vec[int]], string) -> Option[
-        Vec[int]
-      ])((nested_map/24 : HashMap[string, Vec[int]]), "values") {
-          Option::Some(values/25: Vec[int]) => (values/25 : Vec[int])[0],
+    let nested_value/26: isize =
+      match (HashMap[string, Vec[isize]]::get : (HashMap[string, Vec[isize]], string) -> Option[
+        Vec[isize]
+      ])((nested_map/24 : HashMap[string, Vec[isize]]), "values") {
+          Option::Some(values/25: Vec[isize]) => (values/25 : Vec[isize])[0],
           Option::None => 0,
       };
     (println : (string) -> unit)(
-      "" + (pairs/22 : Vec[(int, string)])[1].1 + ":" +
-        (int::to_string : (int) -> string)((nested/23 : Vec[Vec[int]])[1][0]) +
+      "" + (pairs/22 : Vec[(isize, string)])[1].1 + ":" +
+        (isize::to_string : (isize) -> string)((nested/23 : Vec[Vec[isize]])[1][0]) +
         ":" +
-        (int::to_string : (int) -> string)((nested_value/26 : int))
+        (isize::to_string : (isize) -> string)((nested_value/26 : isize))
     )
 }

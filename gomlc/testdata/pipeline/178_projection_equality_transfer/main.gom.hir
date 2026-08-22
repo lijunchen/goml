@@ -10,29 +10,29 @@ file main.gom
   }
 
   struct LeftSource {
-      value: int32,
+      value: i32,
   }
 
   struct RightSource {
-      value: int32,
+      value: i32,
   }
 
-  impl Mark for int32 {
-    fn marked(local/1/0: int32) -> string {
+  impl Mark for i32 {
+    fn marked(local/1/0: i32) -> string {
         "m" + self/0.to_string()
     }
   }
 
   impl Source for LeftSource {
-    type Item = int32;
-    fn get(local/1/1: LeftSource) -> int32 {
+    type Item = i32;
+    fn get(local/1/1: LeftSource) -> i32 {
         self/1.value
     }
   }
 
   impl Source for RightSource {
-    type Item = int32;
-    fn get(local/1/2: RightSource) -> int32 {
+    type Item = i32;
+    fn get(local/1/2: RightSource) -> i32 {
         self/2.value
     }
   }

@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn match_mixed_pair(local/1/0: (int32, string)) -> int32 {
+  fn match_mixed_pair(local/1/0: (i32, string)) -> i32 {
       match pair/0 {
           (0, "zero") => 1,
           (0, _) => 2,
@@ -11,12 +11,12 @@ file main.gom
   }
 
   enum Mixed {
-      OnlyInt(int32),
+      OnlyInt(i32),
       OnlyStr(string),
-      Both(int32, string)
+      Both(i32, string)
   }
 
-  fn match_mixed_enum(local/1/1: Mixed) -> int32 {
+  fn match_mixed_enum(local/1/1: Mixed) -> i32 {
       match value/1 {
           OnlyInt(0) => 6,
           OnlyInt(_) => 7,

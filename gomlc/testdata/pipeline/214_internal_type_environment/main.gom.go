@@ -23,7 +23,7 @@ type Node struct {
     next List
 }
 
-type Wrapper__int32 struct {
+type Wrapper__i32 struct {
     value int32
 }
 
@@ -49,10 +49,10 @@ type Nil struct {}
 
 func (_ Nil) isList() {}
 
-type Shape__int32 struct {
+type Shape__i32 struct {
     _tag int32
     _v0_0 Point
-    _v1_0 Wrapper__int32
+    _v1_0 Wrapper__i32
 }
 
 func list_value(value__10 List) int32 {

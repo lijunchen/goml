@@ -90,7 +90,7 @@ func main0() struct{} {
     var inline562 int32 = 4
     var inline565 int32 = x__22 + inline562
     t488 = inline565
-    var inline558 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t488)
+    var inline558 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(t488)
     _goml_runtime_core_string_println(inline558)
     var t489 string
     var inline555 string = "north"
@@ -101,11 +101,11 @@ func main0() struct{} {
     var inline537 int32 = 1
     var inline538 int32 = 2
     var inline541 string = "Key::Point { " + "x: "
-    var inline542 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline537)
+    var inline542 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(inline537)
     var inline543 string = inline541 + inline542
     var inline544 string = inline543 + ", "
     var inline545 string = inline544 + "y: "
-    var inline546 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(inline538)
+    var inline546 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(inline538)
     var inline547 string = inline545 + inline546
     var inline548 string = inline547 + " }"
     t491 = inline548
@@ -127,7 +127,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__154 int32) string {
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__154 int32) string {
     var t497 string = _goml_runtime_core_int32_to_string(self__154)
     return t497
 }

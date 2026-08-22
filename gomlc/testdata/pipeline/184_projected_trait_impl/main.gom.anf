@@ -1,26 +1,26 @@
-fn trait_impl#Source#Value#get(self/1: Value) -> int32 {
+fn trait_impl#Source#Value#get(self/1: Value) -> i32 {
   let t416 = Value.value(self/1) in
   t416
 }
 
 fn main() -> unit {
   let t418 = Value { value: 41 } in
-  join inline_cont447(direct/6: int32) -> unit {
+  join inline_cont447(direct/6: i32) -> unit {
     join inline_cont444(_wild411: unit) -> unit {
       let t419 = Value { value: 42 } in
-      join inline_cont439(t420: int32) -> unit {
-        let inline437 = trait_impl#ToString#int32#to_string(t420) in
+      join inline_cont439(t420: i32) -> unit {
+        let inline437 = trait_impl#ToString#i32#to_string(t420) in
         let inline438 = @runtime(core.string_println)(inline437) in
         ()
       } in
-      let inline440 = trait_impl#Pick#[int32]@Value#pick(t419) in
+      let inline440 = trait_impl#Pick#[i32]@Value#pick(t419) in
       let inline441 = closure_env_identity_0 {} in
       let inline442 =
         pack_closure[inherent#closure_env_identity_0#closure_env_identity_0#apply](inline441) in
       let inline443 = inline442(inline440) in
       jump inline_cont439(inline443)
     } in
-    let inline445 = trait_impl#ToString#int32#to_string(direct/6) in
+    let inline445 = trait_impl#ToString#i32#to_string(direct/6) in
     let inline446 = @runtime(core.string_println)(inline445) in
     jump inline_cont444(())
   } in
@@ -28,12 +28,12 @@ fn main() -> unit {
   jump inline_cont447(inline448)
 }
 
-fn trait_impl#Pick#[int32]@Value#pick(self/0: Value) -> int32 {
+fn trait_impl#Pick#[i32]@Value#pick(self/0: Value) -> i32 {
   let inline450 = Value.value(self/0) in
   inline450
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_i32(value/1: i32) -> unit {
   join inline_cont451(t425: string) -> unit {
     let t426 = @runtime(core.string_println)(t425) in
     ()
@@ -42,8 +42,8 @@ fn println__T_int32(value/1: int32) -> unit {
   jump inline_cont451(inline452)
 }
 
-fn copy__S_Value(source/2: Value) -> int32 {
-  join inline_cont453(value/3: int32) -> int32 {
+fn copy__S_Value(source/2: Value) -> i32 {
+  join inline_cont453(value/3: i32) -> i32 {
     let t429 = closure_env_identity_0 {} in
     let identity/5 =
       pack_closure[inherent#closure_env_identity_0#closure_env_identity_0#apply](t429) in
@@ -54,14 +54,14 @@ fn copy__S_Value(source/2: Value) -> int32 {
   jump inline_cont453(inline454)
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   let t433 = @runtime(core.int32_to_string)(self/154) in
   t433
 }
 
 fn inherent#closure_env_identity_0#closure_env_identity_0#apply(
   env413: closure_env_identity_0,
-  item/4: int32
-) -> int32 {
+  item/4: i32
+) -> i32 {
   item/4
 }

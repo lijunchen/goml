@@ -1,13 +1,13 @@
-fn trait_impl#Measure#Vec[int32]#measure(self/0: Vec[int32]) -> int {
-  inherent#Vec#Vec[T]#len__T_int32(self/0)
+fn trait_impl#Measure#Vec[i32]#measure(self/0: Vec[i32]) -> isize {
+  inherent#Vec#Vec[T]#len__T_i32(self/0)
 }
 
 fn main() -> unit {
   let values/2 = @intrinsic(vec.new)() in
-  println__T_string(inherent#int#int#to_string(read_measure__T_Vec[int32](values/2)))
+  println__T_string(inherent#isize#isize#to_string(read_measure__T_Vec[i32](values/2)))
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/273: Vec[int32]) -> int {
+fn inherent#Vec#Vec[T]#len__T_i32(self/273: Vec[i32]) -> isize {
   @intrinsic(vec.len)(self/273)
 }
 
@@ -15,11 +15,11 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn read_measure__T_Vec[int32](value/1: Vec[int32]) -> int {
-  trait_impl#Measure#Vec[int32]#measure(value/1)
+fn read_measure__T_Vec[i32](value/1: Vec[i32]) -> isize {
+  trait_impl#Measure#Vec[i32]#measure(value/1)
 }
 
-fn inherent#int#int#to_string(self/32: int) -> string {
+fn inherent#isize#isize#to_string(self/32: isize) -> string {
   @runtime(core.int_to_string)(self/32)
 }
 

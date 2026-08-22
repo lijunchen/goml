@@ -28,10 +28,10 @@ fn main() -> unit {
       "version"
     ) {
         Option::Some(field/5: std::json::Value) =>
-          match (std::json::as_int : (std::json::Value) -> Option[int])(
+          match (std::json::as_int : (std::json::Value) -> Option[isize])(
             (field/5 : std::json::Value)
           ) {
-              Option::Some(version/6: int) => (println : (int) -> unit)((version/6 : int)),
+              Option::Some(version/6: isize) => (println : (isize) -> unit)((version/6 : isize)),
               Option::None => (println : (string) -> unit)("invalid version"),
           },
         Option::None => (println : (string) -> unit)("missing version"),

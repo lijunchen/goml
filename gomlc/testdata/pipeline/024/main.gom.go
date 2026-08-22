@@ -41,10 +41,10 @@ func line_to_string(l__4 Line) string {
     var t436 string
     var inline486 int32 = x415.x
     var inline487 int32 = x415.y
-    var inline490 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline486)
+    var inline490 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline486)
     var inline491 string = "Point { x: " + inline490
     var inline492 string = inline491 + ", y: "
-    var inline493 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline487)
+    var inline493 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline487)
     var inline494 string = inline492 + inline493
     var inline495 string = inline494 + " }"
     t436 = inline495
@@ -53,10 +53,10 @@ func line_to_string(l__4 Line) string {
     var t439 string
     var inline474 int32 = x416.x
     var inline475 int32 = x416.y
-    var inline478 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline474)
+    var inline478 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline474)
     var inline479 string = "Point { x: " + inline478
     var inline480 string = inline479 + ", y: "
-    var inline481 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline475)
+    var inline481 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline475)
     var inline482 string = inline480 + inline481
     var inline483 string = inline482 + " }"
     t439 = inline483
@@ -131,7 +131,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__33 int32) string {
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__33 int32) string {
     var t461 string = _goml_runtime_core_int32_to_string(self__33)
     return t461
 }

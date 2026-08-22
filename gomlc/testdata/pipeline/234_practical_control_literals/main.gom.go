@@ -42,12 +42,12 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 type Ordering int32
 
-type Option__int struct {
+type Option__isize struct {
     _tag int32
     _v1_0 int
 }
 
-func unwrap_or_negative(value__0 Option__int) int {
+func unwrap_or_negative(value__0 Option__isize) int {
     switch value__0._tag {
     case 1:
         var x412 int = value__0._v1_0
@@ -81,7 +81,7 @@ func count_to(limit__2 int) int {
     return jp440
 }
 
-func loop_option(value__5 Option__int) int {
+func loop_option(value__5 Option__isize) int {
     var jp448 int
     switch value__5._tag {
     case 1:
@@ -105,7 +105,7 @@ func main0() struct{} {
     var t468 string = "" + "}"
     var inline559 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t468)
     _goml_runtime_core_string_println(inline559)
-    var t469 Option__int = Option__int{
+    var t469 Option__isize = Option__isize{
         _tag: 1,
         _v1_0: 11,
     }
@@ -128,7 +128,7 @@ func main0() struct{} {
     t475 = inline543
     var inline540 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t475)
     _goml_runtime_core_string_println(inline540)
-    var t476 Option__int = Option__int{
+    var t476 Option__isize = Option__isize{
         _tag: 1,
         _v1_0: 9,
     }
@@ -138,7 +138,7 @@ func main0() struct{} {
     t478 = inline538
     var inline535 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t478)
     _goml_runtime_core_string_println(inline535)
-    var t479 int = loop_option(Option__int{
+    var t479 int = loop_option(Option__isize{
         _tag: 0,
     })
     var t480 string

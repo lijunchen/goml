@@ -1,14 +1,14 @@
-const ANSWER: int = (40 + 2);
-const ALTERNATE: int = 7;
+const ANSWER: isize = (40 + 2);
+const ALTERNATE: isize = 7;
 const ENABLED: bool = true;
 const GREETING: string = "hello";
-const MARKER: uint8 = 65;
-const RATIO: float64 = 1.5;
-const COMPUTED_ANSWER: int = 42;
+const MARKER: u8 = 65;
+const RATIO: f64 = 1.5;
+const COMPUTED_ANSWER: isize = 42;
 const COMPUTED_ENABLED: bool = true;
-const CLASSIFIED_AT_COMPILE_TIME: int = 1;
+const CLASSIFIED_AT_COMPILE_TIME: isize = 1;
 
-fn make_answer() -> int {
+fn make_answer() -> isize {
     42
 }
 
@@ -16,17 +16,17 @@ fn make_enabled() -> bool {
     true
 }
 
-fn comptime_classify(value/0: int) -> int {
-    match (value/0 : int) {
+fn comptime_classify(value/0: isize) -> isize {
+    match (value/0 : isize) {
         COMPUTED_ANSWER => 1,
-        _ : int => 0,
+        _ : isize => 0,
     }
 }
 
-fn classify(value/1: int) -> string {
-    match (value/1 : int) {
+fn classify(value/1: isize) -> string {
+    match (value/1 : isize) {
         42 | 7 => "known",
-        _ : int => "other",
+        _ : isize => "other",
     }
 }
 
@@ -53,10 +53,10 @@ fn classify_comptime_guard(value/4: bool) -> string {
     (result/5 : string)
 }
 
-fn classify_pair(value/6: (int, uint8)) -> bool {
-    match (value/6 : (int, uint8)) {
+fn classify_pair(value/6: (isize, u8)) -> bool {
+    match (value/6 : (isize, u8)) {
         (42, 65) => true,
-        _ : (int, uint8) => false,
+        _ : (isize, u8) => false,
     }
 }
 
@@ -67,78 +67,78 @@ fn classify_string(value/7: string) -> bool {
     }
 }
 
-fn classify_float(value/8: float64) -> bool {
-    match (value/8 : float64) {
+fn classify_float(value/8: f64) -> bool {
+    match (value/8 : f64) {
         RATIO => true,
-        _ : float64 => false,
+        _ : f64 => false,
     }
 }
 
-fn shadow_constant() -> int {
-    let answer/9: int = 9;
-    (answer/9 : int)
+fn shadow_constant() -> isize {
+    let answer/9: isize = 9;
+    (answer/9 : isize)
 }
 
-fn explicit_binding(value/10: int) -> int {
-    match (value/10 : int) {
-        answer/11 @ _ : int => (answer/11 : int),
+fn explicit_binding(value/10: isize) -> isize {
+    match (value/10 : isize) {
+        answer/11 @ _ : isize => (answer/11 : isize),
     }
 }
 
-fn matches_if_let(value/12: int) -> bool {
-    match (value/12 : int) {
+fn matches_if_let(value/12: isize) -> bool {
+    match (value/12 : isize) {
         42 =>
           {
               true
           },
-        _ : int =>
+        _ : isize =>
           {
               false
           },
     }
 }
 
-fn matches_let_else(value/13: int) -> bool {
+fn matches_let_else(value/13: isize) -> bool {
     let 42 =
-      (value/13 : int) else
+      (value/13 : isize) else
       {
           return false
       };
     true
 }
 
-fn for_binding() -> int {
-    let total/14: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
-    for answer/15: int in
+fn for_binding() -> isize {
+    let total/14: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    for answer/15: isize in
       [1, 2] {
-        (Ref[int]::set : (Ref[int], int) -> unit)(
-          (total/14 : Ref[int]),
-          (Ref[int]::get : (Ref[int]) -> int)((total/14 : Ref[int])) + (answer/15 : int)
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+          (total/14 : Ref[isize]),
+          (Ref[isize]::get : (Ref[isize]) -> isize)((total/14 : Ref[isize])) + (answer/15 : isize)
         )
     };
-    (Ref[int]::get : (Ref[int]) -> int)((total/14 : Ref[int]))
+    (Ref[isize]::get : (Ref[isize]) -> isize)((total/14 : Ref[isize]))
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((classify : (int) -> string)(42));
-    (println : (string) -> unit)((classify : (int) -> string)(7));
-    (println : (string) -> unit)((classify : (int) -> string)(0));
+    (println : (string) -> unit)((classify : (isize) -> string)(42));
+    (println : (string) -> unit)((classify : (isize) -> string)(7));
+    (println : (string) -> unit)((classify : (isize) -> string)(0));
     (println : (string) -> unit)((classify_bool : (bool) -> string)(true));
     (println : (string) -> unit)((classify_bool : (bool) -> string)(false));
     (println : (string) -> unit)((classify_computed_bool : (bool) -> string)(true));
     (println : (string) -> unit)((classify_computed_bool : (bool) -> string)(false));
     (println : (string) -> unit)((classify_comptime_guard : (bool) -> string)(true));
     (println : (string) -> unit)((classify_comptime_guard : (bool) -> string)(false));
-    (println : (bool) -> unit)((classify_pair : ((int, uint8)) -> bool)((42, 65)));
-    (println : (bool) -> unit)((classify_pair : ((int, uint8)) -> bool)((42, 66)));
+    (println : (bool) -> unit)((classify_pair : ((isize, u8)) -> bool)((42, 65)));
+    (println : (bool) -> unit)((classify_pair : ((isize, u8)) -> bool)((42, 66)));
     (println : (bool) -> unit)((classify_string : (string) -> bool)("hello"));
-    (println : (bool) -> unit)((classify_float : (float64) -> bool)(1.5));
-    (println : (int) -> unit)((shadow_constant : () -> int)());
-    (println : (int) -> unit)((explicit_binding : (int) -> int)(11));
-    (println : (bool) -> unit)((matches_if_let : (int) -> bool)(42));
-    (println : (bool) -> unit)((matches_if_let : (int) -> bool)(41));
-    (println : (bool) -> unit)((matches_let_else : (int) -> bool)(42));
-    (println : (bool) -> unit)((matches_let_else : (int) -> bool)(41));
-    (println : (int) -> unit)((for_binding : () -> int)());
-    (println : (int) -> unit)((CLASSIFIED_AT_COMPILE_TIME : int))
+    (println : (bool) -> unit)((classify_float : (f64) -> bool)(1.5));
+    (println : (isize) -> unit)((shadow_constant : () -> isize)());
+    (println : (isize) -> unit)((explicit_binding : (isize) -> isize)(11));
+    (println : (bool) -> unit)((matches_if_let : (isize) -> bool)(42));
+    (println : (bool) -> unit)((matches_if_let : (isize) -> bool)(41));
+    (println : (bool) -> unit)((matches_let_else : (isize) -> bool)(42));
+    (println : (bool) -> unit)((matches_let_else : (isize) -> bool)(41));
+    (println : (isize) -> unit)((for_binding : () -> isize)());
+    (println : (isize) -> unit)((CLASSIFIED_AT_COMPILE_TIME : isize))
 }

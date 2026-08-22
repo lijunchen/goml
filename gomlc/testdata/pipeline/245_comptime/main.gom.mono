@@ -1,6 +1,6 @@
-const ANSWER: int = 120;
+const ANSWER: isize = 120;
 
-fn factorial(value/0: int) -> int {
+fn factorial(value/0: isize) -> isize {
   if (value/0 < 2) {
       {
         1
@@ -12,7 +12,7 @@ fn factorial(value/0: int) -> int {
   }
 }
 
-fn accumulate(limit/1: int) -> int {
+fn accumulate(limit/1: isize) -> isize {
   let index/2 = 0 in
   let total/3 = 0 in
   let _wild413 =
@@ -25,11 +25,11 @@ fn accumulate(limit/1: int) -> int {
   total/3
 }
 
-fn make_pair(value/4: int) -> Pair {
+fn make_pair(value/4: isize) -> Pair {
   Pair { left: value/4, right: (value/4 + 1) }
 }
 
-fn choose(value/5: int) -> Choice {
+fn choose(value/5: isize) -> Choice {
   if (value/5 > 0) {
       {
         Choice::Value(value/5)
@@ -41,7 +41,7 @@ fn choose(value/5: int) -> Choice {
   }
 }
 
-fn nonnegative(value/6: int) -> int {
+fn nonnegative(value/6: isize) -> isize {
   if (value/6 < 0) {
       {
         @intrinsic(compiler.missing)("value must be non-negative")
@@ -53,7 +53,7 @@ fn nonnegative(value/6: int) -> int {
   }
 }
 
-fn shadow(value/7: int) -> int {
+fn shadow(value/7: isize) -> isize {
   let base/8 = value/7 in
   let nested/10 =
     {
@@ -63,19 +63,19 @@ fn shadow(value/7: int) -> int {
   (base/9 + nested/10)
 }
 
-fn widen_negative(value/11: int8) -> uint64 {
-  (value/11 as uint64)
+fn widen_negative(value/11: i8) -> u64 {
+  (value/11 as u64)
 }
 
 fn main() -> unit {
   let values/12 = [6, 10, 4] in
   let pair/13 = Pair { left: 7, right: 8 } in
   let choice/14 = Choice::Value(9) in
-  let _wild414 = println__T_int(ANSWER) in
-  let _wild415 = println__T_int(@intrinsic(array.get)(values/12, 0)) in
-  let _wild416 = println__T_int(@intrinsic(array.get)(values/12, 1)) in
-  let _wild417 = println__T_int(@intrinsic(array.get)(values/12, 2)) in
-  let _wild418 = println__T_int((Pair.left(pair/13) + Pair.right(pair/13))) in
+  let _wild414 = println__T_isize(ANSWER) in
+  let _wild415 = println__T_isize(@intrinsic(array.get)(values/12, 0)) in
+  let _wild416 = println__T_isize(@intrinsic(array.get)(values/12, 1)) in
+  let _wild417 = println__T_isize(@intrinsic(array.get)(values/12, 2)) in
+  let _wild418 = println__T_isize((Pair.left(pair/13) + Pair.right(pair/13))) in
   let _wild420 =
     match choice/14 {
       Choice::Value(x419) => {
@@ -83,32 +83,32 @@ fn main() -> unit {
           let x419 = Choice::Value._0(choice/14) in
           {
             let value/15 = x419 in
-            println__T_int(value/15)
+            println__T_isize(value/15)
           }
         }
       },
       Choice::Empty => {
-        println__T_int(0)
+        println__T_isize(0)
       },
     } in
   let _wild421 = println__T_bool((factorial(5) == ANSWER)) in
   let shadowed/16 = 12 in
-  let _wild422 = println__T_int(shadowed/16) in
+  let _wild422 = println__T_isize(shadowed/16) in
   let _wild423 = println__T_bool((shadow(3) == shadowed/16)) in
   let widened/17 = 18446744073709551615 in
   let _wild424 = println__T_bool((widened/17 == widen_negative(-1))) in
-  println__T_int(factorial(4))
+  println__T_isize(factorial(4))
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
 fn println__T_bool(value/1: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 

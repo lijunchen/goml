@@ -53,7 +53,7 @@ func show_scalar(value__0 uint32) struct{} {
     case 1:
         var x412 rune = mtmp411._v1_0
         var t426 uint32 = uint32(rune(x412))
-        var inline478 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(t426)
+        var inline478 string = _goml_m_trait__impl_i_ToString_i_u32_i_to__string(t426)
         _goml_runtime_core_string_println(inline478)
         return struct{}{}
     default:
@@ -74,7 +74,7 @@ func main0() struct{} {
     case 1:
         var inline522 rune = inline520._v1_0
         var inline524 uint32 = uint32(rune(inline522))
-        println__T_uint32(inline524)
+        println__T_u32(inline524)
     default:
         panic("non-exhaustive match")
     }
@@ -86,7 +86,7 @@ func main0() struct{} {
     case 1:
         var inline514 rune = inline512._v1_0
         var inline516 uint32 = uint32(rune(inline514))
-        println__T_uint32(inline516)
+        println__T_u32(inline516)
     default:
         panic("non-exhaustive match")
     }
@@ -98,7 +98,7 @@ func main0() struct{} {
     case 1:
         var inline506 rune = inline504._v1_0
         var inline508 uint32 = uint32(rune(inline506))
-        println__T_uint32(inline508)
+        println__T_u32(inline508)
     default:
         panic("non-exhaustive match")
     }
@@ -110,7 +110,7 @@ func main0() struct{} {
     case 1:
         var inline498 rune = inline496._v1_0
         var inline500 uint32 = uint32(rune(inline498))
-        println__T_uint32(inline500)
+        println__T_u32(inline500)
     default:
         panic("non-exhaustive match")
     }
@@ -161,7 +161,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func println__T_uint32(value__1 uint32) struct{} {
+func println__T_u32(value__1 uint32) struct{} {
     var t440 string
     var inline534 string = _goml_runtime_core_uint32_to_string(value__1)
     t440 = inline534
@@ -205,7 +205,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(self__158 uint32) string {
+func _goml_m_trait__impl_i_ToString_i_u32_i_to__string(self__158 uint32) string {
     var t455 string = _goml_runtime_core_uint32_to_string(self__158)
     return t455
 }

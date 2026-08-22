@@ -12,8 +12,8 @@ file main.gom
       value: T,
   }
 
-  impl Render for Vec[int32] {
-    fn render(local/1/0: Vec[int32]) -> string {
+  impl Render for Vec[i32] {
+    fn render(local/1/0: Vec[i32]) -> string {
         "items=" + self/0.len().to_string()
     }
   }
@@ -37,12 +37,12 @@ file main.gom
   }
 
   fn main() -> unit {
-      let local/1/5: Vec[int32] = vec_new();
+      let local/1/5: Vec[i32] = vec_new();
       values/5.push(1);
       values/5.push(2);
       println(def/1/5(values/5));
       let local/1/6: string = def/1/6("equal");
       println(text/6);
-      let local/1/7: Wrap[int32] = Wrap { value: 7 };
+      let local/1/7: Wrap[i32] = Wrap { value: 7 };
       println(def/1/7(selected/7));
   }

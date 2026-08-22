@@ -1,40 +1,40 @@
-fn std::internal::task::scope_new(parent/0: int64) -> int64 {
+fn std::internal::task::scope_new(parent/0: i64) -> i64 {
   @runtime(std.task.scope_new)(parent/0)
 }
 
-fn std::internal::task::scope_spawn(scope/1: int64, body/2: () -> unit) -> bool {
+fn std::internal::task::scope_spawn(scope/1: i64, body/2: () -> unit) -> bool {
   @runtime(std.task.scope_spawn)(scope/1, body/2)
 }
 
-fn std::internal::task::scope_run(scope/3: int64, body/4: () -> unit) -> unit {
+fn std::internal::task::scope_run(scope/3: i64, body/4: () -> unit) -> unit {
   @runtime(std.task.scope_run)(scope/3, body/4)
 }
 
-fn std::internal::task::scope_try_spawn(scope/5: int64, body/6: () -> unit) -> bool {
+fn std::internal::task::scope_try_spawn(scope/5: i64, body/6: () -> unit) -> bool {
   @runtime(std.task.scope_try_spawn)(scope/5, body/6)
 }
 
-fn std::internal::task::scope_cancel(scope/7: int64) -> unit {
+fn std::internal::task::scope_cancel(scope/7: i64) -> unit {
   @runtime(std.task.scope_cancel)(scope/7)
 }
 
-fn std::internal::task::scope_finish(scope/8: int64) -> unit {
+fn std::internal::task::scope_finish(scope/8: i64) -> unit {
   @runtime(std.task.scope_finish)(scope/8)
 }
 
-fn std::internal::task::scope_cancelled(scope/9: int64) -> bool {
+fn std::internal::task::scope_cancelled(scope/9: i64) -> bool {
   @runtime(std.task.scope_cancelled)(scope/9)
 }
 
-fn std::internal::task::scope_done(scope/10: int64) -> Receiver[unit] {
+fn std::internal::task::scope_done(scope/10: i64) -> Receiver[unit] {
   @runtime(std.task.scope_done)(scope/10)
 }
 
-fn std::internal::task::scope_sleep(scope/11: int64, nanoseconds/12: int64) -> bool {
+fn std::internal::task::scope_sleep(scope/11: i64, nanoseconds/12: i64) -> bool {
   @runtime(std.task.sleep)(scope/11, nanoseconds/12)
 }
 
-fn std::internal::task::scope_count() -> int {
+fn std::internal::task::scope_count() -> isize {
   @runtime(std.task.active_scope_count)()
 }
 
@@ -93,16 +93,16 @@ fn std::internal::task::token(
 
 fn std::internal::task::sleep_with(
   cancel/28: std::internal::task::CancelToken,
-  nanoseconds/29: int64
+  nanoseconds/29: i64
 ) -> bool {
   std::internal::task::scope_sleep(std::internal::task::CancelToken.id(cancel/28), nanoseconds/29)
 }
 
-fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> int64 {
+fn std::internal::task::id(cancel/30: std::internal::task::CancelToken) -> i64 {
   std::internal::task::CancelToken.id(cancel/30)
 }
 
-fn std::internal::task::active_scope_count() -> int {
+fn std::internal::task::active_scope_count() -> isize {
   std::internal::task::scope_count()
 }
 
@@ -119,7 +119,7 @@ fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#do
 }
 
 fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
-  limit/2: int
+  limit/2: isize
 ) -> std::task::ConcurrencyLimit {
   let count/3 =
     if (limit/2 > 0) {
@@ -148,7 +148,7 @@ fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
   std::task::ConcurrencyLimit { slots: slots/4 }
 }
 
-fn std::task::active_scope_count() -> int {
+fn std::task::active_scope_count() -> isize {
   std::internal::task::active_scope_count()
 }
 
@@ -172,7 +172,7 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#is_cancelled(
 
 fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
   self/42: std::task::CancelToken
-) -> int64 {
+) -> i64 {
   std::internal::task::id(std::task::CancelToken.value(self/42))
 }
 
@@ -186,7 +186,7 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#done(
 
 fn std::task::sleep_nanoseconds_with(
   cancel/52: std::task::CancelToken,
-  nanoseconds/53: int64
+  nanoseconds/53: i64
 ) -> std::task::WaitResult__unit {
   if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/52), nanoseconds/53) {
       {
@@ -202,45 +202,45 @@ fn std::task::sleep_nanoseconds_with(
 fn main() -> unit {
   let completed/0 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let total/7 =
-    std::task::scope__T_int(
+    std::task::scope__T_isize(
       |scope/1| {
         let left/3 =
-          inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/2| 20) in
+          inherent#std::task::Scope#std::task::Scope#spawn__T_isize(scope/1, |_cancel/2| 20) in
         let right/5 =
-          inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/4| 22) in
+          inherent#std::task::Scope#std::task::Scope#spawn__T_isize(scope/1, |_cancel/4| 22) in
         let mtmp411 =
           inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
             scope/1,
             |_cancel/6| inherent#Ref#Ref[T]#set__T_bool(completed/0, true)
           ) in
         {
-          (inherent#std::task::Task#std::task::Task[T]#join__T_int(left/3) +
-            inherent#std::task::Task#std::task::Task[T]#join__T_int(right/5))
+          (inherent#std::task::Task#std::task::Task[T]#join__T_isize(left/3) +
+            inherent#std::task::Task#std::task::Task[T]#join__T_isize(right/5))
         }
       }
     ) in
-  let _wild412 = println__T_int(total/7) in
+  let _wild412 = println__T_isize(total/7) in
   let _wild413 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
   let nested/12 =
-    std::task::scope__T_int(
+    std::task::scope__T_isize(
       |scope/8| {
-        std::task::scope_with__T_int(
+        std::task::scope_with__T_isize(
           inherent#std::task::Scope#std::task::Scope#token(scope/8),
           |scope/9| {
             let value/11 =
-              inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/9, |_cancel/10| 7) in
-            inherent#std::task::Task#std::task::Task[T]#join__T_int(value/11)
+              inherent#std::task::Scope#std::task::Scope#spawn__T_isize(scope/9, |_cancel/10| 7) in
+            inherent#std::task::Task#std::task::Task[T]#join__T_isize(value/11)
           }
         )
       }
     ) in
-  let _wild414 = println__T_int(nested/12) in
+  let _wild414 = println__T_isize(nested/12) in
   let scope/13 = 3 in
   let spawn/15 = |value/14| (value/14 + 1) in
-  println__T_int(spawn/15(scope/13))
+  println__T_isize(spawn/15(scope/13))
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: int) -> Channel[unit] {
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/435: isize) -> Channel[unit] {
   @intrinsic(channel.new)(capacity/435)
 }
 
@@ -252,25 +252,25 @@ fn inherent#Ref#Ref[T]#new__T_bool(value/431: bool) -> Ref[bool] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn std::task::scope__T_int(body/9: (std::task::Scope) -> int) -> int {
+fn std::task::scope__T_isize(body/9: (std::task::Scope) -> isize) -> isize {
   let handle/10 = std::internal::task::root_scope() in
-  let result/11 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  let result/11 = inherent#Ref#Ref[T]#new__T_Option[isize](Option__isize::None) in
   let _wild11 =
     std::internal::task::run(
       handle/10,
-      || inherent#Ref#Ref[T]#set__T_Option[int](
+      || inherent#Ref#Ref[T]#set__T_Option[isize](
         result/11,
-        Option__int::Some(body/9(std::task::Scope { handle: handle/10 }))
+        Option__isize::Some(body/9(std::task::Scope { handle: handle/10 }))
       )
     ) in
-  std::task::completed_scope_value__T_int(result/11)
+  std::task::completed_scope_value__T_isize(result/11)
 }
 
-fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
   self/25: std::task::Scope,
-  body/26: (std::task::CancelToken) -> int
-) -> std::task::Task__int {
-  let result/27 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  body/26: (std::task::CancelToken) -> isize
+) -> std::task::Task__isize {
+  let result/27 = inherent#Ref#Ref[T]#new__T_Option[isize](Option__isize::None) in
   let ready/28 = inherent#Channel#Channel[T]#new__T_unit(0) in
   let token/29 =
     std::task::CancelToken {
@@ -281,11 +281,14 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
       std::task::Scope.handle(self/25),
       || {
         let _wild17 =
-          inherent#Ref#Ref[T]#set__T_Option[int](result/27, Option__int::Some(body/26(token/29))) in
+          inherent#Ref#Ref[T]#set__T_Option[isize](
+            result/27,
+            Option__isize::Some(body/26(token/29))
+          ) in
         inherent#Channel#Channel[T]#close__T_unit(ready/28)
       }
     ) in
-  std::task::Task__int { result: result/27, ready: ready/28 }
+  std::task::Task__isize { result: result/27, ready: ready/28 }
 }
 
 fn inherent#Ref#Ref[T]#set__T_bool(self/433: Ref[bool], value/434: bool) -> unit {
@@ -317,19 +320,22 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
   std::task::Task__unit { result: result/27, ready: ready/28 }
 }
 
-fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/55: std::task::Task__int) -> int {
+fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
+  self/55: std::task::Task__isize
+) -> isize {
   loop {
-    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__int.ready(self/55)) in
+    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__isize.ready(self/55)) in
     {
       {
-        let mtmp26 = inherent#Ref#Ref[T]#get__T_Option[int](std::task::Task__int.result(self/55)) in
+        let mtmp26 =
+          inherent#Ref#Ref[T]#get__T_Option[isize](std::task::Task__isize.result(self/55)) in
         match mtmp26 {
-          Option__int::None => {
+          Option__isize::None => {
             ()
           },
-          Option__int::Some(x27) => {
+          Option__isize::Some(x27) => {
             {
-              let x27 = Option__int::Some._0(mtmp26) in
+              let x27 = Option__isize::Some._0(mtmp26) in
               {
                 let value/56 = x27 in
                 {
@@ -344,8 +350,8 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/55: std::task::T
   }
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_isize(value/1: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/1))
 }
 
 fn println__T_bool(value/1: bool) -> unit {
@@ -356,45 +362,45 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/432: Ref[bool]) -> bool {
   @intrinsic(ref.get)(self/432)
 }
 
-fn std::task::scope_with__T_int(
+fn std::task::scope_with__T_isize(
   parent/12: std::task::CancelToken,
-  body/13: (std::task::Scope) -> int
-) -> int {
+  body/13: (std::task::Scope) -> isize
+) -> isize {
   let handle/14 = std::internal::task::child_scope(std::task::CancelToken.value(parent/12)) in
-  let result/15 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  let result/15 = inherent#Ref#Ref[T]#new__T_Option[isize](Option__isize::None) in
   let _wild12 =
     std::internal::task::run(
       handle/14,
-      || inherent#Ref#Ref[T]#set__T_Option[int](
+      || inherent#Ref#Ref[T]#set__T_Option[isize](
         result/15,
-        Option__int::Some(body/13(std::task::Scope { handle: handle/14 }))
+        Option__isize::Some(body/13(std::task::Scope { handle: handle/14 }))
       )
     ) in
-  std::task::completed_scope_value__T_int(result/15)
+  std::task::completed_scope_value__T_isize(result/15)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/431: Option__int) -> Ref[Option__int] {
+fn inherent#Ref#Ref[T]#new__T_Option[isize](value/431: Option__isize) -> Ref[Option__isize] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/433: Ref[Option__int],
-  value/434: Option__int
+fn inherent#Ref#Ref[T]#set__T_Option[isize](
+  self/433: Ref[Option__isize],
+  value/434: Option__isize
 ) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
-fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
+fn std::task::completed_scope_value__T_isize(result/0: Ref[Option__isize]) -> isize {
   loop {
     {
-      let mtmp0 = inherent#Ref#Ref[T]#get__T_Option[int](result/0) in
+      let mtmp0 = inherent#Ref#Ref[T]#get__T_Option[isize](result/0) in
       match mtmp0 {
-        Option__int::None => {
+        Option__isize::None => {
           ()
         },
-        Option__int::Some(x1) => {
+        Option__isize::Some(x1) => {
           {
-            let x1 = Option__int::Some._0(mtmp0) in
+            let x1 = Option__isize::Some._0(mtmp0) in
             {
               let value/1 = x1 in
               break value/1
@@ -446,11 +452,11 @@ fn inherent#Channel#Channel[T]#recv__T_unit(self/438: Channel[unit]) -> Option__
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/432: Ref[Option__int]) -> Option__int {
+fn inherent#Ref#Ref[T]#get__T_Option[isize](self/432: Ref[Option__isize]) -> Option__isize {
   @intrinsic(ref.get)(self/432)
 }
 
-fn trait_impl#ToString#int#to_string(self/151: int) -> string {
+fn trait_impl#ToString#isize#to_string(self/151: isize) -> string {
   @runtime(core.int_to_string)(self/151)
 }
 
@@ -462,7 +468,7 @@ fn trait_impl#PartialEq#bool#eq(self/179: bool, other/180: bool) -> bool {
   (self/179 == other/180)
 }
 
-fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
+fn trait_impl#Hash#bool#hash(self/208: bool) -> u64 {
   if self/208 {
       {
         1
@@ -474,33 +480,36 @@ fn trait_impl#Hash#bool#hash(self/208: bool) -> uint64 {
   }
 }
 
-fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option__int) -> bool {
+fn trait_impl#PartialEq#Option__isize#eq(
+  self/235: Option__isize,
+  other/236: Option__isize
+) -> bool {
   {
     let mtmp171 = (self/235, other/236) in
     {
       let x172 = mtmp171.0 in
       let x173 = mtmp171.1 in
       match x173 {
-        Option__int::None => {
+        Option__isize::None => {
           match x172 {
-            Option__int::None => {
+            Option__isize::None => {
               true
             },
             _ => false,
           }
         },
-        Option__int::Some(x174) => {
+        Option__isize::Some(x174) => {
           {
-            let x174 = Option__int::Some._0(x173) in
+            let x174 = Option__isize::Some._0(x173) in
             match x172 {
-              Option__int::Some(x176) => {
+              Option__isize::Some(x176) => {
                 {
-                  let x176 = Option__int::Some._0(x172) in
+                  let x176 = Option__isize::Some._0(x172) in
                   {
                     let left/237 = x176 in
                     {
                       let right/238 = x174 in
-                      trait_impl#PartialEq#int#eq(left/237, right/238)
+                      trait_impl#PartialEq#isize#eq(left/237, right/238)
                     }
                   }
                 }
@@ -514,17 +523,17 @@ fn trait_impl#PartialEq#Option__int#eq(self/235: Option__int, other/236: Option_
   }
 }
 
-fn trait_impl#Hash#Option__int#hash(self/239: Option__int) -> uint64 {
+fn trait_impl#Hash#Option__isize#hash(self/239: Option__isize) -> u64 {
   match self/239 {
-    Option__int::None => {
+    Option__isize::None => {
       14695981039346656038
     },
-    Option__int::Some(x177) => {
+    Option__isize::Some(x177) => {
       {
-        let x177 = Option__int::Some._0(self/239) in
+        let x177 = Option__isize::Some._0(self/239) in
         {
           let value/240 = x177 in
-          (14695981039346656039 + trait_impl#Hash#int#hash(value/240))
+          (14695981039346656039 + trait_impl#Hash#isize#hash(value/240))
         }
       }
     },
@@ -571,7 +580,7 @@ fn trait_impl#PartialEq#Option__unit#eq(self/235: Option__unit, other/236: Optio
   }
 }
 
-fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> uint64 {
+fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> u64 {
   match self/239 {
     Option__unit::None => {
       14695981039346656038
@@ -588,11 +597,11 @@ fn trait_impl#Hash#Option__unit#hash(self/239: Option__unit) -> uint64 {
   }
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }
 
@@ -600,6 +609,6 @@ fn trait_impl#PartialEq#unit#eq(self/177: unit, other/178: unit) -> bool {
   true
 }
 
-fn trait_impl#Hash#unit#hash(self/207: unit) -> uint64 {
+fn trait_impl#Hash#unit#hash(self/207: unit) -> u64 {
   0
 }

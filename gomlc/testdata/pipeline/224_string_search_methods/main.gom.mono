@@ -74,7 +74,7 @@ fn inherent#string#string#contains(self/461: string, expected/462: string) -> bo
             let _wild388 =
               {
                 let for_iter385 =
-                  trait_impl#IntoIterator#FnIterator__int#into_iter(
+                  trait_impl#IntoIterator#FnIterator__isize#into_iter(
                     __goml_builtin_range(
                       0,
                       ((inherent#string#string#byte_len(self/461) -
@@ -84,14 +84,14 @@ fn inherent#string#string#contains(self/461: string, expected/462: string) -> bo
                   ) in
                 while true {
                     {
-                      let for_next386 = trait_impl#Iterator#FnIterator__int#next(for_iter385) in
+                      let for_next386 = trait_impl#Iterator#FnIterator__isize#next(for_iter385) in
                       match for_next386 {
-                        Option__int::None => {
+                        Option__isize::None => {
                           break
                         },
-                        Option__int::Some(x387) => {
+                        Option__isize::Some(x387) => {
                           {
-                            let x387 = Option__int::Some._0(for_next386) in
+                            let x387 = Option__isize::Some._0(for_next386) in
                             {
                               let start/463 = x387 in
                               {
@@ -140,46 +140,48 @@ fn trait_impl#ToString#bool#to_string(self/148: bool) -> string {
   @runtime(core.bool_to_string)(self/148)
 }
 
-fn inherent#string#string#byte_len(self/36: string) -> int {
+fn inherent#string#string#byte_len(self/36: string) -> isize {
   @runtime(core.string_len)(self/36)
 }
 
-fn inherent#string#string#is_char_boundary(self/44: string, index/45: int) -> bool {
+fn inherent#string#string#is_char_boundary(self/44: string, index/45: isize) -> bool {
   string_is_char_boundary(self/44, index/45)
 }
 
-fn inherent#string#string#byte_slice(self/41: string, start/42: int, end/43: int) -> string {
+fn inherent#string#string#byte_slice(self/41: string, start/42: isize, end/43: isize) -> string {
   string_byte_slice(self/41, start/42, end/43)
 }
 
-fn __goml_builtin_range(start/503: int, end/504: int) -> FnIterator__int {
+fn __goml_builtin_range(start/503: isize, end/504: isize) -> FnIterator__isize {
   let current/505 = @intrinsic(ref.new)(start/503) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_int(
+  inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
     || {
       let value/506 = @intrinsic(ref.get)(current/505) in
       if (value/506 < end/504) {
           {
             let _wild407 = @intrinsic(ref.set)(current/505, (value/506 + 1)) in
-            Option__int::Some(value/506)
+            Option__isize::Some(value/506)
           }
       } else {
           {
-            Option__int::None
+            Option__isize::None
           }
       }
     }
   )
 }
 
-fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/256: FnIterator__int) -> FnIterator__int {
+fn trait_impl#IntoIterator#FnIterator__isize#into_iter(
+  self/256: FnIterator__isize
+) -> FnIterator__isize {
   self/256
 }
 
-fn trait_impl#Iterator#FnIterator__int#next(self/255: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/255)()
+fn trait_impl#Iterator#FnIterator__isize#next(self/255: FnIterator__isize) -> Option__isize {
+  FnIterator__isize.next_fn(self/255)()
 }
 
-fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
+fn string_is_char_boundary(value/15: string, index/16: isize) -> bool {
   if if (index/16 < 0) {
       true
   } else {
@@ -201,7 +203,7 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
   }
 }
 
-fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
+fn string_byte_slice(value/21: string, start/22: isize, end/23: isize) -> string {
   if if string_is_char_boundary(value/21, start/22) {
       string_is_char_boundary(value/21, end/23)
   } else {
@@ -217,20 +219,20 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
   }
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-  next_fn/254: () -> Option__int
-) -> FnIterator__int {
-  FnIterator__int { next_fn: next_fn/254 }
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_isize(
+  next_fn/254: () -> Option__isize
+) -> FnIterator__isize {
+  FnIterator__isize { next_fn: next_fn/254 }
 }
 
-fn inherent#string#string#byte_get(self/39: string, index/40: int) -> uint8 {
+fn inherent#string#string#byte_get(self/39: string, index/40: isize) -> u8 {
   @runtime(core.string_byte_get)(self/39, index/40)
 }
 
-fn trait_impl#PartialEq#int#eq(self/185: int, other/186: int) -> bool {
+fn trait_impl#PartialEq#isize#eq(self/185: isize, other/186: isize) -> bool {
   (self/185 == other/186)
 }
 
-fn trait_impl#Hash#int#hash(self/211: int) -> uint64 {
+fn trait_impl#Hash#isize#hash(self/211: isize) -> u64 {
   @runtime(core.int_hash)(self/211)
 }

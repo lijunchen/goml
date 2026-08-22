@@ -1,5 +1,5 @@
 package main;
-fn parse_flag(flag: bool) -> Result[int32, string] {
+fn parse_flag(flag: bool) -> Result[i32, string] {
     if flag {
         {
             Result::Ok(7)
@@ -11,11 +11,11 @@ fn parse_flag(flag: bool) -> Result[int32, string] {
     }
 }
 
-fn add(a: int32, b: int32) -> int32 {
+fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-fn plus_one(flag: bool) -> Result[int32, string] {
+fn plus_one(flag: bool) -> Result[i32, string] {
     let run =
       || {
           let value = parse_flag(flag)?;
@@ -24,7 +24,7 @@ fn plus_one(flag: bool) -> Result[int32, string] {
     run()
 }
 
-fn show(res: Result[int32, string]) -> string {
+fn show(res: Result[i32, string]) -> string {
     match res {
         Result::Ok(value) => "ok=" + value.to_string(),
         Result::Err(err) => "err=" + err,

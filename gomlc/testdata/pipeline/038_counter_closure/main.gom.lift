@@ -1,5 +1,5 @@
-fn make_counter() -> (() -> int32, () -> unit) {
-  let cell/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
+fn make_counter() -> (() -> i32, () -> unit) {
+  let cell/0 = inherent#Ref#Ref[T]#new__T_i32(0) in
   let next/2 =
     pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](
       closure_env_next_0 { cell_0: cell/0 }
@@ -27,22 +27,22 @@ fn main() -> unit {
   let x418 = mtmp417.0 in
   let new_next/11 = x418 in
   let fourth/12 = new_next/11() in
-  let mtmp420 = println__T_string(inherent#int32#int32#to_string(first/7)) in
-  let mtmp421 = println__T_string(inherent#int32#int32#to_string(second/8)) in
-  let mtmp422 = println__T_string(inherent#int32#int32#to_string(third/9)) in
-  let mtmp423 = println__T_string(inherent#int32#int32#to_string(fourth/12)) in
+  let mtmp420 = println__T_string(inherent#i32#i32#to_string(first/7)) in
+  let mtmp421 = println__T_string(inherent#i32#i32#to_string(second/8)) in
+  let mtmp422 = println__T_string(inherent#i32#i32#to_string(third/9)) in
+  let mtmp423 = println__T_string(inherent#i32#i32#to_string(fourth/12)) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/431: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_i32(value/431: i32) -> Ref[i32] {
   @intrinsic(ref.new)(value/431)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/432: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_i32(self/432: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/432)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/433: Ref[int32], value/434: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/433: Ref[i32], value/434: i32) -> unit {
   @intrinsic(ref.set)(self/433, value/434)
 }
 
@@ -50,7 +50,7 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 
@@ -58,23 +58,23 @@ fn trait_impl#ToString#string#to_string(self/149: string) -> string {
   self/149
 }
 
-fn trait_impl#PartialEq#int32#eq(self/191: int32, other/192: int32) -> bool {
+fn trait_impl#PartialEq#i32#eq(self/191: i32, other/192: i32) -> bool {
   (self/191 == other/192)
 }
 
-fn trait_impl#Hash#int32#hash(self/214: int32) -> uint64 {
+fn trait_impl#Hash#i32#hash(self/214: i32) -> u64 {
   @runtime(core.int32_hash)(self/214)
 }
 
-fn inherent#closure_env_next_0#closure_env_next_0#apply(env424: closure_env_next_0) -> int32 {
+fn inherent#closure_env_next_0#closure_env_next_0#apply(env424: closure_env_next_0) -> i32 {
   let cell/0 = closure_env_next_0.cell_0(env424) in
-  let next/1 = (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1) in
-  let mtmp411 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
+  let next/1 = (inherent#Ref#Ref[T]#get__T_i32(cell/0) + 1) in
+  let mtmp411 = inherent#Ref#Ref[T]#set__T_i32(cell/0, next/1) in
   next/1
 }
 
 fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env425: closure_env_reset_1) -> unit {
   let cell/0 = closure_env_reset_1.cell_0(env425) in
-  let mtmp412 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
+  let mtmp412 = inherent#Ref#Ref[T]#set__T_i32(cell/0, 0) in
   ()
 }

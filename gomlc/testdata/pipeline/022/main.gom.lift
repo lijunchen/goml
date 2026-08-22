@@ -1,4 +1,4 @@
-fn match_string(s/0: string) -> int32 {
+fn match_string(s/0: string) -> i32 {
   match s/0 {
     "hello" => {
       1
@@ -10,11 +10,11 @@ fn match_string(s/0: string) -> int32 {
   }
 }
 
-fn wildcard_position(s/1: string) -> int32 {
+fn wildcard_position(s/1: string) -> i32 {
   4
 }
 
-fn repeated_string(s/2: string) -> int32 {
+fn repeated_string(s/2: string) -> i32 {
   match s/2 {
     "hello" => {
       6
@@ -24,19 +24,19 @@ fn repeated_string(s/2: string) -> int32 {
 }
 
 fn main() -> unit {
-  let mtmp411 = println__T_string(inherent#int32#int32#to_string(match_string("hello"))) in
-  let mtmp412 = println__T_string(inherent#int32#int32#to_string(match_string("planet"))) in
-  let mtmp413 = println__T_string(inherent#int32#int32#to_string(wildcard_position("world"))) in
-  let mtmp414 = println__T_string(inherent#int32#int32#to_string(wildcard_position("sun"))) in
-  let mtmp415 = println__T_string(inherent#int32#int32#to_string(repeated_string("hello"))) in
-  println__T_string(inherent#int32#int32#to_string(repeated_string("mars")))
+  let mtmp411 = println__T_string(inherent#i32#i32#to_string(match_string("hello"))) in
+  let mtmp412 = println__T_string(inherent#i32#i32#to_string(match_string("planet"))) in
+  let mtmp413 = println__T_string(inherent#i32#i32#to_string(wildcard_position("world"))) in
+  let mtmp414 = println__T_string(inherent#i32#i32#to_string(wildcard_position("sun"))) in
+  let mtmp415 = println__T_string(inherent#i32#i32#to_string(repeated_string("hello"))) in
+  println__T_string(inherent#i32#i32#to_string(repeated_string("mars")))
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/33: int32) -> string {
+fn inherent#i32#i32#to_string(self/33: i32) -> string {
   @runtime(core.int32_to_string)(self/33)
 }
 

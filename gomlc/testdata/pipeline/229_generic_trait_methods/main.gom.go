@@ -39,7 +39,7 @@ func main0() struct{} {
     var ufcs__5 string
     var inline443 int = 12
     var inline444 string = "ufcs:"
-    var inline445 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline443)
+    var inline445 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(inline443)
     var inline446 string = inline444 + inline445
     ufcs__5 = inline446
     var inline440 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(ufcs__5)
@@ -60,7 +60,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t438 string = _goml_runtime_core_int_to_string(self__151)
     return t438
 }

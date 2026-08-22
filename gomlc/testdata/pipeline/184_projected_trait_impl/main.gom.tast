@@ -5,7 +5,7 @@ impl[S] Pick[S::Item] for S where S: Source {
 }
 
 impl Source for Value {
-  fn get(self/1: Value) -> int32 {
+  fn get(self/1: Value) -> i32 {
       (self/1 : Value).value
   }
 }
@@ -17,7 +17,7 @@ fn copy[S](source/2: S) -> S::Item where S: Source, S: Pick[S::Item] {
 }
 
 fn main() -> unit {
-    let direct/6: int32 = (Pick[Value::Item]::pick : (Value) -> int32)(Value { value: 41 });
-    (println : (int32) -> unit)((direct/6 : int32));
-    (println : (int32) -> unit)((copy : (Value) -> int32)(Value { value: 42 }));
+    let direct/6: i32 = (Pick[Value::Item]::pick : (Value) -> i32)(Value { value: 41 });
+    (println : (i32) -> unit)((direct/6 : i32));
+    (println : (i32) -> unit)((copy : (Value) -> i32)(Value { value: 42 }));
 }

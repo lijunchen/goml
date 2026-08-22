@@ -1,4 +1,4 @@
-fn fib(x/0: int32) -> int32 {
+fn fib(x/0: i32) -> i32 {
   let mtmp411 = (x/0 < 2) in
   match mtmp411 {
     true => {
@@ -11,14 +11,14 @@ fn fib(x/0: int32) -> int32 {
 }
 
 fn main() -> unit {
-  let mtmp412 = print__T_int32(fib(10)) in
+  let mtmp412 = print__T_i32(fib(10)) in
   ()
 }
 
-fn print__T_int32(value/0: int32) -> unit {
-  @runtime(core.string_print)(trait_impl#ToString#int32#to_string(value/0))
+fn print__T_i32(value/0: i32) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#i32#to_string(value/0))
 }
 
-fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+fn trait_impl#ToString#i32#to_string(self/154: i32) -> string {
   @runtime(core.int32_to_string)(self/154)
 }

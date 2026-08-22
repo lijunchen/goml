@@ -87,7 +87,7 @@ func main0() struct{} {
     var t425 int
     var inline517 int = ref_get__Ref_3int(sum__0)
     t425 = inline517
-    var inline514 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t425)
+    var inline514 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t425)
     _goml_runtime_core_string_println(inline514)
     var even_sum__2 *ref_int_x
     var inline511 int = 0
@@ -132,7 +132,7 @@ func main0() struct{} {
     var t427 int
     var inline502 int = ref_get__Ref_3int(even_sum__2)
     t427 = inline502
-    var inline499 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t427)
+    var inline499 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t427)
     _goml_runtime_core_string_println(inline499)
     return struct{}{}
 }
@@ -141,7 +141,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__149 string) stri
     return self__149
 }
 
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__151 int) string {
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__151 int) string {
     var t467 string = _goml_runtime_core_int_to_string(self__151)
     return t467
 }

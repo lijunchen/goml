@@ -1,6 +1,6 @@
-impl Mark for int32 {
-  fn mark(self/0: int32) -> string {
-      (int32::to_string : (int32) -> string)((self/0 : int32))
+impl Mark for i32 {
+  fn mark(self/0: i32) -> string {
+      (i32::to_string : (i32) -> string)((self/0 : i32))
   }
 }
 
@@ -18,6 +18,6 @@ impl Label for Box[string] {
 
 fn main() -> unit {
     (println : (string) -> unit)((Label::label : (Box[string]) -> string)(Box { value: "text" }));
-    let value/3: Box[int32] = Box { value: 7 };
-    (println : (string) -> unit)((Label::label : (Box[int32]) -> string)((value/3 : Box[int32])));
+    let value/3: Box[i32] = Box { value: 7 };
+    (println : (string) -> unit)((Label::label : (Box[i32]) -> string)((value/3 : Box[i32])));
 }
