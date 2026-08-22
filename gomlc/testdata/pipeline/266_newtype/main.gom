@@ -1,0 +1,26 @@
+type RawId = int32;
+
+struct UserId(RawId);
+
+struct Box[T](T);
+
+fn increment(value: UserId) -> UserId {
+    let mut result = value;
+    result.0 += 1;
+    result
+}
+
+fn unwrap(value: UserId) -> int32 {
+    let UserId(inner) = value;
+    inner
+}
+
+fn main() -> unit {
+    let raw: RawId = 40;
+    let id = UserId(raw);
+    println(id.0);
+    println(unwrap(increment(id)));
+    let boxed = Box("wrapped");
+    let Box(text) = boxed;
+    println(text)
+}

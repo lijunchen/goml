@@ -340,6 +340,14 @@ fn formats_enum_variants_like_rustfmt() -> unit {
 }
 
 #[test]
+fn formats_newtype_structs() -> unit {
+    expect_format(
+        "pub struct Wrapper [ T ] ( pub T , ) ;\nstruct UserId(int32);",
+        "pub struct Wrapper[T](pub T,);\n\nstruct UserId(int32);\n",
+    )
+}
+
+#[test]
 fn formats_static_items() -> unit {
     expect_format(
         "static VALUE:OnceCell[int]=OnceCell::new();",

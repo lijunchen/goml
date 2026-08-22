@@ -79,6 +79,21 @@ fn lowers_items_types_and_float_values() -> unit {
 }
 
 #[test]
+fn lowers_newtype_structs_as_nominal_single_field_types() -> unit {
+    let file = lowered_file("pub struct Wrapper[T](pub T);");
+    match file.items.get(0) {
+        StructDef(value) => {
+            testing::assert(value.newtype);
+            testing::assert_eq(value.name, "Wrapper");
+            testing::assert_eq(value.generics.get(0), "T");
+            testing::assert_eq(value.fields.get(0).0, "_0");
+            testing::assert(value.public_fields.contains("_0"))
+        },
+        _ => testing::fail("expected newtype struct"),
+    }
+}
+
+#[test]
 fn lowers_attribute_names_and_arguments_structurally() -> unit {
     let file = lowered_file("#[vendor::intrinsic(\"runtime\")] extern fn probe() -> unit;");
     match file.items.get(0) {

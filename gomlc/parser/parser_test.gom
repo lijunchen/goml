@@ -236,6 +236,19 @@ fn parses_type_aliases_constants_and_byte_patterns() -> unit {
 }
 
 #[test]
+fn parses_newtype_structs_and_rejects_multiple_fields() -> unit {
+    let source = "struct UserId(int32); pub struct Name[T](pub T,);";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::STRUCT), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::NEWTYPE_FIELD), 2);
+    let invalid = parse("struct Pair(int32, int32);");
+    testing::assert(
+        diagnostic_containing(invalid.diagnostics, "newtype structs require exactly one field").is_some(),
+    )
+}
+
+#[test]
 fn parses_practical_expression_syntax() -> unit {
     let source = "fn main() -> unit { let a = Vec::from_array([1, 2]); let b = HashMap::from_array([(\"x\", 1)]); let c: Vec[int] = Vec::from_array([]); let d = Vec::[int]::new(); let p = Point { x: 3, ..base, }; a[0] += 2; let text = f\"value={a.get(0)} {{ok}}\"; }";
     let result = parse(source);
