@@ -50,7 +50,7 @@ fn main_string_contains(value: string, expected: string) -> bool {
 
 #[test]
 fn stage_lowering_preserves_hidden_fresh_names() -> unit {
-    let source = "enum E { A(int32), B(int32), C(int32) } fn main() -> unit { let value = E::B(1); match value { E::B(item) => (), _ => () } }";
+    let source = "enum E { A(i32), B(i32), C(i32) } fn main() -> unit { let value = E::B(1); match value { E::B(item) => (), _ => () } }";
     let stage = lower_core_stage("main.gom", source);
     testing::assert_eq(stage.counter.get(), 3)
 }
@@ -102,7 +102,7 @@ fn assert_parse_error(values: Vec[string], expected: string) -> unit {
     }
 }
 
-fn core_function_index(value: core::File, expected: string) -> int {
+fn core_function_index(value: core::File, expected: string) -> isize {
     let result = Ref::new(-1);
     for index in range(0, value.functions.len()) {
         if value.functions.get(index).name == expected {
@@ -281,7 +281,7 @@ fn parses_run_single_without_dumps() -> unit {
 fn preserves_source_and_expanded_ast_views() -> unit {
     let compilation = compile_source(
         "main.gom",
-        "#[derive(PartialEq, Eq)] struct Key { value: int } fn main() -> unit { () }",
+        "#[derive(PartialEq, Eq)] struct Key { value: isize } fn main() -> unit { () }",
     );
     let source = ast::pretty(compilation.source_ast_value);
     let expanded = ast::pretty(compilation.ast_value);
@@ -1007,7 +1007,7 @@ fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
 
 #[test]
 fn filters_private_types_traits_and_trait_impls() -> unit {
-    let source = "package api; enum HiddenEnum { A } struct HiddenStruct {} trait HiddenTrait { fn hidden(self: Self) -> int32; } pub struct Item {} impl HiddenTrait for Item { fn hidden(self: Item) -> int32 { 1 } } pub fn item() -> Item { Item {} }";
+    let source = "package api; enum HiddenEnum { A } struct HiddenStruct {} trait HiddenTrait { fn hidden(self: Self) -> i32; } pub struct Item {} impl HiddenTrait for Item { fn hidden(self: Item) -> i32 { 1 } } pub fn item() -> Item { Item {} }";
     let ast_values = Vec::new();
     ast_values.push(ast::lower(parser::parse(source)));
     let public_names = public_item_names(ast_values, "visibility_audit::api");
@@ -1280,7 +1280,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
 
 #[test]
 fn extracts_interface_unit_from_checked_package() -> unit {
-    let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { private_value() + 1 }";
+    let source = "package value; fn private_value() -> i32 { 41 } pub fn value() -> i32 { private_value() + 1 }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
     ast_values.push(lowered_ast);
@@ -1485,7 +1485,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
 
 #[test]
 fn writes_core_unit_from_checked_package() -> unit {
-    let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { private_value() + 1 }";
+    let source = "package value; fn private_value() -> i32 { 41 } pub fn value() -> i32 { private_value() + 1 }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
     ast_values.push(lowered_ast);
@@ -1988,7 +1988,7 @@ fn test_world_container(value: bytes::Bytes) -> wire::ArtifactBinaryContainer {
     }
 }
 
-fn test_world_section(value: wire::ArtifactBinaryContainer, id: uint16) -> wire::ArtifactBinarySection {
+fn test_world_section(value: wire::ArtifactBinaryContainer, id: u16) -> wire::ArtifactBinarySection {
     match wire::artifact_binary_find_section(value, id) {
         Some(value) => value,
         None => {
@@ -2003,7 +2003,7 @@ fn test_world_section(value: wire::ArtifactBinaryContainer, id: uint16) -> wire:
     }
 }
 
-fn test_world_encode_sections(kind: uint8, sections: Vec[wire::ArtifactBinarySection]) -> bytes::Bytes {
+fn test_world_encode_sections(kind: u8, sections: Vec[wire::ArtifactBinarySection]) -> bytes::Bytes {
     match wire::encode_artifact_binary_container(kind, sections) {
         Ok(value) => value,
         Err(error) => {
@@ -2013,7 +2013,7 @@ fn test_world_encode_sections(kind: uint8, sections: Vec[wire::ArtifactBinarySec
     }
 }
 
-fn world_without_test_section(value: bytes::Bytes, id: uint16) -> bytes::Bytes {
+fn world_without_test_section(value: bytes::Bytes, id: u16) -> bytes::Bytes {
     let container = test_world_container(value);
     let sections: Vec[wire::ArtifactBinarySection] = Vec::from_array([]);
     for section in container.sections {
@@ -2024,7 +2024,7 @@ fn world_without_test_section(value: bytes::Bytes, id: uint16) -> bytes::Bytes {
     test_world_encode_sections(container.kind, sections)
 }
 
-fn world_with_test_section_version(value: bytes::Bytes, id: uint16, version: uint16) -> bytes::Bytes {
+fn world_with_test_section_version(value: bytes::Bytes, id: u16, version: u16) -> bytes::Bytes {
     let container = test_world_container(value);
     let sections: Vec[wire::ArtifactBinarySection] = Vec::from_array([]);
     for section in container.sections {
@@ -2082,7 +2082,7 @@ fn replaced_test_dependency(values: Vec[(string, string)], name: string, hash: s
 
 fn world_with_test_package_dependency(
     value: bytes::Bytes,
-    section_id: uint16,
+    section_id: u16,
     dependency_name: string,
     dependency_hash: string,
 ) -> bytes::Bytes {
@@ -2180,7 +2180,7 @@ fn assert_world_decode_error(value: bytes::Bytes, expected: string) -> unit {
     }
 }
 
-fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> uint16 {
+fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> u16 {
     let container = match wire::decode_artifact_binary_container(value) {
         Ok(value) => value,
         Err(error) => {

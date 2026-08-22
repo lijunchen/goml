@@ -3,7 +3,7 @@ package pretty;
 use std::testing;
 use std::text as std_text;
 
-fn assert_pretty(width: int, value: Doc, expected: string) -> unit {
+fn assert_pretty(width: isize, value: Doc, expected: string) -> unit {
     testing::assert_eq(pretty(width, value), expected)
 }
 
@@ -185,7 +185,7 @@ fn show_bracket(values: Vec[Tree]) -> Doc {
     }
 }
 
-fn show_trees(values: Vec[Tree], index: int) -> Doc {
+fn show_trees(values: Vec[Tree], index: isize) -> Doc {
     if index + 1 >= values.len() {
         show_tree(values.get(index))
     } else {

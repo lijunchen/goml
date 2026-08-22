@@ -56,7 +56,7 @@ fn rejects_deeply_nested_expressions_without_overflowing() -> unit {
 
 #[test]
 fn lowers_items_types_and_float_values() -> unit {
-    let source = "package sample; pub enum Choice[T] { None, Some(T) } struct Pair { left: int32, right: float64 } fn value() -> float64 { 3.140 }";
+    let source = "package sample; pub enum Choice[T] { None, Some(T) } struct Pair { left: i32, right: f64 } fn value() -> f64 { 3.140 }";
     let file = lowered_file(source);
     testing::assert_eq(file.package_name, "sample");
     testing::assert(file.package_explicit);
@@ -113,7 +113,7 @@ fn lowers_attribute_names_and_arguments_structurally() -> unit {
 #[test]
 fn lowers_named_attribute_arguments_structurally() -> unit {
     let file = lowered_file(
-        "#[serde(rename = \"entry\", with = codec::value, skip)] struct Entry { value: int }",
+        "#[serde(rename = \"entry\", with = codec::value, skip)] struct Entry { value: isize }",
     );
     match file.items[0] {
         StructDef(value) => {
@@ -147,7 +147,7 @@ fn lowers_named_attribute_arguments_structurally() -> unit {
 #[test]
 fn lowers_derive_paths_and_nested_item_attributes() -> unit {
     let file = lowered_file(
-        "#[derive(macros::handler)] struct Box { #[field_tag] value: int } enum Choice { #[variant_tag] Data(#[payload_tag] int) }",
+        "#[derive(macros::handler)] struct Box { #[field_tag] value: isize } enum Choice { #[variant_tag] Data(#[payload_tag] isize) }",
     );
     match file.items[0] {
         StructDef(value) => {
@@ -206,7 +206,7 @@ fn lowers_unicode_strings_and_constructor_patterns() -> unit {
 #[test]
 fn lowers_cross_file_constructor_patterns() -> unit {
     let parsed = Vec::new();
-    parsed.push(parser::parse("package main; enum Status { Idle, Busy(int32) }"));
+    parsed.push(parser::parse("package main; enum Status { Idle, Busy(i32) }"));
     parsed.push(
         parser::parse(
             "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
@@ -244,9 +244,7 @@ fn parser_diagnostics_prevent_ast_creation() -> unit {
 
 #[test]
 fn reports_invalid_parameter_types() -> unit {
-    let result = lower(
-        parser::parse("fn take(value: [int32; 18446744073709551615]) -> unit { () }"),
-    );
+    let result = lower(parser::parse("fn take(value: [i32; 18446744073709551615]) -> unit { () }"));
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert_eq(
         result.diagnostics.get(0).message,

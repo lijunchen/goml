@@ -50,10 +50,10 @@ fn rejects_invalid_normalized_integers() -> unit {
 fn parses_valid_float32() -> unit {
     match parse_float32("3.5") {
         Some(value) => testing::assert(value == 3.5),
-        None => testing::fail("expected float32"),
+        None => testing::fail("expected f32"),
     };
     match parse_float32("not-a-number") {
         None => (),
-        Some(_) => testing::fail("expected invalid float32"),
+        Some(_) => testing::fail("expected invalid f32"),
     }
 }

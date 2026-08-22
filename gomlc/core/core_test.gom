@@ -7,7 +7,7 @@ use module::parser;
 use module::tast;
 use std::testing;
 
-fn test_builtins(counter: Ref[int]) -> File {
+fn test_builtins(counter: Ref[isize]) -> File {
     match lower_builtins(counter) {
         Ok(value) => value,
         Err(error) => {
@@ -92,7 +92,7 @@ fn preserves_open_core_types_without_tast_state() -> unit {
         value,
         Vec::from_array([("T", Type::Int32), ("U", Type::String)]),
     );
-    testing::assert_eq(type_key(substituted), "dynIterator[int32,Item=int32::Item]")
+    testing::assert_eq(type_key(substituted), "dynIterator[i32,Item=i32::Item]")
 }
 
 #[test]
@@ -161,27 +161,27 @@ fn string_contains(value: string, expected: string) -> bool {
 
 #[test]
 fn lowers_basic_functions_and_let_chains() -> unit {
-    let source = "fn take(value: uint16) -> uint16 { value } fn main() -> uint16 { let value = take(1000); value }";
+    let source = "fn take(value: u16) -> u16 { value } fn main() -> u16 { let value = take(1000); value }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn take(value/0: uint16) -> uint16 {\n  value/0\n}\n\nfn main() -> uint16 {\n  let value/1 = take(1000) in\n  value/1\n}",
+        "fn take(value/0: u16) -> u16 {\n  value/0\n}\n\nfn main() -> u16 {\n  let value/1 = take(1000) in\n  value/1\n}",
     )
 }
 
 #[test]
 fn folds_negative_integer_primitives() -> unit {
     testing::assert_eq(
-        encode(lower_source("fn main() -> int32 { -1 }")),
-        "fn main() -> int32 {\n  -1\n}",
+        encode(lower_source("fn main() -> i32 { -1 }")),
+        "fn main() -> i32 {\n  -1\n}",
     )
 }
 
 #[test]
 fn preserves_exiting_accessor_subexpressions() -> unit {
-    let source = "fn proj_case() -> int32 { let _: int32 = (return 1).0; 0 } fn index_case() -> int32 { let _: int32 = (return 1)[0]; 0 } fn field_case() -> int32 { let _: int32 = (return 1).value; 0 }";
+    let source = "fn proj_case() -> i32 { let _: i32 = (return 1).0; 0 } fn index_case() -> i32 { let _: i32 = (return 1)[0]; 0 } fn field_case() -> i32 { let _: i32 = (return 1).value; 0 }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn proj_case() -> int32 {\n  let mtmp1 =\n    {\n      let _wild0 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}\n\nfn index_case() -> int32 {\n  let mtmp3 =\n    {\n      let _wild2 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}\n\nfn field_case() -> int32 {\n  let mtmp5 =\n    {\n      let _wild4 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}",
+        "fn proj_case() -> i32 {\n  let mtmp1 =\n    {\n      let _wild0 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}\n\nfn index_case() -> i32 {\n  let mtmp3 =\n    {\n      let _wild2 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}\n\nfn field_case() -> i32 {\n  let mtmp5 =\n    {\n      let _wild4 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}",
     )
 }
 
@@ -195,10 +195,10 @@ fn nests_discard_patterns_around_the_continuation() -> unit {
 
 #[test]
 fn lowers_enum_payload_patterns_in_definition_order() -> unit {
-    let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
+    let source = "enum Weird[T] { Next(Ref[Weird[(i32) -> i32]]), Done(T) } fn main() -> unit { let x: Weird[i32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let x/0 = Weird::Done(1) in\n  match x/0 {\n    Weird::Next(x0) => {\n      {\n        let x0 = Weird::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird::Done(x1) => {\n      {\n        let x1 = Weird::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#int32#int32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
+        "fn main() -> unit {\n  let x/0 = Weird::Done(1) in\n  match x/0 {\n    Weird::Next(x0) => {\n      {\n        let x0 = Weird::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird::Done(x1) => {\n      {\n        let x1 = Weird::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#i32#i32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
     )
 }
 
@@ -214,7 +214,7 @@ fn lowers_or_patterns_in_match_matrices() -> unit {
 #[test]
 fn allocates_statement_names_after_lowering_the_value() -> unit {
     let file = lower_source(
-        "fn f(flag: bool) -> int32 { while true { if flag { return 1 } else { break }; }; 2 }",
+        "fn f(flag: bool) -> i32 { while true { if flag { return 1 } else { break }; }; 2 }",
     );
     match file.functions.get(0).body.stmts.get(0) {
         LetStmt { name, value: While { cond: _, body: Block { block: body, ty: _ }, ty: _ }, ty: _ } => {
@@ -227,7 +227,7 @@ fn allocates_statement_names_after_lowering_the_value() -> unit {
 
 #[test]
 fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
-    let source = "fn build() -> Option[() -> int32] { Option::Some(|| 1) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0), } }";
+    let source = "fn build() -> Option[() -> i32] { Option::Some(|| 1) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0), } }";
     let file = lower_source(source);
     match file.functions.get(1).body.tail {
         Some(Block { block, ty: _ }) => {
@@ -311,10 +311,10 @@ fn lowers_linked_builtin_option_payload_patterns() -> unit {
 
 #[test]
 fn boxes_mutable_locals_captured_by_closures() -> unit {
-    let source = "fn main() -> int32 { let mut x = 0; let inc = || { x = x + 1; x }; inc() }";
+    let source = "fn main() -> i32 { let mut x = 0; let inc = || { x = x + 1; x }; inc() }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> int32 {\n  let x/0 = @intrinsic(ref.new)(0) in\n  let inc/1 =\n    || => {\n      let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in\n      @intrinsic(ref.get)(x/0)\n    } in\n  inc/1()\n}",
+        "fn main() -> i32 {\n  let x/0 = @intrinsic(ref.new)(0) in\n  let inc/1 =\n    || => {\n      let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in\n      @intrinsic(ref.get)(x/0)\n    } in\n  inc/1()\n}",
     )
 }
 
@@ -388,34 +388,34 @@ fn evaluates_index_assignment_places_once() -> unit {
 
 #[test]
 fn lowers_flat_tuple_bindings_in_matrix_order() -> unit {
-    let source = "fn split(pair: (int32, string)) -> string { let (left, right) = pair; right }";
+    let source = "fn split(pair: (i32, string)) -> string { let (left, right) = pair; right }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn split(pair/0: (int32, string)) -> string {\n  let mtmp0 = pair/0 in\n  {\n    let x1 = mtmp0.0 in\n    let x2 = mtmp0.1 in\n    {\n      let right/2 = x2 in\n      {\n        let left/1 = x1 in\n        {\n          right/2\n        }\n      }\n    }\n  }\n}",
+        "fn split(pair/0: (i32, string)) -> string {\n  let mtmp0 = pair/0 in\n  {\n    let x1 = mtmp0.0 in\n    let x2 = mtmp0.1 in\n    {\n      let right/2 = x2 in\n      {\n        let left/1 = x1 in\n        {\n          right/2\n        }\n      }\n    }\n  }\n}",
     )
 }
 
 #[test]
 fn lowers_nested_boolean_enum_payload_patterns() -> unit {
-    let source = "enum Pair { Values(bool, bool) } fn choose(value: Pair) -> int32 { match value { Pair::Values(false, false) => 2, Pair::Values(false, true) => 3, _ => 4, } }";
+    let source = "enum Pair { Values(bool, bool) } fn choose(value: Pair) -> i32 { match value { Pair::Values(false, false) => 2, Pair::Values(false, true) => 3, _ => 4, } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn choose(value/0: Pair) -> int32 {\n  match value/0 {\n    Pair::Values(x0, x1) => {\n      {\n        let x0 = Pair::Values._0(value/0) in\n        let x1 = Pair::Values._1(value/0) in\n        match x1 {\n          true => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                3\n              },\n            }\n          },\n          false => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                2\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
+        "fn choose(value/0: Pair) -> i32 {\n  match value/0 {\n    Pair::Values(x0, x1) => {\n      {\n        let x0 = Pair::Values._0(value/0) in\n        let x1 = Pair::Values._1(value/0) in\n        match x1 {\n          true => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                3\n              },\n            }\n          },\n          false => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                2\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
     )
 }
 
 #[test]
 fn lowers_for_loops_through_iterator_protocols() -> unit {
-    let source = "fn each(values: Vec[int32]) -> unit { for value in values { println(value) } }";
+    let source = "fn each(values: Vec[i32]) -> unit { for value in values { println(value) } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn each(values/0: Vec[int32]) -> unit {\n  {\n    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in\n    while true {\n        {\n          let for_next1 = trait_call[Iterator::next](for_iter0) in\n          match for_next1 {\n            Option::None => {\n              break\n            },\n            Option::Some(x2) => {\n              {\n                let x2 = Option::Some._0(for_next1) in\n                {\n                  let value/1 = x2 in\n                  {\n                    println(value/1)\n                  }\n                }\n              }\n            },\n          }\n        }\n    }\n  }\n}",
+        "fn each(values/0: Vec[i32]) -> unit {\n  {\n    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in\n    while true {\n        {\n          let for_next1 = trait_call[Iterator::next](for_iter0) in\n          match for_next1 {\n            Option::None => {\n              break\n            },\n            Option::Some(x2) => {\n              {\n                let x2 = Option::Some._0(for_next1) in\n                {\n                  let value/1 = x2 in\n                  {\n                    println(value/1)\n                  }\n                }\n              }\n            },\n          }\n        }\n    }\n  }\n}",
     )
 }
 
 #[test]
 fn lowers_builtin_iterators_without_iterator_protocols() -> unit {
-    let source = "fn each(values: Vec[int32]) -> unit { for value in values { if value == 0 { continue } else { println(value) } }; for value in range(2, 4) { println(value) }; for value in values.slice(0, 1) { println(value) } }";
+    let source = "fn each(values: Vec[i32]) -> unit { for value in values { if value == 0 { continue } else { println(value) } }; for value in range(2, 4) { println(value) }; for value in values.slice(0, 1) { println(value) } }";
     let encoded = encode(lower_optimized_source(source));
     testing::assert(!string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
     testing::assert(!string_contains(encoded, "trait_call[Iterator::next]"));
@@ -429,7 +429,7 @@ fn lowers_builtin_iterators_without_iterator_protocols() -> unit {
 
 #[test]
 fn lowers_inclusive_ranges_without_overflowing_the_endpoint() -> unit {
-    let source = "fn each(start: int, end: int) -> unit { for value in start..=end { if value == 0 { continue } else { println(value) } } }";
+    let source = "fn each(start: isize, end: isize) -> unit { for value in start..=end { if value == 0 { continue } else { println(value) } } }";
     let encoded = encode(lower_optimized_source(source));
     testing::assert(!string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
     testing::assert(!string_contains(encoded, "trait_call[Iterator::next]"));
@@ -439,7 +439,7 @@ fn lowers_inclusive_ranges_without_overflowing_the_endpoint() -> unit {
 
 #[test]
 fn does_not_optimize_user_function_named_range() -> unit {
-    let source = "fn range(start: int, end: int) -> FnIterator[int] { FnIterator::from_fn(|| Option::None) } fn each() -> unit { for value in range(2, 4) { println(value) } }";
+    let source = "fn range(start: isize, end: isize) -> FnIterator[isize] { FnIterator::from_fn(|| Option::None) } fn each() -> unit { for value in range(2, 4) { println(value) } }";
     let encoded = encode(lower_optimized_source(source));
     testing::assert(string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
     testing::assert(string_contains(encoded, "trait_call[Iterator::next]"));
@@ -448,7 +448,7 @@ fn does_not_optimize_user_function_named_range() -> unit {
 
 #[test]
 fn lowers_flat_struct_bindings_in_field_order() -> unit {
-    let source = "struct Pair { left: int32, right: string } fn right(pair: Pair) -> string { let Pair { left: _, right } = pair; right }";
+    let source = "struct Pair { left: i32, right: string } fn right(pair: Pair) -> string { let Pair { left: _, right } = pair; right }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn right(pair/0: Pair) -> string {\n  let mtmp0 = pair/0 in\n  {\n    let x1 = Pair.left(mtmp0) in\n    let x2 = Pair.right(mtmp0) in\n    {\n      let right/1 = x2 in\n      {\n        right/1\n      }\n    }\n  }\n}",
@@ -478,7 +478,7 @@ fn links_builtin_core_before_user_core() -> unit {
 
 #[test]
 fn lowers_nested_tuple_and_enum_pattern_matrices() -> unit {
-    let source = "enum Key { A, B(int32) } fn equal_pair(left: Key, right: Key) -> bool { match (left, right) { (Key::A, Key::A) => true, (Key::B(x), Key::B(y)) => x == y, _ => false, } }";
+    let source = "enum Key { A, B(i32) } fn equal_pair(left: Key, right: Key) -> bool { match (left, right) { (Key::A, Key::A) => true, (Key::B(x), Key::B(y)) => x == y, _ => false, } }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn equal_pair(left/0: Key, right/1: Key) -> bool {\n  {\n    let mtmp0 = (left/0, right/1) in\n    {\n      let x1 = mtmp0.0 in\n      let x2 = mtmp0.1 in\n      match x2 {\n        Key::A => {\n          match x1 {\n            Key::A => {\n              true\n            },\n            _ => false,\n          }\n        },\n        Key::B(x3) => {\n          {\n            let x3 = Key::B._0(x2) in\n            match x1 {\n              Key::B(x5) => {\n                {\n                  let x5 = Key::B._0(x1) in\n                  {\n                    let x/2 = x5 in\n                    {\n                      let y/3 = x3 in\n                      (x/2 == y/3)\n                    }\n                  }\n                }\n              },\n              _ => false,\n            }\n          }\n        },\n      }\n    }\n  }\n}",
@@ -487,19 +487,19 @@ fn lowers_nested_tuple_and_enum_pattern_matrices() -> unit {
 
 #[test]
 fn lowers_ordered_and_uninhabited_patterns() -> unit {
-    let source = "enum Never {} enum Single { Only(int32) } fn absurd(value: Never) -> int32 { match value {} } fn unwrap(value: Single) -> int32 { let (Single::Only(inner)) = value; inner } fn classify(values: Vec[bool]) -> int32 { match values { [] => 0, [true, .., _] => 1, _ => 2, } }";
+    let source = "enum Never {} enum Single { Only(i32) } fn absurd(value: Never) -> i32 { match value {} } fn unwrap(value: Single) -> i32 { let (Single::Only(inner)) = value; inner } fn classify(values: Vec[bool]) -> i32 { match values { [] => 0, [true, .., _] => 1, _ => 2, } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn absurd(value/0: Never) -> int32 {\n  {\n    let _wild0 = value/0 in\n    @intrinsic(compiler.missing)(\"\")\n  }\n}\n\nfn unwrap(value/1: Single) -> int32 {\n  let mtmp1 = value/1 in\n  match mtmp1 {\n    Single::Only(x2) => {\n      {\n        let x2 = Single::Only._0(mtmp1) in\n        {\n          let inner/2 = x2 in\n          {\n            inner/2\n          }\n        }\n      }\n    },\n  }\n}\n\nfn classify(values/3: Vec[bool]) -> int32 {\n  {\n    let match3 = values/3 in\n    if (@intrinsic(vec.len)(match3) == 0) {\n        0\n    } else {\n        if (@intrinsic(vec.len)(match3) >= 2) {\n            if (@intrinsic(vec.get)(match3, 0) == true) {\n                1\n            } else {\n                2\n            }\n        } else {\n            2\n        }\n    }\n  }\n}",
+        "fn absurd(value/0: Never) -> i32 {\n  {\n    let _wild0 = value/0 in\n    @intrinsic(compiler.missing)(\"\")\n  }\n}\n\nfn unwrap(value/1: Single) -> i32 {\n  let mtmp1 = value/1 in\n  match mtmp1 {\n    Single::Only(x2) => {\n      {\n        let x2 = Single::Only._0(mtmp1) in\n        {\n          let inner/2 = x2 in\n          {\n            inner/2\n          }\n        }\n      }\n    },\n  }\n}\n\nfn classify(values/3: Vec[bool]) -> i32 {\n  {\n    let match3 = values/3 in\n    if (@intrinsic(vec.len)(match3) == 0) {\n        0\n    } else {\n        if (@intrinsic(vec.len)(match3) >= 2) {\n            if (@intrinsic(vec.get)(match3, 0) == true) {\n                1\n            } else {\n                2\n            }\n        } else {\n            2\n        }\n    }\n  }\n}",
     )
 }
 
 #[test]
 fn preserves_scalar_pattern_precedence() -> unit {
-    let source = "fn choose(value: int32) -> int32 { match value { 1 => 10, _ => 20, 1 => 30, 2 => 40, } } fn first(value: int32) -> int32 { match value { _ => 50, 0 => 60, } }";
+    let source = "fn choose(value: i32) -> i32 { match value { 1 => 10, _ => 20, 1 => 30, 2 => 40, } } fn first(value: i32) -> i32 { match value { _ => 50, 0 => 60, } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn choose(value/0: int32) -> int32 {\n  match value/0 {\n    1 => {\n      10\n    },\n    2 => {\n      20\n    },\n    _ => 20,\n  }\n}\n\nfn first(value/1: int32) -> int32 {\n  50\n}",
+        "fn choose(value/0: i32) -> i32 {\n  match value/0 {\n    1 => {\n      10\n    },\n    2 => {\n      20\n    },\n    _ => 20,\n  }\n}\n\nfn first(value/1: i32) -> i32 {\n  50\n}",
     )
 }
 
@@ -514,7 +514,7 @@ fn lowers_unit_columns_inside_enum_patterns() -> unit {
 
 #[test]
 fn lowers_struct_pattern_matrices_by_field_order() -> unit {
-    let source = "struct Pair { left: int32, right: int32 } fn matches(value: Pair) -> bool { match value { Pair { left: 4, right: 9 } => true, Pair { left: _, right: 6 } => true, _ => false, } }";
+    let source = "struct Pair { left: i32, right: i32 } fn matches(value: Pair) -> bool { match value { Pair { left: 4, right: 9 } => true, Pair { left: _, right: 6 } => true, _ => false, } }";
     testing::assert_eq(
         encode(lower_source(source)),
         "fn matches(value/0: Pair) -> bool {\n  {\n    let x0 = Pair.left(value/0) in\n    let x1 = Pair.right(value/0) in\n    match x1 {\n      9 => {\n        match x0 {\n          4 => {\n            true\n          },\n          _ => false,\n        }\n      },\n      6 => {\n        true\n      },\n      _ => false,\n    }\n  }\n}",
@@ -523,7 +523,7 @@ fn lowers_struct_pattern_matrices_by_field_order() -> unit {
 
 #[test]
 fn eliminates_dead_locals_without_dropping_effects() -> unit {
-    let source = "fn effect() -> int32 { 1 } fn main() -> unit { let dead = 1; let dead_pair = (dead, 2); let unused = |value: int32| value + dead; let kept = effect(); let divisor = 2; let quotient = 8 / divisor; () }";
+    let source = "fn effect() -> i32 { 1 } fn main() -> unit { let dead = 1; let dead_pair = (dead, 2); let unused = |value: i32| value + dead; let kept = effect(); let divisor = 2; let quotient = 8 / divisor; () }";
     let output = encode(dce(lower_source(source)));
     testing::assert(!string_contains(output, "dead/"));
     testing::assert(!string_contains(output, "dead_pair/"));

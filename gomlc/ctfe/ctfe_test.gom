@@ -11,23 +11,23 @@ fn int_type() -> ctir::CtType {
     ctir::CtType::Integer { signed: true, width: 64 }
 }
 
-fn int_value(value: int) -> ctir::CtValue {
+fn int_value(value: isize) -> ctir::CtValue {
     ctir::CtValue::Integer { signed: true, width: 64, bits: value.to_uint64() }
 }
 
-fn int_expr(value: int) -> ctir::CtExpr {
+fn int_expr(value: isize) -> ctir::CtExpr {
     ctir::CtExpr { kind: ctir::CtExprKind::Value(int_value(value)), ty: int_type(), origin: 0 }
 }
 
-fn narrow_int_type(signed: bool, width: int) -> ctir::CtType {
+fn narrow_int_type(signed: bool, width: isize) -> ctir::CtType {
     ctir::CtType::Integer { signed, width }
 }
 
-fn narrow_int_value(signed: bool, width: int, bits: uint64) -> ctir::CtValue {
+fn narrow_int_value(signed: bool, width: isize, bits: u64) -> ctir::CtValue {
     ctir::CtValue::Integer { signed, width, bits }
 }
 
-fn narrow_int_expr(signed: bool, width: int, bits: uint64) -> ctir::CtExpr {
+fn narrow_int_expr(signed: bool, width: isize, bits: u64) -> ctir::CtExpr {
     ctir::CtExpr {
         kind: ctir::CtExprKind::Value(narrow_int_value(signed, width, bits)),
         ty: narrow_int_type(signed, width),
@@ -35,7 +35,7 @@ fn narrow_int_expr(signed: bool, width: int, bits: uint64) -> ctir::CtExpr {
     }
 }
 
-fn local_expr(slot: int, ty: ctir::CtType) -> ctir::CtExpr {
+fn local_expr(slot: isize, ty: ctir::CtType) -> ctir::CtExpr {
     ctir::CtExpr { kind: ctir::CtExprKind::Local(slot), ty, origin: 0 }
 }
 
@@ -142,7 +142,7 @@ fn factorial_module() -> ctir::CtModule {
     module
 }
 
-fn expect_int(result: Result[ctir::CtValue, CtError]) -> int {
+fn expect_int(result: Result[ctir::CtValue, CtError]) -> isize {
     match result {
         Ok(ctir::CtValue::Integer { signed: true, width: 64, bits }) => bits.to_int(),
         Ok(_) => {

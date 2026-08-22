@@ -122,7 +122,7 @@ fn initializes_and_answers_hover_requests() -> unit {
         },
         Err(error) => testing::fail(error),
     };
-    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-test.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int32 { let value = 42; value }\"}}}";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-test.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> i32 { let value = 42; value }\"}}}";
     match handle_payload(server, open) {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
         Err(error) => testing::fail(error),
@@ -136,7 +136,7 @@ fn initializes_and_answers_hover_requests() -> unit {
                     Some(contents) => match json::field(contents, "value") {
                         Some(value) => match json::as_string(value) {
                             Some(value) => {
-                                testing::assert_eq(value, "```goml\nint32\n```")
+                                testing::assert_eq(value, "```goml\ni32\n```")
                             },
                             None => testing::fail("expected hover text"),
                         },
@@ -154,7 +154,7 @@ fn initializes_and_answers_hover_requests() -> unit {
 #[test]
 fn returns_expanded_derive_source() -> unit {
     let server = new_server();
-    let source = "#[derive(PartialEq, Eq)] struct Key { value: int } fn main() -> unit { () }";
+    let source = "#[derive(PartialEq, Eq)] struct Key { value: isize } fn main() -> unit { () }";
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/expanded.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
         + source
         + "\"}}}";
@@ -181,17 +181,17 @@ fn returns_expanded_derive_source() -> unit {
 #[test]
 fn applies_full_document_changes_and_stops_on_exit() -> unit {
     let server = new_server();
-    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int32 { 1 }\"}}}";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> i32 { 1 }\"}}}";
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error),
     };
-    let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\"fn main() -> int32 { 2 }\"}]}}";
+    let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\"fn main() -> i32 { 2 }\"}]}}";
     match handle_payload(server, change) {
         Ok(_) => match server_document(server, "file:///tmp/gomllsp-change.gom") {
             Some(document) => {
                 testing::assert_eq(document.version, 2);
-                testing::assert_eq(document.text, "fn main() -> int32 { 2 }")
+                testing::assert_eq(document.text, "fn main() -> i32 { 2 }")
             },
             None => testing::fail("expected changed document"),
         },
@@ -204,7 +204,7 @@ fn applies_full_document_changes_and_stops_on_exit() -> unit {
 #[test]
 fn completes_from_cached_analysis_after_document_changes() -> unit {
     let server = new_server();
-    let source = "struct Point { x: int32 } fn consume(value: int32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.x); () }";
+    let source = "struct Point { x: i32 } fn consume(value: i32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.x); () }";
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
         + source
         + "\"}}}";
@@ -212,7 +212,7 @@ fn completes_from_cached_analysis_after_document_changes() -> unit {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
         Err(error) => testing::fail(error),
     };
-    let changed = "struct Point { x: int32 } fn consume(value: int32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.); () }";
+    let changed = "struct Point { x: i32 } fn consume(value: i32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.); () }";
     let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\""
         + changed
         + "\"}]}}";
@@ -262,7 +262,7 @@ fn completes_select_with_snippets() -> unit {
 #[test]
 fn keeps_cached_analysis_when_an_open_document_is_saved() -> unit {
     let server = new_server();
-    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-save.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int { 1 }\"}}}";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-save.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> isize { 1 }\"}}}";
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error),
@@ -407,7 +407,7 @@ fn filters_inlay_hints_to_the_requested_range() -> unit {
                     match json::field(hints.get(0), "label") {
                         Some(label) => match json::as_string(label) {
                             Some(label) => {
-                                testing::assert_eq(label, ": int")
+                                testing::assert_eq(label, ": isize")
                             },
                             None => testing::fail("expected hint label"),
                         },
@@ -449,7 +449,7 @@ fn rejects_requests_after_shutdown() -> unit {
 #[test]
 fn includes_diagnostics_in_hover() -> unit {
     let server = new_server();
-    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/hover-error.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int32 { missing }\"}}}";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/hover-error.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> i32 { missing }\"}}}";
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error),

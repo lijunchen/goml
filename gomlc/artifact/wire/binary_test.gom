@@ -3,7 +3,7 @@ package wire;
 use std::bytes;
 use std::testing;
 
-fn artifact_binary_test_bytes(values: Vec[uint8]) -> bytes::Bytes {
+fn artifact_binary_test_bytes(values: Vec[u8]) -> bytes::Bytes {
     bytes::Bytes::from_vec(values)
 }
 
@@ -51,7 +51,7 @@ fn binary_artifact_round_trips_fixed_width_values() -> unit {
 
 #[test]
 fn binary_artifact_round_trips_varints() -> unit {
-    let unsigned: Vec[uint64] = Vec::new();
+    let unsigned: Vec[u64] = Vec::new();
     unsigned.push(0);
     unsigned.push(1);
     unsigned.push(127);
@@ -60,7 +60,7 @@ fn binary_artifact_round_trips_varints() -> unit {
     unsigned.push(256);
     unsigned.push(4294967295);
     unsigned.push(~(0.to_uint64()));
-    let signed: Vec[int64] = Vec::new();
+    let signed: Vec[i64] = Vec::new();
     signed.push(-9223372036854775807 - 1);
     signed.push(-2147483648);
     signed.push(-1);

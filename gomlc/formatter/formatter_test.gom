@@ -297,7 +297,7 @@ fn formats_block_and_byte_string_expressions_losslessly() -> unit {
 
 #[test]
 fn formats_lexical_task_scope_contextual_forms_losslessly() -> unit {
-    let source = "use std::task;fn main()->unit{let task=scope{spawn|cancel|cancel.is_cancelled()};let scope=1;let spawn=|value:int|value;println(spawn(scope));let _=task;}\n";
+    let source = "use std::task;fn main()->unit{let task=scope{spawn|cancel|cancel.is_cancelled()};let scope=1;let spawn=|value:isize|value;println(spawn(scope));let _=task;}\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
         Err(_) => {
@@ -310,7 +310,7 @@ fn formats_lexical_task_scope_contextual_forms_losslessly() -> unit {
 
 #[test]
 fn formats_comptime_contextually_without_reserving_the_name() -> unit {
-    let source = "#[comptime]fn factorial(value:int)->int{if value<2{1}else{value*factorial(value-1)}}fn comptime()->int{1}fn main()->int{let value=comptime{factorial(4)};value+comptime()}\n";
+    let source = "#[comptime]fn factorial(value:isize)->isize{if value<2{1}else{value*factorial(value-1)}}fn comptime()->isize{1}fn main()->isize{let value=comptime{factorial(4)};value+comptime()}\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
         Err(_) => {
@@ -326,32 +326,32 @@ fn formats_comptime_contextually_without_reserving_the_name() -> unit {
 #[test]
 fn removes_redundant_unit_expressions_and_semicolons() -> unit {
     expect_format(
-        "fn empty()->unit{;;;()}fn control(flag:bool,values:Vec[int])->unit{while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->unit{if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[int])->(Vec[int],Vec[int]){for value in values{let _=value;};(values,values)}",
-        "fn empty() -> unit {}\n\nfn control(flag: bool, values: Vec[int]) -> unit {\n    while flag {}\n    for value in values {\n        let _ = value;\n    }\n    loop {\n        break;\n    }\n    if flag {} else {};\n    match flag {\n        true => (),\n        false => (),\n    };\n}\n\nfn retain(flag: bool) -> unit {\n    if flag {\n        1\n    } else {\n        2\n    };\n    match flag {\n        true => 1,\n        false => 2,\n    };\n    loop {\n        break 1\n    };\n}\n\nfn boundary(values: Vec[int]) -> (Vec[int], Vec[int]) {\n    for value in values {\n        let _ = value;\n    };\n    (values, values)\n}\n",
+        "fn empty()->unit{;;;()}fn control(flag:bool,values:Vec[isize])->unit{while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->unit{if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[isize])->(Vec[isize],Vec[isize]){for value in values{let _=value;};(values,values)}",
+        "fn empty() -> unit {}\n\nfn control(flag: bool, values: Vec[isize]) -> unit {\n    while flag {}\n    for value in values {\n        let _ = value;\n    }\n    loop {\n        break;\n    }\n    if flag {} else {};\n    match flag {\n        true => (),\n        false => (),\n    };\n}\n\nfn retain(flag: bool) -> unit {\n    if flag {\n        1\n    } else {\n        2\n    };\n    match flag {\n        true => 1,\n        false => 2,\n    };\n    loop {\n        break 1\n    };\n}\n\nfn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {\n    for value in values {\n        let _ = value;\n    };\n    (values, values)\n}\n",
     )
 }
 
 #[test]
 fn formats_enum_variants_like_rustfmt() -> unit {
     expect_format(
-        "enum Compact[T]{None,One{value:T},Two(T)}enum Expanded[T]{One{value:T},Pair{left:T,right:T},Other{value:T}}enum Wide{First{value:ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth},Second{value:int}}",
-        "enum Compact[T] {\n    None,\n    One { value: T },\n    Two(T),\n}\n\nenum Expanded[T] {\n    One {\n        value: T,\n    },\n    Pair {\n        left: T,\n        right: T,\n    },\n    Other {\n        value: T,\n    },\n}\n\nenum Wide {\n    First {\n        value: ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth,\n    },\n    Second {\n        value: int,\n    },\n}\n",
+        "enum Compact[T]{None,One{value:T},Two(T)}enum Expanded[T]{One{value:T},Pair{left:T,right:T},Other{value:T}}enum Wide{First{value:ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth},Second{value:isize}}",
+        "enum Compact[T] {\n    None,\n    One { value: T },\n    Two(T),\n}\n\nenum Expanded[T] {\n    One {\n        value: T,\n    },\n    Pair {\n        left: T,\n        right: T,\n    },\n    Other {\n        value: T,\n    },\n}\n\nenum Wide {\n    First {\n        value: ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth,\n    },\n    Second {\n        value: isize,\n    },\n}\n",
     )
 }
 
 #[test]
 fn formats_newtype_structs() -> unit {
     expect_format(
-        "pub struct Wrapper [ T ] ( pub T , ) ;\nstruct UserId(int32);",
-        "pub struct Wrapper[T](pub T,);\n\nstruct UserId(int32);\n",
+        "pub struct Wrapper [ T ] ( pub T , ) ;\nstruct UserId(i32);",
+        "pub struct Wrapper[T](pub T,);\n\nstruct UserId(i32);\n",
     )
 }
 
 #[test]
 fn formats_static_items() -> unit {
     expect_format(
-        "static VALUE:OnceCell[int]=OnceCell::new();",
-        "static VALUE: OnceCell[int] = OnceCell::new();\n",
+        "static VALUE:OnceCell[isize]=OnceCell::new();",
+        "static VALUE: OnceCell[isize] = OnceCell::new();\n",
     )
 }
 
@@ -366,15 +366,15 @@ fn rejects_invalid_source() -> unit {
 #[test]
 fn formats_select_arms_vertically() -> unit {
     expect_format(
-        "fn choose(input:Channel[int],output:Channel[int])->int{select{recv(input)as value=>value.unwrap_or(0),send(output,1)=>2,default=>{let fallback=3;fallback},}}",
-        "fn choose(input: Channel[int], output: Channel[int]) -> int {\n    select {\n        recv(input) as value => value.unwrap_or(0),\n        send(output, 1) => 2,\n        default => {\n            let fallback = 3;\n            fallback\n        },\n    }\n}\n",
+        "fn choose(input:Channel[isize],output:Channel[isize])->isize{select{recv(input)as value=>value.unwrap_or(0),send(output,1)=>2,default=>{let fallback=3;fallback},}}",
+        "fn choose(input: Channel[isize], output: Channel[isize]) -> isize {\n    select {\n        recv(input) as value => value.unwrap_or(0),\n        send(output, 1) => 2,\n        default => {\n            let fallback = 3;\n            fallback\n        },\n    }\n}\n",
     )
 }
 
 #[test]
 fn formats_advanced_select_arms() -> unit {
     expect_format(
-        "fn choose(input:Channel[int],output:Channel[int])->int{select priority{recv(input)when true match{Some(value)=>value,None=>0,},send(output,1)when false=>2,default=>3,}}",
-        "fn choose(input: Channel[int], output: Channel[int]) -> int {\n    select priority {\n        recv(input) when true match {\n            Some(value) => value,\n            None => 0,\n        },\n        send(output, 1) when false => 2,\n        default => 3,\n    }\n}\n",
+        "fn choose(input:Channel[isize],output:Channel[isize])->isize{select priority{recv(input)when true match{Some(value)=>value,None=>0,},send(output,1)when false=>2,default=>3,}}",
+        "fn choose(input: Channel[isize], output: Channel[isize]) -> isize {\n    select priority {\n        recv(input) when true match {\n            Some(value) => value,\n            None => 0,\n        },\n        send(output, 1) when false => 2,\n        default => 3,\n    }\n}\n",
     )
 }

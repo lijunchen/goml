@@ -26,7 +26,7 @@ fn binary_interface_fixture() -> artifact::ArtifactInterfaceUnit {
     )
 }
 
-fn binary_comptime_module(value: int, source_path: string) -> ctir::CtModule {
+fn binary_comptime_module(value: isize, source_path: string) -> ctir::CtModule {
     let ty = ctir::CtType::Integer { signed: true, width: 64 };
     let module = ctir::empty_module("audit::comptime");
     module.origins.set(0, ctir::CtOrigin { source_path, start: 10, end: 20 });
@@ -65,7 +65,7 @@ fn binary_comptime_module(value: int, source_path: string) -> ctir::CtModule {
     module
 }
 
-fn binary_comptime_interface(value: int, source_path: string) -> artifact::ArtifactInterfaceUnit {
+fn binary_comptime_interface(value: isize, source_path: string) -> artifact::ArtifactInterfaceUnit {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
@@ -265,13 +265,13 @@ fn comptime_semantic_hash_ignores_origins_and_tracks_values() -> unit {
 #[test]
 fn interface_hash_tracks_only_public_comptime_body_closures() -> unit {
     let first = source_interface(
-        "package value; fn runtime_helper() -> int { 1 } pub fn runtime_value() -> int { runtime_helper() } #[comptime] fn ct_helper() -> int { 2 } #[comptime] pub fn ct_value() -> int { ct_helper() }",
+        "package value; fn runtime_helper() -> isize { 1 } pub fn runtime_value() -> isize { runtime_helper() } #[comptime] fn ct_helper() -> isize { 2 } #[comptime] pub fn ct_value() -> isize { ct_helper() }",
     );
     let runtime_changed = source_interface(
-        "package value; fn runtime_helper() -> int { 99 } pub fn runtime_value() -> int { runtime_helper() } #[comptime] fn ct_helper() -> int { 2 } #[comptime] pub fn ct_value() -> int { ct_helper() }",
+        "package value; fn runtime_helper() -> isize { 99 } pub fn runtime_value() -> isize { runtime_helper() } #[comptime] fn ct_helper() -> isize { 2 } #[comptime] pub fn ct_value() -> isize { ct_helper() }",
     );
     let comptime_changed = source_interface(
-        "package value; fn runtime_helper() -> int { 1 } pub fn runtime_value() -> int { runtime_helper() } #[comptime] fn ct_helper() -> int { 3 } #[comptime] pub fn ct_value() -> int { ct_helper() }",
+        "package value; fn runtime_helper() -> isize { 1 } pub fn runtime_value() -> isize { runtime_helper() } #[comptime] fn ct_helper() -> isize { 3 } #[comptime] pub fn ct_value() -> isize { ct_helper() }",
     );
     testing::assert_eq(first.interface_hash, runtime_changed.interface_hash);
     testing::assert(first.interface_hash != comptime_changed.interface_hash)

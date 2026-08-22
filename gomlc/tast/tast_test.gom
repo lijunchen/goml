@@ -52,7 +52,7 @@ fn has_diagnostic_containing(values: Vec[Diagnostic], expected: string) -> bool 
 #[test]
 fn evaluates_explicit_comptime_functions() -> unit {
     let file = checked_file(
-        "#[comptime] fn fibonacci(n: int) -> int { if n < 2 { n } else { fibonacci(n - 1) + fibonacci(n - 2) } } fn main() -> int { comptime { fibonacci(10) } }",
+        "#[comptime] fn fibonacci(n: isize) -> isize { if n < 2 { n } else { fibonacci(n - 1) + fibonacci(n - 2) } } fn main() -> isize { comptime { fibonacci(10) } }",
     );
     testing::assert_eq(file.items.len(), 2);
     match file.items[1] {
@@ -97,7 +97,9 @@ fn validates_comptime_derive_capability_boundaries() -> unit {
         "#[comptime_derive(Label)] pub fn first(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") } #[comptime_derive(Label)] pub fn second(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") }",
     );
     testing::assert(has_diagnostic(duplicate, "duplicate comptime derive export `Label`"));
-    let invalid_signature = checked_diagnostics("#[comptime_derive] pub fn handler() -> int { 1 }");
+    let invalid_signature = checked_diagnostics(
+        "#[comptime_derive] pub fn handler() -> isize { 1 }",
+    );
     testing::assert(
         has_diagnostic(
             invalid_signature,
@@ -105,7 +107,7 @@ fn validates_comptime_derive_capability_boundaries() -> unit {
         ),
     );
     let runtime_call = checked_diagnostics(
-        "#[comptime_derive] fn helper() -> int { 1 } fn value() -> int { helper() }",
+        "#[comptime_derive] fn helper() -> isize { 1 } fn value() -> isize { helper() }",
     );
     testing::assert(
         has_diagnostic(
@@ -132,7 +134,7 @@ fn validates_comptime_derive_capability_boundaries() -> unit {
 #[test]
 fn evaluates_comptime_shadowing_like_runtime() -> unit {
     let file = checked_file(
-        "#[comptime] fn shadow(value: int) -> int { let base = value; let nested = { let base = base + 1; base * 2 }; base + nested } fn main() -> int { comptime { shadow(3) } }",
+        "#[comptime] fn shadow(value: isize) -> isize { let base = value; let nested = { let base = base + 1; base * 2 }; base + nested } fn main() -> isize { comptime { shadow(3) } }",
     );
     match file.items[1] {
         Function(value) => match value.body.tail {
@@ -148,7 +150,7 @@ fn evaluates_comptime_shadowing_like_runtime() -> unit {
 #[test]
 fn eliminates_comptime_before_core_lowering() -> unit {
     let file = checked_file(
-        "#[comptime] fn double(value: int) -> int { value * 2 } fn main() -> int { comptime { double(21) } }",
+        "#[comptime] fn double(value: isize) -> isize { value * 2 } fn main() -> isize { comptime { double(21) } }",
     );
     testing::assert(!contains_comptime(file))
 }
@@ -156,7 +158,7 @@ fn eliminates_comptime_before_core_lowering() -> unit {
 #[test]
 fn evaluates_top_level_constants_with_comptime_functions() -> unit {
     let file = checked_file(
-        "#[comptime] fn square(value: int) -> int { value * value } const answer: int = square(12); fn main() -> int { answer }",
+        "#[comptime] fn square(value: isize) -> isize { value * value } const answer: isize = square(12); fn main() -> isize { answer }",
     );
     testing::assert_eq(file.constants.len(), 1);
     match file.constants[0].value {
@@ -169,12 +171,12 @@ fn evaluates_top_level_constants_with_comptime_functions() -> unit {
 
 #[test]
 fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> unit {
-    let capture = checked_diagnostics("fn main(value: int) -> int { comptime { value + 1 } }");
+    let capture = checked_diagnostics("fn main(value: isize) -> isize { comptime { value + 1 } }");
     testing::assert(
         has_diagnostic(capture, "comptime expression cannot capture runtime local `value/0`"),
     );
     let runtime_call = checked_diagnostics(
-        "fn runtime_value() -> int { 1 } fn main() -> int { comptime { runtime_value() } }",
+        "fn runtime_value() -> isize { 1 } fn main() -> isize { comptime { runtime_value() } }",
     );
     testing::assert(
         has_diagnostic(
@@ -182,7 +184,7 @@ fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> unit {
             "comptime function calls runtime-only function `runtime_value`",
         ),
     );
-    let source = "fn runtime_value() -> int { 1 } #[comptime] fn checked() -> int { runtime_value() } fn main() -> unit {}";
+    let source = "fn runtime_value() -> isize { 1 } #[comptime] fn checked() -> isize { runtime_value() } fn main() -> unit {}";
     let diagnostics = checked_diagnostics(source);
     let expected_call = match text::rfind(source, "runtime_value") {
         Some(value) => value,
@@ -215,7 +217,7 @@ fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> unit {
 
 #[test]
 fn reports_compile_error_from_comptime() -> unit {
-    let source = "#[comptime] fn checked(value: int) -> int { if value < 0 { compile_error(\"value must be non-negative\") } else { value } } fn main() -> int { comptime { checked(-1) } }";
+    let source = "#[comptime] fn checked(value: isize) -> isize { if value < 0 { compile_error(\"value must be non-negative\") } else { value } } fn main() -> isize { comptime { checked(-1) } }";
     let diagnostics = checked_diagnostics(source);
     testing::assert(has_diagnostic_containing(diagnostics, "value must be non-negative"));
     testing::assert(has_diagnostic_containing(diagnostics, "comptime call stack:"));
@@ -260,7 +262,7 @@ fn validates_comptime_attributes_and_function_capabilities() -> unit {
         has_diagnostic(invalid, "#[comptime] is only valid on free function declarations"),
     );
     let closure = checked_diagnostics(
-        "#[comptime] fn invalid() -> int { let value = || 1; value() } fn main() -> unit {}",
+        "#[comptime] fn invalid() -> isize { let value = || 1; value() } fn main() -> unit {}",
     );
     testing::assert(has_diagnostic_containing(closure, "closures are not available in comptime"));
     testing::assert(
@@ -273,7 +275,7 @@ fn validates_comptime_attributes_and_function_capabilities() -> unit {
 
 #[test]
 fn checks_let_else_and_value_break_restrictions() -> unit {
-    let source = "enum Choice { Value(int), Empty } fn non_exit(value: Choice) -> int { let Value(item) = value else { 0 }; item } fn while_value() { while true { break 1; }; } fn irrefutable() { let item = 1 else { return; }; }";
+    let source = "enum Choice { Value(isize), Empty } fn non_exit(value: Choice) -> isize { let Value(item) = value else { 0 }; item } fn while_value() { while true { break 1; }; } fn irrefutable() { let item = 1 else { return; }; }";
     let diagnostics = checked_diagnostics(source);
     testing::assert(
         has_diagnostic(diagnostics, "`let else` branch must exit the surrounding control flow"),
@@ -284,19 +286,19 @@ fn checks_let_else_and_value_break_restrictions() -> unit {
 
 #[test]
 fn checks_value_break_types_across_loop_paths() -> unit {
-    let source = "fn choose(flag: bool) -> int { loop { if flag { break 1; } else { break \"wrong\"; }; } }";
+    let source = "fn choose(flag: bool) -> isize { loop { if flag { break 1; } else { break \"wrong\"; }; } }";
     testing::assert(
-        has_diagnostic(checked_diagnostics(source), "Type mismatch: expected int, found string"),
+        has_diagnostic(checked_diagnostics(source), "Type mismatch: expected isize, found string"),
     )
 }
 
 #[test]
 fn checks_block_and_byte_string_types() -> unit {
     let valid = checked_diagnostics(
-        "fn answer() -> int { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let fixed: [byte; 3] = b\"raw\"; let _ = empty.len() + bytes.len() + fixed[0].to_int(); }",
+        "fn answer() -> isize { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let fixed: [byte; 3] = b\"raw\"; let _ = empty.len() + bytes.len() + fixed[0].to_int(); }",
     );
     testing::assert_eq(valid.len(), 0);
-    let invalid = checked_diagnostics("fn wrong() -> Vec[int] { b\"value\" }");
+    let invalid = checked_diagnostics("fn wrong() -> Vec[isize] { b\"value\" }");
     testing::assert(invalid.len() > 0)
 }
 
@@ -370,7 +372,7 @@ fn records_typecheck_query_facts() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn identity(value: int32) -> int32 { value } fn main() -> int32 { let answer = identity(42); answer }",
+                    "fn identity(value: i32) -> i32 { value } fn main() -> i32 { let answer = identity(42); answer }",
                 ),
             ),
             "main.gom",
@@ -421,8 +423,8 @@ fn records_typecheck_query_facts() -> unit {
 #[test]
 fn merges_typecheck_query_facts_for_package_files() -> unit {
     let parsed = Vec::new();
-    parsed.push(parser::parse("package values; fn value() -> int32 { 42 }"));
-    parsed.push(parser::parse("package values; fn answer() -> int32 { value() }"));
+    parsed.push(parser::parse("package values; fn value() -> i32 { 42 }"));
+    parsed.push(parser::parse("package values; fn answer() -> i32 { value() }"));
     let ast_files = ast::lower_package(parsed);
     let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     inputs.push((ast_files.get(0), "value.gom"));
@@ -454,7 +456,7 @@ fn checks_cross_file_package_definitions() -> unit {
     let parsed = Vec::new();
     parsed.push(
         parser::parse(
-            "package main; trait Label { fn label(self: Self) -> string; } enum Status { Idle, Busy(int32) } impl Label for Status { fn label(self: Status) -> string { match self { Idle => \"idle\", Busy(value) => value.to_string() } } }",
+            "package main; trait Label { fn label(self: Self) -> string; } enum Status { Idle, Busy(i32) } impl Label for Status { fn label(self: Status) -> string { match self { Idle => \"idle\", Busy(value) => value.to_string() } } }",
         ),
     );
     parsed.push(
@@ -503,10 +505,10 @@ fn diagnoses_overlapping_impls_across_package_files() -> unit {
     let parsed = Vec::from_array(
         [
             parser::parse(
-                "package values; trait Pick { fn pick(self: Self) -> int32; } struct Value {} impl Pick for Value { fn pick(self: Value) -> int32 { 1 } }",
+                "package values; trait Pick { fn pick(self: Self) -> i32; } struct Value {} impl Pick for Value { fn pick(self: Value) -> i32 { 1 } }",
             ),
             parser::parse(
-                "package values; impl Pick for Value { fn pick(self: Value) -> int32 { 2 } }",
+                "package values; impl Pick for Value { fn pick(self: Value) -> i32 { 2 } }",
             ),
         ],
     );
@@ -558,7 +560,7 @@ fn diagnoses_duplicate_functions_across_package_files() -> unit {
 #[test]
 fn diagnoses_duplicate_declaration_names() -> unit {
     let diagnostics = checked_diagnostics(
-        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } type Alias = int32; type Alias = string; struct Mixed {} type Mixed = int32; trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {} const repeated: int = 1; const repeated: int = 2; fn conflict() -> int { 1 } const conflict: int = 1;",
+        "enum E { A, A } struct S { x: i32, x: string } enum Both { A } struct Both { value: i32 } type Alias = i32; type Alias = string; struct Mixed {} type Mixed = i32; trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: i32, x: string) -> unit {} fn duplicate() -> unit {} const repeated: isize = 1; const repeated: isize = 2; fn conflict() -> isize { 1 } const conflict: isize = 1;",
     );
     let expected = Vec::new();
     expected.push("variant A is defined multiple times in enum E");
@@ -761,9 +763,9 @@ fn diagnoses_invalid_go_ffi_declarations() -> unit {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
-                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe(values: Vec[int32]) -> unit;",
+                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe(values: Vec[i32]) -> unit;",
             ),
-            "Go FFI parameter values has unsupported type Vec[int32]",
+            "Go FFI parameter values has unsupported type Vec[i32]",
         ),
     );
     testing::assert(
@@ -789,7 +791,7 @@ fn permits_runtime_externs_in_builtin_sources() -> unit {
     let lowered = hir::lower(
         ast::lower(
             parser::parse(
-                "#[runtime(\"core.string_get\")] extern fn string_get_raw(value: string, index: int) -> char; fn load(value: string, index: int) -> char { string_get_raw(value, index) }",
+                "#[runtime(\"core.string_get\")] extern fn string_get_raw(value: string, index: isize) -> char; fn load(value: string, index: isize) -> char { string_get_raw(value, index) }",
             ),
         ),
         "builtin/runtime.gom",
@@ -840,7 +842,7 @@ fn hides_raw_builtin_helpers_from_user_sources() -> unit {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
-                "fn probe(channel: Channel[int]) -> bool { builtin::channel_send_cancel(channel, 1, 0) }",
+                "fn probe(channel: Channel[isize]) -> bool { builtin::channel_send_cancel(channel, 1, 0) }",
             ),
             "Type or trait builtin not found for member access",
         ),
@@ -909,10 +911,10 @@ fn resolves_runtime_externs_from_package_interfaces() -> unit {
 fn resolves_enum_patterns_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
-        dependency_hir("package api; pub enum Choice { Empty, Value(int32) }", "vendor::api"),
+        dependency_hir("package api; pub enum Choice { Empty, Value(i32) }", "vendor::api"),
     );
     let file = checked_file_with_dependencies(
-        "use vendor::api; fn unwrap(value: api::Choice) -> int32 { match value { api::Choice::Empty => 0, api::Choice::Value(inner) => inner } }",
+        "use vendor::api; fn unwrap(value: api::Choice) -> i32 { match value { api::Choice::Empty => 0, api::Choice::Value(inner) => inner } }",
         dependencies,
     );
     match file.items.get(0) {
@@ -933,7 +935,7 @@ fn prefers_exact_struct_names_over_dependency_short_names() -> unit {
         dependency_hir("package api; pub struct Context { foreign: string }", "vendor::api"),
     );
     let file = checked_package_file_with_dependencies(
-        "struct Context { local: int32 } fn read(value: Context) -> int32 { value.local }",
+        "struct Context { local: i32 } fn read(value: Context) -> i32 { value.local }",
         dependencies,
     );
     match file.items.get(0) {
@@ -974,7 +976,7 @@ fn rejects_mismatched_let_annotations() -> unit {
     let result = check(
         hir::lower(
             ast::lower(
-                parser::parse("fn main() -> unit { let value: int32 = \"wrong\"; let _ = value; }"),
+                parser::parse("fn main() -> unit { let value: i32 = \"wrong\"; let _ = value; }"),
             ),
             "main.gom",
         ),
@@ -982,19 +984,19 @@ fn rejects_mismatched_let_annotations() -> unit {
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(
         result.diagnostics.get(0).message,
-        "Type mismatch: expected int32, found string",
+        "Type mismatch: expected i32, found string",
     )
 }
 
 #[test]
 fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
-    let local = checked_diagnostics("fn value() -> int32 { 1 } fn main() -> string { value() }");
+    let local = checked_diagnostics("fn value() -> i32 { 1 } fn main() -> string { value() }");
     testing::assert_eq(local.len(), 2);
     for diagnostic in local {
-        testing::assert_eq(diagnostic.message, "Type mismatch: expected string, found int32")
+        testing::assert_eq(diagnostic.message, "Type mismatch: expected string, found i32")
     }
     let dependencies: Vec[hir::File] = Vec::new();
-    dependencies.push(dependency_hir("package api; pub fn value() -> int32 { 1 }", "vendor::api"));
+    dependencies.push(dependency_hir("package api; pub fn value() -> i32 { 1 }", "vendor::api"));
     let external = check_for_link_with_dependencies(
         hir::lower(
             ast::lower(parser::parse("use vendor::api; fn main() -> string { api::value() }")),
@@ -1004,13 +1006,13 @@ fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
     );
     testing::assert_eq(external.diagnostics.len(), 2);
     for diagnostic in external.diagnostics {
-        testing::assert_eq(diagnostic.message, "Type mismatch: expected string, found int32")
+        testing::assert_eq(diagnostic.message, "Type mismatch: expected string, found i32")
     }
 }
 
 #[test]
 fn infers_numeric_generic_arguments_from_expected_types() -> unit {
-    let source = "fn main() -> unit { let r: Ref[uint8] = Ref::new(10); }";
+    let source = "fn main() -> unit { let r: Ref[u8] = Ref::new(10); }";
     let diagnostics = checked_diagnostics(source);
     testing::assert_eq(diagnostics.len(), 0)
 }
@@ -1024,10 +1026,7 @@ fn rejects_float_remainder_operands() -> unit {
         ),
     );
     testing::assert_eq(result.diagnostics.len(), 1);
-    testing::assert_eq(
-        result.diagnostics.get(0).message,
-        "Operator % is not defined for type float64",
-    )
+    testing::assert_eq(result.diagnostics.get(0).message, "Operator % is not defined for type f64")
 }
 
 #[test]
@@ -1036,7 +1035,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "trait Display { fn display(self: Self) -> string; } fn convert(value: int32) -> dyn Display { value as dyn Display }",
+                    "trait Display { fn display(self: Self) -> string; } fn convert(value: i32) -> dyn Display { value as dyn Display }",
                 ),
             ),
             "main.gom",
@@ -1045,13 +1044,13 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     testing::assert_eq(dyn_result.diagnostics.len(), 1);
     testing::assert_eq(
         dyn_result.diagnostics.get(0).message,
-        "Type int32 does not implement trait Display",
+        "Type i32 does not implement trait Display",
     );
     let equality_result = check(
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn main() -> unit { let left: (int32) -> int32 = |value| value; let right: (int32) -> int32 = |value| value; let _ = left == right; }",
+                    "fn main() -> unit { let left: (i32) -> i32 = |value| value; let right: (i32) -> i32 = |value| value; let _ = left == right; }",
                 ),
             ),
             "main.gom",
@@ -1060,7 +1059,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     testing::assert_eq(equality_result.diagnostics.len(), 1);
     testing::assert_eq(
         equality_result.diagnostics.get(0).message,
-        "No instance found for trait PartialEq<(int32) -> int32>",
+        "No instance found for trait PartialEq<(i32) -> i32>",
     )
 }
 
@@ -1102,7 +1101,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     testing::assert_eq(unknown_trait.diagnostics.get(0).message, "Unknown trait Missing");
     let bad_application = check(
         hir::lower(
-            ast::lower(parser::parse("fn use_value[T](value: T[int32]) -> unit { () }")),
+            ast::lower(parser::parse("fn use_value[T](value: T[i32]) -> unit { () }")),
             "main.gom",
         ),
     );
@@ -1113,30 +1112,30 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     );
     let overflow = check(
         hir::lower(
-            ast::lower(parser::parse("fn main() -> unit { let value: int8 = 999; }")),
+            ast::lower(parser::parse("fn main() -> unit { let value: i8 = 999; }")),
             "main.gom",
         ),
     );
     testing::assert_eq(overflow.diagnostics.len(), 1);
     testing::assert_eq(
         overflow.diagnostics.get(0).message,
-        "Integer literal 999 does not fit in int8",
+        "Integer literal 999 does not fit in i8",
     );
     let negative_unsigned = check(
         hir::lower(
-            ast::lower(parser::parse("fn main() -> unit { let value: uint8 = -1; }")),
+            ast::lower(parser::parse("fn main() -> unit { let value: u8 = -1; }")),
             "main.gom",
         ),
     );
     testing::assert_eq(negative_unsigned.diagnostics.len(), 1);
     testing::assert_eq(
         negative_unsigned.diagnostics.get(0).message,
-        "Integer literal -1 does not fit in uint8",
+        "Integer literal -1 does not fit in u8",
     );
     let uint_overflow = check(
         hir::lower(
             ast::lower(
-                parser::parse("fn main() -> unit { let value: uint = 18446744073709551616; }"),
+                parser::parse("fn main() -> unit { let value: usize = 18446744073709551616; }"),
             ),
             "main.gom",
         ),
@@ -1144,7 +1143,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     testing::assert_eq(uint_overflow.diagnostics.len(), 1);
     testing::assert_eq(
         uint_overflow.diagnostics.get(0).message,
-        "Integer literal 18446744073709551616 does not fit in uint",
+        "Integer literal 18446744073709551616 does not fit in usize",
     )
 }
 
@@ -1183,7 +1182,7 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn choose(value: bool) -> int32 { match value { true => 1, false => 0 } }",
+                    "fn choose(value: bool) -> i32 { match value { true => 1, false => 0 } }",
                 ),
             ),
             "main.gom",
@@ -1194,7 +1193,7 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn choose(value: (bool, bool)) -> int32 { match value { (true, true) => 1, (true, false) => 2, (false, true) => 3 } }",
+                    "fn choose(value: (bool, bool)) -> i32 { match value { (true, true) => 1, (true, false) => 2, (false, true) => 3 } }",
                 ),
             ),
             "main.gom",
@@ -1206,31 +1205,31 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         "non-exhaustive match: missing pattern (false, false)",
     );
     let symbolic_constant = checked_diagnostics(
-        "const classified: int = classify(42); const answer: int = make_answer(); #[comptime] fn make_answer() -> int { 42 } #[comptime] fn classify(value: int) -> int { match value { answer => 1, _ => 0 } }",
+        "const classified: isize = classify(42); const answer: isize = make_answer(); #[comptime] fn make_answer() -> isize { 42 } #[comptime] fn classify(value: isize) -> isize { match value { answer => 1, _ => 0 } }",
     );
     testing::assert_eq(symbolic_constant.len(), 0);
     let symbolic_bool = checked_diagnostics(
-        "const enabled: bool = make_enabled(); #[comptime] fn make_enabled() -> bool { true } fn choose(value: bool) -> int { match value { enabled => 1, false => 0 } }",
+        "const enabled: bool = make_enabled(); #[comptime] fn make_enabled() -> bool { true } fn choose(value: bool) -> isize { match value { enabled => 1, false => 0 } }",
     );
     testing::assert_eq(symbolic_bool.len(), 0);
     let symbolic_scalar = checked_diagnostics(
-        "const answer: uint8 = make_answer(); #[comptime] fn make_answer() -> uint8 { 42 } fn choose(value: uint8) -> int { match value { 0..=41 => 0, answer => 1, 43..=255 => 2 } }",
+        "const answer: u8 = make_answer(); #[comptime] fn make_answer() -> u8 { 42 } fn choose(value: u8) -> isize { match value { 0..=41 => 0, answer => 1, 43..=255 => 2 } }",
     );
     testing::assert_eq(symbolic_scalar.len(), 0);
     let symbolic_duplicate = checked_diagnostics(
-        "const enabled: bool = make_enabled(); #[comptime] fn make_enabled() -> bool { true } fn choose(value: bool) -> int { match value { true => 1, enabled => 2, false => 0 } }",
+        "const enabled: bool = make_enabled(); #[comptime] fn make_enabled() -> bool { true } fn choose(value: bool) -> isize { match value { true => 1, enabled => 2, false => 0 } }",
     );
     testing::assert_eq(symbolic_duplicate.len(), 1);
     testing::assert_eq(symbolic_duplicate.get(0).message, "Unreachable match arm");
     let comptime_guard = checked_diagnostics(
-        "fn choose(value: bool) -> int { let selected = match value { true if comptime { true } => 1, false => 0 }; selected }",
+        "fn choose(value: bool) -> isize { let selected = match value { true if comptime { true } => 1, false => 0 }; selected }",
     );
     testing::assert_eq(comptime_guard.len(), 0);
     let refutable = check(
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "enum Choice { None, Some(int32) } fn make() -> Choice { Choice::None } fn main() -> unit { let Choice::Some(value) = make(); }",
+                    "enum Choice { None, Some(i32) } fn make() -> Choice { Choice::None } fn main() -> unit { let Choice::Some(value) = make(); }",
                 ),
             ),
             "main.gom",
@@ -1252,7 +1251,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
     let sequence_gap = check(
         hir::lower(
             ast::lower(
-                parser::parse("fn choose(values: Vec[bool]) -> int32 { match values { [] => 0 } }"),
+                parser::parse("fn choose(values: Vec[bool]) -> i32 { match values { [] => 0 } }"),
             ),
             "main.gom",
         ),
@@ -1266,7 +1265,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn choose(values: Vec[bool]) -> int32 { match values { [] => 0, [true, ..] => 1, [false, ..] => 2 } }",
+                    "fn choose(values: Vec[bool]) -> i32 { match values { [] => 0, [true, ..] => 1, [false, ..] => 2 } }",
                 ),
             ),
             "main.gom",
@@ -1277,7 +1276,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn choose(value: uint8) -> int32 { match value { 0..=127 => 0, 128..=255 => 1 } }",
+                    "fn choose(value: u8) -> i32 { match value { 0..=127 => 0, 128..=255 => 1 } }",
                 ),
             ),
             "main.gom",
@@ -1288,7 +1287,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn choose(value: uint8) -> int32 { match value { 0..=126 => 0, 128..=255 => 1 } }",
+                    "fn choose(value: u8) -> i32 { match value { 0..=126 => 0, 128..=255 => 1 } }",
                 ),
             ),
             "main.gom",
@@ -1303,7 +1302,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "enum Never {} enum MaybeNever { Empty, Filled(Never) } fn absurd(value: Never) -> int32 { match value {} } fn maybe(value: MaybeNever) -> int32 { match value { MaybeNever::Empty => 0 } } fn empty_vec(value: Vec[Never]) -> int32 { match value { [] => 0 } }",
+                    "enum Never {} enum MaybeNever { Empty, Filled(Never) } fn absurd(value: Never) -> i32 { match value {} } fn maybe(value: MaybeNever) -> i32 { match value { MaybeNever::Empty => 0 } } fn empty_vec(value: Vec[Never]) -> i32 { match value { [] => 0 } }",
                 ),
             ),
             "main.gom",
@@ -1338,7 +1337,7 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "trait Pick { fn pick(self: Self) -> int32; } impl Pick for int32 { fn pick(self: int32) -> int32 { 1 } } impl[T] Pick for T { fn pick(self: T) -> int32 { 2 } }",
+                    "trait Pick { fn pick(self: Self) -> i32; } impl Pick for i32 { fn pick(self: i32) -> i32 { 1 } } impl[T] Pick for T { fn pick(self: T) -> i32 { 2 } }",
                 ),
             ),
             "main.gom",
@@ -1354,20 +1353,20 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
 #[test]
 fn rejects_impls_overlapping_builtin_ref_blankets() -> unit {
     let diagnostics = checked_diagnostics(
-        "impl PartialEq for Ref[int32] { fn eq(self: Ref[int32], other: Ref[int32]) -> bool { true } } impl Eq for Ref[int32] {} impl Hash for Ref[int32] { fn hash(self: Ref[int32]) -> uint64 { 0 } }",
+        "impl PartialEq for Ref[i32] { fn eq(self: Ref[i32], other: Ref[i32]) -> bool { true } } impl Eq for Ref[i32] {} impl Hash for Ref[i32] { fn hash(self: Ref[i32]) -> u64 { 0 } }",
     );
     testing::assert_eq(diagnostics.len(), 3);
     testing::assert_eq(
         diagnostics.get(0).message,
-        "Trait PartialEq implementation for Ref[int32] overlaps with builtin implementation",
+        "Trait PartialEq implementation for Ref[i32] overlaps with builtin implementation",
     );
     testing::assert_eq(
         diagnostics.get(1).message,
-        "Trait Eq implementation for Ref[int32] overlaps with builtin implementation",
+        "Trait Eq implementation for Ref[i32] overlaps with builtin implementation",
     );
     testing::assert_eq(
         diagnostics.get(2).message,
-        "Trait Hash implementation for Ref[int32] overlaps with builtin implementation",
+        "Trait Hash implementation for Ref[i32] overlaps with builtin implementation",
     );
     for diagnostic in diagnostics {
         testing::assert(
@@ -1388,13 +1387,13 @@ fn distinguishes_fully_qualified_trait_names() -> unit {
 
 #[test]
 fn solves_trait_chains_without_an_arbitrary_depth_cutoff() -> unit {
-    let ty = Ref::new("int32");
+    let ty = Ref::new("i32");
     let value = Ref::new("0");
     for _ in 0..24 {
         ty.set("Wrap[" + ty.get() + "]");
         value.set("Wrap { value: " + value.get() + " }")
     }
-    let source = "trait Mark {} struct Wrap[T] { value: T } impl Mark for int32 {} impl[T: Mark] Mark for Wrap[T] {} fn require[T: Mark](value: T) -> unit {} fn main() -> unit { let value: "
+    let source = "trait Mark {} struct Wrap[T] { value: T } impl Mark for i32 {} impl[T: Mark] Mark for Wrap[T] {} fn require[T: Mark](value: T) -> unit {} fn main() -> unit { let value: "
         + ty.get()
         + " = "
         + value.get()
@@ -1407,7 +1406,7 @@ fn solves_trait_chains_without_an_arbitrary_depth_cutoff() -> unit {
 fn rejects_invalid_for_sources_and_patterns() -> unit {
     let non_iterator = checked_diagnostics("fn main() -> unit { for _ in 1 {} }");
     testing::assert(
-        has_diagnostic(non_iterator, "for loop expects a type implementing IntoIterator, got int"),
+        has_diagnostic(non_iterator, "for loop expects a type implementing IntoIterator, got isize"),
     );
     let refutable = checked_diagnostics("fn main() -> unit { for 1 in range(0, 3) {} }");
     testing::assert(
@@ -1418,7 +1417,7 @@ fn rejects_invalid_for_sources_and_patterns() -> unit {
 #[test]
 fn checks_indexed_assignment_roots() -> unit {
     let temporary = checked_diagnostics(
-        "fn make() -> [int32; 2] { [1, 2] } fn main() -> unit { make()[0] = 3; }",
+        "fn make() -> [i32; 2] { [1, 2] } fn main() -> unit { make()[0] = 3; }",
     );
     testing::assert(
         has_diagnostic(
@@ -1447,7 +1446,7 @@ fn checks_indexed_assignment_roots() -> unit {
 #[test]
 fn checks_practical_expression_syntax() -> unit {
     let valid = checked_diagnostics(
-        "struct Point { x: int, y: int } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[int] = Vec::from_array([]); let table: HashMap[string, int] = HashMap::from_array([(\"x\", 1)]); let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
+        "struct Point { x: isize, y: isize } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[isize] = Vec::from_array([]); let table: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
     );
     testing::assert_eq(valid.len(), 0)
 }
@@ -1455,7 +1454,7 @@ fn checks_practical_expression_syntax() -> unit {
 #[test]
 fn checks_collection_from_array_inference_and_constraints() -> unit {
     let valid = checked_diagnostics(
-        "fn main() -> unit { let values: Vec[int] = Vec::from_array([]); let entries = HashMap::[string, int]::from_array([]); let make: ([int; 2]) -> Vec[int] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",
+        "fn main() -> unit { let values: Vec[isize] = Vec::from_array([]); let entries = HashMap::[string, isize]::from_array([]); let make: ([isize; 2]) -> Vec[isize] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",
     );
     testing::assert_eq(valid.len(), 0);
     let uninferred = checked_diagnostics(
@@ -1463,11 +1462,11 @@ fn checks_collection_from_array_inference_and_constraints() -> unit {
     );
     testing::assert(has_diagnostic_containing(uninferred, "Could not infer"));
     let wrong_element = checked_diagnostics(
-        "fn main() -> Vec[int] { Vec::from_array([1, \"wrong\"]) }",
+        "fn main() -> Vec[isize] { Vec::from_array([1, \"wrong\"]) }",
     );
-    testing::assert(has_diagnostic(wrong_element, "Type mismatch: expected int, found string"));
+    testing::assert(has_diagnostic(wrong_element, "Type mismatch: expected isize, found string"));
     let missing_key_traits = checked_diagnostics(
-        "struct Key {} fn main() -> HashMap[Key, int] { HashMap::from_array([(Key {}, 1)]) }",
+        "struct Key {} fn main() -> HashMap[Key, isize] { HashMap::from_array([(Key {}, 1)]) }",
     );
     testing::assert(has_diagnostic_containing(missing_key_traits, "Hash"));
     testing::assert(has_diagnostic_containing(missing_key_traits, "Eq"));
@@ -1489,7 +1488,7 @@ fn checks_collection_from_array_inference_and_constraints() -> unit {
 
 #[test]
 fn lowers_collection_from_array_to_specialized_intrinsic() -> unit {
-    let file = checked_file("fn main() -> Vec[int] { Vec::from_array([1, 2]) }");
+    let file = checked_file("fn main() -> Vec[isize] { Vec::from_array([1, 2]) }");
     match file.items[0] {
         Function(value) => match value.body.tail {
             Some(Call {
@@ -1525,7 +1524,7 @@ fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
 #[test]
 fn infers_empty_vectors_from_return_and_call_context() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn values() -> Option[Vec[Vec[uint16]]] { Option::Some(Vec::from_array([])) } fn main() -> unit { let values = values().unwrap_or(Vec::from_array([])); let _ = values.len(); }",
+        "fn values() -> Option[Vec[Vec[u16]]] { Option::Some(Vec::from_array([])) } fn main() -> unit { let values = values().unwrap_or(Vec::from_array([])); let _ = values.len(); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
@@ -1533,7 +1532,7 @@ fn infers_empty_vectors_from_return_and_call_context() -> unit {
 #[test]
 fn rejects_hashmap_index_compound_assignment() -> unit {
     let hashmap_compound = checked_diagnostics(
-        "fn main() -> unit { let values: HashMap[string, int] = HashMap::from_array([(\"x\", 1)]); values[\"x\"] += 2; }",
+        "fn main() -> unit { let values: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); values[\"x\"] += 2; }",
     );
     testing::assert(
         has_diagnostic(
@@ -1557,38 +1556,38 @@ fn rejects_non_stringifiable_interpolation() -> unit {
 #[test]
 fn validates_trait_impl_contracts() -> unit {
     let duplicate = checked_diagnostics(
-        "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn show(self: int32) -> string { \"b\" } }",
+        "trait Display { fn show(self: Self) -> string; } impl Display for i32 { fn show(self: i32) -> string { \"a\" } fn show(self: i32) -> string { \"b\" } }",
     );
     testing::assert(
         has_diagnostic(duplicate, "Method show implemented multiple times in impl of trait Display"),
     );
     let extra = checked_diagnostics(
-        "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn extra(self: int32) -> string { \"b\" } }",
+        "trait Display { fn show(self: Self) -> string; } impl Display for i32 { fn show(self: i32) -> string { \"a\" } fn extra(self: i32) -> string { \"b\" } }",
     );
     testing::assert(has_diagnostic(extra, "Method extra is not declared in trait Display"));
     let missing = checked_diagnostics(
-        "trait Display { fn show(self: Self) -> string; fn debug(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } }",
+        "trait Display { fn show(self: Self) -> string; fn debug(self: Self) -> string; } impl Display for i32 { fn show(self: i32) -> string { \"a\" } }",
     );
     testing::assert(
-        has_diagnostic(missing, "Trait Display implementation for int32 is missing method debug"),
+        has_diagnostic(missing, "Trait Display implementation for i32 is missing method debug"),
     );
     let arity = checked_diagnostics(
-        "trait Format { fn format(self: Self, arg1: string) -> string; } impl Format for int32 { fn format(self: int32) -> string { \"a\" } }",
+        "trait Format { fn format(self: Self, arg1: string) -> string; } impl Format for i32 { fn format(self: i32) -> string { \"a\" } }",
     );
     testing::assert(
         has_diagnostic(arity, "Trait Format::format expects 2 parameters but impl has 1"),
     );
     let parameter = checked_diagnostics(
-        "trait Format { fn format(self: Self, arg1: string) -> string; } impl Format for int32 { fn format(self: int32, value: int32) -> string { value.to_string() } }",
+        "trait Format { fn format(self: Self, arg1: string) -> string; } impl Format for i32 { fn format(self: i32, value: i32) -> string { value.to_string() } }",
     );
     testing::assert(
         has_diagnostic(
             parameter,
-            "Trait Format::format parameter 1 expected type string but found int32",
+            "Trait Format::format parameter 1 expected type string but found i32",
         ),
     );
     let result = checked_diagnostics(
-        "trait Display { fn show(self: Self) -> string; } impl Display for int32 { fn show(self: int32) -> bool { true } }",
+        "trait Display { fn show(self: Self) -> string; } impl Display for i32 { fn show(self: i32) -> bool { true } }",
     );
     testing::assert(
         has_diagnostic(result, "Trait Display::show expected return type string but found bool"),
@@ -1598,7 +1597,7 @@ fn validates_trait_impl_contracts() -> unit {
 #[test]
 fn validates_declared_types_and_tostring_requirements() -> unit {
     let declarations = checked_diagnostics(
-        "enum Maybe[T] { Just(T), Nothing } struct UseMaybe { value: Maybe, missing: Unknown[int32] } struct Generic[T] { field: V }",
+        "enum Maybe[T] { Just(T), Nothing } struct UseMaybe { value: Maybe, missing: Unknown[i32] } struct Generic[T] { field: V }",
     );
     testing::assert(has_diagnostic(declarations, "Type Maybe expects 1 type arguments, but got 0"));
     testing::assert(has_diagnostic(declarations, "Unknown type constructor Unknown"));
@@ -1617,7 +1616,7 @@ fn validates_declared_types_and_tostring_requirements() -> unit {
 fn reports_unimported_package_members_canonically() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
-        dependency_hir("package dep; pub fn value() -> int32 { 1 }", "package_model_test::dep"),
+        dependency_hir("package dep; pub fn value() -> i32 { 1 }", "package_model_test::dep"),
     );
     let result = check_for_link_with_dependencies(
         hir::lower_package(
@@ -1656,7 +1655,7 @@ fn reports_missing_constructor_inference_canonically() -> unit {
 
 #[test]
 fn accepts_blocks_terminated_by_return() -> unit {
-    let source = "fn direct() -> int32 { return 1; } fn branch(flag: bool) -> int32 { if flag { return 1; } else { return 2; }; }";
+    let source = "fn direct() -> i32 { return 1; } fn branch(flag: bool) -> i32 { if flag { return 1; } else { return 2; }; }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0)
 }
@@ -1665,7 +1664,7 @@ fn accepts_blocks_terminated_by_return() -> unit {
 fn resolves_enum_constructors_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
-        dependency_hir("package api; pub enum Choice { None, Some(int32) }", "vendor::api"),
+        dependency_hir("package api; pub enum Choice { None, Some(i32) }", "vendor::api"),
     );
     let file = checked_package_file_with_dependencies(
         "use vendor::api; fn zero() -> api::Choice { api::Choice::None } fn payload() -> api::Choice { api::Choice::Some(7) }",
@@ -1689,7 +1688,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> unit {
                 testing::assert_eq(values.len(), 1);
                 match resolve_type(expr_type(values.get(0))) {
                     Int32 => (),
-                    _ => testing::fail("expected int32 constructor argument"),
+                    _ => testing::fail("expected i32 constructor argument"),
                 };
                 testing::assert_eq(name, "vendor::api::Choice")
             },
@@ -1710,7 +1709,7 @@ fn filters_external_trait_methods_by_hir_scope() -> unit {
     );
     dependencies.push(
         dependency_hir(
-            "package data; use vendor::traits; pub struct Card { value: int32 } impl traits::Render for Card { fn render(self: Card) -> string { \"R\" } } impl traits::Fancy for Card { fn render(self: Card) -> string { \"F\" } }",
+            "package data; use vendor::traits; pub struct Card { value: i32 } impl traits::Render for Card { fn render(self: Card) -> string { \"R\" } } impl traits::Fancy for Card { fn render(self: Card) -> string { \"F\" } }",
             "vendor::data",
         ),
     );
@@ -1747,7 +1746,7 @@ fn imports_external_supertrait_methods_with_child_scope() -> unit {
         ),
     );
     let file = checked_package_file_with_dependencies(
-        "package usepkg; use vendor::api; use api::Child; fn read(value: api::Box[int32]) -> int32 { value.parent() }",
+        "package usepkg; use vendor::api; use api::Child; fn read(value: api::Box[i32]) -> i32 { value.parent() }",
         dependencies,
     );
     match file.items.get(0) {
@@ -1778,7 +1777,7 @@ fn primitive_text(value: Primitive) -> string {
 #[test]
 fn erases_indexed_assignment_read_types() -> unit {
     let file = checked_file(
-        "fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1] = \"ok\"; }",
+        "fn main() -> unit { let map: HashMap[i32, string] = HashMap::new(); map[1] = \"ok\"; }",
     );
     match file.items.get(0) {
         Function(value) => match value.body.stmts.get(1) {
@@ -1800,21 +1799,21 @@ fn erases_indexed_assignment_read_types() -> unit {
 
 #[test]
 fn infers_shift_operands_independently() -> unit {
-    let file = checked_file("fn shift(value: uint8) -> uint8 { value << 4 }");
+    let file = checked_file("fn shift(value: u8) -> u8 { value << 4 }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
             Some(Binary { op: Shl, lhs: left, rhs: right, ty, resolution: _ }) => {
                 match resolve_type(expr_type(left)) {
                     Uint8 => (),
-                    _ => testing::fail("expected uint8 left operand"),
+                    _ => testing::fail("expected u8 left operand"),
                 };
                 match resolve_type(expr_type(right)) {
                     Int => (),
-                    _ => testing::fail("expected int shift count"),
+                    _ => testing::fail("expected isize shift count"),
                 };
                 match resolve_type(ty) {
                     Uint8 => (),
-                    _ => testing::fail("expected uint8 shift result"),
+                    _ => testing::fail("expected u8 shift result"),
                 }
             },
             _ => testing::fail("expected shift expression"),
@@ -1860,7 +1859,7 @@ fn infers_generic_function_calls() -> unit {
 
 #[test]
 fn resolves_reordered_result_try_tags() -> unit {
-    let source = "enum Result[T, E] { Err(E), Ok(T), } fn parse(flag: bool) -> Result[int32, string] { if flag { Result::Ok(1) } else { Result::Err(\"bad\") } } fn compute(flag: bool) -> Result[int32, string] { let value = parse(flag)?; Result::Ok(value) }";
+    let source = "enum Result[T, E] { Err(E), Ok(T), } fn parse(flag: bool) -> Result[i32, string] { if flag { Result::Ok(1) } else { Result::Err(\"bad\") } } fn compute(flag: bool) -> Result[i32, string] { let value = parse(flag)?; Result::Ok(value) }";
     let file = checked_file(source);
     match file.items.get(1) {
         Function(value) => match value.body.stmts.get(0) {
@@ -1940,10 +1939,10 @@ fn checks_closures_with_call_context() -> unit {
                                 resolve_type(body_ty),
                             ) {
                                 (Int, String, String) => (),
-                                _ => testing::fail("expected contextual int method types"),
+                                _ => testing::fail("expected contextual isize method types"),
                             }
                         },
-                        _ => testing::fail("expected contextual int method"),
+                        _ => testing::fail("expected contextual isize method"),
                     }
                 },
                 _ => testing::fail("expected contextual closure argument"),
@@ -1956,7 +1955,7 @@ fn checks_closures_with_call_context() -> unit {
 
 #[test]
 fn infers_trait_goals_from_function_calls() -> unit {
-    let source = "trait Measure { fn measure(self: Self) -> int; } impl Measure for Vec[int] { fn measure(self: Vec[int]) -> int { self.len() } } fn read_measure[T: Measure](value: T) -> int { Measure::measure(value) } fn main() -> int { let values = vec_new(); read_measure(values) }";
+    let source = "trait Measure { fn measure(self: Self) -> isize; } impl Measure for Vec[isize] { fn measure(self: Vec[isize]) -> isize { self.len() } } fn read_measure[T: Measure](value: T) -> isize { Measure::measure(value) } fn main() -> isize { let values = vec_new(); read_measure(values) }";
     let file = checked_file(source);
     match file.items.get(2) {
         Function(value) => {
@@ -1968,7 +1967,7 @@ fn infers_trait_goals_from_function_calls() -> unit {
                 } => {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
                         (VecType { elem: Int }, VecType { elem: Int }) => (),
-                        _ => testing::fail("expected inferred Vec[int] binding"),
+                        _ => testing::fail("expected inferred Vec[isize] binding"),
                     }
                 },
                 _ => testing::fail("expected inferred vector binding"),
@@ -1994,7 +1993,7 @@ fn infers_trait_goals_from_function_calls() -> unit {
 
 #[test]
 fn checks_positional_struct_constructors() -> unit {
-    let source = "struct Point { x: int32, y: int32 } struct Wrapper[T] { value: T } fn point() -> Point { Point(1, 2) } fn wrapper() -> Wrapper[string] { Wrapper(\"ok\") }";
+    let source = "struct Point { x: i32, y: i32 } struct Wrapper[T] { value: T } fn point() -> Point { Point(1, 2) } fn wrapper() -> Wrapper[string] { Wrapper(\"ok\") }";
     let file = checked_file(source);
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -2008,7 +2007,7 @@ fn checks_positional_struct_constructors() -> unit {
                     resolve_type(expr_type(values.get(1))),
                 ) {
                     (Int32, Int32) => (),
-                    _ => testing::fail("expected int32 positional fields"),
+                    _ => testing::fail("expected i32 positional fields"),
                 }
             },
             _ => testing::fail("expected positional Point constructor"),
@@ -2033,7 +2032,7 @@ fn checks_positional_struct_constructors() -> unit {
 
 #[test]
 fn checks_enum_patterns_and_default_integer_literals() -> unit {
-    let source = "enum Choice { None, Some(int32) } fn unwrap(value: Choice) -> int32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
+    let source = "enum Choice { None, Some(i32) } fn unwrap(value: Choice) -> i32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 1);
     match file.items.get(0) {
@@ -2042,7 +2041,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
                 testing::assert_eq(arms.len(), 2);
                 match ty {
                     Int32 => (),
-                    _ => testing::fail("expected int32 match result"),
+                    _ => testing::fail("expected i32 match result"),
                 };
                 match arms.get(0).pat {
                     Constr { constructor, args, ty: Con { name } } => {
@@ -2057,10 +2056,10 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
                         testing::assert_eq(value, "0");
                         match resolve_type(literal_ty) {
                             Int32 => (),
-                            _ => testing::fail("expected defaulted int32 literal"),
+                            _ => testing::fail("expected defaulted i32 literal"),
                         }
                     },
-                    _ => testing::fail("expected defaulted int32 literal"),
+                    _ => testing::fail("expected defaulted i32 literal"),
                 }
             },
             _ => testing::fail("expected match tail"),
@@ -2071,7 +2070,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
 
 #[test]
 fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
-    let source = "enum First[T] { Shared(T), Empty, Named { value: T } } enum Second[T] { Shared(T) } type Alias = First[int32]; fn classify(value: Alias) -> int32 { match value { Shared(inner) => inner, Empty => 0, Named { value } => value } } fn nested(value: Option[Result[int32, string]]) -> int32 { match value { Some(Ok(inner)) => inner, Some(Err(_)) => -1, None => 0 } }";
+    let source = "enum First[T] { Shared(T), Empty, Named { value: T } } enum Second[T] { Shared(T) } type Alias = First[i32]; fn classify(value: Alias) -> i32 { match value { Shared(inner) => inner, Empty => 0, Named { value } => value } } fn nested(value: Option[Result[i32, string]]) -> i32 { match value { Some(Ok(inner)) => inner, Some(Err(_)) => -1, None => 0 } }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0);
     let shared = Ref::new(false);
@@ -2095,16 +2094,16 @@ fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
     testing::assert(some.get());
     testing::assert(ok.get());
     let missing = checked_diagnostics(
-        "enum First { Shared } enum Second { Missing } fn classify(value: First) -> int32 { match value { Missing => 1 } }",
+        "enum First { Shared } enum Second { Missing } fn classify(value: First) -> i32 { match value { Missing => 1 } }",
     );
     testing::assert(has_diagnostic(missing, "Enum First has no variant Missing"));
     let non_enum = checked_diagnostics(
-        "fn classify(value: int32) -> int32 { match value { Some(inner) => inner } }",
+        "fn classify(value: i32) -> i32 { match value { Some(inner) => inner } }",
     );
     testing::assert_eq(non_enum.len(), 1);
     testing::assert_eq(
         non_enum.get(0).message,
-        "Contextual variant Some cannot match value of type int32",
+        "Contextual variant Some cannot match value of type i32",
     );
     let unknown = checked_diagnostics(
         "fn inspect() -> unit { let matcher = |value| match value { Some(_) => (), _ => () }; let _ = matcher; }",
@@ -2114,7 +2113,7 @@ fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
 
 #[test]
 fn resolves_associated_types_and_bound_methods() -> unit {
-    let source = "trait Provider { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> int32 { read(Number { value: 42 }) }";
+    let source = "trait Provider { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: i32 } impl Provider for Number { type Item = i32; fn get(self: Number) -> i32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> i32 { read(Number { value: 42 }) }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 3);
     match file.items.get(1) {
@@ -2157,7 +2156,7 @@ fn resolves_associated_types_and_bound_methods() -> unit {
 
 #[test]
 fn preserves_projection_equality_owners() -> unit {
-    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } struct LeftSource {} struct RightSource {} impl Source for LeftSource { type Item = int32; fn get(self: LeftSource) -> int32 { 1 } } impl Source for RightSource { type Item = int32; fn get(self: RightSource) -> int32 { 2 } } fn combine[A: Source, B: Source](left: A, right: B) -> unit where A::Item = B::Item { () } fn main() -> unit { combine(LeftSource {}, RightSource {}) }";
+    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } struct LeftSource {} struct RightSource {} impl Source for LeftSource { type Item = i32; fn get(self: LeftSource) -> i32 { 1 } } impl Source for RightSource { type Item = i32; fn get(self: RightSource) -> i32 { 2 } } fn combine[A: Source, B: Source](left: A, right: B) -> unit where A::Item = B::Item { () } fn main() -> unit { combine(LeftSource {}, RightSource {}) }";
     let file = checked_file(source);
     match file.items.get(3) {
         Function(value) => match value.body.tail {
@@ -2196,14 +2195,14 @@ fn applies_where_type_equalities_in_function_bodies() -> unit {
 
 #[test]
 fn rejects_unsatisfied_impl_equality_predicates() -> unit {
-    let source = "trait Selected { fn selected(self: Self) -> unit; } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T = int32 { fn selected(self: Wrap[T]) -> unit { () } } fn require[T: Selected](value: T) -> unit { () } fn main() -> unit { require(Wrap { value: \"no\" }) }";
+    let source = "trait Selected { fn selected(self: Self) -> unit; } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T = i32 { fn selected(self: Wrap[T]) -> unit { () } } fn require[T: Selected](value: T) -> unit { () } fn main() -> unit { require(Wrap { value: \"no\" }) }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert(result.diagnostics.len() > 0)
 }
 
 #[test]
 fn checks_extended_builtin_method_catalog() -> unit {
-    let source = "fn exercise(text: string, values: Vec[int], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); let _ = text.starts_with(\"a\"); let _ = text.ends_with(\"z\"); let _ = text.contains(\"m\"); let _ = text.starts_with_at(1, \"b\"); let _ = text.find(\"b\"); let _ = text.rfind(\"b\"); let _ = text.find_bytes(\"b\"); let _ = text.char_count(); let _ = text.slice_chars(0, 1); let _ = text.trim(); let _ = text.trim_start(); let _ = text.trim_end(); let _ = text.split(\",\"); let _ = text.split_once(\",\"); let _ = text.lines(); let _ = text.replace(\"a\", \"b\"); let _ = text.repeat(2); let _ = text.is_ascii(); let _ = text.eq_ignore_ascii_case(\"a\"); let _ = text.to_ascii_lowercase(); let _ = text.to_ascii_uppercase(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); let _ = values.contains(1); let _ = values.position(|value: int| value == 1); values.sort_by(|left: int, right: int| left - right); values.dedup(); let _ = values.join(\",\"); values.truncate(0); values.clear(); let _ = map.entries(); }";
+    let source = "fn exercise(text: string, values: Vec[isize], map: HashMap[string, i32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); let _ = text.starts_with(\"a\"); let _ = text.ends_with(\"z\"); let _ = text.contains(\"m\"); let _ = text.starts_with_at(1, \"b\"); let _ = text.find(\"b\"); let _ = text.rfind(\"b\"); let _ = text.find_bytes(\"b\"); let _ = text.char_count(); let _ = text.slice_chars(0, 1); let _ = text.trim(); let _ = text.trim_start(); let _ = text.trim_end(); let _ = text.split(\",\"); let _ = text.split_once(\",\"); let _ = text.lines(); let _ = text.replace(\"a\", \"b\"); let _ = text.repeat(2); let _ = text.is_ascii(); let _ = text.eq_ignore_ascii_case(\"a\"); let _ = text.to_ascii_lowercase(); let _ = text.to_ascii_uppercase(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); let _ = values.contains(1); let _ = values.position(|value: isize| value == 1); values.sort_by(|left: isize, right: isize| left - right); values.dedup(); let _ = values.join(\",\"); values.truncate(0); values.clear(); let _ = map.entries(); }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 1)
 }
@@ -2223,7 +2222,7 @@ fn checks_builtin_source_method_constraints() -> unit {
 
 #[test]
 fn prefers_builtin_inherent_methods() -> unit {
-    let source = "trait Container { fn is_empty(self: Self) -> bool; } impl Container for Vec[int32] { fn is_empty(self: Vec[int32]) -> bool { false } } fn main() -> bool { let values: Vec[int32] = Vec::new(); values.is_empty() }";
+    let source = "trait Container { fn is_empty(self: Self) -> bool; } impl Container for Vec[i32] { fn is_empty(self: Vec[i32]) -> bool { false } } fn main() -> bool { let values: Vec[i32] = Vec::new(); values.is_empty() }";
     let file = checked_file(source);
     match file.items.get(1) {
         Function(value) => match value.body.tail {
@@ -2238,7 +2237,7 @@ fn prefers_builtin_inherent_methods() -> unit {
                 testing::assert_eq(name, "is_empty");
                 match resolve_type(owner) {
                     VecType { elem: Int32 } => (),
-                    _ => testing::fail("expected Vec[int32] inherent owner"),
+                    _ => testing::fail("expected Vec[i32] inherent owner"),
                 }
             },
             _ => testing::fail("expected builtin inherent method call"),
@@ -2250,7 +2249,7 @@ fn prefers_builtin_inherent_methods() -> unit {
 #[test]
 fn specializes_array_builtin_lengths() -> unit {
     let file = checked_file(
-        "fn exercise(values: [int32; 2]) -> int32 { array_set(values, 0, 7); array_get(values, 0) }",
+        "fn exercise(values: [i32; 2]) -> i32 { array_set(values, 0, 7); array_get(values, 0) }",
     );
     match file.items.get(0) {
         Function(value) => {
@@ -2299,7 +2298,7 @@ fn specializes_array_builtin_lengths() -> unit {
 
 #[test]
 fn checks_char_from_uint32_builtin() -> unit {
-    let file = checked_file("fn decode(value: uint32) -> Option[char] { char_from_uint32(value) }");
+    let file = checked_file("fn decode(value: u32) -> Option[char] { char_from_uint32(value) }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
             Some(Call {
@@ -2323,19 +2322,19 @@ fn checks_char_from_uint32_builtin() -> unit {
 #[test]
 fn restricts_expression_as_to_dyn_conversions() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let value: int16 = 257; let _ = value as uint8; let _ = 'A' as uint32; let _ = true as uint8; }",
+        "fn main() -> unit { let value: i16 = 257; let _ = value as u8; let _ = 'A' as u32; let _ = true as u8; }",
     );
     testing::assert_eq(diagnostics.len(), 3);
     testing::assert(
         has_diagnostic(
             diagnostics,
-            "`as` only creates dyn trait values; use `value.to_uint8()` for numeric conversion",
+            "`as` only creates dyn trait values; use `value.to_u8()` for numeric conversion",
         ),
     );
     testing::assert(
         has_diagnostic(
             diagnostics,
-            "`as` only creates dyn trait values; use `value.to_uint32()` for numeric conversion",
+            "`as` only creates dyn trait values; use `value.to_u32()` for numeric conversion",
         ),
     );
     testing::assert(
@@ -2349,11 +2348,11 @@ fn restricts_expression_as_to_dyn_conversions() -> unit {
 #[test]
 fn requires_explicit_dyn_conversions_in_typed_contexts() -> unit {
     for source in[
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn produce() -> dyn Label { 1 }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let direct: dyn Label = 1; }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn accept(value: dyn Label) -> unit {} fn main() -> unit { accept(1); }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let branch: dyn Label = if true { 1 as dyn Label } else { 2 }; }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let values: Vec[dyn Label] = Vec::new(); values.push(1); }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn produce() -> dyn Label { 1 }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let direct: dyn Label = 1; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn accept(value: dyn Label) -> unit {} fn main() -> unit { accept(1); }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let branch: dyn Label = if true { 1 as dyn Label } else { 2 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let values: Vec[dyn Label] = Vec::new(); values.push(1); }",
     ] {
         testing::assert(
             has_diagnostic(
@@ -2374,7 +2373,7 @@ fn validates_numeric_unary_operators() -> unit {
 
 #[test]
 fn types_control_flow_member_subexpressions_as_unit() -> unit {
-    let source = "fn projected() -> int32 { let _: int32 = (return 1).0; 0 } fn indexed() -> int32 { let _: int32 = (return 1)[0]; 0 } fn field() -> int32 { let _: int32 = (return 1).value; 0 }";
+    let source = "fn projected() -> i32 { let _: i32 = (return 1).0; 0 } fn indexed() -> i32 { let _: i32 = (return 1)[0]; 0 } fn field() -> i32 { let _: i32 = (return 1).value; 0 }";
     let file = checked_file(source);
     for index in range(0, 3) {
         match file.items.get(index) {
@@ -2411,7 +2410,7 @@ fn suppresses_unreachable_while_condition_type_errors() -> unit {
     testing::assert(has_diagnostic(wrapped_index, "`break` is not allowed in a while condition"));
     testing::assert(has_diagnostic(wrapped_index, "`continue` is not allowed in a while condition"));
     let wrapped_call = checked_diagnostics(
-        "fn id_int(x: int32) -> int32 { x } fn main() -> unit { while id_int(if true { break } else { continue }) { break; }; }",
+        "fn id_int(x: i32) -> i32 { x } fn main() -> unit { while id_int(if true { break } else { continue }) { break; }; }",
     );
     testing::assert_eq(wrapped_call.len(), 2);
     testing::assert(has_diagnostic(wrapped_call, "`break` is not allowed in a while condition"));
@@ -2421,7 +2420,7 @@ fn suppresses_unreachable_while_condition_type_errors() -> unit {
 #[test]
 fn preserves_bare_fn_iterator_static_owner() -> unit {
     let file = checked_file(
-        "fn iterator() -> FnIterator[int32] { FnIterator::from_fn(|| Option::None) }",
+        "fn iterator() -> FnIterator[i32] { FnIterator::from_fn(|| Option::None) }",
     );
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -2522,7 +2521,7 @@ fn rejects_parameterized_language_items_outside_builtin_sources() -> unit {
 
 #[test]
 fn preserves_bare_generic_static_owner() -> unit {
-    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn new(value: T) -> Self { Box { value } } } fn make() -> Box[int32] { Box::new(1) }";
+    let source = "struct Box[T] { value: T } impl[T] Box[T] { fn new(value: T) -> Self { Box { value } } } fn make() -> Box[i32] { Box::new(1) }";
     let file = checked_file(source);
     match file.items.get(1) {
         Function(value) => match value.body.tail {
@@ -2548,7 +2547,7 @@ fn preserves_bare_generic_static_owner() -> unit {
 
 #[test]
 fn specializes_constructor_only_static_owner() -> unit {
-    let file = checked_file("fn make() -> Ref[int32] { Ref::new(1) }");
+    let file = checked_file("fn make() -> Ref[i32] { Ref::new(1) }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
             Some(Call {
@@ -2584,7 +2583,7 @@ fn normalizes_and_escapes_char_literals() -> unit {
 
 #[test]
 fn resolves_generic_trait_associated_applications() -> unit {
-    let source = "trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[int32] for Value { type Output = string; fn convert(self: Value) -> string { \"int\" } } impl Convert[string] for Value { type Output = int32; fn convert(self: Value) -> int32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert::[int32]::convert(Value {}); let number: int32 = Convert::[string]::convert(Value {}); let generic: string = Convert::[string]::convert(Wrapped { value: \"ok\" }); }";
+    let source = "trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[i32] for Value { type Output = string; fn convert(self: Value) -> string { \"isize\" } } impl Convert[string] for Value { type Output = i32; fn convert(self: Value) -> i32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert::[i32]::convert(Value {}); let number: i32 = Convert::[string]::convert(Value {}); let generic: string = Convert::[string]::convert(Wrapped { value: \"ok\" }); }";
     let file = checked_file(source);
     match file.items.get(3) {
         Function(value) => {
@@ -2602,7 +2601,7 @@ fn resolves_generic_trait_associated_applications() -> unit {
                     pat: Var { name: _, is_mut: _, ty: Int32 },
                     value: Call { func: _, args: _, ty: Int32 },
                 } => (),
-                _ => testing::fail("expected int32 associated output"),
+                _ => testing::fail("expected i32 associated output"),
             };
             match value.body.stmts.get(2) {
                 Let {
@@ -2619,7 +2618,7 @@ fn resolves_generic_trait_associated_applications() -> unit {
 
 #[test]
 fn resolves_trait_methods_from_call_context() -> unit {
-    let source = "trait Put[T] { fn put(self: Self, arg1: T) -> string; } struct Target {} impl Put[int32] for Target { fn put(self: Target, value: int32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Convertible {} impl Convert[int32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = int32; fn convert(self: Convertible) -> int32 { 7 } } trait Source[T] where Self::Item = T { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: int32 } impl Source[int32] for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source::[T]::get(source) } trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item = T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: int32 = (Convertible {}).convert(); let value: int32 = read(Number { value: 8 }); }";
+    let source = "trait Put[T] { fn put(self: Self, arg1: T) -> string; } struct Target {} impl Put[i32] for Target { fn put(self: Target, value: i32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Convertible {} impl Convert[i32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = i32; fn convert(self: Convertible) -> i32 { 7 } } trait Source[T] where Self::Item = T { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: i32 } impl Source[i32] for Number { type Item = i32; fn get(self: Number) -> i32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source::[T]::get(source) } trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item = T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: i32 = (Convertible {}).convert(); let value: i32 = read(Number { value: 8 }); }";
     let file = checked_file(source);
     match file.items.get(7) {
         Function(value) => match value.body.tail {
@@ -2675,7 +2674,7 @@ fn resolves_trait_methods_from_call_context() -> unit {
                     pat: Var { name: _, is_mut: _, ty: Int32 },
                     value: Call { func: _, args: _, ty: Int32 },
                 } => (),
-                _ => testing::fail("expected int32 return overload"),
+                _ => testing::fail("expected i32 return overload"),
             };
             match value.body.stmts.get(4) {
                 Let {
@@ -2692,7 +2691,7 @@ fn resolves_trait_methods_from_call_context() -> unit {
 
 #[test]
 fn resolves_builtin_for_iterator_types() -> unit {
-    let source = "fn iterate(numbers: Vec[int32], words: Slice[string]) -> unit { for _ in numbers {}; for _ in words {}; }";
+    let source = "fn iterate(numbers: Vec[i32], words: Slice[string]) -> unit { for _ in numbers {}; for _ in words {}; }";
     let file = checked_file(source);
     match file.items.get(0) {
         Function(value) => {
@@ -2711,7 +2710,7 @@ fn resolves_builtin_for_iterator_types() -> unit {
                     testing::assert_eq(owner, "FnIterator");
                     match args.get(0) {
                         Int32 => (),
-                        _ => testing::fail("expected int32 vector iterator"),
+                        _ => testing::fail("expected i32 vector iterator"),
                     }
                 },
                 _ => testing::fail("expected vector for loop"),
@@ -2784,14 +2783,14 @@ fn preserves_associated_into_iterator_item_projection() -> unit {
 
 #[test]
 fn resolves_iterator_item_for_for_loop_method_calls() -> unit {
-    let source = "struct Values {} impl Iterator for Values { type Item = int32; fn next(self: Values) -> Option[int32] { Option::None } } fn main() -> unit { for value in (Values {}) { println(value.to_string()); }; }";
+    let source = "struct Values {} impl Iterator for Values { type Item = i32; fn next(self: Values) -> Option[i32] { Option::None } } fn main() -> unit { for value in (Values {}) { println(value.to_string()); }; }";
     let result = check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0)
 }
 
 #[test]
 fn accepts_builtin_into_iterator_predicates() -> unit {
-    let source = "fn sum[S: IntoIterator](source: S) -> int32 where S::Item = int32 { let total = Ref::new(0); for value in source { total.set(total.get() + value); }; total.get() } fn use_values(values: Vec[int32], slice: Slice[int32]) -> unit { let _ = sum(values); let _ = sum(slice); }";
+    let source = "fn sum[S: IntoIterator](source: S) -> i32 where S::Item = i32 { let total = Ref::new(0); for value in source { total.set(total.get() + value); }; total.get() } fn use_values(values: Vec[i32], slice: Slice[i32]) -> unit { let _ = sum(values); let _ = sum(slice); }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.tast {
@@ -2873,7 +2872,7 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
 
 #[test]
 fn resolves_projected_trait_impls() -> unit {
-    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn main() -> int32 { (Value { value: 41 }).pick() }";
+    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: i32 } impl Source for Value { type Item = i32; fn get(self: Value) -> i32 { self.value } } fn main() -> i32 { (Value { value: 41 }).pick() }";
     let file = checked_file(source);
     match file.items.get(2) {
         Function(value) => match value.body.tail {
@@ -2903,14 +2902,14 @@ fn resolves_projected_trait_impls() -> unit {
 
 #[test]
 fn accepts_projected_trait_predicates() -> unit {
-    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick::[S::Item]::pick(source) } fn main() -> int32 { copy(Value { value: 42 }) }";
+    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: i32 } impl Source for Value { type Item = i32; fn get(self: Value) -> i32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick::[S::Item]::pick(source) } fn main() -> i32 { copy(Value { value: 42 }) }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0)
 }
 
 #[test]
 fn resolves_constrained_blanket_methods() -> unit {
-    let source = "trait Mark { fn mark(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } struct Box[T] { value: T } impl Mark for int32 { fn mark(self: int32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { self.value } } fn string_label() -> string { (Box { value: \"text\" }).label() } fn marked_label() -> string { (Box { value: 7 }).label() }";
+    let source = "trait Mark { fn mark(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } struct Box[T] { value: T } impl Mark for i32 { fn mark(self: i32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { self.value } } fn string_label() -> string { (Box { value: \"text\" }).label() } fn marked_label() -> string { (Box { value: 7 }).label() }";
     let file = checked_file(source);
     for index in range(3, 5) {
         match file.items.get(index) {
@@ -2953,7 +2952,7 @@ fn resolves_constrained_blanket_methods() -> unit {
 #[test]
 fn normalizes_float_pattern_literals() -> unit {
     let file = checked_file(
-        "fn signed_zero(value: float64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }",
+        "fn signed_zero(value: f64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }",
     );
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -2978,17 +2977,17 @@ fn rounds_float32_literals() -> unit {
     testing::assert_eq(normalized_float32_literal("1e20"), "100000000000000000000");
     testing::assert_eq(normalized_float32_literal("1e-20"), "0.00000000000000000001");
     testing::assert_eq(normalized_float32_literal("-0.0"), "-0");
-    let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14 }");
+    let file = checked_file("fn inferred() -> f32 { 3.14 } fn explicit() -> f32 { 3.14 }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
             Some(Prim { value: Float { value: literal }, ty }) => {
                 testing::assert_eq(literal, "3.14");
                 match resolve_type(ty) {
                     Float32 => (),
-                    _ => testing::fail("expected inferred float32 literal type"),
+                    _ => testing::fail("expected inferred f32 literal type"),
                 }
             },
-            _ => testing::fail("expected rounded inferred float32 literal"),
+            _ => testing::fail("expected rounded inferred f32 literal"),
         },
         _ => testing::fail("expected inferred function"),
     };
@@ -2997,12 +2996,12 @@ fn rounds_float32_literals() -> unit {
             Some(Prim { value: Float { value: literal }, ty: Float32 }) => {
                 testing::assert_eq(literal, "3.14")
             },
-            _ => testing::fail("expected rounded explicit float32 literal"),
+            _ => testing::fail("expected rounded explicit f32 literal"),
         },
         _ => testing::fail("expected explicit function"),
     };
     let generic = checked_file(
-        "fn identity[T](value: T) -> T { value } fn inferred() -> float32 { identity(3.14) }",
+        "fn identity[T](value: T) -> T { value } fn inferred() -> f32 { identity(3.14) }",
     );
     match generic.items.get(1) {
         Function(value) => match value.body.tail {
@@ -3011,7 +3010,7 @@ fn rounds_float32_literals() -> unit {
                     testing::assert_eq(literal, "3.14");
                     match resolve_type(ty) {
                         Float32 => (),
-                        _ => testing::fail("expected generic float32 argument type"),
+                        _ => testing::fail("expected generic f32 argument type"),
                     }
                 },
                 _ => testing::fail("expected generic float literal argument"),
@@ -3024,8 +3023,8 @@ fn rounds_float32_literals() -> unit {
 
 #[test]
 fn indents_array_control_flow_expressions() -> unit {
-    let file = checked_file("fn choose(flag: bool) -> [int32; 1] { [if flag { 1 } else { 2 }] }");
-    let expected = "fn choose(flag/0: bool) -> [int32; 1] {\n" + "    [\n"
+    let file = checked_file("fn choose(flag: bool) -> [i32; 1] { [if flag { 1 } else { 2 }] }");
+    let expected = "fn choose(flag/0: bool) -> [i32; 1] {\n" + "    [\n"
         + "      if (flag/0 : bool) {\n"
         + "          {\n"
         + "              1\n"
@@ -3073,7 +3072,7 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
 #[test]
 fn validates_trait_associated_function_self_resolution() -> unit {
     let valid = checked_diagnostics(
-        "trait Decode { fn decode(input: string) -> Self; } trait TryDecode { fn try_decode(input: string) -> Result[Self, string]; } trait Default { fn default() -> Self; } struct Value { value: int32 } impl Decode for Value { fn decode(input: string) -> Value { Value { value: 1 } } } impl TryDecode for Value { fn try_decode(input: string) -> Result[Value, string] { Result::Ok(Value { value: 1 }) } } impl Default for Value { fn default() -> Value { Value { value: 0 } } } fn decode[T: Decode](input: string) -> T { Decode::decode(input) } fn try_decode[T: TryDecode](input: string) -> Result[T, string] { let value: T = TryDecode::try_decode(input)?; Result::Ok(value) } fn make[T: Default]() -> T { Default::default() }",
+        "trait Decode { fn decode(input: string) -> Self; } trait TryDecode { fn try_decode(input: string) -> Result[Self, string]; } trait Default { fn default() -> Self; } struct Value { value: i32 } impl Decode for Value { fn decode(input: string) -> Value { Value { value: 1 } } } impl TryDecode for Value { fn try_decode(input: string) -> Result[Value, string] { Result::Ok(Value { value: 1 }) } } impl Default for Value { fn default() -> Value { Value { value: 0 } } } fn decode[T: Decode](input: string) -> T { Decode::decode(input) } fn try_decode[T: TryDecode](input: string) -> Result[T, string] { let value: T = TryDecode::try_decode(input)?; Result::Ok(value) } fn make[T: Default]() -> T { Default::default() }",
     );
     testing::assert_eq(valid.len(), 0);
     let ambiguous = checked_diagnostics(
@@ -3096,7 +3095,7 @@ fn validates_trait_associated_function_self_resolution() -> unit {
 #[test]
 fn rejects_trait_associated_functions_in_dyn_traits() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Factory { fn create(seed: int32) -> Self; } fn use_factory(value: dyn Factory) -> unit {}",
+        "trait Factory { fn create(seed: i32) -> Self; } fn use_factory(value: dyn Factory) -> unit {}",
     );
     testing::assert(
         has_diagnostic(
@@ -3109,7 +3108,7 @@ fn rejects_trait_associated_functions_in_dyn_traits() -> unit {
 #[test]
 fn rejects_unsafe_dyn_body_annotations() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: int32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 } as dyn Cloneish; }",
+        "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: i32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 } as dyn Cloneish; }",
     );
     testing::assert(
         has_diagnostic(
@@ -3133,7 +3132,7 @@ fn resolves_dyn_dot_methods_and_reports_unavailable_methods() -> unit {
 #[test]
 fn rejects_dyn_patterns_and_marks_recovery_arms_unreachable() -> unit {
     let diagnostics = checked_diagnostics(
-        "trait Label { fn label(self: Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let concrete: int32 = 1; let value: dyn Label = concrete as dyn Label; let _ = match value { 1 => 2, _ => 3 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let concrete: i32 = 1; let value: dyn Label = concrete as dyn Label; let _ = match value { 1 => 2, _ => 3 }; }",
     );
     testing::assert_eq(diagnostics.len(), 2);
     testing::assert_eq(diagnostics.get(0).message, "Pattern matching on dyn Label is not supported");
@@ -3186,7 +3185,7 @@ fn rejects_recursive_struct_layouts() -> unit {
 #[test]
 fn propagates_generic_result_constraints_to_literals() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let value: Ref[uint8] = Ref::new(10); }",
+        "fn main() -> unit { let value: Ref[u8] = Ref::new(10); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
@@ -3209,27 +3208,27 @@ fn infers_nested_builtin_method_receivers() -> unit {
 #[test]
 fn checks_contextual_numeric_expressions_and_inherent_arguments() -> unit {
     let _ = checked_file(
-        "struct Counter { value: uint8 } impl Counter { fn add(self: Counter, value: uint8) -> Counter { Counter { value: self.value + value } } } fn main() -> unit { let negative: int8 = -128; let total: uint8 = 10 + 20; let counter = Counter { value: total }.add(5); println(counter.value.to_string()) }",
+        "struct Counter { value: u8 } impl Counter { fn add(self: Counter, value: u8) -> Counter { Counter { value: self.value + value } } } fn main() -> unit { let negative: i8 = -128; let total: u8 = 10 + 20; let counter = Counter { value: total }.add(5); println(counter.value.to_string()) }",
     );
 }
 
 #[test]
 fn qualified_struct_variants_win_over_same_named_structs() -> unit {
     let _ = checked_file(
-        "struct Path { segment: string } struct Block { value: int } enum Expr { Path { path: Path, span: int }, Block { block: Block, span: int } } fn span(value: Expr) -> int { match value { Expr::Path { path: _, span } => span, Expr::Block { block: _, span } => span } } fn main() -> unit { let path = Path { segment: \"x\" }; let block = Block { value: 1 }; let _ = span(Expr::Path { path, span: 2 }); let _ = span(Expr::Block { block, span: 3 }); }",
+        "struct Path { segment: string } struct Block { value: isize } enum Expr { Path { path: Path, span: isize }, Block { block: Block, span: isize } } fn span(value: Expr) -> isize { match value { Expr::Path { path: _, span } => span, Expr::Block { block: _, span } => span } } fn main() -> unit { let path = Path { segment: \"x\" }; let block = Block { value: 1 }; let _ = span(Expr::Path { path, span: 2 }); let _ = span(Expr::Block { block, span: 3 }); }",
     );
 }
 
 #[test]
 fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
-    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_int32(); }";
+    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[i32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: i32 = base + 2; const base: i32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[i32]) -> i32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: u8 = entry.read(); let pair: Pair[i32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_int32(); }";
     let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
 }
 
 #[test]
 fn accepts_recursively_immutable_composite_constants() -> unit {
-    let source = "struct Pair { left: int, bytes: [byte; 2] } enum Choice { None, Some(Pair) } const BYTES: [byte; 3] = b\"ABC\"; const PAIR: Pair = Pair { left: 7, bytes: [8, 9] }; const CHOICE: Choice = Choice::Some(PAIR); fn main() -> unit { let _ = BYTES[0]; let _ = PAIR.left; match CHOICE { Choice::None => (), Choice::Some(_) => () } }";
+    let source = "struct Pair { left: isize, bytes: [byte; 2] } enum Choice { None, Some(Pair) } const BYTES: [byte; 3] = b\"ABC\"; const PAIR: Pair = Pair { left: 7, bytes: [8, 9] }; const CHOICE: Choice = Choice::Some(PAIR); fn main() -> unit { let _ = BYTES[0]; let _ = PAIR.left; match CHOICE { Choice::None => (), Choice::Some(_) => () } }";
     let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
 }
@@ -3237,7 +3236,7 @@ fn accepts_recursively_immutable_composite_constants() -> unit {
 #[test]
 fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
     let mutable = checked_diagnostics(
-        "const BAD: Vec[int] = Vec::from_array([1]); fn main() -> unit {}",
+        "const BAD: Vec[isize] = Vec::from_array([1]); fn main() -> unit {}",
     );
     testing::assert(
         has_diagnostic(
@@ -3246,11 +3245,11 @@ fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
         ),
     );
     let pattern = checked_diagnostics(
-        "const VALUES: [int; 2] = [1, 2]; fn check(value: [int; 2]) -> bool { match value { VALUES => true, _ => false } }",
+        "const VALUES: [isize; 2] = [1, 2]; fn check(value: [isize; 2]) -> bool { match value { VALUES => true, _ => false } }",
     );
     testing::assert(has_diagnostic(pattern, "non-scalar constants cannot be used as patterns"));
     let reassignment = checked_diagnostics(
-        "const VALUES: [int; 2] = [1, 2]; fn main() -> unit { VALUES = [3, 4]; }",
+        "const VALUES: [isize; 2] = [1, 2]; fn main() -> unit { VALUES = [3, 4]; }",
     );
     testing::assert(has_diagnostic(reassignment, "cannot assign to constant `VALUES`"))
 }
@@ -3258,21 +3257,21 @@ fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
 #[test]
 fn checks_once_cell_statics() -> unit {
     let file = checked_file(
-        "static VALUE: OnceCell[FrozenVec[int]] = OnceCell::new(); fn value() -> FrozenVec[int] { VALUE.get_or_init(|| Vec::from_array([1, 2]).freeze()) } fn main() -> unit { let _ = value(); }",
+        "static VALUE: OnceCell[FrozenVec[isize]] = OnceCell::new(); fn value() -> FrozenVec[isize] { VALUE.get_or_init(|| Vec::from_array([1, 2]).freeze()) } fn main() -> unit { let _ = value(); }",
     );
     testing::assert_eq(file.statics.len(), 1);
     let invalid_type = checked_diagnostics(
-        "static VALUE: int = OnceCell::new(); fn main() -> unit {}",
+        "static VALUE: isize = OnceCell::new(); fn main() -> unit {}",
     );
     testing::assert(has_diagnostic(invalid_type, "static initializer must be `OnceCell::new()`"));
     let invalid_initializer = checked_diagnostics(
-        "static VALUE: OnceCell[int] = Option::None; fn main() -> unit {}",
+        "static VALUE: OnceCell[isize] = Option::None; fn main() -> unit {}",
     );
     testing::assert(
         has_diagnostic(invalid_initializer, "static initializer must be `OnceCell::new()`"),
     );
     let reassignment = checked_diagnostics(
-        "static VALUE: OnceCell[int] = OnceCell::new(); fn main() -> unit { VALUE = OnceCell::new(); }",
+        "static VALUE: OnceCell[isize] = OnceCell::new(); fn main() -> unit { VALUE = OnceCell::new(); }",
     );
     testing::assert(has_diagnostic(reassignment, "cannot assign to static binding `VALUE`"))
 }
@@ -3292,12 +3291,12 @@ fn diagnoses_type_alias_cycles_and_wrong_arity() -> unit {
 #[test]
 fn diagnoses_constant_cycles_and_non_constant_expressions() -> unit {
     let cycle = checked_diagnostics(
-        "const first: int = second; const second: int = first; fn main() -> unit {}",
+        "const first: isize = second; const second: isize = first; fn main() -> unit {}",
     );
     testing::assert(has_diagnostic(cycle, "Cyclic constant first"));
     testing::assert(has_diagnostic(cycle, "Cyclic constant second"));
     let call = checked_diagnostics(
-        "fn value() -> int { 1 } const answer: int = value(); fn main() -> unit {}",
+        "fn value() -> isize { 1 } const answer: isize = value(); fn main() -> unit {}",
     );
     testing::assert(has_diagnostic(call, "comptime function calls runtime-only function `value`"))
 }
@@ -3363,7 +3362,7 @@ fn direct_type_writer_matches_compact_document_rendering() -> unit {
 #[test]
 fn checks_select_channels_bindings_and_branch_types() -> unit {
     let valid = checked_diagnostics(
-        "fn choose(input: Channel[int], output: Channel[int]) -> int { select { recv(input) as value => value.unwrap_or(0), send(output, 1) => 2, default => 3, } }",
+        "fn choose(input: Channel[isize], output: Channel[isize]) -> isize { select { recv(input) as value => value.unwrap_or(0), send(output, 1) => 2, default => 3, } }",
     );
     testing::assert_eq(valid.len(), 0);
     let receive = checked_diagnostics(
@@ -3371,31 +3370,31 @@ fn checks_select_channels_bindings_and_branch_types() -> unit {
     );
     testing::assert(has_diagnostic_containing(receive, "Channel"));
     let send = checked_diagnostics(
-        "fn main(channel: Channel[int]) -> unit { select { send(channel, \"wrong\") => (), } }",
+        "fn main(channel: Channel[isize]) -> unit { select { send(channel, \"wrong\") => (), } }",
     );
-    testing::assert(has_diagnostic(send, "Type mismatch: expected int, found string"));
+    testing::assert(has_diagnostic(send, "Type mismatch: expected isize, found string"));
     let branches = checked_diagnostics(
-        "fn main(channel: Channel[int]) -> int { select { recv(channel) as _ => 1, default => \"wrong\", } }",
+        "fn main(channel: Channel[isize]) -> isize { select { recv(channel) as _ => 1, default => \"wrong\", } }",
     );
-    testing::assert(has_diagnostic(branches, "Type mismatch: expected int, found string"))
+    testing::assert(has_diagnostic(branches, "Type mismatch: expected isize, found string"))
 }
 
 #[test]
 fn checks_directional_channel_operations() -> unit {
     let valid = checked_diagnostics(
-        "fn choose(channel: Channel[int]) -> unit { let sender: Sender[int] = channel.sender(); let receiver: Receiver[int] = channel.receiver(); select { recv(receiver) as _ => (), send(sender, 1) => (), default => (), } }",
+        "fn choose(channel: Channel[isize]) -> unit { let sender: Sender[isize] = channel.sender(); let receiver: Receiver[isize] = channel.receiver(); select { recv(receiver) as _ => (), send(sender, 1) => (), default => (), } }",
     );
     testing::assert_eq(valid.len(), 0);
     let receive = checked_diagnostics(
-        "fn main(sender: Sender[int]) -> unit { select { recv(sender) as _ => (), default => (), } }",
+        "fn main(sender: Sender[isize]) -> unit { select { recv(sender) as _ => (), default => (), } }",
     );
     testing::assert(has_diagnostic(receive, "Cannot receive from Sender"));
     let send = checked_diagnostics(
-        "fn main(receiver: Receiver[int]) -> unit { select { send(receiver, 1) => (), default => (), } }",
+        "fn main(receiver: Receiver[isize]) -> unit { select { send(receiver, 1) => (), default => (), } }",
     );
     testing::assert(has_diagnostic(send, "Cannot send to Receiver"));
     let method = checked_diagnostics(
-        "fn main(receiver: Receiver[int]) -> unit { receiver.close() }",
+        "fn main(receiver: Receiver[isize]) -> unit { receiver.close() }",
     );
     testing::assert(has_diagnostic_containing(method, "close"))
 }
@@ -3403,15 +3402,15 @@ fn checks_directional_channel_operations() -> unit {
 #[test]
 fn checks_select_guards_and_receive_match_scope() -> unit {
     let valid = checked_diagnostics(
-        "fn choose(channel: Channel[int]) -> int { select priority { recv(channel) when true match { Some(value) => value, None => 0, }, default => -1, } }",
+        "fn choose(channel: Channel[isize]) -> isize { select priority { recv(channel) when true match { Some(value) => value, None => 0, }, default => -1, } }",
     );
     testing::assert_eq(valid.len(), 0);
     let invalid_guard = checked_diagnostics(
-        "fn main(channel: Channel[int]) -> unit { select { recv(channel) when 1 as value => (), default => (), } }",
+        "fn main(channel: Channel[isize]) -> unit { select { recv(channel) when 1 as value => (), default => (), } }",
     );
     testing::assert(has_diagnostic(invalid_guard, "Numeric literal cannot be used as bool"));
     let invalid_scope = checked_diagnostics(
-        "fn main(channel: Channel[int]) -> unit { select { recv(channel) when value.is_some() as value => (), default => (), } }",
+        "fn main(channel: Channel[isize]) -> unit { select { recv(channel) when value.is_some() as value => (), default => (), } }",
     );
     testing::assert(has_diagnostic(invalid_scope, "Unresolved name value"))
 }
@@ -3419,7 +3418,7 @@ fn checks_select_guards_and_receive_match_scope() -> unit {
 #[test]
 fn rejects_select_during_comptime_evaluation() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn main(channel: Channel[int]) -> unit { let _ = comptime { select { recv(channel) as _ => (), } }; }",
+        "fn main(channel: Channel[isize]) -> unit { let _ = comptime { select { recv(channel) as _ => (), } }; }",
     );
     testing::assert(has_diagnostic(diagnostics, "select is not available in comptime"))
 }

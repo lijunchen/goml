@@ -5,7 +5,7 @@ use std::path;
 use std::process;
 use std::testing;
 
-fn fmt_status_code(output: process::Output) -> int {
+fn fmt_status_code(output: process::Output) -> isize {
     match process::ExitStatus::code(process::Output::status(output)) {
         Some(value) => value,
         None => -1,
@@ -25,7 +25,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     let root = test_support::workspace("fmt_module");
     write_fmt_project(root);
     let source = path::join(path::join(root, "src"), "lib.gom");
-    test_support::write_file(source, "package lib;\npub fn value( )->int{1}\n");
+    test_support::write_file(source, "package lib;\npub fn value( )->isize{1}\n");
     let test_source = path::join(root, "main_test.gom");
     test_support::write_file(test_source, "package main;\nfn helper( )->unit{()}\n");
     let ignored = Vec::from_array(
@@ -57,7 +57,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     );
     testing::assert_eq(
         test_support::read_file(source),
-        "package lib;\n\npub fn value() -> int {\n    1\n}\n",
+        "package lib;\n\npub fn value() -> isize {\n    1\n}\n",
     );
     testing::assert_eq(
         test_support::read_file(test_source),
