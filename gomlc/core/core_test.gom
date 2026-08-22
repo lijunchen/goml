@@ -524,7 +524,7 @@ fn lowers_struct_pattern_matrices_by_field_order() -> unit {
 #[test]
 fn eliminates_dead_locals_without_dropping_effects() -> unit {
     let source = "fn effect() -> i32 { 1 } fn main() -> unit { let dead = 1; let dead_pair = (dead, 2); let unused = |value: i32| value + dead; let kept = effect(); let divisor = 2; let quotient = 8 / divisor; () }";
-    let output = encode(dce(lower_source(source)));
+    let output = encode(eliminate_dead_locals(lower_source(source)));
     testing::assert(!string_contains(output, "dead/"));
     testing::assert(!string_contains(output, "dead_pair/"));
     testing::assert(!string_contains(output, "unused/"));

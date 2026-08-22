@@ -214,7 +214,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
 
 fn lower_core_stage(source_path: string, source: string) -> CoreStage {
     let counter = Ref::new(0);
-    let file = core::dce(
+    let file = core::eliminate_dead_locals(
         core::lower_with_counter(
             tast::check(hir::lower(ast::lower(parser::parse(source)), source_path)),
             counter,

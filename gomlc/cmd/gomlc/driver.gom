@@ -341,7 +341,7 @@ fn compile_toolchain_package(
         artifact_comptime_unit(comptime_module, public_exports),
         deps,
     );
-    let core_value = core::dce(
+    let core_value = core::eliminate_dead_locals(
         core::lower_with_counter_types_and_options(
             tast_value,
             Ref::new(0),
@@ -1403,7 +1403,7 @@ fn diagnostic_output_optional(
             true,
         ),
     );
-    let mono_result = mono::lower_checked(core::dce(core_value));
+    let mono_result = mono::lower_checked(eliminate_core_dead_code(core_value));
     match mono_result.error {
         Some(error) => error + "\n",
         None => "",
@@ -1427,8 +1427,12 @@ fn run_test_diagnostics(args: Vec[string]) -> unit {
     }
 }
 
+fn eliminate_core_dead_code(value: core::File) -> core::File {
+    core::eliminate_unreachable_functions(core::eliminate_dead_locals(value))
+}
+
 fn lower_mono_or_fail(value: core::File) -> mono::File {
-    let result = mono::lower_checked(core::dce(value));
+    let result = mono::lower_checked(eliminate_core_dead_code(value));
     match result.error {
         Some(error) => fail(COMPILE_ERROR_PREFIX + error),
         None => (),
@@ -1528,7 +1532,7 @@ fn compile_source_optional(
     let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
     fail_on_missing_single_file_entrypoint(tast_value);
-    let core_value = core::dce(
+    let core_value = eliminate_core_dead_code(
         core::link_with_dependencies(
             compiler.builtins,
             core_dependencies,
@@ -1616,7 +1620,7 @@ fn compile_source_or_diagnostics_optional(
     } else if !has_single_file_entrypoint(tast_value) {
         return SourceCompilation::Diagnostics("main function is required\n")
     } else {};
-    let core_value = core::dce(
+    let core_value = eliminate_core_dead_code(
         core::link_with_dependencies(
             compiler.builtins,
             core_dependencies,

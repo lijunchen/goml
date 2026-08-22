@@ -433,6 +433,383 @@ pub fn eliminate_dead_locals(value: File) -> File {
     }
 }
 
-pub fn dce(value: File) -> File {
-    eliminate_dead_locals(value)
+struct DceFunctions {
+    functions: HashMap[string, Function],
+    inherent_methods: HashMap[string, Vec[string]],
+    trait_functions: HashMap[string, Vec[string]],
+    trait_methods: HashMap[string, Vec[string]],
+    trait_names: DceNames,
+    reachable: DceNames,
+}
+
+fn dce_function_names_add(values: HashMap[string, Vec[string]], key: string, name: string) -> unit {
+    match values[key] {
+        Some(names) => names.push(name),
+        None => {
+            values[key] = Vec::from_array([name]);
+        },
+    }
+}
+
+fn dce_trait_method_key(trait_name: string, method_name: string) -> string {
+    trait_name.byte_len().to_string() + ":" + trait_name + method_name
+}
+
+fn dce_functions_context(value: File) -> DceFunctions {
+    let functions: HashMap[string, Function] = HashMap::from_array([]);
+    let inherent_methods: HashMap[string, Vec[string]] = HashMap::from_array([]);
+    let trait_functions: HashMap[string, Vec[string]] = HashMap::from_array([]);
+    let trait_methods: HashMap[string, Vec[string]] = HashMap::from_array([]);
+    let trait_names = new_dce_names();
+    for function in value.functions {
+        functions[function.name] = function;
+        match function.origin {
+            Inherent { owner: _, method_name } => {
+                dce_function_names_add(inherent_methods, method_name, function.name)
+            },
+            TraitImplementation { method_name } => match function.trait_impl {
+                Some(metadata) => {
+                    dce_names_add(trait_names, metadata.trait_ref.name);
+                    dce_function_names_add(trait_functions, metadata.trait_ref.name, function.name);
+                    dce_function_names_add(
+                        trait_methods,
+                        dce_trait_method_key(metadata.trait_ref.name, method_name),
+                        function.name,
+                    )
+                },
+                None => (),
+            },
+            Source => (),
+        }
+    }
+    DceFunctions {
+        functions,
+        inherent_methods,
+        trait_functions,
+        trait_methods,
+        trait_names,
+        reachable: new_dce_names(),
+    }
+}
+
+fn dce_retain_function(ctx: DceFunctions, name: string) -> unit {
+    if ctx.functions.contains(name) {
+        dce_names_add(ctx.reachable, name)
+    } else {}
+}
+
+fn dce_retain_indexed_functions(
+    ctx: DceFunctions,
+    values: HashMap[string, Vec[string]],
+    key: string,
+) -> unit {
+    match values[key] {
+        Some(names) => for name in names {
+            dce_retain_function(ctx, name)
+        },
+        None => (),
+    }
+}
+
+fn dce_retain_inherent_methods(ctx: DceFunctions, method_name: string) -> unit {
+    dce_retain_indexed_functions(ctx, ctx.inherent_methods, method_name)
+}
+
+fn dce_retain_trait_functions(ctx: DceFunctions, trait_name: string) -> unit {
+    dce_retain_indexed_functions(ctx, ctx.trait_functions, trait_name)
+}
+
+fn dce_retain_trait_methods(ctx: DceFunctions, trait_name: string, method_name: string) -> unit {
+    dce_retain_indexed_functions(
+        ctx,
+        ctx.trait_methods,
+        dce_trait_method_key(trait_name, method_name),
+    )
+}
+
+fn dce_runtime_trait_name(value: string) -> bool {
+    value == "PartialEq" || value.ends_with("::PartialEq") || value == "Hash"
+        || value.ends_with("::Hash")
+}
+
+fn dce_retain_runtime_trait_functions(ctx: DceFunctions) -> unit {
+    for name in ctx.trait_names.values {
+        if dce_runtime_trait_name(name) {
+            dce_retain_trait_functions(ctx, name)
+        } else {}
+    }
+}
+
+fn dce_collect_types(ctx: DceFunctions, values: Vec[Type]) -> unit {
+    for value in values {
+        dce_collect_type(ctx, value)
+    }
+}
+
+fn dce_collect_named_types(ctx: DceFunctions, values: Vec[(string, Type)]) -> unit {
+    for value in values {
+        dce_collect_type(ctx, value.1)
+    }
+}
+
+fn dce_collect_trait_ref_types(ctx: DceFunctions, value: TraitRef) -> unit {
+    dce_collect_types(ctx, value.args)
+}
+
+fn dce_collect_dyn_bounds(ctx: DceFunctions, values: Vec[DynTraitBound]) -> unit {
+    for value in values {
+        dce_retain_trait_functions(ctx, value.trait_name);
+        dce_collect_types(ctx, value.args);
+        dce_collect_named_types(ctx, value.associated_types)
+    }
+}
+
+fn dce_collect_type(ctx: DceFunctions, value: Type) -> unit {
+    match value {
+        Tuple { items } => dce_collect_types(ctx, items),
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            dce_retain_trait_functions(ctx, trait_name);
+            dce_collect_types(ctx, args);
+            dce_collect_named_types(ctx, associated_types);
+            dce_collect_dyn_bounds(ctx, additional_bounds)
+        },
+        Projection { for_ty, name: _, trait_ref } => {
+            dce_collect_type(ctx, for_ty);
+            match trait_ref {
+                Some(reference) => {
+                    dce_retain_trait_functions(ctx, reference.name);
+                    dce_collect_trait_ref_types(ctx, reference)
+                },
+                None => (),
+            }
+        },
+        App { ty, args } => {
+            dce_collect_type(ctx, ty);
+            dce_collect_types(ctx, args)
+        },
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | Channel { elem, direction: _ } => dce_collect_type(
+            ctx,
+            elem,
+        ),
+        RefType { elem } => {
+            dce_retain_runtime_trait_functions(ctx);
+            dce_collect_type(ctx, elem)
+        },
+        HashMap { key, value } => {
+            dce_retain_runtime_trait_functions(ctx);
+            dce_collect_type(ctx, key);
+            dce_collect_type(ctx, value)
+        },
+        Func { params, ret_ty } => {
+            dce_collect_types(ctx, params);
+            dce_collect_type(ctx, ret_ty)
+        },
+        Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char | Con {
+            ..,
+        } | Param { .. } | Error => (),
+    }
+}
+
+fn dce_collect_callable(ctx: DceFunctions, value: Callable) -> unit {
+    match value {
+        Function(name) => dce_retain_function(ctx, name),
+        LangItem { item: _, function_name } => dce_retain_function(ctx, function_name),
+        TraitMethod { trait_ref, method_name, for_ty, has_receiver: _ } => {
+            dce_retain_trait_methods(ctx, trait_ref.name, method_name);
+            dce_collect_trait_ref_types(ctx, trait_ref);
+            dce_collect_type(ctx, for_ty)
+        },
+        DynTraitMethod { trait_name, dispatch_name: _, method_name: _ } => {
+            dce_retain_trait_functions(ctx, trait_name)
+        },
+        InherentMethod { receiver_ty, method_name } => {
+            dce_retain_inherent_methods(ctx, method_name);
+            dce_collect_type(ctx, receiver_ty)
+        },
+        Runtime(_) | Intrinsic(_) | GoForeign { .. } => (),
+    }
+}
+
+fn dce_collect_function_exprs(ctx: DceFunctions, values: Vec[Expr]) -> unit {
+    for value in values {
+        dce_collect_function_expr(ctx, value)
+    }
+}
+
+fn dce_collect_optional_function_expr(ctx: DceFunctions, value: Option[Expr]) -> unit {
+    match value {
+        Some(value) => dce_collect_function_expr(ctx, value),
+        None => (),
+    }
+}
+
+fn dce_collect_function_block(ctx: DceFunctions, value: Block) -> unit {
+    for stmt in value.stmts {
+        dce_collect_type(ctx, stmt.ty);
+        dce_collect_function_expr(ctx, stmt.value)
+    }
+    dce_collect_optional_function_expr(ctx, value.tail)
+}
+
+fn dce_collect_function_select_arms(ctx: DceFunctions, values: Vec[SelectArm]) -> unit {
+    for value in values {
+        match value {
+            Receive { channel, guard, binding: _, binding_ty, body } => {
+                dce_collect_function_expr(ctx, channel);
+                dce_collect_optional_function_expr(ctx, guard);
+                dce_collect_type(ctx, binding_ty);
+                dce_collect_function_expr(ctx, body)
+            },
+            Send { channel, value, guard, body } => {
+                dce_collect_function_expr(ctx, channel);
+                dce_collect_function_expr(ctx, value);
+                dce_collect_optional_function_expr(ctx, guard);
+                dce_collect_function_expr(ctx, body)
+            },
+        }
+    }
+}
+
+fn dce_collect_function_expr(ctx: DceFunctions, value: Expr) -> unit {
+    dce_collect_type(ctx, expr_type(value));
+    match value {
+        Var { name, ty: _ } => dce_retain_function(ctx, name),
+        Callable { callable, ty: _ } => dce_collect_callable(ctx, callable),
+        Prim { .. } | Continue { .. } => (),
+        Constr { args, .. } | Tuple { items: args, .. } | Array { items: args, .. } => {
+            dce_collect_function_exprs(ctx, args)
+        },
+        Closure { params, body, ty: _ } => {
+            for param in params {
+                dce_collect_type(ctx, param.ty)
+            }
+            dce_collect_function_expr(ctx, body)
+        },
+        Block { block, ty: _ } => dce_collect_function_block(ctx, block),
+        Match { expr, arms, default, ty: _ } => {
+            dce_collect_function_expr(ctx, expr);
+            for arm in arms {
+                dce_collect_function_expr(ctx, arm.body)
+            }
+            dce_collect_optional_function_expr(ctx, default)
+        },
+        Select { arms, default, .. } => {
+            dce_collect_function_select_arms(ctx, arms);
+            dce_collect_optional_function_expr(ctx, default)
+        },
+        If { cond, then_branch, else_branch, ty: _ } => {
+            dce_collect_function_expr(ctx, cond);
+            dce_collect_function_expr(ctx, then_branch);
+            dce_collect_function_expr(ctx, else_branch)
+        },
+        While { cond, body, ty: _ } => {
+            dce_collect_function_expr(ctx, cond);
+            dce_collect_function_expr(ctx, body)
+        },
+        Loop { body, ty: _ } => dce_collect_function_expr(ctx, body),
+        Break { target: _, value, ty: _ } => dce_collect_optional_function_expr(ctx, value),
+        Return { expr, ty: _ } => dce_collect_optional_function_expr(ctx, expr),
+        Go { expr, ty: _ } | ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | Proj {
+            tuple: expr,
+            ..,
+        } => dce_collect_function_expr(ctx, expr),
+        Binary { op: _, lhs, rhs, ty: _ } => {
+            dce_collect_function_expr(ctx, lhs);
+            dce_collect_function_expr(ctx, rhs)
+        },
+        Assign { name: _, value, target_ty, ty: _ } => {
+            dce_collect_function_expr(ctx, value);
+            dce_collect_type(ctx, target_ty)
+        },
+        Call { func, args, ty: _ } => {
+            dce_collect_function_expr(ctx, func);
+            dce_collect_function_exprs(ctx, args)
+        },
+        ToDyn { trait_name, for_ty, expr, ty: _ } => {
+            dce_retain_trait_functions(ctx, trait_name);
+            dce_collect_type(ctx, for_ty);
+            dce_collect_function_expr(ctx, expr)
+        },
+        DynCall { trait_name, method_name: _, receiver, args, ty: _ } => {
+            dce_retain_trait_functions(ctx, trait_name);
+            dce_collect_function_expr(ctx, receiver);
+            dce_collect_function_exprs(ctx, args)
+        },
+        TraitCall { trait_ref, method_name, instance_name, for_ty, receiver, args, ty: _ } => {
+            dce_retain_trait_methods(ctx, trait_ref.name, method_name);
+            match instance_name {
+                Some(name) => dce_retain_function(ctx, name),
+                None => (),
+            };
+            dce_collect_trait_ref_types(ctx, trait_ref);
+            dce_collect_type(ctx, for_ty);
+            dce_collect_optional_function_expr(ctx, receiver);
+            dce_collect_function_exprs(ctx, args)
+        },
+    }
+}
+
+fn dce_collect_function_predicates(ctx: DceFunctions, values: Vec[TypePredicate]) -> unit {
+    for value in values {
+        match value {
+            Trait { for_ty, trait_ref } => {
+                dce_retain_trait_functions(ctx, trait_ref.name);
+                dce_collect_type(ctx, for_ty);
+                dce_collect_trait_ref_types(ctx, trait_ref)
+            },
+            Equality { lhs, rhs } => {
+                dce_collect_type(ctx, lhs);
+                dce_collect_type(ctx, rhs)
+            },
+        }
+    }
+}
+
+fn dce_collect_function(ctx: DceFunctions, value: Function) -> unit {
+    for param in value.params {
+        dce_collect_type(ctx, param.1)
+    }
+    dce_collect_type(ctx, value.ret_ty);
+    dce_collect_function_predicates(ctx, value.predicates);
+    match value.trait_impl {
+        Some(metadata) => {
+            dce_collect_trait_ref_types(ctx, metadata.trait_ref);
+            dce_collect_type(ctx, metadata.for_ty);
+            dce_collect_named_types(ctx, metadata.associated_types)
+        },
+        None => (),
+    };
+    dce_collect_function_block(ctx, value.body)
+}
+
+pub fn eliminate_unreachable_functions(value: File) -> File {
+    let ctx = dce_functions_context(value);
+    for function in value.functions {
+        if function.root {
+            dce_retain_function(ctx, function.name)
+        } else {}
+    }
+    let mut index = 0;
+    while index < ctx.reachable.values.len() {
+        let name = ctx.reachable.values[index];
+        index = index + 1;
+        match ctx.functions[name] {
+            Some(function) => dce_collect_function(ctx, function),
+            None => (),
+        }
+    }
+    let functions: Vec[Function] = Vec::from_array([]);
+    for function in value.functions {
+        if dce_names_contains(ctx.reachable, function.name) {
+            functions.push(function)
+        } else {}
+    }
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+        statics: value.statics,
+    }
 }

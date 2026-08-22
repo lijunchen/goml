@@ -366,7 +366,7 @@ fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots:
         artifact_comptime_unit(comptime_module, public_exports),
         toolchain_dependency_hashes(dependencies),
     );
-    let core_value = core::dce(
+    let core_value = core::eliminate_dead_locals(
         core::lower_with_counter_types_and_options(
             checked,
             Ref::new(0),

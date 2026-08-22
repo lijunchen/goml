@@ -842,7 +842,7 @@ fn compile_artifact_package(
         None => generated_interface,
     };
     let core_ir = if build {
-        core::dce(
+        core::eliminate_dead_locals(
             core::lower_with_counter_types_and_options(
                 checked,
                 Ref::new(0),
