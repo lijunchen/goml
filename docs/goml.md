@@ -9,8 +9,8 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 1. The project source code uses `.gom`; the project root directory uses `goml.toml` to declare the canonical module path.
 2. Each source file in the project first writes `package name;`, then writes the file's own `use`, and finally writes the top-level definition.
 3. Parameters of top-level functions must have types; the return type is fixed to `unit` when omitted and is not inferred from the function body.
-4. Generics use square brackets: `Vec[int32]`, `fn id[T](x: T) -> T`, not `<...>`.
-5. Generic calls usually rely on type inference; when explicit type arguments are required, write `id::[int32](1)`, not `id[int32](1)` or Rust's `id::<int32>(1)`.
+4. Generics use square brackets: `Vec[i32]`, `fn id[T](x: T) -> T`, not `<...>`.
+5. Generic calls usually rely on type inference; when explicit type arguments are required, write `id::[i32](1)`, not `id[i32](1)` or Rust's `id::<i32>(1)`.
 6. `if`, `match`, and `select` are expressions. `if` without `else` must return `unit`; `match` must be exhaustive.
 7. The last semicolon-free expression of a block is the block value; adding a semicolon discards the value.
 8. `let` and assignment statements must end with a semicolon. Mutable bindings may be introduced with `let mut pattern` or precisely inside a pattern with `mut name`; the semicolon can be omitted for `if`, `match`, `select`, `while`, `loop` and `for` as statements.
@@ -65,8 +65,8 @@ Common keywords include:
 ```text
 package use as pub fn struct enum trait impl for type const static where defer
 let mut if else match while loop for in break continue return go dyn
-true false unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
-float32 float64 string char extern
+true false unit bool isize i8 i16 i32 i64 usize u8 u16 u32 u64
+f32 f64 string char extern
 ```
 
 `import`, `mod`, `crate`, `super` and `array` are not current keywords, but similar old declarations will receive migration diagnostics.`self` is a special abbreviation for the receiver parameter, and can also be used as a common receiver variable name; `Self` has special meaning in the type position of trait and impl.
@@ -79,24 +79,24 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 | --- | --- | --- |
 | unit | `()` | Type is `unit` |
 | bool | `true`、`false` | Type is `bool` |
-| integer | `0`、`42`、`1_000`、`0b1010`、`0o755`、`0xff` | Determined by context; defaults to `int` when unconstrained |
-| floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `float64` when unconstrained |
+| integer | `0`、`42`、`1_000`、`0b1010`、`0o755`、`0xff` | Determined by context; defaults to `isize` when unconstrained |
+| floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `f64` when unconstrained |
 | string | `"text"` | Type is `string` |
 | raw string | `r"text"`、`r#"text with \"quotes\""#` | Type is `string`; escapes are not processed |
 | byte string | `b"text\\n"` | Type is `Vec[byte]`; ASCII contents and byte escapes are supported |
 | raw byte string | `br"text"`、`br#"text with "quotes""#` | Type is `Vec[byte]`; escapes are not processed |
 | interpolated string | `f"value={value}"` | Type is `string`; embedded values use `ToString` |
 | character | `'a'`、`'\n'`、`'\u0041'` | Type is `char`, representing a Unicode scalar value |
-| byte | `b'A'`、`b'\n'`、`b'\xFF'` | Type is `byte`, a transparent alias of `uint8` |
+| byte | `b'A'`、`b'\n'`、`b'\xFF'` | Type is `byte`, a transparent alias of `u8` |
 
 Numbers have no type suffix.Integer literals support binary `0b`/`0B`, octal `0o`/`0O`, decimal, and hexadecimal `0x`/`0X` forms.The `_` delimiter can be used between two digits; floating point numbers support `e`/`E` exponent and optional exponent sign.When using a decimal point, there must be digits on both sides of the decimal point.Negative numbers are composed of unary `-` and positive numeric literals.
 
 Unsuffixed numbers can get the width from the context:
 
 ```goml
-let small: uint8 = 42;
-let ratio: float32 = 0.5;
-let values: [int16; 3] = [1, 2, 3];
+let small: u8 = 42;
+let ratio: f32 = 0.5;
+let values: [i16; 3] = [1, 2, 3];
 ```
 
 Strings support `\"`, `\\`, `\n`, `\r`, `\t`, `\b`, `\f`, `\/` and four-digit `\uXXXX` escaping; characters are escaped using the same set of control characters, and `\'` is used to represent single quotes. Ordinary strings cannot span lines.
@@ -332,8 +332,8 @@ Top-level items are only visible within the package by default.Top-level functio
 
 ```goml
 pub struct Point {
-    pub x: int32,
-    pub y: int32,
+    pub x: i32,
+    pub y: i32,
 }
 
 pub fn origin() -> Point {
@@ -341,7 +341,7 @@ pub fn origin() -> Point {
 }
 
 impl Point {
-    pub fn sum(self) -> int32 {
+    pub fn sum(self) -> i32 {
         self.x + self.y
     }
 }
@@ -357,26 +357,28 @@ All files in the same package can use private top-level items.The trait impl met
 | --- | --- | --- |
 | unit | `unit` | The only value is `()`; `()` is not a type notation |
 | Boolean | `bool` | `true`、`false` |
-| raw integer | `int` | Corresponds to the `int` of the target Go platform and is also the default type of integers. |
-| signed integer | `int8`、`int16`、`int32`、`int64` | fixed width |
-| unsigned integer | `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `uint` has the target Go platform width; the others have fixed widths |
-| byte | `byte` | Transparent builtin alias of `uint8` |
-| floating point | `float32`、`float64` | IEEE floating point |
+| raw integer | `isize` | Corresponds to the `int` of the target Go platform and is also the default type of integers. |
+| signed integer | `i8`、`i16`、`i32`、`i64` | fixed width |
+| unsigned integer | `usize`、`u8`、`u16`、`u32`、`u64` | `usize` corresponds to the target Go platform's `uint`; the others have fixed widths |
+| byte | `byte` | Transparent builtin alias of `u8` |
+| floating point | `f32`、`f64` | IEEE floating point |
 | string | `string` | Go string backend |
 | character | `char` | Compile to Go `rune` |
-| tuple | `(int32, string)` | Tuples in type syntax have at least two elements |
-| fixed array | `[int32; 4]` | The length is part of the type |
-| function | `(int32, string) -> bool` | parameter type list to return type |
-| Generic application | `Option[int32]`、`pkg::Box[string]` | Use square brackets |
-| channel | `Channel[int]`, `Sender[int]`, `Receiver[int]` | Bidirectional and directional Go channel backends |
-| trait object | `dyn Render`、`dyn Iterator[Item = int]` | A single, non-generic dyn-safe trait; associated types must be bound |
+| tuple | `(i32, string)` | Tuples in type syntax have at least two elements |
+| fixed array | `[i32; 4]` | The length is part of the type |
+| function | `(i32, string) -> bool` | parameter type list to return type |
+| Generic application | `Option[i32]`、`pkg::Box[string]` | Use square brackets |
+| channel | `Channel[isize]`, `Sender[isize]`, `Receiver[isize]` | Bidirectional and directional Go channel backends |
+| trait object | `dyn Render`、`dyn Iterator[Item = isize]` | A single, non-generic dyn-safe trait; associated types must be bound |
 | Associative type projection | `I::Item`、`Self::Output`、`I::IntoIter::Item` | There must be corresponding trait constraints; projections may be chained |
+
+The `0.1.35` transition release also accepts `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, and `float64` so existing packages can migrate. Compiler output, diagnostics, and completion use the new names. These compatibility spellings are deprecated and will be removed after stage0 and the repository sources have migrated.
 
 Example of function type:
 
 ```goml
-let predicate: (int32) -> bool = |value: int32| value > 0;
-let combine: (int32, int32) -> int32 = |a, b| a + b;
+let predicate: (i32) -> bool = |value: i32| value > 0;
+let combine: (i32, i32) -> i32 = |a, b| a + b;
 let action: () -> unit = || println("run");
 ```
 
@@ -397,7 +399,7 @@ The number of array literal elements must match the array type.Empty arrays and 
 Top-level aliases are transparent and may have type parameters:
 
 ```goml
-type UserId = uint64;
+type UserId = u64;
 type Pair[T] = (T, T);
 pub type Names = Vec[string];
 ```
@@ -407,11 +409,11 @@ Aliases do not create nominally distinct types and recursive alias cycles are re
 Use a single-field tuple struct when a value needs a distinct nominal type instead of an alias:
 
 ```goml
-struct UserId(uint64);
+struct UserId(u64);
 struct Box[T](T);
 ```
 
-This form is the newtype pattern. Construct it with `UserId(value)`, access its field with `value.0`, and destructure it with `let UserId(inner) = value;`. The field is private by default. A public newtype that can be constructed and unwrapped across package boundaries marks both the type and field public: `pub struct UserId(pub uint64);`.
+This form is the newtype pattern. Construct it with `UserId(value)`, access its field with `value.0`, and destructure it with `let UserId(inner) = value;`. The field is private by default. A public newtype that can be constructed and unwrapped across package boundaries marks both the type and field public: `pub struct UserId(pub u64);`.
 
 ### Type syntax not currently available
 
@@ -441,8 +443,8 @@ The top level of an ordinary source code file should only contain:
 Top-level constants require an explicit type and a compile-time expression:
 
 ```goml
-const BASE: int32 = 0x20;
-pub const ANSWER: int32 = BASE + 10;
+const BASE: i32 = 0x20;
+pub const ANSWER: i32 = BASE + 10;
 const NEWLINE: byte = b'\n';
 ```
 
@@ -453,9 +455,9 @@ Constant names may start with an uppercase letter, a lowercase letter, or `_`; `
 A top-level `static` has one program-wide storage location. Its binding cannot be reassigned. In the first supported form, its explicit type must be `OnceCell[T]` and its initializer must be exactly `OnceCell::new()`:
 
 ```goml
-static EMOJI: OnceCell[FrozenVec[FrozenVec[uint16]]] = OnceCell::new();
+static EMOJI: OnceCell[FrozenVec[FrozenVec[u16]]] = OnceCell::new();
 
-fn emoji() -> FrozenVec[FrozenVec[uint16]] {
+fn emoji() -> FrozenVec[FrozenVec[u16]] {
     EMOJI.get_or_init(|| build_emoji().freeze())
 }
 ```
@@ -467,7 +469,7 @@ Unlike a `const`, a `static` has observable identity. `OnceCell[T]` controls ini
 Visible top-level constants can be used as value patterns in `match`, `if let`, `while let`, and `let else`. Both local names and package-qualified names are supported, and constant patterns can be nested or combined with or-patterns:
 
 ```goml
-const ANSWER: int = 42;
+const ANSWER: isize = 42;
 
 match value {
     ANSWER | config::FALLBACK => "known",
@@ -483,7 +485,7 @@ In these refutable pattern contexts, a visible constant takes precedence over in
 
 ```goml
 #[comptime]
-fn factorial(value: int) -> int {
+fn factorial(value: isize) -> isize {
     if value < 2 {
         1
     } else {
@@ -491,9 +493,9 @@ fn factorial(value: int) -> int {
     }
 }
 
-const SIX: int = factorial(3);
+const SIX: isize = factorial(3);
 
-fn table() -> [int; 4] {
+fn table() -> [isize; 4] {
     comptime {
         [factorial(1), factorial(2), factorial(3), factorial(4)]
     }
@@ -502,9 +504,9 @@ fn table() -> [int; 4] {
 
 `#[comptime]` marks a non-generic free function as compile-time-capable. The function remains callable at runtime. A compile-time call may call only other `#[comptime]` free functions or the `compile_error(string) -> never` intrinsic. The compiler validates the complete body of every marked function, including branches not taken by a particular invocation. Attributes with arguments, duplicate attributes, generic functions, methods, extern functions, and other declarations are rejected.
 
-A top-level constant initializer is an implicit compile-time context, so `const SIX: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. A top-level constant may produce a recursively immutable tuple, fixed array, struct, or enum in addition to scalar values. A `comptime` expression in ordinary code supports the same reifiable value shapes.
+A top-level constant initializer is an implicit compile-time context, so `const SIX: isize = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. A top-level constant may produce a recursively immutable tuple, fixed array, struct, or enum in addition to scalar values. A `comptime` expression in ordinary code supports the same reifiable value shapes.
 
-Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, restricted `for`, `break`, `continue`, `return`, recursion, direct calls, integer conversion methods, and supported operators. A compile-time `for` accepts only a fixed array or the builtin `int` ranges `start..end` and `start..=end`; its source and range endpoints are evaluated once, and its pattern must be irrefutable. The deterministic string methods `len`, `byte_len`, `get`, `byte_get`, `byte_slice`, `is_char_boundary`, `starts_with`, `ends_with`, and `contains` are also available. String indexes and slices use byte offsets and reject invalid UTF-8 character boundaries.
+Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, restricted `for`, `break`, `continue`, `return`, recursion, direct calls, integer conversion methods, and supported operators. A compile-time `for` accepts only a fixed array or the builtin `isize` ranges `start..end` and `start..=end`; its source and range endpoints are evaluated once, and its pattern must be irrefutable. The deterministic string methods `len`, `byte_len`, `get`, `byte_get`, `byte_slice`, `is_char_boundary`, `starts_with`, `ends_with`, and `contains` are also available. String indexes and slices use byte offsets and reject invalid UTF-8 character boundaries.
 
 Compile-time code cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods other than the integer conversions and string whitelist, trait or dynamic dispatch, general iterators, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, general type reflection, arbitrary declaration generation, compile-time parameters, value generics, and type-level computation are not supported. The constrained programmable derive interface described below is the only reflection and code-generation facility.
 
@@ -512,7 +514,7 @@ Compile-time code cannot capture a surrounding runtime parameter or local. Closu
 
 ```goml
 #[comptime]
-fn checked_size(value: int) -> int {
+fn checked_size(value: isize) -> isize {
     if value < 0 {
         compile_error("size must be non-negative")
     } else {
@@ -525,7 +527,7 @@ Failures include the compile-time call stack and source locations. Evaluation us
 
 Public `#[comptime]` functions can be called from another package. The defining package's interface contains verified compile-time IR for the public entry and the private compile-time helpers and constants it reaches. Public compile-time constant values are also exported. A compile-time body or value change affects the interface hash; source formatting, local names, and source locations do not. A downstream package needs only the dependency interface for checking and evaluation. A value containing hidden fields from another package cannot currently be reified.
 
-Compile-time integer evaluation uses the same fixed-width, wrapping representation as generated runtime code. Division by zero, a negative shift count, and an out-of-bounds index fail compilation. Signed minimum divided by `-1` yields the signed minimum, and its remainder is zero. Narrowing conversions retain the low bits of the destination width; widening a signed source sign-extends before conversion to the destination signedness. The CTIR target specification is part of its semantic hash. `int` and `uint` currently use the 64-bit Linux amd64 toolchain target width.
+Compile-time integer evaluation uses the same fixed-width, wrapping representation as generated runtime code. Division by zero, a negative shift count, and an out-of-bounds index fail compilation. Signed minimum divided by `-1` yields the signed minimum, and its remainder is zero. Narrowing conversions retain the low bits of the destination width; widening a signed source sign-extends before conversion to the destination signedness. The CTIR target specification is part of its semantic hash. `isize` and `usize` currently use the 64-bit Linux amd64 toolchain target width.
 
 At runtime, integer addition, subtraction, and multiplication use the same fixed-width wrapping representation. Integer division or remainder by zero terminates the current process with the generated Go runtime failure. Integer conversion methods use the same narrowing, sign-extension, and signedness rules as compile-time evaluation.
 
@@ -533,8 +535,8 @@ At runtime, integer addition, subtraction, and multiplication use the same fixed
 
 ```goml
 struct Point {
-    x: int32,
-    y: int32,
+    x: i32,
+    y: i32,
 }
 
 struct Box[T] {
@@ -545,21 +547,21 @@ struct Box[T] {
 A newtype is a nominal structure with exactly one unnamed field:
 
 ```goml
-struct UserId(uint64);
+struct UserId(u64);
 
 fn increment(value: UserId) -> UserId {
     UserId(value.0 + 1)
 }
 ```
 
-Unlike `type UserId = uint64;`, the newtype is not interchangeable with `uint64`. It must be explicitly constructed or destructured. Newtypes may be generic, their field is private by default, and a trailing comma inside the parentheses is accepted. This syntax requires exactly one field; tuple structs with zero or multiple fields are not supported.
+Unlike `type UserId = u64;`, the newtype is not interchangeable with `u64`. It must be explicitly constructed or destructured. Newtypes may be generic, their field is private by default, and a trailing comma inside the parentheses is accepted. This syntax requires exactly one field; tuple structs with zero or multiple fields are not supported.
 
 The type parameter list of structure and enumeration itself does not write bound.Put constraints on functions, traits, or impl that use the type.
 
 Write out the fields during construction, allowing field abbreviations:
 
 ```goml
-fn make_point(x: int32, y: int32) -> Point {
+fn make_point(x: i32, y: i32) -> Point {
     Point { x, y }
 }
 ```
@@ -585,7 +587,7 @@ Directly recursive structures will have infinite size and must be recursed throu
 
 ```goml
 struct Node {
-    value: int32,
+    value: i32,
     next: Option[Ref[Node]],
 }
 ```
@@ -606,8 +608,8 @@ enum Message[T] {
 Unloaded variants are used directly as values, loaded variants are called like functions:
 
 ```goml
-let quit: Message[int32] = Message::Quit;
-let value: Message[int32] = Message::Value(42);
+let quit: Message[i32] = Message::Quit;
+let value: Message[i32] = Message::Value(42);
 let pair = Message::Pair("left", "right");
 let named = Message::Named { value: 42 };
 ```
@@ -615,13 +617,13 @@ let named = Message::Named { value: 42 };
 Unloaded generic variants provide no inference clues, usually the expected type is given:
 
 ```goml
-let none: Option[int32] = Option::None;
+let none: Option[i32] = Option::None;
 ```
 
 Loaded constructors are also available as first-class function values:
 
 ```goml
-let some: (int32) -> Option[int32] = Option::Some;
+let some: (i32) -> Option[i32] = Option::Some;
 ```
 
 Structural variants use field constructs and field patterns:
@@ -640,7 +642,7 @@ Patterns may omit the enum qualifier.When the expected pattern type is `Option[T
 ### top-level function
 
 ```goml
-fn add(left: int32, right: int32) -> int32 {
+fn add(left: i32, right: i32) -> i32 {
     left + right
 }
 
@@ -686,24 +688,24 @@ TypeA = TypeB
 Ordinary generic function calls usually infer the type arguments from the argument and expected result types:
 
 ```goml
-let number: int32 = identity(1);
+let number: i32 = identity(1);
 let text: string = identity("text");
 ```
 
 Use GoML turbofish when explicit specification is required:
 
 ```goml
-let number = identity::[int32](1);
+let number = identity::[i32](1);
 let text = identity::[string]("text");
 ```
 
-Don't write `identity[int32](1)` or Rust's `identity::<int32>(1)`. Generic arguments for an owner type or trait appear before the member name, while arguments owned by a method appear after it:
+Don't write `identity[i32](1)` or Rust's `identity::<i32>(1)`. Generic arguments for an owner type or trait appear before the member name, while arguments owned by a method appear after it:
 
 ```goml
 let inferred = value.convert(fallback);
 let explicit = value.convert::[string](fallback);
-let inherent = Box::[int32]::convert::[string](value, fallback);
-let trait_call = Convert::[int32]::convert::[string](value, fallback);
+let inherent = Box::[i32]::convert::[string](value, fallback);
+let trait_call = Convert::[i32]::convert::[string](value, fallback);
 ```
 
 Top-level functions and methods may introduce their own type parameters. A method's parameters are distinct from the parameters of its enclosing trait or impl and may have their own bounds and `where` predicates. Local named functions do not exist; use closures. Closures do not have generics. Structures, enumerations, traits, and impl blocks can also have type parameters.
@@ -717,7 +719,7 @@ GoML monomorphizes generic calls.Recursive generic code must produce a limited n
 The last semicolon-less expression of the block is the return value:
 
 ```goml
-fn square(value: int32) -> int32 {
+fn square(value: i32) -> i32 {
     let result = value * value;
     result
 }
@@ -732,7 +734,7 @@ fn run() -> unit {
 }
 ```
 
-`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, brace-delimited structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them. Newtype declarations such as `struct UserId(uint64);` do require the trailing semicolon.
+`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, brace-delimited structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them. Newtype declarations such as `struct UserId(u64);` do require the trailing semicolon.
 
 `defer expression;` registers a `unit` expression to run when the current lexical block is left. Deferred expressions run in last-in-first-out order on normal completion and when `return`, `?`, `break`, or `continue` crosses their block. A return or break value is evaluated before cleanup begins. Each loop-body block has its own cleanup stack, so a deferred expression registered during one iteration runs before that iteration exits.
 
@@ -753,7 +755,7 @@ This prints `flush` first, then `closing:ready`.
 
 ```goml
 let inferred = 42;
-let explicit: int64 = 42;
+let explicit: i64 = 42;
 let _ = println("discard explicitly");
 let name = "first";
 let name = "second";
@@ -771,7 +773,7 @@ let Point { x, y: vertical } = point;
 An ordinary `let` cannot use an enumeration or literal pattern that may fail. Use `let ... else` when the failure path must leave the surrounding control flow:
 
 ```goml
-fn require_value(value: Option[int]) -> int {
+fn require_value(value: Option[isize]) -> isize {
     let Some(item) = value else {
         return -1;
     };
@@ -830,11 +832,11 @@ shared.get()[0] = 40;
 `Vec` and `HashMap` are internal mutable containers, so the contents can be modified via methods or indexes even if the binding itself is not `mut`:
 
 ```goml
-let values: Vec[int32] = Vec::new();
+let values: Vec[i32] = Vec::new();
 values.push(10);
 values[0] = 20;
 
-let counts: HashMap[string, int32] = HashMap::new();
+let counts: HashMap[string, i32] = HashMap::new();
 counts["answer"] = 42;
 ```
 
@@ -855,7 +857,7 @@ GoML supports:
 - Method call `value.method(arg)`
 - Index `value[index]`
 - Unary and binary operations
-- Integer conversion method `value.to_uint32()`
+- Integer conversion method `value.to_u32()`
 - Explicit trait-object conversion `value as dyn Trait`
 - Half-open range expression `start..end`
 - `if`、`if let`、`match`、`select`、`while`、`while let`、`loop`、`for`
@@ -932,14 +934,14 @@ let valid = !(predicate());
 - `< > <= >=` uses `PartialOrd`. Primitive numbers, `string`, `char`, tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` provide the corresponding conditional implementations.
 - `== !=` uses `PartialEq`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` compare recursively when their elements implement `PartialEq`.
 - Floating-point values implement `PartialEq + PartialOrd`, but not `Eq + Ord + Hash`. In particular, NaN is unequal to itself and its `partial_cmp` result is `None`.
-- Every integer type provides `to_int`, `to_int8`, `to_int16`, `to_int32`, `to_int64`, `to_uint`, `to_uint8`, `to_uint16`, `to_uint32`, and `to_uint64` for the other integer types. Identity methods are omitted. `byte` uses the `uint8` methods, `char` provides `to_uint32`, and `uint32` to `char` uses `char_from_uint32`, which returns `Option[char]`.
+- Every integer type provides `to_isize`, `to_i8`, `to_i16`, `to_i32`, `to_i64`, `to_usize`, `to_u8`, `to_u16`, `to_u32`, and `to_u64` for the other integer types. Identity methods are omitted. `byte` uses the `u8` methods, `char` provides `to_u32`, and `u32` to `char` uses `char_from_u32`, which returns `Option[char]`. The `0.1.35` transition release retains the old conversion method names as deprecated aliases.
 - Expression `as` is reserved for creating `dyn Trait` values. Numeric conversions use the integer methods above; other non-`dyn` targets are rejected. The separate `as` form in `use package as alias;` still selects an import alias.
 
 There are no exponentiation, null coalescing or user-defined operators.
 
 ### range expression
 
-`start..end` constructs an incrementing half-open `FnIterator[int]`, and `start..=end` constructs an inclusive iterator. Both can be used directly in `for`:
+`start..end` constructs an incrementing half-open `FnIterator[isize]`, and `start..=end` constructs an inclusive iterator. Both can be used directly in `for`:
 
 ```goml
 for value in 0..10 {
@@ -951,7 +953,7 @@ for value in 0..=10 {
 }
 ```
 
-Both ends are `int`. A half-open range is empty when `start >= end`; an inclusive range is empty when `start > end` and contains one value when both ends are equal. Each endpoint is evaluated once from left to right. Inclusive iteration does not compute `end + 1`, so the maximum `int` endpoint does not overflow. Range expressions cannot be chained. Open ranges, character ranges, and custom step syntax are not supported. The `..` and `..=` in patterns are a separate range-pattern syntax.
+Both ends are `isize`. A half-open range is empty when `start >= end`; an inclusive range is empty when `start > end` and contains one value when both ends are equal. Each endpoint is evaluated once from left to right. Inclusive iteration does not compute `end + 1`, so the maximum `isize` endpoint does not overflow. Range expressions cannot be chained. Open ranges, character ranges, and custom step syntax are not supported. The `..` and `..=` in patterns are a separate range-pattern syntax.
 
 ## control flow
 
@@ -960,7 +962,7 @@ Both ends are `int`. A half-open range is empty when `start >= end`; an inclusiv
 `if` is always an expression.`else` is required when generating non-`unit` values:
 
 ```goml
-fn absolute(value: int32) -> int32 {
+fn absolute(value: i32) -> i32 {
     if value < 0 {
         -value
     } else {
@@ -1012,7 +1014,7 @@ When you need to get values ​​from two branches, you must write `else` expli
 ### `match`
 
 ```goml
-fn unwrap_or(value: Option[int32], fallback: int32) -> int32 {
+fn unwrap_or(value: Option[i32], fallback: i32) -> i32 {
     match value {
         Some(inner) => inner,
         None => fallback,
@@ -1136,7 +1138,7 @@ All `break` values targeting the same `loop` must have compatible types. `break;
 ### `for`
 
 ```goml
-let values: Vec[int32] = Vec::new();
+let values: Vec[i32] = Vec::new();
 values.push(10);
 values.push(20);
 
@@ -1145,7 +1147,7 @@ for value in values {
 };
 ```
 
-`for pattern in source { ... }` accepts fixed arrays and values ​​that implement `IntoIterator`.Both the source expression and the `into_iter` transformation are executed only once.The pattern must be irrefutable and the loop body must return `unit`.`start..end` can be used directly as a native `int` range.
+`for pattern in source { ... }` accepts fixed arrays and values ​​that implement `IntoIterator`.Both the source expression and the `into_iter` transformation are executed only once.The pattern must be irrefutable and the loop body must return `unit`.`start..end` can be used directly as a native `isize` range.
 
 Tuple destructuring can be used directly in loops:
 
@@ -1194,7 +1196,7 @@ let answer = 'result: loop {
 `return` can be taken with or without a value and checks the return type of the current function or closure:
 
 ```goml
-fn first_positive(values: Vec[int32]) -> int32 {
+fn first_positive(values: Vec[i32]) -> i32 {
     for value in values {
         if value > 0 {
             return value
@@ -1211,11 +1213,11 @@ fn first_positive(values: Vec[int32]) -> int32 {
 The suffix `?` only supports the built-in semantics `Option[T]` and `Result[T, E]`:
 
 ```goml
-fn plus_one(value: Option[int32]) -> Option[int32] {
+fn plus_one(value: Option[i32]) -> Option[i32] {
     Option::Some(value? + 1)
 }
 
-fn read_number(flag: bool) -> Result[int32, string] {
+fn read_number(flag: bool) -> Result[i32, string] {
     let value = parse_number(flag)?;
     Result::Ok(value)
 }
@@ -1334,11 +1336,11 @@ match values {
 There is at most one rest in a sequence pattern.rest can be located anywhere, or it can be written as `name @ ..` to bind the middle part:
 
 ```goml
-let values: [int32; 4] = [1, 2, 3, 4];
+let values: [i32; 4] = [1, 2, 3, 4];
 let [first, middle @ .., last] = values;
 ```
 
-For fixed arrays, the number of elements must be exactly equal to `N` when rest is omitted; when rest is included, the total number of elements of explicit prefixes and suffixes cannot exceed `N`.In the above example, the type of `middle` is `[int32; 2]`.
+For fixed arrays, the number of elements must be exactly equal to `N` when rest is omitted; when rest is included, the total number of elements of explicit prefixes and suffixes cannot exceed `N`.In the above example, the type of `middle` is `[i32; 2]`.
 
 For `Vec[T]` and `Slice[T]`, the binding type of `name @ ..` is read-only `Slice[T]`.For example `[head, tail @ ..]` requires at least one element, `tail` will not be copied into a new Vec.Since dynamic sequences may not be long enough, such patterns are usually placed inside a `match`, `if let` or `while let`.
 
@@ -1384,7 +1386,7 @@ An empty `match` is only valid for types that have no constructible value:
 ```goml
 enum Never {}
 
-fn absurd(value: Never) -> int32 {
+fn absurd(value: Never) -> i32 {
     match value {}
 }
 ```
@@ -1400,8 +1402,8 @@ There are no `ref` or `ref mut` patterns. `mut name` is supported for individual
 ### closure syntax
 
 ```goml
-let add = |left: int32, right: int32| left + right;
-let increment = |value: int32| {
+let add = |left: i32, right: i32| left + right;
+let increment = |value: i32| {
     value + 1
 };
 let greet = || println("hello");
@@ -1410,7 +1412,7 @@ let greet = || println("hello");
 Closure parameter types can be inferred from the expected function type or the calling location; when inference is unstable, it should be explicitly marked:
 
 ```goml
-let transform: (int32) -> string = |value| value.to_string();
+let transform: (i32) -> string = |value| value.to_string();
 ```
 
 Closures can capture external variables or modify captured `let mut`:
@@ -1568,8 +1570,8 @@ The corresponding impl method must have the same method-generic arity, signature
 
 ```goml
 struct Point {
-    x: int32,
-    y: int32,
+    x: i32,
+    y: i32,
 }
 
 impl Render for Point {
@@ -1592,8 +1594,8 @@ impl[T: ToString] Render for Box[T] {
 Different applications of generic traits are different impl:
 
 ```goml
-impl Convert[int32] for Token {
-    fn convert(self: Token, fallback: int32) -> int32 {
+impl Convert[i32] for Token {
+    fn convert(self: Token, fallback: i32) -> i32 {
         7
     }
 }
@@ -1609,9 +1611,9 @@ Associated types are bound in impl:
 
 ```goml
 impl Iterator for Counter {
-    type Item = int32;
+    type Item = i32;
 
-    fn next(self: Counter) -> Option[int32] {
+    fn next(self: Counter) -> Option[i32] {
         next_value(self)
     }
 }
@@ -1623,11 +1625,11 @@ When implementing a trait with supertraits, you also need to provide the impl of
 
 ```goml
 impl Point {
-    fn new(x: int32, y: int32) -> Self {
+    fn new(x: i32, y: i32) -> Self {
         Point { x, y }
     }
 
-    fn sum(self: Self) -> int32 {
+    fn sum(self: Self) -> i32 {
         self.x + self.y
     }
 }
@@ -1649,7 +1651,7 @@ impl[T] Box[T] {
 }
 ```
 
-Method type arguments are normally inferred. Write `box_value.map::[string](convert)` when explicit arguments are needed, or `Box::[int32]::map::[string](box_value, convert)` in associated form.
+Method type arguments are normally inferred. Write `box_value.map::[string](convert)` when explicit arguments are needed, or `Box::[i32]::map::[string](box_value, convert)` in associated form.
 
 ### Method parsing and UFCS
 
@@ -1677,7 +1679,7 @@ let b = B::render(value);
 Generic trait UFCS uses `::[...]` after the trait name to give the type parameters:
 
 ```goml
-let number = Convert::[int32]::convert(token, 0);
+let number = Convert::[i32]::convert(token, 0);
 let text = Convert::[string]::convert(token, "");
 ```
 
@@ -1719,7 +1721,7 @@ trait Source {
     fn get(self: Self) -> Self::Item;
 }
 
-fn read(source: dyn Source[Item = int]) -> int {
+fn read(source: dyn Source[Item = isize]) -> isize {
     source.get()
 }
 ```
@@ -1747,7 +1749,7 @@ User source code supports deriving `ToString`, `Debug`, `PartialEq`, `Eq`, `Part
 #[derive(ToString, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 struct Key {
     name: string,
-    version: int32,
+    version: i32,
 }
 
 #[derive(ToString, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -1869,12 +1871,12 @@ The input reflection operations are:
 
 ```text
 derive_item_name(input) -> string
-derive_item_kind(input) -> int
-derive_generic_count(input) -> int
+derive_item_kind(input) -> isize
+derive_generic_count(input) -> isize
 derive_generic_name(input, index) -> string
 derive_field_count/name/type(...)
 derive_variant_count/name(...)
-derive_variant_kind(input, variant) -> int
+derive_variant_kind(input, variant) -> isize
 derive_variant_field_count/name/type(...)
 derive_attribute_count/name/text(...)
 derive_field_attribute_count/name/text(...)
@@ -1906,16 +1908,16 @@ meta_type_apply(type, arguments) -> MetaType
 meta_type_array(element, length) -> MetaType
 meta_type_projection(type, associated_name) -> MetaType
 meta_type_kind/name(type) -> string
-meta_type_argument_count/argument(type, index...) -> int | MetaType
-meta_type_tuple_count/tuple_item(type, index...) -> int | MetaType
-meta_type_array_length/array_element(type) -> int | MetaType
-meta_type_function_parameter_count/parameter(type, index...) -> int | MetaType
+meta_type_argument_count/argument(type, index...) -> isize | MetaType
+meta_type_tuple_count/tuple_item(type, index...) -> isize | MetaType
+meta_type_array_length/array_element(type) -> isize | MetaType
+meta_type_function_parameter_count/parameter(type, index...) -> isize | MetaType
 meta_type_function_return(type) -> MetaType
 meta_type_contains_generic(input, type) -> bool
 meta_type_equal(left, right) -> bool
 
 meta_expr_var(name) -> MetaExpr
-meta_expr_unit/bool/int/string/char(value...) -> MetaExpr
+meta_expr_unit/bool/isize/string/char(value...) -> MetaExpr
 meta_expr_integer(text, type) -> MetaExpr
 meta_expr_field(value, name) -> MetaExpr
 meta_expr_index(value, index) -> MetaExpr
@@ -1944,7 +1946,7 @@ meta_expr_list_push(list, expression) -> unit
 
 meta_pattern_wild() -> MetaPattern
 meta_pattern_bind(name) -> MetaPattern
-meta_pattern_unit/bool/int/string/char(value...) -> MetaPattern
+meta_pattern_unit/bool/isize/string/char(value...) -> MetaPattern
 meta_pattern_tuple/array(patterns) -> MetaPattern
 meta_pattern_constructor(name, patterns) -> MetaPattern
 meta_pattern_target_constructor(input, variant, patterns) -> MetaPattern
@@ -1987,7 +1989,7 @@ derive_output_add_call_site_predicate(output, type, trait_name) -> unit
 derive_output_add_method(output, method) -> unit
 ```
 
-`meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_expr_integer` accepts a normalized integer literal string plus its exact integer type, so builders can represent values outside the host `int` range. `meta_expr_cast` accepts only a `dyn` target type; generated numeric conversions should use `meta_expr_method_call`. `meta_expr_trait_call` resolves the trait in the handler's defining package and builds a static trait method call. `meta_type_equal` compares structural type identity. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
+`meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_expr_integer` accepts a normalized integer literal string plus its exact integer type, so builders can represent values outside the host `isize` range. `meta_expr_cast` accepts only a `dyn` target type; generated numeric conversions should use `meta_expr_method_call`. `meta_expr_trait_call` resolves the trait in the handler's defining package and builds a static trait method call. `meta_type_equal` compares structural type identity. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
 
 Unqualified names passed to `derive_output_new`, `derive_output_add_predicate`, `meta_type_named`, `meta_expr_call`, and `meta_generic_list_add_bound` resolve in the handler's defining package. Their `_call_site` variants resolve in the target package. `derive_fresh_name` should be used for generated local bindings that must not collide with user names. The `*_target_*` builders construct or match the annotated item by compiler identity and should be preferred over spelling its name manually.
 
@@ -2034,7 +2036,7 @@ Tuple types are supported only as the complete return type. Tuple elements and a
 
 `dyn Marker` is supported only as a direct parameter or as the complete single return type. `Marker` must be strictly empty: it cannot declare generic parameters, predicates, supertraits, associated types, or methods, and the `dyn` type cannot have arguments, associated-type bindings, or additional bounds. The wrapper passes the object's `data` field to Go as `any` and wraps a returned Go value back into the empty marker object. Empty marker objects are not yet supported inside tuples, arrays, slices, or channels.
 
-The declaration must be monomorphic and must describe the Go function exactly. GoML does not inspect Go package type information during type checking; the Go compiler is the final authority for symbol existence and assignability. In particular, a Go named type such as `time.Duration` is not interchangeable with a GoML `int64` parameter even when its underlying representation is the same.
+The declaration must be monomorphic and must describe the Go function exactly. GoML does not inspect Go package type information during type checking; the Go compiler is the final authority for symbol existence and assignability. In particular, a Go named type such as `time.Duration` is not interchangeable with a GoML `i64` parameter even when its underlying representation is the same.
 
 `Vec`, `Ref`, `HashMap`, `Option`, `Result`, user structs and enums, nonempty trait objects, function values, nested tuples, generic declarations, methods, callbacks, automatic Go object lifetime management, and automatic `error` conversion are not supported by this ABI. Write a small Go shim with an exported function and FFI-safe parameters when adapting such an API:
 
@@ -2245,33 +2247,33 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 - `println[T: ToString](value: T) -> unit`
 - `value.to_string() -> string`, suitable for values ​​that implement `ToString`
 - `value.debug() -> string`, suitable for values that implement `Debug`
-- `string.len() -> int` and `string.byte_len() -> int`, both returning the UTF-8 byte length
-- `string.get(index: int) -> char`, decoding a character at a UTF-8 byte boundary
-- `string.byte_get(index: int) -> uint8`
-- `string.byte_slice(start: int, end: int) -> string`
-- `string.is_char_boundary(index: int) -> bool`
-- `string.decode_at(index: int) -> Option[(char, int)]`
-- `string.to_bytes() -> Vec[uint8]`
+- `string.len() -> isize` and `string.byte_len() -> isize`, both returning the UTF-8 byte length
+- `string.get(index: isize) -> char`, decoding a character at a UTF-8 byte boundary
+- `string.byte_get(index: isize) -> u8`
+- `string.byte_slice(start: isize, end: isize) -> string`
+- `string.is_char_boundary(index: isize) -> bool`
+- `string.decode_at(index: isize) -> Option[(char, isize)]`
+- `string.to_bytes() -> Vec[u8]`
 - `string.chars() -> FnIterator[char]`
-- `string.char_indices() -> FnIterator[(int, char)]`
+- `string.char_indices() -> FnIterator[(isize, char)]`
 - `string.starts_with(prefix: string) -> bool`
 - `string.ends_with(suffix: string) -> bool`
 - `string.contains(expected: string) -> bool`
-- `string.starts_with_at(start: int, prefix: string) -> bool`, checking at a byte offset
-- `string.find(expected: string) -> Option[int]`, `string.rfind(expected: string) -> Option[int]`, and `string.find_bytes(expected: string) -> Option[int]`, returning byte offsets
-- `string.char_count() -> int`, counting Unicode scalar values
-- `string.slice_chars(start: int, end: int) -> Option[string]`, using scalar-value indexes
+- `string.starts_with_at(start: isize, prefix: string) -> bool`, checking at a byte offset
+- `string.find(expected: string) -> Option[isize]`, `string.rfind(expected: string) -> Option[isize]`, and `string.find_bytes(expected: string) -> Option[isize]`, returning byte offsets
+- `string.char_count() -> isize`, counting Unicode scalar values
+- `string.slice_chars(start: isize, end: isize) -> Option[string]`, using scalar-value indexes
 - `string.trim() -> string`, `string.trim_start() -> string`, and `string.trim_end() -> string`, trimming ASCII whitespace
 - `string.split(separator: string) -> Vec[string]`, `string.split_once(separator: string) -> Option[(string, string)]`, and `string.lines() -> Vec[string]`
 - `string.replace(expected: string, replacement: string) -> string`
-- `string.repeat(count: int) -> string`
+- `string.repeat(count: isize) -> string`
 - `string.is_ascii() -> bool`
 - `string.eq_ignore_ascii_case(other: string) -> bool`
 - `string.to_ascii_lowercase() -> string` and `string.to_ascii_uppercase() -> string`
 
 The basic scalar types all implement `ToString` and `Debug`. String concatenation uses `+`.
 
-The key-related traits are the method-bearing `PartialEq::eq(self, other: Self) -> bool`, the marker `Eq: PartialEq`, and `Hash::hash(self) -> uint64`. User types can use handwritten impls or derive the corresponding traits.
+The key-related traits are the method-bearing `PartialEq::eq(self, other: Self) -> bool`, the marker `Eq: PartialEq`, and `Hash::hash(self) -> u64`. User types can use handwritten impls or derive the corresponding traits.
 
 ### `Ref[T]`
 
@@ -2293,12 +2295,12 @@ The built-in `PartialEq`, `Eq`, and `Hash` implementations for `Ref[T]` use refe
 ### fixed array
 
 ```goml
-let mut values: [int32; 3] = [1, 2, 3];
+let mut values: [i32; 3] = [1, 2, 3];
 let first = values[0];
 values[1] = 20;
 ```
 
-The index type is `int`.The underlying `array_get` and `array_set` can also be called; index syntax is preferred for daily code.
+The index type is `isize`.The underlying `array_get` and `array_set` can also be called; index syntax is preferred for daily code.
 
 ### `Vec[T]`
 
@@ -2307,7 +2309,7 @@ let values = Vec::from_array([1, 2, 3]);
 let first = values.get(0);
 ```
 
-`Vec::from_array([values...])` creates a vector from a fixed array. Array items are evaluated once from left to right. The vector receives new outer backing storage, so replacing an array element later does not change the vector, while referenced elements remain shared because the copy is shallow. An empty array needs either an expected result type, as in `let values: Vec[int32] = Vec::from_array([]);`, or explicit owner arguments, as in `Vec::[int32]::from_array([])`. The associated function is an ordinary first-class value, for example `let make: ([int32; 3]) -> Vec[int32] = Vec::from_array;`.
+`Vec::from_array([values...])` creates a vector from a fixed array. Array items are evaluated once from left to right. The vector receives new outer backing storage, so replacing an array element later does not change the vector, while referenced elements remain shared because the copy is shallow. An empty array needs either an expected result type, as in `let values: Vec[i32] = Vec::from_array([]);`, or explicit owner arguments, as in `Vec::[i32]::from_array([])`. The associated function is an ordinary first-class value, for example `let make: ([i32; 3]) -> Vec[i32] = Vec::from_array;`.
 
 GoML 0.1.27 formatted the former `Vec::[...]` spelling to `Vec::from_array([...])`; 0.1.28 removed the former syntax.
 
@@ -2322,17 +2324,17 @@ Commonly used methods:
 - `freeze() -> FrozenVec[T]`
 - `get(index) -> T`
 - `set(index, value) -> unit`
-- `len() -> int`
-- `capacity() -> int`
+- `len() -> isize`
+- `capacity() -> isize`
 - `is_empty() -> bool`
 - `contains(value) -> bool`
-- `position(predicate) -> Option[int]`
+- `position(predicate) -> Option[isize]`
 - `sort_by(compare) -> unit`
 - `stable_sort_by(compare) -> unit`
 - `sort_by_ordering(compare) -> unit`
 - `stable_sort_by_ordering(compare) -> unit`
-- `binary_search_by(compare) -> Option[int]`
-- `binary_search_by_ordering(compare) -> Option[int]`
+- `binary_search_by(compare) -> Option[isize]`
+- `binary_search_by_ordering(compare) -> Option[isize]`
 - `min_by(compare) -> Option[T]`
 - `max_by(compare) -> Option[T]`
 - `min_by_ordering(compare) -> Option[T]`
@@ -2371,7 +2373,7 @@ Sorting and selection methods take an integer comparator returning negative/zero
 `Slice[T]` is a bounded read-only view on the `Vec[T]` storage:
 
 ```goml
-let view: Slice[int32] = values.slice(1, 3);
+let view: Slice[i32] = values.slice(1, 3);
 let item = view.get(0);
 ```
 
@@ -2383,10 +2385,10 @@ The key type must implement both `Hash` and `Eq`; bucket equality dispatches thr
 
 ```goml
 let counts = HashMap::from_array([("a", 1), ("b", 2)]);
-let value: Option[int32] = counts.get("a");
+let value: Option[i32] = counts.get("a");
 ```
 
-`HashMap::from_array([(key, value), ...])` first evaluates the complete entries array from left to right, then inserts its pairs in array order. Later duplicate keys overwrite earlier entries. An empty array needs either an expected result type, as in `let counts: HashMap[string, int32] = HashMap::from_array([]);`, or explicit owner arguments, as in `HashMap::[string, int32]::from_array([])`. The associated function is an ordinary first-class value when its array length is fixed by a function type.
+`HashMap::from_array([(key, value), ...])` first evaluates the complete entries array from left to right, then inserts its pairs in array order. Later duplicate keys overwrite earlier entries. An empty array needs either an expected result type, as in `let counts: HashMap[string, i32] = HashMap::from_array([]);`, or explicit owner arguments, as in `HashMap::[string, i32]::from_array([])`. The associated function is an ordinary first-class value when its array length is fixed by a function type.
 
 GoML 0.1.27 formatted the former map-literal spelling to `HashMap::from_array([(key, value), ...])`; 0.1.28 removed the former syntax.
 
@@ -2412,7 +2414,7 @@ channel.close();
 
 Commonly used methods:
 
-- `Channel::[T]::new(capacity: int) -> Channel[T]`
+- `Channel::[T]::new(capacity: isize) -> Channel[T]`
 - `send(value: T) -> unit`
 - `recv() -> Option[T]`, returns `Option::None` when closed and drained
 - `close() -> unit`
@@ -2445,15 +2447,15 @@ trait IntoIterator {
 }
 ```
 
-The protocol entry points are `FnIterator::from_fn(next_fn)`, `iterator.next()` or `Iterator::next(iterator)`. `range(start, end)` and `start..end` produce incrementing half-open `FnIterator[int]` values; `start >= end` is empty.
+The protocol entry points are `FnIterator::from_fn(next_fn)`, `iterator.next()` or `Iterator::next(iterator)`. `range(start, end)` and `start..end` produce incrementing half-open `FnIterator[isize]` values; `start >= end` is empty.
 
 New code should import `std::iter` for iterator construction, adapters, and consumers:
 
 ```goml
 use std::iter;
 
-let values = iter::map(Vec::from_array([1, 2, 3]).iter(), |value: int| value * 2);
-let total = iter::fold(values, 0, |sum: int, value: int| sum + value);
+let values = iter::map(Vec::from_array([1, 2, 3]).iter(), |value: isize| value * 2);
+let total = iter::fold(values, 0, |sum: isize, value: isize| sum + value);
 ```
 
 - producers: `empty`, `once`, and `from_fn`
@@ -2497,7 +2499,7 @@ Current public entrances include:
 
 - `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
 - `bincode::standard`, `legacy`, configuration builders, serde `Serialize` and `Deserialize` re-exports, `encode_to_vec`, and `decode_from_slice`
-- `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
+- `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[u8]`
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations. `Ordering` is a builtin type re-exported by `cmp`.
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`; `HashSet::to_vec` returns a snapshot of its keys
 - `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, and their comparator variants. The sorting, search, selection, and deduplication methods on `Vec[T]` are the canonical forms.
@@ -2508,8 +2510,8 @@ Current public entrances include:
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
 - `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `try_to_string`, `try_stringify`, `to_string`, `from_string`, `field`, and typed `as_*` accessors
-- `math` float32/float64 elementary functions, IEEE 754 classification, and the `E`, `PI`, `TAU`, `SQRT_2`, `LN_2`, and `LN_10` constants
-- `num` string and structured parsing plus checked and saturating `int64` arithmetic
+- `math` f32/f64 elementary functions, IEEE 754 classification, and the `E`, `PI`, `TAU`, `SQRT_2`, `LN_2`, and `LN_10` constants
+- `num` string and structured parsing plus checked and saturating `i64` arithmetic
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, structured whole-process execution, `ExitStatus`, `Output`, `exit`, and `look_path`
 - `rand::ALGORITHM`, `next_u64`, deterministic byte generation, integer ranges, and shuffle with an explicit seed
@@ -2561,7 +2563,7 @@ Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Err
 
 `std::unicode` fixes its public data version to Unicode 15.0.0. Character predicates operate on one Unicode scalar value. `lowercase` and `uppercase` apply Unicode case mapping to a complete string. `case_fold` uses the checked-in table generated by `tools/generate_unicode_casefold.py`, supports multi-scalar folds, and is locale independent.
 
-`std::math` delegates elementary operations to Go's `math` package and follows its IEEE 754 special-value behavior. The float32 forms calculate through float64 and round the result back to float32. Results therefore use the target Go toolchain's correctly rounded conversions but do not promise bit-for-bit equality across different operating systems or processor implementations for every transcendental function.
+`std::math` delegates elementary operations to Go's `math` package and follows its IEEE 754 special-value behavior. The f32 forms calculate through f64 and round the result back to f32. Results therefore use the target Go toolchain's correctly rounded conversions but do not promise bit-for-bit equality across different operating systems or processor implementations for every transcendental function.
 
 `std::rand` uses the versioned `splitmix64-v1` algorithm. Every operation requires an explicit seed, and identical inputs produce identical outputs. It is intended for tests, simulations, sampling, and shuffling and is not cryptographically secure.
 
@@ -2601,13 +2603,13 @@ use bincode::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 struct Message {
-    id: uint32,
+    id: u32,
     text: string,
 }
 
 fn round_trip(value: Message) -> Result[Message, string] {
     let encoded = bincode::encode_to_vec(value, bincode::standard())?;
-    let decoded: (Message, int) = bincode::decode_from_slice(
+    let decoded: (Message, isize) = bincode::decode_from_slice(
         encoded.slice(0, encoded.len()),
         bincode::standard(),
     )?;
@@ -2630,7 +2632,7 @@ use toml::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 struct Server {
     host: string,
-    port: uint16,
+    port: u16,
 }
 
 fn load(input: string) -> Result[Server, string] {
@@ -2651,7 +2653,7 @@ The prelude `Default` implementations use `()` for `unit`, `false` for `bool`, z
 ```goml
 use std::task;
 
-fn load_pair() -> Result[(int, int), string] {
+fn load_pair() -> Result[(isize, isize), string] {
     task::try_scope(
         |scope: task::Scope| {
             let left = scope.spawn_try(|cancel| load_left(cancel));
@@ -2667,7 +2669,7 @@ The contextual `scope` and `spawn` forms provide the same structured lifetime wi
 ```goml
 use std::task;
 
-fn load_pair() -> Result[(int, int), string] {
+fn load_pair() -> Result[(isize, isize), string] {
     scope {
         let left = spawn |cancel| load_left(cancel);
         let right = spawn |cancel| load_right(cancel);
@@ -2744,11 +2746,11 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 
 | Don't generate | GoML writing method |
 | --- | --- |
-| `Vec<int>` | `Vec[int]` |
+| `Vec<isize>` | `Vec[isize]` |
 | `fn id<T>(x: T) -> T` | `fn id[T](x: T) -> T` |
-| `id::<int32>(1)` | `id::[int32](1)` |
-| Ordinary function `id[int32](1)` | `id::[int32](1)`, or rely on parameter/result type inference |
-| `1i32`、`1u64`、`1.0f32` | Use the expected type, such as `let value: uint64 = 1;` |
+| `id::<i32>(1)` | `id::[i32](1)` |
+| Ordinary function `id[i32](1)` | `id::[i32](1)`, or rely on parameter/result type inference |
+| `1i32`、`1u64`、`1.0f32` | Use the expected type, such as `let value: u64 = 1;` |
 | Non-ASCII source text in `b"é"` | Use a `string`, or write its encoded bytes explicitly such as `b"\xC3\xA9"` |
 | A bare block as a control-flow header value | Parenthesize it, for example `if ({ prepare(); ready() }) { ... }` |
 | `let mut x: &T` | Use value `T` or `Ref[T]` as required |
@@ -2764,10 +2766,10 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 | `switch` | `match` |
 | `null`、`nil` | `Option::None` |
 | `throw`, exception | `Result` and `?` |
-| `float_value.to_int32()` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
+| `float_value.to_i32()` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
 | `dyn A + B` | Use one dyn-safe trait; multiple bounds are reserved syntax but not yet supported |
-| `dyn TraitWithAssociatedType` | Bind every associated type, for example `dyn Iterator[Item = int]` |
-| Use `type UserId = uint64;` when `UserId` must be distinct | Use `struct UserId(uint64);` and construct it explicitly |
+| `dyn TraitWithAssociatedType` | Bind every associated type, for example `dyn Iterator[Item = isize]` |
+| Use `type UserId = u64;` when `UserId` must be distinct | Use `struct UserId(u64);` and construct it explicitly |
 | `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
 | `mod`、`crate::`、`super::` | Directory packages, `module::path` for the current module, and canonical paths for dependencies |
 | `fn helper` inside function | Top-level function or local closure |

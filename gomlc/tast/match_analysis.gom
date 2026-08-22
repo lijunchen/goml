@@ -390,16 +390,16 @@ fn coverage_number_decrement(value: CoverageNumber) -> CoverageNumber {
 
 fn coverage_scalar_kind(ty: Type) -> Option[string] {
     match resolve_type(ty) {
-        Int => Option::Some("int"),
-        Int8 => Option::Some("int8"),
-        Int16 => Option::Some("int16"),
-        Int32 => Option::Some("int32"),
-        Int64 => Option::Some("int64"),
-        Uint => Option::Some("uint"),
-        Uint8 => Option::Some("uint8"),
-        Uint16 => Option::Some("uint16"),
-        Uint32 => Option::Some("uint32"),
-        Uint64 => Option::Some("uint64"),
+        Int => Option::Some("isize"),
+        Int8 => Option::Some("i8"),
+        Int16 => Option::Some("i16"),
+        Int32 => Option::Some("i32"),
+        Int64 => Option::Some("i64"),
+        Uint => Option::Some("usize"),
+        Uint8 => Option::Some("u8"),
+        Uint16 => Option::Some("u16"),
+        Uint32 => Option::Some("u32"),
+        Uint64 => Option::Some("u64"),
         Char => Option::Some("char"),
         _ => Option::None,
     }
@@ -460,19 +460,19 @@ fn coverage_scalar_domains(ty: Type) -> Option[Vec[CoverageScalar]] {
     let result: Vec[CoverageScalar] = Vec::from_array([]);
     match resolve_type(ty) {
         Int => result.push(
-            coverage_scalar_domain("int", "-9223372036854775808", "9223372036854775807"),
+            coverage_scalar_domain("isize", "-9223372036854775808", "9223372036854775807"),
         ),
-        Int8 => result.push(coverage_scalar_domain("int8", "-128", "127")),
-        Int16 => result.push(coverage_scalar_domain("int16", "-32768", "32767")),
-        Int32 => result.push(coverage_scalar_domain("int32", "-2147483648", "2147483647")),
+        Int8 => result.push(coverage_scalar_domain("i8", "-128", "127")),
+        Int16 => result.push(coverage_scalar_domain("i16", "-32768", "32767")),
+        Int32 => result.push(coverage_scalar_domain("i32", "-2147483648", "2147483647")),
         Int64 => result.push(
-            coverage_scalar_domain("int64", "-9223372036854775808", "9223372036854775807"),
+            coverage_scalar_domain("i64", "-9223372036854775808", "9223372036854775807"),
         ),
-        Uint => result.push(coverage_scalar_domain("uint", "0", "18446744073709551615")),
-        Uint8 => result.push(coverage_scalar_domain("uint8", "0", "255")),
-        Uint16 => result.push(coverage_scalar_domain("uint16", "0", "65535")),
-        Uint32 => result.push(coverage_scalar_domain("uint32", "0", "4294967295")),
-        Uint64 => result.push(coverage_scalar_domain("uint64", "0", "18446744073709551615")),
+        Uint => result.push(coverage_scalar_domain("usize", "0", "18446744073709551615")),
+        Uint8 => result.push(coverage_scalar_domain("u8", "0", "255")),
+        Uint16 => result.push(coverage_scalar_domain("u16", "0", "65535")),
+        Uint32 => result.push(coverage_scalar_domain("u32", "0", "4294967295")),
+        Uint64 => result.push(coverage_scalar_domain("u64", "0", "18446744073709551615")),
         Char => {
             result.push(coverage_scalar_domain("char", "0", "55295"));
             result.push(coverage_scalar_domain("char", "57344", "1114111"))

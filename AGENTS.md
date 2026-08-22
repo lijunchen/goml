@@ -367,9 +367,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `int`, `int8/16/32/64`, `uint`, `uint8/16/32/64`, `float32/float64`, `string`, `char`. `byte` is a transparent builtin alias of `uint8`.
+* Primitive types: `bool`, `unit`/`()`, `isize`, `i8/16/32/64`, `usize`, `u8/16/32/64`, `f32/f64`, `string`, `char`. `byte` is a transparent builtin alias of `u8`.
 * Literals: boolean, integer/unsigned/floating-point, string, char, and byte literals.
-  * Numeric literals have no type suffixes. Their type comes from context; unconstrained integer literals default to `int` and unconstrained floating-point literals default to `float64`.
+  * Numeric literals have no type suffixes. Their type comes from context; unconstrained integer literals default to `isize` and unconstrained floating-point literals default to `f64`.
   * Integer literals support binary `0b`, octal `0o`, decimal, and hexadecimal `0x` forms, including uppercase prefixes. Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
   * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
   * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
@@ -380,7 +380,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Bindings and Scope
 
-* `let name = expr;` allows shadowing of the same name. Type annotations are supported, e.g. `let x: int32 = 1;`. `let _ = expr;` discards the result.
+* `let name = expr;` allows shadowing of the same name. Type annotations are supported, e.g. `let x: i32 = 1;`. `let _ = expr;` discards the result.
 * `let` supports pattern destructuring: tuples, struct fields, enum constructors, and wildcards can be mixed.
 
 ### Type Aliases and Constants
@@ -417,7 +417,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
 * Single-pass iterators implement `Iterator` and bind its associated `Item` type.
   * `FnIterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
-  * `range(start, end)` creates a half-open `FnIterator[int]` over increasing values.
+  * `range(start, end)` creates a half-open `FnIterator[isize]` over increasing values.
   * Adapters include `iterator_map`, `iterator_filter`, `iterator_take`, `iterator_enumerate`, `iterator_zip`, `iterator_skip`, and `iterator_chain`.
   * Consumers include `iterator_fold`, `iterator_collect`, `iterator_find`, `iterator_any`, `iterator_all`, and `iterator_count`.
 * `Option[T]` provides `map`, `and_then`, and `ok_or`; `Result[T, E]` provides `map`, `map_err`, and `and_then`. Both also provide `is_*`, `unwrap_or`, and `unwrap_or_else`.
@@ -436,11 +436,11 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Traits and `impl`
 
 * `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits and trait methods may declare type parameters, for example `trait Convert[T] { fn convert[U](Self, U) -> T; }`.
-* Implementations use `impl Trait for Type { ... }`; generic applications are part of impl identity, so one concrete type may implement both `Convert[int32]` and `Convert[string]`.
+* Implementations use `impl Trait for Type { ... }`; generic applications are part of impl identity, so one concrete type may implement both `Convert[i32]` and `Convert[string]`.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
-* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Method type arguments are inferred or written after the method name, such as `value.map::[string](f)`. Owner and method arguments remain separate in associated syntax: `Box::[int32]::convert::[string](value)` and `Convert::[int32]::convert::[string](value)`.
+* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Method type arguments are inferred or written after the method name, such as `value.map::[string](f)`. Owner and method arguments remain separate in associated syntax: `Box::[i32]::convert::[string](value)` and `Convert::[i32]::convert::[string](value)`.
   * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use alias::Trait` after the defining package is imported (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
-* When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert::[int32]::convert(x)`).
+* When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert::[i32]::convert(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
@@ -476,7 +476,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Builtin `HashMap`
 
 * Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
-* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int`, `hashmap_contains -> bool`.
+* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> isize`, `hashmap_contains -> bool`.
 * Key requirements: `K` must have both `Hash` and `Eq`.
 
 ### Builtin `Iterator`
@@ -489,7 +489,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * `Iterator::next(iterator) -> Option[Iterator::Item]` or `iterator.next()`
   * `Vec::[T]::iter() -> FnIterator[T]`
   * `Slice::[T]::iter() -> FnIterator[T]`
-  * `range(start: int, end: int) -> FnIterator[int]`
+  * `range(start: isize, end: isize) -> FnIterator[isize]`
   * `iterator_map`, `iterator_filter`, `iterator_take`, `iterator_enumerate`, `iterator_zip`, `iterator_skip`, and `iterator_chain` return concrete adapter iterator types
   * `iterator_fold`, `iterator_collect`, `iterator_find`, `iterator_any`, `iterator_all`, and `iterator_count` consume iterators
 * `range` is half-open and increasing; `start >= end` produces an empty iterator.
@@ -498,7 +498,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Practical Standard-Library APIs
 
 * `std::text` provides UTF-8 byte-indexed search, ASCII trimming and case conversion, splitting, lines, replacement, joining, and repetition.
-* `std::num` parses `int`, `uint`, `float32`, and `float64` values into `Result[_, string]`, including explicit-radix integer parsing.
+* `std::num` parses `isize`, `usize`, `f32`, and `f64` values into `Result[_, string]`, including explicit-radix integer parsing.
 * `std::collections` provides insertion-ordered `IndexMap[K, V]`, stable in-place comparator sorting, comparator binary search, position and containment queries, min/max selection, and adjacent deduplication.
 * `std::time` provides non-negative `Duration`, monotonic `Instant`, Unix-based `SystemTime`, and blocking `sleep`.
 
@@ -506,7 +506,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * `std::collections::IndexMap[K, V]` requires `K: Eq + Hash` and preserves insertion order.
 * New keys append to the order, replacing an existing value keeps its position, and removing then reinserting a key moves it to the end.
-* The implementation uses a sparse open-addressed `Vec[int]` index table and an insertion-ordered entry array with deletion tombstones. Rebuilds compact entries without changing their relative order.
+* The implementation uses a sparse open-addressed `Vec[isize]` index table and an insertion-ordered entry array with deletion tombstones. Rebuilds compact entries without changing their relative order.
 * Public methods: `new`, `with_capacity`, `len`, `is_empty`, `contains`, `get`, `insert`, `remove`, `reserve`, `clear`, `entries`, `keys`, `values`, and `iter`.
 * `IndexMap[K, V]` implements `IntoIterator` with item type `(K, V)`. Structural mutation while an iterator is active is unsupported.
 
@@ -514,17 +514,17 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Builtin type: `Slice[T]`, a bounded read-only view over contiguous `Vec[T]` storage.
 * Builtin API:
-  * `slice(vec: Vec[T], start: int, end: int) -> Slice[T]`
-  * `slice_get(s: Slice[T], index: int) -> T`
-  * `slice_len(s: Slice[T]) -> int`
-  * `slice_sub(s: Slice[T], start: int, end: int) -> Slice[T]`
+  * `slice(vec: Vec[T], start: isize, end: isize) -> Slice[T]`
+  * `slice_get(s: Slice[T], index: isize) -> T`
+  * `slice_len(s: Slice[T]) -> isize`
+  * `slice_sub(s: Slice[T], start: isize, end: isize) -> Slice[T]`
 * Inherent methods on `Slice[T]`: `get`, `len`, `sub`.
 * Current limitation: mutable slice operations are intentionally not provided.
 
 ### Builtin traits `Eq` / `Hash`
 
 * `trait Eq { fn eq(Self, Self) -> bool; }`
-* `trait Hash { fn hash(Self) -> uint64; }`
+* `trait Hash { fn hash(Self) -> u64; }`
 * `Ref[T]` implements `Eq`/`Hash` by reference identity. Mutating the pointed-to value does not change equality or hashing.
 
 ### Testing / snapshots gotchas

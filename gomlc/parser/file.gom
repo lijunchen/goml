@@ -5,7 +5,7 @@ use module::lexer;
 
 fn is_type_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        UnitKeyword | BoolKeyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | DynKeyword | LBracket | LParen | Ident => true,
+        UnitKeyword | BoolKeyword | IsizeKeyword | I8Keyword | I16Keyword | I32Keyword | I64Keyword | UsizeKeyword | U8Keyword | U16Keyword | U32Keyword | U64Keyword | F32Keyword | F64Keyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | DynKeyword | LBracket | LParen | Ident => true,
         _ => false,
     }
 }
@@ -929,51 +929,51 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_BOOL)
         },
-        IntKeyword => {
+        IsizeKeyword | IntKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT)
         },
-        Int8Keyword => {
+        I8Keyword | Int8Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT8)
         },
-        Int16Keyword => {
+        I16Keyword | Int16Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT16)
         },
-        Int32Keyword => {
+        I32Keyword | Int32Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT32)
         },
-        Int64Keyword => {
+        I64Keyword | Int64Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_INT64)
         },
-        UintKeyword => {
+        UsizeKeyword | UintKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT)
         },
-        Uint8Keyword => {
+        U8Keyword | Uint8Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT8)
         },
-        Uint16Keyword => {
+        U16Keyword | Uint16Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT16)
         },
-        Uint32Keyword => {
+        U32Keyword | Uint32Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT32)
         },
-        Uint64Keyword => {
+        U64Keyword | Uint64Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_UINT64)
         },
-        Float32Keyword => {
+        F32Keyword | Float32Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_FLOAT32)
         },
-        Float64Keyword => {
+        F64Keyword | Float64Keyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_FLOAT64)
         },

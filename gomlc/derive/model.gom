@@ -42,7 +42,7 @@ const META_ATTRIBUTE_NAME: string = "MetaAttribute";
 
 const STRING_TYPE_NAME: string = "string";
 
-const INT_TYPE_NAME: string = "int";
+const INT_TYPE_NAME: string = "isize";
 
 const BOOL_TYPE_NAME: string = "bool";
 
@@ -645,29 +645,29 @@ fn named_type(value: string, value_span: ast::Span) -> ast::TypeExpr {
         ast::TypeExpr::Unit
     } else if value == BOOL_TYPE_NAME {
         ast::TypeExpr::Bool
-    } else if value == INT_TYPE_NAME {
+    } else if value == INT_TYPE_NAME || value == "int" {
         ast::TypeExpr::Int
-    } else if value == "int8" {
+    } else if value == "i8" || value == "int8" {
         ast::TypeExpr::Int8
-    } else if value == "int16" {
+    } else if value == "i16" || value == "int16" {
         ast::TypeExpr::Int16
-    } else if value == "int32" {
+    } else if value == "i32" || value == "int32" {
         ast::TypeExpr::Int32
-    } else if value == "int64" {
+    } else if value == "i64" || value == "int64" {
         ast::TypeExpr::Int64
-    } else if value == "uint" {
+    } else if value == "usize" || value == "uint" {
         ast::TypeExpr::Uint
-    } else if value == "uint8" || value == "byte" {
+    } else if value == "u8" || value == "uint8" || value == "byte" {
         ast::TypeExpr::Uint8
-    } else if value == "uint16" {
+    } else if value == "u16" || value == "uint16" {
         ast::TypeExpr::Uint16
-    } else if value == "uint32" {
+    } else if value == "u32" || value == "uint32" {
         ast::TypeExpr::Uint32
-    } else if value == "uint64" {
+    } else if value == "u64" || value == "uint64" {
         ast::TypeExpr::Uint64
-    } else if value == "float32" {
+    } else if value == "f32" || value == "float32" {
         ast::TypeExpr::Float32
-    } else if value == "float64" {
+    } else if value == "f64" || value == "float64" {
         ast::TypeExpr::Float64
     } else if value == STRING_TYPE_NAME {
         ast::TypeExpr::String
@@ -901,17 +901,17 @@ fn primitive_type_name(value: ast::TypeExpr) -> Option[string] {
         ast::TypeExpr::Unit => Option::Some(UNIT_TYPE_NAME),
         ast::TypeExpr::Bool => Option::Some(BOOL_TYPE_NAME),
         ast::TypeExpr::Int => Option::Some(INT_TYPE_NAME),
-        ast::TypeExpr::Int8 => Option::Some("int8"),
-        ast::TypeExpr::Int16 => Option::Some("int16"),
-        ast::TypeExpr::Int32 => Option::Some("int32"),
-        ast::TypeExpr::Int64 => Option::Some("int64"),
-        ast::TypeExpr::Uint => Option::Some("uint"),
-        ast::TypeExpr::Uint8 => Option::Some("uint8"),
-        ast::TypeExpr::Uint16 => Option::Some("uint16"),
-        ast::TypeExpr::Uint32 => Option::Some("uint32"),
-        ast::TypeExpr::Uint64 => Option::Some("uint64"),
-        ast::TypeExpr::Float32 => Option::Some("float32"),
-        ast::TypeExpr::Float64 => Option::Some("float64"),
+        ast::TypeExpr::Int8 => Option::Some("i8"),
+        ast::TypeExpr::Int16 => Option::Some("i16"),
+        ast::TypeExpr::Int32 => Option::Some("i32"),
+        ast::TypeExpr::Int64 => Option::Some("i64"),
+        ast::TypeExpr::Uint => Option::Some("usize"),
+        ast::TypeExpr::Uint8 => Option::Some("u8"),
+        ast::TypeExpr::Uint16 => Option::Some("u16"),
+        ast::TypeExpr::Uint32 => Option::Some("u32"),
+        ast::TypeExpr::Uint64 => Option::Some("u64"),
+        ast::TypeExpr::Float32 => Option::Some("f32"),
+        ast::TypeExpr::Float64 => Option::Some("f64"),
         ast::TypeExpr::String => Option::Some(STRING_TYPE_NAME),
         ast::TypeExpr::Char => Option::Some("char"),
         _ => Option::None,
@@ -935,17 +935,17 @@ fn meta_type_key(value: ast::TypeExpr) -> string {
         ast::TypeExpr::Unit => UNIT_TYPE_NAME,
         ast::TypeExpr::Bool => BOOL_TYPE_NAME,
         ast::TypeExpr::Int => INT_TYPE_NAME,
-        ast::TypeExpr::Int8 => "int8",
-        ast::TypeExpr::Int16 => "int16",
-        ast::TypeExpr::Int32 => "int32",
-        ast::TypeExpr::Int64 => "int64",
-        ast::TypeExpr::Uint => "uint",
-        ast::TypeExpr::Uint8 => "uint8",
-        ast::TypeExpr::Uint16 => "uint16",
-        ast::TypeExpr::Uint32 => "uint32",
-        ast::TypeExpr::Uint64 => "uint64",
-        ast::TypeExpr::Float32 => "float32",
-        ast::TypeExpr::Float64 => "float64",
+        ast::TypeExpr::Int8 => "i8",
+        ast::TypeExpr::Int16 => "i16",
+        ast::TypeExpr::Int32 => "i32",
+        ast::TypeExpr::Int64 => "i64",
+        ast::TypeExpr::Uint => "usize",
+        ast::TypeExpr::Uint8 => "u8",
+        ast::TypeExpr::Uint16 => "u16",
+        ast::TypeExpr::Uint32 => "u32",
+        ast::TypeExpr::Uint64 => "u64",
+        ast::TypeExpr::Float32 => "f32",
+        ast::TypeExpr::Float64 => "f64",
         ast::TypeExpr::String => STRING_TYPE_NAME,
         ast::TypeExpr::Char => "char",
         ast::TypeExpr::Tuple { items } => {
@@ -1418,17 +1418,29 @@ fn type_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 state,
                 named_type(
                     if value == UNIT_TYPE_NAME || value == BOOL_TYPE_NAME || value == INT_TYPE_NAME
+                        || value == "int"
+                        || value == "i8"
+                        || value == "i16"
+                        || value == "i32"
+                        || value == "i64"
                         || value == "int8"
                         || value == "int16"
                         || value == "int32"
                         || value == "int64"
+                        || value == "usize"
                         || value == "uint"
+                        || value == "u8"
                         || value == "uint8"
                         || value == "byte"
+                        || value == "u16"
                         || value == "uint16"
+                        || value == "u32"
                         || value == "uint32"
+                        || value == "u64"
                         || value == "uint64"
+                        || value == "f32"
                         || value == "float32"
+                        || value == "f64"
                         || value == "float64"
                         || value == STRING_TYPE_NAME
                         || value == "char" {
@@ -1638,15 +1650,15 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
             Result::Err("meta_expr_integer expects an integer type")
         } else {
             let method_name = match ty {
-                ast::TypeExpr::Int8 => Option::Some("to_int8"),
-                ast::TypeExpr::Int16 => Option::Some("to_int16"),
-                ast::TypeExpr::Int32 => Option::Some("to_int32"),
-                ast::TypeExpr::Int64 => Option::Some("to_int64"),
-                ast::TypeExpr::Uint => Option::Some("to_uint"),
-                ast::TypeExpr::Uint8 => Option::Some("to_uint8"),
-                ast::TypeExpr::Uint16 => Option::Some("to_uint16"),
-                ast::TypeExpr::Uint32 => Option::Some("to_uint32"),
-                ast::TypeExpr::Uint64 => Option::Some("to_uint64"),
+                ast::TypeExpr::Int8 => Option::Some("to_i8"),
+                ast::TypeExpr::Int16 => Option::Some("to_i16"),
+                ast::TypeExpr::Int32 => Option::Some("to_i32"),
+                ast::TypeExpr::Int64 => Option::Some("to_i64"),
+                ast::TypeExpr::Uint => Option::Some("to_usize"),
+                ast::TypeExpr::Uint8 => Option::Some("to_u8"),
+                ast::TypeExpr::Uint16 => Option::Some("to_u16"),
+                ast::TypeExpr::Uint32 => Option::Some("to_u32"),
+                ast::TypeExpr::Uint64 => Option::Some("to_u64"),
                 _ => Option::None,
             };
             let lhs = match method_name {

@@ -555,7 +555,7 @@ fn derive_abi_type(module: ctir::CtModule, name: string) -> ctir::CtType {
         ctir::CtType::Unit
     } else if name == "bool" {
         ctir::CtType::Bool
-    } else if name == "int" {
+    } else if name == "isize" || name == "int" {
         ctir::CtType::Integer { signed: true, width: module.target.int_width }
     } else if name == "string" {
         ctir::CtType::String
