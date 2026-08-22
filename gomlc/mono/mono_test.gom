@@ -233,7 +233,7 @@ fn retains_linked_monomorphic_inherent_methods() -> unit {
         lower_linked_source("fn main() -> string { let value: i32 = 42; value.to_string() }"),
     );
     testing::assert(string_contains(output, "fn inherent#i32#i32#to_string"));
-    testing::assert(string_contains(output, "@runtime(core.int32_to_string)"))
+    testing::assert(string_contains(output, "fn __goml_builtin_int32_to_string"))
 }
 
 #[test]

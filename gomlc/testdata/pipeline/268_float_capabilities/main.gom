@@ -1,0 +1,26 @@
+fn main() -> unit {
+    let single: f32 = 1.5;
+    println(single.to_bits());
+    println(float32_from_bits(1069547520).to_string());
+    println(single.to_f64().to_bits());
+    println((16777217.0).to_f32().to_string());
+    println(float64_from_bits(4607182418800017408).to_string());
+    let (hex_valid, hex_value) = string_parse_float64("0x1.8p+1");
+    println(hex_valid);
+    println(hex_value);
+    let (maximum_valid, maximum_value) = string_parse_float64("1.7976931348623157e308");
+    println(maximum_valid);
+    println(maximum_value.to_bits());
+    let (minimum_valid, minimum_value) = string_parse_float64("5e-324");
+    println(minimum_valid);
+    println(minimum_value.to_bits());
+    let (single_valid, single_value) = string_parse_float32("3.4028235e38");
+    println(single_valid);
+    println(single_value.to_f32().to_bits());
+    let (overflow_valid, overflow_value) = string_parse_float64("1e309");
+    println(overflow_valid);
+    println(overflow_value);
+    let (underflow_valid, underflow_value) = string_parse_float64("1e-400");
+    println(underflow_valid);
+    println(underflow_value)
+}

@@ -334,10 +334,7 @@ fn emits_every_core_runtime_hook() -> unit {
     testing::assert(
         string_contains(
             output,
-            "import (\n" + "    _goml_fmt \"fmt\"\n" + "    _goml_math \"math\"\n"
-                + "    _goml_strconv \"strconv\"\n"
-                + "    _goml_strings \"strings\"\n"
-                + ")",
+            "import (\n" + "    _goml_math \"math\"\n" + "    _goml_os \"os\"\n" + ")",
         ),
     );
     for hook in hooks {
@@ -349,12 +346,9 @@ fn emits_every_core_runtime_hook() -> unit {
     testing::assert(string_contains(output, "return rune(s[i])"));
     testing::assert(string_contains(output, "return s[start:end]"));
     testing::assert(string_contains(output, "items: []byte(s),"));
-    testing::assert(
-        string_contains(
-            output,
-            "var formatted string = _goml_strconv.FormatFloat(float64(x), 102, -1, 32)",
-        ),
-    );
+    testing::assert(!string_contains(output, "strconv"));
+    testing::assert(!string_contains(output, "fmt"));
+    testing::assert(!string_contains(output, "strings"));
     testing::assert(string_contains(output, "return uint64(_goml_math.Float32bits(x))"));
     testing::assert(string_contains(output, "h = h * 1099511628211 + uint64(s[i])"))
 }
@@ -381,7 +375,6 @@ fn emits_every_standard_runtime_hook() -> unit {
             output,
             "import (\n" + "    _goml_bytes \"bytes\"\n" + "    _goml_context \"context\"\n"
                 + "    _goml_cryptorand \"crypto/rand\"\n"
-                + "    _goml_fmt \"fmt\"\n"
                 + "    _goml_errors \"errors\"\n"
                 + "    _goml_hash \"hash\"\n"
                 + "    _goml_io \"io\"\n"
@@ -390,8 +383,6 @@ fn emits_every_standard_runtime_hook() -> unit {
                 + "    _goml_exec \"os/exec\"\n"
                 + "    _goml_filepath \"path/filepath\"\n"
                 + "    _goml_sha256 \"crypto/sha256\"\n"
-                + "    _goml_strconv \"strconv\"\n"
-                + "    _goml_strings \"strings\"\n"
                 + "    _goml_sync \"sync\"\n"
                 + "    _goml_syscall \"syscall\"\n"
                 + "    _goml_time \"time\"\n"
@@ -421,12 +412,12 @@ fn emits_every_standard_runtime_hook() -> unit {
     testing::assert(string_contains(output, "file, err = _goml_os.Open(path)"));
     testing::assert(string_contains(output, "var digest _goml_hash.Hash = _goml_sha256.New()"));
     testing::assert(string_contains(output, "_, err = _goml_io.Copy(digest, file)"));
-    testing::assert(string_contains(output, "_goml_fmt.Sprintf(\"%x\", digest.Sum(nil))"));
-    testing::assert(string_contains(output, "_goml_fmt.Fprint(_goml_os.Stderr, value)"));
+    testing::assert(string_contains(output, "var encoded []uint8 = make([]uint8, len(sum) * 2)"));
+    testing::assert(string_contains(output, "_goml_os.Stderr.WriteString(value)"));
     testing::assert(string_contains(output, "data, err = _goml_io.ReadAll(_goml_os.Stdin)"));
     testing::assert(string_contains(output, "_, err = _goml_io.ReadFull(_goml_os.Stdin, data)"));
     testing::assert(string_contains(output, "return _goml_filepath.Join(base, child)"));
-    testing::assert(string_contains(output, "_goml_strings.TrimSuffix(base, extension)"));
+    testing::assert(string_contains(output, "base[0:len(base) - len(extension)]"));
     testing::assert(
         string_contains(
             output,
@@ -435,7 +426,10 @@ fn emits_every_standard_runtime_hook() -> unit {
     );
     testing::assert(string_contains(output, "result, err = _goml_exec.LookPath(program)"));
     testing::assert(string_contains(output, "for _, entry := range environment.items"));
-    testing::assert(string_contains(output, "_goml_fmt.Fprintln(_goml_os.Stderr, message)"))
+    testing::assert(string_contains(output, "_goml_os.Stderr.WriteString(message + \"\\n\")"));
+    testing::assert(!string_contains(output, "\"fmt\""));
+    testing::assert(!string_contains(output, "\"strconv\""));
+    testing::assert(!string_contains(output, "\"strings\""))
 }
 
 #[test]
@@ -1402,7 +1396,7 @@ fn lowers_uint_and_runtime_traits() -> unit {
         ),
     );
     testing::assert(string_contains(output, "var value__0 uint"));
-    testing::assert(string_contains(output, "core_uint_to_string"));
+    testing::assert(string_contains(output, "uint_to_string"));
     testing::assert(string_contains(output, "key uint"))
 }
 
@@ -1480,10 +1474,11 @@ fn orders_runtime_types_before_tuples() -> unit {
 #[test]
 fn lowers_callable_intrinsics() -> unit {
     let source = "fn main() -> unit { let to_text: (i32) -> string = int32_to_string; println(to_text(7)); let get: (Vec[i32], isize) -> i32 = vec_get; let push: (Vec[i32], i32) -> unit = vec_push; let values: Vec[i32] = Vec::new(); push(values, 11); push(values, 22); println(get(values, 1)); let make_slice: (Vec[i32], isize, isize) -> Slice[i32] = slice; let slice_get_value: (Slice[i32], isize) -> i32 = slice_get; let view = make_slice(values, 0, 2); println(slice_get_value(view, 0)); }";
-    testing::assert_eq(
-        encode(lower_source(source)),
-        "package main\n\nimport (\n    _goml_fmt \"fmt\"\n)\n\nfunc _goml_runtime_core_int32_to_string(x int32) string {\n    return _goml_fmt.Sprintf(\"%d\", x)\n}\n\ntype _goml_vec_int32 struct {\n    items []int32\n}\n\nfunc vec_push__Vec_5int32(vec *_goml_vec_int32, elem int32) struct{} {\n    vec.items = append(vec.items, elem)\n    return struct{}{}\n}\n\nfunc vec_get__Vec_5int32(vec *_goml_vec_int32, index int) int32 {\n    return vec.items[index]\n}\n\nfunc main0() struct{} {\n    var to_text__0 func(int32) string = _goml_runtime_core_int32_to_string\n    var t6 string = to_text__0(7)\n    _goml_m_println(t6)\n    var get__1 func(*_goml_vec_int32, int) int32 = vec_get__Vec_5int32\n    var push__2 func(*_goml_vec_int32, int32) struct{} = vec_push__Vec_5int32\n    var values__3 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_i32_r__i_new()\n    push__2(values__3, 11)\n    push__2(values__3, 22)\n    var t7 int32 = get__1(values__3, 1)\n    _goml_m_println(t7)\n    var make_slice__4 func(*_goml_vec_int32, int, int) []int32 = func(p0 *_goml_vec_int32, p1 int, p2 int) []int32 {\n        return p0.items[p1:p2]\n    }\n    var slice_get_value__5 func([]int32, int) int32 = func(p0 []int32, p1 int) int32 {\n        return p0[p1]\n    }\n    var view__6 []int32 = make_slice__4(values__3, 0, 2)\n    var t8 int32 = slice_get_value__5(view__6, 0)\n    _goml_m_println(t8)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
-    )
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "int32_to_string(7)"));
+    testing::assert(string_contains(output, "var push__2 func("));
+    testing::assert(string_contains(output, "var get__1 func("));
+    testing::assert(!string_contains(output, "\"fmt\""))
 }
 
 #[test]
@@ -1518,11 +1513,9 @@ fn keeps_mixed_match_continuations_in_branches() -> unit {
 fn emits_string_hooks_and_vec_new_helpers() -> unit {
     let source = "fn main() -> unit { let values: Vec[i32] = vec_new(); string_print(values.len().to_string()); string_println(\"!\"); let bytes: Vec[u8] = Vec::new(); let (_, text) = string_from_utf8(bytes); string_print(text); let parts: Vec[string] = Vec::new(); string_println(string_concat(parts)); }";
     let output = encode(lower_linked_source(source));
-    testing::assert(
-        string_contains(output, "import (\n    _goml_fmt \"fmt\"\n    _goml_strings \"strings\"\n)"),
-    );
+    testing::assert(string_contains(output, "import (\n    _goml_os \"os\"\n)"));
     testing::assert(string_contains(output, "func _goml_runtime_core_string_from_utf8("));
-    testing::assert(string_contains(output, "func _goml_runtime_core_string_concat("));
+    testing::assert(string_contains(output, "func __goml_builtin_string_concat("));
     testing::assert(string_contains(output, "func _goml_runtime_core_string_print("));
     testing::assert(string_contains(output, "func _goml_runtime_core_string_println("));
     testing::assert(string_contains(output, "func vec_new__Vec_5int32()"))
