@@ -26,7 +26,7 @@ fn check_scalar(bytes/5: Vec[u8], expected/6: u32, expected_width/7: isize) -> u
           {
               let (character/11: char, width/12: isize) = (decoded/10 : (char, isize));
               (println : (bool) -> unit)(
-                (char::to_uint32 : (char) -> u32)((character/11 : char)) == (expected/6 : u32)
+                (char::to_u32 : (char) -> u32)((character/11 : char)) == (expected/6 : u32)
               );
               (println : (bool) -> unit)((width/12 : isize) == (expected_width/7 : isize))
           },

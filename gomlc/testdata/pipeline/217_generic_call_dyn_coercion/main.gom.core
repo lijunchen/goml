@@ -2617,7 +2617,7 @@ fn inherent#Vec#Vec[T]#sort_by_ordering[T](
   inherent#Vec#Vec[T]#sort_by(
     self/337,
     |left/339: T,
-    right/340: T| => inherent#Ordering#Ordering#to_int(compare/338(left/339, right/340))
+    right/340: T| => inherent#Ordering#Ordering#to_isize(compare/338(left/339, right/340))
   )
 }
 
@@ -2628,7 +2628,7 @@ fn inherent#Vec#Vec[T]#stable_sort_by_ordering[T](
   inherent#Vec#Vec[T]#stable_sort_by(
     self/341,
     |left/343: T,
-    right/344: T| => inherent#Ordering#Ordering#to_int(compare/342(left/343, right/344))
+    right/344: T| => inherent#Ordering#Ordering#to_isize(compare/342(left/343, right/344))
   )
 }
 
@@ -2673,7 +2673,7 @@ fn inherent#Vec#Vec[T]#binary_search_by_ordering[T](
 ) -> Option[isize] {
   inherent#Vec#Vec[T]#binary_search_by(
     self/350,
-    |value/352: T| => inherent#Ordering#Ordering#to_int(compare/351(value/352))
+    |value/352: T| => inherent#Ordering#Ordering#to_isize(compare/351(value/352))
   )
 }
 
@@ -2784,7 +2784,7 @@ fn inherent#Vec#Vec[T]#min_by_ordering[T](
   inherent#Vec#Vec[T]#min_by(
     self/363,
     |left/365: T,
-    right/366: T| => inherent#Ordering#Ordering#to_int(compare/364(left/365, right/366))
+    right/366: T| => inherent#Ordering#Ordering#to_isize(compare/364(left/365, right/366))
   )
 }
 
@@ -2795,7 +2795,7 @@ fn inherent#Vec#Vec[T]#max_by_ordering[T](
   inherent#Vec#Vec[T]#max_by(
     self/367,
     |left/369: T,
-    right/370: T| => inherent#Ordering#Ordering#to_int(compare/368(left/369, right/370))
+    right/370: T| => inherent#Ordering#Ordering#to_isize(compare/368(left/369, right/370))
   )
 }
 
@@ -3697,13 +3697,13 @@ fn __goml_builtin_range_inclusive(start/507: isize, end/508: isize) -> FnIterato
   )
 }
 
-fn inherent#Ordering#Ordering#from_int(value/932: isize) -> Ordering {
-  if (value/932 < 0) {
+fn inherent#Ordering#Ordering#from_int(value/841: isize) -> Ordering {
+  if (value/841 < 0) {
       {
         Ordering::Less
       }
   } else {
-      if (value/932 > 0) {
+      if (value/841 > 0) {
           {
             Ordering::Greater
           }
@@ -3715,8 +3715,8 @@ fn inherent#Ordering#Ordering#from_int(value/932: isize) -> Ordering {
   }
 }
 
-fn inherent#Ordering#Ordering#to_int(self/933: Ordering) -> isize {
-  match self/933 {
+fn inherent#Ordering#Ordering#to_isize(self/842: Ordering) -> isize {
+  match self/842 {
     Ordering::Less => {
       -1
     },
@@ -3729,32 +3729,32 @@ fn inherent#Ordering#Ordering#to_int(self/933: Ordering) -> isize {
   }
 }
 
-fn inherent#Ordering#Ordering#is_lt(self/934: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/934, Ordering::Less)
+fn inherent#Ordering#Ordering#is_lt(self/843: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/843, Ordering::Less)
 }
 
-fn inherent#Ordering#Ordering#is_eq(self/935: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/935, Ordering::Equal)
+fn inherent#Ordering#Ordering#is_eq(self/844: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/844, Ordering::Equal)
 }
 
-fn inherent#Ordering#Ordering#is_gt(self/936: Ordering) -> bool {
-  trait_call[PartialEq::eq](self/936, Ordering::Greater)
+fn inherent#Ordering#Ordering#is_gt(self/845: Ordering) -> bool {
+  trait_call[PartialEq::eq](self/845, Ordering::Greater)
 }
 
-fn inherent#Ordering#Ordering#is_le(self/937: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/937, Ordering::Greater))
+fn inherent#Ordering#Ordering#is_le(self/846: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/846, Ordering::Greater))
 }
 
-fn inherent#Ordering#Ordering#is_ge(self/938: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/938, Ordering::Less))
+fn inherent#Ordering#Ordering#is_ge(self/847: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/847, Ordering::Less))
 }
 
-fn inherent#Ordering#Ordering#is_ne(self/939: Ordering) -> bool {
-  (!trait_call[PartialEq::eq](self/939, Ordering::Equal))
+fn inherent#Ordering#Ordering#is_ne(self/848: Ordering) -> bool {
+  (!trait_call[PartialEq::eq](self/848, Ordering::Equal))
 }
 
-fn inherent#Ordering#Ordering#reverse(self/940: Ordering) -> Ordering {
-  match self/940 {
+fn inherent#Ordering#Ordering#reverse(self/849: Ordering) -> Ordering {
+  match self/849 {
     Ordering::Less => {
       Ordering::Greater
     },
@@ -3767,37 +3767,37 @@ fn inherent#Ordering#Ordering#reverse(self/940: Ordering) -> Ordering {
   }
 }
 
-fn inherent#Ordering#Ordering#then(self/941: Ordering, other/942: Ordering) -> Ordering {
-  if trait_call[PartialEq::eq](self/941, Ordering::Equal) {
+fn inherent#Ordering#Ordering#then(self/850: Ordering, other/851: Ordering) -> Ordering {
+  if trait_call[PartialEq::eq](self/850, Ordering::Equal) {
       {
-        other/942
+        other/851
       }
   } else {
       {
-        self/941
+        self/850
       }
   }
 }
 
 fn inherent#Ordering#Ordering#then_with(
-  self/943: Ordering,
-  compare/944: () -> Ordering
+  self/852: Ordering,
+  compare/853: () -> Ordering
 ) -> Ordering {
-  if trait_call[PartialEq::eq](self/943, Ordering::Equal) {
+  if trait_call[PartialEq::eq](self/852, Ordering::Equal) {
       {
-        compare/944()
+        compare/853()
       }
   } else {
       {
-        self/943
+        self/852
       }
   }
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/945: Ordering, other/946: Ordering) -> bool {
-  match self/945 {
+fn trait_impl#PartialEq#Ordering#eq(self/854: Ordering, other/855: Ordering) -> bool {
+  match self/854 {
     Ordering::Less => {
-      match other/946 {
+      match other/855 {
         Ordering::Less => {
           true
         },
@@ -3805,7 +3805,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/945: Ordering, other/946: Ordering) -> 
       }
     },
     Ordering::Equal => {
-      match other/946 {
+      match other/855 {
         Ordering::Equal => {
           true
         },
@@ -3813,7 +3813,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/945: Ordering, other/946: Ordering) -> 
       }
     },
     Ordering::Greater => {
-      match other/946 {
+      match other/855 {
         Ordering::Greater => {
           true
         },
@@ -3835,16 +3835,12 @@ fn println(value/1: T) -> unit {
   @runtime(core.string_println)(trait_call[ToString::to_string](value/1))
 }
 
-fn char_from_uint32(value/2: u32) -> Option[char] {
+fn char_from_u32(value/2: u32) -> Option[char] {
   __goml_builtin_char_from_uint32(value/2)
 }
 
-fn char_from_u32(value/3: u32) -> Option[char] {
-  __goml_builtin_char_from_uint32(value/3)
-}
-
-fn range(start/4: isize, end/5: isize) -> FnIterator[isize] {
-  __goml_builtin_range(start/4, end/5)
+fn range(start/3: isize, end/4: isize) -> FnIterator[isize] {
+  __goml_builtin_range(start/3, end/4)
 }
 
 fn trait_impl#Show#Wrap[i32]#show(self/0: Wrap[i32]) -> string {

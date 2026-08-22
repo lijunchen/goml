@@ -37,7 +37,7 @@ fn describe(value/4: Maybe, numbers/5: Vec[i32], view/6: Slice[i32]) -> string {
       match (numbers/5 : Vec[i32]) {
           [] => "empty",
           [first/10: i32, tail/11 @ ..] if (first/10 : i32) ==
-            (isize::to_int32 : (isize) -> i32)(
+            (isize::to_i32 : (isize) -> i32)(
               (Slice[i32]::len : (Slice[i32]) -> isize)((tail/11 : Slice[i32]))
             ) =>
             "balanced",

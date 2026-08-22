@@ -2652,9 +2652,7 @@ fn std::serde::deserialize_bytes_value(value/379: std::serde::Value) -> Result__
                                       } in
                                     if (parsed/385 > 255) {
                                         {
-                                          return Result__Vec[u8]__string::Err(
-                                            "uint8 is out of range"
-                                          )
+                                          return Result__Vec[u8]__string::Err("u8 is out of range")
                                         }
                                     } else {
                                         {
@@ -2668,7 +2666,7 @@ fn std::serde::deserialize_bytes_value(value/379: std::serde::Value) -> Result__
                                 }
                               }
                             },
-                            _ => return Result__Vec[u8]__string::Err("expected uint8"),
+                            _ => return Result__Vec[u8]__string::Err("expected u8"),
                           }
                         }
                       }
@@ -2817,7 +2815,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__isize__string::Err("expected int"),
+      _ => Result__isize__string::Err("expected isize"),
     }
   }
 }
@@ -2896,7 +2894,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
                   (parsed/396 > 127)
               } {
                   {
-                    Result__i8__string::Err("int8 is out of range")
+                    Result__i8__string::Err("i8 is out of range")
                   }
               } else {
                   {
@@ -2907,7 +2905,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__i8__string::Err("expected int8"),
+      _ => Result__i8__string::Err("expected i8"),
     }
   }
 }
@@ -2986,7 +2984,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
                   (parsed/400 > 32767)
               } {
                   {
-                    Result__i16__string::Err("int16 is out of range")
+                    Result__i16__string::Err("i16 is out of range")
                   }
               } else {
                   {
@@ -2997,7 +2995,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__i16__string::Err("expected int16"),
+      _ => Result__i16__string::Err("expected i16"),
     }
   }
 }
@@ -3076,7 +3074,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
                   (parsed/404 > 2147483647)
               } {
                   {
-                    Result__i32__string::Err("int32 is out of range")
+                    Result__i32__string::Err("i32 is out of range")
                   }
               } else {
                   {
@@ -3087,7 +3085,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__i32__string::Err("expected int32"),
+      _ => Result__i32__string::Err("expected i32"),
     }
   }
 }
@@ -3161,7 +3159,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__i64__string::Err("expected int64"),
+      _ => Result__i64__string::Err("expected i64"),
     }
   }
 }
@@ -3213,7 +3211,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__usize__string::Err("expected uint"),
+      _ => Result__usize__string::Err("expected usize"),
     }
   }
 }
@@ -3288,7 +3286,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
                 } in
               if (parsed/416 > 255) {
                   {
-                    Result__u8__string::Err("uint8 is out of range")
+                    Result__u8__string::Err("u8 is out of range")
                   }
               } else {
                   {
@@ -3299,7 +3297,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__u8__string::Err("expected uint8"),
+      _ => Result__u8__string::Err("expected u8"),
     }
   }
 }
@@ -3374,7 +3372,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
                 } in
               if (parsed/420 > 65535) {
                   {
-                    Result__u16__string::Err("uint16 is out of range")
+                    Result__u16__string::Err("u16 is out of range")
                   }
               } else {
                   {
@@ -3385,7 +3383,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__u16__string::Err("expected uint16"),
+      _ => Result__u16__string::Err("expected u16"),
     }
   }
 }
@@ -3460,7 +3458,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
                 } in
               if (parsed/424 > 4294967295) {
                   {
-                    Result__u32__string::Err("uint32 is out of range")
+                    Result__u32__string::Err("u32 is out of range")
                   }
               } else {
                   {
@@ -3471,7 +3469,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__u32__string::Err("expected uint32"),
+      _ => Result__u32__string::Err("expected u32"),
     }
   }
 }
@@ -3545,7 +3543,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__u64__string::Err("expected uint64"),
+      _ => Result__u64__string::Err("expected u64"),
     }
   }
 }
@@ -3597,7 +3595,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__f32__string::Err("expected float32"),
+      _ => Result__f32__string::Err("expected f32"),
     }
   }
 }
@@ -3649,7 +3647,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           }
         }
       },
-      _ => Result__f64__string::Err("expected float64"),
+      _ => Result__f64__string::Err("expected f64"),
     }
   }
 }
@@ -8547,7 +8545,7 @@ fn std::json::direct_json_int(
   } {
       {
         Result__i64__string::Err(
-          std::json::json_deserializer_error(deserializer/42, "int8 is out of range")
+          std::json::json_deserializer_error(deserializer/42, "i8 is out of range")
         )
       }
   } else {
@@ -8562,7 +8560,7 @@ fn std::json::direct_json_int(
       } {
           {
             Result__i64__string::Err(
-              std::json::json_deserializer_error(deserializer/42, "int16 is out of range")
+              std::json::json_deserializer_error(deserializer/42, "i16 is out of range")
             )
           }
       } else {
@@ -8577,7 +8575,7 @@ fn std::json::direct_json_int(
           } {
               {
                 Result__i64__string::Err(
-                  std::json::json_deserializer_error(deserializer/42, "int32 is out of range")
+                  std::json::json_deserializer_error(deserializer/42, "i32 is out of range")
                 )
               }
           } else {
@@ -8650,7 +8648,7 @@ fn std::json::direct_json_uint(
   } {
       {
         Result__u64__string::Err(
-          std::json::json_deserializer_error(deserializer/48, "uint8 is out of range")
+          std::json::json_deserializer_error(deserializer/48, "u8 is out of range")
         )
       }
   } else {
@@ -8661,7 +8659,7 @@ fn std::json::direct_json_uint(
       } {
           {
             Result__u64__string::Err(
-              std::json::json_deserializer_error(deserializer/48, "uint16 is out of range")
+              std::json::json_deserializer_error(deserializer/48, "u16 is out of range")
             )
           }
       } else {
@@ -8672,7 +8670,7 @@ fn std::json::direct_json_uint(
           } {
               {
                 Result__u64__string::Err(
-                  std::json::json_deserializer_error(deserializer/48, "uint32 is out of range")
+                  std::json::json_deserializer_error(deserializer/48, "u32 is out of range")
                 )
               }
           } else {
@@ -12539,7 +12537,7 @@ fn std::json::write_codepoint(
   codepoint/211: u32
 ) -> Result__unit__string {
   {
-    let mtmp753 = char_from_uint32(codepoint/211) in
+    let mtmp753 = char_from_u32(codepoint/211) in
     match mtmp753 {
       Option__char::None => {
         Result__unit__string::Err(std::json::json_error(value/209, "invalid unicode codepoint"))
@@ -12835,7 +12833,7 @@ fn std::json::parse_json_string(value/217: std::json::JsonParser) -> Result__str
                                   if (escape/221 == 98) {
                                       {
                                         {
-                                          let mtmp770 = char_from_uint32(8) in
+                                          let mtmp770 = char_from_u32(8) in
                                           match mtmp770 {
                                             Option__char::None => {
                                               ()
@@ -12859,7 +12857,7 @@ fn std::json::parse_json_string(value/217: std::json::JsonParser) -> Result__str
                                       if (escape/221 == 102) {
                                           {
                                             {
-                                              let mtmp772 = char_from_uint32(12) in
+                                              let mtmp772 = char_from_u32(12) in
                                               match mtmp772 {
                                                 Option__char::None => {
                                                   ()
@@ -18432,7 +18430,7 @@ fn inherent#Vec#Vec[T]#push__T_std::json::JsonDeserializeFrame(
   @intrinsic(vec.push)(self/258, elem/259)
 }
 
-fn char_from_uint32(value/2: u32) -> Option__char {
+fn char_from_u32(value/2: u32) -> Option__char {
   __goml_builtin_char_from_uint32(value/2)
 }
 

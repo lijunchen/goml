@@ -1463,24 +1463,24 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Ordering_i_eq(self__945 Ordering, other__946 Ordering) bool {
-    switch self__945 {
+func _goml_m_trait__impl_i_PartialEq_i_Ordering_i_eq(self__854 Ordering, other__855 Ordering) bool {
+    switch self__854 {
     case Less:
-        switch other__946 {
+        switch other__855 {
         case Less:
             return true
         default:
             return false
         }
     case Equal:
-        switch other__946 {
+        switch other__855 {
         case Equal:
             return true
         default:
             return false
         }
     case Greater:
-        switch other__946 {
+        switch other__855 {
         case Greater:
             return true
         default:

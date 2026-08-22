@@ -16,7 +16,7 @@ impl Eq for LoggedKey {}
 impl Hash for LoggedKey {
   fn hash(self: LoggedKey) -> u64 {
       self.log.set(self.log.get() + "H");
-      self.id.to_uint64()
+      self.id.to_u64()
   }
 }
 

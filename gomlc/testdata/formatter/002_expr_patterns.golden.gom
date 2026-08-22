@@ -1,14 +1,14 @@
 struct Pair {
-    left: int32,
-    right: int32,
+    left: i32,
+    right: i32,
 }
 
 enum Maybe {
     None,
-    Some(int32),
+    Some(i32),
 }
 
-fn classify(value: Maybe, numbers: Vec[int32]) -> string {
+fn classify(value: Maybe, numbers: Vec[i32]) -> string {
     let selected = if true {
         1
     } else {
@@ -28,11 +28,11 @@ fn classify(value: Maybe, numbers: Vec[int32]) -> string {
     }
 }
 
-fn arrays(values: [int32; 4]) -> int32 {
+fn arrays(values: [i32; 4]) -> i32 {
     let [first, middle @ .., last] = values;
     let tuple = (first, last);
     let vector = Vec::from_array([first, last]);
     let table = HashMap::from_array([("first", first), ("last", last)]);
-    let closure = |value: int32| value + table.get("first").unwrap_or(0);
+    let closure = |value: i32| value + table.get("first").unwrap_or(0);
     closure(tuple.0) + vector[1] + array_get(middle, 0)
 }

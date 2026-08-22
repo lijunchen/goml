@@ -1051,10 +1051,10 @@ fn main() -> unit {
   )
 }
 
-fn trait_impl#PartialEq#Ordering#eq(self/945: Ordering, other/946: Ordering) -> bool {
-  match self/945 {
+fn trait_impl#PartialEq#Ordering#eq(self/854: Ordering, other/855: Ordering) -> bool {
+  match self/854 {
     Ordering::Less => {
-      match other/946 {
+      match other/855 {
         Ordering::Less => {
           true
         },
@@ -1062,7 +1062,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/945: Ordering, other/946: Ordering) -> 
       }
     },
     Ordering::Equal => {
-      match other/946 {
+      match other/855 {
         Ordering::Equal => {
           true
         },
@@ -1070,7 +1070,7 @@ fn trait_impl#PartialEq#Ordering#eq(self/945: Ordering, other/946: Ordering) -> 
       }
     },
     Ordering::Greater => {
-      match other/946 {
+      match other/855 {
         Ordering::Greater => {
           true
         },
@@ -2773,7 +2773,7 @@ fn inherent#Vec#Vec[T]#sort_by_ordering__T_string(
 ) -> unit {
   inherent#Vec#Vec[T]#sort_by__T_string(
     self/337,
-    |left/339, right/340| inherent#Ordering#Ordering#to_int(compare/338(left/339, right/340))
+    |left/339, right/340| inherent#Ordering#Ordering#to_isize(compare/338(left/339, right/340))
   )
 }
 
@@ -2871,7 +2871,7 @@ fn inherent#Vec#Vec[T]#sort_by_ordering__T_(isize,isize)(
 ) -> unit {
   inherent#Vec#Vec[T]#sort_by__T_(isize,isize)(
     self/337,
-    |left/339, right/340| inherent#Ordering#Ordering#to_int(compare/338(left/339, right/340))
+    |left/339, right/340| inherent#Ordering#Ordering#to_isize(compare/338(left/339, right/340))
   )
 }
 
@@ -3303,8 +3303,8 @@ fn inherent#Vec#Vec[T]#is_empty__T_isize(self/275: Vec[isize]) -> bool {
   (@intrinsic(vec.len)(self/275) == 0)
 }
 
-fn inherent#Ordering#Ordering#to_int(self/933: Ordering) -> isize {
-  match self/933 {
+fn inherent#Ordering#Ordering#to_isize(self/842: Ordering) -> isize {
+  match self/842 {
     Ordering::Less => {
       -1
     },

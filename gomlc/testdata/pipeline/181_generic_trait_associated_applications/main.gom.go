@@ -19,7 +19,7 @@ type Ordering int32
 
 func main0() struct{} {
     var text__2 string
-    text__2 = "int"
+    text__2 = "isize"
     var number__3 int32
     number__3 = 7
     var inline435 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(text__2)

@@ -27,12 +27,12 @@ type Ordering int32
 func main0() struct{} {
     var x__0 int32 = 1
     var y__1 int8 = 1
-    var inline444 string = "int32: "
+    var inline444 string = "i32: "
     var inline445 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline444)
     _goml_runtime_core_string_print(inline445)
     var inline441 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(x__0)
     _goml_runtime_core_string_println(inline441)
-    var inline437 string = "int8: "
+    var inline437 string = "i8: "
     var inline438 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline437)
     _goml_runtime_core_string_print(inline438)
     var inline434 string = _goml_m_trait__impl_i_ToString_i_i8_i_to__string(y__1)

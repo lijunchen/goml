@@ -67,7 +67,7 @@ func main0() struct{} {
     show_scalar(55295)
     show_scalar(55296)
     var inline519 uint32 = 57343
-    var inline520 Option__char = char_from_uint32(inline519)
+    var inline520 Option__char = char_from_u32(inline519)
     switch inline520._tag {
     case 0:
         println__T_string("none")
@@ -79,7 +79,7 @@ func main0() struct{} {
         panic("non-exhaustive match")
     }
     var inline511 uint32 = 57344
-    var inline512 Option__char = char_from_uint32(inline511)
+    var inline512 Option__char = char_from_u32(inline511)
     switch inline512._tag {
     case 0:
         println__T_string("none")
@@ -91,7 +91,7 @@ func main0() struct{} {
         panic("non-exhaustive match")
     }
     var inline503 uint32 = 1114111
-    var inline504 Option__char = char_from_uint32(inline503)
+    var inline504 Option__char = char_from_u32(inline503)
     switch inline504._tag {
     case 0:
         println__T_string("none")
@@ -103,7 +103,7 @@ func main0() struct{} {
         panic("non-exhaustive match")
     }
     var inline495 uint32 = 1114112
-    var inline496 Option__char = char_from_uint32(inline495)
+    var inline496 Option__char = char_from_u32(inline495)
     switch inline496._tag {
     case 0:
         println__T_string("none")
@@ -137,7 +137,7 @@ func main0() struct{} {
     }
 }
 
-func char_from_uint32(value__2 uint32) Option__char {
+func char_from_u32(value__2 uint32) Option__char {
     var inline527 bool = utf8_valid_scalar(value__2)
     if inline527 {
         var inline528 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__2)

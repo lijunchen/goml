@@ -71,8 +71,8 @@ fn main() -> unit {
     (Channel[isize]::send : (Channel[isize], isize) -> unit)((events/17 : Channel[isize]), 7);
     let matched/20: isize =
       select {
-          recv((events/17 : Channel[isize])) when 1 + 1 == 2 as $select_recv_1170/18 =>
-            match ($select_recv_1170/18 : Option[isize]) {
+          recv((events/17 : Channel[isize])) when 1 + 1 == 2 as $select_recv_1186/18 =>
+            match ($select_recv_1186/18 : Option[isize]) {
                 Option::Some(value/19: isize) => (value/19 : isize) + 1,
                 Option::None => 0,
             },

@@ -1730,7 +1730,7 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__213 _goml_m_std_p_json_p
                         var t4786 uint32 = 65536 + t4785
                         var t4787 uint32 = t4786 + jp4777
                         var t4788 uint32 = t4787 - 56320
-                        var inline10172 Option__char = char_from_uint32(t4788)
+                        var inline10172 Option__char = char_from_u32(t4788)
                         switch inline10172._tag {
                         case 0:
                             var inline10173 string = _goml_m_std_p_json_p_json__error(value__213, "invalid unicode codepoint")
@@ -1979,7 +1979,7 @@ func _goml_m_std_p_json_p_parse__json__string(value__217 _goml_m_std_p_json_p_Js
                                     } else {
                                         var t4884 bool = escape__221 == 98
                                         if t4884 {
-                                            var mtmp770 Option__char = char_from_uint32(8)
+                                            var mtmp770 Option__char = char_from_u32(8)
                                             switch mtmp770._tag {
                                             case 0:
                                                 var t4873 *ref_int_x = value__217.index
@@ -1999,7 +1999,7 @@ func _goml_m_std_p_json_p_parse__json__string(value__217 _goml_m_std_p_json_p_Js
                                         } else {
                                             var t4888 bool = escape__221 == 102
                                             if t4888 {
-                                                var mtmp772 Option__char = char_from_uint32(12)
+                                                var mtmp772 Option__char = char_from_u32(12)
                                                 switch mtmp772._tag {
                                                 case 0:
                                                     var t4873 *ref_int_x = value__217.index
@@ -4174,7 +4174,7 @@ func _goml_m_inherent_i_string_i_string_i_byte__slice(self__41 string, start__42
     }
 }
 
-func char_from_uint32(value__2 uint32) Option__char {
+func char_from_u32(value__2 uint32) Option__char {
     var inline11400 bool = utf8_valid_scalar(value__2)
     if inline11400 {
         var inline11401 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__2)

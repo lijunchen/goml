@@ -90,7 +90,7 @@ func wrapper_int32_to_string(wrapper__14 Wrapper__i32) string {
     var t458 string
     var inline523 string = _goml_runtime_core_int32_to_string(x419)
     t458 = inline523
-    var prefix__16 string = "Wrapper[int32] { value: " + t458
+    var prefix__16 string = "Wrapper[i32] { value: " + t458
     var t459 string = prefix__16 + " }"
     return t459
 }
@@ -127,7 +127,7 @@ func shape_int32_to_string(shape__20 Shape__i32) string {
         var t470 string
         var inline540 int32 = x423.value
         var inline542 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline540)
-        var inline543 string = "Wrapper[int32] { value: " + inline542
+        var inline543 string = "Wrapper[i32] { value: " + inline542
         var inline544 string = inline543 + " }"
         t470 = inline544
         var prefix__24 string = "Shape::Wrapped(" + t470

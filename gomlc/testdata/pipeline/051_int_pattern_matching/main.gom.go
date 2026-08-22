@@ -99,7 +99,7 @@ func main0() struct{} {
     var pair_second__13 bool = match_struct(t452)
     var t453 bool = is_special8(5)
     var part1__14 string
-    var inline519 string = "int8="
+    var inline519 string = "i8="
     var inline520 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t453)
     var inline521 string = inline519 + inline520
     part1__14 = inline521
@@ -114,7 +114,7 @@ func main0() struct{} {
         t454 = false
     }
     var part2__15 string
-    var inline513 string = ",int16="
+    var inline513 string = ",i16="
     var inline514 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t454)
     var inline515 string = inline513 + inline514
     part2__15 = inline515
@@ -129,7 +129,7 @@ func main0() struct{} {
         t455 = false
     }
     var part3__16 string
-    var inline507 string = ",int32="
+    var inline507 string = ",i32="
     var inline508 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t455)
     var inline509 string = inline507 + inline508
     part3__16 = inline509
