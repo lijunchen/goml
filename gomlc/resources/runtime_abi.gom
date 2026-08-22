@@ -29,10 +29,6 @@ pub enum CoreRuntimeHook {
     Uint16ToString,
     Uint32ToString,
     Uint64ToString,
-    Float32ToString,
-    Float64ToString,
-    StringParseFloat32,
-    StringParseFloat64,
     IntHash,
     Int8Hash,
     Int16Hash,
@@ -58,7 +54,6 @@ pub enum StandardRuntimeHook {
     Path(PathRuntimeHook),
     Process(ProcessRuntimeHook),
     TestingFail,
-    Num(NumRuntimeHook),
     Math(MathRuntimeHook),
     Crypto(CryptoRuntimeHook),
     Time(TimeRuntimeHook),
@@ -137,14 +132,6 @@ pub enum ProcessRuntimeHook {
     Status,
     StatusTimeout,
     StatusCancel,
-}
-
-#[derive(PartialEq, Eq)]
-pub enum NumRuntimeHook {
-    ParseInt,
-    ParseUint,
-    ParseFloat32,
-    ParseFloat64,
 }
 
 #[derive(PartialEq, Eq)]
@@ -321,30 +308,6 @@ pub fn runtime_abi_specs() -> Vec[RuntimeAbiSpec] {
                 "core.uint64_to_string",
                 "uint64_to_string",
                 "uint64_to_string",
-            ),
-            runtime_abi(
-                RuntimeHook::Core(CoreRuntimeHook::Float32ToString),
-                "core.float32_to_string",
-                "float32_to_string",
-                "float32_to_string",
-            ),
-            runtime_abi(
-                RuntimeHook::Core(CoreRuntimeHook::Float64ToString),
-                "core.float64_to_string",
-                "float64_to_string",
-                "float64_to_string",
-            ),
-            runtime_abi(
-                RuntimeHook::Core(CoreRuntimeHook::StringParseFloat32),
-                "core.string_parse_float32",
-                "string_parse_float32",
-                "string_parse_float32",
-            ),
-            runtime_abi(
-                RuntimeHook::Core(CoreRuntimeHook::StringParseFloat64),
-                "core.string_parse_float64",
-                "string_parse_float64",
-                "string_parse_float64",
             ),
             runtime_abi(
                 RuntimeHook::Core(CoreRuntimeHook::IntHash),
@@ -773,30 +736,6 @@ pub fn runtime_abi_specs() -> Vec[RuntimeAbiSpec] {
                 "std.testing.fail",
                 "test_fail",
                 "std_testing_fail",
-            ),
-            runtime_abi(
-                RuntimeHook::Standard(StandardRuntimeHook::Num(NumRuntimeHook::ParseInt)),
-                "std.num.parse_int",
-                "parse_int",
-                "std_num_parse_int",
-            ),
-            runtime_abi(
-                RuntimeHook::Standard(StandardRuntimeHook::Num(NumRuntimeHook::ParseUint)),
-                "std.num.parse_uint",
-                "parse_uint",
-                "std_num_parse_uint",
-            ),
-            runtime_abi(
-                RuntimeHook::Standard(StandardRuntimeHook::Num(NumRuntimeHook::ParseFloat32)),
-                "std.num.parse_float32",
-                "parse_float32",
-                "std_num_parse_float32",
-            ),
-            runtime_abi(
-                RuntimeHook::Standard(StandardRuntimeHook::Num(NumRuntimeHook::ParseFloat64)),
-                "std.num.parse_float64",
-                "parse_float64",
-                "std_num_parse_float64",
             ),
             runtime_abi(
                 RuntimeHook::Standard(StandardRuntimeHook::Math(MathRuntimeHook::Float32Unary)),

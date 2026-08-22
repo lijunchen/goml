@@ -3,12 +3,6 @@ package bincode;
 use module::bytes;
 use module::serde;
 
-#[go_ffi("math", "Float32frombits")]
-extern fn float32_from_bits(value: u32) -> f32;
-
-#[go_ffi("math", "Float64frombits")]
-extern fn float64_from_bits(value: u64) -> f64;
-
 enum BincodeFrame {
     Optional {
         ready: Ref[bool],
@@ -287,9 +281,13 @@ fn read_integer(decoder: Decoder, signed: bool, width: isize) -> Result[serde::V
 
 fn read_float(decoder: Decoder, width: isize) -> Result[serde::Value, string] {
     if width == 32 {
-        Result::Ok(serde::Value::Float32(float32_from_bits(read_fixed(decoder, 4)?.to_u32())))
+        Result::Ok(
+            serde::Value::Float32(
+                __goml_builtin_float32_from_bits(read_fixed(decoder, 4)?.to_u32()),
+            ),
+        )
     } else if width == 64 {
-        Result::Ok(serde::Value::Float64(float64_from_bits(read_fixed(decoder, 8)?)))
+        Result::Ok(serde::Value::Float64(__goml_builtin_float64_from_bits(read_fixed(decoder, 8)?)))
     } else {
         Result::Err(decoder_error(decoder, "unsupported floating-point width"))
     }
@@ -542,12 +540,12 @@ impl serde::Deserializer for Decoder {
 
     fn deserialize_float32(self: Decoder) -> Result[f32, string] {
         claim_bincode_input(self)?;
-        Result::Ok(float32_from_bits(read_fixed(self, 4)?.to_u32()))
+        Result::Ok(__goml_builtin_float32_from_bits(read_fixed(self, 4)?.to_u32()))
     }
 
     fn deserialize_float64(self: Decoder) -> Result[f64, string] {
         claim_bincode_input(self)?;
-        Result::Ok(float64_from_bits(read_fixed(self, 8)?))
+        Result::Ok(__goml_builtin_float64_from_bits(read_fixed(self, 8)?))
     }
 
     fn deserialize_number(self: Decoder) -> Result[string, string] {

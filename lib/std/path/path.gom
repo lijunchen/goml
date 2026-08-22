@@ -3,6 +3,22 @@ package path;
 use module::internal::host;
 use module::io;
 
+fn trim_prefix(value: string, prefix: string) -> string {
+    if value.starts_with(prefix) {
+        value.byte_slice(prefix.byte_len(), value.byte_len())
+    } else {
+        value
+    }
+}
+
+fn trim_suffix(value: string, suffix: string) -> string {
+    if value.ends_with(suffix) {
+        value.byte_slice(0, value.byte_len() - suffix.byte_len())
+    } else {
+        value
+    }
+}
+
 pub fn join(base: string, child: string) -> string {
     host::path_join(base, child)
 }
@@ -36,23 +52,36 @@ pub fn file_name(path: string) -> Option[string] {
 pub fn extension(path: string) -> Option[string] {
     let (found, value) = host::path_extension(path);
     if found {
-        Option::Some(value)
+        Option::Some(trim_prefix(value, "."))
     } else {
         Option::None
     }
 }
 
 pub fn file_stem(path: string) -> Option[string] {
-    let (found, value) = host::path_file_stem(path);
-    if found {
-        Option::Some(value)
-    } else {
-        Option::None
+    match file_name(path) {
+        Some(name) => match extension(name) {
+            Some(value) => Option::Some(trim_suffix(name, "." + value)),
+            None => Option::Some(name),
+        },
+        None => Option::None,
     }
 }
 
-pub fn with_extension(path: string, extension: string) -> string {
-    host::path_with_extension(path, extension)
+pub fn with_extension(path: string, new_extension: string) -> string {
+    let without = match file_name(path) {
+        Some(name) => match extension(name) {
+            Some(value) => trim_suffix(path, "." + value),
+            None => path,
+        },
+        None => path,
+    };
+    let normalized = trim_prefix(new_extension, ".");
+    if normalized == "" {
+        without
+    } else {
+        without + "." + normalized
+    }
 }
 
 pub fn absolute(path: string) -> Result[string, string] {

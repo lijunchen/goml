@@ -12,6 +12,1120 @@ extern fn string_from_utf8_raw(bytes: Vec[byte]) -> (bool, string);
 #[runtime("core.char_to_string")]
 extern fn char_to_string_raw(value: char) -> string;
 
+#[go_ffi("math", "Float32bits")]
+extern fn float32_bits_raw(value: f32) -> u32;
+
+#[go_ffi("math", "Float32frombits")]
+extern fn float32_from_bits_raw(value: u32) -> f32;
+
+#[go_ffi("math", "Float64bits")]
+extern fn float64_bits_raw(value: f64) -> u64;
+
+#[go_ffi("math", "Float64frombits")]
+extern fn float64_from_bits_raw(value: u64) -> f64;
+
+struct FloatNatural {
+    words: Vec[u32],
+}
+
+fn float_natural_zero() -> FloatNatural {
+    FloatNatural { words: vec_new() }
+}
+
+fn float_natural_one() -> FloatNatural {
+    let words = vec_new();
+    vec_push(words, 1);
+    FloatNatural { words }
+}
+
+fn float_natural_from_u64(value: u64) -> FloatNatural {
+    let result = float_natural_zero();
+    if value != 0 {
+        result.words.push(value.to_u32());
+        let high = (value >> 32).to_u32();
+        if high != 0 {
+            result.words.push(high)
+        } else {}
+    } else {};
+    result
+}
+
+fn float_natural_copy(value: FloatNatural) -> FloatNatural {
+    let result = float_natural_zero();
+    let mut index = 0;
+    while index < value.words.len() {
+        result.words.push(value.words[index]);
+        index += 1;
+    }
+    result
+}
+
+fn float_natural_trim(value: FloatNatural) -> unit {
+    while !value.words.is_empty() && value.words[value.words.len() - 1] == 0 {
+        value.words.truncate(value.words.len() - 1)
+    }
+}
+
+fn float_natural_is_zero(value: FloatNatural) -> bool {
+    value.words.is_empty()
+}
+
+fn float_natural_bit_length(value: FloatNatural) -> isize {
+    if value.words.is_empty() {
+        return 0
+    } else {};
+    let mut high = value.words[value.words.len() - 1];
+    let mut bits = 0;
+    while high != 0 {
+        high >>= 1;
+        bits += 1;
+    };
+    (value.words.len() - 1) * 32 + bits
+}
+
+fn float_natural_compare(left: FloatNatural, right: FloatNatural) -> isize {
+    if left.words.len() < right.words.len() {
+        return -1
+    } else if left.words.len() > right.words.len() {
+        return 1
+    } else {};
+    let mut index = left.words.len();
+    while index > 0 {
+        index -= 1;
+        if left.words[index] < right.words[index] {
+            return -1
+        } else if left.words[index] > right.words[index] {
+            return 1
+        } else {}
+    }
+    0
+}
+
+fn float_natural_multiply_small(value: FloatNatural, factor: u32) -> unit {
+    if factor == 0 {
+        value.words.clear();
+        return
+    } else {};
+    let mut carry: u64 = 0;
+    let mut index = 0;
+    while index < value.words.len() {
+        let product = value.words[index].to_u64() * factor.to_u64() + carry;
+        value.words[index] = product.to_u32();
+        carry = product >> 32;
+        index += 1;
+    }
+    if carry != 0 {
+        value.words.push(carry.to_u32())
+    } else {}
+}
+
+fn float_natural_add_small(value: FloatNatural, addition: u32) -> unit {
+    let mut carry = addition.to_u64();
+    let mut index = 0;
+    while carry != 0 {
+        if index == value.words.len() {
+            value.words.push(0)
+        } else {};
+        let sum = value.words[index].to_u64() + carry;
+        value.words[index] = sum.to_u32();
+        carry = sum >> 32;
+        index += 1;
+    }
+}
+
+fn float_natural_power5(exponent: isize) -> FloatNatural {
+    let result = float_natural_one();
+    let mut count = 0;
+    while count < exponent {
+        float_natural_multiply_small(result, 5);
+        count += 1;
+    }
+    result
+}
+
+fn float_natural_shift_left(value: FloatNatural, bits: isize) -> FloatNatural {
+    if float_natural_is_zero(value) {
+        return float_natural_zero()
+    } else if bits == 0 {
+        return float_natural_copy(value)
+    } else {};
+    let result = float_natural_zero();
+    let word_shift = bits / 32;
+    let bit_shift = bits % 32;
+    let mut index = 0;
+    while index < word_shift {
+        result.words.push(0);
+        index += 1;
+    }
+    let mut carry: u64 = 0;
+    index = 0;
+    while index < value.words.len() {
+        let word = value.words[index];
+        let shifted = (word.to_u64() << bit_shift) | carry;
+        result.words.push(shifted.to_u32());
+        carry = shifted >> 32;
+        index += 1;
+    }
+    if carry != 0 {
+        result.words.push(carry.to_u32())
+    } else {};
+    result
+}
+
+fn float_natural_subtract(value: FloatNatural, other: FloatNatural) -> unit {
+    let base: u64 = 4294967296;
+    let mut borrow: u64 = 0;
+    let mut index = 0;
+    while index < value.words.len() {
+        let right = if index < other.words.len() {
+            other.words[index].to_u64()
+        } else {
+            0
+        }
+            + borrow;
+        let left = value.words[index].to_u64();
+        if left >= right {
+            value.words[index] = (left - right).to_u32();
+            borrow = 0;
+        } else {
+            value.words[index] = (base + left - right).to_u32();
+            borrow = 1;
+        }
+        index += 1;
+    }
+    float_natural_trim(value)
+}
+
+fn float_natural_divide_small(value: FloatNatural, divisor: u32) -> u32 {
+    let mut remainder: u64 = 0;
+    let mut index = value.words.len();
+    while index > 0 {
+        index -= 1;
+        let current = (remainder << 32) | value.words[index].to_u64();
+        value.words[index] = (current / divisor.to_u64()).to_u32();
+        remainder = current % divisor.to_u64();
+    }
+    float_natural_trim(value);
+    remainder.to_u32()
+}
+
+fn float_natural_decimal(value: FloatNatural) -> string {
+    if float_natural_is_zero(value) {
+        return "0"
+    } else {};
+    let current = float_natural_copy(value);
+    let reversed: Vec[byte] = vec_new();
+    while !float_natural_is_zero(current) {
+        reversed.push(float_natural_divide_small(current, 10).to_u8() + b'0')
+    }
+    let output: Vec[byte] = vec_with_capacity(reversed.len());
+    let mut offset = 0;
+    while offset < reversed.len() {
+        output.push(reversed[reversed.len() - offset - 1]);
+        offset += 1;
+    }
+    let (_, result) = string_from_utf8_raw(output);
+    result
+}
+
+fn float_rational_quotient(numerator: FloatNatural, denominator: FloatNatural, shift: isize) -> u64 {
+    let remaining = if shift >= 0 {
+        float_natural_shift_left(numerator, shift)
+    } else {
+        float_natural_copy(numerator)
+    };
+    let divisor = if shift >= 0 {
+        float_natural_copy(denominator)
+    } else {
+        float_natural_shift_left(denominator, 0 - shift)
+    };
+    let mut quotient: u64 = 0;
+    while float_natural_compare(remaining, divisor) >= 0 {
+        let mut offset = float_natural_bit_length(remaining) - float_natural_bit_length(divisor);
+        let mut part = float_natural_shift_left(divisor, offset);
+        if float_natural_compare(remaining, part) < 0 {
+            offset -= 1;
+            part = float_natural_shift_left(divisor, offset);
+        } else {};
+        float_natural_subtract(remaining, part);
+        quotient |= 1 << offset;
+    }
+    let doubled = float_natural_shift_left(remaining, 1);
+    let rounding = float_natural_compare(doubled, divisor);
+    if rounding > 0 || rounding == 0 && quotient & 1 == 1 {
+        quotient += 1;
+    } else {};
+    quotient
+}
+
+fn float_rational_bits(
+    numerator: FloatNatural,
+    denominator: FloatNatural,
+    binary_shift: isize,
+    mantissa_bits: isize,
+    exponent_bias: isize,
+) -> (u64, bool) {
+    if float_natural_is_zero(numerator) {
+        return (0, false)
+    } else {};
+    let scaled_numerator = if binary_shift >= 0 {
+        float_natural_shift_left(numerator, binary_shift)
+    } else {
+        float_natural_copy(numerator)
+    };
+    let scaled_denominator = if binary_shift >= 0 {
+        float_natural_copy(denominator)
+    } else {
+        float_natural_shift_left(denominator, 0 - binary_shift)
+    };
+    let mut exponent = float_natural_bit_length(scaled_numerator)
+        - float_natural_bit_length(scaled_denominator);
+    let exponent_comparison = if exponent >= 0 {
+        float_natural_compare(
+            scaled_numerator,
+            float_natural_shift_left(scaled_denominator, exponent),
+        )
+    } else {
+        float_natural_compare(
+            float_natural_shift_left(scaled_numerator, 0 - exponent),
+            scaled_denominator,
+        )
+    };
+    if exponent_comparison < 0 {
+        exponent -= 1;
+    } else {};
+    let minimum_exponent = 1 - exponent_bias;
+    let maximum_exponent = exponent_bias;
+    if exponent > maximum_exponent {
+        return ((maximum_exponent + exponent_bias + 1).to_u64() << mantissa_bits, true)
+    } else {};
+    let mut mantissa = if exponent < minimum_exponent {
+        float_rational_quotient(
+            scaled_numerator,
+            scaled_denominator,
+            mantissa_bits - minimum_exponent,
+        )
+    } else {
+        float_rational_quotient(scaled_numerator, scaled_denominator, mantissa_bits - exponent)
+    };
+    if exponent < minimum_exponent {
+        if mantissa == 0 {
+            (0, false)
+        } else if mantissa >= 1 << mantissa_bits {
+            ((1 << mantissa_bits) | (mantissa - (1 << mantissa_bits)), false)
+        } else {
+            (mantissa, false)
+        }
+    } else {
+        if mantissa >= 1 << (mantissa_bits + 1) {
+            mantissa >>= 1;
+            exponent += 1;
+        } else {};
+        if exponent > maximum_exponent {
+            ((maximum_exponent + exponent_bias + 1).to_u64() << mantissa_bits, true)
+        } else {
+            (
+                ((exponent + exponent_bias).to_u64() << mantissa_bits)
+                    | (mantissa - (1 << mantissa_bits)),
+                false,
+            )
+        }
+    }
+}
+
+fn ascii_lower(value: byte) -> byte {
+    if value >= b'A' && value <= b'Z' {
+        value + (b'a' - b'A')
+    } else {
+        value
+    }
+}
+
+fn string_equals_ascii_case(value: string, expected: string) -> bool {
+    if value.byte_len() != expected.byte_len() {
+        return false
+    } else {};
+    let mut index = 0;
+    while index < value.byte_len() {
+        if ascii_lower(value.byte_get(index)) != expected.byte_get(index) {
+            return false
+        } else {};
+        index += 1;
+    }
+    true
+}
+
+fn float_digit(value: byte, base: isize) -> (bool, isize) {
+    let digit = if value >= b'0' && value <= b'9' {
+        (value - b'0').to_isize()
+    } else if ascii_lower(value) >= b'a' && ascii_lower(value) <= b'f' {
+        (ascii_lower(value) - b'a' + 10).to_isize()
+    } else {
+        return (false, 0)
+    };
+    if digit < base {
+        (true, digit)
+    } else {
+        (false, 0)
+    }
+}
+
+struct ParsedFloat {
+    valid: bool,
+    negative: bool,
+    special: isize,
+    numerator: FloatNatural,
+    decimal_exponent: isize,
+    binary_exponent: isize,
+    hexadecimal: bool,
+    significant_digits: isize,
+}
+
+fn invalid_parsed_float() -> ParsedFloat {
+    ParsedFloat {
+        valid: false,
+        negative: false,
+        special: 0,
+        numerator: float_natural_zero(),
+        decimal_exponent: 0,
+        binary_exponent: 0,
+        hexadecimal: false,
+        significant_digits: 0,
+    }
+}
+
+fn parse_float_text(value: string) -> ParsedFloat {
+    if string_equals_ascii_case(value, "nan") {
+        return ParsedFloat {
+            valid: true,
+            negative: false,
+            special: 2,
+            numerator: float_natural_zero(),
+            decimal_exponent: 0,
+            binary_exponent: 0,
+            hexadecimal: false,
+            significant_digits: 0,
+        }
+    } else {};
+    let mut index = 0;
+    let mut negative = false;
+    if index < value.byte_len() && (value.byte_get(index) == b'+' || value.byte_get(index) == b'-') {
+        negative = value.byte_get(index) == b'-';
+        index += 1;
+    } else {};
+    let special_text = value.byte_slice(index, value.byte_len());
+    if string_equals_ascii_case(special_text, "inf")
+        || string_equals_ascii_case(special_text, "infinity") {
+        return ParsedFloat {
+            valid: true,
+            negative,
+            special: 1,
+            numerator: float_natural_zero(),
+            decimal_exponent: 0,
+            binary_exponent: 0,
+            hexadecimal: false,
+            significant_digits: 0,
+        }
+    } else {};
+    let hexadecimal = index + 2 <= value.byte_len() && value.byte_get(index) == b'0'
+        && ascii_lower(value.byte_get(index + 1)) == b'x';
+    if hexadecimal {
+        index += 2;
+    } else {};
+    let mantissa_start = index;
+    let base = if hexadecimal {
+        16
+    } else {
+        10
+    };
+    let numerator = float_natural_zero();
+    let mut saw_digit = false;
+    let mut saw_dot = false;
+    let mut fraction_digits = 0;
+    let mut significant_digits = 0;
+    let mut previous_digit = false;
+    while index < value.byte_len() {
+        let current = value.byte_get(index);
+        let (valid_digit, digit) = float_digit(current, base);
+        if valid_digit {
+            float_natural_multiply_small(numerator, base.to_u32());
+            float_natural_add_small(numerator, digit.to_u32());
+            saw_digit = true;
+            previous_digit = true;
+            if saw_dot {
+                fraction_digits += 1;
+            } else {};
+            if significant_digits > 0 || digit != 0 {
+                significant_digits += 1;
+            } else {};
+            index += 1;
+        } else if current == b'_' {
+            if index + 1 >= value.byte_len() {
+                return invalid_parsed_float()
+            } else {};
+            let (next_is_digit, _) = float_digit(value.byte_get(index + 1), base);
+            let after_prefix = hexadecimal && !saw_digit && index == mantissa_start;
+            if (!previous_digit && !after_prefix) || !next_is_digit {
+                return invalid_parsed_float()
+            } else {};
+            previous_digit = false;
+            index += 1;
+        } else if current == b'.' && !saw_dot {
+            saw_dot = true;
+            previous_digit = false;
+            index += 1;
+        } else {
+            break
+        }
+    }
+    if !saw_digit {
+        return invalid_parsed_float()
+    } else {};
+    let exponent_marker = if hexadecimal {
+        b'p'
+    } else {
+        b'e'
+    };
+    let mut exponent = 0;
+    let mut exponent_negative = false;
+    if index < value.byte_len() && ascii_lower(value.byte_get(index)) == exponent_marker {
+        index += 1;
+        if index < value.byte_len()
+            && (value.byte_get(index) == b'+' || value.byte_get(index) == b'-') {
+            exponent_negative = value.byte_get(index) == b'-';
+            index += 1;
+        } else {};
+        let mut exponent_digits = false;
+        previous_digit = false;
+        while index < value.byte_len() {
+            let current = value.byte_get(index);
+            if current >= b'0' && current <= b'9' {
+                exponent_digits = true;
+                previous_digit = true;
+                if exponent < 1000000 {
+                    exponent = exponent * 10 + (current - b'0').to_isize();
+                } else {};
+                index += 1;
+            } else if current == b'_' {
+                if !previous_digit || index + 1 >= value.byte_len()
+                    || value.byte_get(index + 1) < b'0'
+                    || value.byte_get(index + 1) > b'9' {
+                    return invalid_parsed_float()
+                } else {};
+                previous_digit = false;
+                index += 1;
+            } else {
+                break
+            }
+        }
+        if !exponent_digits {
+            return invalid_parsed_float()
+        } else {}
+    } else if hexadecimal {
+        return invalid_parsed_float()
+    } else {};
+    if index != value.byte_len() {
+        return invalid_parsed_float()
+    } else {};
+    if exponent_negative {
+        exponent = 0 - exponent;
+    } else {};
+    ParsedFloat {
+        valid: true,
+        negative,
+        special: 0,
+        numerator,
+        decimal_exponent: if hexadecimal {
+            0
+        } else {
+            exponent - fraction_digits
+        },
+        binary_exponent: if hexadecimal {
+            exponent - fraction_digits * 4
+        } else {
+            0
+        },
+        hexadecimal,
+        significant_digits,
+    }
+}
+
+fn parsed_float_bits(value: string, mantissa_bits: isize, exponent_bias: isize) -> (bool, u64) {
+    let parsed = parse_float_text(value);
+    if !parsed.valid {
+        return (false, 0)
+    } else {};
+    let sign = if parsed.negative {
+        1
+            << (mantissa_bits
+                + if mantissa_bits == 23 {
+                    8
+                } else {
+                    11
+                })
+    } else {
+        0
+    };
+    let exponent_mask = ((1
+        << if mantissa_bits == 23 {
+            8
+        } else {
+            11
+        })
+        - 1)
+        << mantissa_bits;
+    if parsed.special == 1 {
+        return (true, sign | exponent_mask)
+    } else if parsed.special == 2 {
+        return (
+            true,
+            exponent_mask | (1 << (mantissa_bits - 1))
+                | if mantissa_bits == 52 {
+                    1
+                } else {
+                    0
+                },
+        )
+    } else if float_natural_is_zero(parsed.numerator) {
+        return (true, sign)
+    } else {};
+    if !parsed.hexadecimal {
+        let decimal_position = parsed.significant_digits + parsed.decimal_exponent;
+        let overflow_position = if mantissa_bits == 23 {
+            40
+        } else {
+            310
+        };
+        let underflow_position = if mantissa_bits == 23 {
+            -46
+        } else {
+            -325
+        };
+        if decimal_position > overflow_position {
+            return (false, sign | exponent_mask)
+        } else if decimal_position < underflow_position {
+            return (true, sign)
+        } else {}
+    } else {};
+    let denominator = if !parsed.hexadecimal && parsed.decimal_exponent < 0 {
+        float_natural_power5(0 - parsed.decimal_exponent)
+    } else {
+        float_natural_one()
+    };
+    let numerator = if !parsed.hexadecimal && parsed.decimal_exponent > 0 {
+        let result = float_natural_copy(parsed.numerator);
+        let mut count = 0;
+        while count < parsed.decimal_exponent {
+            float_natural_multiply_small(result, 5);
+            count += 1;
+        }
+        result
+    } else {
+        parsed.numerator
+    };
+    let binary_shift = if parsed.hexadecimal {
+        parsed.binary_exponent
+    } else {
+        parsed.decimal_exponent
+    };
+    let (bits, overflow) = float_rational_bits(
+        numerator,
+        denominator,
+        binary_shift,
+        mantissa_bits,
+        exponent_bias,
+    );
+    (!overflow, sign | bits)
+}
+
+fn float32_bits_to_float64_bits(value: u32) -> u64 {
+    let sign = (value.to_u64() & 0x80000000) << 32;
+    let exponent = (value >> 23) & 255;
+    let fraction = value & 0x7fffff;
+    if exponent == 255 {
+        if fraction == 0 {
+            sign | 0x7ff0000000000000
+        } else {
+            0x7ff8000000000000
+        }
+    } else if exponent == 0 {
+        if fraction == 0 {
+            sign
+        } else {
+            let mut high = 0;
+            let mut remaining = fraction;
+            while remaining > 1 {
+                remaining >>= 1;
+                high += 1;
+            }
+            let unbiased = high - 149;
+            sign | ((unbiased + 1023).to_u64() << 52)
+                | ((fraction.to_u64() - (1 << high)) << (52 - high))
+        }
+    } else {
+        sign | ((exponent.to_isize() - 127 + 1023).to_u64() << 52) | (fraction.to_u64() << 29)
+    }
+}
+
+fn float64_bits_to_float32_bits(value: u64) -> u32 {
+    let sign = ((value >> 32) & 0x80000000).to_u32();
+    let exponent = (value >> 52) & 2047;
+    let fraction = value & 0x000fffffffffffff;
+    if exponent == 2047 {
+        if fraction == 0 {
+            sign | 0x7f800000
+        } else {
+            0x7fc00000
+        }
+    } else if exponent == 0 && fraction == 0 {
+        sign
+    } else {
+        let mantissa = if exponent == 0 {
+            fraction
+        } else {
+            fraction | (1 << 52)
+        };
+        let binary_exponent = if exponent == 0 {
+            -1074
+        } else {
+            exponent.to_isize() - 1023 - 52
+        };
+        let (bits, _) = float_rational_bits(
+            float_natural_from_u64(mantissa),
+            float_natural_one(),
+            binary_exponent,
+            23,
+            127,
+        );
+        sign | bits.to_u32()
+    }
+}
+
+fn fixed_float_text(digits: string, decimal_point: isize, negative: bool) -> string {
+    let bytes: Vec[byte] = vec_new();
+    if negative {
+        bytes.push(b'-')
+    } else {};
+    if decimal_point <= 0 {
+        bytes.push(b'0');
+        bytes.push(b'.');
+        let mut index = 0;
+        while index < 0 - decimal_point {
+            bytes.push(b'0');
+            index += 1;
+        }
+        index = 0;
+        while index < digits.byte_len() {
+            bytes.push(digits.byte_get(index));
+            index += 1;
+        }
+    } else if decimal_point >= digits.byte_len() {
+        let mut index = 0;
+        while index < digits.byte_len() {
+            bytes.push(digits.byte_get(index));
+            index += 1;
+        }
+        while index < decimal_point {
+            bytes.push(b'0');
+            index += 1;
+        }
+    } else {
+        let mut index = 0;
+        while index < decimal_point {
+            bytes.push(digits.byte_get(index));
+            index += 1;
+        }
+        bytes.push(b'.');
+        while index < digits.byte_len() {
+            bytes.push(digits.byte_get(index));
+            index += 1;
+        }
+    };
+    let (_, result) = string_from_utf8_raw(bytes);
+    result
+}
+
+fn rounded_float_digits(exact: string, count: isize) -> (string, bool) {
+    let output: Vec[byte] = vec_with_capacity(count + 1);
+    let mut index = 0;
+    while index < count {
+        output.push(exact.byte_get(index));
+        index += 1;
+    }
+    if count == exact.byte_len() {
+        let (_, result) = string_from_utf8_raw(output);
+        return (result, false)
+    } else {};
+    let next = exact.byte_get(count);
+    let mut trailing = false;
+    index = count + 1;
+    while index < exact.byte_len() {
+        if exact.byte_get(index) != b'0' {
+            trailing = true;
+        } else {};
+        index += 1;
+    }
+    let round_up = next > b'5'
+        || next == b'5' && (trailing || (output[output.len() - 1] - b'0') % 2 == 1);
+    if round_up {
+        let mut index = output.len();
+        while index > 0 {
+            index -= 1;
+            if output[index] < b'9' {
+                output[index] += 1;
+                let (_, result) = string_from_utf8_raw(output);
+                return (result, false)
+            } else {
+                output[index] = b'0';
+            }
+        }
+        let carried: Vec[byte] = vec_with_capacity(output.len() + 1);
+        carried.push(b'1');
+        index = 0;
+        while index < output.len() {
+            carried.push(output[index]);
+            index += 1;
+        }
+        let (_, result) = string_from_utf8_raw(carried);
+        (result, true)
+    } else {
+        let (_, result) = string_from_utf8_raw(output);
+        (result, false)
+    }
+}
+
+fn trim_float_digits(value: string) -> string {
+    let mut length = value.byte_len();
+    while length > 1 && value.byte_get(length - 1) == b'0' {
+        length -= 1;
+    }
+    value.byte_slice(0, length)
+}
+
+fn format_float_bits(bits: u64, mantissa_bits: isize, exponent_bits: isize, exponent_bias: isize) -> string {
+    let sign_mask = 1 << (mantissa_bits + exponent_bits);
+    let negative = bits & sign_mask != 0;
+    let exponent_mask = (1 << exponent_bits) - 1;
+    let exponent = (bits >> mantissa_bits) & exponent_mask;
+    let fraction = bits & ((1 << mantissa_bits) - 1);
+    if exponent == exponent_mask {
+        if fraction == 0 {
+            if negative {
+                return "-inf"
+            } else {
+                return "inf"
+            }
+        } else {
+            return "NaN"
+        }
+    } else if exponent == 0 && fraction == 0 {
+        if negative {
+            return "-0"
+        } else {
+            return "0"
+        }
+    } else {};
+    let mantissa = if exponent == 0 {
+        fraction
+    } else {
+        fraction | (1 << mantissa_bits)
+    };
+    let binary_exponent = if exponent == 0 {
+        1 - exponent_bias - mantissa_bits
+    } else {
+        exponent.to_isize() - exponent_bias - mantissa_bits
+    };
+    let exact_value = float_natural_from_u64(mantissa);
+    let decimal_point = if binary_exponent >= 0 {
+        let shifted = float_natural_shift_left(exact_value, binary_exponent);
+        let digits = float_natural_decimal(shifted);
+        let maximum_digits = if mantissa_bits == 23 {
+            9
+        } else {
+            17
+        };
+        let limit = if digits.byte_len() < maximum_digits {
+            digits.byte_len()
+        } else {
+            maximum_digits
+        };
+        let mut count = 1;
+        while count <= limit {
+            let (rounded, carried) = rounded_float_digits(digits, count);
+            let rounded = trim_float_digits(rounded);
+            let point = digits.byte_len()
+                + if carried {
+                    1
+                } else {
+                    0
+                };
+            let candidate = fixed_float_text(rounded, point, negative);
+            let (_, parsed) = parsed_float_bits(candidate, mantissa_bits, exponent_bias);
+            if parsed == bits {
+                return candidate
+            } else {};
+            count += 1;
+        }
+        digits.byte_len()
+    } else {
+        let mut count = 0;
+        while count < 0 - binary_exponent {
+            float_natural_multiply_small(exact_value, 5);
+            count += 1;
+        }
+        let digits = float_natural_decimal(exact_value);
+        let point = digits.byte_len() + binary_exponent;
+        let maximum_digits = if mantissa_bits == 23 {
+            9
+        } else {
+            17
+        };
+        let limit = if digits.byte_len() < maximum_digits {
+            digits.byte_len()
+        } else {
+            maximum_digits
+        };
+        count = 1;
+        while count <= limit {
+            let (rounded, carried) = rounded_float_digits(digits, count);
+            let rounded = trim_float_digits(rounded);
+            let candidate = fixed_float_text(
+                rounded,
+                point
+                    + if carried {
+                        1
+                    } else {
+                        0
+                    },
+                negative,
+            );
+            let (_, parsed) = parsed_float_bits(candidate, mantissa_bits, exponent_bias);
+            if parsed == bits {
+                return candidate
+            } else {};
+            count += 1;
+        }
+        point
+    };
+    fixed_float_text(float_natural_decimal(exact_value), decimal_point, negative)
+}
+
+fn __goml_builtin_float32_to_string(value: f32) -> string {
+    format_float_bits(float32_bits_raw(value).to_u64(), 23, 8, 127)
+}
+
+fn __goml_builtin_float64_to_string(value: f64) -> string {
+    format_float_bits(float64_bits_raw(value), 52, 11, 1023)
+}
+
+fn __goml_builtin_string_parse_float32(value: string) -> (bool, f64) {
+    let (valid, bits) = parsed_float_bits(value, 23, 127);
+    (valid, float64_from_bits_raw(float32_bits_to_float64_bits(bits.to_u32())))
+}
+
+fn __goml_builtin_string_parse_float64(value: string) -> (bool, f64) {
+    let (valid, bits) = parsed_float_bits(value, 52, 1023);
+    (valid, float64_from_bits_raw(bits))
+}
+
+fn __goml_builtin_float32_to_bits(value: f32) -> u32 {
+    float32_bits_raw(value)
+}
+
+fn __goml_builtin_float32_from_bits(value: u32) -> f32 {
+    float32_from_bits_raw(value)
+}
+
+fn __goml_builtin_float64_to_bits(value: f64) -> u64 {
+    float64_bits_raw(value)
+}
+
+fn __goml_builtin_float64_from_bits(value: u64) -> f64 {
+    float64_from_bits_raw(value)
+}
+
+fn __goml_builtin_float32_to_float64(value: f32) -> f64 {
+    float64_from_bits_raw(float32_bits_to_float64_bits(float32_bits_raw(value)))
+}
+
+fn __goml_builtin_float64_to_float32(value: f64) -> f32 {
+    float32_from_bits_raw(float64_bits_to_float32_bits(float64_bits_raw(value)))
+}
+
+fn decimal_string(value: u64) -> string {
+    if value == 0 {
+        return "0"
+    } else {};
+    let reversed: Vec[byte] = vec_with_capacity(20);
+    let mut remaining = value;
+    while remaining > 0 {
+        reversed.push((remaining % 10).to_u8() + b'0');
+        remaining /= 10;
+    }
+    let bytes: Vec[byte] = vec_with_capacity(reversed.len());
+    let mut offset = 0;
+    while offset < reversed.len() {
+        bytes.push(reversed[reversed.len() - offset - 1]);
+        offset += 1;
+    }
+    let (_, result) = string_from_utf8_raw(bytes);
+    result
+}
+
+fn signed_decimal_string(value: i64) -> string {
+    if value < 0 {
+        "-" + decimal_string(0 - value.to_u64())
+    } else {
+        decimal_string(value.to_u64())
+    }
+}
+
+fn __goml_builtin_string_concat(values: Vec[string]) -> string {
+    let mut length = 0;
+    let mut value_index = 0;
+    while value_index < values.len() {
+        length += values[value_index].byte_len();
+        value_index += 1;
+    }
+    let bytes: Vec[byte] = vec_with_capacity(length);
+    value_index = 0;
+    while value_index < values.len() {
+        let value = values[value_index];
+        let mut byte_index = 0;
+        while byte_index < value.byte_len() {
+            bytes.push(value.byte_get(byte_index));
+            byte_index += 1;
+        }
+        value_index += 1;
+    }
+    let (_, result) = string_from_utf8_raw(bytes);
+    result
+}
+
+fn __goml_builtin_int_to_string(value: isize) -> string {
+    signed_decimal_string(value.to_i64())
+}
+
+fn __goml_builtin_int8_to_string(value: i8) -> string {
+    signed_decimal_string(value.to_i64())
+}
+
+fn __goml_builtin_int16_to_string(value: i16) -> string {
+    signed_decimal_string(value.to_i64())
+}
+
+fn __goml_builtin_int32_to_string(value: i32) -> string {
+    signed_decimal_string(value.to_i64())
+}
+
+fn __goml_builtin_int64_to_string(value: i64) -> string {
+    signed_decimal_string(value)
+}
+
+fn __goml_builtin_uint_to_string(value: usize) -> string {
+    decimal_string(value.to_u64())
+}
+
+fn __goml_builtin_uint8_to_string(value: u8) -> string {
+    decimal_string(value.to_u64())
+}
+
+fn __goml_builtin_uint16_to_string(value: u16) -> string {
+    decimal_string(value.to_u64())
+}
+
+fn __goml_builtin_uint32_to_string(value: u32) -> string {
+    decimal_string(value.to_u64())
+}
+
+fn __goml_builtin_uint64_to_string(value: u64) -> string {
+    decimal_string(value)
+}
+
+pub fn float32_to_string(value: f32) -> string {
+    __goml_builtin_float32_to_string(value)
+}
+
+pub fn float64_to_string(value: f64) -> string {
+    __goml_builtin_float64_to_string(value)
+}
+
+pub fn string_parse_float32(value: string) -> (bool, f64) {
+    __goml_builtin_string_parse_float32(value)
+}
+
+pub fn string_parse_float64(value: string) -> (bool, f64) {
+    __goml_builtin_string_parse_float64(value)
+}
+
+pub fn float32_to_bits(value: f32) -> u32 {
+    __goml_builtin_float32_to_bits(value)
+}
+
+pub fn float32_from_bits(value: u32) -> f32 {
+    __goml_builtin_float32_from_bits(value)
+}
+
+pub fn float64_to_bits(value: f64) -> u64 {
+    __goml_builtin_float64_to_bits(value)
+}
+
+pub fn float64_from_bits(value: u64) -> f64 {
+    __goml_builtin_float64_from_bits(value)
+}
+
+pub fn float32_to_float64(value: f32) -> f64 {
+    __goml_builtin_float32_to_float64(value)
+}
+
+pub fn float64_to_float32(value: f64) -> f32 {
+    __goml_builtin_float64_to_float32(value)
+}
+
+pub fn string_concat(values: Vec[string]) -> string {
+    __goml_builtin_string_concat(values)
+}
+
+pub fn int_to_string(value: isize) -> string {
+    __goml_builtin_int_to_string(value)
+}
+
+pub fn int8_to_string(value: i8) -> string {
+    __goml_builtin_int8_to_string(value)
+}
+
+pub fn int16_to_string(value: i16) -> string {
+    __goml_builtin_int16_to_string(value)
+}
+
+pub fn int32_to_string(value: i32) -> string {
+    __goml_builtin_int32_to_string(value)
+}
+
+pub fn int64_to_string(value: i64) -> string {
+    __goml_builtin_int64_to_string(value)
+}
+
+pub fn uint_to_string(value: usize) -> string {
+    __goml_builtin_uint_to_string(value)
+}
+
+pub fn uint8_to_string(value: u8) -> string {
+    __goml_builtin_uint8_to_string(value)
+}
+
+pub fn uint16_to_string(value: u16) -> string {
+    __goml_builtin_uint16_to_string(value)
+}
+
+pub fn uint32_to_string(value: u32) -> string {
+    __goml_builtin_uint32_to_string(value)
+}
+
+pub fn uint64_to_string(value: u64) -> string {
+    __goml_builtin_uint64_to_string(value)
+}
+
 fn utf8_invalid_decode() -> (bool, char, isize) {
     (false, '\u0000', 0)
 }
@@ -398,18 +1512,6 @@ extern fn __goml_std_host_process_status_cancel(
 
 #[runtime("std.testing.fail")]
 extern fn __goml_std_host_test_fail(message: string) -> unit;
-
-#[runtime("std.num.parse_int")]
-extern fn __goml_std_host_parse_int(value: string, radix: isize) -> (bool, isize, string);
-
-#[runtime("std.num.parse_uint")]
-extern fn __goml_std_host_parse_uint(value: string, radix: isize) -> (bool, usize, string);
-
-#[runtime("std.num.parse_float32")]
-extern fn __goml_std_host_parse_float32(value: string) -> (bool, f32, string);
-
-#[runtime("std.num.parse_float64")]
-extern fn __goml_std_host_parse_float64(value: string) -> (bool, f64, string);
 
 #[runtime("std.time.monotonic_nanoseconds")]
 extern fn __goml_std_host_monotonic_nanoseconds() -> i64;

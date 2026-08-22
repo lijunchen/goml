@@ -328,16 +328,159 @@ fn bool_to_string_hook_item(key: string) -> Item {
     )
 }
 
-fn integer_to_string_hook_item(key: string, ty: Type) -> Item {
+fn integer_to_string_hook_item(key: string, ty: Type, signed: bool) -> Item {
     let params: Vec[(string, Type)] = Vec::from_array([]);
     params.push(("x", ty));
-    let args: Vec[Expr] = Vec::from_array([]);
-    args.push(Expr::String { value: "%d" });
-    args.push(Expr::Var { name: "x" });
     let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
+        Stmt::Var {
+            name: "negative",
+            ty: Type::Bool,
+            value: Option::Some(
+                if signed {
+                    Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: Expr::Var { name: "x" },
+                        rhs: Expr::Int { value: "0" },
+                    }
+                } else {
+                    Expr::Bool { value: false }
+                },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "value",
+            ty: Type::Uint64,
+            value: Option::Some(Expr::Convert { ty: Type::Uint64, expr: Expr::Var { name: "x" } }),
+        },
+    );
+    if signed {
+        stmts.push(
+            Stmt::If {
+                cond: Expr::Var { name: "negative" },
+                then_: Block {
+                    stmts: Vec::from_array(
+                        [
+                            Stmt::Assign {
+                                name: "value",
+                                value: Expr::Binary {
+                                    op: BinaryOp::Sub,
+                                    lhs: Expr::Int { value: "0" },
+                                    rhs: Expr::Var { name: "value" },
+                                },
+                            },
+                        ],
+                    ),
+                },
+                else_: Option::None,
+            },
+        )
+    } else {};
+    stmts.push(
+        Stmt::Var {
+            name: "buffer",
+            ty: Type::Slice { elem: Type::Uint8 },
+            value: Option::Some(
+                Expr::Make {
+                    ty: Type::Slice { elem: Type::Uint8 },
+                    args: Vec::from_array([Expr::Int { value: "21" }]),
+                },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var { name: "index", ty: Type::Int, value: Option::Some(Expr::Int { value: "21" }) },
+    );
+    let loop_stmts: Vec[Stmt] = Vec::from_array([]);
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "index",
+            value: Expr::Binary {
+                op: BinaryOp::Sub,
+                lhs: Expr::Var { name: "index" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    loop_stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Var { name: "buffer" },
+            index: Expr::Var { name: "index" },
+            value: Expr::Convert {
+                ty: Type::Uint8,
+                expr: Expr::Binary {
+                    op: BinaryOp::Add,
+                    lhs: Expr::Binary {
+                        op: BinaryOp::Rem,
+                        lhs: Expr::Var { name: "value" },
+                        rhs: Expr::Int { value: "10" },
+                    },
+                    rhs: Expr::Int { value: "48" },
+                },
+            },
+        },
+    );
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "value",
+            value: Expr::Binary {
+                op: BinaryOp::Div,
+                lhs: Expr::Var { name: "value" },
+                rhs: Expr::Int { value: "10" },
+            },
+        },
+    );
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: Expr::Var { name: "value" },
+                rhs: Expr::Int { value: "0" },
+            },
+            then_: Block { stmts: Vec::from_array([Stmt::Break]) },
+            else_: Option::None,
+        },
+    );
+    stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
+    let negative_stmts: Vec[Stmt] = Vec::from_array([]);
+    negative_stmts.push(
+        Stmt::Assign {
+            name: "index",
+            value: Expr::Binary {
+                op: BinaryOp::Sub,
+                lhs: Expr::Var { name: "index" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    negative_stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Var { name: "buffer" },
+            index: Expr::Var { name: "index" },
+            value: Expr::Int { value: "45" },
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Var { name: "negative" },
+            then_: Block { stmts: negative_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
         Stmt::Return {
-            expr: Option::Some(Expr::Call { func: Expr::Var { name: "_goml_fmt.Sprintf" }, args }),
+            expr: Option::Some(
+                Expr::Convert {
+                    ty: Type::String,
+                    expr: Expr::Slice {
+                        base: Expr::Var { name: "buffer" },
+                        start: Expr::Var { name: "index" },
+                        end: Expr::Int { value: "21" },
+                    },
+                },
+            ),
         },
     );
     Item::Function(
@@ -350,13 +493,27 @@ fn integer_to_string_hook_item(key: string, ty: Type) -> Item {
     )
 }
 
-fn string_output_hook_item(key: string, go_name: string) -> Item {
+fn string_output_hook_item(key: string, newline: bool) -> Item {
     let params: Vec[(string, Type)] = Vec::from_array([]);
     params.push(("s", Type::String));
     let args: Vec[Expr] = Vec::from_array([]);
-    args.push(Expr::Var { name: "s" });
+    args.push(
+        if newline {
+            Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Var { name: "s" },
+                rhs: Expr::String { value: "\n" },
+            }
+        } else {
+            Expr::Var { name: "s" }
+        },
+    );
     let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: go_name }, args } });
+    stmts.push(
+        Stmt::Expr {
+            expr: Expr::Call { func: Expr::Var { name: "_goml_os.Stdout.WriteString" }, args },
+        },
+    );
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
     Item::Function(
         Function {
@@ -402,15 +559,35 @@ fn string_from_utf8_hook_item(key: string) -> Item {
 fn string_concat_hook_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::from_array([]);
     params.push(("values", lower_type(repr::Type::VecType { elem: repr::Type::String })));
-    let args: Vec[Expr] = Vec::from_array([]);
-    args.push(Expr::Field { expr: Expr::Var { name: "values" }, field_name: "items" });
-    args.push(Expr::String { value: "" });
     let stmts: Vec[Stmt] = Vec::from_array([]);
     stmts.push(
-        Stmt::Return {
-            expr: Option::Some(Expr::Call { func: Expr::Var { name: "_goml_strings.Join" }, args }),
+        Stmt::Var {
+            name: "result",
+            ty: Type::String,
+            value: Option::Some(Expr::String { value: "" }),
         },
     );
+    stmts.push(
+        Stmt::Range {
+            names: Vec::from_array(["_", "value"]),
+            expr: Expr::Field { expr: Expr::Var { name: "values" }, field_name: "items" },
+            body: Block {
+                stmts: Vec::from_array(
+                    [
+                        Stmt::Assign {
+                            name: "result",
+                            value: Expr::Binary {
+                                op: BinaryOp::Add,
+                                lhs: Expr::Var { name: "result" },
+                                rhs: Expr::Var { name: "value" },
+                            },
+                        },
+                    ],
+                ),
+            },
+        },
+    );
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "result" }) });
     Item::Function(
         Function {
             name: runtime_hook_name(key),
@@ -421,50 +598,11 @@ fn string_concat_hook_item(key: string) -> Item {
     )
 }
 
-fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
-    let params: Vec[(string, Type)] = Vec::from_array([]);
-    params.push(("value", Type::String));
-    let tuple_items: Vec[repr::Type] = Vec::from_array([]);
-    tuple_items.push(repr::Type::Bool);
-    tuple_items.push(repr::Type::Float64);
-    let tuple_ty = lower_type(repr::Type::Tuple { items: tuple_items });
-    let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(Stmt::Var { name: "parsed", ty: Type::Float64, value: Option::None });
-    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
-    let names: Vec[string] = Vec::from_array([]);
-    names.push("parsed");
-    names.push("err");
-    let args: Vec[Expr] = Vec::from_array([]);
-    args.push(Expr::Var { name: "value" });
-    args.push(Expr::Int { value: bit_size });
-    stmts.push(
-        Stmt::MultiAssign {
-            names,
-            value: Expr::Call { func: Expr::Var { name: "_goml_strconv.ParseFloat" }, args },
-        },
-    );
-    let fields: Vec[(string, Expr)] = Vec::from_array([]);
-    fields.push(
-        ("_0", Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "err" }, rhs: Expr::Nil }),
-    );
-    fields.push(("_1", Expr::Var { name: "parsed" }));
-    stmts.push(Stmt::Return { expr: Option::Some(Expr::StructLiteral { ty: tuple_ty, fields }) });
-    Item::Function(
-        Function {
-            name: runtime_hook_name(key),
-            params,
-            ret_ty: Option::Some(tuple_ty),
-            body: Block { stmts },
-        },
-    )
-}
-
 #[derive(PartialEq, Eq)]
 enum RuntimeImport {
     Bytes,
     Context,
     CryptoRand,
-    Fmt,
     Errors,
     Hash,
     Io,
@@ -474,8 +612,6 @@ enum RuntimeImport {
     Filepath,
     Reflect,
     Sha256,
-    Strconv,
-    Strings,
     Sync,
     Runtime,
     Syscall,
@@ -490,16 +626,9 @@ fn require_runtime_import(imports: Vec[RuntimeImport], value: RuntimeImport) -> 
 
 fn collect_core_runtime_imports(imports: Vec[RuntimeImport], hook: resources::CoreRuntimeHook) -> unit {
     match hook {
-        IntToString | Int8ToString | Int16ToString | Int32ToString | Int64ToString | UintToString | Uint8ToString | Uint16ToString | Uint32ToString | Uint64ToString | StringPrint | StringPrintln => require_runtime_import(
-            imports,
-            RuntimeImport::Fmt,
-        ),
-        StringParseFloat32 | StringParseFloat64 | Float32ToString | Float64ToString => {
-            require_runtime_import(imports, RuntimeImport::Strconv)
-        },
+        StringPrint | StringPrintln => require_runtime_import(imports, RuntimeImport::Os),
         Float32Hash | Float64Hash => require_runtime_import(imports, RuntimeImport::Math),
-        StringConcat => require_runtime_import(imports, RuntimeImport::Strings),
-        UnitToString | BoolToString | StringLen | StringGet | StringByteGet | StringByteSlice | StringToBytes | StringFromUtf8 | CharToString | CharFromUint32 | IntHash | Int8Hash | Int16Hash | Int32Hash | Int64Hash | CharHash | UintHash | Uint8Hash | Uint16Hash | Uint32Hash | StringHash => (),
+        UnitToString | BoolToString | StringLen | StringGet | StringByteGet | StringByteSlice | StringToBytes | StringFromUtf8 | StringConcat | CharToString | CharFromUint32 | IntToString | Int8ToString | Int16ToString | Int32ToString | Int64ToString | UintToString | Uint8ToString | Uint16ToString | Uint32ToString | Uint64ToString | IntHash | Int8Hash | Int16Hash | Int32Hash | Int64Hash | CharHash | UintHash | Uint8Hash | Uint16Hash | Uint32Hash | StringHash => (),
     }
 }
 
@@ -507,7 +636,6 @@ fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRu
     match hook {
         Canonicalize => require_runtime_import(imports, RuntimeImport::Filepath),
         Sha256File => {
-            require_runtime_import(imports, RuntimeImport::Fmt);
             require_runtime_import(imports, RuntimeImport::Hash);
             require_runtime_import(imports, RuntimeImport::Io);
             require_runtime_import(imports, RuntimeImport::Os);
@@ -530,11 +658,7 @@ fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRu
 
 fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRuntimeHook) -> unit {
     match hook {
-        Print | Println => require_runtime_import(imports, RuntimeImport::Fmt),
-        Eprint => {
-            require_runtime_import(imports, RuntimeImport::Fmt);
-            require_runtime_import(imports, RuntimeImport::Os)
-        },
+        Print | Println | Eprint => require_runtime_import(imports, RuntimeImport::Os),
         ReadStdin | ReadStdinExact => {
             require_runtime_import(imports, RuntimeImport::Io);
             require_runtime_import(imports, RuntimeImport::Os)
@@ -555,11 +679,8 @@ fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRu
 fn collect_path_runtime_imports(imports: Vec[RuntimeImport], hook: resources::PathRuntimeHook) -> unit {
     require_runtime_import(imports, RuntimeImport::Filepath);
     match hook {
-        Extension | FileStem | WithExtension => {
-            require_runtime_import(imports, RuntimeImport::Strings)
-        },
         Separator => require_runtime_import(imports, RuntimeImport::Os),
-        Join | Clean | IsAbsolute | Parent | FileName | Absolute | Relative => (),
+        Join | Clean | IsAbsolute | Parent | FileName | Extension | FileStem | WithExtension | Absolute | Relative => (),
     }
 }
 
@@ -612,11 +733,7 @@ fn collect_standard_runtime_imports(
         Path(hook) => collect_path_runtime_imports(imports, hook),
         Process(hook) => collect_process_runtime_imports(imports, hook),
         TestingFail => {
-            require_runtime_import(imports, RuntimeImport::Fmt);
             require_runtime_import(imports, RuntimeImport::Os)
-        },
-        Num(ParseInt | ParseUint | ParseFloat32 | ParseFloat64) => {
-            require_runtime_import(imports, RuntimeImport::Strconv)
         },
         Math(Float32Unary | Float32Pow) => {
             require_runtime_import(imports, RuntimeImport::Math)
@@ -664,7 +781,7 @@ fn runtime_hook_needs_task_support(hook: resources::RuntimeHook) -> bool {
             OutputCancel | StatusCancel => true,
             Exit | LookPath | Output | OutputTimeout | Status | StatusTimeout => false,
         },
-        Standard(Env(_) | Fs(_) | Io(_) | Path(_) | TestingFail | Num(_) | Math(_) | Crypto(_) | Time(_)) => false,
+        Standard(Env(_) | Fs(_) | Io(_) | Path(_) | TestingFail | Math(_) | Crypto(_) | Time(_)) => false,
     }
 }
 
@@ -681,9 +798,6 @@ fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> 
     } else {};
     if required.contains(RuntimeImport::CryptoRand) {
         imports.push(("_goml_cryptorand", "crypto/rand"))
-    } else {};
-    if required.contains(RuntimeImport::Fmt) {
-        imports.push(("_goml_fmt", "fmt"))
     } else {};
     if required.contains(RuntimeImport::Errors) {
         imports.push(("_goml_errors", "errors"))
@@ -711,12 +825,6 @@ fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> 
     } else {};
     if required.contains(RuntimeImport::Sha256) {
         imports.push(("_goml_sha256", "crypto/sha256"))
-    } else {};
-    if required.contains(RuntimeImport::Strconv) {
-        imports.push(("_goml_strconv", "strconv"))
-    } else {};
-    if required.contains(RuntimeImport::Strings) {
-        imports.push(("_goml_strings", "strings"))
     } else {};
     if required.contains(RuntimeImport::Sync) {
         imports.push(("_goml_sync", "sync"))
@@ -922,7 +1030,7 @@ pub fn emit_runtime_hook_items(
                         Time(MonotonicNanoseconds) => {
                             items.push(std_time_monotonic_origin_item())
                         },
-                        Env(_) | Fs(_) | Io(_) | Path(_) | Process(_) | TestingFail | Num(_) | Math(_) | Crypto(_) | Time(UnixNanoseconds | SleepNanoseconds | TimerNew | TimerStop) | Task(_) => (),
+                        Env(_) | Fs(_) | Io(_) | Path(_) | Process(_) | TestingFail | Math(_) | Crypto(_) | Time(UnixNanoseconds | SleepNanoseconds | TimerNew | TimerStop) | Task(_) => (),
                     };
                     items.push(standard_runtime_hook_item(hook, spec.key))
                 },

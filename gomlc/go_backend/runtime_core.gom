@@ -155,58 +155,6 @@ fn char_from_uint32_hook_item(key: string) -> Item {
     core_function_item(key, params, ret_ty, stmts)
 }
 
-fn float_to_string_hook_item(key: string, ty: Type, bit_size: string, convert: bool) -> Item {
-    let params: Vec[(string, Type)] = Vec::from_array([]);
-    params.push(("x", ty));
-    let args: Vec[Expr] = Vec::from_array([]);
-    args.push(
-        if convert {
-            Expr::Convert { ty: Type::Float64, expr: Expr::Var { name: "x" } }
-        } else {
-            Expr::Var { name: "x" }
-        },
-    );
-    args.push(Expr::Int { value: "102" });
-    args.push(Expr::Int { value: "-1" });
-    args.push(Expr::Int { value: bit_size });
-    let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(
-        Stmt::Var {
-            name: "formatted",
-            ty: Type::String,
-            value: Option::Some(core_call("_goml_strconv.FormatFloat", args)),
-        },
-    );
-    let positive_stmts: Vec[Stmt] = Vec::from_array([]);
-    positive_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "inf" }) });
-    stmts.push(
-        Stmt::If {
-            cond: Expr::Binary {
-                op: BinaryOp::Eq,
-                lhs: Expr::Var { name: "formatted" },
-                rhs: Expr::String { value: "+Inf" },
-            },
-            then_: Block { stmts: positive_stmts },
-            else_: Option::None,
-        },
-    );
-    let negative_stmts: Vec[Stmt] = Vec::from_array([]);
-    negative_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "-inf" }) });
-    stmts.push(
-        Stmt::If {
-            cond: Expr::Binary {
-                op: BinaryOp::Eq,
-                lhs: Expr::Var { name: "formatted" },
-                rhs: Expr::String { value: "-Inf" },
-            },
-            then_: Block { stmts: negative_stmts },
-            else_: Option::None,
-        },
-    );
-    stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "formatted" }) });
-    core_function_item(key, params, Type::String, stmts)
-}
-
 fn integer_hash_hook_item(key: string, ty: Type) -> Item {
     let params: Vec[(string, Type)] = Vec::from_array([]);
     params.push(("x", ty));
@@ -329,20 +277,16 @@ fn core_runtime_hook_item(hook: resources::CoreRuntimeHook, key: string) -> Item
         StringConcat => string_concat_hook_item(key),
         CharToString => char_to_string_hook_item(key),
         CharFromUint32 => char_from_uint32_hook_item(key),
-        IntToString => integer_to_string_hook_item(key, Type::Int),
-        Int8ToString => integer_to_string_hook_item(key, Type::Int8),
-        Int16ToString => integer_to_string_hook_item(key, Type::Int16),
-        Int32ToString => integer_to_string_hook_item(key, Type::Int32),
-        Int64ToString => integer_to_string_hook_item(key, Type::Int64),
-        UintToString => integer_to_string_hook_item(key, Type::Uint),
-        Uint8ToString => integer_to_string_hook_item(key, Type::Uint8),
-        Uint16ToString => integer_to_string_hook_item(key, Type::Uint16),
-        Uint32ToString => integer_to_string_hook_item(key, Type::Uint32),
-        Uint64ToString => integer_to_string_hook_item(key, Type::Uint64),
-        Float32ToString => float_to_string_hook_item(key, Type::Float32, "32", true),
-        Float64ToString => float_to_string_hook_item(key, Type::Float64, "64", false),
-        StringParseFloat32 => string_parse_float_hook_item(key, "32"),
-        StringParseFloat64 => string_parse_float_hook_item(key, "64"),
+        IntToString => integer_to_string_hook_item(key, Type::Int, true),
+        Int8ToString => integer_to_string_hook_item(key, Type::Int8, true),
+        Int16ToString => integer_to_string_hook_item(key, Type::Int16, true),
+        Int32ToString => integer_to_string_hook_item(key, Type::Int32, true),
+        Int64ToString => integer_to_string_hook_item(key, Type::Int64, true),
+        UintToString => integer_to_string_hook_item(key, Type::Uint, false),
+        Uint8ToString => integer_to_string_hook_item(key, Type::Uint8, false),
+        Uint16ToString => integer_to_string_hook_item(key, Type::Uint16, false),
+        Uint32ToString => integer_to_string_hook_item(key, Type::Uint32, false),
+        Uint64ToString => integer_to_string_hook_item(key, Type::Uint64, false),
         IntHash => integer_hash_hook_item(key, Type::Int),
         Int8Hash => integer_hash_hook_item(key, Type::Int8),
         Int16Hash => integer_hash_hook_item(key, Type::Int16),
@@ -356,7 +300,7 @@ fn core_runtime_hook_item(hook: resources::CoreRuntimeHook, key: string) -> Item
         Float32Hash => float_hash_hook_item(key, Type::Float32, "_goml_math.Float32bits", true),
         Float64Hash => float_hash_hook_item(key, Type::Float64, "_goml_math.Float64bits", false),
         StringHash => string_hash_hook_item(key),
-        StringPrint => string_output_hook_item(key, "_goml_fmt.Print"),
-        StringPrintln => string_output_hook_item(key, "_goml_fmt.Println"),
+        StringPrint => string_output_hook_item(key, false),
+        StringPrintln => string_output_hook_item(key, true),
     }
 }

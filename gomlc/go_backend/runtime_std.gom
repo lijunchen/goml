@@ -631,14 +631,93 @@ fn std_fs_sha256_file_item(key: string) -> Item {
             expr: std_method_call(Expr::Var { name: "file" }, "Close", Vec::from_array([])),
         },
     );
-    let sum = std_method_call(Expr::Var { name: "digest" }, "Sum", Vec::from_array([Expr::Nil]));
-    let format_args = Vec::from_array([Expr::String { value: "%x" }, sum]);
+    stmts.push(
+        Stmt::Var {
+            name: "sum",
+            ty: Type::Slice { elem: Type::Uint8 },
+            value: Option::Some(
+                std_method_call(Expr::Var { name: "digest" }, "Sum", Vec::from_array([Expr::Nil])),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "encoded",
+            ty: Type::Slice { elem: Type::Uint8 },
+            value: Option::Some(
+                Expr::Make {
+                    ty: Type::Slice { elem: Type::Uint8 },
+                    args: Vec::from_array(
+                        [
+                            Expr::Binary {
+                                op: BinaryOp::Mul,
+                                lhs: std_call("len", Vec::from_array([Expr::Var { name: "sum" }])),
+                                rhs: Expr::Int { value: "2" },
+                            },
+                        ],
+                    ),
+                },
+            ),
+        },
+    );
+    let range_stmts: Vec[Stmt] = Vec::from_array([]);
+    let encoded_index = Expr::Binary {
+        op: BinaryOp::Mul,
+        lhs: Expr::Var { name: "index" },
+        rhs: Expr::Int { value: "2" },
+    };
+    let hex_digits = Expr::String { value: "0123456789abcdef" };
+    range_stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Var { name: "encoded" },
+            index: encoded_index,
+            value: Expr::Index {
+                base: hex_digits,
+                index: Expr::Convert {
+                    ty: Type::Int,
+                    expr: Expr::Binary {
+                        op: BinaryOp::Shr,
+                        lhs: Expr::Var { name: "value" },
+                        rhs: Expr::Int { value: "4" },
+                    },
+                },
+            },
+        },
+    );
+    range_stmts.push(
+        Stmt::IndexAssign {
+            base: Expr::Var { name: "encoded" },
+            index: Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: encoded_index,
+                rhs: Expr::Int { value: "1" },
+            },
+            value: Expr::Index {
+                base: hex_digits,
+                index: Expr::Convert {
+                    ty: Type::Int,
+                    expr: Expr::Binary {
+                        op: BinaryOp::BitAnd,
+                        lhs: Expr::Var { name: "value" },
+                        rhs: Expr::Int { value: "15" },
+                    },
+                },
+            },
+        },
+    );
+    stmts.push(
+        Stmt::Range {
+            names: Vec::from_array(["index", "value"]),
+            expr: Expr::Var { name: "sum" },
+            body: Block { stmts: range_stmts },
+        },
+    );
     stmts.push(
         Stmt::Return {
             expr: Option::Some(
                 std_bool_string_string_expr(
                     true,
-                    std_call("_goml_fmt.Sprintf", format_args),
+                    Expr::Convert { ty: Type::String, expr: Expr::Var { name: "encoded" } },
                     Expr::String { value: "" },
                 ),
             ),
@@ -1867,16 +1946,34 @@ fn std_fs_read_dir_v2_item(key: string) -> Item {
     std_function_item(key, params, std_bool_strings_error_type(), stmts)
 }
 
-fn std_io_output_item(key: string, function: string, stderr: bool) -> Item {
+fn std_io_output_item(key: string, newline: bool, stderr: bool) -> Item {
     let params: Vec[(string, Type)] = Vec::from_array([]);
     params.push(("value", Type::String));
     let args: Vec[Expr] = Vec::from_array([]);
-    if stderr {
-        args.push(Expr::Var { name: "_goml_os.Stderr" })
-    } else {};
-    args.push(Expr::Var { name: "value" });
+    args.push(
+        if newline {
+            Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Var { name: "value" },
+                rhs: Expr::String { value: "\n" },
+            }
+        } else {
+            Expr::Var { name: "value" }
+        },
+    );
     let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(Stmt::Expr { expr: std_call(function, args) });
+    stmts.push(
+        Stmt::Expr {
+            expr: std_call(
+                if stderr {
+                    "_goml_os.Stderr.WriteString"
+                } else {
+                    "_goml_os.Stdout.WriteString"
+                },
+                args,
+            ),
+        },
+    );
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
     std_function_item(key, params, Type::Unit, stmts)
 }
@@ -2361,13 +2458,17 @@ fn std_path_extension_item(key: string) -> Item {
     stmts.push(
         Stmt::If { cond: missing_condition, then_: Block { stmts: missing }, else_: Option::None },
     );
-    let trim_args: Vec[Expr] = Vec::from_array([]);
-    trim_args.push(Expr::Var { name: "extension" });
-    trim_args.push(Expr::String { value: "." });
     stmts.push(
         Stmt::Return {
             expr: Option::Some(
-                std_bool_string_expr(true, std_call("_goml_strings.TrimPrefix", trim_args)),
+                std_bool_string_expr(
+                    true,
+                    Expr::Slice {
+                        base: Expr::Var { name: "extension" },
+                        start: Expr::Int { value: "1" },
+                        end: std_call("len", Vec::from_array([Expr::Var { name: "extension" }])),
+                    },
+                ),
             ),
         },
     );
@@ -2429,13 +2530,21 @@ fn std_path_file_stem_item(key: string) -> Item {
             else_: Option::None,
         },
     );
-    let trim_args: Vec[Expr] = Vec::from_array([]);
-    trim_args.push(Expr::Var { name: "base" });
-    trim_args.push(Expr::Var { name: "extension" });
     stmts.push(
         Stmt::Return {
             expr: Option::Some(
-                std_bool_string_expr(true, std_call("_goml_strings.TrimSuffix", trim_args)),
+                std_bool_string_expr(
+                    true,
+                    Expr::Slice {
+                        base: Expr::Var { name: "base" },
+                        start: Expr::Int { value: "0" },
+                        end: Expr::Binary {
+                            op: BinaryOp::Sub,
+                            lhs: std_call("len", Vec::from_array([Expr::Var { name: "base" }])),
+                            rhs: std_call("len", Vec::from_array([Expr::Var { name: "extension" }])),
+                        },
+                    },
+                ),
             ),
         },
     );
@@ -2478,14 +2587,21 @@ fn std_path_with_extension_item(key: string) -> Item {
             else_: Option::None,
         },
     );
-    let without_args: Vec[Expr] = Vec::from_array([]);
-    without_args.push(Expr::Var { name: "path" });
-    without_args.push(Expr::Var { name: "current" });
     stmts.push(
         Stmt::Var {
             name: "without",
             ty: Type::String,
-            value: Option::Some(std_call("_goml_strings.TrimSuffix", without_args)),
+            value: Option::Some(
+                Expr::Slice {
+                    base: Expr::Var { name: "path" },
+                    start: Expr::Int { value: "0" },
+                    end: Expr::Binary {
+                        op: BinaryOp::Sub,
+                        lhs: std_call("len", Vec::from_array([Expr::Var { name: "path" }])),
+                        rhs: std_call("len", Vec::from_array([Expr::Var { name: "current" }])),
+                    },
+                },
+            ),
         },
     );
     let empty: Vec[Stmt] = Vec::from_array([]);
@@ -2501,13 +2617,42 @@ fn std_path_with_extension_item(key: string) -> Item {
             else_: Option::None,
         },
     );
-    let extension_args: Vec[Expr] = Vec::from_array([]);
-    extension_args.push(Expr::Var { name: "extension" });
-    extension_args.push(Expr::String { value: "." });
     stmts.push(
-        Stmt::Assign {
-            name: "extension",
-            value: std_call("_goml_strings.TrimPrefix", extension_args),
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::And,
+                lhs: Expr::Binary {
+                    op: BinaryOp::Greater,
+                    lhs: std_call("len", Vec::from_array([Expr::Var { name: "extension" }])),
+                    rhs: Expr::Int { value: "0" },
+                },
+                rhs: Expr::Binary {
+                    op: BinaryOp::Eq,
+                    lhs: Expr::Index {
+                        base: Expr::Var { name: "extension" },
+                        index: Expr::Int { value: "0" },
+                    },
+                    rhs: Expr::Int { value: "46" },
+                },
+            },
+            then_: Block {
+                stmts: Vec::from_array(
+                    [
+                        Stmt::Assign {
+                            name: "extension",
+                            value: Expr::Slice {
+                                base: Expr::Var { name: "extension" },
+                                start: Expr::Int { value: "1" },
+                                end: std_call(
+                                    "len",
+                                    Vec::from_array([Expr::Var { name: "extension" }]),
+                                ),
+                            },
+                        },
+                    ],
+                ),
+            },
+            else_: Option::None,
         },
     );
     stmts.push(
@@ -2642,150 +2787,20 @@ fn std_testing_fail_item(key: string) -> Item {
     let params: Vec[(string, Type)] = Vec::from_array([]);
     params.push(("message", Type::String));
     let print_args: Vec[Expr] = Vec::from_array([]);
-    print_args.push(Expr::Var { name: "_goml_os.Stderr" });
-    print_args.push(Expr::Var { name: "message" });
+    print_args.push(
+        Expr::Binary {
+            op: BinaryOp::Add,
+            lhs: Expr::Var { name: "message" },
+            rhs: Expr::String { value: "\n" },
+        },
+    );
     let exit_args: Vec[Expr] = Vec::from_array([]);
     exit_args.push(Expr::Int { value: "101" });
     let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(Stmt::Expr { expr: std_call("_goml_fmt.Fprintln", print_args) });
+    stmts.push(Stmt::Expr { expr: std_call("_goml_os.Stderr.WriteString", print_args) });
     stmts.push(Stmt::Expr { expr: std_call("_goml_os.Exit", exit_args) });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
     std_function_item(key, params, Type::Unit, stmts)
-}
-
-fn std_num_parse_integer_item(key: string, signed: bool) -> Item {
-    let value_ty = if signed {
-        repr::Type::Int
-    } else {
-        repr::Type::Uint
-    };
-    let native_ty = if signed {
-        Type::Int64
-    } else {
-        Type::Uint64
-    };
-    let function = if signed {
-        "_goml_strconv.ParseInt"
-    } else {
-        "_goml_strconv.ParseUint"
-    };
-    let params = Vec::from_array([("value", Type::String), ("radix", Type::Int)]);
-    let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(Stmt::Var { name: "parsed", ty: native_ty, value: Option::None });
-    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
-    stmts.push(
-        Stmt::MultiAssign {
-            names: Vec::from_array(["parsed", "err"]),
-            value: std_call(
-                function,
-                Vec::from_array(
-                    [
-                        Expr::Var { name: "value" },
-                        Expr::Var { name: "radix" },
-                        Expr::Var { name: "_goml_strconv.IntSize" },
-                    ],
-                ),
-            ),
-        },
-    );
-    let failed: Vec[Stmt] = Vec::from_array([]);
-    failed.push(
-        Stmt::Return {
-            expr: Option::Some(
-                std_bool_value_string_expr(
-                    value_ty,
-                    false,
-                    Expr::Int { value: "0" },
-                    std_error_string(),
-                ),
-            ),
-        },
-    );
-    stmts.push(
-        Stmt::If {
-            cond: std_error_condition(),
-            then_: Block { stmts: failed },
-            else_: Option::None,
-        },
-    );
-    stmts.push(
-        Stmt::Return {
-            expr: Option::Some(
-                std_bool_value_string_expr(
-                    value_ty,
-                    true,
-                    Expr::Convert { ty: lower_type(value_ty), expr: Expr::Var { name: "parsed" } },
-                    Expr::String { value: "" },
-                ),
-            ),
-        },
-    );
-    std_function_item(key, params, std_bool_value_string_type(value_ty), stmts)
-}
-
-fn std_num_parse_float_item(key: string, single: bool) -> Item {
-    let value_ty = if single {
-        repr::Type::Float32
-    } else {
-        repr::Type::Float64
-    };
-    let params = Vec::from_array([("value", Type::String)]);
-    let stmts: Vec[Stmt] = Vec::from_array([]);
-    stmts.push(Stmt::Var { name: "parsed", ty: Type::Float64, value: Option::None });
-    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
-    stmts.push(
-        Stmt::MultiAssign {
-            names: Vec::from_array(["parsed", "err"]),
-            value: std_call(
-                "_goml_strconv.ParseFloat",
-                Vec::from_array(
-                    [
-                        Expr::Var { name: "value" },
-                        Expr::Int {
-                            value: if single {
-                                "32"
-                            } else {
-                                "64"
-                            },
-                        },
-                    ],
-                ),
-            ),
-        },
-    );
-    let failed: Vec[Stmt] = Vec::from_array([]);
-    failed.push(
-        Stmt::Return {
-            expr: Option::Some(
-                std_bool_value_string_expr(
-                    value_ty,
-                    false,
-                    Expr::Float { value: "0" },
-                    std_error_string(),
-                ),
-            ),
-        },
-    );
-    stmts.push(
-        Stmt::If {
-            cond: std_error_condition(),
-            then_: Block { stmts: failed },
-            else_: Option::None,
-        },
-    );
-    stmts.push(
-        Stmt::Return {
-            expr: Option::Some(
-                std_bool_value_string_expr(
-                    value_ty,
-                    true,
-                    Expr::Convert { ty: lower_type(value_ty), expr: Expr::Var { name: "parsed" } },
-                    Expr::String { value: "" },
-                ),
-            ),
-        },
-    );
-    std_function_item(key, params, std_bool_value_string_type(value_ty), stmts)
 }
 
 fn std_time_monotonic_origin_name() -> string {
@@ -4141,9 +4156,9 @@ fn std_fs_runtime_hook_item(hook: resources::FsRuntimeHook, key: string) -> Item
 
 fn std_io_runtime_hook_item(hook: resources::IoRuntimeHook, key: string) -> Item {
     match hook {
-        Print => std_io_output_item(key, "_goml_fmt.Print", false),
-        Println => std_io_output_item(key, "_goml_fmt.Println", false),
-        Eprint => std_io_output_item(key, "_goml_fmt.Fprint", true),
+        Print => std_io_output_item(key, false, false),
+        Println => std_io_output_item(key, true, false),
+        Eprint => std_io_output_item(key, false, true),
         ReadStdin => std_io_read_stdin_item(key),
         ReadStdinV2 => std_io_read_stdin_v2_item(key),
         ReadStdinExact => std_io_read_stdin_exact_item(key),
@@ -4184,15 +4199,6 @@ fn std_process_runtime_hook_item(hook: resources::ProcessRuntimeHook, key: strin
     }
 }
 
-fn std_num_runtime_hook_item(hook: resources::NumRuntimeHook, key: string) -> Item {
-    match hook {
-        ParseInt => std_num_parse_integer_item(key, true),
-        ParseUint => std_num_parse_integer_item(key, false),
-        ParseFloat32 => std_num_parse_float_item(key, true),
-        ParseFloat64 => std_num_parse_float_item(key, false),
-    }
-}
-
 fn std_math_runtime_hook_item(hook: resources::MathRuntimeHook, key: string) -> Item {
     match hook {
         Float32Unary => std_math_float32_unary_item(key),
@@ -4224,7 +4230,6 @@ fn standard_runtime_hook_item(hook: resources::StandardRuntimeHook, key: string)
         Path(hook) => std_path_runtime_hook_item(hook, key),
         Process(hook) => std_process_runtime_hook_item(hook, key),
         TestingFail => std_testing_fail_item(key),
-        Num(hook) => std_num_runtime_hook_item(hook, key),
         Math(hook) => std_math_runtime_hook_item(hook, key),
         Crypto(hook) => std_crypto_runtime_hook_item(hook, key),
         Time(hook) => std_time_runtime_hook_item(hook, key),

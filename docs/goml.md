@@ -935,7 +935,8 @@ let valid = !(predicate());
 - `== !=` uses `PartialEq`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` compare recursively when their elements implement `PartialEq`.
 - Floating-point values implement `PartialEq + PartialOrd`, but not `Eq + Ord + Hash`. In particular, NaN is unequal to itself and its `partial_cmp` result is `None`.
 - Every integer type provides `to_isize`, `to_i8`, `to_i16`, `to_i32`, `to_i64`, `to_usize`, `to_u8`, `to_u16`, `to_u32`, and `to_u64` for the other integer types. Identity methods are omitted. `byte` uses the `u8` methods, `char` provides `to_u32`, and `u32` to `char` uses `char_from_u32`, which returns `Option[char]`.
-- Expression `as` is reserved for creating `dyn Trait` values. Numeric conversions use the integer methods above; other non-`dyn` targets are rejected. The separate `as` form in `use package as alias;` still selects an import alias.
+- `f32` provides `to_bits` and `to_f64`; `f64` provides `to_bits` and `to_f32`. The prelude functions `float32_from_bits` and `float64_from_bits` reconstruct values from their IEEE 754 bit patterns. The `f64` to `f32` conversion uses round-to-nearest, ties-to-even; the reverse conversion is exact.
+- Expression `as` is reserved for creating `dyn Trait` values. Numeric conversions use the integer and floating-point methods above; other non-`dyn` targets are rejected. The separate `as` form in `use package as alias;` still selects an import alias.
 
 There are no exponentiation, null coalescing or user-defined operators.
 
@@ -2736,7 +2737,7 @@ File system operations use `Result[..., string]` to report errors, and can be co
 
 Text search indices are UTF-8 byte offsets, matching the indices accepted by the built-in string APIs. `starts_with_at` returns false for out-of-range and non-character-boundary offsets. `rfind` returns the last matching byte offset. Trimming recognizes ASCII whitespace. Splitting on an empty separator returns the original string as one item, while `split_once` with an empty separator returns `Option::None`.
 
-Numeric parsing returns `Result[_, string]`. Integer radix parsing accepts the host parser's supported radices and reports invalid radices, malformed input, and overflow as `Result::Err`.
+Numeric parsing returns `Result[_, string]` and is implemented by the GoML standard library. Integer radix parsing accepts radix `0` or `2..36`; radix `0` recognizes `0b`, `0o`, and `0x` prefixes and permits Go-style digit separators. Invalid radices, malformed input, and overflow return `Result::Err`. Floating-point parsing supports decimal and hexadecimal IEEE 754 input, signed exponents, digit separators, `inf`, `infinity`, and `NaN`, and rounds directly to the requested `f32` or `f64` width.
 
 Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `sort_by_ordering` and `stable_sort_by_ordering` use `cmp::Ordering`. The older `sort_by` and `stable_sort_by` variants accept negative/zero/positive integer comparators. All current sorting variants are stable. `binary_search` and its comparator-based variants expect the vector to already be ordered and return the first matching index.
 

@@ -53,9 +53,6 @@ pub extern fn is_nan(value: f64) -> bool;
 #[go_ffi("math", "IsInf")]
 extern fn go_is_inf(value: f64, sign: isize) -> bool;
 
-#[go_ffi("math", "Float32bits")]
-extern fn float32_bits(value: f32) -> u32;
-
 pub fn is_infinite(value: f64) -> bool {
     go_is_inf(value, 0)
 }
@@ -127,24 +124,24 @@ pub fn trunc32(value: f32) -> f32 {
 }
 
 pub fn is_nan32(value: f32) -> bool {
-    let bits = float32_bits(value);
+    let bits = value.to_bits();
     bits & 0x7f800000 == 0x7f800000 && bits & 0x007fffff != 0
 }
 
 pub fn is_infinite32(value: f32) -> bool {
-    float32_bits(value) & 0x7fffffff == 0x7f800000
+    value.to_bits() & 0x7fffffff == 0x7f800000
 }
 
 pub fn is_finite32(value: f32) -> bool {
-    float32_bits(value) & 0x7f800000 != 0x7f800000
+    value.to_bits() & 0x7f800000 != 0x7f800000
 }
 
 pub fn is_normal32(value: f32) -> bool {
-    let exponent = float32_bits(value) & 0x7f800000;
+    let exponent = value.to_bits() & 0x7f800000;
     exponent != 0 && exponent != 0x7f800000
 }
 
 pub fn is_subnormal32(value: f32) -> bool {
-    let bits = float32_bits(value) & 0x7fffffff;
+    let bits = value.to_bits() & 0x7fffffff;
     bits != 0 && bits & 0x7f800000 == 0
 }

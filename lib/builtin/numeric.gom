@@ -380,6 +380,34 @@ impl u64 {
     }
 }
 
+impl f32 {
+    fn to_bits(self: f32) -> u32 {
+        __goml_builtin_float32_to_bits(self)
+    }
+
+    fn from_bits(value: u32) -> f32 {
+        __goml_builtin_float32_from_bits(value)
+    }
+
+    fn to_f64(self: f32) -> f64 {
+        __goml_builtin_float32_to_float64(self)
+    }
+}
+
+impl f64 {
+    fn to_bits(self: f64) -> u64 {
+        __goml_builtin_float64_to_bits(self)
+    }
+
+    fn from_bits(value: u64) -> f64 {
+        __goml_builtin_float64_from_bits(value)
+    }
+
+    fn to_f32(self: f64) -> f32 {
+        __goml_builtin_float64_to_float32(self)
+    }
+}
+
 impl char {
     fn to_u32(self: char) -> u32 {
         loop {}

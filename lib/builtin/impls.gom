@@ -2,13 +2,13 @@ package builtin;
 
 impl isize {
     fn to_string(self: isize) -> string {
-        int_to_string(self)
+        __goml_builtin_int_to_string(self)
     }
 }
 
 impl i32 {
     fn to_string(self: i32) -> string {
-        int32_to_string(self)
+        __goml_builtin_int32_to_string(self)
     }
 }
 
@@ -265,7 +265,7 @@ impl string {
                     },
                 }
             }
-            string_concat(parts)
+            __goml_builtin_string_concat(parts)
         }
     }
 
@@ -277,7 +277,7 @@ impl string {
             for _ in 0..count {
                 parts.push(self)
             }
-            string_concat(parts)
+            __goml_builtin_string_concat(parts)
         }
     }
 
@@ -404,67 +404,67 @@ impl ToString for char {
 
 impl ToString for isize {
     fn to_string(self: isize) -> string {
-        int_to_string(self)
+        __goml_builtin_int_to_string(self)
     }
 }
 
 impl ToString for i8 {
     fn to_string(self: i8) -> string {
-        int8_to_string(self)
+        __goml_builtin_int8_to_string(self)
     }
 }
 
 impl ToString for i16 {
     fn to_string(self: i16) -> string {
-        int16_to_string(self)
+        __goml_builtin_int16_to_string(self)
     }
 }
 
 impl ToString for i32 {
     fn to_string(self: i32) -> string {
-        int32_to_string(self)
+        __goml_builtin_int32_to_string(self)
     }
 }
 
 impl ToString for i64 {
     fn to_string(self: i64) -> string {
-        int64_to_string(self)
+        __goml_builtin_int64_to_string(self)
     }
 }
 
 impl ToString for u8 {
     fn to_string(self: u8) -> string {
-        uint8_to_string(self)
+        __goml_builtin_uint8_to_string(self)
     }
 }
 
 impl ToString for u16 {
     fn to_string(self: u16) -> string {
-        uint16_to_string(self)
+        __goml_builtin_uint16_to_string(self)
     }
 }
 
 impl ToString for u32 {
     fn to_string(self: u32) -> string {
-        uint32_to_string(self)
+        __goml_builtin_uint32_to_string(self)
     }
 }
 
 impl ToString for u64 {
     fn to_string(self: u64) -> string {
-        uint64_to_string(self)
+        __goml_builtin_uint64_to_string(self)
     }
 }
 
 impl ToString for f32 {
     fn to_string(self: f32) -> string {
-        float32_to_string(self)
+        __goml_builtin_float32_to_string(self)
     }
 }
 
 impl ToString for f64 {
     fn to_string(self: f64) -> string {
-        float64_to_string(self)
+        __goml_builtin_float64_to_string(self)
     }
 }
 
@@ -1371,7 +1371,7 @@ impl[T: ToString] Vec[T] {
             } else {};
             result.push(parts[index])
         }
-        string_concat(result)
+        __goml_builtin_string_concat(result)
     }
 }
 
@@ -1619,7 +1619,7 @@ impl[T] Receiver[T] {
 
 impl ToString for usize {
     fn to_string(self: usize) -> string {
-        uint_to_string(self)
+        __goml_builtin_uint_to_string(self)
     }
 }
 

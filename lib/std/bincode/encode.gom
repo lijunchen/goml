@@ -3,12 +3,6 @@ package bincode;
 use module::bytes;
 use module::serde;
 
-#[go_ffi("math", "Float32bits")]
-extern fn float32_bits(value: f32) -> u32;
-
-#[go_ffi("math", "Float64bits")]
-extern fn float64_bits(value: f64) -> u64;
-
 fn little_endian(config: Config) -> bool {
     match config.endianness {
         Endianness::Little => true,
@@ -189,11 +183,11 @@ fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[
             Result::Ok(())
         },
         serde::Value::Float32(value) => {
-            push_fixed(output, float32_bits(value).to_u64(), 4, config);
+            push_fixed(output, value.to_bits().to_u64(), 4, config);
             Result::Ok(())
         },
         serde::Value::Float64(value) => {
-            push_fixed(output, float64_bits(value), 8, config);
+            push_fixed(output, value.to_bits(), 8, config);
             Result::Ok(())
         },
         serde::Value::Number(_) => Result::Err("bincode requires a precise numeric type"),
@@ -411,13 +405,13 @@ impl serde::Serializer for BincodeSerializer {
 
     fn serialize_float32(self: BincodeSerializer, value: f32) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_fixed(self.output, float32_bits(value).to_u64(), 4, self.config);
+        push_fixed(self.output, value.to_bits().to_u64(), 4, self.config);
         Result::Ok(())
     }
 
     fn serialize_float64(self: BincodeSerializer, value: f64) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_fixed(self.output, float64_bits(value), 8, self.config);
+        push_fixed(self.output, value.to_bits(), 8, self.config);
         Result::Ok(())
     }
 
