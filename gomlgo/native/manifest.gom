@@ -5,7 +5,7 @@ use std::collections;
 use std::crypto::hash;
 use std::text;
 
-pub const NATIVE_BRIDGE_ABI_VERSION: uint32 = 5;
+pub const NATIVE_BRIDGE_ABI_VERSION: u32 = 5;
 
 pub const NATIVE_BRIDGE_IMPORT_PATH: string = "gomlgo/nativebridge";
 
@@ -16,7 +16,7 @@ pub enum NativeBindingKind {
 }
 
 pub struct NativeCallSpec {
-    pub call_id: uint32,
+    pub call_id: u32,
     pub import_path: string,
     pub symbol: string,
     pub receiver_name: string,
@@ -35,7 +35,7 @@ pub struct NativeTypeSpec {
 }
 
 pub struct NativeGlobalSpec {
-    pub object_id: int,
+    pub object_id: isize,
     pub import_path: string,
     pub name: string,
 }
@@ -65,7 +65,7 @@ pub struct NativeAggregateSpec {
 }
 
 pub struct Manifest {
-    pub abi_version: uint32,
+    pub abi_version: u32,
     pub initialization_packages: Vec[string],
     pub calls: Vec[NativeCallSpec],
     pub types: Vec[NativeTypeSpec],
@@ -87,7 +87,7 @@ pub fn new_manifest(initialization_packages: Vec[string], calls: Vec[NativeCallS
 }
 
 pub fn function_call(
-    call_id: uint32,
+    call_id: u32,
     import_path: string,
     symbol: string,
     parameter_type_keys: Vec[string],
@@ -109,7 +109,7 @@ pub fn function_call(
 }
 
 pub fn generic_function_call(
-    call_id: uint32,
+    call_id: u32,
     import_path: string,
     symbol: string,
     type_argument_keys: Vec[string],
@@ -131,7 +131,7 @@ pub fn generic_function_call(
     }
 }
 
-pub fn exit_call(call_id: uint32) -> NativeCallSpec {
+pub fn exit_call(call_id: u32) -> NativeCallSpec {
     NativeCallSpec {
         call_id,
         import_path: "os",
@@ -147,7 +147,7 @@ pub fn exit_call(call_id: uint32) -> NativeCallSpec {
 }
 
 pub fn method_call(
-    call_id: uint32,
+    call_id: u32,
     import_path: string,
     receiver_name: string,
     receiver_pointer: bool,
@@ -170,7 +170,7 @@ pub fn method_call(
     }
 }
 
-fn binding_rank(value: NativeBindingKind) -> int {
+fn binding_rank(value: NativeBindingKind) -> isize {
     match value {
         NativeBindingKind::Function => 0,
         NativeBindingKind::Method => 1,
@@ -178,7 +178,7 @@ fn binding_rank(value: NativeBindingKind) -> int {
     }
 }
 
-fn compare_call(left: NativeCallSpec, right: NativeCallSpec) -> int {
+fn compare_call(left: NativeCallSpec, right: NativeCallSpec) -> isize {
     if left.call_id < right.call_id {
         -1
     } else if left.call_id > right.call_id {
@@ -196,7 +196,7 @@ fn compare_call(left: NativeCallSpec, right: NativeCallSpec) -> int {
     }
 }
 
-fn compare_proxy(left: NativeProxySpec, right: NativeProxySpec) -> int {
+fn compare_proxy(left: NativeProxySpec, right: NativeProxySpec) -> isize {
     if left.import_path < right.import_path {
         -1
     } else if left.import_path > right.import_path {
@@ -210,7 +210,7 @@ fn compare_proxy(left: NativeProxySpec, right: NativeProxySpec) -> int {
     }
 }
 
-fn compare_aggregate(left: NativeAggregateSpec, right: NativeAggregateSpec) -> int {
+fn compare_aggregate(left: NativeAggregateSpec, right: NativeAggregateSpec) -> isize {
     if left.key < right.key {
         -1
     } else if left.key > right.key {
@@ -220,7 +220,7 @@ fn compare_aggregate(left: NativeAggregateSpec, right: NativeAggregateSpec) -> i
     }
 }
 
-fn compare_type(left: NativeTypeSpec, right: NativeTypeSpec) -> int {
+fn compare_type(left: NativeTypeSpec, right: NativeTypeSpec) -> isize {
     if left.key < right.key {
         -1
     } else if left.key > right.key {
@@ -230,7 +230,7 @@ fn compare_type(left: NativeTypeSpec, right: NativeTypeSpec) -> int {
     }
 }
 
-fn compare_global(left: NativeGlobalSpec, right: NativeGlobalSpec) -> int {
+fn compare_global(left: NativeGlobalSpec, right: NativeGlobalSpec) -> isize {
     left.object_id - right.object_id
 }
 

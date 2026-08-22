@@ -1,12 +1,12 @@
 package serde;
 
 pub enum FieldKey {
-    Position(int),
+    Position(isize),
     Name(string),
 }
 
 pub enum VariantKey {
-    Index(int),
+    Index(isize),
     Name(string),
 }
 
@@ -17,46 +17,46 @@ pub trait Deserializer {
     fn deserialize_any(self: Self) -> Result[Value, string];
     fn deserialize_unit(self: Self) -> Result[unit, string];
     fn deserialize_bool(self: Self) -> Result[bool, string];
-    fn deserialize_int(self: Self) -> Result[int, string];
-    fn deserialize_int8(self: Self) -> Result[int8, string];
-    fn deserialize_int16(self: Self) -> Result[int16, string];
-    fn deserialize_int32(self: Self) -> Result[int32, string];
-    fn deserialize_int64(self: Self) -> Result[int64, string];
-    fn deserialize_uint(self: Self) -> Result[uint, string];
-    fn deserialize_uint8(self: Self) -> Result[uint8, string];
-    fn deserialize_uint16(self: Self) -> Result[uint16, string];
-    fn deserialize_uint32(self: Self) -> Result[uint32, string];
-    fn deserialize_uint64(self: Self) -> Result[uint64, string];
-    fn deserialize_float32(self: Self) -> Result[float32, string];
-    fn deserialize_float64(self: Self) -> Result[float64, string];
+    fn deserialize_int(self: Self) -> Result[isize, string];
+    fn deserialize_int8(self: Self) -> Result[i8, string];
+    fn deserialize_int16(self: Self) -> Result[i16, string];
+    fn deserialize_int32(self: Self) -> Result[i32, string];
+    fn deserialize_int64(self: Self) -> Result[i64, string];
+    fn deserialize_uint(self: Self) -> Result[usize, string];
+    fn deserialize_uint8(self: Self) -> Result[u8, string];
+    fn deserialize_uint16(self: Self) -> Result[u16, string];
+    fn deserialize_uint32(self: Self) -> Result[u32, string];
+    fn deserialize_uint64(self: Self) -> Result[u64, string];
+    fn deserialize_float32(self: Self) -> Result[f32, string];
+    fn deserialize_float64(self: Self) -> Result[f64, string];
     fn deserialize_number(self: Self) -> Result[string, string];
     fn deserialize_string(self: Self) -> Result[string, string];
     fn deserialize_char(self: Self) -> Result[char, string];
     fn deserialize_bytes(self: Self) -> Result[Vec[byte], string];
     fn begin_optional(self: Self) -> Result[bool, string];
     fn end_optional(self: Self) -> Result[unit, string];
-    fn begin_sequence(self: Self) -> Result[Option[int], string];
+    fn begin_sequence(self: Self) -> Result[Option[isize], string];
     fn next_sequence_element(self: Self) -> Result[bool, string];
     fn end_sequence(self: Self) -> Result[unit, string];
-    fn begin_tuple(self: Self, length: int) -> Result[unit, string];
-    fn begin_tuple_element(self: Self, index: int) -> Result[unit, string];
+    fn begin_tuple(self: Self, length: isize) -> Result[unit, string];
+    fn begin_tuple_element(self: Self, index: isize) -> Result[unit, string];
     fn end_tuple(self: Self) -> Result[unit, string];
-    fn begin_map(self: Self) -> Result[Option[int], string];
+    fn begin_map(self: Self) -> Result[Option[isize], string];
     fn next_map_entry(self: Self) -> Result[bool, string];
     fn begin_map_key(self: Self) -> Result[unit, string];
     fn begin_map_value(self: Self) -> Result[unit, string];
     fn end_map(self: Self) -> Result[unit, string];
-    fn begin_struct(self: Self, name: string, fields: int) -> Result[unit, string];
+    fn begin_struct(self: Self, name: string, fields: isize) -> Result[unit, string];
     fn next_struct_field(self: Self) -> Result[Option[FieldKey], string];
     fn skip_value(self: Self) -> Result[unit, string];
     fn end_struct(self: Self) -> Result[unit, string];
-    fn begin_variant(self: Self, enum_name: string, variants: int) -> Result[VariantKey, string];
-    fn begin_variant_fields(self: Self, kind: int, fields: int) -> Result[unit, string];
+    fn begin_variant(self: Self, enum_name: string, variants: isize) -> Result[VariantKey, string];
+    fn begin_variant_fields(self: Self, kind: isize, fields: isize) -> Result[unit, string];
     fn next_variant_field(self: Self) -> Result[Option[FieldKey], string];
     fn end_variant(self: Self) -> Result[unit, string];
 }
 
-pub fn field_key_matches(value: Option[FieldKey], index: int, name: string) -> bool {
+pub fn field_key_matches(value: Option[FieldKey], index: isize, name: string) -> bool {
     match value {
         Some(FieldKey::Position(actual)) => actual == index,
         Some(FieldKey::Name(actual)) => actual == name,
@@ -64,7 +64,7 @@ pub fn field_key_matches(value: Option[FieldKey], index: int, name: string) -> b
     }
 }
 
-pub fn variant_key_matches(value: VariantKey, index: int, name: string) -> bool {
+pub fn variant_key_matches(value: VariantKey, index: isize, name: string) -> bool {
     match value {
         VariantKey::Index(actual) => actual == index,
         VariantKey::Name(actual) => actual == name,
@@ -78,7 +78,7 @@ pub fn required_field[T](value: Option[T], name: string) -> Result[T, string] {
     }
 }
 
-fn schema_field_index(fields: Vec[(string, Schema)], key: FieldKey) -> int {
+fn schema_field_index(fields: Vec[(string, Schema)], key: FieldKey) -> isize {
     match key {
         FieldKey::Position(index) => if index >= 0 && index < fields.len() {
             index
@@ -98,7 +98,7 @@ fn schema_field_index(fields: Vec[(string, Schema)], key: FieldKey) -> int {
     }
 }
 
-fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> int {
+fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> isize {
     match key {
         VariantKey::Index(expected) => {
             let mut index = 0;
@@ -123,7 +123,7 @@ fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> int {
     }
 }
 
-fn deserialize_integer_schema[D: Deserializer](deserializer: D, signed: bool, width: int) -> Result[
+fn deserialize_integer_schema[D: Deserializer](deserializer: D, signed: bool, width: isize) -> Result[
     Value,
     string,
 ] {

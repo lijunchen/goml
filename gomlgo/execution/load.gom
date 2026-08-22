@@ -17,7 +17,7 @@ fn listed_package(packages: Vec[GoListPackage], package_path: string) -> Option[
 
 fn visit_package(
     packages: Vec[GoListPackage],
-    states: HashMap[string, int],
+    states: HashMap[string, isize],
     output: Vec[string],
     package_path: string,
 ) -> Result[unit, string] {
@@ -306,7 +306,7 @@ fn load_checked_packages_with_order(
         None => diagnostics.push(linker_diagnostic(listed.root_path, "main.main is not defined")),
     };
     let program = if diagnostics.is_empty() {
-        let package_indices: Vec[Option[int]] = Vec::with_capacity(world.packages.len());
+        let package_indices: Vec[Option[isize]] = Vec::with_capacity(world.packages.len());
         for _ in world.packages {
             package_indices.push(Option::None)
         }

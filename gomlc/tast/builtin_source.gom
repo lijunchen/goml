@@ -13,7 +13,7 @@ static builtin_source_structs: OnceCell[FrozenVec[StructInfo]] = OnceCell::new()
 
 static builtin_source_functions: OnceCell[FrozenVec[FunctionScheme]] = OnceCell::new();
 
-static builtin_source_arities: OnceCell[FrozenVec[(string, int)]] = OnceCell::new();
+static builtin_source_arities: OnceCell[FrozenVec[(string, isize)]] = OnceCell::new();
 
 static builtin_source_impls: OnceCell[FrozenVec[ImplInfo]] = OnceCell::new();
 
@@ -38,7 +38,7 @@ struct BuiltinLangItem {
     name: string,
     properties: Vec[(string, string)],
     variants: Vec[string],
-    variant_arities: Vec[int],
+    variant_arities: Vec[isize],
     methods: Vec[string],
     associated_types: Vec[string],
 }
@@ -62,7 +62,7 @@ fn builtin_lang_item_from_attrs(
     kind: BuiltinLangItemKind,
     name: string,
     variants: Vec[string],
-    variant_arities: Vec[int],
+    variant_arities: Vec[isize],
     methods: Vec[string],
     associated_types: Vec[string],
 ) -> Result[Option[BuiltinLangItem], string] {
@@ -137,7 +137,7 @@ fn append_builtin_lang_item(
     kind: BuiltinLangItemKind,
     name: string,
     variants: Vec[string],
-    variant_arities: Vec[int],
+    variant_arities: Vec[isize],
     methods: Vec[string],
     associated_types: Vec[string],
 ) -> Result[unit, string] {
@@ -164,7 +164,7 @@ fn builtin_lang_item_type_name(value: hir::TypeExpr) -> Option[string] {
     }
 }
 
-fn builtin_lang_item_variant_arity(value: hir::EnumVariantFields) -> int {
+fn builtin_lang_item_variant_arity(value: hir::EnumVariantFields) -> isize {
     match value {
         hir::EnumVariantFields::Unit => 0,
         hir::EnumVariantFields::Tuple(values) => values.len(),
@@ -180,7 +180,7 @@ fn load_builtin_source_lang_items() -> Result[FrozenVec[BuiltinLangItem], string
             match item {
                 hir::Item::EnumDef(value) => {
                     let variants: Vec[string] = Vec::from_array([]);
-                    let variant_arities: Vec[int] = Vec::from_array([]);
+                    let variant_arities: Vec[isize] = Vec::from_array([]);
                     for variant in value.variants {
                         variants.push(variant.name);
                         variant_arities.push(builtin_lang_item_variant_arity(variant.fields))
@@ -467,7 +467,7 @@ fn builtin_source_function_scheme(name: string) -> Option[FunctionScheme] {
     Option::None
 }
 
-fn append_builtin_source_arity(values: Vec[(string, int)], name: string, arity: int) -> unit {
+fn append_builtin_source_arity(values: Vec[(string, isize)], name: string, arity: isize) -> unit {
     for value in values {
         if value.0 == name {
             return
@@ -476,7 +476,7 @@ fn append_builtin_source_arity(values: Vec[(string, int)], name: string, arity: 
     values.push((name, arity))
 }
 
-fn append_builtin_source_type_arity(values: Vec[(string, int)], value: hir::TypeExpr) -> unit {
+fn append_builtin_source_type_arity(values: Vec[(string, isize)], value: hir::TypeExpr) -> unit {
     match value {
         hir::TypeExpr::Con { name } => append_builtin_source_arity(values, name, 0),
         hir::TypeExpr::App { ty: hir::TypeExpr::Con { name }, args } => {
@@ -486,8 +486,8 @@ fn append_builtin_source_type_arity(values: Vec[(string, int)], value: hir::Type
     }
 }
 
-fn load_builtin_source_arities() -> FrozenVec[(string, int)] {
-    let result: Vec[(string, int)] = Vec::from_array([]);
+fn load_builtin_source_arities() -> FrozenVec[(string, isize)] {
+    let result: Vec[(string, isize)] = Vec::from_array([]);
     let files = match implicit_builtin_hir_files() {
         Ok(values) => values,
         Err(_) => return result.freeze(),
@@ -514,7 +514,7 @@ fn load_builtin_source_arities() -> FrozenVec[(string, int)] {
     result.freeze()
 }
 
-fn builtin_source_nominal_arity(name: string) -> Option[int] {
+fn builtin_source_nominal_arity(name: string) -> Option[isize] {
     let expected = short_name(name);
     let values = builtin_source_arities.get_or_init(|| load_builtin_source_arities());
     let mut index = 0;

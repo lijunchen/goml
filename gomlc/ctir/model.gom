@@ -1,7 +1,7 @@
 package ctir;
 
 pub struct CtTarget {
-    pub int_width: int,
+    pub int_width: isize,
 }
 
 pub enum CtType {
@@ -10,13 +10,13 @@ pub enum CtType {
     Bool,
     Integer {
         signed: bool,
-        width: int,
+        width: isize,
     },
     String,
     Char,
     Tuple(Vec[CtType]),
     Array {
-        len: int,
+        len: isize,
         elem: CtType,
     },
     Struct {
@@ -35,8 +35,8 @@ pub enum CtValue {
     Bool(bool),
     Integer {
         signed: bool,
-        width: int,
-        bits: uint64,
+        width: isize,
+        bits: u64,
     },
     String(string),
     Char(char),
@@ -48,19 +48,19 @@ pub enum CtValue {
     },
     Enum {
         name: string,
-        variant: int,
+        variant: isize,
         fields: Vec[CtValue],
     },
     Meta {
         kind: string,
-        id: int,
+        id: isize,
     },
 }
 
 pub struct CtOrigin {
     pub source_path: string,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
 }
 
 pub enum CtUnaryOp {
@@ -91,7 +91,7 @@ pub enum CtBinaryOp {
 }
 
 pub enum CtCallTarget {
-    Local(int),
+    Local(isize),
     External {
         package_name: string,
         entry_name: string,
@@ -102,7 +102,7 @@ pub enum CtCallTarget {
 pub enum CtPattern {
     Wild,
     Bind {
-        slot: int,
+        slot: isize,
     },
     Value(CtValue),
     Constant {
@@ -112,20 +112,20 @@ pub enum CtPattern {
     Tuple(Vec[CtPattern]),
     Array {
         prefix: Vec[CtPattern],
-        rest: Option[int],
+        rest: Option[isize],
         suffix: Vec[CtPattern],
     },
     Struct {
         name: string,
-        fields: Vec[(int, CtPattern)],
+        fields: Vec[(isize, CtPattern)],
     },
     Enum {
         name: string,
-        variant: int,
+        variant: isize,
         fields: Vec[CtPattern],
     },
     Alias {
-        slot: int,
+        slot: isize,
         pattern: CtPattern,
     },
     Or(Vec[CtPattern]),
@@ -139,19 +139,19 @@ pub enum CtPattern {
 pub struct CtExpr {
     pub kind: CtExprKind,
     pub ty: CtType,
-    pub origin: int,
+    pub origin: isize,
 }
 
 pub struct CtArm {
     pub pattern: CtPattern,
     pub guard: Option[CtExpr],
     pub body: CtExpr,
-    pub origin: int,
+    pub origin: isize,
 }
 
 pub enum CtExprKind {
     Value(CtValue),
-    Local(int),
+    Local(isize),
     Constant {
         package_name: string,
         name: string,
@@ -164,12 +164,12 @@ pub enum CtExprKind {
     },
     Enum {
         name: string,
-        variant: int,
+        variant: isize,
         fields: Vec[CtExpr],
     },
     Field {
         value: CtExpr,
-        index: int,
+        index: isize,
     },
     Index {
         value: CtExpr,
@@ -186,12 +186,12 @@ pub enum CtExprKind {
         arms: Vec[CtArm],
     },
     While {
-        target: int,
+        target: isize,
         condition: CtExpr,
         body: CtExpr,
     },
     ForRange {
-        target: int,
+        target: isize,
         pattern: CtPattern,
         start: CtExpr,
         end: CtExpr,
@@ -199,21 +199,21 @@ pub enum CtExprKind {
         body: CtExpr,
     },
     ForArray {
-        target: int,
+        target: isize,
         pattern: CtPattern,
         value: CtExpr,
         body: CtExpr,
     },
     Loop {
-        target: int,
+        target: isize,
         body: CtExpr,
     },
     Break {
-        target: int,
+        target: isize,
         value: Option[CtExpr],
     },
     Continue {
-        target: int,
+        target: isize,
     },
     Return(Option[CtExpr]),
     Call {
@@ -242,7 +242,7 @@ pub enum CtStmt {
         value: CtExpr,
     },
     Assign {
-        slot: int,
+        slot: isize,
         value: CtExpr,
     },
     Expr(CtExpr),
@@ -251,30 +251,30 @@ pub enum CtStmt {
 pub struct CtBlock {
     pub statements: Vec[CtStmt],
     pub tail: Option[CtExpr],
-    pub origin: int,
+    pub origin: isize,
 }
 
 pub struct CtFunction {
-    pub id: int,
+    pub id: isize,
     pub name: string,
-    pub parameter_slots: Vec[int],
+    pub parameter_slots: Vec[isize],
     pub parameter_types: Vec[CtType],
-    pub local_count: int,
+    pub local_count: isize,
     pub local_types: Vec[CtType],
     pub return_type: CtType,
     pub body: CtBlock,
-    pub origin: int,
+    pub origin: isize,
 }
 
 pub struct CtEntry {
     pub name: string,
-    pub function_id: int,
+    pub function_id: isize,
     pub public: bool,
 }
 
 pub struct CtDeriveEntry {
     pub name: string,
-    pub function_id: int,
+    pub function_id: isize,
     pub public: bool,
     pub export_name: Option[string],
 }
@@ -285,12 +285,12 @@ pub enum CtSiteKind {
 }
 
 pub struct CtSite {
-    pub id: int,
+    pub id: isize,
     pub kind: CtSiteKind,
-    pub local_count: int,
+    pub local_count: isize,
     pub local_types: Vec[CtType],
     pub expression: CtExpr,
-    pub origin: int,
+    pub origin: isize,
 }
 
 pub struct CtConstant {
@@ -324,7 +324,7 @@ pub fn empty_module(package_name: string) -> CtModule {
     }
 }
 
-fn push_reachable_id(values: Vec[int], value: int) -> bool {
+fn push_reachable_id(values: Vec[isize], value: isize) -> bool {
     for existing in values {
         if existing == value {
             return false
@@ -346,7 +346,7 @@ fn push_reachable_name(values: Vec[string], value: string) -> unit {
 fn collect_reachable_expr(
     package_name: string,
     value: CtExpr,
-    ids: Vec[int],
+    ids: Vec[isize],
     constants: Vec[string],
 ) -> unit {
     match value.kind {
@@ -418,7 +418,7 @@ fn collect_reachable_expr(
 fn collect_reachable_block(
     package_name: string,
     value: CtBlock,
-    ids: Vec[int],
+    ids: Vec[isize],
     constants: Vec[string],
 ) -> unit {
     for statement in value.statements {
@@ -435,7 +435,7 @@ fn collect_reachable_block(
 }
 
 pub fn public_module(value: CtModule, public_entries: Vec[string], public_constants: Vec[string]) -> CtModule {
-    let ids: Vec[int] = Vec::from_array([]);
+    let ids: Vec[isize] = Vec::from_array([]);
     let constants: Vec[string] = Vec::from_array([]);
     for name in public_constants {
         push_reachable_name(constants, name)

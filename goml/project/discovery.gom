@@ -567,7 +567,7 @@ fn find_package(packages: Vec[Package], name: string) -> Option[Package] {
 
 fn visit_package(
     packages: Vec[Package],
-    states: HashMap[string, int],
+    states: HashMap[string, isize],
     output: Vec[string],
     name: string,
 ) -> Result[unit, string] {
@@ -598,7 +598,7 @@ fn topological_order(packages: Vec[Package], entry: string) -> Result[Vec[string
 
 fn topological_order_all(packages: Vec[Package]) -> Result[Vec[string], string] {
     let output: Vec[string] = Vec::from_array([]);
-    let states: HashMap[string, int] = HashMap::from_array([]);
+    let states: HashMap[string, isize] = HashMap::from_array([]);
     let names: Vec[string] = Vec::from_array([]);
     for package_value in packages {
         names.push(package_value.name)

@@ -5,8 +5,8 @@ use module::text;
 
 pub enum Value {
     String(string),
-    Integer(int64),
-    Float(float64),
+    Integer(i64),
+    Float(f64),
     Boolean(bool),
     Datetime(string),
     Array(Vec[Value]),
@@ -18,12 +18,12 @@ struct FlatEntry {
     value: Value,
 }
 
-fn toml_error(line: int, message: string) -> string {
+fn toml_error(line: isize, message: string) -> string {
     message + " at line " + line.to_string()
 }
 
 fn strip_comment(value: string) -> string {
-    let mut quote = 0.to_uint8();
+    let mut quote = 0.to_u8();
     let mut escaped = false;
     for index in 0..value.byte_len() {
         let current = value.byte_get(index);
@@ -44,23 +44,23 @@ fn strip_comment(value: string) -> string {
     value
 }
 
-fn hex_digit(value: byte) -> Option[uint32] {
+fn hex_digit(value: byte) -> Option[u32] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0').to_uint32())
+        Option::Some((value - b'0').to_u32())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10).to_uint32())
+        Option::Some((value - b'a' + 10).to_u32())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10).to_uint32())
+        Option::Some((value - b'A' + 10).to_u32())
     } else {
         Option::None
     }
 }
 
-fn unicode_escape(value: string, start: int, length: int) -> Result[(char, int), string] {
+fn unicode_escape(value: string, start: isize, length: isize) -> Result[(char, isize), string] {
     if start + length > value.byte_len() {
         return Result::Err("incomplete unicode escape")
     } else {};
-    let mut codepoint = 0.to_uint32();
+    let mut codepoint = 0.to_u32();
     for index in start..start + length {
         match hex_digit(value.byte_get(index)) {
             Some(digit) => {
@@ -69,7 +69,7 @@ fn unicode_escape(value: string, start: int, length: int) -> Result[(char, int),
             None => return Result::Err("invalid unicode escape"),
         }
     }
-    match char_from_uint32(codepoint) {
+    match char_from_u32(codepoint) {
         Some(character) => Result::Ok((character, start + length)),
         None => Result::Err("invalid unicode scalar"),
     }
@@ -140,8 +140,8 @@ fn parse_quoted(value: string) -> Result[string, string] {
     }
 }
 
-fn top_level_separator(value: string, expected: byte) -> Option[int] {
-    let mut quote = 0.to_uint8();
+fn top_level_separator(value: string, expected: byte) -> Option[isize] {
+    let mut quote = 0.to_u8();
     let mut escaped = false;
     let mut square = 0;
     let mut curly = 0;
@@ -228,7 +228,7 @@ fn parse_key_path(value: string) -> Result[Vec[string], string] {
     Result::Ok(result)
 }
 
-fn parse_integer(value: string) -> Result[int64, string] {
+fn parse_integer(value: string) -> Result[i64, string] {
     let normalized = text::replace(value, "_", "");
     let negative = normalized.byte_len() > 0 && normalized.byte_get(0) == b'-';
     let positive = normalized.byte_len() > 0 && normalized.byte_get(0) == b'+';
@@ -252,7 +252,7 @@ fn parse_integer(value: string) -> Result[int64, string] {
             0 - parsed
         } else {
             parsed
-        }).to_int64(),
+        }).to_i64(),
     )
 }
 
@@ -586,7 +586,7 @@ pub fn as_string(value: Value) -> Option[string] {
     }
 }
 
-pub fn as_integer(value: Value) -> Option[int64] {
+pub fn as_integer(value: Value) -> Option[i64] {
     match value {
         Value::Integer(value) => Option::Some(value),
         _ => Option::None,

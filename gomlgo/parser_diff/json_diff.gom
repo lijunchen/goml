@@ -25,7 +25,7 @@ pub struct Difference {
     pub path: string,
     pub expected: string,
     pub actual: string,
-    pub offset: int,
+    pub offset: isize,
 }
 
 pub fn mode_from_string(value: string) -> Option[Mode] {
@@ -54,7 +54,7 @@ fn ignored_field(mode: Mode, name: string) -> bool {
         && (name == "doc" || name == "comment" || name == "comments" || name == "go_version")
 }
 
-fn difference(path: string, expected: json::Value, actual: json::Value, offset: int) -> Difference {
+fn difference(path: string, expected: json::Value, actual: json::Value, offset: isize) -> Difference {
     Difference { path, expected: json::encode(expected), actual: json::encode(actual), offset }
 }
 
@@ -63,7 +63,7 @@ fn compare_object(
     expected: Vec[(string, json::Value)],
     path: string,
     mode: Mode,
-    parent_offset: int,
+    parent_offset: isize,
 ) -> Option[Difference] {
     let actual_value = json::Value::Object(actual);
     let expected_value = json::Value::Object(expected);
@@ -120,7 +120,7 @@ fn compare_array(
     path: string,
     key: string,
     mode: Mode,
-    offset: int,
+    offset: isize,
 ) -> Option[Difference] {
     if actual.len() != expected.len() {
         Option::Some(
@@ -155,7 +155,7 @@ fn compare_json(
     path: string,
     key: string,
     mode: Mode,
-    offset: int,
+    offset: isize,
 ) -> Option[Difference] {
     match (actual, expected) {
         (json::Value::Object(actual), json::Value::Object(expected)) => {

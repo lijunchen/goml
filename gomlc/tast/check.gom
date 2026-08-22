@@ -10,16 +10,16 @@ use std::text;
 struct FloatDecimal {
     negative: bool,
     digits: string,
-    exponent: int,
+    exponent: isize,
 }
 
-fn char_hex_value(value: uint8) -> Option[uint32] {
+fn char_hex_value(value: u8) -> Option[u32] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0').to_uint32())
+        Option::Some((value - b'0').to_u32())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10).to_uint32())
+        Option::Some((value - b'A' + 10).to_u32())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10).to_uint32())
+        Option::Some((value - b'a' + 10).to_u32())
     } else {
         Option::None
     }
@@ -41,15 +41,15 @@ fn parse_char_literal(value: string) -> Option[char] {
             b'"' => Option::Some('"'),
             b'\\' => Option::Some('\\'),
             b'/' => Option::Some('/'),
-            b'b' => char_from_uint32(8),
-            b'f' => char_from_uint32(12),
+            b'b' => char_from_u32(8),
+            b'f' => char_from_u32(12),
             b'n' => Option::Some('\n'),
             b'r' => Option::Some('\r'),
             b't' => Option::Some('\t'),
             _ => Option::None,
         }
     } else if value.byte_len() == 6 && value.byte_get(1) == b'u' {
-        let mut code = 0.to_uint32();
+        let mut code = 0.to_u32();
         for index in 2..6 {
             match char_hex_value(value.byte_get(index)) {
                 Some(digit) => {
@@ -58,7 +58,7 @@ fn parse_char_literal(value: string) -> Option[char] {
                 None => return Option::None,
             }
         }
-        char_from_uint32(code)
+        char_from_u32(code)
     } else {
         Option::None
     }
@@ -69,7 +69,7 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
         Some(character) => character,
         None => {
             push_diagnostic(ctx, "invalid char literal");
-            match char_from_uint32(0) {
+            match char_from_u32(0) {
                 Some(character) => character,
                 None => ' ',
             }
@@ -77,7 +77,7 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
     }
 }
 
-fn decimal_digit(value: uint8) -> string {
+fn decimal_digit(value: u8) -> string {
     match value {
         0 => "0",
         1 => "1",
@@ -93,7 +93,7 @@ fn decimal_digit(value: uint8) -> string {
 }
 
 fn increment_decimal(value: string) -> string {
-    let digits: Vec[uint8] = Vec::with_capacity(value.byte_len() + 1);
+    let digits: Vec[u8] = Vec::with_capacity(value.byte_len() + 1);
     for index in 0..value.byte_len() {
         digits.push(value.byte_get(index))
     }
@@ -101,7 +101,7 @@ fn increment_decimal(value: string) -> string {
     while index >= 0 {
         let byte = digits.get(index);
         if byte == b'9' {
-            digits[index] = 48.to_uint8();
+            digits[index] = 48.to_u8();
             index = index - 1;
         } else {
             digits[index] = byte + 1;
@@ -126,7 +126,7 @@ fn increment_decimal(value: string) -> string {
     builder.finish()
 }
 
-fn repeated_zeros(count: int) -> string {
+fn repeated_zeros(count: isize) -> string {
     let builder = text::StringBuilder::with_capacity(count);
     for _ in 0..count {
         builder.write_char('0')
@@ -149,7 +149,7 @@ fn trim_fractional_zeros(value: string) -> string {
     }
 }
 
-fn fixed_decimal(coefficient: string, power: int) -> string {
+fn fixed_decimal(coefficient: string, power: isize) -> string {
     let decimal_position = coefficient.byte_len() + power;
     let value = if decimal_position <= 0 {
         "0." + repeated_zeros(-decimal_position) + coefficient
@@ -210,14 +210,14 @@ fn signed_decimal(negative: bool, value: string) -> string {
     }
 }
 
-fn float32_literal_matches(value: string, expected: float64) -> bool {
+fn float32_literal_matches(value: string, expected: f64) -> bool {
     match numeric::parse_float32(value) {
         Some(parsed) => parsed == expected,
         None => false,
     }
 }
 
-fn absolute_float64(value: float64) -> float64 {
+fn absolute_float64(value: f64) -> f64 {
     if value < 0.0 {
         -value
     } else {
@@ -231,7 +231,7 @@ fn decimal_coefficient_even(value: string) -> bool {
 }
 
 fn closer_float_literal(
-    expected: float64,
+    expected: f64,
     left: string,
     left_coefficient: string,
     right: string,
@@ -260,7 +260,7 @@ fn closer_float_literal(
     }
 }
 
-fn shortest_float32_literal(value: float64) -> string {
+fn shortest_float32_literal(value: f64) -> string {
     let full = value.to_string();
     match float_decimal(full) {
         Some(parts) => {
@@ -1323,7 +1323,7 @@ fn check_constructor_expr(
     }
 }
 
-fn named_expr_field_before(values: Vec[(string, hir::Expr)], end: int, name: string) -> bool {
+fn named_expr_field_before(values: Vec[(string, hir::Expr)], end: isize, name: string) -> bool {
     for index in 0..end {
         if values[index].0 == name {
             return true
@@ -1823,7 +1823,7 @@ fn check_closure_expr(
     }
 }
 
-fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
+fn callable_parts(ctx: Checker, value: Type, arity: isize) -> (Vec[Type], Type) {
     match prune(value) {
         Func { params, ret_ty } => (params, ret_ty),
         Var(variable) => {
@@ -1857,7 +1857,7 @@ fn normalize_function_expr(ctx: Checker, value: Expr) -> Expr {
     }
 }
 
-fn array_wildcard_length(params: Vec[Type], values: Vec[Expr]) -> Option[int] {
+fn array_wildcard_length(params: Vec[Type], values: Vec[Expr]) -> Option[isize] {
     for offset in 0..params.len() {
         let index = params.len() - 1 - offset;
         if index < values.len() {
@@ -1874,7 +1874,7 @@ fn array_wildcard_length(params: Vec[Type], values: Vec[Expr]) -> Option[int] {
     Option::None
 }
 
-fn specialize_array_type(value: Type, length: int) -> Type {
+fn specialize_array_type(value: Type, length: isize) -> Type {
     match prune(value) {
         Array { len, elem } => Type::Array {
             len: if len < 0 {
@@ -2055,7 +2055,7 @@ fn apply_typed_call(
     raw_values: Vec[Expr],
     params: Vec[Type],
     ret_ty: Type,
-    prefix_len: int,
+    prefix_len: isize,
     is_static: bool,
 ) -> Expr {
     let values: Vec[Expr] = Vec::from_array([]);
@@ -3168,7 +3168,7 @@ fn pattern_has_or_binding_diagnostic(ctx: Checker, span: ast::Span) -> bool {
     false
 }
 
-fn tast_pattern_binding_count(value: Pat) -> int {
+fn tast_pattern_binding_count(value: Pat) -> isize {
     match value {
         Var { name: _, is_mut: _, ty: _ } => 1,
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
@@ -3385,7 +3385,7 @@ fn check_select_expr(
     Expr::Select { mode, arms: typed_arms, ty: result_ty }
 }
 
-fn diagnostics_invalidate_coverage(ctx: Checker, start: int) -> bool {
+fn diagnostics_invalidate_coverage(ctx: Checker, start: isize) -> bool {
     for index in start..ctx.diagnostics.len() {
         let message = ctx.diagnostics[index].message;
         if message.starts_with("Or-pattern alternatives")
@@ -3434,7 +3434,7 @@ fn try_type_parts(builtin: BuiltinContract, value: Type) -> Option[(string, Vec[
     }
 }
 
-fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[int] {
+fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[isize] {
     match find_enum_by_name(ctx, name) {
         Some(definition) => {
             for index in 0..definition.variants.len() {
@@ -3525,7 +3525,7 @@ fn result_try_shape_is_valid(ctx: Checker, name: string, args: Vec[Type]) -> boo
     }
 }
 
-fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: Vec[Type]) -> Expr {
+fn check_option_try(ctx: Checker, index: isize, inner: Expr, name: string, args: Vec[Type]) -> Expr {
     let some_name = ctx.builtin.option.some.name;
     let none_name = ctx.builtin.option.none.name;
     let ok_ty = args[0];
@@ -3582,7 +3582,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     Expr::Match { expr: inner, arms, coverage: Option::None, ty: ok_ty }
 }
 
-fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: Vec[Type]) -> Expr {
+fn check_result_try(ctx: Checker, index: isize, inner: Expr, name: string, args: Vec[Type]) -> Expr {
     let ok_name = ctx.builtin.result.ok.name;
     let error_name = ctx.builtin.result.err.name;
     let ok_ty = args[0];
@@ -3648,7 +3648,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
 
 fn check_try_expr(
     ctx: Checker,
-    index: int,
+    index: isize,
     source: hir::Expr,
     span: ast::Span,
     result_expected: Option[Type],
@@ -3974,7 +3974,7 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
     }
 }
 
-fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int) -> Expr {
+fn check_projection_expr(ctx: Checker, source: hir::Expr, index: isize) -> Expr {
     let always_exits = hir_expr_always_exits_loop_control(source);
     let value = check_expr(ctx, source, Option::None);
     if always_exits {
@@ -4389,7 +4389,7 @@ fn check_loop_expr(
     }
 }
 
-fn loop_target(ctx: Checker, label: Option[string]) -> Option[int] {
+fn loop_target(ctx: Checker, label: Option[string]) -> Option[isize] {
     match label {
         None => if ctx.loop_results.is_empty() {
             Option::None
@@ -5193,7 +5193,7 @@ fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
     }
 }
 
-fn named_pattern_field_before(values: Vec[(string, hir::Pat)], end: int, name: string) -> bool {
+fn named_pattern_field_before(values: Vec[(string, hir::Pat)], end: isize, name: string) -> bool {
     for index in 0..end {
         if values[index].0 == name {
             return true
@@ -5302,7 +5302,7 @@ fn check_struct_pattern(
     }
 }
 
-fn array_pattern_types(ctx: Checker, expected: Type, fixed_count: int) -> (Type, Type) {
+fn array_pattern_types(ctx: Checker, expected: Type, fixed_count: isize) -> (Type, Type) {
     match prune(expected) {
         Array { len: length, elem } => (
             elem,

@@ -13,7 +13,7 @@ pub enum Value {
 
 struct JsonParser {
     input: string,
-    index: Ref[int],
+    index: Ref[isize],
 }
 
 fn json_parser(input: string) -> JsonParser {
@@ -35,23 +35,23 @@ fn skip_json_whitespace(value: JsonParser) -> unit {
     }
 }
 
-fn hex_digit(value: byte) -> Option[uint32] {
+fn hex_digit(value: byte) -> Option[u32] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0').to_uint32())
+        Option::Some((value - b'0').to_u32())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10).to_uint32())
+        Option::Some((value - b'A' + 10).to_u32())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10).to_uint32())
+        Option::Some((value - b'a' + 10).to_u32())
     } else {
         Option::None
     }
 }
 
-fn parse_hex_quad(value: JsonParser) -> Result[uint32, string] {
+fn parse_hex_quad(value: JsonParser) -> Result[u32, string] {
     if value.index.get() + 4 > value.input.byte_len() {
         Result::Err(json_error(value, "incomplete unicode escape"))
     } else {
-        let mut result = 0.to_uint32();
+        let mut result = 0.to_u32();
         for offset in 0..4 {
             match hex_digit(value.input.byte_get(value.index.get() + offset)) {
                 Some(digit) => {
@@ -67,11 +67,11 @@ fn parse_hex_quad(value: JsonParser) -> Result[uint32, string] {
     }
 }
 
-fn write_codepoint(value: JsonParser, builder: text::StringBuilder, codepoint: uint32) -> Result[
+fn write_codepoint(value: JsonParser, builder: text::StringBuilder, codepoint: u32) -> Result[
     unit,
     string,
 ] {
-    match char_from_uint32(codepoint) {
+    match char_from_u32(codepoint) {
         Some(character) => {
             builder.write_char(character);
             Result::Ok(())
@@ -137,12 +137,12 @@ fn parse_json_string(value: JsonParser) -> Result[string, string] {
             } else if escape == b'/' {
                 builder.write_char('/')
             } else if escape == b'b' {
-                match char_from_uint32(8) {
+                match char_from_u32(8) {
                     Some(character) => builder.write_char(character),
                     None => (),
                 }
             } else if escape == b'f' {
-                match char_from_uint32(12) {
+                match char_from_u32(12) {
                     Some(character) => builder.write_char(character),
                     None => (),
                 }
@@ -332,7 +332,7 @@ pub fn parse(input: string) -> Result[Value, string] {
 }
 
 fn json_hex_digit(value: byte) -> char {
-    "0123456789abcdef".get(value.to_int())
+    "0123456789abcdef".get(value.to_isize())
 }
 
 fn write_json_string(builder: text::StringBuilder, value: string) -> unit {
@@ -443,7 +443,7 @@ pub fn as_string(value: Value) -> Option[string] {
     }
 }
 
-fn parse_json_int_text(value: string) -> Option[int] {
+fn parse_json_int_text(value: string) -> Option[isize] {
     if value.byte_len() == 0 {
         Option::None
     } else {
@@ -462,7 +462,7 @@ fn parse_json_int_text(value: string) -> Option[int] {
             if byte < b'0' || byte > b'9' {
                 return Option::None
             } else {
-                result = result * 10 + (byte - b'0').to_int();
+                result = result * 10 + (byte - b'0').to_isize();
             };
             index += 1;
         }
@@ -476,7 +476,7 @@ fn parse_json_int_text(value: string) -> Option[int] {
     }
 }
 
-pub fn as_int(value: Value) -> Option[int] {
+pub fn as_int(value: Value) -> Option[isize] {
     match value {
         Number(number) => parse_json_int_text(number),
         _ => Option::None,

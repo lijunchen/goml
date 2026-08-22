@@ -24,7 +24,7 @@ fn comptime_derive_name(value: ctir::CtDeriveEntry) -> string {
     }
 }
 
-fn derive_attribute_at(value: Analysis, offset: int) -> bool {
+fn derive_attribute_at(value: Analysis, offset: isize) -> bool {
     match node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
         Some(node) => {
             let mut index = token_index_at_or_after(value.syntax, node.start);
@@ -108,7 +108,7 @@ fn comptime_derive_targets(value: Analysis, canonical: string) -> Vec[ComptimeDe
     result
 }
 
-fn comptime_derive_targets_at(value: Analysis, offset: int) -> Vec[ComptimeDeriveTarget] {
+fn comptime_derive_targets_at(value: Analysis, offset: isize) -> Vec[ComptimeDeriveTarget] {
     if !derive_attribute_at(value, offset) {
         return Vec::from_array([])
     } else {};
@@ -154,7 +154,7 @@ fn comptime_derive_definition(value: Analysis, target: ComptimeDeriveTarget) -> 
     }
 }
 
-fn comptime_derive_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
+fn comptime_derive_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let result: Vec[DefinitionResult] = Vec::from_array([]);
     for target in comptime_derive_targets_at(value, offset) {
         match comptime_derive_definition(value, target) {
@@ -165,7 +165,7 @@ fn comptime_derive_definitions(value: Analysis, offset: int) -> Vec[DefinitionRe
     result
 }
 
-fn comptime_derive_hover(value: Analysis, offset: int) -> Option[string] {
+fn comptime_derive_hover(value: Analysis, offset: isize) -> Option[string] {
     let targets = comptime_derive_targets_at(value, offset);
     if targets.len() == 1 {
         Option::Some("comptime derive " + comptime_derive_name(targets[0].entry))

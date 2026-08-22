@@ -158,7 +158,7 @@ fn cli_help_argument(argument: string) -> bool {
     argument == "--help" || argument.starts_with("-h")
 }
 
-fn cli_minimum(left: int, middle: int, right: int) -> int {
+fn cli_minimum(left: isize, middle: isize, right: isize) -> isize {
     let first = if left < middle {
         left
     } else {
@@ -171,7 +171,7 @@ fn cli_minimum(left: int, middle: int, right: int) -> int {
     }
 }
 
-fn cli_maximum(left: int, right: int) -> int {
+fn cli_maximum(left: isize, right: isize) -> isize {
     if left > right {
         left
     } else {
@@ -179,14 +179,14 @@ fn cli_maximum(left: int, right: int) -> int {
     }
 }
 
-fn cli_edit_distance(left: string, right: string) -> int {
-    let initial: Vec[int] = Vec::from_array([]);
+fn cli_edit_distance(left: string, right: string) -> isize {
+    let initial: Vec[isize] = Vec::from_array([]);
     for index in 0..right.byte_len() + 1 {
         initial.push(index)
     }
     let mut previous = initial;
     for left_index in 0..left.byte_len() {
-        let current: Vec[int] = Vec::from_array([]);
+        let current: Vec[isize] = Vec::from_array([]);
         current.push(left_index + 1);
         for right_index in 0..right.byte_len() {
             let substitution = if left.byte_get(left_index) == right.byte_get(right_index) {
@@ -453,8 +453,8 @@ fn print_cli_help(message: string) -> unit {
 
 struct CliSimilarity {
     value: string,
-    numerator: int,
-    denominator: int,
+    numerator: isize,
+    denominator: isize,
 }
 
 fn cli_similarity_compare(left: CliSimilarity, right: CliSimilarity) -> cmp::Ordering {

@@ -44,8 +44,8 @@ pub struct TraitImpl {
     pub trait_ref: TraitRef,
     pub for_ty: Type,
     pub associated_types: Vec[(string, Type)],
-    pub generic_count: int,
-    pub predicate_count: int,
+    pub generic_count: isize,
+    pub predicate_count: isize,
 }
 
 pub struct LetStmt {
@@ -138,12 +138,12 @@ pub enum Expr {
         ty: Type,
     },
     Break {
-        target: int,
+        target: isize,
         value: Option[Expr],
         ty: Type,
     },
     Continue {
-        target: int,
+        target: isize,
         ty: Type,
     },
     Return {
@@ -157,7 +157,7 @@ pub enum Expr {
     ConstrGet {
         expr: Expr,
         constructor: Constructor,
-        field_index: int,
+        field_index: isize,
         ty: Type,
     },
     Unary {
@@ -210,7 +210,7 @@ pub enum Expr {
     },
     Proj {
         tuple: Expr,
-        index: int,
+        index: isize,
         ty: Type,
     },
 }

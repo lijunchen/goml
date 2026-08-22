@@ -432,7 +432,7 @@ fn parse_unary_expression(parser: Parser) -> ast::Node {
     }
 }
 
-fn precedence(kind: token::Kind) -> int {
+fn precedence(kind: token::Kind) -> isize {
     if token::equal(kind, token::Kind::Lor) {
         1
     } else if token::equal(kind, token::Kind::Land) {
@@ -459,7 +459,7 @@ fn precedence(kind: token::Kind) -> int {
     }
 }
 
-fn parse_binary_expression(parser: Parser, initial: ast::Node, minimum: int) -> ast::Node {
+fn parse_binary_expression(parser: Parser, initial: ast::Node, minimum: isize) -> ast::Node {
     let mut left = initial;
     let mut continuing = true;
     while continuing {

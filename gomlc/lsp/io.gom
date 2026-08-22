@@ -25,7 +25,7 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
 }
 
 pub fn read_rpc_payload() -> Result[string, string] {
-    let mut length: Option[int] = Option::None;
+    let mut length: Option[isize] = Option::None;
     let length = loop {
         let line = read_stdin_line()?.to_string()?;
         if header_line_content(line) == "" {

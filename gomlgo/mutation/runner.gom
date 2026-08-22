@@ -12,9 +12,9 @@ use std::json;
 use std::path;
 
 pub struct Summary {
-    pub seeds: int,
-    pub cases: int,
-    pub failures: int,
+    pub seeds: isize,
+    pub cases: isize,
+    pub failures: isize,
 }
 
 fn collect_go_files(directory: string, files: Vec[string]) -> Result[unit, string] {
@@ -39,7 +39,7 @@ fn copy_bytes(value: bytes::Bytes) -> bytes::Bytes {
     result
 }
 
-fn delete_range(value: bytes::Bytes, start: int, end: int) -> bytes::Bytes {
+fn delete_range(value: bytes::Bytes, start: isize, end: isize) -> bytes::Bytes {
     let result = bytes::Bytes::with_capacity(value.len() - (end - start));
     for index in 0..value.len() {
         if index < start || index >= end {
@@ -49,7 +49,7 @@ fn delete_range(value: bytes::Bytes, start: int, end: int) -> bytes::Bytes {
     result
 }
 
-fn slice_bytes(value: bytes::Bytes, start: int, end: int) -> bytes::Bytes {
+fn slice_bytes(value: bytes::Bytes, start: isize, end: isize) -> bytes::Bytes {
     let result = bytes::Bytes::with_capacity(end - start);
     for index in start..end {
         result.push(value.get(index))
@@ -57,7 +57,7 @@ fn slice_bytes(value: bytes::Bytes, start: int, end: int) -> bytes::Bytes {
     result
 }
 
-fn insert_bytes(value: bytes::Bytes, offset: int, inserted: bytes::Bytes) -> bytes::Bytes {
+fn insert_bytes(value: bytes::Bytes, offset: isize, inserted: bytes::Bytes) -> bytes::Bytes {
     let result = bytes::Bytes::with_capacity(value.len() + inserted.len());
     for index in 0..offset {
         result.push(value.get(index))
@@ -125,7 +125,7 @@ fn mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
             insert_bytes(
                 source,
                 value.start,
-                bytes::Bytes::from_vec(Vec::from_array([255.to_uint8()])),
+                bytes::Bytes::from_vec(Vec::from_array([255.to_u8()])),
             ),
         )
     } else {};
@@ -206,7 +206,7 @@ fn oracle_json(value: differential::OracleResponse) -> string {
     )
 }
 
-fn first_actual_offset(value: parser::ParseResult) -> int {
+fn first_actual_offset(value: parser::ParseResult) -> isize {
     if value.diagnostics.is_empty() {
         -1
     } else {
@@ -214,7 +214,7 @@ fn first_actual_offset(value: parser::ParseResult) -> int {
     }
 }
 
-fn first_oracle_offset(value: differential::OracleResponse) -> int {
+fn first_oracle_offset(value: differential::OracleResponse) -> isize {
     if value.diagnostics.is_empty() {
         -1
     } else {
@@ -223,9 +223,9 @@ fn first_oracle_offset(value: differential::OracleResponse) -> int {
 }
 
 fn input_hash(value: bytes::Bytes) -> string {
-    let mut result = 2166136261.to_uint();
+    let mut result = 2166136261.to_usize();
     for index in 0..value.len() {
-        result = (result ^ value.get(index).to_uint()) * 16777619.to_uint();
+        result = (result ^ value.get(index).to_usize()) * 16777619.to_usize();
     }
     result.to_string()
 }
@@ -245,7 +245,7 @@ fn save_failure(
     fs::write_file(path::join(directory, "diff.txt"), message)
 }
 
-pub fn run(root: string, output: string, seed_limit: int) -> Result[Summary, string] {
+pub fn run(root: string, output: string, seed_limit: isize) -> Result[Summary, string] {
     let files: Vec[string] = Vec::from_array([]);
     if fs::is_file(root) {
         files.push(root)

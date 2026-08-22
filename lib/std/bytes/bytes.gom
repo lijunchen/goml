@@ -9,7 +9,7 @@ impl Bytes {
         Bytes { values: Vec::from_array([]) }
     }
 
-    pub fn with_capacity(capacity: int) -> Bytes {
+    pub fn with_capacity(capacity: isize) -> Bytes {
         Bytes { values: Vec::with_capacity(capacity) }
     }
 
@@ -21,11 +21,11 @@ impl Bytes {
         Bytes { values: value.to_bytes() }
     }
 
-    pub fn len(self: Bytes) -> int {
+    pub fn len(self: Bytes) -> isize {
         self.values.len()
     }
 
-    pub fn capacity(self: Bytes) -> int {
+    pub fn capacity(self: Bytes) -> isize {
         self.values.capacity()
     }
 
@@ -33,11 +33,11 @@ impl Bytes {
         self.values.is_empty()
     }
 
-    pub fn get(self: Bytes, index: int) -> byte {
+    pub fn get(self: Bytes, index: isize) -> byte {
         self.values[index]
     }
 
-    pub fn set(self: Bytes, index: int, value: byte) -> unit {
+    pub fn set(self: Bytes, index: isize, value: byte) -> unit {
         self.values[index] = value;
     }
 
@@ -49,11 +49,11 @@ impl Bytes {
         self.values.pop()
     }
 
-    pub fn reserve(self: Bytes, additional: int) -> unit {
+    pub fn reserve(self: Bytes, additional: isize) -> unit {
         self.values.reserve(additional)
     }
 
-    pub fn truncate(self: Bytes, len: int) -> unit {
+    pub fn truncate(self: Bytes, len: isize) -> unit {
         self.values.truncate(len)
     }
 
@@ -61,7 +61,7 @@ impl Bytes {
         self.values.clear()
     }
 
-    pub fn slice(self: Bytes, start: int, end: int) -> Slice[byte] {
+    pub fn slice(self: Bytes, start: isize, end: isize) -> Slice[byte] {
         self.values.slice(start, end)
     }
 

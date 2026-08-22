@@ -7,11 +7,11 @@ pub enum Operation[T] {
 
 pub enum Selection[T] {
     Received {
-        index: int,
+        index: isize,
         value: Option[T],
     },
     Sent {
-        index: int,
+        index: isize,
     },
 }
 
@@ -20,14 +20,14 @@ pub enum SelectError {
 }
 
 struct PreparedOperations[T] {
-    kinds: Vec[int],
+    kinds: Vec[isize],
     receivers: Vec[Receiver[T]],
     senders: Vec[Sender[T]],
     values: Vec[T],
 }
 
 fn prepare[T](operations: Slice[Operation[T]]) -> PreparedOperations[T] {
-    let kinds: Vec[int] = Vec::with_capacity(operations.len());
+    let kinds: Vec[isize] = Vec::with_capacity(operations.len());
     let receivers: Vec[Receiver[T]] = Vec::new();
     let senders: Vec[Sender[T]] = Vec::new();
     let values: Vec[T] = Vec::new();
@@ -48,7 +48,7 @@ fn prepare[T](operations: Slice[Operation[T]]) -> PreparedOperations[T] {
 }
 
 fn prepared_slices[T](prepared: PreparedOperations[T]) -> (
-    Slice[int],
+    Slice[isize],
     Slice[Receiver[T]],
     Slice[Sender[T]],
     Slice[T],
@@ -61,7 +61,7 @@ fn prepared_slices[T](prepared: PreparedOperations[T]) -> (
     )
 }
 
-fn selection[T](index: int, kind: int, value: T, open: bool) -> Selection[T] {
+fn selection[T](index: isize, kind: isize, value: T, open: bool) -> Selection[T] {
     if kind == 0 {
         Selection::Received {
             index,

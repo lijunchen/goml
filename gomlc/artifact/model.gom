@@ -14,7 +14,7 @@ pub struct ArtifactFnScheme {
 }
 
 pub struct ArtifactComptimeUnit {
-    pub version: int,
+    pub version: isize,
     pub module: ctir::CtModule,
     pub semantic_hash: string,
 }
@@ -74,7 +74,7 @@ pub struct ArtifactPackageExports {
 pub struct ArtifactPackageInterface {
     pub package_name: string,
     pub name: string,
-    pub value_exports: Vec[(string, int)],
+    pub value_exports: Vec[(string, isize)],
     pub enum_variants: Vec[(string, Vec[string])],
 }
 
@@ -93,8 +93,8 @@ pub struct ArtifactTestDescriptor {
     pub symbol: string,
     pub display_name: string,
     pub source_path: string,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
     pub ignored: bool,
     pub ignore_reason: Option[string],
     pub arguments: Vec[(string, string)],

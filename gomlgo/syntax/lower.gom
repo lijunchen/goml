@@ -21,7 +21,7 @@ fn report(context: LowerContext, value: ast::Node, message: string) -> unit {
     )
 }
 
-fn int_field(context: LowerContext, value: ast::Node, name: string) -> int {
+fn int_field(context: LowerContext, value: ast::Node, name: string) -> isize {
     let field = ast::get_field(value, name);
     if !field.present {
         report(context, value, "missing integer field " + name);
@@ -468,7 +468,7 @@ fn contains_name(values: Vec[string], name: string) -> bool {
     false
 }
 
-fn ast_node_count(value: ast::Node) -> int {
+fn ast_node_count(value: ast::Node) -> isize {
     let mut count = 1;
     for entry in value.fields {
         match entry.1 {

@@ -1,16 +1,16 @@
 package scanner;
 
-fn escape_simple(value: int32, quote: int32) -> bool {
-    value == b'a'.to_int32() || value == b'b'.to_int32() || value == b'f'.to_int32()
-        || value == b'n'.to_int32()
-        || value == b'r'.to_int32()
-        || value == b't'.to_int32()
-        || value == b'v'.to_int32()
-        || value == b'\\'.to_int32()
+fn escape_simple(value: i32, quote: i32) -> bool {
+    value == b'a'.to_i32() || value == b'b'.to_i32() || value == b'f'.to_i32()
+        || value == b'n'.to_i32()
+        || value == b'r'.to_i32()
+        || value == b't'.to_i32()
+        || value == b'v'.to_i32()
+        || value == b'\\'.to_i32()
         || value == quote
 }
 
-fn scan_escape(scanner: Scanner, quote: int32) -> bool {
+fn scan_escape(scanner: Scanner, quote: i32) -> bool {
     let start = scanner.offset.get();
     if escape_simple(scanner.current.get(), quote) {
         next(scanner);
@@ -18,22 +18,22 @@ fn scan_escape(scanner: Scanner, quote: int32) -> bool {
     } else {};
     let mut digits = 0;
     let mut base = 0;
-    let mut maximum = 0.to_uint32();
-    if scanner.current.get() >= b'0'.to_int32() && scanner.current.get() <= b'7'.to_int32() {
+    let mut maximum = 0.to_u32();
+    if scanner.current.get() >= b'0'.to_i32() && scanner.current.get() <= b'7'.to_i32() {
         digits = 3;
         base = 8;
         maximum = 255;
-    } else if scanner.current.get() == b'x'.to_int32() {
+    } else if scanner.current.get() == b'x'.to_i32() {
         next(scanner);
         digits = 2;
         base = 16;
         maximum = 255;
-    } else if scanner.current.get() == b'u'.to_int32() {
+    } else if scanner.current.get() == b'u'.to_i32() {
         next(scanner);
         digits = 4;
         base = 16;
         maximum = 1114111;
-    } else if scanner.current.get() == b'U'.to_int32() {
+    } else if scanner.current.get() == b'U'.to_i32() {
         next(scanner);
         digits = 8;
         base = 16;
@@ -50,7 +50,7 @@ fn scan_escape(scanner: Scanner, quote: int32) -> bool {
         );
         return false
     };
-    let mut value = 0.to_uint32();
+    let mut value = 0.to_u32();
     while digits > 0 {
         let digit = digit_value(scanner.current.get());
         if digit >= base {
@@ -65,7 +65,7 @@ fn scan_escape(scanner: Scanner, quote: int32) -> bool {
             );
             return false
         } else {};
-        value = value * base.to_uint32() + digit.to_uint32();
+        value = value * base.to_u32() + digit.to_u32();
         next(scanner);
         digits -= 1;
     }
@@ -84,7 +84,7 @@ fn scan_rune(scanner: Scanner) -> string {
     let mut finished = false;
     while !finished {
         let current = scanner.current.get();
-        if current == b'\n'.to_int32() || current < 0 {
+        if current == b'\n'.to_i32() || current < 0 {
             if valid {
                 report(scanner, start, "rune literal not terminated");
                 valid = false;
@@ -92,11 +92,11 @@ fn scan_rune(scanner: Scanner) -> string {
             finished = true;
         } else {
             next(scanner);
-            if current == b'\''.to_int32() {
+            if current == b'\''.to_i32() {
                 finished = true;
             } else {
                 count += 1;
-                if current == b'\\'.to_int32() && !scan_escape(scanner, b'\''.to_int32()) {
+                if current == b'\\'.to_i32() && !scan_escape(scanner, b'\''.to_i32()) {
                     valid = false;
                 } else {}
             }
@@ -113,22 +113,22 @@ fn scan_string(scanner: Scanner) -> string {
     let mut finished = false;
     while !finished {
         let current = scanner.current.get();
-        if current == b'\n'.to_int32() || current < 0 {
+        if current == b'\n'.to_i32() || current < 0 {
             report(scanner, start, "string literal not terminated");
             finished = true;
         } else {
             next(scanner);
-            if current == b'"'.to_int32() {
+            if current == b'"'.to_i32() {
                 finished = true;
-            } else if current == b'\\'.to_int32() {
-                let _ = scan_escape(scanner, b'"'.to_int32());
+            } else if current == b'\\'.to_i32() {
+                let _ = scan_escape(scanner, b'"'.to_i32());
             } else {}
         }
     }
     source_text(scanner.source, start, scanner.offset.get())
 }
 
-fn strip_carriage_returns(source: Vec[byte], start: int, end: int, comment: bool) -> string {
+fn strip_carriage_returns(source: Vec[byte], start: isize, end: isize, comment: bool) -> string {
     let output: Vec[byte] = Vec::with_capacity(end - start);
     let mut index = start;
     while index < end {
@@ -155,9 +155,9 @@ fn scan_raw_string(scanner: Scanner) -> string {
             finished = true;
         } else {
             next(scanner);
-            if current == b'`'.to_int32() {
+            if current == b'`'.to_i32() {
                 finished = true;
-            } else if current == b'\r'.to_int32() {
+            } else if current == b'\r'.to_i32() {
                 has_carriage_return = true;
             } else {}
         }

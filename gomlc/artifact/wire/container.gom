@@ -5,35 +5,35 @@ use std::bytes;
 use std::cmp;
 use std::collections;
 
-pub fn required_section_flag() -> uint16 {
+pub fn required_section_flag() -> u16 {
     1
 }
 
-pub fn string_table_section_id() -> uint16 {
+pub fn string_table_section_id() -> u16 {
     1
 }
 
-pub fn value_section_id() -> uint16 {
+pub fn value_section_id() -> u16 {
     2
 }
 
 pub struct ArtifactBinarySection {
-    pub id: uint16,
-    pub version: uint16,
-    pub flags: uint16,
+    pub id: u16,
+    pub version: u16,
+    pub flags: u16,
     pub data: bytes::Bytes,
 }
 
 pub struct ArtifactBinaryContainer {
-    pub kind: uint8,
+    pub kind: u8,
     pub sections: Vec[ArtifactBinarySection],
 }
 
-fn artifact_binary_header_size() -> int {
+fn artifact_binary_header_size() -> isize {
     70
 }
 
-fn artifact_binary_directory_entry_size() -> int {
+fn artifact_binary_directory_entry_size() -> isize {
     56
 }
 
@@ -54,7 +54,7 @@ pub fn artifact_binary_bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> b
     }
 }
 
-fn artifact_binary_hex_value(value: uint8) -> uint8 {
+fn artifact_binary_hex_value(value: u8) -> u8 {
     if value >= 48 && value <= 57 {
         value - 48
     } else if value >= 97 && value <= 102 {
@@ -86,7 +86,7 @@ fn artifact_binary_sort_sections(values: Vec[ArtifactBinarySection]) -> Vec[Arti
 }
 
 fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
-    let mut previous: Option[uint16] = Option::None;
+    let mut previous: Option[u16] = Option::None;
     for value in values {
         match previous {
             Some(id) => if id == value.id {
@@ -99,7 +99,7 @@ fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
     true
 }
 
-pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinarySection]) -> Result[
+pub fn encode_artifact_binary_container(kind: u8, sections: Vec[ArtifactBinarySection]) -> Result[
     bytes::Bytes,
     string,
 ] {
@@ -125,10 +125,10 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
     artifact_binary_write_u8(writer, kind);
     artifact_binary_write_u8(writer, 0);
     artifact_binary_write_u32(writer, 5);
-    artifact_binary_write_u16(writer, sections.len().to_uint16());
+    artifact_binary_write_u16(writer, sections.len().to_u16());
     artifact_binary_write_u16(writer, 0);
-    artifact_binary_write_u64(writer, artifact_binary_header_size().to_uint64());
-    artifact_binary_write_u64(writer, payload.len().to_uint64());
+    artifact_binary_write_u64(writer, artifact_binary_header_size().to_u64());
+    artifact_binary_write_u64(writer, payload.len().to_u64());
     artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(payload));
     let mut offset = artifact_binary_header_size()
         + artifact_binary_directory_entry_size() * sections.len();
@@ -137,8 +137,8 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
         artifact_binary_write_u16(writer, section.version);
         artifact_binary_write_u16(writer, section.flags);
         artifact_binary_write_u16(writer, 0);
-        artifact_binary_write_u64(writer, offset.to_uint64());
-        artifact_binary_write_u64(writer, section.data.len().to_uint64());
+        artifact_binary_write_u64(writer, offset.to_u64());
+        artifact_binary_write_u64(writer, section.data.len().to_u64());
         artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(section.data));
         offset = offset + section.data.len();
     }
@@ -146,14 +146,14 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
     Result::Ok(artifact_binary_writer_finish(writer))
 }
 
-fn artifact_binary_checked_int(reader: ArtifactBinaryReader, value: uint64, name: string) -> Result[
-    int,
+fn artifact_binary_checked_int(reader: ArtifactBinaryReader, value: u64, name: string) -> Result[
+    isize,
     string,
 ] {
     if value > 2147483647 {
         Result::Err(artifact_binary_reader_error(reader, name + " exceeds supported size"))
     } else {
-        Result::Ok(value.to_int())
+        Result::Ok(value.to_isize())
     }
 }
 
@@ -185,7 +185,7 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
     if compiler_abi != 5 {
         return Result::Err("unsupported binary artifact compiler ABI")
     } else {};
-    let section_count = artifact_binary_read_u16(reader)?.to_int();
+    let section_count = artifact_binary_read_u16(reader)?.to_isize();
     let reserved = artifact_binary_read_u16(reader)?;
     if section_count > 1024 {
         return Result::Err("too many binary artifact sections")
@@ -287,7 +287,7 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
     }
 }
 
-pub fn artifact_binary_find_section(value: ArtifactBinaryContainer, id: uint16) -> Option[
+pub fn artifact_binary_find_section(value: ArtifactBinaryContainer, id: u16) -> Option[
     ArtifactBinarySection,
 ] {
     for offset in 0..value.sections.len() {

@@ -10,7 +10,7 @@ pub struct HoverResult {
     pub span: ast::Span,
 }
 
-fn fact_contains(span: ast::Span, offset: int) -> bool {
+fn fact_contains(span: ast::Span, offset: isize) -> bool {
     span.start <= offset && offset < span.end
 }
 
@@ -65,7 +65,7 @@ fn hover_call_text(capability: tast::ComptimeCapability, ty: tast::Type) -> Opti
     }
 }
 
-fn hover_span(value: Analysis, span: ast::Span, offset: int) -> ast::Span {
+fn hover_span(value: Analysis, span: ast::Span, offset: isize) -> ast::Span {
     match token_at(value.syntax, offset) {
         Some(token) => if token.start >= span.start && token.end <= span.end {
             ast::span(token.start, token.end)
@@ -254,7 +254,7 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
     }
 }
 
-fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
+fn symbol_at_offset(value: Analysis, offset: isize) -> Option[Symbol] {
     let symbols = build_symbol_index(value).symbols;
     let mut index = symbols.len() - 1;
     while index >= 0 {
@@ -269,7 +269,7 @@ fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
     Option::None
 }
 
-pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
+pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
     match comptime_derive_hover(value, offset) {
         Some(contents) => match token_at(value.syntax, offset) {
             Some(token) => return Option::Some(

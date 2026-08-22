@@ -30,7 +30,7 @@ fn direct_delimiter_tokens(node: LocatedNode) -> Option[(LocatedToken, LocatedTo
     }
 }
 
-fn list_requires_flat_comma(kind: cst::NodeKind, items: int) -> bool {
+fn list_requires_flat_comma(kind: cst::NodeKind, items: isize) -> bool {
     items == 1
         && match kind {
             EXPR_TUPLE | TYPE_TUPLE | PATTERN_TUPLE => true,
@@ -111,7 +111,7 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
     };
     let (open, close) = delimiters;
     let body = parts();
-    let item_count: Ref[int] = Ref::new(0);
+    let item_count: Ref[isize] = Ref::new(0);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {

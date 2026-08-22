@@ -1613,7 +1613,7 @@ fn hashmap_option_info(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
-) -> (Type, Type, Type, bool, bool, int, int) {
+) -> (Type, Type, Type, bool, bool, isize, isize) {
     let args: Vec[repr::Type] = Vec::from_array([]);
     args.push(value);
     match find_instance(instances, builtin.option.name, args) {
@@ -2391,8 +2391,8 @@ fn hashmap_get_item(
     some_ty: Type,
     none_ty: Type,
     compact: bool,
-    some_tag: int,
-    none_tag: int,
+    some_tag: isize,
+    none_tag: isize,
 ) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let params: Vec[(string, Type)] = Vec::from_array([]);
@@ -3354,7 +3354,7 @@ fn dyn_methods(builtin: tast::BuiltinContract, functions: Vec[anf::Function], tr
     result
 }
 
-fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> int {
+fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> isize {
     let mut count = 0;
     for coercion in coercions {
         if raw_dyn_factory_name(coercion.trait_name, coercion.for_ty) == expected {
@@ -3369,7 +3369,7 @@ fn dyn_wrapper_name_count(
     coercions: Vec[DynCoercion],
     functions: Vec[anf::Function],
     expected: string,
-) -> int {
+) -> isize {
     let mut count = 0;
     for coercion in coercions {
         for method in dyn_methods(builtin, functions, coercion.trait_name) {

@@ -1,10 +1,10 @@
 package builtin;
 
 #[runtime("core.string_get")]
-extern fn string_get_raw(value: string, index: int) -> char;
+extern fn string_get_raw(value: string, index: isize) -> char;
 
 #[runtime("core.string_byte_slice")]
-extern fn string_byte_slice_raw(value: string, start: int, end: int) -> string;
+extern fn string_byte_slice_raw(value: string, start: isize, end: isize) -> string;
 
 #[runtime("core.string_from_utf8")]
 extern fn string_from_utf8_raw(bytes: Vec[byte]) -> (bool, string);
@@ -12,31 +12,31 @@ extern fn string_from_utf8_raw(bytes: Vec[byte]) -> (bool, string);
 #[runtime("core.char_to_string")]
 extern fn char_to_string_raw(value: char) -> string;
 
-fn utf8_invalid_decode() -> (bool, char, int) {
+fn utf8_invalid_decode() -> (bool, char, isize) {
     (false, '\u0000', 0)
 }
 
-fn utf8_valid_decode(value: uint32, width: int) -> (bool, char, int) {
+fn utf8_valid_decode(value: u32, width: isize) -> (bool, char, isize) {
     match __goml_builtin_char_from_uint32(value) {
         Some(character) => (true, character, width),
         None => utf8_invalid_decode(),
     }
 }
 
-fn utf8_invalid_continuation(value: uint32) -> bool {
+fn utf8_invalid_continuation(value: u32) -> bool {
     value < 128 || value > 191
 }
 
-fn utf8_valid_scalar(value: uint32) -> bool {
+fn utf8_valid_scalar(value: u32) -> bool {
     value <= 1114111 && !(value >= 55296 && value <= 57343)
 }
 
-fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
+fn string_decode_utf8_at(value: string, index: isize) -> (bool, char, isize) {
     let length = value.byte_len();
     if index < 0 || index >= length {
         return utf8_invalid_decode()
     } else {};
-    let first = value.byte_get(index).to_uint32();
+    let first = value.byte_get(index).to_u32();
     if first < 128 {
         utf8_valid_decode(first, 1)
     } else if first < 194 {
@@ -45,7 +45,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
         if length - index < 2 {
             return utf8_invalid_decode()
         } else {};
-        let second = value.byte_get(index + 1).to_uint32();
+        let second = value.byte_get(index + 1).to_u32();
         if utf8_invalid_continuation(second) {
             utf8_invalid_decode()
         } else {
@@ -55,8 +55,8 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
         if length - index < 3 {
             return utf8_invalid_decode()
         } else {};
-        let second = value.byte_get(index + 1).to_uint32();
-        let third = value.byte_get(index + 2).to_uint32();
+        let second = value.byte_get(index + 1).to_u32();
+        let third = value.byte_get(index + 2).to_u32();
         if utf8_invalid_continuation(second) || utf8_invalid_continuation(third)
             || (first == 224 && second < 160)
             || (first == 237 && second >= 160) {
@@ -68,9 +68,9 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
         if length - index < 4 {
             return utf8_invalid_decode()
         } else {};
-        let second = value.byte_get(index + 1).to_uint32();
-        let third = value.byte_get(index + 2).to_uint32();
-        let fourth = value.byte_get(index + 3).to_uint32();
+        let second = value.byte_get(index + 1).to_u32();
+        let third = value.byte_get(index + 2).to_u32();
+        let fourth = value.byte_get(index + 3).to_u32();
         if utf8_invalid_continuation(second) || utf8_invalid_continuation(third)
             || utf8_invalid_continuation(fourth)
             || (first == 240 && second < 144)
@@ -87,7 +87,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
     }
 }
 
-fn string_is_char_boundary(value: string, index: int) -> bool {
+fn string_is_char_boundary(value: string, index: isize) -> bool {
     if index < 0 || index > value.byte_len() {
         false
     } else if index == value.byte_len() {
@@ -97,7 +97,7 @@ fn string_is_char_boundary(value: string, index: int) -> bool {
     }
 }
 
-fn string_get(value: string, index: int) -> char {
+fn string_get(value: string, index: isize) -> char {
     let (valid, character, _) = string_decode_utf8_at(value, index);
     if valid {
         character
@@ -106,7 +106,7 @@ fn string_get(value: string, index: int) -> char {
     }
 }
 
-fn string_byte_slice(value: string, start: int, end: int) -> string {
+fn string_byte_slice(value: string, start: isize, end: isize) -> string {
     if string_is_char_boundary(value, start) && string_is_char_boundary(value, end) {
         string_byte_slice_raw(value, start, end)
     } else {
@@ -129,7 +129,7 @@ fn string_from_utf8(bytes: Vec[byte]) -> (bool, string) {
 }
 
 fn char_to_string(value: char) -> string {
-    if utf8_valid_scalar(value.to_uint32()) {
+    if utf8_valid_scalar(value.to_u32()) {
         char_to_string_raw(value)
     } else {
         let _ = string_get_raw("", -1);
@@ -137,7 +137,7 @@ fn char_to_string(value: char) -> string {
     }
 }
 
-fn __goml_builtin_char_from_uint32(value: uint32) -> Option[char] {
+fn __goml_builtin_char_from_uint32(value: u32) -> Option[char] {
     if utf8_valid_scalar(value) {
         let (_, character) = char_from_uint32_raw(value);
         Option::Some(character)
@@ -168,51 +168,51 @@ extern fn __goml_std_host_read_file(path: string) -> (bool, string, string);
 extern fn __goml_std_host_write_file(path: string, content: string) -> (bool, string);
 
 #[runtime("std.fs.read_bytes")]
-extern fn __goml_std_host_read_bytes(path: string) -> (bool, Vec[uint8], string);
+extern fn __goml_std_host_read_bytes(path: string) -> (bool, Vec[u8], string);
 
 #[runtime("std.fs.read_bytes.v2")]
-extern fn __goml_std_host_read_bytes_v2(path: string) -> (bool, Vec[uint8], int, bool, int, string);
+extern fn __goml_std_host_read_bytes_v2(path: string) -> (bool, Vec[u8], isize, bool, isize, string);
 
 #[runtime("std.fs.write_bytes")]
-extern fn __goml_std_host_write_bytes(path: string, data: Vec[uint8]) -> (bool, string);
+extern fn __goml_std_host_write_bytes(path: string, data: Vec[u8]) -> (bool, string);
 
 #[runtime("std.fs.write_bytes.v2")]
-extern fn __goml_std_host_write_bytes_v2(path: string, data: Vec[uint8]) -> (
+extern fn __goml_std_host_write_bytes_v2(path: string, data: Vec[u8]) -> (
     bool,
-    int,
+    isize,
     bool,
-    int,
+    isize,
     string,
 );
 
 #[runtime("std.fs.path_operation.v2")]
-extern fn __goml_std_host_fs_path_operation_v2(operation: int, first: string, second: string) -> (
+extern fn __goml_std_host_fs_path_operation_v2(operation: isize, first: string, second: string) -> (
     bool,
-    int,
+    isize,
     bool,
-    int,
+    isize,
     string,
 );
 
 #[runtime("std.fs.metadata.v2")]
 extern fn __goml_std_host_fs_metadata_v2(path: string, follow: bool) -> (
     bool,
-    int,
-    int64,
-    uint32,
-    int64,
-    int,
+    isize,
+    i64,
+    u32,
+    i64,
+    isize,
     bool,
-    int,
+    isize,
     string,
 );
 
 #[runtime("std.fs.atomic_write.v2")]
-extern fn __goml_std_host_fs_atomic_write_v2(path: string, data: Vec[uint8]) -> (
+extern fn __goml_std_host_fs_atomic_write_v2(path: string, data: Vec[u8]) -> (
     bool,
-    int,
+    isize,
     bool,
-    int,
+    isize,
     string,
 );
 
@@ -241,7 +241,14 @@ extern fn __goml_std_host_canonicalize(path: string) -> (bool, string, string);
 extern fn __goml_std_host_read_dir(path: string) -> (bool, Vec[string], string);
 
 #[runtime("std.fs.read_dir.v2")]
-extern fn __goml_std_host_read_dir_v2(path: string) -> (bool, Vec[string], int, bool, int, string);
+extern fn __goml_std_host_read_dir_v2(path: string) -> (
+    bool,
+    Vec[string],
+    isize,
+    bool,
+    isize,
+    string,
+);
 
 #[runtime("std.fs.sha256_file")]
 extern fn __goml_std_host_sha256_file(path: string) -> (bool, string, string);
@@ -256,35 +263,35 @@ extern fn __goml_std_host_println(value: string) -> unit;
 extern fn __goml_std_host_eprint(value: string) -> unit;
 
 #[runtime("std.io.read_stdin")]
-extern fn __goml_std_host_read_stdin() -> (bool, Vec[uint8], string);
+extern fn __goml_std_host_read_stdin() -> (bool, Vec[u8], string);
 
 #[runtime("std.io.read_stdin.v2")]
-extern fn __goml_std_host_read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string);
+extern fn __goml_std_host_read_stdin_v2() -> (bool, Vec[u8], isize, bool, isize, string);
 
 #[runtime("std.io.read_stdin_exact")]
-extern fn __goml_std_host_read_stdin_exact(length: int) -> (bool, Vec[uint8], string);
+extern fn __goml_std_host_read_stdin_exact(length: isize) -> (bool, Vec[u8], string);
 
 #[runtime("std.io.read_stdin_exact.v2")]
-extern fn __goml_std_host_read_stdin_exact_v2(length: int) -> (
+extern fn __goml_std_host_read_stdin_exact_v2(length: isize) -> (
     bool,
-    Vec[uint8],
-    int,
+    Vec[u8],
+    isize,
     bool,
-    int,
+    isize,
     string,
 );
 
 #[runtime("std.io.write_stdout")]
-extern fn __goml_std_host_write_stdout(data: Vec[uint8]) -> (bool, string);
+extern fn __goml_std_host_write_stdout(data: Vec[u8]) -> (bool, string);
 
 #[runtime("std.io.write_stdout.v2")]
-extern fn __goml_std_host_write_stdout_v2(data: Vec[uint8]) -> (bool, int, bool, int, string);
+extern fn __goml_std_host_write_stdout_v2(data: Vec[u8]) -> (bool, isize, bool, isize, string);
 
 #[runtime("std.io.write_stderr")]
-extern fn __goml_std_host_write_stderr(data: Vec[uint8]) -> (bool, string);
+extern fn __goml_std_host_write_stderr(data: Vec[u8]) -> (bool, string);
 
 #[runtime("std.io.write_stderr.v2")]
-extern fn __goml_std_host_write_stderr_v2(data: Vec[uint8]) -> (bool, int, bool, int, string);
+extern fn __goml_std_host_write_stderr_v2(data: Vec[u8]) -> (bool, isize, bool, isize, string);
 
 #[runtime("std.path.join")]
 extern fn __goml_std_host_path_join(base: string, child: string) -> string;
@@ -320,7 +327,7 @@ extern fn __goml_std_host_path_relative(base: string, target: string) -> (bool, 
 extern fn __goml_std_host_path_separator() -> string;
 
 #[runtime("std.process.exit")]
-extern fn __goml_std_host_exit(code: int) -> unit;
+extern fn __goml_std_host_exit(code: isize) -> unit;
 
 #[runtime("std.process.look_path")]
 extern fn __goml_std_host_process_look_path(program: string) -> (bool, string, string);
@@ -333,8 +340,8 @@ extern fn __goml_std_host_process_output(
     directory: string,
     environment: Vec[(string, string)],
     has_input: bool,
-    input: Vec[uint8],
-) -> (bool, int, Vec[uint8], Vec[uint8], string);
+    input: Vec[u8],
+) -> (bool, isize, Vec[u8], Vec[u8], string);
 
 #[runtime("std.process.output_timeout")]
 extern fn __goml_std_host_process_output_timeout(
@@ -344,9 +351,9 @@ extern fn __goml_std_host_process_output_timeout(
     directory: string,
     environment: Vec[(string, string)],
     has_input: bool,
-    input: Vec[uint8],
-    timeout_ms: int,
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool);
+    input: Vec[u8],
+    timeout_ms: isize,
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool);
 
 #[runtime("std.process.output_cancel")]
 extern fn __goml_std_host_process_output_cancel(
@@ -356,9 +363,9 @@ extern fn __goml_std_host_process_output_cancel(
     directory: string,
     environment: Vec[(string, string)],
     has_input: bool,
-    input: Vec[uint8],
-    scope_id: int64,
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool);
+    input: Vec[u8],
+    scope_id: i64,
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool);
 
 #[runtime("std.process.status")]
 extern fn __goml_std_host_process_status(
@@ -367,7 +374,7 @@ extern fn __goml_std_host_process_status(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-) -> (bool, int, string);
+) -> (bool, isize, string);
 
 #[runtime("std.process.status_timeout")]
 extern fn __goml_std_host_process_status_timeout(
@@ -376,8 +383,8 @@ extern fn __goml_std_host_process_status_timeout(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-    timeout_ms: int,
-) -> (bool, int, string, bool);
+    timeout_ms: isize,
+) -> (bool, isize, string, bool);
 
 #[runtime("std.process.status_cancel")]
 extern fn __goml_std_host_process_status_cancel(
@@ -386,74 +393,74 @@ extern fn __goml_std_host_process_status_cancel(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-    scope_id: int64,
-) -> (bool, int, string, bool);
+    scope_id: i64,
+) -> (bool, isize, string, bool);
 
 #[runtime("std.testing.fail")]
 extern fn __goml_std_host_test_fail(message: string) -> unit;
 
 #[runtime("std.num.parse_int")]
-extern fn __goml_std_host_parse_int(value: string, radix: int) -> (bool, int, string);
+extern fn __goml_std_host_parse_int(value: string, radix: isize) -> (bool, isize, string);
 
 #[runtime("std.num.parse_uint")]
-extern fn __goml_std_host_parse_uint(value: string, radix: int) -> (bool, uint, string);
+extern fn __goml_std_host_parse_uint(value: string, radix: isize) -> (bool, usize, string);
 
 #[runtime("std.num.parse_float32")]
-extern fn __goml_std_host_parse_float32(value: string) -> (bool, float32, string);
+extern fn __goml_std_host_parse_float32(value: string) -> (bool, f32, string);
 
 #[runtime("std.num.parse_float64")]
-extern fn __goml_std_host_parse_float64(value: string) -> (bool, float64, string);
+extern fn __goml_std_host_parse_float64(value: string) -> (bool, f64, string);
 
 #[runtime("std.time.monotonic_nanoseconds")]
-extern fn __goml_std_host_monotonic_nanoseconds() -> int64;
+extern fn __goml_std_host_monotonic_nanoseconds() -> i64;
 
 #[runtime("std.time.unix_nanoseconds")]
-extern fn __goml_std_host_unix_nanoseconds() -> int64;
+extern fn __goml_std_host_unix_nanoseconds() -> i64;
 
 #[runtime("std.time.sleep_nanoseconds")]
-extern fn __goml_std_host_sleep_nanoseconds(value: int64) -> unit;
+extern fn __goml_std_host_sleep_nanoseconds(value: i64) -> unit;
 
 #[runtime("std.time.timer_new")]
-extern fn __goml_std_host_timer_new(value: int64) -> (int64, Receiver[unit]);
+extern fn __goml_std_host_timer_new(value: i64) -> (i64, Receiver[unit]);
 
 #[runtime("std.time.timer_stop")]
-extern fn __goml_std_host_timer_stop(id: int64) -> bool;
+extern fn __goml_std_host_timer_stop(id: i64) -> bool;
 
 #[runtime("std.math.float32_unary")]
-extern fn __goml_std_host_math_float32_unary(operation: int, value: float32) -> float32;
+extern fn __goml_std_host_math_float32_unary(operation: isize, value: f32) -> f32;
 
 #[runtime("std.math.float32_pow")]
-extern fn __goml_std_host_math_float32_pow(value: float32, exponent: float32) -> float32;
+extern fn __goml_std_host_math_float32_pow(value: f32, exponent: f32) -> f32;
 
 #[runtime("std.crypto.rand.bytes")]
-extern fn __goml_std_host_crypto_random_bytes(length: int) -> (bool, Vec[byte], string);
+extern fn __goml_std_host_crypto_random_bytes(length: isize) -> (bool, Vec[byte], string);
 
 #[runtime("std.task.scope_new")]
-extern fn __goml_std_task_scope_new(parent: int64) -> int64;
+extern fn __goml_std_task_scope_new(parent: i64) -> i64;
 
 #[runtime("std.task.scope_spawn")]
-extern fn __goml_std_task_scope_spawn(scope: int64, body: () -> unit) -> bool;
+extern fn __goml_std_task_scope_spawn(scope: i64, body: () -> unit) -> bool;
 
 #[runtime("std.task.scope_run")]
-extern fn __goml_std_task_scope_run(scope: int64, body: () -> unit) -> unit;
+extern fn __goml_std_task_scope_run(scope: i64, body: () -> unit) -> unit;
 
 #[runtime("std.task.scope_try_spawn")]
-extern fn __goml_std_task_scope_try_spawn(scope: int64, body: () -> unit) -> bool;
+extern fn __goml_std_task_scope_try_spawn(scope: i64, body: () -> unit) -> bool;
 
 #[runtime("std.task.scope_cancel")]
-extern fn __goml_std_task_scope_cancel(scope: int64) -> unit;
+extern fn __goml_std_task_scope_cancel(scope: i64) -> unit;
 
 #[runtime("std.task.scope_finish")]
-extern fn __goml_std_task_scope_finish(scope: int64) -> unit;
+extern fn __goml_std_task_scope_finish(scope: i64) -> unit;
 
 #[runtime("std.task.scope_cancelled")]
-extern fn __goml_std_task_scope_cancelled(scope: int64) -> bool;
+extern fn __goml_std_task_scope_cancelled(scope: i64) -> bool;
 
 #[runtime("std.task.scope_done")]
-extern fn __goml_std_task_scope_done(scope: int64) -> Receiver[unit];
+extern fn __goml_std_task_scope_done(scope: i64) -> Receiver[unit];
 
 #[runtime("std.task.sleep")]
-extern fn __goml_std_task_scope_sleep(scope: int64, nanoseconds: int64) -> bool;
+extern fn __goml_std_task_scope_sleep(scope: i64, nanoseconds: i64) -> bool;
 
 #[runtime("std.task.active_scope_count")]
-extern fn __goml_std_task_scope_count() -> int;
+extern fn __goml_std_task_scope_count() -> isize;

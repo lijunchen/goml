@@ -4,11 +4,11 @@ use module::internal::host;
 use module::task;
 
 pub struct Duration {
-    nanoseconds: int64,
+    nanoseconds: i64,
 }
 
 pub struct Timer {
-    id: int64,
+    id: i64,
     ready: Receiver[unit],
 }
 
@@ -17,7 +17,7 @@ impl Duration {
         Duration { nanoseconds: 0 }
     }
 
-    pub fn from_nanoseconds(value: int64) -> Duration {
+    pub fn from_nanoseconds(value: i64) -> Duration {
         Duration {
             nanoseconds: if value < 0 {
                 0
@@ -27,31 +27,31 @@ impl Duration {
         }
     }
 
-    pub fn from_microseconds(value: int64) -> Duration {
+    pub fn from_microseconds(value: i64) -> Duration {
         Duration::from_nanoseconds(value * 1000)
     }
 
-    pub fn from_milliseconds(value: int64) -> Duration {
+    pub fn from_milliseconds(value: i64) -> Duration {
         Duration::from_nanoseconds(value * 1000000)
     }
 
-    pub fn from_seconds(value: int64) -> Duration {
+    pub fn from_seconds(value: i64) -> Duration {
         Duration::from_nanoseconds(value * 1000000000)
     }
 
-    pub fn checked_from_microseconds(value: int64) -> Option[Duration] {
+    pub fn checked_from_microseconds(value: i64) -> Option[Duration] {
         Duration::checked_scaled(value, 1000)
     }
 
-    pub fn checked_from_milliseconds(value: int64) -> Option[Duration] {
+    pub fn checked_from_milliseconds(value: i64) -> Option[Duration] {
         Duration::checked_scaled(value, 1000000)
     }
 
-    pub fn checked_from_seconds(value: int64) -> Option[Duration] {
+    pub fn checked_from_seconds(value: i64) -> Option[Duration] {
         Duration::checked_scaled(value, 1000000000)
     }
 
-    fn checked_scaled(value: int64, scale: int64) -> Option[Duration] {
+    fn checked_scaled(value: i64, scale: i64) -> Option[Duration] {
         if value < 0 || value > 9223372036854775807 / scale {
             Option::None
         } else {
@@ -59,19 +59,19 @@ impl Duration {
         }
     }
 
-    pub fn saturating_from_microseconds(value: int64) -> Duration {
+    pub fn saturating_from_microseconds(value: i64) -> Duration {
         Duration::saturating_scaled(value, 1000)
     }
 
-    pub fn saturating_from_milliseconds(value: int64) -> Duration {
+    pub fn saturating_from_milliseconds(value: i64) -> Duration {
         Duration::saturating_scaled(value, 1000000)
     }
 
-    pub fn saturating_from_seconds(value: int64) -> Duration {
+    pub fn saturating_from_seconds(value: i64) -> Duration {
         Duration::saturating_scaled(value, 1000000000)
     }
 
-    fn saturating_scaled(value: int64, scale: int64) -> Duration {
+    fn saturating_scaled(value: i64, scale: i64) -> Duration {
         match Duration::checked_scaled(value, scale) {
             Some(duration) => duration,
             None => if value < 0 {
@@ -82,19 +82,19 @@ impl Duration {
         }
     }
 
-    pub fn as_nanoseconds(self: Duration) -> int64 {
+    pub fn as_nanoseconds(self: Duration) -> i64 {
         self.nanoseconds
     }
 
-    pub fn as_microseconds(self: Duration) -> int64 {
+    pub fn as_microseconds(self: Duration) -> i64 {
         self.nanoseconds / 1000
     }
 
-    pub fn as_milliseconds(self: Duration) -> int64 {
+    pub fn as_milliseconds(self: Duration) -> i64 {
         self.nanoseconds / 1000000
     }
 
-    pub fn as_seconds(self: Duration) -> int64 {
+    pub fn as_seconds(self: Duration) -> i64 {
         self.nanoseconds / 1000000000
     }
 
@@ -134,7 +134,7 @@ impl Duration {
         self.checked_subtract(other).unwrap_or(Duration::zero())
     }
 
-    pub fn checked_multiply(self: Duration, factor: int64) -> Option[Duration] {
+    pub fn checked_multiply(self: Duration, factor: i64) -> Option[Duration] {
         if factor < 0 || factor > 0 && self.nanoseconds > 9223372036854775807 / factor {
             Option::None
         } else {
@@ -142,7 +142,7 @@ impl Duration {
         }
     }
 
-    pub fn saturating_multiply(self: Duration, factor: int64) -> Duration {
+    pub fn saturating_multiply(self: Duration, factor: i64) -> Duration {
         match self.checked_multiply(factor) {
             Some(duration) => duration,
             None => if factor < 0 {
@@ -153,7 +153,7 @@ impl Duration {
         }
     }
 
-    pub fn compare(self: Duration, other: Duration) -> int {
+    pub fn compare(self: Duration, other: Duration) -> isize {
         if self.nanoseconds < other.nanoseconds {
             -1
         } else if self.nanoseconds > other.nanoseconds {
@@ -173,7 +173,7 @@ impl PartialEq for Duration {
 impl Eq for Duration {}
 
 pub struct Instant {
-    nanoseconds: int64,
+    nanoseconds: i64,
 }
 
 impl Instant {
@@ -197,7 +197,7 @@ impl Instant {
         }
     }
 
-    pub fn compare(self: Instant, other: Instant) -> int {
+    pub fn compare(self: Instant, other: Instant) -> isize {
         if self.nanoseconds < other.nanoseconds {
             -1
         } else if self.nanoseconds > other.nanoseconds {
@@ -217,7 +217,7 @@ impl PartialEq for Instant {
 impl Eq for Instant {}
 
 pub struct SystemTime {
-    unix_nanoseconds: int64,
+    unix_nanoseconds: i64,
 }
 
 impl SystemTime {
@@ -225,11 +225,11 @@ impl SystemTime {
         SystemTime { unix_nanoseconds: host::unix_nanoseconds() }
     }
 
-    pub fn from_unix_nanoseconds(value: int64) -> SystemTime {
+    pub fn from_unix_nanoseconds(value: i64) -> SystemTime {
         SystemTime { unix_nanoseconds: value }
     }
 
-    pub fn checked_from_unix_milliseconds(value: int64) -> Result[SystemTime, Error] {
+    pub fn checked_from_unix_milliseconds(value: i64) -> Result[SystemTime, Error] {
         if value > 9223372036854 || value < -9223372036854 {
             Result::Err(Error::new("system time conversion", "milliseconds out of range"))
         } else {
@@ -237,7 +237,7 @@ impl SystemTime {
         }
     }
 
-    pub fn checked_from_unix_seconds(value: int64) -> Result[SystemTime, Error] {
+    pub fn checked_from_unix_seconds(value: i64) -> Result[SystemTime, Error] {
         if value > 9223372036 || value < -9223372036 {
             Result::Err(Error::new("system time conversion", "seconds out of range"))
         } else {
@@ -253,19 +253,19 @@ impl SystemTime {
         }
     }
 
-    pub fn unix_nanoseconds(self: SystemTime) -> int64 {
+    pub fn unix_nanoseconds(self: SystemTime) -> i64 {
         self.unix_nanoseconds
     }
 
-    pub fn unix_milliseconds(self: SystemTime) -> int64 {
+    pub fn unix_milliseconds(self: SystemTime) -> i64 {
         self.unix_nanoseconds / 1000000
     }
 
-    pub fn unix_seconds(self: SystemTime) -> int64 {
+    pub fn unix_seconds(self: SystemTime) -> i64 {
         self.unix_nanoseconds / 1000000000
     }
 
-    pub fn compare(self: SystemTime, other: SystemTime) -> int {
+    pub fn compare(self: SystemTime, other: SystemTime) -> isize {
         if self.unix_nanoseconds < other.unix_nanoseconds {
             -1
         } else if self.unix_nanoseconds > other.unix_nanoseconds {

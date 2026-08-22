@@ -21,7 +21,7 @@ enum PlaceRoot {
 enum PlaceStep {
     Proj {
         parent_ty: tast::Type,
-        index: int,
+        index: isize,
         item_ty: tast::Type,
     },
     Field {
@@ -40,7 +40,7 @@ enum EvaluatedPlaceStep {
     Proj {
         parent_var: string,
         parent_ty: tast::Type,
-        index: int,
+        index: isize,
     },
     Field {
         parent_var: string,
@@ -285,7 +285,7 @@ fn place_field_get(
     }
 }
 
-fn rebuild_tuple(parent: LowerExpr, parent_ty: tast::Type, index: int, value: LowerExpr) -> LowerExpr {
+fn rebuild_tuple(parent: LowerExpr, parent_ty: tast::Type, index: isize, value: LowerExpr) -> LowerExpr {
     match tast::resolve_type(parent_ty) {
         Tuple { items: types } => {
             let items: Vec[LowerExpr] = Vec::from_array([]);

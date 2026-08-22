@@ -281,7 +281,7 @@ fn check_composite_literal_elements(
     }
 }
 
-fn composite_literal_rbrace(state: CheckState, node: syntax::NodeId) -> int {
+fn composite_literal_rbrace(state: CheckState, node: syntax::NodeId) -> isize {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -472,7 +472,7 @@ fn constant_index(
     scope: go_types::ScopeId,
     node: syntax::NodeId,
     require_constant: bool,
-) -> Option[int] {
+) -> Option[isize] {
     let operand = check_expression(state, scope, node);
     if operand.type_id.value == state.world.invalid.value {
         return Option::None
@@ -562,7 +562,7 @@ fn constant_index(
     }
 }
 
-fn report_index_out_of_bounds(state: CheckState, node: syntax::NodeId, value: int, length: int64) -> unit {
+fn report_index_out_of_bounds(state: CheckState, node: syntax::NodeId, value: isize, length: i64) -> unit {
     diagnostic(
         state,
         node,
@@ -577,12 +577,12 @@ fn check_sequence_literal(
     scope: go_types::ScopeId,
     node: syntax::NodeId,
     element_type: go_types::TypeId,
-    length: Option[int64],
+    length: Option[i64],
     elements: Vec[syntax::NodeId],
-) -> int {
+) -> isize {
     let mut next_index = 0;
     let mut maximum = -1;
-    let used: Vec[int] = Vec::from_array([]);
+    let used: Vec[isize] = Vec::from_array([]);
     for element in elements {
         let mut valid_index = true;
         let mut explicit = false;
@@ -604,13 +604,13 @@ fn check_sequence_literal(
         let mut in_bounds = true;
         if valid_index {
             match length {
-                Some(length) => if next_index.to_int64() >= length {
+                Some(length) => if next_index.to_i64() >= length {
                     match key_value_nodes(state, element) {
                         Some((key, _)) => report_index_out_of_bounds(
                             state,
                             key,
                             next_index,
-                            next_index.to_int64(),
+                            next_index.to_i64(),
                         ),
                         None => diagnostic(
                             state,
@@ -807,7 +807,7 @@ fn check_composite_literal(
             let length = check_sequence_literal(state, scope, node, element, Option::None, elements);
             let result = go_types::add_type(
                 state.world,
-                go_types::TypeKind::Array { length: length.to_int64(), element },
+                go_types::TypeKind::Array { length: length.to_i64(), element },
             );
             record_type_expression(state, type_node, result);
             result
@@ -873,7 +873,7 @@ fn check_composite_literal(
 }
 
 fn indexed_concrete_type(state: CheckState, value: go_types::TypeId) -> Option[
-    (go_types::TypeId, bool, Option[int64], Option[go_types::TypeId]),
+    (go_types::TypeId, bool, Option[i64], Option[go_types::TypeId]),
 ] {
     let mut resolved = core_type_id(state, value);
     match go_types::get_type(state.world, resolved) {
@@ -915,7 +915,7 @@ fn indexed_concrete_type(state: CheckState, value: go_types::TypeId) -> Option[
 }
 
 fn indexed_type(state: CheckState, value: go_types::TypeId) -> Option[
-    (go_types::TypeId, bool, Option[int64], Option[go_types::TypeId]),
+    (go_types::TypeId, bool, Option[i64], Option[go_types::TypeId]),
 ] {
     match indexed_concrete_type(state, value) {
         Some(value) => return Option::Some(value),
@@ -930,7 +930,7 @@ fn indexed_type(state: CheckState, value: go_types::TypeId) -> Option[
     } else {};
     let mut element: Option[go_types::TypeId] = Option::None;
     let mut addressable = true;
-    let mut length: Option[int64] = Option::None;
+    let mut length: Option[i64] = Option::None;
     let mut map_key: Option[go_types::TypeId] = Option::None;
     let mut map_kind: Option[bool] = Option::None;
     for term in terms {
@@ -1126,12 +1126,12 @@ fn check_index_expression(
             let length = match (length, base.value) {
                 (Some(length), _) => Option::Some(length),
                 (None, Some(constant::ConstValue::String(value))) => Option::Some(
-                    value.len().to_int64(),
+                    value.len().to_i64(),
                 ),
                 _ => Option::None,
             };
             match (index_value, length) {
-                (Some(index_value), Some(length)) => if index_value.to_int64() >= length {
+                (Some(index_value), Some(length)) => if index_value.to_i64() >= length {
                     report_index_out_of_bounds(state, index, index_value, length)
                 } else {},
                 _ => {},
@@ -1160,7 +1160,7 @@ fn check_index_expression(
 }
 
 fn check_slice_index(state: CheckState, scope: go_types::ScopeId, value: Option[syntax::NodeId]) -> Option[
-    int,
+    isize,
 ] {
     match value {
         Some(value) => constant_index(state, scope, value, false),
@@ -1171,33 +1171,33 @@ fn check_slice_index(state: CheckState, scope: go_types::ScopeId, value: Option[
 fn check_slice_bounds(
     state: CheckState,
     low_node: Option[syntax::NodeId],
-    low: Option[int],
+    low: Option[isize],
     high_node: Option[syntax::NodeId],
-    high: Option[int],
+    high: Option[isize],
     max_node: Option[syntax::NodeId],
-    max: Option[int],
-    length: Option[int64],
+    max: Option[isize],
+    length: Option[i64],
 ) -> unit {
     let mut out_of_bounds = false;
     match length {
         Some(length) => {
             match (low_node, low) {
-                (Some(node), Some(value)) => if value.to_int64() > length {
-                    report_index_out_of_bounds(state, node, value, value.to_int64());
+                (Some(node), Some(value)) => if value.to_i64() > length {
+                    report_index_out_of_bounds(state, node, value, value.to_i64());
                     out_of_bounds = true;
                 } else {},
                 _ => {},
             };
             match (high_node, high) {
-                (Some(node), Some(value)) => if value.to_int64() > length {
-                    report_index_out_of_bounds(state, node, value, value.to_int64());
+                (Some(node), Some(value)) => if value.to_i64() > length {
+                    report_index_out_of_bounds(state, node, value, value.to_i64());
                     out_of_bounds = true;
                 } else {},
                 _ => {},
             };
             match (max_node, max) {
-                (Some(node), Some(value)) => if value.to_int64() > length {
-                    report_index_out_of_bounds(state, node, value, value.to_int64());
+                (Some(node), Some(value)) => if value.to_i64() > length {
+                    report_index_out_of_bounds(state, node, value, value.to_i64());
                     out_of_bounds = true;
                 } else {},
                 _ => {},
@@ -1232,7 +1232,7 @@ fn check_slice_bounds(
     }
 }
 
-fn sliceable_type(state: CheckState, value: go_types::TypeId, slice3: bool) -> int {
+fn sliceable_type(state: CheckState, value: go_types::TypeId, slice3: bool) -> isize {
     let mut resolved = core_type_id(state, value);
     match go_types::get_type(state.world, resolved) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
@@ -1426,7 +1426,7 @@ fn check_slice_expression(
             invalid_operand(state)
         } else {
             let length = match base.value {
-                Some(constant::ConstValue::String(value)) => Option::Some(value.len().to_int64()),
+                Some(constant::ConstValue::String(value)) => Option::Some(value.len().to_i64()),
                 _ => Option::None,
             };
             check_slice_bounds(state, low, low_value, high, high_value, max, max_value, length);

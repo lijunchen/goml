@@ -3,18 +3,18 @@ package serde;
 pub enum Value {
     Unit,
     Bool(bool),
-    Int(int),
-    Int8(int8),
-    Int16(int16),
-    Int32(int32),
-    Int64(int64),
-    Uint(uint),
-    Uint8(uint8),
-    Uint16(uint16),
-    Uint32(uint32),
-    Uint64(uint64),
-    Float32(float32),
-    Float64(float64),
+    Int(isize),
+    Int8(i8),
+    Int16(i16),
+    Int32(i32),
+    Int64(i64),
+    Uint(usize),
+    Uint8(u8),
+    Uint16(u16),
+    Uint32(u32),
+    Uint64(u64),
+    Float32(f32),
+    Float64(f64),
     Number(string),
     String(string),
     Char(char),
@@ -23,9 +23,9 @@ pub enum Value {
     Optional(Vec[Value]),
     Struct(Vec[(string, Value)]),
     Variant {
-        index: int,
+        index: isize,
         name: string,
-        kind: int,
+        kind: isize,
         fields: Vec[(string, Value)],
     },
 }
@@ -36,9 +36,9 @@ pub enum Schema {
     Bool,
     Integer {
         signed: bool,
-        width: int,
+        width: isize,
     },
-    Float(int),
+    Float(isize),
     String,
     Char,
     Sequence(Vec[Schema]),
@@ -49,9 +49,9 @@ pub enum Schema {
 }
 
 pub struct VariantSchema {
-    pub index: int,
+    pub index: isize,
     pub name: string,
-    pub kind: int,
+    pub kind: isize,
     pub fields: Vec[(string, Schema)],
 }
 
@@ -84,7 +84,7 @@ pub fn structure(fields: Vec[(string, Value)]) -> Value {
     Value::Struct(fields)
 }
 
-pub fn variant(index: int, name: string, kind: int, fields: Vec[(string, Value)]) -> Value {
+pub fn variant(index: isize, name: string, kind: isize, fields: Vec[(string, Value)]) -> Value {
     Value::Variant { index, name, kind, fields }
 }
 
@@ -96,7 +96,7 @@ pub fn structure_schema(fields: Vec[(string, Schema)]) -> Schema {
     Schema::Struct(fields)
 }
 
-pub fn variant_schema(index: int, name: string, kind: int, fields: Vec[(string, Schema)]) -> VariantSchema {
+pub fn variant_schema(index: isize, name: string, kind: isize, fields: Vec[(string, Schema)]) -> VariantSchema {
     VariantSchema { index, name, kind, fields }
 }
 
@@ -120,7 +120,7 @@ pub fn named_field(fields: Vec[(string, Value)], name: string) -> Result[Value, 
     Result::Err("missing field `" + name + "`")
 }
 
-pub fn positional_field(fields: Vec[(string, Value)], index: int) -> Result[Value, string] {
+pub fn positional_field(fields: Vec[(string, Value)], index: isize) -> Result[Value, string] {
     if index < 0 || index >= fields.len() {
         Result::Err("missing positional field " + index.to_string())
     } else {
@@ -128,7 +128,7 @@ pub fn positional_field(fields: Vec[(string, Value)], index: int) -> Result[Valu
     }
 }
 
-pub fn variant_parts(value: Value) -> Result[(string, int, Vec[(string, Value)]), string] {
+pub fn variant_parts(value: Value) -> Result[(string, isize, Vec[(string, Value)]), string] {
     match value {
         Value::Variant { index: _, name, kind, fields } => Result::Ok((name, kind, fields)),
         Value::String(name) => Result::Ok((name, 0, Vec::from_array([]))),
@@ -152,7 +152,7 @@ pub fn variant_parts(value: Value) -> Result[(string, int, Vec[(string, Value)])
     }
 }
 
-fn tuple_values(value: Value, size: int) -> Result[Vec[Value], string] {
+fn tuple_values(value: Value, size: isize) -> Result[Vec[Value], string] {
     let values = match value {
         Value::Tuple(values) => values,
         Value::Sequence(values) => values,
@@ -229,146 +229,146 @@ impl Deserialize for char {
     }
 }
 
-impl Serialize for int {
-    fn serialize[S: Serializer](self: int, serializer: S) -> Result[unit, string] {
+impl Serialize for isize {
+    fn serialize[S: Serializer](self: isize, serializer: S) -> Result[unit, string] {
         serializer.serialize_int(self)
     }
 }
 
-impl Deserialize for int {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[int, string] {
+impl Deserialize for isize {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[isize, string] {
         deserializer.deserialize_int()
     }
 }
 
-impl Serialize for int8 {
-    fn serialize[S: Serializer](self: int8, serializer: S) -> Result[unit, string] {
+impl Serialize for i8 {
+    fn serialize[S: Serializer](self: i8, serializer: S) -> Result[unit, string] {
         serializer.serialize_int8(self)
     }
 }
 
-impl Deserialize for int8 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[int8, string] {
+impl Deserialize for i8 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[i8, string] {
         deserializer.deserialize_int8()
     }
 }
 
-impl Serialize for int16 {
-    fn serialize[S: Serializer](self: int16, serializer: S) -> Result[unit, string] {
+impl Serialize for i16 {
+    fn serialize[S: Serializer](self: i16, serializer: S) -> Result[unit, string] {
         serializer.serialize_int16(self)
     }
 }
 
-impl Deserialize for int16 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[int16, string] {
+impl Deserialize for i16 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[i16, string] {
         deserializer.deserialize_int16()
     }
 }
 
-impl Serialize for int32 {
-    fn serialize[S: Serializer](self: int32, serializer: S) -> Result[unit, string] {
+impl Serialize for i32 {
+    fn serialize[S: Serializer](self: i32, serializer: S) -> Result[unit, string] {
         serializer.serialize_int32(self)
     }
 }
 
-impl Deserialize for int32 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[int32, string] {
+impl Deserialize for i32 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[i32, string] {
         deserializer.deserialize_int32()
     }
 }
 
-impl Serialize for int64 {
-    fn serialize[S: Serializer](self: int64, serializer: S) -> Result[unit, string] {
+impl Serialize for i64 {
+    fn serialize[S: Serializer](self: i64, serializer: S) -> Result[unit, string] {
         serializer.serialize_int64(self)
     }
 }
 
-impl Deserialize for int64 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[int64, string] {
+impl Deserialize for i64 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[i64, string] {
         deserializer.deserialize_int64()
     }
 }
 
-impl Serialize for uint {
-    fn serialize[S: Serializer](self: uint, serializer: S) -> Result[unit, string] {
+impl Serialize for usize {
+    fn serialize[S: Serializer](self: usize, serializer: S) -> Result[unit, string] {
         serializer.serialize_uint(self)
     }
 }
 
-impl Deserialize for uint {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[uint, string] {
+impl Deserialize for usize {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[usize, string] {
         deserializer.deserialize_uint()
     }
 }
 
-impl Serialize for uint8 {
-    fn serialize[S: Serializer](self: uint8, serializer: S) -> Result[unit, string] {
+impl Serialize for u8 {
+    fn serialize[S: Serializer](self: u8, serializer: S) -> Result[unit, string] {
         serializer.serialize_uint8(self)
     }
 }
 
-impl Deserialize for uint8 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[uint8, string] {
+impl Deserialize for u8 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[u8, string] {
         deserializer.deserialize_uint8()
     }
 }
 
-impl Serialize for uint16 {
-    fn serialize[S: Serializer](self: uint16, serializer: S) -> Result[unit, string] {
+impl Serialize for u16 {
+    fn serialize[S: Serializer](self: u16, serializer: S) -> Result[unit, string] {
         serializer.serialize_uint16(self)
     }
 }
 
-impl Deserialize for uint16 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[uint16, string] {
+impl Deserialize for u16 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[u16, string] {
         deserializer.deserialize_uint16()
     }
 }
 
-impl Serialize for uint32 {
-    fn serialize[S: Serializer](self: uint32, serializer: S) -> Result[unit, string] {
+impl Serialize for u32 {
+    fn serialize[S: Serializer](self: u32, serializer: S) -> Result[unit, string] {
         serializer.serialize_uint32(self)
     }
 }
 
-impl Deserialize for uint32 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[uint32, string] {
+impl Deserialize for u32 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[u32, string] {
         deserializer.deserialize_uint32()
     }
 }
 
-impl Serialize for uint64 {
-    fn serialize[S: Serializer](self: uint64, serializer: S) -> Result[unit, string] {
+impl Serialize for u64 {
+    fn serialize[S: Serializer](self: u64, serializer: S) -> Result[unit, string] {
         serializer.serialize_uint64(self)
     }
 }
 
-impl Deserialize for uint64 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[uint64, string] {
+impl Deserialize for u64 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[u64, string] {
         deserializer.deserialize_uint64()
     }
 }
 
-impl Serialize for float32 {
-    fn serialize[S: Serializer](self: float32, serializer: S) -> Result[unit, string] {
+impl Serialize for f32 {
+    fn serialize[S: Serializer](self: f32, serializer: S) -> Result[unit, string] {
         serializer.serialize_float32(self)
     }
 }
 
-impl Deserialize for float32 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[float32, string] {
+impl Deserialize for f32 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[f32, string] {
         deserializer.deserialize_float32()
     }
 }
 
-impl Serialize for float64 {
-    fn serialize[S: Serializer](self: float64, serializer: S) -> Result[unit, string] {
+impl Serialize for f64 {
+    fn serialize[S: Serializer](self: f64, serializer: S) -> Result[unit, string] {
         serializer.serialize_float64(self)
     }
 }
 
-impl Deserialize for float64 {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[float64, string] {
+impl Deserialize for f64 {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[f64, string] {
         deserializer.deserialize_float64()
     }
 }

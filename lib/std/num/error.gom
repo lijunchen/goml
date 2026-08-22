@@ -5,11 +5,11 @@ use module::io;
 pub struct ParseIntError {
     details: io::ErrorDetails,
     input_value: string,
-    radix_value: int,
+    radix_value: isize,
 }
 
 impl ParseIntError {
-    pub fn new(input: string, radix: int, message: string) -> ParseIntError {
+    pub fn new(input: string, radix: isize, message: string) -> ParseIntError {
         ParseIntError {
             details: io::ErrorDetails::new(
                 io::ErrorKind::InvalidInput,
@@ -35,7 +35,7 @@ impl ParseIntError {
         self.details.context()
     }
 
-    pub fn raw_os_code(self: ParseIntError) -> Option[int] {
+    pub fn raw_os_code(self: ParseIntError) -> Option[isize] {
         self.details.raw_os_code()
     }
 
@@ -43,7 +43,7 @@ impl ParseIntError {
         self.input_value
     }
 
-    pub fn radix(self: ParseIntError) -> int {
+    pub fn radix(self: ParseIntError) -> isize {
         self.radix_value
     }
 
@@ -102,7 +102,7 @@ impl ParseFloatError {
         self.details.context()
     }
 
-    pub fn raw_os_code(self: ParseFloatError) -> Option[int] {
+    pub fn raw_os_code(self: ParseFloatError) -> Option[isize] {
         self.details.raw_os_code()
     }
 

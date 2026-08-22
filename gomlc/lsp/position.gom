@@ -3,8 +3,8 @@ package lsp;
 use module::line_index as text_index;
 
 pub struct Position {
-    pub line: int,
-    pub character: int,
+    pub line: isize,
+    pub character: isize,
 }
 
 pub struct Range {
@@ -16,12 +16,12 @@ pub fn line_index(source: string) -> text_index::LineIndex {
     text_index::new(source)
 }
 
-pub fn offset_to_position_with_index(index: text_index::LineIndex, offset: int) -> Position {
+pub fn offset_to_position_with_index(index: text_index::LineIndex, offset: isize) -> Position {
     let position = text_index::offset_to_line_col(index, offset, text_index::Encoding::Utf16);
     Position { line: position.line, character: position.column }
 }
 
-pub fn position_to_offset_with_index(index: text_index::LineIndex, position: Position) -> int {
+pub fn position_to_offset_with_index(index: text_index::LineIndex, position: Position) -> isize {
     text_index::line_col_to_offset(
         index,
         text_index::LineCol { line: position.line, column: position.character },
@@ -30,7 +30,7 @@ pub fn position_to_offset_with_index(index: text_index::LineIndex, position: Pos
 }
 
 pub fn position_to_offset_checked_with_index(index: text_index::LineIndex, position: Position) -> Option[
-    int,
+    isize,
 ] {
     text_index::line_col_to_offset_checked(
         index,
@@ -39,25 +39,25 @@ pub fn position_to_offset_checked_with_index(index: text_index::LineIndex, posit
     )
 }
 
-pub fn offsets_to_range_with_index(index: text_index::LineIndex, start: int, end: int) -> Range {
+pub fn offsets_to_range_with_index(index: text_index::LineIndex, start: isize, end: isize) -> Range {
     Range {
         start: offset_to_position_with_index(index, start),
         end: offset_to_position_with_index(index, end),
     }
 }
 
-pub fn offset_to_position(source: string, offset: int) -> Position {
+pub fn offset_to_position(source: string, offset: isize) -> Position {
     offset_to_position_with_index(line_index(source), offset)
 }
 
-pub fn position_to_offset(source: string, position: Position) -> int {
+pub fn position_to_offset(source: string, position: Position) -> isize {
     position_to_offset_with_index(line_index(source), position)
 }
 
-pub fn position_to_offset_checked(source: string, position: Position) -> Option[int] {
+pub fn position_to_offset_checked(source: string, position: Position) -> Option[isize] {
     position_to_offset_checked_with_index(line_index(source), position)
 }
 
-pub fn offsets_to_range(source: string, start: int, end: int) -> Range {
+pub fn offsets_to_range(source: string, start: isize, end: isize) -> Range {
     offsets_to_range_with_index(line_index(source), start, end)
 }

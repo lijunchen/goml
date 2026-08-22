@@ -9,7 +9,7 @@ struct SignatureShape {
     variadic: bool,
 }
 
-fn bool_slots(count: int) -> Vec[bool] {
+fn bool_slots(count: isize) -> Vec[bool] {
     let result: Vec[bool] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(false)
@@ -17,8 +17,8 @@ fn bool_slots(count: int) -> Vec[bool] {
     result
 }
 
-fn int_slots(count: int, value: int) -> Vec[int] {
-    let result: Vec[int] = Vec::with_capacity(count);
+fn int_slots(count: isize, value: isize) -> Vec[isize] {
+    let result: Vec[isize] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(value)
     }
@@ -29,7 +29,7 @@ fn report(
     diagnostics: Vec[VerifyDiagnostic],
     function: Option[FunctionId],
     block: Option[BlockId],
-    instruction: int,
+    instruction: isize,
     message: string,
 ) -> unit {
     diagnostics.push(VerifyDiagnostic { function, block, instruction, message })
@@ -42,8 +42,8 @@ fn valid_type(program: BytecodeProgram, type_id: go_types::TypeId) -> bool {
 fn type_contains_parameter_inner(
     program: BytecodeProgram,
     type_id: go_types::TypeId,
-    marks: Vec[int],
-    generation: int,
+    marks: Vec[isize],
+    generation: isize,
 ) -> bool {
     if !valid_type(program, type_id) || marks[type_id.value] == generation {
         return false
@@ -180,9 +180,9 @@ fn type_contains_parameter_inner(
 fn type_contains_parameter(
     program: BytecodeProgram,
     type_id: go_types::TypeId,
-    cache: Vec[int],
-    marks: Vec[int],
-    next_generation: Ref[int],
+    cache: Vec[isize],
+    marks: Vec[isize],
+    next_generation: Ref[isize],
 ) -> bool {
     if !valid_type(program, type_id) {
         return false
@@ -239,7 +239,7 @@ fn check_register(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: RegisterId,
 ) -> unit {
     if !register_valid(function, register) {
@@ -257,7 +257,7 @@ fn check_registers(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     registers: Vec[RegisterId],
 ) -> unit {
     for register in registers {
@@ -269,7 +269,7 @@ fn check_optional_register(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: Option[RegisterId],
 ) -> unit {
     match register {
@@ -282,7 +282,7 @@ fn check_place(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     place: PlaceId,
 ) -> unit {
     if !place_valid(function, place) {
@@ -300,7 +300,7 @@ fn check_places(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     places: Vec[PlaceId],
 ) -> unit {
     for place in places {
@@ -312,7 +312,7 @@ fn check_local(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     local: LocalId,
 ) -> unit {
     if !local_valid(function, local) {
@@ -330,7 +330,7 @@ fn check_locals(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     locals: Vec[LocalId],
 ) -> unit {
     for local in locals {
@@ -429,7 +429,7 @@ fn check_register_type(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: RegisterId,
     expected: go_types::TypeId,
     message: string,
@@ -453,7 +453,7 @@ fn check_bool_register(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: RegisterId,
     message: string,
 ) -> unit {
@@ -476,7 +476,7 @@ fn check_integer_register(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: RegisterId,
     message: string,
 ) -> unit {
@@ -499,7 +499,7 @@ fn check_optional_bool_register(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: Option[RegisterId],
     message: string,
 ) -> unit {
@@ -522,7 +522,7 @@ fn checked_map_register(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: RegisterId,
 ) -> Option[(go_types::TypeId, go_types::TypeId)] {
     match verified_register_type(function, register) {
@@ -548,7 +548,7 @@ fn check_call_target(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     target: CallTarget,
 ) -> unit {
     match target {
@@ -636,7 +636,7 @@ fn verified_channel_element(program: BytecodeProgram, type_id: go_types::TypeId)
 }
 
 fn verified_channel_type(program: BytecodeProgram, type_id: go_types::TypeId) -> Option[
-    (int, go_types::TypeId),
+    (isize, go_types::TypeId),
 ] {
     match go_types::type_data(program.world, go_types::underlying(program.world, type_id)) {
         go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction, element } } => Option::Some(
@@ -651,9 +651,9 @@ fn checked_channel_register(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     register: RegisterId,
-) -> Option[(int, go_types::TypeId)] {
+) -> Option[(isize, go_types::TypeId)] {
     match verified_register_type(function, register) {
         Some(type_id) => match verified_channel_type(program, type_id) {
             Some(value) => Option::Some(value),
@@ -677,7 +677,7 @@ fn check_channel_send(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     channel: RegisterId,
     value: RegisterId,
 ) -> unit {
@@ -712,7 +712,7 @@ fn check_channel_receive(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     channel: RegisterId,
     value: RegisterId,
     ok: Option[RegisterId],
@@ -752,7 +752,7 @@ fn check_channel_receive(
     )
 }
 
-fn function_local_types(function: BytecodeFunction, locals: Vec[LocalId], start: int) -> Vec[
+fn function_local_types(function: BytecodeFunction, locals: Vec[LocalId], start: isize) -> Vec[
     go_types::TypeId,
 ] {
     let result: Vec[go_types::TypeId] = Vec::from_array([]);
@@ -770,7 +770,7 @@ fn check_call_arguments(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     arguments: Vec[RegisterId],
     parameters: Vec[go_types::TypeId],
     variadic: bool,
@@ -848,7 +848,7 @@ fn check_call_results(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     results: Vec[RegisterId],
     expected: Vec[go_types::TypeId],
     target_name: string,
@@ -915,7 +915,7 @@ fn check_call_shape(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     target: CallTarget,
     arguments: Vec[RegisterId],
     results: Option[Vec[RegisterId]],
@@ -1136,7 +1136,7 @@ fn check_location(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     location: CodeLocation,
 ) -> unit {
     if location.file.value < -1 {
@@ -1181,7 +1181,7 @@ fn check_target_type(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     target: RegisterId,
     type_id: go_types::TypeId,
 ) -> unit {
@@ -1211,7 +1211,7 @@ fn check_instruction(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     value: Instruction,
 ) -> unit {
     check_location(program, function, diagnostics, block, instruction, value.location);
@@ -1937,7 +1937,7 @@ fn check_edge(
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
-    instruction: int,
+    instruction: isize,
     target: BlockId,
     arguments: Vec[RegisterId],
 ) -> unit {
@@ -2164,9 +2164,9 @@ fn check_function(
     program: BytecodeProgram,
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
-    type_parameter_cache: Vec[int],
-    type_parameter_marks: Vec[int],
-    next_type_parameter_generation: Ref[int],
+    type_parameter_cache: Vec[isize],
+    type_parameter_marks: Vec[isize],
+    next_type_parameter_generation: Ref[isize],
 ) -> unit {
     if !valid_package(program, function.package_id) {
         report(diagnostics, Option::Some(function.id), Option::None, -1, "invalid function package")

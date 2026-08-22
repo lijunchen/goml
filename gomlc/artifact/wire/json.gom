@@ -22,21 +22,21 @@ enum ArtifactCapturedContainer {
 
 struct ArtifactBinaryValueScope {
     object: bool,
-    count: Ref[int],
-    count_offset: int,
+    count: Ref[isize],
+    count_offset: isize,
 }
 
 pub struct ArtifactJsonWriter {
     builder: text::StringBuilder,
     pretty: bool,
     capture: bool,
-    depth: Ref[int],
+    depth: Ref[isize],
     object_scopes: Vec[bool],
     first_values: Vec[bool],
     after_name: Ref[bool],
     captured_containers: Vec[ArtifactCapturedContainer],
     captured_values: Vec[ArtifactValue],
-    binary_mode: uint8,
+    binary_mode: u8,
     binary_seen: HashMap[string, unit],
     binary_strings: Vec[string],
     binary_writer: ArtifactBinaryWriter,
@@ -145,7 +145,7 @@ fn artifact_binary_stream_error(value: ArtifactJsonWriter, result: Result[unit, 
     }
 }
 
-fn artifact_binary_stream_begin_container(value: ArtifactJsonWriter, tag: uint8, object: bool) -> unit {
+fn artifact_binary_stream_begin_container(value: ArtifactJsonWriter, tag: u8, object: bool) -> unit {
     artifact_binary_stream_before_value(value);
     artifact_binary_write_u8(value.binary_writer, tag);
     let offset = artifact_binary_writer_len(value.binary_writer);
@@ -162,7 +162,7 @@ fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> unit {
         artifact_binary_patch_u32(
             value.binary_writer,
             scope.count_offset,
-            scope.count.get().to_uint32(),
+            scope.count.get().to_u32(),
         ),
     )
 }
@@ -240,10 +240,10 @@ fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
     } else {}
 }
 
-fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: uint8) -> unit {
+fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: u8) -> unit {
     let digits = "0123456789abcdef";
-    value.builder.write_char(digits.get((byte / 16).to_int()));
-    value.builder.write_char(digits.get((byte % 16).to_int()))
+    value.builder.write_char(digits.get((byte / 16).to_isize()));
+    value.builder.write_char(digits.get((byte % 16).to_isize()))
 }
 
 fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> unit {
@@ -467,7 +467,7 @@ pub fn artifact_json_null(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-pub fn artifact_json_binary_mode(value: ArtifactJsonWriter) -> uint8 {
+pub fn artifact_json_binary_mode(value: ArtifactJsonWriter) -> u8 {
     value.binary_mode
 }
 

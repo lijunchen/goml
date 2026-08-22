@@ -7,47 +7,47 @@ use std::bytes;
 use std::num;
 
 #[go_ffi("math", "Float32bits")]
-extern fn float32_bits(value: float32) -> uint32;
+extern fn float32_bits(value: f32) -> u32;
 
 #[go_ffi("math", "Float32frombits")]
-extern fn float32_from_bits(value: uint32) -> float32;
+extern fn float32_from_bits(value: u32) -> f32;
 
 #[go_ffi("math", "Float64bits")]
-extern fn float64_bits(value: float64) -> uint64;
+extern fn float64_bits(value: f64) -> u64;
 
 #[go_ffi("math", "Float64frombits")]
-extern fn float64_from_bits(value: uint64) -> float64;
+extern fn float64_from_bits(value: u64) -> f64;
 
 #[go_ffi("strconv", "FormatFloat")]
-extern fn format_float(value: float64, format: uint8, precision: int, bits: int) -> string;
+extern fn format_float(value: f64, format: u8, precision: isize, bits: isize) -> string;
 
 #[go_ffi("math", "Trunc")]
-extern fn truncate_float(value: float64) -> float64;
+extern fn truncate_float(value: f64) -> f64;
 
-fn maximum_uint64() -> uint64 {
-    0.to_uint64() - 1.to_uint64()
+fn maximum_uint64() -> u64 {
+    0.to_u64() - 1.to_u64()
 }
 
-fn widen_float32(value: float32) -> Result[float64, string] {
+fn widen_float32(value: f32) -> Result[f64, string] {
     num::parse_float64(value.to_string())
 }
 
-fn narrow_float64(value: float64) -> Result[float32, string] {
+fn narrow_float64(value: f64) -> Result[f32, string] {
     num::parse_float32(value.to_string())
 }
 
-fn signed_float64(value: int64) -> Result[float64, string] {
+fn signed_float64(value: i64) -> Result[f64, string] {
     num::parse_float64(value.to_string())
 }
 
-fn unsigned_float64(value: uint64) -> Result[float64, string] {
+fn unsigned_float64(value: u64) -> Result[f64, string] {
     num::parse_float64(value.to_string())
 }
 
-fn float64_integer(value: float64) -> Result[int64, string] {
+fn float64_integer(value: f64) -> Result[i64, string] {
     let truncated = truncate_float(value);
     let text = format_float(truncated, b'f', 0, 64);
-    Result::Ok(num::parse_int(text)?.to_int64())
+    Result::Ok(num::parse_int(text)?.to_i64())
 }
 
 pub fn basic_kind(world: go_types::World, type_id: go_types::TypeId) -> Option[go_types::BasicKind] {
@@ -60,7 +60,7 @@ pub fn basic_kind(world: go_types::World, type_id: go_types::TypeId) -> Option[g
     }
 }
 
-fn integer_layout(kind: go_types::BasicKind) -> Option[(int, bool)] {
+fn integer_layout(kind: go_types::BasicKind) -> Option[(isize, bool)] {
     match kind {
         go_types::BasicKind::Int | go_types::BasicKind::Int64 | go_types::BasicKind::UntypedInt => {
             Option::Some((64, true))
@@ -78,65 +78,65 @@ fn integer_layout(kind: go_types::BasicKind) -> Option[(int, bool)] {
     }
 }
 
-fn integer_mask(width: int) -> uint64 {
+fn integer_mask(width: isize) -> u64 {
     if width >= 64 {
         maximum_uint64()
     } else {
-        (1.to_uint64() << width) - 1.to_uint64()
+        (1.to_u64() << width) - 1.to_u64()
     }
 }
 
-fn normalize_integer(bits: uint64, width: int) -> uint64 {
+fn normalize_integer(bits: u64, width: isize) -> u64 {
     bits & integer_mask(width)
 }
 
-fn signed_integer(bits: uint64, width: int) -> int64 {
+fn signed_integer(bits: u64, width: isize) -> i64 {
     let bits = normalize_integer(bits, width);
     if width >= 64 {
-        bits.to_int64()
-    } else if bits & (1.to_uint64() << (width - 1)) != 0.to_uint64() {
-        (bits | (maximum_uint64() ^ integer_mask(width))).to_int64()
+        bits.to_i64()
+    } else if bits & (1.to_u64() << (width - 1)) != 0.to_u64() {
+        (bits | (maximum_uint64() ^ integer_mask(width))).to_i64()
     } else {
-        bits.to_int64()
+        bits.to_i64()
     }
 }
 
-fn integer_value(bits: uint64, width: int, signed: bool) -> Value {
+fn integer_value(bits: u64, width: isize, signed: bool) -> Value {
     Value::Local(LocalValue::Integer { bits: normalize_integer(bits, width), width, signed })
 }
 
-fn integer_magnitude(value: constant::BigInt) -> uint64 {
-    let mut result = 0.to_uint64();
+fn integer_magnitude(value: constant::BigInt) -> u64 {
+    let mut result = 0.to_u64();
     if !value.magnitude.limbs.is_empty() {
-        result = value.magnitude.limbs[0].to_uint64();
+        result = value.magnitude.limbs[0].to_u64();
     } else {};
     if value.magnitude.limbs.len() > 1 {
-        result = result | (value.magnitude.limbs[1].to_uint64() << 32);
+        result = result | (value.magnitude.limbs[1].to_u64() << 32);
     } else {};
     if value.sign < 0 {
-        0.to_uint64() - result
+        0.to_u64() - result
     } else {
         result
     }
 }
 
-fn natural_uint64(value: constant::Natural) -> Result[uint64, string] {
+fn natural_uint64(value: constant::Natural) -> Result[u64, string] {
     if value.limbs.len() > 2 {
         return Result::Err("floating-point significand exceeds 64 bits")
     } else {};
-    let mut result = 0.to_uint64();
+    let mut result = 0.to_u64();
     if !value.limbs.is_empty() {
-        result = value.limbs[0].to_uint64();
+        result = value.limbs[0].to_u64();
     } else {};
     if value.limbs.len() > 1 {
-        result = result | (value.limbs[1].to_uint64() << 32);
+        result = result | (value.limbs[1].to_u64() << 32);
     } else {};
     Result::Ok(result)
 }
 
-fn rounded_float_bits(value: constant::BigRat, width: int) -> Result[uint64, string] {
+fn rounded_float_bits(value: constant::BigRat, width: isize) -> Result[u64, string] {
     if value.numerator.sign == 0 {
-        return Result::Ok(0.to_uint64())
+        return Result::Ok(0.to_u64())
     } else {};
     let fraction_bits = if width == 32 {
         23
@@ -172,17 +172,17 @@ fn rounded_float_bits(value: constant::BigRat, width: int) -> Result[uint64, str
     let fraction = if exponent < minimum_exponent {
         significand
     } else {
-        significand - (1.to_uint64() << fraction_bits)
+        significand - (1.to_u64() << fraction_bits)
     };
     let exponent_bits = if exponent < minimum_exponent {
-        0.to_uint64()
+        0.to_u64()
     } else {
-        (exponent + bias).to_uint64()
+        (exponent + bias).to_u64()
     };
     let sign = if value.numerator.sign < 0 {
-        1.to_uint64() << (width - 1)
+        1.to_u64() << (width - 1)
     } else {
-        0.to_uint64()
+        0.to_u64()
     };
     Result::Ok(sign | (exponent_bits << fraction_bits) | fraction)
 }
@@ -288,33 +288,25 @@ pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[V
     let underlying = go_types::underlying(world, type_id);
     match go_types::type_data(world, underlying).kind {
         go_types::TypeKind::Basic { basic, name: _, untyped: _ } => match integer_layout(basic) {
-            Some((width, signed)) => Result::Ok(integer_value(0.to_uint64(), width, signed)),
+            Some((width, signed)) => Result::Ok(integer_value(0.to_u64(), width, signed)),
             None => match basic {
                 go_types::BasicKind::Bool | go_types::BasicKind::UntypedBool => {
                     Result::Ok(Value::Local(LocalValue::Bool(false)))
                 },
                 go_types::BasicKind::Float32 => Result::Ok(
-                    Value::Local(LocalValue::Float { bits: 0.to_uint64(), width: 32 }),
+                    Value::Local(LocalValue::Float { bits: 0.to_u64(), width: 32 }),
                 ),
                 go_types::BasicKind::Float64 | go_types::BasicKind::UntypedFloat => Result::Ok(
-                    Value::Local(LocalValue::Float { bits: 0.to_uint64(), width: 64 }),
+                    Value::Local(LocalValue::Float { bits: 0.to_u64(), width: 64 }),
                 ),
                 go_types::BasicKind::Complex64 => Result::Ok(
                     Value::Local(
-                        LocalValue::Complex {
-                            real: 0.to_uint64(),
-                            imaginary: 0.to_uint64(),
-                            width: 64,
-                        },
+                        LocalValue::Complex { real: 0.to_u64(), imaginary: 0.to_u64(), width: 64 },
                     ),
                 ),
                 go_types::BasicKind::Complex128 | go_types::BasicKind::UntypedComplex => Result::Ok(
                     Value::Local(
-                        LocalValue::Complex {
-                            real: 0.to_uint64(),
-                            imaginary: 0.to_uint64(),
-                            width: 128,
-                        },
+                        LocalValue::Complex { real: 0.to_u64(), imaginary: 0.to_u64(), width: 128 },
                     ),
                 ),
                 go_types::BasicKind::String | go_types::BasicKind::UntypedString => Result::Ok(
@@ -327,11 +319,11 @@ pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[V
             },
         },
         go_types::TypeKind::Array { length, element } => {
-            if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
+            if length < 0.to_i64() || length > 9223372036854775807.to_i64() {
                 return Result::Err("array length is outside the host integer range")
             } else {};
-            let elements: Vec[Value] = Vec::with_capacity(length.to_int());
-            for _ in 0..length.to_int() {
+            let elements: Vec[Value] = Vec::with_capacity(length.to_isize());
+            for _ in 0..length.to_isize() {
                 elements.push(zero_value(world, element)?)
             }
             Result::Ok(local_aggregate(type_id, elements))
@@ -407,7 +399,7 @@ pub fn unary_value(
         Value::Local(LocalValue::Integer { bits, width, signed }) => match op {
             bytecode::UnaryOp::Positive => Result::Ok(integer_value(bits, width, signed)),
             bytecode::UnaryOp::Negative => {
-                Result::Ok(integer_value(0.to_uint64() - bits, width, signed))
+                Result::Ok(integer_value(0.to_u64() - bits, width, signed))
             },
             bytecode::UnaryOp::Complement => Result::Ok(
                 integer_value(maximum_uint64() ^ bits, width, signed),
@@ -422,9 +414,9 @@ pub fn unary_value(
                 Value::Local(
                     LocalValue::Float {
                         bits: if width == 32 {
-                            bits ^ (1.to_uint64() << 31)
+                            bits ^ (1.to_u64() << 31)
                         } else {
-                            bits ^ (1.to_uint64() << 63)
+                            bits ^ (1.to_u64() << 63)
                         },
                         width,
                     },
@@ -445,8 +437,8 @@ pub fn unary_value(
                 Result::Ok(
                     Value::Local(
                         LocalValue::Complex {
-                            real: real ^ (1.to_uint64() << sign),
-                            imaginary: imaginary ^ (1.to_uint64() << sign),
+                            real: real ^ (1.to_u64() << sign),
+                            imaginary: imaginary ^ (1.to_u64() << sign),
                             width,
                         },
                     ),
@@ -462,10 +454,12 @@ pub fn unary_value(
     }
 }
 
-fn comparison_result(op: bytecode::BinaryOp, comparison: int, false_value: Value, true_value: Value) -> Result[
-    Value,
-    string,
-] {
+fn comparison_result(
+    op: bytecode::BinaryOp,
+    comparison: isize,
+    false_value: Value,
+    true_value: Value,
+) -> Result[Value, string] {
     let result = match op {
         bytecode::BinaryOp::Equal => comparison == 0,
         bytecode::BinaryOp::NotEqual => comparison != 0,
@@ -484,9 +478,9 @@ fn comparison_result(op: bytecode::BinaryOp, comparison: int, false_value: Value
     )
 }
 
-fn shift_count(value: Value) -> Result[uint64, string] {
+fn shift_count(value: Value) -> Result[u64, string] {
     let (bits, width, signed) = integer_bits(value)?;
-    if signed && signed_integer(bits, width) < 0.to_int64() {
+    if signed && signed_integer(bits, width) < 0.to_i64() {
         Result::Err("negative shift count")
     } else {
         Result::Ok(bits)
@@ -511,16 +505,16 @@ fn integer_binary(
             integer_value(left_bits * right_bits, width, signed),
         ),
         bytecode::BinaryOp::Divide | bytecode::BinaryOp::Remainder => {
-            if right_bits == 0.to_uint64() {
+            if right_bits == 0.to_u64() {
                 return Result::Err("integer divide by zero")
             } else {};
             let bits = if signed {
                 let left = signed_integer(left_bits, width);
                 let right = signed_integer(right_bits, right_width);
                 if op == bytecode::BinaryOp::Divide {
-                    (left / right).to_uint64()
+                    (left / right).to_u64()
                 } else {
-                    (left % right).to_uint64()
+                    (left % right).to_u64()
                 }
             } else if op == bytecode::BinaryOp::Divide {
                 left_bits / right_bits
@@ -553,10 +547,10 @@ fn integer_binary(
             )?;
             Result::Ok(
                 integer_value(
-                    if count >= 64.to_uint64() {
-                        0.to_uint64()
+                    if count >= 64.to_u64() {
+                        0.to_u64()
                     } else {
-                        left_bits << count.to_int()
+                        left_bits << count.to_isize()
                     },
                     width,
                     signed,
@@ -574,19 +568,19 @@ fn integer_binary(
                 ),
             )?;
             let result = if signed {
-                if count >= 64.to_uint64() {
-                    if signed_integer(left_bits, width) < 0.to_int64() {
+                if count >= 64.to_u64() {
+                    if signed_integer(left_bits, width) < 0.to_i64() {
                         maximum_uint64()
                     } else {
-                        0.to_uint64()
+                        0.to_u64()
                     }
                 } else {
-                    (signed_integer(left_bits, width) >> count.to_int()).to_uint64()
+                    (signed_integer(left_bits, width) >> count.to_isize()).to_u64()
                 }
-            } else if count >= 64.to_uint64() {
-                0.to_uint64()
+            } else if count >= 64.to_u64() {
+                0.to_u64()
             } else {
-                left_bits >> count.to_int()
+                left_bits >> count.to_isize()
             };
             Result::Ok(integer_value(result, width, signed))
         },
@@ -613,10 +607,10 @@ fn integer_binary(
     }
 }
 
-fn float_number(value: Value) -> Result[(float64, int), string] {
+fn float_number(value: Value) -> Result[(f64, isize), string] {
     match value {
         Value::Local(LocalValue::Float { bits, width }) => if width == 32 {
-            Result::Ok((widen_float32(float32_from_bits(bits.to_uint32()))?, width))
+            Result::Ok((widen_float32(float32_from_bits(bits.to_u32()))?, width))
         } else {
             Result::Ok((float64_from_bits(bits), width))
         },
@@ -624,11 +618,11 @@ fn float_number(value: Value) -> Result[(float64, int), string] {
     }
 }
 
-fn float_result(value: float64, width: int) -> Value {
+fn float_result(value: f64, width: isize) -> Value {
     if width == 32 {
         Value::Local(
             LocalValue::Float {
-                bits: float32_bits(narrow_float64(value).unwrap_or(0.0)).to_uint64(),
+                bits: float32_bits(narrow_float64(value).unwrap_or(0.0)).to_u64(),
                 width,
             },
         )
@@ -697,14 +691,14 @@ fn float_binary(
     }
 }
 
-fn complex_number(value: Value) -> Result[((float64, float64), int), string] {
+fn complex_number(value: Value) -> Result[((f64, f64), isize), string] {
     match value {
         Value::Local(LocalValue::Complex { real, imaginary, width }) => if width == 64 {
             Result::Ok(
                 (
                     (
-                        widen_float32(float32_from_bits(real.to_uint32()))?,
-                        widen_float32(float32_from_bits(imaginary.to_uint32()))?,
+                        widen_float32(float32_from_bits(real.to_u32()))?,
+                        widen_float32(float32_from_bits(imaginary.to_u32()))?,
                     ),
                     width,
                 ),
@@ -716,12 +710,12 @@ fn complex_number(value: Value) -> Result[((float64, float64), int), string] {
     }
 }
 
-fn complex_result(real: float64, imaginary: float64, width: int) -> Value {
+fn complex_result(real: f64, imaginary: f64, width: isize) -> Value {
     if width == 64 {
         Value::Local(
             LocalValue::Complex {
-                real: float32_bits(narrow_float64(real).unwrap_or(0.0)).to_uint64(),
-                imaginary: float32_bits(narrow_float64(imaginary).unwrap_or(0.0)).to_uint64(),
+                real: float32_bits(narrow_float64(real).unwrap_or(0.0)).to_u64(),
+                imaginary: float32_bits(narrow_float64(imaginary).unwrap_or(0.0)).to_u64(),
                 width,
             },
         )
@@ -787,7 +781,7 @@ fn complex_binary(
     }
 }
 
-fn bytes_compare(left: bytes::Bytes, right: bytes::Bytes) -> int {
+fn bytes_compare(left: bytes::Bytes, right: bytes::Bytes) -> isize {
     let count = if left.len() < right.len() {
         left.len()
     } else {
@@ -990,7 +984,7 @@ pub fn convert_value(
                 Result::Ok(
                     integer_value(
                         if source_signed {
-                            signed_integer(bits, source_width).to_uint64()
+                            signed_integer(bits, source_width).to_u64()
                         } else {
                             bits
                         },
@@ -1001,11 +995,11 @@ pub fn convert_value(
             },
             Value::Local(LocalValue::Float { bits, width: source_width }) => {
                 let value = if source_width == 32 {
-                    widen_float32(float32_from_bits(bits.to_uint32()))?
+                    widen_float32(float32_from_bits(bits.to_u32()))?
                 } else {
                     float64_from_bits(bits)
                 };
-                Result::Ok(integer_value(float64_integer(value)?.to_uint64(), width, signed))
+                Result::Ok(integer_value(float64_integer(value)?.to_u64(), width, signed))
             },
             _ => Result::Err("value cannot be converted to integer"),
         },
@@ -1031,7 +1025,7 @@ pub fn convert_value(
                 Value::Local(LocalValue::Float { bits, width }) => Result::Ok(
                     float_result(
                         if width == 32 {
-                            widen_float32(float32_from_bits(bits.to_uint32()))?
+                            widen_float32(float32_from_bits(bits.to_u32()))?
                         } else {
                             float64_from_bits(bits)
                         },
@@ -1079,7 +1073,7 @@ pub fn output_bytes(value: Value) -> Result[bytes::Bytes, string] {
         Value::Local(LocalValue::Float { bits, width }) => Result::Ok(
             bytes::Bytes::from_string(
                 if width == 32 {
-                    float32_from_bits(bits.to_uint32()).to_string()
+                    float32_from_bits(bits.to_u32()).to_string()
                 } else {
                     format_float(float64_from_bits(bits), b'g', -1, 64)
                 },
@@ -1092,12 +1086,12 @@ pub fn output_bytes(value: Value) -> Result[bytes::Bytes, string] {
                 64
             };
             let real = if component_width == 32 {
-                float32_from_bits(real.to_uint32()).to_string()
+                float32_from_bits(real.to_u32()).to_string()
             } else {
                 format_float(float64_from_bits(real), b'g', -1, 64)
             };
             let imaginary = if component_width == 32 {
-                float32_from_bits(imaginary.to_uint32()).to_string()
+                float32_from_bits(imaginary.to_u32()).to_string()
             } else {
                 format_float(float64_from_bits(imaginary), b'g', -1, 64)
             };

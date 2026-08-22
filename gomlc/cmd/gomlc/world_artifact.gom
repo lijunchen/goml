@@ -10,33 +10,33 @@ use module::version;
 use std::bytes;
 use std::fs;
 
-const WORLD_ARTIFACT_FORMAT: int = 18;
+const WORLD_ARTIFACT_FORMAT: isize = 18;
 
-const WORLD_COMPILER_ABI: int = 5;
+const WORLD_COMPILER_ABI: isize = 5;
 
 struct WorldMetadata {
-    counter: int,
-    package_count: int,
-    artifact_format: int,
-    compiler_abi: int,
+    counter: isize,
+    package_count: isize,
+    artifact_format: isize,
+    compiler_abi: isize,
     compiler_identity: string,
     source_digest: string,
     builtin_package: string,
     prelude_package: string,
 }
 
-fn world_metadata_v1(counter: int) -> bytes::Bytes {
+fn world_metadata_v1(counter: isize) -> bytes::Bytes {
     let writer = wire::new_artifact_binary_writer();
-    wire::artifact_binary_write_u64(writer, counter.to_uint64());
+    wire::artifact_binary_write_u64(writer, counter.to_u64());
     wire::artifact_binary_writer_finish(writer)
 }
 
 fn world_encode_metadata_v2(value: WorldMetadata) -> bytes::Bytes {
     let writer = wire::new_artifact_binary_writer();
-    wire::artifact_binary_write_u64(writer, value.counter.to_uint64());
-    wire::artifact_binary_write_u64(writer, value.package_count.to_uint64());
-    wire::artifact_binary_write_u64(writer, value.artifact_format.to_uint64());
-    wire::artifact_binary_write_u64(writer, value.compiler_abi.to_uint64());
+    wire::artifact_binary_write_u64(writer, value.counter.to_u64());
+    wire::artifact_binary_write_u64(writer, value.package_count.to_u64());
+    wire::artifact_binary_write_u64(writer, value.artifact_format.to_u64());
+    wire::artifact_binary_write_u64(writer, value.compiler_abi.to_u64());
     wire::artifact_binary_write_string(writer, value.compiler_identity);
     wire::artifact_binary_write_string(writer, value.source_digest);
     wire::artifact_binary_write_string(writer, value.builtin_package);
@@ -44,7 +44,7 @@ fn world_encode_metadata_v2(value: WorldMetadata) -> bytes::Bytes {
     wire::artifact_binary_writer_finish(writer)
 }
 
-fn world_metadata_v2(value: PackageWorld, package_count: int) -> bytes::Bytes {
+fn world_metadata_v2(value: PackageWorld, package_count: isize) -> bytes::Bytes {
     world_encode_metadata_v2(
         WorldMetadata {
             counter: value.counter.get(),
@@ -59,11 +59,11 @@ fn world_metadata_v2(value: PackageWorld, package_count: int) -> bytes::Bytes {
     )
 }
 
-fn world_decode_supported_int(value: uint64, name: string) -> Result[int, string] {
+fn world_decode_supported_int(value: u64, name: string) -> Result[isize, string] {
     if value > 2147483647 {
         Result::Err("world artifact " + name + " exceeds supported size")
     } else {
-        Result::Ok(value.to_int())
+        Result::Ok(value.to_isize())
     }
 }
 
@@ -150,7 +150,7 @@ fn world_core_unit(
 
 fn world_add_package_sections(
     sections: Vec[wire::ArtifactBinarySection],
-    section_id: uint16,
+    section_id: u16,
     value: ToolchainPackage,
 ) -> Result[unit, string] {
     let interface = interface_codec::encode_binary(value.interface_unit)?;
@@ -240,41 +240,41 @@ fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainP
     Result::Ok(result)
 }
 
-fn world_v1_package_section_id(package_name: string) -> Option[uint16] {
+fn world_v1_package_section_id(package_name: string) -> Option[u16] {
     match package_name {
-        "builtin" => Option::Some(2.to_uint16()),
-        "prelude" => Option::Some(4.to_uint16()),
-        resources::STD_ROOT_PACKAGE => Option::Some(10.to_uint16()),
-        resources::STD_INTERNAL_HOST_PACKAGE => Option::Some(12.to_uint16()),
-        resources::STD_BYTES_PACKAGE => Option::Some(14.to_uint16()),
-        resources::STD_COLLECTIONS_PACKAGE => Option::Some(16.to_uint16()),
-        resources::STD_ENV_PACKAGE => Option::Some(18.to_uint16()),
-        resources::STD_FS_PACKAGE => Option::Some(20.to_uint16()),
-        resources::STD_IO_PACKAGE => Option::Some(22.to_uint16()),
-        resources::STD_JSON_PACKAGE => Option::Some(24.to_uint16()),
-        resources::STD_PATH_PACKAGE => Option::Some(26.to_uint16()),
-        resources::STD_PROCESS_PACKAGE => Option::Some(28.to_uint16()),
-        resources::STD_TESTING_PACKAGE => Option::Some(30.to_uint16()),
-        resources::STD_TEXT_PACKAGE => Option::Some(32.to_uint16()),
-        resources::STD_NUM_PACKAGE => Option::Some(34.to_uint16()),
-        resources::STD_TIME_PACKAGE => Option::Some(36.to_uint16()),
-        resources::STD_ASCII_PACKAGE => Option::Some(38.to_uint16()),
-        resources::STD_ITER_PACKAGE => Option::Some(40.to_uint16()),
-        resources::STD_CMP_PACKAGE => Option::Some(42.to_uint16()),
-        resources::STD_INTERNAL_TASK_PACKAGE => Option::Some(44.to_uint16()),
-        resources::STD_TASK_PACKAGE => Option::Some(46.to_uint16()),
-        resources::STD_SERDE_PACKAGE => Option::Some(48.to_uint16()),
-        resources::STD_TOML_PACKAGE => Option::Some(50.to_uint16()),
-        resources::STD_BINCODE_PACKAGE => Option::Some(52.to_uint16()),
-        resources::STD_ERROR_PACKAGE => Option::Some(54.to_uint16()),
-        resources::STD_UTF8_PACKAGE => Option::Some(56.to_uint16()),
-        resources::STD_UNICODE_PACKAGE => Option::Some(58.to_uint16()),
-        resources::STD_MATH_PACKAGE => Option::Some(60.to_uint16()),
-        resources::STD_RAND_PACKAGE => Option::Some(62.to_uint16()),
-        resources::STD_CRYPTO_PACKAGE => Option::Some(64.to_uint16()),
-        resources::STD_CRYPTO_HASH_PACKAGE => Option::Some(66.to_uint16()),
-        resources::STD_CRYPTO_RAND_PACKAGE => Option::Some(68.to_uint16()),
-        resources::STD_CHANNEL_PACKAGE => Option::Some(70.to_uint16()),
+        "builtin" => Option::Some(2.to_u16()),
+        "prelude" => Option::Some(4.to_u16()),
+        resources::STD_ROOT_PACKAGE => Option::Some(10.to_u16()),
+        resources::STD_INTERNAL_HOST_PACKAGE => Option::Some(12.to_u16()),
+        resources::STD_BYTES_PACKAGE => Option::Some(14.to_u16()),
+        resources::STD_COLLECTIONS_PACKAGE => Option::Some(16.to_u16()),
+        resources::STD_ENV_PACKAGE => Option::Some(18.to_u16()),
+        resources::STD_FS_PACKAGE => Option::Some(20.to_u16()),
+        resources::STD_IO_PACKAGE => Option::Some(22.to_u16()),
+        resources::STD_JSON_PACKAGE => Option::Some(24.to_u16()),
+        resources::STD_PATH_PACKAGE => Option::Some(26.to_u16()),
+        resources::STD_PROCESS_PACKAGE => Option::Some(28.to_u16()),
+        resources::STD_TESTING_PACKAGE => Option::Some(30.to_u16()),
+        resources::STD_TEXT_PACKAGE => Option::Some(32.to_u16()),
+        resources::STD_NUM_PACKAGE => Option::Some(34.to_u16()),
+        resources::STD_TIME_PACKAGE => Option::Some(36.to_u16()),
+        resources::STD_ASCII_PACKAGE => Option::Some(38.to_u16()),
+        resources::STD_ITER_PACKAGE => Option::Some(40.to_u16()),
+        resources::STD_CMP_PACKAGE => Option::Some(42.to_u16()),
+        resources::STD_INTERNAL_TASK_PACKAGE => Option::Some(44.to_u16()),
+        resources::STD_TASK_PACKAGE => Option::Some(46.to_u16()),
+        resources::STD_SERDE_PACKAGE => Option::Some(48.to_u16()),
+        resources::STD_TOML_PACKAGE => Option::Some(50.to_u16()),
+        resources::STD_BINCODE_PACKAGE => Option::Some(52.to_u16()),
+        resources::STD_ERROR_PACKAGE => Option::Some(54.to_u16()),
+        resources::STD_UTF8_PACKAGE => Option::Some(56.to_u16()),
+        resources::STD_UNICODE_PACKAGE => Option::Some(58.to_u16()),
+        resources::STD_MATH_PACKAGE => Option::Some(60.to_u16()),
+        resources::STD_RAND_PACKAGE => Option::Some(62.to_u16()),
+        resources::STD_CRYPTO_PACKAGE => Option::Some(64.to_u16()),
+        resources::STD_CRYPTO_HASH_PACKAGE => Option::Some(66.to_u16()),
+        resources::STD_CRYPTO_RAND_PACKAGE => Option::Some(68.to_u16()),
+        resources::STD_CHANNEL_PACKAGE => Option::Some(70.to_u16()),
         _ => Option::None,
     }
 }
@@ -317,12 +317,12 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
         ],
     );
     for index in 0..packages.len() {
-        world_add_package_sections(sections, (2 + index * 2).to_uint16(), packages[index])?
+        world_add_package_sections(sections, (2 + index * 2).to_u16(), packages[index])?
     }
     wire::encode_artifact_binary_container(3, sections)
 }
 
-fn world_required_section_version(value: wire::ArtifactBinaryContainer, id: uint16, version: uint16) -> Result[
+fn world_required_section_version(value: wire::ArtifactBinaryContainer, id: u16, version: u16) -> Result[
     wire::ArtifactBinarySection,
     string,
 ] {
@@ -337,11 +337,11 @@ fn world_required_section_version(value: wire::ArtifactBinaryContainer, id: uint
     }
 }
 
-fn world_required_section(value: wire::ArtifactBinaryContainer, id: uint16) -> Result[
+fn world_required_section(value: wire::ArtifactBinaryContainer, id: u16) -> Result[
     wire::ArtifactBinarySection,
     string,
 ] {
-    world_required_section_version(value, id, 1.to_uint16())
+    world_required_section_version(value, id, 1.to_u16())
 }
 
 fn world_dependencies_equal(left: Vec[(string, string)], right: Vec[(string, string)]) -> bool {
@@ -359,7 +359,7 @@ fn world_dependencies_equal(left: Vec[(string, string)], right: Vec[(string, str
 
 fn world_decode_package(
     value: wire::ArtifactBinaryContainer,
-    section_id: uint16,
+    section_id: u16,
     expected_name: string,
 ) -> Result[ToolchainPackage, string] {
     let interface_section = world_required_section(value, section_id)?;
@@ -381,7 +381,7 @@ fn world_decode_package(
     }
 }
 
-fn world_decode_package_any(value: wire::ArtifactBinaryContainer, section_id: uint16) -> Result[
+fn world_decode_package_any(value: wire::ArtifactBinaryContainer, section_id: u16) -> Result[
     ToolchainPackage,
     string,
 ] {
@@ -591,7 +591,7 @@ fn decode_package_world_v2(
     let packages: Vec[ToolchainPackage] = Vec::from_array([]);
     let names: Vec[string] = Vec::from_array([]);
     for index in 0..metadata.package_count {
-        let package_value = world_decode_package_any(container, (2 + index * 2).to_uint16())?;
+        let package_value = world_decode_package_any(container, (2 + index * 2).to_u16())?;
         names.push(package_value.interface_unit.package_name);
         packages.push(package_value)
     }

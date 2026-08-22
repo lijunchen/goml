@@ -51,7 +51,7 @@ fn names_match(left: string, right: string) -> bool {
         || (!right.contains("::") && short_name(left) == short_name(right))
 }
 
-fn add_impl_index(values: HashMap[string, Vec[int]], value: ImplInfo, index: int) -> unit {
+fn add_impl_index(values: HashMap[string, Vec[isize]], value: ImplInfo, index: isize) -> unit {
     let name = short_name(value.trait_ref.name);
     match values[name] {
         Some(indices) => indices.push(index),
@@ -61,8 +61,8 @@ fn add_impl_index(values: HashMap[string, Vec[int]], value: ImplInfo, index: int
     }
 }
 
-fn impl_name_index(values: Vec[ImplInfo]) -> HashMap[string, Vec[int]] {
-    let result: HashMap[string, Vec[int]] = HashMap::from_array([]);
+fn impl_name_index(values: Vec[ImplInfo]) -> HashMap[string, Vec[isize]] {
+    let result: HashMap[string, Vec[isize]] = HashMap::from_array([]);
     for index in 0..values.len() {
         add_impl_index(result, values[index], index)
     }
@@ -74,15 +74,15 @@ fn push_impl_info(ctx: Checker, value: ImplInfo) -> unit {
     ctx.impls.push(value)
 }
 
-fn impl_candidate_indices(ctx: Checker, trait_name: string) -> Option[Vec[int]] {
+fn impl_candidate_indices(ctx: Checker, trait_name: string) -> Option[Vec[isize]] {
     ctx.impl_indices[short_name(trait_name)]
 }
 
 fn add_name_index(
-    exact: HashMap[string, int],
-    short: HashMap[string, int],
+    exact: HashMap[string, isize],
+    short: HashMap[string, isize],
     name: string,
-    index: int,
+    index: isize,
 ) -> unit {
     exact[name] = index;
     let short_name = short_name(name);
@@ -92,8 +92,8 @@ fn add_name_index(
     }
 }
 
-fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, int] {
-    let result: HashMap[string, int] = HashMap::from_array([]);
+fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, isize] {
+    let result: HashMap[string, isize] = HashMap::from_array([]);
     for index in 0..values.len() {
         let name = if short {
             short_name(values[index].name)
@@ -112,16 +112,16 @@ fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, int] {
     result
 }
 
-fn index_enum_name(ctx: Checker, value: EnumInfo, index: int) -> unit {
+fn index_enum_name(ctx: Checker, value: EnumInfo, index: isize) -> unit {
     add_name_index(ctx.enum_names, ctx.enum_short_names, value.name, index)
 }
 
-fn index_struct_name(ctx: Checker, value: StructInfo, index: int) -> unit {
+fn index_struct_name(ctx: Checker, value: StructInfo, index: isize) -> unit {
     add_name_index(ctx.struct_names, ctx.struct_short_names, value.name, index)
 }
 
-fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, int] {
-    let result: HashMap[string, int] = HashMap::from_array([]);
+fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, isize] {
+    let result: HashMap[string, isize] = HashMap::from_array([]);
     for index in 0..values.len() {
         let name = if short {
             short_name(values[index].name)
@@ -234,7 +234,7 @@ fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
     find_struct_by_name(ctx, name).is_some() || find_enum_by_name(ctx, name).is_some()
 }
 
-fn find_variant(value: EnumInfo, index: int) -> Option[EnumVariantInfo] {
+fn find_variant(value: EnumInfo, index: isize) -> Option[EnumVariantInfo] {
     if index >= 0 && index < value.variants.len() {
         Option::Some(value.variants[index])
     } else {
@@ -254,7 +254,7 @@ fn instantiate_enum(ctx: Checker, value: EnumInfo) -> (Type, Vec[TypeSubst]) {
     (nominal_type(ctx.builtin, value.name, args), substitutions)
 }
 
-fn resolve_user_constructor(ctx: Checker, value: EnumInfo, variant_index: int) -> Option[
+fn resolve_user_constructor(ctx: Checker, value: EnumInfo, variant_index: isize) -> Option[
     ResolvedConstructor,
 ] {
     match find_variant(value, variant_index) {
@@ -477,7 +477,7 @@ fn resolve_positional_struct(ctx: Checker, name: string) -> Option[ResolvedConst
 fn instantiate_named_variant(
     ctx: Checker,
     value: EnumInfo,
-    variant_index: int,
+    variant_index: isize,
     named: Vec[(string, Type)],
 ) -> ResolvedStruct {
     let (ty, substitutions) = instantiate_enum(ctx, value);
@@ -516,7 +516,7 @@ fn resolve_named_variant_in(ctx: Checker, value: EnumInfo, variant_name: string)
     NamedFieldConstructorResolution::Missing
 }
 
-fn resolve_named_variant_at(ctx: Checker, value: EnumInfo, variant_index: int) -> NamedFieldConstructorResolution {
+fn resolve_named_variant_at(ctx: Checker, value: EnumInfo, variant_index: isize) -> NamedFieldConstructorResolution {
     match find_variant(value, variant_index) {
         Some(variant) => match enum_variant_named_fields(variant.fields) {
             Some(fields) => NamedFieldConstructorResolution::Found(
@@ -543,7 +543,7 @@ fn resolve_named_field_constructor(ctx: Checker, name: string) -> NamedFieldCons
         Some(value) => return NamedFieldConstructorResolution::Found(value),
         None => (),
     };
-    let candidates: Vec[(EnumInfo, int)] = Vec::from_array([]);
+    let candidates: Vec[(EnumInfo, isize)] = Vec::from_array([]);
     for value in ctx.enums {
         for index in 0..value.variants.len() {
             if value.variants[index].name == name {
@@ -1522,7 +1522,7 @@ fn compatible_impl_count(
     reference_uses_builtin: bool,
     canonical_reference: string,
     reference_short_name: string,
-) -> int {
+) -> isize {
     let mut count = 0;
     match impl_candidate_indices(ctx, reference.name) {
         Some(indices) => for index in indices {
@@ -1584,7 +1584,7 @@ fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
     }
 }
 
-fn validate_impl_overlaps(ctx: Checker, local_impl_count: int) -> unit {
+fn validate_impl_overlaps(ctx: Checker, local_impl_count: isize) -> unit {
     for left in 0..local_impl_count {
         match impl_candidate_indices(ctx, ctx.impls[left].trait_ref.name) {
             Some(indices) => for right in indices {
@@ -2274,7 +2274,7 @@ fn resolve_signature_predicates(ctx: Checker, predicates: Vec[TypePredicate], re
     )
 }
 
-fn builtin_nominal_arity(name: string) -> Option[int] {
+fn builtin_nominal_arity(name: string) -> Option[isize] {
     if derive::is_meta_type(name) {
         Option::Some(0)
     } else {
@@ -2282,7 +2282,7 @@ fn builtin_nominal_arity(name: string) -> Option[int] {
     }
 }
 
-fn nominal_arity(ctx: Checker, name: string) -> Option[int] {
+fn nominal_arity(ctx: Checker, name: string) -> Option[isize] {
     match find_enum_by_name(ctx, name) {
         Some(value) => Option::Some(value.generics.len()),
         None => match find_struct_by_name(ctx, name) {
@@ -2514,7 +2514,7 @@ fn type_contains_unbound_dyn_self(value: Type, associated_types: Vec[(string, Ty
 
 fn dyn_parameter_types_contain_from(
     values: Vec[Type],
-    start: int,
+    start: isize,
     associated_types: Vec[(string, Type)],
 ) -> bool {
     for index in start..values.len() {

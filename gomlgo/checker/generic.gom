@@ -403,7 +403,12 @@ fn instantiated_identifier_node(state: CheckState, node: syntax::NodeId) -> synt
     }
 }
 
-fn type_argument_count_message(state: CheckState, origin: go_types::TypeId, have: int, want: int) -> string {
+fn type_argument_count_message(
+    state: CheckState,
+    origin: go_types::TypeId,
+    have: isize,
+    want: isize,
+) -> string {
     match generic_type_name(state, origin) {
         Some(name) => if have < want {
             "not enough"
@@ -845,7 +850,7 @@ fn check_deferred_instance_counts(state: CheckState) -> unit {
     }
 }
 
-fn instantiation_lbrack(state: CheckState, node: syntax::NodeId) -> int {
+fn instantiation_lbrack(state: CheckState, node: syntax::NodeId) -> isize {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -1069,7 +1074,7 @@ fn union_term_string(state: CheckState, term: go_types::UnionTerm) -> string {
         + go_types::format_type(state.world, term.type_id)
 }
 
-fn expanded_union_term_count(state: CheckState, terms: Vec[go_types::UnionTerm]) -> int {
+fn expanded_union_term_count(state: CheckState, terms: Vec[go_types::UnionTerm]) -> isize {
     let mut count = 0;
     for term in terms {
         if !term.tilde && go_types::is_interface(state.world, term.type_id) {
@@ -1223,7 +1228,7 @@ struct InferenceTypePair {
 struct InferenceChannel {
     type_id: go_types::TypeId,
     element: go_types::TypeId,
-    direction: int,
+    direction: isize,
     named: bool,
 }
 
@@ -2228,7 +2233,7 @@ fn infer_from_constraint_inner(
     }
 }
 
-fn inferred_binding_count(values: Vec[InferenceBinding]) -> int {
+fn inferred_binding_count(values: Vec[InferenceBinding]) -> isize {
     let mut result = 0;
     for value in values {
         if value.type_id.is_some() {
@@ -2574,7 +2579,7 @@ fn infer_signature(
     node: syntax::NodeId,
     signature: go_types::TypeId,
     argument_nodes: Vec[syntax::NodeId],
-    ellipsis: int,
+    ellipsis: isize,
 ) -> go_types::TypeId {
     let parameters = generic_parameters(state, signature);
     if parameters.is_empty() {
@@ -3092,7 +3097,7 @@ fn parameter_in_named_instance(
     }
 }
 
-fn instantiation_argument_node(state: CheckState, node: syntax::NodeId, index: int) -> syntax::NodeId {
+fn instantiation_argument_node(state: CheckState, node: syntax::NodeId, index: isize) -> syntax::NodeId {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -3360,7 +3365,7 @@ fn partial_explicit_constraint_failure(
     state: CheckState,
     origin: go_types::TypeId,
     explicit: Vec[go_types::TypeId],
-) -> int {
+) -> isize {
     let parameters = generic_parameters(state, origin);
     let bindings: Vec[InferenceBinding] = Vec::from_array([]);
     for index in 0..parameters.len() {

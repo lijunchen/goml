@@ -6,9 +6,9 @@ use std::bytes;
 
 struct CommentInfo {
     node: ast::Node,
-    next_start: int,
-    previous_start: int,
-    previous_end: int,
+    next_start: isize,
+    previous_start: isize,
+    previous_end: isize,
     previous_semicolon: bool,
     lead: bool,
     line: bool,
@@ -17,11 +17,11 @@ struct CommentInfo {
 struct CommentData {
     infos: Vec[CommentInfo],
     nodes: Vec[ast::Node],
-    lines: Vec[int],
+    lines: Vec[isize],
 }
 
-fn source_lines(source: bytes::Bytes) -> Vec[int] {
-    let result: Vec[int] = Vec::from_array([0]);
+fn source_lines(source: bytes::Bytes) -> Vec[isize] {
+    let result: Vec[isize] = Vec::from_array([0]);
     for index in 0..source.len() {
         if source.get(index) == b'\n' {
             result.push(index + 1)
@@ -30,7 +30,7 @@ fn source_lines(source: bytes::Bytes) -> Vec[int] {
     result
 }
 
-fn line_for(lines: Vec[int], offset: int) -> int {
+fn line_for(lines: Vec[isize], offset: isize) -> isize {
     let mut low = 0;
     let mut high = lines.len();
     while low + 1 < high {
@@ -44,7 +44,7 @@ fn line_for(lines: Vec[int], offset: int) -> int {
     low + 1
 }
 
-fn comment_end_line(value: token::Token, start_line: int) -> int {
+fn comment_end_line(value: token::Token, start_line: isize) -> isize {
     let mut result = start_line;
     for index in 0..value.literal.byte_len() {
         if value.literal.byte_get(index) == b'\n' {
@@ -68,7 +68,7 @@ fn comment_node(value: token::Token) -> ast::Node {
     )
 }
 
-fn comment_group(tokens: Vec[token::Token], start: int, end: int) -> ast::Node {
+fn comment_group(tokens: Vec[token::Token], start: isize, end: isize) -> ast::Node {
     let values: Vec[ast::Node] = Vec::from_array([]);
     for index in start..end {
         values.push(comment_node(tokens[index]))
@@ -84,8 +84,8 @@ fn comment_group(tokens: Vec[token::Token], start: int, end: int) -> ast::Node {
 fn append_comment_info(
     data: CommentData,
     tokens: Vec[token::Token],
-    start: int,
-    end: int,
+    start: isize,
+    end: isize,
     next: token::Token,
     previous: Option[token::Token],
     lead: bool,
@@ -202,7 +202,7 @@ fn analyze_comments(source: bytes::Bytes, tokens: Vec[token::Token]) -> CommentD
     data
 }
 
-fn lead_comment(parser: Parser, start: int) -> Option[ast::Node] {
+fn lead_comment(parser: Parser, start: isize) -> Option[ast::Node] {
     for value in parser.comment_infos {
         if value.lead && value.next_start == start {
             return Option::Some(value.node)
@@ -211,7 +211,7 @@ fn lead_comment(parser: Parser, start: int) -> Option[ast::Node] {
     Option::None
 }
 
-fn line_comment(parser: Parser, end: int) -> Option[ast::Node] {
+fn line_comment(parser: Parser, end: isize) -> Option[ast::Node] {
     for value in parser.comment_infos {
         if value.line
             && (value.previous_end == end

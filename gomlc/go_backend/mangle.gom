@@ -5,13 +5,13 @@ use std::ascii;
 use std::text;
 
 fn is_ascii_letter(value: char) -> bool {
-    let code = value.to_uint32();
-    code <= 127 && ascii::is_alphabetic(code.to_uint8())
+    let code = value.to_u32();
+    code <= 127 && ascii::is_alphabetic(code.to_u8())
 }
 
 fn is_ascii_digit(value: char) -> bool {
-    let code = value.to_uint32();
-    code <= 127 && ascii::is_digit(code.to_uint8())
+    let code = value.to_u32();
+    code <= 127 && ascii::is_digit(code.to_u8())
 }
 
 fn is_valid_ident(value: string) -> bool {
@@ -110,28 +110,28 @@ fn is_generated_value(value: string) -> bool {
         || value.starts_with("missing__")
 }
 
-fn write_hex_byte(builder: text::StringBuilder, value: uint8) -> unit {
+fn write_hex_byte(builder: text::StringBuilder, value: u8) -> unit {
     let digits = "0123456789abcdef";
-    builder.write_char(digits.get((value / 16).to_int()));
-    builder.write_char(digits.get((value % 16).to_int()))
+    builder.write_char(digits.get((value / 16).to_isize()));
+    builder.write_char(digits.get((value % 16).to_isize()))
 }
 
 fn write_utf8_hex(builder: text::StringBuilder, value: char) -> unit {
-    let code = value.to_uint32();
+    let code = value.to_u32();
     if code <= 127 {
-        write_hex_byte(builder, code.to_uint8())
+        write_hex_byte(builder, code.to_u8())
     } else if code <= 2047 {
-        write_hex_byte(builder, (192 | (code >> 6)).to_uint8());
-        write_hex_byte(builder, (128 | (code & 63)).to_uint8())
+        write_hex_byte(builder, (192 | (code >> 6)).to_u8());
+        write_hex_byte(builder, (128 | (code & 63)).to_u8())
     } else if code <= 65535 {
-        write_hex_byte(builder, (224 | (code >> 12)).to_uint8());
-        write_hex_byte(builder, (128 | ((code >> 6) & 63)).to_uint8());
-        write_hex_byte(builder, (128 | (code & 63)).to_uint8())
+        write_hex_byte(builder, (224 | (code >> 12)).to_u8());
+        write_hex_byte(builder, (128 | ((code >> 6) & 63)).to_u8());
+        write_hex_byte(builder, (128 | (code & 63)).to_u8())
     } else {
-        write_hex_byte(builder, (240 | (code >> 18)).to_uint8());
-        write_hex_byte(builder, (128 | ((code >> 12) & 63)).to_uint8());
-        write_hex_byte(builder, (128 | ((code >> 6) & 63)).to_uint8());
-        write_hex_byte(builder, (128 | (code & 63)).to_uint8())
+        write_hex_byte(builder, (240 | (code >> 18)).to_u8());
+        write_hex_byte(builder, (128 | ((code >> 12) & 63)).to_u8());
+        write_hex_byte(builder, (128 | ((code >> 6) & 63)).to_u8());
+        write_hex_byte(builder, (128 | (code & 63)).to_u8())
     }
 }
 
@@ -221,7 +221,7 @@ fn compact_ident(value: string) -> string {
     }
 }
 
-fn bounded_hint(value: string, budget: int) -> string {
+fn bounded_hint(value: string, budget: isize) -> string {
     if value.byte_len() <= budget {
         value
     } else {

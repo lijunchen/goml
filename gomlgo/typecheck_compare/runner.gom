@@ -17,10 +17,10 @@ pub const DIAGNOSTICS_MODE: string = "diagnostics";
 pub const INFO_MODE: string = "info";
 
 pub struct Summary {
-    pub files: int,
-    pub accepted: int,
-    pub rejected: int,
-    pub info_compared: int,
+    pub files: isize,
+    pub accepted: isize,
+    pub rejected: isize,
+    pub info_compared: isize,
 }
 
 pub enum CompareMode {
@@ -95,7 +95,7 @@ fn unordered_label_diagnostic(message: string) -> bool {
 fn compare_checker_diagnostic_position(
     left: checker::CheckDiagnostic,
     right: checker::CheckDiagnostic,
-) -> int {
+) -> isize {
     if left.start < right.start || (left.start == right.start && left.message < right.message) {
         -1
     } else if left.start == right.start && left.message == right.message {
@@ -108,7 +108,7 @@ fn compare_checker_diagnostic_position(
 fn compare_oracle_diagnostic_position(
     left: typecheck_diff::Diagnostic,
     right: typecheck_diff::Diagnostic,
-) -> int {
+) -> isize {
     if left.start < right.start || (left.start == right.start && left.message < right.message) {
         -1
     } else if left.start == right.start && left.message == right.message {

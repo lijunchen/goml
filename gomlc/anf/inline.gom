@@ -12,7 +12,7 @@ struct InlineJoin {
     replacement: string,
 }
 
-fn fresh_inline(counter: Ref[int], prefix: string) -> string {
+fn fresh_inline(counter: Ref[isize], prefix: string) -> string {
     let value = counter.get();
     counter.set(value + 1);
     prefix + value.to_string()
@@ -58,7 +58,7 @@ fn renamed_inline_join(values: Vec[InlineJoin], name: string) -> string {
     }
 }
 
-fn add_inline_local(values: Vec[InlineName], name: string, ty: repr::Type, counter: Ref[int]) -> unit {
+fn add_inline_local(values: Vec[InlineName], name: string, ty: repr::Type, counter: Ref[isize]) -> unit {
     if name == "_" {} else {
         values.push(
             InlineName { name, value: Imm::Var { name: fresh_inline(counter, "inline"), ty } },
@@ -70,7 +70,7 @@ fn collect_inline_term_names(
     value: Term,
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
-    counter: Ref[int],
+    counter: Ref[isize],
 ) -> unit {
     match value {
         If { then_, else_, .. } => {
@@ -109,7 +109,7 @@ fn collect_inline_join_names(
     value: JoinBind,
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
-    counter: Ref[int],
+    counter: Ref[isize],
 ) -> unit {
     for param in value.params {
         add_inline_local(names, param.0, param.1, counter)
@@ -121,7 +121,7 @@ fn collect_inline_block_names(
     value: Block,
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
-    counter: Ref[int],
+    counter: Ref[isize],
 ) -> unit {
     for bind in value.binds {
         match bind {
@@ -378,7 +378,7 @@ fn clone_inline_block(
     Block { binds, term: clone_inline_term(value.term, names, joins, continuation, ret_ty) }
 }
 
-fn inline_block_cost(value: Block) -> int {
+fn inline_block_cost(value: Block) -> isize {
     let mut result = 1;
     for bind in value.binds {
         result = result + 1;
@@ -709,7 +709,7 @@ fn indexed_inline_candidate(
     ty: repr::Type,
     bind_ty: repr::Type,
     recursive_consumer: bool,
-    budget: Ref[int],
+    budget: Ref[isize],
 ) -> Option[Function] {
     if name == caller {
         return Option::None
@@ -742,7 +742,7 @@ fn inline_candidate(
     ty: repr::Type,
     bind_ty: repr::Type,
     recursive_consumer: bool,
-    budget: Ref[int],
+    budget: Ref[isize],
 ) -> Option[Function] {
     indexed_inline_candidate(
         inline_function_index(functions),
@@ -765,7 +765,7 @@ fn prepend_inline_bind(value: Bind, rest: Block) -> Block {
     Block { binds, term: rest.term }
 }
 
-fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, counter: Ref[int]) -> Block {
+fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, counter: Ref[isize]) -> Block {
     let continuation = fresh_inline(counter, "inline_cont");
     let params: Vec[(string, repr::Type)] = Vec::from_array([]);
     params.push((value.name, value.ty));
@@ -815,8 +815,8 @@ fn inline_term(
     value: Term,
     functions: HashMap[string, Function],
     caller: string,
-    budget: Ref[int],
-    counter: Ref[int],
+    budget: Ref[isize],
+    counter: Ref[isize],
 ) -> Term {
     match value {
         If { cond, then_, else_, ret_ty } => Term::If {
@@ -888,12 +888,12 @@ fn inline_term(
 
 fn inline_binds(
     values: Vec[Bind],
-    index: int,
+    index: isize,
     term: Term,
     functions: HashMap[string, Function],
     caller: string,
-    budget: Ref[int],
-    counter: Ref[int],
+    budget: Ref[isize],
+    counter: Ref[isize],
 ) -> Block {
     if index >= values.len() {
         Block { binds: Vec::from_array([]), term }
@@ -971,8 +971,8 @@ fn inline_block(
     value: Block,
     functions: HashMap[string, Function],
     caller: string,
-    budget: Ref[int],
-    counter: Ref[int],
+    budget: Ref[isize],
+    counter: Ref[isize],
 ) -> Block {
     inline_binds(
         value.binds,
@@ -985,7 +985,7 @@ fn inline_block(
     )
 }
 
-fn inline_function(value: Function, functions: HashMap[string, Function], counter: Ref[int]) -> Function {
+fn inline_function(value: Function, functions: HashMap[string, Function], counter: Ref[isize]) -> Function {
     let budget = Ref::new(48);
     Function {
         name: value.name,
@@ -998,7 +998,7 @@ fn inline_function(value: Function, functions: HashMap[string, Function], counte
     }
 }
 
-pub fn inline(value: File, counter: Ref[int]) -> File {
+pub fn inline(value: File, counter: Ref[isize]) -> File {
     let function_index = inline_function_index(value.functions);
     let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
     for function in value.functions {

@@ -1,7 +1,7 @@
 package builtin;
 
 #[lang("range", public_name = "range")]
-fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
+fn __goml_builtin_range(start: isize, end: isize) -> FnIterator[isize] {
     let mut current = start;
     FnIterator::from_fn(
         || {
@@ -17,7 +17,7 @@ fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
 }
 
 #[lang("range_inclusive")]
-fn __goml_builtin_range_inclusive(start: int, end: int) -> FnIterator[int] {
+fn __goml_builtin_range_inclusive(start: isize, end: isize) -> FnIterator[isize] {
     let mut current = start;
     let mut finished = false;
     FnIterator::from_fn(

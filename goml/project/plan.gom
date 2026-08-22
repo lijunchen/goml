@@ -9,9 +9,9 @@ use std::task;
 use std::text;
 
 struct BuildNode {
-    index: int,
+    index: isize,
     command: Command,
-    dependencies: Vec[int],
+    dependencies: Vec[isize],
 }
 
 struct BuildGraph {
@@ -1013,7 +1013,7 @@ fn abandon_prepared_command(context: Context, cache: Option[PreparedCache]) -> u
 }
 
 fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
-    let producers: HashMap[string, Vec[int]] = HashMap::from_array([]);
+    let producers: HashMap[string, Vec[isize]] = HashMap::from_array([]);
     for index in 0..commands.len() {
         match cache_spec(commands[index]) {
             Some(spec) => for output in spec.outputs {
@@ -1028,7 +1028,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     let result: Vec[BuildNode] = Vec::from_array([]);
     for index in 0..commands.len() {
         let command = commands[index];
-        let dependencies: Vec[int] = Vec::from_array([]);
+        let dependencies: Vec[isize] = Vec::from_array([]);
         match cache_spec(command) {
             Some(spec) => {
                 for input in spec.inputs {
@@ -1075,7 +1075,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     Result::Ok(BuildGraph { nodes: result })
 }
 
-fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
+fn build_node(nodes: Vec[BuildNode], index: isize) -> Option[BuildNode] {
     if index >= 0 && index < nodes.len() {
         Option::Some(nodes[index])
     } else {
@@ -1083,7 +1083,7 @@ fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
     }
 }
 
-fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
+fn build_node_ready(node: BuildNode, completed: Vec[isize]) -> bool {
     for dependency in node.dependencies {
         if !completed.contains(dependency) {
             return false
@@ -1092,7 +1092,7 @@ fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
     true
 }
 
-fn take_ready_build_node(nodes: Vec[BuildNode], pending: Vec[int], completed: Vec[int]) -> Result[
+fn take_ready_build_node(nodes: Vec[BuildNode], pending: Vec[isize], completed: Vec[isize]) -> Result[
     Option[BuildNode],
     string,
 ] {
@@ -1113,13 +1113,13 @@ fn take_ready_build_node(nodes: Vec[BuildNode], pending: Vec[int], completed: Ve
 }
 
 struct BuildWork {
-    index: int,
+    index: isize,
     command: Command,
     cache: Option[PreparedCache],
 }
 
 struct BuildWorkResult {
-    index: int,
+    index: isize,
     cache: Option[PreparedCache],
     result: Result[unit, string],
     completion: Option[Channel[bool]],
@@ -1131,8 +1131,8 @@ fn accept_build_result(
     context: Context,
     identity: string,
     received: Option[BuildWorkResult],
-    completed_nodes: Vec[int],
-    completed: Ref[int],
+    completed_nodes: Vec[isize],
+    completed: Ref[isize],
 ) -> Result[unit, string] {
     let Some(value) = received else {
         scope.cancel();
@@ -1211,16 +1211,16 @@ fn execute_plan_concurrently(
     context: Context,
     graph: BuildGraph,
     identity: string,
-    total: int,
-    jobs: int,
-    completed: Ref[int],
+    total: isize,
+    jobs: isize,
+    completed: Ref[isize],
 ) -> Result[unit, string] {
-    let initial: Vec[int] = Vec::from_array([]);
+    let initial: Vec[isize] = Vec::from_array([]);
     for node in graph.nodes {
         initial.push(node.index)
     }
     let mut pending = initial;
-    let completed_nodes: Vec[int] = Vec::from_array([]);
+    let completed_nodes: Vec[isize] = Vec::from_array([]);
     let mut running = 0;
     let worker_count = if jobs < total {
         jobs
@@ -1341,7 +1341,10 @@ fn execute_plan_concurrently(
     Result::Ok(())
 }
 
-pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> Result[unit, string] {
+pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: isize) -> Result[
+    unit,
+    string,
+] {
     if !dry_run && jobs < 1 {
         return Result::Err("build jobs must be greater than zero")
     } else {};

@@ -4,19 +4,19 @@ use module::cst;
 use module::lexer;
 
 pub struct SyntaxNode {
-    pub id: int,
-    pub parent: Option[int],
+    pub id: isize,
+    pub parent: Option[isize],
     pub kind: cst::NodeKind,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
 }
 
 pub struct SyntaxToken {
-    pub parent: int,
+    pub parent: isize,
     pub kind: lexer::TokenKind,
     pub text: string,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
 }
 
 pub struct SyntaxIndex {
@@ -26,11 +26,11 @@ pub struct SyntaxIndex {
 
 fn index_node(
     value: cst::CstNode,
-    parent: Option[int],
-    start: int,
+    parent: Option[isize],
+    start: isize,
     nodes: Vec[SyntaxNode],
     tokens: Vec[SyntaxToken],
-) -> int {
+) -> isize {
     let id = nodes.len();
     let end = start + value.byte_len;
     nodes.push(SyntaxNode { id, parent, kind: value.kind, start, end });
@@ -65,7 +65,7 @@ pub fn syntax_index(root: cst::CstNode) -> SyntaxIndex {
     SyntaxIndex { nodes, tokens }
 }
 
-pub fn token_index_at_or_after(index: SyntaxIndex, offset: int) -> int {
+pub fn token_index_at_or_after(index: SyntaxIndex, offset: isize) -> isize {
     let mut low = 0;
     let mut high = index.tokens.len();
     while low < high {
@@ -79,7 +79,7 @@ pub fn token_index_at_or_after(index: SyntaxIndex, offset: int) -> int {
     low
 }
 
-pub fn token_index_before(index: SyntaxIndex, offset: int) -> int {
+pub fn token_index_before(index: SyntaxIndex, offset: isize) -> isize {
     let mut low = 0;
     let mut high = index.tokens.len();
     while low < high {
@@ -93,11 +93,11 @@ pub fn token_index_before(index: SyntaxIndex, offset: int) -> int {
     low - 1
 }
 
-fn contains_offset(start: int, end: int, offset: int) -> bool {
+fn contains_offset(start: isize, end: isize, offset: isize) -> bool {
     start <= offset && (offset < end || (start == end && offset == start))
 }
 
-pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
+pub fn token_at(index: SyntaxIndex, offset: isize) -> Option[SyntaxToken] {
     let mut low = 0;
     let mut high = index.tokens.len();
     while low < high {
@@ -122,7 +122,7 @@ pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
     Option::None
 }
 
-pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
+pub fn node_at(index: SyntaxIndex, offset: isize) -> Option[SyntaxNode] {
     let mut best = -1;
     for candidate in 0..index.nodes.len() {
         let node = index.nodes[candidate];
@@ -139,7 +139,7 @@ pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
     }
 }
 
-pub fn node_at_kind(index: SyntaxIndex, offset: int, kind: cst::NodeKind) -> Option[SyntaxNode] {
+pub fn node_at_kind(index: SyntaxIndex, offset: isize, kind: cst::NodeKind) -> Option[SyntaxNode] {
     let mut current = node_at(index, offset);
     while current.is_some() {
         match current {

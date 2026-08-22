@@ -372,7 +372,7 @@ All files in the same package can use private top-level items.The trait impl met
 | trait object | `dyn Render`、`dyn Iterator[Item = isize]` | A single, non-generic dyn-safe trait; associated types must be bound |
 | Associative type projection | `I::Item`、`Self::Output`、`I::IntoIter::Item` | There must be corresponding trait constraints; projections may be chained |
 
-The `0.1.35` transition release also accepts `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, and `float64` so existing packages can migrate. Compiler output, diagnostics, and completion use the new names. These compatibility spellings are deprecated and will be removed after stage0 and the repository sources have migrated.
+The `0.1.35` transition release accepted the former numeric type spellings and conversion method names. They are removed in `0.1.36`; migrate to the names in the table above and to the compact conversion methods before upgrading.
 
 Example of function type:
 
@@ -934,7 +934,7 @@ let valid = !(predicate());
 - `< > <= >=` uses `PartialOrd`. Primitive numbers, `string`, `char`, tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` provide the corresponding conditional implementations.
 - `== !=` uses `PartialEq`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` compare recursively when their elements implement `PartialEq`.
 - Floating-point values implement `PartialEq + PartialOrd`, but not `Eq + Ord + Hash`. In particular, NaN is unequal to itself and its `partial_cmp` result is `None`.
-- Every integer type provides `to_isize`, `to_i8`, `to_i16`, `to_i32`, `to_i64`, `to_usize`, `to_u8`, `to_u16`, `to_u32`, and `to_u64` for the other integer types. Identity methods are omitted. `byte` uses the `u8` methods, `char` provides `to_u32`, and `u32` to `char` uses `char_from_u32`, which returns `Option[char]`. The `0.1.35` transition release retains the old conversion method names as deprecated aliases.
+- Every integer type provides `to_isize`, `to_i8`, `to_i16`, `to_i32`, `to_i64`, `to_usize`, `to_u8`, `to_u16`, `to_u32`, and `to_u64` for the other integer types. Identity methods are omitted. `byte` uses the `u8` methods, `char` provides `to_u32`, and `u32` to `char` uses `char_from_u32`, which returns `Option[char]`.
 - Expression `as` is reserved for creating `dyn Trait` values. Numeric conversions use the integer methods above; other non-`dyn` targets are rejected. The separate `as` form in `use package as alias;` still selects an import alias.
 
 There are no exponentiation, null coalescing or user-defined operators.

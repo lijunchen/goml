@@ -8,31 +8,31 @@ enum ValueSerializeFrame {
     },
     Sequence {
         values: Vec[Value],
-        length: int,
+        length: isize,
         ready: Ref[bool],
     },
     Tuple {
         values: Vec[Value],
-        length: int,
+        length: isize,
         ready: Ref[bool],
     },
     Map {
         entries: Vec[Value],
-        length: int,
-        state: Ref[int],
+        length: isize,
+        state: Ref[isize],
         key: Ref[Option[Value]],
     },
     Struct {
         fields: Vec[(string, Value)],
-        length: int,
+        length: isize,
         pending: Ref[Option[string]],
     },
     Variant {
-        index: int,
+        index: isize,
         name: string,
-        kind: int,
+        kind: isize,
         fields: Vec[(string, Value)],
-        length: int,
+        length: isize,
         pending: Ref[Option[string]],
     },
 }
@@ -172,51 +172,51 @@ impl Serializer for ValueSerializer {
         append_serialized_value(self, Value::Bool(value))
     }
 
-    fn serialize_int(self: ValueSerializer, value: int) -> Result[unit, string] {
+    fn serialize_int(self: ValueSerializer, value: isize) -> Result[unit, string] {
         append_serialized_value(self, Value::Int(value))
     }
 
-    fn serialize_int8(self: ValueSerializer, value: int8) -> Result[unit, string] {
+    fn serialize_int8(self: ValueSerializer, value: i8) -> Result[unit, string] {
         append_serialized_value(self, Value::Int8(value))
     }
 
-    fn serialize_int16(self: ValueSerializer, value: int16) -> Result[unit, string] {
+    fn serialize_int16(self: ValueSerializer, value: i16) -> Result[unit, string] {
         append_serialized_value(self, Value::Int16(value))
     }
 
-    fn serialize_int32(self: ValueSerializer, value: int32) -> Result[unit, string] {
+    fn serialize_int32(self: ValueSerializer, value: i32) -> Result[unit, string] {
         append_serialized_value(self, Value::Int32(value))
     }
 
-    fn serialize_int64(self: ValueSerializer, value: int64) -> Result[unit, string] {
+    fn serialize_int64(self: ValueSerializer, value: i64) -> Result[unit, string] {
         append_serialized_value(self, Value::Int64(value))
     }
 
-    fn serialize_uint(self: ValueSerializer, value: uint) -> Result[unit, string] {
+    fn serialize_uint(self: ValueSerializer, value: usize) -> Result[unit, string] {
         append_serialized_value(self, Value::Uint(value))
     }
 
-    fn serialize_uint8(self: ValueSerializer, value: uint8) -> Result[unit, string] {
+    fn serialize_uint8(self: ValueSerializer, value: u8) -> Result[unit, string] {
         append_serialized_value(self, Value::Uint8(value))
     }
 
-    fn serialize_uint16(self: ValueSerializer, value: uint16) -> Result[unit, string] {
+    fn serialize_uint16(self: ValueSerializer, value: u16) -> Result[unit, string] {
         append_serialized_value(self, Value::Uint16(value))
     }
 
-    fn serialize_uint32(self: ValueSerializer, value: uint32) -> Result[unit, string] {
+    fn serialize_uint32(self: ValueSerializer, value: u32) -> Result[unit, string] {
         append_serialized_value(self, Value::Uint32(value))
     }
 
-    fn serialize_uint64(self: ValueSerializer, value: uint64) -> Result[unit, string] {
+    fn serialize_uint64(self: ValueSerializer, value: u64) -> Result[unit, string] {
         append_serialized_value(self, Value::Uint64(value))
     }
 
-    fn serialize_float32(self: ValueSerializer, value: float32) -> Result[unit, string] {
+    fn serialize_float32(self: ValueSerializer, value: f32) -> Result[unit, string] {
         append_serialized_value(self, Value::Float32(value))
     }
 
-    fn serialize_float64(self: ValueSerializer, value: float64) -> Result[unit, string] {
+    fn serialize_float64(self: ValueSerializer, value: f64) -> Result[unit, string] {
         append_serialized_value(self, Value::Float64(value))
     }
 
@@ -275,7 +275,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_sequence(self: ValueSerializer, length: int) -> Result[unit, string] {
+    fn begin_sequence(self: ValueSerializer, length: isize) -> Result[unit, string] {
         if length < 0 {
             Result::Err("sequence length cannot be negative")
         } else {
@@ -290,7 +290,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_sequence_element(self: ValueSerializer, index: int) -> Result[unit, string] {
+    fn begin_sequence_element(self: ValueSerializer, index: isize) -> Result[unit, string] {
         if self.frames.is_empty() {
             return Result::Err("sequence element without sequence")
         } else {};
@@ -323,7 +323,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_tuple(self: ValueSerializer, length: int) -> Result[unit, string] {
+    fn begin_tuple(self: ValueSerializer, length: isize) -> Result[unit, string] {
         if length < 0 {
             Result::Err("tuple length cannot be negative")
         } else {
@@ -338,7 +338,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_tuple_element(self: ValueSerializer, index: int) -> Result[unit, string] {
+    fn begin_tuple_element(self: ValueSerializer, index: isize) -> Result[unit, string] {
         if self.frames.is_empty() {
             return Result::Err("tuple element without tuple")
         } else {};
@@ -371,7 +371,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_map(self: ValueSerializer, length: int) -> Result[unit, string] {
+    fn begin_map(self: ValueSerializer, length: isize) -> Result[unit, string] {
         if length < 0 {
             Result::Err("map length cannot be negative")
         } else {
@@ -387,7 +387,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_map_key(self: ValueSerializer, index: int) -> Result[unit, string] {
+    fn begin_map_key(self: ValueSerializer, index: isize) -> Result[unit, string] {
         if self.frames.is_empty() {
             return Result::Err("map key without map")
         } else {};
@@ -405,7 +405,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_map_value(self: ValueSerializer, index: int) -> Result[unit, string] {
+    fn begin_map_value(self: ValueSerializer, index: isize) -> Result[unit, string] {
         if self.frames.is_empty() {
             return Result::Err("map value without map")
         } else {};
@@ -439,7 +439,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_struct(self: ValueSerializer, name: string, fields: int) -> Result[unit, string] {
+    fn begin_struct(self: ValueSerializer, name: string, fields: isize) -> Result[unit, string] {
         let _ = name;
         if fields < 0 {
             Result::Err("struct field count cannot be negative")
@@ -455,7 +455,7 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_struct_field(self: ValueSerializer, index: int, name: string) -> Result[unit, string] {
+    fn begin_struct_field(self: ValueSerializer, index: isize, name: string) -> Result[unit, string] {
         if self.frames.is_empty() {
             return Result::Err("struct field without struct")
         } else {};
@@ -491,10 +491,10 @@ impl Serializer for ValueSerializer {
     fn begin_variant(
         self: ValueSerializer,
         enum_name: string,
-        index: int,
+        index: isize,
         name: string,
-        kind: int,
-        fields: int,
+        kind: isize,
+        fields: isize,
     ) -> Result[unit, string] {
         let _ = enum_name;
         if fields < 0 {
@@ -514,7 +514,10 @@ impl Serializer for ValueSerializer {
         }
     }
 
-    fn begin_variant_field(self: ValueSerializer, index: int, name: string) -> Result[unit, string] {
+    fn begin_variant_field(self: ValueSerializer, index: isize, name: string) -> Result[
+        unit,
+        string,
+    ] {
         if self.frames.is_empty() {
             return Result::Err("variant field without variant")
         } else {};

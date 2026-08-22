@@ -215,7 +215,7 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
     }
 }
 
-fn artifact_method_constraints(value: tast::Function, start: int) -> Vec[tast::TypePredicate] {
+fn artifact_method_constraints(value: tast::Function, start: isize) -> Vec[tast::TypePredicate] {
     let result: Vec[tast::TypePredicate] = Vec::from_array([]);
     for index in start..value.predicates.len() {
         result.push(value.predicates[index])
@@ -242,7 +242,11 @@ fn artifact_default_method_name(value: tast::Function) -> Option[string] {
     }
 }
 
-fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, constraint_start: int) -> artifact::ArtifactFnScheme {
+fn artifact_method_scheme(
+    value: tast::Function,
+    owner_generic_count: isize,
+    constraint_start: isize,
+) -> artifact::ArtifactFnScheme {
     let type_params: Vec[string] = Vec::from_array([]);
     for index in owner_generic_count..value.generics.len() {
         type_params.push(value.generics[index])
@@ -271,8 +275,8 @@ fn artifact_method_is_public(value: tast::Function) -> bool {
 
 fn artifact_impl_methods(
     value: tast::ImplBlock,
-    owner_generic_count: int,
-    constraint_start: int,
+    owner_generic_count: isize,
+    constraint_start: isize,
     public_only: bool,
 ) -> Vec[artifact::ArtifactFnScheme] {
     let result: Vec[artifact::ArtifactFnScheme] = Vec::from_array([]);
@@ -679,7 +683,7 @@ fn artifact_package_interface(
         function_names.push(function.name)
     }
     let function_names = wire::sort_artifact_names(function_names);
-    let value_exports: Vec[(string, int)] = Vec::from_array([]);
+    let value_exports: Vec[(string, isize)] = Vec::from_array([]);
     for index in 0..function_names.len() {
         value_exports.push((function_names[index], index))
     }

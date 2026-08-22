@@ -42,7 +42,7 @@ fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
     false
 }
 
-fn ordered_int(value: int) -> LowerExpr {
+fn ordered_int(value: isize) -> LowerExpr {
     LowerExpr::Prim {
         value: tast::Primitive::Int { value: value.to_string() },
         ty: tast::Type::Int,
@@ -84,7 +84,7 @@ fn ordered_len(value: LowerExpr, container_ty: tast::Type) -> Option[LowerExpr] 
     }
 }
 
-fn ordered_container_parts(container_ty: tast::Type) -> Option[(tast::Type, Option[int])] {
+fn ordered_container_parts(container_ty: tast::Type) -> Option[(tast::Type, Option[isize])] {
     match tast::resolve_type(container_ty) {
         Array { len: length, elem } => Option::Some((elem, Option::Some(length))),
         VecType { elem } | Slice { elem } => {
@@ -98,9 +98,9 @@ fn ordered_rest_value(
     value: LowerExpr,
     container_ty: tast::Type,
     elem_ty: tast::Type,
-    fixed_len: Option[int],
-    prefix_len: int,
-    suffix_len: int,
+    fixed_len: Option[isize],
+    prefix_len: isize,
+    suffix_len: isize,
     len_expr: LowerExpr,
     rest_ty: tast::Type,
 ) -> LowerExpr {
@@ -162,7 +162,12 @@ fn ordered_rest_value(
     }
 }
 
-fn ordered_suffix_index(fixed_len: Option[int], len_expr: LowerExpr, suffix_len: int, offset: int) -> LowerExpr {
+fn ordered_suffix_index(
+    fixed_len: Option[isize],
+    len_expr: LowerExpr,
+    suffix_len: isize,
+    offset: isize,
+) -> LowerExpr {
     match fixed_len {
         Some(length) => ordered_int(length - suffix_len + offset),
         None => ordered_binary(

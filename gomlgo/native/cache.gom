@@ -6,9 +6,9 @@ use std::crypto::hash;
 use std::path;
 use std::text;
 
-pub const NATIVE_CACHE_SCHEMA_VERSION: uint32 = 3;
+pub const NATIVE_CACHE_SCHEMA_VERSION: u32 = 3;
 
-pub const NATIVE_REGISTRY_GENERATOR_VERSION: uint32 = 5;
+pub const NATIVE_REGISTRY_GENERATOR_VERSION: u32 = 5;
 
 const EXECUTION_MODULE_PATH: string = "gomlgo";
 
@@ -108,7 +108,7 @@ fn valid_relative_path(value: string) -> bool {
     true
 }
 
-fn compare_generated_file(left: GeneratedFile, right: GeneratedFile) -> int {
+fn compare_generated_file(left: GeneratedFile, right: GeneratedFile) -> isize {
     if left.relative_path < right.relative_path {
         -1
     } else if left.relative_path > right.relative_path {

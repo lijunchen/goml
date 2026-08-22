@@ -127,7 +127,7 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
     }
 }
 
-fn hex_value(value: uint8) -> Option[uint32] {
+fn hex_value(value: u8) -> Option[u32] {
     if value >= 48 && value <= 57 {
         Option::Some(decimal_hex_value(value))
     } else {
@@ -143,7 +143,7 @@ fn hex_value(value: uint8) -> Option[uint32] {
     }
 }
 
-fn decimal_hex_value(value: uint8) -> uint32 {
+fn decimal_hex_value(value: u8) -> u32 {
     match value {
         48 => 0,
         49 => 1,
@@ -158,7 +158,7 @@ fn decimal_hex_value(value: uint8) -> uint32 {
     }
 }
 
-fn unicode_escape_character(value: string, start: int) -> Option[char] {
+fn unicode_escape_character(value: string, start: isize) -> Option[char] {
     if start + 4 > value.byte_len() {
         return Option::None
     } else {};
@@ -171,7 +171,7 @@ fn unicode_escape_character(value: string, start: int) -> Option[char] {
             None => return Option::None,
         }
     }
-    char_from_uint32(code)
+    char_from_u32(code)
 }
 
 fn unescape_string(value: string) -> string {
@@ -831,7 +831,7 @@ fn lower_char_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
     }
 }
 
-fn byte_escape_value(value: uint8) -> Option[int] {
+fn byte_escape_value(value: u8) -> Option[isize] {
     match value {
         b'\'' => Option::Some(39),
         b'"' => Option::Some(34),
@@ -886,7 +886,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
         } else if byte > 127 {
             return Option::None
         } else {
-            result.push((byte.to_int()).to_string());
+            result.push((byte.to_isize()).to_string());
             index = index + 1;
         }
     }
@@ -912,7 +912,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
         if byte > 127 {
             return Option::None
         } else {
-            result.push((byte.to_int()).to_string())
+            result.push((byte.to_isize()).to_string())
         }
     }
     Option::Some(result)
@@ -921,7 +921,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
 fn byte_literal_value(value: string) -> Option[string] {
     if value.byte_len() == 4 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
         && value.byte_get(3) == b'\'' {
-        Option::Some((value.byte_get(2).to_int()).to_string())
+        Option::Some((value.byte_get(2).to_isize()).to_string())
     } else if value.byte_len() == 5 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
         && value.byte_get(2) == b'\\'
         && value.byte_get(4) == b'\'' {

@@ -7,13 +7,13 @@ use module::task;
 use module::time;
 
 pub enum ExitReason {
-    Exited(int),
+    Exited(isize),
     Signaled,
     Unknown,
 }
 
 pub struct ExitStatus {
-    pub code_value: int,
+    pub code_value: isize,
 }
 
 impl ExitStatus {
@@ -21,7 +21,7 @@ impl ExitStatus {
         self.code_value == 0
     }
 
-    pub fn code(self: ExitStatus) -> Option[int] {
+    pub fn code(self: ExitStatus) -> Option[isize] {
         if self.code_value < 0 {
             Option::None
         } else {
@@ -67,7 +67,7 @@ pub struct Command {
     pub directory: string,
     pub environment: Vec[(string, string)],
     pub has_input: bool,
-    pub input_value: Vec[uint8],
+    pub input_value: Vec[u8],
 }
 
 impl Command {
@@ -181,7 +181,7 @@ impl Command {
         Error,
     ] {
         let program = self.program;
-        match self.output_timeout(timeout.as_milliseconds().to_int()) {
+        match self.output_timeout(timeout.as_milliseconds().to_isize()) {
             Ok((output, timed_out)) => if timed_out {
                 Result::Err(
                     Error::new(
@@ -207,7 +207,7 @@ impl Command {
         }
     }
 
-    pub fn output_timeout(self: Command, timeout_ms: int) -> Result[(Output, bool), string] {
+    pub fn output_timeout(self: Command, timeout_ms: isize) -> Result[(Output, bool), string] {
         let (ok, code, stdout, stderr, err, timed_out) = host::process_output_timeout(
             self.program,
             self.arguments,
@@ -329,7 +329,7 @@ impl Command {
         Error,
     ] {
         let program = self.program;
-        match self.status_timeout(timeout.as_milliseconds().to_int()) {
+        match self.status_timeout(timeout.as_milliseconds().to_isize()) {
             Ok((status, timed_out)) => if timed_out {
                 Result::Err(
                     Error::new(
@@ -355,7 +355,7 @@ impl Command {
         }
     }
 
-    pub fn status_timeout(self: Command, timeout_ms: int) -> Result[(ExitStatus, bool), string] {
+    pub fn status_timeout(self: Command, timeout_ms: isize) -> Result[(ExitStatus, bool), string] {
         let (ok, code, err, timed_out) = host::process_status_timeout(
             self.program,
             self.arguments,
@@ -421,7 +421,7 @@ impl Command {
     }
 }
 
-pub fn exit(code: int) -> unit {
+pub fn exit(code: isize) -> unit {
     host::exit(code)
 }
 

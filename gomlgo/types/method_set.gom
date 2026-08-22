@@ -2,7 +2,7 @@ package types;
 
 pub struct Selection {
     pub object: ObjectId,
-    pub index: Vec[int],
+    pub index: Vec[isize],
     pub indirect: bool,
 }
 
@@ -14,12 +14,12 @@ pub enum FieldOrMethodLookup {
 
 struct SearchNode {
     type_id: TypeId,
-    index: Vec[int],
+    index: Vec[isize],
     indirect: bool,
 }
 
-fn append_index(values: Vec[int], value: int) -> Vec[int] {
-    let result: Vec[int] = Vec::from_array([]);
+fn append_index(values: Vec[isize], value: isize) -> Vec[isize] {
+    let result: Vec[isize] = Vec::from_array([]);
     for existing in values {
         result.push(existing)
     }
@@ -174,8 +174,8 @@ fn add_method_candidate(
     world: World,
     result: Vec[Selection],
     method: ObjectId,
-    method_index: int,
-    path: Vec[int],
+    method_index: isize,
+    path: Vec[isize],
     indirect: bool,
     allow_pointer: bool,
     name: string,
@@ -277,7 +277,7 @@ fn search_node(
 fn search_underlying(
     world: World,
     value: TypeId,
-    path: Vec[int],
+    path: Vec[isize],
     indirect: bool,
     addressable: bool,
     name: string,

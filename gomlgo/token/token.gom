@@ -138,13 +138,13 @@ pub enum Kind {
 
 pub struct Token {
     pub literal: string,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
     pub kind: Kind,
     pub synthetic: bool,
 }
 
-pub fn make(kind: Kind, literal: string, start: int, end: int, synthetic: bool) -> Token {
+pub fn make(kind: Kind, literal: string, start: isize, end: isize, synthetic: bool) -> Token {
     Token { kind, literal, start, end, synthetic }
 }
 

@@ -13,14 +13,14 @@ use std::text;
 
 pub struct Options {
     pub filter: Option[string],
-    pub jobs: int,
+    pub jobs: isize,
     pub list: bool,
     pub ignored: bool,
     pub include_ignored: bool,
     pub json: bool,
     pub nocapture: bool,
-    pub timeout_ms: int,
-    pub seed: int,
+    pub timeout_ms: isize,
+    pub seed: isize,
 }
 
 pub struct Group {
@@ -40,13 +40,13 @@ struct Test {
 
 enum Status {
     Passed,
-    Failed(int),
+    Failed(isize),
     TimedOut,
     Ignored,
 }
 
 struct Execution {
-    index: int,
+    index: isize,
     test: Test,
     status: Status,
     stdout: string,
@@ -170,7 +170,7 @@ fn print_list(tests: Vec[Test], options: Options) -> unit {
     }
 }
 
-fn run_one(module_dir: string, index: int, test: Test, options: Options) -> Execution {
+fn run_one(module_dir: string, index: isize, test: Test, options: Options) -> Execution {
     if test.ignored && !options.ignored && !options.include_ignored {
         Execution { index, test, status: Status::Ignored, stdout: "", stderr: "" }
     } else {
@@ -245,7 +245,7 @@ fn worker(
     cancel: task::CancelToken,
     module_dir: string,
     options: Options,
-    work: Channel[(int, Test)],
+    work: Channel[(isize, Test)],
     results: Channel[Execution],
 ) -> unit {
     loop {
@@ -266,9 +266,9 @@ fn worker(
 fn record_execution(
     executions: Vec[Execution],
     received: Option[Execution],
-    completed: int,
-    total: int,
-) -> Result[int, string] {
+    completed: isize,
+    total: isize,
+) -> Result[isize, string] {
     let Some(value) = received else {
         return Result::Err("test result channel closed early")
     };
@@ -296,7 +296,7 @@ fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
     values
 }
 
-fn report_text(values: Vec[Execution], seed: int) -> int {
+fn report_text(values: Vec[Execution], seed: isize) -> isize {
     let mut passed = 0;
     let mut failed = 0;
     let mut ignored = 0;
@@ -349,7 +349,7 @@ fn report_text(values: Vec[Execution], seed: int) -> int {
     failed
 }
 
-fn report_json(values: Vec[Execution], seed: int) -> int {
+fn report_json(values: Vec[Execution], seed: isize) -> isize {
     let mut failed = 0;
     for value in values {
         let event = match value.status {

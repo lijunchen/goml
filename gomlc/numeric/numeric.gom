@@ -2,19 +2,19 @@ package numeric;
 
 use std::text;
 
-fn integer_digit(value: byte) -> Option[int] {
+fn integer_digit(value: byte) -> Option[isize] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0').to_int())
+        Option::Some((value - b'0').to_isize())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10).to_int())
+        Option::Some((value - b'A' + 10).to_isize())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10).to_int())
+        Option::Some((value - b'a' + 10).to_isize())
     } else {
         Option::None
     }
 }
 
-fn integer_parts(value: string) -> (int, int) {
+fn integer_parts(value: string) -> (isize, isize) {
     if value.byte_len() >= 2 && value.byte_get(0) == b'0' {
         match value.byte_get(1) {
             b'B' | b'b' => (2, 2),
@@ -27,7 +27,7 @@ fn integer_parts(value: string) -> (int, int) {
     }
 }
 
-fn decimal_digit(value: int) -> string {
+fn decimal_digit(value: isize) -> string {
     match value {
         0 => "0",
         1 => "1",
@@ -42,7 +42,7 @@ fn decimal_digit(value: int) -> string {
     }
 }
 
-fn integer_digit_in_base(value: byte, base: int) -> bool {
+fn integer_digit_in_base(value: byte, base: isize) -> bool {
     match integer_digit(value) {
         Some(value) => value < base,
         None => false,
@@ -51,7 +51,7 @@ fn integer_digit_in_base(value: byte, base: int) -> bool {
 
 pub fn normalize_integer(value: string) -> Option[string] {
     let (base, start) = integer_parts(value);
-    let digits: Vec[int] = Vec::from_array([]);
+    let digits: Vec[isize] = Vec::from_array([]);
     digits.push(0);
     let mut found = false;
     for index in start..value.byte_len() {
@@ -94,7 +94,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
     }
 }
 
-pub fn parse_float32(value: string) -> Option[float64] {
+pub fn parse_float32(value: string) -> Option[f64] {
     let (valid, parsed) = string_parse_float32(value);
     if valid {
         Option::Some(parsed)

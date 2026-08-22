@@ -97,7 +97,7 @@ fn relative_path(root: string, value: string) -> string {
     }
 }
 
-pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[int, string] {
+pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[isize, string] {
     let context = project::load_context(Option::None, Option::None)?;
     let module_root = context.graph.module_dir;
     let files = module_format_files(context)?;

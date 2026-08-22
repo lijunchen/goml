@@ -7,11 +7,11 @@ use gomlgo::token;
 use std::bytes;
 use std::collections;
 
-const MAX_NESTING: int = 10000;
+const MAX_NESTING: isize = 10000;
 
-const DIAGNOSTIC_LIMIT: int = 100;
+const DIAGNOSTIC_LIMIT: isize = 100;
 
-const CURSOR_FUEL: int = 256;
+const CURSOR_FUEL: isize = 256;
 
 pub struct ParseResult {
     pub root: Option[ast::Node],
@@ -20,20 +20,20 @@ pub struct ParseResult {
 
 struct Parser {
     tokens: Vec[token::Token],
-    cursor: Ref[int],
-    previous_end: Ref[int],
-    fuel: Ref[int],
-    nesting: Ref[int],
-    expr_level: Ref[int],
+    cursor: Ref[isize],
+    previous_end: Ref[isize],
+    fuel: Ref[isize],
+    nesting: Ref[isize],
+    expr_level: Ref[isize],
     depth_limit_hit: Ref[bool],
     diagnostic_limit_hit: Ref[bool],
     diagnostics: Vec[diagnostic::Diagnostic],
     imports: Vec[ast::Node],
     comment_infos: Vec[CommentInfo],
     comment_nodes: Vec[ast::Node],
-    comment_limit: int,
+    comment_limit: isize,
     go_version: string,
-    source_len: int,
+    source_len: isize,
     skip_function_bodies: bool,
 }
 
@@ -76,7 +76,7 @@ fn parser_new(source: bytes::Bytes) -> Parser {
     parser_new_with_mode(source, true, false)
 }
 
-fn significant_index(parser: Parser, distance: int) -> int {
+fn significant_index(parser: Parser, distance: isize) -> isize {
     let mut index = parser.cursor.get();
     if index >= parser.comment_limit {
         index += distance;
@@ -113,7 +113,7 @@ fn current(parser: Parser) -> token::Token {
     }
 }
 
-fn nth(parser: Parser, distance: int) -> token::Token {
+fn nth(parser: Parser, distance: isize) -> token::Token {
     if parser.fuel.get() == 0 {
         report(parser, current(parser).start, "parser did not consume input");
         eof_token(parser)
@@ -189,7 +189,7 @@ fn expect(parser: Parser, kind: token::Kind) -> token::Token {
     }
 }
 
-fn report(parser: Parser, offset: int, message: string) -> unit {
+fn report(parser: Parser, offset: isize, message: string) -> unit {
     if parser.diagnostics.len() < DIAGNOSTIC_LIMIT {
         parser.diagnostics.push(diagnostic::make(message, offset))
     } else if !parser.diagnostic_limit_hit.get() {
@@ -219,7 +219,7 @@ fn leave_nesting(parser: Parser) -> unit {
     } else {}
 }
 
-fn ensure_progress(parser: Parser, before: int, context: string) -> bool {
+fn ensure_progress(parser: Parser, before: isize, context: string) -> bool {
     let after = significant_index(parser, 0);
     if after > before || eof(parser) {
         true
@@ -268,7 +268,7 @@ fn consume_semicolon(parser: Parser) -> unit {
     } else {}
 }
 
-fn compare_diagnostic(left: diagnostic::Diagnostic, right: diagnostic::Diagnostic) -> int {
+fn compare_diagnostic(left: diagnostic::Diagnostic, right: diagnostic::Diagnostic) -> isize {
     if left.offset < right.offset || (left.offset == right.offset && left.message < right.message) {
         -1
     } else if left.offset == right.offset && left.message == right.message {

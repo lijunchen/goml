@@ -52,7 +52,7 @@ fn reify_k_for_expr(state: State, value: lift::Expr, k: (Imm) -> Block) -> (Join
 fn lower_core_stmts(
     state: State,
     stmts: Vec[lift::LetStmt],
-    index: int,
+    index: isize,
     tail: Option[lift::Expr],
     k: (Imm) -> Block,
 ) -> Block {
@@ -199,7 +199,7 @@ fn lower_select_arms_from(
     state: State,
     mode: ast::SelectMode,
     values: Vec[lift::SelectArm],
-    index: int,
+    index: isize,
     result: Vec[SelectArm],
     default: Option[lift::Expr],
     join: JoinBind,
@@ -442,7 +442,7 @@ fn lower_return(state: State, value: Option[lift::Expr]) -> Block {
     }
 }
 
-fn loop_context(state: State, target: int) -> Option[LoopCtx] {
+fn loop_context(state: State, target: isize) -> Option[LoopCtx] {
     if target < 0 || target >= state.loop_ctxs.len() {
         Option::None
     } else {

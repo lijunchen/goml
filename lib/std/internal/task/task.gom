@@ -1,50 +1,50 @@
 package task;
 
 pub struct ScopeHandle {
-    id: int64,
+    id: i64,
 }
 
 pub struct CancelToken {
-    id: int64,
+    id: i64,
 }
 
-fn scope_new(parent: int64) -> int64 {
+fn scope_new(parent: i64) -> i64 {
     __goml_std_task_scope_new(parent)
 }
 
-fn scope_spawn(scope: int64, body: () -> unit) -> bool {
+fn scope_spawn(scope: i64, body: () -> unit) -> bool {
     __goml_std_task_scope_spawn(scope, body)
 }
 
-fn scope_run(scope: int64, body: () -> unit) -> unit {
+fn scope_run(scope: i64, body: () -> unit) -> unit {
     __goml_std_task_scope_run(scope, body)
 }
 
-fn scope_try_spawn(scope: int64, body: () -> unit) -> bool {
+fn scope_try_spawn(scope: i64, body: () -> unit) -> bool {
     __goml_std_task_scope_try_spawn(scope, body)
 }
 
-fn scope_cancel(scope: int64) -> unit {
+fn scope_cancel(scope: i64) -> unit {
     __goml_std_task_scope_cancel(scope)
 }
 
-fn scope_finish(scope: int64) -> unit {
+fn scope_finish(scope: i64) -> unit {
     __goml_std_task_scope_finish(scope)
 }
 
-fn scope_cancelled(scope: int64) -> bool {
+fn scope_cancelled(scope: i64) -> bool {
     __goml_std_task_scope_cancelled(scope)
 }
 
-fn scope_done(scope: int64) -> Receiver[unit] {
+fn scope_done(scope: i64) -> Receiver[unit] {
     __goml_std_task_scope_done(scope)
 }
 
-fn scope_sleep(scope: int64, nanoseconds: int64) -> bool {
+fn scope_sleep(scope: i64, nanoseconds: i64) -> bool {
     __goml_std_task_scope_sleep(scope, nanoseconds)
 }
 
-fn scope_count() -> int {
+fn scope_count() -> isize {
     __goml_std_task_scope_count()
 }
 
@@ -89,15 +89,15 @@ pub fn send_with[T](cancel: CancelToken, channel: Channel[T], value: T) -> bool 
     channel_send_cancel(channel, value, cancel.id)
 }
 
-pub fn sleep_with(cancel: CancelToken, nanoseconds: int64) -> bool {
+pub fn sleep_with(cancel: CancelToken, nanoseconds: i64) -> bool {
     scope_sleep(cancel.id, nanoseconds)
 }
 
-pub fn id(cancel: CancelToken) -> int64 {
+pub fn id(cancel: CancelToken) -> i64 {
     cancel.id
 }
 
-pub fn active_scope_count() -> int {
+pub fn active_scope_count() -> isize {
     scope_count()
 }
 

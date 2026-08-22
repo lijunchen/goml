@@ -24,8 +24,8 @@ fn intrinsic_int_type(target: ctir::CtTarget) -> ctir::CtType {
     ctir::CtType::Integer { signed: true, width: target.int_width }
 }
 
-fn intrinsic_int_value(target: ctir::CtTarget, value: int) -> ctir::CtValue {
-    ctir::CtValue::Integer { signed: true, width: target.int_width, bits: value.to_uint64() }
+fn intrinsic_int_value(target: ctir::CtTarget, value: isize) -> ctir::CtValue {
+    ctir::CtValue::Integer { signed: true, width: target.int_width, bits: value.to_u64() }
 }
 
 fn one_intrinsic_type(value: ctir::CtType) -> Vec[ctir::CtType] {
@@ -72,7 +72,7 @@ pub fn value_intrinsic_signature(target: ctir::CtTarget, name: string) -> Option
     }
 }
 
-fn intrinsic_argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::CtValue, string] {
+fn intrinsic_argument(values: Vec[ctir::CtValue], index: isize) -> Result[ctir::CtValue, string] {
     if index < 0 || index >= values.len() {
         Result::Err("comptime intrinsic argument is missing")
     } else {
@@ -80,29 +80,29 @@ fn intrinsic_argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::Ct
     }
 }
 
-fn intrinsic_string_argument(values: Vec[ctir::CtValue], index: int) -> Result[string, string] {
+fn intrinsic_string_argument(values: Vec[ctir::CtValue], index: isize) -> Result[string, string] {
     match intrinsic_argument(values, index)? {
         ctir::CtValue::String(value) => Result::Ok(value),
         _ => Result::Err("comptime string intrinsic expects a string"),
     }
 }
 
-fn intrinsic_int_argument(values: Vec[ctir::CtValue], index: int) -> Result[int, string] {
+fn intrinsic_int_argument(values: Vec[ctir::CtValue], index: isize) -> Result[isize, string] {
     match intrinsic_argument(values, index)? {
         ctir::CtValue::Integer { signed: true, width, bits } => if width == 32 {
-            Result::Ok((bits.to_uint32()).to_int32().to_int())
+            Result::Ok((bits.to_u32()).to_i32().to_isize())
         } else {
-            Result::Ok(bits.to_int64().to_int())
+            Result::Ok(bits.to_i64().to_isize())
         },
-        _ => Result::Err("comptime string intrinsic expects an int index"),
+        _ => Result::Err("comptime string intrinsic expects an isize index"),
     }
 }
 
-fn valid_string_index(value: string, index: int) -> bool {
+fn valid_string_index(value: string, index: isize) -> bool {
     index >= 0 && index < value.byte_len() && value.is_char_boundary(index)
 }
 
-fn valid_string_slice(value: string, start: int, end: int) -> bool {
+fn valid_string_slice(value: string, start: isize, end: isize) -> bool {
     start >= 0 && start <= end && end <= value.byte_len() && value.is_char_boundary(start)
         && value.is_char_boundary(end)
 }
@@ -146,7 +146,7 @@ pub fn call_value_intrinsic(target: ctir::CtTarget, name: string, args: Vec[ctir
                             ctir::CtValue::Integer {
                                 signed: false,
                                 width: 8,
-                                bits: value.byte_get(index).to_uint64(),
+                                bits: value.byte_get(index).to_u64(),
                             },
                         )
                     } else {

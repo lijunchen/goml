@@ -2,7 +2,7 @@ package rand;
 
 pub const ALGORITHM: string = "splitmix64-v1";
 
-fn advance(state: Ref[uint64]) -> uint64 {
+fn advance(state: Ref[u64]) -> u64 {
     let next = state.get() + 0x9e3779b97f4a7c15;
     state.set(next);
     let mut value = next;
@@ -11,11 +11,11 @@ fn advance(state: Ref[uint64]) -> uint64 {
     value ^ (value >> 31)
 }
 
-pub fn next_u64(seed: uint64) -> uint64 {
+pub fn next_u64(seed: u64) -> u64 {
     advance(Ref::new(seed))
 }
 
-pub fn bytes(seed: uint64, length: int) -> Vec[byte] {
+pub fn bytes(seed: u64, length: isize) -> Vec[byte] {
     let output: Vec[byte] = Vec::with_capacity(
         if length > 0 {
             length
@@ -33,23 +33,23 @@ pub fn bytes(seed: uint64, length: int) -> Vec[byte] {
             8
         };
         for index in 0..count {
-            output.push((value >> (index * 8)).to_uint8())
+            output.push((value >> (index * 8)).to_u8())
         }
         remaining -= count;
     }
     output
 }
 
-pub fn int_range(seed: uint64, start: int, end: int) -> Option[int] {
+pub fn int_range(seed: u64, start: isize, end: isize) -> Option[isize] {
     if start >= end {
         Option::None
     } else {
-        let width = (end - start).to_uint64();
-        Option::Some(start + (next_u64(seed) % width).to_int())
+        let width = (end - start).to_u64();
+        Option::Some(start + (next_u64(seed) % width).to_isize())
     }
 }
 
-pub fn shuffle[T](values: Vec[T], seed: uint64) -> Vec[T] {
+pub fn shuffle[T](values: Vec[T], seed: u64) -> Vec[T] {
     let output: Vec[T] = Vec::with_capacity(values.len());
     for value in values {
         output.push(value)
@@ -57,7 +57,7 @@ pub fn shuffle[T](values: Vec[T], seed: uint64) -> Vec[T] {
     let state = Ref::new(seed);
     let mut remaining = output.len();
     while remaining > 1 {
-        let index = (advance(state) % (remaining.to_uint64())).to_int();
+        let index = (advance(state) % (remaining.to_u64())).to_isize();
         let last = remaining - 1;
         let value = output[index];
         output[index] = output[last];

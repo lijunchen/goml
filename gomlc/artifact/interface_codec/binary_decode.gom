@@ -20,16 +20,13 @@ fn artifact_interface_binary_error(expected: string) -> string {
     wire::artifact_decode_error(expected)
 }
 
-fn artifact_interface_binary_read_tag(reader: ArtifactInterfaceBinaryReader) -> Result[
-    uint8,
-    string,
-] {
+fn artifact_interface_binary_read_tag(reader: ArtifactInterfaceBinaryReader) -> Result[u8, string] {
     wire::artifact_binary_read_u8(reader.reader)
 }
 
 fn artifact_interface_binary_expect_tag(
     reader: ArtifactInterfaceBinaryReader,
-    expected_tag: uint8,
+    expected_tag: u8,
     expected: string,
 ) -> Result[unit, string] {
     match artifact_interface_binary_read_tag(reader) {
@@ -44,11 +41,11 @@ fn artifact_interface_binary_expect_tag(
 
 fn artifact_interface_binary_read_count(
     reader: ArtifactInterfaceBinaryReader,
-    tag: uint8,
+    tag: u8,
     expected: string,
-) -> Result[int, string] {
+) -> Result[isize, string] {
     artifact_interface_binary_expect_tag(reader, tag, expected)?;
-    let count = wire::artifact_binary_read_u32(reader.reader)?.to_int();
+    let count = wire::artifact_binary_read_u32(reader.reader)?.to_isize();
     if count > 10000000 {
         Result::Err(artifact_interface_binary_error(expected))
     } else {
@@ -58,7 +55,7 @@ fn artifact_interface_binary_read_count(
 
 fn artifact_interface_binary_object(
     reader: ArtifactInterfaceBinaryReader,
-    expected_count: int,
+    expected_count: isize,
     expected: string,
 ) -> Result[unit, string] {
     match artifact_interface_binary_read_count(reader, 6, expected) {
@@ -72,7 +69,7 @@ fn artifact_interface_binary_object(
 }
 
 fn artifact_interface_binary_array(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
-    int,
+    isize,
     string,
 ] {
     artifact_interface_binary_read_count(reader, 5, expected)

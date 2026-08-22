@@ -248,7 +248,7 @@ fn pattern_head_doc(value: PatternHead) -> pretty::Doc {
     }
 }
 
-fn utf8_width(value: uint8) -> int {
+fn utf8_width(value: u8) -> isize {
     if value < 128 {
         1
     } else if value < 224 {
@@ -260,7 +260,7 @@ fn utf8_width(value: uint8) -> int {
     }
 }
 
-fn hex_digit(value: uint8) -> char {
+fn hex_digit(value: u8) -> char {
     match value {
         0 => '0',
         1 => '1',
@@ -281,12 +281,12 @@ fn hex_digit(value: uint8) -> char {
     }
 }
 
-fn decimal_byte(value: string) -> uint8 {
+fn decimal_byte(value: string) -> u8 {
     let mut result = 0;
     for index in 0..value.byte_len() {
-        result = result * 10 + (value.byte_get(index) - 48).to_int();
+        result = result * 10 + (value.byte_get(index) - 48).to_isize();
     }
-    result.to_uint8()
+    result.to_u8()
 }
 
 fn write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
@@ -308,7 +308,7 @@ fn write_byte_string(builder: text::StringBuilder, values: Vec[string]) -> unit 
     builder.write_char('"')
 }
 
-fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
+fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(hex_digit(value / 16))
@@ -485,7 +485,7 @@ fn record_doc(header: pretty::Doc, values: Vec[pretty::Doc]) -> pretty::Doc {
     }
 }
 
-fn braced_docs(values: Vec[pretty::Doc], indentation: int) -> pretty::Doc {
+fn braced_docs(values: Vec[pretty::Doc], indentation: isize) -> pretty::Doc {
     if values.is_empty() {
         pretty::text("{}")
     } else {

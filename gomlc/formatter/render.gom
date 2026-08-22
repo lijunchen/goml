@@ -9,15 +9,15 @@ enum RenderMode {
 
 struct Renderer {
     output: text::StringBuilder,
-    column: Ref[int],
-    indent_level: Ref[int],
-    line_width: int,
+    column: Ref[isize],
+    indent_level: Ref[isize],
+    line_width: isize,
     line_start: Ref[bool],
-    broken_groups: HashMap[int, unit],
+    broken_groups: HashMap[isize, unit],
     suffixes: Vec[Doc],
 }
 
-fn renderer(line_width: int) -> Renderer {
+fn renderer(line_width: isize) -> Renderer {
     Renderer {
         output: text::StringBuilder::new(),
         column: Ref::new(0),
@@ -45,7 +45,7 @@ fn string_contains_newline(value: string) -> bool {
     false
 }
 
-fn limited_add(left: int, right: int, limit: int) -> int {
+fn limited_add(left: isize, right: isize, limit: isize) -> isize {
     if left > limit || right > limit || left > limit - right {
         limit + 1
     } else {
@@ -53,7 +53,7 @@ fn limited_add(left: int, right: int, limit: int) -> int {
     }
 }
 
-fn flat_width(value: Doc, broken_groups: HashMap[int, unit], limit: int) -> int {
+fn flat_width(value: Doc, broken_groups: HashMap[isize, unit], limit: isize) -> isize {
     match value {
         Nil => 0,
         Text(_, width) => if width > limit {
@@ -72,7 +72,7 @@ fn flat_width(value: Doc, broken_groups: HashMap[int, unit], limit: int) -> int 
             }
         },
         Concat(values) => {
-            let width: Ref[int] = Ref::new(0);
+            let width: Ref[isize] = Ref::new(0);
             for child in values {
                 width.set(
                     limited_add(
@@ -126,7 +126,7 @@ fn write_indent(value: Renderer) -> unit {
     } else {}
 }
 
-fn write_text(value: Renderer, content: string, width: int) -> unit {
+fn write_text(value: Renderer, content: string, width: isize) -> unit {
     if content == "" {} else {
         write_indent(value);
         value.output.write_string(content);
@@ -134,8 +134,8 @@ fn write_text(value: Renderer, content: string, width: int) -> unit {
     }
 }
 
-fn raw_last_line_width(content: string) -> int {
-    let start: Ref[int] = Ref::new(0);
+fn raw_last_line_width(content: string) -> isize {
+    let start: Ref[isize] = Ref::new(0);
     for index in 0..content.byte_len() {
         if content.byte_get(index) == b'\n' {
             start.set(index + 1)
@@ -169,7 +169,7 @@ fn flush_suffixes(value: Renderer) -> unit {
                         None => (),
                     }
                 }
-                let index: Ref[int] = Ref::new(pending.len() - 1);
+                let index: Ref[isize] = Ref::new(pending.len() - 1);
                 while index.get() >= 0 {
                     render_doc(value, pending[index.get()], RenderMode::Flat);
                     index.set(index.get() - 1)
@@ -188,7 +188,7 @@ fn write_newline(value: Renderer) -> unit {
     value.line_start.set(true)
 }
 
-fn render_group(value: Renderer, id: int, content: Doc, mode: RenderMode) -> unit {
+fn render_group(value: Renderer, id: isize, content: Doc, mode: RenderMode) -> unit {
     if render_mode_flat(mode) {
         render_doc(value, content, RenderMode::Flat)
     } else {
@@ -244,7 +244,7 @@ fn render_doc(value: Renderer, doc: Doc, mode: RenderMode) -> unit {
     }
 }
 
-fn render(value: Doc, line_width: int) -> string {
+fn render(value: Doc, line_width: isize) -> string {
     let output = renderer(line_width);
     render_doc(output, value, RenderMode::Broken);
     flush_suffixes(output);

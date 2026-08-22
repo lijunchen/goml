@@ -12,9 +12,9 @@ struct DependencyRequirement {
 }
 
 struct SemVersion {
-    major: int,
-    minor: int,
-    patch: int,
+    major: isize,
+    minor: isize,
+    patch: isize,
 }
 
 struct ResolvedModule {
@@ -25,7 +25,7 @@ struct ResolvedModule {
 
 fn quoted_values(value: string) -> Vec[string] {
     let result: Vec[string] = Vec::from_array([]);
-    let mut start: Option[int] = Option::None;
+    let mut start: Option[isize] = Option::None;
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'"' {
             match start {
@@ -69,7 +69,7 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
     result
 }
 
-fn decimal_number(value: string) -> Option[int] {
+fn decimal_number(value: string) -> Option[isize] {
     let length = value.byte_len();
     if length == 0 {
         Option::None
@@ -80,7 +80,7 @@ fn decimal_number(value: string) -> Option[int] {
             if byte < b'0' || byte > b'9' {
                 return Option::None
             } else {
-                result = result * 10 + (byte - b'0').to_int();
+                result = result * 10 + (byte - b'0').to_isize();
             }
         }
         Option::Some(result)
@@ -246,7 +246,7 @@ fn module_directory(registry: string, module_name: string, version: string) -> R
     }
 }
 
-fn selected_module_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
+fn selected_module_index(values: Vec[ResolvedModule], name: string) -> Option[isize] {
     let mut index = values.len() - 1;
     while index >= 0 {
         if values[index].name == name {

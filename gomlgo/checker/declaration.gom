@@ -26,13 +26,13 @@ struct PendingValue {
     type_node: Option[syntax::NodeId],
     declaration_node: syntax::NodeId,
     value_nodes: Vec[syntax::NodeId],
-    value_index: int,
-    value_count: int,
+    value_index: isize,
+    value_count: isize,
     constant_declaration: bool,
-    iota_value: int,
+    iota_value: isize,
     inherited_initializer: bool,
     invalid_constant_type: bool,
-    status: int,
+    status: isize,
 }
 
 struct ValueCycle {
@@ -76,14 +76,14 @@ struct PendingType {
     declaration_node: syntax::NodeId,
     type_params_node: Option[syntax::NodeId],
     alias: bool,
-    status: int,
+    status: isize,
 }
 
 struct PendingFunction {
     object: go_types::ObjectId,
     file_scope: go_types::ScopeId,
     type_node: syntax::NodeId,
-    status: int,
+    status: isize,
 }
 
 struct PendingMethod {
@@ -120,7 +120,7 @@ struct LocalBinding {
     object: go_types::ObjectId,
     node: syntax::NodeId,
     scope: go_types::ScopeId,
-    function_id: int,
+    function_id: isize,
 }
 
 struct DeferredInstanceCheck {
@@ -145,8 +145,8 @@ struct DeferredFunctionBody {
     signature_node: syntax::NodeId,
     signature: go_types::TypeId,
     body: syntax::NodeId,
-    start: int,
-    iota_value: int,
+    start: isize,
+    iota_value: isize,
     body_checked: bool,
     emitted: bool,
     diagnostics: Vec[CheckDiagnostic],
@@ -167,19 +167,19 @@ struct PartialInstance {
 
 #[derive(PartialEq, Eq, Hash)]
 struct TypeFactSourceKey {
-    file: int32,
-    start: int32,
-    end: int32,
+    file: i32,
+    start: i32,
+    end: i32,
 }
 
 struct TypeFactSourceEntry {
     key: TypeFactSourceKey,
-    index: int32,
+    index: i32,
 }
 
 struct TypeFactSourceIndex {
     entries: Vec[TypeFactSourceEntry],
-    mask: uint64,
+    mask: u64,
 }
 
 struct ActiveInstantiation {
@@ -197,37 +197,37 @@ struct CheckState {
     package_id: go_types::PackageId,
     file_scopes: Vec[go_types::ScopeId],
     info: TypeInfo,
-    function_scope_ends: HashMap[int, int],
-    loop_labels: HashMap[int, string],
+    function_scope_ends: HashMap[isize, isize],
+    loop_labels: HashMap[isize, string],
     effect_expression_nodes: Vec[syntax::NodeId],
-    scope_fact_indices: HashMap[int, int],
-    scope_fact_previous_indices: Vec[Option[int]],
-    selection_indices: HashMap[int, int],
-    type_fact_indices: Vec[int32],
+    scope_fact_indices: HashMap[isize, isize],
+    scope_fact_previous_indices: Vec[Option[isize]],
+    selection_indices: HashMap[isize, isize],
+    type_fact_indices: Vec[i32],
     type_fact_source_indices: TypeFactSourceIndex,
-    type_visit_marks: Vec[int],
-    type_visit_generation: Ref[int],
-    type_invalid_cache: Vec[int32],
-    omitted_type_fact_nodes: HashMap[int, bool],
-    preserved_type_fact_nodes: HashMap[int, bool],
-    retained_invalid_type_fact_nodes: HashMap[int, bool],
-    failed_inference_nodes: HashMap[int, bool],
+    type_visit_marks: Vec[isize],
+    type_visit_generation: Ref[isize],
+    type_invalid_cache: Vec[i32],
+    omitted_type_fact_nodes: HashMap[isize, bool],
+    preserved_type_fact_nodes: HashMap[isize, bool],
+    retained_invalid_type_fact_nodes: HashMap[isize, bool],
+    failed_inference_nodes: HashMap[isize, bool],
     ignore_function_type_params: bool,
-    use_fact_indices: Vec[int32],
-    omitted_use_fact_nodes: HashMap[int, bool],
-    invalid_builtin_parameter_nodes: HashMap[int, bool],
-    used_objects: HashMap[int, bool],
+    use_fact_indices: Vec[i32],
+    omitted_use_fact_nodes: HashMap[isize, bool],
+    invalid_builtin_parameter_nodes: HashMap[isize, bool],
+    used_objects: HashMap[isize, bool],
     constants: Vec[ConstantObjectValue],
     declarations: Vec[DeclaredObject],
     pending_values: Vec[PendingValue],
-    pending_value_indices: HashMap[int, int],
+    pending_value_indices: HashMap[isize, isize],
     active_value_objects: Vec[go_types::ObjectId],
     active_initialization_objects: Vec[go_types::ObjectId],
     initialization_dependencies: Vec[(go_types::ObjectId, go_types::ObjectId)],
     function_initialization_dependencies: Vec[(go_types::ObjectId, go_types::ObjectId)],
     value_cycles: Vec[ValueCycle],
     pending_types: Vec[PendingType],
-    pending_type_indices: HashMap[int, int],
+    pending_type_indices: HashMap[isize, isize],
     active_type_objects: Vec[go_types::ObjectId],
     deferred_type_validations: Vec[go_types::TypeId],
     invalid_type_objects: Vec[go_types::ObjectId],
@@ -241,62 +241,62 @@ struct CheckState {
     deferred_union_diagnostics: Vec[CheckDiagnostic],
     deferred_local_type_validations: Vec[go_types::TypeId],
     deferred_local_type_validation_nodes: Vec[syntax::NodeId],
-    local_type_declaration_depth: int,
-    local_type_alias_depth: int,
+    local_type_declaration_depth: isize,
+    local_type_alias_depth: isize,
     active_local_type_objects: Vec[go_types::ObjectId],
     deferred_local_alias_cycles: Vec[go_types::ObjectId],
     deferred_local_alias_body_objects: Vec[go_types::ObjectId],
     deferred_local_alias_bodies: Vec[syntax::NodeId],
     pending_functions: Vec[PendingFunction],
-    pending_function_indices: HashMap[int, int],
+    pending_function_indices: HashMap[isize, isize],
     pending_methods: Vec[PendingMethod],
     receiver_validation_nodes: Vec[syntax::NodeId],
     active_function_objects: Vec[go_types::ObjectId],
-    reported_recursive_calls: HashMap[int, bool],
-    type_cycle_depth: int,
-    type_fact_recovery_depth: int,
-    array_length_depth: int,
-    array_length_type_cycle_depth: int,
-    named_type_depth: int,
-    type_parameter_cycle_depth: int,
-    generic_type_origin_depth: int,
+    reported_recursive_calls: HashMap[isize, bool],
+    type_cycle_depth: isize,
+    type_fact_recovery_depth: isize,
+    array_length_depth: isize,
+    array_length_type_cycle_depth: isize,
+    named_type_depth: isize,
+    type_parameter_cycle_depth: isize,
+    generic_type_origin_depth: isize,
     generic_type_short_diagnostic: bool,
-    generic_function_context_depth: Ref[int],
-    generic_argument_inference_depth: int,
-    target_inference_context: Ref[int],
+    generic_function_context_depth: Ref[isize],
+    generic_argument_inference_depth: isize,
+    target_inference_context: Ref[isize],
     target_inference_description: Ref[string],
     target_inference_call: Ref[string],
-    constraint_type_depth: int,
+    constraint_type_depth: isize,
     imports: Vec[ImportBinding],
-    dot_import_indices: HashMap[int, Vec[int]],
+    dot_import_indices: HashMap[isize, Vec[isize]],
     labels: Vec[LabelBinding],
-    label_starts: Vec[int],
+    label_starts: Vec[isize],
     active_labels: Vec[ActiveLabel],
-    active_label_starts: Vec[int],
-    loop_depth: int,
-    breakable_depth: int,
+    active_label_starts: Vec[isize],
+    loop_depth: isize,
+    breakable_depth: isize,
     fallthrough_allowed: bool,
-    fallthrough_context: int,
+    fallthrough_context: isize,
     locals: Vec[LocalBinding],
-    function_ids: Vec[int],
+    function_ids: Vec[isize],
     active_instantiations: Vec[ActiveInstantiation],
-    next_function_id: int,
-    initialization_depth: int,
+    next_function_id: isize,
+    initialization_depth: isize,
     function_dependencies_enabled: bool,
-    checked_function_bodies: HashMap[int, bool],
+    checked_function_bodies: HashMap[isize, bool],
     defer_constraint_checks: bool,
     deferred_instances: Vec[DeferredInstanceCheck],
-    checked_deferred_instances: int,
+    checked_deferred_instances: isize,
     deferred_type_info_expressions: Vec[DeferredTypeInfoExpression],
     deferred_constraint_type_uses: Vec[DeferredConstraintTypeUse],
     deferred_function_bodies: Vec[DeferredFunctionBody],
-    deferred_function_body_indices: HashMap[int, int],
-    deferred_function_body_queue: Vec[int],
+    deferred_function_body_indices: HashMap[isize, isize],
+    deferred_function_body_queue: Vec[isize],
     deferred_function_type_diagnostics: Vec[DeferredFunctionTypeDiagnostic],
     partial_instances: Vec[PartialInstance],
     void_nodes: Vec[syntax::NodeId],
-    void_node_indices: HashMap[int, bool],
-    current_iota: int,
+    void_node_indices: HashMap[isize, bool],
+    current_iota: isize,
     diagnostic_override: Option[syntax::NodeId],
     diagnostics: Vec[CheckDiagnostic],
 }
@@ -304,13 +304,13 @@ struct CheckState {
 fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> TypeFactSourceKey {
     let value = syntax::node_at(state.syntax.arena, node.value);
     TypeFactSourceKey {
-        file: value.file.value.to_int32(),
-        start: value.span.start.to_int32(),
-        end: value.span.end.to_int32(),
+        file: value.file.value.to_i32(),
+        start: value.span.start.to_i32(),
+        end: value.span.end.to_i32(),
     }
 }
 
-fn empty_type_fact_source_index(count: int) -> TypeFactSourceIndex {
+fn empty_type_fact_source_index(count: isize) -> TypeFactSourceIndex {
     let mut capacity = 16;
     while capacity <= count {
         capacity *= 2;
@@ -321,52 +321,52 @@ fn empty_type_fact_source_index(count: int) -> TypeFactSourceIndex {
             TypeFactSourceEntry { key: TypeFactSourceKey { file: 0, start: 0, end: 0 }, index: -1 },
         )
     }
-    TypeFactSourceIndex { entries, mask: (capacity - 1).to_uint64() }
+    TypeFactSourceIndex { entries, mask: (capacity - 1).to_u64() }
 }
 
-fn type_fact_source_slot(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> int {
+fn type_fact_source_slot(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> isize {
     let hash = key.hash();
-    let mut position = (hash & index.mask).to_int();
+    let mut position = (hash & index.mask).to_isize();
     let mut perturb = hash;
     loop {
         let entry = index.entries[position];
         if entry.index < 0 || entry.key == key {
             return position
         } else {};
-        position = ((position.to_uint64() * 5 + perturb + 1) & index.mask).to_int();
+        position = ((position.to_u64() * 5 + perturb + 1) & index.mask).to_isize();
         perturb >>= 5;
     }
 }
 
-fn insert_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey, value: int) -> unit {
+fn insert_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey, value: isize) -> unit {
     let position = type_fact_source_slot(index, key);
     if index.entries[position].index < 0 {
-        index.entries[position] = TypeFactSourceEntry { key, index: value.to_int32() };
+        index.entries[position] = TypeFactSourceEntry { key, index: value.to_i32() };
     } else {}
 }
 
-fn find_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> Option[int] {
+fn find_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> Option[isize] {
     let entry = index.entries[type_fact_source_slot(index, key)];
     if entry.index >= 0 {
-        Option::Some(entry.index.to_int())
+        Option::Some(entry.index.to_isize())
     } else {
         Option::None
     }
 }
 
-fn fact_index_slots(count: int) -> Vec[int32] {
-    let result: Vec[int32] = Vec::with_capacity(count);
+fn fact_index_slots(count: isize) -> Vec[i32] {
+    let result: Vec[i32] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(-1)
     }
     result
 }
 
-fn type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
+fn type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[isize] {
     if node.value < 0 || node.value >= state.type_fact_indices.len() {
         return Option::None
     } else {};
-    let index = state.type_fact_indices[node.value].to_int();
+    let index = state.type_fact_indices[node.value].to_isize();
     if index >= 0 {
         Option::Some(index)
     } else {
@@ -374,13 +374,13 @@ fn type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
     }
 }
 
-fn set_type_fact_index(state: CheckState, node: syntax::NodeId, index: int) -> unit {
+fn set_type_fact_index(state: CheckState, node: syntax::NodeId, index: isize) -> unit {
     if node.value >= 0 && node.value < state.type_fact_indices.len() {
-        state.type_fact_indices[node.value] = index.to_int32();
+        state.type_fact_indices[node.value] = index.to_i32();
     } else {}
 }
 
-fn index_type_fact(state: CheckState, node: syntax::NodeId, index: int) -> unit {
+fn index_type_fact(state: CheckState, node: syntax::NodeId, index: isize) -> unit {
     set_type_fact_index(state, node, index);
     let key = type_fact_source_key(state, node);
     if key.file >= 0 {
@@ -425,7 +425,7 @@ fn find_scope_fact(state: CheckState, node: syntax::NodeId) -> Option[ScopeFact]
     }
 }
 
-fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
+fn source_type_fact_index(state: CheckState, node: syntax::NodeId) -> Option[isize] {
     let key = type_fact_source_key(state, node);
     if key.file >= 0 {
         find_type_fact_source(state.type_fact_source_indices, key)
@@ -543,19 +543,19 @@ fn record_use(state: CheckState, node: syntax::NodeId, object: go_types::ObjectI
     if node.value < 0 || node.value >= state.use_fact_indices.len() {
         return
     } else {};
-    let index = state.use_fact_indices[node.value].to_int();
+    let index = state.use_fact_indices[node.value].to_isize();
     if index >= 0 && index < state.info.uses.len() {
         state.info.uses[index].object = Option::Some(object);
         return
     } else {};
-    state.use_fact_indices[node.value] = state.info.uses.len().to_int32();
+    state.use_fact_indices[node.value] = state.info.uses.len().to_i32();
     state.info.uses.push(ObjectFact { node, object: Option::Some(object) })
 }
 
 fn diagnostic_at_position(
     state: CheckState,
     node: syntax::NodeId,
-    position: int,
+    position: isize,
     message: string,
     soft: bool,
 ) -> unit {
@@ -971,7 +971,7 @@ fn node_file(state: CheckState, node: syntax::NodeId) -> Option[syntax::FileId] 
     }
 }
 
-fn node_start(state: CheckState, node: syntax::NodeId) -> int {
+fn node_start(state: CheckState, node: syntax::NodeId) -> isize {
     match syntax::get_node(state.syntax.arena, node) {
         Some(value) => value.span.start,
         None => -1,
@@ -994,7 +994,7 @@ fn effective_file_version(package_version: string, file_version: string) -> stri
     }
 }
 
-fn pending_type_index(state: CheckState, object: go_types::ObjectId) -> Option[int] {
+fn pending_type_index(state: CheckState, object: go_types::ObjectId) -> Option[isize] {
     state.pending_type_indices[object.value]
 }
 
@@ -1602,7 +1602,7 @@ fn type_syntax_contains_named_object(
     state: CheckState,
     type_id: go_types::TypeId,
     target: go_types::ObjectId,
-    visited: Vec[int],
+    visited: Vec[isize],
 ) -> bool {
     for existing in visited {
         if existing == type_id.value {
@@ -1755,7 +1755,7 @@ fn named_type_reference_after(
     state: CheckState,
     rhs: syntax::NodeId,
     target: go_types::ObjectId,
-    after: int,
+    after: isize,
 ) -> Option[syntax::NodeId] {
     let start = node_start(state, rhs);
     let end = node_end(state, rhs);
@@ -2725,7 +2725,7 @@ fn report_deferred_interface_method_diagnostics(state: CheckState, object: go_ty
     }
 }
 
-fn take_diagnostics_from(state: CheckState, start: int) -> Vec[CheckDiagnostic] {
+fn take_diagnostics_from(state: CheckState, start: isize) -> Vec[CheckDiagnostic] {
     let result: Vec[CheckDiagnostic] = Vec::from_array([]);
     for index in start..state.diagnostics.len() {
         result.push(state.diagnostics[index])
@@ -2861,7 +2861,7 @@ fn type_has_expression_array_length(state: CheckState, object: go_types::ObjectI
     }
 }
 
-fn recursive_cycle_diagnostic_rank(state: CheckState, value: CheckDiagnostic) -> int {
+fn recursive_cycle_diagnostic_rank(state: CheckState, value: CheckDiagnostic) -> isize {
     if value.message.starts_with("invalid use of type alias") {
         return 1
     } else {};
@@ -3073,7 +3073,7 @@ fn reorder_type_argument_cycle_diagnostics(state: CheckState, values: Vec[CheckD
     }
 }
 
-fn diagnostic_declaration_position(state: CheckState, value: CheckDiagnostic) -> int {
+fn diagnostic_declaration_position(state: CheckState, value: CheckDiagnostic) -> isize {
     for file in state.syntax.files {
         if file.name == value.file {
             match syntax::get_node(state.syntax.arena, file.root) {
@@ -3411,7 +3411,7 @@ fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
     }
 }
 
-fn pending_function_index(state: CheckState, object: go_types::ObjectId) -> Option[int] {
+fn pending_function_index(state: CheckState, object: go_types::ObjectId) -> Option[isize] {
     state.pending_function_indices[object.value]
 }
 
@@ -3627,7 +3627,7 @@ fn qualified_non_type_object_name(state: CheckState, qualifier: string, object: 
 }
 
 fn resolve_array_length(state: CheckState, scope: go_types::ScopeId, length_node: syntax::NodeId) -> Option[
-    int64,
+    i64,
 ] {
     match syntax::get_node(state.syntax.arena, length_node) {
         Some(syntax::SyntaxNode {
@@ -3718,7 +3718,7 @@ fn resolve_array_length(state: CheckState, scope: go_types::ScopeId, length_node
                     state.config.sizes,
                 ) {
                     Some(_) => match num::parse_int(constant::integer_to_string(value)) {
-                        Ok(length) => Option::Some(length.to_int64()),
+                        Ok(length) => Option::Some(length.to_i64()),
                         Err(_) => {
                             diagnostic(
                                 state,
@@ -4587,7 +4587,7 @@ fn predeclare_value_spec(
     inherited_type: Option[syntax::NodeId],
     inherited_values: Vec[syntax::NodeId],
     inherited_spec: Option[syntax::NodeId],
-    iota_value: int,
+    iota_value: isize,
 ) -> unit {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
@@ -4879,7 +4879,7 @@ fn predeclare_declaration(
     }
 }
 
-fn predeclare_file(state: CheckState, file_index: int) -> unit {
+fn predeclare_file(state: CheckState, file_index: isize) -> unit {
     let file = state.syntax.files[file_index];
     let file_scope = state.file_scopes[file_index];
     let package_scope = state.world.packages[state.package_id.value].scope;
@@ -5255,7 +5255,7 @@ fn declaration_operand(
     result
 }
 
-fn pending_value_index(state: CheckState, object: go_types::ObjectId) -> Option[int] {
+fn pending_value_index(state: CheckState, object: go_types::ObjectId) -> Option[isize] {
     state.pending_value_indices[object.value]
 }
 
@@ -5413,7 +5413,11 @@ fn initializer_contains_object(fact: InitializerFact, object: go_types::ObjectId
     false
 }
 
-fn initializer_dependency_count(dependencies: Vec[int], emitted: Vec[bool], cycle_dependency: bool) -> int {
+fn initializer_dependency_count(
+    dependencies: Vec[isize],
+    emitted: Vec[bool],
+    cycle_dependency: bool,
+) -> isize {
     let mut count = 0;
     for dependency in dependencies {
         if !emitted[dependency] {
@@ -5427,9 +5431,9 @@ fn initializer_dependency_count(dependencies: Vec[int], emitted: Vec[bool], cycl
     }
 }
 
-fn initializer_dependency_indices(state: CheckState, facts: Vec[InitializerFact]) -> Vec[Vec[int]] {
-    let object_facts: HashMap[int, int] = HashMap::from_array([]);
-    let dependencies: Vec[Vec[int]] = Vec::from_array([]);
+fn initializer_dependency_indices(state: CheckState, facts: Vec[InitializerFact]) -> Vec[Vec[isize]] {
+    let object_facts: HashMap[isize, isize] = HashMap::from_array([]);
+    let dependencies: Vec[Vec[isize]] = Vec::from_array([]);
     for index in 0..facts.len() {
         dependencies.push(Vec::from_array([]));
         for object in facts[index].left {
@@ -5456,7 +5460,7 @@ fn initializer_dependency_indices(state: CheckState, facts: Vec[InitializerFact]
 }
 
 fn initializer_cycle_dependencies(state: CheckState, facts: Vec[InitializerFact]) -> Vec[bool] {
-    let cycle_objects: HashMap[int, bool] = HashMap::from_array([]);
+    let cycle_objects: HashMap[isize, bool] = HashMap::from_array([]);
     for cycle in state.value_cycles {
         for object in cycle.objects {
             cycle_objects[object.value] = true;
@@ -5525,7 +5529,7 @@ fn sort_initializers(state: CheckState) -> unit {
     let dependencies = initializer_dependency_indices(state, facts);
     let cycle_dependencies = initializer_cycle_dependencies(state, facts);
     let order_files: Vec[string] = Vec::with_capacity(facts.len());
-    let order_starts: Vec[int] = Vec::with_capacity(facts.len());
+    let order_starts: Vec[isize] = Vec::with_capacity(facts.len());
     for fact in facts {
         let node = initializer_order_node(state, fact);
         if node.value >= 0 && node.value < state.syntax.arena.nodes.len() {
@@ -5646,7 +5650,7 @@ fn evaluate_function_dependency(state: CheckState, object: go_types::ObjectId) -
     }
 }
 
-fn object_position(state: CheckState, object: go_types::ObjectId) -> int {
+fn object_position(state: CheckState, object: go_types::ObjectId) -> isize {
     match go_types::get_object(state.world, object) {
         Some(object) => object.position,
         None => -1,
@@ -5829,7 +5833,7 @@ fn report_value_cycles(state: CheckState, declaration: bool) -> unit {
     }
 }
 
-fn evaluate_pending_value(state: CheckState, index: int) -> unit {
+fn evaluate_pending_value(state: CheckState, index: isize) -> unit {
     if index < 0 || index >= state.pending_values.len() {
         return
     } else if state.pending_values[index].status == 2 {
@@ -6305,7 +6309,7 @@ fn check_declaration(
     }
 }
 
-fn prepare_file_methods(state: CheckState, file_index: int) -> unit {
+fn prepare_file_methods(state: CheckState, file_index: isize) -> unit {
     let file = state.syntax.files[file_index];
     let file_scope = state.file_scopes[file_index];
     match syntax::get_node(state.syntax.arena, file.root) {
@@ -6346,7 +6350,7 @@ fn prepare_file_methods(state: CheckState, file_index: int) -> unit {
     }
 }
 
-fn check_file_missing_method_receivers(state: CheckState, file_index: int) -> unit {
+fn check_file_missing_method_receivers(state: CheckState, file_index: isize) -> unit {
     let file = state.syntax.files[file_index];
     match syntax::get_node(state.syntax.arena, file.root) {
         Some(syntax::SyntaxNode {
@@ -6382,7 +6386,7 @@ fn check_file_missing_method_receivers(state: CheckState, file_index: int) -> un
     }
 }
 
-fn initialize_file(state: CheckState, file_index: int, expected_name: string) -> unit {
+fn initialize_file(state: CheckState, file_index: isize, expected_name: string) -> unit {
     let file = state.syntax.files[file_index];
     let file_scope = state.file_scopes[file_index];
     let package_scope = state.world.packages[state.package_id.value].scope;
@@ -6426,7 +6430,7 @@ fn initialize_file(state: CheckState, file_index: int, expected_name: string) ->
     }
 }
 
-fn check_file_declarations(state: CheckState, file_index: int) -> unit {
+fn check_file_declarations(state: CheckState, file_index: isize) -> unit {
     let file = state.syntax.files[file_index];
     let file_scope = state.file_scopes[file_index];
     let package_scope = state.world.packages[state.package_id.value].scope;
@@ -6450,7 +6454,7 @@ fn check_file_declarations(state: CheckState, file_index: int) -> unit {
     }
 }
 
-fn check_file_type_declarations(state: CheckState, file_index: int, aliases: bool) -> unit {
+fn check_file_type_declarations(state: CheckState, file_index: isize, aliases: bool) -> unit {
     let file = state.syntax.files[file_index];
     match syntax::get_node(state.syntax.arena, file.root) {
         Some(syntax::SyntaxNode {
@@ -6507,7 +6511,7 @@ fn check_file_type_declarations(state: CheckState, file_index: int, aliases: boo
     }
 }
 
-fn check_file_function_bodies(state: CheckState, file_index: int) -> unit {
+fn check_file_function_bodies(state: CheckState, file_index: isize) -> unit {
     let file = state.syntax.files[file_index];
     match syntax::get_node(state.syntax.arena, file.root) {
         Some(syntax::SyntaxNode {
@@ -6550,14 +6554,14 @@ fn check_file_function_bodies(state: CheckState, file_index: int) -> unit {
     }
 }
 
-fn deferred_function_body_before(state: CheckState, left: int, right: int) -> bool {
+fn deferred_function_body_before(state: CheckState, left: isize, right: isize) -> bool {
     state.deferred_function_bodies[left].start < state.deferred_function_bodies[right].start
         || (state.deferred_function_bodies[left].start
             == state.deferred_function_bodies[right].start
             && left < right)
 }
 
-fn push_deferred_function_body(state: CheckState, index: int) -> unit {
+fn push_deferred_function_body(state: CheckState, index: isize) -> unit {
     state.deferred_function_body_queue.push(index);
     let mut position = state.deferred_function_body_queue.len() - 1;
     while position > 0 {
@@ -6576,7 +6580,7 @@ fn push_deferred_function_body(state: CheckState, index: int) -> unit {
     }
 }
 
-fn pop_deferred_function_body(state: CheckState) -> Option[int] {
+fn pop_deferred_function_body(state: CheckState) -> Option[isize] {
     if state.deferred_function_body_queue.is_empty() {
         return Option::None
     } else {};
@@ -6622,7 +6626,7 @@ fn defer_function_body(
     signature_node: syntax::NodeId,
     signature: go_types::TypeId,
     body: syntax::NodeId,
-    iota_value: int,
+    iota_value: isize,
 ) -> unit {
     if state.deferred_function_body_indices.contains(body.value) {
         return
@@ -6649,7 +6653,7 @@ fn check_deferred_function_body_early(
     signature_node: syntax::NodeId,
     signature: go_types::TypeId,
     body: syntax::NodeId,
-    iota_value: int,
+    iota_value: isize,
 ) -> unit {
     defer_function_body(state, signature_node, signature, body, iota_value);
     let Some(deferred_index) = state.deferred_function_body_indices[body.value] else {
@@ -6661,7 +6665,7 @@ fn check_deferred_function_body_early(
     if !state.function_dependencies_enabled {
         return
     }
-    let pending_statuses: Vec[int] = Vec::from_array([]);
+    let pending_statuses: Vec[isize] = Vec::from_array([]);
     for pending in state.pending_values {
         pending_statuses.push(pending.status)
     }
@@ -6801,7 +6805,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     go_types::set_alias_enabled(world, config.enable_alias);
     let diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
     let syntax_sources: Vec[syntax::SourceFile] = Vec::from_array([]);
-    let source_lengths: Vec[(string, int)] = Vec::from_array([]);
+    let source_lengths: Vec[(string, isize)] = Vec::from_array([]);
     let source_texts: Vec[(string, string)] = Vec::from_array([]);
     for file in input.files {
         source_lengths.push((file.name, file.source.len()));
@@ -6877,8 +6881,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         )
     }
     let function_dependencies_enabled = !config.ignore_func_bodies;
-    let function_scope_ends: HashMap[int, int] = HashMap::from_array([]);
-    let loop_labels: HashMap[int, string] = HashMap::from_array([]);
+    let function_scope_ends: HashMap[isize, isize] = HashMap::from_array([]);
+    let loop_labels: HashMap[isize, string] = HashMap::from_array([]);
     let effect_expression_nodes: Vec[syntax::NodeId] = Vec::from_array([]);
     for candidate_value in syntax_package.arena.nodes {
         let Some(candidate) = candidate_value else {

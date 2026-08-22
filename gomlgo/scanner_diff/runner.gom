@@ -8,8 +8,8 @@ use std::fs;
 use std::path;
 
 pub struct Summary {
-    pub files: int,
-    pub tokens: int,
+    pub files: isize,
+    pub tokens: isize,
 }
 
 fn collect_go_files(directory: string, files: Vec[string]) -> Result[unit, string] {
@@ -41,7 +41,7 @@ fn render_expected(value: differential::OracleToken) -> string {
         + value.synthetic.to_string()
 }
 
-fn compare_file(file: string) -> Result[int, string] {
+fn compare_file(file: string) -> Result[isize, string] {
     let source = fs::read_bytes(file)?;
     let actual = scanner::scan_bytes(source);
     let expected = differential::run_oracle("scan", source)?;

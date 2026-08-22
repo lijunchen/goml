@@ -21,7 +21,7 @@ pub enum Ordering {
 }
 
 impl Ordering {
-    pub fn from_int(value: int) -> Ordering {
+    pub fn from_int(value: isize) -> Ordering {
         if value < 0 {
             Ordering::Less
         } else if value > 0 {
@@ -31,7 +31,7 @@ impl Ordering {
         }
     }
 
-    pub fn to_int(self: Ordering) -> int {
+    pub fn to_isize(self: Ordering) -> isize {
         match self {
             Ordering::Less => -1,
             Ordering::Equal => 0,

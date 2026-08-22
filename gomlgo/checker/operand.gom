@@ -80,7 +80,7 @@ fn similar_field_in_type_inner(
     state: CheckState,
     type_id: go_types::TypeId,
     name: string,
-    visited: Vec[int],
+    visited: Vec[isize],
 ) -> Option[go_types::ObjectId] {
     let resolved = go_types::unalias(state.world, type_id);
     for existing in visited {
@@ -385,7 +385,7 @@ fn core_type_id(state: CheckState, value: go_types::TypeId) -> go_types::TypeId 
     go_types::core_type(state.world, value).unwrap_or(state.world.invalid)
 }
 
-fn checked_object_index(state: CheckState, object: go_types::ObjectId) -> int {
+fn checked_object_index(state: CheckState, object: go_types::ObjectId) -> isize {
     if object.value >= 0 && object.value < state.world.objects.len() {
         object.value
     } else {
@@ -403,7 +403,7 @@ fn pointer_to_interface_type(state: CheckState, value: go_types::TypeId) -> bool
     }
 }
 
-fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, generation: int) -> bool {
+fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, generation: isize) -> bool {
     if !go_types::has_type(state.world, type_id) {
         return true
     } else {};
@@ -529,7 +529,7 @@ fn type_contains_invalid(state: CheckState, type_id: go_types::TypeId) -> bool {
         return true
     } else {};
     while state.type_invalid_cache.len() <= type_id.value {
-        state.type_invalid_cache.push(0.to_int32())
+        state.type_invalid_cache.push(0.to_i32())
     }
     let revision = go_types::type_revision(state.world);
     let cached = state.type_invalid_cache[type_id.value];
@@ -549,7 +549,11 @@ fn type_contains_invalid(state: CheckState, type_id: go_types::TypeId) -> bool {
     result
 }
 
-fn type_contains_active_type_inner(state: CheckState, type_id: go_types::TypeId, visited: Vec[int]) -> bool {
+fn type_contains_active_type_inner(
+    state: CheckState,
+    type_id: go_types::TypeId,
+    visited: Vec[isize],
+) -> bool {
     for existing in visited {
         if existing == type_id.value {
             return false
@@ -1176,7 +1180,7 @@ fn find_constant(state: CheckState, object: go_types::ObjectId) -> Option[consta
     let value = state.world.objects[index];
     if value.name == "iota" {
         Option::Some(
-            constant::ConstValue::Int(constant::integer_from_int64(state.current_iota.to_int64())),
+            constant::ConstValue::Int(constant::integer_from_int64(state.current_iota.to_i64())),
         )
     } else {
         match value.constant {
@@ -1556,7 +1560,7 @@ fn check_conversion(
     node: syntax::NodeId,
     target: go_types::TypeId,
     arguments: Vec[syntax::NodeId],
-    ellipsis: int,
+    ellipsis: isize,
 ) -> Operand {
     if target.value == state.world.invalid.value {
         let uninstantiated_generic = match syntax::get_node(state.syntax.arena, node) {
@@ -2331,7 +2335,7 @@ fn call_have_types(
     state: CheckState,
     arguments: Vec[syntax::NodeId],
     checked: Vec[Operand],
-    ellipsis: int,
+    ellipsis: isize,
 ) -> string {
     let values: Vec[string] = Vec::from_array([]);
     for index in 0..checked.len() {
@@ -2371,7 +2375,7 @@ fn call_want_types(state: CheckState, parameters: Vec[go_types::Variable], varia
     "(" + text::join(values, ", ") + ")"
 }
 
-fn call_rparen(state: CheckState, node: syntax::NodeId) -> int {
+fn call_rparen(state: CheckState, node: syntax::NodeId) -> isize {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -2398,7 +2402,7 @@ fn report_call_arity(
     checked: Vec[Operand],
     parameters: Vec[go_types::Variable],
     variadic: bool,
-    ellipsis: int,
+    ellipsis: isize,
     too_few: bool,
 ) -> unit {
     let message = if too_few {
@@ -2523,7 +2527,7 @@ fn check_call(
     node: syntax::NodeId,
     function_node: syntax::NodeId,
     arguments: Vec[syntax::NodeId],
-    ellipsis: int,
+    ellipsis: isize,
 ) -> Operand {
     match builtin_reference(state, scope, function_node) {
         Some(reference) => return check_builtin_call(
@@ -3074,7 +3078,7 @@ fn results_type(state: CheckState, values: Vec[go_types::Variable]) -> go_types:
     }
 }
 
-fn numeric_rank(kind: go_types::BasicKind) -> int {
+fn numeric_rank(kind: go_types::BasicKind) -> isize {
     match kind {
         go_types::BasicKind::UntypedInt => 1,
         go_types::BasicKind::UntypedRune => 2,
@@ -3136,7 +3140,7 @@ fn comparison_value(op: string, left: constant::ConstValue, right: constant::Con
     }
 }
 
-fn shift_amount(value: constant::ConstValue) -> Option[int] {
+fn shift_amount(value: constant::ConstValue) -> Option[isize] {
     match constant::constant_to_integer(value) {
         Some(value) => if value.sign < 0 {
             Option::None
@@ -3276,7 +3280,7 @@ fn check_unary(
                         go_types::BasicKind::Uint32 => 32,
                         go_types::BasicKind::Uint64 => 64,
                         go_types::BasicKind::Uint | go_types::BasicKind::Uintptr => {
-                            (state.config.sizes.word_size * 8).to_int()
+                            (state.config.sizes.word_size * 8).to_isize()
                         },
                         _ => 0,
                     };
@@ -3387,7 +3391,7 @@ fn check_unary(
                     go_types::BasicKind::Uint32 => 32,
                     go_types::BasicKind::Uint64 => 64,
                     go_types::BasicKind::Uint | go_types::BasicKind::Uintptr => {
-                        (state.config.sizes.word_size * 8).to_int()
+                        (state.config.sizes.word_size * 8).to_isize()
                     },
                     _ => 0,
                 };
@@ -4190,7 +4194,7 @@ fn method_value_selection_type(
     }
 }
 
-fn recorded_selection_index(state: CheckState, node: syntax::NodeId) -> Option[int] {
+fn recorded_selection_index(state: CheckState, node: syntax::NodeId) -> Option[isize] {
     match state.selection_indices[node.value] {
         Some(index) => if index >= 0 && index < state.info.selections.len()
             && state.info.selections[index].node.value == node.value {

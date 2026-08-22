@@ -36,16 +36,16 @@ fn is_integer_type(value: Type) -> bool {
 
 fn integer_conversion_target(name: string) -> Option[Type] {
     match name {
-        "to_isize" | "to_int" => Option::Some(Type::Int),
-        "to_i8" | "to_int8" => Option::Some(Type::Int8),
-        "to_i16" | "to_int16" => Option::Some(Type::Int16),
-        "to_i32" | "to_int32" => Option::Some(Type::Int32),
-        "to_i64" | "to_int64" => Option::Some(Type::Int64),
-        "to_usize" | "to_uint" => Option::Some(Type::Uint),
-        "to_u8" | "to_uint8" => Option::Some(Type::Uint8),
-        "to_u16" | "to_uint16" => Option::Some(Type::Uint16),
-        "to_u32" | "to_uint32" => Option::Some(Type::Uint32),
-        "to_u64" | "to_uint64" => Option::Some(Type::Uint64),
+        "to_isize" => Option::Some(Type::Int),
+        "to_i8" => Option::Some(Type::Int8),
+        "to_i16" => Option::Some(Type::Int16),
+        "to_i32" => Option::Some(Type::Int32),
+        "to_i64" => Option::Some(Type::Int64),
+        "to_usize" => Option::Some(Type::Uint),
+        "to_u8" => Option::Some(Type::Uint8),
+        "to_u16" => Option::Some(Type::Uint16),
+        "to_u32" => Option::Some(Type::Uint32),
+        "to_u64" => Option::Some(Type::Uint64),
         _ => Option::None,
     }
 }
@@ -113,7 +113,7 @@ fn kind_accepts(kind: VarKind, value: Type) -> bool {
     }
 }
 
-fn fresh_type(counter: Ref[int], kind: VarKind) -> Type {
+fn fresh_type(counter: Ref[isize], kind: VarKind) -> Type {
     let index = counter.get();
     counter.set(index + 1);
     Type::Var(Ref::new(TypeVar::Unbound { id: index, kind }))
@@ -679,7 +679,7 @@ pub fn types_equal(left: Type, right: Type) -> bool {
     }
 }
 
-fn resolve_parameter_alias_at(value: Type, substitutions: Vec[TypeSubst], depth: int) -> Type {
+fn resolve_parameter_alias_at(value: Type, substitutions: Vec[TypeSubst], depth: isize) -> Type {
     if depth > substitutions.len() {
         value
     } else {
@@ -875,7 +875,7 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
     substitutions
 }
 
-fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int {
+fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> isize {
     let mut result = -1;
     for index in 0..values.len() {
         if result < 0 && types_equal(values[index].projection, projection) {
@@ -1385,7 +1385,7 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
     substitute_type(value, substitutions)
 }
 
-fn instantiate_substitutions(counter: Ref[int], params: Vec[string], explicit: Vec[Type]) -> Vec[
+fn instantiate_substitutions(counter: Ref[isize], params: Vec[string], explicit: Vec[Type]) -> Vec[
     TypeSubst,
 ] {
     let result: Vec[TypeSubst] = Vec::from_array([]);
@@ -1578,12 +1578,12 @@ pub fn nominal_type(builtin: BuiltinContract, name: string, args: Vec[Type]) -> 
     }
 }
 
-fn parse_array_length(value: string) -> int {
+fn parse_array_length(value: string) -> isize {
     let mut result = 0;
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if byte >= b'0' && byte <= b'9' {
-            result = result * 10 + (byte - 48).to_int();
+            result = result * 10 + (byte - 48).to_isize();
         } else {}
     }
     result

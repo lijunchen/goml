@@ -34,7 +34,7 @@ pub struct IntoIteratorLangItem {
 
 pub struct LangVariant {
     pub name: string,
-    pub tag: int,
+    pub tag: isize,
 }
 
 pub struct OptionLangItem {
@@ -216,7 +216,7 @@ fn required_enum_lang_item(item: string) -> Result[BuiltinLangItem, string] {
     }
 }
 
-fn required_lang_variant(value: BuiltinLangItem, property: string, arity: int) -> Result[
+fn required_lang_variant(value: BuiltinLangItem, property: string, arity: isize) -> Result[
     LangVariant,
     string,
 ] {

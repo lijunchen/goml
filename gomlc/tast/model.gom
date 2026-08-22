@@ -11,7 +11,7 @@ pub enum VarKind {
 
 pub enum TypeVar {
     Unbound {
-        id: int,
+        id: isize,
         kind: VarKind,
     },
     Link(Type),
@@ -58,7 +58,7 @@ pub enum Type {
         args: Vec[Type],
     },
     Array {
-        len: int,
+        len: isize,
         elem: Type,
     },
     Slice {
@@ -178,8 +178,8 @@ pub struct PendingConstant {
     pub ty: Type,
     pub value: Expr,
     pub source_path: string,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
     pub comptime_origins: Vec[ast::Span],
 }
 
@@ -187,7 +187,7 @@ pub struct Constructor {
     pub name: string,
     pub fields: Vec[string],
     pub is_struct: bool,
-    pub tag: Option[int],
+    pub tag: Option[isize],
 }
 
 pub enum Callable {
@@ -290,10 +290,10 @@ pub enum Expr {
         ty: Type,
     },
     Comptime {
-        site_id: int,
+        site_id: isize,
         source_path: string,
-        start: int,
-        end: int,
+        start: isize,
+        end: isize,
         origins: Vec[ast::Span],
         body: Expr,
         ty: Type,
@@ -334,12 +334,12 @@ pub enum Expr {
         ty: Type,
     },
     Break {
-        target: int,
+        target: isize,
         value: Option[Expr],
         ty: Type,
     },
     Continue {
-        target: int,
+        target: isize,
         ty: Type,
     },
     Return {
@@ -366,7 +366,7 @@ pub enum Expr {
     },
     Proj {
         tuple: Expr,
-        index: int,
+        index: isize,
         ty: Type,
     },
     Field {
@@ -498,8 +498,8 @@ pub struct Function {
     pub comptime: ComptimeCapability,
     pub derive_export_name: Option[string],
     pub source_path: string,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
     pub comptime_origins: Vec[ast::Span],
     pub generics: Vec[string],
     pub predicates: Vec[TypePredicate],
@@ -575,7 +575,7 @@ pub struct Diagnostic {
     pub span: Option[ast::Span],
     pub primary_label: Option[string],
     pub secondary_labels: Vec[DiagnosticLabel],
-    pub sort_order: int,
+    pub sort_order: isize,
 }
 
 pub struct CheckResult {

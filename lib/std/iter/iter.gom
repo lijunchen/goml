@@ -69,7 +69,7 @@ where
     )
 }
 
-pub fn take[I: Iterator](iterator: I, count: int) -> FnIterator[I::Item] {
+pub fn take[I: Iterator](iterator: I, count: isize) -> FnIterator[I::Item] {
     let remaining = Ref::new(
         if count > 0 {
             count
@@ -116,7 +116,7 @@ where
     )
 }
 
-pub fn skip[I: Iterator](iterator: I, count: int) -> FnIterator[I::Item] {
+pub fn skip[I: Iterator](iterator: I, count: isize) -> FnIterator[I::Item] {
     let remaining = Ref::new(
         if count > 0 {
             count
@@ -161,7 +161,7 @@ where
     )
 }
 
-pub fn enumerate[I: Iterator](iterator: I) -> FnIterator[(int, I::Item)] {
+pub fn enumerate[I: Iterator](iterator: I) -> FnIterator[(isize, I::Item)] {
     let index = Ref::new(0);
     FnIterator::from_fn(
         || {
@@ -315,7 +315,7 @@ pub fn all[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I:
     !any(iterator, |value: T| !predicate(value))
 }
 
-pub fn count[I: Iterator](iterator: I) -> int {
+pub fn count[I: Iterator](iterator: I) -> isize {
     let mut result = 0;
     loop {
         match iterator.next() {
@@ -328,7 +328,7 @@ pub fn count[I: Iterator](iterator: I) -> int {
     result
 }
 
-pub fn position[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[int]
+pub fn position[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[isize]
 where
     I::Item = T,
 {
@@ -346,7 +346,7 @@ where
     Option::None
 }
 
-pub fn nth[I: Iterator](iterator: I, index: int) -> Option[I::Item] {
+pub fn nth[I: Iterator](iterator: I, index: isize) -> Option[I::Item] {
     if index < 0 {
         Option::None
     } else {

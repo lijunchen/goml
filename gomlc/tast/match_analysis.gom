@@ -23,8 +23,8 @@ struct CoverageScalar {
 }
 
 struct CoverageSequence {
-    prefix: int,
-    suffix: int,
+    prefix: isize,
+    suffix: isize,
     has_rest: bool,
 }
 
@@ -180,7 +180,7 @@ fn coverage_join(left: Vec[CoveragePat], right: Vec[CoveragePat]) -> Vec[Coverag
     result
 }
 
-fn coverage_lists_at(values: Vec[Pat], index: int) -> Vec[Vec[CoveragePat]] {
+fn coverage_lists_at(values: Vec[Pat], index: isize) -> Vec[Vec[CoveragePat]] {
     if index >= values.len() {
         Vec::from_array([Vec::from_array([])])
     } else {
@@ -210,7 +210,7 @@ fn coverage_owner(value: string) -> string {
     }
 }
 
-fn coverage_enum_key(name: string, tag: int) -> string {
+fn coverage_enum_key(name: string, tag: isize) -> string {
     "enum:" + name + ":" + tag.to_string()
 }
 
@@ -233,21 +233,21 @@ fn coverage_primitive_value(value: Primitive) -> string {
         } else {
             "bool:false"
         },
-        Int { value } => "int:" + value,
-        Int8 { value } => "int8:" + value,
-        Int16 { value } => "int16:" + value,
-        Int32 { value } => "int32:" + value,
-        Int64 { value } => "int64:" + value,
-        Uint { value } => "uint:" + value,
-        Uint8 { value } => "uint8:" + value,
-        Uint16 { value } => "uint16:" + value,
-        Uint32 { value } => "uint32:" + value,
-        Uint64 { value } => "uint64:" + value,
+        Int { value } => "isize:" + value,
+        Int8 { value } => "i8:" + value,
+        Int16 { value } => "i16:" + value,
+        Int32 { value } => "i32:" + value,
+        Int64 { value } => "i64:" + value,
+        Uint { value } => "usize:" + value,
+        Uint8 { value } => "u8:" + value,
+        Uint16 { value } => "u16:" + value,
+        Uint32 { value } => "u32:" + value,
+        Uint64 { value } => "u64:" + value,
         Float { value } => "float:" + value,
-        Float32 { value } => "float32:" + value,
-        Float64 { value } => "float64:" + value,
+        Float32 { value } => "f32:" + value,
+        Float64 { value } => "f64:" + value,
         String { value } => "string:" + value,
-        Char { value } => "char:" + (value.to_uint32()).to_string(),
+        Char { value } => "char:" + (value.to_u32()).to_string(),
         Bytes { values: _ } => "bytes",
     }
 }
@@ -259,7 +259,7 @@ fn coverage_primitive_raw(value: Primitive) -> Option[string] {
         } | Uint8 { value } | Uint16 { value } | Uint32 { value } | Uint64 { value } => Option::Some(
             value,
         ),
-        Char { value } => Option::Some((value.to_uint32()).to_string()),
+        Char { value } => Option::Some((value.to_u32()).to_string()),
         _ => Option::None,
     }
 }
@@ -321,7 +321,7 @@ fn coverage_number_max(left: CoverageNumber, right: CoverageNumber) -> CoverageN
     }
 }
 
-fn coverage_decimal_byte(value: uint8) -> string {
+fn coverage_decimal_byte(value: u8) -> string {
     match value {
         48 => "0",
         49 => "1",
@@ -337,7 +337,7 @@ fn coverage_decimal_byte(value: uint8) -> string {
 }
 
 fn coverage_decrement_magnitude(value: string) -> string {
-    let digits: Vec[uint8] = Vec::with_capacity(value.byte_len());
+    let digits: Vec[u8] = Vec::with_capacity(value.byte_len());
     for index in 0..value.byte_len() {
         digits.push(value.byte_get(index))
     }
@@ -345,7 +345,7 @@ fn coverage_decrement_magnitude(value: string) -> string {
     while index >= 0 {
         let digit = digits[index];
         if digit == 48 {
-            digits[index] = 57.to_uint8();
+            digits[index] = 57.to_u8();
         } else {
             digits[index] = digit - 1;
             break
@@ -498,7 +498,7 @@ fn coverage_scalar_intersection(left: CoverageScalar, right: CoverageScalar) -> 
     }
 }
 
-fn coverage_repeat(value: Type, count: int) -> Vec[Type] {
+fn coverage_repeat(value: Type, count: isize) -> Vec[Type] {
     let result: Vec[Type] = Vec::from_array([]);
     for _ in 0..count {
         result.push(value)
@@ -506,7 +506,7 @@ fn coverage_repeat(value: Type, count: int) -> Vec[Type] {
     result
 }
 
-fn coverage_fixed_array(prefix: Vec[Pat], suffix: Vec[Pat], length: int, element: Type, ty: Type) -> Vec[
+fn coverage_fixed_array(prefix: Vec[Pat], suffix: Vec[Pat], length: isize, element: Type, ty: Type) -> Vec[
     CoveragePat,
 ] {
     let result: Vec[CoveragePat] = Vec::from_array([]);
@@ -825,7 +825,7 @@ fn coverage_constructor_inhabited_at(
     ctx: CoverageContext,
     constructor: CoverageConstructor,
     visiting: Vec[string],
-    depth: int,
+    depth: isize,
 ) -> bool {
     for field in constructor.fields {
         if !(coverage_type_inhabited_at(ctx, field, visiting, depth + 1)) {
@@ -835,7 +835,7 @@ fn coverage_constructor_inhabited_at(
     true
 }
 
-fn coverage_type_inhabited_at(ctx: CoverageContext, ty: Type, visiting: Vec[string], depth: int) -> bool {
+fn coverage_type_inhabited_at(ctx: CoverageContext, ty: Type, visiting: Vec[string], depth: isize) -> bool {
     if depth >= 128 {
         true
     } else {
@@ -959,7 +959,7 @@ fn coverage_sequence_element(ty: Type) -> Option[Type] {
     }
 }
 
-fn coverage_int_has(values: Vec[int], expected: int) -> bool {
+fn coverage_int_has(values: Vec[isize], expected: isize) -> bool {
     for value in values {
         if value == expected {
             return true
@@ -968,13 +968,13 @@ fn coverage_int_has(values: Vec[int], expected: int) -> bool {
     false
 }
 
-fn coverage_int_push_unique(values: Vec[int], value: int) -> unit {
+fn coverage_int_push_unique(values: Vec[isize], value: isize) -> unit {
     if coverage_int_has(values, value) {} else {
         values.push(value)
     }
 }
 
-fn coverage_sequence_matches(shape: Option[CoverageSequence], length: int) -> bool {
+fn coverage_sequence_matches(shape: Option[CoverageSequence], length: isize) -> bool {
     match shape {
         Some(shape) => if shape.has_rest {
             length >= shape.prefix + shape.suffix
@@ -985,7 +985,7 @@ fn coverage_sequence_matches(shape: Option[CoverageSequence], length: int) -> bo
     }
 }
 
-fn coverage_sequence_specialize_pattern(pattern: CoveragePat, length: int, element: Type) -> Option[
+fn coverage_sequence_specialize_pattern(pattern: CoveragePat, length: isize, element: Type) -> Option[
     Vec[CoveragePat],
 ] {
     if !(coverage_sequence_matches(pattern.sequence, length)) {
@@ -1013,7 +1013,7 @@ fn coverage_sequence_specialize_pattern(pattern: CoveragePat, length: int, eleme
     }
 }
 
-fn coverage_sequence_specialize_row(row: Vec[CoveragePat], length: int, element: Type) -> Option[
+fn coverage_sequence_specialize_row(row: Vec[CoveragePat], length: isize, element: Type) -> Option[
     Vec[CoveragePat],
 ] {
     if row.is_empty() {
@@ -1036,7 +1036,7 @@ fn coverage_useful_sequence(
     let tail = coverage_tail(candidate);
     let mut max_prefix = 0;
     let mut max_suffix = 0;
-    let exact_lengths: Vec[int] = Vec::from_array([]);
+    let exact_lengths: Vec[isize] = Vec::from_array([]);
     for row in matrix {
         if !row.is_empty() {
             match row[0].sequence {
@@ -1072,7 +1072,7 @@ fn coverage_useful_sequence(
     while coverage_int_has(exact_lengths, large_length) {
         large_length = large_length + 1;
     }
-    let lengths: Vec[int] = Vec::from_array([]);
+    let lengths: Vec[isize] = Vec::from_array([]);
     for length in 0..stable_length + 1 {
         coverage_int_push_unique(lengths, length)
     }
@@ -1289,7 +1289,7 @@ fn coverage_witness_pat(value: CoverageWitness) -> CoveragePat {
     }
 }
 
-fn coverage_witness_prefix(values: Vec[CoverageWitness], count: int) -> Vec[CoverageWitness] {
+fn coverage_witness_prefix(values: Vec[CoverageWitness], count: isize) -> Vec[CoverageWitness] {
     let result: Vec[CoverageWitness] = Vec::from_array([]);
     for index in 0..count {
         result.push(values[index])
@@ -1297,7 +1297,7 @@ fn coverage_witness_prefix(values: Vec[CoverageWitness], count: int) -> Vec[Cove
     result
 }
 
-fn coverage_witness_suffix(values: Vec[CoverageWitness], start: int) -> Vec[CoverageWitness] {
+fn coverage_witness_suffix(values: Vec[CoverageWitness], start: isize) -> Vec[CoverageWitness] {
     let result: Vec[CoverageWitness] = Vec::from_array([]);
     for index in start..values.len() {
         result.push(values[index])
@@ -1495,10 +1495,10 @@ fn coverage_number_text(value: CoverageNumber) -> string {
     }
 }
 
-fn coverage_number_uint32(value: CoverageNumber) -> uint32 {
-    let mut result = 0.to_uint32();
+fn coverage_number_uint32(value: CoverageNumber) -> u32 {
+    let mut result = 0.to_u32();
     for index in 0..value.magnitude.byte_len() {
-        result = result * 10 + (value.magnitude.byte_get(index) - 48).to_uint32();
+        result = result * 10 + (value.magnitude.byte_get(index) - 48).to_u32();
     }
     result
 }
@@ -1508,7 +1508,7 @@ fn coverage_char_text(value: CoverageNumber) -> string {
     if code == 0 {
         "'\\u0000'"
     } else {
-        match char_from_uint32(code) {
+        match char_from_u32(code) {
             Some(value) => "'" + value.to_string() + "'",
             None => "'\\u0000'",
         }
@@ -1817,7 +1817,7 @@ fn resolve_finalized_arms(
     result
 }
 
-fn unreachable_match_diagnostic(value: MatchCoverageInfo, index: int) -> Diagnostic {
+fn unreachable_match_diagnostic(value: MatchCoverageInfo, index: isize) -> Diagnostic {
     Diagnostic {
         severity: DiagnosticSeverity::Warning,
         stage: TYPER_STAGE,

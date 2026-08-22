@@ -10,14 +10,10 @@ pub fn println[T: ToString](value: T) -> unit {
     string_println(ToString::to_string(value))
 }
 
-pub fn char_from_uint32(value: uint32) -> Option[char] {
+pub fn char_from_u32(value: u32) -> Option[char] {
     __goml_builtin_char_from_uint32(value)
 }
 
-pub fn char_from_u32(value: uint32) -> Option[char] {
-    __goml_builtin_char_from_uint32(value)
-}
-
-pub fn range(start: int, end: int) -> FnIterator[int] {
+pub fn range(start: isize, end: isize) -> FnIterator[isize] {
     __goml_builtin_range(start, end)
 }

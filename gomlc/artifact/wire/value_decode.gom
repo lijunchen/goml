@@ -111,7 +111,7 @@ pub fn artifact_json_field_object(values: Vec[(string, ArtifactValue)], name: st
     }
 }
 
-pub fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
+pub fn artifact_parse_nonnegative_int(value: string) -> Result[isize, string] {
     if value.byte_len() == 0 {
         Result::Err(artifact_decode_error("nonnegative integer"))
     } else {
@@ -121,13 +121,13 @@ pub fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
             if byte < b'0' || byte > b'9' {
                 return Result::Err(artifact_decode_error("nonnegative integer"))
             } else {
-                result = result * 10 + (byte - 48).to_int64();
+                result = result * 10 + (byte - 48).to_i64();
             };
             if result > 2147483647 {
                 return Result::Err(artifact_decode_error("32-bit integer"))
             } else {}
         }
-        Result::Ok(result.to_int())
+        Result::Ok(result.to_isize())
     }
 }
 

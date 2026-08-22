@@ -2,69 +2,69 @@ package math;
 
 use module::internal::host;
 
-pub const E: float64 = 2.7182818284590452354;
+pub const E: f64 = 2.7182818284590452354;
 
-pub const PI: float64 = 3.14159265358979323846;
+pub const PI: f64 = 3.14159265358979323846;
 
-pub const TAU: float64 = 6.28318530717958647692;
+pub const TAU: f64 = 6.28318530717958647692;
 
-pub const SQRT_2: float64 = 1.4142135623730950488;
+pub const SQRT_2: f64 = 1.4142135623730950488;
 
-pub const LN_2: float64 = 0.69314718055994530942;
+pub const LN_2: f64 = 0.69314718055994530942;
 
-pub const LN_10: float64 = 2.30258509299404568402;
+pub const LN_10: f64 = 2.30258509299404568402;
 
 #[go_ffi("math", "Sqrt")]
-pub extern fn sqrt(value: float64) -> float64;
+pub extern fn sqrt(value: f64) -> f64;
 
 #[go_ffi("math", "Pow")]
-pub extern fn pow(value: float64, exponent: float64) -> float64;
+pub extern fn pow(value: f64, exponent: f64) -> f64;
 
 #[go_ffi("math", "Exp")]
-pub extern fn exp(value: float64) -> float64;
+pub extern fn exp(value: f64) -> f64;
 
 #[go_ffi("math", "Log")]
-pub extern fn log(value: float64) -> float64;
+pub extern fn log(value: f64) -> f64;
 
 #[go_ffi("math", "Sin")]
-pub extern fn sin(value: float64) -> float64;
+pub extern fn sin(value: f64) -> f64;
 
 #[go_ffi("math", "Cos")]
-pub extern fn cos(value: float64) -> float64;
+pub extern fn cos(value: f64) -> f64;
 
 #[go_ffi("math", "Tan")]
-pub extern fn tan(value: float64) -> float64;
+pub extern fn tan(value: f64) -> f64;
 
 #[go_ffi("math", "Floor")]
-pub extern fn floor(value: float64) -> float64;
+pub extern fn floor(value: f64) -> f64;
 
 #[go_ffi("math", "Ceil")]
-pub extern fn ceil(value: float64) -> float64;
+pub extern fn ceil(value: f64) -> f64;
 
 #[go_ffi("math", "Round")]
-pub extern fn round(value: float64) -> float64;
+pub extern fn round(value: f64) -> f64;
 
 #[go_ffi("math", "Trunc")]
-pub extern fn trunc(value: float64) -> float64;
+pub extern fn trunc(value: f64) -> f64;
 
 #[go_ffi("math", "IsNaN")]
-pub extern fn is_nan(value: float64) -> bool;
+pub extern fn is_nan(value: f64) -> bool;
 
 #[go_ffi("math", "IsInf")]
-extern fn go_is_inf(value: float64, sign: int) -> bool;
+extern fn go_is_inf(value: f64, sign: isize) -> bool;
 
 #[go_ffi("math", "Float32bits")]
-extern fn float32_bits(value: float32) -> uint32;
+extern fn float32_bits(value: f32) -> u32;
 
-pub fn is_infinite(value: float64) -> bool {
+pub fn is_infinite(value: f64) -> bool {
     go_is_inf(value, 0)
 }
 
-pub fn is_finite(value: float64) -> bool {
+pub fn is_finite(value: f64) -> bool {
     !is_nan(value) && !is_infinite(value)
 }
 
-pub fn is_normal(value: float64) -> bool {
+pub fn is_normal(value: f64) -> bool {
     let magnitude = if value < 0.0 {
         -value
     } else {
@@ -73,7 +73,7 @@ pub fn is_normal(value: float64) -> bool {
     is_finite(value) && magnitude >= 2.2250738585072014e-308
 }
 
-pub fn is_subnormal(value: float64) -> bool {
+pub fn is_subnormal(value: f64) -> bool {
     let magnitude = if value < 0.0 {
         -value
     } else {
@@ -82,69 +82,69 @@ pub fn is_subnormal(value: float64) -> bool {
     magnitude > 0.0 && magnitude < 2.2250738585072014e-308
 }
 
-pub fn sqrt32(value: float32) -> float32 {
+pub fn sqrt32(value: f32) -> f32 {
     host::math_float32_unary(0, value)
 }
 
-pub fn pow32(value: float32, exponent: float32) -> float32 {
+pub fn pow32(value: f32, exponent: f32) -> f32 {
     host::math_float32_pow(value, exponent)
 }
 
-pub fn exp32(value: float32) -> float32 {
+pub fn exp32(value: f32) -> f32 {
     host::math_float32_unary(1, value)
 }
 
-pub fn log32(value: float32) -> float32 {
+pub fn log32(value: f32) -> f32 {
     host::math_float32_unary(2, value)
 }
 
-pub fn sin32(value: float32) -> float32 {
+pub fn sin32(value: f32) -> f32 {
     host::math_float32_unary(3, value)
 }
 
-pub fn cos32(value: float32) -> float32 {
+pub fn cos32(value: f32) -> f32 {
     host::math_float32_unary(4, value)
 }
 
-pub fn tan32(value: float32) -> float32 {
+pub fn tan32(value: f32) -> f32 {
     host::math_float32_unary(5, value)
 }
 
-pub fn floor32(value: float32) -> float32 {
+pub fn floor32(value: f32) -> f32 {
     host::math_float32_unary(6, value)
 }
 
-pub fn ceil32(value: float32) -> float32 {
+pub fn ceil32(value: f32) -> f32 {
     host::math_float32_unary(7, value)
 }
 
-pub fn round32(value: float32) -> float32 {
+pub fn round32(value: f32) -> f32 {
     host::math_float32_unary(8, value)
 }
 
-pub fn trunc32(value: float32) -> float32 {
+pub fn trunc32(value: f32) -> f32 {
     host::math_float32_unary(9, value)
 }
 
-pub fn is_nan32(value: float32) -> bool {
+pub fn is_nan32(value: f32) -> bool {
     let bits = float32_bits(value);
     bits & 0x7f800000 == 0x7f800000 && bits & 0x007fffff != 0
 }
 
-pub fn is_infinite32(value: float32) -> bool {
+pub fn is_infinite32(value: f32) -> bool {
     float32_bits(value) & 0x7fffffff == 0x7f800000
 }
 
-pub fn is_finite32(value: float32) -> bool {
+pub fn is_finite32(value: f32) -> bool {
     float32_bits(value) & 0x7f800000 != 0x7f800000
 }
 
-pub fn is_normal32(value: float32) -> bool {
+pub fn is_normal32(value: f32) -> bool {
     let exponent = float32_bits(value) & 0x7f800000;
     exponent != 0 && exponent != 0x7f800000
 }
 
-pub fn is_subnormal32(value: float32) -> bool {
+pub fn is_subnormal32(value: f32) -> bool {
     let bits = float32_bits(value) & 0x7fffffff;
     bits != 0 && bits & 0x7f800000 == 0
 }

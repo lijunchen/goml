@@ -5,12 +5,12 @@ use std::collections;
 
 struct ChannelValue {
     element_type: go_types::TypeId,
-    capacity: int,
+    capacity: isize,
     values: collections::Deque[Value],
     closed: Ref[bool],
 }
 
-fn new_channel_value(element_type: go_types::TypeId, capacity: int) -> ChannelValue {
+fn new_channel_value(element_type: go_types::TypeId, capacity: isize) -> ChannelValue {
     ChannelValue {
         element_type,
         capacity,
@@ -19,7 +19,7 @@ fn new_channel_value(element_type: go_types::TypeId, capacity: int) -> ChannelVa
     }
 }
 
-fn channel_length(channel: ChannelValue) -> int {
+fn channel_length(channel: ChannelValue) -> isize {
     channel.values.len()
 }
 

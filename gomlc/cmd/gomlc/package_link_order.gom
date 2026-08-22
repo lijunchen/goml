@@ -6,7 +6,7 @@ use std::cmp;
 struct PackageOrderNode {
     name: string,
     dependencies: Vec[string],
-    position: int,
+    position: isize,
 }
 
 fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
@@ -39,7 +39,7 @@ fn package_node_is_ready(value: PackageOrderNode, remaining: Vec[PackageOrderNod
     true
 }
 
-fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string] {
+fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[isize], string] {
     let remaining: Vec[PackageOrderNode] = Vec::from_array([]);
     let names: Vec[string] = Vec::from_array([]);
     for value in values {
@@ -50,7 +50,7 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
             remaining.push(value)
         }
     }
-    let result: Vec[int] = Vec::from_array([]);
+    let result: Vec[isize] = Vec::from_array([]);
     while !remaining.is_empty() {
         let mut candidate = -1;
         for index in 0..remaining.len() {

@@ -40,7 +40,7 @@ pub struct NativeChannelInvocation {
 extern fn clone_host_value(value: HostValueRef) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewInvocation")]
-extern fn new_native_invocation_value(call_id: int, variadic: bool) -> HostValueRef;
+extern fn new_native_invocation_value(call_id: isize, variadic: bool) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewValueInvocation")]
 extern fn new_native_value_invocation_value(function: HostValueRef, variadic: bool) -> HostValueRef;
@@ -55,7 +55,7 @@ extern fn append_native_argument(invocation: HostValueRef, value: HostValueRef) 
 extern fn run_native_invocation(invocation: HostValueRef) -> unit;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationUseRuntimeStack")]
-extern fn use_native_runtime_stack(invocation: HostValueRef, goroutine: uint64) -> bool;
+extern fn use_native_runtime_stack(invocation: HostValueRef, goroutine: u64) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationStart")]
 extern fn start_native_invocation(invocation: HostValueRef) -> bool;
@@ -67,7 +67,7 @@ extern fn native_invocation_ready(invocation: HostValueRef) -> bool;
 extern fn wait_native_invocation(invocation: HostValueRef) -> unit;
 
 #[go_ffi("gomlgo/nativebridge", "NewInvocationQueue")]
-extern fn new_native_invocation_queue_value(capacity: int) -> HostValueRef;
+extern fn new_native_invocation_queue_value(capacity: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationQueueStart")]
 extern fn start_queued_native_invocation(queue: HostValueRef, invocation: HostValueRef) -> bool;
@@ -81,7 +81,7 @@ extern fn wait_native_completion(queue: HostValueRef) -> bool;
 #[go_ffi("gomlgo/nativebridge", "InvocationQueueClose")]
 extern fn close_native_completion_queue(queue: HostValueRef) -> unit;
 
-fn new_native_invocation(call_id: int, variadic: bool) -> NativeInvocation {
+fn new_native_invocation(call_id: isize, variadic: bool) -> NativeInvocation {
     NativeInvocation { value: new_native_invocation_value(call_id, variadic) }
 }
 
@@ -89,7 +89,7 @@ fn new_native_value_invocation(function: HostValueRef, variadic: bool) -> Native
     NativeInvocation { value: new_native_value_invocation_value(function, variadic) }
 }
 
-fn new_native_completion_queue(capacity: int) -> NativeCompletionQueue {
+fn new_native_completion_queue(capacity: isize) -> NativeCompletionQueue {
     NativeCompletionQueue { value: new_native_invocation_queue_value(capacity) }
 }
 
@@ -132,7 +132,7 @@ extern fn cancel_native_channel_invocation_value(invocation: HostValueRef) -> bo
 extern fn wait_native_channel_invocation_value(invocation: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "ChannelInvocationIndex")]
-extern fn native_channel_invocation_index_value(invocation: HostValueRef) -> int;
+extern fn native_channel_invocation_index_value(invocation: HostValueRef) -> isize;
 
 #[go_ffi("gomlgo/nativebridge", "ChannelInvocationReady")]
 extern fn native_channel_invocation_ready_value(invocation: HostValueRef) -> bool;
@@ -148,7 +148,7 @@ fn new_native_channel_invocation() -> NativeChannelInvocation {
 }
 
 #[go_ffi("gomlgo/nativebridge", "NewCallbackQueueWithCompletion")]
-extern fn new_native_callback_queue_value(completion: HostValueRef, capacity: int) -> HostValueRef;
+extern fn new_native_callback_queue_value(completion: HostValueRef, capacity: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackQueueToken")]
 extern fn native_callback_token_value(queue: HostValueRef) -> HostValueRef;
@@ -163,18 +163,18 @@ extern fn close_native_callback_queue_value(queue: HostValueRef) -> unit;
 extern fn native_host_value_valid(value: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackRequestArgumentCount")]
-extern fn native_callback_argument_count_value(request: HostValueRef) -> int;
+extern fn native_callback_argument_count_value(request: HostValueRef) -> isize;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackRequestMethod")]
 extern fn native_callback_method_value(request: HostValueRef) -> string;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackRequestArgument")]
-extern fn native_callback_argument_value(request: HostValueRef, index: int) -> HostValueRef;
+extern fn native_callback_argument_value(request: HostValueRef, index: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackRequestWriteArgument")]
 extern fn write_native_callback_argument_value(
     request: HostValueRef,
-    index: int,
+    index: isize,
     value: HostValueRef,
 ) -> bool;
 
@@ -188,7 +188,7 @@ extern fn append_native_callback_result_value(completion: HostValueRef, value: H
 extern fn set_native_callback_panic_value(completion: HostValueRef, value: HostValueRef) -> unit;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionExit")]
-extern fn set_native_callback_exit_value(completion: HostValueRef, code: int) -> unit;
+extern fn set_native_callback_exit_value(completion: HostValueRef, code: isize) -> unit;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionError")]
 extern fn set_native_callback_error_value(completion: HostValueRef, message: string) -> unit;
@@ -196,7 +196,7 @@ extern fn set_native_callback_error_value(completion: HostValueRef, message: str
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionFinish")]
 extern fn finish_native_callback_value(completion: HostValueRef) -> bool;
 
-fn new_native_callback_queue(completion: NativeCompletionQueue, capacity: int) -> NativeCallbackQueue {
+fn new_native_callback_queue(completion: NativeCompletionQueue, capacity: isize) -> NativeCallbackQueue {
     NativeCallbackQueue { value: new_native_callback_queue_value(completion.value, capacity) }
 }
 
@@ -217,7 +217,7 @@ fn close_native_callback_queue(queue: NativeCallbackQueue) -> unit {
     close_native_callback_queue_value(queue.value)
 }
 
-fn native_callback_argument_count(request: NativeCallbackRequest) -> int {
+fn native_callback_argument_count(request: NativeCallbackRequest) -> isize {
     native_callback_argument_count_value(request.value)
 }
 
@@ -225,13 +225,13 @@ fn native_callback_method(request: NativeCallbackRequest) -> string {
     native_callback_method_value(request.value)
 }
 
-fn native_callback_argument(request: NativeCallbackRequest, index: int) -> NativeHostValue {
+fn native_callback_argument(request: NativeCallbackRequest, index: isize) -> NativeHostValue {
     NativeHostValue { value: native_callback_argument_value(request.value, index) }
 }
 
 fn write_native_callback_argument(
     request: NativeCallbackRequest,
-    index: int,
+    index: isize,
     value: NativeHostValue,
 ) -> bool {
     write_native_callback_argument_value(request.value, index, value.value)
@@ -249,7 +249,7 @@ fn set_native_callback_panic(completion: NativeCallbackCompletion, value: Native
     set_native_callback_panic_value(completion.value, value.value)
 }
 
-fn set_native_callback_exit(completion: NativeCallbackCompletion, code: int) -> unit {
+fn set_native_callback_exit(completion: NativeCallbackCompletion, code: isize) -> unit {
     set_native_callback_exit_value(completion.value, code)
 }
 
@@ -271,28 +271,28 @@ extern fn native_invocation_panicked(invocation: HostValueRef) -> bool;
 extern fn native_invocation_exited(invocation: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationExitCode")]
-extern fn native_invocation_exit_code(invocation: HostValueRef) -> int;
+extern fn native_invocation_exit_code(invocation: HostValueRef) -> isize;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationResultCount")]
-extern fn native_invocation_result_count(invocation: HostValueRef) -> int;
+extern fn native_invocation_result_count(invocation: HostValueRef) -> isize;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationResult")]
-extern fn native_invocation_result(invocation: HostValueRef, index: int) -> HostValueRef;
+extern fn native_invocation_result(invocation: HostValueRef, index: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationArgument")]
-extern fn native_invocation_argument(invocation: HostValueRef, index: int) -> HostValueRef;
+extern fn native_invocation_argument(invocation: HostValueRef, index: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationPanic")]
 extern fn native_invocation_panic(invocation: HostValueRef) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewIntegerValue")]
-extern fn new_native_integer(type_key: string, bits: uint64) -> HostValueRef;
+extern fn new_native_integer(type_key: string, bits: u64) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewNilValue")]
 extern fn new_native_nil() -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewPointerIdentity")]
-extern fn new_native_pointer_identity(root: int, projection: string) -> HostValueRef;
+extern fn new_native_pointer_identity(root: isize, projection: string) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "ProgramArgsValue")]
 extern fn native_program_args() -> HostValueRef;
@@ -301,22 +301,22 @@ extern fn native_program_args() -> HostValueRef;
 extern fn set_native_program_executable(value: string) -> unit;
 
 #[go_ffi("gomlgo/nativebridge", "NativeGlobalValue")]
-extern fn native_global_value(object_id: int) -> HostValueRef;
+extern fn native_global_value(object_id: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewBoolValue")]
 extern fn new_native_bool(value: bool) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewFloatValue")]
-extern fn new_native_float(type_key: string, bits: uint64) -> HostValueRef;
+extern fn new_native_float(type_key: string, bits: u64) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewComplexValue")]
-extern fn new_native_complex(type_key: string, real: uint64, imaginary: uint64) -> HostValueRef;
+extern fn new_native_complex(type_key: string, real: u64, imaginary: u64) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewStringValue")]
 extern fn new_native_string(value: string) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewSliceValue")]
-extern fn new_native_slice(type_key: string, length: int, nil_value: bool) -> HostValueRef;
+extern fn new_native_slice(type_key: string, length: isize, nil_value: bool) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "NewAggregateValue")]
 extern fn new_native_aggregate(type_key: string) -> HostValueRef;
@@ -331,19 +331,19 @@ extern fn address_native_value(value: HostValueRef) -> HostValueRef;
 extern fn indirect_native_value(value: HostValueRef) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "FieldReference")]
-extern fn native_field_reference(value: HostValueRef, index: int) -> HostValueRef;
+extern fn native_field_reference(value: HostValueRef, index: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "SetValue")]
 extern fn set_native_value(target: HostValueRef, value: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "SetAggregateValue")]
-extern fn set_native_aggregate_value(aggregate: HostValueRef, index: int, value: HostValueRef) -> bool;
+extern fn set_native_aggregate_value(aggregate: HostValueRef, index: isize, value: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "ValueAggregateField")]
-extern fn native_value_aggregate_field(value: HostValueRef, index: int) -> HostValueRef;
+extern fn native_value_aggregate_field(value: HostValueRef, index: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "SetSliceValue")]
-extern fn set_native_slice_value(slice: HostValueRef, index: int, value: HostValueRef) -> bool;
+extern fn set_native_slice_value(slice: HostValueRef, index: isize, value: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "NilValue")]
 extern fn native_value_nil(value: HostValueRef) -> bool;
@@ -352,44 +352,44 @@ extern fn native_value_nil(value: HostValueRef) -> bool;
 extern fn native_value_bool(value: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "ValueIntegerBits")]
-extern fn native_value_integer_bits(value: HostValueRef) -> uint64;
+extern fn native_value_integer_bits(value: HostValueRef) -> u64;
 
 #[go_ffi("gomlgo/nativebridge", "ValueFloatBits")]
-extern fn native_value_float_bits(value: HostValueRef) -> uint64;
+extern fn native_value_float_bits(value: HostValueRef) -> u64;
 
 #[go_ffi("gomlgo/nativebridge", "ValueComplexRealBits")]
-extern fn native_value_complex_real_bits(value: HostValueRef) -> uint64;
+extern fn native_value_complex_real_bits(value: HostValueRef) -> u64;
 
 #[go_ffi("gomlgo/nativebridge", "ValueComplexImaginaryBits")]
-extern fn native_value_complex_imaginary_bits(value: HostValueRef) -> uint64;
+extern fn native_value_complex_imaginary_bits(value: HostValueRef) -> u64;
 
 #[go_ffi("gomlgo/nativebridge", "ValueStringText")]
 extern fn native_value_string(value: HostValueRef) -> string;
 
 #[go_ffi("gomlgo/nativebridge", "ValueLength")]
-extern fn native_value_length(value: HostValueRef) -> int;
+extern fn native_value_length(value: HostValueRef) -> isize;
 
 #[go_ffi("gomlgo/nativebridge", "ValueCapacity")]
-extern fn native_value_capacity(value: HostValueRef) -> int;
+extern fn native_value_capacity(value: HostValueRef) -> isize;
 
 #[go_ffi("gomlgo/nativebridge", "ValueIndex")]
-extern fn native_value_index(value: HostValueRef, index: int) -> HostValueRef;
+extern fn native_value_index(value: HostValueRef, index: isize) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "ValueText")]
 extern fn native_value_text(value: HostValueRef) -> string;
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct CellId {
-    pub value: int,
+    pub value: isize,
 }
 
-pub fn cell_id(value: int) -> CellId {
+pub fn cell_id(value: isize) -> CellId {
     CellId { value }
 }
 
 pub enum Projection {
-    Field(int),
-    Index(int),
+    Field(isize),
+    Index(isize),
 }
 
 pub struct Place {
@@ -402,7 +402,7 @@ pub enum FunctionTarget {
     MethodExpression {
         function: bytecode::FunctionId,
         receiver_type: go_types::TypeId,
-        index: Vec[int],
+        index: Vec[isize],
     },
     InterfaceMethod(go_types::ObjectId),
 }
@@ -416,27 +416,27 @@ pub struct FunctionValue {
 pub struct SliceValue {
     pub element_type: go_types::TypeId,
     pub backing: Option[Place],
-    pub offset: int,
-    pub length: int,
-    pub capacity: int,
+    pub offset: isize,
+    pub length: isize,
+    pub capacity: isize,
 }
 
 pub enum LocalValue {
     Unit,
     Bool(bool),
     Integer {
-        bits: uint64,
-        width: int,
+        bits: u64,
+        width: isize,
         signed: bool,
     },
     Float {
-        bits: uint64,
-        width: int,
+        bits: u64,
+        width: isize,
     },
     Complex {
-        real: uint64,
-        imaginary: uint64,
-        width: int,
+        real: u64,
+        imaginary: u64,
+        width: isize,
     },
     String(bytes::Bytes),
     Pointer(Option[Place]),
@@ -447,8 +447,8 @@ pub enum LocalValue {
         elements: Vec[Value],
         host: bool,
     },
-    Map(int),
-    Channel(int),
+    Map(isize),
+    Channel(isize),
     Function(Option[FunctionValue]),
 }
 
@@ -509,7 +509,7 @@ pub fn copy_value(value: Value) -> Value {
     }
 }
 
-pub fn integer_bits(value: Value) -> Result[(uint64, int, bool), string] {
+pub fn integer_bits(value: Value) -> Result[(u64, isize, bool), string] {
     match value {
         Value::Local(LocalValue::Integer { bits, width, signed }) => {
             Result::Ok((bits, width, signed))
@@ -518,7 +518,7 @@ pub fn integer_bits(value: Value) -> Result[(uint64, int, bool), string] {
     }
 }
 
-pub fn integer_index(value: Value) -> Result[int, string] {
+pub fn integer_index(value: Value) -> Result[isize, string] {
     let value = integer_host(value)?;
     if value < 0 {
         Result::Err("index is outside the host integer range")
@@ -527,14 +527,14 @@ pub fn integer_index(value: Value) -> Result[int, string] {
     }
 }
 
-pub fn integer_host(value: Value) -> Result[int, string] {
+pub fn integer_host(value: Value) -> Result[isize, string] {
     let (bits, width, signed) = integer_bits(value)?;
     if signed {
-        Result::Ok(signed_integer(bits, width).to_int())
-    } else if bits > 9223372036854775807.to_uint64() {
+        Result::Ok(signed_integer(bits, width).to_isize())
+    } else if bits > 9223372036854775807.to_u64() {
         Result::Err("integer is outside the host integer range")
     } else {
-        Result::Ok(bits.to_int())
+        Result::Ok(bits.to_isize())
     }
 }
 
@@ -575,27 +575,27 @@ pub fn places_equal(left: Place, right: Place) -> bool {
     left.root.value == right.root.value && projections_equal(left.projections, right.projections)
 }
 
-fn float_bits_nan(bits: uint64, width: int) -> bool {
+fn float_bits_nan(bits: u64, width: isize) -> bool {
     if width == 32 {
-        let exponent = (bits >> 23) & 255.to_uint64();
-        let fraction = bits & ((1.to_uint64() << 23) - 1.to_uint64());
-        exponent == 255.to_uint64() && fraction != 0.to_uint64()
+        let exponent = (bits >> 23) & 255.to_u64();
+        let fraction = bits & ((1.to_u64() << 23) - 1.to_u64());
+        exponent == 255.to_u64() && fraction != 0.to_u64()
     } else {
-        let exponent = (bits >> 52) & 2047.to_uint64();
-        let fraction = bits & ((1.to_uint64() << 52) - 1.to_uint64());
-        exponent == 2047.to_uint64() && fraction != 0.to_uint64()
+        let exponent = (bits >> 52) & 2047.to_u64();
+        let fraction = bits & ((1.to_u64() << 52) - 1.to_u64());
+        exponent == 2047.to_u64() && fraction != 0.to_u64()
     }
 }
 
-fn float_bits_zero(bits: uint64, width: int) -> bool {
+fn float_bits_zero(bits: u64, width: isize) -> bool {
     if width == 32 {
-        bits & ((1.to_uint64() << 31) - 1.to_uint64()) == 0.to_uint64()
+        bits & ((1.to_u64() << 31) - 1.to_u64()) == 0.to_u64()
     } else {
-        bits & ((1.to_uint64() << 63) - 1.to_uint64()) == 0.to_uint64()
+        bits & ((1.to_u64() << 63) - 1.to_u64()) == 0.to_u64()
     }
 }
 
-fn float_bits_equal(left: uint64, right: uint64, width: int) -> bool {
+fn float_bits_equal(left: u64, right: u64, width: isize) -> bool {
     if float_bits_nan(left, width) || float_bits_nan(right, width) {
         false
     } else if float_bits_zero(left, width) && float_bits_zero(right, width) {

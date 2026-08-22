@@ -33,8 +33,8 @@ const GOARCH_SPARC64: string = "sparc64";
 const GOARCH_WASM: string = "wasm";
 
 pub struct TargetSizes {
-    pub word_size: int64,
-    pub max_align: int64,
+    pub word_size: i64,
+    pub max_align: i64,
 }
 
 pub fn gc_sizes(arch: string) -> Option[TargetSizes] {
@@ -55,8 +55,8 @@ pub fn gc_sizes(arch: string) -> Option[TargetSizes] {
     }
 }
 
-fn aligned_offset(value: int64, alignment: int64) -> int64 {
-    if value < 0 || alignment < 1 || value > 9223372036854775807.to_int64() - alignment + 1 {
+fn aligned_offset(value: i64, alignment: i64) -> i64 {
+    if value < 0 || alignment < 1 || value > 9223372036854775807.to_i64() - alignment + 1 {
         -1
     } else {
         let remainder = value % alignment;
@@ -68,7 +68,7 @@ fn aligned_offset(value: int64, alignment: int64) -> int64 {
     }
 }
 
-fn basic_size(kind: BasicKind, sizes: TargetSizes) -> int64 {
+fn basic_size(kind: BasicKind, sizes: TargetSizes) -> i64 {
     match kind {
         BasicKind::Bool | BasicKind::Int8 | BasicKind::Uint8 => 1,
         BasicKind::Int16 | BasicKind::Uint16 => 2,
@@ -121,7 +121,7 @@ fn size_type_seen(values: Vec[TypeId], value: TypeId) -> bool {
     false
 }
 
-fn alignof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[TypeId]) -> int64 {
+fn alignof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[TypeId]) -> i64 {
     match get_type(world, underlying(world, value)) {
         Some(TypeData { id: _, kind: TypeKind::Array { length: _, element } }) => {
             let key = unalias(world, value);
@@ -142,7 +142,7 @@ fn alignof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[T
             } else {
                 let next = copied_size_types(visited);
                 next.push(key);
-                let mut result = 1.to_int64();
+                let mut result = 1.to_i64();
                 for field in fields {
                     let alignment = alignof_inner(world, field.variable.type_id, sizes, next);
                     if alignment > result {
@@ -185,7 +185,7 @@ fn alignof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[T
     }
 }
 
-pub fn alignof(world: World, value: TypeId, sizes: TargetSizes) -> int64 {
+pub fn alignof(world: World, value: TypeId, sizes: TargetSizes) -> i64 {
     alignof_inner(world, value, sizes, Vec::from_array([]))
 }
 
@@ -194,9 +194,9 @@ fn offsets_of_inner(
     fields: Vec[StructField],
     sizes: TargetSizes,
     visited: Vec[TypeId],
-) -> Vec[int64] {
-    let result: Vec[int64] = Vec::from_array([]);
-    let mut offset = 0.to_int64();
+) -> Vec[i64] {
+    let result: Vec[i64] = Vec::from_array([]);
+    let mut offset = 0.to_i64();
     for field in fields {
         offset = aligned_offset(
             offset,
@@ -204,7 +204,7 @@ fn offsets_of_inner(
         );
         result.push(offset);
         let size = sizeof_inner(world, field.variable.type_id, sizes, visited);
-        if offset < 0 || size < 0 || offset > 9223372036854775807.to_int64() - size {
+        if offset < 0 || size < 0 || offset > 9223372036854775807.to_i64() - size {
             offset = -1;
         } else {
             offset += size;
@@ -213,11 +213,11 @@ fn offsets_of_inner(
     result
 }
 
-pub fn offsets_of(world: World, fields: Vec[StructField], sizes: TargetSizes) -> Vec[int64] {
+pub fn offsets_of(world: World, fields: Vec[StructField], sizes: TargetSizes) -> Vec[i64] {
     offsets_of_inner(world, fields, sizes, Vec::from_array([]))
 }
 
-fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[TypeId]) -> int64 {
+fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[TypeId]) -> i64 {
     match get_type(world, underlying(world, value)) {
         Some(TypeData { id: _, kind: TypeKind::Basic { basic, name: _, untyped: _ } }) => basic_size(
             basic,
@@ -234,7 +234,7 @@ fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[Ty
                 next.push(key);
                 let element_size = sizeof_inner(world, element, sizes, next);
                 if element_size < 0
-                    || (element_size > 0 && length > 9223372036854775807.to_int64() / element_size) {
+                    || (element_size > 0 && length > 9223372036854775807.to_i64() / element_size) {
                     -1
                 } else {
                     element_size * length
@@ -279,6 +279,6 @@ fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[Ty
     }
 }
 
-pub fn sizeof(world: World, value: TypeId, sizes: TargetSizes) -> int64 {
+pub fn sizeof(world: World, value: TypeId, sizes: TargetSizes) -> i64 {
     sizeof_inner(world, value, sizes, Vec::from_array([]))
 }

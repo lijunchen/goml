@@ -74,7 +74,7 @@ pub fn rational_div(left: BigRat, right: BigRat) -> Result[BigRat, string] {
     rational_new(integer_from_parts(sign, magnitude), denominator)
 }
 
-pub fn rational_compare(left: BigRat, right: BigRat) -> int {
+pub fn rational_compare(left: BigRat, right: BigRat) -> isize {
     integer_compare(
         integer_mul(left.numerator, integer_from_parts(1, natural_copy(right.denominator))),
         integer_mul(right.numerator, integer_from_parts(1, natural_copy(left.denominator))),

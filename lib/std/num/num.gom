@@ -2,7 +2,7 @@ package num;
 
 use module::internal::host;
 
-fn int_result(value: (bool, int, string)) -> Result[int, string] {
+fn int_result(value: (bool, isize, string)) -> Result[isize, string] {
     let (ok, parsed, error) = value;
     if ok {
         Result::Ok(parsed)
@@ -11,7 +11,7 @@ fn int_result(value: (bool, int, string)) -> Result[int, string] {
     }
 }
 
-fn uint_result(value: (bool, uint, string)) -> Result[uint, string] {
+fn uint_result(value: (bool, usize, string)) -> Result[usize, string] {
     let (ok, parsed, error) = value;
     if ok {
         Result::Ok(parsed)
@@ -20,7 +20,7 @@ fn uint_result(value: (bool, uint, string)) -> Result[uint, string] {
     }
 }
 
-fn float32_result(value: (bool, float32, string)) -> Result[float32, string] {
+fn float32_result(value: (bool, f32, string)) -> Result[f32, string] {
     let (ok, parsed, error) = value;
     if ok {
         Result::Ok(parsed)
@@ -29,7 +29,7 @@ fn float32_result(value: (bool, float32, string)) -> Result[float32, string] {
     }
 }
 
-fn float64_result(value: (bool, float64, string)) -> Result[float64, string] {
+fn float64_result(value: (bool, f64, string)) -> Result[f64, string] {
     let (ok, parsed, error) = value;
     if ok {
         Result::Ok(parsed)
@@ -38,35 +38,35 @@ fn float64_result(value: (bool, float64, string)) -> Result[float64, string] {
     }
 }
 
-pub fn parse_int(value: string) -> Result[int, string] {
+pub fn parse_int(value: string) -> Result[isize, string] {
     parse_int_radix(value, 10)
 }
 
-pub fn parse_int_radix(value: string, radix: int) -> Result[int, string] {
+pub fn parse_int_radix(value: string, radix: isize) -> Result[isize, string] {
     int_result(host::parse_int(value, radix))
 }
 
-pub fn parse_uint(value: string) -> Result[uint, string] {
+pub fn parse_uint(value: string) -> Result[usize, string] {
     parse_uint_radix(value, 10)
 }
 
-pub fn parse_uint_radix(value: string, radix: int) -> Result[uint, string] {
+pub fn parse_uint_radix(value: string, radix: isize) -> Result[usize, string] {
     uint_result(host::parse_uint(value, radix))
 }
 
-pub fn parse_float32(value: string) -> Result[float32, string] {
+pub fn parse_float32(value: string) -> Result[f32, string] {
     float32_result(host::parse_float32(value))
 }
 
-pub fn parse_float64(value: string) -> Result[float64, string] {
+pub fn parse_float64(value: string) -> Result[f64, string] {
     float64_result(host::parse_float64(value))
 }
 
-pub fn parse_int_structured(value: string) -> Result[int, ParseIntError] {
+pub fn parse_int_structured(value: string) -> Result[isize, ParseIntError] {
     parse_int_radix_structured(value, 10)
 }
 
-pub fn parse_int_radix_structured(value: string, radix: int) -> Result[int, ParseIntError] {
+pub fn parse_int_radix_structured(value: string, radix: isize) -> Result[isize, ParseIntError] {
     let (ok, parsed, message) = host::parse_int(value, radix);
     if ok {
         Result::Ok(parsed)
@@ -75,11 +75,11 @@ pub fn parse_int_radix_structured(value: string, radix: int) -> Result[int, Pars
     }
 }
 
-pub fn parse_uint_structured(value: string) -> Result[uint, ParseIntError] {
+pub fn parse_uint_structured(value: string) -> Result[usize, ParseIntError] {
     parse_uint_radix_structured(value, 10)
 }
 
-pub fn parse_uint_radix_structured(value: string, radix: int) -> Result[uint, ParseIntError] {
+pub fn parse_uint_radix_structured(value: string, radix: isize) -> Result[usize, ParseIntError] {
     let (ok, parsed, message) = host::parse_uint(value, radix);
     if ok {
         Result::Ok(parsed)
@@ -88,7 +88,7 @@ pub fn parse_uint_radix_structured(value: string, radix: int) -> Result[uint, Pa
     }
 }
 
-pub fn parse_float32_structured(value: string) -> Result[float32, ParseFloatError] {
+pub fn parse_float32_structured(value: string) -> Result[f32, ParseFloatError] {
     let (ok, parsed, message) = host::parse_float32(value);
     if ok {
         Result::Ok(parsed)
@@ -97,7 +97,7 @@ pub fn parse_float32_structured(value: string) -> Result[float32, ParseFloatErro
     }
 }
 
-pub fn parse_float64_structured(value: string) -> Result[float64, ParseFloatError] {
+pub fn parse_float64_structured(value: string) -> Result[f64, ParseFloatError] {
     let (ok, parsed, message) = host::parse_float64(value);
     if ok {
         Result::Ok(parsed)
@@ -106,7 +106,7 @@ pub fn parse_float64_structured(value: string) -> Result[float64, ParseFloatErro
     }
 }
 
-pub fn checked_add_int64(left: int64, right: int64) -> Option[int64] {
+pub fn checked_add_int64(left: i64, right: i64) -> Option[i64] {
     if right > 0 && left > 9223372036854775807 - right {
         Option::None
     } else if right < 0 && left < -9223372036854775807 - 1 - right {
@@ -116,7 +116,7 @@ pub fn checked_add_int64(left: int64, right: int64) -> Option[int64] {
     }
 }
 
-pub fn checked_subtract_int64(left: int64, right: int64) -> Option[int64] {
+pub fn checked_subtract_int64(left: i64, right: i64) -> Option[i64] {
     if right > 0 && left < -9223372036854775807 - 1 + right {
         Option::None
     } else if right < 0 && left > 9223372036854775807 + right {
@@ -126,7 +126,7 @@ pub fn checked_subtract_int64(left: int64, right: int64) -> Option[int64] {
     }
 }
 
-pub fn checked_multiply_int64(left: int64, right: int64) -> Option[int64] {
+pub fn checked_multiply_int64(left: i64, right: i64) -> Option[i64] {
     if left == 0 || right == 0 {
         Option::Some(0)
     } else if left == -9223372036854775807 - 1 && right == -1 {
@@ -143,7 +143,7 @@ pub fn checked_multiply_int64(left: int64, right: int64) -> Option[int64] {
     }
 }
 
-pub fn saturating_add_int64(left: int64, right: int64) -> int64 {
+pub fn saturating_add_int64(left: i64, right: i64) -> i64 {
     match checked_add_int64(left, right) {
         Some(value) => value,
         None => if right < 0 {
@@ -154,7 +154,7 @@ pub fn saturating_add_int64(left: int64, right: int64) -> int64 {
     }
 }
 
-pub fn saturating_subtract_int64(left: int64, right: int64) -> int64 {
+pub fn saturating_subtract_int64(left: i64, right: i64) -> i64 {
     match checked_subtract_int64(left, right) {
         Some(value) => value,
         None => if right < 0 {
@@ -165,7 +165,7 @@ pub fn saturating_subtract_int64(left: int64, right: int64) -> int64 {
     }
 }
 
-pub fn saturating_multiply_int64(left: int64, right: int64) -> int64 {
+pub fn saturating_multiply_int64(left: i64, right: i64) -> i64 {
     match checked_multiply_int64(left, right) {
         Some(value) => value,
         None => if (left < 0) != (right < 0) {

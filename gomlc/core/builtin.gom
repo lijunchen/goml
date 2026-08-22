@@ -55,7 +55,7 @@ pub fn without_roots(value: File) -> File {
     }
 }
 
-pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
+pub fn lower_builtins(counter: Ref[isize]) -> Result[File, string] {
     let hir_files = lower_toolchain_hir_files(resources::builtin_layer_sources()?, "builtin")?;
     let checked = tast::check_builtin_package_files(hir_files);
     if checked.tast.is_none() {
@@ -64,7 +64,7 @@ pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
     Result::Ok(lower_with_counter(checked, counter))
 }
 
-pub fn lower_prelude(builtins: File, counter: Ref[int]) -> Result[File, string] {
+pub fn lower_prelude(builtins: File, counter: Ref[isize]) -> Result[File, string] {
     let builtin_files = lower_toolchain_hir_files(resources::builtin_layer_sources()?, "builtin")?;
     let prelude_files = lower_toolchain_hir_files(resources::prelude_sources()?, "prelude")?;
     let checked = tast::check_package_files_for_link_with_dependencies(prelude_files, builtin_files);

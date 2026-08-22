@@ -28,27 +28,27 @@ pub fn write_file(path: string, content: string) -> (bool, string) {
     __goml_std_host_write_file(path, content)
 }
 
-pub fn read_bytes(path: string) -> (bool, Vec[uint8], string) {
+pub fn read_bytes(path: string) -> (bool, Vec[u8], string) {
     __goml_std_host_read_bytes(path)
 }
 
-pub fn read_bytes_v2(path: string) -> (bool, Vec[uint8], int, bool, int, string) {
+pub fn read_bytes_v2(path: string) -> (bool, Vec[u8], isize, bool, isize, string) {
     __goml_std_host_read_bytes_v2(path)
 }
 
-pub fn write_bytes(path: string, data: Vec[uint8]) -> (bool, string) {
+pub fn write_bytes(path: string, data: Vec[u8]) -> (bool, string) {
     __goml_std_host_write_bytes(path, data)
 }
 
-pub fn write_bytes_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string) {
+pub fn write_bytes_v2(path: string, data: Vec[u8]) -> (bool, isize, bool, isize, string) {
     __goml_std_host_write_bytes_v2(path, data)
 }
 
-pub fn fs_path_operation_v2(operation: int, first: string, second: string) -> (
+pub fn fs_path_operation_v2(operation: isize, first: string, second: string) -> (
     bool,
-    int,
+    isize,
     bool,
-    int,
+    isize,
     string,
 ) {
     __goml_std_host_fs_path_operation_v2(operation, first, second)
@@ -56,19 +56,19 @@ pub fn fs_path_operation_v2(operation: int, first: string, second: string) -> (
 
 pub fn fs_metadata_v2(path: string, follow: bool) -> (
     bool,
-    int,
-    int64,
-    uint32,
-    int64,
-    int,
+    isize,
+    i64,
+    u32,
+    i64,
+    isize,
     bool,
-    int,
+    isize,
     string,
 ) {
     __goml_std_host_fs_metadata_v2(path, follow)
 }
 
-pub fn fs_atomic_write_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string) {
+pub fn fs_atomic_write_v2(path: string, data: Vec[u8]) -> (bool, isize, bool, isize, string) {
     __goml_std_host_fs_atomic_write_v2(path, data)
 }
 
@@ -104,7 +104,7 @@ pub fn read_dir(path: string) -> (bool, Vec[string], string) {
     __goml_std_host_read_dir(path)
 }
 
-pub fn read_dir_v2(path: string) -> (bool, Vec[string], int, bool, int, string) {
+pub fn read_dir_v2(path: string) -> (bool, Vec[string], isize, bool, isize, string) {
     __goml_std_host_read_dir_v2(path)
 }
 
@@ -124,35 +124,35 @@ pub fn eprint(value: string) -> unit {
     __goml_std_host_eprint(value)
 }
 
-pub fn read_stdin() -> (bool, Vec[uint8], string) {
+pub fn read_stdin() -> (bool, Vec[u8], string) {
     __goml_std_host_read_stdin()
 }
 
-pub fn read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string) {
+pub fn read_stdin_v2() -> (bool, Vec[u8], isize, bool, isize, string) {
     __goml_std_host_read_stdin_v2()
 }
 
-pub fn read_stdin_exact(length: int) -> (bool, Vec[uint8], string) {
+pub fn read_stdin_exact(length: isize) -> (bool, Vec[u8], string) {
     __goml_std_host_read_stdin_exact(length)
 }
 
-pub fn read_stdin_exact_v2(length: int) -> (bool, Vec[uint8], int, bool, int, string) {
+pub fn read_stdin_exact_v2(length: isize) -> (bool, Vec[u8], isize, bool, isize, string) {
     __goml_std_host_read_stdin_exact_v2(length)
 }
 
-pub fn write_stdout(data: Vec[uint8]) -> (bool, string) {
+pub fn write_stdout(data: Vec[u8]) -> (bool, string) {
     __goml_std_host_write_stdout(data)
 }
 
-pub fn write_stdout_v2(data: Vec[uint8]) -> (bool, int, bool, int, string) {
+pub fn write_stdout_v2(data: Vec[u8]) -> (bool, isize, bool, isize, string) {
     __goml_std_host_write_stdout_v2(data)
 }
 
-pub fn write_stderr(data: Vec[uint8]) -> (bool, string) {
+pub fn write_stderr(data: Vec[u8]) -> (bool, string) {
     __goml_std_host_write_stderr(data)
 }
 
-pub fn write_stderr_v2(data: Vec[uint8]) -> (bool, int, bool, int, string) {
+pub fn write_stderr_v2(data: Vec[u8]) -> (bool, isize, bool, isize, string) {
     __goml_std_host_write_stderr_v2(data)
 }
 
@@ -200,7 +200,7 @@ pub fn path_separator() -> string {
     __goml_std_host_path_separator()
 }
 
-pub fn exit(code: int) -> unit {
+pub fn exit(code: isize) -> unit {
     __goml_std_host_exit(code)
 }
 
@@ -215,8 +215,8 @@ pub fn process_output(
     directory: string,
     environment: Vec[(string, string)],
     has_input: bool,
-    input: Vec[uint8],
-) -> (bool, int, Vec[uint8], Vec[uint8], string) {
+    input: Vec[u8],
+) -> (bool, isize, Vec[u8], Vec[u8], string) {
     __goml_std_host_process_output(
         program,
         arguments,
@@ -235,9 +235,9 @@ pub fn process_output_timeout(
     directory: string,
     environment: Vec[(string, string)],
     has_input: bool,
-    input: Vec[uint8],
-    timeout_ms: int,
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+    input: Vec[u8],
+    timeout_ms: isize,
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
     __goml_std_host_process_output_timeout(
         program,
         arguments,
@@ -257,9 +257,9 @@ pub fn process_output_cancel(
     directory: string,
     environment: Vec[(string, string)],
     has_input: bool,
-    input: Vec[uint8],
-    scope_id: int64,
-) -> (bool, int, Vec[uint8], Vec[uint8], string, bool) {
+    input: Vec[u8],
+    scope_id: i64,
+) -> (bool, isize, Vec[u8], Vec[u8], string, bool) {
     __goml_std_host_process_output_cancel(
         program,
         arguments,
@@ -278,7 +278,7 @@ pub fn process_status(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-) -> (bool, int, string) {
+) -> (bool, isize, string) {
     __goml_std_host_process_status(program, arguments, has_directory, directory, environment)
 }
 
@@ -288,8 +288,8 @@ pub fn process_status_timeout(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-    timeout_ms: int,
-) -> (bool, int, string, bool) {
+    timeout_ms: isize,
+) -> (bool, isize, string, bool) {
     __goml_std_host_process_status_timeout(
         program,
         arguments,
@@ -306,8 +306,8 @@ pub fn process_status_cancel(
     has_directory: bool,
     directory: string,
     environment: Vec[(string, string)],
-    scope_id: int64,
-) -> (bool, int, string, bool) {
+    scope_id: i64,
+) -> (bool, isize, string, bool) {
     __goml_std_host_process_status_cancel(
         program,
         arguments,
@@ -322,50 +322,50 @@ pub fn test_fail(message: string) -> unit {
     __goml_std_host_test_fail(message)
 }
 
-pub fn parse_int(value: string, radix: int) -> (bool, int, string) {
+pub fn parse_int(value: string, radix: isize) -> (bool, isize, string) {
     __goml_std_host_parse_int(value, radix)
 }
 
-pub fn parse_uint(value: string, radix: int) -> (bool, uint, string) {
+pub fn parse_uint(value: string, radix: isize) -> (bool, usize, string) {
     __goml_std_host_parse_uint(value, radix)
 }
 
-pub fn parse_float32(value: string) -> (bool, float32, string) {
+pub fn parse_float32(value: string) -> (bool, f32, string) {
     __goml_std_host_parse_float32(value)
 }
 
-pub fn parse_float64(value: string) -> (bool, float64, string) {
+pub fn parse_float64(value: string) -> (bool, f64, string) {
     __goml_std_host_parse_float64(value)
 }
 
-pub fn monotonic_nanoseconds() -> int64 {
+pub fn monotonic_nanoseconds() -> i64 {
     __goml_std_host_monotonic_nanoseconds()
 }
 
-pub fn unix_nanoseconds() -> int64 {
+pub fn unix_nanoseconds() -> i64 {
     __goml_std_host_unix_nanoseconds()
 }
 
-pub fn sleep_nanoseconds(value: int64) -> unit {
+pub fn sleep_nanoseconds(value: i64) -> unit {
     __goml_std_host_sleep_nanoseconds(value)
 }
 
-pub fn timer_new(value: int64) -> (int64, Receiver[unit]) {
+pub fn timer_new(value: i64) -> (i64, Receiver[unit]) {
     __goml_std_host_timer_new(value)
 }
 
-pub fn timer_stop(id: int64) -> bool {
+pub fn timer_stop(id: i64) -> bool {
     __goml_std_host_timer_stop(id)
 }
 
-pub fn math_float32_unary(operation: int, value: float32) -> float32 {
+pub fn math_float32_unary(operation: isize, value: f32) -> f32 {
     __goml_std_host_math_float32_unary(operation, value)
 }
 
-pub fn math_float32_pow(value: float32, exponent: float32) -> float32 {
+pub fn math_float32_pow(value: f32, exponent: f32) -> f32 {
     __goml_std_host_math_float32_pow(value, exponent)
 }
 
-pub fn crypto_random_bytes(length: int) -> (bool, Vec[byte], string) {
+pub fn crypto_random_bytes(length: isize) -> (bool, Vec[byte], string) {
     __goml_std_host_crypto_random_bytes(length)
 }

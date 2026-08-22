@@ -1,11 +1,11 @@
 package collections;
 
 pub struct Symbol {
-    pub index: int,
+    pub index: isize,
 }
 
 impl Symbol {
-    pub fn index(self: Symbol) -> int {
+    pub fn index(self: Symbol) -> isize {
         self.index
     }
 }
@@ -19,7 +19,7 @@ impl PartialEq for Symbol {
 impl Eq for Symbol {}
 
 impl Hash for Symbol {
-    fn hash(self: Symbol) -> uint64 {
+    fn hash(self: Symbol) -> u64 {
         Hash::hash(self.index)
     }
 }
@@ -40,7 +40,7 @@ impl Interner {
         Interner { symbols: HashMap::from_array([]), values: Vec::from_array([]) }
     }
 
-    pub fn len(self: Interner) -> int {
+    pub fn len(self: Interner) -> isize {
         self.values.len()
     }
 

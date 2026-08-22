@@ -215,7 +215,7 @@ fn pretty_visibility_doc(value: Visibility) -> doc::Doc {
     }
 }
 
-fn pretty_utf8_width(value: uint8) -> int {
+fn pretty_utf8_width(value: u8) -> isize {
     if value < 128 {
         1
     } else if value < 224 {
@@ -227,7 +227,7 @@ fn pretty_utf8_width(value: uint8) -> int {
     }
 }
 
-fn pretty_hex_digit(value: uint8) -> char {
+fn pretty_hex_digit(value: u8) -> char {
     match value {
         0 => '0',
         1 => '1',
@@ -248,7 +248,7 @@ fn pretty_hex_digit(value: uint8) -> char {
     }
 }
 
-fn pretty_write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
+fn pretty_write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(pretty_hex_digit(value / 16))

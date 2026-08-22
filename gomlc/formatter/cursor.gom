@@ -6,14 +6,14 @@ use std::text;
 
 struct LocatedNode {
     node: cst::CstNode,
-    start: int,
-    end: int,
+    start: isize,
+    end: isize,
 }
 
 struct LocatedToken {
     token: lexer::Token,
-    start: int,
-    end: int,
+    start: isize,
+    end: isize,
 }
 
 enum LocatedElement {
@@ -23,16 +23,16 @@ enum LocatedElement {
 
 struct ChildCursor {
     elements: Vec[LocatedElement],
-    index: Ref[int],
+    index: Ref[isize],
 }
 
-fn located_node(node: cst::CstNode, start: int) -> LocatedNode {
+fn located_node(node: cst::CstNode, start: isize) -> LocatedNode {
     LocatedNode { node, start, end: start + cst::node_byte_len(node) }
 }
 
 fn child_cursor(value: LocatedNode) -> ChildCursor {
     let elements: Vec[LocatedElement] = Vec::from_array([]);
-    let offset: Ref[int] = Ref::new(value.start);
+    let offset: Ref[isize] = Ref::new(value.start);
     for element in cst::node_children(value.node) {
         let length = cst::element_byte_len(element);
         match element {
@@ -74,14 +74,14 @@ fn element_token(value: LocatedElement) -> Option[LocatedToken] {
     }
 }
 
-fn element_start(value: LocatedElement) -> int {
+fn element_start(value: LocatedElement) -> isize {
     match value {
         Node(node) => node.start,
         Token(token) => token.start,
     }
 }
 
-fn element_end(value: LocatedElement) -> int {
+fn element_end(value: LocatedElement) -> isize {
     match value {
         Node(node) => node.end,
         Token(token) => token.end,
@@ -89,7 +89,7 @@ fn element_end(value: LocatedElement) -> int {
 }
 
 impl ChildCursor {
-    fn remaining(self: ChildCursor) -> int {
+    fn remaining(self: ChildCursor) -> isize {
         self.elements.len() - self.index.get()
     }
 

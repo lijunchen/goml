@@ -50,7 +50,7 @@ pub fn encode_to_vec[T: Serialize](value: T, config: Config) -> Result[Vec[byte]
 }
 
 pub fn decode_from_slice[T: Deserialize](input: Slice[byte], config: Config) -> Result[
-    (T, int),
+    (T, isize),
     string,
 ] {
     let deserializer = bincode_deserializer(input, config);

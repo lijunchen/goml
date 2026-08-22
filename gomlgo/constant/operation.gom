@@ -151,7 +151,7 @@ pub fn constant_bit_not(value: ConstValue) -> ConstValue {
     }
 }
 
-pub fn constant_bit_not_width(value: ConstValue, bits: int) -> ConstValue {
+pub fn constant_bit_not_width(value: ConstValue, bits: isize) -> ConstValue {
     match constant_to_integer(value) {
         Some(value) => if bits > 0 {
             let mask = natural_sub(natural_shift_left(natural_one(), bits), natural_one()).unwrap_or(
@@ -356,7 +356,7 @@ pub fn constant_bit_xor(left: ConstValue, right: ConstValue) -> ConstValue {
     }
 }
 
-pub fn constant_shift_left(value: ConstValue, amount: int) -> ConstValue {
+pub fn constant_shift_left(value: ConstValue, amount: isize) -> ConstValue {
     match constant_to_integer(value) {
         Some(value) => if amount >= 0 {
             ConstValue::Int(integer_shift_left(value, amount))
@@ -367,7 +367,7 @@ pub fn constant_shift_left(value: ConstValue, amount: int) -> ConstValue {
     }
 }
 
-pub fn constant_shift_right(value: ConstValue, amount: int) -> ConstValue {
+pub fn constant_shift_right(value: ConstValue, amount: isize) -> ConstValue {
     match constant_to_integer(value) {
         Some(value) => if amount >= 0 {
             ConstValue::Int(integer_shift_right(value, amount))
@@ -378,7 +378,7 @@ pub fn constant_shift_right(value: ConstValue, amount: int) -> ConstValue {
     }
 }
 
-pub fn constant_compare(left: ConstValue, right: ConstValue) -> Option[int] {
+pub fn constant_compare(left: ConstValue, right: ConstValue) -> Option[isize] {
     if has_large_float(left) || has_large_float(right) {
         match (
             constant_to_binary_float(left, binary_float_default_precision()),

@@ -53,10 +53,10 @@ pub fn valid_test_mode(value: string) -> bool {
 }
 
 pub struct Summary {
-    pub packages: int,
-    pub accepted: int,
-    pub rejected: int,
-    pub info_compared: int,
+    pub packages: isize,
+    pub accepted: isize,
+    pub rejected: isize,
+    pub info_compared: isize,
 }
 
 fn excluded_directory(name: string) -> bool {
@@ -230,7 +230,7 @@ fn compare_package(
 pub fn compare(
     root: string,
     scope: string,
-    limit: int,
+    limit: isize,
     start: string,
     mode: CompareMode,
     goos: string,

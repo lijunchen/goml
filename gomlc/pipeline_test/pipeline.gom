@@ -59,7 +59,7 @@ fn has_out_snapshot(base: string) -> bool {
     fs::is_file(path::join(base, "main.gom.out"))
 }
 
-fn pipeline_case_insert_index(values: Vec[string], name: string) -> int {
+fn pipeline_case_insert_index(values: Vec[string], name: string) -> isize {
     for index in 0..values.len() {
         if name < values[index] {
             return index
@@ -263,7 +263,7 @@ pub fn test_one_case(name: string) -> unit {
     )
 }
 
-pub fn test_pipeline_shard(shard: int, shard_count: int) -> unit {
+pub fn test_pipeline_shard(shard: isize, shard_count: isize) -> unit {
     let names: Vec[string] = Vec::from_array([]);
     let compiler_sources = Vec::new();
     let index = Ref::new(0);

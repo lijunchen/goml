@@ -38,11 +38,11 @@ impl PartialEq for FileType {
 }
 
 pub struct Permissions {
-    mode_value: uint32,
+    mode_value: u32,
 }
 
 impl Permissions {
-    pub fn mode(self: Permissions) -> uint32 {
+    pub fn mode(self: Permissions) -> u32 {
         self.mode_value
     }
 
@@ -53,9 +53,9 @@ impl Permissions {
 
 pub struct Metadata {
     file_type_value: FileType,
-    length_value: int64,
+    length_value: i64,
     permissions_value: Permissions,
-    modified_unix_nanoseconds_value: int64,
+    modified_unix_nanoseconds_value: i64,
 }
 
 impl Metadata {
@@ -63,7 +63,7 @@ impl Metadata {
         self.file_type_value
     }
 
-    pub fn len(self: Metadata) -> int64 {
+    pub fn len(self: Metadata) -> i64 {
         self.length_value
     }
 
@@ -71,7 +71,7 @@ impl Metadata {
         self.permissions_value
     }
 
-    pub fn modified_unix_nanoseconds(self: Metadata) -> int64 {
+    pub fn modified_unix_nanoseconds(self: Metadata) -> i64 {
         self.modified_unix_nanoseconds_value
     }
 }
@@ -99,9 +99,9 @@ impl DirEntry {
 fn structured_error(
     operation: string,
     path: string,
-    kind_code: int,
+    kind_code: isize,
     has_raw_code: bool,
-    raw_code: int,
+    raw_code: isize,
     message: string,
 ) -> Error {
     Error::new(
@@ -159,7 +159,7 @@ pub fn write_file_structured(path: string, content: string) -> Result[unit, Erro
     write_bytes_structured(path, bytes::Bytes::from_string(content))
 }
 
-fn path_operation(operation: int, name: string, first: string, second: string) -> Result[
+fn path_operation(operation: isize, name: string, first: string, second: string) -> Result[
     unit,
     Error,
 ] {
@@ -225,7 +225,7 @@ pub fn atomic_write(path: string, content: string) -> Result[unit, Error] {
     atomic_write_bytes(path, bytes::Bytes::from_string(content))
 }
 
-fn file_type_from_code(code: int) -> FileType {
+fn file_type_from_code(code: isize) -> FileType {
     if code == 0 {
         FileType::File
     } else if code == 1 {

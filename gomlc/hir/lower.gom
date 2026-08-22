@@ -26,7 +26,7 @@ struct ResolvedUses {
 
 struct LowerCtx {
     package_name: string,
-    package_id: int,
+    package_id: isize,
     definitions: Vec[(string, DefId)],
     constants: Vec[(string, DefId)],
     enums: Vec[EnumInfo],
@@ -34,13 +34,13 @@ struct LowerCtx {
     traits: Vec[string],
     aliases: Vec[AliasEntry],
     qualify_imports: bool,
-    local_counter: Ref[int],
-    method_counter: Ref[int],
-    expr_counter: Ref[int],
+    local_counter: Ref[isize],
+    method_counter: Ref[isize],
+    expr_counter: Ref[isize],
     diagnostics: Vec[Diagnostic],
     current_pattern_span: Ref[Option[ast::Span]],
     lexical_scopes: Vec[LexicalScope],
-    closure_depth: Ref[int],
+    closure_depth: Ref[isize],
 }
 
 struct PatternState {
@@ -51,7 +51,7 @@ struct PatternState {
 
 struct LexicalScope {
     local: LocalId,
-    closure_depth: int,
+    closure_depth: isize,
 }
 
 fn path_segments(path: ast::Path) -> Vec[string] {
@@ -109,7 +109,7 @@ fn is_special_package(package_name: string) -> bool {
     package_name == "main" || package_name == "builtin" || package_name == "prelude"
 }
 
-fn package_id(package_name: string) -> int {
+fn package_id(package_name: string) -> isize {
     if package_name == "builtin" {
         0
     } else if package_name == "main" {
@@ -509,7 +509,7 @@ fn fresh_method(ctx: LowerCtx) -> DefId {
     DefId { pkg: ctx.package_id, index }
 }
 
-fn enum_variant(info: EnumInfo, name: string) -> Option[int] {
+fn enum_variant(info: EnumInfo, name: string) -> Option[isize] {
     let mut index = info.variants.len() - 1;
     while index >= 0 {
         if info.variants[index] == name {
@@ -536,7 +536,7 @@ fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
     let parts = expand_segments(ctx, path);
     if parts.len() == 1 {
-        let matches: Vec[(DefId, int)] = Vec::from_array([]);
+        let matches: Vec[(DefId, isize)] = Vec::from_array([]);
         for info in ctx.enums {
             match enum_variant(info, parts[0]) {
                 Some(index) => matches.push((info.def_id, index)),
@@ -1871,7 +1871,7 @@ fn lower_file_with_context(
     canonical_package_name: string,
     qualify_imports: bool,
     base: LowerCtx,
-    item_offset: int,
+    item_offset: isize,
     diagnostics: Vec[Diagnostic],
 ) -> File {
     let ctx = file_context(base, file, diagnostics);

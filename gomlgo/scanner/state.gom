@@ -5,11 +5,11 @@ use std::bytes;
 use std::text;
 use std::unicode;
 
-const EOF: int32 = -1;
+const EOF: i32 = -1;
 
-const BOM: int32 = 65279;
+const BOM: i32 = 65279;
 
-const RUNE_ERROR: int32 = 65533;
+const RUNE_ERROR: i32 = 65533;
 
 #[go_ffi("unicode", "IsDigit")]
 extern fn go_is_digit(value: char) -> bool;
@@ -21,22 +21,22 @@ pub struct ScanResult {
 
 struct Scanner {
     source: Vec[byte],
-    current: Ref[int32],
-    offset: Ref[int],
-    read_offset: Ref[int],
+    current: Ref[i32],
+    offset: Ref[isize],
+    read_offset: Ref[isize],
     insert_semi: Ref[bool],
-    pending_newline: Ref[int],
+    pending_newline: Ref[isize],
     diagnostics: Vec[diagnostic::Diagnostic],
 }
 
-fn decode_rune(source: Vec[byte], index: int) -> (int32, int, bool) {
+fn decode_rune(source: Vec[byte], index: isize) -> (i32, isize, bool) {
     let first = source[index];
     if first < 128 {
-        (first.to_int32(), 1, true)
+        (first.to_i32(), 1, true)
     } else if first >= 194 && first <= 223 && index + 1 < source.len() {
         let second = source[index + 1];
         if second >= 128 && second <= 191 {
-            ((((first & 31).to_int32()) << 6) | (second & 63).to_int32(), 2, true)
+            ((((first & 31).to_i32()) << 6) | (second & 63).to_i32(), 2, true)
         } else {
             (RUNE_ERROR, 1, false)
         }
@@ -52,8 +52,8 @@ fn decode_rune(source: Vec[byte], index: int) -> (int32, int, bool) {
         };
         if second_valid && third >= 128 && third <= 191 {
             (
-                (((first & 15).to_int32()) << 12) | (((second & 63).to_int32()) << 6)
-                    | (third & 63).to_int32(),
+                (((first & 15).to_i32()) << 12) | (((second & 63).to_i32()) << 6)
+                    | (third & 63).to_i32(),
                 3,
                 true,
             )
@@ -73,9 +73,9 @@ fn decode_rune(source: Vec[byte], index: int) -> (int32, int, bool) {
         };
         if second_valid && third >= 128 && third <= 191 && fourth >= 128 && fourth <= 191 {
             (
-                (((first & 7).to_int32()) << 18) | (((second & 63).to_int32()) << 12)
-                    | (((third & 63).to_int32()) << 6)
-                    | (fourth & 63).to_int32(),
+                (((first & 7).to_i32()) << 18) | (((second & 63).to_i32()) << 12)
+                    | (((third & 63).to_i32()) << 6)
+                    | (fourth & 63).to_i32(),
                 4,
                 true,
             )
@@ -87,22 +87,22 @@ fn decode_rune(source: Vec[byte], index: int) -> (int32, int, bool) {
     }
 }
 
-fn codepoint_char(value: int32) -> Option[char] {
+fn codepoint_char(value: i32) -> Option[char] {
     if value < 0 {
         Option::None
     } else {
-        char_from_uint32(value.to_uint32())
+        char_from_u32(value.to_u32())
     }
 }
 
-fn codepoint_text(value: int32) -> string {
+fn codepoint_text(value: i32) -> string {
     match codepoint_char(value) {
         Some(character) => character.to_string(),
         None => "",
     }
 }
 
-fn source_text(source: Vec[byte], start: int, end: int) -> string {
+fn source_text(source: Vec[byte], start: isize, end: isize) -> string {
     let values: Vec[byte] = Vec::with_capacity(end - start);
     for index in start..end {
         values.push(source[index])
@@ -122,7 +122,7 @@ fn source_text(source: Vec[byte], start: int, end: int) -> string {
     }
 }
 
-fn report(scanner: Scanner, offset: int, message: string) -> unit {
+fn report(scanner: Scanner, offset: isize, message: string) -> unit {
     scanner.diagnostics.push(diagnostic::make(message, offset))
 }
 
@@ -165,7 +165,7 @@ fn peek_byte(scanner: Scanner) -> byte {
 fn scanner_new(source: Vec[byte]) -> Scanner {
     let scanner = Scanner {
         source,
-        current: Ref::new(b' '.to_int32()),
+        current: Ref::new(b' '.to_i32()),
         offset: Ref::new(0),
         read_offset: Ref::new(0),
         insert_semi: Ref::new(false),
@@ -179,26 +179,26 @@ fn scanner_new(source: Vec[byte]) -> Scanner {
     scanner
 }
 
-fn ascii_lower(value: int32) -> int32 {
-    if value >= b'A'.to_int32() && value <= b'Z'.to_int32() {
+fn ascii_lower(value: i32) -> i32 {
+    if value >= b'A'.to_i32() && value <= b'Z'.to_i32() {
         value + 32
     } else {
         value
     }
 }
 
-fn is_decimal(value: int32) -> bool {
-    value >= b'0'.to_int32() && value <= b'9'.to_int32()
+fn is_decimal(value: i32) -> bool {
+    value >= b'0'.to_i32() && value <= b'9'.to_i32()
 }
 
-fn is_hex(value: int32) -> bool {
+fn is_hex(value: i32) -> bool {
     is_decimal(value)
-        || (ascii_lower(value) >= b'a'.to_int32() && ascii_lower(value) <= b'f'.to_int32())
+        || (ascii_lower(value) >= b'a'.to_i32() && ascii_lower(value) <= b'f'.to_i32())
 }
 
-fn is_letter(value: int32) -> bool {
-    (ascii_lower(value) >= b'a'.to_int32() && ascii_lower(value) <= b'z'.to_int32())
-        || value == b'_'.to_int32()
+fn is_letter(value: i32) -> bool {
+    (ascii_lower(value) >= b'a'.to_i32() && ascii_lower(value) <= b'z'.to_i32())
+        || value == b'_'.to_i32()
         || if value >= 128 {
             match codepoint_char(value) {
                 Some(character) => unicode::is_letter(character),
@@ -209,7 +209,7 @@ fn is_letter(value: int32) -> bool {
         }
 }
 
-fn is_digit(value: int32) -> bool {
+fn is_digit(value: i32) -> bool {
     is_decimal(value)
         || if value >= 128 {
             match codepoint_char(value) {
@@ -230,15 +230,15 @@ fn scan_identifier(scanner: Scanner) -> string {
 }
 
 fn skip_whitespace(scanner: Scanner) -> unit {
-    while scanner.current.get() == b' '.to_int32() || scanner.current.get() == b'\t'.to_int32()
-        || (scanner.current.get() == b'\n'.to_int32() && !scanner.insert_semi.get())
-        || scanner.current.get() == b'\r'.to_int32() {
+    while scanner.current.get() == b' '.to_i32() || scanner.current.get() == b'\t'.to_i32()
+        || (scanner.current.get() == b'\n'.to_i32() && !scanner.insert_semi.get())
+        || scanner.current.get() == b'\r'.to_i32() {
         next(scanner)
     }
 }
 
 fn switch_two(scanner: Scanner, plain: gomlgo::token::Kind, assigned: gomlgo::token::Kind) -> gomlgo::token::Kind {
-    if scanner.current.get() == b'='.to_int32() {
+    if scanner.current.get() == b'='.to_i32() {
         next(scanner);
         assigned
     } else {
@@ -250,10 +250,10 @@ fn switch_three(
     scanner: Scanner,
     plain: gomlgo::token::Kind,
     assigned: gomlgo::token::Kind,
-    alternate_character: int32,
+    alternate_character: i32,
     alternate: gomlgo::token::Kind,
 ) -> gomlgo::token::Kind {
-    if scanner.current.get() == b'='.to_int32() {
+    if scanner.current.get() == b'='.to_i32() {
         next(scanner);
         assigned
     } else if scanner.current.get() == alternate_character {
@@ -268,16 +268,16 @@ fn switch_four(
     scanner: Scanner,
     plain: gomlgo::token::Kind,
     assigned: gomlgo::token::Kind,
-    alternate_character: int32,
+    alternate_character: i32,
     alternate: gomlgo::token::Kind,
     alternate_assigned: gomlgo::token::Kind,
 ) -> gomlgo::token::Kind {
-    if scanner.current.get() == b'='.to_int32() {
+    if scanner.current.get() == b'='.to_i32() {
         next(scanner);
         assigned
     } else if scanner.current.get() == alternate_character {
         next(scanner);
-        if scanner.current.get() == b'='.to_int32() {
+        if scanner.current.get() == b'='.to_i32() {
             next(scanner);
             alternate_assigned
         } else {

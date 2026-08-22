@@ -2,11 +2,11 @@ package formatter;
 
 pub enum Doc {
     Nil,
-    Text(string, int),
+    Text(string, isize),
     Verbatim(string),
     Concat(Vec[Doc]),
-    Group(int, Doc),
-    IfBreak(int, Doc, Doc),
+    Group(isize, Doc),
+    IfBreak(isize, Doc, Doc),
     SoftLine,
     Line,
     HardLine,
@@ -16,11 +16,11 @@ pub enum Doc {
 }
 
 struct DocBuilder {
-    next_group: Ref[int],
+    next_group: Ref[isize],
 }
 
 struct GroupedDoc {
-    id: int,
+    id: isize,
     doc: Doc,
 }
 
@@ -32,8 +32,8 @@ fn nil() -> Doc {
     Doc::Nil
 }
 
-fn codepoint_width(value: string) -> int {
-    let width: Ref[int] = Ref::new(0);
+fn codepoint_width(value: string) -> isize {
+    let width: Ref[isize] = Ref::new(0);
     for _ in value.chars() {
         width.set(width.get() + 1)
     }
@@ -94,7 +94,7 @@ fn indent(value: Doc) -> Doc {
     }
 }
 
-fn if_break(group_id: int, broken: Doc, flat: Doc) -> Doc {
+fn if_break(group_id: isize, broken: Doc, flat: Doc) -> Doc {
     Doc::IfBreak(group_id, broken, flat)
 }
 
@@ -130,13 +130,13 @@ fn join(separator: Doc, values: Vec[Doc]) -> Doc {
 }
 
 impl DocBuilder {
-    fn new_group_id(self: DocBuilder) -> int {
+    fn new_group_id(self: DocBuilder) -> isize {
         let id = self.next_group.get();
         self.next_group.set(id + 1);
         id
     }
 
-    fn group_with_id(self: DocBuilder, id: int, content: Doc) -> GroupedDoc {
+    fn group_with_id(self: DocBuilder, id: isize, content: Doc) -> GroupedDoc {
         GroupedDoc { id, doc: Doc::Group(id, content) }
     }
 

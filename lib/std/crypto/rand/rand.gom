@@ -3,7 +3,7 @@ package rand;
 use module::bytes;
 use module::internal::host;
 
-pub fn bytes(length: int) -> Result[bytes::Bytes, string] {
+pub fn bytes(length: isize) -> Result[bytes::Bytes, string] {
     if length < 0 {
         Result::Err("random byte length must be non-negative")
     } else {

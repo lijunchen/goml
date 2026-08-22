@@ -6,19 +6,19 @@ use module::derive;
 struct VerifyContext {
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
-    local_count: int,
+    local_count: isize,
     local_types: Vec[ctir::CtType],
     return_type: ctir::CtType,
-    loop_targets: Vec[(int, ctir::CtType, bool)],
-    value_nodes: Ref[int],
-    value_bytes: Ref[int],
+    loop_targets: Vec[(isize, ctir::CtType, bool)],
+    value_nodes: Ref[isize],
+    value_bytes: Ref[isize],
 }
 
-fn ctir_value_node_limit() -> int {
+fn ctir_value_node_limit() -> isize {
     1000000
 }
 
-fn ctir_value_byte_limit() -> int {
+fn ctir_value_byte_limit() -> isize {
     8388608
 }
 
@@ -283,11 +283,11 @@ fn value_list_matches_types(values: Vec[ctir::CtValue], types: Vec[ctir::CtType]
     }
 }
 
-fn origin_valid(ctx: VerifyContext, origin: int) -> bool {
+fn origin_valid(ctx: VerifyContext, origin: isize) -> bool {
     origin >= 0 && origin < ctx.module.origins.len()
 }
 
-fn verify_origin(ctx: VerifyContext, origin: int) -> Result[unit, string] {
+fn verify_origin(ctx: VerifyContext, origin: isize) -> Result[unit, string] {
     if origin_valid(ctx, origin) {
         Result::Ok(())
     } else {
@@ -295,11 +295,11 @@ fn verify_origin(ctx: VerifyContext, origin: int) -> Result[unit, string] {
     }
 }
 
-fn slot_valid(ctx: VerifyContext, slot: int) -> bool {
+fn slot_valid(ctx: VerifyContext, slot: isize) -> bool {
     slot >= 0 && slot < ctx.local_count
 }
 
-fn slot_type(ctx: VerifyContext, slot: int) -> Option[ctir::CtType] {
+fn slot_type(ctx: VerifyContext, slot: isize) -> Option[ctir::CtType] {
     if slot_valid(ctx, slot) && slot < ctx.local_types.len() {
         Option::Some(ctx.local_types[slot])
     } else {
@@ -307,7 +307,7 @@ fn slot_type(ctx: VerifyContext, slot: int) -> Option[ctir::CtType] {
     }
 }
 
-fn loop_target(ctx: VerifyContext, target: int) -> Option[(ctir::CtType, bool)] {
+fn loop_target(ctx: VerifyContext, target: isize) -> Option[(ctir::CtType, bool)] {
     let mut index = ctx.loop_targets.len();
     while index > 0 {
         index = index - 1;
@@ -318,7 +318,7 @@ fn loop_target(ctx: VerifyContext, target: int) -> Option[(ctir::CtType, bool)] 
     Option::None
 }
 
-fn verify_value_limits(value: ctir::CtValue, nodes: Ref[int], bytes: Ref[int]) -> Result[
+fn verify_value_limits(value: ctir::CtValue, nodes: Ref[isize], bytes: Ref[isize]) -> Result[
     unit,
     string,
 ] {
@@ -479,7 +479,7 @@ fn verify_pattern_list(ctx: VerifyContext, patterns: Vec[ctir::CtPattern], types
     }
 }
 
-fn verify_find_function(module: ctir::CtModule, id: int) -> Option[ctir::CtFunction] {
+fn verify_find_function(module: ctir::CtModule, id: isize) -> Option[ctir::CtFunction] {
     for function in module.functions {
         if function.id == id {
             return Option::Some(function)
@@ -555,7 +555,7 @@ fn derive_abi_type(module: ctir::CtModule, name: string) -> ctir::CtType {
         ctir::CtType::Unit
     } else if name == "bool" {
         ctir::CtType::Bool
-    } else if name == "isize" || name == "int" {
+    } else if name == "isize" {
         ctir::CtType::Integer { signed: true, width: module.target.int_width }
     } else if name == "string" {
         ctir::CtType::String
@@ -1067,8 +1067,8 @@ fn verify_function(
     module: ctir::CtModule,
     dependencies: Vec[ctir::CtModule],
     value: ctir::CtFunction,
-    value_nodes: Ref[int],
-    value_bytes: Ref[int],
+    value_nodes: Ref[isize],
+    value_bytes: Ref[isize],
 ) -> Result[unit, string] {
     if value.parameter_slots.len() != value.parameter_types.len() {
         return Result::Err("CTIR function parameter signature mismatch")
@@ -1077,7 +1077,7 @@ fn verify_function(
     } else if value.local_count != value.local_types.len() {
         return Result::Err("CTIR function local type count does not match local count")
     } else {};
-    let seen: Vec[int] = Vec::from_array([]);
+    let seen: Vec[isize] = Vec::from_array([]);
     for index in 0..value.parameter_slots.len() {
         let slot = value.parameter_slots[index];
         if slot < 0 || slot >= value.local_count || seen.contains(slot) {
@@ -1140,7 +1140,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     verify_unique_module_names(module, dependencies)?;
     let value_nodes = Ref::new(0);
     let value_bytes = Ref::new(0);
-    let ids: Vec[int] = Vec::from_array([]);
+    let ids: Vec[isize] = Vec::from_array([]);
     for function in module.functions {
         if function.id < 0 || ids.contains(function.id) {
             return Result::Err("duplicate or negative CTIR function id")
@@ -1186,7 +1186,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
             } else {}
         } else {}
     }
-    let site_ids: Vec[int] = Vec::from_array([]);
+    let site_ids: Vec[isize] = Vec::from_array([]);
     for site in module.sites {
         if site.id < 0 || site_ids.contains(site.id) || site.local_count < 0
             || site.local_count != site.local_types.len() {

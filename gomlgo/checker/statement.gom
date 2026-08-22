@@ -4,7 +4,7 @@ use gomlgo::constant;
 use gomlgo::syntax;
 use gomlgo::types as go_types;
 
-fn node_end(state: CheckState, node: syntax::NodeId) -> int {
+fn node_end(state: CheckState, node: syntax::NodeId) -> isize {
     match syntax::get_node(state.syntax.arena, node) {
         Some(value) => value.span.end,
         None => -1,
@@ -681,7 +681,7 @@ fn assignment_operands(
     state: CheckState,
     scope: go_types::ScopeId,
     nodes: Vec[syntax::NodeId],
-    expected: int,
+    expected: isize,
     allow_comma_ok: bool,
     targets: Vec[go_types::TypeId],
     target_descriptions: Vec[string],
@@ -1007,7 +1007,7 @@ fn assign_existing(
     assign_checked(state, node, source_node, source, target)
 }
 
-fn assignment_count_text(count: int, singular: string, plural: string) -> string {
+fn assignment_count_text(count: isize, singular: string, plural: string) -> string {
     count.to_string() + " "
         + if count == 1 {
             singular
@@ -1019,9 +1019,9 @@ fn assignment_count_text(count: int, singular: string, plural: string) -> string
 fn report_assignment_count(
     state: CheckState,
     node: syntax::NodeId,
-    left_count: int,
+    left_count: isize,
     right_nodes: Vec[syntax::NodeId],
-    right_count: int,
+    right_count: isize,
 ) -> unit {
     let position = if right_nodes.is_empty() {
         node
@@ -1529,7 +1529,7 @@ fn check_condition(
     } else {}
 }
 
-fn label_start(state: CheckState) -> int {
+fn label_start(state: CheckState) -> isize {
     if state.label_starts.is_empty() {
         state.labels.len()
     } else {
@@ -1537,7 +1537,7 @@ fn label_start(state: CheckState) -> int {
     }
 }
 
-fn active_label_start(state: CheckState) -> int {
+fn active_label_start(state: CheckState) -> isize {
     if state.active_label_starts.is_empty() {
         state.active_labels.len()
     } else {
@@ -1545,7 +1545,7 @@ fn active_label_start(state: CheckState) -> int {
     }
 }
 
-fn label_index(state: CheckState, name: string) -> Option[int] {
+fn label_index(state: CheckState, name: string) -> Option[isize] {
     let start = label_start(state);
     for index in start..state.labels.len() {
         if state.labels[index].name == name {
@@ -1960,7 +1960,7 @@ fn loop_label_name(state: CheckState, loop_node: syntax::NodeId) -> string {
     }
 }
 
-fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nested_breakable: int) -> bool {
+fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nested_breakable: isize) -> bool {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -2712,7 +2712,7 @@ fn check_send_statement(
     scope: go_types::ScopeId,
     node: syntax::NodeId,
     channel: syntax::NodeId,
-    arrow: int,
+    arrow: isize,
     value: syntax::NodeId,
 ) -> unit {
     let channel_operand = check_expression(state, scope, channel);
@@ -3076,7 +3076,7 @@ fn check_expression_case(
     (list.is_empty(), terminating)
 }
 
-fn remaining_statements_empty(state: CheckState, statements: Vec[syntax::NodeId], start: int) -> bool {
+fn remaining_statements_empty(state: CheckState, statements: Vec[syntax::NodeId], start: isize) -> bool {
     for index in start..statements.len() {
         match syntax::get_node(state.syntax.arena, statements[index]) {
             Some(syntax::SyntaxNode {
@@ -4276,11 +4276,11 @@ fn local_object_used(state: CheckState, object: go_types::ObjectId) -> bool {
     }
 }
 
-fn local_scope_depth(state: CheckState, scope: go_types::ScopeId) -> int {
+fn local_scope_depth(state: CheckState, scope: go_types::ScopeId) -> isize {
     state.world.scopes[scope.value].depth
 }
 
-fn report_unused_locals(state: CheckState, function_id: int, start: int) -> unit {
+fn report_unused_locals(state: CheckState, function_id: isize, start: isize) -> unit {
     let mut root_depth = state.world.scopes.len();
     for index in start..state.locals.len() {
         let local = state.locals[index];
@@ -4312,20 +4312,20 @@ fn report_unused_locals(state: CheckState, function_id: int, start: int) -> unit
 struct FlowLabel {
     name: string,
     node: syntax::NodeId,
-    position: int,
+    position: isize,
     blocks: Vec[syntax::NodeId],
 }
 
 struct FlowGoto {
     name: string,
     node: syntax::NodeId,
-    position: int,
+    position: isize,
     blocks: Vec[syntax::NodeId],
 }
 
 struct FlowDeclaration {
     node: syntax::NodeId,
-    position: int,
+    position: isize,
     blocks: Vec[syntax::NodeId],
 }
 
@@ -4607,7 +4607,7 @@ fn flow_blocks_prefix(prefix: Vec[syntax::NodeId], value: Vec[syntax::NodeId]) -
     true
 }
 
-fn source_line(state: CheckState, node: syntax::NodeId) -> int {
+fn source_line(state: CheckState, node: syntax::NodeId) -> isize {
     match syntax::get_node(state.syntax.arena, node) {
         Some(value) => if value.file.value < 0 || value.file.value >= state.syntax.files.len() {
             0

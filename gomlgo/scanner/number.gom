@@ -2,22 +2,22 @@ package scanner;
 
 use gomlgo::token;
 
-fn digit_value(value: int32) -> int {
-    if value >= b'0'.to_int32() && value <= b'9'.to_int32() {
-        (value - b'0'.to_int32()).to_int()
-    } else if ascii_lower(value) >= b'a'.to_int32() && ascii_lower(value) <= b'f'.to_int32() {
-        (ascii_lower(value) - b'a'.to_int32() + 10).to_int()
+fn digit_value(value: i32) -> isize {
+    if value >= b'0'.to_i32() && value <= b'9'.to_i32() {
+        (value - b'0'.to_i32()).to_isize()
+    } else if ascii_lower(value) >= b'a'.to_i32() && ascii_lower(value) <= b'f'.to_i32() {
+        (ascii_lower(value) - b'a'.to_i32() + 10).to_isize()
     } else {
         16
     }
 }
 
-fn scan_digits(scanner: Scanner, base: int, invalid: Ref[int]) -> int {
+fn scan_digits(scanner: Scanner, base: isize, invalid: Ref[isize]) -> isize {
     let mut result = 0;
     if base <= 10 {
-        let maximum = b'0'.to_int32() + base.to_int32();
-        while is_decimal(scanner.current.get()) || scanner.current.get() == b'_'.to_int32() {
-            if scanner.current.get() == b'_'.to_int32() {
+        let maximum = b'0'.to_i32() + base.to_i32();
+        while is_decimal(scanner.current.get()) || scanner.current.get() == b'_'.to_i32() {
+            if scanner.current.get() == b'_'.to_i32() {
                 result = result | 2;
             } else {
                 result = result | 1;
@@ -28,8 +28,8 @@ fn scan_digits(scanner: Scanner, base: int, invalid: Ref[int]) -> int {
             next(scanner)
         }
     } else {
-        while is_hex(scanner.current.get()) || scanner.current.get() == b'_'.to_int32() {
-            if scanner.current.get() == b'_'.to_int32() {
+        while is_hex(scanner.current.get()) || scanner.current.get() == b'_'.to_i32() {
+            if scanner.current.get() == b'_'.to_i32() {
                 result = result | 2;
             } else {
                 result = result | 1;
@@ -40,19 +40,19 @@ fn scan_digits(scanner: Scanner, base: int, invalid: Ref[int]) -> int {
     result
 }
 
-fn literal_name(prefix: int32) -> string {
-    if prefix == b'x'.to_int32() {
+fn literal_name(prefix: i32) -> string {
+    if prefix == b'x'.to_i32() {
         "hexadecimal literal"
-    } else if prefix == b'o'.to_int32() || prefix == b'0'.to_int32() {
+    } else if prefix == b'o'.to_i32() || prefix == b'0'.to_i32() {
         "octal literal"
-    } else if prefix == b'b'.to_int32() {
+    } else if prefix == b'b'.to_i32() {
         "binary literal"
     } else {
         "decimal literal"
     }
 }
 
-fn invalid_separator(literal: string) -> int {
+fn invalid_separator(literal: string) -> isize {
     let mut prefix = b' ';
     let mut previous = b'.';
     let mut index = 0;
@@ -99,37 +99,37 @@ fn scan_number(scanner: Scanner) -> (token::Kind, string) {
     let start = scanner.offset.get();
     let mut kind = token::Kind::Illegal;
     let mut base = 10;
-    let mut prefix = 0.to_int32();
+    let mut prefix = 0.to_i32();
     let mut digit_separator = 0;
     let invalid = Ref::new(-1);
-    if scanner.current.get() != b'.'.to_int32() {
+    if scanner.current.get() != b'.'.to_i32() {
         kind = token::Kind::Int;
-        if scanner.current.get() == b'0'.to_int32() {
+        if scanner.current.get() == b'0'.to_i32() {
             next(scanner);
             let lowered = ascii_lower(scanner.current.get());
-            if lowered == b'x'.to_int32() {
+            if lowered == b'x'.to_i32() {
                 next(scanner);
                 base = 16;
-                prefix = b'x'.to_int32();
-            } else if lowered == b'o'.to_int32() {
+                prefix = b'x'.to_i32();
+            } else if lowered == b'o'.to_i32() {
                 next(scanner);
                 base = 8;
-                prefix = b'o'.to_int32();
-            } else if lowered == b'b'.to_int32() {
+                prefix = b'o'.to_i32();
+            } else if lowered == b'b'.to_i32() {
                 next(scanner);
                 base = 2;
-                prefix = b'b'.to_int32();
+                prefix = b'b'.to_i32();
             } else {
                 base = 8;
-                prefix = b'0'.to_int32();
+                prefix = b'0'.to_i32();
                 digit_separator = 1;
             }
         } else {};
         digit_separator = digit_separator | scan_digits(scanner, base, invalid);
     } else {};
-    if scanner.current.get() == b'.'.to_int32() {
+    if scanner.current.get() == b'.'.to_i32() {
         kind = token::Kind::Float;
-        if prefix == b'o'.to_int32() || prefix == b'b'.to_int32() {
+        if prefix == b'o'.to_i32() || prefix == b'b'.to_i32() {
             report(scanner, scanner.offset.get(), "invalid radix point in " + literal_name(prefix))
         } else {};
         next(scanner);
@@ -139,15 +139,15 @@ fn scan_number(scanner: Scanner) -> (token::Kind, string) {
         report(scanner, scanner.offset.get(), literal_name(prefix) + " has no digits")
     } else {};
     let exponent = ascii_lower(scanner.current.get());
-    if exponent == b'e'.to_int32() || exponent == b'p'.to_int32() {
-        if exponent == b'e'.to_int32() && prefix != 0 && prefix != b'0'.to_int32() {
+    if exponent == b'e'.to_i32() || exponent == b'p'.to_i32() {
+        if exponent == b'e'.to_i32() && prefix != 0 && prefix != b'0'.to_i32() {
             report(scanner, scanner.offset.get(), "exponent requires decimal mantissa")
-        } else if exponent == b'p'.to_int32() && prefix != b'x'.to_int32() {
+        } else if exponent == b'p'.to_i32() && prefix != b'x'.to_i32() {
             report(scanner, scanner.offset.get(), "exponent requires hexadecimal mantissa")
         } else {};
         next(scanner);
         kind = token::Kind::Float;
-        if scanner.current.get() == b'+'.to_int32() || scanner.current.get() == b'-'.to_int32() {
+        if scanner.current.get() == b'+'.to_i32() || scanner.current.get() == b'-'.to_i32() {
             next(scanner)
         } else {};
         let exponent_invalid = Ref::new(-1);
@@ -156,10 +156,10 @@ fn scan_number(scanner: Scanner) -> (token::Kind, string) {
         if exponent_digits & 1 == 0 {
             report(scanner, scanner.offset.get(), "exponent has no digits")
         } else {}
-    } else if prefix == b'x'.to_int32() && token::equal(kind, token::Kind::Float) {
+    } else if prefix == b'x'.to_i32() && token::equal(kind, token::Kind::Float) {
         report(scanner, scanner.offset.get(), "hexadecimal mantissa requires a 'p' exponent")
     } else {};
-    if scanner.current.get() == b'i'.to_int32() {
+    if scanner.current.get() == b'i'.to_i32() {
         kind = token::Kind::Imag;
         next(scanner)
     } else {};

@@ -2,8 +2,8 @@ package formatter;
 
 use module::lexer;
 
-fn whitespace_newlines(value: string) -> int {
-    let count: Ref[int] = Ref::new(0);
+fn whitespace_newlines(value: string) -> isize {
+    let count: Ref[isize] = Ref::new(0);
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'\n' {
             count.set(count.get() + 1)
@@ -12,8 +12,8 @@ fn whitespace_newlines(value: string) -> int {
     count.get()
 }
 
-fn trivia_newlines(values: Vec[LocatedToken]) -> int {
-    let count: Ref[int] = Ref::new(0);
+fn trivia_newlines(values: Vec[LocatedToken]) -> isize {
+    let count: Ref[isize] = Ref::new(0);
     for value in values {
         if token_is(value, lexer::TokenKind::Whitespace) {
             count.set(count.get() + whitespace_newlines(value.token.text))

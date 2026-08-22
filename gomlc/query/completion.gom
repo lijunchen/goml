@@ -33,12 +33,12 @@ struct UseCompletionContext {
     prefix: string,
 }
 
-fn identifier_byte(value: uint8) -> bool {
+fn identifier_byte(value: u8) -> bool {
     (value >= 65 && value <= 90) || (value >= 97 && value <= 122) || (value >= 48 && value <= 57)
         || value == 95
 }
 
-fn prefix_start(source: string, offset: int) -> int {
+fn prefix_start(source: string, offset: isize) -> isize {
     let mut start = if offset < source.byte_len() {
         offset
     } else {
@@ -50,7 +50,7 @@ fn prefix_start(source: string, offset: int) -> int {
     start
 }
 
-fn completion_prefix(source: string, offset: int) -> string {
+fn completion_prefix(source: string, offset: isize) -> string {
     let start = prefix_start(source, offset);
     source.byte_slice(
         start,
@@ -62,7 +62,7 @@ fn completion_prefix(source: string, offset: int) -> string {
     )
 }
 
-fn use_completion_context(source: string, offset: int) -> Option[UseCompletionContext] {
+fn use_completion_context(source: string, offset: isize) -> Option[UseCompletionContext] {
     let limit = if offset < source.byte_len() {
         offset
     } else {
@@ -199,7 +199,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
     }
 }
 
-fn namespace_path(source: string, offset: int) -> Option[string] {
+fn namespace_path(source: string, offset: isize) -> Option[string] {
     let start = prefix_start(source, offset);
     if start >= 2 && text::starts_with_at(source, start - 2, "::") {
         let owner_end = start - 2;
@@ -525,7 +525,7 @@ fn short_type_name(value: string) -> string {
     value.byte_slice(start, value.byte_len())
 }
 
-fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken] {
+fn significant_token_before(value: Analysis, offset: isize) -> Option[SyntaxToken] {
     let mut index = token_index_before(value.syntax, offset);
     while index >= 0 {
         let token = value.syntax.tokens[index];
@@ -569,7 +569,7 @@ fn local_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::
     Option::None
 }
 
-fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
+fn receiver_type(value: Analysis, dot: isize) -> Option[tast::Type] {
     match significant_token_before(value, dot) {
         Some(token) => {
             let mut result = Option::None;
@@ -600,7 +600,7 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
     }
 }
 
-fn member_dot(source: string, offset: int) -> Option[int] {
+fn member_dot(source: string, offset: isize) -> Option[isize] {
     let start = prefix_start(source, offset);
     if start > 0 && source.byte_get(start - 1) == b'.' {
         Option::Some(start - 1)
@@ -650,7 +650,7 @@ fn parameter_explicit_type(parameters: Vec[(string, ast::TypeExpr)], name: strin
     Option::None
 }
 
-fn source_explicit_receiver_type(source: string, name: string, limit: int) -> Option[string] {
+fn source_explicit_receiver_type(source: string, name: string, limit: isize) -> Option[string] {
     let mut index = limit - name.byte_len();
     while index >= 0 {
         if source.byte_slice(index, index + name.byte_len()) == name {
@@ -710,7 +710,7 @@ fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string]
     Option::None
 }
 
-fn explicit_receiver_type(value: Analysis, dot: int) -> Option[string] {
+fn explicit_receiver_type(value: Analysis, dot: isize) -> Option[string] {
     match significant_token_before(value, dot) {
         Some(token) => {
             let lowered = value.lowered;
@@ -774,7 +774,7 @@ fn complete_named_methods(
     }
 }
 
-fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[CompletionItem] {
+fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[CompletionItem] {
     let result: Vec[CompletionItem] = Vec::from_array([]);
     match receiver_type(value, dot) {
         Some(receiver) => {
@@ -887,7 +887,7 @@ fn containing_completion_scope(syntax: SyntaxIndex, span: ast::Span) -> Option[S
     Option::None
 }
 
-fn local_visible_at(syntax: SyntaxIndex, span: ast::Span, offset: int) -> bool {
+fn local_visible_at(syntax: SyntaxIndex, span: ast::Span, offset: isize) -> bool {
     if span.start >= offset {
         false
     } else {
@@ -900,7 +900,7 @@ fn local_visible_at(syntax: SyntaxIndex, span: ast::Span, offset: int) -> bool {
     }
 }
 
-fn local_completion_index(values: Vec[CompletionItem], label: string) -> Option[int] {
+fn local_completion_index(values: Vec[CompletionItem], label: string) -> Option[isize] {
     for offset in 0..values.len() {
         let index = values.len() - 1 - offset;
         if values[index].label == label {
@@ -980,7 +980,7 @@ fn append_prelude_scope_completions(result: Vec[CompletionItem], value: Analysis
     }
 }
 
-fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[CompletionItem] {
+fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[CompletionItem] {
     let result: Vec[CompletionItem] = Vec::from_array([]);
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
@@ -1093,11 +1093,11 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
     result
 }
 
-fn completion_whitespace(value: uint8) -> bool {
+fn completion_whitespace(value: u8) -> bool {
     value == 9 || value == 10 || value == 13 || value == 32
 }
 
-fn previous_completion_byte(source: string, end: int) -> Option[int] {
+fn previous_completion_byte(source: string, end: isize) -> Option[isize] {
     let mut index = end;
     while index > 0 && completion_whitespace(source.byte_get(index - 1)) {
         index = index - 1;
@@ -1109,7 +1109,7 @@ fn previous_completion_byte(source: string, end: int) -> Option[int] {
     }
 }
 
-fn completion_word_before(source: string, end: int) -> string {
+fn completion_word_before(source: string, end: isize) -> string {
     match previous_completion_byte(source, end) {
         Some(last) => {
             let mut start = last;
@@ -1122,7 +1122,7 @@ fn completion_word_before(source: string, end: int) -> string {
     }
 }
 
-fn call_open_before(source: string, offset: int) -> Option[int] {
+fn call_open_before(source: string, offset: isize) -> Option[isize] {
     let mut index = offset;
     let mut depth = 0;
     while index > 0 {
@@ -1141,7 +1141,7 @@ fn call_open_before(source: string, offset: int) -> Option[int] {
     Option::None
 }
 
-fn call_argument_context(source: string, offset: int) -> bool {
+fn call_argument_context(source: string, offset: isize) -> bool {
     let start = prefix_start(source, offset);
     match call_open_before(source, start) {
         Some(open) => {
@@ -1155,12 +1155,12 @@ fn call_argument_context(source: string, offset: int) -> bool {
     }
 }
 
-fn insert_completion_placeholder(source: string, offset: int) -> string {
+fn insert_completion_placeholder(source: string, offset: isize) -> string {
     source.byte_slice(0, offset) + "completion_placeholder"
         + source.byte_slice(offset, source.byte_len())
 }
 
-fn completion_open_brace(source: string, end: int) -> Option[int] {
+fn completion_open_brace(source: string, end: isize) -> Option[isize] {
     let mut index = end;
     let mut depth = 0;
     while index > 0 {
@@ -1179,7 +1179,7 @@ fn completion_open_brace(source: string, end: int) -> Option[int] {
     Option::None
 }
 
-fn select_completion_open(source: string, offset: int) -> Option[int] {
+fn select_completion_open(source: string, offset: isize) -> Option[isize] {
     match completion_open_brace(source, offset) {
         Some(open) => {
             let previous = completion_word_before(source, open);
@@ -1221,7 +1221,7 @@ fn push_contextual_completion(
 fn append_select_completions(
     result: Vec[CompletionItem],
     source: string,
-    offset: int,
+    offset: isize,
     prefix: string,
 ) -> unit {
     let start = prefix_start(source, offset);
@@ -1253,7 +1253,7 @@ fn append_select_completions(
     }
 }
 
-fn completion_query(value: Analysis, source: string, offset: int, prefix: string) -> Vec[
+fn completion_query(value: Analysis, source: string, offset: isize, prefix: string) -> Vec[
     CompletionItem,
 ] {
     match member_dot(source, offset) {
@@ -1267,7 +1267,7 @@ fn completion_query(value: Analysis, source: string, offset: int, prefix: string
     }
 }
 
-fn completions_for_source(value: Analysis, source: string, offset: int, recover: bool) -> Vec[
+fn completions_for_source(value: Analysis, source: string, offset: isize, recover: bool) -> Vec[
     CompletionItem,
 ] {
     let prefix = completion_prefix(source, offset);
@@ -1297,10 +1297,10 @@ fn completions_for_source(value: Analysis, source: string, offset: int, recover:
     }
 }
 
-pub fn cached_completions(value: Analysis, source: string, offset: int) -> Vec[CompletionItem] {
+pub fn cached_completions(value: Analysis, source: string, offset: isize) -> Vec[CompletionItem] {
     completions_for_source(value, source, offset, false)
 }
 
-pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
+pub fn completions(value: Analysis, offset: isize) -> Vec[CompletionItem] {
     completions_for_source(value, value.source, offset, true)
 }

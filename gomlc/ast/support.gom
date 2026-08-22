@@ -6,12 +6,12 @@ use std::text;
 
 struct LocatedNode {
     node: cst::CstNode,
-    start: int,
+    start: isize,
 }
 
 struct LocatedToken {
     token: lexer::Token,
-    start: int,
+    start: isize,
 }
 
 fn root_node(result: cst::ParseResult) -> LocatedNode {
@@ -26,7 +26,7 @@ fn node_span(value: LocatedNode) -> Span {
     span(value.start, value.start + cst::node_byte_len(value.node))
 }
 
-fn trimmed_node_end(value: LocatedNode) -> int {
+fn trimmed_node_end(value: LocatedNode) -> isize {
     let mut cursor = value.start;
     let mut end = value.start;
     for element in cst::node_children(value.node) {

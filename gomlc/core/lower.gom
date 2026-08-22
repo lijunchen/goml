@@ -7,13 +7,13 @@ use std::text;
 
 struct Lowerer {
     builtin: tast::BuiltinContract,
-    counter: Ref[int],
+    counter: Ref[isize],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
     cleanups: Vec[tast::Expr],
-    loop_cleanup_depths: Vec[int],
-    cleanup_lowering_depth: Ref[int],
+    loop_cleanup_depths: Vec[isize],
+    cleanup_lowering_depth: Ref[isize],
 }
 
 struct EnumCase {
@@ -1181,7 +1181,7 @@ fn direct_array_for(
     pattern: tast::Pat,
     iterator: tast::Expr,
     container_ty: tast::Type,
-    length: int,
+    length: isize,
     body: tast::Expr,
 ) -> LowerExpr {
     let item_ty = tast::pat_type(pattern);
@@ -1413,7 +1413,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
             for value in ctx.cleanups {
                 saved_cleanups.push(value)
             }
-            let saved_loop_depths: Vec[int] = Vec::from_array([]);
+            let saved_loop_depths: Vec[isize] = Vec::from_array([]);
             for value in ctx.loop_cleanup_depths {
                 saved_loop_depths.push(value)
             }
@@ -1579,7 +1579,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
     }
 }
 
-fn lower_cleanup_stmts(ctx: Lowerer, start: int) -> Vec[LowerLetStmt] {
+fn lower_cleanup_stmts(ctx: Lowerer, start: isize) -> Vec[LowerLetStmt] {
     let result: Vec[LowerLetStmt] = Vec::from_array([]);
     let mut index = ctx.cleanups.len();
     while index > start {
@@ -1592,7 +1592,7 @@ fn lower_cleanup_stmts(ctx: Lowerer, start: int) -> Vec[LowerLetStmt] {
     result
 }
 
-fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::Type) -> LowerExpr {
+fn lower_break(ctx: Lowerer, target: isize, value: Option[tast::Expr], ty: tast::Type) -> LowerExpr {
     let start = if ctx.loop_cleanup_depths.is_empty() {
         0
     } else {
@@ -1642,7 +1642,7 @@ fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::T
     }
 }
 
-fn lower_continue(ctx: Lowerer, target: int, ty: tast::Type) -> LowerExpr {
+fn lower_continue(ctx: Lowerer, target: isize, ty: tast::Type) -> LowerExpr {
     let start = if ctx.loop_cleanup_depths.is_empty() {
         0
     } else {
@@ -1716,10 +1716,10 @@ fn prepend_stmt(value: LowerLetStmt, rest: LowerBlock) -> LowerBlock {
 fn remaining_tast_block(
     ctx: Lowerer,
     stmts: Vec[tast::Stmt],
-    index: int,
+    index: isize,
     tail: Option[tast::Expr],
     ty: tast::Type,
-    cleanup_start: int,
+    cleanup_start: isize,
 ) -> tast::Expr {
     let remaining: Vec[tast::Stmt] = Vec::from_array([]);
     for current in index..stmts.len() {
@@ -1820,10 +1820,10 @@ fn lower_pattern_continuation(
 fn lower_block_from(
     ctx: Lowerer,
     stmts: Vec[tast::Stmt],
-    index: int,
+    index: isize,
     tail: Option[tast::Expr],
     ty: tast::Type,
-    cleanup_start: int,
+    cleanup_start: isize,
 ) -> LowerBlock {
     if index >= stmts.len() {
         if ctx.cleanups.len() == cleanup_start {
@@ -2017,7 +2017,7 @@ fn lower_marker_trait_witness(block: tast::ImplBlock, reference: tast::TraitRef)
 fn lower_file_with_types(
     builtin: tast::BuiltinContract,
     value: tast::File,
-    counter: Ref[int],
+    counter: Ref[isize],
     dependency_enums: Vec[tast::EnumDef],
     dependency_structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
@@ -2122,7 +2122,7 @@ fn lower_file_with_types(
     }
 }
 
-fn lower_file(builtin: tast::BuiltinContract, value: tast::File, counter: Ref[int]) -> LowerFile {
+fn lower_file(builtin: tast::BuiltinContract, value: tast::File, counter: Ref[isize]) -> LowerFile {
     lower_file_with_types(builtin, value, counter, Vec::from_array([]), Vec::from_array([]), false)
 }
 
@@ -2139,7 +2139,7 @@ fn empty_lower_file() -> LowerFile {
 
 fn lower_raw_with_counter_types_and_options(
     value: tast::CheckResult,
-    counter: Ref[int],
+    counter: Ref[isize],
     dependency_enums: Vec[tast::EnumDef],
     dependency_structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
@@ -2162,7 +2162,7 @@ fn lower_raw_with_counter_types_and_options(
 
 pub fn lower_with_counter_types_and_options(
     value: tast::CheckResult,
-    counter: Ref[int],
+    counter: Ref[isize],
     dependency_enums: Vec[tast::EnumDef],
     dependency_structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
@@ -2180,7 +2180,7 @@ pub fn lower_with_counter_types_and_options(
 
 pub fn lower_with_counter_and_types(
     value: tast::CheckResult,
-    counter: Ref[int],
+    counter: Ref[isize],
     dependency_enums: Vec[tast::EnumDef],
     dependency_structs: Vec[tast::StructDef],
 ) -> File {
@@ -2193,7 +2193,7 @@ pub fn lower_with_counter_and_types(
     )
 }
 
-pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int]) -> File {
+pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[isize]) -> File {
     detach_file(
         match value.tast {
             Some(file) => match tast::builtin_contract() {

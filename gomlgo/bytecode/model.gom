@@ -5,79 +5,79 @@ use gomlgo::syntax;
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct RegisterId {
-    pub value: int,
+    pub value: isize,
 }
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct PlaceId {
-    pub value: int,
+    pub value: isize,
 }
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct LocalId {
-    pub value: int,
+    pub value: isize,
 }
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct GlobalId {
-    pub value: int,
+    pub value: isize,
 }
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct BlockId {
-    pub value: int,
+    pub value: isize,
 }
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct FunctionId {
-    pub value: int,
+    pub value: isize,
 }
 
 #[derive(PartialEq, Eq, ToString)]
 pub struct NativeCallId {
-    pub value: int,
+    pub value: isize,
 }
 
-pub fn register_id(value: int) -> RegisterId {
+pub fn register_id(value: isize) -> RegisterId {
     RegisterId { value }
 }
 
-pub fn place_id(value: int) -> PlaceId {
+pub fn place_id(value: isize) -> PlaceId {
     PlaceId { value }
 }
 
-pub fn local_id(value: int) -> LocalId {
+pub fn local_id(value: isize) -> LocalId {
     LocalId { value }
 }
 
-pub fn global_id(value: int) -> GlobalId {
+pub fn global_id(value: isize) -> GlobalId {
     GlobalId { value }
 }
 
-pub fn block_id(value: int) -> BlockId {
+pub fn block_id(value: isize) -> BlockId {
     BlockId { value }
 }
 
-pub fn function_id(value: int) -> FunctionId {
+pub fn function_id(value: isize) -> FunctionId {
     FunctionId { value }
 }
 
-pub fn native_call_id(value: int) -> NativeCallId {
+pub fn native_call_id(value: isize) -> NativeCallId {
     NativeCallId { value }
 }
 
 pub struct SourceLocation {
     pub package_id: go_types::PackageId,
     pub file: syntax::FileId,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
     pub function: FunctionId,
 }
 
 pub struct CodeLocation {
     pub file: syntax::FileId,
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
 }
 
 pub fn expand_location(
@@ -214,7 +214,7 @@ pub enum InstructionKind {
     FieldPlace {
         target: PlaceId,
         base: PlaceId,
-        index: Vec[int],
+        index: Vec[isize],
     },
     IndexPlace {
         target: PlaceId,
@@ -267,12 +267,12 @@ pub enum InstructionKind {
         target: RegisterId,
         type_id: go_types::TypeId,
         elements: Vec[AggregateElement],
-        length: int,
+        length: isize,
     },
     FieldValue {
         target: RegisterId,
         base: RegisterId,
-        index: Vec[int],
+        index: Vec[isize],
     },
     IndexValue {
         target: RegisterId,
@@ -336,7 +336,7 @@ pub enum InstructionKind {
         target: RegisterId,
         function: FunctionId,
         receiver_type: go_types::TypeId,
-        index: Vec[int],
+        index: Vec[isize],
     },
     MakeInterfaceMethodValue {
         target: RegisterId,
@@ -409,7 +409,7 @@ pub enum InstructionKind {
 }
 
 pub struct AggregateElement {
-    pub index: int,
+    pub index: isize,
     pub value: RegisterId,
 }
 
@@ -474,7 +474,7 @@ pub struct BytecodeFunction {
     pub name: string,
     pub signature: go_types::TypeId,
     pub register_types: Vec[go_types::TypeId],
-    pub place_count: int,
+    pub place_count: isize,
     pub locals: Vec[Local],
     pub captures: Vec[LocalId],
     pub parameters: Vec[LocalId],
@@ -551,8 +551,8 @@ pub struct LowerDiagnostic {
     pub package_id: Option[go_types::PackageId],
     pub function: Option[go_types::ObjectId],
     pub file: Option[syntax::FileId],
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
     pub message: string,
 }
 
@@ -564,6 +564,6 @@ pub struct LowerResult {
 pub struct VerifyDiagnostic {
     pub function: Option[FunctionId],
     pub block: Option[BlockId],
-    pub instruction: int,
+    pub instruction: isize,
     pub message: string,
 }

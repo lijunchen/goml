@@ -242,7 +242,7 @@ fn expand_or_pattern_rows(rows: Vec[PatternRow], source: string) -> Option[Vec[P
     }
 }
 
-fn or_pattern_column_index(row: PatternRow, source: string) -> Option[int] {
+fn or_pattern_column_index(row: PatternRow, source: string) -> Option[isize] {
     for index in 0..row.columns.len() {
         let column = row.columns[index];
         if column.source == source {
@@ -255,7 +255,7 @@ fn or_pattern_column_index(row: PatternRow, source: string) -> Option[int] {
     Option::None
 }
 
-fn pattern_source_count(rows: Vec[PatternRow], source: string) -> int {
+fn pattern_source_count(rows: Vec[PatternRow], source: string) -> isize {
     let mut count = 0;
     for row in rows {
         for column in row.columns {

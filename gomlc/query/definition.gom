@@ -59,7 +59,7 @@ fn package_definition(value: Analysis, package_name: string) -> Option[Definitio
     Option::None
 }
 
-fn path_node_at(value: Analysis, offset: int) -> Option[SyntaxNode] {
+fn path_node_at(value: Analysis, offset: isize) -> Option[SyntaxNode] {
     node_at_kind(value.syntax, offset, cst::NodeKind::PATH)
 }
 
@@ -77,7 +77,7 @@ fn node_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
     result
 }
 
-fn path_prefix(values: Vec[SyntaxToken], end: int) -> string {
+fn path_prefix(values: Vec[SyntaxToken], end: isize) -> string {
     let builder = text::StringBuilder::new();
     for index in 0..end + 1 {
         if index > 0 {
@@ -124,7 +124,7 @@ fn canonical_path_at(
     value: Analysis,
     node: SyntaxNode,
     identifiers: Vec[SyntaxToken],
-    token_index: int,
+    token_index: isize,
 ) -> string {
     let raw = path_prefix(identifiers, token_index);
     if containing_use(value, node) {
@@ -192,7 +192,7 @@ fn symbol_definitions(
     }
 }
 
-fn identifier_index_at(identifiers: Vec[SyntaxToken], offset: int) -> Option[int] {
+fn identifier_index_at(identifiers: Vec[SyntaxToken], offset: isize) -> Option[isize] {
     for distance in 0..identifiers.len() {
         let index = identifiers.len() - 1 - distance;
         let token = identifiers[index];
@@ -203,7 +203,7 @@ fn identifier_index_at(identifiers: Vec[SyntaxToken], offset: int) -> Option[int
     Option::None
 }
 
-fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
+fn path_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let result: Vec[DefinitionResult] = Vec::from_array([]);
     match path_node_at(value, offset) {
         Some(node) => {
@@ -253,7 +253,7 @@ fn symbol_owner_matches(symbol: Symbol, owner: string) -> bool {
         || short_type_name(symbol_owner_name) == short_type_name(owner)
 }
 
-fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
+fn member_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let exact: Vec[DefinitionResult] = Vec::from_array([]);
     let fallback: Vec[DefinitionResult] = Vec::from_array([]);
     match token_at(value.syntax, offset) {
@@ -293,7 +293,7 @@ fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     }
 }
 
-fn containing_struct_literal(value: Analysis, offset: int) -> Option[SyntaxNode] {
+fn containing_struct_literal(value: Analysis, offset: isize) -> Option[SyntaxNode] {
     node_at_kind(value.syntax, offset, cst::NodeKind::EXPR_STRUCT_LITERAL)
 }
 
@@ -319,7 +319,7 @@ fn struct_literal_owner(value: Analysis, literal: SyntaxNode) -> Option[string] 
     }
 }
 
-fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
+fn struct_field_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let exact: Vec[DefinitionResult] = Vec::from_array([]);
     let fallback: Vec[DefinitionResult] = Vec::from_array([]);
     match token_at(value.syntax, offset) {
@@ -357,7 +357,9 @@ fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResul
     }
 }
 
-fn local_name_token(syntax: SyntaxIndex, start: int, end: int, name: string) -> Option[SyntaxToken] {
+fn local_name_token(syntax: SyntaxIndex, start: isize, end: isize, name: string) -> Option[
+    SyntaxToken,
+] {
     let mut index = token_index_at_or_after(syntax, start);
     while index < syntax.tokens.len() && syntax.tokens[index].start < end {
         let token = syntax.tokens[index];
@@ -480,14 +482,16 @@ fn callable_name(value: tast::Callable) -> string {
     }
 }
 
-fn token_text(value: Analysis, offset: int) -> Option[string] {
+fn token_text(value: Analysis, offset: isize) -> Option[string] {
     match token_at(value.syntax, offset) {
         Some(token) => Option::Some(token.text),
         None => Option::None,
     }
 }
 
-fn target_symbol_name(value: Analysis, target: tast::ReferenceTarget, offset: int) -> Option[string] {
+fn target_symbol_name(value: Analysis, target: tast::ReferenceTarget, offset: isize) -> Option[
+    string,
+] {
     match target {
         Local(_) => Option::None,
         Definition(_) => match token_text(value, offset) {
@@ -504,7 +508,7 @@ fn target_symbol_name(value: Analysis, target: tast::ReferenceTarget, offset: in
     }
 }
 
-fn semantic_definition(value: Analysis, offset: int) -> Option[DefinitionResult] {
+fn semantic_definition(value: Analysis, offset: isize) -> Option[DefinitionResult] {
     let mut reference: Option[tast::ReferenceFact] = Option::None;
     let mut width = 2147483647;
     for fact in value.checked.typeck_results.references {
@@ -535,7 +539,7 @@ fn semantic_definition(value: Analysis, offset: int) -> Option[DefinitionResult]
     }
 }
 
-pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
+pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let result: Vec[DefinitionResult] = Vec::from_array([]);
     for definition in comptime_derive_definitions(value, offset) {
         push_definition(result, definition)
@@ -591,7 +595,7 @@ pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     result
 }
 
-pub fn goto_definition(value: Analysis, offset: int) -> Option[DefinitionResult] {
+pub fn goto_definition(value: Analysis, offset: isize) -> Option[DefinitionResult] {
     let values = goto_definitions(value, offset);
     if values.is_empty() {
         Option::None

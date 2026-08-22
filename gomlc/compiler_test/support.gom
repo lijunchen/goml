@@ -92,7 +92,7 @@ fn bytes_text(value: bytes::Bytes) -> string {
     }
 }
 
-fn assert_bytes(actual: bytes::Bytes, expected: Vec[uint8]) -> unit {
+fn assert_bytes(actual: bytes::Bytes, expected: Vec[u8]) -> unit {
     let values = actual.to_vec();
     testing::assert(values.len() == expected.len());
     for index in 0..expected.len() {
@@ -126,7 +126,7 @@ fn copy_directory(source: string, target: string) -> unit {
     }
 }
 
-fn execute_go(source: string, expected: string, suite: string, shard: int, index: int) -> string {
+fn execute_go(source: string, expected: string, suite: string, shard: isize, index: isize) -> string {
     let directory = path::join(
         path::join(path::join(repository_root(), "gomlc/_artifact/test-work/compiler"), suite),
         shard.to_string() + "-" + index.to_string(),
@@ -230,7 +230,7 @@ fn assert_text(actual: string, expected_path: string, source: string) -> unit {
     }
 }
 
-pub fn assert_e2e_suite(kind: string, shard: int, shard_count: int) -> unit {
+pub fn assert_e2e_suite(kind: string, shard: isize, shard_count: isize) -> unit {
     let directory = path::join(path::join(compiler_tests_root(), "e2e"), kind);
     let sources = Vec::new();
     collect_main_sources(directory, sources);
@@ -284,7 +284,7 @@ pub fn assert_e2e_counts() -> unit {
     testing::assert_eq(bad.len(), 80)
 }
 
-pub fn assert_diagnostic_suite(name: string, expected_count: int) -> unit {
+pub fn assert_diagnostic_suite(name: string, expected_count: isize) -> unit {
     let sources = collect_diagnostic_sources(path::join(compiler_tests_root(), name));
     testing::assert_eq(sources.len(), expected_count);
     let compiler = compiler_driver::source_compiler_without_standard();
@@ -335,7 +335,7 @@ fn collect_diagnostic_kinds(name: string, result: collections::HashSet[string]) 
     }
 }
 
-pub fn assert_distinct_type_diagnostic_count(minimum: int) -> unit {
+pub fn assert_distinct_type_diagnostic_count(minimum: isize) -> unit {
     let kinds: collections::HashSet[string] = collections::HashSet::new();
     collect_diagnostic_kinds("typer", kinds);
     collect_diagnostic_kinds("trait_impl", kinds);
@@ -412,7 +412,7 @@ pub fn assert_module_count() -> unit {
     testing::assert_eq(module_projects().len(), 66)
 }
 
-pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
+pub fn assert_module_shard(shard: isize, shard_count: isize) -> unit {
     let index = Ref::new(0);
     for source_project in module_projects() {
         let current = index.get();
@@ -524,7 +524,7 @@ pub fn assert_standard_binary_stdio() -> unit {
     let target = path::join(project, "_artifact");
     let built = project_command("build", project, target);
     assert_command_success(built, "stdio project build");
-    let input: Vec[uint8] = Vec::new();
+    let input: Vec[u8] = Vec::new();
     input.push(0);
     input.push(127);
     input.push(128);
@@ -570,7 +570,7 @@ pub fn assert_crasher_counts() -> unit {
     testing::assert_eq(crasher_sources(".out").len(), 56)
 }
 
-pub fn assert_crasher_diagnostic_shard(shard: int, shard_count: int) -> unit {
+pub fn assert_crasher_diagnostic_shard(shard: isize, shard_count: isize) -> unit {
     let compiler = compiler_driver::source_compiler_without_standard();
     let index = Ref::new(0);
     for source_path in crasher_sources(".diag") {
@@ -590,7 +590,7 @@ pub fn assert_crasher_diagnostic_shard(shard: int, shard_count: int) -> unit {
     }
 }
 
-pub fn assert_crasher_runtime_shard(shard: int, shard_count: int) -> unit {
+pub fn assert_crasher_runtime_shard(shard: isize, shard_count: isize) -> unit {
     let compiler = compiler_driver::source_compiler_without_standard();
     let index = Ref::new(0);
     for source_path in crasher_sources(".out") {

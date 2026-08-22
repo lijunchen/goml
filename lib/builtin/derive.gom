@@ -52,7 +52,7 @@ fn derive_and(left: MetaExpr, right: MetaExpr) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn derive_struct_type_seen(input: DeriveInput, index: int, ty: MetaType) -> bool {
+fn derive_struct_type_seen(input: DeriveInput, index: isize, ty: MetaType) -> bool {
     let mut previous = 0;
     while previous < index {
         if meta_type_equal(derive_field_type(input, previous), ty) {
@@ -64,7 +64,7 @@ fn derive_struct_type_seen(input: DeriveInput, index: int, ty: MetaType) -> bool
 }
 
 #[comptime_derive]
-fn derive_enum_type_seen(input: DeriveInput, variant_index: int, field_index: int, ty: MetaType) -> bool {
+fn derive_enum_type_seen(input: DeriveInput, variant_index: isize, field_index: isize, ty: MetaType) -> bool {
     let mut previous_variant = 0;
     while previous_variant < variant_index {
         let mut previous_field = 0;
@@ -411,7 +411,7 @@ fn derive_hash_step(input: DeriveInput, value: MetaExpr) -> MetaExpr {
         meta_expr_binary(
             2,
             meta_expr_var("h"),
-            meta_expr_integer("1099511628211", meta_type_call_site("uint64")),
+            meta_expr_integer("1099511628211", meta_type_call_site("u64")),
         ),
         derive_trait_call(input, "Hash", "hash", derive_expr_list_one(value)),
     )
@@ -419,7 +419,7 @@ fn derive_hash_step(input: DeriveInput, value: MetaExpr) -> MetaExpr {
 
 #[comptime_derive]
 fn derive_hash_initial() -> MetaExpr {
-    meta_expr_integer("14695981039346656037", meta_type_call_site("uint64"))
+    meta_expr_integer("14695981039346656037", meta_type_call_site("u64"))
 }
 
 #[comptime_derive]
@@ -494,7 +494,7 @@ pub fn derive_hash(input: DeriveInput) -> DeriveOutput {
     };
     derive_output_add_method(
         output,
-        meta_method("hash", derive_self_params(input), meta_type_call_site("uint64"), body),
+        meta_method("hash", derive_self_params(input), meta_type_call_site("u64"), body),
     );
     output
 }
@@ -721,7 +721,7 @@ fn derive_enum_tag(input: DeriveInput, value: MetaExpr) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn derive_enum_same_variant_body(input: DeriveInput, variant: int, partial: bool) -> MetaArm {
+fn derive_enum_same_variant_body(input: DeriveInput, variant: isize, partial: bool) -> MetaArm {
     let kind = derive_variant_kind(input, variant);
     let left_positional = meta_pattern_list_new();
     let right_positional = meta_pattern_list_new();

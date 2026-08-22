@@ -131,7 +131,7 @@ fn write_files(values: Vec[FormattedFile]) -> Result[unit, string] {
     Result::Ok(())
 }
 
-fn run(options: Options) -> int {
+fn run(options: Options) -> isize {
     let files = match format_files(options.paths) {
         Ok(values) => values,
         Err(error) => {

@@ -10,12 +10,12 @@ pub struct FormatError {
 }
 
 struct FormatOmission {
-    start: int,
-    end: int,
+    start: isize,
+    end: isize,
 }
 
 fn canonical_file_ending(value: string) -> string {
-    let end: Ref[int] = Ref::new(value.byte_len());
+    let end: Ref[isize] = Ref::new(value.byte_len());
     while end.get() > 0 {
         let byte = value.byte_get(end.get() - 1);
         if byte == b'\n' || byte == b'\r' {
@@ -31,7 +31,7 @@ fn canonical_file_ending(value: string) -> string {
     }
 }
 
-fn format_next_non_trivia(tokens: Vec[lexer::Token], start: int) -> Option[lexer::TokenKind] {
+fn format_next_non_trivia(tokens: Vec[lexer::Token], start: isize) -> Option[lexer::TokenKind] {
     for index in start..tokens.len() {
         if lexer::token_is_trivia(tokens[index].kind) {} else {
             return Option::Some(tokens[index].kind)
@@ -47,7 +47,7 @@ fn format_closing_delimiter(kind: lexer::TokenKind) -> bool {
     }
 }
 
-fn push_format_omission(values: Vec[FormatOmission], start: int, end: int) -> unit {
+fn push_format_omission(values: Vec[FormatOmission], start: isize, end: isize) -> unit {
     values.push(FormatOmission { start, end })
 }
 
@@ -71,7 +71,7 @@ fn collect_statement_omissions(
 
 fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> unit {
     let block_nodes = meaningful_block_nodes(node);
-    let node_index: Ref[int] = Ref::new(0);
+    let node_index: Ref[isize] = Ref::new(0);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
@@ -154,7 +154,7 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
     output.finish()
 }
 
-fn format_source_with_width(source: string, line_width: int) -> Result[string, FormatError] {
+fn format_source_with_width(source: string, line_width: isize) -> Result[string, FormatError] {
     let parsed = parser::parse(source);
     if !parsed.diagnostics.is_empty() {
         Result::Err(FormatError { diagnostics: parsed.diagnostics })

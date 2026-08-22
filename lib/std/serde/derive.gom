@@ -147,7 +147,7 @@ fn renamed_attribute(attribute: MetaAttribute, fallback: string) -> string {
 }
 
 #[comptime_derive]
-fn field_name(input: DeriveInput, field: int) -> string {
+fn field_name(input: DeriveInput, field: isize) -> string {
     let mut result = derive_field_name(input, field);
     let mut index = 0;
     while index < derive_field_attribute_count(input, field) {
@@ -158,7 +158,7 @@ fn field_name(input: DeriveInput, field: int) -> string {
 }
 
 #[comptime_derive]
-fn variant_name(input: DeriveInput, variant: int) -> string {
+fn variant_name(input: DeriveInput, variant: isize) -> string {
     let mut result = derive_variant_name(input, variant);
     let mut index = 0;
     while index < derive_variant_attribute_count(input, variant) {
@@ -169,7 +169,7 @@ fn variant_name(input: DeriveInput, variant: int) -> string {
 }
 
 #[comptime_derive]
-fn variant_field_name(input: DeriveInput, variant: int, field: int) -> string {
+fn variant_field_name(input: DeriveInput, variant: isize, field: isize) -> string {
     let mut result = derive_variant_field_name(input, variant, field);
     let mut index = 0;
     while index < derive_variant_field_attribute_count(input, variant, field) {
@@ -183,7 +183,7 @@ fn variant_field_name(input: DeriveInput, variant: int, field: int) -> string {
 }
 
 #[comptime_derive]
-fn type_seen(input: DeriveInput, variant: int, field: int, ty: MetaType) -> bool {
+fn type_seen(input: DeriveInput, variant: isize, field: isize, ty: MetaType) -> bool {
     if derive_item_kind(input) == 0 {
         let mut previous = 0;
         while previous < field {
@@ -377,7 +377,7 @@ pub fn derive_serialize(input: DeriveInput) -> DeriveOutput {
 #[comptime_derive]
 fn deserialize_direct_struct_field_branch(
     input: DeriveInput,
-    field: int,
+    field: isize,
     binding: string,
     next: string,
     otherwise: MetaExpr,
@@ -414,7 +414,7 @@ fn deserialize_direct_struct_field_branch(
 }
 
 #[comptime_derive]
-fn direct_field_binding(input: DeriveInput, field: int) -> string {
+fn direct_field_binding(input: DeriveInput, field: isize) -> string {
     "__goml_serde_field_" + derive_field_name(input, field)
 }
 
@@ -512,13 +512,13 @@ fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn direct_variant_field_binding(input: DeriveInput, variant: int, field: int) -> string {
+fn direct_variant_field_binding(input: DeriveInput, variant: isize, field: isize) -> string {
     "__goml_serde_variant_" + derive_variant_name(input, variant) + "_field_"
         + derive_variant_field_name(input, variant, field)
 }
 
 #[comptime_derive]
-fn direct_variant_field_label(input: DeriveInput, variant: int, field: int) -> string {
+fn direct_variant_field_label(input: DeriveInput, variant: isize, field: isize) -> string {
     if derive_variant_kind(input, variant) == 2 {
         variant_field_name(input, variant, field)
     } else {
@@ -529,8 +529,8 @@ fn direct_variant_field_label(input: DeriveInput, variant: int, field: int) -> s
 #[comptime_derive]
 fn deserialize_direct_variant_field_branch(
     input: DeriveInput,
-    variant: int,
-    field: int,
+    variant: isize,
+    field: isize,
     next: string,
     otherwise: MetaExpr,
 ) -> MetaExpr {
@@ -572,7 +572,7 @@ fn deserialize_direct_variant_field_branch(
 }
 
 #[comptime_derive]
-fn deserialize_variant_body(input: DeriveInput, variant: int) -> MetaExpr {
+fn deserialize_variant_body(input: DeriveInput, variant: isize) -> MetaExpr {
     let block = meta_block_new();
     let kind = derive_variant_kind(input, variant);
     let field_count = derive_variant_field_count(input, variant);

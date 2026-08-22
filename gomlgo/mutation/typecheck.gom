@@ -12,12 +12,12 @@ use std::json;
 use std::path;
 
 pub struct TypecheckSummary {
-    pub seeds: int,
-    pub cases: int,
-    pub failures: int,
+    pub seeds: isize,
+    pub cases: isize,
+    pub failures: isize,
 }
 
-fn replace_range(value: bytes::Bytes, start: int, end: int, replacement: string) -> bytes::Bytes {
+fn replace_range(value: bytes::Bytes, start: isize, end: isize, replacement: string) -> bytes::Bytes {
     insert_bytes(delete_range(value, start, end), start, bytes::Bytes::from_string(replacement))
 }
 
@@ -168,7 +168,7 @@ fn save_typecheck_failure(
     fs::write_file(path::join(directory, "diff.txt"), message)
 }
 
-pub fn run_typecheck(root: string, output: string, seed_limit: int) -> Result[
+pub fn run_typecheck(root: string, output: string, seed_limit: isize) -> Result[
     TypecheckSummary,
     string,
 ] {

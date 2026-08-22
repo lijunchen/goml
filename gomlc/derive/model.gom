@@ -569,7 +569,7 @@ pub struct DeriveRequest {
 
 pub struct DeriveState {
     pub request: DeriveRequest,
-    int_width: int,
+    int_width: isize,
     definition_package: Ref[string],
     pub types: Vec[ast::TypeExpr],
     pub type_lists: Vec[Vec[ast::TypeExpr]],
@@ -587,11 +587,11 @@ pub struct DeriveState {
     pub generic_lists: Vec[Vec[(string, Vec[ast::TraitRef])]],
     pub methods: Vec[ast::Function],
     pub outputs: Vec[ast::ImplBlock],
-    pub fresh: Ref[int],
-    pub operations: Ref[int],
+    pub fresh: Ref[isize],
+    pub operations: Ref[isize],
 }
 
-pub fn new_state(request: DeriveRequest, int_width: int) -> DeriveState {
+pub fn new_state(request: DeriveRequest, int_width: isize) -> DeriveState {
     DeriveState {
         request,
         int_width,
@@ -645,29 +645,29 @@ fn named_type(value: string, value_span: ast::Span) -> ast::TypeExpr {
         ast::TypeExpr::Unit
     } else if value == BOOL_TYPE_NAME {
         ast::TypeExpr::Bool
-    } else if value == INT_TYPE_NAME || value == "int" {
+    } else if value == INT_TYPE_NAME {
         ast::TypeExpr::Int
-    } else if value == "i8" || value == "int8" {
+    } else if value == "i8" {
         ast::TypeExpr::Int8
-    } else if value == "i16" || value == "int16" {
+    } else if value == "i16" {
         ast::TypeExpr::Int16
-    } else if value == "i32" || value == "int32" {
+    } else if value == "i32" {
         ast::TypeExpr::Int32
-    } else if value == "i64" || value == "int64" {
+    } else if value == "i64" {
         ast::TypeExpr::Int64
-    } else if value == "usize" || value == "uint" {
+    } else if value == "usize" {
         ast::TypeExpr::Uint
-    } else if value == "u8" || value == "uint8" || value == "byte" {
+    } else if value == "u8" || value == "byte" {
         ast::TypeExpr::Uint8
-    } else if value == "u16" || value == "uint16" {
+    } else if value == "u16" {
         ast::TypeExpr::Uint16
-    } else if value == "u32" || value == "uint32" {
+    } else if value == "u32" {
         ast::TypeExpr::Uint32
-    } else if value == "u64" || value == "uint64" {
+    } else if value == "u64" {
         ast::TypeExpr::Uint64
-    } else if value == "f32" || value == "float32" {
+    } else if value == "f32" {
         ast::TypeExpr::Float32
-    } else if value == "f64" || value == "float64" {
+    } else if value == "f64" {
         ast::TypeExpr::Float64
     } else if value == STRING_TYPE_NAME {
         ast::TypeExpr::String
@@ -712,7 +712,7 @@ fn target_type(value: DeriveItem, value_span: ast::Span) -> ast::TypeExpr {
     }
 }
 
-fn meta(kind: string, id: int) -> ctir::CtValue {
+fn meta(kind: string, id: isize) -> ctir::CtValue {
     ctir::CtValue::Meta { kind, id }
 }
 
@@ -720,11 +720,11 @@ fn unit_value() -> ctir::CtValue {
     ctir::CtValue::Unit
 }
 
-fn int_value(state: DeriveState, value: int) -> ctir::CtValue {
-    ctir::CtValue::Integer { signed: true, width: state.int_width, bits: value.to_uint64() }
+fn int_value(state: DeriveState, value: isize) -> ctir::CtValue {
+    ctir::CtValue::Integer { signed: true, width: state.int_width, bits: value.to_u64() }
 }
 
-fn argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::CtValue, string] {
+fn argument(values: Vec[ctir::CtValue], index: isize) -> Result[ctir::CtValue, string] {
     if index < 0 || index >= values.len() {
         Result::Err("derive intrinsic argument is missing")
     } else {
@@ -732,28 +732,28 @@ fn argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::CtValue, str
     }
 }
 
-fn int_argument(values: Vec[ctir::CtValue], index: int) -> Result[int, string] {
+fn int_argument(values: Vec[ctir::CtValue], index: isize) -> Result[isize, string] {
     match argument(values, index)? {
-        ctir::CtValue::Integer { bits, .. } => Result::Ok(bits.to_int()),
+        ctir::CtValue::Integer { bits, .. } => Result::Ok(bits.to_isize()),
         _ => Result::Err("derive intrinsic expects an integer argument"),
     }
 }
 
-fn bool_argument(values: Vec[ctir::CtValue], index: int) -> Result[bool, string] {
+fn bool_argument(values: Vec[ctir::CtValue], index: isize) -> Result[bool, string] {
     match argument(values, index)? {
         ctir::CtValue::Bool(value) => Result::Ok(value),
         _ => Result::Err("derive intrinsic expects a boolean argument"),
     }
 }
 
-fn string_argument(values: Vec[ctir::CtValue], index: int) -> Result[string, string] {
+fn string_argument(values: Vec[ctir::CtValue], index: isize) -> Result[string, string] {
     match argument(values, index)? {
         ctir::CtValue::String(value) => Result::Ok(value),
         _ => Result::Err("derive intrinsic expects a string argument"),
     }
 }
 
-fn handle_argument(values: Vec[ctir::CtValue], index: int, kind: string) -> Result[int, string] {
+fn handle_argument(values: Vec[ctir::CtValue], index: isize, kind: string) -> Result[isize, string] {
     match argument(values, index)? {
         ctir::CtValue::Meta { kind: actual, id } => if actual == kind {
             Result::Ok(id)
@@ -764,7 +764,7 @@ fn handle_argument(values: Vec[ctir::CtValue], index: int, kind: string) -> Resu
     }
 }
 
-fn checked_index(index: int, len: int, description: string) -> Result[int, string] {
+fn checked_index(index: isize, len: isize, description: string) -> Result[isize, string] {
     if index < 0 || index >= len {
         Result::Err(description + " index " + index.to_string() + " is out of bounds")
     } else {
@@ -796,7 +796,7 @@ fn push_pattern(state: DeriveState, value: ast::Pat) -> ctir::CtValue {
     meta(META_PATTERN_NAME, id)
 }
 
-fn type_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Result[
+fn type_value(state: DeriveState, values: Vec[ctir::CtValue], index: isize) -> Result[
     ast::TypeExpr,
     string,
 ] {
@@ -805,7 +805,7 @@ fn type_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Res
     Result::Ok(state.types[id])
 }
 
-fn expr_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Result[
+fn expr_value(state: DeriveState, values: Vec[ctir::CtValue], index: isize) -> Result[
     ast::Expr,
     string,
 ] {
@@ -814,7 +814,7 @@ fn expr_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Res
     Result::Ok(state.exprs[id])
 }
 
-fn pattern_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Result[
+fn pattern_value(state: DeriveState, values: Vec[ctir::CtValue], index: isize) -> Result[
     ast::Pat,
     string,
 ] {
@@ -823,7 +823,7 @@ fn pattern_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> 
     Result::Ok(state.patterns[id])
 }
 
-fn attribute_handle(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Result[
+fn attribute_handle(state: DeriveState, values: Vec[ctir::CtValue], index: isize) -> Result[
     ast::Attribute,
     string,
 ] {
@@ -832,17 +832,17 @@ fn attribute_handle(state: DeriveState, values: Vec[ctir::CtValue], index: int) 
     Result::Ok(state.attributes[id])
 }
 
-fn struct_field(value: ast::StructDef, index: int) -> Result[(string, ast::TypeExpr), string] {
+fn struct_field(value: ast::StructDef, index: isize) -> Result[(string, ast::TypeExpr), string] {
     let index = checked_index(index, value.fields.len(), "derive field")?;
     Result::Ok(value.fields[index])
 }
 
-fn enum_variant(value: ast::EnumDef, index: int) -> Result[ast::EnumVariant, string] {
+fn enum_variant(value: ast::EnumDef, index: isize) -> Result[ast::EnumVariant, string] {
     let index = checked_index(index, value.variants.len(), "derive variant")?;
     Result::Ok(value.variants[index])
 }
 
-fn variant_field_count(value: ast::EnumVariant) -> int {
+fn variant_field_count(value: ast::EnumVariant) -> isize {
     match value.fields {
         ast::EnumVariantFields::Unit => 0,
         ast::EnumVariantFields::Tuple(values) => values.len(),
@@ -850,7 +850,7 @@ fn variant_field_count(value: ast::EnumVariant) -> int {
     }
 }
 
-fn variant_field(value: ast::EnumVariant, index: int) -> Result[(string, ast::TypeExpr), string] {
+fn variant_field(value: ast::EnumVariant, index: isize) -> Result[(string, ast::TypeExpr), string] {
     match value.fields {
         ast::EnumVariantFields::Unit => Result::Err("unit variant has no fields"),
         ast::EnumVariantFields::Tuple(values) => {
@@ -864,7 +864,7 @@ fn variant_field(value: ast::EnumVariant, index: int) -> Result[(string, ast::Ty
     }
 }
 
-fn attribute_value(values: Vec[ast::Attribute], index: int, description: string, text_value: bool) -> Result[
+fn attribute_value(values: Vec[ast::Attribute], index: isize, description: string, text_value: bool) -> Result[
     ctir::CtValue,
     string,
 ] {
@@ -876,7 +876,7 @@ fn attribute_value(values: Vec[ast::Attribute], index: int, description: string,
     }
 }
 
-fn selected_attribute(values: Vec[ast::Attribute], index: int, description: string) -> Result[
+fn selected_attribute(values: Vec[ast::Attribute], index: isize, description: string) -> Result[
     ast::Attribute,
     string,
 ] {
@@ -1048,7 +1048,7 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
     }
 }
 
-fn unary_op(value: int) -> Result[ast::UnaryOp, string] {
+fn unary_op(value: isize) -> Result[ast::UnaryOp, string] {
     match value {
         0 => Result::Ok(ast::UnaryOp::Neg),
         1 => Result::Ok(ast::UnaryOp::Not),
@@ -1057,7 +1057,7 @@ fn unary_op(value: int) -> Result[ast::UnaryOp, string] {
     }
 }
 
-fn binary_op(value: int) -> Result[ast::BinaryOp, string] {
+fn binary_op(value: isize) -> Result[ast::BinaryOp, string] {
     match value {
         0 => Result::Ok(ast::BinaryOp::Add),
         1 => Result::Ok(ast::BinaryOp::Sub),
@@ -1418,30 +1418,18 @@ fn type_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 state,
                 named_type(
                     if value == UNIT_TYPE_NAME || value == BOOL_TYPE_NAME || value == INT_TYPE_NAME
-                        || value == "int"
                         || value == "i8"
                         || value == "i16"
                         || value == "i32"
                         || value == "i64"
-                        || value == "int8"
-                        || value == "int16"
-                        || value == "int32"
-                        || value == "int64"
                         || value == "usize"
-                        || value == "uint"
                         || value == "u8"
-                        || value == "uint8"
                         || value == "byte"
                         || value == "u16"
-                        || value == "uint16"
                         || value == "u32"
-                        || value == "uint32"
                         || value == "u64"
-                        || value == "uint64"
                         || value == "f32"
-                        || value == "float32"
                         || value == "f64"
-                        || value == "float64"
                         || value == STRING_TYPE_NAME
                         || value == "char" {
                         value

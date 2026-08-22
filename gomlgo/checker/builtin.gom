@@ -198,7 +198,7 @@ fn record_builtin_signature(
     reference: BuiltinReference,
     arguments: Vec[syntax::NodeId],
     result: Operand,
-    ellipsis: int,
+    ellipsis: isize,
 ) -> unit {
     let parameter_types: Vec[go_types::TypeId] = Vec::from_array([]);
     let expanded = if arguments.len() == 1 {
@@ -412,9 +412,9 @@ fn void_operand(state: CheckState, node: syntax::NodeId) -> Operand {
 fn check_builtin_count(
     state: CheckState,
     node: syntax::NodeId,
-    actual: int,
-    minimum: int,
-    maximum: int,
+    actual: isize,
+    minimum: isize,
+    maximum: isize,
 ) -> bool {
     if actual < minimum || (maximum >= 0 && actual > maximum) {
         let (position, call) = match syntax::get_node(state.syntax.arena, node) {
@@ -603,7 +603,7 @@ fn length_builtin_argument(state: CheckState, scope: go_types::ScopeId, node: sy
     }
 }
 
-fn len_cap_classification(state: CheckState, name: string, value: go_types::TypeId) -> int64 {
+fn len_cap_classification(state: CheckState, name: string, value: go_types::TypeId) -> i64 {
     match underlying_kind(state, value) {
         Some(go_types::TypeKind::Array { length, element: _ }) => length,
         Some(go_types::TypeKind::Pointer { element }) => match underlying_kind(state, element) {
@@ -713,7 +713,7 @@ fn check_len_cap(
         return invalid_operand(state)
     } else {};
     let mut valid = false;
-    let mut constant_length: Option[int64] = Option::None;
+    let mut constant_length: Option[i64] = Option::None;
     match underlying_kind(state, argument.type_id) {
         Some(go_types::TypeKind::Array { length, element: _ }) => {
             valid = true;
@@ -743,7 +743,7 @@ fn check_len_cap(
             valid = true;
             match argument.value {
                 Some(constant::ConstValue::String(value)) => {
-                    constant_length = Option::Some(value.byte_len().to_int64());
+                    constant_length = Option::Some(value.byte_len().to_i64());
                 },
                 _ => {},
             }
@@ -913,7 +913,7 @@ fn check_new_builtin(
     }
 }
 
-fn go_version_at_least(state: CheckState, node: syntax::NodeId, required_minor: int) -> bool {
+fn go_version_at_least(state: CheckState, node: syntax::NodeId, required_minor: isize) -> bool {
     let file = node_file(state, node);
     let mut version = state.config.go_version;
     for fact in state.info.file_versions {
@@ -1663,7 +1663,7 @@ fn check_append_builtin(
     scope: go_types::ScopeId,
     node: syntax::NodeId,
     arguments: Vec[syntax::NodeId],
-    ellipsis: int,
+    ellipsis: isize,
 ) -> Operand {
     if !check_builtin_count(state, node, arguments.len(), 1, -1) {
         return invalid_operand(state)
@@ -2548,7 +2548,7 @@ fn check_real_imag_builtin(
     }
 }
 
-fn unsafe_constant_operand(state: CheckState, value: int64) -> Operand {
+fn unsafe_constant_operand(state: CheckState, value: i64) -> Operand {
     Operand {
         type_id: basic_type_id(state, "uintptr"),
         value: Option::Some(constant::ConstValue::Int(constant::integer_from_int64(value))),
@@ -2558,13 +2558,13 @@ fn unsafe_constant_operand(state: CheckState, value: int64) -> Operand {
 }
 
 fn common_type_parameter_size(state: CheckState, value: go_types::TypeId, alignment: bool) -> Option[
-    int64,
+    i64,
 ] {
     let terms = go_types::type_set_specific_types(state.world, value);
     if terms.is_empty() {
         return Option::None
     } else {};
-    let mut result: Option[int64] = Option::None;
+    let mut result: Option[i64] = Option::None;
     for term in terms {
         let candidate = if alignment {
             go_types::alignof(state.world, term, state.config.sizes)
@@ -2633,7 +2633,7 @@ fn type_has_variable_size(
 fn invalid_recursive_generic_instance_in_type(
     state: CheckState,
     value: go_types::TypeId,
-    visited: Vec[int],
+    visited: Vec[isize],
 ) -> Option[go_types::ObjectId] {
     let resolved = go_types::unalias(state.world, value);
     for existing in visited {
@@ -2698,7 +2698,7 @@ fn check_size_align_initializer_function_body(
     state: CheckState,
     node: syntax::NodeId,
     signature: go_types::TypeId,
-    value: int64,
+    value: i64,
 ) -> unit {
     if state.active_value_objects.is_empty() {
         return
@@ -2991,9 +2991,9 @@ fn record_offsetof_selection(state: CheckState, node: syntax::NodeId, receiver: 
     }
 }
 
-fn field_path_offset(state: CheckState, receiver: go_types::TypeId, path: Vec[int]) -> Option[int64] {
+fn field_path_offset(state: CheckState, receiver: go_types::TypeId, path: Vec[isize]) -> Option[i64] {
     let mut current = receiver;
-    let mut offset = 0.to_int64();
+    let mut offset = 0.to_i64();
     let mut first = true;
     for index in path {
         match go_types::get_type(state.world, core_type_id(state, current)) {
@@ -3011,7 +3011,7 @@ fn field_path_offset(state: CheckState, receiver: go_types::TypeId, path: Vec[in
                 return Option::None
             } else {
                 let offsets = go_types::offsets_of(state.world, fields, state.config.sizes);
-                if offsets[index] < 0 || offset > 9223372036854775807.to_int64() - offsets[index] {
+                if offsets[index] < 0 || offset > 9223372036854775807.to_i64() - offsets[index] {
                     return Option::None
                 } else {
                     offset += offsets[index];
@@ -3646,7 +3646,7 @@ fn check_builtin_call(
     node: syntax::NodeId,
     reference: BuiltinReference,
     arguments: Vec[syntax::NodeId],
-    ellipsis: int,
+    ellipsis: isize,
 ) -> Operand {
     record_builtin_reference(state, reference);
     if ellipsis >= 0 && reference.name != APPEND_BUILTIN {

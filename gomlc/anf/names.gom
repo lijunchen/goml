@@ -2,7 +2,7 @@ package anf;
 
 use module::lift;
 
-fn parse_digits(value: string, start: int) -> int {
+fn parse_digits(value: string, start: isize) -> isize {
     let mut result = 0;
     for index in start..value.byte_len() {
         let byte = value.byte_get(index);
@@ -32,7 +32,7 @@ fn parse_digits(value: string, start: int) -> int {
     result
 }
 
-fn trailing_number(value: string) -> Option[int] {
+fn trailing_number(value: string) -> Option[isize] {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return Option::None
@@ -61,7 +61,7 @@ fn trailing_number(value: string) -> Option[int] {
     }
 }
 
-fn observe_name(maximum: Ref[int], name: string) -> unit {
+fn observe_name(maximum: Ref[isize], name: string) -> unit {
     match trailing_number(name) {
         Some(value) => if value > maximum.get() {
             maximum.set(value)
@@ -70,20 +70,20 @@ fn observe_name(maximum: Ref[int], name: string) -> unit {
     }
 }
 
-fn observe_exprs(maximum: Ref[int], values: Vec[lift::Expr]) -> unit {
+fn observe_exprs(maximum: Ref[isize], values: Vec[lift::Expr]) -> unit {
     for value in values {
         observe_expr(maximum, value)
     }
 }
 
-fn observe_optional_expr(maximum: Ref[int], value: Option[lift::Expr]) -> unit {
+fn observe_optional_expr(maximum: Ref[isize], value: Option[lift::Expr]) -> unit {
     match value {
         Some(value) => observe_expr(maximum, value),
         None => (),
     }
 }
 
-fn observe_block(maximum: Ref[int], value: lift::Block) -> unit {
+fn observe_block(maximum: Ref[isize], value: lift::Block) -> unit {
     for stmt in value.stmts {
         observe_name(maximum, stmt.name);
         observe_expr(maximum, stmt.value)
@@ -91,7 +91,7 @@ fn observe_block(maximum: Ref[int], value: lift::Block) -> unit {
     observe_optional_expr(maximum, value.tail)
 }
 
-fn observe_expr(maximum: Ref[int], value: lift::Expr) -> unit {
+fn observe_expr(maximum: Ref[isize], value: lift::Expr) -> unit {
     match value {
         Constr { constructor: _, args, ty: _ } => observe_exprs(maximum, args),
         Tuple { items, ty: _ } | Array { items, ty: _ } => {
@@ -164,7 +164,7 @@ fn observe_expr(maximum: Ref[int], value: lift::Expr) -> unit {
     }
 }
 
-fn initial_counter(value: lift::File) -> int {
+fn initial_counter(value: lift::File) -> isize {
     let maximum = Ref::new(-1);
     for function in value.functions {
         for param in function.params {

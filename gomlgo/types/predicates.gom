@@ -709,7 +709,7 @@ fn is_pointer_type(world: World, value: TypeId) -> bool {
     }
 }
 
-fn slice_array_conversion_minor(world: World, source: TypeId, target: TypeId) -> int {
+fn slice_array_conversion_minor(world: World, source: TypeId, target: TypeId) -> isize {
     let source_element = match get_type(world, underlying(world, source)) {
         Some(TypeData { id: _, kind: TypeKind::Slice { element } }) => element,
         _ => return 0,
@@ -854,7 +854,7 @@ pub fn convertible_types(world: World, source: TypeId, target: TypeId) -> bool {
     convertible_inner(world, source, target, Vec::from_array([]))
 }
 
-pub fn conversion_minimum_minor(world: World, source: TypeId, target: TypeId) -> int {
+pub fn conversion_minimum_minor(world: World, source: TypeId, target: TypeId) -> isize {
     let source_types = if is_type_parameter(world, source) {
         type_set_specific_types(world, source)
     } else {

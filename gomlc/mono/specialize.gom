@@ -469,7 +469,7 @@ fn core_trait_call(
     }
 }
 
-fn structural_array_item(value: core::Expr, owner: core::Type, elem: core::Type, index: int) -> core::Expr {
+fn structural_array_item(value: core::Expr, owner: core::Type, elem: core::Type, index: isize) -> core::Expr {
     let params = Vec::from_array([owner, core::Type::Int]);
     core::Expr::Call {
         func: core::Expr::Callable {
@@ -634,7 +634,7 @@ fn nominal_type_name(value: core::Type) -> string {
     }
 }
 
-fn ordering_constructor(ordering_ty: core::Type, name: string, tag: int) -> core::Expr {
+fn ordering_constructor(ordering_ty: core::Type, name: string, tag: isize) -> core::Expr {
     core::Expr::Constr {
         constructor: core::Constructor {
             name: nominal_type_name(ordering_ty) + "::" + name,
@@ -647,7 +647,7 @@ fn ordering_constructor(ordering_ty: core::Type, name: string, tag: int) -> core
     }
 }
 
-fn option_constructor(option_ty: core::Type, name: string, tag: int, args: Vec[core::Expr]) -> core::Expr {
+fn option_constructor(option_ty: core::Type, name: string, tag: isize, args: Vec[core::Expr]) -> core::Expr {
     core::Expr::Constr {
         constructor: core::Constructor {
             name: nominal_type_name(option_ty) + "::" + name,
@@ -1690,8 +1690,8 @@ fn complete_function_bindings_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
-    generic_count: int,
-    predicate_count: int,
+    generic_count: isize,
+    predicate_count: isize,
 ) -> unit {
     for _ in 0..generic_count + 1 {
         let previous_len = bindings.len();
@@ -1744,7 +1744,7 @@ fn predicates_are_satisfied_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
-    predicate_count: int,
+    predicate_count: isize,
 ) -> bool {
     for index in 0..predicate_count {
         let predicate = value.predicates[index];
@@ -1841,8 +1841,8 @@ fn complete_bindings_up_to(
     ctx: SpecializeCtx,
     value: core::Function,
     bindings: Vec[TypeBinding],
-    generic_count: int,
-    predicate_count: int,
+    generic_count: isize,
+    predicate_count: isize,
 ) -> bool {
     complete_function_bindings_up_to(ctx, value, bindings, generic_count, predicate_count);
     for index in 0..generic_count {

@@ -105,7 +105,7 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
     }
 }
 
-fn lower_select_arm_body(ctx: LowerCtx, node: LocatedNode, expression_index: int) -> Option[Expr] {
+fn lower_select_arm_body(ctx: LowerCtx, node: LocatedNode, expression_index: isize) -> Option[Expr] {
     let values = expr_children(node);
     if expression_index < values.len() {
         lower_expr(ctx, values[expression_index])

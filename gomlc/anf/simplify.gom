@@ -50,7 +50,7 @@ fn copy_imms(values: Vec[Imm]) -> Vec[Imm] {
     result
 }
 
-fn resolve_known_imm_from(value: Imm, known: Vec[KnownBinding], depth: int) -> Imm {
+fn resolve_known_imm_from(value: Imm, known: Vec[KnownBinding], depth: isize) -> Imm {
     if depth >= 64 {
         value
     } else {
@@ -76,7 +76,7 @@ fn simplify_known_imms(values: Vec[Imm], known: Vec[KnownBinding]) -> Vec[Imm] {
     result
 }
 
-fn optional_int_equal(left: Option[int], right: Option[int]) -> bool {
+fn optional_int_equal(left: Option[isize], right: Option[isize]) -> bool {
     match left {
         Some(left) => match right {
             Some(right) => left == right,
@@ -142,7 +142,7 @@ fn known_constructor_field(
     known: Vec[KnownBinding],
     expr: Imm,
     constructor: repr::Constructor,
-    field_index: int,
+    field_index: isize,
     ty: repr::Type,
 ) -> Option[Imm] {
     match resolve_known_imm(expr, known) {
@@ -162,7 +162,9 @@ fn known_constructor_field(
     }
 }
 
-fn known_tuple_field(known: Vec[KnownBinding], expr: Imm, index: int, ty: repr::Type) -> Option[Imm] {
+fn known_tuple_field(known: Vec[KnownBinding], expr: Imm, index: isize, ty: repr::Type) -> Option[
+    Imm,
+] {
     match resolve_known_imm(expr, known) {
         Var { name, ty: _ } => match find_known_binding(known, name) {
             Some(Tuple { items, ty: _ }) => {
@@ -628,7 +630,7 @@ fn simplify_known_block(value: Block) -> Block {
     simplify_known_block_with(value, Vec::from_array([]), assigned)
 }
 
-fn count_join_uses_term(value: Term, target: string) -> int {
+fn count_join_uses_term(value: Term, target: string) -> isize {
     match value {
         Jump { target: present, .. } => if present == target {
             1
@@ -668,7 +670,7 @@ fn count_join_uses_term(value: Term, target: string) -> int {
     }
 }
 
-fn count_join_uses_block(value: Block, target: string) -> int {
+fn count_join_uses_block(value: Block, target: string) -> isize {
     let mut result = 0;
     for bind in value.binds {
         match bind {
@@ -907,7 +909,7 @@ fn prepend_simplified_bind(value: Bind, rest: Block) -> Block {
     Block { binds, term: rest.term }
 }
 
-fn simplify_join_binds(values: Vec[Bind], index: int, term: Term) -> Block {
+fn simplify_join_binds(values: Vec[Bind], index: isize, term: Term) -> Block {
     if index >= values.len() {
         Block { binds: Vec::from_array([]), term }
     } else {
@@ -1031,7 +1033,7 @@ fn simplify_function(value: Function) -> Function {
 }
 
 fn simplify_functions(values: Vec[Function]) -> Vec[Function] {
-    let work: Vec[(int, Function)] = Vec::with_capacity(values.len());
+    let work: Vec[(isize, Function)] = Vec::with_capacity(values.len());
     let simplified: Vec[Option[Function]] = Vec::with_capacity(values.len());
     for index in 0..values.len() {
         work.push((index, values[index]));
@@ -1040,7 +1042,7 @@ fn simplify_functions(values: Vec[Function]) -> Vec[Function] {
     let completed: Result[unit, Vec[task::IndexedError[unit]]] = task::for_each_concurrent(
         8,
         work,
-        |_: task::CancelToken, item: (int, Function)| {
+        |_: task::CancelToken, item: (isize, Function)| {
             simplified[item.0] = Option::Some(simplify_function(item.1));
             Result::Ok(())
         },

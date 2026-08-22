@@ -59,7 +59,7 @@ pub enum Imm {
         ty: repr::Type,
     },
     Tag {
-        index: int,
+        index: isize,
         ty: repr::Type,
     },
 }
@@ -108,7 +108,7 @@ pub enum Value {
     ConstrGet {
         expr: Imm,
         constructor: repr::Constructor,
-        field_index: int,
+        field_index: isize,
         ty: repr::Type,
     },
     Unary {
@@ -161,7 +161,7 @@ pub enum Value {
     },
     Proj {
         tuple: Imm,
-        index: int,
+        index: isize,
         ty: repr::Type,
     },
 }

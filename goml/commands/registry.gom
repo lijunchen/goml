@@ -84,7 +84,7 @@ fn config_registry_source() -> Result[string, string] {
     )
 }
 
-fn option_local_registry(args: Vec[string], index: int) -> Result[(Option[string], int), string] {
+fn option_local_registry(args: Vec[string], index: isize) -> Result[(Option[string], isize), string] {
     let argument = args[index];
     let inline_prefix = LOCAL_REGISTRY_OPTION + "=";
     if argument == LOCAL_REGISTRY_OPTION {
@@ -256,7 +256,7 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
     let buffer: Vec[string] = Vec::from_array([]);
     let mut in_dependencies = false;
     let kept = Ref::new(0);
-    let flush = |result: Vec[string], buffer: Vec[string], kept: Ref[int]| {
+    let flush = |result: Vec[string], buffer: Vec[string], kept: Ref[isize]| {
         if kept.get() > 0 {
             result.push("[dependencies]");
             for value in buffer {

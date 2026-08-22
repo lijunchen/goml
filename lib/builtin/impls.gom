@@ -1,13 +1,13 @@
 package builtin;
 
-impl int {
-    fn to_string(self: int) -> string {
+impl isize {
+    fn to_string(self: isize) -> string {
         int_to_string(self)
     }
 }
 
-impl int32 {
-    fn to_string(self: int32) -> string {
+impl i32 {
+    fn to_string(self: i32) -> string {
         int32_to_string(self)
     }
 }
@@ -19,31 +19,31 @@ impl char {
 }
 
 impl string {
-    fn len(self: string) -> int {
+    fn len(self: string) -> isize {
         string_len(self)
     }
 
-    fn byte_len(self: string) -> int {
+    fn byte_len(self: string) -> isize {
         string_len(self)
     }
 
-    fn get(self: string, index: int) -> char {
+    fn get(self: string, index: isize) -> char {
         string_get(self, index)
     }
 
-    fn byte_get(self: string, index: int) -> byte {
+    fn byte_get(self: string, index: isize) -> byte {
         string_byte_get(self, index)
     }
 
-    fn byte_slice(self: string, start: int, end: int) -> string {
+    fn byte_slice(self: string, start: isize, end: isize) -> string {
         string_byte_slice(self, start, end)
     }
 
-    fn is_char_boundary(self: string, index: int) -> bool {
+    fn is_char_boundary(self: string, index: isize) -> bool {
         string_is_char_boundary(self, index)
     }
 
-    fn decode_at(self: string, index: int) -> Option[(char, int)] {
+    fn decode_at(self: string, index: isize) -> Option[(char, isize)] {
         let (valid, value, width) = string_decode_utf8_at(self, index);
         if valid {
             Option::Some((value, width))
@@ -72,7 +72,7 @@ impl string {
         )
     }
 
-    fn char_indices(self: string) -> FnIterator[(int, char)] {
+    fn char_indices(self: string) -> FnIterator[(isize, char)] {
         let mut index = 0;
         FnIterator::from_fn(
             || {
@@ -89,7 +89,7 @@ impl string {
         )
     }
 
-    fn starts_with_at(self: string, start: int, prefix: string) -> bool {
+    fn starts_with_at(self: string, start: isize, prefix: string) -> bool {
         let value_len = self.byte_len();
         let prefix_len = prefix.byte_len();
         if start < 0 || start > value_len || prefix_len > value_len - start {
@@ -101,15 +101,15 @@ impl string {
         }
     }
 
-    fn find(self: string, expected: string) -> Option[int] {
+    fn find(self: string, expected: string) -> Option[isize] {
         string_find_from(self, expected, 0)
     }
 
-    fn find_bytes(self: string, expected: string) -> Option[int] {
+    fn find_bytes(self: string, expected: string) -> Option[isize] {
         self.find(expected)
     }
 
-    fn char_count(self: string) -> int {
+    fn char_count(self: string) -> isize {
         let mut count = 0;
         for _ in self.chars() {
             count += 1;
@@ -117,7 +117,7 @@ impl string {
         count
     }
 
-    fn slice_chars(self: string, start: int, end: int) -> Option[string] {
+    fn slice_chars(self: string, start: isize, end: isize) -> Option[string] {
         if start < 0 || end < start {
             Option::None
         } else {
@@ -155,7 +155,7 @@ impl string {
         }
     }
 
-    fn rfind(self: string, expected: string) -> Option[int] {
+    fn rfind(self: string, expected: string) -> Option[isize] {
         let value_len = self.byte_len();
         let expected_len = expected.byte_len();
         if expected_len > value_len {
@@ -269,7 +269,7 @@ impl string {
         }
     }
 
-    fn repeat(self: string, count: int) -> string {
+    fn repeat(self: string, count: isize) -> string {
         if count <= 0 || self.byte_len() == 0 {
             ""
         } else {
@@ -322,7 +322,7 @@ impl string {
     }
 }
 
-fn string_find_from(value: string, expected: string, start: int) -> Option[int] {
+fn string_find_from(value: string, expected: string, start: isize) -> Option[isize] {
     let value_len = value.byte_len();
     let expected_len = expected.byte_len();
     if start < 0 || start > value_len {
@@ -402,68 +402,68 @@ impl ToString for char {
     }
 }
 
-impl ToString for int {
-    fn to_string(self: int) -> string {
+impl ToString for isize {
+    fn to_string(self: isize) -> string {
         int_to_string(self)
     }
 }
 
-impl ToString for int8 {
-    fn to_string(self: int8) -> string {
+impl ToString for i8 {
+    fn to_string(self: i8) -> string {
         int8_to_string(self)
     }
 }
 
-impl ToString for int16 {
-    fn to_string(self: int16) -> string {
+impl ToString for i16 {
+    fn to_string(self: i16) -> string {
         int16_to_string(self)
     }
 }
 
-impl ToString for int32 {
-    fn to_string(self: int32) -> string {
+impl ToString for i32 {
+    fn to_string(self: i32) -> string {
         int32_to_string(self)
     }
 }
 
-impl ToString for int64 {
-    fn to_string(self: int64) -> string {
+impl ToString for i64 {
+    fn to_string(self: i64) -> string {
         int64_to_string(self)
     }
 }
 
-impl ToString for uint8 {
-    fn to_string(self: uint8) -> string {
+impl ToString for u8 {
+    fn to_string(self: u8) -> string {
         uint8_to_string(self)
     }
 }
 
-impl ToString for uint16 {
-    fn to_string(self: uint16) -> string {
+impl ToString for u16 {
+    fn to_string(self: u16) -> string {
         uint16_to_string(self)
     }
 }
 
-impl ToString for uint32 {
-    fn to_string(self: uint32) -> string {
+impl ToString for u32 {
+    fn to_string(self: u32) -> string {
         uint32_to_string(self)
     }
 }
 
-impl ToString for uint64 {
-    fn to_string(self: uint64) -> string {
+impl ToString for u64 {
+    fn to_string(self: u64) -> string {
         uint64_to_string(self)
     }
 }
 
-impl ToString for float32 {
-    fn to_string(self: float32) -> string {
+impl ToString for f32 {
+    fn to_string(self: f32) -> string {
         float32_to_string(self)
     }
 }
 
-impl ToString for float64 {
-    fn to_string(self: float64) -> string {
+impl ToString for f64 {
+    fn to_string(self: f64) -> string {
         float64_to_string(self)
     }
 }
@@ -492,68 +492,68 @@ impl Debug for char {
     }
 }
 
-impl Debug for int {
-    fn debug(self: int) -> string {
+impl Debug for isize {
+    fn debug(self: isize) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for int8 {
-    fn debug(self: int8) -> string {
+impl Debug for i8 {
+    fn debug(self: i8) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for int16 {
-    fn debug(self: int16) -> string {
+impl Debug for i16 {
+    fn debug(self: i16) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for int32 {
-    fn debug(self: int32) -> string {
+impl Debug for i32 {
+    fn debug(self: i32) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for int64 {
-    fn debug(self: int64) -> string {
+impl Debug for i64 {
+    fn debug(self: i64) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for uint8 {
-    fn debug(self: uint8) -> string {
+impl Debug for u8 {
+    fn debug(self: u8) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for uint16 {
-    fn debug(self: uint16) -> string {
+impl Debug for u16 {
+    fn debug(self: u16) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for uint32 {
-    fn debug(self: uint32) -> string {
+impl Debug for u32 {
+    fn debug(self: u32) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for uint64 {
-    fn debug(self: uint64) -> string {
+impl Debug for u64 {
+    fn debug(self: u64) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for float32 {
-    fn debug(self: float32) -> string {
+impl Debug for f32 {
+    fn debug(self: f32) -> string {
         ToString::to_string(self)
     }
 }
 
-impl Debug for float64 {
-    fn debug(self: float64) -> string {
+impl Debug for f64 {
+    fn debug(self: f64) -> string {
         ToString::to_string(self)
     }
 }
@@ -590,98 +590,98 @@ impl PartialEq for char {
 
 impl Eq for char {}
 
-impl PartialEq for int {
-    fn eq(self: int, other: int) -> bool {
+impl PartialEq for isize {
+    fn eq(self: isize, other: isize) -> bool {
         self == other
     }
 }
 
-impl Eq for int {}
+impl Eq for isize {}
 
-impl PartialEq for int8 {
-    fn eq(self: int8, other: int8) -> bool {
+impl PartialEq for i8 {
+    fn eq(self: i8, other: i8) -> bool {
         self == other
     }
 }
 
-impl Eq for int8 {}
+impl Eq for i8 {}
 
-impl PartialEq for int16 {
-    fn eq(self: int16, other: int16) -> bool {
+impl PartialEq for i16 {
+    fn eq(self: i16, other: i16) -> bool {
         self == other
     }
 }
 
-impl Eq for int16 {}
+impl Eq for i16 {}
 
-impl PartialEq for int32 {
-    fn eq(self: int32, other: int32) -> bool {
+impl PartialEq for i32 {
+    fn eq(self: i32, other: i32) -> bool {
         self == other
     }
 }
 
-impl Eq for int32 {}
+impl Eq for i32 {}
 
-impl PartialEq for int64 {
-    fn eq(self: int64, other: int64) -> bool {
+impl PartialEq for i64 {
+    fn eq(self: i64, other: i64) -> bool {
         self == other
     }
 }
 
-impl Eq for int64 {}
+impl Eq for i64 {}
 
-impl PartialEq for uint8 {
-    fn eq(self: uint8, other: uint8) -> bool {
+impl PartialEq for u8 {
+    fn eq(self: u8, other: u8) -> bool {
         self == other
     }
 }
 
-impl Eq for uint8 {}
+impl Eq for u8 {}
 
-impl PartialEq for uint16 {
-    fn eq(self: uint16, other: uint16) -> bool {
+impl PartialEq for u16 {
+    fn eq(self: u16, other: u16) -> bool {
         self == other
     }
 }
 
-impl Eq for uint16 {}
+impl Eq for u16 {}
 
-impl PartialEq for uint32 {
-    fn eq(self: uint32, other: uint32) -> bool {
+impl PartialEq for u32 {
+    fn eq(self: u32, other: u32) -> bool {
         self == other
     }
 }
 
-impl Eq for uint32 {}
+impl Eq for u32 {}
 
-impl PartialEq for uint64 {
-    fn eq(self: uint64, other: uint64) -> bool {
+impl PartialEq for u64 {
+    fn eq(self: u64, other: u64) -> bool {
         self == other
     }
 }
 
-impl Eq for uint64 {}
+impl Eq for u64 {}
 
-impl PartialEq for float32 {
-    fn eq(self: float32, other: float32) -> bool {
+impl PartialEq for f32 {
+    fn eq(self: f32, other: f32) -> bool {
         self == other
     }
 }
 
-impl PartialEq for float64 {
-    fn eq(self: float64, other: float64) -> bool {
+impl PartialEq for f64 {
+    fn eq(self: f64, other: f64) -> bool {
         self == other
     }
 }
 
 impl Hash for unit {
-    fn hash(self: unit) -> uint64 {
+    fn hash(self: unit) -> u64 {
         0
     }
 }
 
 impl Hash for bool {
-    fn hash(self: bool) -> uint64 {
+    fn hash(self: bool) -> u64 {
         if self {
             1
         } else {
@@ -691,67 +691,67 @@ impl Hash for bool {
 }
 
 impl Hash for string {
-    fn hash(self: string) -> uint64 {
+    fn hash(self: string) -> u64 {
         string_hash(self)
     }
 }
 
 impl Hash for char {
-    fn hash(self: char) -> uint64 {
+    fn hash(self: char) -> u64 {
         char_hash(self)
     }
 }
 
-impl Hash for int {
-    fn hash(self: int) -> uint64 {
+impl Hash for isize {
+    fn hash(self: isize) -> u64 {
         int_hash(self)
     }
 }
 
-impl Hash for int8 {
-    fn hash(self: int8) -> uint64 {
+impl Hash for i8 {
+    fn hash(self: i8) -> u64 {
         int8_hash(self)
     }
 }
 
-impl Hash for int16 {
-    fn hash(self: int16) -> uint64 {
+impl Hash for i16 {
+    fn hash(self: i16) -> u64 {
         int16_hash(self)
     }
 }
 
-impl Hash for int32 {
-    fn hash(self: int32) -> uint64 {
+impl Hash for i32 {
+    fn hash(self: i32) -> u64 {
         int32_hash(self)
     }
 }
 
-impl Hash for int64 {
-    fn hash(self: int64) -> uint64 {
+impl Hash for i64 {
+    fn hash(self: i64) -> u64 {
         int64_hash(self)
     }
 }
 
-impl Hash for uint8 {
-    fn hash(self: uint8) -> uint64 {
+impl Hash for u8 {
+    fn hash(self: u8) -> u64 {
         uint8_hash(self)
     }
 }
 
-impl Hash for uint16 {
-    fn hash(self: uint16) -> uint64 {
+impl Hash for u16 {
+    fn hash(self: u16) -> u64 {
         uint16_hash(self)
     }
 }
 
-impl Hash for uint32 {
-    fn hash(self: uint32) -> uint64 {
+impl Hash for u32 {
+    fn hash(self: u32) -> u64 {
         uint32_hash(self)
     }
 }
 
-impl Hash for uint64 {
-    fn hash(self: uint64) -> uint64 {
+impl Hash for u64 {
+    fn hash(self: u64) -> u64 {
         self
     }
 }
@@ -765,7 +765,7 @@ impl[T] PartialEq for Ref[T] {
 impl[T] Eq for Ref[T] {}
 
 impl[T] Hash for Ref[T] {
-    fn hash(self: Ref[T]) -> uint64 {
+    fn hash(self: Ref[T]) -> u64 {
         ptr_hash(self)
     }
 }
@@ -792,74 +792,74 @@ impl Default for char {
     }
 }
 
-impl Default for int {
-    fn default() -> int {
+impl Default for isize {
+    fn default() -> isize {
         0
     }
 }
 
-impl Default for int8 {
-    fn default() -> int8 {
+impl Default for i8 {
+    fn default() -> i8 {
         0
     }
 }
 
-impl Default for int16 {
-    fn default() -> int16 {
+impl Default for i16 {
+    fn default() -> i16 {
         0
     }
 }
 
-impl Default for int32 {
-    fn default() -> int32 {
+impl Default for i32 {
+    fn default() -> i32 {
         0
     }
 }
 
-impl Default for int64 {
-    fn default() -> int64 {
+impl Default for i64 {
+    fn default() -> i64 {
         0
     }
 }
 
-impl Default for uint {
-    fn default() -> uint {
+impl Default for usize {
+    fn default() -> usize {
         0
     }
 }
 
-impl Default for uint8 {
-    fn default() -> uint8 {
+impl Default for u8 {
+    fn default() -> u8 {
         0
     }
 }
 
-impl Default for uint16 {
-    fn default() -> uint16 {
+impl Default for u16 {
+    fn default() -> u16 {
         0
     }
 }
 
-impl Default for uint32 {
-    fn default() -> uint32 {
+impl Default for u32 {
+    fn default() -> u32 {
         0
     }
 }
 
-impl Default for uint64 {
-    fn default() -> uint64 {
+impl Default for u64 {
+    fn default() -> u64 {
         0
     }
 }
 
-impl Default for float32 {
-    fn default() -> float32 {
+impl Default for f32 {
+    fn default() -> f32 {
         0.0
     }
 }
 
-impl Default for float64 {
-    fn default() -> float64 {
+impl Default for f64 {
+    fn default() -> f64 {
         0.0
     }
 }
@@ -903,8 +903,8 @@ impl[T: PartialEq] PartialEq for Vec[T] {
 impl[T: Eq] Eq for Vec[T] {}
 
 impl[T: Hash] Hash for Vec[T] {
-    fn hash(self: Vec[T]) -> uint64 {
-        let mut value: uint64 = 14695981039346656037;
+    fn hash(self: Vec[T]) -> u64 {
+        let mut value: u64 = 14695981039346656037;
         let mut index = 0;
         while index < self.len() {
             value = value * 1099511628211 + Hash::hash(self[index]);
@@ -935,8 +935,8 @@ impl[T: PartialEq] PartialEq for Slice[T] {
 impl[T: Eq] Eq for Slice[T] {}
 
 impl[T: Hash] Hash for Slice[T] {
-    fn hash(self: Slice[T]) -> uint64 {
-        let mut value: uint64 = 14695981039346656037;
+    fn hash(self: Slice[T]) -> u64 {
+        let mut value: u64 = 14695981039346656037;
         let mut index = 0;
         while index < self.len() {
             value = value * 1099511628211 + Hash::hash(self[index]);
@@ -959,7 +959,7 @@ impl[T: PartialEq] PartialEq for Option[T] {
 impl[T: Eq] Eq for Option[T] {}
 
 impl[T: Hash] Hash for Option[T] {
-    fn hash(self: Option[T]) -> uint64 {
+    fn hash(self: Option[T]) -> u64 {
         match self {
             Option::None => 14695981039346656038,
             Option::Some(value) => 14695981039346656039 + Hash::hash(value),
@@ -980,7 +980,7 @@ impl[T: PartialEq, E: PartialEq] PartialEq for Result[T, E] {
 impl[T: Eq, E: Eq] Eq for Result[T, E] {}
 
 impl[T: Hash, E: Hash] Hash for Result[T, E] {
-    fn hash(self: Result[T, E]) -> uint64 {
+    fn hash(self: Result[T, E]) -> u64 {
         match self {
             Result::Ok(value) => 14695981039346656038 + Hash::hash(value),
             Result::Err(value) => 14695981039346656039 + Hash::hash(value),
@@ -1032,7 +1032,7 @@ impl[T] Vec[T] {
         vec_new()
     }
 
-    fn with_capacity(capacity: int) -> Self {
+    fn with_capacity(capacity: isize) -> Self {
         vec_with_capacity(capacity)
     }
 
@@ -1065,19 +1065,19 @@ impl[T] Vec[T] {
         FrozenVec { values: self.copy() }
     }
 
-    fn get(self: Self, index: int) -> T {
+    fn get(self: Self, index: isize) -> T {
         vec_get(self, index)
     }
 
-    fn set(self: Self, index: int, elem: T) -> unit {
+    fn set(self: Self, index: isize, elem: T) -> unit {
         vec_set(self, index, elem)
     }
 
-    fn len(self: Self) -> int {
+    fn len(self: Self) -> isize {
         vec_len(self)
     }
 
-    fn capacity(self: Self) -> int {
+    fn capacity(self: Self) -> isize {
         vec_capacity(self)
     }
 
@@ -1085,11 +1085,11 @@ impl[T] Vec[T] {
         vec_len(self) == 0
     }
 
-    fn reserve(self: Self, additional: int) -> unit {
+    fn reserve(self: Self, additional: isize) -> unit {
         vec_reserve(self, additional)
     }
 
-    fn truncate(self: Self, len: int) -> unit {
+    fn truncate(self: Self, len: isize) -> unit {
         vec_truncate(self, len)
     }
 
@@ -1117,13 +1117,13 @@ impl[T] Vec[T] {
         }
     }
 
-    fn swap(self: Self, left: int, right: int) -> unit {
+    fn swap(self: Self, left: isize, right: isize) -> unit {
         let value = self[left];
         self[left] = self[right];
         self[right] = value;
     }
 
-    fn swap_remove(self: Self, index: int) -> T {
+    fn swap_remove(self: Self, index: isize) -> T {
         let len = self.len();
         let value = self[index];
         if index + 1 < len {
@@ -1133,7 +1133,7 @@ impl[T] Vec[T] {
         value
     }
 
-    fn insert(self: Self, index: int, value: T) -> unit {
+    fn insert(self: Self, index: isize, value: T) -> unit {
         let len = self.len();
         if index == len {
             self.push(value)
@@ -1149,7 +1149,7 @@ impl[T] Vec[T] {
         }
     }
 
-    fn remove(self: Self, index: int) -> T {
+    fn remove(self: Self, index: isize) -> T {
         let len = self.len();
         let value = self[index];
         let mut current = index;
@@ -1181,7 +1181,7 @@ impl[T] Vec[T] {
         }
     }
 
-    fn slice(self: Self, start: int, end: int) -> Slice[T] {
+    fn slice(self: Self, start: isize, end: isize) -> Slice[T] {
         slice(self, start, end)
     }
 
@@ -1202,7 +1202,7 @@ impl[T] Vec[T] {
         )
     }
 
-    fn position(self: Self, predicate: (T) -> bool) -> Option[int] {
+    fn position(self: Self, predicate: (T) -> bool) -> Option[isize] {
         for index in 0..self.len() {
             if predicate(self[index]) {
                 return Option::Some(index)
@@ -1211,7 +1211,7 @@ impl[T] Vec[T] {
         Option::None
     }
 
-    fn stable_sort_by(self: Self, compare: (T, T) -> int) -> unit {
+    fn stable_sort_by(self: Self, compare: (T, T) -> isize) -> unit {
         let length = self.len();
         if length < 2 {
             return
@@ -1262,19 +1262,19 @@ impl[T] Vec[T] {
         }
     }
 
-    fn sort_by(self: Self, compare: (T, T) -> int) -> unit {
+    fn sort_by(self: Self, compare: (T, T) -> isize) -> unit {
         self.stable_sort_by(compare)
     }
 
     fn sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> unit {
-        self.sort_by(|left: T, right: T| compare(left, right).to_int())
+        self.sort_by(|left: T, right: T| compare(left, right).to_isize())
     }
 
     fn stable_sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> unit {
-        self.stable_sort_by(|left: T, right: T| compare(left, right).to_int())
+        self.stable_sort_by(|left: T, right: T| compare(left, right).to_isize())
     }
 
-    fn binary_search_by(self: Self, compare: (T) -> int) -> Option[int] {
+    fn binary_search_by(self: Self, compare: (T) -> isize) -> Option[isize] {
         let mut low = 0;
         let mut high = self.len();
         while low < high {
@@ -1292,11 +1292,11 @@ impl[T] Vec[T] {
         }
     }
 
-    fn binary_search_by_ordering(self: Self, compare: (T) -> Ordering) -> Option[int] {
-        self.binary_search_by(|value: T| compare(value).to_int())
+    fn binary_search_by_ordering(self: Self, compare: (T) -> Ordering) -> Option[isize] {
+        self.binary_search_by(|value: T| compare(value).to_isize())
     }
 
-    fn min_by(self: Self, compare: (T, T) -> int) -> Option[T] {
+    fn min_by(self: Self, compare: (T, T) -> isize) -> Option[T] {
         if self.is_empty() {
             Option::None
         } else {
@@ -1311,7 +1311,7 @@ impl[T] Vec[T] {
         }
     }
 
-    fn max_by(self: Self, compare: (T, T) -> int) -> Option[T] {
+    fn max_by(self: Self, compare: (T, T) -> isize) -> Option[T] {
         if self.is_empty() {
             Option::None
         } else {
@@ -1327,11 +1327,11 @@ impl[T] Vec[T] {
     }
 
     fn min_by_ordering(self: Self, compare: (T, T) -> Ordering) -> Option[T] {
-        self.min_by(|left: T, right: T| compare(left, right).to_int())
+        self.min_by(|left: T, right: T| compare(left, right).to_isize())
     }
 
     fn max_by_ordering(self: Self, compare: (T, T) -> Ordering) -> Option[T] {
-        self.max_by(|left: T, right: T| compare(left, right).to_int())
+        self.max_by(|left: T, right: T| compare(left, right).to_isize())
     }
 
     fn dedup_by(self: Self, equal: (T, T) -> bool) -> unit {
@@ -1350,7 +1350,7 @@ impl[T] Vec[T] {
     }
 }
 
-fn smaller(left: int, right: int) -> int {
+fn smaller(left: isize, right: isize) -> isize {
     if left < right {
         left
     } else {
@@ -1419,7 +1419,7 @@ impl[T: PartialEq] FrozenVec[T] {
 }
 
 impl[T] FrozenVec[T] {
-    fn len(self: Self) -> int {
+    fn len(self: Self) -> isize {
         self.values.len()
     }
 
@@ -1427,7 +1427,7 @@ impl[T] FrozenVec[T] {
         self.values.is_empty()
     }
 
-    fn get(self: Self, index: int) -> T {
+    fn get(self: Self, index: isize) -> T {
         self.values[index]
     }
 
@@ -1462,15 +1462,15 @@ impl[T] IntoIterator for Vec[T] {
 
 #[lang("slice")]
 impl[T] Slice[T] {
-    fn get(self: Self, index: int) -> T {
+    fn get(self: Self, index: isize) -> T {
         slice_get(self, index)
     }
 
-    fn len(self: Self) -> int {
+    fn len(self: Self) -> isize {
         slice_len(self)
     }
 
-    fn sub(self: Self, start: int, end: int) -> Self {
+    fn sub(self: Self, start: isize, end: isize) -> Self {
         slice_sub(self, start, end)
     }
 
@@ -1530,7 +1530,7 @@ impl[K: Hash + Eq, V] HashMap[K, V] {
         hashmap_remove(self, key)
     }
 
-    fn len(self: Self) -> int {
+    fn len(self: Self) -> isize {
         hashmap_len(self)
     }
 
@@ -1560,7 +1560,7 @@ impl[T] Ref[T] {
 
 #[lang("channel")]
 impl[T] Channel[T] {
-    fn new(capacity: int) -> Self {
+    fn new(capacity: isize) -> Self {
         channel_new(capacity)
     }
 
@@ -1617,28 +1617,28 @@ impl[T] Receiver[T] {
     }
 }
 
-impl ToString for uint {
-    fn to_string(self: uint) -> string {
+impl ToString for usize {
+    fn to_string(self: usize) -> string {
         uint_to_string(self)
     }
 }
 
-impl Debug for uint {
-    fn debug(self: uint) -> string {
+impl Debug for usize {
+    fn debug(self: usize) -> string {
         ToString::to_string(self)
     }
 }
 
-impl PartialEq for uint {
-    fn eq(self: uint, other: uint) -> bool {
+impl PartialEq for usize {
+    fn eq(self: usize, other: usize) -> bool {
         self == other
     }
 }
 
-impl Eq for uint {}
+impl Eq for usize {}
 
-impl Hash for uint {
-    fn hash(self: uint) -> uint64 {
+impl Hash for usize {
+    fn hash(self: usize) -> u64 {
         uint_hash(self)
     }
 }

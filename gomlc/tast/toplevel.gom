@@ -1314,8 +1314,8 @@ fn validate_method_signature(
     expected: TraitMethodInfo,
     actual: Function,
     substitutions: Vec[TypeSubst],
-    owner_generic_count: int,
-    owner_predicate_count: int,
+    owner_generic_count: isize,
+    owner_predicate_count: isize,
 ) -> unit {
     let actual_method_generics: Vec[string] = Vec::from_array([]);
     for index in owner_generic_count..actual.generics.len() {
@@ -2091,7 +2091,7 @@ fn by_value_type_has_cycle(ctx: Checker, value: Type, active: Vec[string]) -> bo
     }
 }
 
-fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
+fn validate_struct_sizes(ctx: Checker, struct_count: isize) -> unit {
     for index in 0..struct_count {
         let info = ctx.structs[index];
         let active = Vec::from_array([info.name]);
@@ -2144,7 +2144,7 @@ fn cycle_text(values: Vec[string]) -> string {
     text::join(values, " -> ")
 }
 
-fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
+fn validate_supertrait_cycles(ctx: Checker, trait_count: isize) -> unit {
     for index in 0..trait_count {
         let info = ctx.traits[index];
         for reference in info.supertraits {
@@ -2161,7 +2161,12 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
     }
 }
 
-fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, trait_count: int) -> unit {
+fn validate_local_definitions(
+    ctx: Checker,
+    enum_count: isize,
+    struct_count: isize,
+    trait_count: isize,
+) -> unit {
     for index in 0..enum_count {
         for variant in ctx.enums[index].variants {
             for field in enum_variant_field_types(variant.fields) {
@@ -2277,7 +2282,7 @@ fn enum_option_variants(builtin: BuiltinContract, name: string, variants: Vec[En
     }
 }
 
-fn declaration_name_index(values: Vec[string], expected: string) -> int {
+fn declaration_name_index(values: Vec[string], expected: string) -> isize {
     for index in 0..values.len() {
         if values[index] == expected {
             return index
@@ -2389,7 +2394,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
     }
 }
 
-fn nominal_kind_name(kind: int) -> string {
+fn nominal_kind_name(kind: isize) -> string {
     if kind == 1 {
         "enum"
     } else if kind == 2 {
@@ -2399,7 +2404,7 @@ fn nominal_kind_name(kind: int) -> string {
     }
 }
 
-fn mixed_nominal_declaration_message(name: string, first: int, second: int) -> string {
+fn mixed_nominal_declaration_message(name: string, first: isize, second: isize) -> string {
     if (first == 1 && second == 2) || (first == 2 && second == 1) {
         "type " + name + " is defined as both a struct and an enum"
     } else {
@@ -2408,7 +2413,7 @@ fn mixed_nominal_declaration_message(name: string, first: int, second: int) -> s
     }
 }
 
-fn value_kind_name(kind: int) -> string {
+fn value_kind_name(kind: isize) -> string {
     if kind == 1 {
         "function"
     } else {
@@ -2422,9 +2427,9 @@ fn mixed_value_declaration_message(name: string) -> string {
 
 fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
     let nominal_names: Vec[string] = Vec::from_array([]);
-    let nominal_kinds: Vec[int] = Vec::from_array([]);
+    let nominal_kinds: Vec[isize] = Vec::from_array([]);
     let function_names: Vec[string] = Vec::from_array([]);
-    let function_kinds: Vec[int] = Vec::from_array([]);
+    let function_kinds: Vec[isize] = Vec::from_array([]);
     for item in value.items {
         let nominal = match item {
             EnumDef(definition) => Option::Some((definition.name, 1)),
@@ -2542,14 +2547,14 @@ fn validate_cross_file_declaration_names(
         files.push(file)
     }
     let nominal_names: Vec[string] = Vec::from_array([]);
-    let nominal_kinds: Vec[int] = Vec::from_array([]);
+    let nominal_kinds: Vec[isize] = Vec::from_array([]);
     let function_names: Vec[string] = Vec::from_array([]);
-    let function_kinds: Vec[int] = Vec::from_array([]);
+    let function_kinds: Vec[isize] = Vec::from_array([]);
     for file in files {
         let local_nominal_names: Vec[string] = Vec::from_array([]);
-        let local_nominal_kinds: Vec[int] = Vec::from_array([]);
+        let local_nominal_kinds: Vec[isize] = Vec::from_array([]);
         let local_function_names: Vec[string] = Vec::from_array([]);
-        let local_function_kinds: Vec[int] = Vec::from_array([]);
+        let local_function_kinds: Vec[isize] = Vec::from_array([]);
         for item in file.items {
             let nominal = match item {
                 EnumDef(definition) => Option::Some((definition.name, 1)),
@@ -2838,7 +2843,7 @@ fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: str
     }
 }
 
-fn diagnostic_message_index(values: Vec[Diagnostic], message: string) -> int {
+fn diagnostic_message_index(values: Vec[Diagnostic], message: string) -> isize {
     for index in 0..values.len() {
         if values[index].message == message {
             return index

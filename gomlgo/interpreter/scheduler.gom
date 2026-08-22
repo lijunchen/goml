@@ -11,7 +11,7 @@ struct ScheduledInvocation {
 
 struct ScheduledFrame {
     frame: Frame,
-    instruction: Ref[int],
+    instruction: Ref[isize],
     waiting: Ref[bool],
     results: Vec[bytecode::RegisterId],
     finishing: Ref[bool],
@@ -42,7 +42,7 @@ enum ScheduledNativeChannelTarget {
     Select {
         chosen: bytecode::RegisterId,
         cases: Vec[bytecode::SelectCase],
-        native_indices: Vec[int],
+        native_indices: Vec[isize],
     },
 }
 
@@ -67,7 +67,7 @@ struct ScheduledGoroutine {
     pending: Ref[Option[ScheduledPendingCall]],
     native: Ref[Option[ScheduledNativeCall]],
     native_channel: Ref[Option[ScheduledNativeChannel]],
-    state: Ref[int],
+    state: Ref[isize],
     startup: bool,
 }
 
@@ -75,20 +75,20 @@ struct Scheduler {
     state: VmState,
     goroutines: Vec[ScheduledGoroutine],
     entries: Vec[bytecode::FunctionId],
-    next_entry: Ref[int],
-    cursor: Ref[int],
-    random: Ref[uint64],
+    next_entry: Ref[isize],
+    cursor: Ref[isize],
+    random: Ref[u64],
     native_completions: NativeCompletionQueue,
 }
 
 struct WaitingOperation {
-    goroutine: int,
-    case_index: int,
+    goroutine: isize,
+    case_index: isize,
 }
 
 struct ScheduledInstruction {
     instructions: Vec[bytecode::Instruction],
-    index: int,
+    index: isize,
     present: bool,
     message: string,
 }
@@ -230,7 +230,7 @@ fn scheduled_interface_invocation(
     method: go_types::ObjectId,
     receiver: Value,
     arguments: Vec[Value],
-    first_argument: int,
+    first_argument: isize,
 ) -> Result[ScheduledInvocation, string] {
     let method_object = state.program.world.objects[method.value];
     let (dynamic_type, dynamic_value) = match receiver {
@@ -404,14 +404,14 @@ fn scheduled_current_instruction(scheduled: ScheduledFrame) -> Result[
     }
 }
 
-fn scheduled_channel_id(frame: Frame, register_id: bytecode::RegisterId) -> Result[int, string] {
+fn scheduled_channel_id(frame: Frame, register_id: bytecode::RegisterId) -> Result[isize, string] {
     match register(frame, register_id)? {
         Value::Local(LocalValue::Channel(value)) => Result::Ok(value),
         _ => Result::Err("channel operation source is not a channel"),
     }
 }
 
-fn scheduled_channel_matches(frame: Frame, register_id: bytecode::RegisterId, target: int) -> Result[
+fn scheduled_channel_matches(frame: Frame, register_id: bytecode::RegisterId, target: isize) -> Result[
     bool,
     string,
 ] {
@@ -422,7 +422,7 @@ fn scheduled_channel_matches(frame: Frame, register_id: bytecode::RegisterId, ta
     }
 }
 
-fn checked_channel(state: VmState, id: int) -> Result[ChannelValue, string] {
+fn checked_channel(state: VmState, id: isize) -> Result[ChannelValue, string] {
     if id < 0 || id >= state.channels.len() {
         Result::Err("invalid channel " + id.to_string())
     } else {
@@ -433,10 +433,10 @@ fn checked_channel(state: VmState, id: int) -> Result[ChannelValue, string] {
 fn instruction_channel_matches(
     scheduler: Scheduler,
     goroutine: ScheduledGoroutine,
-    target: int,
+    target: isize,
     receive: bool,
     choose: bool,
-) -> Result[int, string] {
+) -> Result[isize, string] {
     let scheduled = scheduled_top(goroutine)?;
     match scheduled_current_instruction(scheduled)? {
         Some(bytecode::Instruction {
@@ -459,7 +459,7 @@ fn instruction_channel_matches(
             kind: bytecode::InstructionKind::Select { chosen: _, cases },
             location: _,
         }) => {
-            let matches: Vec[int] = Vec::from_array([]);
+            let matches: Vec[isize] = Vec::from_array([]);
             for index in 0..cases.len() {
                 let matched = match cases[index].operation {
                     bytecode::SelectOperation::Send { channel, value: _ } => !receive
@@ -486,7 +486,7 @@ fn instruction_channel_matches(
 
 fn cancel_scheduled_native_channel(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     pending: ScheduledNativeChannel,
 ) -> Result[unit, string] {
     if !cancel_native_channel_invocation_value(pending.invocation.value) {
@@ -501,7 +501,7 @@ fn scheduled_channel_waiter(goroutine: ScheduledGoroutine) -> bool {
     goroutine.state.get() == 1 && goroutine.native.get().is_none()
 }
 
-fn find_waiting_operation(scheduler: Scheduler, current: int, channel: int, receive: bool) -> Result[
+fn find_waiting_operation(scheduler: Scheduler, current: isize, channel: isize, receive: bool) -> Result[
     Option[WaitingOperation],
     string,
 ] {
@@ -539,7 +539,7 @@ fn select_case_enter(
     scheduled: ScheduledFrame,
     chosen: bytecode::RegisterId,
     cases: Vec[bytecode::SelectCase],
-    case_index: int,
+    case_index: isize,
 ) -> Result[unit, string] {
     let selected = cases[case_index];
     let arguments = block_argument_values(scheduled.frame, selected.arguments)?;
@@ -651,7 +651,7 @@ fn complete_waiting_send(scheduler: Scheduler, waiting: WaitingOperation) -> Res
     }
 }
 
-fn attempt_send(scheduler: Scheduler, current: int, channel_id: int, value: Value) -> Result[
+fn attempt_send(scheduler: Scheduler, current: isize, channel_id: isize, value: Value) -> Result[
     SendAttempt,
     string,
 ] {
@@ -678,7 +678,7 @@ fn attempt_send(scheduler: Scheduler, current: int, channel_id: int, value: Valu
     }
 }
 
-fn attempt_receive(scheduler: Scheduler, current: int, channel_id: int) -> Result[
+fn attempt_receive(scheduler: Scheduler, current: isize, channel_id: isize) -> Result[
     ReceiveAttempt,
     string,
 ] {
@@ -708,7 +708,7 @@ fn attempt_receive(scheduler: Scheduler, current: int, channel_id: int) -> Resul
     }
 }
 
-fn wake_channel(scheduler: Scheduler, channel: int) -> Result[unit, string] {
+fn wake_channel(scheduler: Scheduler, channel: isize) -> Result[unit, string] {
     for index in 0..scheduler.goroutines.len() {
         let goroutine = scheduler.goroutines[index];
         if scheduled_channel_waiter(goroutine)
@@ -725,7 +725,7 @@ fn wake_channel(scheduler: Scheduler, channel: int) -> Result[unit, string] {
 
 fn select_case_ready(
     scheduler: Scheduler,
-    current: int,
+    current: isize,
     scheduled: ScheduledFrame,
     operation: bytecode::SelectOperation,
 ) -> Result[bool, string] {
@@ -758,11 +758,10 @@ fn select_case_ready(
     }
 }
 
-fn select_choice(scheduler: Scheduler, ready: Vec[int]) -> int {
-    let next = scheduler.random.get() * 6364136223846793005.to_uint64()
-        + 1442695040888963407.to_uint64();
+fn select_choice(scheduler: Scheduler, ready: Vec[isize]) -> isize {
+    let next = scheduler.random.get() * 6364136223846793005.to_u64() + 1442695040888963407.to_u64();
     scheduler.random.set(next);
-    ready[(next % ready.len().to_uint64()).to_int()]
+    ready[(next % ready.len().to_u64()).to_isize()]
 }
 
 fn block_scheduled(goroutine: ScheduledGoroutine, scheduled: ScheduledFrame) -> unit {
@@ -960,7 +959,7 @@ fn close_native_callbacks(state: VmState) -> unit {
 
 fn start_scheduled_native_call(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     call: PreparedCall,
     owner: Option[ScheduledFrame],
     results: Vec[bytecode::RegisterId],
@@ -988,7 +987,7 @@ fn start_scheduled_native_call(
 
 fn complete_scheduled_native(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     pending: ScheduledNativeCall,
 ) -> Result[Option[InvocationOutcome], string] {
     let goroutine = scheduler.goroutines[goroutine_index];
@@ -1084,7 +1083,7 @@ fn channel_element_type(world: go_types::World, type_id: go_types::TypeId) -> Re
 
 fn start_native_channel(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     owner: ScheduledFrame,
     channels: Vec[dyn HostValueMarker],
     default_case: bool,
@@ -1111,7 +1110,7 @@ fn start_native_channel(
 
 fn complete_native_channel(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     pending: ScheduledNativeChannel,
 ) -> Result[unit, string] {
     let goroutine = scheduler.goroutines[goroutine_index];
@@ -1212,10 +1211,11 @@ fn update_scheduled_panic(scheduled: ScheduledFrame, outcome: InvocationOutcome)
     }
 }
 
-fn complete_scheduled_frame(scheduler: Scheduler, goroutine_index: int, outcome: InvocationOutcome) -> Result[
-    Option[InvocationOutcome],
-    string,
-] {
+fn complete_scheduled_frame(
+    scheduler: Scheduler,
+    goroutine_index: isize,
+    outcome: InvocationOutcome,
+) -> Result[Option[InvocationOutcome], string] {
     let goroutine = scheduler.goroutines[goroutine_index];
     let completed = scheduled_top(goroutine)?;
     let _ = goroutine.frames.pop().ok_or("scheduled frame stack is empty")?;
@@ -1279,7 +1279,7 @@ fn complete_scheduled_frame(scheduler: Scheduler, goroutine_index: int, outcome:
     }
 }
 
-fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: int) -> Result[
+fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: isize) -> Result[
     Option[InvocationOutcome],
     string,
 ] {
@@ -1366,7 +1366,7 @@ fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: int) -> Result
     }
 }
 
-fn begin_scheduled_finish(scheduler: Scheduler, goroutine_index: int, panic: Option[PanicPayload]) -> Result[
+fn begin_scheduled_finish(scheduler: Scheduler, goroutine_index: isize, panic: Option[PanicPayload]) -> Result[
     Option[InvocationOutcome],
     string,
 ] {
@@ -1381,14 +1381,14 @@ fn begin_scheduled_finish(scheduler: Scheduler, goroutine_index: int, panic: Opt
     resume_scheduled_finish(scheduler, goroutine_index)
 }
 
-fn panic_scheduled(scheduler: Scheduler, goroutine_index: int, payload: PanicPayload) -> Result[
+fn panic_scheduled(scheduler: Scheduler, goroutine_index: isize, payload: PanicPayload) -> Result[
     Option[InvocationOutcome],
     string,
 ] {
     begin_scheduled_finish(scheduler, goroutine_index, Option::Some(payload))
 }
 
-fn return_scheduled(scheduler: Scheduler, goroutine_index: int, values: Vec[Value]) -> Result[
+fn return_scheduled(scheduler: Scheduler, goroutine_index: isize, values: Vec[Value]) -> Result[
     Option[InvocationOutcome],
     string,
 ] {
@@ -1461,7 +1461,7 @@ fn spawn_scheduled_call(scheduler: Scheduler, caller: Frame, call: PreparedCall)
 
 fn execute_scheduled_select(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     scheduled: ScheduledFrame,
     instruction: bytecode::Instruction,
     chosen: bytecode::RegisterId,
@@ -1471,7 +1471,7 @@ fn execute_scheduled_select(
         return Result::Err("instruction limit exceeded")
     } else {};
     let native_channels: Vec[dyn HostValueMarker] = Vec::from_array([]);
-    let native_indices: Vec[int] = Vec::from_array([]);
+    let native_indices: Vec[isize] = Vec::from_array([]);
     let mut default_index = -1;
     for index in 0..cases.len() {
         match cases[index].operation {
@@ -1501,7 +1501,7 @@ fn execute_scheduled_select(
             },
         }
     }
-    let ready: Vec[int] = Vec::from_array([]);
+    let ready: Vec[isize] = Vec::from_array([]);
     for index in 0..cases.len() {
         match cases[index].operation {
             bytecode::SelectOperation::Receive { channel, value: _, ok: _ } => match register(
@@ -1625,7 +1625,7 @@ fn execute_scheduled_select(
 
 fn finish_scheduled_instruction(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     scheduled: ScheduledFrame,
     control: InstructionControl,
 ) -> Result[Option[InvocationOutcome], string] {
@@ -1647,7 +1647,7 @@ fn finish_scheduled_instruction(
 
 fn execute_scheduled_instruction(
     scheduler: Scheduler,
-    goroutine_index: int,
+    goroutine_index: isize,
     scheduled: ScheduledFrame,
     instruction: bytecode::Instruction,
 ) -> Result[Option[InvocationOutcome], string] {
@@ -1894,7 +1894,7 @@ fn execute_scheduled_instruction(
     }
 }
 
-fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: int) -> Result[
+fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: isize) -> Result[
     Option[InvocationOutcome],
     string,
 ] {
@@ -1968,7 +1968,7 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: int) -> Result[
     }
 }
 
-fn next_runnable(scheduler: Scheduler) -> int {
+fn next_runnable(scheduler: Scheduler) -> isize {
     if scheduler.goroutines.is_empty() {
         return -1
     } else {};

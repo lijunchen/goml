@@ -6,40 +6,40 @@ use module::lexer;
 enum Event {
     Open {
         kind: cst::NodeKind,
-        forward_parent: Option[int],
+        forward_parent: Option[isize],
     },
     Close,
     Advance,
     Error {
         message: string,
-        start: int,
-        end: int,
+        start: isize,
+        end: isize,
     },
 }
 
 struct MarkerOpened {
-    index: int,
+    index: isize,
 }
 
 struct MarkerClosed {
-    index: int,
+    index: isize,
 }
 
 struct Parser {
     tokens: Vec[lexer::Token],
-    source_len: int,
-    cursor: Ref[int],
-    fuel: Ref[int],
+    source_len: isize,
+    cursor: Ref[isize],
+    fuel: Ref[isize],
     events: Vec[Event],
     diagnostics: Vec[cst::Diagnostic],
     stuck_reported: Ref[bool],
     depth_limit_hit: Ref[bool],
-    expr_depth: Ref[int],
-    pattern_depth: Ref[int],
-    type_depth: Ref[int],
+    expr_depth: Ref[isize],
+    pattern_depth: Ref[isize],
+    type_depth: Ref[isize],
     struct_literals_allowed: Ref[bool],
     contextual_blocks_allowed: Ref[bool],
-    select_guard_depth: Ref[int],
+    select_guard_depth: Ref[isize],
 }
 
 fn event_tombstone() -> Event {
@@ -85,7 +85,7 @@ fn input_peek(parser: Parser) -> lexer::TokenKind {
     input_peek_raw(parser)
 }
 
-fn input_nth(parser: Parser, offset: int) -> lexer::TokenKind {
+fn input_nth(parser: Parser, offset: isize) -> lexer::TokenKind {
     let mut index = parser.cursor.get();
     let mut remaining = offset;
     while index < parser.tokens.len() {
@@ -100,7 +100,7 @@ fn input_nth(parser: Parser, offset: int) -> lexer::TokenKind {
     lexer::TokenKind::Eof
 }
 
-fn input_nth_text(parser: Parser, offset: int) -> string {
+fn input_nth_text(parser: Parser, offset: isize) -> string {
     let mut index = parser.cursor.get();
     let mut remaining = offset;
     while index < parser.tokens.len() {
@@ -124,7 +124,7 @@ fn input_current_text(parser: Parser) -> string {
     }
 }
 
-fn current_token_index(parser: Parser) -> Option[int] {
+fn current_token_index(parser: Parser) -> Option[isize] {
     let mut index = parser.cursor.get();
     while index < parser.tokens.len() && lexer::token_is_trivia(parser.tokens[index].kind) {
         index = index + 1;
@@ -136,7 +136,7 @@ fn current_token_index(parser: Parser) -> Option[int] {
     }
 }
 
-fn current_range(parser: Parser) -> (int, int) {
+fn current_range(parser: Parser) -> (isize, isize) {
     match current_token_index(parser) {
         Some(index) => {
             let token = parser.tokens[index];
@@ -153,7 +153,7 @@ fn current_lex_error(parser: Parser) -> Option[lexer::LexError] {
     }
 }
 
-fn missing_range(parser: Parser) -> (int, int) {
+fn missing_range(parser: Parser) -> (isize, isize) {
     let current = match current_token_index(parser) {
         Some(index) => index,
         None => parser.tokens.len(),
@@ -175,7 +175,7 @@ fn missing_range(parser: Parser) -> (int, int) {
     }
 }
 
-fn new_parser(tokens: Vec[lexer::Token], source_len: int) -> Parser {
+fn new_parser(tokens: Vec[lexer::Token], source_len: isize) -> Parser {
     let event_capacity = tokens.len() * 2;
     Parser {
         tokens,
@@ -218,7 +218,7 @@ impl Parser {
         }
     }
 
-    pub fn nth(self: Parser, offset: int) -> lexer::TokenKind {
+    pub fn nth(self: Parser, offset: isize) -> lexer::TokenKind {
         if self.depth_limit_hit.get() {
             lexer::TokenKind::Eof
         } else if self.fuel.get() == 0 {
@@ -230,7 +230,7 @@ impl Parser {
         }
     }
 
-    pub fn nth_text(self: Parser, offset: int) -> string {
+    pub fn nth_text(self: Parser, offset: isize) -> string {
         if self.depth_limit_hit.get() || self.fuel.get() == 0 {
             ""
         } else {
@@ -387,13 +387,13 @@ impl Parser {
         self.expr_depth.set(self.expr_depth.get() - 1)
     }
 
-    pub fn enter_select_guard(self: Parser) -> int {
+    pub fn enter_select_guard(self: Parser) -> isize {
         let previous = self.select_guard_depth.get();
         self.select_guard_depth.set(self.expr_depth.get() + 1);
         previous
     }
 
-    pub fn leave_select_guard(self: Parser, previous: int) -> unit {
+    pub fn leave_select_guard(self: Parser, previous: isize) -> unit {
         self.select_guard_depth.set(previous)
     }
 
@@ -417,7 +417,7 @@ impl Parser {
         self.type_depth.set(self.type_depth.get() - 1)
     }
 
-    pub fn enter_depth(self: Parser, depth: Ref[int], message: string) -> bool {
+    pub fn enter_depth(self: Parser, depth: Ref[isize], message: string) -> bool {
         if depth.get() >= 512 {
             if !self.depth_limit_hit.get() {
                 self.error(message);
@@ -463,7 +463,7 @@ impl MarkerOpened {
     }
 }
 
-fn element_byte_len(element: cst::CstElement) -> int {
+fn element_byte_len(element: cst::CstElement) -> isize {
     match element {
         Node(value) => value.byte_len,
         Token(value) => value.text.byte_len(),
@@ -494,7 +494,7 @@ fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
     } else {}
 }
 
-fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
+fn event_open(event: Event) -> Option[(cst::NodeKind, Option[isize])] {
     match event {
         Open { kind, forward_parent: parent } => Option::Some((kind, parent)),
         _ => Option::None,

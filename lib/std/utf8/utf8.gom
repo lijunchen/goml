@@ -14,12 +14,12 @@ impl BytesUtf8 for bytes::Bytes {
 }
 
 pub struct Utf8Error {
-    valid_up_to_value: int,
-    error_length_value: Option[int],
+    valid_up_to_value: isize,
+    error_length_value: Option[isize],
 }
 
 impl Utf8Error {
-    pub fn new(valid_up_to: int, error_length: Option[int]) -> Utf8Error {
+    pub fn new(valid_up_to: isize, error_length: Option[isize]) -> Utf8Error {
         Utf8Error { valid_up_to_value: valid_up_to, error_length_value: error_length }
     }
 
@@ -27,11 +27,11 @@ impl Utf8Error {
         io::ErrorKind::InvalidData
     }
 
-    pub fn valid_up_to(self: Utf8Error) -> int {
+    pub fn valid_up_to(self: Utf8Error) -> isize {
         self.valid_up_to_value
     }
 
-    pub fn error_length(self: Utf8Error) -> Option[int] {
+    pub fn error_length(self: Utf8Error) -> Option[isize] {
         self.error_length_value
     }
 }
@@ -59,11 +59,11 @@ fn continuation(value: byte) -> bool {
     value >= 128 && value <= 191
 }
 
-fn invalid(index: int) -> Result[unit, Utf8Error] {
+fn invalid(index: isize) -> Result[unit, Utf8Error] {
     Result::Err(Utf8Error::new(index, Option::Some(1)))
 }
 
-fn truncated(index: int) -> Result[unit, Utf8Error] {
+fn truncated(index: isize) -> Result[unit, Utf8Error] {
     Result::Err(Utf8Error::new(index, Option::None))
 }
 
@@ -139,6 +139,6 @@ pub fn encode(value: string) -> Vec[byte] {
     value.to_bytes()
 }
 
-pub fn encoded_len(value: char) -> int {
+pub fn encoded_len(value: char) -> isize {
     value.to_string().byte_len()
 }

@@ -8,7 +8,7 @@ use std::text;
 pub struct SignatureResult {
     pub label: string,
     pub parameters: Vec[string],
-    pub active_parameter: int,
+    pub active_parameter: isize,
     pub span: ast::Span,
 }
 
@@ -244,7 +244,7 @@ fn signature_parameters(value: Analysis, fact: tast::CallFact, types: Vec[tast::
     result
 }
 
-fn active_parameter(fact: tast::CallFact, offset: int) -> int {
+fn active_parameter(fact: tast::CallFact, offset: isize) -> isize {
     let mut active = 0;
     let mut index = 0;
     for span in fact.argument_spans {
@@ -258,7 +258,7 @@ fn active_parameter(fact: tast::CallFact, offset: int) -> int {
     active
 }
 
-pub fn signature_help(value: Analysis, offset: int) -> Option[SignatureResult] {
+pub fn signature_help(value: Analysis, offset: isize) -> Option[SignatureResult] {
     let calls = value.checked.typeck_results.calls;
     let mut best = -1;
     for candidate in 0..calls.len() {

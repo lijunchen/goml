@@ -5,9 +5,9 @@ use std::text;
 #[go_ffi("gomlgo/rawstring", "FromBytes")]
 extern fn string_from_bytes(value: Slice[byte]) -> string;
 
-const LITERAL_LENGTH_LIMIT: int = 10000;
+const LITERAL_LENGTH_LIMIT: isize = 10000;
 
-const LITERAL_EXPONENT_LIMIT: int = 2147483647;
+const LITERAL_EXPONENT_LIMIT: isize = 2147483647;
 
 fn without_underscores(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
@@ -19,13 +19,13 @@ fn without_underscores(value: string) -> string {
     builder.finish()
 }
 
-fn literal_digit(value: byte, radix: int) -> Option[int] {
+fn literal_digit(value: byte, radix: isize) -> Option[isize] {
     let digit = if value >= b'0' && value <= b'9' {
-        (value - b'0').to_int()
+        (value - b'0').to_isize()
     } else if value >= b'a' && value <= b'f' {
-        (value - b'a' + 10).to_int()
+        (value - b'a' + 10).to_isize()
     } else if value >= b'A' && value <= b'F' {
-        (value - b'A' + 10).to_int()
+        (value - b'A' + 10).to_isize()
     } else {
         -1
     };
@@ -36,7 +36,7 @@ fn literal_digit(value: byte, radix: int) -> Option[int] {
     }
 }
 
-fn parse_exponent(value: string) -> Result[int, string] {
+fn parse_exponent(value: string) -> Result[isize, string] {
     if value == "" {
         return Result::Err("missing exponent")
     } else {};
@@ -66,7 +66,7 @@ fn parse_exponent(value: string) -> Result[int, string] {
     Result::Ok(sign * result)
 }
 
-fn exponent_marker(value: string, hexadecimal: bool) -> Option[int] {
+fn exponent_marker(value: string, hexadecimal: bool) -> Option[isize] {
     let mut index = 0;
     while index < value.byte_len() {
         let byte = value.byte_get(index);
@@ -79,7 +79,7 @@ fn exponent_marker(value: string, hexadecimal: bool) -> Option[int] {
     Option::None
 }
 
-fn remove_point(value: string) -> Result[(string, int), string] {
+fn remove_point(value: string) -> Result[(string, isize), string] {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
     let mut fraction = 0;
     let mut seen_point = false;
@@ -106,7 +106,7 @@ fn remove_point(value: string) -> Result[(string, int), string] {
     }
 }
 
-fn scaled_rational(magnitude: Natural, radix: uint32, exponent: int) -> Result[BigRat, string] {
+fn scaled_rational(magnitude: Natural, radix: u32, exponent: isize) -> Result[BigRat, string] {
     if exponent >= 0 {
         rational_new(
             integer_from_parts(1, natural_mul(magnitude, natural_pow_small(radix, exponent))),
@@ -154,9 +154,9 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     let magnitude = natural_parse_digits(
         parts.0,
         if hexadecimal {
-            16.to_uint32()
+            16.to_u32()
         } else {
-            10.to_uint32()
+            10.to_u32()
         },
     )?;
     if magnitude.limbs.is_empty() {
@@ -184,11 +184,9 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     let binary_exponent = binary_float_mantissa_exponent(approximate);
     if binary_exponent > -4096 && binary_exponent < 4096 {
         if hexadecimal {
-            Result::Ok(ConstValue::Rat(scaled_rational(magnitude, 2.to_uint32(), scaled_exponent)?))
+            Result::Ok(ConstValue::Rat(scaled_rational(magnitude, 2.to_u32(), scaled_exponent)?))
         } else {
-            Result::Ok(
-                ConstValue::Rat(scaled_rational(magnitude, 10.to_uint32(), scaled_exponent)?),
-            )
+            Result::Ok(ConstValue::Rat(scaled_rational(magnitude, 10.to_u32(), scaled_exponent)?))
         }
     } else {
         Result::Ok(ConstValue::LargeFloat(approximate))
@@ -222,11 +220,11 @@ pub fn parse_imaginary_literal(value: string) -> Result[ConstValue, string] {
     }
 }
 
-fn append_codepoint(builder: text::StringBuilder, value: uint32) -> Result[unit, string] {
+fn append_codepoint(builder: text::StringBuilder, value: u32) -> Result[unit, string] {
     if value > 1114111 || (value >= 55296 && value < 57344) {
         Result::Err("escape sequence is invalid Unicode code point")
     } else {
-        match char_from_uint32(value) {
+        match char_from_u32(value) {
             Some(value) => {
                 builder.write_char(value);
                 Result::Ok(())
@@ -236,8 +234,8 @@ fn append_codepoint(builder: text::StringBuilder, value: uint32) -> Result[unit,
     }
 }
 
-fn parse_escape(value: string, index: int, quote: byte, builder: text::StringBuilder) -> Result[
-    int,
+fn parse_escape(value: string, index: isize, quote: byte, builder: text::StringBuilder) -> Result[
+    isize,
     string,
 ] {
     if index >= value.byte_len() {
@@ -299,11 +297,11 @@ fn parse_escape(value: string, index: int, quote: byte, builder: text::StringBui
         if cursor + digits > value.byte_len() {
             return Result::Err("escape sequence not terminated")
         } else {};
-        let mut decoded = 0.to_uint32();
+        let mut decoded = 0.to_u32();
         for offset in 0..digits {
             match literal_digit(value.byte_get(cursor + offset), radix) {
                 Some(digit) => {
-                    decoded = decoded * radix.to_uint32() + digit.to_uint32();
+                    decoded = decoded * radix.to_u32() + digit.to_u32();
                 },
                 None => return Result::Err("illegal character in escape sequence"),
             }
@@ -312,7 +310,7 @@ fn parse_escape(value: string, index: int, quote: byte, builder: text::StringBui
             if decoded > 255 {
                 Result::Err("escape sequence is invalid Unicode code point")
             } else {
-                builder.values.push(decoded.to_uint8());
+                builder.values.push(decoded.to_u8());
                 Result::Ok(cursor + digits)
             }
         } else {
@@ -367,11 +365,11 @@ pub fn parse_rune_literal(value: string) -> Result[ConstValue, string] {
             return Result::Err("illegal rune literal")
         } else {};
         if builder.values.len() == 1 {
-            builder.values[0].to_uint32()
+            builder.values[0].to_u32()
         } else {
             match builder.finish().decode_at(0) {
                 Some((character, width)) => if width == builder.values.len() {
-                    character.to_uint32()
+                    character.to_u32()
                 } else {
                     return Result::Err("illegal rune literal")
                 },
@@ -381,12 +379,12 @@ pub fn parse_rune_literal(value: string) -> Result[ConstValue, string] {
     } else {
         match content.decode_at(0) {
             Some((character, width)) => if width == content.byte_len() {
-                character.to_uint32()
+                character.to_u32()
             } else {
                 return Result::Err("illegal rune literal")
             },
             None => return Result::Err("illegal rune literal"),
         }
     };
-    Result::Ok(ConstValue::Int(integer_from_parts(1, natural_from_uint64(codepoint.to_uint64()))))
+    Result::Ok(ConstValue::Int(integer_from_parts(1, natural_from_uint64(codepoint.to_u64()))))
 }

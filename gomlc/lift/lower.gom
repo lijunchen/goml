@@ -31,7 +31,7 @@ pub fn lower_checked(value: mono::File) -> Result[File, string] {
     finish_lowering(lambda_lift(value))
 }
 
-pub fn lower_checked_with_counter(value: mono::File, counter: Ref[int]) -> Result[File, string] {
+pub fn lower_checked_with_counter(value: mono::File, counter: Ref[isize]) -> Result[File, string] {
     finish_lowering(lambda_lift_with_counter(value, counter))
 }
 
@@ -42,7 +42,7 @@ pub fn lower(value: mono::File) -> File {
     }
 }
 
-pub fn lower_with_counter(value: mono::File, counter: Ref[int]) -> File {
+pub fn lower_with_counter(value: mono::File, counter: Ref[isize]) -> File {
     match lower_checked_with_counter(value, counter) {
         Ok(value) => value,
         Err(_) => empty_file(),

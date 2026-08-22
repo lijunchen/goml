@@ -48,7 +48,7 @@ pub fn rpc_success(id: json::Value, result: json::Value) -> json::Value {
     json_fields(fields)
 }
 
-pub fn rpc_error(id: json::Value, code: int, message: string) -> json::Value {
+pub fn rpc_error(id: json::Value, code: isize, message: string) -> json::Value {
     let error: Vec[(string, json::Value)] = Vec::from_array([]);
     push_json_field(error, "code", json::Value::Number(code.to_string()));
     push_json_field(error, "message", json::Value::String(message));
@@ -93,7 +93,7 @@ fn header_line_content(value: string) -> string {
     value.byte_slice(0, end)
 }
 
-fn decimal_length(value: string) -> Result[int, string] {
+fn decimal_length(value: string) -> Result[isize, string] {
     let mut result = 0;
     let length = value.byte_len();
     if length == 0 {
@@ -104,13 +104,13 @@ fn decimal_length(value: string) -> Result[int, string] {
         if byte < b'0' || byte > b'9' {
             return Result::Err("invalid Content-Length")
         } else {
-            result = result * 10 + (byte - b'0').to_int();
+            result = result * 10 + (byte - b'0').to_isize();
         }
     }
     Result::Ok(result)
 }
 
-pub fn content_length(value: string) -> Result[int, string] {
+pub fn content_length(value: string) -> Result[isize, string] {
     let line = header_line_content(value);
     let prefix = "Content-Length:";
     if !ascii_prefix_equal_case_insensitive(line, prefix) {

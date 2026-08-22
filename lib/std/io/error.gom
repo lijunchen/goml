@@ -50,7 +50,7 @@ impl PartialEq for ErrorKind {
 
 impl Eq for ErrorKind {}
 
-pub fn kind_from_code(code: int) -> ErrorKind {
+pub fn kind_from_code(code: isize) -> ErrorKind {
     match code {
         1 => ErrorKind::NotFound,
         2 => ErrorKind::PermissionDenied,
@@ -68,7 +68,7 @@ pub fn kind_from_code(code: int) -> ErrorKind {
     }
 }
 
-pub fn kind_code(kind: ErrorKind) -> int {
+pub fn kind_code(kind: ErrorKind) -> isize {
     match kind {
         ErrorKind::NotFound => 1,
         ErrorKind::PermissionDenied => 2,
@@ -90,7 +90,7 @@ pub struct ErrorDetails {
     kind_value: ErrorKind,
     operation_value: string,
     context_value: Option[string],
-    raw_os_code_value: Option[int],
+    raw_os_code_value: Option[isize],
     message_value: string,
 }
 
@@ -99,7 +99,7 @@ impl ErrorDetails {
         kind: ErrorKind,
         operation: string,
         context: Option[string],
-        raw_os_code: Option[int],
+        raw_os_code: Option[isize],
         message: string,
     ) -> ErrorDetails {
         ErrorDetails {
@@ -123,7 +123,7 @@ impl ErrorDetails {
         self.context_value
     }
 
-    pub fn raw_os_code(self: ErrorDetails) -> Option[int] {
+    pub fn raw_os_code(self: ErrorDetails) -> Option[isize] {
         self.raw_os_code_value
     }
 
@@ -165,7 +165,7 @@ impl Error {
         kind: ErrorKind,
         operation: string,
         context: Option[string],
-        raw_os_code: Option[int],
+        raw_os_code: Option[isize],
         message: string,
     ) -> Error {
         Error { details: ErrorDetails::new(kind, operation, context, raw_os_code, message) }
@@ -183,7 +183,7 @@ impl Error {
         self.details.context()
     }
 
-    pub fn raw_os_code(self: Error) -> Option[int] {
+    pub fn raw_os_code(self: Error) -> Option[isize] {
         self.details.raw_os_code()
     }
 

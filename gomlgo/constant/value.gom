@@ -24,7 +24,7 @@ const FALSE_EXACT_VALUE: string = "false";
 extern fn quote_string(value: string) -> string;
 
 #[go_ffi("strconv", "FormatFloat")]
-extern fn format_float(value: float64, format: uint8, precision: int, bits: int) -> string;
+extern fn format_float(value: f64, format: u8, precision: isize, bits: isize) -> string;
 
 #[derive(PartialEq, Eq, ToString, Debug)]
 pub enum ConstantKind {
@@ -302,7 +302,7 @@ pub fn constant_to_numeric_complex(value: ConstValue) -> Option[
     }
 }
 
-pub fn constant_sign(value: ConstValue) -> Option[int] {
+pub fn constant_sign(value: ConstValue) -> Option[isize] {
     match value {
         ConstValue::Int(value) => Option::Some(value.sign),
         ConstValue::Rat(value) => Option::Some(value.numerator.sign),
@@ -394,7 +394,7 @@ fn manual_rational_short_string(value: BigRat) -> string {
     } else {};
     let mut digits = natural_to_string(rounded);
     if digits.byte_len() > 6 {
-        rounded = natural_div_rem_small(rounded, 10).unwrap_or((rounded, 0.to_uint32())).0;
+        rounded = natural_div_rem_small(rounded, 10).unwrap_or((rounded, 0.to_u32())).0;
         digits = natural_to_string(rounded);
         exponent += 1;
     } else {};
@@ -540,7 +540,7 @@ pub fn constant_equal(left: ConstValue, right: ConstValue) -> bool {
     }
 }
 
-pub fn constant_exceeds_integer_precision(value: ConstValue, precision: int) -> bool {
+pub fn constant_exceeds_integer_precision(value: ConstValue, precision: isize) -> bool {
     match value {
         ConstValue::Int(value) => natural_bit_len(value.magnitude) > precision,
         _ => false,

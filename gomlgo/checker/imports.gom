@@ -8,10 +8,10 @@ use std::unicode;
 
 fn import_character_code(value: char) -> string {
     let digits = "0123456789ABCDEF";
-    let mut number = value.to_uint32();
+    let mut number = value.to_u32();
     let mut result = "";
     while number > 0 {
-        let digit = (number % 16).to_int();
+        let digit = (number % 16).to_isize();
         result = digits.byte_slice(digit, digit + 1) + result;
         number = number / 16;
     }
@@ -263,7 +263,7 @@ fn process_import_spec(state: CheckState, file_scope: go_types::ScopeId, node: s
     }
 }
 
-fn process_file_imports(state: CheckState, file_index: int) -> unit {
+fn process_file_imports(state: CheckState, file_index: isize) -> unit {
     let file = state.syntax.files[file_index];
     let file_scope = state.file_scopes[file_index];
     match syntax::get_node(state.syntax.arena, file.root) {

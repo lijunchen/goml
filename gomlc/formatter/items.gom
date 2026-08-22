@@ -3,7 +3,7 @@ package formatter;
 use module::cst;
 use module::lexer;
 
-fn file_node_category(value: LocatedNode) -> int {
+fn file_node_category(value: LocatedNode) -> isize {
     if node_is(value, cst::NodeKind::PACKAGE) {
         1
     } else if node_is(value, cst::NodeKind::USE) {
@@ -17,7 +17,7 @@ fn file_node_category(value: LocatedNode) -> int {
 
 fn format_file(value: Builder, node: LocatedNode) -> BuiltDoc {
     let output = parts();
-    let previous_category: Ref[int] = Ref::new(0);
+    let previous_category: Ref[isize] = Ref::new(0);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
@@ -175,7 +175,7 @@ fn format_block(value: Builder, node: LocatedNode) -> BuiltDoc {
     let content = parts();
     let meaningful: Ref[bool] = Ref::new(false);
     let block_nodes = meaningful_block_nodes(node);
-    let node_index: Ref[int] = Ref::new(0);
+    let node_index: Ref[isize] = Ref::new(0);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
@@ -238,7 +238,7 @@ fn format_impl(value: Builder, node: LocatedNode) -> BuiltDoc {
     let header = parts();
     let body = parts();
     let in_body: Ref[bool] = Ref::new(false);
-    let item_count: Ref[int] = Ref::new(0);
+    let item_count: Ref[isize] = Ref::new(0);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
@@ -389,7 +389,7 @@ fn enum_variants_require_vertical_fields(value: Builder, node: LocatedNode) -> b
 
 fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
     let content = parts();
-    let item_count: Ref[int] = Ref::new(0);
+    let item_count: Ref[isize] = Ref::new(0);
     let kind = cst::node_kind(node.node);
     let owns_open = cst::node_kind_equal(kind, cst::NodeKind::MATCH_ARM_LIST)
         || cst::node_kind_equal(kind, cst::NodeKind::SELECT_ARM_LIST);

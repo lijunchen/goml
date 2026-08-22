@@ -429,10 +429,10 @@ fn run_files(arguments: Vec[string]) -> unit {
                 fail(COMMAND_USAGE)
             } else {};
             vm_config.select_seed = match num::parse_uint(arguments[index + 1]) {
-                Ok(value) => value.to_uint64(),
+                Ok(value) => value.to_u64(),
                 Err(message) => {
                     fail("invalid select seed: " + message);
-                    0.to_uint64()
+                    0.to_u64()
                 },
             };
             index += 2;
@@ -459,14 +459,14 @@ fn run_files(arguments: Vec[string]) -> unit {
             } else {};
             vm_config.max_steps = match num::parse_int(arguments[index + 1]) {
                 Ok(value) => if value > 0 || value == -1 {
-                    value.to_int64()
+                    value.to_i64()
                 } else {
                     fail("maximum step count must be positive or -1");
-                    1.to_int64()
+                    1.to_i64()
                 },
                 Err(message) => {
                     fail("invalid maximum step count: " + message);
-                    1.to_int64()
+                    1.to_i64()
                 },
             };
             index += 2;

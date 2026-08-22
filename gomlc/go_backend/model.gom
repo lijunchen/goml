@@ -29,7 +29,7 @@ pub enum Type {
         elem: Type,
     },
     Array {
-        len: int,
+        len: isize,
         elem: Type,
     },
     Slice {
@@ -353,7 +353,7 @@ pub struct DynHelperNames {
 
 pub struct VariantInfo {
     pub owner_name: string,
-    pub tag: int,
+    pub tag: isize,
     pub variant_name: string,
     pub field_types: Vec[repr::Type],
     pub tag_only: bool,

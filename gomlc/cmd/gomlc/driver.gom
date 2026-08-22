@@ -58,10 +58,10 @@ struct PackageCompilation {
 }
 
 struct DiagnosticPosition {
-    line: int,
-    column: int,
-    line_start: int,
-    line_end: int,
+    line: isize,
+    column: isize,
+    line_start: isize,
+    line_end: isize,
 }
 
 struct StandardLibrary {
@@ -69,7 +69,7 @@ struct StandardLibrary {
 }
 
 pub struct SourceCompiler {
-    counter_start: int,
+    counter_start: isize,
     builtin_files: Vec[hir::File],
     builtins: core::File,
     builtin_interface: artifact::ArtifactInterfaceUnit,
@@ -83,12 +83,12 @@ struct ToolchainPackage {
     environment_exports: artifact::ArtifactPackageExports,
 }
 
-fn lower_builtin_core(counter: Ref[int]) -> core::File {
+fn lower_builtin_core(counter: Ref[isize]) -> core::File {
     let checked = tast::check_builtin_package_files(builtin_hir_files());
     lower_checked_builtin_core(checked, counter)
 }
 
-fn lower_checked_builtin_core(checked: tast::CheckResult, counter: Ref[int]) -> core::File {
+fn lower_checked_builtin_core(checked: tast::CheckResult, counter: Ref[isize]) -> core::File {
     if checked.tast.is_some() {
         core::lower_with_counter(checked, counter)
     } else {
@@ -841,7 +841,7 @@ fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Ve
     result
 }
 
-fn diagnostic_span_start(value: tast::Diagnostic) -> int {
+fn diagnostic_span_start(value: tast::Diagnostic) -> isize {
     match value.span {
         Some(span) => span.start,
         None => if value.source_path == "" {
@@ -852,7 +852,7 @@ fn diagnostic_span_start(value: tast::Diagnostic) -> int {
     }
 }
 
-fn diagnostic_span_end(value: tast::Diagnostic) -> int {
+fn diagnostic_span_end(value: tast::Diagnostic) -> isize {
     match value.span {
         Some(span) => span.end,
         None => if value.source_path == "" {
@@ -913,7 +913,7 @@ fn diagnostic_source(source_path: string, fallback_path: string, fallback_source
     }
 }
 
-fn source_position(source: string, offset: int) -> DiagnosticPosition {
+fn source_position(source: string, offset: isize) -> DiagnosticPosition {
     let limit = if offset < 0 {
         0
     } else if offset > source.byte_len() {
@@ -960,7 +960,7 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
     DiagnosticPosition { line, column, line_start, line_end }
 }
 
-fn repeat_char(value: char, count: int) -> string {
+fn repeat_char(value: char, count: isize) -> string {
     let builder = text::StringBuilder::new();
     for _ in 0..count {
         builder.write_char(value)
@@ -968,7 +968,7 @@ fn repeat_char(value: char, count: int) -> string {
     builder.finish()
 }
 
-fn diagnostic_visual_width(value: string) -> int {
+fn diagnostic_visual_width(value: string) -> isize {
     let mut width = 0;
     for character in value.chars() {
         if character == '\t' {
@@ -1241,7 +1241,7 @@ fn diagnostic_message_starts_with(value: string, prefix: string) -> bool {
     value.starts_with(prefix)
 }
 
-fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
+fn compact_diagnostic_phase(value: tast::Diagnostic) -> isize {
     if value.message == INFERENCE_FAILURE_MESSAGE {
         4
     } else if diagnostic_message_starts_with(value.message, "Could not infer the ") {
@@ -1263,7 +1263,7 @@ fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
     }
 }
 
-fn specialized_inference_priority(value: string) -> int {
+fn specialized_inference_priority(value: string) -> isize {
     if diagnostic_message_starts_with(value, "Could not infer the base type") {
         0
     } else if diagnostic_message_starts_with(value, "Could not infer the operand type") {
@@ -1441,7 +1441,7 @@ fn lower_mono_or_fail(value: core::File) -> mono::File {
     lowered
 }
 
-fn lower_lift_stage(value: mono::File, counter: Ref[int]) -> lift::File {
+fn lower_lift_stage(value: mono::File, counter: Ref[isize]) -> lift::File {
     let lowered = match lift::lower_checked_with_counter(value, counter) {
         Ok(value) => value,
         Err(message) => {
@@ -1465,7 +1465,7 @@ fn lower_lift_stage(value: mono::File, counter: Ref[int]) -> lift::File {
     result
 }
 
-fn lower_anf_stage(value: lift::File, counter: Ref[int]) -> anf::File {
+fn lower_anf_stage(value: lift::File, counter: Ref[isize]) -> anf::File {
     let result = anf::dce(anf::lower_with_counter(value, counter));
     match anf::verify(result) {
         Ok(_) => (),

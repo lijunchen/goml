@@ -486,7 +486,7 @@ fn parse_parameters(parser: Parser, result: bool) -> ast::Node {
     parse_field_list(parser, token::Kind::Lparen, token::Kind::Rparen, !result)
 }
 
-fn parse_func_type_after_keyword(parser: Parser, function_position: int) -> ast::Node {
+fn parse_func_type_after_keyword(parser: Parser, function_position: isize) -> ast::Node {
     let type_parameters = parse_type_parameters(parser);
     let parameters = parse_parameters(parser, false);
     let results = if at(parser, token::Kind::Lparen) {

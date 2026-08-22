@@ -8,9 +8,9 @@ use std::path;
 use std::text;
 
 pub struct SemVersion {
-    pub major: int,
-    pub minor: int,
-    pub patch: int,
+    pub major: isize,
+    pub minor: isize,
+    pub patch: isize,
 }
 
 struct RegistryEntry {
@@ -26,7 +26,7 @@ pub struct ResolvedModule {
     pub dependencies: Vec[manifest::Dependency],
 }
 
-fn decimal_number(value: string) -> Option[int] {
+fn decimal_number(value: string) -> Option[isize] {
     let length = value.byte_len();
     if length == 0 {
         return Option::None
@@ -37,7 +37,7 @@ fn decimal_number(value: string) -> Option[int] {
         if byte < b'0' || byte > b'9' {
             return Option::None
         } else {
-            result = result * 10 + (byte - b'0').to_int();
+            result = result * 10 + (byte - b'0').to_isize();
         }
     }
     Option::Some(result)
@@ -76,7 +76,7 @@ fn version_equal(left: SemVersion, right: SemVersion) -> bool {
 
 fn quoted_values(value: string) -> Vec[string] {
     let result: Vec[string] = Vec::from_array([]);
-    let mut start: Option[int] = Option::None;
+    let mut start: Option[isize] = Option::None;
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'"' {
             match start {
@@ -294,7 +294,7 @@ pub fn cached_root() -> Result[string, string] {
     Result::Ok(path::join(path::join(home, "cache"), "registry"))
 }
 
-fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
+fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[isize] {
     for index in 0..values.len() {
         if values[index].name == name {
             return Option::Some(index)

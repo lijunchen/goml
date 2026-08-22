@@ -4,7 +4,7 @@ use std::bytes;
 use std::path;
 use std::text;
 
-fn uri_unreserved(value: uint8) -> bool {
+fn uri_unreserved(value: u8) -> bool {
     (value >= 65 && value <= 90) || (value >= 97 && value <= 122) || (value >= 48 && value <= 57)
         || value == 45
         || value == 46
@@ -12,8 +12,8 @@ fn uri_unreserved(value: uint8) -> bool {
         || value == 126
 }
 
-fn uri_hex(value: uint8) -> char {
-    "0123456789ABCDEF".get(value.to_int())
+fn uri_hex(value: u8) -> char {
+    "0123456789ABCDEF".get(value.to_isize())
 }
 
 pub fn path_to_uri(value: string) -> string {
@@ -36,7 +36,7 @@ pub fn path_to_uri(value: string) -> string {
     builder.finish()
 }
 
-fn uri_hex_value(value: uint8) -> Option[uint8] {
+fn uri_hex_value(value: u8) -> Option[u8] {
     if value >= 48 && value <= 57 {
         Option::Some(value - 48)
     } else if value >= 65 && value <= 70 {
@@ -53,7 +53,7 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
     if !value.starts_with(prefix) {
         Result::Err("unsupported URI: " + value)
     } else {
-        let decoded_bytes: Vec[uint8] = Vec::from_array([]);
+        let decoded_bytes: Vec[u8] = Vec::from_array([]);
         let mut index = prefix.byte_len();
         while index < value.byte_len() {
             let byte = value.byte_get(index);

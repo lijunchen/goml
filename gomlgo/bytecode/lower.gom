@@ -8,8 +8,8 @@ use std::collections;
 use std::num;
 
 struct FunctionSource {
-    template: int,
-    package_index: int,
+    template: isize,
+    package_index: isize,
     declaration: syntax::NodeId,
     receiver: Option[syntax::NodeId],
     name: syntax::NodeId,
@@ -35,21 +35,21 @@ struct FunctionCaptures {
 
 struct CaptureUse {
     file: syntax::FileId,
-    start: int,
-    end: int,
+    start: isize,
+    end: isize,
     object: go_types::ObjectId,
 }
 
 struct FunctionSourceRange {
-    source: int,
-    package_index: int,
-    file: int,
-    start: int,
-    end: int,
+    source: isize,
+    package_index: isize,
+    file: isize,
+    start: isize,
+    end: isize,
     literal: bool,
 }
 
-fn compare_function_source_range(left: FunctionSourceRange, right: FunctionSourceRange) -> int {
+fn compare_function_source_range(left: FunctionSourceRange, right: FunctionSourceRange) -> isize {
     if left.package_index != right.package_index {
         left.package_index - right.package_index
     } else if left.file != right.file {
@@ -69,7 +69,7 @@ fn compare_function_source_range(left: FunctionSourceRange, right: FunctionSourc
     }
 }
 
-fn compare_capture_use(left: CaptureUse, right: CaptureUse) -> int {
+fn compare_capture_use(left: CaptureUse, right: CaptureUse) -> isize {
     if left.file.value != right.file.value {
         left.file.value - right.file.value
     } else if left.start != right.start {
@@ -81,7 +81,7 @@ fn compare_capture_use(left: CaptureUse, right: CaptureUse) -> int {
     }
 }
 
-fn first_capture_use_at_or_after(uses: Vec[CaptureUse], file: syntax::FileId, start: int) -> int {
+fn first_capture_use_at_or_after(uses: Vec[CaptureUse], file: syntax::FileId, start: isize) -> isize {
     let mut low = 0;
     let mut high = uses.len();
     while low < high {
@@ -106,7 +106,7 @@ struct IndexedRangeSource {
     string_value: bool,
     element_type: Option[go_types::TypeId],
     source_place: Option[PlaceId],
-    fixed_length: int,
+    fixed_length: isize,
 }
 
 enum LoweredRangeSource {
@@ -152,20 +152,20 @@ struct FunctionBuilder {
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     function_templates: Vec[FunctionSource],
-    function_template_indices: HashMap[int, int],
+    function_template_indices: HashMap[isize, isize],
     function_instances: Vec[FunctionInstance],
-    function_instance_indices: Vec[Vec[int]],
+    function_instance_indices: Vec[Vec[isize]],
     pending_functions: Vec[FunctionSource],
-    next_function: Ref[int],
-    literal_functions: HashMap[string, int],
+    next_function: Ref[isize],
+    literal_functions: HashMap[string, isize],
     template_capture_objects: Vec[FunctionCaptures],
     function_capture_objects: Vec[FunctionCaptures],
     type_parameters: Vec[go_types::TypeParameter],
     type_arguments: Vec[go_types::TypeId],
     register_types: Vec[go_types::TypeId],
-    place_count: Ref[int],
+    place_count: Ref[isize],
     locals: Vec[Local],
-    object_locals: HashMap[int, LocalId],
+    object_locals: HashMap[isize, LocalId],
     captures: Vec[LocalId],
     parameters: Vec[LocalId],
     results: Vec[LocalId],
@@ -223,7 +223,7 @@ enum AssignmentTarget {
     },
 }
 
-fn option_slots[T](count: int) -> Vec[Option[T]] {
+fn option_slots[T](count: isize) -> Vec[Option[T]] {
     let result: Vec[Option[T]] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(Option::None)
@@ -231,8 +231,8 @@ fn option_slots[T](count: int) -> Vec[Option[T]] {
     result
 }
 
-fn int_vector_slots(count: int) -> Vec[Vec[int]] {
-    let result: Vec[Vec[int]] = Vec::with_capacity(count);
+fn int_vector_slots(count: isize) -> Vec[Vec[isize]] {
+    let result: Vec[Vec[isize]] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(Vec::from_array([]))
     }
@@ -306,7 +306,7 @@ fn collect_function_sources(
     program: execution::ExecutionProgram,
     object_functions: Vec[Option[FunctionId]],
     object_globals: Vec[Option[GlobalId]],
-    literal_functions: HashMap[string, int],
+    literal_functions: HashMap[string, isize],
     diagnostics: Vec[LowerDiagnostic],
 ) -> Vec[FunctionSource] {
     let sources: Vec[FunctionSource] = Vec::from_array([]);
@@ -662,7 +662,7 @@ fn analyze_function_capture_objects(
                 "function literal body is missing",
             )?;
             let function_scope = execution::require_scope(package_value.index, source.type_node)?.scope;
-            let selected: HashMap[int, bool] = HashMap::from_array([]);
+            let selected: HashMap[isize, bool] = HashMap::from_array([]);
             let uses = package_uses[source.package_index];
             let mut usage_index = first_capture_use_at_or_after(uses, body.file, body.span.start);
             while usage_index < uses.len() {
@@ -1447,7 +1447,7 @@ fn source_object(builder: FunctionBuilder, object: go_types::ObjectId) -> go_typ
     }
 }
 
-fn find_function_template(builder: FunctionBuilder, object: go_types::ObjectId) -> Option[int] {
+fn find_function_template(builder: FunctionBuilder, object: go_types::ObjectId) -> Option[isize] {
     let source = source_object(builder, object);
     builder.function_template_indices[source.value]
 }
@@ -1991,13 +1991,13 @@ fn lower_method_receiver(
     node: syntax::NodeId,
     expression: syntax::NodeId,
     object: go_types::ObjectId,
-    selection_index: Vec[int],
+    selection_index: Vec[isize],
 ) -> Result[RegisterId, string] {
     let expected = method_receiver_type(builder, object)?;
     if selection_index.is_empty() {
         return Result::Err("method selection has an empty path")
     } else {};
-    let fields: Vec[int] = Vec::with_capacity(selection_index.len() - 1);
+    let fields: Vec[isize] = Vec::with_capacity(selection_index.len() - 1);
     for index in 0..selection_index.len() - 1 {
         fields.push(selection_index[index])
     }
@@ -2029,7 +2029,7 @@ fn lower_method_receiver(
     }
 }
 
-fn field_path_type(builder: FunctionBuilder, source: go_types::TypeId, fields: Vec[int]) -> Result[
+fn field_path_type(builder: FunctionBuilder, source: go_types::TypeId, fields: Vec[isize]) -> Result[
     go_types::TypeId,
     string,
 ] {
@@ -2057,7 +2057,7 @@ fn lower_receiver_value(
     builder: FunctionBuilder,
     node: syntax::NodeId,
     expression: syntax::NodeId,
-    fields: Vec[int],
+    fields: Vec[isize],
     type_id: go_types::TypeId,
 ) -> Result[RegisterId, string] {
     if fields.is_empty() {
@@ -2073,7 +2073,7 @@ fn lower_receiver_place(
     builder: FunctionBuilder,
     node: syntax::NodeId,
     expression: syntax::NodeId,
-    fields: Vec[int],
+    fields: Vec[isize],
 ) -> Result[(Option[PlaceId], go_types::TypeId), string] {
     let mut current_type = node_type(builder, expression)?;
     let mut current_place = match pointer_element(builder, current_type) {
@@ -2251,7 +2251,7 @@ fn lower_call_arguments(
     node: syntax::NodeId,
     function_node: syntax::NodeId,
     arguments: Vec[syntax::NodeId],
-    ellipsis: int,
+    ellipsis: isize,
     target: CallTarget,
 ) -> Result[Vec[RegisterId], string] {
     let raw_arguments: Vec[RegisterId] = Vec::from_array([]);
@@ -2328,7 +2328,7 @@ fn lower_call(
     node: syntax::NodeId,
     function_node: syntax::NodeId,
     arguments: Vec[syntax::NodeId],
-    ellipsis: int,
+    ellipsis: isize,
 ) -> Result[Vec[RegisterId], string] {
     let function_fact = node_fact(builder, function_node)?;
     if function_fact.type_expr {
@@ -3714,7 +3714,7 @@ fn indexed_range_source(
     string_value: bool,
     element_type: Option[go_types::TypeId],
     source_place: Option[PlaceId],
-    fixed_length: int,
+    fixed_length: isize,
 ) -> Result[LoweredRangeSource, string] {
     let int_type = go_types::basic_type(builder.world, "int").ok_or("world has no int type")?;
     let bool_type = go_types::basic_type(builder.world, "bool").ok_or("world has no bool type")?;
@@ -3737,11 +3737,11 @@ fn indexed_range_source(
     )
 }
 
-fn checked_range_length(length: int64) -> Result[int, string] {
-    if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
+fn checked_range_length(length: i64) -> Result[isize, string] {
+    if length < 0.to_i64() || length > 9223372036854775807.to_i64() {
         Result::Err("range array length is outside the host integer range")
     } else {
-        Result::Ok(length.to_int())
+        Result::Ok(length.to_isize())
     }
 }
 
@@ -4342,7 +4342,7 @@ fn lower_type_switch(
     let clauses = type_switch_clauses(builder, body, guard.1)?;
     let exit = new_block(builder);
     let bool_type = go_types::basic_type(builder.world, "bool").ok_or("world has no bool type")?;
-    let mut default_clause: Option[int] = Option::None;
+    let mut default_clause: Option[isize] = Option::None;
     for clause_index in 0..clauses.len() {
         let clause = clauses[clause_index];
         if clause.expressions.is_empty() {
@@ -5178,12 +5178,12 @@ fn lower_function(
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     function_templates: Vec[FunctionSource],
-    function_template_indices: HashMap[int, int],
+    function_template_indices: HashMap[isize, isize],
     function_instances: Vec[FunctionInstance],
-    function_instance_indices: Vec[Vec[int]],
+    function_instance_indices: Vec[Vec[isize]],
     pending_functions: Vec[FunctionSource],
-    next_function: Ref[int],
-    literal_functions: HashMap[string, int],
+    next_function: Ref[isize],
+    literal_functions: HashMap[string, isize],
     template_capture_objects: Vec[FunctionCaptures],
     function_capture_objects: Vec[FunctionCaptures],
 ) -> Result[BytecodeFunction, string] {
@@ -5276,12 +5276,12 @@ fn lower_package_initializer(
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     function_templates: Vec[FunctionSource],
-    function_template_indices: HashMap[int, int],
+    function_template_indices: HashMap[isize, isize],
     function_instances: Vec[FunctionInstance],
-    function_instance_indices: Vec[Vec[int]],
+    function_instance_indices: Vec[Vec[isize]],
     pending_functions: Vec[FunctionSource],
-    next_function: Ref[int],
-    literal_functions: HashMap[string, int],
+    next_function: Ref[isize],
+    literal_functions: HashMap[string, isize],
     template_capture_objects: Vec[FunctionCaptures],
     function_capture_objects: Vec[FunctionCaptures],
 ) -> Result[BytecodeFunction, string] {
@@ -5484,10 +5484,10 @@ fn seed_function_instances(
     captures: Vec[FunctionCaptures],
     object_functions: Vec[Option[FunctionId]],
     instances: Vec[FunctionInstance],
-    instance_indices: Vec[Vec[int]],
+    instance_indices: Vec[Vec[isize]],
     pending: Vec[FunctionSource],
     instance_captures: Vec[FunctionCaptures],
-    next_function: Ref[int],
+    next_function: Ref[isize],
 ) -> unit {
     for template in templates {
         if template.type_parameters.is_empty() {
@@ -5539,16 +5539,16 @@ fn lower_pending_functions(
     object_native_calls: Vec[Option[NativeCallId]],
     native_calls: Vec[NativeCall],
     templates: Vec[FunctionSource],
-    template_indices: HashMap[int, int],
+    template_indices: HashMap[isize, isize],
     instances: Vec[FunctionInstance],
-    instance_indices: Vec[Vec[int]],
+    instance_indices: Vec[Vec[isize]],
     pending: Vec[FunctionSource],
-    next_function: Ref[int],
-    literal_functions: HashMap[string, int],
+    next_function: Ref[isize],
+    literal_functions: HashMap[string, isize],
     template_captures: Vec[FunctionCaptures],
     instance_captures: Vec[FunctionCaptures],
     functions: Vec[BytecodeFunction],
-    lowered: Ref[int],
+    lowered: Ref[isize],
     diagnostics: Vec[LowerDiagnostic],
 ) -> unit {
     while lowered.get() < pending.len() {
@@ -5604,7 +5604,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
     } else {};
     let object_functions: Vec[Option[FunctionId]] = option_slots(program.world.objects.len());
     let object_globals: Vec[Option[GlobalId]] = option_slots(program.world.objects.len());
-    let literal_functions: HashMap[string, int] = HashMap::from_array([]);
+    let literal_functions: HashMap[string, isize] = HashMap::from_array([]);
     let templates = collect_function_sources(
         program,
         object_functions,
@@ -5612,7 +5612,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
         literal_functions,
         diagnostics,
     );
-    let template_indices: HashMap[int, int] = HashMap::from_array([]);
+    let template_indices: HashMap[isize, isize] = HashMap::from_array([]);
     for index in 0..templates.len() {
         template_indices[templates[index].object.value] = index;
     }

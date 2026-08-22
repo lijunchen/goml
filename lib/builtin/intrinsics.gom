@@ -7,10 +7,10 @@ pub extern fn unit_to_string(value: unit) -> string;
 pub extern fn bool_to_string(value: bool) -> string;
 
 #[runtime("core.string_len")]
-pub extern fn string_len(value: string) -> int;
+pub extern fn string_len(value: string) -> isize;
 
 #[runtime("core.string_byte_get")]
-pub extern fn string_byte_get(value: string, index: int) -> byte;
+pub extern fn string_byte_get(value: string, index: isize) -> byte;
 
 #[runtime("core.string_to_bytes")]
 pub extern fn string_to_bytes(value: string) -> Vec[byte];
@@ -19,88 +19,88 @@ pub extern fn string_to_bytes(value: string) -> Vec[byte];
 pub extern fn string_concat(values: Vec[string]) -> string;
 
 #[runtime("core.char_from_uint32")]
-pub extern fn char_from_uint32_raw(value: uint32) -> (bool, char);
+pub extern fn char_from_uint32_raw(value: u32) -> (bool, char);
 
 #[runtime("core.int_to_string")]
-pub extern fn int_to_string(value: int) -> string;
+pub extern fn int_to_string(value: isize) -> string;
 
 #[runtime("core.int8_to_string")]
-pub extern fn int8_to_string(value: int8) -> string;
+pub extern fn int8_to_string(value: i8) -> string;
 
 #[runtime("core.int16_to_string")]
-pub extern fn int16_to_string(value: int16) -> string;
+pub extern fn int16_to_string(value: i16) -> string;
 
 #[runtime("core.int32_to_string")]
-pub extern fn int32_to_string(value: int32) -> string;
+pub extern fn int32_to_string(value: i32) -> string;
 
 #[runtime("core.int64_to_string")]
-pub extern fn int64_to_string(value: int64) -> string;
+pub extern fn int64_to_string(value: i64) -> string;
 
 #[runtime("core.uint_to_string")]
-pub extern fn uint_to_string(value: uint) -> string;
+pub extern fn uint_to_string(value: usize) -> string;
 
 #[runtime("core.uint8_to_string")]
-pub extern fn uint8_to_string(value: uint8) -> string;
+pub extern fn uint8_to_string(value: u8) -> string;
 
 #[runtime("core.uint16_to_string")]
-pub extern fn uint16_to_string(value: uint16) -> string;
+pub extern fn uint16_to_string(value: u16) -> string;
 
 #[runtime("core.uint32_to_string")]
-pub extern fn uint32_to_string(value: uint32) -> string;
+pub extern fn uint32_to_string(value: u32) -> string;
 
 #[runtime("core.uint64_to_string")]
-pub extern fn uint64_to_string(value: uint64) -> string;
+pub extern fn uint64_to_string(value: u64) -> string;
 
 #[runtime("core.float32_to_string")]
-pub extern fn float32_to_string(value: float32) -> string;
+pub extern fn float32_to_string(value: f32) -> string;
 
 #[runtime("core.float64_to_string")]
-pub extern fn float64_to_string(value: float64) -> string;
+pub extern fn float64_to_string(value: f64) -> string;
 
 #[runtime("core.string_parse_float32")]
-pub extern fn string_parse_float32(value: string) -> (bool, float64);
+pub extern fn string_parse_float32(value: string) -> (bool, f64);
 
 #[runtime("core.string_parse_float64")]
-pub extern fn string_parse_float64(value: string) -> (bool, float64);
+pub extern fn string_parse_float64(value: string) -> (bool, f64);
 
 #[runtime("core.int_hash")]
-pub extern fn int_hash(value: int) -> uint64;
+pub extern fn int_hash(value: isize) -> u64;
 
 #[runtime("core.int8_hash")]
-pub extern fn int8_hash(value: int8) -> uint64;
+pub extern fn int8_hash(value: i8) -> u64;
 
 #[runtime("core.int16_hash")]
-pub extern fn int16_hash(value: int16) -> uint64;
+pub extern fn int16_hash(value: i16) -> u64;
 
 #[runtime("core.int32_hash")]
-pub extern fn int32_hash(value: int32) -> uint64;
+pub extern fn int32_hash(value: i32) -> u64;
 
 #[runtime("core.int64_hash")]
-pub extern fn int64_hash(value: int64) -> uint64;
+pub extern fn int64_hash(value: i64) -> u64;
 
 #[runtime("core.uint_hash")]
-pub extern fn uint_hash(value: uint) -> uint64;
+pub extern fn uint_hash(value: usize) -> u64;
 
 #[runtime("core.uint8_hash")]
-pub extern fn uint8_hash(value: uint8) -> uint64;
+pub extern fn uint8_hash(value: u8) -> u64;
 
 #[runtime("core.uint16_hash")]
-pub extern fn uint16_hash(value: uint16) -> uint64;
+pub extern fn uint16_hash(value: u16) -> u64;
 
 #[runtime("core.uint32_hash")]
-pub extern fn uint32_hash(value: uint32) -> uint64;
+pub extern fn uint32_hash(value: u32) -> u64;
 
 #[runtime("core.float32_hash")]
-pub extern fn float32_hash(value: float32) -> uint64;
+pub extern fn float32_hash(value: f32) -> u64;
 
 #[runtime("core.float64_hash")]
-pub extern fn float64_hash(value: float64) -> uint64;
+pub extern fn float64_hash(value: f64) -> u64;
 
 #[runtime("core.string_hash")]
-pub extern fn string_hash(value: string) -> uint64;
+pub extern fn string_hash(value: string) -> u64;
 
 #[runtime("core.char_hash")]
-pub extern fn char_hash(value: char) -> uint64;
+pub extern fn char_hash(value: char) -> u64;
 
 #[runtime("core.string_print")]
 pub extern fn string_print(value: string) -> unit;
@@ -112,28 +112,28 @@ pub extern fn string_println(value: string) -> unit;
 pub extern fn vec_new[T]() -> Vec[T];
 
 #[intrinsic("vec.with_capacity")]
-pub extern fn vec_with_capacity[T](capacity: int) -> Vec[T];
+pub extern fn vec_with_capacity[T](capacity: isize) -> Vec[T];
 
 #[intrinsic("vec.push")]
 pub extern fn vec_push[T](values: Vec[T], value: T) -> unit;
 
 #[intrinsic("vec.get")]
-pub extern fn vec_get[T](values: Vec[T], index: int) -> T;
+pub extern fn vec_get[T](values: Vec[T], index: isize) -> T;
 
 #[intrinsic("vec.set")]
-pub extern fn vec_set[T](values: Vec[T], index: int, value: T) -> unit;
+pub extern fn vec_set[T](values: Vec[T], index: isize, value: T) -> unit;
 
 #[intrinsic("vec.len")]
-pub extern fn vec_len[T](values: Vec[T]) -> int;
+pub extern fn vec_len[T](values: Vec[T]) -> isize;
 
 #[intrinsic("vec.capacity")]
-pub extern fn vec_capacity[T](values: Vec[T]) -> int;
+pub extern fn vec_capacity[T](values: Vec[T]) -> isize;
 
 #[intrinsic("vec.reserve")]
-pub extern fn vec_reserve[T](values: Vec[T], additional: int) -> unit;
+pub extern fn vec_reserve[T](values: Vec[T], additional: isize) -> unit;
 
 #[intrinsic("vec.truncate")]
-pub extern fn vec_truncate[T](values: Vec[T], length: int) -> unit;
+pub extern fn vec_truncate[T](values: Vec[T], length: isize) -> unit;
 
 #[intrinsic("once_cell.new")]
 pub extern fn once_cell_new[T]() -> OnceCell[T];
@@ -142,16 +142,16 @@ pub extern fn once_cell_new[T]() -> OnceCell[T];
 pub extern fn once_cell_get_or_init[T](cell: OnceCell[T], init: () -> T) -> T;
 
 #[intrinsic("slice.new")]
-pub extern fn slice[T](values: Vec[T], start: int, end: int) -> Slice[T];
+pub extern fn slice[T](values: Vec[T], start: isize, end: isize) -> Slice[T];
 
 #[intrinsic("slice.get")]
-pub extern fn slice_get[T](values: Slice[T], index: int) -> T;
+pub extern fn slice_get[T](values: Slice[T], index: isize) -> T;
 
 #[intrinsic("slice.len")]
-pub extern fn slice_len[T](values: Slice[T]) -> int;
+pub extern fn slice_len[T](values: Slice[T]) -> isize;
 
 #[intrinsic("slice.sub")]
-pub extern fn slice_sub[T](values: Slice[T], start: int, end: int) -> Slice[T];
+pub extern fn slice_sub[T](values: Slice[T], start: isize, end: isize) -> Slice[T];
 
 #[intrinsic("hashmap.new")]
 pub extern fn hashmap_new[K: Hash + Eq, V]() -> HashMap[K, V];
@@ -166,7 +166,7 @@ pub extern fn hashmap_set[K: Hash + Eq, V](values: HashMap[K, V], key: K, value:
 pub extern fn hashmap_remove[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> unit;
 
 #[intrinsic("hashmap.len")]
-pub extern fn hashmap_len[K: Hash + Eq, V](values: HashMap[K, V]) -> int;
+pub extern fn hashmap_len[K: Hash + Eq, V](values: HashMap[K, V]) -> isize;
 
 #[intrinsic("hashmap.contains")]
 pub extern fn hashmap_contains[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> bool;
@@ -175,7 +175,7 @@ pub extern fn hashmap_contains[K: Hash + Eq, V](values: HashMap[K, V], key: K) -
 pub extern fn hashmap_entries[K: Hash + Eq, V](values: HashMap[K, V]) -> Vec[(K, V)];
 
 #[intrinsic("channel.new")]
-pub extern fn channel_new[T](capacity: int) -> Channel[T];
+pub extern fn channel_new[T](capacity: isize) -> Channel[T];
 
 #[intrinsic("channel.send")]
 pub extern fn channel_send[T](channel: Channel[T], value: T) -> unit;
@@ -184,10 +184,10 @@ pub extern fn channel_send[T](channel: Channel[T], value: T) -> unit;
 pub extern fn channel_recv[T](channel: Channel[T]) -> (T, bool);
 
 #[intrinsic("channel.send_cancel")]
-pub extern fn channel_send_cancel[T](channel: Channel[T], value: T, cancel: int64) -> bool;
+pub extern fn channel_send_cancel[T](channel: Channel[T], value: T, cancel: i64) -> bool;
 
 #[intrinsic("channel.recv_cancel")]
-pub extern fn channel_recv_cancel[T](channel: Channel[T], cancel: int64) -> (T, bool, bool);
+pub extern fn channel_recv_cancel[T](channel: Channel[T], cancel: i64) -> (T, bool, bool);
 
 #[intrinsic("channel.close")]
 pub extern fn channel_close[T](channel: Channel[T]) -> unit;
@@ -212,27 +212,27 @@ pub extern fn sender_close[T](channel: Sender[T]) -> unit;
 
 #[intrinsic("channel.dynamic_select")]
 pub extern fn channel_dynamic_select[T](
-    kinds: Slice[int],
+    kinds: Slice[isize],
     receivers: Slice[Receiver[T]],
     senders: Slice[Sender[T]],
     values: Slice[T],
-) -> (int, int, T, bool, bool);
+) -> (isize, isize, T, bool, bool);
 
 #[intrinsic("channel.dynamic_try_select")]
 pub extern fn channel_dynamic_try_select[T](
-    kinds: Slice[int],
+    kinds: Slice[isize],
     receivers: Slice[Receiver[T]],
     senders: Slice[Sender[T]],
     values: Slice[T],
-) -> (int, int, T, bool, bool);
+) -> (isize, isize, T, bool, bool);
 
 #[intrinsic("channel.dynamic_try_select_priority")]
 pub extern fn channel_dynamic_try_select_priority[T](
-    kinds: Slice[int],
+    kinds: Slice[isize],
     receivers: Slice[Receiver[T]],
     senders: Slice[Sender[T]],
     values: Slice[T],
-) -> (int, int, T, bool, bool);
+) -> (isize, isize, T, bool, bool);
 
 #[intrinsic("ref.new")]
 pub extern fn ref[T](value: T) -> Ref[T];
@@ -247,7 +247,7 @@ pub extern fn ref_set[T](reference: Ref[T], value: T) -> unit;
 pub extern fn ptr_eq[T](left: Ref[T], right: Ref[T]) -> bool;
 
 #[intrinsic("ref.ptr_hash")]
-pub extern fn ptr_hash[T](reference: Ref[T]) -> uint64;
+pub extern fn ptr_hash[T](reference: Ref[T]) -> u64;
 
 #[intrinsic("compiler.missing")]
 pub extern fn missing[T](message: string) -> T;

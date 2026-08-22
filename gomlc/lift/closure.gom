@@ -23,8 +23,8 @@ struct Capture {
 }
 
 struct State {
-    next_env: Ref[int],
-    next_name: Ref[int],
+    next_env: Ref[isize],
+    next_name: Ref[isize],
     generated: Vec[LowerFunction],
     generated_structs: Vec[mono::StructDef],
     closures: Vec[ClosureInfo],
@@ -310,7 +310,7 @@ fn fresh_name(state: State, prefix: string) -> string {
     prefix + index.to_string()
 }
 
-fn trailing_number(value: string) -> Option[int] {
+fn trailing_number(value: string) -> Option[isize] {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return Option::None
@@ -339,7 +339,7 @@ fn trailing_number(value: string) -> Option[int] {
     }
 }
 
-fn parse_digits(value: string, start: int) -> int {
+fn parse_digits(value: string, start: isize) -> isize {
     let mut result = 0;
     for index in start..value.byte_len() {
         let byte = value.byte_get(index);
@@ -369,7 +369,7 @@ fn parse_digits(value: string, start: int) -> int {
     result
 }
 
-fn observe_name(maximum: Ref[int], name: string) -> unit {
+fn observe_name(maximum: Ref[isize], name: string) -> unit {
     match trailing_number(name) {
         Some(value) => if value > maximum.get() {
             maximum.set(value)
@@ -378,20 +378,20 @@ fn observe_name(maximum: Ref[int], name: string) -> unit {
     }
 }
 
-fn observe_exprs(maximum: Ref[int], values: Vec[mono::Expr]) -> unit {
+fn observe_exprs(maximum: Ref[isize], values: Vec[mono::Expr]) -> unit {
     for value in values {
         observe_expr(maximum, value)
     }
 }
 
-fn observe_optional_expr(maximum: Ref[int], value: Option[mono::Expr]) -> unit {
+fn observe_optional_expr(maximum: Ref[isize], value: Option[mono::Expr]) -> unit {
     match value {
         Some(value) => observe_expr(maximum, value),
         None => (),
     }
 }
 
-fn observe_block(maximum: Ref[int], value: mono::Block) -> unit {
+fn observe_block(maximum: Ref[isize], value: mono::Block) -> unit {
     for stmt in value.stmts {
         observe_name(maximum, stmt.name);
         observe_expr(maximum, stmt.value)
@@ -399,7 +399,7 @@ fn observe_block(maximum: Ref[int], value: mono::Block) -> unit {
     observe_optional_expr(maximum, value.tail)
 }
 
-fn observe_expr(maximum: Ref[int], value: mono::Expr) -> unit {
+fn observe_expr(maximum: Ref[isize], value: mono::Expr) -> unit {
     match value {
         Var { name: _, ty: _ } => (),
         Constr { constructor: _, args, ty: _ } => observe_exprs(maximum, args),
@@ -474,7 +474,7 @@ fn observe_expr(maximum: Ref[int], value: mono::Expr) -> unit {
     }
 }
 
-fn initial_name_counter(value: mono::File) -> int {
+fn initial_name_counter(value: mono::File) -> isize {
     let maximum = Ref::new(-1);
     for function in value.functions {
         for param in function.params {
@@ -913,7 +913,7 @@ fn collect_captured(
     }
 }
 
-fn make_field_name(name: string, index: int) -> string {
+fn make_field_name(name: string, index: isize) -> string {
     match sanitize_name(name) {
         Some(name) => name + "_" + index.to_string(),
         None => "field_" + index.to_string(),
@@ -1115,7 +1115,7 @@ fn transform_function(state: State, value: mono::Function) -> LowerFunction {
     }
 }
 
-fn lambda_lift_with_counter(value: mono::File, counter: Ref[int]) -> LambdaLiftResult {
+fn lambda_lift_with_counter(value: mono::File, counter: Ref[isize]) -> LambdaLiftResult {
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;

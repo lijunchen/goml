@@ -6,7 +6,7 @@ use module::lexer;
 use module::tast;
 
 pub struct InlayHint {
-    pub position: int,
+    pub position: isize,
     pub label: string,
     pub span: ast::Span,
 }
@@ -45,11 +45,11 @@ fn let_has_annotation(syntax: SyntaxIndex, statement: SyntaxNode) -> bool {
     false
 }
 
-fn span_overlaps_range(span: ast::Span, start: int, end: int) -> bool {
+fn span_overlaps_range(span: ast::Span, start: isize, end: isize) -> bool {
     span.end >= start && span.start <= end
 }
 
-pub fn inlay_hints_in_range(value: Analysis, start: int, end: int) -> Vec[InlayHint] {
+pub fn inlay_hints_in_range(value: Analysis, start: isize, end: isize) -> Vec[InlayHint] {
     let hints: Vec[InlayHint] = Vec::from_array([]);
     for fact in value.checked.typeck_results.locals {
         let within_range = match fact.span {

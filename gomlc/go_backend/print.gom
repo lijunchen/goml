@@ -5,7 +5,7 @@ use module::pretty;
 use std::task;
 use std::text;
 
-fn utf8_width(value: uint8) -> int {
+fn utf8_width(value: u8) -> isize {
     if value < 128 {
         1
     } else if value < 224 {
@@ -17,7 +17,7 @@ fn utf8_width(value: uint8) -> int {
     }
 }
 
-fn hex_digit(value: uint8) -> char {
+fn hex_digit(value: u8) -> char {
     match value {
         0 => '0',
         1 => '1',
@@ -836,7 +836,7 @@ fn item_doc(value: Item) -> pretty::Doc {
 }
 
 fn item_docs(values: Vec[Item]) -> Vec[pretty::Doc] {
-    let work: Vec[(int, Item)] = Vec::with_capacity(values.len());
+    let work: Vec[(isize, Item)] = Vec::with_capacity(values.len());
     let docs: Vec[Option[pretty::Doc]] = Vec::with_capacity(values.len());
     for index in 0..values.len() {
         work.push((index, values[index]));
@@ -845,7 +845,7 @@ fn item_docs(values: Vec[Item]) -> Vec[pretty::Doc] {
     let completed: Result[unit, Vec[task::IndexedError[unit]]] = task::for_each_concurrent(
         8,
         work,
-        |_: task::CancelToken, item: (int, Item)| {
+        |_: task::CancelToken, item: (isize, Item)| {
             docs[item.0] = Option::Some(item_doc(item.1));
             Result::Ok(())
         },

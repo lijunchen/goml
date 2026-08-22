@@ -17,7 +17,7 @@ fn ident_node(value: token::Token) -> ast::Node {
     )
 }
 
-fn missing_ident(offset: int) -> ast::Node {
+fn missing_ident(offset: isize) -> ast::Node {
     ast::node(
         ast::Kind::Ident,
         offset,
@@ -57,7 +57,7 @@ fn basic_lit_node(value: token::Token) -> ast::Node {
     )
 }
 
-fn bad_expr(start: int, end: int) -> ast::Node {
+fn bad_expr(start: isize, end: isize) -> ast::Node {
     ast::node(
         ast::Kind::BadExpr,
         start,
@@ -68,7 +68,7 @@ fn bad_expr(start: int, end: int) -> ast::Node {
     )
 }
 
-fn bad_stmt(start: int, end: int) -> ast::Node {
+fn bad_stmt(start: isize, end: isize) -> ast::Node {
     ast::node(
         ast::Kind::BadStmt,
         start,
@@ -79,7 +79,7 @@ fn bad_stmt(start: int, end: int) -> ast::Node {
     )
 }
 
-fn bad_decl(start: int, end: int) -> ast::Node {
+fn bad_decl(start: isize, end: isize) -> ast::Node {
     ast::node(
         ast::Kind::BadDecl,
         start,
@@ -133,7 +133,7 @@ fn field_node(names: Vec[ast::Node], type_value: Option[ast::Node], tag: Option[
     )
 }
 
-fn field_list_node(opening: int, fields: Vec[ast::Node], closing: int) -> ast::Node {
+fn field_list_node(opening: isize, fields: Vec[ast::Node], closing: isize) -> ast::Node {
     let start = if opening >= 0 {
         opening
     } else if !fields.is_empty() {
@@ -178,7 +178,7 @@ fn expr_stmt_node(expression: ast::Node) -> ast::Node {
     )
 }
 
-fn block_node(left: int, statements: Vec[ast::Node], right: int) -> ast::Node {
+fn block_node(left: isize, statements: Vec[ast::Node], right: isize) -> ast::Node {
     let end = if right >= 0 {
         right + 1
     } else if !statements.is_empty() {

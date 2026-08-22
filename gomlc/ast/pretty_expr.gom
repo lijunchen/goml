@@ -3,12 +3,12 @@ package ast;
 use module::pretty as doc;
 use std::text;
 
-fn pretty_decimal_byte(value: string) -> uint8 {
+fn pretty_decimal_byte(value: string) -> u8 {
     let mut result = 0;
     for index in 0..value.byte_len() {
-        result = result * 10 + (value.byte_get(index) - 48).to_int();
+        result = result * 10 + (value.byte_get(index) - 48).to_isize();
     }
-    result.to_uint8()
+    result.to_u8()
 }
 
 fn pretty_write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
@@ -126,7 +126,7 @@ fn pretty_record_doc(header: doc::Doc, values: Vec[doc::Doc]) -> doc::Doc {
     }
 }
 
-fn pretty_braced_docs(values: Vec[doc::Doc], indentation: int) -> doc::Doc {
+fn pretty_braced_docs(values: Vec[doc::Doc], indentation: isize) -> doc::Doc {
     if values.is_empty() {
         doc::text("{}")
     } else {

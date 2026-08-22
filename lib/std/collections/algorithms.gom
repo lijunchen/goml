@@ -2,11 +2,11 @@ package collections;
 
 use module::cmp;
 
-pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
+pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> isize) -> unit {
     values.stable_sort_by(compare)
 }
 
-pub fn sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
+pub fn sort_by[T](values: Vec[T], compare: (T, T) -> isize) -> unit {
     values.sort_by(compare)
 }
 
@@ -26,27 +26,27 @@ pub fn sort[T: cmp::Ord](values: Vec[T]) -> unit {
     values.sort_by_ordering(|left: T, right: T| cmp::compare(left, right))
 }
 
-pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
+pub fn binary_search_by[T](values: Vec[T], compare: (T) -> isize) -> Option[isize] {
     values.binary_search_by(compare)
 }
 
-pub fn binary_search_by_ordering[T](values: Vec[T], compare: (T) -> cmp::Ordering) -> Option[int] {
+pub fn binary_search_by_ordering[T](values: Vec[T], compare: (T) -> cmp::Ordering) -> Option[isize] {
     values.binary_search_by_ordering(compare)
 }
 
-pub fn binary_search[T: cmp::Ord](values: Vec[T], expected: T) -> Option[int] {
+pub fn binary_search[T: cmp::Ord](values: Vec[T], expected: T) -> Option[isize] {
     values.binary_search_by_ordering(|value: T| cmp::compare(value, expected))
 }
 
-pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
+pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[isize] {
     values.position(predicate)
 }
 
-pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
+pub fn min_by[T](values: Vec[T], compare: (T, T) -> isize) -> Option[T] {
     values.min_by(compare)
 }
 
-pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
+pub fn max_by[T](values: Vec[T], compare: (T, T) -> isize) -> Option[T] {
     values.max_by(compare)
 }
 

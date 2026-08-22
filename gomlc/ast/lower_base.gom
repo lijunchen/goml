@@ -6,9 +6,9 @@ use module::lexer;
 struct LowerCtx {
     diagnostics: Vec[cst::Diagnostic],
     invalid_self_type_spans: Vec[Span],
-    expr_depth: Ref[int],
-    pattern_depth: Ref[int],
-    type_depth: Ref[int],
+    expr_depth: Ref[isize],
+    pattern_depth: Ref[isize],
+    type_depth: Ref[isize],
 }
 
 fn push_error(ctx: LowerCtx, value_span: Span, message: string) -> unit {

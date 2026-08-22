@@ -11,7 +11,7 @@ impl Error {
         kind: io::ErrorKind,
         operation: string,
         path: Option[string],
-        raw_os_code: Option[int],
+        raw_os_code: Option[isize],
         message: string,
     ) -> Error {
         Error { details: io::ErrorDetails::new(kind, operation, path, raw_os_code, message) }
@@ -33,7 +33,7 @@ impl Error {
         self.details.context()
     }
 
-    pub fn raw_os_code(self: Error) -> Option[int] {
+    pub fn raw_os_code(self: Error) -> Option[isize] {
         self.details.raw_os_code()
     }
 

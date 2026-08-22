@@ -8,16 +8,16 @@ enum JsonDeserializeFrame {
     Sequence {
         first: Ref[bool],
         done: Ref[bool],
-        index: Ref[int],
+        index: Ref[isize],
     },
     Tuple {
-        length: int,
-        index: Ref[int],
+        length: isize,
+        index: Ref[isize],
     },
     Map {
         first: Ref[bool],
         done: Ref[bool],
-        state: Ref[int],
+        state: Ref[isize],
         key: Ref[Option[string]],
     },
     Struct {
@@ -29,10 +29,10 @@ enum JsonDeserializeFrame {
     Variant {
         enum_name: string,
         variant_name: string,
-        representation: int,
-        kind: Ref[int],
-        length: Ref[int],
-        index: Ref[int],
+        representation: isize,
+        kind: Ref[isize],
+        length: Ref[isize],
+        index: Ref[isize],
         first: Ref[bool],
         done: Ref[bool],
         begun: Ref[bool],
@@ -44,7 +44,7 @@ struct JsonDeserializer {
     frames: Vec[JsonDeserializeFrame],
 }
 
-fn json_current_index(index: Ref[int]) -> int {
+fn json_current_index(index: Ref[isize]) -> isize {
     if index.get() > 0 {
         index.get() - 1
     } else {
@@ -292,41 +292,41 @@ fn direct_json_number(deserializer: JsonDeserializer) -> Result[string, string] 
     }
 }
 
-fn direct_json_int(deserializer: JsonDeserializer, width: int) -> Result[int64, string] {
+fn direct_json_int(deserializer: JsonDeserializer, width: isize) -> Result[i64, string] {
     let text = direct_json_number(deserializer)?;
     let value = match num::parse_int(text) {
-        Ok(value) => value.to_int64(),
+        Ok(value) => value.to_i64(),
         Err(error) => return Result::Err(json_deserializer_error(deserializer, error)),
     };
     if width == 8 && (value < -128 || value > 127) {
-        Result::Err(json_deserializer_error(deserializer, "int8 is out of range"))
+        Result::Err(json_deserializer_error(deserializer, "i8 is out of range"))
     } else if width == 16 && (value < -32768 || value > 32767) {
-        Result::Err(json_deserializer_error(deserializer, "int16 is out of range"))
+        Result::Err(json_deserializer_error(deserializer, "i16 is out of range"))
     } else if width == 32 && (value < -2147483648 || value > 2147483647) {
-        Result::Err(json_deserializer_error(deserializer, "int32 is out of range"))
+        Result::Err(json_deserializer_error(deserializer, "i32 is out of range"))
     } else {
         Result::Ok(value)
     }
 }
 
-fn direct_json_uint(deserializer: JsonDeserializer, width: int) -> Result[uint64, string] {
+fn direct_json_uint(deserializer: JsonDeserializer, width: isize) -> Result[u64, string] {
     let text = direct_json_number(deserializer)?;
     let value = match num::parse_uint(text) {
-        Ok(value) => value.to_uint64(),
+        Ok(value) => value.to_u64(),
         Err(error) => return Result::Err(json_deserializer_error(deserializer, error)),
     };
     if width == 8 && value > 255 {
-        Result::Err(json_deserializer_error(deserializer, "uint8 is out of range"))
+        Result::Err(json_deserializer_error(deserializer, "u8 is out of range"))
     } else if width == 16 && value > 65535 {
-        Result::Err(json_deserializer_error(deserializer, "uint16 is out of range"))
+        Result::Err(json_deserializer_error(deserializer, "u16 is out of range"))
     } else if width == 32 && value > 4294967295 {
-        Result::Err(json_deserializer_error(deserializer, "uint32 is out of range"))
+        Result::Err(json_deserializer_error(deserializer, "u32 is out of range"))
     } else {
         Result::Ok(value)
     }
 }
 
-fn json_frame_index(deserializer: JsonDeserializer) -> Result[int, string] {
+fn json_frame_index(deserializer: JsonDeserializer) -> Result[isize, string] {
     if deserializer.frames.is_empty() {
         Result::Err(json_error(deserializer.parser, "no active compound value"))
     } else {
@@ -477,47 +477,47 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn deserialize_int(self: JsonDeserializer) -> Result[int, string] {
-        Result::Ok(direct_json_int(self, 0)?.to_int())
+    fn deserialize_int(self: JsonDeserializer) -> Result[isize, string] {
+        Result::Ok(direct_json_int(self, 0)?.to_isize())
     }
 
-    fn deserialize_int8(self: JsonDeserializer) -> Result[int8, string] {
-        Result::Ok(direct_json_int(self, 8)?.to_int8())
+    fn deserialize_int8(self: JsonDeserializer) -> Result[i8, string] {
+        Result::Ok(direct_json_int(self, 8)?.to_i8())
     }
 
-    fn deserialize_int16(self: JsonDeserializer) -> Result[int16, string] {
-        Result::Ok(direct_json_int(self, 16)?.to_int16())
+    fn deserialize_int16(self: JsonDeserializer) -> Result[i16, string] {
+        Result::Ok(direct_json_int(self, 16)?.to_i16())
     }
 
-    fn deserialize_int32(self: JsonDeserializer) -> Result[int32, string] {
-        Result::Ok(direct_json_int(self, 32)?.to_int32())
+    fn deserialize_int32(self: JsonDeserializer) -> Result[i32, string] {
+        Result::Ok(direct_json_int(self, 32)?.to_i32())
     }
 
-    fn deserialize_int64(self: JsonDeserializer) -> Result[int64, string] {
+    fn deserialize_int64(self: JsonDeserializer) -> Result[i64, string] {
         direct_json_int(self, 64)
     }
 
-    fn deserialize_uint(self: JsonDeserializer) -> Result[uint, string] {
-        Result::Ok(direct_json_uint(self, 0)?.to_uint())
+    fn deserialize_uint(self: JsonDeserializer) -> Result[usize, string] {
+        Result::Ok(direct_json_uint(self, 0)?.to_usize())
     }
 
-    fn deserialize_uint8(self: JsonDeserializer) -> Result[uint8, string] {
-        Result::Ok(direct_json_uint(self, 8)?.to_uint8())
+    fn deserialize_uint8(self: JsonDeserializer) -> Result[u8, string] {
+        Result::Ok(direct_json_uint(self, 8)?.to_u8())
     }
 
-    fn deserialize_uint16(self: JsonDeserializer) -> Result[uint16, string] {
-        Result::Ok(direct_json_uint(self, 16)?.to_uint16())
+    fn deserialize_uint16(self: JsonDeserializer) -> Result[u16, string] {
+        Result::Ok(direct_json_uint(self, 16)?.to_u16())
     }
 
-    fn deserialize_uint32(self: JsonDeserializer) -> Result[uint32, string] {
-        Result::Ok(direct_json_uint(self, 32)?.to_uint32())
+    fn deserialize_uint32(self: JsonDeserializer) -> Result[u32, string] {
+        Result::Ok(direct_json_uint(self, 32)?.to_u32())
     }
 
-    fn deserialize_uint64(self: JsonDeserializer) -> Result[uint64, string] {
+    fn deserialize_uint64(self: JsonDeserializer) -> Result[u64, string] {
         direct_json_uint(self, 64)
     }
 
-    fn deserialize_float32(self: JsonDeserializer) -> Result[float32, string] {
+    fn deserialize_float32(self: JsonDeserializer) -> Result[f32, string] {
         let text = direct_json_number(self)?;
         match num::parse_float32(text) {
             Ok(value) => Result::Ok(value),
@@ -525,7 +525,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn deserialize_float64(self: JsonDeserializer) -> Result[float64, string] {
+    fn deserialize_float64(self: JsonDeserializer) -> Result[f64, string] {
         let text = direct_json_number(self)?;
         match num::parse_float64(text) {
             Ok(value) => Result::Ok(value),
@@ -590,7 +590,7 @@ impl serde::Deserializer for JsonDeserializer {
             } else {
                 consume_json_byte(self.parser, b',', "expected byte array separator")?;
             };
-            values.push(direct_json_uint(self, 8)?.to_uint8())
+            values.push(direct_json_uint(self, 8)?.to_u8())
         }
         Result::Err("unreachable byte array state")
     }
@@ -619,7 +619,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_sequence(self: JsonDeserializer) -> Result[Option[int], string] {
+    fn begin_sequence(self: JsonDeserializer) -> Result[Option[isize], string] {
         consume_json_byte(self.parser, b'[', "expected array")?;
         self.frames.push(
             JsonDeserializeFrame::Sequence {
@@ -661,7 +661,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_tuple(self: JsonDeserializer, length: int) -> Result[unit, string] {
+    fn begin_tuple(self: JsonDeserializer, length: isize) -> Result[unit, string] {
         if length < 0 {
             return Result::Err(json_error(self.parser, "tuple length cannot be negative"))
         } else {};
@@ -670,7 +670,7 @@ impl serde::Deserializer for JsonDeserializer {
         Result::Ok(())
     }
 
-    fn begin_tuple_element(self: JsonDeserializer, index: int) -> Result[unit, string] {
+    fn begin_tuple_element(self: JsonDeserializer, index: isize) -> Result[unit, string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Tuple { length, index: next } => if index != next.get()
@@ -708,7 +708,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_map(self: JsonDeserializer) -> Result[Option[int], string] {
+    fn begin_map(self: JsonDeserializer) -> Result[Option[isize], string] {
         consume_json_byte(self.parser, b'{', "expected map object")?;
         self.frames.push(
             JsonDeserializeFrame::Map {
@@ -791,7 +791,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_struct(self: JsonDeserializer, name: string, fields: int) -> Result[unit, string] {
+    fn begin_struct(self: JsonDeserializer, name: string, fields: isize) -> Result[unit, string] {
         if fields < 0 {
             return Result::Err(json_error(self.parser, "struct field count cannot be negative"))
         } else {};
@@ -847,7 +847,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_variant(self: JsonDeserializer, enum_name: string, variants: int) -> Result[
+    fn begin_variant(self: JsonDeserializer, enum_name: string, variants: isize) -> Result[
         serde::VariantKey,
         string,
     ] {
@@ -894,7 +894,10 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_variant_fields(self: JsonDeserializer, kind: int, fields: int) -> Result[unit, string] {
+    fn begin_variant_fields(self: JsonDeserializer, kind: isize, fields: isize) -> Result[
+        unit,
+        string,
+    ] {
         if kind < 0 || kind > 2 || fields < 0 || kind == 0 && fields != 0 {
             return Result::Err(json_error(self.parser, "invalid enum variant payload shape"))
         } else {};

@@ -9,8 +9,8 @@ pub struct Doc {
 enum DocNode {
     Nil,
     Append(Doc, Doc),
-    Nest(int, Doc),
-    Text(string, int),
+    Nest(isize, Doc),
+    Text(string, isize),
     Line,
     HardLine,
     BreakLine,
@@ -20,8 +20,8 @@ enum DocNode {
 }
 
 enum Task {
-    Document(int, bool, Doc),
-    Fill(int, bool, Vec[Doc], int, bool),
+    Document(isize, bool, Doc),
+    Fill(isize, bool, Vec[Doc], isize, bool),
 }
 
 enum Tasks {
@@ -31,7 +31,7 @@ enum Tasks {
 
 enum FitFallbacks {
     NoFallback,
-    Fallback(int, Tasks, FitFallbacks),
+    Fallback(isize, Tasks, FitFallbacks),
 }
 
 fn doc(node: DocNode) -> Doc {
@@ -42,7 +42,7 @@ pub fn nil() -> Doc {
     doc(DocNode::Nil)
 }
 
-pub fn text_width(value: string) -> int {
+pub fn text_width(value: string) -> isize {
     let width = Ref::new(0);
     for _ in value.chars() {
         width.set(width.get() + 1)
@@ -141,7 +141,7 @@ fn result_is_nil(value: Doc) -> bool {
     }
 }
 
-pub fn nest(indentation: int, value: Doc) -> Doc {
+pub fn nest(indentation: isize, value: Doc) -> Doc {
     if indentation <= 0 || result_is_nil(value) {
         value
     } else {
@@ -276,26 +276,26 @@ pub fn fillwords(value: string) -> Doc {
     fill(words)
 }
 
-fn push_document(rest: Tasks, indentation: int, flat: bool, value: Doc) -> Tasks {
+fn push_document(rest: Tasks, indentation: isize, flat: bool, value: Doc) -> Tasks {
     Tasks::More(Task::Document(indentation, flat, value), rest)
 }
 
 fn push_fill(
     rest: Tasks,
-    indentation: int,
+    indentation: isize,
     flat: bool,
     values: Vec[Doc],
-    index: int,
+    index: isize,
     head_flat: bool,
 ) -> Tasks {
     Tasks::More(Task::Fill(indentation, flat, values, index, head_flat), rest)
 }
 
-fn append_tasks(rest: Tasks, indentation: int, flat: bool, left: Doc, right: Doc) -> Tasks {
+fn append_tasks(rest: Tasks, indentation: isize, flat: bool, left: Doc, right: Doc) -> Tasks {
     push_document(push_document(rest, indentation, flat, right), indentation, flat, left)
 }
 
-fn flat_fill_tasks(rest: Tasks, indentation: int, values: Vec[Doc], index: int) -> Tasks {
+fn flat_fill_tasks(rest: Tasks, indentation: isize, values: Vec[Doc], index: isize) -> Tasks {
     let current = values.get(index);
     if index + 1 >= values.len() {
         push_document(rest, indentation, true, current)
@@ -314,10 +314,13 @@ fn flat_fill_tasks(rest: Tasks, indentation: int, values: Vec[Doc], index: int) 
     }
 }
 
-fn fill_choice_tasks(rest: Tasks, indentation: int, values: Vec[Doc], index: int, head_flat: bool) -> (
-    Tasks,
-    Tasks,
-) {
+fn fill_choice_tasks(
+    rest: Tasks,
+    indentation: isize,
+    values: Vec[Doc],
+    index: isize,
+    head_flat: bool,
+) -> (Tasks, Tasks) {
     let current = values.get(index);
     let left = push_document(
         push_document(
@@ -344,7 +347,7 @@ fn fill_choice_tasks(rest: Tasks, indentation: int, values: Vec[Doc], index: int
     (left, right)
 }
 
-fn fits(initial: int, initial_tasks: Tasks) -> bool {
+fn fits(initial: isize, initial_tasks: Tasks) -> bool {
     let mut available = initial;
     let mut tasks = initial_tasks;
     let mut fallbacks = FitFallbacks::NoFallback;
@@ -437,14 +440,14 @@ fn fits(initial: int, initial_tasks: Tasks) -> bool {
     false
 }
 
-fn write_line(output: std_text::StringBuilder, indentation: int) -> unit {
+fn write_line(output: std_text::StringBuilder, indentation: isize) -> unit {
     output.write_char('\n');
     for _ in range(0, indentation) {
         output.write_char(' ')
     }
 }
 
-pub fn pretty(width: int, value: Doc) -> string {
+pub fn pretty(width: isize, value: Doc) -> string {
     let output = std_text::StringBuilder::new();
     let mut column = 0;
     let mut tasks = push_document(Tasks::Done, 0, false, value);
@@ -551,7 +554,7 @@ impl Doc {
         append(self, other)
     }
 
-    pub fn indented(self: Doc, indentation: int) -> Doc {
+    pub fn indented(self: Doc, indentation: isize) -> Doc {
         nest(indentation, self)
     }
 
@@ -559,7 +562,7 @@ impl Doc {
         group(self)
     }
 
-    pub fn render(self: Doc, width: int) -> string {
+    pub fn render(self: Doc, width: isize) -> string {
         pretty(width, self)
     }
 }

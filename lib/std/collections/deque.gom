@@ -2,8 +2,8 @@ package collections;
 
 pub struct Deque[T] {
     pub slots: Ref[Vec[Option[T]]],
-    pub head: Ref[int],
-    pub len: Ref[int],
+    pub head: Ref[isize],
+    pub len: Ref[isize],
 }
 
 impl[T] Default for Deque[T] {
@@ -17,7 +17,7 @@ impl[T] Deque[T] {
         Deque { slots: Ref::new(Vec::from_array([])), head: Ref::new(0), len: Ref::new(0) }
     }
 
-    pub fn with_capacity(capacity: int) -> Deque[T] {
+    pub fn with_capacity(capacity: isize) -> Deque[T] {
         let slots: Vec[Option[T]] = Vec::with_capacity(capacity);
         let mut index = 0;
         while index < capacity {
@@ -27,11 +27,11 @@ impl[T] Deque[T] {
         Deque { slots: Ref::new(slots), head: Ref::new(0), len: Ref::new(0) }
     }
 
-    pub fn len(self: Deque[T]) -> int {
+    pub fn len(self: Deque[T]) -> isize {
         self.len.get()
     }
 
-    pub fn capacity(self: Deque[T]) -> int {
+    pub fn capacity(self: Deque[T]) -> isize {
         self.slots.get().len()
     }
 
@@ -128,7 +128,7 @@ impl[T] Deque[T] {
         }
     }
 
-    pub fn get(self: Deque[T], index: int) -> Option[T] {
+    pub fn get(self: Deque[T], index: isize) -> Option[T] {
         if index < 0 || index >= self.len.get() {
             Option::None
         } else {

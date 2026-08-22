@@ -11,7 +11,7 @@ fn ctir_tag(writer: wire::ArtifactJsonWriter, value: string) -> unit {
     wire::artifact_json_string(writer, value)
 }
 
-fn ctir_number(writer: wire::ArtifactJsonWriter, value: int) -> unit {
+fn ctir_number(writer: wire::ArtifactJsonWriter, value: isize) -> unit {
     wire::artifact_json_number(writer, value.to_string())
 }
 
@@ -609,7 +609,7 @@ fn ctir_string(value: wire::ArtifactValue, expected: string) -> Result[string, s
     wire::artifact_json_string_value(value, "CTIR " + expected)
 }
 
-fn ctir_int(value: wire::ArtifactValue, expected: string) -> Result[int, string] {
+fn ctir_int(value: wire::ArtifactValue, expected: string) -> Result[isize, string] {
     wire::artifact_parse_nonnegative_int(
         wire::artifact_json_number_value(value, "CTIR " + expected)?,
     )
@@ -619,7 +619,7 @@ fn ctir_bool(value: wire::ArtifactValue, expected: string) -> Result[bool, strin
     wire::artifact_json_bool_value(value, "CTIR " + expected)
 }
 
-fn ctir_expect_length(values: Vec[wire::ArtifactValue], length: int, expected: string) -> Result[
+fn ctir_expect_length(values: Vec[wire::ArtifactValue], length: isize, expected: string) -> Result[
     unit,
     string,
 ] {
@@ -712,19 +712,19 @@ fn decode_ctir_types(value: wire::ArtifactValue) -> Result[Vec[ctir::CtType], st
     Result::Ok(result)
 }
 
-fn parse_uint64_string(value: string) -> Result[uint64, string] {
+fn parse_uint64_string(value: string) -> Result[u64, string] {
     if value == "" {
-        return Result::Err(wire::artifact_decode_error("CTIR uint64"))
+        return Result::Err(wire::artifact_decode_error("CTIR u64"))
     } else {};
-    let mut result = 0.to_uint64();
+    let mut result = 0.to_u64();
     for index in 0..value.byte_len() {
         let digit = value.byte_get(index);
         if digit < b'0' || digit > b'9' {
-            return Result::Err(wire::artifact_decode_error("CTIR uint64"))
+            return Result::Err(wire::artifact_decode_error("CTIR u64"))
         } else {};
-        let next = result * 10 + ((digit - b'0').to_uint64());
+        let next = result * 10 + ((digit - b'0').to_u64());
         if next < result {
-            return Result::Err(wire::artifact_decode_error("CTIR uint64"))
+            return Result::Err(wire::artifact_decode_error("CTIR u64"))
         } else {};
         result = next;
     }
@@ -823,7 +823,7 @@ fn decode_ctir_values(value: wire::ArtifactValue) -> Result[Vec[ctir::CtValue], 
     Result::Ok(result)
 }
 
-fn decode_optional_int(value: wire::ArtifactValue) -> Result[Option[int], string] {
+fn decode_optional_int(value: wire::ArtifactValue) -> Result[Option[isize], string] {
     match value {
         wire::ArtifactValue::Null => Result::Ok(Option::None),
         other => Result::Ok(Option::Some(ctir_int(other, "optional integer")?)),
@@ -881,7 +881,7 @@ fn decode_ctir_pattern(value: wire::ArtifactValue) -> Result[ctir::CtPattern, st
         },
         "struct" => {
             ctir_expect_length(values, 3, "struct pattern")?;
-            let fields: Vec[(int, ctir::CtPattern)] = Vec::from_array([]);
+            let fields: Vec[(isize, ctir::CtPattern)] = Vec::from_array([]);
             for value in ctir_array(values[2], "struct pattern fields")? {
                 let pair = ctir_array(value, "struct pattern field")?;
                 ctir_expect_length(pair, 2, "struct pattern field")?;
@@ -1228,8 +1228,8 @@ fn decode_ctir_block(value: wire::ArtifactValue) -> Result[ctir::CtBlock, string
     )
 }
 
-fn decode_int_array(value: wire::ArtifactValue, expected: string) -> Result[Vec[int], string] {
-    let result: Vec[int] = Vec::from_array([]);
+fn decode_int_array(value: wire::ArtifactValue, expected: string) -> Result[Vec[isize], string] {
+    let result: Vec[isize] = Vec::from_array([]);
     for value in ctir_array(value, expected)? {
         result.push(ctir_int(value, expected)?)
     }

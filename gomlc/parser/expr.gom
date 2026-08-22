@@ -35,7 +35,7 @@ fn expect_expr_with_message(parser: Parser, message: string) -> bool {
     }
 }
 
-fn expect_expr_bp_with_message(parser: Parser, min_bp: int, message: string) -> bool {
+fn expect_expr_bp_with_message(parser: Parser, min_bp: isize, message: string) -> bool {
     if !marker_is_none(expr_bp(parser, min_bp)) {
         true
     } else {
@@ -102,7 +102,7 @@ fn array_literal(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_ARRAY_LITERAL)
 }
 
-fn bracket_has_following_path_segment(parser: Parser, offset: int) -> bool {
+fn bracket_has_following_path_segment(parser: Parser, offset: isize) -> bool {
     let mut index = offset;
     let mut depth = 0;
     while !token_is(parser.nth(index), lexer::TokenKind::Eof) {
@@ -890,7 +890,7 @@ fn looks_like_struct_literal(parser: Parser) -> bool {
     }
 }
 
-fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int] {
+fn postfix_binding_power(kind: lexer::TokenKind) -> Option[isize] {
     match kind {
         LParen | LBracket => Option::Some(25),
         Question => Option::Some(26),
@@ -898,14 +898,14 @@ fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int] {
     }
 }
 
-fn prefix_binding_power(kind: lexer::TokenKind) -> Option[int] {
+fn prefix_binding_power(kind: lexer::TokenKind) -> Option[isize] {
     match kind {
         Minus | Bang | Tilde => Option::Some(23),
         _ => Option::None,
     }
 }
 
-fn infix_binding_power(kind: lexer::TokenKind) -> Option[(int, int)] {
+fn infix_binding_power(kind: lexer::TokenKind) -> Option[(isize, isize)] {
     match kind {
         OrOr => Option::Some((1, 2)),
         AndAnd => Option::Some((3, 4)),
@@ -932,7 +932,7 @@ fn expr(parser: Parser) -> Option[MarkerClosed] {
     expr_bp(parser, 0)
 }
 
-fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
+fn expr_bp(parser: Parser, min_bp: isize) -> Option[MarkerClosed] {
     if !parser.enter_expr() {
         Option::None
     } else {

@@ -29,13 +29,13 @@ fn encode_bool_value(builder: text::StringBuilder, value: bool) -> unit {
     )
 }
 
-fn encode_int_value(builder: text::StringBuilder, value: int) -> unit {
+fn encode_int_value(builder: text::StringBuilder, value: isize) -> unit {
     builder.write_string("I\t");
     builder.write_string(value.to_string());
     builder.write_string("\n")
 }
 
-fn encode_list(builder: text::StringBuilder, length: int) -> unit {
+fn encode_list(builder: text::StringBuilder, length: isize) -> unit {
     builder.write_string("L\t");
     builder.write_string(length.to_string());
     builder.write_string("\n")

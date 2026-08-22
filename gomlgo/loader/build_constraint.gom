@@ -75,7 +75,7 @@ const UNIX_BUILD_TAG: string = "unix";
 
 struct ConstraintParser {
     input: string,
-    index: Ref[int],
+    index: Ref[isize],
     valid: Ref[bool],
     goos: string,
     goarch: string,
@@ -107,7 +107,7 @@ fn consume_constraint(parser: ConstraintParser, value: string) -> bool {
     }
 }
 
-fn version_minor(value: string) -> int {
+fn version_minor(value: string) -> isize {
     if value.starts_with("go1.") && value.byte_len() > 4 {
         num::parse_int(value.byte_slice(4, value.byte_len())).unwrap_or(-1)
     } else if value == "go1" {

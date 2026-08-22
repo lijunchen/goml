@@ -6,11 +6,11 @@ use gomlgo::types as go_types;
 use std::bytes;
 
 pub struct VmConfig {
-    pub max_steps: int64,
-    pub max_call_depth: int,
-    pub max_goroutines: int,
-    pub instruction_quantum: int,
-    pub select_seed: uint64,
+    pub max_steps: i64,
+    pub max_call_depth: isize,
+    pub max_goroutines: isize,
+    pub instruction_quantum: isize,
+    pub select_seed: u64,
     pub trace_bytecode: bool,
     pub program_executable: string,
 }
@@ -31,9 +31,9 @@ pub struct RuntimeError {
 pub struct VmResult {
     pub stdout: bytes::Bytes,
     pub stderr: bytes::Bytes,
-    pub exit_code: int,
+    pub exit_code: isize,
     pub error: Option[RuntimeError],
-    pub steps: int64,
+    pub steps: i64,
 }
 
 struct PanicPayload {
@@ -88,7 +88,7 @@ enum RuntimePlace {
     BoolElement {
         backing: Place,
         elements: Vec[bool],
-        index: int,
+        index: isize,
     },
     Native {
         value: dyn HostValueMarker,
@@ -99,11 +99,11 @@ enum RuntimePlace {
 struct BoolElementPlace {
     backing: Place,
     elements: Vec[bool],
-    index: int,
+    index: isize,
 }
 
 struct ScalarLayout {
-    width: int,
+    width: isize,
     signed: bool,
 }
 
@@ -113,25 +113,25 @@ struct Frame {
     blocks: Vec[bytecode::BasicBlock],
     name: string,
     registers: Vec[Option[Value]],
-    scalar: Vec[uint64],
+    scalar: Vec[u64],
     places: Vec[Option[RuntimePlace]],
     bool_places: Vec[Option[BoolElementPlace]],
-    place_roots: Vec[int],
+    place_roots: Vec[isize],
     locals: Vec[CellId],
     owned_cells: Vec[CellId],
     block_arguments: Vec[Value],
     block: Ref[bytecode::BlockId],
-    frame_cell_checkpoint: int,
+    frame_cell_checkpoint: isize,
     deferred: Vec[PreparedCall],
     recover_state: Option[PanicState],
 }
 
 struct FrameSlots {
     registers: Vec[Option[Value]],
-    scalar: Vec[uint64],
+    scalar: Vec[u64],
     places: Vec[Option[RuntimePlace]],
     bool_places: Vec[Option[BoolElementPlace]],
-    place_roots: Vec[int],
+    place_roots: Vec[isize],
     locals: Vec[CellId],
     owned_cells: Vec[CellId],
     block_arguments: Vec[Value],
@@ -145,26 +145,26 @@ struct FrameCallResult {
 }
 
 struct MapEntry {
-    hash: uint64,
+    hash: u64,
     key: Value,
     value: Ref[Value],
     active: Ref[bool],
-    next: int,
+    next: isize,
 }
 
 struct MapValue {
     key_type: go_types::TypeId,
     value_type: go_types::TypeId,
     entries: Vec[MapEntry],
-    buckets: HashMap[uint64, int],
+    buckets: HashMap[u64, isize],
 }
 
 struct MapIterator {
-    map: int,
+    map: isize,
     key_type: go_types::TypeId,
     value_type: go_types::TypeId,
-    entries: Vec[int],
-    cursor: Ref[int],
+    entries: Vec[isize],
+    cursor: Ref[isize],
 }
 
 enum NativeCallbackTarget {
@@ -204,15 +204,15 @@ struct VmState {
     channels: Vec[ChannelValue],
     stdout: bytes::Bytes,
     stderr: bytes::Bytes,
-    steps: Ref[int64],
-    depth: Ref[int],
+    steps: Ref[i64],
+    depth: Ref[isize],
     location: Ref[bytecode::SourceLocation],
     native_completions: NativeCompletionQueue,
     native_callbacks: Vec[NativeCallbackBinding],
     instruction_panic: Ref[Option[Ref[PanicPayload]]],
-    instruction_exit: Ref[int],
+    instruction_exit: Ref[isize],
     zero_values: Vec[Option[Value]],
-    native_type_indices: Vec[int],
+    native_type_indices: Vec[isize],
     constant_values: HashMap[string, Vec[CachedConstant]],
     frame_slots: Vec[FrameSlots],
     false_value: Value,
@@ -239,37 +239,37 @@ enum FunctionControl {
 }
 
 struct InstructionControl {
-    kind: int,
+    kind: isize,
     panic: Option[Ref[PanicPayload]],
-    exit_code: int,
+    exit_code: isize,
     error: string,
 }
 
 struct SequentialOperation {
-    kind: int,
-    place: int,
-    source: int,
-    target: int,
+    kind: isize,
+    place: isize,
+    source: isize,
+    target: isize,
 }
 
 struct SequentialLoopOperation {
-    header_block: int,
-    header_index: int,
-    condition_local: int,
-    constant_index: int,
-    comparison_kind: int,
-    body_block: int,
+    header_block: isize,
+    header_index: isize,
+    condition_local: isize,
+    constant_index: isize,
+    comparison_kind: isize,
+    body_block: isize,
     body_when_true: bool,
-    body_index: int,
-    update_block: int,
-    update_index: int,
-    exit_block: int,
-    slice_local: int,
-    index_local: int,
+    body_index: isize,
+    update_block: isize,
+    update_index: isize,
+    exit_block: isize,
+    slice_local: isize,
+    index_local: isize,
     value: bool,
-    left_local: int,
-    right_local: int,
-    binary_kind: int,
+    left_local: isize,
+    right_local: isize,
+    binary_kind: isize,
 }
 
 struct SequentialProgram {
@@ -278,15 +278,15 @@ struct SequentialProgram {
 }
 
 struct SequentialTerminator {
-    kind: int,
-    condition: int,
-    first: int,
-    second: int,
+    kind: isize,
+    condition: isize,
+    first: isize,
+    second: isize,
 }
 
 struct FastOperand {
-    argument: int,
-    fields: Vec[int],
+    argument: isize,
+    fields: Vec[isize],
     type_id: go_types::TypeId,
 }
 
@@ -305,34 +305,34 @@ enum FastFunction {
     Unavailable,
     Constant {
         value: Value,
-        steps: int,
+        steps: isize,
     },
     Projection {
         operand: FastOperand,
-        steps: int,
+        steps: isize,
     },
     Binary {
         operation: bytecode::BinaryOp,
         left: FastOperand,
         right: FastOperand,
         result_type: go_types::TypeId,
-        steps: int,
+        steps: isize,
     },
 }
 
 enum InvocationOutcome {
     Returned(Vec[Value]),
     Panicked(PanicPayload),
-    Exited(int),
+    Exited(isize),
 }
 
 pub fn default_config() -> VmConfig {
     VmConfig {
-        max_steps: 10000000.to_int64(),
+        max_steps: 10000000.to_i64(),
         max_call_depth: 1024,
         max_goroutines: 100000,
         instruction_quantum: 64,
-        select_seed: 1.to_uint64(),
+        select_seed: 1.to_u64(),
         trace_bytecode: false,
         program_executable: "",
     }
@@ -355,15 +355,15 @@ fn scalar_layout(world: go_types::World, type_id: go_types::TypeId) -> ScalarLay
     }
 }
 
-fn empty_scalar_values(count: int) -> Vec[uint64] {
-    let result: Vec[uint64] = Vec::with_capacity(count);
+fn empty_scalar_values(count: isize) -> Vec[u64] {
+    let result: Vec[u64] = Vec::with_capacity(count);
     for _ in 0..count {
-        result.push(0.to_uint64())
+        result.push(0.to_u64())
     }
     result
 }
 
-fn empty_slots[T](count: int) -> Vec[Option[T]] {
+fn empty_slots[T](count: isize) -> Vec[Option[T]] {
     let result: Vec[Option[T]] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(Option::None)
@@ -371,7 +371,7 @@ fn empty_slots[T](count: int) -> Vec[Option[T]] {
     result
 }
 
-fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
+fn prepared_slots[T](slots: Vec[Option[T]], count: isize) -> Vec[Option[T]] {
     if slots.len() == count {
         return slots
     } else {};
@@ -385,7 +385,7 @@ fn prepared_slots[T](slots: Vec[Option[T]], count: int) -> Vec[Option[T]] {
     slots
 }
 
-fn prepared_place_roots(slots: Vec[int], count: int) -> Vec[int] {
+fn prepared_place_roots(slots: Vec[isize], count: isize) -> Vec[isize] {
     if slots.len() == count {
         return slots
     } else {};
@@ -405,7 +405,7 @@ fn reset_slots[T](slots: Vec[Option[T]]) -> unit {
     }
 }
 
-fn reset_place_roots(slots: Vec[int]) -> unit {
+fn reset_place_roots(slots: Vec[isize]) -> unit {
     for index in 0..slots.len() {
         slots[index] = -1;
     }
@@ -413,10 +413,10 @@ fn reset_place_roots(slots: Vec[int]) -> unit {
 
 fn take_frame_slots(
     state: VmState,
-    register_count: int,
-    scalar_count: int,
-    place_count: int,
-    local_count: int,
+    register_count: isize,
+    scalar_count: isize,
+    place_count: isize,
+    local_count: isize,
 ) -> FrameSlots {
     match state.frame_slots.pop() {
         Some(slots) => {
@@ -457,18 +457,18 @@ fn take_frame_slots(
     }
 }
 
-fn prepared_scalar_slots(slots: Vec[uint64], count: int) -> Vec[uint64] {
+fn prepared_scalar_slots(slots: Vec[u64], count: isize) -> Vec[u64] {
     if slots.len() != count {
         slots.clear();
         if slots.capacity() < count {
             slots.reserve(count)
         } else {};
         for _ in 0..count {
-            slots.push(0.to_uint64())
+            slots.push(0.to_u64())
         }
     } else {
         for index in 0..count {
-            slots[index] = 0.to_uint64();
+            slots[index] = 0.to_u64();
         }
     };
     slots
@@ -476,7 +476,7 @@ fn prepared_scalar_slots(slots: Vec[uint64], count: int) -> Vec[uint64] {
 
 fn allocate_local_cell(
     state: VmState,
-    checkpoint: int,
+    checkpoint: isize,
     recyclable: bool,
     owned_cells: Vec[CellId],
     value: Value,
@@ -492,7 +492,7 @@ fn allocate_local_cell(
     }
 }
 
-fn replace_local_cell(state: VmState, frame: Frame, local: int, value: Value) -> unit {
+fn replace_local_cell(state: VmState, frame: Frame, local: isize, value: Value) -> unit {
     if state.recyclable_locals[frame.function.value][local] {
         let current = frame.locals[local];
         set_cell_value(state.memory, current.value, copy_value(value))
@@ -543,7 +543,7 @@ fn instruction_panic(payload: PanicPayload) -> InstructionControl {
     InstructionControl { kind: 1, panic: Option::Some(Ref::new(payload)), exit_code: 0, error: "" }
 }
 
-fn instruction_exit(code: int) -> InstructionControl {
+fn instruction_exit(code: isize) -> InstructionControl {
     InstructionControl { kind: 2, panic: Option::None, exit_code: code, error: "" }
 }
 
@@ -551,7 +551,7 @@ fn instruction_error(message: string) -> InstructionControl {
     InstructionControl { kind: 3, panic: Option::None, exit_code: 0, error: message }
 }
 
-fn sequential_binary_kind(operation: bytecode::BinaryOp) -> int {
+fn sequential_binary_kind(operation: bytecode::BinaryOp) -> isize {
     match operation {
         bytecode::BinaryOp::Add => 1,
         bytecode::BinaryOp::Subtract => 2,
@@ -573,7 +573,7 @@ fn sequential_binary_kind(operation: bytecode::BinaryOp) -> int {
     }
 }
 
-fn sequential_binary_operation(kind: int) -> bytecode::BinaryOp {
+fn sequential_binary_operation(kind: isize) -> bytecode::BinaryOp {
     match kind {
         1 => bytecode::BinaryOp::Add,
         2 => bytecode::BinaryOp::Subtract,
@@ -757,8 +757,8 @@ fn sequential_super_operation(
     world: go_types::World,
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
-    index: int,
-    constant_index: int,
+    index: isize,
+    constant_index: isize,
 ) -> SequentialOperation {
     if index + 3 >= block.instructions.len() {
         return sequential_fallback()
@@ -1050,7 +1050,7 @@ fn sequential_super_operation(
     }
 }
 
-fn sequential_register_vector_contains(values: Vec[bytecode::RegisterId], register: int) -> bool {
+fn sequential_register_vector_contains(values: Vec[bytecode::RegisterId], register: isize) -> bool {
     for value in values {
         if value.value == register {
             return true
@@ -1059,14 +1059,14 @@ fn sequential_register_vector_contains(values: Vec[bytecode::RegisterId], regist
     false
 }
 
-fn sequential_optional_register_contains(value: Option[bytecode::RegisterId], register: int) -> bool {
+fn sequential_optional_register_contains(value: Option[bytecode::RegisterId], register: isize) -> bool {
     match value {
         Some(value) => value.value == register,
         None => false,
     }
 }
 
-fn sequential_call_target_uses_register(target: bytecode::CallTarget, register: int) -> bool {
+fn sequential_call_target_uses_register(target: bytecode::CallTarget, register: isize) -> bool {
     match target {
         bytecode::CallTarget::Method { function: _, receiver } | bytecode::CallTarget::InterfaceMethod {
             method: _,
@@ -1077,7 +1077,7 @@ fn sequential_call_target_uses_register(target: bytecode::CallTarget, register: 
     }
 }
 
-fn sequential_aggregate_uses_register(elements: Vec[bytecode::AggregateElement], register: int) -> bool {
+fn sequential_aggregate_uses_register(elements: Vec[bytecode::AggregateElement], register: isize) -> bool {
     for element in elements {
         if element.value.value == register {
             return true
@@ -1086,7 +1086,7 @@ fn sequential_aggregate_uses_register(elements: Vec[bytecode::AggregateElement],
     false
 }
 
-fn sequential_select_uses_register(cases: Vec[bytecode::SelectCase], register: int) -> bool {
+fn sequential_select_uses_register(cases: Vec[bytecode::SelectCase], register: isize) -> bool {
     for selected in cases {
         let used = match selected.operation {
             bytecode::SelectOperation::Send { channel, value } => channel.value == register
@@ -1102,7 +1102,7 @@ fn sequential_select_uses_register(cases: Vec[bytecode::SelectCase], register: i
     false
 }
 
-fn sequential_instruction_uses_register(instruction: bytecode::Instruction, register: int) -> bool {
+fn sequential_instruction_uses_register(instruction: bytecode::Instruction, register: isize) -> bool {
     match instruction.kind {
         bytecode::InstructionKind::Constant { .. } | bytecode::InstructionKind::Zero { .. } | bytecode::InstructionKind::LocalPlace {
             ..,
@@ -1208,7 +1208,7 @@ fn sequential_instruction_uses_register(instruction: bytecode::Instruction, regi
     }
 }
 
-fn sequential_instruction_uses_place(instruction: bytecode::Instruction, place: int) -> bool {
+fn sequential_instruction_uses_place(instruction: bytecode::Instruction, place: isize) -> bool {
     match instruction.kind {
         bytecode::InstructionKind::FieldPlace { target: _, base, index: _ } | bytecode::InstructionKind::IndexPlace {
             target: _,
@@ -1231,7 +1231,7 @@ fn sequential_instruction_uses_place(instruction: bytecode::Instruction, place: 
     }
 }
 
-fn sequential_terminator_uses_register(terminator: bytecode::Terminator, register: int) -> bool {
+fn sequential_terminator_uses_register(terminator: bytecode::Terminator, register: isize) -> bool {
     match terminator.kind {
         bytecode::TerminatorKind::Jump { target: _, arguments } | bytecode::TerminatorKind::Return {
             values: arguments,
@@ -1267,9 +1267,9 @@ fn sequential_terminator_uses_register(terminator: bytecode::Terminator, registe
 fn sequential_register_unused_outside(
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
-    start: int,
-    end: int,
-    register: int,
+    start: isize,
+    end: isize,
+    register: isize,
 ) -> bool {
     sequential_register_unused_outside_with_terminator(function, block, start, end, register, false)
 }
@@ -1277,9 +1277,9 @@ fn sequential_register_unused_outside(
 fn sequential_register_unused_outside_current_terminator(
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
-    start: int,
-    end: int,
-    register: int,
+    start: isize,
+    end: isize,
+    register: isize,
 ) -> bool {
     sequential_register_unused_outside_with_terminator(function, block, start, end, register, true)
 }
@@ -1287,9 +1287,9 @@ fn sequential_register_unused_outside_current_terminator(
 fn sequential_register_unused_outside_with_terminator(
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
-    start: int,
-    end: int,
-    register: int,
+    start: isize,
+    end: isize,
+    register: isize,
     skip_current_terminator: bool,
 ) -> bool {
     for candidate in function.blocks {
@@ -1309,7 +1309,7 @@ fn sequential_register_unused_outside_with_terminator(
 }
 
 fn sequential_direct_branch_targets(block: bytecode::BasicBlock, register: bytecode::RegisterId) -> Option[
-    (int, int),
+    (isize, isize),
 ] {
     match block.terminator.kind {
         bytecode::TerminatorKind::Branch {
@@ -1324,7 +1324,7 @@ fn sequential_direct_branch_targets(block: bytecode::BasicBlock, register: bytec
     }
 }
 
-fn sequential_direct_jump_target(block: bytecode::BasicBlock) -> Option[int] {
+fn sequential_direct_jump_target(block: bytecode::BasicBlock) -> Option[isize] {
     match block.terminator.kind {
         bytecode::TerminatorKind::Jump { target, arguments } if arguments.is_empty() => {
             Option::Some(target.value)
@@ -1336,9 +1336,9 @@ fn sequential_direct_jump_target(block: bytecode::BasicBlock) -> Option[int] {
 fn sequential_place_unused_outside(
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
-    start: int,
-    end: int,
-    place: int,
+    start: isize,
+    end: isize,
+    place: isize,
 ) -> bool {
     for candidate in function.blocks {
         for offset in 0..candidate.instructions.len() {
@@ -1355,7 +1355,7 @@ fn sequential_bool_slice_super_operation(
     world: go_types::World,
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
-    index: int,
+    index: isize,
 ) -> SequentialOperation {
     if index + 4 >= block.instructions.len() {
         return sequential_fallback()
@@ -1622,9 +1622,9 @@ fn sequential_operation(
     world: go_types::World,
     function: bytecode::BytecodeFunction,
     block: bytecode::BasicBlock,
-    index: int,
-    global_count: int,
-    constant_index: int,
+    index: isize,
+    global_count: isize,
+    constant_index: isize,
 ) -> SequentialOperation {
     let current = block.instructions[index];
     let bool_slice_operation = sequential_bool_slice_super_operation(world, function, block, index);
@@ -1725,7 +1725,7 @@ fn sequential_operation(
     sequential_single_operation(world, function, current)
 }
 
-fn sequential_prefix_operation_index(operations: Vec[SequentialOperation]) -> int {
+fn sequential_prefix_operation_index(operations: Vec[SequentialOperation]) -> isize {
     let mut index = 0;
     while index < operations.len() && operations[index].kind == 47 {
         index += 1;
@@ -1736,10 +1736,10 @@ fn sequential_prefix_operation_index(operations: Vec[SequentialOperation]) -> in
 fn sequential_loop_candidate(
     function: bytecode::BytecodeFunction,
     blocks: Vec[Vec[SequentialOperation]],
-    header_block: int,
-    header_index: int,
-    body_block: int,
-    exit_block: int,
+    header_block: isize,
+    header_index: isize,
+    body_block: isize,
+    exit_block: isize,
     body_when_true: bool,
 ) -> Option[SequentialLoopOperation] {
     if body_block < 0 || body_block >= blocks.len() || exit_block < 0 || exit_block >= blocks.len() {
@@ -1946,13 +1946,13 @@ fn small_integer_values() -> Vec[Value] {
     let values: Vec[Value] = Vec::with_capacity(128);
     for value in 0..128 {
         values.push(
-            Value::Local(LocalValue::Integer { bits: value.to_uint64(), width: 64, signed: true }),
+            Value::Local(LocalValue::Integer { bits: value.to_u64(), width: 64, signed: true }),
         )
     }
     values
 }
 
-fn empty_fast_expressions(count: int) -> Vec[FastExpression] {
+fn empty_fast_expressions(count: isize) -> Vec[FastExpression] {
     let values: Vec[FastExpression] = Vec::with_capacity(count);
     for _ in 0..count {
         values.push(FastExpression::Unknown)
@@ -1960,8 +1960,8 @@ fn empty_fast_expressions(count: int) -> Vec[FastExpression] {
     values
 }
 
-fn empty_fast_places(count: int) -> Vec[int] {
-    let values: Vec[int] = Vec::with_capacity(count);
+fn empty_fast_places(count: isize) -> Vec[isize] {
+    let values: Vec[isize] = Vec::with_capacity(count);
     for _ in 0..count {
         values.push(-1)
     }
@@ -1975,8 +1975,8 @@ fn fast_operand(expression: FastExpression) -> Option[FastOperand] {
     }
 }
 
-fn extend_fast_operand(operand: FastOperand, fields: Vec[int], type_id: go_types::TypeId) -> FastOperand {
-    let result: Vec[int] = Vec::with_capacity(operand.fields.len() + fields.len());
+fn extend_fast_operand(operand: FastOperand, fields: Vec[isize], type_id: go_types::TypeId) -> FastOperand {
+    let result: Vec[isize] = Vec::with_capacity(operand.fields.len() + fields.len());
     for field in operand.fields {
         result.push(field)
     }
@@ -2162,9 +2162,9 @@ fn fast_functions(program: bytecode::BytecodeProgram) -> Vec[FastFunction] {
     values
 }
 
-fn place_local_roots(function: bytecode::BytecodeFunction) -> Vec[int] {
-    let roots: Vec[int] = Vec::with_capacity(function.place_count);
-    let bases: Vec[int] = Vec::with_capacity(function.place_count);
+fn place_local_roots(function: bytecode::BytecodeFunction) -> Vec[isize] {
+    let roots: Vec[isize] = Vec::with_capacity(function.place_count);
+    let bases: Vec[isize] = Vec::with_capacity(function.place_count);
     for _ in 0..function.place_count {
         roots.push(-1);
         bases.push(-1)
@@ -2282,7 +2282,7 @@ fn function_has_back_edge(function: bytecode::BytecodeFunction) -> bool {
     false
 }
 
-fn scalar_local_safe(function: bytecode::BytecodeFunction, local: int) -> bool {
+fn scalar_local_safe(function: bytecode::BytecodeFunction, local: isize) -> bool {
     if local < 0 || local >= function.locals.len() || local < function.captures.len() {
         return false
     } else {};
@@ -2373,12 +2373,12 @@ fn scalar_local_layouts(program: bytecode::BytecodeProgram) -> Vec[Vec[ScalarLay
     result
 }
 
-fn pending_instruction_panic(state: VmState, payload: PanicPayload) -> int {
+fn pending_instruction_panic(state: VmState, payload: PanicPayload) -> isize {
     state.instruction_panic.set(Option::Some(Ref::new(payload)));
     1
 }
 
-fn pending_instruction_exit(state: VmState, code: int) -> int {
+fn pending_instruction_exit(state: VmState, code: isize) -> isize {
     state.instruction_exit.set(code);
     2
 }
@@ -2395,25 +2395,25 @@ fn validate_function(state: VmState, id: bytecode::FunctionId) -> Result[unit, s
     }
 }
 
-fn scalar_layout_code(layout: ScalarLayout) -> uint64 {
+fn scalar_layout_code(layout: ScalarLayout) -> u64 {
     if layout.width == 0 {
-        0.to_uint64()
+        0.to_u64()
     } else {
-        layout.width.to_uint64()
+        layout.width.to_u64()
             | if layout.signed {
-                128.to_uint64()
+                128.to_u64()
             } else {
-                0.to_uint64()
+                0.to_u64()
             }
     }
 }
 
-fn scalar_code_layout(code: uint64) -> Option[ScalarLayout] {
-    let width = (code & 127.to_uint64()).to_int();
+fn scalar_code_layout(code: u64) -> Option[ScalarLayout] {
+    let width = (code & 127.to_u64()).to_isize();
     if width == 0 {
         Option::None
     } else {
-        Option::Some(ScalarLayout { width, signed: code & 128.to_uint64() != 0.to_uint64() })
+        Option::Some(ScalarLayout { width, signed: code & 128.to_u64() != 0.to_u64() })
     }
 }
 
@@ -2425,7 +2425,7 @@ fn scalar_register_layout(frame: Frame, id: bytecode::RegisterId) -> Option[Scal
     }
 }
 
-fn scalar_local_layout(frame: Frame, local: int) -> Option[ScalarLayout] {
+fn scalar_local_layout(frame: Frame, local: isize) -> Option[ScalarLayout] {
     if frame.scalar.is_empty() || local < 0 || local >= frame.locals.len() {
         Option::None
     } else {
@@ -2433,7 +2433,7 @@ fn scalar_local_layout(frame: Frame, local: int) -> Option[ScalarLayout] {
     }
 }
 
-fn scalar_local_value(frame: Frame, local: int) -> Result[uint64, string] {
+fn scalar_local_value(frame: Frame, local: isize) -> Result[u64, string] {
     if frame.scalar.is_empty() || local < 0 || local >= frame.locals.len() {
         Result::Err("invalid scalar local")
     } else {
@@ -2441,7 +2441,7 @@ fn scalar_local_value(frame: Frame, local: int) -> Result[uint64, string] {
     }
 }
 
-fn replace_scalar_local(frame: Frame, local: int, value: uint64) -> Result[unit, string] {
+fn replace_scalar_local(frame: Frame, local: isize, value: u64) -> Result[unit, string] {
     if frame.scalar.is_empty() || local < 0 || local >= frame.locals.len() {
         Result::Err("invalid scalar local")
     } else {
@@ -2450,31 +2450,31 @@ fn replace_scalar_local(frame: Frame, local: int, value: uint64) -> Result[unit,
     }
 }
 
-fn scalar_place_local(frame: Frame, place: bytecode::PlaceId) -> Option[int] {
+fn scalar_place_local(frame: Frame, place: bytecode::PlaceId) -> Option[isize] {
     if frame.scalar.is_empty() || place.value < 0 || place.value >= frame.place_roots.len()
         || frame.place_roots[place.value] == -1 {
         return Option::None
     } else {};
     let value = frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place.value];
-    if value == 0.to_uint64() {
+    if value == 0.to_u64() {
         Option::None
     } else {
-        Option::Some(value.to_int() - 1)
+        Option::Some(value.to_isize() - 1)
     }
 }
 
-fn replace_scalar_place_local(frame: Frame, place: bytecode::PlaceId, local: int) -> unit {
+fn replace_scalar_place_local(frame: Frame, place: bytecode::PlaceId, local: isize) -> unit {
     if !frame.scalar.is_empty() && place.value >= 0 && place.value < frame.places.len() {
         frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place.value] = if local
             < 0 {
-            0.to_uint64()
+            0.to_u64()
         } else {
-            (local + 1).to_uint64()
+            (local + 1).to_u64()
         };
     } else {}
 }
 
-fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(uint64, int, bool), string] {
+fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(u64, isize, bool), string] {
     if id.value < 0 || id.value >= frame.registers.len() {
         return Result::Err("invalid register " + id.value.to_string())
     } else {};
@@ -2491,7 +2491,7 @@ fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(uint64, i
     } else {};
     if id.value >= 0 && id.value < frame.registers.len() {
         let code = frame.scalar[frame.registers.len() + id.value];
-        if code & 256.to_uint64() != 0.to_uint64() {
+        if code & 256.to_u64() != 0.to_u64() {
             let layout = scalar_code_layout(code).ok_or("invalid scalar register")?;
             return Result::Ok((frame.scalar[id.value], layout.width, layout.signed))
         } else {}
@@ -2502,14 +2502,14 @@ fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(uint64, i
     }
 }
 
-fn integer_register_index(frame: Frame, id: bytecode::RegisterId) -> Result[int, string] {
+fn integer_register_index(frame: Frame, id: bytecode::RegisterId) -> Result[isize, string] {
     let (bits, width, signed) = integer_register(frame, id)?;
     let value = if signed {
-        signed_integer(bits, width).to_int()
-    } else if bits > 9223372036854775807.to_uint64() {
+        signed_integer(bits, width).to_isize()
+    } else if bits > 9223372036854775807.to_u64() {
         return Result::Err("integer is outside the host integer range")
     } else {
-        bits.to_int()
+        bits.to_isize()
     };
     if value < 0 {
         Result::Err("index is outside the host integer range")
@@ -2524,10 +2524,10 @@ fn boolean_register(frame: Frame, id: bytecode::RegisterId) -> Result[bool, stri
     } else {};
     if !frame.scalar.is_empty() {
         let code = frame.scalar[frame.registers.len() + id.value];
-        if code & 256.to_uint64() != 0.to_uint64() {
+        if code & 256.to_u64() != 0.to_u64() {
             let layout = scalar_code_layout(code).ok_or("invalid scalar register")?;
             if layout.width == 1 {
-                return Result::Ok(frame.scalar[id.value] != 0.to_uint64())
+                return Result::Ok(frame.scalar[id.value] != 0.to_u64())
             } else {}
         } else {}
     } else {};
@@ -2540,11 +2540,11 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
     } else {
         if !frame.scalar.is_empty() {
             let code = frame.scalar[frame.registers.len() + id.value];
-            if code & 256.to_uint64() != 0.to_uint64() {
+            if code & 256.to_u64() != 0.to_u64() {
                 let layout = scalar_code_layout(code).ok_or("invalid scalar register")?;
                 if layout.width == 1 {
                     return Result::Ok(
-                        Value::Local(LocalValue::Bool(frame.scalar[id.value] != 0.to_uint64())),
+                        Value::Local(LocalValue::Bool(frame.scalar[id.value] != 0.to_u64())),
                     )
                 } else {};
                 return Result::Ok(
@@ -2579,28 +2579,28 @@ fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[
             Some(layout) if layout.width == 1 => match value {
                 Value::Local(LocalValue::Bool(boolean)) => {
                     frame.scalar[id.value] = if boolean {
-                        1.to_uint64()
+                        1.to_u64()
                     } else {
-                        0.to_uint64()
+                        0.to_u64()
                     };
-                    frame.scalar[code_index] = frame.scalar[code_index] | 256.to_uint64();
+                    frame.scalar[code_index] = frame.scalar[code_index] | 256.to_u64();
                     frame.registers[id.value] = Option::None;
                 },
                 _ => {
                     frame.registers[id.value] = Option::Some(copy_value(value));
-                    frame.scalar[code_index] = frame.scalar[code_index] & 255.to_uint64();
+                    frame.scalar[code_index] = frame.scalar[code_index] & 255.to_u64();
                 },
             },
             Some(layout) => {
                 match integer_bits(value) {
                     Ok((bits, _, _)) => {
                         frame.scalar[id.value] = normalize_integer(bits, layout.width);
-                        frame.scalar[code_index] = frame.scalar[code_index] | 256.to_uint64();
+                        frame.scalar[code_index] = frame.scalar[code_index] | 256.to_u64();
                         frame.registers[id.value] = Option::None;
                     },
                     Err(_) => {
                         frame.registers[id.value] = Option::Some(copy_value(value));
-                        frame.scalar[code_index] = frame.scalar[code_index] & 255.to_uint64();
+                        frame.scalar[code_index] = frame.scalar[code_index] & 255.to_u64();
                     },
                 }
             },
@@ -2615,8 +2615,8 @@ fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[
 fn set_integer_register(
     frame: Frame,
     target: bytecode::RegisterId,
-    bits: uint64,
-    width: int,
+    bits: u64,
+    width: isize,
     signed: bool,
 ) -> Result[unit, string] {
     let bits = normalize_integer(bits, width);
@@ -2631,7 +2631,7 @@ fn set_integer_register(
         Some(layout) => {
             frame.scalar[target.value] = normalize_integer(bits, layout.width);
             let code_index = frame.registers.len() + target.value;
-            frame.scalar[code_index] = frame.scalar[code_index] | 256.to_uint64();
+            frame.scalar[code_index] = frame.scalar[code_index] | 256.to_u64();
             frame.registers[target.value] = Option::None;
             Result::Ok(())
         },
@@ -2643,7 +2643,7 @@ fn set_integer_register(
     }
 }
 
-fn set_scalar_integer_register(frame: Frame, target: int, bits: uint64) -> bool {
+fn set_scalar_integer_register(frame: Frame, target: isize, bits: u64) -> bool {
     if frame.scalar.is_empty() || target < 0 || target >= frame.registers.len() {
         return false
     } else {};
@@ -2651,7 +2651,7 @@ fn set_scalar_integer_register(frame: Frame, target: int, bits: uint64) -> bool 
     match scalar_code_layout(frame.scalar[code_index]) {
         Some(layout) if layout.width != 1 => {
             frame.scalar[target] = normalize_integer(bits, layout.width);
-            frame.scalar[code_index] = frame.scalar[code_index] | 256.to_uint64();
+            frame.scalar[code_index] = frame.scalar[code_index] | 256.to_u64();
             frame.registers[target] = Option::None;
             true
         },
@@ -2662,7 +2662,7 @@ fn set_scalar_integer_register(frame: Frame, target: int, bits: uint64) -> bool 
 
 fn set_scalar_bool_register(
     frame: Frame,
-    target: int,
+    target: isize,
     value: bool,
     false_value: Value,
     true_value: Value,
@@ -2675,11 +2675,11 @@ fn set_scalar_bool_register(
         match scalar_code_layout(frame.scalar[code_index]) {
             Some(layout) if layout.width == 1 => {
                 frame.scalar[target] = if value {
-                    1.to_uint64()
+                    1.to_u64()
                 } else {
-                    0.to_uint64()
+                    0.to_u64()
                 };
-                frame.scalar[code_index] = frame.scalar[code_index] | 256.to_uint64();
+                frame.scalar[code_index] = frame.scalar[code_index] | 256.to_u64();
                 frame.registers[target] = Option::None;
                 return true
             },
@@ -2697,12 +2697,12 @@ fn set_scalar_bool_register(
 }
 
 fn scalar_integer_comparison(
-    kind: int,
-    left_bits: uint64,
-    width: int,
+    kind: isize,
+    left_bits: u64,
+    width: isize,
     signed: bool,
-    right_bits: uint64,
-    right_width: int,
+    right_bits: u64,
+    right_width: isize,
 ) -> Result[bool, string] {
     let comparison = if signed {
         let left = signed_integer(left_bits, width);
@@ -2734,13 +2734,13 @@ fn scalar_integer_comparison(
 
 fn execute_scalar_integer_binary(
     frame: Frame,
-    kind: int,
-    target: int,
-    left_bits: uint64,
-    width: int,
+    kind: isize,
+    target: isize,
+    left_bits: u64,
+    width: isize,
     signed: bool,
-    right_bits: uint64,
-    right_width: int,
+    right_bits: u64,
+    right_width: isize,
     right_signed: bool,
     false_value: Value,
     true_value: Value,
@@ -2750,16 +2750,16 @@ fn execute_scalar_integer_binary(
         2 => left_bits - right_bits,
         3 => left_bits * right_bits,
         4 | 5 => {
-            if right_bits == 0.to_uint64() {
+            if right_bits == 0.to_u64() {
                 return "integer divide by zero"
             } else {};
             if signed {
                 let left = signed_integer(left_bits, width);
                 let right = signed_integer(right_bits, right_width);
                 if kind == 4 {
-                    (left / right).to_uint64()
+                    (left / right).to_u64()
                 } else {
-                    (left % right).to_uint64()
+                    (left % right).to_u64()
                 }
             } else if kind == 4 {
                 left_bits / right_bits
@@ -2772,29 +2772,29 @@ fn execute_scalar_integer_binary(
         8 => left_bits ^ right_bits,
         9 => left_bits & (maximum_uint64() ^ right_bits),
         10 | 11 => {
-            if right_signed && signed_integer(right_bits, right_width) < 0.to_int64() {
+            if right_signed && signed_integer(right_bits, right_width) < 0.to_i64() {
                 return "negative shift count"
             } else {};
             if kind == 10 {
-                if right_bits >= 64.to_uint64() {
-                    0.to_uint64()
+                if right_bits >= 64.to_u64() {
+                    0.to_u64()
                 } else {
-                    left_bits << right_bits.to_int()
+                    left_bits << right_bits.to_isize()
                 }
             } else if signed {
-                if right_bits >= 64.to_uint64() {
-                    if signed_integer(left_bits, width) < 0.to_int64() {
+                if right_bits >= 64.to_u64() {
+                    if signed_integer(left_bits, width) < 0.to_i64() {
                         maximum_uint64()
                     } else {
-                        0.to_uint64()
+                        0.to_u64()
                     }
                 } else {
-                    (signed_integer(left_bits, width) >> right_bits.to_int()).to_uint64()
+                    (signed_integer(left_bits, width) >> right_bits.to_isize()).to_u64()
                 }
-            } else if right_bits >= 64.to_uint64() {
-                0.to_uint64()
+            } else if right_bits >= 64.to_u64() {
+                0.to_u64()
             } else {
-                left_bits >> right_bits.to_int()
+                left_bits >> right_bits.to_isize()
             }
         },
         _ => {
@@ -2827,15 +2827,15 @@ fn set_small_integer_register(
     state: VmState,
     frame: Frame,
     target: bytecode::RegisterId,
-    bits: uint64,
-    width: int,
+    bits: u64,
+    width: isize,
     signed: bool,
 ) -> Result[unit, string] {
     let bits = normalize_integer(bits, width);
     if !frame.scalar.is_empty() && scalar_register_layout(frame, target).is_some() {
         set_integer_register(frame, target, bits, width, signed)
-    } else if width == 64 && signed && bits < state.small_integers.len().to_uint64() {
-        set_register(frame, target, state.small_integers[bits.to_int()])
+    } else if width == 64 && signed && bits < state.small_integers.len().to_u64() {
+        set_register(frame, target, state.small_integers[bits.to_isize()])
     } else {
         set_register(frame, target, Value::Local(LocalValue::Integer { bits, width, signed }))
     }
@@ -2846,11 +2846,11 @@ fn execute_integer_binary(
     frame: Frame,
     target: bytecode::RegisterId,
     op: bytecode::BinaryOp,
-    left_bits: uint64,
-    width: int,
+    left_bits: u64,
+    width: isize,
     signed: bool,
-    right_bits: uint64,
-    right_width: int,
+    right_bits: u64,
+    right_width: isize,
     right_signed: bool,
     false_value: Value,
     true_value: Value,
@@ -2858,7 +2858,7 @@ fn execute_integer_binary(
     match op {
         bytecode::BinaryOp::Add => {
             let bits = left_bits + right_bits;
-            if (left_bits | right_bits) < 128.to_uint64() {
+            if (left_bits | right_bits) < 128.to_u64() {
                 set_small_integer_register(state, frame, target, bits, width, signed)
             } else {
                 set_integer_register(frame, target, bits, width, signed)
@@ -2871,16 +2871,16 @@ fn execute_integer_binary(
             set_integer_register(frame, target, left_bits * right_bits, width, signed)
         },
         bytecode::BinaryOp::Divide | bytecode::BinaryOp::Remainder => {
-            if right_bits == 0.to_uint64() {
+            if right_bits == 0.to_u64() {
                 return Result::Err("integer divide by zero")
             } else {};
             let bits = if signed {
                 let left = signed_integer(left_bits, width);
                 let right = signed_integer(right_bits, right_width);
                 if op == bytecode::BinaryOp::Divide {
-                    (left / right).to_uint64()
+                    (left / right).to_u64()
                 } else {
-                    (left % right).to_uint64()
+                    (left % right).to_u64()
                 }
             } else if op == bytecode::BinaryOp::Divide {
                 left_bits / right_bits
@@ -2906,29 +2906,29 @@ fn execute_integer_binary(
             signed,
         ),
         bytecode::BinaryOp::ShiftLeft | bytecode::BinaryOp::ShiftRight => {
-            if right_signed && signed_integer(right_bits, right_width) < 0.to_int64() {
+            if right_signed && signed_integer(right_bits, right_width) < 0.to_i64() {
                 return Result::Err("negative shift count")
             } else {};
             let bits = if op == bytecode::BinaryOp::ShiftLeft {
-                if right_bits >= 64.to_uint64() {
-                    0.to_uint64()
+                if right_bits >= 64.to_u64() {
+                    0.to_u64()
                 } else {
-                    left_bits << right_bits.to_int()
+                    left_bits << right_bits.to_isize()
                 }
             } else if signed {
-                if right_bits >= 64.to_uint64() {
-                    if signed_integer(left_bits, width) < 0.to_int64() {
+                if right_bits >= 64.to_u64() {
+                    if signed_integer(left_bits, width) < 0.to_i64() {
                         maximum_uint64()
                     } else {
-                        0.to_uint64()
+                        0.to_u64()
                     }
                 } else {
-                    (signed_integer(left_bits, width) >> right_bits.to_int()).to_uint64()
+                    (signed_integer(left_bits, width) >> right_bits.to_isize()).to_u64()
                 }
-            } else if right_bits >= 64.to_uint64() {
-                0.to_uint64()
+            } else if right_bits >= 64.to_u64() {
+                0.to_u64()
             } else {
-                left_bits >> right_bits.to_int()
+                left_bits >> right_bits.to_isize()
             };
             set_integer_register(frame, target, bits, width, signed)
         },
@@ -3034,7 +3034,7 @@ fn set_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId) -> Result[
     }
 }
 
-fn set_local_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId, local: int) -> Result[
+fn set_local_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId, local: isize) -> Result[
     unit,
     string,
 ] {
@@ -3061,7 +3061,7 @@ fn set_bool_place(
     id: bytecode::PlaceId,
     backing: Place,
     elements: Vec[bool],
-    index: int,
+    index: isize,
 ) -> Result[unit, string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
@@ -3108,18 +3108,18 @@ fn current_location(state: VmState) -> Option[bytecode::SourceLocation] {
 }
 
 fn count_step(state: VmState) -> bool {
-    let steps = state.steps.get() + 1.to_int64();
+    let steps = state.steps.get() + 1.to_i64();
     state.steps.set(steps);
-    state.config.max_steps < 0.to_int64() || steps <= state.config.max_steps
+    state.config.max_steps < 0.to_i64() || steps <= state.config.max_steps
 }
 
-fn fast_steps_available(state: VmState, count: int) -> bool {
+fn fast_steps_available(state: VmState, count: isize) -> bool {
     let maximum = state.config.max_steps;
-    maximum < 0.to_int64() || state.steps.get() + count.to_int64() <= maximum
+    maximum < 0.to_i64() || state.steps.get() + count.to_i64() <= maximum
 }
 
-fn consume_fast_steps(state: VmState, count: int) -> unit {
-    state.steps.set(state.steps.get() + count.to_int64())
+fn consume_fast_steps(state: VmState, count: isize) -> unit {
+    state.steps.set(state.steps.get() + count.to_i64())
 }
 
 fn fast_call_operand(
@@ -3251,7 +3251,7 @@ fn append_output(state: VmState, values: Vec[Value], newline: bool) -> Result[un
     Result::Ok(())
 }
 
-fn result_type(state: VmState, frame: Frame, registers: Vec[bytecode::RegisterId], index: int) -> Result[
+fn result_type(state: VmState, frame: Frame, registers: Vec[bytecode::RegisterId], index: isize) -> Result[
     go_types::TypeId,
     string,
 ] {
@@ -3267,7 +3267,7 @@ fn result_type(state: VmState, frame: Frame, registers: Vec[bytecode::RegisterId
     }
 }
 
-fn value_length(state: VmState, value: Value) -> Result[int, string] {
+fn value_length(state: VmState, value: Value) -> Result[isize, string] {
     match value {
         Value::Local(LocalValue::Slice(value)) => Result::Ok(value.length),
         Value::Local(LocalValue::String(value)) => Result::Ok(value.len()),
@@ -3298,7 +3298,7 @@ fn value_length(state: VmState, value: Value) -> Result[int, string] {
     }
 }
 
-fn value_capacity(state: VmState, value: Value) -> Result[int, string] {
+fn value_capacity(state: VmState, value: Value) -> Result[isize, string] {
     match value {
         Value::Local(LocalValue::Slice(value)) => Result::Ok(value.capacity),
         Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => Result::Ok(
@@ -3315,17 +3315,20 @@ fn value_capacity(state: VmState, value: Value) -> Result[int, string] {
     }
 }
 
-fn integer_for_type(state: VmState, type_id: go_types::TypeId, value: int) -> Result[Value, string] {
+fn integer_for_type(state: VmState, type_id: go_types::TypeId, value: isize) -> Result[
+    Value,
+    string,
+] {
     let zero = runtime_zero_value(state, type_id)?;
     match zero {
         Value::Local(LocalValue::Integer { bits: _, width, signed }) => Result::Ok(
-            Value::Local(LocalValue::Integer { bits: value.to_uint64(), width, signed }),
+            Value::Local(LocalValue::Integer { bits: value.to_u64(), width, signed }),
         ),
         _ => Result::Err("builtin result is not integer typed"),
     }
 }
 
-fn size_value(state: VmState, type_id: go_types::TypeId, value: int) -> Result[Value, string] {
+fn size_value(state: VmState, type_id: go_types::TypeId, value: isize) -> Result[Value, string] {
     if value < 0 || value >= state.size_values.len() {
         return integer_for_type(state, type_id, value)
     } else {};
@@ -3366,7 +3369,7 @@ fn string_to_slice(state: VmState, value: bytes::Bytes, type_id: go_types::TypeI
     let elements: Vec[Value] = Vec::from_array([]);
     if element_kind == Option::Some(go_types::BasicKind::Uint8) {
         for byte in value.to_vec() {
-            elements.push(integer_for_type(state, element, byte.to_int())?)
+            elements.push(integer_for_type(state, element, byte.to_isize())?)
         }
     } else if element_kind == Option::Some(go_types::BasicKind::Int32) {
         let mut offset = 0;
@@ -3391,25 +3394,25 @@ fn string_to_slice(state: VmState, value: bytes::Bytes, type_id: go_types::TypeI
     Result::Ok(Value::Local(LocalValue::Slice(slice)))
 }
 
-fn integer_to_string(bits: uint64, width: int, signed: bool) -> string {
+fn integer_to_string(bits: u64, width: isize, signed: bool) -> string {
     let scalar = if signed {
         let value = signed_integer(bits, width);
-        if value < 0.to_int64() || value > 1114111.to_int64() {
+        if value < 0.to_i64() || value > 1114111.to_i64() {
             65533
         } else {
-            value.to_int()
+            value.to_isize()
         }
-    } else if bits > 1114111.to_uint64() {
+    } else if bits > 1114111.to_u64() {
         65533
     } else {
-        bits.to_int()
+        bits.to_isize()
     };
     let scalar = if scalar >= 55296 && scalar < 57344 {
         65533
     } else {
         scalar
     };
-    char_from_uint32(scalar.to_uint32()).unwrap_or('\uFFFD').to_string()
+    char_from_u32(scalar.to_u32()).unwrap_or('\uFFFD').to_string()
 }
 
 fn slice_to_string(state: VmState, value: SliceValue) -> Result[Value, string] {
@@ -3423,7 +3426,7 @@ fn slice_to_string(state: VmState, value: SliceValue) -> Result[Value, string] {
         match element {
             Value::Local(LocalValue::Integer { bits, width, signed }) => if element_kind
                 == Option::Some(go_types::BasicKind::Uint8) {
-                result.push(bits.to_uint8())
+                result.push(bits.to_u8())
             } else {
                 for byte in bytes::Bytes::from_string(integer_to_string(bits, width, signed)).to_vec() {
                     result.push(byte)
@@ -3491,7 +3494,7 @@ fn append_elements(state: VmState, slice: SliceValue, arguments: Vec[Value], var
         Value::Local(LocalValue::String(value)) => {
             let result: Vec[Value] = Vec::with_capacity(value.len());
             for byte in value.to_vec() {
-                result.push(integer_for_type(state, slice.element_type, byte.to_int())?)
+                result.push(integer_for_type(state, slice.element_type, byte.to_isize())?)
             }
             Result::Ok(result)
         },
@@ -3552,7 +3555,7 @@ fn appended_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue,
     Result::Ok(Value::Local(LocalValue::Slice(slice)))
 }
 
-fn grown_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue, amount: int) -> Result[
+fn grown_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue, amount: isize) -> Result[
     Value,
     string,
 ] {
@@ -3586,7 +3589,7 @@ fn copied_values(state: VmState, value: Value) -> Result[Vec[Value], string] {
             )?;
             let result: Vec[Value] = Vec::with_capacity(value.len());
             for byte in value.to_vec() {
-                result.push(integer_for_type(state, byte_type, byte.to_int())?)
+                result.push(integer_for_type(state, byte_type, byte.to_isize())?)
             }
             Result::Ok(result)
         },
@@ -3594,7 +3597,7 @@ fn copied_values(state: VmState, value: Value) -> Result[Vec[Value], string] {
     }
 }
 
-fn copy_builtin(state: VmState, destination: SliceValue, source: Value) -> Result[int, string] {
+fn copy_builtin(state: VmState, destination: SliceValue, source: Value) -> Result[isize, string] {
     let values = copied_values(state, source)?;
     let count = if destination.length < values.len() {
         destination.length
@@ -3623,7 +3626,7 @@ fn map_types(world: go_types::World, type_id: go_types::TypeId) -> Result[
     }
 }
 
-fn new_map(state: VmState, type_id: go_types::TypeId, capacity: int) -> Result[Value, string] {
+fn new_map(state: VmState, type_id: go_types::TypeId, capacity: isize) -> Result[Value, string] {
     if capacity < 0 {
         return Result::Err("makemap: size out of range")
     } else {};
@@ -3640,7 +3643,7 @@ fn new_map(state: VmState, type_id: go_types::TypeId, capacity: int) -> Result[V
     Result::Ok(Value::Local(LocalValue::Map(id)))
 }
 
-fn checked_map(state: VmState, id: int) -> Result[MapValue, string] {
+fn checked_map(state: VmState, id: isize) -> Result[MapValue, string] {
     if id < 0 || id >= state.maps.len() {
         Result::Err("invalid map")
     } else {
@@ -3648,23 +3651,17 @@ fn checked_map(state: VmState, id: int) -> Result[MapValue, string] {
     }
 }
 
-fn hash_mix(seed: uint64, value: uint64) -> uint64 {
-    (seed ^ value) * 1099511628211.to_uint64()
+fn hash_mix(seed: u64, value: u64) -> u64 {
+    (seed ^ value) * 1099511628211.to_u64()
 }
 
-fn hash_place(value: Place) -> uint64 {
-    let mut result = hash_mix(1469598103934665603.to_uint64(), value.root.value.to_uint64());
+fn hash_place(value: Place) -> u64 {
+    let mut result = hash_mix(1469598103934665603.to_u64(), value.root.value.to_u64());
     match value.projections {
         Some(projections) => for projection in projections {
             result = match projection {
-                Projection::Field(index) => hash_mix(
-                    hash_mix(result, 1.to_uint64()),
-                    index.to_uint64(),
-                ),
-                Projection::Index(index) => hash_mix(
-                    hash_mix(result, 2.to_uint64()),
-                    index.to_uint64(),
-                ),
+                Projection::Field(index) => hash_mix(hash_mix(result, 1.to_u64()), index.to_u64()),
+                Projection::Index(index) => hash_mix(hash_mix(result, 2.to_u64()), index.to_u64()),
             };
         },
         None => (),
@@ -3672,73 +3669,73 @@ fn hash_place(value: Place) -> uint64 {
     result
 }
 
-fn normalized_float_hash(bits: uint64, width: int) -> uint64 {
+fn normalized_float_hash(bits: u64, width: isize) -> u64 {
     if width == 32 {
-        if bits & 2147483647.to_uint64() == 0.to_uint64() {
-            0.to_uint64()
+        if bits & 2147483647.to_u64() == 0.to_u64() {
+            0.to_u64()
         } else {
-            bits & 4294967295.to_uint64()
+            bits & 4294967295.to_u64()
         }
-    } else if bits & 9223372036854775807.to_uint64() == 0.to_uint64() {
-        0.to_uint64()
+    } else if bits & 9223372036854775807.to_u64() == 0.to_u64() {
+        0.to_u64()
     } else {
         bits
     }
 }
 
-fn hash_value(state: VmState, value: Value) -> Result[uint64, string] {
+fn hash_value(state: VmState, value: Value) -> Result[u64, string] {
     match value {
-        Value::Local(LocalValue::Unit) => Result::Ok(3.to_uint64()),
+        Value::Local(LocalValue::Unit) => Result::Ok(3.to_u64()),
         Value::Local(LocalValue::Bool(value)) => Result::Ok(
             if value {
-                5.to_uint64()
+                5.to_u64()
             } else {
-                7.to_uint64()
+                7.to_u64()
             },
         ),
         Value::Local(LocalValue::Integer { bits, width: _, signed: _ }) => {
-            Result::Ok(hash_mix(11.to_uint64(), bits))
+            Result::Ok(hash_mix(11.to_u64(), bits))
         },
         Value::Local(LocalValue::Float { bits, width }) => Result::Ok(
-            hash_mix(width.to_uint64(), normalized_float_hash(bits, width)),
+            hash_mix(width.to_u64(), normalized_float_hash(bits, width)),
         ),
         Value::Local(LocalValue::Complex { real, imaginary, width }) => Result::Ok(
             hash_mix(
-                hash_mix(width.to_uint64(), normalized_float_hash(real, width / 2)),
+                hash_mix(width.to_u64(), normalized_float_hash(real, width / 2)),
                 normalized_float_hash(imaginary, width / 2),
             ),
         ),
         Value::Local(LocalValue::String(value)) => {
-            let mut result = 1469598103934665603.to_uint64();
+            let mut result = 1469598103934665603.to_u64();
             for byte in value.to_vec() {
-                result = hash_mix(result, byte.to_uint64());
+                result = hash_mix(result, byte.to_u64());
             }
             Result::Ok(result)
         },
         Value::Local(LocalValue::Pointer(value)) => Result::Ok(
             match value {
                 Some(place) => hash_place(place),
-                None => 13.to_uint64(),
+                None => 13.to_u64(),
             },
         ),
         Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
-            let mut result = hash_mix(17.to_uint64(), elements.len().to_uint64());
+            let mut result = hash_mix(17.to_u64(), elements.len().to_u64());
             for element in elements {
                 result = hash_mix(result, hash_value(state, element)?);
             }
             Result::Ok(result)
         },
         Value::Local(LocalValue::Channel(value)) => {
-            Result::Ok(hash_mix(19.to_uint64(), value.to_uint64()))
+            Result::Ok(hash_mix(19.to_u64(), value.to_u64()))
         },
         Value::Interface { static_type: _, dynamic_type: None, value: _ } => {
-            Result::Ok(23.to_uint64())
+            Result::Ok(23.to_u64())
         },
         Value::Interface { static_type: _, dynamic_type: Some(dynamic_type), value: Some(value) } => if go_types::comparable(
             state.program.world,
             dynamic_type,
         ) {
-            Result::Ok(hash_mix(dynamic_type.value.to_uint64(), hash_value(state, value.get())?))
+            Result::Ok(hash_mix(dynamic_type.value.to_u64(), hash_value(state, value.get())?))
         } else {
             Result::Err("hash of unhashable type")
         },
@@ -3752,7 +3749,7 @@ fn hash_value(state: VmState, value: Value) -> Result[uint64, string] {
     }
 }
 
-fn map_entry_index(state: VmState, value: MapValue, key: Value, hash: uint64) -> Result[int, string] {
+fn map_entry_index(state: VmState, value: MapValue, key: Value, hash: u64) -> Result[isize, string] {
     let mut index = value.buckets.get(hash).unwrap_or(-1);
     let mut visited = 0;
     while index >= 0 {
@@ -3775,7 +3772,7 @@ fn ensure_map_key_comparable(state: VmState, key: Value) -> Result[unit, string]
     Result::Ok(())
 }
 
-fn map_lookup(state: VmState, id: int, key: Value, value_type: go_types::TypeId) -> Result[
+fn map_lookup(state: VmState, id: isize, key: Value, value_type: go_types::TypeId) -> Result[
     (Value, bool),
     string,
 ] {
@@ -3792,7 +3789,7 @@ fn map_lookup(state: VmState, id: int, key: Value, value_type: go_types::TypeId)
     }
 }
 
-fn map_set(state: VmState, id: int, key: Value, value: Value) -> Result[unit, string] {
+fn map_set(state: VmState, id: isize, key: Value, value: Value) -> Result[unit, string] {
     if id < 0 {
         return Result::Err("assignment to entry in nil map")
     } else {};
@@ -3819,7 +3816,7 @@ fn map_set(state: VmState, id: int, key: Value, value: Value) -> Result[unit, st
     Result::Ok(())
 }
 
-fn map_delete(state: VmState, id: int, key: Value) -> Result[unit, string] {
+fn map_delete(state: VmState, id: isize, key: Value) -> Result[unit, string] {
     let hash = hash_value(state, key)?;
     if id < 0 {
         return Result::Ok(())
@@ -3832,7 +3829,7 @@ fn map_delete(state: VmState, id: int, key: Value) -> Result[unit, string] {
     Result::Ok(())
 }
 
-fn clear_map(state: VmState, id: int) -> Result[unit, string] {
+fn clear_map(state: VmState, id: isize) -> Result[unit, string] {
     if id < 0 {
         return Result::Ok(())
     } else {};
@@ -3857,11 +3854,11 @@ fn clear_slice(state: VmState, value: SliceValue) -> Result[unit, string] {
 
 fn new_map_iterator(
     state: VmState,
-    id: int,
+    id: isize,
     key_type: go_types::TypeId,
     value_type: go_types::TypeId,
-) -> Result[int, string] {
-    let entries: Vec[int] = Vec::from_array([]);
+) -> Result[isize, string] {
+    let entries: Vec[isize] = Vec::from_array([]);
     if id >= 0 {
         let map = checked_map(state, id)?;
         for index in 0..map.entries.len() {
@@ -3877,7 +3874,7 @@ fn new_map_iterator(
     Result::Ok(iterator)
 }
 
-fn map_iterator_next(state: VmState, id: int) -> Result[(Value, Value, bool), string] {
+fn map_iterator_next(state: VmState, id: isize) -> Result[(Value, Value, bool), string] {
     if id < 0 || id >= state.map_iterators.len() {
         return Result::Err("invalid map iterator")
     } else {};
@@ -4147,7 +4144,7 @@ fn execute_builtin(
     }
 }
 
-fn aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: int) -> Result[
+fn aggregate_element(state: VmState, value: Value, indices: Vec[isize], offset: isize) -> Result[
     Value,
     string,
 ] {
@@ -4193,7 +4190,7 @@ fn aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: in
     }
 }
 
-fn borrow_aggregate_element(state: VmState, value: Value, indices: Vec[int], offset: int) -> Result[
+fn borrow_aggregate_element(state: VmState, value: Value, indices: Vec[isize], offset: isize) -> Result[
     Value,
     string,
 ] {
@@ -4292,7 +4289,7 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
                     (
                         Value::Local(
                             LocalValue::Integer {
-                                bits: value.get(index).to_uint64(),
+                                bits: value.get(index).to_u64(),
                                 width: 8,
                                 signed: false,
                             },
@@ -4307,7 +4304,10 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
     }
 }
 
-fn indexed_integer_value(state: VmState, value: Value, index: int) -> Result[(Value, bool), string] {
+fn indexed_integer_value(state: VmState, value: Value, index: isize) -> Result[
+    (Value, bool),
+    string,
+] {
     match value {
         Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             if index < 0 || index >= elements.len() {
@@ -4353,7 +4353,7 @@ fn indexed_integer_value(state: VmState, value: Value, index: int) -> Result[(Va
                 (
                     Value::Local(
                         LocalValue::Integer {
-                            bits: value.get(index).to_uint64(),
+                            bits: value.get(index).to_u64(),
                             width: 8,
                             signed: false,
                         },
@@ -4367,59 +4367,59 @@ fn indexed_integer_value(state: VmState, value: Value, index: int) -> Result[(Va
 }
 
 fn continuation_byte(value: byte) -> bool {
-    value >= 128.to_uint8() && value <= 191.to_uint8()
+    value >= 128.to_u8() && value <= 191.to_u8()
 }
 
-fn decoded_rune(value: bytes::Bytes, offset: int) -> Result[(int, int), string] {
+fn decoded_rune(value: bytes::Bytes, offset: isize) -> Result[(isize, isize), string] {
     if offset < 0 || offset >= value.len() {
         return Result::Err("string range offset is out of bounds")
     } else {};
     let first = value.get(offset);
-    if first < 128.to_uint8() {
-        return Result::Ok((first.to_int(), 1))
-    } else if first < 194.to_uint8() {
+    if first < 128.to_u8() {
+        return Result::Ok((first.to_isize(), 1))
+    } else if first < 194.to_u8() {
         return Result::Ok((65533, 1))
-    } else if first <= 223.to_uint8() {
+    } else if first <= 223.to_u8() {
         if offset + 1 < value.len() && continuation_byte(value.get(offset + 1)) {
             return Result::Ok(
-                (((first.to_int() & 31) << 6) | (value.get(offset + 1).to_int() & 63), 2),
+                (((first.to_isize() & 31) << 6) | (value.get(offset + 1).to_isize() & 63), 2),
             )
         } else {
             return Result::Ok((65533, 1))
         }
-    } else if first <= 239.to_uint8() {
+    } else if first <= 239.to_u8() {
         if offset + 2 >= value.len() || !continuation_byte(value.get(offset + 1))
             || !continuation_byte(value.get(offset + 2)) {
             return Result::Ok((65533, 1))
         } else {};
         let second = value.get(offset + 1);
-        if first == 224.to_uint8() && second < 160.to_uint8()
-            || first == 237.to_uint8() && second >= 160.to_uint8() {
+        if first == 224.to_u8() && second < 160.to_u8()
+            || first == 237.to_u8() && second >= 160.to_u8() {
             return Result::Ok((65533, 1))
         } else {};
         Result::Ok(
             (
-                ((first.to_int() & 15) << 12) | ((second.to_int() & 63) << 6)
-                    | (value.get(offset + 2).to_int() & 63),
+                ((first.to_isize() & 15) << 12) | ((second.to_isize() & 63) << 6)
+                    | (value.get(offset + 2).to_isize() & 63),
                 3,
             ),
         )
-    } else if first <= 244.to_uint8() {
+    } else if first <= 244.to_u8() {
         if offset + 3 >= value.len() || !continuation_byte(value.get(offset + 1))
             || !continuation_byte(value.get(offset + 2))
             || !continuation_byte(value.get(offset + 3)) {
             return Result::Ok((65533, 1))
         } else {};
         let second = value.get(offset + 1);
-        if first == 240.to_uint8() && second < 144.to_uint8()
-            || first == 244.to_uint8() && second >= 144.to_uint8() {
+        if first == 240.to_u8() && second < 144.to_u8()
+            || first == 244.to_u8() && second >= 144.to_u8() {
             return Result::Ok((65533, 1))
         } else {};
         Result::Ok(
             (
-                ((first.to_int() & 7) << 18) | ((second.to_int() & 63) << 12)
-                    | ((value.get(offset + 2).to_int() & 63) << 6)
-                    | (value.get(offset + 3).to_int() & 63),
+                ((first.to_isize() & 7) << 18) | ((second.to_isize() & 63) << 12)
+                    | ((value.get(offset + 2).to_isize() & 63) << 6)
+                    | (value.get(offset + 3).to_isize() & 63),
                 4,
             ),
         )
@@ -4428,7 +4428,7 @@ fn decoded_rune(value: bytes::Bytes, offset: int) -> Result[(int, int), string] 
     }
 }
 
-fn bounded_index(value: Option[Value], default: int) -> Result[int, string] {
+fn bounded_index(value: Option[Value], default: isize) -> Result[isize, string] {
     match value {
         Some(value) => integer_index(value),
         None => Result::Ok(default),
@@ -4547,7 +4547,7 @@ fn aggregate_value(
     type_id: go_types::TypeId,
     values: Vec[bytecode::AggregateElement],
     frame: Frame,
-    length: int,
+    length: isize,
 ) -> Result[Value, string] {
     let underlying = go_types::underlying(state.program.world, type_id);
     match go_types::type_data(state.program.world, underlying) {
@@ -4632,7 +4632,7 @@ fn aggregate_value(
     }
 }
 
-fn make_slice(state: VmState, type_id: go_types::TypeId, length: int, capacity: int) -> Result[
+fn make_slice(state: VmState, type_id: go_types::TypeId, length: isize, capacity: isize) -> Result[
     Value,
     string,
 ] {
@@ -4752,8 +4752,8 @@ fn native_type_value(state: VmState, type_id: go_types::TypeId) -> Option[byteco
     Option::None
 }
 
-fn native_type_cache(count: int) -> Vec[int] {
-    let result: Vec[int] = Vec::with_capacity(count);
+fn native_type_cache(count: isize) -> Vec[isize] {
+    let result: Vec[isize] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(-2)
     }
@@ -4793,7 +4793,7 @@ fn pointer_element_type(world: go_types::World, type_id: go_types::TypeId) -> Re
     }
 }
 
-fn native_field_type(world: go_types::World, type_id: go_types::TypeId, index: int) -> Result[
+fn native_field_type(world: go_types::World, type_id: go_types::TypeId, index: isize) -> Result[
     go_types::TypeId,
     string,
 ] {
@@ -4815,7 +4815,7 @@ fn native_field_type(world: go_types::World, type_id: go_types::TypeId, index: i
     }
 }
 
-fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[int]) -> Result[
+fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[isize]) -> Result[
     RuntimePlace,
     string,
 ] {
@@ -4839,7 +4839,7 @@ fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[int]
     }
 }
 
-fn projected_frame_place(state: VmState, frame: Frame, base: bytecode::PlaceId, indices: Vec[int]) -> Result[
+fn projected_frame_place(state: VmState, frame: Frame, base: bytecode::PlaceId, indices: Vec[isize]) -> Result[
     RuntimePlace,
     string,
 ] {
@@ -4915,7 +4915,7 @@ fn set_indexed_runtime_place(
     frame: Frame,
     target: bytecode::PlaceId,
     base: bytecode::PlaceId,
-    index: int,
+    index: isize,
 ) -> Result[unit, string] {
     let base = local_frame_place(frame, base)?;
     match load_place(state.memory, base) {
@@ -4976,11 +4976,11 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                 go_types::underlying(state.program.world, type_id),
             ).kind {
                 go_types::TypeKind::Array { length, element } => {
-                    if length < 0.to_int64() || length > 9223372036854775807.to_int64() {
+                    if length < 0.to_i64() || length > 9223372036854775807.to_i64() {
                         return Result::Err("array length is outside the host integer range")
                     } else {};
-                    let elements: Vec[Value] = Vec::with_capacity(length.to_int());
-                    for _ in 0..length.to_int() {
+                    let elements: Vec[Value] = Vec::with_capacity(length.to_isize());
+                    for _ in 0..length.to_isize() {
                         elements.push(runtime_zero_value(state, element)?)
                     }
                     Result::Ok(local_aggregate(type_id, elements))
@@ -5331,8 +5331,8 @@ fn native_aggregate_element_types(world: go_types::World, type_id: go_types::Typ
             Result::Ok(result)
         },
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => {
-            let result: Vec[go_types::TypeId] = Vec::with_capacity(length.to_int());
-            for _ in 0..length.to_int() {
+            let result: Vec[go_types::TypeId] = Vec::with_capacity(length.to_isize());
+            for _ in 0..length.to_isize() {
                 result.push(element)
             }
             Result::Ok(result)
@@ -5630,12 +5630,12 @@ fn prepare_native_value_invocation(state: VmState, native: NativePrepared, argum
 fn prepare_native_runtime_context(
     native: NativePrepared,
     invocation: NativeInvocation,
-    goroutine: int,
+    goroutine: isize,
 ) -> Result[unit, string] {
     if native.runtime_stack
         && !use_native_runtime_stack(
             invocation.value as dyn HostValueMarker,
-            (goroutine + 1).to_uint64(),
+            (goroutine + 1).to_u64(),
         ) {
         Result::Err("runtime.Stack native context could not be installed")
     } else {
@@ -6144,7 +6144,7 @@ fn runtime_fault_payload(state: VmState, message: string) -> Result[PanicPayload
 }
 
 fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecode::Instruction) -> Result[
-    int,
+    isize,
     string,
 ] {
     let result: Result[unit, string] = match instruction.kind {
@@ -6255,7 +6255,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                         frame,
                         target,
                         Value::Local(
-                            LocalValue::Bool(scalar_local_value(frame, local)? != 0.to_uint64()),
+                            LocalValue::Bool(scalar_local_value(frame, local)? != 0.to_u64()),
                         ),
                     )
                 } else {
@@ -6281,9 +6281,9 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                         frame,
                         local,
                         if boolean_register(frame, value)? {
-                            1.to_uint64()
+                            1.to_u64()
                         } else {
-                            0.to_uint64()
+                            0.to_u64()
                         },
                     )
                 } else {
@@ -6957,18 +6957,18 @@ fn count_sequential_steps(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    count: int,
+    index: isize,
+    count: isize,
 ) -> string {
     let current = state.steps.get();
     let maximum = state.config.max_steps;
-    if maximum >= 0.to_int64() && current + count.to_int64() > maximum {
+    if maximum >= 0.to_i64() && current + count.to_i64() > maximum {
         let offset = if current >= maximum {
             0
         } else {
-            (maximum - current).to_int()
+            (maximum - current).to_isize()
         };
-        state.steps.set(maximum + 1.to_int64());
+        state.steps.set(maximum + 1.to_i64());
         sequential_error_at(
             state,
             frame,
@@ -6976,7 +6976,7 @@ fn count_sequential_steps(
             "instruction limit exceeded",
         )
     } else {
-        state.steps.set(current + count.to_int64());
+        state.steps.set(current + count.to_i64());
         ""
     }
 }
@@ -6985,19 +6985,19 @@ fn count_sequential_branch_steps(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    instruction_count: int,
+    index: isize,
+    instruction_count: isize,
 ) -> string {
     let current = state.steps.get();
     let maximum = state.config.max_steps;
     let count = instruction_count + 1;
-    if maximum >= 0.to_int64() && current + count.to_int64() > maximum {
+    if maximum >= 0.to_i64() && current + count.to_i64() > maximum {
         let offset = if current >= maximum {
             0
         } else {
-            (maximum - current).to_int()
+            (maximum - current).to_isize()
         };
-        state.steps.set(maximum + 1.to_int64());
+        state.steps.set(maximum + 1.to_i64());
         sequential_error_at(
             state,
             frame,
@@ -7009,26 +7009,26 @@ fn count_sequential_branch_steps(
             "instruction limit exceeded",
         )
     } else {
-        state.steps.set(current + count.to_int64());
+        state.steps.set(current + count.to_i64());
         ""
     }
 }
 
-fn install_sequential_local_place(frame: Frame, place: int, local: int) -> unit {
+fn install_sequential_local_place(frame: Frame, place: isize, local: isize) -> unit {
     frame.place_roots[place] = frame.locals[local].value;
     frame.places[place] = Option::None;
     frame.bool_places[place] = Option::None;
-    frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place] = (local + 1).to_uint64();
+    frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place] = (local + 1).to_u64();
 }
 
 fn execute_sequential_increment(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    place: int,
-    local: int,
-    current: int,
+    index: isize,
+    place: isize,
+    local: isize,
+    current: isize,
     add: bool,
 ) -> string {
     let step_error = count_sequential_steps(state, frame, block, index, 5);
@@ -7053,20 +7053,19 @@ fn execute_sequential_increment(
             "invalid sequential increment operation",
         ),
     };
-    let width = (frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local]
-        & 127.to_uint64()).to_int();
+    let width = (frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local] & 127.to_u64()).to_isize();
     let old = frame.scalar[frame.registers.len() * 2 + local];
     let value = normalize_integer(
         if add {
-            old + 1.to_uint64()
+            old + 1.to_u64()
         } else {
-            old - 1.to_uint64()
+            old - 1.to_u64()
         },
         width,
     );
     install_sequential_local_place(frame, place, local);
     if !set_scalar_integer_register(frame, current, old)
-        || !set_scalar_integer_register(frame, constant, 1.to_uint64())
+        || !set_scalar_integer_register(frame, constant, 1.to_u64())
         || !set_scalar_integer_register(frame, result, value) {
         return sequential_error_at(
             state,
@@ -7083,10 +7082,10 @@ fn execute_sequential_local_binary(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    left_local: int,
-    right_local: int,
-    kind: int,
+    index: isize,
+    left_local: isize,
+    right_local: isize,
+    kind: isize,
     store: bool,
 ) -> string {
     let count = if store {
@@ -7157,11 +7156,11 @@ fn execute_sequential_local_binary(
         kind,
         target,
         left_bits,
-        (left_code & 127.to_uint64()).to_int(),
-        left_code & 128.to_uint64() != 0.to_uint64(),
+        (left_code & 127.to_u64()).to_isize(),
+        left_code & 128.to_u64() != 0.to_u64(),
         right_bits,
-        (right_code & 127.to_uint64()).to_int(),
-        right_code & 128.to_uint64() != 0.to_uint64(),
+        (right_code & 127.to_u64()).to_isize(),
+        right_code & 128.to_u64() != 0.to_u64(),
         state.false_value,
         state.true_value,
     );
@@ -7171,7 +7170,7 @@ fn execute_sequential_local_binary(
     if store {
         frame.scalar[frame.registers.len() * 2 + left_local] = normalize_integer(
             frame.scalar[target],
-            (left_code & 127.to_uint64()).to_int(),
+            (left_code & 127.to_u64()).to_isize(),
         );
     } else {};
     ""
@@ -7181,10 +7180,10 @@ fn execute_sequential_local_constant_binary(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    local: int,
-    constant_index: int,
-    kind: int,
+    index: isize,
+    local: isize,
+    constant_index: isize,
+    kind: isize,
 ) -> string {
     let step_error = count_sequential_steps(state, frame, block, index, 4);
     if step_error != "" {
@@ -7246,8 +7245,8 @@ fn execute_sequential_local_constant_binary(
         kind,
         target,
         left_bits,
-        (left_code & 127.to_uint64()).to_int(),
-        left_code & 128.to_uint64() != 0.to_uint64(),
+        (left_code & 127.to_u64()).to_isize(),
+        left_code & 128.to_u64() != 0.to_u64(),
         right_bits,
         right_width,
         right_signed,
@@ -7265,10 +7264,10 @@ fn execute_fast_increment(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    local: int,
+    index: isize,
+    local: isize,
     add: bool,
-    jump_target: int,
+    jump_target: isize,
 ) -> string {
     let step_error = if jump_target >= 0 {
         count_sequential_branch_steps(state, frame, block, index, 5)
@@ -7282,11 +7281,11 @@ fn execute_fast_increment(
     let value_index = frame.registers.len() * 2 + local;
     frame.scalar[value_index] = normalize_integer(
         if add {
-            frame.scalar[value_index] + 1.to_uint64()
+            frame.scalar[value_index] + 1.to_u64()
         } else {
-            frame.scalar[value_index] - 1.to_uint64()
+            frame.scalar[value_index] - 1.to_u64()
         },
-        (code & 127.to_uint64()).to_int(),
+        (code & 127.to_u64()).to_isize(),
     );
     if jump_target >= 0 {
         frame.block.set(bytecode::block_id(jump_target))
@@ -7298,12 +7297,12 @@ fn execute_fast_local_binary(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    left_local: int,
-    right_local: int,
-    kind: int,
+    index: isize,
+    left_local: isize,
+    right_local: isize,
+    kind: isize,
     store: bool,
-    jump_target: int,
+    jump_target: isize,
 ) -> string {
     let instruction_count = if store {
         6
@@ -7329,7 +7328,7 @@ fn execute_fast_local_binary(
             } else {
                 left_bits - right_bits
             },
-            (left_code & 127.to_uint64()).to_int(),
+            (left_code & 127.to_u64()).to_isize(),
         );
         if jump_target >= 0 {
             frame.block.set(bytecode::block_id(jump_target))
@@ -7350,11 +7349,11 @@ fn execute_fast_local_binary(
         kind,
         target,
         left_bits,
-        (left_code & 127.to_uint64()).to_int(),
-        left_code & 128.to_uint64() != 0.to_uint64(),
+        (left_code & 127.to_u64()).to_isize(),
+        left_code & 128.to_u64() != 0.to_u64(),
         right_bits,
-        (right_code & 127.to_uint64()).to_int(),
-        right_code & 128.to_uint64() != 0.to_uint64(),
+        (right_code & 127.to_u64()).to_isize(),
+        right_code & 128.to_u64() != 0.to_u64(),
         state.false_value,
         state.true_value,
     );
@@ -7369,10 +7368,10 @@ fn execute_fast_local_constant_binary(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    local: int,
-    constant_index: int,
-    kind: int,
+    index: isize,
+    local: isize,
+    constant_index: isize,
+    kind: isize,
 ) -> string {
     let step_error = count_sequential_steps(state, frame, block, index, 4);
     if step_error != "" {
@@ -7402,8 +7401,8 @@ fn execute_fast_local_constant_binary(
         kind,
         target,
         frame.scalar[frame.registers.len() * 2 + local],
-        (left_code & 127.to_uint64()).to_int(),
-        left_code & 128.to_uint64() != 0.to_uint64(),
+        (left_code & 127.to_u64()).to_isize(),
+        left_code & 128.to_u64() != 0.to_u64(),
         right_bits,
         right_width,
         right_signed,
@@ -7421,10 +7420,10 @@ fn execute_fast_local_constant_branch(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    local: int,
-    constant_index: int,
-    packed: int,
+    index: isize,
+    local: isize,
+    constant_index: isize,
+    packed: isize,
 ) -> string {
     let step_error = count_sequential_branch_steps(state, frame, block, index, 4);
     if step_error != "" {
@@ -7443,8 +7442,8 @@ fn execute_fast_local_constant_branch(
     let condition = match scalar_integer_comparison(
         packed % 18,
         frame.scalar[frame.registers.len() * 2 + local],
-        (code & 127.to_uint64()).to_int(),
-        code & 128.to_uint64() != 0.to_uint64(),
+        (code & 127.to_u64()).to_isize(),
+        code & 128.to_u64() != 0.to_u64(),
         right_bits,
         right_width,
     ) {
@@ -7474,11 +7473,11 @@ fn execute_sequential_integer_binary(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    kind: int,
-    left: int,
-    right: int,
-    target: int,
+    index: isize,
+    kind: isize,
+    left: isize,
+    right: isize,
+    target: isize,
 ) -> string {
     let instruction = block.instructions[index];
     if !count_step(state) {
@@ -7519,18 +7518,17 @@ fn execute_sequential_integer_binary(
     if left >= 0 && left < frame.registers.len() && right >= 0 && right < frame.registers.len() {
         let left_code = frame.scalar[frame.registers.len() + left];
         let right_code = frame.scalar[frame.registers.len() + right];
-        if left_code & 256.to_uint64() != 0.to_uint64()
-            && right_code & 256.to_uint64() != 0.to_uint64() {
+        if left_code & 256.to_u64() != 0.to_u64() && right_code & 256.to_u64() != 0.to_u64() {
             let message = execute_scalar_integer_binary(
                 frame,
                 kind,
                 target,
                 frame.scalar[left],
-                (left_code & 127.to_uint64()).to_int(),
-                left_code & 128.to_uint64() != 0.to_uint64(),
+                (left_code & 127.to_u64()).to_isize(),
+                left_code & 128.to_u64() != 0.to_u64(),
                 frame.scalar[right],
-                (right_code & 127.to_uint64()).to_int(),
-                right_code & 128.to_uint64() != 0.to_uint64(),
+                (right_code & 127.to_u64()).to_isize(),
+                right_code & 128.to_u64() != 0.to_u64(),
                 state.false_value,
                 state.true_value,
             );
@@ -7551,9 +7549,9 @@ fn execute_sequential_constant(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    source: int,
-    target: int,
+    index: isize,
+    source: isize,
+    target: isize,
 ) -> string {
     let instruction = block.instructions[index];
     if !count_step(state) {
@@ -7584,23 +7582,23 @@ fn execute_sequential_constant(
     }
 }
 
-fn sequential_integer_register_index(frame: Frame, index: int) -> Result[int, string] {
+fn sequential_integer_register_index(frame: Frame, index: isize) -> Result[isize, string] {
     if !frame.scalar.is_empty() && index >= 0 && index < frame.registers.len() {
         let code = frame.scalar[frame.registers.len() + index];
-        let width = (code & 127.to_uint64()).to_int();
-        if code & 256.to_uint64() != 0.to_uint64() && width > 1 {
+        let width = (code & 127.to_u64()).to_isize();
+        if code & 256.to_u64() != 0.to_u64() && width > 1 {
             let bits = frame.scalar[index];
-            if code & 128.to_uint64() != 0.to_uint64() {
-                let value = signed_integer(bits, width).to_int();
+            if code & 128.to_u64() != 0.to_u64() {
+                let value = signed_integer(bits, width).to_isize();
                 if value < 0 {
                     return Result::Err("index is outside the host integer range")
                 } else {
                     return Result::Ok(value)
                 }
-            } else if bits > 9223372036854775807.to_uint64() {
+            } else if bits > 9223372036854775807.to_u64() {
                 return Result::Err("integer is outside the host integer range")
             } else {
-                return Result::Ok(bits.to_int())
+                return Result::Ok(bits.to_isize())
             }
         } else {}
     } else {};
@@ -7611,10 +7609,10 @@ fn execute_sequential_index_place(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    target: int,
-    base: int,
-    index: int,
+    instruction_index: isize,
+    target: isize,
+    base: isize,
+    index: isize,
 ) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
@@ -7677,9 +7675,9 @@ fn execute_sequential_load(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    source: int,
-    target: int,
+    instruction_index: isize,
+    source: isize,
+    target: isize,
 ) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
@@ -7716,9 +7714,9 @@ fn execute_sequential_store(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    target: int,
-    source: int,
+    instruction_index: isize,
+    target: isize,
+    source: isize,
 ) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
@@ -7726,18 +7724,18 @@ fn execute_sequential_store(
     } else {};
     if !frame.scalar.is_empty() && frame.place_roots[target] != -1 {
         let local_value = frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + target];
-        if local_value > 0.to_uint64() && local_value <= frame.locals.len().to_uint64() {
-            let local = local_value.to_int() - 1;
+        if local_value > 0.to_u64() && local_value <= frame.locals.len().to_u64() {
+            let local = local_value.to_isize() - 1;
             let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
             let source_code = frame.scalar[frame.registers.len() + source];
-            let local_width = local_code & 127.to_uint64();
-            let source_width = source_code & 127.to_uint64();
-            if local_width != 0.to_uint64() && source_code & 256.to_uint64() != 0.to_uint64()
-                && (local_width == 1.to_uint64()) == (source_width == 1.to_uint64()) {
-                frame.scalar[frame.registers.len() * 2 + local] = if local_width == 1.to_uint64() {
+            let local_width = local_code & 127.to_u64();
+            let source_width = source_code & 127.to_u64();
+            if local_width != 0.to_u64() && source_code & 256.to_u64() != 0.to_u64()
+                && (local_width == 1.to_u64()) == (source_width == 1.to_u64()) {
+                frame.scalar[frame.registers.len() * 2 + local] = if local_width == 1.to_u64() {
                     frame.scalar[source]
                 } else {
-                    normalize_integer(frame.scalar[source], local_width.to_int())
+                    normalize_integer(frame.scalar[source], local_width.to_isize())
                 };
                 return ""
             } else {}
@@ -7763,9 +7761,9 @@ fn execute_sequential_local_place(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    target: int,
-    local: int,
+    instruction_index: isize,
+    target: isize,
+    local: isize,
 ) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
@@ -7790,9 +7788,9 @@ fn execute_sequential_boolean_not(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    source: int,
-    target: int,
+    instruction_index: isize,
+    source: isize,
+    target: isize,
 ) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
@@ -7823,10 +7821,10 @@ fn execute_sequential_boolean_index(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    base: int,
-    index: int,
-    target: int,
+    instruction_index: isize,
+    base: isize,
+    index: isize,
+    target: isize,
 ) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
@@ -7885,27 +7883,27 @@ fn execute_sequential_boolean_index(
     }
 }
 
-fn sequential_integer_local_index(frame: Frame, local: int) -> Result[int, string] {
+fn sequential_integer_local_index(frame: Frame, local: isize) -> Result[isize, string] {
     if frame.scalar.is_empty() || local < 0 || local >= frame.locals.len() {
         return Result::Err("invalid scalar index local")
     } else {};
     let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
-    let width = (code & 127.to_uint64()).to_int();
+    let width = (code & 127.to_u64()).to_isize();
     if width <= 1 {
         return Result::Err("invalid scalar index local")
     } else {};
     let bits = frame.scalar[frame.registers.len() * 2 + local];
-    if code & 128.to_uint64() != 0.to_uint64() {
-        let value = signed_integer(bits, width).to_int();
+    if code & 128.to_u64() != 0.to_u64() {
+        let value = signed_integer(bits, width).to_isize();
         if value < 0 {
             Result::Err("index is outside the host integer range")
         } else {
             Result::Ok(value)
         }
-    } else if bits > 9223372036854775807.to_uint64() {
+    } else if bits > 9223372036854775807.to_u64() {
         Result::Err("integer is outside the host integer range")
     } else {
-        Result::Ok(bits.to_int())
+        Result::Ok(bits.to_isize())
     }
 }
 
@@ -7913,10 +7911,10 @@ fn execute_sequential_bool_slice_index(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    slice_local: int,
-    index_local: int,
-    target: int,
+    instruction_index: isize,
+    slice_local: isize,
+    index_local: isize,
+    target: isize,
 ) -> string {
     let step_error = count_sequential_steps(state, frame, block, instruction_index, 5);
     if step_error != "" {
@@ -8036,9 +8034,9 @@ fn execute_sequential_bool_slice_store(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    slice_local: int,
-    index_local: int,
+    instruction_index: isize,
+    slice_local: isize,
+    index_local: isize,
     value: bool,
 ) -> string {
     let step_error = count_sequential_steps(state, frame, block, instruction_index, 6);
@@ -8175,10 +8173,10 @@ fn execute_fast_bool_slice_index(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    slice_local: int,
-    index_local: int,
-    target: int,
+    instruction_index: isize,
+    slice_local: isize,
+    index_local: isize,
+    target: isize,
 ) -> string {
     let step_error = count_sequential_steps(state, frame, block, instruction_index, 5);
     if step_error != "" {
@@ -8268,11 +8266,11 @@ fn execute_fast_bool_slice_store(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    slice_local: int,
-    index_local: int,
+    instruction_index: isize,
+    slice_local: isize,
+    index_local: isize,
     value: bool,
-    jump_target: int,
+    jump_target: isize,
 ) -> string {
     let step_error = if jump_target >= 0 {
         count_sequential_branch_steps(state, frame, block, instruction_index, 6)
@@ -8357,13 +8355,13 @@ fn execute_bool_slice_update_effect(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    slice_local: int,
-    index_local: int,
+    instruction_index: isize,
+    slice_local: isize,
+    index_local: isize,
     value: bool,
-    left_local: int,
-    right_local: int,
-    binary_kind: int,
+    left_local: isize,
+    right_local: isize,
+    binary_kind: isize,
 ) -> string {
     let index = match sequential_integer_local_index(frame, index_local) {
         Ok(value) => value,
@@ -8439,7 +8437,7 @@ fn execute_bool_slice_update_effect(
         } else {
             left_bits - right_bits
         },
-        (left_code & 127.to_uint64()).to_int(),
+        (left_code & 127.to_u64()).to_isize(),
     );
     ""
 }
@@ -8473,8 +8471,8 @@ fn execute_fast_bool_slice_loop(state: VmState, frame: Frame, operation: Sequent
         let condition = match scalar_integer_comparison(
             operation.comparison_kind,
             frame.scalar[frame.registers.len() * 2 + operation.condition_local],
-            (code & 127.to_uint64()).to_int(),
-            code & 128.to_uint64() != 0.to_uint64(),
+            (code & 127.to_u64()).to_isize(),
+            code & 128.to_u64() != 0.to_u64(),
             right_bits,
             right_width,
         ) {
@@ -8532,10 +8530,10 @@ fn execute_fast_bool_slice_branch(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    slice_local: int,
-    index_local: int,
-    packed: int,
+    instruction_index: isize,
+    slice_local: isize,
+    index_local: isize,
+    packed: isize,
 ) -> string {
     let block_count = frame.blocks.len();
     let invert = packed / (block_count * block_count) != 0;
@@ -8635,8 +8633,8 @@ fn execute_sequential_clone_local(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
-    local: int,
+    instruction_index: isize,
+    local: isize,
 ) -> string {
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
@@ -8644,7 +8642,7 @@ fn execute_sequential_clone_local(
     } else {};
     if !frame.scalar.is_empty() {
         let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
-        if code & 127.to_uint64() != 0.to_uint64() {
+        if code & 127.to_u64() != 0.to_u64() {
             return ""
         } else {}
     } else {};
@@ -8658,7 +8656,7 @@ fn execute_fast_clone_local(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    instruction_index: int,
+    instruction_index: isize,
 ) -> string {
     if count_step(state) {
         ""
@@ -8676,11 +8674,11 @@ fn execute_sequential_root_load(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    place: int,
-    local: int,
+    index: isize,
+    place: isize,
+    local: isize,
     cell: CellId,
-    target: int,
+    target: isize,
 ) -> string {
     if !count_step(state) {
         return sequential_error_at(
@@ -8694,8 +8692,8 @@ fn execute_sequential_root_load(
         && target < frame.registers.len() {
         let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
         let target_code_index = frame.registers.len() + target;
-        if local_code & 127.to_uint64() != 0.to_uint64()
-            && frame.scalar[target_code_index] & 127.to_uint64() != 0.to_uint64() {
+        if local_code & 127.to_u64() != 0.to_u64()
+            && frame.scalar[target_code_index] & 127.to_u64() != 0.to_u64() {
             if !count_step(state) {
                 return sequential_error_at(
                     state,
@@ -8707,9 +8705,9 @@ fn execute_sequential_root_load(
             frame.place_roots[place] = cell.value;
             frame.places[place] = Option::None;
             frame.bool_places[place] = Option::None;
-            frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place] = (local + 1).to_uint64();
+            frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place] = (local + 1).to_u64();
             frame.scalar[target] = frame.scalar[frame.registers.len() * 2 + local];
-            frame.scalar[target_code_index] = frame.scalar[target_code_index] | 256.to_uint64();
+            frame.scalar[target_code_index] = frame.scalar[target_code_index] | 256.to_u64();
             frame.registers[target] = Option::None;
             return ""
         } else {}
@@ -8738,8 +8736,7 @@ fn execute_sequential_root_load(
         && target < frame.registers.len() {
         let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
         let target_code = frame.scalar[frame.registers.len() + target];
-        if local_code & 127.to_uint64() == 0.to_uint64()
-            && target_code & 127.to_uint64() == 0.to_uint64() {
+        if local_code & 127.to_u64() == 0.to_u64() && target_code & 127.to_u64() == 0.to_u64() {
             frame.registers[target] = Option::Some(copy_value(cell_value(state.memory, cell.value)));
             return ""
         } else {}
@@ -8753,7 +8750,7 @@ fn execute_sequential_root_load(
             Ok(bits) => match set_register(
                 frame,
                 bytecode::register_id(target),
-                Value::Local(LocalValue::Bool(bits != 0.to_uint64())),
+                Value::Local(LocalValue::Bool(bits != 0.to_u64())),
             ) {
                 Ok(()) => "",
                 Err(message) => sequential_error_at(
@@ -8813,11 +8810,11 @@ fn execute_sequential_root_store(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    place: int,
-    local: int,
+    index: isize,
+    place: isize,
+    local: isize,
     cell: CellId,
-    value: int,
+    value: isize,
 ) -> string {
     if !count_step(state) {
         return sequential_error_at(
@@ -8831,8 +8828,7 @@ fn execute_sequential_root_store(
         && value < frame.registers.len() {
         let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
         let value_code = frame.scalar[frame.registers.len() + value];
-        if local_code & 127.to_uint64() != 0.to_uint64()
-            && value_code & 256.to_uint64() != 0.to_uint64() {
+        if local_code & 127.to_u64() != 0.to_u64() && value_code & 256.to_u64() != 0.to_u64() {
             if !count_step(state) {
                 return sequential_error_at(
                     state,
@@ -8844,10 +8840,10 @@ fn execute_sequential_root_store(
             frame.place_roots[place] = cell.value;
             frame.places[place] = Option::None;
             frame.bool_places[place] = Option::None;
-            frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place] = (local + 1).to_uint64();
+            frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place] = (local + 1).to_u64();
             frame.scalar[frame.registers.len() * 2 + local] = normalize_integer(
                 frame.scalar[value],
-                (local_code & 127.to_uint64()).to_int(),
+                (local_code & 127.to_u64()).to_isize(),
             );
             return ""
         } else {}
@@ -8895,9 +8891,9 @@ fn execute_sequential_root_store(
                 frame,
                 local,
                 if boolean {
-                    1.to_uint64()
+                    1.to_u64()
                 } else {
-                    0.to_uint64()
+                    0.to_u64()
                 },
             ) {
                 Ok(()) => "",
@@ -8955,9 +8951,9 @@ fn execute_sequential_renew_local(
     state: VmState,
     frame: Frame,
     block: bytecode::BasicBlock,
-    index: int,
-    local: int,
-    type_id: int,
+    index: isize,
+    local: isize,
+    type_id: isize,
 ) -> string {
     if !count_step(state) {
         return sequential_error_at(
@@ -8968,7 +8964,7 @@ fn execute_sequential_renew_local(
         )
     } else {};
     match scalar_local_layout(frame, local) {
-        Some(_) => return match replace_scalar_local(frame, local, 0.to_uint64()) {
+        Some(_) => return match replace_scalar_local(frame, local, 0.to_u64()) {
             Ok(()) => "",
             Err(message) => sequential_error_at(
                 state,
@@ -8993,7 +8989,7 @@ fn execute_sequential_renew_local(
     }
 }
 
-fn method_field_path_type(world: go_types::World, source: go_types::TypeId, fields: Vec[int]) -> Result[
+fn method_field_path_type(world: go_types::World, source: go_types::TypeId, fields: Vec[isize]) -> Result[
     go_types::TypeId,
     string,
 ] {
@@ -9021,7 +9017,7 @@ fn method_receiver_place(
     state: VmState,
     receiver: Value,
     receiver_type: go_types::TypeId,
-    fields: Vec[int],
+    fields: Vec[isize],
 ) -> Result[Place, string] {
     let mut current_type = receiver_type;
     let mut current = match (pointer_type(state.program.world, current_type), receiver) {
@@ -9078,12 +9074,12 @@ fn method_expression_receiver(
     function: bytecode::BytecodeFunction,
     receiver: Value,
     receiver_type: go_types::TypeId,
-    index: Vec[int],
+    index: Vec[isize],
 ) -> Result[Value, string] {
     if index.is_empty() || function.parameters.is_empty() {
         return Result::Err("method expression has an invalid call shape")
     } else {};
-    let fields: Vec[int] = Vec::with_capacity(index.len() - 1);
+    let fields: Vec[isize] = Vec::with_capacity(index.len() - 1);
     for offset in 0..index.len() - 1 {
         fields.push(index[offset])
     }
@@ -9364,9 +9360,9 @@ fn frame_for_call(
                     match cell_value(state.memory, locals[local_index].value) {
                         Value::Local(LocalValue::Bool(value)) => {
                             scalar[scalar_register_layouts.len() * 2 + local_index] = if value {
-                                1.to_uint64()
+                                1.to_u64()
                             } else {
-                                0.to_uint64()
+                                0.to_u64()
                             };
                         },
                         _ => {
@@ -9961,7 +9957,7 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         channels: Vec::from_array([]),
         stdout: bytes::Bytes::new(),
         stderr: bytes::Bytes::new(),
-        steps: Ref::new(0.to_int64()),
+        steps: Ref::new(0.to_i64()),
         depth: Ref::new(0),
         location: Ref::new(
             bytecode::SourceLocation {
@@ -10061,7 +10057,7 @@ pub fn run(program: bytecode::BytecodeProgram, config: VmConfig) -> VmResult {
             stderr: bytes::Bytes::from_string(message),
             exit_code: 1,
             error: Option::Some(runtime_error("runtime", message, Option::None)),
-            steps: 0.to_int64(),
+            steps: 0.to_i64(),
         },
     };
     let execution = if program_needs_scheduler(state.program) {

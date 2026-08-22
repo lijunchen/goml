@@ -64,7 +64,7 @@ pub enum TypeKind {
         untyped: bool,
     },
     Array {
-        length: int64,
+        length: i64,
         element: TypeId,
     },
     Slice {
@@ -98,7 +98,7 @@ pub enum TypeKind {
         value: TypeId,
     },
     Chan {
-        direction: int,
+        direction: isize,
         element: TypeId,
     },
     Named {
@@ -117,7 +117,7 @@ pub enum TypeKind {
     TypeParam {
         object: ObjectId,
         constraint: TypeId,
-        index: int,
+        index: isize,
     },
     Union {
         terms: Vec[UnionTerm],
@@ -148,7 +148,7 @@ pub struct Object {
     pub owner: Option[PackageId],
     pub file: Option[syntax::FileId],
     pub node: Option[syntax::NodeId],
-    pub position: int,
+    pub position: isize,
     pub type_id: TypeId,
     pub exported: bool,
     pub constant_kind: string,
@@ -174,10 +174,10 @@ pub struct Scope {
     pub id: ScopeId,
     pub kind: ScopeKind,
     pub parent: Option[ScopeId],
-    pub depth: int,
+    pub depth: isize,
     pub file: Option[syntax::FileId],
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
     pub entries: Vec[ScopeEntry],
     pub entry_objects: HashMap[string, ObjectId],
     pub children: Vec[ScopeId],
@@ -198,9 +198,9 @@ pub struct BasicTypeEntry {
 
 pub struct World {
     pub types: Vec[TypeData],
-    pub type_revision: Ref[int32],
-    pub named_instances: HashMap[int, Vec[TypeId]],
-    pub named_type_objects: Vec[int],
+    pub type_revision: Ref[i32],
+    pub named_instances: HashMap[isize, Vec[TypeId]],
+    pub named_type_objects: Vec[isize],
     pub objects: Vec[Object],
     pub scopes: Vec[Scope],
     pub packages: Vec[Package],

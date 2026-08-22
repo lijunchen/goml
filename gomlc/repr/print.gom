@@ -4,7 +4,7 @@ use module::ast;
 use module::pretty;
 use std::text;
 
-fn utf8_width(value: uint8) -> int {
+fn utf8_width(value: u8) -> isize {
     if value < 128 {
         1
     } else if value < 224 {
@@ -16,7 +16,7 @@ fn utf8_width(value: uint8) -> int {
     }
 }
 
-fn hex_digit(value: uint8) -> char {
+fn hex_digit(value: u8) -> char {
     match value {
         0 => '0',
         1 => '1',
@@ -37,7 +37,7 @@ fn hex_digit(value: uint8) -> char {
     }
 }
 
-fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
+fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(hex_digit(value / 16))
@@ -76,7 +76,7 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
 
 fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
     builder.write_char('\'');
-    let code = value.to_uint32();
+    let code = value.to_u32();
     if value == '\'' {
         builder.write_string("\\'")
     } else if value == '\\' {
@@ -90,7 +90,7 @@ fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
     } else if code == 0 {
         builder.write_string("\\0")
     } else if code < 32 || code == 127 {
-        write_control_escape(builder, code.to_uint8())
+        write_control_escape(builder, code.to_u8())
     } else {
         builder.write_char(value)
     };

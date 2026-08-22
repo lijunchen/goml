@@ -3,8 +3,8 @@ package ast;
 use module::cst;
 
 pub struct Span {
-    pub start: int,
-    pub end: int,
+    pub start: isize,
+    pub end: isize,
 }
 
 pub struct PathSegment {
@@ -393,7 +393,7 @@ pub enum Expr {
         span: Span,
     },
     Float {
-        value: float64,
+        value: f64,
         span: Span,
     },
     String {
@@ -540,7 +540,7 @@ pub enum Expr {
     },
     Proj {
         tuple: Expr,
-        index: int,
+        index: isize,
         span: Span,
     },
     Field {
@@ -650,7 +650,7 @@ pub struct LowerResult {
     pub diagnostics: Vec[cst::Diagnostic],
 }
 
-pub fn span(start: int, end: int) -> Span {
+pub fn span(start: isize, end: isize) -> Span {
     Span { start, end }
 }
 

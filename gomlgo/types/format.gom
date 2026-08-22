@@ -5,7 +5,7 @@ use std::text;
 #[go_ffi("strconv", "Quote")]
 extern fn quote_string(value: string) -> string;
 
-fn contains_id(values: Vec[int], value: int) -> bool {
+fn contains_id(values: Vec[isize], value: isize) -> bool {
     for item in values {
         if item == value {
             return true
@@ -45,7 +45,7 @@ fn package_prefix(world: World, owner: Option[PackageId]) -> string {
     }
 }
 
-fn variable_text(world: World, value: Variable, visited: Vec[int]) -> string {
+fn variable_text(world: World, value: Variable, visited: Vec[isize]) -> string {
     let rendered = format_type_inner(world, value.type_id, visited);
     if value.name == "" {
         rendered
@@ -54,7 +54,7 @@ fn variable_text(world: World, value: Variable, visited: Vec[int]) -> string {
     }
 }
 
-fn tuple_parts(world: World, id: TypeId, visited: Vec[int]) -> Vec[string] {
+fn tuple_parts(world: World, id: TypeId, visited: Vec[isize]) -> Vec[string] {
     match get_type(world, id) {
         Some(TypeData { id: _, kind: TypeKind::Tuple { variables } }) => {
             let result: Vec[string] = Vec::with_capacity(variables.len());
@@ -67,7 +67,7 @@ fn tuple_parts(world: World, id: TypeId, visited: Vec[int]) -> Vec[string] {
     }
 }
 
-fn parameter_parts(world: World, id: TypeId, visited: Vec[int], variadic: bool) -> Vec[string] {
+fn parameter_parts(world: World, id: TypeId, visited: Vec[isize], variadic: bool) -> Vec[string] {
     match get_type(world, id) {
         Some(TypeData { id: _, kind: TypeKind::Tuple { variables } }) => {
             let result: Vec[string] = Vec::with_capacity(variables.len());
@@ -111,7 +111,7 @@ fn tuple_has_single_named(world: World, id: TypeId) -> bool {
     }
 }
 
-fn type_parameter_is_grouped(parameters: Vec[TypeParameter], index: int) -> bool {
+fn type_parameter_is_grouped(parameters: Vec[TypeParameter], index: isize) -> bool {
     parameters[index].grouped
         || (index + 1 < parameters.len()
             && parameters[index].constraint.value == parameters[index + 1].constraint.value)
@@ -129,14 +129,14 @@ fn type_parameter_name(world: World, object: ObjectId) -> string {
     }
 }
 
-fn format_type_inner(world: World, id: TypeId, visited: Vec[int]) -> string {
+fn format_type_inner(world: World, id: TypeId, visited: Vec[isize]) -> string {
     if legacy_any_type(world, id) {
         return "any"
     } else {};
     if contains_id(visited, id.value) {
         return "<cycle>"
     } else {};
-    let next: Vec[int] = Vec::with_capacity(visited.len() + 1);
+    let next: Vec[isize] = Vec::with_capacity(visited.len() + 1);
     for value in visited {
         next.push(value)
     }

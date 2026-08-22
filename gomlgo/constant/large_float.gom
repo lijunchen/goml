@@ -2,19 +2,19 @@ package constant;
 
 use std::text;
 
-const BINARY_FLOAT_PRECISION: int = 512;
+const BINARY_FLOAT_PRECISION: isize = 512;
 
-const BINARY_FLOAT_MAX_EXPONENT: int = 2147483647;
+const BINARY_FLOAT_MAX_EXPONENT: isize = 2147483647;
 
-const BINARY_FLOAT_MIN_EXPONENT: int = -2147483648;
+const BINARY_FLOAT_MIN_EXPONENT: isize = -2147483648;
 
-const BINARY_FLOAT_MAX_STORAGE_EXPONENT: int = 2147487743;
+const BINARY_FLOAT_MAX_STORAGE_EXPONENT: isize = 2147487743;
 
-const BINARY_FLOAT_MIN_STORAGE_EXPONENT: int = -2147487744;
+const BINARY_FLOAT_MIN_STORAGE_EXPONENT: isize = -2147487744;
 
 pub struct BinaryFloat {
     pub magnitude: Natural,
-    pub exponent: int,
+    pub exponent: isize,
     pub negative: bool,
 }
 
@@ -26,7 +26,7 @@ pub fn binary_float_copy(value: BinaryFloat) -> BinaryFloat {
     }
 }
 
-fn exponent_add(left: int, right: int) -> Option[int] {
+fn exponent_add(left: isize, right: isize) -> Option[isize] {
     if right > 0 && left > BINARY_FLOAT_MAX_STORAGE_EXPONENT - right {
         Option::None
     } else if right < 0 && left < BINARY_FLOAT_MIN_STORAGE_EXPONENT - right {
@@ -36,7 +36,7 @@ fn exponent_add(left: int, right: int) -> Option[int] {
     }
 }
 
-fn low_bits_nonzero(value: Natural, count: int) -> bool {
+fn low_bits_nonzero(value: Natural, count: isize) -> bool {
     let end = if count < natural_bit_len(value) {
         count
     } else {
@@ -61,7 +61,7 @@ fn valid_binary_float(value: BinaryFloat) -> bool {
     }
 }
 
-fn round_binary_float(magnitude: Natural, exponent: int, negative: bool, precision: int) -> Option[
+fn round_binary_float(magnitude: Natural, exponent: isize, negative: bool, precision: isize) -> Option[
     BinaryFloat,
 ] {
     if natural_is_zero(magnitude) {
@@ -80,7 +80,7 @@ fn round_binary_float(magnitude: Natural, exponent: int, negative: bool, precisi
             None => return Option::None,
         };
         if round_bit && (sticky || natural_bit(rounded, 0)) {
-            rounded = natural_add_small(rounded, 1.to_uint32());
+            rounded = natural_add_small(rounded, 1.to_u32());
         } else {};
         if natural_bit_len(rounded) > precision {
             rounded = natural_shift_right(rounded, 1);
@@ -98,7 +98,7 @@ fn round_binary_float(magnitude: Natural, exponent: int, negative: bool, precisi
     }
 }
 
-fn rational_binary_exponent_parts(numerator: Natural, denominator: Natural) -> int {
+fn rational_binary_exponent_parts(numerator: Natural, denominator: Natural) -> isize {
     let mut exponent = natural_bit_len(numerator) - natural_bit_len(denominator);
     let compared = if exponent >= 0 {
         natural_compare(numerator, natural_shift_left(denominator, exponent))
@@ -114,9 +114,9 @@ fn rational_binary_exponent_parts(numerator: Natural, denominator: Natural) -> i
 fn binary_float_from_ratio(
     numerator: Natural,
     denominator: Natural,
-    binary_exponent: int,
+    binary_exponent: isize,
     negative: bool,
-    precision: int,
+    precision: isize,
 ) -> Option[BinaryFloat] {
     if natural_is_zero(numerator) || natural_is_zero(denominator) {
         return Option::None
@@ -138,10 +138,10 @@ fn binary_float_from_ratio(
         Err(_) => return Option::None,
     };
     let mut magnitude = divided.0;
-    let doubled_remainder = natural_mul_small(divided.1, 2.to_uint32());
+    let doubled_remainder = natural_mul_small(divided.1, 2.to_u32());
     let comparison = natural_compare(doubled_remainder, scaled_denominator);
     if comparison > 0 || (comparison == 0 && natural_bit(magnitude, 0)) {
-        magnitude = natural_add_small(magnitude, 1.to_uint32());
+        magnitude = natural_add_small(magnitude, 1.to_u32());
     } else {};
     let mut exponent = match exponent_add(mantissa_exponent, binary_exponent) {
         Some(value) => match exponent_add(value, -precision) {
@@ -165,7 +165,7 @@ fn binary_float_from_ratio(
     }
 }
 
-pub fn binary_float_from_rational(value: BigRat, precision: int) -> Option[BinaryFloat] {
+pub fn binary_float_from_rational(value: BigRat, precision: isize) -> Option[BinaryFloat] {
     if value.numerator.sign == 0 {
         Option::None
     } else {
@@ -179,7 +179,7 @@ pub fn binary_float_from_rational(value: BigRat, precision: int) -> Option[Binar
     }
 }
 
-pub fn constant_to_binary_float(value: ConstValue, precision: int) -> Option[BinaryFloat] {
+pub fn constant_to_binary_float(value: ConstValue, precision: isize) -> Option[BinaryFloat] {
     match value {
         ConstValue::Int(value) => binary_float_from_rational(
             rational_from_integer(value),
@@ -201,13 +201,16 @@ pub fn constant_to_binary_float(value: ConstValue, precision: int) -> Option[Bin
     }
 }
 
-pub fn binary_float_from_natural(magnitude: Natural, exponent: int, negative: bool, precision: int) -> Option[
-    BinaryFloat,
-] {
+pub fn binary_float_from_natural(
+    magnitude: Natural,
+    exponent: isize,
+    negative: bool,
+    precision: isize,
+) -> Option[BinaryFloat] {
     round_binary_float(magnitude, exponent, negative, precision)
 }
 
-pub fn binary_float_mantissa_exponent(value: BinaryFloat) -> int {
+pub fn binary_float_mantissa_exponent(value: BinaryFloat) -> isize {
     exponent_add(value.exponent, natural_bit_len(value.magnitude)).unwrap_or(
         if value.exponent < 0 {
             BINARY_FLOAT_MIN_EXPONENT
@@ -221,7 +224,7 @@ pub fn binary_float_neg(value: BinaryFloat) -> BinaryFloat {
     BinaryFloat { magnitude: value.magnitude, exponent: value.exponent, negative: !value.negative }
 }
 
-pub fn binary_float_mul(left: BinaryFloat, right: BinaryFloat, precision: int) -> Option[
+pub fn binary_float_mul(left: BinaryFloat, right: BinaryFloat, precision: isize) -> Option[
     BinaryFloat,
 ] {
     let exponent = match exponent_add(left.exponent, right.exponent) {
@@ -236,7 +239,7 @@ pub fn binary_float_mul(left: BinaryFloat, right: BinaryFloat, precision: int) -
     )
 }
 
-pub fn binary_float_div(left: BinaryFloat, right: BinaryFloat, precision: int) -> Option[
+pub fn binary_float_div(left: BinaryFloat, right: BinaryFloat, precision: isize) -> Option[
     BinaryFloat,
 ] {
     let exponent = match exponent_add(left.exponent, -right.exponent) {
@@ -252,7 +255,7 @@ pub fn binary_float_div(left: BinaryFloat, right: BinaryFloat, precision: int) -
     )
 }
 
-fn compare_binary_float_magnitude(left: BinaryFloat, right: BinaryFloat) -> int {
+fn compare_binary_float_magnitude(left: BinaryFloat, right: BinaryFloat) -> isize {
     let left_top = binary_float_mantissa_exponent(left);
     let right_top = binary_float_mantissa_exponent(right);
     if left_top < right_top {
@@ -275,7 +278,7 @@ fn compare_binary_float_magnitude(left: BinaryFloat, right: BinaryFloat) -> int 
     }
 }
 
-pub fn binary_float_compare(left: BinaryFloat, right: BinaryFloat) -> int {
+pub fn binary_float_compare(left: BinaryFloat, right: BinaryFloat) -> isize {
     if left.negative != right.negative {
         if left.negative {
             -1
@@ -292,7 +295,7 @@ pub fn binary_float_compare(left: BinaryFloat, right: BinaryFloat) -> int {
     }
 }
 
-pub fn binary_float_add(left: BinaryFloat, right: BinaryFloat, precision: int) -> Option[
+pub fn binary_float_add(left: BinaryFloat, right: BinaryFloat, precision: isize) -> Option[
     BinaryFloat,
 ] {
     let compared = compare_binary_float_magnitude(left, right);
@@ -358,24 +361,24 @@ pub fn binary_float_add(left: BinaryFloat, right: BinaryFloat, precision: int) -
     }
 }
 
-fn binary_float_pow5(exponent: int, precision: int) -> Option[BinaryFloat] {
+fn binary_float_pow5(exponent: isize, precision: isize) -> Option[BinaryFloat] {
     if exponent <= 27 {
         return binary_float_from_natural(
-            natural_pow_small(5.to_uint32(), exponent),
+            natural_pow_small(5.to_u32(), exponent),
             0,
             false,
             precision,
         )
     } else {};
     let mut result = binary_float_from_natural(
-        natural_pow_small(5.to_uint32(), 27),
+        natural_pow_small(5.to_u32(), 27),
         0,
         false,
         precision,
     )?;
     let mut power = exponent - 27;
     let mut factor = binary_float_from_natural(
-        natural_from_uint64(5.to_uint64()),
+        natural_from_uint64(5.to_u64()),
         0,
         false,
         precision + 64,
@@ -392,7 +395,7 @@ fn binary_float_pow5(exponent: int, precision: int) -> Option[BinaryFloat] {
     Option::Some(result)
 }
 
-pub fn binary_float_from_decimal(magnitude: Natural, exponent: int, precision: int) -> Option[
+pub fn binary_float_from_decimal(magnitude: Natural, exponent: isize, precision: isize) -> Option[
     BinaryFloat,
 ] {
     let exact = BinaryFloat { magnitude, exponent, negative: false };
@@ -418,11 +421,11 @@ pub fn binary_float_from_decimal(magnitude: Natural, exponent: int, precision: i
     }
 }
 
-fn hex_digit(value: int) -> byte {
+fn hex_digit(value: isize) -> byte {
     if value < 10 {
-        b'0' + value.to_uint8()
+        b'0' + value.to_u8()
     } else {
-        b'a' + (value - 10).to_uint8()
+        b'a' + (value - 10).to_u8()
     }
 }
 
@@ -466,7 +469,7 @@ pub fn binary_float_exact_string(value: BinaryFloat) -> string {
         }
 }
 
-fn round_natural_binary_shift(value: Natural, shift: int) -> Natural {
+fn round_natural_binary_shift(value: Natural, shift: isize) -> Natural {
     if shift >= 0 {
         natural_shift_left(value, shift)
     } else {
@@ -476,7 +479,7 @@ fn round_natural_binary_shift(value: Natural, shift: int) -> Natural {
             let round_bit = natural_bit(value, amount - 1);
             let sticky = low_bits_nonzero(value, amount - 1);
             if round_bit && (sticky || natural_bit(rounded, 0)) {
-                rounded = natural_add_small(rounded, 1.to_uint32());
+                rounded = natural_add_small(rounded, 1.to_u32());
             } else {}
         } else {};
         rounded
@@ -485,9 +488,9 @@ fn round_natural_binary_shift(value: Natural, shift: int) -> Natural {
 
 pub fn binary_float_round_rational(
     value: BinaryFloat,
-    precision: int,
-    minimum_exponent: int,
-    maximum_exponent: int,
+    precision: isize,
+    minimum_exponent: isize,
+    maximum_exponent: isize,
 ) -> Option[BigRat] {
     let overflow = BinaryFloat {
         magnitude: natural_sub(natural_shift_left(natural_one(), precision + 1), natural_one()).unwrap_or(
@@ -530,6 +533,6 @@ pub fn binary_float_round_rational(
     }
 }
 
-pub fn binary_float_default_precision() -> int {
+pub fn binary_float_default_precision() -> isize {
     BINARY_FLOAT_PRECISION
 }

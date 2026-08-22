@@ -5,9 +5,9 @@ use module::internal::host;
 
 fn structured_error(
     operation: string,
-    kind_code: int,
+    kind_code: isize,
     has_raw_code: bool,
-    raw_code: int,
+    raw_code: isize,
     message: string,
 ) -> Error {
     Error::new(
@@ -50,7 +50,7 @@ pub fn read_stdin_to_string() -> Result[string, Error] {
     }
 }
 
-pub fn read_stdin_exact_structured(length: int) -> Result[bytes::Bytes, Error] {
+pub fn read_stdin_exact_structured(length: isize) -> Result[bytes::Bytes, Error] {
     if length < 0 {
         Result::Err(
             Error::new(
@@ -152,7 +152,7 @@ pub fn write_stderr(data: bytes::Bytes) -> Result[unit, string] {
     }
 }
 
-pub fn read_stdin_exact(length: int) -> Result[bytes::Bytes, string] {
+pub fn read_stdin_exact(length: isize) -> Result[bytes::Bytes, string] {
     if length < 0 {
         Result::Err("read length must be non-negative")
     } else {

@@ -1,12 +1,12 @@
 package line_index;
 
-const SWAR_LOW_BITS: uint64 = 0x0101010101010101;
+const SWAR_LOW_BITS: u64 = 0x0101010101010101;
 
-const SWAR_HIGH_BITS: uint64 = 0x8080808080808080;
+const SWAR_HIGH_BITS: u64 = 0x8080808080808080;
 
-const SWAR_CR: uint64 = 0x0D0D0D0D0D0D0D0D;
+const SWAR_CR: u64 = 0x0D0D0D0D0D0D0D0D;
 
-const SWAR_LF: uint64 = 0x0A0A0A0A0A0A0A0A;
+const SWAR_LF: u64 = 0x0A0A0A0A0A0A0A0A;
 
 pub enum Encoding {
     Utf8,
@@ -15,24 +15,24 @@ pub enum Encoding {
 }
 
 pub struct LineCol {
-    pub line: int,
-    pub column: int,
+    pub line: isize,
+    pub column: isize,
 }
 
 struct WideChar {
-    start: int,
-    end: int,
+    start: isize,
+    end: isize,
 }
 
 pub struct LineIndex {
-    line_starts: Vec[int],
-    line_ends: Vec[int],
-    wide_offsets: Vec[int],
+    line_starts: Vec[isize],
+    line_ends: Vec[isize],
+    wide_offsets: Vec[isize],
     wide_chars: Vec[WideChar],
-    source_len: int,
+    source_len: isize,
 }
 
-fn utf8_width(value: uint8) -> int {
+fn utf8_width(value: u8) -> isize {
     if value < 128 {
         1
     } else if value < 224 {
@@ -44,7 +44,7 @@ fn utf8_width(value: uint8) -> int {
     }
 }
 
-fn encoded_width(width: int, encoding: Encoding) -> int {
+fn encoded_width(width: isize, encoding: Encoding) -> isize {
     match encoding {
         Utf8 => width,
         Utf16 => if width == 4 {
@@ -56,32 +56,32 @@ fn encoded_width(width: int, encoding: Encoding) -> int {
     }
 }
 
-fn swar_word(source: string, start: int) -> uint64 {
-    source.byte_get(start).to_uint64() | (source.byte_get(start + 1).to_uint64() << 8)
-        | (source.byte_get(start + 2).to_uint64() << 16)
-        | (source.byte_get(start + 3).to_uint64() << 24)
-        | (source.byte_get(start + 4).to_uint64() << 32)
-        | (source.byte_get(start + 5).to_uint64() << 40)
-        | (source.byte_get(start + 6).to_uint64() << 48)
-        | (source.byte_get(start + 7).to_uint64() << 56)
+fn swar_word(source: string, start: isize) -> u64 {
+    source.byte_get(start).to_u64() | (source.byte_get(start + 1).to_u64() << 8)
+        | (source.byte_get(start + 2).to_u64() << 16)
+        | (source.byte_get(start + 3).to_u64() << 24)
+        | (source.byte_get(start + 4).to_u64() << 32)
+        | (source.byte_get(start + 5).to_u64() << 40)
+        | (source.byte_get(start + 6).to_u64() << 48)
+        | (source.byte_get(start + 7).to_u64() << 56)
 }
 
-fn swar_has_zero(value: uint64) -> bool {
+fn swar_has_zero(value: u64) -> bool {
     ((value - SWAR_LOW_BITS) & (~value) & SWAR_HIGH_BITS) != 0
 }
 
-fn swar_has_byte(value: uint64, repeated: uint64) -> bool {
+fn swar_has_byte(value: u64, repeated: u64) -> bool {
     swar_has_zero(value ^ repeated)
 }
 
-fn swar_is_plain_ascii(value: uint64) -> bool {
+fn swar_is_plain_ascii(value: u64) -> bool {
     value & SWAR_HIGH_BITS == 0 && !swar_has_byte(value, SWAR_CR) && !swar_has_byte(value, SWAR_LF)
 }
 
 pub fn new(source: string) -> LineIndex {
-    let line_starts: Vec[int] = Vec::from_array([0]);
-    let line_ends: Vec[int] = Vec::from_array([]);
-    let wide_offsets: Vec[int] = Vec::from_array([0]);
+    let line_starts: Vec[isize] = Vec::from_array([0]);
+    let line_ends: Vec[isize] = Vec::from_array([]);
+    let wide_offsets: Vec[isize] = Vec::from_array([0]);
     let wide_chars: Vec[WideChar] = Vec::from_array([]);
     let mut line_start = 0;
     let mut offset = 0;
@@ -120,7 +120,7 @@ pub fn new(source: string) -> LineIndex {
     LineIndex { line_starts, line_ends, wide_offsets, wide_chars, source_len: source.byte_len() }
 }
 
-fn line_at_offset(index: LineIndex, offset: int) -> int {
+fn line_at_offset(index: LineIndex, offset: isize) -> isize {
     let mut low = 0;
     let mut high = index.line_starts.len();
     while low < high {
@@ -134,7 +134,7 @@ fn line_at_offset(index: LineIndex, offset: int) -> int {
     low - 1
 }
 
-pub fn offset_to_line_col(index: LineIndex, offset: int, encoding: Encoding) -> LineCol {
+pub fn offset_to_line_col(index: LineIndex, offset: isize, encoding: Encoding) -> LineCol {
     let limit = if offset < 0 {
         0
     } else if offset > index.source_len {
@@ -165,7 +165,7 @@ pub fn offset_to_line_col(index: LineIndex, offset: int, encoding: Encoding) -> 
     LineCol { line, column }
 }
 
-pub fn line_col_to_offset(index: LineIndex, position: LineCol, encoding: Encoding) -> int {
+pub fn line_col_to_offset(index: LineIndex, position: LineCol, encoding: Encoding) -> isize {
     if position.line < 0 || position.line >= index.line_starts.len() {
         index.source_len
     } else {
@@ -194,7 +194,7 @@ pub fn line_col_to_offset(index: LineIndex, position: LineCol, encoding: Encodin
 }
 
 pub fn line_col_to_offset_checked(index: LineIndex, position: LineCol, encoding: Encoding) -> Option[
-    int,
+    isize,
 ] {
     if position.line < 0 || position.column < 0 {
         Option::None

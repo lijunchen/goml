@@ -10,7 +10,7 @@ extern fn catalog_supports_package(import_path: string) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "CatalogBind")]
 extern fn catalog_bind(
-    call_id: uint32,
+    call_id: u32,
     import_path: string,
     symbol: string,
     receiver_name: string,
@@ -26,7 +26,7 @@ extern fn catalog_register_type(key: string, import_path: string, name: string) 
 extern fn catalog_register_aggregate(key: string, type_keys: string, tags: string) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "CatalogRegisterGlobal")]
-extern fn catalog_register_global(id: int, import_path: string, name: string) -> bool;
+extern fn catalog_register_global(id: isize, import_path: string, name: string) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "CatalogRegisterProxy")]
 extern fn catalog_register_proxy(import_path: string, name: string) -> bool;

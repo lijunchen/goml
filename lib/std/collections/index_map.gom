@@ -1,21 +1,21 @@
 package collections;
 
 struct IndexMapEntry[K, V] {
-    hash: uint64,
+    hash: u64,
     key: K,
     value: V,
 }
 
 enum IndexMapProbe {
-    Found(int, int),
-    Vacant(int),
+    Found(isize, isize),
+    Vacant(isize),
 }
 
 pub struct IndexMap[K, V] {
-    indices: Ref[Vec[int]],
+    indices: Ref[Vec[isize]],
     entries: Ref[Vec[Option[IndexMapEntry[K, V]]]],
-    len: Ref[int],
-    deleted: Ref[int],
+    len: Ref[isize],
+    deleted: Ref[isize],
 }
 
 impl[K: Eq + Hash, V] Default for IndexMap[K, V] {
@@ -24,7 +24,7 @@ impl[K: Eq + Hash, V] Default for IndexMap[K, V] {
     }
 }
 
-fn index_map_capacity_for_entries(entries: int) -> int {
+fn index_map_capacity_for_entries(entries: isize) -> isize {
     let requested = if entries < 0 {
         0
     } else {
@@ -37,7 +37,7 @@ fn index_map_capacity_for_entries(entries: int) -> int {
     capacity
 }
 
-fn index_map_empty_indices(capacity: int) -> Vec[int] {
+fn index_map_empty_indices(capacity: isize) -> Vec[isize] {
     let indices = Vec::with_capacity(capacity);
     let mut index = 0;
     while index < capacity {
@@ -52,7 +52,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         IndexMap::with_capacity(0)
     }
 
-    pub fn with_capacity(capacity: int) -> IndexMap[K, V] {
+    pub fn with_capacity(capacity: isize) -> IndexMap[K, V] {
         let entry_capacity = if capacity < 0 {
             0
         } else {
@@ -68,7 +68,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         }
     }
 
-    pub fn len(self: IndexMap[K, V]) -> int {
+    pub fn len(self: IndexMap[K, V]) -> isize {
         self.len.get()
     }
 
@@ -76,10 +76,10 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         self.len.get() == 0
     }
 
-    fn probe(self: IndexMap[K, V], key: K, hash: uint64) -> IndexMapProbe {
+    fn probe(self: IndexMap[K, V], key: K, hash: u64) -> IndexMapProbe {
         let indices = self.indices.get();
         let mask = indices.len() - 1;
-        let mut position = (hash & mask.to_uint64()).to_int();
+        let mut position = (hash & mask.to_u64()).to_isize();
         let mut perturb = hash;
         let mut first_deleted = -1;
         loop {
@@ -106,13 +106,13 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                     None => (),
                 }
             };
-            position = ((position.to_uint64() * 5 + perturb + 1) & mask.to_uint64()).to_int();
+            position = ((position.to_u64() * 5 + perturb + 1) & mask.to_u64()).to_isize();
             perturb >>= 5;
         }
         IndexMapProbe::Vacant(0)
     }
 
-    fn place_entry_index(self: IndexMap[K, V], dense_index: int) -> unit {
+    fn place_entry_index(self: IndexMap[K, V], dense_index: isize) -> unit {
         match self.entries.get()[dense_index] {
             Some(entry) => match self.probe(entry.key, entry.hash) {
                 Found(slot, _) => {
@@ -126,7 +126,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         }
     }
 
-    fn rebuild(self: IndexMap[K, V], requested_entries: int) -> unit {
+    fn rebuild(self: IndexMap[K, V], requested_entries: isize) -> unit {
         let live_entries = self.len.get();
         let desired_entries = if requested_entries > live_entries {
             requested_entries
@@ -235,7 +235,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         }
     }
 
-    pub fn reserve(self: IndexMap[K, V], additional: int) -> unit {
+    pub fn reserve(self: IndexMap[K, V], additional: isize) -> unit {
         if additional <= 0 {} else {
             let desired_entries = self.len.get() + additional;
             let desired_capacity = index_map_capacity_for_entries(desired_entries);

@@ -4,7 +4,7 @@ use module::env;
 use module::internal::host;
 use module::num;
 
-pub fn seed() -> int {
+pub fn seed() -> isize {
     match env::var("GOML_TEST_SEED") {
         Some(value) => num::parse_int(value).unwrap_or(0),
         None => 0,

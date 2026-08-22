@@ -45,8 +45,8 @@ struct LowerTraitImpl {
     trait_ref: tast::TraitRef,
     for_ty: tast::Type,
     associated_types: Vec[(string, tast::Type)],
-    generic_count: int,
-    predicate_count: int,
+    generic_count: isize,
+    predicate_count: isize,
 }
 
 struct LowerLetStmt {
@@ -139,12 +139,12 @@ enum LowerExpr {
         ty: tast::Type,
     },
     Break {
-        target: int,
+        target: isize,
         value: Option[LowerExpr],
         ty: tast::Type,
     },
     Continue {
-        target: int,
+        target: isize,
         ty: tast::Type,
     },
     Return {
@@ -158,7 +158,7 @@ enum LowerExpr {
     ConstrGet {
         expr: LowerExpr,
         constructor: tast::Constructor,
-        field_index: int,
+        field_index: isize,
         ty: tast::Type,
     },
     Unary {
@@ -211,7 +211,7 @@ enum LowerExpr {
     },
     Proj {
         tuple: LowerExpr,
-        index: int,
+        index: isize,
         ty: tast::Type,
     },
 }

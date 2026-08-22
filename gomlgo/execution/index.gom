@@ -4,8 +4,8 @@ use gomlgo::checker;
 use gomlgo::syntax;
 use gomlgo::types as go_types;
 
-fn empty_indices(count: int) -> Vec[int32] {
-    let result: Vec[int32] = Vec::with_capacity(count);
+fn empty_indices(count: isize) -> Vec[i32] {
+    let result: Vec[i32] = Vec::with_capacity(count);
     for _ in 0..count {
         result.push(-1)
     }
@@ -24,11 +24,11 @@ fn index_diagnostic(package_path: string, message: string) -> ExecutionDiagnosti
     }
 }
 
-fn valid_node(node: syntax::NodeId, count: int) -> bool {
+fn valid_node(node: syntax::NodeId, count: isize) -> bool {
     node.value >= 0 && node.value < count
 }
 
-fn valid_file(file: syntax::FileId, count: int) -> bool {
+fn valid_file(file: syntax::FileId, count: isize) -> bool {
     file.value >= 0 && file.value < count
 }
 
@@ -81,8 +81,8 @@ pub fn build_type_info_index(
     world: go_types::World,
     package_id: go_types::PackageId,
     package_path: string,
-    node_count: int,
-    file_count: int,
+    node_count: isize,
+    file_count: isize,
     info: checker::TypeInfo,
 ) -> TypeInfoIndexResult {
     let index = TypeInfoIndex {
@@ -150,7 +150,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.type_indices[fact.node.value] = fact_index.to_int32();
+            index.type_indices[fact.node.value] = fact_index.to_i32();
         }
     }
     for fact_index in 0..index.definitions.len() {
@@ -172,7 +172,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.definition_indices[fact.node.value] = fact_index.to_int32();
+            index.definition_indices[fact.node.value] = fact_index.to_i32();
         }
     }
     for fact_index in 0..index.uses.len() {
@@ -194,7 +194,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.use_indices[fact.node.value] = fact_index.to_int32();
+            index.use_indices[fact.node.value] = fact_index.to_i32();
         }
     }
     for fact_index in 0..index.implicits.len() {
@@ -216,7 +216,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.implicit_indices[fact.node.value] = fact_index.to_int32();
+            index.implicit_indices[fact.node.value] = fact_index.to_i32();
         }
     }
     for fact_index in 0..index.selections.len() {
@@ -240,7 +240,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.selection_indices[fact.node.value] = fact_index.to_int32();
+            index.selection_indices[fact.node.value] = fact_index.to_i32();
         }
     }
     for fact_index in 0..index.instances.len() {
@@ -268,7 +268,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.instance_indices[fact.node.value] = fact_index.to_int32();
+            index.instance_indices[fact.node.value] = fact_index.to_i32();
         }
     }
     for fact_index in 0..index.scopes.len() {
@@ -290,7 +290,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.scope_indices[fact.node.value] = fact_index.to_int32();
+            index.scope_indices[fact.node.value] = fact_index.to_i32();
         }
     }
     for fact_index in 0..index.file_versions.len() {
@@ -310,7 +310,7 @@ pub fn build_type_info_index(
                 ),
             )
         } else {
-            index.file_version_indices[fact.file.value] = fact_index.to_int32();
+            index.file_version_indices[fact.file.value] = fact_index.to_i32();
         }
     }
     for initializer in index.initialization_order {
@@ -344,13 +344,13 @@ fn require_fact_index(
     kind: string,
     index: TypeInfoIndex,
     node: syntax::NodeId,
-    indices: Vec[int32],
-    fact_count: int,
-) -> Result[int, string] {
+    indices: Vec[i32],
+    fact_count: isize,
+) -> Result[isize, string] {
     if !valid_index_node(index, node) {
         Result::Err(missing_fact(kind, index, node))
     } else {
-        let fact_index = indices[node.value].to_int();
+        let fact_index = indices[node.value].to_isize();
         if fact_index < 0 || fact_index >= fact_count {
             Result::Err(missing_fact(kind, index, node))
         } else {
@@ -359,15 +359,15 @@ fn require_fact_index(
     }
 }
 
-pub fn require_node_type_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[int, string] {
+pub fn require_node_type_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[isize, string] {
     require_fact_index("type", index, node, index.type_indices, index.types.len())
 }
 
-pub fn require_definition_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[int, string] {
+pub fn require_definition_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[isize, string] {
     require_fact_index("definition", index, node, index.definition_indices, index.definitions.len())
 }
 
-pub fn require_use_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[int, string] {
+pub fn require_use_index(index: TypeInfoIndex, node: syntax::NodeId) -> Result[isize, string] {
     require_fact_index("use", index, node, index.use_indices, index.uses.len())
 }
 
@@ -408,7 +408,7 @@ pub fn require_implicit(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("implicit", index, node))
     } else {
-        let fact_index = index.implicit_indices[node.value].to_int();
+        let fact_index = index.implicit_indices[node.value].to_isize();
         if fact_index < 0 || fact_index >= index.implicits.len() {
             Result::Err(missing_fact("implicit", index, node))
         } else {
@@ -424,7 +424,7 @@ pub fn require_selection(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("selection", index, node))
     } else {
-        let fact_index = index.selection_indices[node.value].to_int();
+        let fact_index = index.selection_indices[node.value].to_isize();
         if fact_index < 0 || fact_index >= index.selections.len() {
             Result::Err(missing_fact("selection", index, node))
         } else {
@@ -440,7 +440,7 @@ pub fn require_instance(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("instance", index, node))
     } else {
-        let fact_index = index.instance_indices[node.value].to_int();
+        let fact_index = index.instance_indices[node.value].to_isize();
         if fact_index < 0 || fact_index >= index.instances.len() {
             Result::Err(missing_fact("instance", index, node))
         } else {
@@ -456,7 +456,7 @@ pub fn require_scope(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
     if !valid_index_node(index, node) {
         Result::Err(missing_fact("scope", index, node))
     } else {
-        let fact_index = index.scope_indices[node.value].to_int();
+        let fact_index = index.scope_indices[node.value].to_isize();
         if fact_index < 0 || fact_index >= index.scopes.len() {
             Result::Err(missing_fact("scope", index, node))
         } else {
@@ -469,11 +469,11 @@ pub fn set_use(index: TypeInfoIndex, fact: checker::ObjectFact) -> bool {
     if !valid_index_node(index, fact.node) {
         return false
     } else {};
-    let fact_index = index.use_indices[fact.node.value].to_int();
+    let fact_index = index.use_indices[fact.node.value].to_isize();
     if fact_index >= 0 && fact_index < index.uses.len() {
         index.uses[fact_index] = fact;
     } else {
-        index.use_indices[fact.node.value] = index.uses.len().to_int32();
+        index.use_indices[fact.node.value] = index.uses.len().to_i32();
         index.uses.push(fact)
     };
     true

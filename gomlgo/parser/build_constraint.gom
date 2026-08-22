@@ -6,7 +6,7 @@ use std::text;
 
 struct BuildParser {
     input: string,
-    index: Ref[int],
+    index: Ref[isize],
     valid: Ref[bool],
 }
 
@@ -33,7 +33,7 @@ fn build_consume(parser: BuildParser, value: string) -> bool {
     }
 }
 
-fn build_version_tag(value: string) -> int {
+fn build_version_tag(value: string) -> isize {
     if value == "go1" {
         0
     } else if value.starts_with("go1.") && value.byte_len() > 4 {
@@ -46,7 +46,7 @@ fn build_version_tag(value: string) -> int {
     }
 }
 
-fn build_read_tag(parser: BuildParser, sign: int) -> int {
+fn build_read_tag(parser: BuildParser, sign: isize) -> isize {
     build_skip_space(parser);
     let start = parser.index.get();
     while parser.index.get() < parser.input.byte_len() {
@@ -68,7 +68,7 @@ fn build_read_tag(parser: BuildParser, sign: int) -> int {
     }
 }
 
-fn build_max(left: int, right: int) -> int {
+fn build_max(left: isize, right: isize) -> isize {
     if left > right {
         left
     } else {
@@ -76,7 +76,7 @@ fn build_max(left: int, right: int) -> int {
     }
 }
 
-fn build_min(left: int, right: int) -> int {
+fn build_min(left: isize, right: isize) -> isize {
     if left < right {
         left
     } else {
@@ -84,7 +84,7 @@ fn build_min(left: int, right: int) -> int {
     }
 }
 
-fn build_parse_atom(parser: BuildParser, sign: int) -> int {
+fn build_parse_atom(parser: BuildParser, sign: isize) -> isize {
     if build_consume(parser, "!") {
         build_parse_atom(parser, -sign)
     } else if build_consume(parser, "(") {
@@ -98,7 +98,7 @@ fn build_parse_atom(parser: BuildParser, sign: int) -> int {
     }
 }
 
-fn build_parse_and(parser: BuildParser, sign: int) -> int {
+fn build_parse_and(parser: BuildParser, sign: isize) -> isize {
     let mut result = build_parse_atom(parser, sign);
     while build_consume(parser, "&&") {
         let right = build_parse_atom(parser, sign);
@@ -111,7 +111,7 @@ fn build_parse_and(parser: BuildParser, sign: int) -> int {
     result
 }
 
-fn build_parse_or(parser: BuildParser, sign: int) -> int {
+fn build_parse_or(parser: BuildParser, sign: isize) -> isize {
     let mut result = build_parse_and(parser, sign);
     while build_consume(parser, "||") {
         let right = build_parse_and(parser, sign);
@@ -148,7 +148,7 @@ fn build_constraint_version(value: string) -> string {
     }
 }
 
-fn token_metadata(tokens: Vec[token::Token]) -> (string, int) {
+fn token_metadata(tokens: Vec[token::Token]) -> (string, isize) {
     let mut result = "";
     let mut index = 0;
     while index < tokens.len() && token::equal(tokens[index].kind, token::Kind::Comment) {

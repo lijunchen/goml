@@ -65,7 +65,7 @@ fn required_string_field(value: json::Value, name: string) -> Result[string, str
     }
 }
 
-fn optional_int_field(value: json::Value, name: string, fallback: int) -> int {
+fn optional_int_field(value: json::Value, name: string, fallback: isize) -> isize {
     match json::field(value, name) {
         Some(field) => match json::as_int(field) {
             Some(number) => number,
@@ -101,7 +101,7 @@ fn request_position(params: json::Value) -> Result[Position, string] {
     }
 }
 
-fn request_offset(document: Document, position: Position) -> Result[int, string] {
+fn request_offset(document: Document, position: Position) -> Result[isize, string] {
     match position_to_offset_checked_with_index(document.line_index, position) {
         Some(offset) => Result::Ok(offset),
         None => Result::Err("position is outside the document"),
@@ -171,7 +171,7 @@ fn diagnostic_text(value: tast::Diagnostic) -> string {
     }
 }
 
-fn diagnostic_contains_offset(value: tast::Diagnostic, source_path: string, offset: int) -> bool {
+fn diagnostic_contains_offset(value: tast::Diagnostic, source_path: string, offset: isize) -> bool {
     (value.source_path == "" || value.source_path == source_path)
         && match value.span {
             Some(span) => if span.start == span.end {
@@ -231,7 +231,7 @@ fn expanded_derive_response(server: Server, params: json::Value) -> Result[json:
     Result::Ok(json::Value::String(query::expanded_derive(analysis)))
 }
 
-fn completion_kind(value: query::CompletionKind) -> int {
+fn completion_kind(value: query::CompletionKind) -> isize {
     match value {
         Package => 9,
         Method => 2,
@@ -501,7 +501,7 @@ fn code_action_response(params: json::Value) -> Result[json::Value, string] {
     }
 }
 
-fn diagnostic_severity(value: tast::DiagnosticSeverity) -> int {
+fn diagnostic_severity(value: tast::DiagnosticSeverity) -> isize {
     match value {
         Error => 1,
         Warning => 2,

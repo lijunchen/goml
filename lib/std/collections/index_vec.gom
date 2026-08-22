@@ -1,11 +1,11 @@
 package collections;
 
 pub struct Index[T] {
-    pub value: int,
+    pub value: isize,
 }
 
 impl[T] Index[T] {
-    pub fn value(self: Index[T]) -> int {
+    pub fn value(self: Index[T]) -> isize {
         self.value
     }
 }
@@ -19,7 +19,7 @@ impl[T] PartialEq for Index[T] {
 impl[T] Eq for Index[T] {}
 
 impl[T] Hash for Index[T] {
-    fn hash(self: Index[T]) -> uint64 {
+    fn hash(self: Index[T]) -> u64 {
         Hash::hash(self.value)
     }
 }
@@ -39,11 +39,11 @@ impl[T] IndexVec[T] {
         IndexVec { values: Vec::from_array([]) }
     }
 
-    pub fn with_capacity(capacity: int) -> IndexVec[T] {
+    pub fn with_capacity(capacity: isize) -> IndexVec[T] {
         IndexVec { values: Vec::with_capacity(capacity) }
     }
 
-    pub fn len(self: IndexVec[T]) -> int {
+    pub fn len(self: IndexVec[T]) -> isize {
         self.values.len()
     }
 

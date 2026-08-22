@@ -3,7 +3,7 @@ package hash;
 use std::bytes;
 use std::text;
 
-fn sha256_constants() -> Vec[uint32] {
+fn sha256_constants() -> Vec[u32] {
     Vec::from_array(
         [
             1116352408,
@@ -74,35 +74,35 @@ fn sha256_constants() -> Vec[uint32] {
     )
 }
 
-fn rotate_right(value: uint32, count: uint32) -> uint32 {
+fn rotate_right(value: u32, count: u32) -> u32 {
     (value >> count) | (value << (32 - count))
 }
 
-fn padded_byte(value: bytes::Bytes, index: int, padded_len: int, bit_len: uint64) -> byte {
+fn padded_byte(value: bytes::Bytes, index: isize, padded_len: isize, bit_len: u64) -> byte {
     if index < value.len() {
         value.get(index)
     } else if index == value.len() {
         128
     } else if index >= padded_len - 8 {
-        let shift = ((padded_len - 1 - index) * 8).to_uint64();
-        ((bit_len >> shift) & 255).to_uint8()
+        let shift = ((padded_len - 1 - index) * 8).to_u64();
+        ((bit_len >> shift) & 255).to_u8()
     } else {
         0
     }
 }
 
-fn message_word(value: bytes::Bytes, offset: int, padded_len: int, bit_len: uint64) -> uint32 {
-    ((padded_byte(value, offset, padded_len, bit_len).to_uint32()) << 24)
-        | ((padded_byte(value, offset + 1, padded_len, bit_len).to_uint32()) << 16)
-        | ((padded_byte(value, offset + 2, padded_len, bit_len).to_uint32()) << 8)
-        | (padded_byte(value, offset + 3, padded_len, bit_len).to_uint32())
+fn message_word(value: bytes::Bytes, offset: isize, padded_len: isize, bit_len: u64) -> u32 {
+    ((padded_byte(value, offset, padded_len, bit_len).to_u32()) << 24)
+        | ((padded_byte(value, offset + 1, padded_len, bit_len).to_u32()) << 16)
+        | ((padded_byte(value, offset + 2, padded_len, bit_len).to_u32()) << 8)
+        | (padded_byte(value, offset + 3, padded_len, bit_len).to_u32())
 }
 
-fn write_hex_word(builder: text::StringBuilder, value: uint32) -> unit {
+fn write_hex_word(builder: text::StringBuilder, value: u32) -> unit {
     let digits = "0123456789abcdef";
     for index in 0..8 {
-        let shift = ((7 - index) * 4).to_uint32();
-        builder.write_char(digits.get(((value >> shift) & 15).to_int()))
+        let shift = ((7 - index) * 4).to_u32();
+        builder.write_char(digits.get(((value >> shift) & 15).to_isize()))
     }
 }
 
@@ -112,7 +112,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     while padded_len % 64 != 0 {
         padded_len += 1;
     }
-    let bit_len = (value.len().to_uint64()) * 8;
+    let bit_len = (value.len().to_u64()) * 8;
     let mut h0 = 1779033703;
     let mut h1 = 3144134277;
     let mut h2 = 1013904242;
@@ -121,7 +121,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     let mut h5 = 2600822924;
     let mut h6 = 528734635;
     let mut h7 = 1541459225;
-    let words: Vec[uint32] = Vec::with_capacity(64);
+    let words: Vec[u32] = Vec::with_capacity(64);
     for _ in 0..64 {
         words.push(0)
     }

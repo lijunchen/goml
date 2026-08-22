@@ -2,7 +2,7 @@ package constant;
 
 use gomlgo::types as go_types;
 
-fn integer_fits_signed(value: BigInt, bits: int) -> bool {
+fn integer_fits_signed(value: BigInt, bits: isize) -> bool {
     if value.sign == 0 {
         true
     } else if value.sign > 0 {
@@ -15,7 +15,7 @@ fn integer_fits_signed(value: BigInt, bits: int) -> bool {
     }
 }
 
-fn integer_fits_unsigned(value: BigInt, bits: int) -> bool {
+fn integer_fits_unsigned(value: BigInt, bits: isize) -> bool {
     value.sign >= 0 && natural_bit_len(value.magnitude) <= bits
 }
 
@@ -30,14 +30,14 @@ fn rational_less_than_natural(value: BigRat, limit: Natural) -> bool {
     natural_compare(value.numerator.magnitude, natural_mul(limit, value.denominator)) < 0
 }
 
-fn float_overflow_threshold(precision: int, maximum_exponent: int) -> Natural {
+fn float_overflow_threshold(precision: isize, maximum_exponent: isize) -> Natural {
     let significand = natural_sub(natural_shift_left(natural_one(), precision + 1), natural_one()).unwrap_or(
         natural_zero(),
     );
     natural_shift_left(significand, maximum_exponent - precision)
 }
 
-fn rational_fits_float(value: BigRat, precision: int, maximum_exponent: int) -> bool {
+fn rational_fits_float(value: BigRat, precision: isize, maximum_exponent: isize) -> bool {
     if value.numerator.sign == 0 {
         true
     } else {
@@ -48,7 +48,7 @@ fn rational_fits_float(value: BigRat, precision: int, maximum_exponent: int) -> 
     }
 }
 
-fn quotient_for_scale(numerator: Natural, denominator: Natural, scale: int) -> Result[
+fn quotient_for_scale(numerator: Natural, denominator: Natural, scale: isize) -> Result[
     (Natural, Natural, Natural),
     string,
 ] {
@@ -67,13 +67,13 @@ fn round_quotient(quotient: Natural, remainder: Natural, denominator: Natural) -
     let doubled = natural_shift_left(remainder, 1);
     let compared = natural_compare(doubled, denominator);
     if compared > 0 || (compared == 0 && natural_bit(quotient, 0)) {
-        natural_add_small(quotient, 1.to_uint32())
+        natural_add_small(quotient, 1.to_u32())
     } else {
         quotient
     }
 }
 
-fn rational_binary_exponent(value: BigRat) -> int {
+fn rational_binary_exponent(value: BigRat) -> isize {
     let mut exponent = natural_bit_len(value.numerator.magnitude)
         - natural_bit_len(value.denominator);
     let compared = if exponent >= 0 {
@@ -87,9 +87,12 @@ fn rational_binary_exponent(value: BigRat) -> int {
     exponent
 }
 
-fn rounded_rational(value: BigRat, precision: int, minimum_exponent: int, maximum_exponent: int) -> Option[
-    BigRat,
-] {
+fn rounded_rational(
+    value: BigRat,
+    precision: isize,
+    minimum_exponent: isize,
+    maximum_exponent: isize,
+) -> Option[BigRat] {
     if value.numerator.sign == 0 {
         return Option::Some(rational_zero())
     } else if !rational_fits_float(value, precision, maximum_exponent) {
@@ -130,9 +133,9 @@ fn rounded_rational(value: BigRat, precision: int, minimum_exponent: int, maximu
 
 fn rounded_float_constant(
     value: ConstValue,
-    precision: int,
-    minimum_exponent: int,
-    maximum_exponent: int,
+    precision: isize,
+    minimum_exponent: isize,
+    maximum_exponent: isize,
 ) -> Option[ConstValue] {
     match value {
         ConstValue::LargeFloat(value) => match binary_float_round_rational(
@@ -159,19 +162,19 @@ fn rounded_float_constant(
     }
 }
 
-fn integer_width(kind: go_types::BasicKind, sizes: go_types::TargetSizes) -> Option[(int, bool)] {
+fn integer_width(kind: go_types::BasicKind, sizes: go_types::TargetSizes) -> Option[(isize, bool)] {
     match kind {
-        go_types::BasicKind::Int => Option::Some(((sizes.word_size * 8).to_int(), true)),
+        go_types::BasicKind::Int => Option::Some(((sizes.word_size * 8).to_isize(), true)),
         go_types::BasicKind::Int8 => Option::Some((8, true)),
         go_types::BasicKind::Int16 => Option::Some((16, true)),
         go_types::BasicKind::Int32 => Option::Some((32, true)),
         go_types::BasicKind::Int64 => Option::Some((64, true)),
-        go_types::BasicKind::Uint => Option::Some(((sizes.word_size * 8).to_int(), false)),
+        go_types::BasicKind::Uint => Option::Some(((sizes.word_size * 8).to_isize(), false)),
         go_types::BasicKind::Uint8 => Option::Some((8, false)),
         go_types::BasicKind::Uint16 => Option::Some((16, false)),
         go_types::BasicKind::Uint32 => Option::Some((32, false)),
         go_types::BasicKind::Uint64 => Option::Some((64, false)),
-        go_types::BasicKind::Uintptr => Option::Some(((sizes.word_size * 8).to_int(), false)),
+        go_types::BasicKind::Uintptr => Option::Some(((sizes.word_size * 8).to_isize(), false)),
         _ => Option::None,
     }
 }
@@ -269,18 +272,17 @@ pub fn default_type(kind: go_types::BasicKind) -> Option[go_types::BasicKind] {
     }
 }
 
-fn integer_codepoint(value: BigInt) -> uint32 {
+fn integer_codepoint(value: BigInt) -> u32 {
     if value.sign < 0 || value.magnitude.limbs.len() > 1 {
-        65533.to_uint32()
+        65533.to_u32()
     } else {
         let result = if value.magnitude.limbs.is_empty() {
-            0.to_uint32()
+            0.to_u32()
         } else {
             value.magnitude.limbs[0]
         };
-        if result > 1114111.to_uint32()
-            || (result >= 55296.to_uint32() && result < 57344.to_uint32()) {
-            65533.to_uint32()
+        if result > 1114111.to_u32() || (result >= 55296.to_u32() && result < 57344.to_u32()) {
+            65533.to_u32()
         } else {
             result
         }
@@ -294,7 +296,7 @@ pub fn convert_constant(value: ConstValue, kind: go_types::BasicKind, sizes: go_
         match value {
             ConstValue::String(value) => Option::Some(ConstValue::String(value)),
             value => match constant_to_integer(value) {
-                Some(value) => match char_from_uint32(integer_codepoint(value)) {
+                Some(value) => match char_from_u32(integer_codepoint(value)) {
                     Some(value) => Option::Some(ConstValue::String(value.to_string())),
                     None => Option::Some(ConstValue::String("�")),
                 },

@@ -27,7 +27,7 @@ struct LowerEnv {
     dyn_helper_names: DynHelperNames,
     pointer_params: Vec[PointerParamInfo],
     pointer_vars: HashMap[string, bool],
-    select_counter: Ref[int],
+    select_counter: Ref[isize],
 }
 
 struct PointerParamInfo {
@@ -400,7 +400,7 @@ fn compile_primitive(value: repr::Primitive, ty: repr::Type) -> Expr {
             value: go_float_literal(value, ty),
         },
         String { value } => Expr::String { value },
-        Char { value } => Expr::Int { value: (value.to_uint32()).to_string() },
+        Char { value } => Expr::Int { value: (value.to_u32()).to_string() },
         Bytes { values } => {
             let items: Vec[Expr] = Vec::with_capacity(values.len());
             for value in values {
@@ -2963,7 +2963,7 @@ fn loop_label(value: string) -> string {
     "Loop_" + go_local_ident(value)
 }
 
-fn fresh_loop_label_with_suffix(emitted: Vec[string], base: string, suffix: int) -> string {
+fn fresh_loop_label_with_suffix(emitted: Vec[string], base: string, suffix: isize) -> string {
     let candidate = if suffix == 1 {
         base
     } else {
@@ -4576,12 +4576,12 @@ fn block_assigns_name(value: anf::Block, name: string) -> bool {
 }
 
 struct GoSize {
-    size: int,
-    alignment: int,
+    size: isize,
+    alignment: isize,
     known: bool,
 }
 
-fn known_go_size(size: int, alignment: int) -> GoSize {
+fn known_go_size(size: isize, alignment: isize) -> GoSize {
     GoSize { size, alignment, known: true }
 }
 
@@ -4589,11 +4589,11 @@ fn unknown_go_size() -> GoSize {
     GoSize { size: 0, alignment: 1, known: false }
 }
 
-fn aligned_go_size(size: int, alignment: int) -> int {
+fn aligned_go_size(size: isize, alignment: isize) -> isize {
     (size + alignment - 1) / alignment * alignment
 }
 
-fn go_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef], depth: int) -> GoSize {
+fn go_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef], depth: isize) -> GoSize {
     let mut size = 0;
     let mut alignment = 1;
     for value in values {
@@ -4609,7 +4609,7 @@ fn go_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef], dep
     known_go_size(aligned_go_size(size, alignment), alignment)
 }
 
-fn go_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: int) -> GoSize {
+fn go_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: isize) -> GoSize {
     if depth >= 16 {
         unknown_go_size()
     } else {
@@ -4699,9 +4699,9 @@ fn pointer_call_argument(value: anf::Imm) -> bool {
 fn inspect_pointer_call(
     value: anf::Value,
     target: string,
-    parameter: int,
+    parameter: isize,
     valid: Ref[bool],
-    calls: Ref[int],
+    calls: Ref[isize],
 ) -> unit {
     match value {
         Imm(value) => if imm_uses_function(value, target) {
@@ -4761,9 +4761,9 @@ fn inspect_pointer_call(
 fn inspect_pointer_calls(
     value: anf::Block,
     target: string,
-    parameter: int,
+    parameter: isize,
     valid: Ref[bool],
-    calls: Ref[int],
+    calls: Ref[isize],
 ) -> unit {
     for bind in value.binds {
         match bind {
@@ -4841,7 +4841,7 @@ fn inspect_pointer_calls(
     }
 }
 
-fn pointer_call_is_safe(functions: Vec[anf::Function], target: string, parameter: int) -> bool {
+fn pointer_call_is_safe(functions: Vec[anf::Function], target: string, parameter: isize) -> bool {
     let valid = Ref::new(true);
     let calls = Ref::new(0);
     for function in functions {
@@ -4869,7 +4869,7 @@ fn build_pointer_param_infos(functions: Vec[anf::Function], structs: Vec[repr::S
     result
 }
 
-fn pointer_param_enabled(values: Vec[PointerParamInfo], function: string, index: int) -> bool {
+fn pointer_param_enabled(values: Vec[PointerParamInfo], function: string, index: isize) -> bool {
     for value in values {
         if value.function == function {
             return index >= 0 && index < value.values.len() && value.values[index]
@@ -4878,7 +4878,7 @@ fn pointer_param_enabled(values: Vec[PointerParamInfo], function: string, index:
     false
 }
 
-fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: int) -> bool {
+fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: isize) -> bool {
     for value in values {
         if value.function == function {
             return index >= 0 && index < value.copies.len() && value.copies[index]
@@ -4974,7 +4974,7 @@ fn compile_functions(
     dyn_helper_names: DynHelperNames,
     pointer_params: Vec[PointerParamInfo],
 ) -> Vec[Function] {
-    let work: Vec[(int, anf::Function)] = Vec::with_capacity(values.len());
+    let work: Vec[(isize, anf::Function)] = Vec::with_capacity(values.len());
     let compiled: Vec[Option[Function]] = Vec::with_capacity(values.len());
     for index in 0..values.len() {
         work.push((index, values[index]));
@@ -4983,7 +4983,7 @@ fn compile_functions(
     let completed: Result[unit, Vec[task::IndexedError[unit]]] = task::for_each_concurrent(
         8,
         work,
-        |_: task::CancelToken, item: (int, anf::Function)| {
+        |_: task::CancelToken, item: (isize, anf::Function)| {
             compiled[item.0] = Option::Some(
                 compile_function(
                     builtin,

@@ -1,8 +1,8 @@
 package collections;
 
 pub struct BitSet {
-    pub words: Vec[uint64],
-    pub len: Ref[int],
+    pub words: Vec[u64],
+    pub len: Ref[isize],
 }
 
 impl Default for BitSet {
@@ -16,7 +16,7 @@ impl BitSet {
         BitSet { words: Vec::from_array([]), len: Ref::new(0) }
     }
 
-    pub fn len(self: BitSet) -> int {
+    pub fn len(self: BitSet) -> isize {
         self.len.get()
     }
 
@@ -24,7 +24,7 @@ impl BitSet {
         self.len.get() == 0
     }
 
-    pub fn contains(self: BitSet, index: int) -> bool {
+    pub fn contains(self: BitSet, index: isize) -> bool {
         if index < 0 {
             false
         } else {
@@ -38,7 +38,7 @@ impl BitSet {
         }
     }
 
-    pub fn insert(self: BitSet, index: int) -> bool {
+    pub fn insert(self: BitSet, index: isize) -> bool {
         if index < 0 {
             false
         } else {
@@ -58,7 +58,7 @@ impl BitSet {
         }
     }
 
-    pub fn remove(self: BitSet, index: int) -> bool {
+    pub fn remove(self: BitSet, index: isize) -> bool {
         if !self.contains(index) {
             false
         } else {

@@ -7,19 +7,19 @@ pub struct Document {
     pub uri: string,
     pub path: string,
     pub text: string,
-    pub version: int,
+    pub version: isize,
     pub line_index: text_index::LineIndex,
 }
 
 struct CachedAnalysis {
     path: string,
-    generation: int,
+    generation: isize,
     analysis: query::Analysis,
 }
 
 struct CachedLineIndex {
     path: string,
-    generation: int,
+    generation: isize,
     index: text_index::LineIndex,
 }
 
@@ -28,7 +28,7 @@ pub struct Server {
     analyses: Vec[CachedAnalysis],
     line_indexes: Vec[CachedLineIndex],
     analysis_context: query::AnalysisContext,
-    generation: Ref[int],
+    generation: Ref[isize],
     running: Ref[bool],
     shutdown: Ref[bool],
 }
@@ -54,7 +54,7 @@ pub fn invalidate_analyses(value: Server) -> unit {
     value.line_indexes.clear()
 }
 
-fn analysis_index(value: Server, path: string) -> Option[int] {
+fn analysis_index(value: Server, path: string) -> Option[isize] {
     let mut index = value.analyses.len() - 1;
     while index >= 0 {
         if value.analyses[index].path == path {
@@ -66,7 +66,7 @@ fn analysis_index(value: Server, path: string) -> Option[int] {
     Option::None
 }
 
-fn document_index(value: Server, uri: string) -> Option[int] {
+fn document_index(value: Server, uri: string) -> Option[isize] {
     let mut index = value.documents.len() - 1;
     while index >= 0 {
         if value.documents[index].uri == uri {
@@ -119,7 +119,7 @@ pub fn open_document(value: Server, document: Document) -> unit {
     invalidate_analyses(value)
 }
 
-pub fn change_document(value: Server, uri: string, text: string, version: int) -> unit {
+pub fn change_document(value: Server, uri: string, text: string, version: isize) -> unit {
     match document_index(value, uri) {
         Some(index) => {
             let current = value.documents[index];

@@ -11,9 +11,9 @@ use std::text;
 struct TestCandidate {
     name: string,
     source_path: string,
-    start: int,
-    end: int,
-    label_end: int,
+    start: isize,
+    end: isize,
+    label_end: isize,
     ignored: bool,
     ignore_reason: Option[string],
     arguments: Vec[(string, string)],
@@ -599,10 +599,10 @@ fn validate_package_tests(
     TestValidation { tests: sort_test_descriptors(tests), diagnostics }
 }
 
-fn write_test_json_hex(builder: text::StringBuilder, value: uint8) -> unit {
+fn write_test_json_hex(builder: text::StringBuilder, value: u8) -> unit {
     let digits = "0123456789abcdef";
-    builder.write_char(digits.get((value / 16).to_int()));
-    builder.write_char(digits.get((value % 16).to_int()))
+    builder.write_char(digits.get((value / 16).to_isize()));
+    builder.write_char(digits.get((value % 16).to_isize()))
 }
 
 fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {

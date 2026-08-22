@@ -213,7 +213,11 @@ fn proxy_go_type(value: string) -> string {
     }
 }
 
-fn write_proxy_method(builder: text::StringBuilder, proxy_index: int, method: NativeProxyMethodSpec) -> unit {
+fn write_proxy_method(
+    builder: text::StringBuilder,
+    proxy_index: isize,
+    method: NativeProxyMethodSpec,
+) -> unit {
     builder.write_string("func (_gomlgo_receiver *_gomlgo_nativeproxy");
     builder.write_string(proxy_index.to_string());
     builder.write_string(") ");

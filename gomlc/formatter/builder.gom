@@ -8,7 +8,7 @@ struct BuiltDoc {
     first: Option[lexer::TokenKind],
     last: Option[lexer::TokenKind],
     starts_with_line: bool,
-    trailing_lines: int,
+    trailing_lines: isize,
 }
 
 struct Parts {
@@ -16,8 +16,8 @@ struct Parts {
     first: Ref[Option[lexer::TokenKind]],
     last: Ref[Option[lexer::TokenKind]],
     starts_with_line: Ref[bool],
-    trailing_lines: Ref[int],
-    pending_newlines: Ref[int],
+    trailing_lines: Ref[isize],
+    pending_newlines: Ref[isize],
 }
 
 struct Builder {
@@ -63,7 +63,7 @@ fn kind_is(kind: lexer::TokenKind, expected: lexer::TokenKind) -> bool {
 
 fn is_word(kind: lexer::TokenKind) -> bool {
     match kind {
-        ExternKeyword | PackageKeyword | UseKeyword | AsKeyword | PubKeyword | FnKeyword | TraitKeyword | ImplKeyword | ForKeyword | EnumKeyword | StructKeyword | TypeKeyword | ConstKeyword | StaticKeyword | WhereKeyword | MatchKeyword | IfKeyword | ElseKeyword | LetKeyword | MutKeyword | InKeyword | ReturnKeyword | GoKeyword | DeferKeyword | WhileKeyword | LoopKeyword | BreakKeyword | ContinueKeyword | DynKeyword | TrueKeyword | FalseKeyword | WildcardKeyword | UnitKeyword | BoolKeyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | Ident | Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | Label | ByteCharLit | ByteStr | RawByteStr => true,
+        ExternKeyword | PackageKeyword | UseKeyword | AsKeyword | PubKeyword | FnKeyword | TraitKeyword | ImplKeyword | ForKeyword | EnumKeyword | StructKeyword | TypeKeyword | ConstKeyword | StaticKeyword | WhereKeyword | MatchKeyword | IfKeyword | ElseKeyword | LetKeyword | MutKeyword | InKeyword | ReturnKeyword | GoKeyword | DeferKeyword | WhileKeyword | LoopKeyword | BreakKeyword | ContinueKeyword | DynKeyword | TrueKeyword | FalseKeyword | WildcardKeyword | UnitKeyword | BoolKeyword | IsizeKeyword | I8Keyword | I16Keyword | I32Keyword | I64Keyword | UsizeKeyword | U8Keyword | U16Keyword | U32Keyword | U64Keyword | F32Keyword | F64Keyword | StringKeyword | CharKeyword | Ident | Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | Label | ByteCharLit | ByteStr | RawByteStr => true,
         _ => false,
     }
 }
@@ -147,7 +147,7 @@ fn token_doc(value: LocatedToken) -> Doc {
 }
 
 impl Parts {
-    fn add_pending_newlines(self: Parts, count: int) -> unit {
+    fn add_pending_newlines(self: Parts, count: isize) -> unit {
         if count > self.pending_newlines.get() {
             self.pending_newlines.set(count)
         } else {}
@@ -163,7 +163,7 @@ impl Parts {
         self.pending_newlines.set(0)
     }
 
-    fn ensure_lines(self: Parts, count: int) -> unit {
+    fn ensure_lines(self: Parts, count: isize) -> unit {
         while self.trailing_lines.get() < count {
             self.push_line()
         }

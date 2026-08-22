@@ -126,14 +126,14 @@ struct PackageInfoFile {
 
 struct PackageInfoScanner {
     source: string,
-    index: Ref[int],
+    index: Ref[isize],
 }
 
 fn new_package_info_scanner(source: string) -> PackageInfoScanner {
     PackageInfoScanner { source, index: Ref::new(0) }
 }
 
-fn package_info_ident_continue(value: uint8) -> bool {
+fn package_info_ident_continue(value: u8) -> bool {
     (value >= 65 && value <= 90) || (value >= 97 && value <= 122) || (value >= 48 && value <= 57)
         || value == 95
 }

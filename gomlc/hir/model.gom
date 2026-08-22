@@ -3,14 +3,14 @@ package hir;
 use module::ast;
 
 pub struct LocalId {
-    pub pkg: int,
-    pub index: int,
+    pub pkg: isize,
+    pub index: isize,
     pub hint: string,
 }
 
 pub struct DefId {
-    pub pkg: int,
-    pub index: int,
+    pub pkg: isize,
+    pub index: isize,
 }
 
 pub struct ImportAlias {
@@ -27,7 +27,7 @@ pub enum NameRef {
 pub enum ConstructorRef {
     Resolved {
         enum_def: DefId,
-        variant_index: int,
+        variant_index: isize,
     },
     Unresolved(string),
 }
@@ -35,7 +35,7 @@ pub enum ConstructorRef {
 pub enum PatternHead {
     Resolved {
         enum_def: DefId,
-        variant_index: int,
+        variant_index: isize,
         span: ast::Span,
     },
     Qualified {
@@ -348,7 +348,7 @@ pub enum ExprKind {
         value: string,
     },
     Float {
-        value: float64,
+        value: f64,
     },
     String {
         value: string,
@@ -444,7 +444,7 @@ pub enum ExprKind {
         ty: TypeExpr,
     },
     Try {
-        depth: int,
+        depth: isize,
         expr: Expr,
     },
     Range {
@@ -459,7 +459,7 @@ pub enum ExprKind {
     },
     Proj {
         tuple: Expr,
-        index: int,
+        index: isize,
     },
     Field {
         expr: Expr,

@@ -6,25 +6,25 @@ enum ValueDeserializeFrame {
     Optional,
     Sequence {
         values: Vec[Value],
-        index: Ref[int],
+        index: Ref[isize],
     },
     Tuple {
         values: Vec[Value],
-        index: Ref[int],
+        index: Ref[isize],
     },
     Map {
         entries: Vec[Value],
-        index: Ref[int],
-        state: Ref[int],
+        index: Ref[isize],
+        state: Ref[isize],
     },
     Struct {
         fields: Vec[(string, Value)],
-        index: Ref[int],
+        index: Ref[isize],
     },
     Variant {
-        kind: int,
+        kind: isize,
         fields: Vec[(string, Value)],
-        index: Ref[int],
+        index: Ref[isize],
         begun: Ref[bool],
     },
 }
@@ -100,12 +100,12 @@ fn deserialize_bytes_value(value: Value) -> Result[Vec[byte], string] {
                     Value::Number(value) => {
                         let parsed = num::parse_uint(value)?;
                         if parsed > 255 {
-                            return Result::Err("uint8 is out of range")
+                            return Result::Err("u8 is out of range")
                         } else {
-                            bytes.push(parsed.to_uint8())
+                            bytes.push(parsed.to_u8())
                         }
                     },
-                    _ => return Result::Err("expected uint8"),
+                    _ => return Result::Err("expected u8"),
                 }
             }
             Result::Ok(bytes)
@@ -133,147 +133,147 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn deserialize_int(self: ValueDeserializer) -> Result[int, string] {
+    fn deserialize_int(self: ValueDeserializer) -> Result[isize, string] {
         match take_deserializer_value(self)? {
             Value::Int(value) => Result::Ok(value),
             Value::Number(value) => num::parse_int(value),
-            _ => Result::Err("expected int"),
+            _ => Result::Err("expected isize"),
         }
     }
 
-    fn deserialize_int8(self: ValueDeserializer) -> Result[int8, string] {
+    fn deserialize_int8(self: ValueDeserializer) -> Result[i8, string] {
         match take_deserializer_value(self)? {
             Value::Int8(value) => Result::Ok(value),
             Value::Number(value) => {
                 let parsed = num::parse_int(value)?;
                 if parsed < -128 || parsed > 127 {
-                    Result::Err("int8 is out of range")
+                    Result::Err("i8 is out of range")
                 } else {
-                    Result::Ok(parsed.to_int8())
+                    Result::Ok(parsed.to_i8())
                 }
             },
-            _ => Result::Err("expected int8"),
+            _ => Result::Err("expected i8"),
         }
     }
 
-    fn deserialize_int16(self: ValueDeserializer) -> Result[int16, string] {
+    fn deserialize_int16(self: ValueDeserializer) -> Result[i16, string] {
         match take_deserializer_value(self)? {
             Value::Int16(value) => Result::Ok(value),
             Value::Number(value) => {
                 let parsed = num::parse_int(value)?;
                 if parsed < -32768 || parsed > 32767 {
-                    Result::Err("int16 is out of range")
+                    Result::Err("i16 is out of range")
                 } else {
-                    Result::Ok(parsed.to_int16())
+                    Result::Ok(parsed.to_i16())
                 }
             },
-            _ => Result::Err("expected int16"),
+            _ => Result::Err("expected i16"),
         }
     }
 
-    fn deserialize_int32(self: ValueDeserializer) -> Result[int32, string] {
+    fn deserialize_int32(self: ValueDeserializer) -> Result[i32, string] {
         match take_deserializer_value(self)? {
             Value::Int32(value) => Result::Ok(value),
             Value::Number(value) => {
                 let parsed = num::parse_int(value)?;
                 if parsed < -2147483648 || parsed > 2147483647 {
-                    Result::Err("int32 is out of range")
+                    Result::Err("i32 is out of range")
                 } else {
-                    Result::Ok(parsed.to_int32())
+                    Result::Ok(parsed.to_i32())
                 }
             },
-            _ => Result::Err("expected int32"),
+            _ => Result::Err("expected i32"),
         }
     }
 
-    fn deserialize_int64(self: ValueDeserializer) -> Result[int64, string] {
+    fn deserialize_int64(self: ValueDeserializer) -> Result[i64, string] {
         match take_deserializer_value(self)? {
             Value::Int64(value) => Result::Ok(value),
             Value::Number(value) => match num::parse_int(value) {
-                Ok(value) => Result::Ok(value.to_int64()),
+                Ok(value) => Result::Ok(value.to_i64()),
                 Err(error) => Result::Err(error),
             },
-            _ => Result::Err("expected int64"),
+            _ => Result::Err("expected i64"),
         }
     }
 
-    fn deserialize_uint(self: ValueDeserializer) -> Result[uint, string] {
+    fn deserialize_uint(self: ValueDeserializer) -> Result[usize, string] {
         match take_deserializer_value(self)? {
             Value::Uint(value) => Result::Ok(value),
             Value::Number(value) => num::parse_uint(value),
-            _ => Result::Err("expected uint"),
+            _ => Result::Err("expected usize"),
         }
     }
 
-    fn deserialize_uint8(self: ValueDeserializer) -> Result[uint8, string] {
+    fn deserialize_uint8(self: ValueDeserializer) -> Result[u8, string] {
         match take_deserializer_value(self)? {
             Value::Uint8(value) => Result::Ok(value),
             Value::Number(value) => {
                 let parsed = num::parse_uint(value)?;
                 if parsed > 255 {
-                    Result::Err("uint8 is out of range")
+                    Result::Err("u8 is out of range")
                 } else {
-                    Result::Ok(parsed.to_uint8())
+                    Result::Ok(parsed.to_u8())
                 }
             },
-            _ => Result::Err("expected uint8"),
+            _ => Result::Err("expected u8"),
         }
     }
 
-    fn deserialize_uint16(self: ValueDeserializer) -> Result[uint16, string] {
+    fn deserialize_uint16(self: ValueDeserializer) -> Result[u16, string] {
         match take_deserializer_value(self)? {
             Value::Uint16(value) => Result::Ok(value),
             Value::Number(value) => {
                 let parsed = num::parse_uint(value)?;
                 if parsed > 65535 {
-                    Result::Err("uint16 is out of range")
+                    Result::Err("u16 is out of range")
                 } else {
-                    Result::Ok(parsed.to_uint16())
+                    Result::Ok(parsed.to_u16())
                 }
             },
-            _ => Result::Err("expected uint16"),
+            _ => Result::Err("expected u16"),
         }
     }
 
-    fn deserialize_uint32(self: ValueDeserializer) -> Result[uint32, string] {
+    fn deserialize_uint32(self: ValueDeserializer) -> Result[u32, string] {
         match take_deserializer_value(self)? {
             Value::Uint32(value) => Result::Ok(value),
             Value::Number(value) => {
                 let parsed = num::parse_uint(value)?;
                 if parsed > 4294967295 {
-                    Result::Err("uint32 is out of range")
+                    Result::Err("u32 is out of range")
                 } else {
-                    Result::Ok(parsed.to_uint32())
+                    Result::Ok(parsed.to_u32())
                 }
             },
-            _ => Result::Err("expected uint32"),
+            _ => Result::Err("expected u32"),
         }
     }
 
-    fn deserialize_uint64(self: ValueDeserializer) -> Result[uint64, string] {
+    fn deserialize_uint64(self: ValueDeserializer) -> Result[u64, string] {
         match take_deserializer_value(self)? {
             Value::Uint64(value) => Result::Ok(value),
             Value::Number(value) => match num::parse_uint(value) {
-                Ok(value) => Result::Ok(value.to_uint64()),
+                Ok(value) => Result::Ok(value.to_u64()),
                 Err(error) => Result::Err(error),
             },
-            _ => Result::Err("expected uint64"),
+            _ => Result::Err("expected u64"),
         }
     }
 
-    fn deserialize_float32(self: ValueDeserializer) -> Result[float32, string] {
+    fn deserialize_float32(self: ValueDeserializer) -> Result[f32, string] {
         match take_deserializer_value(self)? {
             Value::Float32(value) => Result::Ok(value),
             Value::Number(value) => num::parse_float32(value),
-            _ => Result::Err("expected float32"),
+            _ => Result::Err("expected f32"),
         }
     }
 
-    fn deserialize_float64(self: ValueDeserializer) -> Result[float64, string] {
+    fn deserialize_float64(self: ValueDeserializer) -> Result[f64, string] {
         match take_deserializer_value(self)? {
             Value::Float64(value) => Result::Ok(value),
             Value::Number(value) => num::parse_float64(value),
-            _ => Result::Err("expected float64"),
+            _ => Result::Err("expected f64"),
         }
     }
 
@@ -344,7 +344,7 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn begin_sequence(self: ValueDeserializer) -> Result[Option[int], string] {
+    fn begin_sequence(self: ValueDeserializer) -> Result[Option[isize], string] {
         match take_deserializer_value(self)? {
             Value::Sequence(values) => {
                 let length = values.len();
@@ -390,7 +390,7 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn begin_tuple(self: ValueDeserializer, length: int) -> Result[unit, string] {
+    fn begin_tuple(self: ValueDeserializer, length: isize) -> Result[unit, string] {
         let value = take_deserializer_value(self)?;
         let values = match value {
             Value::Tuple(values) => values,
@@ -405,7 +405,7 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn begin_tuple_element(self: ValueDeserializer, index: int) -> Result[unit, string] {
+    fn begin_tuple_element(self: ValueDeserializer, index: isize) -> Result[unit, string] {
         if self.frames.is_empty() {
             return Result::Err("tuple element without tuple")
         } else if self.current.get().is_some() {
@@ -441,7 +441,7 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn begin_map(self: ValueDeserializer) -> Result[Option[int], string] {
+    fn begin_map(self: ValueDeserializer) -> Result[Option[isize], string] {
         match take_deserializer_value(self)? {
             Value::Sequence(entries) => {
                 let length = entries.len();
@@ -548,7 +548,7 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn begin_struct(self: ValueDeserializer, name: string, fields: int) -> Result[unit, string] {
+    fn begin_struct(self: ValueDeserializer, name: string, fields: isize) -> Result[unit, string] {
         let _ = name;
         let _ = fields;
         match take_deserializer_value(self)? {
@@ -608,7 +608,7 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn begin_variant(self: ValueDeserializer, enum_name: string, variants: int) -> Result[
+    fn begin_variant(self: ValueDeserializer, enum_name: string, variants: isize) -> Result[
         VariantKey,
         string,
     ] {
@@ -642,7 +642,10 @@ impl Deserializer for ValueDeserializer {
         }
     }
 
-    fn begin_variant_fields(self: ValueDeserializer, kind: int, fields: int) -> Result[unit, string] {
+    fn begin_variant_fields(self: ValueDeserializer, kind: isize, fields: isize) -> Result[
+        unit,
+        string,
+    ] {
         if self.frames.is_empty() {
             return Result::Err("variant fields without variant")
         } else {};

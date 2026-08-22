@@ -664,7 +664,7 @@ fn addable_basic_kind(value: BasicKind) -> bool {
         }
 }
 
-fn type_set_basic_property(world: World, value: TypeId, property: int) -> bool {
+fn type_set_basic_property(world: World, value: TypeId, property: isize) -> bool {
     let terms = constraint_type_terms(world, value, Vec::from_array([]));
     if terms.all || terms.terms.is_empty() {
         return false

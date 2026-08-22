@@ -3,7 +3,7 @@ package ast;
 use module::cst;
 use module::lexer;
 
-fn self_type_occurrences(value: LocatedNode) -> int {
+fn self_type_occurrences(value: LocatedNode) -> isize {
     let mut result = 0;
     for token in direct_tokens(value) {
         if lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Ident)
@@ -542,7 +542,7 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
     }
 }
 
-fn lower_param(ctx: LowerCtx, node: LocatedNode, index: int, shorthand_self_ty: Option[TypeExpr]) -> Option[
+fn lower_param(ctx: LowerCtx, node: LocatedNode, index: isize, shorthand_self_ty: Option[TypeExpr]) -> Option[
     (string, TypeExpr),
 ] {
     match first_token(node, lexer::TokenKind::Ident) {
