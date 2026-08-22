@@ -1,0 +1,58 @@
+fn increment(value/0: UserId) -> UserId {
+  let result/1 = value/0 in
+  let _wild414 =
+    {
+      let place_root411 = result/1 in
+      let place412 = UserId._0(place_root411) in
+      let value413 = 1 in
+      result/1 = UserId { _0: (place412 + value413) }
+    } in
+  result/1
+}
+
+fn unwrap(value/2: UserId) -> int32 {
+  let mtmp415 = value/2 in
+  {
+    let x416 = UserId._0(mtmp415) in
+    {
+      let inner/3 = x416 in
+      {
+        inner/3
+      }
+    }
+  }
+}
+
+fn main() -> unit {
+  let raw/4 = 40 in
+  let id/5 = UserId { _0: raw/4 } in
+  let _wild417 = println__T_int32(UserId._0(id/5)) in
+  let _wild418 = println__T_int32(unwrap(increment(id/5))) in
+  let boxed/6 = Box__string { _0: "wrapped" } in
+  let mtmp419 = boxed/6 in
+  {
+    let x420 = Box__string._0(mtmp419) in
+    {
+      let text/7 = x420 in
+      {
+        println__T_string(text/7)
+      }
+    }
+  }
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+  @runtime(core.int32_to_string)(self/154)
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}

@@ -1,0 +1,74 @@
+fn increment(value/0: UserId) -> UserId {
+  let result/1 = value/0 in
+  let place_root411 = result/1 in
+  let place412 = UserId._0(place_root411) in
+  let value413 = 1 in
+  let t423 = (place412 + value413) in
+  let t424 = UserId { _0: t423 } in
+  let t425 = result/1 = t424 in
+  result/1
+}
+
+fn unwrap(value/2: UserId) -> int32 {
+  let x416 = UserId._0(value/2) in
+  x416
+}
+
+fn main() -> unit {
+  let raw/4 = 40 in
+  let id/5 = UserId { _0: raw/4 } in
+  join inline_cont463(_wild417: unit) -> unit {
+    join inline_cont454(t430: UserId) -> unit {
+      join inline_cont450(t431: int32) -> unit {
+        join inline_cont447(_wild418: unit) -> unit {
+          let x420 = "wrapped" in
+          let inline445 = trait_impl#ToString#string#to_string(x420) in
+          let inline446 = @runtime(core.string_println)(inline445) in
+          ()
+        } in
+        let inline448 = trait_impl#ToString#int32#to_string(t431) in
+        let inline449 = @runtime(core.string_println)(inline448) in
+        jump inline_cont447(())
+      } in
+      let inline452 = UserId._0(t430) in
+      jump inline_cont450(inline452)
+    } in
+    let inline455 = id/5 in
+    let inline456 = inline455 in
+    let inline457 = UserId._0(inline456) in
+    let inline458 = 1 in
+    let inline459 = (inline457 + inline458) in
+    let inline460 = UserId { _0: inline459 } in
+    let inline461 = inline455 = inline460 in
+    jump inline_cont454(inline455)
+  } in
+  let inline464 = trait_impl#ToString#int32#to_string(raw/4) in
+  let inline465 = @runtime(core.string_println)(inline464) in
+  jump inline_cont463(())
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join inline_cont466(t434: string) -> unit {
+    let t435 = @runtime(core.string_println)(t434) in
+    ()
+  } in
+  let inline467 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont466(inline467)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont468(t437: string) -> unit {
+    let t438 = @runtime(core.string_println)(t437) in
+    ()
+  } in
+  jump inline_cont468(value/1)
+}
+
+fn trait_impl#ToString#int32#to_string(self/154: int32) -> string {
+  let t441 = @runtime(core.int32_to_string)(self/154) in
+  t441
+}
+
+fn trait_impl#ToString#string#to_string(self/149: string) -> string {
+  self/149
+}
