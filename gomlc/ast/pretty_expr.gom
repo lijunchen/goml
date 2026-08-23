@@ -355,7 +355,7 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
             },
         ),
         Int { value, span: _ } => doc::text(value),
-        Float { value, span: _ } => doc::text(value.to_string()),
+        Float { value, span: _ } => doc::text(value),
         String { value, span: _ } => pretty_quoted_string_doc(value),
         InterpolatedString { parts, span: _ } => {
             let values: Vec[doc::Doc] = Vec::with_capacity(parts.len() + 2);

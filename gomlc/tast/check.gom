@@ -300,17 +300,31 @@ fn shortest_float32_literal(value: f64) -> string {
     }
 }
 
-fn normalized_float32_literal(value: string) -> string {
+fn try_normalized_float32_literal(value: string) -> Option[string] {
     match numeric::parse_float32(value) {
-        Some(parsed) => shortest_float32_literal(parsed),
+        Some(parsed) => Option::Some(shortest_float32_literal(parsed)),
+        None => Option::None,
+    }
+}
+
+fn normalized_float32_literal(value: string) -> string {
+    match try_normalized_float32_literal(value) {
+        Some(normalized) => normalized,
         None => value,
     }
 }
 
-fn normalized_float64_literal(value: string) -> string {
+fn try_normalized_float64_literal(value: string) -> Option[string] {
     match num::parse_float64(value) {
-        Ok(parsed) => parsed.to_string(),
-        Err(_) => value,
+        Ok(parsed) => Option::Some(parsed.to_string()),
+        Err(_) => Option::None,
+    }
+}
+
+fn normalized_float64_literal(value: string) -> string {
+    match try_normalized_float64_literal(value) {
+        Some(normalized) => normalized,
+        None => value,
     }
 }
 
@@ -402,15 +416,33 @@ fn validate_integer_literal(ctx: Checker, value: string, ty: Type) -> unit {
     }
 }
 
-fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
+fn checked_float_literal(ctx: Checker, value: string, ty: Type) -> string {
+    let normalized = match prune(ty) {
+        Float32 => try_normalized_float32_literal(value),
+        Float64 => try_normalized_float64_literal(value),
+        _ => Option::Some(value),
+    };
+    match normalized {
+        Some(value) => value,
+        None => {
+            push_diagnostic(
+                ctx,
+                "Float literal " + value + " cannot be represented as " + type_text(ty),
+            );
+            value
+        },
+    }
+}
+
+fn normalize_float_expr(ctx: Checker, value: Expr, expected: Type) -> Expr {
     match value {
         Prim { value: Float { value: raw }, ty } => match prune(expected) {
             Float32 => Expr::Prim {
-                value: Primitive::Float { value: normalized_float32_literal(raw) },
+                value: Primitive::Float { value: checked_float_literal(ctx, raw, expected) },
                 ty,
             },
             Float64 => Expr::Prim {
-                value: Primitive::Float { value: normalized_float64_literal(raw) },
+                value: Primitive::Float { value: checked_float_literal(ctx, raw, expected) },
                 ty,
             },
             _ => Expr::Prim { value: Primitive::Float { value: raw }, ty },
@@ -420,11 +452,13 @@ fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
 }
 
 fn float_literal_integer(value: string) -> Option[string] {
-    let normalized = normalized_float64_literal(value);
-    if normalized.contains(".") {
-        Option::None
-    } else {
-        Option::Some(normalized)
+    match try_normalized_float64_literal(value) {
+        Some(normalized) => if normalized.contains(".") {
+            Option::None
+        } else {
+            Option::Some(normalized)
+        },
+        None => Option::None,
     }
 }
 
@@ -500,6 +534,8 @@ fn resolve_numeric_literal_constraints(ctx: Checker) -> unit {
                     "Float literal " + raw + " cannot be represented as " + type_text(ty),
                 ),
             }
+        } else if constraint.float && is_float_type(ty) {
+            let _ = checked_float_literal(ctx, raw, ty);
         } else if constraint.float {} else {
             validate_integer_literal(ctx, raw, ty)
         };
@@ -537,7 +573,7 @@ fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
         _ => (),
     };
     expect_type(ctx, expr_type(value), expected);
-    normalize_float_expr(value, expected)
+    normalize_float_expr(ctx, value, expected)
 }
 
 fn coerce_to_dyn(ctx: Checker, value: Expr, expected_ty: Type) -> Expr {
@@ -955,7 +991,7 @@ fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
         ),
         Float { value } => Option::Some(
             Expr::Prim {
-                value: Primitive::Float { value: value.to_string() },
+                value: Primitive::Float { value },
                 ty: fresh_type(ctx.counter, VarKind::Float),
             },
         ),
@@ -4742,7 +4778,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             }
         },
         Float { value: raw } => {
-            let raw_text = raw.to_string();
+            let raw_text = raw;
             let deferred = match expected {
                 Some(ty) => match prune(ty) {
                     Var(_) => true,
@@ -5369,6 +5405,18 @@ fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
     }
 }
 
+fn checked_pattern_primitive(ctx: Checker, value: Primitive, expected: Type) -> Primitive {
+    match value {
+        Float { value: raw } => match prune(expected) {
+            Float32 | Float64 => {
+                Primitive::Float { value: checked_float_literal(ctx, raw, expected) }
+            },
+            _ => Primitive::Float { value: raw },
+        },
+        other => other,
+    }
+}
+
 fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     match prune(expected) {
         Dyn { trait_name: name, .. } => match value.kind {
@@ -5386,7 +5434,7 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     match primitive_pattern(ctx, value) {
         Some(result) => {
             expect_type(ctx, expected, result.1);
-            Pat::Prim { value: normalize_pattern_primitive(result.0, expected), ty: expected }
+            Pat::Prim { value: checked_pattern_primitive(ctx, result.0, expected), ty: expected }
         },
         None => match value.kind {
             Var { name: local, is_mut } => {

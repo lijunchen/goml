@@ -722,7 +722,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             },
         ),
         Int { value } => pretty::text(value),
-        Float { value } => pretty::text(value.to_string()),
+        Float { value } => pretty::text(value),
         String { value } => quoted_string_doc(value),
         InterpolatedString { parts } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(parts.len() + 2);

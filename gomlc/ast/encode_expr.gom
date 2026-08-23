@@ -125,11 +125,12 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_bool_value(builder, value)
         },
         Int { value, span: value_span } => encode_literal_expr(builder, "Int", value, value_span),
-        Float { value, span: value_span } => {
-            encode_open(builder, "Expr.Float");
-            encode_span(builder, value_span);
-            encode_string_value(builder, float64_hash(value).to_string())
-        },
+        Float { value, span: value_span } => encode_literal_expr(
+            builder,
+            "Float",
+            value,
+            value_span,
+        ),
         String { value, span: value_span } => encode_literal_expr(
             builder,
             "String",
