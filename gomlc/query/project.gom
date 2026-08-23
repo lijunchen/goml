@@ -43,6 +43,24 @@ fn trim_ascii(value: string) -> string {
     value.byte_slice(start, end)
 }
 
+fn strip_comment(value: string) -> string {
+    let mut quoted = false;
+    let mut escaped = false;
+    for index in 0..value.byte_len() {
+        let byte = value.byte_get(index);
+        if escaped {
+            escaped = false;
+        } else if quoted && byte == b'\\' {
+            escaped = true;
+        } else if byte == b'"' {
+            quoted = !quoted;
+        } else if !quoted && byte == b'#' {
+            return value.byte_slice(0, index)
+        } else {}
+    }
+    value
+}
+
 fn manifest_module_path(source: string) -> Option[string] {
     let mut cursor = 0;
     let mut in_module = false;
@@ -51,7 +69,7 @@ fn manifest_module_path(source: string) -> Option[string] {
         while end < source.byte_len() && source.byte_get(end) != b'\n' {
             end = end + 1;
         }
-        let line = trim_ascii(source.byte_slice(cursor, end));
+        let line = trim_ascii(strip_comment(source.byte_slice(cursor, end)));
         if line.starts_with("[") {
             in_module = line == "[module]";
         } else if in_module && line.starts_with("path") {
