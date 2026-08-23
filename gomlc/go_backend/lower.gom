@@ -3569,6 +3569,43 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
             }
             Option::Some(target)
         },
+        Select { arms, default, .. } => {
+            let targets: Vec[LoopBranchTarget] = Vec::new();
+            for arm in arms {
+                targets.push(
+                    loop_branch_target(
+                        match arm {
+                            Receive { body, .. } | Send { body, .. } => body,
+                        },
+                        loop_name,
+                        joins,
+                    ),
+                )
+            }
+            match default {
+                Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
+                None => (),
+            };
+            let exits: Vec[string] = Vec::new();
+            let continues: Vec[unit] = Vec::new();
+            for target in targets {
+                match target {
+                    Continue => continues.push(()),
+                    Exit(target) => exits.push(target),
+                    Invalid => return Option::None,
+                }
+            }
+            if continues.is_empty() || exits.is_empty() {
+                return Option::None
+            } else {};
+            let target = exits[0];
+            for value in exits {
+                if value != target {
+                    return Option::None
+                } else {}
+            }
+            Option::Some(target)
+        },
         _ => Option::None,
     }
 }
