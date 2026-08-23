@@ -107,7 +107,8 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
             },
         }
     };
-    let interpreted = if source_current && fs::is_file(executable) {
+    let interpreted = if source_current && fs::is_file(executable)
+        || !go_backend::yaegi_compatible(go_source) {
         Option::None
     } else {
         match process::Command::new("yaegi").arg("main.go").current_dir(work_dir).output() {

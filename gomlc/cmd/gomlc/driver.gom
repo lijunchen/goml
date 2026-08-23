@@ -1802,29 +1802,6 @@ fn command_succeeded(output: process::Output) -> bool {
     process::ExitStatus::success(process::Output::status(output))
 }
 
-fn try_execute_with_yaegi(directory: string, go_file: string) -> bool {
-    let available = match process::Command::new("yaegi").arg("help").output() {
-        Ok(output) => command_succeeded(output),
-        Err(_) => false,
-    };
-    if !available {
-        false
-    } else {
-        match process::Command::new("yaegi").arg("run").arg(go_file).current_dir(directory).env(
-            "TZ",
-            "UTC",
-        ).output() {
-            Ok(output) => if command_succeeded(output) {
-                write_stdout(process::Output::stdout(output));
-                true
-            } else {
-                false
-            },
-            Err(_) => false,
-        }
-    }
-}
-
 fn cleanup_temp_file(go_file: string) -> unit {
     let _ = process::Command::new("rm").arg("-f").arg(go_file).output();
 }
@@ -1853,9 +1830,7 @@ fn execute_go_source(source_path: string, source: string) -> unit {
         Some(value) => value,
         None => temp_root(),
     };
-    if try_execute_with_yaegi(directory, go_file) {} else {
-        execute_with_go_run(directory, go_file)
-    };
+    execute_with_go_run(directory, go_file);
     cleanup_temp_file(go_file)
 }
 

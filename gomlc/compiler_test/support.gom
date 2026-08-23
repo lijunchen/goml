@@ -151,7 +151,8 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
             },
         }
     };
-    let interpreted = if source_current && fs::is_file(executable) {
+    let interpreted = if source_current && fs::is_file(executable)
+        || !go_backend::yaegi_compatible(source) {
         Option::None
     } else {
         match process::Command::new("yaegi").arg("main.go").current_dir(directory).env("TZ", "UTC").output() {
