@@ -1,0 +1,21 @@
+fn main() -> unit {
+    let keep/0: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+    let channel/1: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(0);
+    while true {
+        {
+            if (Ref[bool]::get : (Ref[bool]) -> bool)((keep/0 : Ref[bool])) {
+                {
+                    continue
+                }
+            } else {
+                {
+                    select {
+                        recv((channel/1 : Channel[isize])) as _/2 => break,
+                        default => break,
+                    }
+                }
+            }
+        }
+    };
+    (println : (isize) -> unit)(42)
+}

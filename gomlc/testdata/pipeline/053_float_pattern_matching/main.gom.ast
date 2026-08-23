@@ -15,8 +15,8 @@ fn compare(values: (f32, f64)) -> string {
     match values {
         (left, right) =>
           {
-              let limit32: f32 = 1;
-              let limit64: f64 = 5;
+              let limit32: f32 = 1.0;
+              let limit64: f64 = 5.0;
               let less_left = left < limit32;
               let less_right = right < limit64;
               "left<1?=" + less_left.to_string() + ",right<5?=" + less_right.to_string()
@@ -31,7 +31,7 @@ fn main() {
     let first = Sample32("f32=", first_value);
     let second = Sample32("f32_b=", second_value);
     let third = Sample64("f64=", third_value);
-    let tuple: (f32, f64) = (0.75, 4);
+    let tuple: (f32, f64) = (0.75, 4.0);
     let tuple_other: (f32, f64) = (1.5, 7.25);
     let message =
       summarize(first) + summarize(second) + summarize(third) + compare(tuple) +

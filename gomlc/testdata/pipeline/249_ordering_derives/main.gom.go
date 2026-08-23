@@ -1423,7 +1423,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline21)
     var t67 float64 = zero__0 / zero__0
     var tuple_nan__0 Tuple2_3int_7float64 = Tuple2_3int_7float64{
-        _0: 0,
+        _0: 0.0,
         _1: t67,
     }
     var t68 Option__Ordering = _goml_m_trait__impl_i_std_p_cmp_p_PartialOrd_i__o_isize_c_f64_q__i_partial__cmp(tuple_nan__0, tuple_nan__0)

@@ -1,0 +1,80 @@
+fn default_break_outer_continue() -> isize {
+    let rounds/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    let channel/1: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(0);
+    loop {
+        if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) == 0 {
+            {
+                (Ref[isize]::set : (Ref[isize], isize) -> unit)((rounds/0 : Ref[isize]), 1);
+                loop {
+                    select {
+                        recv((channel/1 : Channel[isize])) as _/2 => continue,
+                        default => break,
+                    }
+                };
+                continue;
+            }
+        } else {
+            {
+                break 11;
+            }
+        }
+    }
+}
+
+fn default_break_outer_break() -> isize {
+    let channel/3: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(0);
+    loop {
+        loop {
+            select {
+                recv((channel/3 : Channel[isize])) as _/4 => continue,
+                default => break,
+            }
+        };
+        break 12;
+    }
+}
+
+fn arm_break_outer_continue() -> isize {
+    let rounds/5: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    let channel/6: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
+    (Channel[isize]::send : (Channel[isize], isize) -> unit)((channel/6 : Channel[isize]), 1);
+    loop {
+        if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/5 : Ref[isize])) == 0 {
+            {
+                (Ref[isize]::set : (Ref[isize], isize) -> unit)((rounds/5 : Ref[isize]), 1);
+                loop {
+                    select {
+                        recv((channel/6 : Channel[isize])) as _/7 => break,
+                        default => continue,
+                    }
+                };
+                continue;
+            }
+        } else {
+            {
+                break 13;
+            }
+        }
+    }
+}
+
+fn arm_break_outer_break() -> isize {
+    let channel/8: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
+    (Channel[isize]::send : (Channel[isize], isize) -> unit)((channel/8 : Channel[isize]), 1);
+    loop {
+        loop {
+            select {
+                recv((channel/8 : Channel[isize])) as _/9 => break,
+                default => continue,
+            }
+        };
+        break 14;
+    }
+}
+
+fn main() -> unit {
+    (println : (isize) -> unit)((default_break_outer_continue : () -> isize)());
+    (println : (isize) -> unit)((default_break_outer_break : () -> isize)());
+    (println : (isize) -> unit)((arm_break_outer_continue : () -> isize)());
+    (println : (isize) -> unit)((arm_break_outer_break : () -> isize)())
+}

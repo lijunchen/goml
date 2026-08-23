@@ -92,6 +92,8 @@ func main0() struct{} {
     var inline3 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(counter__0)
     var inline4 int = inline3 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(counter__0, inline4)
+    var divisor__0 int = 2
+    _ = 8 / divisor__0
     var t0 int
     var inline2 int = ref_get__Ref_3int(counter__0)
     t0 = inline2

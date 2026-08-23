@@ -1,0 +1,219 @@
+fn default_break_outer_continue() -> isize {
+  let rounds/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  let channel/0 = inherent#Channel#Channel[T]#new__T_isize(0) in
+  loop {
+    if (inherent#Ref#Ref[T]#get__T_isize(rounds/0) == 0) {
+        {
+          let _wild0 = inherent#Ref#Ref[T]#set__T_isize(rounds/0, 1) in
+          let _wild1 =
+            loop {
+              select {
+                recv(channel/0) as _/0 => {
+                  continue
+                },
+                default => {
+                  break
+                },
+              }
+            } in
+          let _wild2 = continue in
+        }
+    } else {
+        {
+          let _wild3 = break 11 in
+        }
+    }
+  }
+}
+
+fn default_break_outer_break() -> isize {
+  let channel/0 = inherent#Channel#Channel[T]#new__T_isize(0) in
+  loop {
+    let _wild0 =
+      loop {
+        select {
+          recv(channel/0) as _/0 => {
+            continue
+          },
+          default => {
+            break
+          },
+        }
+      } in
+    let _wild1 = break 12 in
+  }
+}
+
+fn arm_break_outer_continue() -> isize {
+  let rounds/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  let channel/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let _wild0 = inherent#Channel#Channel[T]#send__T_isize(channel/0, 1) in
+  loop {
+    if (inherent#Ref#Ref[T]#get__T_isize(rounds/0) == 0) {
+        {
+          let _wild1 = inherent#Ref#Ref[T]#set__T_isize(rounds/0, 1) in
+          let _wild2 =
+            loop {
+              select {
+                recv(channel/0) as _/0 => {
+                  break
+                },
+                default => {
+                  continue
+                },
+              }
+            } in
+          let _wild3 = continue in
+        }
+    } else {
+        {
+          let _wild4 = break 13 in
+        }
+    }
+  }
+}
+
+fn arm_break_outer_break() -> isize {
+  let channel/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
+  let _wild0 = inherent#Channel#Channel[T]#send__T_isize(channel/0, 1) in
+  loop {
+    let _wild1 =
+      loop {
+        select {
+          recv(channel/0) as _/0 => {
+            break
+          },
+          default => {
+            continue
+          },
+        }
+      } in
+    let _wild2 = break 14 in
+  }
+}
+
+fn main() -> unit {
+  let _wild0 = println__T_isize(default_break_outer_continue()) in
+  let _wild1 = println__T_isize(default_break_outer_break()) in
+  let _wild2 = println__T_isize(arm_break_outer_continue()) in
+  println__T_isize(arm_break_outer_break())
+}
+
+fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
+  @intrinsic(ref.new)(value/0)
+}
+
+fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize] {
+  @intrinsic(channel.new)(capacity/0)
+}
+
+fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
+  @intrinsic(ref.get)(self/0)
+}
+
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+  @intrinsic(ref.set)(self/0, value/0)
+}
+
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+  @intrinsic(channel.send)(self/0, value/0)
+}
+
+fn println__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
+}
+
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
+}
+
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
+}
+
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/0 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/0 as u64))
+      }
+  }
+}
+
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        {
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
+            {
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
+            } in
+        }
+    } in
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        {
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
+              @intrinsic(vec.get)(
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
+              )
+            ) in
+          let _wild6 =
+            {
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
+            } in
+        }
+    } in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  {
+    let x0 = mtmp0.1 in
+    {
+      let result/0 = x0 in
+      {
+        result/0
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
+}
+
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
+}
+
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
+}

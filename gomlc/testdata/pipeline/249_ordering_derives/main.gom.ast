@@ -503,7 +503,7 @@ fn main() -> unit {
         cmp::Ord::cmp(Level::High { rank: 3, detail: 1 }, Level::High { rank: 3, detail: 1 })
       )
     );
-    let zero = 0;
+    let zero = 0.0;
     let nan = MaybeNumber { value: zero / zero };
     println(nan == nan.to_string());
     println(cmp::PartialOrd::partial_cmp(nan, nan).is_none().to_string());
@@ -532,7 +532,7 @@ fn main() -> unit {
     println(default_array == [0, 0, 0].to_string());
     println((1, 2) < (1, 3).to_string());
     println(ordering_name(cmp::Ord::cmp([1, 2], [1, 3])));
-    let tuple_nan = (0, zero / zero);
+    let tuple_nan = (0.0, zero / zero);
     println(cmp::PartialOrd::partial_cmp(tuple_nan, tuple_nan).is_none().to_string());
     let tuple_values: HashMap[(isize, string), string] = HashMap::new();
     tuple_values.set((1, "one"), "tuple");

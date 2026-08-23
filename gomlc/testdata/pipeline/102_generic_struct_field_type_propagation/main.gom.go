@@ -163,7 +163,7 @@ func main0() struct{} {
     t1 = inline5
     var inline3 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
     _goml_runtime_core_string_println(inline3)
-    var t2 float32 = 3.140000104904175
+    var t2 float32 = 3.14
     var t3 string
     var inline2 string = __goml_builtin_float32_to_string(t2)
     t3 = inline2

@@ -1,0 +1,177 @@
+fn classify(value/0: f32) -> isize {
+  match value/0 {
+    1.0000001 => {
+      1
+    },
+    _ => 0,
+  }
+}
+
+fn main() -> unit {
+  let below/0 = 1 in
+  let midpoint/0 = 1 in
+  let above/0 = 1.0000001 in
+  let _wild0 = println__T_u0(inherent#f32#f32#to_bits(below/0)) in
+  let _wild1 = println__T_u0(inherent#f32#f32#to_bits(midpoint/0)) in
+  let _wild2 = println__T_u0(inherent#f32#f32#to_bits(above/0)) in
+  let generic/0 = identity__T_f0(1.0000001) in
+  let _wild3 = println__T_u0(inherent#f32#f32#to_bits(generic/0)) in
+  let _wild4 =
+    println__T_string(inherent#isize#isize#to_string(classify(float32_from_bits(1065353217)))) in
+  let tiny32/0 = 0 in
+  let tiny64/0 = 0 in
+  let _wild5 = println__T_u0(inherent#f32#f32#to_bits(tiny32/0)) in
+  let _wild6 = println__T_u1(inherent#f64#f64#to_bits(tiny64/0)) in
+  let maximum32/0 = 340282350000000000000000000000000000000 in
+  let maximum64/0 =
+    179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 in
+  let _wild7 = println__T_u0(inherent#f32#f32#to_bits(maximum32/0)) in
+  println__T_u1(inherent#f64#f64#to_bits(maximum64/0))
+}
+
+fn println__T_u32(value/0: u32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u32#to_string(value/0))
+}
+
+fn inherent#f32#f32#to_bits(self/0: f32) -> u32 {
+  __goml_builtin_float32_to_bits(self/0)
+}
+
+fn identity__T_f32(value/0: f32) -> f32 {
+  value/0
+}
+
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
+}
+
+fn float32_from_bits(value/0: u32) -> f32 {
+  __goml_builtin_float32_from_bits(value/0)
+}
+
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
+}
+
+fn println__T_u64(value/0: u64) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/0))
+}
+
+fn inherent#f64#f64#to_bits(self/0: f64) -> u64 {
+  __goml_builtin_float64_to_bits(self/0)
+}
+
+fn trait_impl#ToString#u32#to_string(self/0: u32) -> string {
+  __goml_builtin_uint32_to_string(self/0)
+}
+
+fn __goml_builtin_float32_to_bits(value/0: f32) -> u32 {
+  @go_ffi(math, Float32bits)(value/0)
+}
+
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
+}
+
+fn __goml_builtin_float32_from_bits(value/0: u32) -> f32 {
+  @go_ffi(math, Float32frombits)(value/0)
+}
+
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
+}
+
+fn trait_impl#ToString#u64#to_string(self/0: u64) -> string {
+  __goml_builtin_uint64_to_string(self/0)
+}
+
+fn __goml_builtin_float64_to_bits(value/0: f64) -> u64 {
+  @go_ffi(math, Float64bits)(value/0)
+}
+
+fn __goml_builtin_uint32_to_string(value/0: u32) -> string {
+  decimal_string((value/0 as u64))
+}
+
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/0 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/0 as u64))
+      }
+  }
+}
+
+fn __goml_builtin_uint64_to_string(value/0: u64) -> string {
+  decimal_string(value/0)
+}
+
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        {
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
+            {
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
+            } in
+        }
+    } in
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        {
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
+              @intrinsic(vec.get)(
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
+              )
+            ) in
+          let _wild6 =
+            {
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
+            } in
+        }
+    } in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  {
+    let x0 = mtmp0.1 in
+    {
+      let result/0 = x0 in
+      {
+        result/0
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
+}

@@ -16,14 +16,14 @@ fn lerp32(a: f32, b: f32, weight: f32) -> f32 {
 
 fn midpoint_energy(x: f64, y: f64) -> f64 {
     let sum = x * x + y * y;
-    sum / 2
+    sum / 2.0
 }
 
 fn main() {
     let start32: f32 = 1.25;
     let end32: f32 = 5.75;
     let half: f32 = 0.5;
-    let scale: f32 = 2;
+    let scale: f32 = 2.0;
     let mid32 = lerp32(start32, end32, half);
     let neg_end32 = -end32;
     let ratio32 = end32 / scale;
@@ -34,7 +34,7 @@ fn main() {
     let energy: f64 = midpoint_energy(dx, dy);
     let neg_dx = -dx;
     let adjusted: f64 = energy + dy - dx * quarter;
-    let threshold: f64 = 4;
+    let threshold: f64 = 4.0;
     let less64 = adjusted < threshold;
     show32("mid32=", mid32);
     show32("neg_end32=", neg_end32);
