@@ -120,7 +120,7 @@ fn separates_top_level_and_local_go_names() -> unit {
     let output = encode(lower_source_with_counter(source, 0));
     testing::assert(output.contains("const (\n    value__0 int = 42"));
     testing::assert(output.contains("var cell__0 *OnceCell__isize"));
-    testing::assert(output.contains("func t0(value__0 int) int"));
+    testing::assert(output.contains("func t0(_goml_local_value__0 int) int"));
     testing::assert(output.contains(" = t0(0)"));
     testing::assert(output.contains(" = t0(1)"));
     testing::assert(!output.contains("_goml_local_t0("));
