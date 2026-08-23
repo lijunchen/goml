@@ -359,10 +359,21 @@ fn scan_escape_end(source: string, slash: isize, quote: u8) -> Option[isize] {
             || escaped == b'/' {
             Option::Some(slash + 2)
         } else if escaped == b'u' && slash + 5 < source.byte_len() {
-            if ascii::is_hexdigit(byte_at(source, slash + 2))
-                && ascii::is_hexdigit(byte_at(source, slash + 3))
-                && ascii::is_hexdigit(byte_at(source, slash + 4))
-                && ascii::is_hexdigit(byte_at(source, slash + 5)) {
+            let mut code = 0.to_u32();
+            let mut cursor = slash + 2;
+            while cursor < slash + 6 && ascii::is_hexdigit(byte_at(source, cursor)) {
+                let value = byte_at(source, cursor);
+                let digit = if value >= b'0' && value <= b'9' {
+                    (value - b'0').to_u32()
+                } else if value >= b'A' && value <= b'F' {
+                    (value - b'A' + 10).to_u32()
+                } else {
+                    (value - b'a' + 10).to_u32()
+                };
+                code = code * 16 + digit;
+                cursor = cursor + 1;
+            }
+            if cursor == slash + 6 && char_from_u32(code).is_some() {
                 Option::Some(slash + 6)
             } else {
                 Option::None
