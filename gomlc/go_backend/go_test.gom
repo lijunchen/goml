@@ -1444,10 +1444,35 @@ fn lowers_uint_and_runtime_traits() -> unit {
 }
 
 #[test]
-fn emits_rounded_float32_literals() -> unit {
+fn preserves_float32_literals_for_go_rounding() -> unit {
     let source = "fn identity[T](x: T) -> T { x } fn main() -> unit { let value: f32 = identity(3.14); println(value.to_string()) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(output, "3.140000104904175"))
+    testing::assert(string_contains(output, "float32 = 3.14\n"))
+}
+
+#[test]
+fn emits_go_safe_float_boundaries() -> unit {
+    let source = "fn identity[T](value: T) -> T { value } fn main() -> unit { let below: f32 = 1.0000000596046447753906249999999999999999; let midpoint: f32 = 1.000000059604644775390625; let above: f32 = 1.0000000596046447753906250000000000000001; let generic: f32 = identity(1.0000000596046447753906250000000000000001); let maximum32: f32 = 3.4028235e38; let maximum64: f64 = 1.7976931348623157e308; println(below.to_bits()); println(midpoint.to_bits()); println(above.to_bits()); println(generic.to_bits()); println(maximum32.to_bits()); println(maximum64.to_bits()) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "var below__"));
+    testing::assert(string_contains(output, "var midpoint__"));
+    testing::assert(string_contains(output, "float32 = 1\n"));
+    testing::assert(string_contains(output, "float32 = 1.0000001\n"));
+    testing::assert(string_contains(output, "float32 = 340282350000000000000000000000000000000\n"));
+    testing::assert(string_contains(output, "float64 = 17976931348623157e292\n"))
+}
+
+#[test]
+fn compacts_long_integer_float_literals() -> unit {
+    let zeros = "0000000000000000" + "0000000000000000" + "0000000000000000" + "0000000000000000"
+        + "0000000000000000";
+    testing::assert_eq(compact_go_float_literal("123" + zeros), "123e80");
+    testing::assert_eq(compact_go_float_literal("-123" + zeros), "-123e80");
+    testing::assert_eq(compact_go_float_literal(zeros), zeros);
+    testing::assert_eq(compact_go_float_literal("-" + zeros), "-" + zeros);
+    testing::assert_eq(compact_go_float_literal("1." + zeros), "1." + zeros);
+    testing::assert_eq(compact_go_float_literal("1e" + zeros), "1e" + zeros);
+    testing::assert_eq(compact_go_float_literal("1000"), "1000")
 }
 
 #[test]
