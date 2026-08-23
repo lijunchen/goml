@@ -1296,6 +1296,37 @@ fn checks_dynamic_guarded_arm_usefulness() -> unit {
 }
 
 #[test]
+fn validates_fixed_array_pattern_lengths() -> unit {
+    let too_short = checked_diagnostics(
+        "fn choose(value: [i32; 2]) -> i32 { match value { [first] => first, _ => 0 } }",
+    );
+    testing::assert(
+        has_diagnostic(too_short, "Array length mismatch: expected [i32; 1], found [i32; 2]"),
+    );
+    let too_long = checked_diagnostics(
+        "fn choose(value: [i32; 1]) -> i32 { match value { [first, second] => first + second, _ => 0 } }",
+    );
+    testing::assert(
+        has_diagnostic(too_long, "Array length mismatch: expected [i32; 2], found [i32; 1]"),
+    );
+    let rest_too_long = checked_diagnostics(
+        "fn choose(value: [i32; 1]) -> i32 { match value { [first, .., last] => first + last, _ => 0 } }",
+    );
+    testing::assert(
+        has_diagnostic(
+            rest_too_long,
+            "Array length mismatch: expected [i32; 2], found [i32; 1]",
+        ),
+    );
+    testing::assert_eq(
+        checked_diagnostics(
+            "fn exact(value: [i32; 2]) -> i32 { match value { [first, last] => first + last } } fn with_rest(value: [i32; 2]) -> i32 { match value { [first, ..] => first } }",
+        ).len(),
+        0,
+    )
+}
+
+#[test]
 fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
     testing::assert_eq(
         coverage_decrement_magnitude("100000000000000000000"),
