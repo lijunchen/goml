@@ -1015,6 +1015,66 @@ fn separates_members_for_same_named_types_across_packages() -> unit {
 }
 
 #[test]
+fn filters_member_completion_visibility_and_receivers() -> unit {
+    let root = "/tmp/goml-query-member-visibility";
+    let lib_dir = root + "/lib";
+    for directory in Vec::from_array([root, lib_dir]) {
+        match fs::create_dir_all(directory) {
+            Ok(()) => (),
+            Err(error) => testing::fail(error),
+        }
+    }
+    let lib_path = lib_dir + "/lib.gom";
+    let main_path = root + "/main.gom";
+    let lib_source = "package lib; pub struct Item { pub shown: isize, hidden: isize, } impl Item { pub fn new() -> Item { Item { shown: 1, hidden: 2 } } pub fn shown_method(self: Item) -> isize { self.shown } fn hidden_method(self: Item) -> isize { self.hidden } } pub trait Describe { fn describe(self: Self) -> string; fn kind() -> string; } impl Describe for Item { fn describe(self: Item) -> string { self.shown.to_string() } fn kind() -> string { \"item\" } } fn inspect(value: Item) -> unit { println(value.shown); println(value.describe()) }";
+    let main_source = "package main; use module::lib; use lib::Describe; fn main() -> unit { let value = lib::Item::new(); println(value.shown); println(value.shown_method()); println(value.describe()); let _ = lib::Item::new(); () }";
+    write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::member_visibility\"\n");
+    write_query_fixture(lib_path, lib_source);
+    write_query_fixture(main_path, main_source);
+    let external = analyze(main_path, main_source);
+    assert_no_diagnostics(external);
+    match last_substring(main_source, "value.shown") {
+        Some(offset) => {
+            let items = completions(external, offset + "value.".byte_len());
+            testing::assert(has_completion(items, "shown"));
+            testing::assert(has_completion(items, "shown_method"));
+            testing::assert(has_completion(items, "describe"));
+            testing::assert(!has_completion(items, "hidden"));
+            testing::assert(!has_completion(items, "hidden_method"));
+            testing::assert(!has_completion(items, "new"));
+            testing::assert(!has_completion(items, "kind"))
+        },
+        None => testing::fail("expected external member access"),
+    };
+    match last_substring(main_source, "lib::Item::new") {
+        Some(offset) => {
+            let items = completions(external, offset + "lib::Item::".byte_len());
+            testing::assert(has_completion(items, "new"));
+            testing::assert(has_completion(items, "shown_method"));
+            testing::assert(has_completion(items, "describe"));
+            testing::assert(has_completion(items, "kind"));
+            testing::assert(!has_completion(items, "hidden_method"))
+        },
+        None => testing::fail("expected external static access"),
+    };
+    let local = analyze(lib_path, lib_source);
+    assert_no_diagnostics(local);
+    match last_substring(lib_source, "value.shown") {
+        Some(offset) => {
+            let items = completions(local, offset + "value.".byte_len());
+            testing::assert(has_completion(items, "shown"));
+            testing::assert(has_completion(items, "hidden"));
+            testing::assert(has_completion(items, "shown_method"));
+            testing::assert(has_completion(items, "hidden_method"));
+            testing::assert(has_completion(items, "describe"));
+            testing::assert(!has_completion(items, "new"));
+            testing::assert(!has_completion(items, "kind"))
+        },
+        None => testing::fail("expected local member access"),
+    }
+}
+
+#[test]
 fn completes_incomplete_member_and_enum_paths() -> unit {
     let member_source = "struct Point { x: i32 } fn main() -> unit { let point = Point { x: 1 }; let _ = point.; () }";
     testing::assert(
@@ -1137,7 +1197,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         },
         None => testing::fail("expected Vec member"),
     };
-    let dyn_source = "trait Showable { fn show(Self) -> string; } fn render(value: dyn Showable) -> string { value.sh }";
+    let dyn_source = "trait Showable { fn show(self: Self) -> string; } fn render(value: dyn Showable) -> string { value.sh }";
     match last_substring(dyn_source, "value.sh") {
         Some(offset) => {
             let analysis = analyze("main.gom", dyn_source);
