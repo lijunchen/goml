@@ -3675,107 +3675,155 @@ fn all_paths_reach_or_terminate(value: anf::Block, target: string) -> bool {
     block_all_paths_reach_or_terminate(value, target, Vec::new(), Vec::new())
 }
 
-enum LoopBranchTarget {
-    Continue,
-    Exit(string),
-    Invalid,
+struct LoopOutcomes {
+    has_continue: bool,
+    exits: Vec[string],
+    valid: bool,
 }
 
-fn loop_branch_target(body: anf::Block, loop_name: string, joins: Vec[anf::JoinBind]) -> LoopBranchTarget {
-    if block_reaches_target(body, loop_name, joins, Vec::new()) {
-        LoopBranchTarget::Continue
-    } else {
-        match block_tail_target_through_joins(body, joins, Vec::new()) {
-            Some(target) => LoopBranchTarget::Exit(target),
-            None => LoopBranchTarget::Invalid,
-        }
+fn new_loop_outcomes() -> LoopOutcomes {
+    LoopOutcomes { has_continue: false, exits: Vec::new(), valid: true }
+}
+
+fn invalid_loop_outcomes() -> LoopOutcomes {
+    LoopOutcomes { has_continue: false, exits: Vec::new(), valid: false }
+}
+
+fn append_loop_outcomes(target: LoopOutcomes, value: LoopOutcomes) -> unit {
+    target.has_continue = target.has_continue || value.has_continue;
+    target.valid = target.valid && value.valid;
+    for exit in value.exits {
+        target.exits.push(exit)
+    }
+}
+
+fn block_loop_outcomes(
+    value: anf::Block,
+    loop_name: string,
+    parent: Vec[anf::JoinBind],
+    visited: Vec[string],
+) -> LoopOutcomes {
+    let joins = scoped_joins(parent, value);
+    term_loop_outcomes(value.term, loop_name, joins, visited)
+}
+
+fn term_loop_outcomes(
+    value: anf::Term,
+    loop_name: string,
+    joins: Vec[anf::JoinBind],
+    visited: Vec[string],
+) -> LoopOutcomes {
+    match value {
+        Jump { target, args, ret_ty: _ } => if target == loop_name {
+            if args.is_empty() {
+                LoopOutcomes { has_continue: true, exits: Vec::new(), valid: true }
+            } else {
+                invalid_loop_outcomes()
+            }
+        } else if visited.contains(target) {
+            invalid_loop_outcomes()
+        } else {
+            match find_join(joins, target) {
+                Some(join) => match join.role {
+                    anf::JoinRole::LoopExit => {
+                        LoopOutcomes {
+                            has_continue: false,
+                            exits: Vec::from_array([target]),
+                            valid: true,
+                        }
+                    },
+                    anf::JoinRole::Continuation => {
+                        visited.push(target);
+                        let result = block_loop_outcomes(join.body, loop_name, joins, visited);
+                        let _ = visited.remove(visited.len() - 1);
+                        result
+                    },
+                    anf::JoinRole::Return => invalid_loop_outcomes(),
+                },
+                None => invalid_loop_outcomes(),
+            }
+        },
+        If { cond: _, then_, else_, ret_ty: _ } => {
+            let result = new_loop_outcomes();
+            append_loop_outcomes(result, block_loop_outcomes(then_, loop_name, joins, visited));
+            append_loop_outcomes(result, block_loop_outcomes(else_, loop_name, joins, visited));
+            result
+        },
+        Match { scrutinee: _, arms, default, ret_ty: _ } => {
+            let result = new_loop_outcomes();
+            let mut branches = 0;
+            for arm in arms {
+                append_loop_outcomes(
+                    result,
+                    block_loop_outcomes(arm.body, loop_name, joins, visited),
+                );
+                branches = branches + 1;
+            }
+            match default {
+                Some(body) => {
+                    append_loop_outcomes(
+                        result,
+                        block_loop_outcomes(body, loop_name, joins, visited),
+                    );
+                    branches = branches + 1;
+                },
+                None => (),
+            };
+            if branches == 0 {
+                result.valid = false;
+            } else {};
+            result
+        },
+        Select { arms, default, .. } => {
+            let result = new_loop_outcomes();
+            let mut branches = 0;
+            for arm in arms {
+                append_loop_outcomes(
+                    result,
+                    block_loop_outcomes(
+                        match arm {
+                            Receive { body, .. } | Send { body, .. } => body,
+                        },
+                        loop_name,
+                        joins,
+                        visited,
+                    ),
+                );
+                branches = branches + 1;
+            }
+            match default {
+                Some(body) => {
+                    append_loop_outcomes(
+                        result,
+                        block_loop_outcomes(body, loop_name, joins, visited),
+                    );
+                    branches = branches + 1;
+                },
+                None => (),
+            };
+            if branches == 0 {
+                result.valid = false;
+            } else {};
+            result
+        },
+        Return(_) | Unreachable { ty: _ } => invalid_loop_outcomes(),
     }
 }
 
 fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
     string,
 ] {
-    let joins = scoped_joins(parent, value);
-    match value.term {
-        If { cond: _, then_, else_, ret_ty: _ } => {
-            let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::new());
-            let else_reaches = block_reaches_target(else_, loop_name, joins, Vec::new());
-            if then_reaches && !else_reaches {
-                block_tail_target_through_joins(else_, joins, Vec::new())
-            } else if else_reaches && !then_reaches {
-                block_tail_target_through_joins(then_, joins, Vec::new())
-            } else {
-                Option::None
-            }
-        },
-        Match { scrutinee: _, arms, default, ret_ty: _ } => {
-            let targets: Vec[LoopBranchTarget] = Vec::new();
-            for arm in arms {
-                targets.push(loop_branch_target(arm.body, loop_name, joins))
-            }
-            match default {
-                Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
-                None => (),
-            };
-            let exits: Vec[string] = Vec::new();
-            let continues: Vec[unit] = Vec::new();
-            for target in targets {
-                match target {
-                    Continue => continues.push(()),
-                    Exit(target) => exits.push(target),
-                    Invalid => return Option::None,
-                }
-            }
-            if continues.is_empty() || exits.is_empty() {
-                return Option::None
-            } else {};
-            let target = exits[0];
-            for value in exits {
-                if value != target {
-                    return Option::None
-                } else {}
-            }
-            Option::Some(target)
-        },
-        Select { arms, default, .. } => {
-            let targets: Vec[LoopBranchTarget] = Vec::new();
-            for arm in arms {
-                targets.push(
-                    loop_branch_target(
-                        match arm {
-                            Receive { body, .. } | Send { body, .. } => body,
-                        },
-                        loop_name,
-                        joins,
-                    ),
-                )
-            }
-            match default {
-                Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
-                None => (),
-            };
-            let exits: Vec[string] = Vec::new();
-            let continues: Vec[unit] = Vec::new();
-            for target in targets {
-                match target {
-                    Continue => continues.push(()),
-                    Exit(target) => exits.push(target),
-                    Invalid => return Option::None,
-                }
-            }
-            if continues.is_empty() || exits.is_empty() {
-                return Option::None
-            } else {};
-            let target = exits[0];
-            for value in exits {
-                if value != target {
-                    return Option::None
-                } else {}
-            }
-            Option::Some(target)
-        },
-        _ => Option::None,
+    let outcomes = block_loop_outcomes(value, loop_name, parent, Vec::new());
+    if !outcomes.valid || !outcomes.has_continue || outcomes.exits.is_empty() {
+        return Option::None
+    } else {};
+    let target = outcomes.exits[0];
+    for value in outcomes.exits {
+        if value != target {
+            return Option::None
+        } else {}
     }
+    Option::Some(target)
 }
 
 fn find_loop_exit(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
