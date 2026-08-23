@@ -74,6 +74,33 @@ fn lower_source(source: string) -> File {
     )
 }
 
+fn lower_source_with_counter(source: string, start: isize) -> File {
+    required_lower(
+        lower(
+            anf::lower(
+                lift::lower(
+                    mono::lower(
+                        core::lower_with_counter(
+                            tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
+                            Ref::new(start),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+}
+
+#[test]
+fn generates_stable_go_names_across_ir_counters() -> unit {
+    let source = "fn stable2(value: i32) -> i32 { if value <= 0 { 0 } else { stable2(value - 1) + 1 } } fn main() -> unit { println(stable2(2).to_string()) }";
+    let initial = encode(lower_source_with_counter(source, 0));
+    let shifted = encode(lower_source_with_counter(source, 500));
+    testing::assert_eq(initial, shifted);
+    testing::assert(initial.contains("func stable2("));
+    testing::assert(initial.contains(" = stable2("))
+}
+
 fn lower_linked_source(source: string) -> File {
     let counter = Ref::new(0);
     let builtins = test_builtins(counter);
