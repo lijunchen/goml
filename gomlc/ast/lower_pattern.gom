@@ -124,7 +124,9 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             },
             PATTERN_STRING => match literal_value(node, lexer::TokenKind::Str) {
                 Some(raw) => match strip_delimiters(raw) {
-                    Some(value) => Option::Some(Pat::String { value, span: value_span }),
+                    Some(value) => Option::Some(
+                        Pat::String { value: unescape_string(value), span: value_span },
+                    ),
                     None => Option::None,
                 },
                 None => match raw_string_pattern_value(node) {
