@@ -452,14 +452,7 @@ fn normalize_float_expr(ctx: Checker, value: Expr, expected: Type) -> Expr {
 }
 
 fn float_literal_integer(value: string) -> Option[string] {
-    match try_normalized_float64_literal(value) {
-        Some(normalized) => if normalized.contains(".") {
-            Option::None
-        } else {
-            Option::Some(normalized)
-        },
-        None => Option::None,
-    }
+    numeric::normalize_float_integer(value, 20)
 }
 
 fn optional_spans_equal(left: Option[ast::Span], right: Option[ast::Span]) -> bool {
@@ -5599,11 +5592,27 @@ fn checked_pattern_primitive(ctx: Checker, value: Primitive, expected: Type) -> 
             validate_integer_literal(ctx, raw, expected);
             Primitive::Int { value: raw }
         },
-        Float { value: raw } => match prune(expected) {
-            Float32 | Float64 => {
-                Primitive::Float { value: checked_float_literal(ctx, raw, expected) }
-            },
-            _ => Primitive::Float { value: raw },
+        Float { value: raw } => if is_integer_type(expected) {
+            match float_literal_integer(raw) {
+                Some(integer) => {
+                    validate_integer_literal(ctx, integer, expected);
+                    Primitive::Int { value: integer }
+                },
+                None => {
+                    push_diagnostic(
+                        ctx,
+                        "Float literal " + raw + " cannot be represented as " + type_text(expected),
+                    );
+                    Primitive::Int { value: "0" }
+                },
+            }
+        } else {
+            match prune(expected) {
+                Float32 | Float64 => {
+                    Primitive::Float { value: checked_float_literal(ctx, raw, expected) }
+                },
+                _ => Primitive::Float { value: raw },
+            }
         },
         other => other,
     }
