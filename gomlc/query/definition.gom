@@ -248,9 +248,7 @@ fn path_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
 }
 
 fn symbol_owner_matches(symbol: Symbol, owner: string) -> bool {
-    let symbol_owner_name = symbol_owner(symbol.qualified_name);
-    symbol_owner_name == owner || symbol_owner_name.ends_with("::" + owner)
-        || short_type_name(symbol_owner_name) == short_type_name(owner)
+    owner_name_matches(symbol_owner(symbol.qualified_name), owner)
 }
 
 fn member_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
@@ -273,7 +271,7 @@ fn member_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
                                 span: symbol.span,
                             };
                             let owner_name = symbol_owner(symbol.qualified_name);
-                            if owner_name == owner || owner_name.ends_with("::" + owner) {
+                            if owner_name == owner {
                                 push_definition(exact, definition)
                             } else if symbol_owner_matches(symbol, owner) {
                                 push_definition(fallback, definition)
@@ -337,7 +335,7 @@ fn struct_field_definitions(value: Analysis, offset: isize) -> Vec[DefinitionRes
                             span: symbol.span,
                         };
                         let owner_name = symbol_owner(symbol.qualified_name);
-                        if owner_name == owner || owner_name.ends_with("::" + owner) {
+                        if owner_name == owner {
                             push_definition(exact, definition)
                         } else if symbol_owner_matches(symbol, owner) {
                             push_definition(fallback, definition)

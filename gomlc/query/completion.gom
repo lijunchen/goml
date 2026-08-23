@@ -292,11 +292,9 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
         complete_namespace(value, canonical, prefix)
     } else {
         let result: Vec[CompletionItem] = Vec::new();
-        let current_name = value.package_name + "::" + canonical;
         for symbol in build_symbol_index(value).symbols {
             let owner = qualified_owner(symbol.qualified_name);
-            if (owner == canonical || owner == current_name
-                || short_type_name(owner) == short_type_name(canonical))
+            if completion_owner_matches(value, owner, canonical)
                 && match symbol.kind {
                     Variant | Method => true,
                     _ => false,
@@ -315,8 +313,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
         }
         for environment in value.environments {
             for definition in environment.enums {
-                if definition.name == canonical || definition.name == current_name
-                    || short_type_name(definition.name) == short_type_name(canonical) {
+                if completion_owner_matches(value, definition.name, canonical) {
                     for variant in definition.variants {
                         push_completion(
                             result,
@@ -332,8 +329,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
             }
             for method in environment.methods {
                 let receiver = tast::diagnostic_type_text(tast::resolve_type(method.for_type));
-                if receiver == canonical || receiver == current_name
-                    || short_type_name(receiver) == short_type_name(canonical) {
+                if completion_owner_matches(value, receiver, canonical) {
                     push_completion(
                         result,
                         CompletionItem {
@@ -552,6 +548,22 @@ fn short_type_name(value: string) -> string {
     value.byte_slice(start, value.byte_len())
 }
 
+fn owner_name_matches(actual: string, expected: string) -> bool {
+    actual == expected
+        || (short_type_name(expected) == expected && short_type_name(actual) == expected)
+}
+
+fn completion_owner_matches(value: Analysis, actual: string, expected: string) -> bool {
+    let canonical = canonical_namespace(value, expected);
+    if short_type_name(canonical) != canonical {
+        actual == canonical
+    } else {
+        actual == canonical || actual == value.package_name + "::" + canonical
+            || actual == "builtin::" + canonical
+            || actual == "prelude::" + canonical
+    }
+}
+
 fn significant_token_before(value: Analysis, offset: isize) -> Option[SyntaxToken] {
     let mut index = token_index_before(value.syntax, offset);
     while index >= 0 {
@@ -765,8 +777,11 @@ fn complete_named_methods(
             Method => true,
             _ => false,
         }
-            && short_type_name(qualified_owner(symbol.qualified_name))
-                == short_type_name(receiver_name)
+            && completion_owner_matches(
+                value,
+                qualified_owner(symbol.qualified_name),
+                receiver_name,
+            )
             && (symbol.package_name == value.package_name || symbol.public) {
             push_completion(
                 result,
@@ -781,8 +796,7 @@ fn complete_named_methods(
     }
     for environment in value.environments {
         for definition in environment.traits {
-            if definition.name == receiver_name
-                || short_type_name(definition.name) == short_type_name(receiver_name) {
+            if completion_owner_matches(value, definition.name, receiver_name) {
                 for method in definition.methods {
                     push_completion(
                         result,
@@ -806,7 +820,6 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
     match receiver_type(value, dot) {
         Some(receiver) => {
             let receiver_name = type_owner_name(receiver);
-            let receiver_short = short_type_name(receiver_name);
             let receiver_symbol_name = match tast::resolve_type(receiver) {
                 Dyn { trait_name, .. } => trait_name,
                 _ => receiver_name,
@@ -814,7 +827,7 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
             complete_named_methods(result, value, receiver_symbol_name, prefix);
             for environment in value.environments {
                 for info in environment.structs {
-                    if info.name == receiver_name || short_type_name(info.name) == receiver_short {
+                    if completion_owner_matches(value, info.name, receiver_name) {
                         for field in info.fields {
                             push_completion(
                                 result,
@@ -830,8 +843,7 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                 }
                 for method in environment.methods {
                     let method_receiver = type_owner_name(method.for_type);
-                    if method_receiver == receiver_name
-                        || short_type_name(method_receiver) == receiver_short {
+                    if completion_owner_matches(value, method_receiver, receiver_name) {
                         push_completion(
                             result,
                             CompletionItem {
@@ -850,8 +862,7 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                 }
                 match tast::resolve_type(receiver) {
                     Dyn { trait_name, .. } => for definition in environment.traits {
-                        if definition.name == trait_name
-                            || short_type_name(definition.name) == short_type_name(trait_name) {
+                        if completion_owner_matches(value, definition.name, trait_name) {
                             for method in definition.methods {
                                 push_completion(
                                     result,

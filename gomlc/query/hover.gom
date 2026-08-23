@@ -95,8 +95,7 @@ fn method_matches_symbol(value: tast::MethodInfo, symbol: Symbol) -> bool {
     let actual_owner = method_owner(value);
     (value.function.name == symbol.qualified_name
         || short_type_name(value.function.name) == symbol.name)
-        && (actual_owner == expected_owner
-            || short_type_name(actual_owner) == short_type_name(expected_owner))
+        && owner_name_matches(actual_owner, expected_owner)
 }
 
 fn function_hover_by_name(value: Analysis, name: string) -> Option[string] {
@@ -193,8 +192,7 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                 let mut definition_index = environment.structs.len() - 1;
                 while definition_index >= 0 {
                     let definition = environment.structs[definition_index];
-                    if definition.name == owner
-                        || short_type_name(definition.name) == short_type_name(owner) {
+                    if owner_name_matches(definition.name, owner) {
                         let mut field_index = definition.fields.len() - 1;
                         while field_index >= 0 {
                             let field = definition.fields[field_index];
