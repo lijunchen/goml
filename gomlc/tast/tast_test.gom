@@ -1319,9 +1319,7 @@ fn suppresses_secondary_diagnostics_after_pattern_and_guard_errors() -> unit {
     testing::assert_eq(let_else[0].message, "Enum Choice has no variant Missing");
     let let_binding = checked_diagnostics("fn inspect() -> unit { let true = 1; }");
     testing::assert_eq(let_binding.len(), 1);
-    let guard = checked_diagnostics(
-        "fn choose(value: bool) -> i32 { match value { _ if 1 => 0 } }",
-    );
+    let guard = checked_diagnostics("fn choose(value: bool) -> i32 { match value { _ if 1 => 0 } }");
     testing::assert_eq(guard.len(), 1);
     testing::assert_eq(guard[0].message, "Numeric literal cannot be used as bool")
 }
@@ -1341,10 +1339,7 @@ fn validates_or_pattern_binding_consistency() -> unit {
         "enum Value { Left(i32), Right(i32) } fn inspect(value: Value) -> i32 { match value { Value::Left(mut item) | Value::Right(item) => item } }",
     );
     testing::assert(
-        has_diagnostic(
-            mutability,
-            "Or-pattern binding `item` has inconsistent mutability",
-        ),
+        has_diagnostic(mutability, "Or-pattern binding `item` has inconsistent mutability"),
     );
     testing::assert_eq(
         checked_diagnostics(
@@ -1438,10 +1433,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         range_gap.diagnostics.get(0).message,
         "non-exhaustive match: missing pattern 127",
     );
-    testing::assert_eq(
-        checked_diagnostics("fn diverge() -> i32 { match loop {} {} }").len(),
-        0,
-    );
+    testing::assert_eq(checked_diagnostics("fn diverge() -> i32 { match loop {} {} }").len(), 0);
     let uninhabited = check(
         hir::lower(
             ast::lower(

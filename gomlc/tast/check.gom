@@ -3206,12 +3206,7 @@ fn find_or_pattern_binding(values: Vec[OrPatternBinding], name: string) -> Optio
     Option::None
 }
 
-fn push_or_pattern_binding(
-    values: Vec[OrPatternBinding],
-    name: string,
-    is_mut: bool,
-    ty: Type,
-) -> unit {
+fn push_or_pattern_binding(values: Vec[OrPatternBinding], name: string, is_mut: bool, ty: Type) -> unit {
     if find_or_pattern_binding(values, name).is_some() {} else {
         values.push(OrPatternBinding { name, is_mut, ty })
     }
@@ -3418,8 +3413,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
     } else {};
     let invalid_coverage = bool_values_contain(pattern_errors, true)
         || bool_values_contain(guard_errors, true);
-    let match_ty = if !invalid_coverage
-        && match_arms_all_never(typed_arms)
+    let match_ty = if !invalid_coverage && match_arms_all_never(typed_arms)
         && match_is_exhaustive(coverage_context(ctx), expr_type(scrutinee), typed_arms) {
         Type::Never
     } else {
