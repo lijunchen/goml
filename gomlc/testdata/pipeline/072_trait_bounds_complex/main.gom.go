@@ -78,14 +78,18 @@ func _goml_m_trait__impl_i_Debug_i_i32_i_show(self__0 int32) string {
     var t0 string
     var inline0 string = __goml_builtin_int32_to_string(self__0)
     t0 = inline0
-    var t1 string = "i32(" + t0
-    var t2 string = t1 + ")"
+    var t1_lhs string = "i32("
+    var t1 string = t1_lhs + t0
+    var t2_rhs string = ")"
+    var t2 string = t1 + t2_rhs
     return t2
 }
 
 func _goml_m_trait__impl_i_MyHash_i_i32_i_hash(self__0 int32) int32 {
-    var t0 int32 = self__0 * 16777619
-    var t1 int32 = t0 + 216613626
+    var t0_rhs int32 = 16777619
+    var t0 int32 = self__0 * t0_rhs
+    var t1_rhs int32 = 216613626
+    var t1 int32 = t0 + t1_rhs
     return t1
 }
 
@@ -98,8 +102,10 @@ func _goml_m_trait__impl_i_Inspect_i_i32_i_inspect(self__0 int32) string {
     var t0 string
     var inline0 string = __goml_builtin_int32_to_string(self__0)
     t0 = inline0
-    var t1 string = "<" + t0
-    var t2 string = t1 + ">"
+    var t1_lhs string = "<"
+    var t1 string = t1_lhs + t0
+    var t2_rhs string = ">"
+    var t2 string = t1 + t2_rhs
     return t2
 }
 
@@ -108,8 +114,10 @@ func _goml_m_trait__impl_i_Display_i_Boxed_i_show(self__0 Boxed) string {
     var t1 string
     var inline0 string = __goml_builtin_int32_to_string(t0)
     t1 = inline0
-    var t2 string = "Boxed(" + t1
-    var t3 string = t2 + ")"
+    var t2_lhs string = "Boxed("
+    var t2 string = t2_lhs + t1
+    var t3_rhs string = ")"
+    var t3 string = t2 + t3_rhs
     return t3
 }
 
@@ -118,16 +126,21 @@ func _goml_m_trait__impl_i_Debug_i_Boxed_i_show(self__0 Boxed) string {
     var t1 string
     var inline0 string = __goml_builtin_int32_to_string(t0)
     t1 = inline0
-    var t2 string = "Boxed{value=" + t1
-    var t3 string = t2 + "}"
+    var t2_lhs string = "Boxed{value="
+    var t2 string = t2_lhs + t1
+    var t3_rhs string = "}"
+    var t3 string = t2 + t3_rhs
     return t3
 }
 
 func _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(self__0 Boxed) int32 {
     var t0 int32 = self__0.value
-    var t1 int32 = t0 * 31
-    var t2 int32 = t1 + 7
-    var t3 int32 = t2 * 1315423911
+    var t1_rhs int32 = 31
+    var t1 int32 = t0 * t1_rhs
+    var t2_rhs int32 = 7
+    var t2 int32 = t1 + t2_rhs
+    var t3_rhs int32 = 1315423911
+    var t3 int32 = t2 * t3_rhs
     return t3
 }
 
@@ -146,8 +159,10 @@ func _goml_m_trait__impl_i_Inspect_i_Boxed_i_inspect(self__0 Boxed) string {
     var t1 string
     var inline0 string = __goml_builtin_int32_to_string(t0)
     t1 = inline0
-    var t2 string = "[" + t1
-    var t3 string = t2 + "]"
+    var t2_lhs string = "["
+    var t2 string = t2_lhs + t1
+    var t3_rhs string = "]"
+    var t3 string = t2 + t3_rhs
     return t3
 }
 
@@ -185,11 +200,13 @@ func main0() struct{} {
     var inline15 int32 = _goml_m_trait__impl_i_Add_i_i32_i_add(inline14, third__0)
     var inline16 string = tag_text__Q_i32(sum_tag__0)
     var inline17 int32 = _goml_m_trait__impl_i_MyHash_i_i32_i_hash(inline15)
-    var inline18 string = inline16 + " "
+    var inline18_rhs string = " "
+    var inline18 string = inline16 + inline18_rhs
     var inline19 string = _goml_m_trait__impl_i_Inspect_i_i32_i_inspect(inline15)
     var inline20 string = inline18 + inline19
     var inline21 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline17)
-    var inline22 string = " @" + inline21
+    var inline22_lhs string = " @"
+    var inline22 string = inline22_lhs + inline21
     var inline23 string = inline20 + inline22
     t5 = inline23
     var inline12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t5)
@@ -211,11 +228,13 @@ func main0() struct{} {
     var inline3 Boxed = _goml_m_trait__impl_i_Add_i_Boxed_i_add(inline2, t9)
     var inline4 string = tag_text__Q_Boxed(t6)
     var inline5 int32 = _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(inline3)
-    var inline6 string = inline4 + " "
+    var inline6_rhs string = " "
+    var inline6 string = inline4 + inline6_rhs
     var inline7 string = _goml_m_trait__impl_i_Inspect_i_Boxed_i_inspect(inline3)
     var inline8 string = inline6 + inline7
     var inline9 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline5)
-    var inline10 string = " @" + inline9
+    var inline10_lhs string = " @"
+    var inline10 string = inline10_lhs + inline9
     var inline11 string = inline8 + inline10
     t10 = inline11
     var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t10)
@@ -234,9 +253,11 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -263,22 +284,27 @@ func report_pair__Q_i32__T_i32(tag__0 int32, a__0 int32, b__0 int32, combined__0
     same__0 = inline12
     var header__0 string
     var inline7 string = _goml_m_trait__impl_i_Debug_i_i32_i_show(tag__0)
-    var inline8 string = inline7 + "#"
+    var inline8_rhs string = "#"
+    var inline8 string = inline7 + inline8_rhs
     var inline9 int32 = _goml_m_trait__impl_i_MyHash_i_i32_i_hash(tag__0)
     var inline10 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline9)
     var inline11 string = inline8 + inline10
     header__0 = inline11
     var repr__0 string
     var inline3 string = _goml_m_trait__impl_i_Debug_i_i32_i_show(combined__0)
-    var inline4 string = inline3 + " / "
+    var inline4_rhs string = " / "
+    var inline4 string = inline3 + inline4_rhs
     var inline5 string = _goml_m_trait__impl_i_Display_i_i32_i_show(combined__0)
     var inline6 string = inline4 + inline5
     repr__0 = inline6
     var h__0 int32
-    var inline1 int32 = combined__0 * 16777619
-    var inline2 int32 = inline1 + 216613626
+    var inline1_rhs int32 = 16777619
+    var inline1 int32 = combined__0 * inline1_rhs
+    var inline2_rhs int32 = 216613626
+    var inline2 int32 = inline1 + inline2_rhs
     h__0 = inline2
-    var t0 string = header__0 + " "
+    var t0_rhs string = " "
+    var t0 string = header__0 + t0_rhs
     var t1 string = t0 + repr__0
     var t2 string
     if same__0 {
@@ -286,11 +312,13 @@ func report_pair__Q_i32__T_i32(tag__0 int32, a__0 int32, b__0 int32, combined__0
     } else {
         t2 = "false"
     }
-    var t3 string = " | eq=" + t2
+    var t3_lhs string = " | eq="
+    var t3 string = t3_lhs + t2
     var t4 string
     var inline0 string = __goml_builtin_int32_to_string(h__0)
     t4 = inline0
-    var t5 string = " | hash=" + t4
+    var t5_lhs string = " | hash="
+    var t5 string = t5_lhs + t4
     var t6 string = t3 + t5
     var t7 string = t1 + t6
     return t7
@@ -321,24 +349,30 @@ func report_pair__Q_Boxed__T_Boxed(tag__0 Boxed, a__0 Boxed, b__0 Boxed, combine
     same__0 = inline16
     var header__0 string
     var inline9 string = _goml_m_trait__impl_i_Debug_i_Boxed_i_show(tag__0)
-    var inline10 string = inline9 + "#"
+    var inline10_rhs string = "#"
+    var inline10 string = inline9 + inline10_rhs
     var inline11 int32 = _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(tag__0)
     var inline12 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline11)
     var inline13 string = inline10 + inline12
     header__0 = inline13
     var repr__0 string
     var inline5 string = _goml_m_trait__impl_i_Debug_i_Boxed_i_show(combined__0)
-    var inline6 string = inline5 + " / "
+    var inline6_rhs string = " / "
+    var inline6 string = inline5 + inline6_rhs
     var inline7 string = _goml_m_trait__impl_i_Display_i_Boxed_i_show(combined__0)
     var inline8 string = inline6 + inline7
     repr__0 = inline8
     var h__0 int32
     var inline1 int32 = combined__0.value
-    var inline2 int32 = inline1 * 31
-    var inline3 int32 = inline2 + 7
-    var inline4 int32 = inline3 * 1315423911
+    var inline2_rhs int32 = 31
+    var inline2 int32 = inline1 * inline2_rhs
+    var inline3_rhs int32 = 7
+    var inline3 int32 = inline2 + inline3_rhs
+    var inline4_rhs int32 = 1315423911
+    var inline4 int32 = inline3 * inline4_rhs
     h__0 = inline4
-    var t0 string = header__0 + " "
+    var t0_rhs string = " "
+    var t0 string = header__0 + t0_rhs
     var t1 string = t0 + repr__0
     var t2 string
     if same__0 {
@@ -346,11 +380,13 @@ func report_pair__Q_Boxed__T_Boxed(tag__0 Boxed, a__0 Boxed, b__0 Boxed, combine
     } else {
         t2 = "false"
     }
-    var t3 string = " | eq=" + t2
+    var t3_lhs string = " | eq="
+    var t3 string = t3_lhs + t2
     var t4 string
     var inline0 string = __goml_builtin_int32_to_string(h__0)
     t4 = inline0
-    var t5 string = " | hash=" + t4
+    var t5_lhs string = " | hash="
+    var t5 string = t5_lhs + t4
     var t6 string = t3 + t5
     var t7 string = t1 + t6
     return t7
@@ -359,13 +395,18 @@ func report_pair__Q_Boxed__T_Boxed(tag__0 Boxed, a__0 Boxed, b__0 Boxed, combine
 func tag_text__Q_i32(tag__0 int32) string {
     var t0 string
     var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(tag__0)
-    var inline4 string = "i32(" + inline3
-    var inline5 string = inline4 + ")"
+    var inline4_lhs string = "i32("
+    var inline4 string = inline4_lhs + inline3
+    var inline5_rhs string = ")"
+    var inline5 string = inline4 + inline5_rhs
     t0 = inline5
-    var t1 string = t0 + "#"
+    var t1_rhs string = "#"
+    var t1 string = t0 + t1_rhs
     var t2 int32
-    var inline1 int32 = tag__0 * 16777619
-    var inline2 int32 = inline1 + 216613626
+    var inline1_rhs int32 = 16777619
+    var inline1 int32 = tag__0 * inline1_rhs
+    var inline2_rhs int32 = 216613626
+    var inline2 int32 = inline1 + inline2_rhs
     t2 = inline2
     var t3 string
     var inline0 string = __goml_builtin_int32_to_string(t2)
@@ -378,15 +419,21 @@ func tag_text__Q_Boxed(tag__0 Boxed) string {
     var t0 string
     var inline5 int32 = tag__0.value
     var inline6 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline5)
-    var inline7 string = "Boxed{value=" + inline6
-    var inline8 string = inline7 + "}"
+    var inline7_lhs string = "Boxed{value="
+    var inline7 string = inline7_lhs + inline6
+    var inline8_rhs string = "}"
+    var inline8 string = inline7 + inline8_rhs
     t0 = inline8
-    var t1 string = t0 + "#"
+    var t1_rhs string = "#"
+    var t1 string = t0 + t1_rhs
     var t2 int32
     var inline1 int32 = tag__0.value
-    var inline2 int32 = inline1 * 31
-    var inline3 int32 = inline2 + 7
-    var inline4 int32 = inline3 * 1315423911
+    var inline2_rhs int32 = 31
+    var inline2 int32 = inline1 * inline2_rhs
+    var inline3_rhs int32 = 7
+    var inline3 int32 = inline2 + inline3_rhs
+    var inline4_rhs int32 = 1315423911
+    var inline4 int32 = inline3 * inline4_rhs
     t2 = inline4
     var t3 string
     var inline0 string = __goml_builtin_int32_to_string(t2)
@@ -399,9 +446,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -424,7 +473,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -451,7 +501,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

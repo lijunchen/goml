@@ -99,7 +99,8 @@ func main0() struct{} {
             var t2 int
             var inline8 int = ref_get__Ref_3int(i__0)
             t2 = inline8
-            var t3 int = t2 + 1
+            var t3_rhs int = 1
+            var t3 int = t2 + t3_rhs
             ref_set__Ref_3int(i__0, t3)
             var t4 int
             var inline6 int = ref_get__Ref_3int(i__0)
@@ -139,9 +140,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -164,7 +167,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -191,7 +195,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

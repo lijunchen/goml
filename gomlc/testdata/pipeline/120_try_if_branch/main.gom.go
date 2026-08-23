@@ -95,7 +95,8 @@ func bump(flag__0 bool, fallback__0 bool) Result__i32__string {
         if fallback__0 {
             commute_field0 = 5
             jp0 = commute_field0
-            var t0 int32 = jp0 + 1
+            var t0_rhs int32 = 1
+            var t0 int32 = jp0 + t0_rhs
             var t1 Result__i32__string = Result__i32__string{
                 _tag: 0,
                 _v0_0: t0,
@@ -111,7 +112,8 @@ func bump(flag__0 bool, fallback__0 bool) Result__i32__string {
         }
     } else {
         jp0 = 10
-        var t0 int32 = jp0 + 1
+        var t0_rhs int32 = 1
+        var t0 int32 = jp0 + t0_rhs
         var t1 Result__i32__string = Result__i32__string{
             _tag: 0,
             _v0_0: t0,
@@ -127,11 +129,13 @@ func show(res__0 Result__i32__string) string {
         var t0 string
         var inline0 string = __goml_builtin_int32_to_string(x0)
         t0 = inline0
-        var t1 string = "ok=" + t0
+        var t1_lhs string = "ok="
+        var t1 string = t1_lhs + t0
         return t1
     case 1:
         var x1 string = res__0._v1_0
-        var t2 string = "err=" + x1
+        var t2_lhs string = "err="
+        var t2 string = t2_lhs + x1
         return t2
     default:
         panic("non-exhaustive match")
@@ -149,11 +153,13 @@ func main0() struct{} {
     case 0:
         var inline18 int32 = t2._v0_0
         var inline19 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline18)
-        var inline20 string = "ok=" + inline19
+        var inline20_lhs string = "ok="
+        var inline20 string = inline20_lhs + inline19
         t3 = inline20
     case 1:
         var inline21 string = t2._v1_0
-        var inline22 string = "err=" + inline21
+        var inline22_lhs string = "err="
+        var inline22 string = inline22_lhs + inline21
         t3 = inline22
     default:
         panic("non-exhaustive match")
@@ -170,7 +176,8 @@ func main0() struct{} {
         case 0:
             var inline13 int32 = inline12._v0_0
             inline9 = inline13
-            var inline10 int32 = inline9 + 1
+            var inline10_rhs int32 = 1
+            var inline10 int32 = inline9 + inline10_rhs
             var inline11 Result__i32__string = Result__i32__string{
                 _tag: 0,
                 _v0_0: inline10,
@@ -181,11 +188,13 @@ func main0() struct{} {
             case 0:
                 var inline2 int32 = t4._v0_0
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
-                var inline4 string = "ok=" + inline3
+                var inline4_lhs string = "ok="
+                var inline4 string = inline4_lhs + inline3
                 t5 = inline4
             case 1:
                 var inline5 string = t4._v1_0
-                var inline6 string = "err=" + inline5
+                var inline6_lhs string = "err="
+                var inline6 string = inline6_lhs + inline5
                 t5 = inline6
             default:
                 panic("non-exhaustive match")
@@ -205,11 +214,13 @@ func main0() struct{} {
             case 0:
                 var inline2 int32 = t4._v0_0
                 var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
-                var inline4 string = "ok=" + inline3
+                var inline4_lhs string = "ok="
+                var inline4 string = inline4_lhs + inline3
                 t5 = inline4
             case 1:
                 var inline5 string = t4._v1_0
-                var inline6 string = "err=" + inline5
+                var inline6_lhs string = "err="
+                var inline6 string = inline6_lhs + inline5
                 t5 = inline6
             default:
                 panic("non-exhaustive match")
@@ -222,7 +233,8 @@ func main0() struct{} {
         }
     } else {
         inline9 = 10
-        var inline10 int32 = inline9 + 1
+        var inline10_rhs int32 = 1
+        var inline10 int32 = inline9 + inline10_rhs
         var inline11 Result__i32__string = Result__i32__string{
             _tag: 0,
             _v0_0: inline10,
@@ -233,11 +245,13 @@ func main0() struct{} {
         case 0:
             var inline2 int32 = t4._v0_0
             var inline3 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
-            var inline4 string = "ok=" + inline3
+            var inline4_lhs string = "ok="
+            var inline4 string = inline4_lhs + inline3
             t5 = inline4
         case 1:
             var inline5 string = t4._v1_0
-            var inline6 string = "err=" + inline5
+            var inline6_lhs string = "err="
+            var inline6 string = inline6_lhs + inline5
             t5 = inline6
         default:
             panic("non-exhaustive match")
@@ -259,9 +273,11 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -278,9 +294,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -303,7 +321,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -330,7 +349,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

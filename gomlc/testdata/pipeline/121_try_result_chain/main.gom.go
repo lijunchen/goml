@@ -72,7 +72,8 @@ func normalize_text(ok__0 bool) Result__string__string {
     case 0:
         var x0 string = mtmp0._v0_0
         jp0 = x0
-        var t0 string = jp0 + "!"
+        var t0_rhs string = "!"
+        var t0 string = jp0 + t0_rhs
         var t1 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: t0,
@@ -98,7 +99,8 @@ func decorate_text(ok__0 bool) Result__string__string {
     case 0:
         var inline4 string = inline0._v0_0
         inline1 = inline4
-        var inline2 string = inline1 + "!"
+        var inline2_rhs string = "!"
+        var inline2 string = inline1 + inline2_rhs
         var inline3 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: inline2,
@@ -109,8 +111,10 @@ func decorate_text(ok__0 bool) Result__string__string {
         case 0:
             var x0 string = mtmp0._v0_0
             jp0 = x0
-            var t0 string = "[" + jp0
-            var t1 string = t0 + "]"
+            var t0_lhs string = "["
+            var t0 string = t0_lhs + jp0
+            var t1_rhs string = "]"
+            var t1 string = t0 + t1_rhs
             var t2 Result__string__string = Result__string__string{
                 _tag: 0,
                 _v0_0: t1,
@@ -138,8 +142,10 @@ func decorate_text(ok__0 bool) Result__string__string {
         case 0:
             var x0 string = mtmp0._v0_0
             jp0 = x0
-            var t0 string = "[" + jp0
-            var t1 string = t0 + "]"
+            var t0_lhs string = "["
+            var t0 string = t0_lhs + jp0
+            var t1_rhs string = "]"
+            var t1 string = t0 + t1_rhs
             var t2 Result__string__string = Result__string__string{
                 _tag: 0,
                 _v0_0: t1,
@@ -166,11 +172,13 @@ func main0() struct{} {
     switch t0._tag {
     case 0:
         var inline17 string = t0._v0_0
-        var inline18 string = "ok " + inline17
+        var inline18_lhs string = "ok "
+        var inline18 string = inline18_lhs + inline17
         t1 = inline18
     case 1:
         var inline19 string = t0._v1_0
-        var inline20 string = "err " + inline19
+        var inline20_lhs string = "err "
+        var inline20 string = inline20_lhs + inline19
         t1 = inline20
     default:
         panic("non-exhaustive match")
@@ -185,8 +193,10 @@ func main0() struct{} {
     case 0:
         var inline12 string = inline7._v0_0
         inline8 = inline12
-        var inline9 string = "[" + inline8
-        var inline10 string = inline9 + "]"
+        var inline9_lhs string = "["
+        var inline9 string = inline9_lhs + inline8
+        var inline10_rhs string = "]"
+        var inline10 string = inline9 + inline10_rhs
         var inline11 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: inline10,
@@ -196,11 +206,13 @@ func main0() struct{} {
         switch t2._tag {
         case 0:
             var inline2 string = t2._v0_0
-            var inline3 string = "ok " + inline2
+            var inline3_lhs string = "ok "
+            var inline3 string = inline3_lhs + inline2
             t3 = inline3
         case 1:
             var inline4 string = t2._v1_0
-            var inline5 string = "err " + inline4
+            var inline5_lhs string = "err "
+            var inline5 string = inline5_lhs + inline4
             t3 = inline5
         default:
             panic("non-exhaustive match")
@@ -219,11 +231,13 @@ func main0() struct{} {
         switch t2._tag {
         case 0:
             var inline2 string = t2._v0_0
-            var inline3 string = "ok " + inline2
+            var inline3_lhs string = "ok "
+            var inline3 string = inline3_lhs + inline2
             t3 = inline3
         case 1:
             var inline4 string = t2._v1_0
-            var inline5 string = "err " + inline4
+            var inline5_lhs string = "err "
+            var inline5 string = inline5_lhs + inline4
             t3 = inline5
         default:
             panic("non-exhaustive match")

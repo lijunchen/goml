@@ -96,7 +96,8 @@ func describe(ok__0 bool) Option__string {
         jp0 = x2
         var x0 string = jp0._0
         var x1 string = jp0._1
-        var t0 string = x0 + ":"
+        var t0_rhs string = ":"
+        var t0 string = x0 + t0_rhs
         var t1 string = t0 + x1
         var t2 Option__string = Option__string{
             _tag: 1,
@@ -116,7 +117,8 @@ func main0() struct{} {
         t1 = "none"
     case 1:
         var inline15 string = t0._v1_0
-        var inline16 string = "some " + inline15
+        var inline16_lhs string = "some "
+        var inline16 string = inline16_lhs + inline15
         t1 = inline16
     default:
         panic("non-exhaustive match")
@@ -138,7 +140,8 @@ func main0() struct{} {
             t3 = "none"
         case 1:
             var inline2 string = t2._v1_0
-            var inline3 string = "some " + inline2
+            var inline3_lhs string = "some "
+            var inline3 string = inline3_lhs + inline2
             t3 = inline3
         default:
             panic("non-exhaustive match")
@@ -151,7 +154,8 @@ func main0() struct{} {
         inline6 = inline12
         var inline7 string = inline6._0
         var inline8 string = inline6._1
-        var inline9 string = inline7 + ":"
+        var inline9_rhs string = ":"
+        var inline9 string = inline7 + inline9_rhs
         var inline10 string = inline9 + inline8
         var inline11 Option__string = Option__string{
             _tag: 1,
@@ -164,7 +168,8 @@ func main0() struct{} {
             t3 = "none"
         case 1:
             var inline2 string = t2._v1_0
-            var inline3 string = "some " + inline2
+            var inline3_lhs string = "some "
+            var inline3 string = inline3_lhs + inline2
             t3 = inline3
         default:
             panic("non-exhaustive match")

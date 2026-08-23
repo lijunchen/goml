@@ -63,7 +63,8 @@ func main0() struct{} {
     }
     var inline8 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
     _goml_runtime_core_string_println(inline8)
-    var t2 float64 = -1
+    var t2_operand float64 = 1
+    var t2 float64 = -t2_operand
     var t3 string
     switch t2 {
     case 0:

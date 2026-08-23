@@ -112,9 +112,11 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -141,7 +143,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -168,7 +171,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

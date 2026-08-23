@@ -647,10 +647,12 @@ type _goml_m_Option____Vec_l_isize_r_ struct {
 func _goml_m_trait__impl_i_Hash_i_DerivedKey_i_hash(self__0 DerivedKey) uint64 {
     var t0_source int = 0
     var t0 uint64 = uint64(int(t0_source))
-    var h__0 uint64 = t0 + 14695981039346656037
+    var h__0_rhs uint64 = 14695981039346656037
+    var h__0 uint64 = t0 + h__0_rhs
     var t1_source int = 0
     var t1 uint64 = uint64(int(t1_source))
-    var t2 uint64 = t1 + 1099511628211
+    var t2_rhs uint64 = 1099511628211
+    var t2 uint64 = t1 + t2_rhs
     var t3 uint64 = h__0 * t2
     var t4 int = self__0.id
     var t5 uint64
@@ -673,7 +675,8 @@ func _goml_m_trait__impl_i_PartialEq_i_LoggedKey_i_eq(self__0 LoggedKey, other__
     var t2 string
     var inline1 string = ref_get__Ref_6string(t1)
     t2 = inline1
-    var t3 string = t2 + "E"
+    var t3_rhs string = "E"
+    var t3 string = t2 + t3_rhs
     ref_set__Ref_6string(t0, t3)
     var t4 int = self__0.id
     var t5 int = other__0.id
@@ -687,7 +690,8 @@ func _goml_m_trait__impl_i_Hash_i_LoggedKey_i_hash(self__0 LoggedKey) uint64 {
     var t2 string
     var inline1 string = ref_get__Ref_6string(t1)
     t2 = inline1
-    var t3 string = t2 + "H"
+    var t3_rhs string = "H"
+    var t3 string = t2 + t3_rhs
     ref_set__Ref_6string(t0, t3)
     var t4 int = self__0.id
     var t5 uint64 = uint64(int(t4))
@@ -730,12 +734,15 @@ func main0() struct{} {
     var values__0 *_goml_vec_int = make_vec__0(t0)
     var t1 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__isize(values__0)
     var t2 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t1)
-    var t3 string = "" + t2
-    var t4 string = t3 + ":"
+    var t3_lhs string = ""
+    var t3 string = t3_lhs + t2
+    var t4_rhs string = ":"
+    var t4 string = t3 + t4_rhs
     var t5 int = vec_get__Vec_3int(values__0, 0)
     var t6 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t5)
     var t7 string = t4 + t6
-    var t8 string = t7 + ":"
+    var t8_rhs string = ":"
+    var t8 string = t7 + t8_rhs
     var t9 int = vec_get__Vec_3int(values__0, 2)
     var t10 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t9)
     var t11 string = t8 + t10
@@ -769,8 +776,10 @@ func main0() struct{} {
     var t19 *ref_int_x = vec_get__Vec_8Ref_3int(copied__0, 0)
     var t20 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t19)
     var t21 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t20)
-    var t22 string = "" + t21
-    var t23 string = t22 + ":"
+    var t22_lhs string = ""
+    var t22 string = t22_lhs + t21
+    var t23_rhs string = ":"
+    var t23 string = t22 + t23_rhs
     var t24 *ref_int_x = array_get__Array_2_8Ref_3int(source__0, 0)
     var t25 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t24)
     var t26 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t25)
@@ -869,15 +878,18 @@ func main0() struct{} {
     var t46 Option__isize = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__isize____V__isize(native_first__0, 1)
     var t47 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t46, 0)
     var t48 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t47)
-    var t49 string = "" + t48
-    var t50 string = t49 + ":"
+    var t49_lhs string = ""
+    var t49 string = t49_lhs + t48
+    var t50_rhs string = ":"
+    var t50 string = t49 + t50_rhs
     var t51 Option__isize = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__isize____V__isize(native_second__0, 1)
     var t52 int = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__isize(t51, 0)
     var t53 string
     var inline25 string = __goml_builtin_int_to_string(t52)
     t53 = inline25
     var t54 string = t50 + t53
-    var t55 string = t54 + ":"
+    var t55_rhs string = ":"
+    var t55 string = t54 + t55_rhs
     var t56 Option__isize
     var inline23 int = 2
     var inline24 Option__isize = hashmap_get__HashMap_3int_3int(native_second__0, inline23)
@@ -942,8 +954,10 @@ func main0() struct{} {
     var t68 string
     var inline16 string = __goml_builtin_int_to_string(t67)
     t68 = inline16
-    var t69 string = "" + t68
-    var t70 string = t69 + ":"
+    var t69_lhs string = ""
+    var t69 string = t69_lhs + t68
+    var t70_rhs string = ":"
+    var t70 string = t69 + t70_rhs
     var t71 DerivedKey = DerivedKey{
         id: 1,
     }
@@ -965,7 +979,8 @@ func main0() struct{} {
     var inline12 string = __goml_builtin_int_to_string(t73)
     t74 = inline12
     var t75 string = t70 + t74
-    var t76 string = t75 + ":"
+    var t76_rhs string = ":"
+    var t76 string = t75 + t76_rhs
     var t77 DerivedKey = DerivedKey{
         id: 2,
     }
@@ -1074,15 +1089,18 @@ func main0() struct{} {
     }
     var t94 Tuple2_3int_6string = vec_get__Vec_19Tuple2_3int_6string(pairs__0, 1)
     var t95 string = t94._1
-    var t96 string = "" + t95
-    var t97 string = t96 + ":"
+    var t96_lhs string = ""
+    var t96 string = t96_lhs + t95
+    var t97_rhs string = ":"
+    var t97 string = t96 + t97_rhs
     var t98 *_goml_vec_int = vec_get__Vec_8Vec_3int(nested__0, 1)
     var t99 int = vec_get__Vec_3int(t98, 0)
     var t100 string
     var inline3 string = __goml_builtin_int_to_string(t99)
     t100 = inline3
     var t101 string = t97 + t100
-    var t102 string = t101 + ":"
+    var t102_rhs string = ":"
+    var t102 string = t101 + t102_rhs
     var t103 string
     var inline2 string = __goml_builtin_int_to_string(jp1)
     t103 = inline2
@@ -1189,9 +1207,11 @@ func __goml_builtin_int_to_string(value__0 int) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -1204,9 +1224,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -1229,7 +1251,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -1256,7 +1279,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

@@ -126,7 +126,8 @@ func main0() struct{} {
         var t17 bool = for_index0 < for_limit0
         if t17 {
             var for_item3 int = for_index0
-            var t18 int = for_index0 + 1
+            var t18_rhs int = 1
+            var t18 int = for_index0 + t18_rhs
             for_index0 = t18
             var inline38 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(for_item3)
             _goml_runtime_core_string_println(inline38)
@@ -142,13 +143,15 @@ func main0() struct{} {
     var for_index1 int
     var inline32 int = 4
     var inline33 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(calls__0)
-    var inline34 int = inline33 + 1
+    var inline34_rhs int = 1
+    var inline34 int = inline33 + inline34_rhs
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(calls__0, inline34)
     for_index1 = inline32
     var for_limit1 int
     var inline28 int = 6
     var inline29 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(calls__0)
-    var inline30 int = inline29 + 1
+    var inline30_rhs int = 1
+    var inline30 int = inline29 + inline30_rhs
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(calls__0, inline30)
     for_limit1 = inline28
     var for_done0 bool = for_index1 > for_limit1
@@ -161,7 +164,8 @@ func main0() struct{} {
             if t13 {
                 for_done0 = true
             } else {
-                var t15 int = for_index1 + 1
+                var t15_rhs int = 1
+                var t15 int = for_index1 + t15_rhs
                 for_index1 = t15
             }
             var inline26 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(for_item2)
@@ -183,7 +187,8 @@ func main0() struct{} {
             if t8 {
                 for_done1 = true
             } else {
-                var t10 int = for_index2 + 1
+                var t10_rhs int = 1
+                var t10 int = for_index2 + t10_rhs
                 for_index2 = t10
             }
             var inline24 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(for_item1)
@@ -205,7 +210,8 @@ func main0() struct{} {
             if t3 {
                 for_done2 = true
             } else {
-                var t5 int = for_index3 + 1
+                var t5_rhs int = 1
+                var t5 int = for_index3 + t5_rhs
                 for_index3 = t5
             }
             var inline22 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(for_item0)
@@ -298,9 +304,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -323,7 +331,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -350,7 +359,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0
@@ -391,7 +401,8 @@ func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_
         if t1 {
             ref_set__Ref_4bool(finished__0, true)
         } else {
-            var t3 int = value__0 + 1
+            var t3_rhs int = 1
+            var t3 int = value__0 + t3_rhs
             ref_set__Ref_3int(current__0, t3)
         }
         var t2 Option__isize = Option__isize{

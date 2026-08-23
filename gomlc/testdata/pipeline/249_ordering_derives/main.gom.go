@@ -2446,7 +2446,8 @@ func _goml_m_trait__impl_i_Hash_i_Vec_l_isize_r__i_hash(self__0 *_goml_vec_int) 
         t0 = inline1
         var t1 bool = index__0 < t0
         if t1 {
-            var t2 uint64 = value__0 * 1099511628211
+            var t2_rhs uint64 = 1099511628211
+            var t2 uint64 = value__0 * t2_rhs
             var t3 int = vec_get__Vec_3int(self__0, index__0)
             var t4 uint64
             var inline0 uint64 = _goml_runtime_core_int_hash(t3)
@@ -2489,13 +2490,15 @@ func _goml_m_trait__impl_i_PartialEq_i__o_isize_c_string_q__i_eq(self Tuple2_3in
 
 func _goml_m_trait__impl_i_Hash_i__o_isize_c_string_q__i_hash(self Tuple2_3int_6string) uint64 {
     var _structural_hash_0 uint64 = 14695981039346656037
-    var t0 uint64 = _structural_hash_0 * 1099511628211
+    var t0_rhs uint64 = 1099511628211
+    var t0 uint64 = _structural_hash_0 * t0_rhs
     var t1 int = self._0
     var t2 uint64
     var inline1 uint64 = _goml_runtime_core_int_hash(t1)
     t2 = inline1
     var _structural_hash_1 uint64 = t0 + t2
-    var t3 uint64 = _structural_hash_1 * 1099511628211
+    var t3_rhs uint64 = 1099511628211
+    var t3 uint64 = _structural_hash_1 * t3_rhs
     var t4 string = self._1
     var t5 uint64
     var inline0 uint64 = _goml_runtime_core_string_hash(t4)
@@ -2528,13 +2531,15 @@ func _goml_m_trait__impl_i_PartialEq_i__l_isize_x3b_2_r__i_eq(self [2]int, other
 
 func _goml_m_trait__impl_i_Hash_i__l_isize_x3b_2_r__i_hash(self [2]int) uint64 {
     var _structural_hash_0 uint64 = 14695981039346656037
-    var t0 uint64 = _structural_hash_0 * 1099511628211
+    var t0_rhs uint64 = 1099511628211
+    var t0 uint64 = _structural_hash_0 * t0_rhs
     var t1 int = array_get__Array_2_3int(self, 0)
     var t2 uint64
     var inline1 uint64 = _goml_runtime_core_int_hash(t1)
     t2 = inline1
     var _structural_hash_1 uint64 = t0 + t2
-    var t3 uint64 = _structural_hash_1 * 1099511628211
+    var t3_rhs uint64 = 1099511628211
+    var t3 uint64 = _structural_hash_1 * t3_rhs
     var t4 int = array_get__Array_2_3int(self, 1)
     var t5 uint64
     var inline0 uint64 = _goml_runtime_core_int_hash(t4)

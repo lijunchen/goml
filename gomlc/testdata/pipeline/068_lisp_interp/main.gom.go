@@ -621,7 +621,8 @@ func is_int_text(text__0 string) bool {
                     var t6 int
                     var inline3 int = ref_get__Ref_3int(i__0)
                     t6 = inline3
-                    var t7 int = t6 + 1
+                    var t7_rhs int = 1
+                    var t7 int = t6 + t7_rhs
                     ref_set__Ref_3int(i__0, t7)
                     continue
                 } else {
@@ -641,7 +642,8 @@ func is_int_text(text__0 string) bool {
                         var t9 int
                         var inline7 int = ref_get__Ref_3int(i__0)
                         t9 = inline7
-                        var t10 int = t9 + 1
+                        var t10_rhs int = 1
+                        var t10 int = t9 + t10_rhs
                         ref_set__Ref_3int(i__0, t10)
                         continue
                     } else {
@@ -710,7 +712,8 @@ func parse_int32(text__0 string) int32 {
                 var t8 int
                 var inline4 int = ref_get__Ref_3int(i__0)
                 t8 = inline4
-                var t9 int = t8 + 1
+                var t9_rhs int = 1
+                var t9 int = t8 + t9_rhs
                 ref_set__Ref_3int(i__0, t9)
                 continue
             } else {
@@ -744,13 +747,15 @@ func parse_int32(text__0 string) int32 {
                 var t10 int32
                 var inline12 int32 = ref_get__Ref_5int32(acc__0)
                 t10 = inline12
-                var t11 int32 = t10 * 10
+                var t11_rhs int32 = 10
+                var t11 int32 = t10 * t11_rhs
                 var t12 int32 = t11 + d__0
                 ref_set__Ref_5int32(acc__0, t12)
                 var t13 int
                 var inline10 int = ref_get__Ref_3int(i__0)
                 t13 = inline10
-                var t14 int = t13 + 1
+                var t14_rhs int = 1
+                var t14 int = t13 + t14_rhs
                 ref_set__Ref_3int(i__0, t14)
                 continue
             }
@@ -765,7 +770,8 @@ func parse_int32(text__0 string) int32 {
         var t1 int32
         var inline0 int32 = ref_get__Ref_5int32(acc__0)
         t1 = inline0
-        var t2 int32 = 0 - t1
+        var t2_lhs int32 = 0
+        var t2 int32 = t2_lhs - t1
         return t2
     } else {
         var inline1 int32 = ref_get__Ref_5int32(acc__0)
@@ -838,7 +844,8 @@ func lex_atom(source__0 string, start__0 int) Tuple2_5Token_3int {
                     var t15 int
                     var inline5 int = ref_get__Ref_3int(i__0)
                     t15 = inline5
-                    var t16 int = t15 + 1
+                    var t16_rhs int = 1
+                    var t16 int = t15 + t16_rhs
                     ref_set__Ref_3int(i__0, t16)
                     continue
                 }
@@ -861,7 +868,8 @@ func lex_atom(source__0 string, start__0 int) Tuple2_5Token_3int {
                     var t15 int
                     var inline5 int = ref_get__Ref_3int(i__0)
                     t15 = inline5
-                    var t16 int = t15 + 1
+                    var t16_rhs int = 1
+                    var t16 int = t15 + t16_rhs
                     ref_set__Ref_3int(i__0, t16)
                     continue
                 }
@@ -947,7 +955,8 @@ func lex(source__0 string) *_goml_vec_Token {
                 var t6 int
                 var inline2 int = ref_get__Ref_3int(i__0)
                 t6 = inline2
-                var t7 int = t6 + 1
+                var t7_rhs int = 1
+                var t7 int = t6 + t7_rhs
                 ref_set__Ref_3int(i__0, t7)
                 continue
             } else {
@@ -961,7 +970,8 @@ func lex(source__0 string) *_goml_vec_Token {
                     var t11 int
                     var inline6 int = ref_get__Ref_3int(i__0)
                     t11 = inline6
-                    var t12 int = t11 + 1
+                    var t12_rhs int = 1
+                    var t12 int = t11 + t12_rhs
                     ref_set__Ref_3int(i__0, t12)
                     continue
                 } else {
@@ -970,7 +980,8 @@ func lex(source__0 string) *_goml_vec_Token {
                         var t14 int
                         var inline10 int = ref_get__Ref_3int(i__0)
                         t14 = inline10
-                        var t15 int = t14 + 1
+                        var t15_rhs int = 1
+                        var t15 int = t14 + t15_rhs
                         ref_set__Ref_3int(i__0, t15)
                         continue
                     } else {
@@ -1002,7 +1013,8 @@ func env_lookup(env__0 *_goml_vec_Binding, name__0 string) Value {
     var t0 int
     var inline13 int = vec_len__Vec_7Binding(env__0)
     t0 = inline13
-    var t1 int = t0 - 1
+    var t1_rhs int = 1
+    var t1 int = t0 - t1_rhs
     var i__0 *ref_int_x
     var inline12 *ref_int_x = ref__Ref_3int(t1)
     i__0 = inline12
@@ -1046,7 +1058,8 @@ func env_lookup(env__0 *_goml_vec_Binding, name__0 string) Value {
                 var t8 int
                 var inline5 int = ref_get__Ref_3int(i__0)
                 t8 = inline5
-                var t9 int = t8 - 1
+                var t9_rhs int = 1
+                var t9 int = t8 - t9_rhs
                 ref_set__Ref_3int(i__0, t9)
                 continue
             }
@@ -1103,7 +1116,8 @@ func parse_list(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_10Vec_5SExpr_3i
                 var t6 int
                 var inline3 int = ref_get__Ref_3int(i__0)
                 t6 = inline3
-                var t7 int = t6 + 1
+                var t7_rhs int = 1
+                var t7 int = t6 + t7_rhs
                 ref_set__Ref_3int(i__0, t7)
                 continue
             default:
@@ -1142,7 +1156,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
     var mtmp0 Token = vec_get__Vec_5Token(tokens__0, start__0)
     switch mtmp0.(type) {
     case LParen:
-        var t0 int = start__0 + 1
+        var t0_rhs int = 1
+        var t0 int = start__0 + t0_rhs
         var mtmp1 Tuple2_10Vec_5SExpr_3int = parse_list(tokens__0, t0)
         var x0 *_goml_vec_SExpr = mtmp1._0
         var x1 int = mtmp1._1
@@ -1158,7 +1173,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
         var t3 SExpr = SExpr_Sym{
             _0: ")",
         }
-        var t4 int = start__0 + 1
+        var t4_rhs int = 1
+        var t4 int = start__0 + t4_rhs
         var t5 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
             _0: t3,
             _1: t4,
@@ -1169,7 +1185,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
         var t6 SExpr = SExpr_Sym{
             _0: x2,
         }
-        var t7 int = start__0 + 1
+        var t7_rhs int = 1
+        var t7 int = start__0 + t7_rhs
         var t8 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
             _0: t6,
             _1: t7,
@@ -1180,7 +1197,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
         var t9 SExpr = SExpr_Int{
             _0: x3,
         }
-        var t10 int = start__0 + 1
+        var t10_rhs int = 1
+        var t10 int = start__0 + t10_rhs
         var t11 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
             _0: t9,
             _1: t10,
@@ -1191,7 +1209,8 @@ func parse_expr(tokens__0 *_goml_vec_Token, start__0 int) Tuple2_5SExpr_3int {
         var t12 SExpr = SExpr_Bool{
             _0: x4,
         }
-        var t13 int = start__0 + 1
+        var t13_rhs int = 1
+        var t13 int = start__0 + t13_rhs
         var t14 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
             _0: t12,
             _1: t13,
@@ -1456,7 +1475,8 @@ func eval_begin(items__0 *_goml_vec_SExpr, start__0 int, local__0 *_goml_vec_Bin
             var t5 int
             var inline2 int = ref_get__Ref_3int(i__0)
             t5 = inline2
-            var t6 int = t5 + 1
+            var t6_rhs int = 1
+            var t6 int = t5 + t6_rhs
             ref_set__Ref_3int(i__0, t6)
             continue
         } else {
@@ -1503,14 +1523,16 @@ func params_from_sexprs(items__0 *_goml_vec_SExpr) *_goml_vec_string {
                 var t6 int
                 var inline2 int = ref_get__Ref_3int(i__0)
                 t6 = inline2
-                var t7 int = t6 + 1
+                var t7_rhs int = 1
+                var t7 int = t6 + t7_rhs
                 ref_set__Ref_3int(i__0, t7)
                 continue
             default:
                 var t8 int
                 var inline6 int = ref_get__Ref_3int(i__0)
                 t8 = inline6
-                var t9 int = t8 + 1
+                var t9_rhs int = 1
+                var t9 int = t8 + t9_rhs
                 ref_set__Ref_3int(i__0, t9)
                 continue
             }
@@ -1555,7 +1577,8 @@ func eval_args(items__0 *_goml_vec_SExpr, start__0 int, local__0 *_goml_vec_Bind
             var t7 int
             var inline2 int = ref_get__Ref_3int(i__0)
             t7 = inline2
-            var t8 int = t7 + 1
+            var t8_rhs int = 1
+            var t8 int = t7 + t8_rhs
             ref_set__Ref_3int(i__0, t8)
             continue
         } else {
@@ -1655,14 +1678,16 @@ func apply_builtin(name__0 string, args__0 *_goml_vec_Value) Value {
                     var t20 int
                     var inline3 int = ref_get__Ref_3int(i__0)
                     t20 = inline3
-                    var t21 int = t20 + 1
+                    var t21_rhs int = 1
+                    var t21 int = t20 + t21_rhs
                     ref_set__Ref_3int(i__0, t21)
                     continue
                 default:
                     var t22 int
                     var inline7 int = ref_get__Ref_3int(i__0)
                     t22 = inline7
-                    var t23 int = t22 + 1
+                    var t23_rhs int = 1
+                    var t23 int = t22 + t23_rhs
                     ref_set__Ref_3int(i__0, t23)
                     continue
                 }
@@ -1708,14 +1733,16 @@ func apply_builtin(name__0 string, args__0 *_goml_vec_Value) Value {
                     var t32 int
                     var inline17 int = ref_get__Ref_3int(i__1)
                     t32 = inline17
-                    var t33 int = t32 + 1
+                    var t33_rhs int = 1
+                    var t33 int = t32 + t33_rhs
                     ref_set__Ref_3int(i__1, t33)
                     continue
                 default:
                     var t34 int
                     var inline21 int = ref_get__Ref_3int(i__1)
                     t34 = inline21
-                    var t35 int = t34 + 1
+                    var t35_rhs int = 1
+                    var t35 int = t34 + t35_rhs
                     ref_set__Ref_3int(i__1, t35)
                     continue
                 }
@@ -1738,7 +1765,8 @@ func apply_builtin(name__0 string, args__0 *_goml_vec_Value) Value {
             switch mtmp5.(type) {
             case Value_Int:
                 var x6 int32 = mtmp5.(Value_Int)._0
-                var t36 int32 = 0 - x6
+                var t36_lhs int32 = 0
+                var t36 int32 = t36_lhs - x6
                 var t37 Value = Value_Int{
                     _0: t36,
                 }
@@ -1865,7 +1893,8 @@ func apply_lambda(lambda__0 Lambda, args__0 *_goml_vec_Value) Value {
             var t14 int
             var inline2 int = ref_get__Ref_3int(i__0)
             t14 = inline2
-            var t15 int = t14 + 1
+            var t15_rhs int = 1
+            var t15 int = t14 + t15_rhs
             ref_set__Ref_3int(i__0, t15)
             continue
         } else {
@@ -1963,7 +1992,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(self__0 *_goml_vec
     var t0 int
     var inline4 int = vec_len__Vec_5Token(self__0)
     t0 = inline4
-    var t1 int = t0 + 1
+    var t1_rhs int = 1
+    var t1 int = t0 + t1_rhs
     var result__0 *_goml_vec_Token
     var inline3 *_goml_vec_Token = vec_with_capacity__Vec_5Token(t1)
     result__0 = inline3
@@ -1994,7 +2024,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(self__0 *_goml_vec
     var t0 int
     var inline4 int = vec_len__Vec_5SExpr(self__0)
     t0 = inline4
-    var t1 int = t0 + 1
+    var t1_rhs int = 1
+    var t1 int = t0 + t1_rhs
     var result__0 *_goml_vec_SExpr
     var inline3 *_goml_vec_SExpr = vec_with_capacity__Vec_5SExpr(t1)
     result__0 = inline3
@@ -2041,7 +2072,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(self__0 *_goml_v
     var t0 int
     var inline4 int = vec_len__Vec_7Binding(self__0)
     t0 = inline4
-    var t1 int = t0 + 1
+    var t1_rhs int = 1
+    var t1 int = t0 + t1_rhs
     var result__0 *_goml_vec_Binding
     var inline3 *_goml_vec_Binding = vec_with_capacity__Vec_7Binding(t1)
     result__0 = inline3
@@ -2072,7 +2104,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(self__0 *_goml_ve
     var t0 int
     var inline4 int = vec_len__Vec_6string(self__0)
     t0 = inline4
-    var t1 int = t0 + 1
+    var t1_rhs int = 1
+    var t1 int = t0 + t1_rhs
     var result__0 *_goml_vec_string
     var inline3 *_goml_vec_string = vec_with_capacity__Vec_6string(t1)
     result__0 = inline3
@@ -2103,7 +2136,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Value(self__0 *_goml_vec
     var t0 int
     var inline4 int = vec_len__Vec_5Value(self__0)
     t0 = inline4
-    var t1 int = t0 + 1
+    var t1_rhs int = 1
+    var t1 int = t0 + t1_rhs
     var result__0 *_goml_vec_Value
     var inline3 *_goml_vec_Value = vec_with_capacity__Vec_5Value(t1)
     result__0 = inline3
@@ -2239,7 +2273,8 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                         }
                         return inline15
                     } else {
-                        var t7 int = index__0 + 1
+                        var t7_rhs int = 1
+                        var t7 int = index__0 + t7_rhs
                         var t8 uint8
                         var inline14 uint8 = _goml_runtime_core_string_byte_get(value__0, t7)
                         t8 = inline14
@@ -2299,10 +2334,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             }
                             return inline24
                         } else {
-                            var t17 int = index__0 + 1
+                            var t17_rhs int = 1
+                            var t17 int = index__0 + t17_rhs
                             var t18 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t17)
                             var second__1 uint32 = uint32(uint8(t18))
-                            var t19 int = index__0 + 2
+                            var t19_rhs int = 2
+                            var t19 int = index__0 + t19_rhs
                             var t20 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t19)
                             var third__0 uint32 = uint32(uint8(t20))
                             var t21 bool = utf8_invalid_continuation(second__1)
@@ -2390,13 +2427,16 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 var t61 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return t61
                             } else {
-                                var t36 int = index__0 + 1
+                                var t36_rhs int = 1
+                                var t36 int = index__0 + t36_rhs
                                 var t37 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t36)
                                 var second__2 uint32 = uint32(uint8(t37))
-                                var t38 int = index__0 + 2
+                                var t38_rhs int = 2
+                                var t38 int = index__0 + t38_rhs
                                 var t39 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t38)
                                 var third__1 uint32 = uint32(uint8(t39))
-                                var t40 int = index__0 + 3
+                                var t40_rhs int = 3
+                                var t40 int = index__0 + t40_rhs
                                 var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
                                 var fourth__0 uint32 = uint32(uint8(t41))
                                 var t42 bool = utf8_invalid_continuation(second__2)
@@ -2496,9 +2536,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -2573,7 +2615,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -2600,7 +2643,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

@@ -95,7 +95,8 @@ func flip(point__0 Point) Point {
 func x_add_1(p__0 Point) Point {
     var x0 int32 = p__0.x
     var x1 int32 = p__0.y
-    var t0 int32 = x0 + 1
+    var t0_rhs int32 = 1
+    var t0 int32 = x0 + t0_rhs
     var t1 Point = Point{
         x: t0,
         y: x1,
@@ -109,13 +110,16 @@ func point32_to_string(p__0 Point) string {
     var t0 string
     var inline1 string = __goml_builtin_int32_to_string(x0)
     t0 = inline1
-    var t1 string = "Point { x: " + t0
-    var t2 string = t1 + ", y: "
+    var t1_lhs string = "Point { x: "
+    var t1 string = t1_lhs + t0
+    var t2_rhs string = ", y: "
+    var t2 string = t1 + t2_rhs
     var t3 string
     var inline0 string = __goml_builtin_int32_to_string(x1)
     t3 = inline0
     var t4 string = t2 + t3
-    var t5 string = t4 + "}"
+    var t5_rhs string = "}"
+    var t5 string = t4 + t5_rhs
     return t5
 }
 
@@ -125,13 +129,16 @@ func point32_to_string2(p__0 Point) string {
     var t0 string
     var inline1 string = __goml_builtin_int32_to_string(x0)
     t0 = inline1
-    var t1 string = "Point { x: " + t0
-    var t2 string = t1 + ", y: "
+    var t1_lhs string = "Point { x: "
+    var t1 string = t1_lhs + t0
+    var t2_rhs string = ", y: "
+    var t2 string = t1 + t2_rhs
     var t3 string
     var inline0 string = __goml_builtin_int32_to_string(x1)
     t3 = inline0
     var t4 string = t2 + t3
-    var t5 string = t4 + "}"
+    var t5_rhs string = "}"
+    var t5 string = t4 + t5_rhs
     return t5
 }
 
@@ -151,18 +158,22 @@ func main0() struct{} {
     var inline19 int32 = a__0.x
     var inline20 int32 = a__0.y
     var inline21 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline19)
-    var inline22 string = "Point { x: " + inline21
-    var inline23 string = inline22 + ", y: "
+    var inline22_lhs string = "Point { x: "
+    var inline22 string = inline22_lhs + inline21
+    var inline23_rhs string = ", y: "
+    var inline23 string = inline22 + inline23_rhs
     var inline24 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline20)
     var inline25 string = inline23 + inline24
-    var inline26 string = inline25 + "}"
+    var inline26_rhs string = "}"
+    var inline26 string = inline25 + inline26_rhs
     t3 = inline26
     var inline17 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
     _goml_runtime_core_string_println(inline17)
     var t4 Point
     var inline13 int32 = start__0.x
     var inline14 int32 = start__0.y
-    var inline15 int32 = inline13 + 1
+    var inline15_rhs int32 = 1
+    var inline15 int32 = inline13 + inline15_rhs
     var inline16 Point = Point{
         x: inline15,
         y: inline14,
@@ -180,11 +191,14 @@ func main0() struct{} {
     var inline2 int32 = a__1.x
     var inline3 int32 = a__1.y
     var inline4 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline2)
-    var inline5 string = "Point { x: " + inline4
-    var inline6 string = inline5 + ", y: "
+    var inline5_lhs string = "Point { x: "
+    var inline5 string = inline5_lhs + inline4
+    var inline6_rhs string = ", y: "
+    var inline6 string = inline5 + inline6_rhs
     var inline7 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline3)
     var inline8 string = inline6 + inline7
-    var inline9 string = inline8 + "}"
+    var inline9_rhs string = "}"
+    var inline9 string = inline8 + inline9_rhs
     t5 = inline9
     var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t5)
     _goml_runtime_core_string_println(inline0)
@@ -209,9 +223,11 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -228,9 +244,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -253,7 +271,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -280,7 +299,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

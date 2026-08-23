@@ -73,7 +73,8 @@ func render(ok__0 bool) Result__string__string {
         jp0 = x2
         var x0 string = jp0._0
         var x1 string = jp0._1
-        var t0 string = x0 + ":"
+        var t0_rhs string = ":"
+        var t0 string = x0 + t0_rhs
         var t1 string = t0 + x1
         var t2 Result__string__string = Result__string__string{
             _tag: 0,
@@ -98,11 +99,13 @@ func main0() struct{} {
     switch t0._tag {
     case 0:
         var inline8 string = t0._v0_0
-        var inline9 string = "ok " + inline8
+        var inline9_lhs string = "ok "
+        var inline9 string = inline9_lhs + inline8
         t1 = inline9
     case 1:
         var inline10 string = t0._v1_0
-        var inline11 string = "err " + inline10
+        var inline11_lhs string = "err "
+        var inline11 string = inline11_lhs + inline10
         t1 = inline11
     default:
         panic("non-exhaustive match")
@@ -114,11 +117,13 @@ func main0() struct{} {
     switch t2._tag {
     case 0:
         var inline2 string = t2._v0_0
-        var inline3 string = "ok " + inline2
+        var inline3_lhs string = "ok "
+        var inline3 string = inline3_lhs + inline2
         t3 = inline3
     case 1:
         var inline4 string = t2._v1_0
-        var inline5 string = "err " + inline4
+        var inline5_lhs string = "err "
+        var inline5 string = inline5_lhs + inline4
         t3 = inline5
     default:
         panic("non-exhaustive match")

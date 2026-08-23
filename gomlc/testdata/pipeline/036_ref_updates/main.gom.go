@@ -129,7 +129,8 @@ func bump(cell__0 *ref_int32_x) int32 {
     var t0 int32
     var inline2 int32 = ref_get__Ref_5int32(cell__0)
     t0 = inline2
-    var t1 int32 = t0 + 1
+    var t1_rhs int32 = 1
+    var t1 int32 = t0 + t1_rhs
     ref_set__Ref_5int32(cell__0, t1)
     var inline0 int32 = ref_get__Ref_5int32(cell__0)
     return inline0
@@ -152,7 +153,8 @@ func nested_total(cell__0 *ref_Ref_5int32_x) int32 {
     var before__0 int32
     var inline2 int32 = ref_get__Ref_5int32(inner__0)
     before__0 = inline2
-    var t0 int32 = before__0 + 2
+    var t0_rhs int32 = 2
+    var t0 int32 = before__0 + t0_rhs
     ref_set__Ref_5int32(inner__0, t0)
     var t1 int32
     var inline0 int32 = ref_get__Ref_5int32(inner__0)
@@ -178,7 +180,8 @@ func main0() struct{} {
     var nested_total_val__0 int32 = nested_total(nested__0)
     var alias_total__0 int32
     var inline27 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(counter__0)
-    var inline28 int32 = inline27 + 5
+    var inline28_rhs int32 = 5
+    var inline28 int32 = inline27 + inline28_rhs
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(counter__0, inline28)
     var inline30 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(counter__0)
     alias_total__0 = inline30
@@ -196,7 +199,8 @@ func main0() struct{} {
     var reassigned__0 int32
     var inline13 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Ref_l_i32_r_(nested__0)
     var inline14 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline13)
-    var inline15 int32 = inline14 + 7
+    var inline15_rhs int32 = 7
+    var inline15 int32 = inline14 + inline15_rhs
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline13, inline15)
     var inline17 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline13)
     reassigned__0 = inline17
@@ -281,9 +285,11 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -306,7 +312,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -333,7 +340,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

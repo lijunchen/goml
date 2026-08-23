@@ -125,13 +125,16 @@ func point32_to_string(point__0 Point) string {
     var t0 string
     var inline1 string = __goml_builtin_int32_to_string(x0)
     t0 = inline1
-    var with_x__0 string = "Point { x: " + t0
-    var with_y_label__0 string = with_x__0 + ", y: "
+    var with_x__0_lhs string = "Point { x: "
+    var with_x__0 string = with_x__0_lhs + t0
+    var with_y_label__0_rhs string = ", y: "
+    var with_y_label__0 string = with_x__0 + with_y_label__0_rhs
     var t1 string
     var inline0 string = __goml_builtin_int32_to_string(x1)
     t1 = inline0
     var with_y__0 string = with_y_label__0 + t1
-    var t2 string = with_y__0 + " }"
+    var t2_rhs string = " }"
+    var t2 string = with_y__0 + t2_rhs
     return t2
 }
 
@@ -140,8 +143,10 @@ func wrapper_int32_to_string(wrapper__0 Wrapper__i32) string {
     var t0 string
     var inline0 string = __goml_builtin_int32_to_string(x0)
     t0 = inline0
-    var prefix__0 string = "Wrapper[i32] { value: " + t0
-    var t1 string = prefix__0 + " }"
+    var prefix__0_lhs string = "Wrapper[i32] { value: "
+    var prefix__0 string = prefix__0_lhs + t0
+    var t1_rhs string = " }"
+    var t1 string = prefix__0 + t1_rhs
     return t1
 }
 
@@ -150,8 +155,10 @@ func wrapper_unit_to_string(wrapper__0 Wrapper__unit) string {
     var t0 string
     var inline0 string = _goml_runtime_core_unit_to_string(x0)
     t0 = inline0
-    var prefix__0 string = "Wrapper[unit] { value: " + t0
-    var t1 string = prefix__0 + " }"
+    var prefix__0_lhs string = "Wrapper[unit] { value: "
+    var prefix__0 string = prefix__0_lhs + t0
+    var t1_rhs string = " }"
+    var t1 string = prefix__0 + t1_rhs
     return t1
 }
 
@@ -163,25 +170,34 @@ func shape_int32_to_string(shape__0 Shape__i32) string {
         var inline0 int32 = x0.x
         var inline1 int32 = x0.y
         var inline2 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline0)
-        var inline3 string = "Point { x: " + inline2
-        var inline4 string = inline3 + ", y: "
+        var inline3_lhs string = "Point { x: "
+        var inline3 string = inline3_lhs + inline2
+        var inline4_rhs string = ", y: "
+        var inline4 string = inline3 + inline4_rhs
         var inline5 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline1)
         var inline6 string = inline4 + inline5
-        var inline7 string = inline6 + " }"
+        var inline7_rhs string = " }"
+        var inline7 string = inline6 + inline7_rhs
         t0 = inline7
-        var prefix__0 string = "Shape::Dot(" + t0
-        var t1 string = prefix__0 + ")"
+        var prefix__0_lhs string = "Shape::Dot("
+        var prefix__0 string = prefix__0_lhs + t0
+        var t1_rhs string = ")"
+        var t1 string = prefix__0 + t1_rhs
         return t1
     case 1:
         var x1 Wrapper__i32 = shape__0._v1_0
         var t2 string
         var inline8 int32 = x1.value
         var inline9 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline8)
-        var inline10 string = "Wrapper[i32] { value: " + inline9
-        var inline11 string = inline10 + " }"
+        var inline10_lhs string = "Wrapper[i32] { value: "
+        var inline10 string = inline10_lhs + inline9
+        var inline11_rhs string = " }"
+        var inline11 string = inline10 + inline11_rhs
         t2 = inline11
-        var prefix__1 string = "Shape::Wrapped(" + t2
-        var t3 string = prefix__1 + ")"
+        var prefix__1_lhs string = "Shape::Wrapped("
+        var prefix__1 string = prefix__1_lhs + t2
+        var t3_rhs string = ")"
+        var t3 string = prefix__1 + t3_rhs
         return t3
     case 2:
         return "Shape::Origin"
@@ -198,25 +214,34 @@ func shape_unit_to_string(shape__0 Shape__unit) string {
         var inline0 int32 = x0.x
         var inline1 int32 = x0.y
         var inline2 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline0)
-        var inline3 string = "Point { x: " + inline2
-        var inline4 string = inline3 + ", y: "
+        var inline3_lhs string = "Point { x: "
+        var inline3 string = inline3_lhs + inline2
+        var inline4_rhs string = ", y: "
+        var inline4 string = inline3 + inline4_rhs
         var inline5 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline1)
         var inline6 string = inline4 + inline5
-        var inline7 string = inline6 + " }"
+        var inline7_rhs string = " }"
+        var inline7 string = inline6 + inline7_rhs
         t0 = inline7
-        var prefix__0 string = "Shape::Dot(" + t0
-        var t1 string = prefix__0 + ")"
+        var prefix__0_lhs string = "Shape::Dot("
+        var prefix__0 string = prefix__0_lhs + t0
+        var t1_rhs string = ")"
+        var t1 string = prefix__0 + t1_rhs
         return t1
     case 1:
         var x1 Wrapper__unit = shape__0._v1_0
         var t2 string
         var inline8 struct{} = x1.value
         var inline9 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline8)
-        var inline10 string = "Wrapper[unit] { value: " + inline9
-        var inline11 string = inline10 + " }"
+        var inline10_lhs string = "Wrapper[unit] { value: "
+        var inline10 string = inline10_lhs + inline9
+        var inline11_rhs string = " }"
+        var inline11 string = inline10 + inline11_rhs
         t2 = inline11
-        var prefix__1 string = "Shape::Wrapped(" + t2
-        var t3 string = prefix__1 + ")"
+        var prefix__1_lhs string = "Shape::Wrapped("
+        var prefix__1 string = prefix__1_lhs + t2
+        var t3_rhs string = ")"
+        var t3 string = prefix__1 + t3_rhs
         return t3
     case 2:
         return "Shape::Origin"
@@ -333,9 +358,11 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -352,9 +379,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -377,7 +406,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -404,7 +434,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

@@ -282,10 +282,12 @@ func _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(self__0 LegacyKey, other__
 func _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(self__0 LegacyKey) uint64 {
     var t0_source int = 0
     var t0 uint64 = uint64(int(t0_source))
-    var h__0 uint64 = t0 + 14695981039346656037
+    var h__0_rhs uint64 = 14695981039346656037
+    var h__0 uint64 = t0 + h__0_rhs
     var t1_source int = 0
     var t1 uint64 = uint64(int(t1_source))
-    var t2 uint64 = t1 + 1099511628211
+    var t2_rhs uint64 = 1099511628211
+    var t2 uint64 = t1 + t2_rhs
     var t3 uint64 = h__0 * t2
     var t4 int = self__0.value
     var t5 uint64

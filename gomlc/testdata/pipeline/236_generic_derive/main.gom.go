@@ -100,11 +100,14 @@ func main0() struct{} {
     var t10 uint64
     var inline10_source int = 0
     var inline10 uint64 = uint64(int(inline10_source))
-    var inline11 uint64 = inline10 + 14695981039346656037
-    var inline12 uint64 = inline11 + 2
+    var inline11_rhs uint64 = 14695981039346656037
+    var inline11 uint64 = inline10 + inline11_rhs
+    var inline12_rhs uint64 = 2
+    var inline12 uint64 = inline11 + inline12_rhs
     var inline13_source int = 0
     var inline13 uint64 = uint64(int(inline13_source))
-    var inline14 uint64 = inline13 + 1099511628211
+    var inline14_rhs uint64 = 1099511628211
+    var inline14 uint64 = inline13 + inline14_rhs
     var inline15 uint64 = inline12 * inline14
     var inline16 uint64 = _goml_m_trait__impl_i_Hash_i_Wrapper____NoTraits_i_hash(wrapped__0)
     var inline17 uint64 = inline15 + inline16
@@ -112,11 +115,14 @@ func main0() struct{} {
     var t11 uint64
     var inline2_source int = 0
     var inline2 uint64 = uint64(int(inline2_source))
-    var inline3 uint64 = inline2 + 14695981039346656037
-    var inline4 uint64 = inline3 + 2
+    var inline3_rhs uint64 = 14695981039346656037
+    var inline3 uint64 = inline2 + inline3_rhs
+    var inline4_rhs uint64 = 2
+    var inline4 uint64 = inline3 + inline4_rhs
     var inline5_source int = 0
     var inline5 uint64 = uint64(int(inline5_source))
-    var inline6 uint64 = inline5 + 1099511628211
+    var inline6_rhs uint64 = 1099511628211
+    var inline6 uint64 = inline5 + inline6_rhs
     var inline7 uint64 = inline4 * inline6
     var inline8 uint64 = _goml_m_trait__impl_i_Hash_i_Wrapper____NoTraits_i_hash(wrapped__0)
     var inline9 uint64 = inline7 + inline8
@@ -135,16 +141,21 @@ func println__T_string(value__0 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_Generic____NoTraits____NoTraits_i_to__string(self__0 Generic__NoTraits__NoTraits) string {
-    var t0 string = "Generic { " + "first: "
+    var t0_lhs string = "Generic { "
+    var t0_rhs string = "first: "
+    var t0 string = t0_lhs + t0_rhs
     var t1 string
     t1 = "wrapped"
     var t2 string = t0 + t1
-    var t3 string = t2 + ", "
-    var t4 string = t3 + "second: "
+    var t3_rhs string = ", "
+    var t3 string = t2 + t3_rhs
+    var t4_rhs string = "second: "
+    var t4 string = t3 + t4_rhs
     var t5 string
     t5 = "wrapped"
     var t6 string = t4 + t5
-    var t7 string = t6 + " }"
+    var t7_rhs string = " }"
+    var t7 string = t6 + t7_rhs
     return t7
 }
 
@@ -169,17 +180,20 @@ func _goml_m_trait__impl_i_PartialEq_i_Generic____NoTraits____NoTraits_i_eq(self
 func _goml_m_trait__impl_i_Hash_i_Generic____NoTraits____NoTraits_i_hash(self__0 Generic__NoTraits__NoTraits) uint64 {
     var t0_source int = 0
     var t0 uint64 = uint64(int(t0_source))
-    var h__0 uint64 = t0 + 14695981039346656037
+    var h__0_rhs uint64 = 14695981039346656037
+    var h__0 uint64 = t0 + h__0_rhs
     var t1_source int = 0
     var t1 uint64 = uint64(int(t1_source))
-    var t2 uint64 = t1 + 1099511628211
+    var t2_rhs uint64 = 1099511628211
+    var t2 uint64 = t1 + t2_rhs
     var t3 uint64 = h__0 * t2
     var t4 uint64
     t4 = 7
     var h__1 uint64 = t3 + t4
     var t5_source int = 0
     var t5 uint64 = uint64(int(t5_source))
-    var t6 uint64 = t5 + 1099511628211
+    var t6_rhs uint64 = 1099511628211
+    var t6 uint64 = t5 + t6_rhs
     var t7 uint64 = h__1 * t6
     var t8 uint64
     t8 = 7
@@ -194,8 +208,10 @@ func _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__s
     case 1:
         var t0 string
         t0 = "wrapped"
-        var t1 string = "GenericChoice::Value(" + t0
-        var t2 string = t1 + ")"
+        var t1_lhs string = "GenericChoice::Value("
+        var t1 string = t1_lhs + t0
+        var t2_rhs string = ")"
+        var t2 string = t1 + t2_rhs
         return t2
     default:
         panic("non-exhaustive match")

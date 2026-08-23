@@ -428,7 +428,8 @@ func gensym(st__0 CheckerState) string {
     var inline3 int32 = ref_get__Ref_5int32(t0)
     n__0 = inline3
     var t1 *ref_int32_x = st__0.gensym_counter
-    var t2 int32 = n__0 + 1
+    var t2_rhs int32 = 1
+    var t2 int32 = n__0 + t2_rhs
     ref_set__Ref_5int32(t1, t2)
     var t3 bool = n__0 < 26
     if t3 {
@@ -439,7 +440,8 @@ func gensym(st__0 CheckerState) string {
         var t5 string
         var inline1 string = __goml_builtin_int32_to_string(n__0)
         t5 = inline1
-        var t6 string = "t" + t5
+        var t6_lhs string = "t"
+        var t6 string = t6_lhs + t5
         return t6
     }
 }
@@ -476,7 +478,8 @@ func typ_to_string(ty__0 Typ) string {
         switch mtmp0.(type) {
         case Unbound:
             var x1 string = mtmp0.(Unbound)._0
-            var t0 string = "'" + x1
+            var t0_lhs string = "'"
+            var t0 string = t0_lhs + x1
             return t0
         case Link:
             var x2 Typ = mtmp0.(Link)._0
@@ -487,7 +490,8 @@ func typ_to_string(ty__0 Typ) string {
         }
     case QVar:
         var x3 string = ty__0.(QVar)._0
-        var t2 string = "'" + x3
+        var t2_lhs string = "'"
+        var t2 string = t2_lhs + x3
         return t2
     case TArrow:
         var x4 Typ = ty__0.(TArrow)._0
@@ -496,15 +500,18 @@ func typ_to_string(ty__0 Typ) string {
         var jp0 string
         if t3 {
             var t6 string = typ_to_string(x4)
-            var t7 string = "(" + t6
-            var t8 string = t7 + ")"
+            var t7_lhs string = "("
+            var t7 string = t7_lhs + t6
+            var t8_rhs string = ")"
+            var t8 string = t7 + t8_rhs
             jp0 = t8
         } else {
             var t9 string = typ_to_string(x4)
             jp0 = t9
         }
         var s2__0 string = typ_to_string(x5)
-        var t4 string = jp0 + " -> "
+        var t4_rhs string = " -> "
+        var t4 string = jp0 + t4_rhs
         var t5 string = t4 + s2__0
         return t5
     default:
@@ -521,7 +528,8 @@ func env_lookup(env__0 *_goml_vec_EnvEntry, name__0 string) Option__Typ {
     var t0 int
     var inline13 int = vec_len__Vec_8EnvEntry(env__0)
     t0 = inline13
-    var t1 int = t0 - 1
+    var t1_rhs int = 1
+    var t1 int = t0 - t1_rhs
     var i__0 *ref_int_x
     var inline12 *ref_int_x = ref__Ref_3int(t1)
     i__0 = inline12
@@ -571,7 +579,8 @@ func env_lookup(env__0 *_goml_vec_EnvEntry, name__0 string) Option__Typ {
                 var t9 int
                 var inline5 int = ref_get__Ref_3int(i__0)
                 t9 = inline5
-                var t10 int = t9 - 1
+                var t10_rhs int = 1
+                var t10 int = t9 - t10_rhs
                 ref_set__Ref_3int(i__0, t10)
                 continue
             }
@@ -587,7 +596,8 @@ func subst_lookup(subst__0 *_goml_vec_SubstEntry, name__0 string) Option__Typ {
     var t0 int
     var inline13 int = vec_len__Vec_10SubstEntry(subst__0)
     t0 = inline13
-    var t1 int = t0 - 1
+    var t1_rhs int = 1
+    var t1 int = t0 - t1_rhs
     var i__0 *ref_int_x
     var inline12 *ref_int_x = ref__Ref_3int(t1)
     i__0 = inline12
@@ -637,7 +647,8 @@ func subst_lookup(subst__0 *_goml_vec_SubstEntry, name__0 string) Option__Typ {
                 var t9 int
                 var inline5 int = ref_get__Ref_3int(i__0)
                 t9 = inline5
-                var t10 int = t9 - 1
+                var t10_rhs int = 1
+                var t10 int = t9 - t10_rhs
                 ref_set__Ref_3int(i__0, t10)
                 continue
             }
@@ -1228,13 +1239,15 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
         var inline20 *ref_int32_x = st__0.current_level
         var inline21 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline20)
         var inline22 *ref_int32_x = st__0.current_level
-        var inline23 int32 = inline21 + 1
+        var inline23_rhs int32 = 1
+        var inline23 int32 = inline21 + inline23_rhs
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline22, inline23)
         var ty_e__0 Result__Typ__string = typeof(st__0, env__0, x14)
         var inline15 *ref_int32_x = st__0.current_level
         var inline16 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline15)
         var inline17 *ref_int32_x = st__0.current_level
-        var inline18 int32 = inline16 - 1
+        var inline18_rhs int32 = 1
+        var inline18 int32 = inline16 - inline18_rhs
         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline17, inline18)
         switch ty_e__0._tag {
         case 0:
@@ -1298,7 +1311,8 @@ func show_result(label__0 string, res__0 Result__Typ__string) struct{} {
     switch res__0._tag {
     case 0:
         var x0 Typ = res__0._v0_0
-        var t0 string = label__0 + ": "
+        var t0_rhs string = ": "
+        var t0 string = label__0 + t0_rhs
         var t1 string = typ_to_string(x0)
         var t2 string = t0 + t1
         var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t2)
@@ -1306,7 +1320,8 @@ func show_result(label__0 string, res__0 Result__Typ__string) struct{} {
         return struct{}{}
     case 1:
         var x1 string = res__0._v1_0
-        var t3 string = label__0 + ": "
+        var t3_rhs string = ": "
+        var t3 string = label__0 + t3_rhs
         var t4 string = t3 + x1
         var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t4)
         _goml_runtime_core_string_println(inline2)
@@ -1572,13 +1587,15 @@ func main0() struct{} {
     switch t149._tag {
     case 0:
         var inline10 Typ = t149._v0_0
-        var inline11 string = inline9 + ": "
+        var inline11_rhs string = ": "
+        var inline11 string = inline9 + inline11_rhs
         var inline12 string = typ_to_string(inline10)
         var inline13 string = inline11 + inline12
         println__T_string(inline13)
     case 1:
         var inline15 string = t149._v1_0
-        var inline16 string = inline9 + ": "
+        var inline16_rhs string = ": "
+        var inline16 string = inline9 + inline16_rhs
         var inline17 string = inline16 + inline15
         println__T_string(inline17)
     default:
@@ -1620,7 +1637,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__0 *_gom
     var t0 int
     var inline4 int = vec_len__Vec_10SubstEntry(self__0)
     t0 = inline4
-    var t1 int = t0 + 1
+    var t1_rhs int = 1
+    var t1 int = t0 + t1_rhs
     var result__0 *_goml_vec_SubstEntry
     var inline3 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(t1)
     result__0 = inline3
@@ -1656,7 +1674,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__0 *_goml_
     var t0 int
     var inline4 int = vec_len__Vec_8EnvEntry(self__0)
     t0 = inline4
-    var t1 int = t0 + 1
+    var t1_rhs int = 1
+    var t1 int = t0 + t1_rhs
     var result__0 *_goml_vec_EnvEntry
     var inline3 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(t1)
     result__0 = inline3
@@ -1722,9 +1741,11 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -1751,7 +1772,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -1778,7 +1800,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

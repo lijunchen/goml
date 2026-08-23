@@ -78,7 +78,8 @@ func main0() struct{} {
             t1 = "none"
         case 1:
             var inline11 string = t0._v1_0
-            var inline12 string = "some " + inline11
+            var inline12_lhs string = "some "
+            var inline12 string = inline12_lhs + inline11
             t1 = inline12
         default:
             panic("non-exhaustive match")
@@ -99,7 +100,8 @@ func main0() struct{} {
                 t3 = "none"
             case 1:
                 var inline2 string = t2._v1_0
-                var inline3 string = "some " + inline2
+                var inline3_lhs string = "some "
+                var inline3 string = inline3_lhs + inline2
                 t3 = inline3
             default:
                 panic("non-exhaustive match")
@@ -119,7 +121,8 @@ func main0() struct{} {
                 t3 = "none"
             case 1:
                 var inline2 string = t2._v1_0
-                var inline3 string = "some " + inline2
+                var inline3_lhs string = "some "
+                var inline3 string = inline3_lhs + inline2
                 t3 = inline3
             default:
                 panic("non-exhaustive match")
@@ -142,7 +145,8 @@ func main0() struct{} {
             t1 = "none"
         case 1:
             var inline11 string = t0._v1_0
-            var inline12 string = "some " + inline11
+            var inline12_lhs string = "some "
+            var inline12 string = inline12_lhs + inline11
             t1 = inline12
         default:
             panic("non-exhaustive match")
@@ -163,7 +167,8 @@ func main0() struct{} {
                 t3 = "none"
             case 1:
                 var inline2 string = t2._v1_0
-                var inline3 string = "some " + inline2
+                var inline3_lhs string = "some "
+                var inline3 string = inline3_lhs + inline2
                 t3 = inline3
             default:
                 panic("non-exhaustive match")
@@ -183,7 +188,8 @@ func main0() struct{} {
                 t3 = "none"
             case 1:
                 var inline2 string = t2._v1_0
-                var inline3 string = "some " + inline2
+                var inline3_lhs string = "some "
+                var inline3 string = inline3_lhs + inline2
                 t3 = inline3
             default:
                 panic("non-exhaustive match")

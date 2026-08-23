@@ -68,7 +68,8 @@ func _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(self__0 DefaultValue) 
 
 func _goml_m_trait__impl_i_Describe_i_DefaultValue_i_describe(default_arg0 DefaultValue) string {
     var inline0 string = _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(default_arg0)
-    var inline1 string = "default:" + inline0
+    var inline1_lhs string = "default:"
+    var inline1 string = inline1_lhs + inline0
     return inline1
 }
 
@@ -78,7 +79,8 @@ func main0() struct{} {
     }
     var t0 string
     var inline10 string = _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(default_value__0)
-    var inline11 string = "default:" + inline10
+    var inline11_lhs string = "default:"
+    var inline11 string = inline11_lhs + inline10
     t0 = inline11
     var inline8 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t0)
     _goml_runtime_core_string_println(inline8)

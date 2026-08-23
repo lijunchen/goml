@@ -212,7 +212,8 @@ func main0() struct{} {
         var t31 bool = for_index0 < for_limit0
         if t31 {
             var for_item2 int = vec_get__Vec_3int(values__0, for_index0)
-            var t32 int = for_index0 + 1
+            var t32_rhs int = 1
+            var t32 int = for_index0 + t32_rhs
             for_index0 = t32
             var item__0 int = for_item2
             var compound_old2 int = item__0
@@ -282,7 +283,8 @@ func main0() struct{} {
         var t20 bool = for_index1 < for_limit1
         if t20 {
             var for_item0 int = for_index1
-            var t21 int = for_index1 + 1
+            var t21_rhs int = 1
+            var t21 int = for_index1 + t21_rhs
             for_index1 = t21
             var for_index2 int = 0
             var for_limit2 int = 3
@@ -292,12 +294,14 @@ func main0() struct{} {
                 var t23 bool = for_index2 < for_limit2
                 if t23 {
                     var for_item1 int = for_index2
-                    var t24 int = for_index2 + 1
+                    var t24_rhs int = 1
+                    var t24 int = for_index2 + t24_rhs
                     for_index2 = t24
                     var t25 int
                     var inline6 int = ref_get__Ref_3int(seen__0)
                     t25 = inline6
-                    var t26 int = t25 + 1
+                    var t26_rhs int = 1
+                    var t26 int = t25 + t26_rhs
                     ref_set__Ref_3int(seen__0, t26)
                     var jp1 bool
                     if t22 {
@@ -357,9 +361,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -382,7 +388,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -409,7 +416,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

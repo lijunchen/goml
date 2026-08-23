@@ -280,8 +280,10 @@ func main0() struct{} {
     direct__0 = t9
     var t11 int = direct__0.x
     var t12 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t11)
-    var t13 string = "" + t12
-    var t14 string = t13 + ","
+    var t13_lhs string = ""
+    var t13 string = t13_lhs + t12
+    var t14_rhs string = ","
+    var t14 string = t13 + t14_rhs
     var t15 int = direct__0.y
     var t16 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t15)
     var t17 string = t14 + t16
@@ -302,8 +304,10 @@ func main0() struct{} {
     pair__0 = t20
     var t22 int = pair__0._0
     var t23 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t22)
-    var t24 string = "" + t23
-    var t25 string = t24 + ","
+    var t24_lhs string = ""
+    var t24 string = t24_lhs + t23
+    var t25_rhs string = ","
+    var t25 string = t24 + t25_rhs
     var t26 int = pair__0._1
     var t27 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t26)
     var t28 string = t25 + t27
@@ -319,8 +323,10 @@ func main0() struct{} {
     var t30 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(log__0)
     println__T_string(t30)
     var t31 string = _goml_m_inherent_i_isize_i_isize_i_to__string(struct_update_field__789__0)
-    var t32 string = "" + t31
-    var t33 string = t32 + ","
+    var t32_lhs string = ""
+    var t32 string = t32_lhs + t31
+    var t33_rhs string = ","
+    var t33 string = t32 + t33_rhs
     var t34 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t29)
     var t35 string = t33 + t34
     println__T_string(t35)
@@ -347,8 +353,10 @@ func main0() struct{} {
     println__T_string(t41)
     var t42 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__isize(values__0, 0)
     var t43 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t42)
-    var t44 string = "" + t43
-    var t45 string = t44 + ","
+    var t44_lhs string = ""
+    var t44 string = t44_lhs + t43
+    var t45_rhs string = ","
+    var t45 string = t44 + t45_rhs
     var t46 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__isize(values__0, 1)
     var t47 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t46)
     var t48 string = t45 + t47
@@ -356,7 +364,9 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline38)
     var inline36 string = ""
     ref_set__Ref_6string(log__0, inline36)
-    var t49 string = "" + "k"
+    var t49_lhs string = ""
+    var t49_rhs string = "k"
+    var t49 string = t49_lhs + t49_rhs
     var t50 int
     var inline31 string = "K"
     var inline32 int = 1
@@ -437,7 +447,9 @@ func main0() struct{} {
     var empty_table__0 *hashmap_string_int_x
     var inline5 *hashmap_string_int_x = hashmap_new__HashMap_6string_3int()
     empty_table__0 = inline5
-    var t61 string = "" + "empty="
+    var t61_lhs string = ""
+    var t61_rhs string = "empty="
+    var t61 string = t61_lhs + t61_rhs
     var t62 int
     var inline4 int = vec_len__Vec_3int(empty_values__0)
     t62 = inline4
@@ -449,7 +461,8 @@ func main0() struct{} {
     var inline2 string = __goml_builtin_int_to_string(t64)
     t65 = inline2
     var t66 string = t61 + t65
-    var t67 string = t66 + " {ok}"
+    var t67_rhs string = " {ok}"
+    var t67 string = t66 + t67_rhs
     var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t67)
     _goml_runtime_core_string_println(inline0)
     return struct{}{}
@@ -497,9 +510,11 @@ func __goml_builtin_int_to_string(value__0 int) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
+        var inline2_lhs uint64 = 0
+        var inline2 uint64 = inline2_lhs - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
+        var inline4_lhs string = "-"
+        var inline4 string = inline4_lhs + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -512,9 +527,11 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
+        var t2_lhs uint64 = 0
+        var t2 uint64 = t2_lhs - t1
         var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
+        var t4_lhs string = "-"
+        var t4 string = t4_lhs + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -537,7 +554,8 @@ func decimal_string(value__0 uint64) string {
                 var t11_rhs uint64 = 10
                 var t11 uint64 = remaining__0 % t11_rhs
                 var t12 uint8 = uint8(uint64(t11))
-                var t13 uint8 = t12 + 48
+                var t13_rhs uint8 = 48
+                var t13 uint8 = t12 + t13_rhs
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -564,7 +582,8 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6 int = t5 - 1
+                var t6_rhs int = 1
+                var t6 int = t5 - t6_rhs
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0
