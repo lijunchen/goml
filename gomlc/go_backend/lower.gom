@@ -18,6 +18,7 @@ pub struct FunctionNames {
 struct LowerEnv {
     builtin: tast::BuiltinContract,
     joins: Vec[anf::JoinBind],
+    collection_arrays: HashMap[string, anf::Value],
     emitted_loop_labels: Vec[string],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
@@ -2200,6 +2201,10 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
 }
 
 fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
+    match compile_hashmap_array_literal_let(env, value) {
+        Some(result) => return result,
+        None => (),
+    };
     let result: Vec[Stmt] = Vec::from_array([]);
     let compiled = compile_value(env, value.name, value.value, value.ty);
     append_stmts(result, compiled.stmts);
@@ -2211,6 +2216,190 @@ fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
         },
     );
     result
+}
+
+fn hashmap_array_literal_fields(key: repr::Type, value: repr::Type, capacity: Expr) -> Vec[
+    (string, Expr),
+] {
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let fields: Vec[(string, Expr)] = Vec::from_array([]);
+    if hashmap_native_key(key) {
+        fields.push(
+            (
+                "indices",
+                Expr::Make {
+                    ty: Type::Map { key: lower_type(key), value: Type::Int },
+                    args: Vec::from_array([capacity]),
+                },
+            ),
+        );
+        fields.push(
+            (
+                "entries",
+                Expr::Make {
+                    ty: Type::Slice { elem: entry_ty },
+                    args: Vec::from_array([Expr::Int { value: "0" }, capacity]),
+                },
+            ),
+        )
+    } else {
+        fields.push(
+            (
+                "buckets",
+                Expr::Make {
+                    ty: Type::Map { key: Type::Uint64, value: Type::Slice { elem: entry_ty } },
+                    args: Vec::from_array([capacity]),
+                },
+            ),
+        );
+        fields.push(
+            (
+                "hashes",
+                Expr::Make {
+                    ty: Type::Slice { elem: Type::Uint64 },
+                    args: Vec::from_array([Expr::Int { value: "0" }, capacity]),
+                },
+            ),
+        )
+    };
+    fields.push(("len", Expr::Int { value: "0" }));
+    fields
+}
+
+fn compile_hashmap_array_literal(env: LowerEnv, value: anf::LetBind, items: Vec[anf::Imm]) -> Vec[
+    Stmt,
+] {
+    let (key, map_value) = match repr::resolve_type(value.ty) {
+        HashMap { key, value } => (key, value),
+        _ => return Vec::from_array([]),
+    };
+    let result: Vec[Stmt] = Vec::from_array([]);
+    result.push(
+        Stmt::Var {
+            name: go_local_ident(value.name),
+            ty: lower_type(value.ty),
+            value: Option::Some(
+                Expr::Unary {
+                    op: UnaryOp::Address,
+                    expr: Expr::StructLiteral {
+                        ty: Type::Named { name: hashmap_name(key, map_value) },
+                        fields: hashmap_array_literal_fields(
+                            key,
+                            map_value,
+                            Expr::Int { value: items.len().to_string() },
+                        ),
+                    },
+                },
+            ),
+        },
+    );
+    for item in items {
+        let entry = compile_imm(env, item);
+        result.push(
+            Stmt::Expr {
+                expr: Expr::Call {
+                    func: Expr::Var { name: runtime_helper_name("hashmap_set", value.ty) },
+                    args: Vec::from_array(
+                        [
+                            Expr::Var { name: go_local_ident(value.name) },
+                            Expr::Field { expr: entry, field_name: "_0" },
+                            Expr::Field { expr: entry, field_name: "_1" },
+                        ],
+                    ),
+                },
+            },
+        )
+    }
+    result
+}
+
+fn compile_hashmap_array_literal_let(env: LowerEnv, value: anf::LetBind) -> Option[Vec[Stmt]] {
+    match value.value {
+        Call { func: Callable { callable: Intrinsic(key), ty: _ }, args, ty: _ } if key
+            == "hashmap.from_array"
+            && args.len() == 1 => match args[0] {
+            Var { name, ty: _ } => match env.collection_arrays[name] {
+                Some(Array { items, ty: _ }) => {
+                    Option::Some(compile_hashmap_array_literal(env, value, items))
+                },
+                _ => Option::None,
+            },
+            _ => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn collection_array_argument(value: anf::Bind) -> Option[string] {
+    match value {
+        Let(anf::LetBind {
+            name: _,
+            value: Call { func: Callable { callable: Intrinsic(key), ty: _ }, args, ty: _ },
+            ty: _,
+        }) if key == "hashmap.from_array" && args.len() == 1 => match args[0] {
+            Var { name, ty: _ } => Option::Some(name),
+            _ => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn collect_collection_arrays_term(result: HashMap[string, anf::Value], value: anf::Term) -> unit {
+    match value {
+        If { cond: _, then_, else_, ret_ty: _ } => {
+            collect_collection_arrays(result, then_);
+            collect_collection_arrays(result, else_)
+        },
+        Match { scrutinee: _, arms, default, ret_ty: _ } => {
+            for arm in arms {
+                collect_collection_arrays(result, arm.body)
+            }
+            match default {
+                Some(body) => collect_collection_arrays(result, body),
+                None => (),
+            }
+        },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                collect_collection_arrays(
+                    result,
+                    match arm {
+                        Receive { body, .. } | Send { body, .. } => body,
+                    },
+                )
+            }
+            match default {
+                Some(body) => collect_collection_arrays(result, body),
+                None => (),
+            }
+        },
+        Return(_) | Jump { target: _, args: _, ret_ty: _ } | Unreachable { ty: _ } => (),
+    }
+}
+
+fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Block) -> unit {
+    let mut index = 0;
+    while index < value.binds.len() {
+        match value.binds[index] {
+            Let(bind) => match bind.value {
+                Array { items, ty } if index + 1 < value.binds.len() => {
+                    match collection_array_argument(value.binds[index + 1]) {
+                        Some(name) => if name == bind.name {
+                            result[name] = anf::Value::Array { items, ty };
+                        } else {},
+                        None => (),
+                    }
+                },
+                _ => (),
+            },
+            Join(join) => collect_collection_arrays(result, join.body),
+            JoinRec(joins) => for join in joins {
+                collect_collection_arrays(result, join.body)
+            },
+        };
+        index += 1;
+    }
+    collect_collection_arrays_term(result, value.term)
 }
 
 fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
@@ -4900,6 +5089,8 @@ fn compile_function(
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::from_array([]);
     collect_joins_block(joins, value.body);
+    let collection_arrays: HashMap[string, anf::Value] = HashMap::from_array([]);
+    collect_collection_arrays(collection_arrays, value.body);
     let params: Vec[(string, Type)] = Vec::from_array([]);
     let pointer_vars: HashMap[string, bool] = HashMap::from_array([]);
     let copied_params: Vec[(string, string, Type)] = Vec::from_array([]);
@@ -4929,6 +5120,7 @@ fn compile_function(
     let env = LowerEnv {
         builtin,
         joins,
+        collection_arrays,
         emitted_loop_labels: Vec::from_array([]),
         variants,
         structs,
