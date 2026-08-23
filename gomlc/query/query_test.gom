@@ -96,8 +96,8 @@ fn builtin_source_derive_expansion(source: string) -> string {
         ast::lower(parser::parse(source)),
         hir::DeriveEnvironment {
             builtin: Option::Some(required_builtin_comptime_module()),
-            dependencies: Vec::from_array([]),
-            reexports: Vec::from_array([]),
+            dependencies: Vec::new(),
+            reexports: Vec::new(),
         },
     );
     if expanded.diagnostics.is_empty() {} else {
@@ -105,7 +105,7 @@ fn builtin_source_derive_expansion(source: string) -> string {
     };
     let formatted = ast::pretty(expanded);
     let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([(expanded, "derive_test.gom")]);
-    let files: Vec[hir::File] = Vec::from_array([]);
+    let files: Vec[hir::File] = Vec::new();
     for lowered in hir::lower_expanded_package_files(inputs, "derive_test") {
         if lowered.diagnostics.is_empty() {} else {
             testing::fail(lowered.diagnostics[0].message)
@@ -123,12 +123,12 @@ fn builtin_source_derive_expansion(source: string) -> string {
             ),
             Err(error) => {
                 testing::fail(error);
-                tast::check_package_files_for_link_with_dependencies(files, Vec::from_array([]))
+                tast::check_package_files_for_link_with_dependencies(files, Vec::new())
             },
         },
         Err(error) => {
             testing::fail(error);
-            tast::check_package_files_for_link_with_dependencies(files, Vec::from_array([]))
+            tast::check_package_files_for_link_with_dependencies(files, Vec::new())
         },
     };
     if checked.diagnostics.is_empty() {} else {
@@ -162,8 +162,8 @@ fn builtin_derives_require_builtin_source_exports() -> unit {
         ast::lower(parser::parse("#[derive(Eq)] struct Key { value: isize }")),
         hir::DeriveEnvironment {
             builtin: Option::None,
-            dependencies: Vec::from_array([]),
-            reexports: Vec::from_array([]),
+            dependencies: Vec::new(),
+            reexports: Vec::new(),
         },
     );
     testing::assert_eq(expanded.diagnostics.len(), 1);

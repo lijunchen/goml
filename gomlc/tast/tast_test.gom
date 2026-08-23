@@ -489,7 +489,7 @@ fn checks_cross_file_package_definitions() -> unit {
             None => testing::fail("expected cross-file HIR"),
         }
     }
-    let dependencies: Vec[DependencyEnvironment] = Vec::from_array([]);
+    let dependencies: Vec[DependencyEnvironment] = Vec::new();
     match implicit_builtin_dependency_environment() {
         Ok(environment) => dependencies.push(environment),
         Err(error) => testing::fail(error),
@@ -530,14 +530,14 @@ fn diagnoses_overlapping_impls_across_package_files() -> unit {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array(
         [(ast_files[0], "first.gom"), (ast_files[1], "second.gom")],
     );
-    let hir_files: Vec[hir::File] = Vec::from_array([]);
+    let hir_files: Vec[hir::File] = Vec::new();
     for lowered in hir::lower_package_files(inputs, "example::values") {
         match lowered.hir {
             Some(file) => hir_files.push(file),
             None => testing::fail("expected overlapping impl HIR"),
         }
     }
-    let checked = check_package_files_for_link_with_dependencies(hir_files, Vec::from_array([]));
+    let checked = check_package_files_for_link_with_dependencies(hir_files, Vec::new());
     testing::assert(
         has_diagnostic(
             checked.diagnostics,
@@ -810,7 +810,7 @@ fn permits_runtime_externs_in_builtin_sources() -> unit {
         ),
         "builtin/runtime.gom",
     );
-    let files: Vec[hir::File] = Vec::from_array([]);
+    let files: Vec[hir::File] = Vec::new();
     match lowered.hir {
         Some(file) => files.push(file),
         None => testing::fail("expected builtin HIR"),
@@ -830,12 +830,12 @@ fn rejects_runtime_externs_in_prelude_sources() -> unit {
         "prelude/prelude.gom",
         "prelude",
     );
-    let files: Vec[hir::File] = Vec::from_array([]);
+    let files: Vec[hir::File] = Vec::new();
     match lowered.hir {
         Some(file) => files.push(file),
         None => testing::fail("expected prelude HIR"),
     };
-    let checked = check_package_files_for_link_with_dependencies(files, Vec::from_array([]));
+    let checked = check_package_files_for_link_with_dependencies(files, Vec::new());
     testing::assert(
         has_diagnostic(checked.diagnostics, "extern output is not permitted in this source"),
     )
@@ -1460,7 +1460,7 @@ fn checks_indexed_assignment_roots() -> unit {
 #[test]
 fn checks_practical_expression_syntax() -> unit {
     let valid = checked_diagnostics(
-        "struct Point { x: isize, y: isize } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[isize] = Vec::from_array([]); let table: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
+        "struct Point { x: isize, y: isize } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[isize] = Vec::new(); let table: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
     );
     testing::assert_eq(valid.len(), 0)
 }
@@ -1468,11 +1468,11 @@ fn checks_practical_expression_syntax() -> unit {
 #[test]
 fn checks_collection_from_array_inference_and_constraints() -> unit {
     let valid = checked_diagnostics(
-        "fn main() -> unit { let values: Vec[isize] = Vec::from_array([]); let entries = HashMap::[string, isize]::from_array([]); let make: ([isize; 2]) -> Vec[isize] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",
+        "fn main() -> unit { let values: Vec[isize] = Vec::new(); let entries = HashMap::[string, isize]::new(); let make: ([isize; 2]) -> Vec[isize] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",
     );
     testing::assert_eq(valid.len(), 0);
     let uninferred = checked_diagnostics(
-        "fn main() -> unit { let _ = Vec::from_array([]); let _ = HashMap::from_array([]); }",
+        "fn main() -> unit { let _ = Vec::new(); let _ = HashMap::new(); }",
     );
     testing::assert(has_diagnostic_containing(uninferred, "Could not infer"));
     let wrong_element = checked_diagnostics(
@@ -1484,7 +1484,7 @@ fn checks_collection_from_array_inference_and_constraints() -> unit {
     );
     testing::assert(has_diagnostic_containing(missing_key_traits, "Hash"));
     testing::assert(has_diagnostic_containing(missing_key_traits, "Eq"));
-    let dependencies: Vec[hir::File] = Vec::from_array([]);
+    let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir("package shadow; pub struct Vec[T] {}", "vendor::shadow"));
     let shadowed = check_for_link_with_dependencies(
         hir::lower(
@@ -1530,7 +1530,7 @@ fn lowers_collection_from_array_to_specialized_intrinsic() -> unit {
 #[test]
 fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let values = Vec::from_array([]); values.push(Vec::from_array([1, 2])); }",
+        "fn main() -> unit { let values = Vec::new(); values.push(Vec::from_array([1, 2])); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
@@ -1538,7 +1538,7 @@ fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
 #[test]
 fn infers_empty_vectors_from_return_and_call_context() -> unit {
     let diagnostics = checked_diagnostics(
-        "fn values() -> Option[Vec[Vec[u16]]] { Option::Some(Vec::from_array([])) } fn main() -> unit { let values = values().unwrap_or(Vec::from_array([])); let _ = values.len(); }",
+        "fn values() -> Option[Vec[Vec[u16]]] { Option::Some(Vec::new()) } fn main() -> unit { let values = values().unwrap_or(Vec::new()); let _ = values.len(); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
@@ -3348,9 +3348,9 @@ fn direct_type_writer_matches_compact_document_rendering() -> unit {
             Type::Con { name: "sample::Type" },
             Type::Dyn {
                 trait_name: "sample::Trait",
-                args: Vec::from_array([]),
-                associated_types: Vec::from_array([]),
-                additional_bounds: Vec::from_array([]),
+                args: Vec::new(),
+                associated_types: Vec::new(),
+                additional_bounds: Vec::new(),
             },
             Type::Projection {
                 for_ty: Type::Con { name: "sample::Type" },
@@ -3359,7 +3359,7 @@ fn direct_type_writer_matches_compact_document_rendering() -> unit {
                     TraitRef { name: "sample::Trait", args: Vec::from_array([Type::Int]) },
                 ),
             },
-            Type::App { ty: Type::Con { name: "Option" }, args: Vec::from_array([]) },
+            Type::App { ty: Type::Con { name: "Option" }, args: Vec::new() },
             Type::App { ty: Type::Con { name: "Option" }, args: Vec::from_array([Type::String]) },
             Type::Array { len: 4, elem: Type::Uint8 },
             Type::Slice { elem: Type::Char },

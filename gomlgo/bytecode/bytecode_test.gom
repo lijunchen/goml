@@ -14,16 +14,13 @@ fn execution_fixture(name: string) -> string {
 fn minimal_program() -> BytecodeProgram {
     let world = go_types::new_world();
     let package_id = go_types::add_package(world, "example.com/main", "main", world.universe, true);
-    let empty_tuple = go_types::add_type(
-        world,
-        go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
-    );
+    let empty_tuple = go_types::add_type(world, go_types::TypeKind::Tuple { variables: Vec::new() });
     let signature = go_types::add_type(
         world,
         go_types::TypeKind::Signature {
             receiver: Option::None,
-            receiver_type_params: Vec::from_array([]),
-            type_params: Vec::from_array([]),
+            receiver_type_params: Vec::new(),
+            type_params: Vec::new(),
             params: empty_tuple,
             results: empty_tuple,
             variadic: false,
@@ -62,7 +59,7 @@ fn minimal_program() -> BytecodeProgram {
                     package_id,
                     path: "example.com/main",
                     functions: Vec::from_array([function]),
-                    globals: Vec::from_array([]),
+                    globals: Vec::new(),
                     initializer: Option::None,
                 },
             ],
@@ -75,20 +72,20 @@ fn minimal_program() -> BytecodeProgram {
                     object,
                     name: "main",
                     signature,
-                    register_types: Vec::from_array([]),
+                    register_types: Vec::new(),
                     place_count: 0,
-                    locals: Vec::from_array([]),
-                    captures: Vec::from_array([]),
-                    parameters: Vec::from_array([]),
-                    results: Vec::from_array([]),
+                    locals: Vec::new(),
+                    captures: Vec::new(),
+                    parameters: Vec::new(),
+                    results: Vec::new(),
                     blocks: Vec::from_array(
                         [
                             BasicBlock {
                                 id: block_id(0),
-                                parameters: Vec::from_array([]),
-                                instructions: Vec::from_array([]),
+                                parameters: Vec::new(),
+                                instructions: Vec::new(),
                                 terminator: Terminator {
-                                    kind: TerminatorKind::Return { values: Vec::from_array([]) },
+                                    kind: TerminatorKind::Return { values: Vec::new() },
                                     location,
                                 },
                             },
@@ -98,13 +95,13 @@ fn minimal_program() -> BytecodeProgram {
                 },
             ],
         ),
-        globals: Vec::from_array([]),
+        globals: Vec::new(),
         object_functions,
         object_globals,
-        native_calls: Vec::from_array([]),
-        native_types: Vec::from_array([]),
+        native_calls: Vec::new(),
+        native_types: Vec::new(),
         object_native_calls: native_option_slots(world.objects.len()),
-        native_initialization_packages: Vec::from_array([]),
+        native_initialization_packages: Vec::new(),
         source_files: Vec::from_array(
             [BytecodeSourceFile { package_id, file: syntax::file_id(0), name: "main.go" }],
         ),
@@ -132,7 +129,7 @@ fn reports_invalid_control_flow_without_indexing_the_target() -> unit {
     let program = minimal_program();
     program.functions[0].blocks[0].terminator.kind = TerminatorKind::Jump {
         target: block_id(50),
-        arguments: Vec::from_array([]),
+        arguments: Vec::new(),
     };
     let diagnostics = verify(program);
     testing::assert(contains_message(diagnostics, "invalid block 50"))
@@ -193,8 +190,8 @@ fn reports_malformed_allocate_assertion_map_and_dynamic_call() -> unit {
     let comparable_interface = go_types::add_type(
         program.world,
         go_types::TypeKind::Interface {
-            methods: Vec::from_array([]),
-            embeddeds: Vec::from_array([]),
+            methods: Vec::new(),
+            embeddeds: Vec::new(),
             comparable: true,
             implicit: false,
         },
@@ -245,9 +242,9 @@ fn reports_malformed_allocate_assertion_map_and_dynamic_call() -> unit {
             },
             Instruction {
                 kind: InstructionKind::Call {
-                    results: Vec::from_array([]),
+                    results: Vec::new(),
                     target: CallTarget::Dynamic(register_id(1)),
-                    arguments: Vec::from_array([]),
+                    arguments: Vec::new(),
                     variadic: false,
                 },
                 location,
@@ -314,12 +311,12 @@ fn reports_malformed_channel_and_select_instructions() -> unit {
                             SelectCase {
                                 operation: SelectOperation::Default,
                                 target: block_id(0),
-                                arguments: Vec::from_array([]),
+                                arguments: Vec::new(),
                             },
                             SelectCase {
                                 operation: SelectOperation::Default,
                                 target: block_id(0),
-                                arguments: Vec::from_array([]),
+                                arguments: Vec::new(),
                             },
                         ],
                     ),
@@ -458,7 +455,7 @@ fn lowered_fixture(name: string) -> LowerResult {
     );
     if !loaded.diagnostics.is_empty() {
         testing::fail(loaded.diagnostics[0].message);
-        return LowerResult { program: Option::None, diagnostics: Vec::from_array([]) }
+        return LowerResult { program: Option::None, diagnostics: Vec::new() }
     } else {};
     lower(testing::expect_some(loaded.program, "execution program is missing"))
 }
@@ -470,7 +467,7 @@ fn lowered_file(file: string) -> LowerResult {
     );
     if !loaded.diagnostics.is_empty() {
         testing::fail(loaded.diagnostics[0].message);
-        return LowerResult { program: Option::None, diagnostics: Vec::from_array([]) }
+        return LowerResult { program: Option::None, diagnostics: Vec::new() }
     } else {};
     lower(testing::expect_some(loaded.program, "execution program is missing"))
 }

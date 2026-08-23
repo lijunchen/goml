@@ -56,9 +56,9 @@ fn discovers_toolchain_projects_with_implicit_layers() -> unit {
                 module_dir: "",
                 module_path: "",
                 entry_package: "",
-                packages: Vec::from_array([]),
-                sources: Vec::from_array([]),
-                order: Vec::from_array([]),
+                packages: Vec::new(),
+                sources: Vec::new(),
+                order: Vec::new(),
             }
         },
     };
@@ -120,11 +120,11 @@ fn compiler_world_test_context(world: CompilerWorld) -> Context {
                         directory: "/tmp/module",
                         artifact_prefix: "pkg",
                         files: Vec::from_array(["/tmp/module/main.gom"]),
-                        imports: Vec::from_array([]),
+                        imports: Vec::new(),
                     },
                 ],
             ),
-            sources: Vec::from_array([]),
+            sources: Vec::new(),
             order: Vec::from_array(["test"]),
         },
         compiler: "/tmp/toolchain/bin/gomlc",
@@ -143,11 +143,7 @@ fn installed_compiler_world_is_a_read_only_plan_input() -> unit {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
-            Plan {
-                commands: Vec::from_array([]),
-                executable: Option::None,
-                test_groups: Vec::from_array([]),
-            }
+            Plan { commands: Vec::new(), executable: Option::None, test_groups: Vec::new() }
         },
     };
     testing::assert_eq(plan.commands.len(), 1);
@@ -163,11 +159,7 @@ fn legacy_compiler_world_keeps_prepare_world_compatibility() -> unit {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
-            Plan {
-                commands: Vec::from_array([]),
-                executable: Option::None,
-                test_groups: Vec::from_array([]),
-            }
+            Plan { commands: Vec::new(), executable: Option::None, test_groups: Vec::new() }
         },
     };
     testing::assert_eq(plan.commands.len(), 2);
@@ -341,9 +333,9 @@ fn cancellation_test_context(root: string, compiler: string) -> Context {
             module_dir: root,
             module_path: "cancellation_test",
             entry_package: "",
-            packages: Vec::from_array([]),
-            sources: Vec::from_array([]),
-            order: Vec::from_array([]),
+            packages: Vec::new(),
+            sources: Vec::new(),
+            order: Vec::new(),
         },
         compiler,
         compiler_world: CompilerWorld::Source,
@@ -357,7 +349,7 @@ fn cancellation_test_command(name: string) -> Command {
         package_name: name,
         module_name: "test",
         input_files: Vec::from_array([name + ".input"]),
-        interface_files: Vec::from_array([]),
+        interface_files: Vec::new(),
         output: path::join("out", name),
         world: Option::None,
     }
@@ -384,7 +376,7 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> unit {
                 [cancellation_test_command("slow"), cancellation_test_command("fail")],
             ),
             executable: Option::None,
-            test_groups: Vec::from_array([]),
+            test_groups: Vec::new(),
         },
         false,
         2,

@@ -26,7 +26,7 @@ fn check_scalar(bytes: Vec[byte], expected: u32, expected_width: isize) -> unit 
 }
 
 fn main() -> unit {
-    check_utf8(Vec::from_array([]), true);
+    check_utf8(Vec::new(), true);
     check_utf8(Vec::from_array([0]), true);
     check_utf8(Vec::from_array([127]), true);
     check_scalar(Vec::from_array([194, 128]), 128, 2);

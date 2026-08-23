@@ -59,7 +59,7 @@ fn main() -> unit {
         Ok(value) => value,
         Err(error) => {
             println(error);
-            toml::Value::Table(Vec::from_array([]))
+            toml::Value::Table(Vec::new())
         },
     };
     match toml::field(value, "created") {

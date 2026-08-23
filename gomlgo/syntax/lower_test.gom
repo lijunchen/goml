@@ -90,10 +90,7 @@ fn lowers_every_parser_ast_kind_without_terminating() -> unit {
     let kinds = all_ast_kinds();
     testing::assert_eq(kinds.len(), 55);
     for kind in kinds {
-        let result = lower_file(
-            ast::kind_name(kind) + ".go",
-            ast::node(kind, 0, 1, Vec::from_array([])),
-        );
+        let result = lower_file(ast::kind_name(kind) + ".go", ast::node(kind, 0, 1, Vec::new()));
         testing::assert_eq(result.files.len(), 1);
         let root = testing::expect_some(
             get_node(result.arena, result.files[0].root),
@@ -124,7 +121,7 @@ fn lowers_valid_file_to_typed_nodes_and_canonical_paths() -> unit {
         },
         _ => testing::fail("root is not a file"),
     };
-    let kinds: Vec[string] = Vec::from_array([]);
+    let kinds: Vec[string] = Vec::new();
     for node_value in result.arena.nodes {
         let node = testing::expect_some(node_value, "missing syntax node");
         kinds.push(syntax_kind_name(node.kind))
@@ -146,7 +143,7 @@ fn node_ids_and_keys_are_unique_across_files() -> unit {
         ),
     );
     testing::assert_eq(result.diagnostics.len(), 0);
-    let keys: Vec[string] = Vec::from_array([]);
+    let keys: Vec[string] = Vec::new();
     for index in 0..result.arena.nodes.len() {
         let node = testing::expect_some(result.arena.nodes[index], "missing syntax node");
         testing::assert_eq(node.id.value, index);
@@ -159,7 +156,7 @@ fn node_ids_and_keys_are_unique_across_files() -> unit {
 
 #[test]
 fn malformed_generic_ast_produces_recoverable_diagnostics() -> unit {
-    let result = lower_file("bad.go", ast::node(ast::Kind::Ident, 4, 7, Vec::from_array([])));
+    let result = lower_file("bad.go", ast::node(ast::Kind::Ident, 4, 7, Vec::new()));
     testing::assert_eq(result.files.len(), 1);
     testing::assert(result.diagnostics.len() >= 2);
     testing::assert_eq(result.diagnostics[0].file, "bad.go");

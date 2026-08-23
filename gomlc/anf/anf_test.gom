@@ -31,26 +31,26 @@ fn snapshot_names_restart_for_each_function() -> unit {
 }
 
 fn verifier_file(body: Block, ret_ty: repr::Type) -> File {
-    let functions: Vec[Function] = Vec::from_array([]);
+    let functions: Vec[Function] = Vec::new();
     functions.push(
         Function {
             name: "verify_test",
             origin: FunctionOrigin::Source,
             root: true,
             trait_impl: Option::None,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty,
             body,
         },
     );
     File {
         functions,
-        enums: Vec::from_array([]),
-        structs: Vec::from_array([]),
-        type_instances: Vec::from_array([]),
-        constants: Vec::from_array([]),
-        statics: Vec::from_array([]),
-        closure_defs: Vec::from_array([]),
+        enums: Vec::new(),
+        structs: Vec::new(),
+        type_instances: Vec::new(),
+        constants: Vec::new(),
+        statics: Vec::new(),
+        closure_defs: Vec::new(),
     }
 }
 
@@ -132,31 +132,27 @@ fn eliminates_unreachable_recursive_join_members() -> unit {
     let live = JoinBind {
         name: "live",
         role: JoinRole::Continuation,
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: repr::Type::Unit,
-        body: Block { binds: Vec::from_array([]), term: Term::Return(unit_value) },
+        body: Block { binds: Vec::new(), term: Term::Return(unit_value) },
     };
     let dead = JoinBind {
         name: "dead",
         role: JoinRole::Continuation,
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: repr::Type::Unit,
         body: Block {
-            binds: Vec::from_array([]),
-            term: Term::Jump { target: "dead", args: Vec::from_array([]), ret_ty: repr::Type::Unit },
+            binds: Vec::new(),
+            term: Term::Jump { target: "dead", args: Vec::new(), ret_ty: repr::Type::Unit },
         },
     };
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::JoinRec(Vec::from_array([live, dead])));
     let value = dce(
         verifier_file(
             Block {
                 binds,
-                term: Term::Jump {
-                    target: "live",
-                    args: Vec::from_array([]),
-                    ret_ty: repr::Type::Unit,
-                },
+                term: Term::Jump { target: "live", args: Vec::new(), ret_ty: repr::Type::Unit },
             },
             repr::Type::Unit,
         ),
@@ -175,14 +171,14 @@ fn eliminates_unreferenced_nonrecursive_joins() -> unit {
     let join = JoinBind {
         name: "dead",
         role: JoinRole::Continuation,
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: repr::Type::Unit,
         body: Block {
-            binds: Vec::from_array([]),
+            binds: Vec::new(),
             term: Term::Return(Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit }),
         },
     };
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(join));
     let value = dce(
         verifier_file(
@@ -206,10 +202,10 @@ fn rejects_out_of_scope_join_jumps() -> unit {
         verify(
             verifier_file(
                 Block {
-                    binds: Vec::from_array([]),
+                    binds: Vec::new(),
                     term: Term::Jump {
                         target: "missing",
-                        args: Vec::from_array([]),
+                        args: Vec::new(),
                         ret_ty: repr::Type::Unit,
                     },
                 },
@@ -225,29 +221,21 @@ fn rejects_nonrecursive_self_jumps() -> unit {
     let join = JoinBind {
         name: "again",
         role: JoinRole::Continuation,
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: repr::Type::Unit,
         body: Block {
-            binds: Vec::from_array([]),
-            term: Term::Jump {
-                target: "again",
-                args: Vec::from_array([]),
-                ret_ty: repr::Type::Unit,
-            },
+            binds: Vec::new(),
+            term: Term::Jump { target: "again", args: Vec::new(), ret_ty: repr::Type::Unit },
         },
     };
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(join));
     verifier_error_contains(
         verify(
             verifier_file(
                 Block {
                     binds,
-                    term: Term::Jump {
-                        target: "again",
-                        args: Vec::from_array([]),
-                        ret_ty: repr::Type::Unit,
-                    },
+                    term: Term::Jump { target: "again", args: Vec::new(), ret_ty: repr::Type::Unit },
                 },
                 repr::Type::Unit,
             ),
@@ -258,7 +246,7 @@ fn rejects_nonrecursive_self_jumps() -> unit {
 
 #[test]
 fn rejects_join_argument_mismatches() -> unit {
-    let params: Vec[(string, repr::Type)] = Vec::from_array([]);
+    let params: Vec[(string, repr::Type)] = Vec::new();
     params.push(("value", repr::Type::Int32));
     let join = JoinBind {
         name: "done",
@@ -266,22 +254,18 @@ fn rejects_join_argument_mismatches() -> unit {
         params,
         ret_ty: repr::Type::Int32,
         body: Block {
-            binds: Vec::from_array([]),
+            binds: Vec::new(),
             term: Term::Return(Imm::Var { name: "value", ty: repr::Type::Int32 }),
         },
     };
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(join));
     verifier_error_contains(
         verify(
             verifier_file(
                 Block {
                     binds,
-                    term: Term::Jump {
-                        target: "done",
-                        args: Vec::from_array([]),
-                        ret_ty: repr::Type::Int32,
-                    },
+                    term: Term::Jump { target: "done", args: Vec::new(), ret_ty: repr::Type::Int32 },
                 },
                 repr::Type::Int32,
             ),
@@ -292,34 +276,26 @@ fn rejects_join_argument_mismatches() -> unit {
 
 #[test]
 fn accepts_recursive_self_jumps() -> unit {
-    let joins: Vec[JoinBind] = Vec::from_array([]);
+    let joins: Vec[JoinBind] = Vec::new();
     joins.push(
         JoinBind {
             name: "loop",
             role: JoinRole::Continuation,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: repr::Type::Unit,
             body: Block {
-                binds: Vec::from_array([]),
-                term: Term::Jump {
-                    target: "loop",
-                    args: Vec::from_array([]),
-                    ret_ty: repr::Type::Unit,
-                },
+                binds: Vec::new(),
+                term: Term::Jump { target: "loop", args: Vec::new(), ret_ty: repr::Type::Unit },
             },
         },
     );
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::JoinRec(joins));
     match verify(
         verifier_file(
             Block {
                 binds,
-                term: Term::Jump {
-                    target: "loop",
-                    args: Vec::from_array([]),
-                    ret_ty: repr::Type::Unit,
-                },
+                term: Term::Jump { target: "loop", args: Vec::new(), ret_ty: repr::Type::Unit },
             },
             repr::Type::Unit,
         ),
@@ -334,24 +310,20 @@ fn preserves_loop_exit_joins() -> unit {
     let join = JoinBind {
         name: "exit",
         role: JoinRole::LoopExit,
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: repr::Type::Unit,
         body: Block {
-            binds: Vec::from_array([]),
+            binds: Vec::new(),
             term: Term::Return(Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit }),
         },
     };
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(join));
     let optimized = simplify(
         verifier_file(
             Block {
                 binds,
-                term: Term::Jump {
-                    target: "exit",
-                    args: Vec::from_array([]),
-                    ret_ty: repr::Type::Unit,
-                },
+                term: Term::Jump { target: "exit", args: Vec::new(), ret_ty: repr::Type::Unit },
             },
             repr::Type::Unit,
         ),
@@ -367,8 +339,8 @@ fn preserves_loop_exit_joins() -> unit {
 
 #[test]
 fn rejects_bare_closure_environment_join_arguments() -> unit {
-    let function_ty = repr::Type::Func { params: Vec::from_array([]), ret_ty: repr::Type::String };
-    let params: Vec[(string, repr::Type)] = Vec::from_array([]);
+    let function_ty = repr::Type::Func { params: Vec::new(), ret_ty: repr::Type::String };
+    let params: Vec[(string, repr::Type)] = Vec::new();
     params.push(("result", function_ty));
     let join = JoinBind {
         name: "return",
@@ -376,13 +348,13 @@ fn rejects_bare_closure_environment_join_arguments() -> unit {
         params,
         ret_ty: function_ty,
         body: Block {
-            binds: Vec::from_array([]),
+            binds: Vec::new(),
             term: Term::Return(Imm::Var { name: "result", ty: function_ty }),
         },
     };
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(join));
-    let args: Vec[Imm] = Vec::from_array([]);
+    let args: Vec[Imm] = Vec::new();
     args.push(
         Imm::Var {
             name: "environment",
@@ -400,7 +372,7 @@ fn rejects_bare_closure_environment_join_arguments() -> unit {
 
 #[test]
 fn does_not_propagate_assigned_bindings() -> unit {
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(
         Bind::Let(
             LetBind {
@@ -555,7 +527,7 @@ fn exhausts_static_inline_budget() -> unit {
         Some(value) => value,
         None => return testing::fail("missing inline candidate"),
     };
-    let args: Vec[Imm] = Vec::from_array([]);
+    let args: Vec[Imm] = Vec::new();
     args.push(Imm::Prim { value: repr::Primitive::String { value: "x" }, ty: repr::Type::String });
     let budget = Ref::new(2);
     for _ in 0..2 {
@@ -618,7 +590,7 @@ fn preserves_continuations_with_unknown_entries() -> unit {
 
 #[test]
 fn invalidates_commuting_constructors_after_assignment() -> unit {
-    let known: Vec[CommuteBinding] = Vec::from_array([]);
+    let known: Vec[CommuteBinding] = Vec::new();
     record_commute_binding(
         known,
         LetBind {
@@ -629,7 +601,7 @@ fn invalidates_commuting_constructors_after_assignment() -> unit {
             ty: repr::Type::Int32,
         },
     );
-    let fields: Vec[Imm] = Vec::from_array([]);
+    let fields: Vec[Imm] = Vec::new();
     fields.push(Imm::Var { name: "field", ty: repr::Type::Int32 });
     record_commute_binding(
         known,
@@ -638,7 +610,7 @@ fn invalidates_commuting_constructors_after_assignment() -> unit {
             value: Value::Constr {
                 constructor: repr::Constructor {
                     name: "Maybe::Some",
-                    fields: Vec::from_array([]),
+                    fields: Vec::new(),
                     is_struct: false,
                     tag: Option::Some(0),
                 },
@@ -701,12 +673,12 @@ fn fuses_recursive_join_consumers() -> unit {
 
 #[test]
 fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
-    let arms: Vec[Arm] = Vec::from_array([]);
+    let arms: Vec[Arm] = Vec::new();
     arms.push(
         Arm {
             lhs: Imm::Tag { index: 0, ty: repr::Type::Named { name: "Option__int" } },
             body: Block {
-                binds: Vec::from_array([]),
+                binds: Vec::new(),
                 term: Term::Return(
                     Imm::Prim {
                         value: repr::Primitive::Bool { value: false },
@@ -720,10 +692,10 @@ fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
         Arm {
             lhs: Imm::Tag { index: 1, ty: repr::Type::Named { name: "Option__int" } },
             body: Block {
-                binds: Vec::from_array([]),
+                binds: Vec::new(),
                 term: Term::Jump {
                     target: "outer_loop",
-                    args: Vec::from_array([]),
+                    args: Vec::new(),
                     ret_ty: repr::Type::Bool,
                 },
             },
@@ -732,7 +704,7 @@ fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
     testing::assert(
         !inline_block_consumes(
             Block {
-                binds: Vec::from_array([]),
+                binds: Vec::new(),
                 term: Term::Match {
                     scrutinee: Imm::Var {
                         name: "result",

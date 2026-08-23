@@ -117,7 +117,7 @@ fn imports_a_package_once_for_function_and_exit_bindings() -> unit {
     let source = testing::expect_ok(
         generate_registry_source(
             new_manifest(
-                Vec::from_array([]),
+                Vec::new(),
                 Vec::from_array(
                     [
                         exit_call(2),
@@ -145,14 +145,14 @@ fn routes_program_executable_through_the_bridge() -> unit {
     let source = testing::expect_ok(
         generate_registry_source(
             new_manifest(
-                Vec::from_array([]),
+                Vec::new(),
                 Vec::from_array(
                     [
                         function_call(
                             11,
                             "os",
                             "Executable",
-                            Vec::from_array([]),
+                            Vec::new(),
                             Vec::from_array(["string", "error"]),
                             false,
                         ),
@@ -169,7 +169,7 @@ fn routes_program_executable_through_the_bridge() -> unit {
 #[test]
 fn generates_native_method_and_type_bindings() -> unit {
     let manifest = new_manifest(
-        Vec::from_array([]),
+        Vec::new(),
         Vec::from_array(
             [
                 method_call(
@@ -179,7 +179,7 @@ fn generates_native_method_and_type_bindings() -> unit {
                     true,
                     "Lock",
                     Vec::from_array(["native:*sync.Mutex"]),
-                    Vec::from_array([]),
+                    Vec::new(),
                     false,
                 ),
             ],
@@ -204,7 +204,7 @@ fn generates_concrete_generic_function_bindings() -> unit {
     let source = testing::expect_ok(
         generate_registry_source(
             new_manifest(
-                Vec::from_array([]),
+                Vec::new(),
                 Vec::from_array(
                     [
                         generic_function_call(
@@ -228,7 +228,7 @@ fn generates_concrete_generic_function_bindings() -> unit {
 #[test]
 fn generates_interface_proxies_and_aggregate_shells() -> unit {
     let manifest = new_manifest(
-        Vec::from_array([]),
+        Vec::new(),
         Vec::from_array(
             [
                 function_call(
@@ -288,7 +288,7 @@ fn generates_interface_proxies_and_aggregate_shells() -> unit {
 
 #[test]
 fn generates_void_interface_proxy_methods_without_unused_results() -> unit {
-    let manifest = new_manifest(Vec::from_array([]), Vec::from_array([]));
+    let manifest = new_manifest(Vec::new(), Vec::new());
     manifest.proxies.push(
         NativeProxySpec {
             import_path: "sync",
@@ -297,8 +297,8 @@ fn generates_void_interface_proxy_methods_without_unused_results() -> unit {
                 [
                     NativeProxyMethodSpec {
                         name: "Lock",
-                        parameter_type_keys: Vec::from_array([]),
-                        result_type_keys: Vec::from_array([]),
+                        parameter_type_keys: Vec::new(),
+                        result_type_keys: Vec::new(),
                     },
                 ],
             ),
@@ -316,7 +316,7 @@ fn generates_void_interface_proxy_methods_without_unused_results() -> unit {
 
 #[test]
 fn rejects_aggregate_fields_without_concrete_go_types() -> unit {
-    let manifest = new_manifest(Vec::from_array([]), Vec::from_array([]));
+    let manifest = new_manifest(Vec::new(), Vec::new());
     manifest.aggregates.push(
         NativeAggregateSpec {
             key: "gomlgo-type-8",
@@ -364,17 +364,15 @@ fn hashes_only_the_canonical_manifest() -> unit {
 
 #[test]
 fn rejects_invalid_and_duplicate_bindings() -> unit {
-    let duplicate = new_manifest(Vec::from_array([]), Vec::from_array([exit_call(2), exit_call(2)]));
+    let duplicate = new_manifest(Vec::new(), Vec::from_array([exit_call(2), exit_call(2)]));
     testing::assert(canonical_manifest(duplicate).is_err());
     let invalid_symbol = new_manifest(
-        Vec::from_array([]),
-        Vec::from_array(
-            [function_call(1, "fmt", "sprintf", Vec::from_array([]), Vec::from_array([]), false)],
-        ),
+        Vec::new(),
+        Vec::from_array([function_call(1, "fmt", "sprintf", Vec::new(), Vec::new(), false)]),
     );
     testing::assert(canonical_manifest(invalid_symbol).is_err());
     let invalid_exit = new_manifest(
-        Vec::from_array([]),
+        Vec::new(),
         Vec::from_array(
             [
                 NativeCallSpec {
@@ -383,9 +381,9 @@ fn rejects_invalid_and_duplicate_bindings() -> unit {
                     symbol: "Exit",
                     receiver_name: "",
                     receiver_pointer: false,
-                    type_argument_keys: Vec::from_array([]),
+                    type_argument_keys: Vec::new(),
                     parameter_type_keys: Vec::from_array(["int32"]),
-                    result_type_keys: Vec::from_array([]),
+                    result_type_keys: Vec::new(),
                     variadic: false,
                     binding: NativeBindingKind::Exit,
                 },
@@ -394,9 +392,9 @@ fn rejects_invalid_and_duplicate_bindings() -> unit {
     );
     testing::assert(canonical_manifest(invalid_exit).is_err());
     let unsafe_exit = new_manifest(
-        Vec::from_array([]),
+        Vec::new(),
         Vec::from_array(
-            [function_call(1, "os", "Exit", Vec::from_array(["int"]), Vec::from_array([]), false)],
+            [function_call(1, "os", "Exit", Vec::from_array(["int"]), Vec::new(), false)],
         ),
     );
     testing::assert(canonical_manifest(unsafe_exit).is_err());
@@ -594,7 +592,7 @@ fn creates_a_reproducible_go_build_plan() -> unit {
 
 #[test]
 fn rejects_cgo_and_unsafe_image_paths() -> unit {
-    let cgo = cache_input(Vec::from_array([]));
+    let cgo = cache_input(Vec::new());
     cgo.cgo = true;
     testing::assert(
         build_plan(
@@ -613,7 +611,7 @@ fn rejects_cgo_and_unsafe_image_paths() -> unit {
             BuildRequest {
                 go_binary: "/usr/lib/go-1.26/bin/go",
                 cache_root: "/tmp/gomlgo-native",
-                cache: cache_input(Vec::from_array([])),
+                cache: cache_input(Vec::new()),
                 bridge_sources: bridge_sources(),
                 image_sources: Vec::from_array(
                     [GeneratedFile { relative_path: "go.mod", content: "module invalid" }],
@@ -627,7 +625,7 @@ fn rejects_cgo_and_unsafe_image_paths() -> unit {
             BuildRequest {
                 go_binary: "/usr/lib/go-1.26/bin/go",
                 cache_root: "/tmp/gomlgo-native",
-                cache: cache_input(Vec::from_array([])),
+                cache: cache_input(Vec::new()),
                 bridge_sources: bridge_sources(),
                 image_sources: Vec::from_array(
                     [GeneratedFile { relative_path: "../main.go", content: "package main" }],
@@ -641,23 +639,14 @@ fn rejects_cgo_and_unsafe_image_paths() -> unit {
             BuildRequest {
                 go_binary: "/usr/lib/go-1.26/bin/go",
                 cache_root: "/tmp/gomlgo-native",
-                cache: cache_input(Vec::from_array([])),
+                cache: cache_input(Vec::new()),
                 bridge_sources: bridge_sources(),
                 image_sources: image_sources(),
             },
             new_manifest(
-                Vec::from_array([]),
+                Vec::new(),
                 Vec::from_array(
-                    [
-                        function_call(
-                            1,
-                            "gomlgo/nativebridge",
-                            "Bind",
-                            Vec::from_array([]),
-                            Vec::from_array([]),
-                            false,
-                        ),
-                    ],
+                    [function_call(1, "gomlgo/nativebridge", "Bind", Vec::new(), Vec::new(), false)],
                 ),
             ),
         ).is_err(),
@@ -676,7 +665,7 @@ fn generated_registry_builds_with_go126() -> unit {
             BuildRequest {
                 go_binary: "/usr/lib/go-1.26/bin/go",
                 cache_root: path::join(root, "_artifact/native-registry-smoke"),
-                cache: cache_input(Vec::from_array([])),
+                cache: cache_input(Vec::new()),
                 bridge_sources: Vec::from_array(
                     [
                         GeneratedFile {

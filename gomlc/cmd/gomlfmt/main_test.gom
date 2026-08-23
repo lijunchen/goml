@@ -27,7 +27,7 @@ fn parses_formatter_modes() -> unit {
 
 #[test]
 fn defaults_to_stdin() -> unit {
-    match parse_options(args(Vec::from_array([]))) {
+    match parse_options(args(Vec::new())) {
         Ok(options) => {
             testing::assert_eq(options.paths.len(), 1);
             testing::assert_eq(options.paths[0], "-")

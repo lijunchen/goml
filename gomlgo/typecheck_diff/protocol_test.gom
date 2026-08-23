@@ -49,7 +49,7 @@ fn request_encoding_is_stable() -> unit {
 
 #[test]
 fn acceptance_request_skips_info() -> unit {
-    let encoded = encode_check_request(acceptance_request("example/p", Vec::from_array([])));
+    let encoded = encode_check_request(acceptance_request("example/p", Vec::new()));
     let parsed = json::parse(encoded).unwrap_or(json::Value::Null);
     testing::assert(
         !json::as_bool(

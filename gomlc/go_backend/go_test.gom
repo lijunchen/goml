@@ -53,7 +53,7 @@ fn required_lower(value: Result[File, string]) -> File {
         Ok(file) => file,
         Err(error) => {
             testing::fail(error);
-            File { items: Vec::from_array([]) }
+            File { items: Vec::new() }
         },
     }
 }
@@ -239,8 +239,8 @@ fn bounds_qualified_variant_names_after_qualification() -> unit {
 #[test]
 fn emits_test_runner_entrypoint() -> unit {
     let test_cases = Vec::new();
-    test_cases.push(("example::alpha", "alpha", Vec::from_array([])));
-    test_cases.push(("example::beta", "beta", Vec::from_array([])));
+    test_cases.push(("example::alpha", "alpha", Vec::new()));
+    test_cases.push(("example::beta", "beta", Vec::new()));
     let output = encode(
         lower_test_source(
             "fn beta() -> unit {} fn alpha() -> unit {} fn unused() -> unit {}",
@@ -524,7 +524,7 @@ fn emits_complete_vec_runtime_helpers() -> unit {
 fn stores_vec_from_array_header_and_items_together() -> unit {
     let output = encode(
         lower_linked_source(
-            "fn main() -> unit { let values = Vec::from_array([1, 2]); let empty: Vec[isize] = Vec::from_array([]); println(values.len() + empty.len()) }",
+            "fn main() -> unit { let values = Vec::from_array([1, 2]); let empty: Vec[isize] = Vec::new(); println(values.len() + empty.len()) }",
         ),
     );
     testing::assert(string_contains(output, "var storage struct {"));
@@ -534,12 +534,7 @@ fn stores_vec_from_array_header_and_items_together() -> unit {
         string_contains(output, "storage.vector.items = storage.values[0:len(storage.values)]"),
     );
     testing::assert(string_contains(output, "return &storage.vector"));
-    testing::assert(
-        string_contains(
-            output,
-            "func(values [0]int) *_goml_vec_int {\n        return &_goml_vec_int{",
-        ),
-    )
+    testing::assert(!string_contains(output, "values [0]int"))
 }
 
 #[test]
@@ -652,35 +647,31 @@ fn recognizes_recursive_joins_independently_of_their_names() -> unit {
     let recursive = anf::JoinBind {
         name: "renamed_control_node",
         role: anf::JoinRole::Continuation,
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: ty,
         body: anf::Block {
-            binds: Vec::from_array([]),
-            term: anf::Term::Jump {
-                target: "renamed_control_node",
-                args: Vec::from_array([]),
-                ret_ty: ty,
-            },
+            binds: Vec::new(),
+            term: anf::Term::Jump { target: "renamed_control_node", args: Vec::new(), ret_ty: ty },
         },
     };
-    let recursive_group: Vec[anf::JoinBind] = Vec::from_array([]);
+    let recursive_group: Vec[anf::JoinBind] = Vec::new();
     recursive_group.push(recursive);
-    let binds: Vec[anf::Bind] = Vec::from_array([]);
+    let binds: Vec[anf::Bind] = Vec::new();
     binds.push(anf::Bind::JoinRec(recursive_group));
-    let functions: Vec[anf::Function] = Vec::from_array([]);
+    let functions: Vec[anf::Function] = Vec::new();
     functions.push(
         anf::Function {
             name: "main",
             origin: anf::FunctionOrigin::Source,
             root: true,
             trait_impl: Option::None,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: ty,
             body: anf::Block {
                 binds,
                 term: anf::Term::Jump {
                     target: "renamed_control_node",
-                    args: Vec::from_array([]),
+                    args: Vec::new(),
                     ret_ty: ty,
                 },
             },
@@ -691,12 +682,12 @@ fn recognizes_recursive_joins_independently_of_their_names() -> unit {
             lower(
                 anf::File {
                     functions,
-                    enums: Vec::from_array([]),
-                    structs: Vec::from_array([]),
-                    type_instances: Vec::from_array([]),
-                    constants: Vec::from_array([]),
-                    statics: Vec::from_array([]),
-                    closure_defs: Vec::from_array([]),
+                    enums: Vec::new(),
+                    structs: Vec::new(),
+                    type_instances: Vec::new(),
+                    constants: Vec::new(),
+                    statics: Vec::new(),
+                    closure_defs: Vec::new(),
                 },
             ),
         ),
@@ -708,16 +699,16 @@ fn recognizes_recursive_joins_independently_of_their_names() -> unit {
 #[test]
 fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit {
     let ty = repr::Type::Unit;
-    let joins: Vec[anf::JoinBind] = Vec::from_array([]);
+    let joins: Vec[anf::JoinBind] = Vec::new();
     joins.push(
         anf::JoinBind {
             name: "first",
             role: anf::JoinRole::Continuation,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: ty,
             body: anf::Block {
-                binds: Vec::from_array([]),
-                term: anf::Term::Jump { target: "second", args: Vec::from_array([]), ret_ty: ty },
+                binds: Vec::new(),
+                term: anf::Term::Jump { target: "second", args: Vec::new(), ret_ty: ty },
             },
         },
     );
@@ -725,38 +716,38 @@ fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit 
         anf::JoinBind {
             name: "second",
             role: anf::JoinRole::Continuation,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: ty,
             body: anf::Block {
-                binds: Vec::from_array([]),
-                term: anf::Term::Jump { target: "first", args: Vec::from_array([]), ret_ty: ty },
+                binds: Vec::new(),
+                term: anf::Term::Jump { target: "first", args: Vec::new(), ret_ty: ty },
             },
         },
     );
-    let functions: Vec[anf::Function] = Vec::from_array([]);
+    let functions: Vec[anf::Function] = Vec::new();
     functions.push(
         anf::Function {
             name: "cycle",
             origin: anf::FunctionOrigin::Source,
             root: true,
             trait_impl: Option::None,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: ty,
             body: anf::Block {
                 binds: Vec::from_array([anf::Bind::JoinRec(joins)]),
-                term: anf::Term::Jump { target: "first", args: Vec::from_array([]), ret_ty: ty },
+                term: anf::Term::Jump { target: "first", args: Vec::new(), ret_ty: ty },
             },
         },
     );
     match lower(
         anf::File {
             functions,
-            enums: Vec::from_array([]),
-            structs: Vec::from_array([]),
-            type_instances: Vec::from_array([]),
-            constants: Vec::from_array([]),
-            statics: Vec::from_array([]),
-            closure_defs: Vec::from_array([]),
+            enums: Vec::new(),
+            structs: Vec::new(),
+            type_instances: Vec::new(),
+            constants: Vec::new(),
+            statics: Vec::new(),
+            closure_defs: Vec::new(),
         },
     ) {
         Err(error) => testing::assert_eq(
@@ -768,7 +759,7 @@ fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit 
 }
 
 fn callable_file(callable: repr::Callable) -> anf::File {
-    let ty = repr::Type::Func { params: Vec::from_array([]), ret_ty: repr::Type::Unit };
+    let ty = repr::Type::Func { params: Vec::new(), ret_ty: repr::Type::Unit };
     anf::File {
         functions: Vec::from_array(
             [
@@ -777,21 +768,21 @@ fn callable_file(callable: repr::Callable) -> anf::File {
                     origin: anf::FunctionOrigin::Source,
                     root: true,
                     trait_impl: Option::None,
-                    params: Vec::from_array([]),
+                    params: Vec::new(),
                     ret_ty: ty,
                     body: anf::Block {
-                        binds: Vec::from_array([]),
+                        binds: Vec::new(),
                         term: anf::Term::Return(anf::Imm::Callable { callable, ty }),
                     },
                 },
             ],
         ),
-        enums: Vec::from_array([]),
-        structs: Vec::from_array([]),
-        type_instances: Vec::from_array([]),
-        constants: Vec::from_array([]),
-        statics: Vec::from_array([]),
-        closure_defs: Vec::from_array([]),
+        enums: Vec::new(),
+        structs: Vec::new(),
+        type_instances: Vec::new(),
+        constants: Vec::new(),
+        statics: Vec::new(),
+        closure_defs: Vec::new(),
     }
 }
 

@@ -199,9 +199,9 @@ fn recursive_named_types_use_ids_and_format_stably() -> unit {
         TypeKind::Named {
             object,
             underlying: world.invalid,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     let _ = set_object_type(world, object, named);
@@ -232,9 +232,9 @@ fn recursive_named_types_use_ids_and_format_stably() -> unit {
             TypeKind::Named {
                 object,
                 underlying,
-                type_params: Vec::from_array([]),
-                type_args: Vec::from_array([]),
-                methods: Vec::from_array([]),
+                type_params: Vec::new(),
+                type_args: Vec::new(),
+                methods: Vec::new(),
             },
         ),
     );
@@ -293,7 +293,7 @@ fn gc_sizes_compute_composite_alignment_offsets_and_trailing_padding() -> unit {
     let sizes = testing::expect_some(gc_sizes("amd64"), "missing amd64 sizes");
     let int8_type = testing::expect_some(basic_type(world, "int8"), "missing int8");
     let int64_type = testing::expect_some(basic_type(world, "int64"), "missing int64");
-    let empty = add_type(world, TypeKind::Struct { fields: Vec::from_array([]) });
+    let empty = add_type(world, TypeKind::Struct { fields: Vec::new() });
     let fields = Vec::from_array(
         [
             StructField {
@@ -344,9 +344,9 @@ fn named_test_type(world: World, pkg: PackageId, name: string, rhs: TypeId) -> T
         TypeKind::Named {
             object,
             underlying: rhs,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     let _ = set_object_type(world, object, result);
@@ -378,8 +378,8 @@ fn type_identity_distinguishes_named_types_and_unaliases() -> unit {
         TypeKind::Alias {
             object: alias_object,
             rhs: first,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
         },
     );
     testing::assert(identical(world, alias, first));
@@ -394,8 +394,8 @@ fn type_resolution_rejects_alias_and_named_cycles() -> unit {
         TypeKind::Alias {
             object: object_id(-1),
             rhs: world.invalid,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
         },
     );
     let second_alias = add_type(
@@ -403,8 +403,8 @@ fn type_resolution_rejects_alias_and_named_cycles() -> unit {
         TypeKind::Alias {
             object: object_id(-1),
             rhs: first_alias,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
         },
     );
     testing::assert(
@@ -414,8 +414,8 @@ fn type_resolution_rejects_alias_and_named_cycles() -> unit {
             TypeKind::Alias {
                 object: object_id(-1),
                 rhs: second_alias,
-                type_params: Vec::from_array([]),
-                type_args: Vec::from_array([]),
+                type_params: Vec::new(),
+                type_args: Vec::new(),
             },
         ),
     );
@@ -425,9 +425,9 @@ fn type_resolution_rejects_alias_and_named_cycles() -> unit {
         TypeKind::Named {
             object: object_id(-1),
             underlying: world.invalid,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     let second_named = add_type(
@@ -435,9 +435,9 @@ fn type_resolution_rejects_alias_and_named_cycles() -> unit {
         TypeKind::Named {
             object: object_id(-1),
             underlying: first_named,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     testing::assert(
@@ -447,9 +447,9 @@ fn type_resolution_rejects_alias_and_named_cycles() -> unit {
             TypeKind::Named {
                 object: object_id(-1),
                 underlying: second_named,
-                type_params: Vec::from_array([]),
-                type_args: Vec::from_array([]),
-                methods: Vec::from_array([]),
+                type_params: Vec::new(),
+                type_args: Vec::new(),
+                methods: Vec::new(),
             },
         ),
     );
@@ -555,9 +555,9 @@ fn test_named_type(world: World, package_id: PackageId, name: string, underlying
         TypeKind::Named {
             object,
             underlying,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     let _ = set_object_type(world, object, result);
@@ -571,7 +571,7 @@ fn test_method(
     receiver_type: TypeId,
     result_type: TypeId,
 ) -> ObjectId {
-    let params = add_type(world, TypeKind::Tuple { variables: Vec::from_array([]) });
+    let params = add_type(world, TypeKind::Tuple { variables: Vec::new() });
     let results = add_type(
         world,
         TypeKind::Tuple {
@@ -586,8 +586,8 @@ fn test_method(
             receiver: Option::Some(
                 Variable { name: "", owner: Option::Some(package_id), type_id: receiver_type },
             ),
-            receiver_type_params: Vec::from_array([]),
-            type_params: Vec::from_array([]),
+            receiver_type_params: Vec::new(),
+            type_params: Vec::new(),
             params,
             results,
             variadic: false,
@@ -619,7 +619,7 @@ fn set_named_methods(world: World, value: TypeId, methods: Vec[ObjectId]) -> uni
 }
 
 fn test_interface_method(world: World, package_id: PackageId, name: string, result_type: TypeId) -> ObjectId {
-    let params = add_type(world, TypeKind::Tuple { variables: Vec::from_array([]) });
+    let params = add_type(world, TypeKind::Tuple { variables: Vec::new() });
     let results = add_type(
         world,
         TypeKind::Tuple {
@@ -632,8 +632,8 @@ fn test_interface_method(world: World, package_id: PackageId, name: string, resu
         world,
         TypeKind::Signature {
             receiver: Option::None,
-            receiver_type_params: Vec::from_array([]),
-            type_params: Vec::from_array([]),
+            receiver_type_params: Vec::new(),
+            type_params: Vec::new(),
             params,
             results,
             variadic: false,
@@ -656,7 +656,7 @@ fn method_sets_distinguish_value_pointer_and_promoted_methods() -> unit {
     let world = new_world();
     let package_id = add_package(world, "example/p", "p", world.universe, false);
     let int_type = required_type(world, "int");
-    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::from_array([]) });
+    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::new() });
     let inner = test_named_type(world, package_id, "Inner", empty_struct);
     let inner_pointer = add_type(world, TypeKind::Pointer { element: inner });
     let value_method = test_method(world, package_id, "Value", inner, int_type);
@@ -709,7 +709,7 @@ fn interface_implementation_uses_completed_embedded_method_sets() -> unit {
     let world = new_world();
     let package_id = add_package(world, "example/p", "p", world.universe, false);
     let int_type = required_type(world, "int");
-    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::from_array([]) });
+    let empty_struct = add_type(world, TypeKind::Struct { fields: Vec::new() });
     let concrete = test_named_type(world, package_id, "Concrete", empty_struct);
     let concrete_pointer = add_type(world, TypeKind::Pointer { element: concrete });
     let read = test_method(world, package_id, "Read", concrete, int_type);
@@ -721,7 +721,7 @@ fn interface_implementation_uses_completed_embedded_method_sets() -> unit {
         world,
         TypeKind::Interface {
             methods: Vec::from_array([read_requirement]),
-            embeddeds: Vec::from_array([]),
+            embeddeds: Vec::new(),
             comparable: false,
             implicit: false,
         },

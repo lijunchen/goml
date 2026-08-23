@@ -34,13 +34,13 @@ fn binary_comptime_module(value: isize, source_path: string) -> ctir::CtModule {
         ctir::CtFunction {
             id: 0,
             name: "audit::comptime::value",
-            parameter_slots: Vec::from_array([]),
-            parameter_types: Vec::from_array([]),
+            parameter_slots: Vec::new(),
+            parameter_types: Vec::new(),
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             return_type: ty,
             body: ctir::CtBlock {
-                statements: Vec::from_array([]),
+                statements: Vec::new(),
                 tail: Option::Some(
                     ctir::CtExpr {
                         kind: ctir::CtExprKind::Value(
@@ -67,9 +67,9 @@ fn binary_comptime_interface(value: isize, source_path: string) -> artifact::Art
         artifact::ArtifactFnScheme {
             name: "audit::comptime::value",
             comptime: tast::ComptimeCapability::Capable,
-            type_params: Vec::from_array([]),
-            constraints: Vec::from_array([]),
-            ty: tast::Type::Func { params: Vec::from_array([]), ret_ty: tast::Type::Int },
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Int },
             body: tast::Callable::Function("audit::comptime::value"),
         },
     );
@@ -80,10 +80,10 @@ fn binary_comptime_interface(value: isize, source_path: string) -> artifact::Art
             package_name: "audit::comptime",
             name: "comptime",
             value_exports: Vec::from_array([("audit::comptime::value", 0)]),
-            enum_variants: Vec::from_array([]),
+            enum_variants: Vec::new(),
         },
         Option::Some(interface_codec::new_comptime_unit(binary_comptime_module(value, source_path))),
-        Vec::from_array([]),
+        Vec::new(),
     )
 }
 
@@ -99,12 +99,12 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
                 package_name: "audit::value",
                 path: "value.gom",
                 source_path: "value.gom",
-                imports: Vec::from_array([]),
-                import_aliases: Vec::from_array([]),
-                use_traits: Vec::from_array([]),
-                public_reexports: Vec::from_array([]),
-                items: Vec::from_array([]),
-                invalid_self_type_spans: Vec::from_array([]),
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                public_reexports: Vec::new(),
+                items: Vec::new(),
+                invalid_self_type_spans: Vec::new(),
             }
         },
     };
@@ -113,16 +113,16 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
         Err(error) => {
             testing::fail(error);
             tast::PackageSignatures {
-                traits: Vec::from_array([]),
-                functions: Vec::from_array([]),
-                type_aliases: Vec::from_array([]),
-                constants: Vec::from_array([]),
+                traits: Vec::new(),
+                functions: Vec::new(),
+                type_aliases: Vec::new(),
+                constants: Vec::new(),
             }
         },
     };
     let checked = tast::check_package_files_for_link_with_dependencies(
         Vec::from_array([hir_file]),
-        Vec::from_array([]),
+        Vec::new(),
     );
     if checked.diagnostics.is_empty() {} else {
         testing::fail(checked.diagnostics[0].message)
@@ -132,11 +132,11 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
         None => {
             testing::fail("expected source interface TAST");
             tast::File {
-                items: Vec::from_array([]),
-                enums: Vec::from_array([]),
-                structs: Vec::from_array([]),
-                constants: Vec::from_array([]),
-                statics: Vec::from_array([]),
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+                constants: Vec::new(),
+                statics: Vec::new(),
             }
         },
     };
@@ -145,17 +145,17 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
         signatures,
         "audit::value",
         public_names,
-        Vec::from_array([]),
+        Vec::new(),
         true,
-        Vec::from_array([]),
-        Vec::from_array([]),
+        Vec::new(),
+        Vec::new(),
     );
     interface_codec::new_unit_with_comptime(
         "audit::value",
         exports,
         artifact_package_interface("audit::value", "value", exports),
         artifact_comptime_unit(checked.comptime, exports),
-        Vec::from_array([]),
+        Vec::new(),
     )
 }
 

@@ -759,7 +759,7 @@ fn deduplicates_type_facts_by_source_span() -> unit {
     let source = "package p\ntype Item struct { Value int }\nvar Values = []Item{{Value: 1}, {Value: 2}, {Value: 3}}\nconst ( First = iota; Second; Third )\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
-    let positions: HashMap[string, bool] = HashMap::from_array([]);
+    let positions: HashMap[string, bool] = HashMap::new();
     for fact in result.info.types {
         match syntax::get_node(result.syntax.arena, fact.node) {
             Some(node) => {
@@ -1294,7 +1294,7 @@ fn defaults_untyped_print_arguments() -> unit {
     let source = "package p\nfunc Print() { println(\"text\", 1, 'r') }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
-    let actual: Vec[string] = Vec::from_array([]);
+    let actual: Vec[string] = Vec::new();
     for fact in result.info.types {
         let key = syntax::node_key(result.syntax, fact.node).unwrap_or("");
         if key.contains(".fields.args[") && !fact.builtin {

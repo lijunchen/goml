@@ -91,7 +91,7 @@ fn preserves_open_core_types_without_tast_state() -> unit {
                     ),
                 ],
             ),
-            additional_bounds: Vec::from_array([]),
+            additional_bounds: Vec::new(),
         },
     );
     testing::assert_eq(type_parameters(value).len(), 2);
@@ -118,20 +118,20 @@ fn rejects_residual_comptime_nodes() -> unit {
                         source_path: "main.gom",
                         start: 0,
                         end: 0,
-                        comptime_origins: Vec::from_array([]),
-                        generics: Vec::from_array([]),
-                        predicates: Vec::from_array([]),
-                        params: Vec::from_array([]),
+                        comptime_origins: Vec::new(),
+                        generics: Vec::new(),
+                        predicates: Vec::new(),
+                        params: Vec::new(),
                         ret_ty: tast::Type::Unit,
                         body: tast::Block {
-                            stmts: Vec::from_array([]),
+                            stmts: Vec::new(),
                             tail: Option::Some(
                                 tast::Expr::Comptime {
                                     site_id: 0,
                                     source_path: "main.gom",
                                     start: 0,
                                     end: 8,
-                                    origins: Vec::from_array([]),
+                                    origins: Vec::new(),
                                     body: tast::Expr::Prim {
                                         value: tast::Primitive::Unit,
                                         ty: tast::Type::Unit,
@@ -144,17 +144,17 @@ fn rejects_residual_comptime_nodes() -> unit {
                 ),
             ],
         ),
-        enums: Vec::from_array([]),
-        structs: Vec::from_array([]),
-        constants: Vec::from_array([]),
-        statics: Vec::from_array([]),
+        enums: Vec::new(),
+        structs: Vec::new(),
+        constants: Vec::new(),
+        statics: Vec::new(),
     };
     let lowered = lower(
         tast::CheckResult {
             tast: Option::Some(typed),
             comptime: ctir::empty_module("main"),
-            pending_constants: Vec::from_array([]),
-            diagnostics: Vec::from_array([]),
+            pending_constants: Vec::new(),
+            diagnostics: Vec::new(),
             typeck_results: tast::empty_typeck_results(),
         },
     );
@@ -543,7 +543,7 @@ fn eliminates_dead_locals_without_dropping_effects() -> unit {
 }
 
 fn core_with_only_named_root(value: File, root_name: string) -> File {
-    let functions: Vec[Function] = Vec::from_array([]);
+    let functions: Vec[Function] = Vec::new();
     for function in value.functions {
         functions.push(
             Function {

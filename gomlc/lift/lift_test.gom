@@ -19,13 +19,13 @@ fn lower_source(source: string) -> File {
         Err(message) => {
             testing::fail(message);
             File {
-                functions: Vec::from_array([]),
-                enums: Vec::from_array([]),
-                structs: Vec::from_array([]),
-                type_instances: Vec::from_array([]),
-                constants: Vec::from_array([]),
-                statics: Vec::from_array([]),
-                closure_defs: Vec::from_array([]),
+                functions: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+                type_instances: Vec::new(),
+                constants: Vec::new(),
+                statics: Vec::new(),
+                closure_defs: Vec::new(),
             }
         },
     }
@@ -199,10 +199,10 @@ fn rejects_closures_with_non_function_types() -> unit {
                 params: function.params,
                 ret_ty: function.ret_ty,
                 body: mono::Block {
-                    stmts: Vec::from_array([]),
+                    stmts: Vec::new(),
                     tail: Option::Some(
                         mono::Expr::Closure {
-                            params: Vec::from_array([]),
+                            params: Vec::new(),
                             body: mono::Expr::Prim {
                                 value: mono::Primitive::Unit,
                                 ty: mono::Type::Unit,

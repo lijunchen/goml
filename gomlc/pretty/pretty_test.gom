@@ -86,9 +86,9 @@ fn unavoidable_overflow_uses_the_shorter_first_line() -> unit {
 
 #[test]
 fn concat_join_and_folddoc_cover_empty_and_nil_elements() -> unit {
-    testing::assert_eq(layout(concat(Vec::from_array([]))), "");
+    testing::assert_eq(layout(concat(Vec::new())), "");
     testing::assert_eq(layout(concat(Vec::from_array([text("a"), nil(), text("b")]))), "ab");
-    testing::assert_eq(layout(join(text(","), Vec::from_array([]))), "");
+    testing::assert_eq(layout(join(text(","), Vec::new())), "");
     testing::assert_eq(
         layout(join(text(","), Vec::from_array([text("a"), nil(), text("b")]))),
         "a,,b",
@@ -97,7 +97,7 @@ fn concat_join_and_folddoc_cover_empty_and_nil_elements() -> unit {
         layout(folddoc(above, Vec::from_array([text("a"), text("b"), text("c")]))),
         "a\nb\nc",
     );
-    testing::assert_eq(layout(folddoc(append, Vec::from_array([]))), "");
+    testing::assert_eq(layout(folddoc(append, Vec::new())), "");
     testing::assert_eq(layout(folddoc(append, Vec::from_array([text("only")]))), "only")
 }
 
@@ -128,7 +128,7 @@ fn fill_greedily_packs_plain_documents() -> unit {
     assert_pretty(6, value, "aaa bb\nc dddd");
     assert_pretty(5, value, "aaa\nbb c\ndddd");
     testing::assert_eq(pretty(5, group(value)), pretty(5, value));
-    testing::assert_eq(pretty(5, fill(Vec::from_array([]))), "");
+    testing::assert_eq(pretty(5, fill(Vec::new())), "");
     testing::assert_eq(pretty(5, fill(Vec::from_array([text("only")]))), "only")
 }
 
@@ -203,21 +203,16 @@ fn paper_tree() -> Tree {
             [
                 Tree::Node(
                     "bbbbb",
-                    Vec::from_array(
-                        [
-                            Tree::Node("ccc", Vec::from_array([])),
-                            Tree::Node("dd", Vec::from_array([])),
-                        ],
-                    ),
+                    Vec::from_array([Tree::Node("ccc", Vec::new()), Tree::Node("dd", Vec::new())]),
                 ),
-                Tree::Node("eee", Vec::from_array([])),
+                Tree::Node("eee", Vec::new()),
                 Tree::Node(
                     "ffff",
                     Vec::from_array(
                         [
-                            Tree::Node("gg", Vec::from_array([])),
-                            Tree::Node("hhh", Vec::from_array([])),
-                            Tree::Node("ii", Vec::from_array([])),
+                            Tree::Node("gg", Vec::new()),
+                            Tree::Node("hhh", Vec::new()),
+                            Tree::Node("ii", Vec::new()),
                         ],
                     ),
                 ),

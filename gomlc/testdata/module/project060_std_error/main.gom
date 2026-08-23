@@ -232,7 +232,7 @@ fn main() -> unit {
         Err(error) => println(error.kind().to_string()),
     };
     println(fs::rename(copied, renamed).is_ok());
-    let empty_entries: Vec[fs::DirEntry] = Vec::from_array([]);
+    let empty_entries: Vec[fs::DirEntry] = Vec::new();
     let entries = fs::read_dir_structured(directory).unwrap_or(empty_entries);
     println(entries.len());
     println(fs::read_file_structured(renamed).unwrap_or("failed"));

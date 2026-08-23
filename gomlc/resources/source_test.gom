@@ -14,7 +14,7 @@ fn required_abi(value: Option[CallableAbiSpec]) -> CallableAbiSpec {
         Some(spec) => spec,
         None => {
             testing::fail("expected callable ABI entry");
-            callable_abi("", "", "", Vec::from_array([]))
+            callable_abi("", "", "", Vec::new())
         },
     }
 }
@@ -71,7 +71,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> unit {
         Ok(values) => values,
         Err(error) => {
             testing::fail(error);
-            Vec::from_array([])
+            Vec::new()
         },
     } {
         if source.source.contains("#[runtime(\"std.") {
@@ -83,7 +83,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> unit {
         Ok(values) => values,
         Err(error) => {
             testing::fail(error);
-            Vec::from_array([])
+            Vec::new()
         },
     } {
         testing::assert(!source.source.contains("#[runtime("))
@@ -132,14 +132,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         Some(value) => value,
         None => {
             testing::fail("expected std::fs package metadata");
-            standard_package(
-                "",
-                "",
-                "",
-                Vec::from_array([]),
-                Vec::from_array([]),
-                Vec::from_array([]),
-            )
+            standard_package("", "", "", Vec::new(), Vec::new(), Vec::new())
         },
     };
     testing::assert_eq(fs.declared_name, "fs");
@@ -156,14 +149,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         Some(value) => value,
         None => {
             testing::fail("expected std::internal::host package metadata");
-            standard_package(
-                "",
-                "",
-                "",
-                Vec::from_array([]),
-                Vec::from_array([]),
-                Vec::from_array([]),
-            )
+            standard_package("", "", "", Vec::new(), Vec::new(), Vec::new())
         },
     };
     assert_strings(host.source_paths, Vec::from_array(["std/internal/host/host.gom"]));

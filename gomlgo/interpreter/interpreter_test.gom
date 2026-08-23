@@ -36,7 +36,7 @@ fn load_bytecode(name: string) -> bytecode::BytecodeProgram {
 
 fn blocked_scheduler_goroutine() -> ScheduledGoroutine {
     ScheduledGoroutine {
-        frames: Vec::from_array([]),
+        frames: Vec::new(),
         pending: Ref::new(Option::None),
         native: Ref::new(Option::None),
         native_channel: Ref::new(Option::None),
@@ -70,17 +70,17 @@ fn test_function(local_count: isize, place_count: isize, instructions: Vec[bytec
         object: go_types::object_id(-1),
         name: "",
         signature: go_types::type_id(-1),
-        register_types: Vec::from_array([]),
+        register_types: Vec::new(),
         place_count,
         locals,
-        captures: Vec::from_array([]),
-        parameters: Vec::from_array([]),
-        results: Vec::from_array([]),
+        captures: Vec::new(),
+        parameters: Vec::new(),
+        results: Vec::new(),
         blocks: Vec::from_array(
             [
                 bytecode::BasicBlock {
                     id: bytecode::block_id(0),
-                    parameters: Vec::from_array([]),
+                    parameters: Vec::new(),
                     instructions,
                     terminator: bytecode::Terminator {
                         kind: bytecode::TerminatorKind::Unreachable,
@@ -171,18 +171,18 @@ fn excludes_native_call_waiters_from_channel_matching() -> unit {
                 native: NativePrepared {
                     id: Option::None,
                     function: Option::None,
-                    parameter_types: Vec::from_array([]),
-                    parameter_keys: Vec::from_array([]),
-                    result_types: Vec::from_array([]),
-                    result_keys: Vec::from_array([]),
+                    parameter_types: Vec::new(),
+                    parameter_keys: Vec::new(),
+                    result_types: Vec::new(),
+                    result_keys: Vec::new(),
                     variadic: false,
                     reflect_value_of: false,
                     runtime_stack: false,
-                    argument_slices: Vec::from_array([]),
+                    argument_slices: Vec::new(),
                 },
                 invocation: new_native_invocation(0, false),
                 owner: Option::None,
-                results: Vec::from_array([]),
+                results: Vec::new(),
                 deferred: false,
             },
         ),
@@ -714,8 +714,8 @@ fn passes_host_backed_interfaces_directly_to_native_calls() -> unit {
     let underlying = go_types::add_type(
         world,
         go_types::TypeKind::Interface {
-            methods: Vec::from_array([]),
-            embeddeds: Vec::from_array([]),
+            methods: Vec::new(),
+            embeddeds: Vec::new(),
             comparable: false,
             implicit: false,
         },
@@ -725,9 +725,9 @@ fn passes_host_backed_interfaces_directly_to_native_calls() -> unit {
         go_types::TypeKind::Named {
             object,
             underlying,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     testing::assert(go_types::set_object_type(world, object, interface_type));

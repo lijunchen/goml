@@ -110,8 +110,8 @@ fn evaluate_expression(expression: ctir::CtExpr, local_types: Vec[ctir::CtType],
     CtError,
 ] {
     let module = expression_module(expression, local_types);
-    match verify_module(module, Vec::from_array([])) {
-        Ok(()) => evaluate_site(module, Vec::from_array([]), 0, limits),
+    match verify_module(module, Vec::new()) {
+        Ok(()) => evaluate_site(module, Vec::new(), 0, limits),
         Err(error) => {
             testing::fail(error);
             Result::Err(
@@ -120,7 +120,7 @@ fn evaluate_expression(expression: ctir::CtExpr, local_types: Vec[ctir::CtType],
                     message: error,
                     package_name: "test::expression",
                     origin: 0,
-                    stack: Vec::from_array([]),
+                    stack: Vec::new(),
                 },
             )
         },
@@ -159,11 +159,7 @@ fn factorial_module() -> ctir::CtModule {
             local_count: 1,
             local_types: Vec::from_array([int_type()]),
             return_type: int_type(),
-            body: ctir::CtBlock {
-                statements: Vec::from_array([]),
-                tail: Option::Some(body_expr),
-                origin: 0,
-            },
+            body: ctir::CtBlock { statements: Vec::new(), tail: Option::Some(body_expr), origin: 0 },
             origin: 0,
         },
     );
@@ -275,7 +271,7 @@ fn rejects_invalid_compile_time_string_boundaries() -> unit {
 #[test]
 fn evaluates_recursive_direct_calls() -> unit {
     let module = factorial_module();
-    match verify_module(module, Vec::from_array([])) {
+    match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
@@ -283,7 +279,7 @@ fn evaluates_recursive_direct_calls() -> unit {
         expect_int(
             evaluate_entry(
                 module,
-                Vec::from_array([]),
+                Vec::new(),
                 "factorial",
                 Vec::from_array([int_value(10)]),
                 default_limits(),
@@ -373,14 +369,11 @@ fn loop_site_module() -> ctir::CtModule {
 #[test]
 fn evaluates_local_state_and_loops() -> unit {
     let module = loop_site_module();
-    match verify_module(module, Vec::from_array([])) {
+    match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
-    testing::assert_eq(
-        expect_int(evaluate_site(module, Vec::from_array([]), 0, default_limits())),
-        10,
-    )
+    testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 10)
 }
 
 #[test]
@@ -390,10 +383,7 @@ fn rejects_loop_control_after_loop_scope() -> unit {
         ty: ctir::CtType::Never,
         origin: 0,
     };
-    match verify_module(
-        expression_module(loop_then(sibling_break), Vec::from_array([])),
-        Vec::from_array([]),
-    ) {
+    match verify_module(expression_module(loop_then(sibling_break), Vec::new()), Vec::new()) {
         Err(error) => testing::assert_eq(error, "CTIR break target is not in scope"),
         Ok(()) => testing::fail("expected sibling break target rejection"),
     };
@@ -402,10 +392,7 @@ fn rejects_loop_control_after_loop_scope() -> unit {
         ty: ctir::CtType::Never,
         origin: 0,
     };
-    match verify_module(
-        expression_module(loop_then(sibling_continue), Vec::from_array([])),
-        Vec::from_array([]),
-    ) {
+    match verify_module(expression_module(loop_then(sibling_continue), Vec::new()), Vec::new()) {
         Err(error) => testing::assert_eq(error, "CTIR continue target is not in scope"),
         Ok(()) => testing::fail("expected sibling continue target rejection"),
     }
@@ -430,7 +417,7 @@ fn inclusive_range_stops_at_maximum_integer() -> unit {
         ty: ctir::CtType::Unit,
         origin: 0,
     };
-    match evaluate_expression(expression, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(expression, Vec::new(), default_limits()) {
         Ok(ctir::CtValue::Unit) => (),
         Ok(_) => testing::fail("expected unit range result"),
         Err(error) => testing::fail(error.message),
@@ -441,7 +428,7 @@ fn inclusive_range_stops_at_maximum_integer() -> unit {
 fn evaluates_structured_match_values() -> unit {
     let option_type = ctir::CtType::Enum {
         name: "test::OptionInt",
-        variants: Vec::from_array([Vec::from_array([int_type()]), Vec::from_array([])]),
+        variants: Vec::from_array([Vec::from_array([int_type()]), Vec::new()]),
     };
     let source = ctir::CtExpr {
         kind: ctir::CtExprKind::Enum {
@@ -490,14 +477,11 @@ fn evaluates_structured_match_values() -> unit {
             origin: 0,
         },
     );
-    match verify_module(module, Vec::from_array([])) {
+    match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
-    testing::assert_eq(
-        expect_int(evaluate_site(module, Vec::from_array([]), 0, default_limits())),
-        42,
-    )
+    testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 42)
 }
 
 #[test]
@@ -518,12 +502,12 @@ fn reports_compile_errors_and_resource_limits() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             expression,
             origin: 0,
         },
     );
-    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
+    match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Err(error) => testing::assert_eq(error.message, "stop"),
         Ok(_) => testing::fail("expected compile_error"),
     };
@@ -536,7 +520,7 @@ fn reports_compile_errors_and_resource_limits() -> unit {
     };
     match evaluate_entry(
         factorial_module(),
-        Vec::from_array([]),
+        Vec::new(),
         "factorial",
         Vec::from_array([int_value(10)]),
         limits,
@@ -557,7 +541,7 @@ fn enforces_depth_value_and_result_limits() -> unit {
     };
     match evaluate_entry(
         factorial_module(),
-        Vec::from_array([]),
+        Vec::new(),
         "factorial",
         Vec::from_array([int_value(10)]),
         depth_limits,
@@ -578,12 +562,12 @@ fn enforces_depth_value_and_result_limits() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             expression: int_expr(1),
             origin: 0,
         },
     );
-    match evaluate_site(module, Vec::from_array([]), 0, value_limits) {
+    match evaluate_site(module, Vec::new(), 0, value_limits) {
         Err(error) => testing::assert_eq(error.message, "comptime temporary value limit exceeded"),
         Ok(_) => testing::fail("expected temporary value exhaustion"),
     };
@@ -594,7 +578,7 @@ fn enforces_depth_value_and_result_limits() -> unit {
         temporary_bytes: 1000,
         final_bytes: 4,
     };
-    match evaluate_site(module, Vec::from_array([]), 0, size_limits) {
+    match evaluate_site(module, Vec::new(), 0, size_limits) {
         Err(error) => testing::assert_eq(error.message, "comptime result size limit exceeded"),
         Ok(_) => testing::fail("expected result size exhaustion"),
     }
@@ -615,12 +599,12 @@ fn applies_fixed_width_integer_semantics() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             expression: wrapping_add,
             origin: 0,
         },
     );
-    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
+    match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(signed);
             testing::assert_eq(width, 8);
@@ -641,16 +625,16 @@ fn applies_fixed_width_integer_semantics() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             expression: shifted,
             origin: 0,
         },
     );
-    match verify_module(module, Vec::from_array([])) {
+    match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
-    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
+    match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(!signed);
             testing::assert_eq(width, 8);
@@ -669,16 +653,16 @@ fn rejects_invalid_ctir_before_execution() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             expression: local_expr(1, int_type()),
             origin: 0,
         },
     );
-    match verify_module(module, Vec::from_array([])) {
+    match verify_module(module, Vec::new()) {
         Err(error) => testing::assert_eq(error, "invalid CTIR local slot or type"),
         Ok(()) => testing::fail("expected invalid local slot"),
     };
-    match evaluate_site(module, Vec::from_array([]), 0, default_limits()) {
+    match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Err(error) => testing::assert_eq(
             error.message,
             "invalid CTIR: invalid CTIR local slot or type",
@@ -691,7 +675,7 @@ fn rejects_invalid_ctir_before_execution() -> unit {
             id: 0,
             kind: ctir::CtSiteKind::Expression,
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             expression: ctir::CtExpr {
                 kind: ctir::CtExprKind::Call {
                     target: ctir::CtCallTarget::Local(0),
@@ -711,7 +695,7 @@ fn rejects_invalid_ctir_before_execution() -> unit {
             origin: 0,
         },
     );
-    match verify_module(caller, Vec::from_array([])) {
+    match verify_module(caller, Vec::new()) {
         Err(error) => testing::assert_eq(error, "CTIR call argument type mismatch"),
         Ok(()) => testing::fail("expected invalid call argument type"),
     }
@@ -725,7 +709,7 @@ fn evaluates_short_circuit_and_left_to_right_order() -> unit {
         compile_error_expr("right"),
         ctir::CtType::Bool,
     );
-    match evaluate_expression(short_circuit, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(short_circuit, Vec::new(), default_limits()) {
         Ok(ctir::CtValue::Bool(value)) => testing::assert(!value),
         Ok(_) => testing::fail("expected bool result"),
         Err(error) => testing::fail(error.message),
@@ -737,7 +721,7 @@ fn evaluates_short_circuit_and_left_to_right_order() -> unit {
         ty: ctir::CtType::Array { len: 2, elem: int_type() },
         origin: 0,
     };
-    match evaluate_expression(ordered, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(ordered, Vec::new(), default_limits()) {
         Err(error) => testing::assert_eq(error.message, "left"),
         Ok(_) => testing::fail("expected left-to-right failure"),
     }
@@ -820,10 +804,10 @@ fn evaluates_return_break_and_continue() -> unit {
         ctir::CtFunction {
             id: 0,
             name: "return_value",
-            parameter_slots: Vec::from_array([]),
-            parameter_types: Vec::from_array([]),
+            parameter_slots: Vec::new(),
+            parameter_types: Vec::new(),
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             return_type: int_type(),
             body: ctir::CtBlock {
                 statements: Vec::from_array(
@@ -844,20 +828,12 @@ fn evaluates_return_break_and_continue() -> unit {
         },
     );
     module.entries.push(ctir::CtEntry { name: "return_value", function_id: 0, public: true });
-    match verify_module(module, Vec::from_array([])) {
+    match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     };
     testing::assert_eq(
-        expect_int(
-            evaluate_entry(
-                module,
-                Vec::from_array([]),
-                "return_value",
-                Vec::from_array([]),
-                default_limits(),
-            ),
-        ),
+        expect_int(evaluate_entry(module, Vec::new(), "return_value", Vec::new(), default_limits())),
         7,
     )
 }
@@ -872,7 +848,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         ty: narrow_int_type(false, 64),
         origin: 0,
     };
-    match evaluate_expression(widened, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(widened, Vec::new(), default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(!signed);
             testing::assert_eq(width, 64);
@@ -889,13 +865,13 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         ty: narrow_int_type(false, 8),
         origin: 0,
     };
-    match evaluate_expression(truncated, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(truncated, Vec::new(), default_limits()) {
         Ok(ctir::CtValue::Integer { bits, .. }) => testing::assert_eq(bits, 255),
         Ok(_) => testing::fail("expected truncated integer"),
         Err(error) => testing::fail(error.message),
     };
     let division = binary_expr(ctir::CtBinaryOp::Div, int_expr(1), int_expr(0), int_type());
-    match evaluate_expression(division, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(division, Vec::new(), default_limits()) {
         Err(error) => {
             testing::assert_eq(error.message, "division by zero during comptime evaluation")
         },
@@ -907,7 +883,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         narrow_int_expr(true, 64, ~(0.to_u64())),
         narrow_int_type(false, 8),
     );
-    match evaluate_expression(shift, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(shift, Vec::new(), default_limits()) {
         Err(error) => {
             testing::assert_eq(error.message, "negative shift count during comptime evaluation")
         },
@@ -925,7 +901,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
         ty: int_type(),
         origin: 0,
     };
-    match evaluate_expression(indexed, Vec::from_array([]), default_limits()) {
+    match evaluate_expression(indexed, Vec::new(), default_limits()) {
         Err(error) => {
             testing::assert_eq(error.message, "index out of bounds during comptime evaluation")
         },
@@ -947,7 +923,7 @@ fn enforces_temporary_memory_and_target_limits() -> unit {
         temporary_bytes: 4,
         final_bytes: 100,
     };
-    match evaluate_expression(value, Vec::from_array([]), limits) {
+    match evaluate_expression(value, Vec::new(), limits) {
         Err(error) => {
             testing::assert_eq(error.message, "comptime temporary memory limit exceeded")
         },
@@ -955,13 +931,13 @@ fn enforces_temporary_memory_and_target_limits() -> unit {
     };
     let module = factorial_module();
     module.target = ctir::CtTarget { int_width: 16 };
-    match verify_module(module, Vec::from_array([])) {
+    match verify_module(module, Vec::new()) {
         Err(error) => testing::assert_eq(error, "invalid CTIR target integer width"),
         Ok(()) => testing::fail("expected invalid target rejection"),
     };
     let invalid_local = factorial_module();
     invalid_local.functions[0].local_types.set(0, ctir::CtType::Bool);
-    match verify_module(invalid_local, Vec::from_array([])) {
+    match verify_module(invalid_local, Vec::new()) {
         Err(error) => testing::assert_eq(error, "CTIR parameter local type mismatch"),
         Ok(()) => testing::fail("expected local type rejection"),
     }
@@ -974,13 +950,13 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
         ctir::CtFunction {
             id: 0,
             name: "handler",
-            parameter_slots: Vec::from_array([]),
-            parameter_types: Vec::from_array([]),
+            parameter_slots: Vec::new(),
+            parameter_types: Vec::new(),
             local_count: 0,
-            local_types: Vec::from_array([]),
+            local_types: Vec::new(),
             return_type: int_type(),
             body: ctir::CtBlock {
-                statements: Vec::from_array([]),
+                statements: Vec::new(),
                 tail: Option::Some(int_expr(1)),
                 origin: 0,
             },
@@ -995,7 +971,7 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
             export_name: Option::None,
         },
     );
-    match verify_module(invalid_signature, Vec::from_array([])) {
+    match verify_module(invalid_signature, Vec::new()) {
         Err(error) => testing::assert_eq(error, "invalid CTIR derive entry signature"),
         Ok(()) => testing::fail("expected invalid derive signature"),
     };
@@ -1012,7 +988,7 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
             local_types: Vec::from_array([input_ty]),
             return_type: output_ty,
             body: ctir::CtBlock {
-                statements: Vec::from_array([]),
+                statements: Vec::new(),
                 tail: Option::Some(
                     ctir::CtExpr {
                         kind: ctir::CtExprKind::Call {
@@ -1036,7 +1012,7 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
             export_name: Option::None,
         },
     );
-    match verify_module(invalid_intrinsic, Vec::from_array([])) {
+    match verify_module(invalid_intrinsic, Vec::new()) {
         Err(error) => testing::assert_eq(error, "unknown CTIR intrinsic"),
         Ok(()) => testing::fail("expected invalid derive intrinsic"),
     }

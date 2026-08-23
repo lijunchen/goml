@@ -250,7 +250,7 @@ fn parses_newtype_structs_and_rejects_multiple_fields() -> unit {
 
 #[test]
 fn parses_practical_expression_syntax() -> unit {
-    let source = "fn main() -> unit { let a = Vec::from_array([1, 2]); let b = HashMap::from_array([(\"x\", 1)]); let c: Vec[isize] = Vec::from_array([]); let d = Vec::[isize]::new(); let p = Point { x: 3, ..base, }; a[0] += 2; let text = f\"value={a.get(0)} {{ok}}\"; }";
+    let source = "fn main() -> unit { let a = Vec::from_array([1, 2]); let b = HashMap::from_array([(\"x\", 1)]); let c: Vec[isize] = Vec::new(); let d = Vec::[isize]::new(); let p = Point { x: 3, ..base, }; a[0] += 2; let text = f\"value={a.get(0)} {{ok}}\"; }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_ARRAY_LITERAL), 3);
