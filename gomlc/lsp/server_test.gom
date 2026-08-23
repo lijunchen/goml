@@ -2,6 +2,7 @@ package lsp;
 
 use module::version;
 use std::json;
+use std::path;
 use std::testing;
 
 fn response_result(value: json::Value) -> Option[json::Value] {
@@ -234,6 +235,60 @@ fn completes_from_cached_analysis_after_document_changes() -> unit {
     let check = "{\"jsonrpc\":\"2.0\",\"method\":\"goml/checkDiagnostics\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\"}}}";
     match handle_payload(server, check) {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn refreshes_completion_analysis_after_dependency_changes() -> unit {
+    let server = new_server();
+    let root = "../gomlc/testdata/module/project001";
+    let main_path = path::join(root, "main.gom");
+    let lib_path = path::join(root, "lib/lib.gom");
+    let main_uri = path_to_uri(main_path);
+    let lib_uri = path_to_uri(lib_path);
+    let main_source = "package main; use project001::lib; fn main() -> unit { lib:: }";
+    let old_lib_source = "package lib; pub fn old_value() -> isize { 1 }";
+    let new_lib_source = "package lib; pub fn new_value() -> isize { 2 }";
+    let main_document = Document {
+        uri: main_uri,
+        path: main_path,
+        text: main_source,
+        version: 1,
+        line_index: line_index(main_source),
+    };
+    open_document(server, main_document);
+    open_document(
+        server,
+        Document {
+            uri: lib_uri,
+            path: lib_path,
+            text: old_lib_source,
+            version: 1,
+            line_index: line_index(old_lib_source),
+        },
+    );
+    let _ = document_analysis(server, main_document);
+    let position = main_source.byte_len() - " }".byte_len();
+    let completion = "{\"jsonrpc\":\"2.0\",\"id\":13,\"method\":\"textDocument/completion\",\"params\":{\"textDocument\":{\"uri\":\""
+        + main_uri
+        + "\"},\"position\":{\"line\":0,\"character\":"
+        + position.to_string()
+        + "}}}";
+    match handle_payload(server, completion) {
+        Ok(messages) => {
+            testing::assert_eq(messages.len(), 1);
+            testing::assert(response_has_label(messages.get(0), "old_value"))
+        },
+        Err(error) => testing::fail(error),
+    };
+    change_document(server, lib_uri, new_lib_source, 2);
+    match handle_payload(server, completion) {
+        Ok(messages) => {
+            testing::assert_eq(messages.len(), 1);
+            testing::assert(response_has_label(messages.get(0), "new_value"));
+            testing::assert(!response_has_label(messages.get(0), "old_value"))
+        },
         Err(error) => testing::fail(error),
     }
 }
