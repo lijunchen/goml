@@ -198,12 +198,8 @@ fn parses_module_paths_with_inline_comments() -> unit {
 
 #[test]
 fn parses_only_exact_module_path_keys() -> unit {
-    testing::assert(
-        manifest_module_path("[module]\npathology = \"wrong::path\"\n").is_none(),
-    );
-    testing::assert(
-        manifest_module_path("[module]\npath_suffix = \"wrong::suffix\"\n").is_none(),
-    );
+    testing::assert(manifest_module_path("[module]\npathology = \"wrong::path\"\n").is_none());
+    testing::assert(manifest_module_path("[module]\npath_suffix = \"wrong::suffix\"\n").is_none());
     match manifest_module_path(
         "[module]\npathology = \"wrong::path\"\npath_suffix = \"wrong::suffix\"\npath = \"alice::tools\" # canonical path\n",
     ) {
@@ -269,11 +265,27 @@ fn analyzes_and_navigates_module_root_imports() -> unit {
         },
         None => testing::fail("expected module-relative use path"),
     };
-    let completion_source = "package main;\nuse module::";
-    let completion_analysis = analyze(main_path, completion_source);
-    let items = completions(completion_analysis, completion_source.byte_len());
-    testing::assert(has_completion(items, "data"));
-    testing::assert(has_completion(items, "service"))
+    for completion_source in Vec::from_array([
+        "package main;\nuse module::",
+        "package main;\nuse\tmodule::",
+        "package main;\nuse  module::",
+        "package main;\nuse\nmodule::",
+        "package main;\nuse // package path\nmodule::",
+        "package main;\nuse module ::",
+        "package main;\npub use module::",
+    ]) {
+        let completion_analysis = analyze(main_path, completion_source);
+        let items = completions(completion_analysis, completion_source.byte_len());
+        testing::assert(has_completion(items, "data"));
+        testing::assert(has_completion(items, "service"))
+    };
+    let scope_source = "package main;\nuse module::service; fn main() -> unit { pri }";
+    match last_substring(scope_source, "pri") {
+        Some(offset) => testing::assert(
+            has_completion(completions(analyze(main_path, scope_source), offset + 3), "println"),
+        ),
+        None => testing::fail("expected scope completion prefix"),
+    }
 }
 
 #[test]
