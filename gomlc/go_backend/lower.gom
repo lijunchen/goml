@@ -18,6 +18,9 @@ struct LowerEnv {
     builtin: tast::BuiltinContract,
     joins: Vec[anf::JoinBind],
     constant_names: HashMap[string, unit],
+    static_names: HashMap[string, unit],
+    top_level_names: HashMap[string, unit],
+    local_names: HashMap[string, unit],
     collection_array_consumers: HashMap[string, anf::Value],
     emitted_loop_labels: Vec[string],
     variants: VariantInfos,
@@ -224,6 +227,149 @@ fn build_function_names(
         };
         add_function_name(result, function.name, name)
     }
+    result
+}
+
+fn build_static_names(values: Vec[repr::Static]) -> HashMap[string, unit] {
+    let result: HashMap[string, unit] = HashMap::new();
+    for value in values {
+        result[value.name] = ();
+    }
+    result
+}
+
+fn build_top_level_names(
+    functions: Vec[anf::Function],
+    constants: Vec[repr::Constant],
+    statics: Vec[repr::Static],
+    enums: Vec[repr::EnumDef],
+    structs: Vec[repr::StructDef],
+    instances: Vec[repr::TypeInstance],
+    function_names: FunctionNames,
+) -> HashMap[string, unit] {
+    let result: HashMap[string, unit] = HashMap::new();
+    result["main"] = ();
+    for function in functions {
+        result[match mapped_function_name(function_names, function.name) {
+            Some(name) => name,
+            None => function_name(function.name),
+        }] = ();
+    }
+    for value in constants {
+        result[go_local_ident(value.name)] = ();
+    }
+    for value in statics {
+        result[go_local_ident(value.name)] = ();
+    }
+    for definition in structs {
+        result[go_user_type_name(definition.name)] = ();
+    }
+    for definition in enums {
+        result[go_user_type_name(definition.name)] = ();
+        for variant in definition.variants {
+            result[variant_go_name(
+                definition.name,
+                variant.name,
+                enums,
+                structs,
+                instances,
+                function_names,
+            )] = ();
+        }
+    }
+    for instance in instances {
+        result[go_user_type_name(instance.name)] = ();
+    }
+    result
+}
+
+fn protect_local_ident(top_level_names: HashMap[string, unit], candidate: string) -> string {
+    if top_level_names.contains(candidate) {
+        go_generated_ident("_goml_local_" + candidate)
+    } else {
+        candidate
+    }
+}
+
+fn local_ident(top_level_names: HashMap[string, unit], value: string) -> string {
+    protect_local_ident(top_level_names, go_local_ident(value))
+}
+
+fn local_ident_with_suffix(top_level_names: HashMap[string, unit], value: string, suffix: string) -> string {
+    protect_local_ident(top_level_names, go_local_ident(value) + suffix)
+}
+
+fn env_local_ident(env: LowerEnv, value: string) -> string {
+    local_ident(env.top_level_names, value)
+}
+
+fn env_local_ident_with_suffix(env: LowerEnv, value: string, suffix: string) -> string {
+    local_ident_with_suffix(env.top_level_names, value, suffix)
+}
+
+fn collect_local_term(names: HashMap[string, unit], value: anf::Term) -> unit {
+    match value {
+        If { then_, else_, .. } => {
+            collect_local_block(names, then_);
+            collect_local_block(names, else_)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                collect_local_block(names, arm.body)
+            }
+            match default {
+                Some(body) => collect_local_block(names, body),
+                None => (),
+            }
+        },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                match arm {
+                    Receive { binding, body, .. } => {
+                        names[binding] = ();
+                        collect_local_block(names, body)
+                    },
+                    Send { body, .. } => collect_local_block(names, body),
+                }
+            }
+            match default {
+                Some(body) => collect_local_block(names, body),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn collect_local_block(names: HashMap[string, unit], value: anf::Block) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => {
+                names[value.name] = ();
+            },
+            Join(value) => {
+                for param in value.params {
+                    names[param.0] = ();
+                }
+                collect_local_block(names, value.body)
+            },
+            JoinRec(values) => for value in values {
+                for param in value.params {
+                    names[param.0] = ();
+                }
+                collect_local_block(names, value.body)
+            },
+        }
+    }
+    collect_local_term(names, value.term)
+}
+
+fn function_local_names(value: anf::Function) -> HashMap[string, unit] {
+    let result: HashMap[string, unit] = HashMap::new();
+    for param in value.params {
+        result[param.0] = ();
+    }
+    collect_local_block(result, value.body);
     result
 }
 
@@ -617,16 +763,28 @@ fn emit_statics(items: Vec[Item], values: Vec[repr::Static]) -> unit {
 fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
     match value {
         Var { name, ty: _ } => {
-            match mapped_function_name(env.function_names, name) {
-                Some(value) => Expr::Var { name: value },
-                None => {
-                    let result = Expr::Var { name: go_local_ident(name) };
-                    if env.pointer_vars.contains(name) {
-                        Expr::Unary { op: UnaryOp::Deref, expr: result }
-                    } else {
-                        result
-                    }
-                },
+            let local = env.local_names.contains(name);
+            let result = if local {
+                Expr::Var { name: env_local_ident(env, name) }
+            } else {
+                match mapped_function_name(env.function_names, name) {
+                    Some(value) => Expr::Var { name: value },
+                    None => {
+                        Expr::Var {
+                            name: if env.constant_names.contains(name)
+                                || env.static_names.contains(name) {
+                                go_local_ident(name)
+                            } else {
+                                env_local_ident(env, name)
+                            },
+                        }
+                    },
+                }
+            };
+            if local && env.pointer_vars.contains(name) {
+                Expr::Unary { op: UnaryOp::Deref, expr: result }
+            } else {
+                result
             }
         },
         Callable { callable: Intrinsic(key), ty: function_ty } => {
@@ -1876,7 +2034,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
             if pointer_param_enabled(env.pointer_params, name, index) {
                 compiled[index] = match args[index] {
                     Var { name, ty: _ } if env.pointer_vars.contains(name) => {
-                        Expr::Var { name: go_local_ident(name) }
+                        Expr::Var { name: env_local_ident(env, name) }
                     },
                     _ => Expr::Unary { op: UnaryOp::Address, expr: compiled[index] },
                 };
@@ -2145,7 +2303,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                 Neg | BitNot => compile_runtime_imm(
                     env,
                     operand,
-                    go_local_ident(bind_name) + "_operand",
+                    env_local_ident_with_suffix(env, bind_name, "_operand"),
                 ),
                 _ => CompiledValue { stmts: Vec::new(), expr: compile_imm(env, operand) },
             };
@@ -2154,7 +2312,11 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         },
         Cast { expr: source, ty } => {
             let source_ty = lower_type(anf::imm_type(source));
-            let compiled = compile_runtime_imm(env, source, go_local_ident(bind_name) + "_source");
+            let compiled = compile_runtime_imm(
+                env,
+                source,
+                env_local_ident_with_suffix(env, bind_name, "_source"),
+            );
             append_stmts(stmts, compiled.stmts);
             Expr::Convert {
                 ty: lower_type(ty),
@@ -2164,12 +2326,12 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         Binary { op, lhs, rhs, ty: _ } => {
             let materializes = materializes_binary_operands(env, op, lhs, rhs);
             let compiled_lhs = if materializes {
-                compile_runtime_imm(env, lhs, go_local_ident(bind_name) + "_lhs")
+                compile_runtime_imm(env, lhs, env_local_ident_with_suffix(env, bind_name, "_lhs"))
             } else {
                 CompiledValue { stmts: Vec::new(), expr: compile_imm(env, lhs) }
             };
             let compiled_rhs = if materializes {
-                compile_runtime_imm(env, rhs, go_local_ident(bind_name) + "_rhs")
+                compile_runtime_imm(env, rhs, env_local_ident_with_suffix(env, bind_name, "_rhs"))
             } else {
                 CompiledValue { stmts: Vec::new(), expr: compile_imm(env, rhs) }
             };
@@ -2180,7 +2342,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         Assign { name, value, target_ty, ty: _ } => {
             stmts.push(
                 Stmt::Assign {
-                    name: go_local_ident(name),
+                    name: env_local_ident(env, name),
                     value: compile_imm_expected(env, value, target_ty),
                 },
             );
@@ -2261,7 +2423,7 @@ fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
     append_stmts(result, compiled.stmts);
     result.push(
         Stmt::Var {
-            name: go_local_ident(value.name),
+            name: env_local_ident(env, value.name),
             ty: lower_type(value.ty),
             value: Option::Some(compiled.expr),
         },
@@ -2327,7 +2489,7 @@ fn compile_hashmap_array_literal(env: LowerEnv, value: anf::LetBind, items: Vec[
     let result: Vec[Stmt] = Vec::new();
     result.push(
         Stmt::Var {
-            name: go_local_ident(value.name),
+            name: env_local_ident(env, value.name),
             ty: lower_type(value.ty),
             value: Option::Some(
                 Expr::Unary {
@@ -2352,7 +2514,7 @@ fn compile_hashmap_array_literal(env: LowerEnv, value: anf::LetBind, items: Vec[
                     func: Expr::Var { name: runtime_helper_name("hashmap_set", value.ty) },
                     args: Vec::from_array(
                         [
-                            Expr::Var { name: go_local_ident(value.name) },
+                            Expr::Var { name: env_local_ident(env, value.name) },
                             Expr::Field { expr: entry, field_name: "_0" },
                             Expr::Field { expr: entry, field_name: "_1" },
                         ],
@@ -2670,7 +2832,7 @@ fn compile_jump_args(env: LowerEnv, value: anf::JoinBind, args: Vec[anf::Imm]) -
         if index < value.params.len() && value.params[index].0 != "_" {
             result.push(
                 Stmt::Assign {
-                    name: go_local_ident(value.params[index].0),
+                    name: env_local_ident(env, value.params[index].0),
                     value: compile_imm_expected(env, args[index], value.params[index].1),
                 },
             )
@@ -2691,7 +2853,7 @@ fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join
                     if param.0 != "_" {
                         stmts.push(
                             Stmt::Var {
-                                name: go_local_ident(param.0),
+                                name: env_local_ident(env, param.0),
                                 ty: lower_type(param.1),
                                 value: Option::None,
                             },
@@ -2901,21 +3063,21 @@ fn compile_select(
                 let open_name = binding + "#select_open";
                 result.push(
                     Stmt::Var {
-                        name: go_local_ident(value_name),
+                        name: env_local_ident(env, value_name),
                         ty: lower_type(elem_ty),
                         value: Option::None,
                     },
                 );
                 result.push(
                     Stmt::Var {
-                        name: go_local_ident(open_name),
+                        name: env_local_ident(env, open_name),
                         ty: Type::Bool,
                         value: Option::None,
                     },
                 );
                 result.push(
                     Stmt::Var {
-                        name: go_local_ident(binding),
+                        name: env_local_ident(env, binding),
                         ty: lower_type(binding_ty),
                         value: Option::Some(select_option_expr(env, binding_ty, Option::None)),
                     },
@@ -2923,12 +3085,12 @@ fn compile_select(
                 let case_stmts: Vec[Stmt] = Vec::new();
                 case_stmts.push(
                     Stmt::If {
-                        cond: Expr::Var { name: go_local_ident(open_name) },
+                        cond: Expr::Var { name: env_local_ident(env, open_name) },
                         then_: Block {
                             stmts: Vec::from_array(
                                 [
                                     Stmt::Assign {
-                                        name: go_local_ident(binding),
+                                        name: env_local_ident(env, binding),
                                         value: select_option_expr(
                                             env,
                                             binding_ty,
@@ -2946,9 +3108,12 @@ fn compile_select(
                 append_stmts(case_stmts, compile_body(body).stmts);
                 let selected_channel = match guard {
                     Some(value) => {
-                        let name = go_generated_ident(
-                            "select_channel_" + select_index.to_string() + "_"
-                                + arm_index.to_string(),
+                        let name = protect_local_ident(
+                            env.top_level_names,
+                            go_generated_ident(
+                                "select_channel_" + select_index.to_string() + "_"
+                                    + arm_index.to_string(),
+                            ),
                         );
                         result.push(
                             Stmt::Var {
@@ -2976,7 +3141,7 @@ fn compile_select(
                     SelectCase {
                         operation: SelectOperation::Receive {
                             names: Vec::from_array(
-                                [go_local_ident(value_name), go_local_ident(open_name)],
+                                [env_local_ident(env, value_name), env_local_ident(env, open_name)],
                             ),
                             channel: selected_channel,
                         },
@@ -2987,9 +3152,12 @@ fn compile_select(
             Send { channel, value, guard, body } => {
                 let selected_channel = match guard {
                     Some(guard_value) => {
-                        let name = go_generated_ident(
-                            "select_channel_" + select_index.to_string() + "_"
-                                + arm_index.to_string(),
+                        let name = protect_local_ident(
+                            env.top_level_names,
+                            go_generated_ident(
+                                "select_channel_" + select_index.to_string() + "_"
+                                    + arm_index.to_string(),
+                            ),
                         );
                         result.push(
                             Stmt::Var {
@@ -3653,7 +3821,7 @@ fn compile_loop_branch_to_join(
                     if param.0 != "_" {
                         stmts.push(
                             Stmt::Var {
-                                name: go_local_ident(param.0),
+                                name: env_local_ident(env, param.0),
                                 ty: lower_type(param.1),
                                 value: Option::None,
                             },
@@ -4081,7 +4249,7 @@ fn compile_loop_block(
                     if param.0 != "_" {
                         stmts.push(
                             Stmt::Var {
-                                name: go_local_ident(param.0),
+                                name: env_local_ident(env, param.0),
                                 ty: lower_type(param.1),
                                 value: Option::None,
                             },
@@ -4285,7 +4453,7 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
                     if param.0 != "_" {
                         stmts.push(
                             Stmt::Var {
-                                name: go_local_ident(param.0),
+                                name: env_local_ident(env, param.0),
                                 ty: lower_type(param.1),
                                 value: Option::None,
                             },
@@ -5159,6 +5327,8 @@ fn compile_function(
     builtin: tast::BuiltinContract,
     value: anf::Function,
     constant_names: HashMap[string, unit],
+    static_names: HashMap[string, unit],
+    top_level_names: HashMap[string, unit],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -5169,6 +5339,7 @@ fn compile_function(
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(joins, value.body);
+    let local_names = function_local_names(value);
     let collection_array_consumers: HashMap[string, anf::Value] = HashMap::new();
     collect_collection_arrays(collection_array_consumers, value.body);
     let params: Vec[(string, Type)] = Vec::new();
@@ -5176,11 +5347,12 @@ fn compile_function(
     let copied_params: Vec[(string, string, Type)] = Vec::new();
     for index in 0..value.params.len() {
         let param = value.params[index];
-        let name = go_local_ident(param.0);
+        let name = local_ident(top_level_names, param.0);
+        let pointer_name = local_ident_with_suffix(top_level_names, param.0, "_pointer");
         let mut ty = lower_type(param.1);
         if pointer_param_enabled(pointer_params, value.name, index) {
             if pointer_param_copied(pointer_params, value.name, index) {
-                copied_params.push((name, name + "_pointer", ty))
+                copied_params.push((name, pointer_name, ty))
             } else {
                 pointer_vars[param.0] = true;
             };
@@ -5189,7 +5361,7 @@ fn compile_function(
         params.push(
             (
                 if pointer_param_copied(pointer_params, value.name, index) {
-                    name + "_pointer"
+                    pointer_name
                 } else {
                     name
                 },
@@ -5201,6 +5373,9 @@ fn compile_function(
         builtin,
         joins,
         constant_names,
+        static_names,
+        top_level_names,
+        local_names,
         collection_array_consumers,
         emitted_loop_labels: Vec::new(),
         variants,
@@ -5241,6 +5416,8 @@ fn compile_functions(
     builtin: tast::BuiltinContract,
     values: Vec[anf::Function],
     constant_names: HashMap[string, unit],
+    static_names: HashMap[string, unit],
+    top_level_names: HashMap[string, unit],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -5263,6 +5440,8 @@ fn compile_functions(
                     builtin,
                     item.1,
                     constant_names,
+                    static_names,
+                    top_level_names,
                     variants,
                     structs,
                     instances,
@@ -5288,6 +5467,8 @@ fn compile_functions(
                     builtin,
                     values[index],
                     constant_names,
+                    static_names,
+                    top_level_names,
                     variants,
                     structs,
                     instances,
@@ -5373,7 +5554,17 @@ fn lower_with_test_cases(
     let constants = value.constants;
     let constant_names = build_constant_names(constants);
     let statics = value.statics;
+    let static_names = build_static_names(statics);
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
+    let top_level_names = build_top_level_names(
+        value.functions,
+        constants,
+        statics,
+        enums,
+        structs,
+        type_instances,
+        function_names,
+    );
     let pointer_params = build_pointer_param_infos(value.functions, structs);
     let items: Vec[Item] = Vec::new();
     let types = new_collected_types();
@@ -5451,6 +5642,8 @@ fn lower_with_test_cases(
         builtin,
         value.functions,
         constant_names,
+        static_names,
+        top_level_names,
         variants,
         structs,
         type_instances,
