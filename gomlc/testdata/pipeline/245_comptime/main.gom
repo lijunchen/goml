@@ -66,6 +66,18 @@ fn widen_negative(value: i8) -> u64 {
     value.to_u64()
 }
 
+#[comptime]
+fn guarded_match() -> isize {
+    let mut value = 0;
+    match 0 {
+        _ if {
+            value = 1;
+            false
+        } => 99,
+        _ => value,
+    }
+}
+
 const ANSWER: isize = factorial(5);
 
 fn main() -> unit {
@@ -97,5 +109,10 @@ fn main() -> unit {
         widen_negative(-1)
     };
     println(widened == widen_negative(-1));
+    let folded_guard = comptime {
+        guarded_match()
+    };
+    println(guarded_match());
+    println(folded_guard);
     println(factorial(4))
 }
