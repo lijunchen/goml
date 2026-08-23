@@ -17,6 +17,13 @@ pub enum SymbolKind {
     Field,
 }
 
+pub enum MethodOrigin {
+    NotMethod,
+    Inherent,
+    TraitDeclaration,
+    TraitImplementation,
+}
+
 pub struct Symbol {
     pub name: string,
     pub qualified_name: string,
@@ -26,6 +33,7 @@ pub struct Symbol {
     pub kind: SymbolKind,
     pub public: bool,
     pub has_receiver: bool,
+    pub method_origin: MethodOrigin,
 }
 
 pub struct SymbolIndex {
@@ -149,6 +157,8 @@ fn symbol_kind(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SymbolKind] {
         Option::Some(SymbolKind::TypeAlias)
     } else if cst::node_kind_equal(node.kind, cst::NodeKind::CONST) {
         Option::Some(SymbolKind::Constant)
+    } else if cst::node_kind_equal(node.kind, cst::NodeKind::EXTERN) {
+        Option::Some(SymbolKind::Function)
     } else if cst::node_kind_equal(node.kind, cst::NodeKind::VARIANT) {
         Option::Some(SymbolKind::Variant)
     } else if cst::node_kind_equal(node.kind, cst::NodeKind::TRAIT_METHOD_SIG) {
@@ -269,6 +279,39 @@ fn symbol_has_receiver(syntax: SyntaxIndex, node: SyntaxNode, kind: SymbolKind) 
     }
 }
 
+fn impl_has_trait(syntax: SyntaxIndex, node: SyntaxNode) -> bool {
+    let mut index = token_index_at_or_after(syntax, node.start);
+    while index < syntax.tokens.len() && syntax.tokens[index].start < node.end {
+        let token = syntax.tokens[index];
+        if token_is_inside_node(token, node)
+            && lexer::token_kind_equal(token.kind, lexer::TokenKind::ForKeyword) {
+            return true
+        } else if token_is_inside_node(token, node)
+            && lexer::token_kind_equal(token.kind, lexer::TokenKind::LBrace) {
+            return false
+        } else {
+            index = index + 1;
+        }
+    }
+    false
+}
+
+fn symbol_method_origin(syntax: SyntaxIndex, node: SyntaxNode, kind: SymbolKind) -> MethodOrigin {
+    match kind {
+        Method => match parent_with_kind(syntax, node, cst::NodeKind::TRAIT, cst::NodeKind::IMPL) {
+            Some(owner) => if cst::node_kind_equal(owner.kind, cst::NodeKind::TRAIT) {
+                MethodOrigin::TraitDeclaration
+            } else if impl_has_trait(syntax, owner) {
+                MethodOrigin::TraitImplementation
+            } else {
+                MethodOrigin::Inherent
+            },
+            None => MethodOrigin::NotMethod,
+        },
+        _ => MethodOrigin::NotMethod,
+    }
+}
+
 fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Symbol]) -> unit {
     for node in syntax.nodes {
         match symbol_kind(syntax, node) {
@@ -290,6 +333,7 @@ fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Sym
                         public: source.package_name == "builtin"
                             || symbol_public(syntax, node, kind),
                         has_receiver: symbol_has_receiver(syntax, node, kind),
+                        method_origin: symbol_method_origin(syntax, node, kind),
                     },
                 ),
                 None => (),
@@ -358,6 +402,7 @@ fn index_builtin_collection_methods(source: SourceFile, symbols: Vec[Symbol]) ->
                                 kind: SymbolKind::Method,
                                 public: true,
                                 has_receiver: false,
+                                method_origin: MethodOrigin::Inherent,
                             },
                         ),
                         _ => (),
