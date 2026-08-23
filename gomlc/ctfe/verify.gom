@@ -318,6 +318,26 @@ fn loop_target(ctx: VerifyContext, target: isize) -> Option[(ctir::CtType, bool)
     Option::None
 }
 
+fn loop_context(ctx: VerifyContext, target: isize, result_type: ctir::CtType, accepts_value: bool) -> VerifyContext {
+    let loop_targets: Vec[(isize, ctir::CtType, bool)] = Vec::with_capacity(
+        ctx.loop_targets.len() + 1,
+    );
+    for value in ctx.loop_targets {
+        loop_targets.push(value)
+    }
+    loop_targets.push((target, result_type, accepts_value));
+    VerifyContext {
+        module: ctx.module,
+        dependencies: ctx.dependencies,
+        local_count: ctx.local_count,
+        local_types: ctx.local_types,
+        return_type: ctx.return_type,
+        loop_targets,
+        value_nodes: ctx.value_nodes,
+        value_bytes: ctx.value_bytes,
+    }
+}
+
 fn verify_value_limits(value: ctir::CtValue, nodes: Ref[isize], bytes: Ref[isize]) -> Result[
     unit,
     string,
@@ -748,21 +768,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
         },
         ctir::CtExprKind::While { target, condition, body } => {
             verify_expr(ctx, condition)?;
-            let loops = ctx.loop_targets;
-            loops.push((target, ctir::CtType::Unit, false));
-            verify_expr(
-                VerifyContext {
-                    module: ctx.module,
-                    dependencies: ctx.dependencies,
-                    local_count: ctx.local_count,
-                    local_types: ctx.local_types,
-                    return_type: ctx.return_type,
-                    loop_targets: loops,
-                    value_nodes: ctx.value_nodes,
-                    value_bytes: ctx.value_bytes,
-                },
-                body,
-            )?;
+            verify_expr(loop_context(ctx, target, ctir::CtType::Unit, false), body)?;
             if expression_type_matches(ctir::CtType::Bool, condition.ty)
                 && types_equal(value.ty, ctir::CtType::Unit)
                 && expression_type_matches(ctir::CtType::Unit, body.ty) {
@@ -776,21 +782,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
             verify_expr(ctx, end)?;
             let item_ty = ctir::CtType::Integer { signed: true, width: ctx.module.target.int_width };
             verify_pattern(ctx, pattern, item_ty)?;
-            let loops = ctx.loop_targets;
-            loops.push((target, ctir::CtType::Unit, false));
-            verify_expr(
-                VerifyContext {
-                    module: ctx.module,
-                    dependencies: ctx.dependencies,
-                    local_count: ctx.local_count,
-                    local_types: ctx.local_types,
-                    return_type: ctx.return_type,
-                    loop_targets: loops,
-                    value_nodes: ctx.value_nodes,
-                    value_bytes: ctx.value_bytes,
-                },
-                body,
-            )?;
+            verify_expr(loop_context(ctx, target, ctir::CtType::Unit, false), body)?;
             if types_equal(value.ty, ctir::CtType::Unit)
                 && expression_type_matches(item_ty, start.ty)
                 && expression_type_matches(item_ty, end.ty)
@@ -807,21 +799,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
                 _ => return Result::Err("CTIR array for source is not an array"),
             };
             verify_pattern(ctx, pattern, item_ty)?;
-            let loops = ctx.loop_targets;
-            loops.push((target, ctir::CtType::Unit, false));
-            verify_expr(
-                VerifyContext {
-                    module: ctx.module,
-                    dependencies: ctx.dependencies,
-                    local_count: ctx.local_count,
-                    local_types: ctx.local_types,
-                    return_type: ctx.return_type,
-                    loop_targets: loops,
-                    value_nodes: ctx.value_nodes,
-                    value_bytes: ctx.value_bytes,
-                },
-                body,
-            )?;
+            verify_expr(loop_context(ctx, target, ctir::CtType::Unit, false), body)?;
             if types_equal(value.ty, ctir::CtType::Unit)
                 && expression_type_matches(ctir::CtType::Unit, body.ty) {
                 Result::Ok(())
@@ -830,21 +808,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
             }
         },
         ctir::CtExprKind::Loop { target, body } => {
-            let loops = ctx.loop_targets;
-            loops.push((target, value.ty, true));
-            verify_expr(
-                VerifyContext {
-                    module: ctx.module,
-                    dependencies: ctx.dependencies,
-                    local_count: ctx.local_count,
-                    local_types: ctx.local_types,
-                    return_type: ctx.return_type,
-                    loop_targets: loops,
-                    value_nodes: ctx.value_nodes,
-                    value_bytes: ctx.value_bytes,
-                },
-                body,
-            )?;
+            verify_expr(loop_context(ctx, target, value.ty, true), body)?;
             if expression_type_matches(ctir::CtType::Unit, body.ty) {
                 Result::Ok(())
             } else {
