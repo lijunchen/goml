@@ -837,6 +837,50 @@ fn returns_signature_help_for_active_arguments() -> unit {
 }
 
 #[test]
+fn keeps_signature_names_for_canonical_cross_package_targets() -> unit {
+    let root = "/tmp/goml-query-signature-owner-collision";
+    let left_dir = root + "/left";
+    let right_dir = root + "/right";
+    for directory in Vec::from_array([root, left_dir, right_dir]) {
+        match fs::create_dir_all(directory) {
+            Ok(()) => (),
+            Err(error) => testing::fail(error),
+        }
+    }
+    let left_path = left_dir + "/item.gom";
+    let right_path = right_dir + "/item.gom";
+    let main_path = root + "/main.gom";
+    let left_source = "package shared; pub struct Item {} impl Item { pub fn choose(self: Item, left_method_value: isize) -> isize { left_method_value } } pub fn call(left_function_value: isize) -> isize { left_function_value }";
+    let right_source = "package shared; pub struct Item {} impl Item { pub fn choose(self: Item, right_method_value: isize) -> isize { right_method_value } } pub fn call(right_function_value: isize) -> isize { right_function_value }";
+    let main_source = "package main; use module::left as left; use module::right as right; fn main() -> unit { let left_value = left::Item {}; let right_value = right::Item {}; println(left_value.choose(1)); println(right_value.choose(2)); println(left::call(3)); println(right::call(4)) }";
+    write_query_fixture(
+        root + "/goml.toml",
+        "[module]\npath = \"query::signature_owner_collision\"\n",
+    );
+    write_query_fixture(left_path, left_source);
+    write_query_fixture(right_path, right_source);
+    write_query_fixture(main_path, main_source);
+    let analysis = analyze(main_path, main_source);
+    assert_no_diagnostics(analysis);
+    for expected in Vec::from_array(
+        [
+            ("left_value.choose(", "(left_method_value: isize) -> isize"),
+            ("right_value.choose(", "(right_method_value: isize) -> isize"),
+            ("left::call(", "(left_function_value: isize) -> isize"),
+            ("right::call(", "(right_function_value: isize) -> isize"),
+        ],
+    ) {
+        match last_substring(main_source, expected.0) {
+            Some(offset) => match signature_help(analysis, offset + expected.0.byte_len()) {
+                Some(signature) => testing::assert_eq(signature.label, expected.1),
+                None => testing::fail("expected signature help for " + expected.0),
+            },
+            None => testing::fail("expected call " + expected.0),
+        }
+    }
+}
+
+#[test]
 fn hides_method_receivers_in_signature_help() -> unit {
     let source = "fn main() -> string { let value = 1; value.to_string() }";
     match last_substring(source, "to_string()") {
