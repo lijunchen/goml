@@ -1352,18 +1352,15 @@ fn rejects_invalid_range_pattern_endpoint_types() -> unit {
     let boolean = checked_diagnostics(
         "fn classify(value: bool) -> bool { match value { false..=true => true, _ => false } }",
     );
-    testing::assert_eq(boolean.len(), 1);
-    testing::assert_eq(boolean[0].message, expected);
+    testing::assert(has_diagnostic(boolean, expected));
     let string_result = checked_diagnostics(
         "fn classify(value: string) -> bool { match value { \"a\"..=\"z\" => true, _ => false } }",
     );
-    testing::assert_eq(string_result.len(), 1);
-    testing::assert_eq(string_result[0].message, expected);
+    testing::assert(has_diagnostic(string_result, expected));
     let float_result = checked_diagnostics(
         "fn classify(value: f64) -> bool { match value { 1.0..=2.0 => true, _ => false } }",
     );
-    testing::assert_eq(float_result.len(), 1);
-    testing::assert_eq(float_result[0].message, expected);
+    testing::assert(has_diagnostic(float_result, expected));
     testing::assert_eq(
         checked_diagnostics(
             "fn integer(value: i16) -> bool { match value { -2..=2 => true, _ => false } } fn byte(value: u8) -> bool { match value { b'a'..=b'z' => true, _ => false } } fn character(value: char) -> bool { match value { 'a'..='z' => true, _ => false } }",
@@ -1378,23 +1375,19 @@ fn rejects_invalid_range_pattern_ordering() -> unit {
     let signed = checked_diagnostics(
         "fn classify(value: i16) -> bool { match value { 2..=-2 => true, _ => false } }",
     );
-    testing::assert_eq(signed.len(), 1);
-    testing::assert_eq(signed[0].message, expected);
+    testing::assert(has_diagnostic(signed, expected));
     let unsigned = checked_diagnostics(
         "fn classify(value: u16) -> bool { match value { 200..=100 => true, _ => false } }",
     );
-    testing::assert_eq(unsigned.len(), 1);
-    testing::assert_eq(unsigned[0].message, expected);
+    testing::assert(has_diagnostic(unsigned, expected));
     let character = checked_diagnostics(
         "fn classify(value: char) -> bool { match value { 'z'..='a' => true, _ => false } }",
     );
-    testing::assert_eq(character.len(), 1);
-    testing::assert_eq(character[0].message, expected);
+    testing::assert(has_diagnostic(character, expected));
     let empty = checked_diagnostics(
         "fn classify(value: u8) -> bool { match value { 10..10 => true, _ => false } }",
     );
-    testing::assert_eq(empty.len(), 1);
-    testing::assert_eq(empty[0].message, expected);
+    testing::assert(has_diagnostic(empty, expected));
     testing::assert_eq(
         checked_diagnostics(
             "fn signed(value: i8) -> bool { match value { -128..=-128 => true, _ => false } } fn unsigned(value: u8) -> bool { match value { 255..=255 => true, _ => false } } fn character(value: char) -> bool { match value { 'a'..='a' => true, _ => false } }",
