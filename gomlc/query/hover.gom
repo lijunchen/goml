@@ -92,20 +92,41 @@ fn method_owner(value: tast::MethodInfo) -> string {
 
 fn method_matches_symbol(value: tast::MethodInfo, symbol: Symbol) -> bool {
     let expected_owner = symbol_owner(symbol.qualified_name);
-    let actual_owner = method_owner(value);
-    (value.function.name == symbol.qualified_name
-        || short_type_name(value.function.name) == symbol.name)
-        && owner_name_matches(actual_owner, expected_owner)
+    let name_matches = value.function.name == symbol.qualified_name
+        || short_type_name(value.function.name) == symbol.name;
+    name_matches
+        && match symbol.method_origin {
+            Inherent => method_owner(value) == expected_owner && value.trait_ref.is_none(),
+            TraitImplementation => {
+                type_owner_name(value.for_type) == expected_owner && value.trait_ref.is_some()
+            },
+            _ => false,
+        }
 }
 
 fn function_hover_by_name(value: Analysis, name: string) -> Option[string] {
+    for environment in value.environments {
+        for function in environment.functions {
+            if function.name == name {
+                return hover_function_text(
+                    function.comptime,
+                    function.generics,
+                    function.params,
+                    function.ret_ty,
+                )
+            } else {}
+        }
+    }
+    if short_type_name(name) != name {
+        return Option::None
+    } else {};
     let mut environment_index = value.environments.len() - 1;
     while environment_index >= 0 {
         let environment = value.environments[environment_index];
         let mut function_index = environment.functions.len() - 1;
         while function_index >= 0 {
             let function = environment.functions[function_index];
-            if function.name == name || short_type_name(function.name) == short_type_name(name) {
+            if short_type_name(function.name) == name {
                 return hover_function_text(
                     function.comptime,
                     function.generics,
@@ -117,6 +138,49 @@ fn function_hover_by_name(value: Analysis, name: string) -> Option[string] {
             }
         }
         environment_index = environment_index - 1;
+    }
+    Option::None
+}
+
+fn trait_method_hover(value: Analysis, symbol: Symbol) -> Option[string] {
+    let owner = symbol_owner(symbol.qualified_name);
+    for environment in value.environments {
+        for definition in environment.traits {
+            if definition.name == owner {
+                for method in definition.methods {
+                    if method.name == symbol.name {
+                        return hover_function_text(
+                            tast::ComptimeCapability::RuntimeOnly,
+                            method.generics,
+                            method.params,
+                            method.ret_ty,
+                        )
+                    } else {}
+                }
+            } else {}
+        }
+    }
+    Option::None
+}
+
+fn constant_hover(value: Analysis, symbol: Symbol) -> Option[string] {
+    for environment in value.environments {
+        for constant in environment.constants {
+            if constant.name == symbol.qualified_name {
+                return hover_text(constant.ty)
+            } else {}
+        }
+    }
+    Option::None
+}
+
+fn type_alias_hover(value: Analysis, symbol: Symbol) -> Option[string] {
+    for environment in value.environments {
+        for alias in environment.type_aliases {
+            if alias.name == symbol.qualified_name {
+                return hover_text(alias.ty)
+            } else {}
+        }
     }
     Option::None
 }
@@ -162,7 +226,12 @@ fn reference_hover_text(value: Analysis, target: tast::ReferenceTarget, ty: tast
 fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
     match symbol.kind {
         Function => function_hover_by_name(value, symbol.qualified_name),
-        Method => {
+        Method => if match symbol.method_origin {
+            TraitDeclaration => true,
+            _ => false,
+        } {
+            trait_method_hover(value, symbol)
+        } else {
             let mut environment_index = value.environments.len() - 1;
             while environment_index >= 0 {
                 let environment = value.environments[environment_index];
@@ -210,42 +279,8 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
             Option::None
         },
         Variant => Option::Some(short_type_name(symbol_owner(symbol.qualified_name))),
-        Constant => {
-            let mut environment_index = value.environments.len() - 1;
-            while environment_index >= 0 {
-                let environment = value.environments[environment_index];
-                let mut constant_index = environment.constants.len() - 1;
-                while constant_index >= 0 {
-                    let constant = environment.constants[constant_index];
-                    if constant.name == symbol.qualified_name
-                        || short_type_name(constant.name) == symbol.name {
-                        return hover_text(constant.ty)
-                    } else {
-                        constant_index = constant_index - 1;
-                    }
-                }
-                environment_index = environment_index - 1;
-            }
-            Option::None
-        },
-        TypeAlias => {
-            let mut environment_index = value.environments.len() - 1;
-            while environment_index >= 0 {
-                let environment = value.environments[environment_index];
-                let mut alias_index = environment.type_aliases.len() - 1;
-                while alias_index >= 0 {
-                    let alias = environment.type_aliases[alias_index];
-                    if alias.name == symbol.qualified_name
-                        || short_type_name(alias.name) == symbol.name {
-                        return hover_text(alias.ty)
-                    } else {
-                        alias_index = alias_index - 1;
-                    }
-                }
-                environment_index = environment_index - 1;
-            }
-            Option::None
-        },
+        Constant => constant_hover(value, symbol),
+        TypeAlias => type_alias_hover(value, symbol),
         Struct | Enum | Trait => {
             Option::Some(short_type_name(symbol.qualified_name))
         },
