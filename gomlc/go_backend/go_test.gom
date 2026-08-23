@@ -642,6 +642,19 @@ fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
 }
 
 #[test]
+fn preserves_unused_panicking_expressions() -> unit {
+    let source = "fn main() -> unit { let divisor: isize = 2; let shift: isize = 1; let dead_div = 8 / divisor; let dead_rem = 8 % divisor; let dead_shl = 1 << shift; let dead_shr = 8 >> shift; let values = Vec::from_array([1]); let view = values.slice(0, 1); let dead_get = view[1]; let dead_sub = view.sub(0, 2); let dead_add = 1 + 2; println(42) }";
+    let output = encode(lower_linked_source(source));
+    testing::assert(string_contains(output, "_ = 8 / divisor__0\n"));
+    testing::assert(string_contains(output, "_ = 8 % divisor__0\n"));
+    testing::assert(string_contains(output, "_ = 1 << shift__0\n"));
+    testing::assert(string_contains(output, "_ = 8 >> shift__0\n"));
+    testing::assert(string_contains(output, "_ = view__0[1]\n"));
+    testing::assert(string_contains(output, "_ = view__0[inline3:inline4]\n"));
+    testing::assert(!string_contains(output, "1 + 2"))
+}
+
+#[test]
 fn preserves_nested_tuple_discovery_order() -> unit {
     let source = "fn classify(p: ((i32, i32), string)) -> string { p.1 } fn main() -> unit { println(classify(((1, 2), \"value\"))); }";
     testing::assert(
