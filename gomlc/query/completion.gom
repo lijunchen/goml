@@ -1127,7 +1127,7 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
     let lowered = value.lowered;
     match lowered.ast {
         Some(file) => for import in file.uses {
-            let package_name = path_text(import.path);
+            let package_name = expand_module_namespace(value.module_path, path_text(import.path));
             if analysis_has_package(value, package_name) {
                 let alias = match import.alias {
                     Some(name) => name,
