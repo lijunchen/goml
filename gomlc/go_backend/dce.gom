@@ -393,6 +393,13 @@ fn emit_side_effect(value: Expr) -> Stmt {
     }
 }
 
+fn binary_may_panic(value: BinaryOp) -> bool {
+    match value {
+        Div | Rem | Shl | Shr => true,
+        Add | Sub | Mul | BitAnd | BitOr | BitXor | Less | Greater | LessEq | GreaterEq | Eq | NotEq | And | Or => false,
+    }
+}
+
 fn expr_has_side_effects(value: Expr) -> bool {
     match value {
         Call { func, args } => {
@@ -404,13 +411,11 @@ fn expr_has_side_effects(value: Expr) -> bool {
             append_call(func) || !call_result_must_be_used(func)
         },
         Unary { op: _, expr } => expr_has_side_effects(expr),
-        Binary { op: _, lhs, rhs } => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
-        Field { expr, field_name: _ } => expr_has_side_effects(expr),
-        Index { base: expr, index } => expr_has_side_effects(expr) || expr_has_side_effects(index),
-        Slice { base: expr, start, end } => {
-            expr_has_side_effects(expr) || expr_has_side_effects(start)
-                || expr_has_side_effects(end)
+        Binary { op, lhs, rhs } => {
+            binary_may_panic(op) || expr_has_side_effects(lhs) || expr_has_side_effects(rhs)
         },
+        Field { expr, field_name: _ } => expr_has_side_effects(expr),
+        Index { base: _, index: _ } | Slice { base: _, start: _, end: _ } => true,
         Cast { expr, ty: _ } | Convert { ty: _, expr } => expr_has_side_effects(expr),
         Make { ty: _, args } => {
             for arg in args {
