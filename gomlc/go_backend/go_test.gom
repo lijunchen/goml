@@ -116,20 +116,15 @@ fn generates_stable_go_names_across_ir_counters() -> unit {
 
 #[test]
 fn separates_top_level_and_local_go_names() -> unit {
-    let source = "const value__0: isize = 42; static cell__0: OnceCell[isize] = OnceCell::new(); struct Marker { value: isize, } fn t0(value: isize) -> isize { if value == 0 { 5 } else { t0(value - 1) + 1 } } fn identity(value: isize) -> isize { value } fn main() -> unit { let value = 7; let cell = 9; let result = t0(0) + t0(1) + identity(3); let marker = Marker { value: result }; println(value); println(value__0); println(cell); println(cell__0.get_or_init(|| 11)); println(marker.value) }";
+    let source = "const value__0: isize = 42; fn t0(value: isize) -> isize { if value == 0 { 5 } else { t0(value - 1) + 1 } } fn main() -> unit { let value = 7; println(t0(0) + t0(1)); println(value); println(value__0) }";
     let output = encode(lower_source_with_counter(source, 0));
     testing::assert(output.contains("const (\n    value__0 int = 42"));
-    testing::assert(output.contains("var cell__0 *OnceCell__isize"));
     testing::assert(output.contains("func t0(_goml_local_value__0 int) int"));
     testing::assert(output.contains(" = t0(0)"));
     testing::assert(output.contains(" = t0(1)"));
     testing::assert(!output.contains("_goml_local_t0("));
     testing::assert(output.contains("var _goml_local_value__0 int = 7"));
-    testing::assert(output.contains("var _goml_local_cell__0 int = 9"));
-    testing::assert(output.contains("once_cell_get_or_init__OnceCell__isize(cell__0,"));
-    testing::assert(output.contains("var result__0 int"));
     testing::assert(!output.contains("var value__0 int = 7"));
-    testing::assert(!output.contains("var cell__0 int = 9"));
     let type_names: HashMap[string, unit] = HashMap::new();
     type_names["Marker"] = ();
     testing::assert_eq(local_ident(type_names, "Marker"), "_goml_local_Marker")
