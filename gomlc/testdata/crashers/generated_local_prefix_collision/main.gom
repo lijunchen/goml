@@ -1,0 +1,21 @@
+fn t1(value: isize) -> isize {
+    if value == 0 {
+        0
+    } else {
+        t1(value - 1) + 1
+    }
+}
+
+fn _goml_local_t1(value: isize) -> isize {
+    if value == 0 {
+        0
+    } else {
+        _goml_local_t1(value - 1) + 1
+    }
+}
+
+fn main() -> unit {
+    let value = 40 + 2;
+    println(_goml_local_t1(value));
+    println(t1(1))
+}

@@ -12,3 +12,13 @@ fn canonicalizes_ids_by_prefix() -> unit {
     testing::assert_eq(canonical(values, "mtmp802"), "mtmp0");
     testing::assert_eq(canonical(values, "stable"), "stable")
 }
+
+#[test]
+fn skips_exact_reserved_names() -> unit {
+    let values = names();
+    reserve(values, "t1");
+    reserve(values, "t3");
+    testing::assert_eq(canonical(values, "t801"), "t0");
+    testing::assert_eq(canonical(values, "t802"), "t2");
+    testing::assert_eq(canonical(values, "t803"), "t4")
+}
