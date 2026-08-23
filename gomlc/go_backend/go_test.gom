@@ -121,7 +121,9 @@ fn separates_top_level_and_local_go_names() -> unit {
     testing::assert(output.contains("const (\n    value__0 int = 42"));
     testing::assert(output.contains("var cell__0 *OnceCell__isize"));
     testing::assert(output.contains("func t0(value__0 int) int"));
-    testing::assert(output.contains("var _goml_local_t0 bool = value__0 == 0"));
+    testing::assert(output.contains(" = t0(0)"));
+    testing::assert(output.contains(" = t0(1)"));
+    testing::assert(!output.contains("_goml_local_t0("));
     testing::assert(output.contains("var _goml_local_value__0 int = 7"));
     testing::assert(output.contains("var _goml_local_cell__0 int = 9"));
     testing::assert(output.contains("once_cell_get_or_init__OnceCell__isize(cell__0,"));
