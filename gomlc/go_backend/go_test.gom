@@ -927,6 +927,15 @@ fn preserves_loop_carried_assignments() -> unit {
 }
 
 #[test]
+fn preserves_outer_loop_continuation_after_nested_while() -> unit {
+    let source = "fn main() -> unit { let mut index = 0; while index < 2 { let start = index; if start == 0 { index = start + 1; while index < 1 { index = index + 1; }; println(\"space\") } else { index = index + 1; println(\"other\") } } }";
+    let output = encode(lower_source(source));
+    testing::assert(!output.contains("panic(\"unreachable\")"));
+    testing::assert(output.contains("_goml_runtime_core_string_println(inline"));
+    testing::assert(output.contains("continue"))
+}
+
+#[test]
 fn preserves_all_exit_while_conditions() -> unit {
     let source = "fn loop_return_unit(flag: bool) -> unit { while if flag { return } else { return } { println(\"unreachable\"); }; } fn main() -> unit { loop_return_unit(true) }";
     let output = encode(lower_source(source));
