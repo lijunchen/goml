@@ -16,7 +16,9 @@ use module::tast;
 use module::version;
 use std::bytes;
 use std::env;
+use std::fs;
 use std::json;
+use std::path;
 use std::testing;
 
 fn test_package_world() -> PackageWorld {
@@ -53,6 +55,28 @@ fn stage_lowering_preserves_hidden_fresh_names() -> unit {
     let source = "enum E { A(i32), B(i32), C(i32) } fn main() -> unit { let value = E::B(1); match value { E::B(item) => (), _ => () } }";
     let stage = lower_core_stage("main.gom", source);
     testing::assert_eq(stage.counter.get(), 3)
+}
+
+#[test]
+fn isolates_temporary_go_paths_for_identical_sources() -> unit {
+    let first = temp_go_path("main.gom", "package main");
+    let second = temp_go_path("main.gom", "package main");
+    let Some(first_directory) = path::parent(first) else {
+        testing::fail("expected first temporary directory");
+        return
+    };
+    let Some(second_directory) = path::parent(second) else {
+        testing::fail("expected second temporary directory");
+        return
+    };
+    testing::assert(first != second);
+    testing::assert(first_directory != second_directory);
+    testing::assert(fs::is_dir(first_directory));
+    testing::assert(fs::is_dir(second_directory));
+    cleanup_temp_directory(first);
+    cleanup_temp_directory(second);
+    testing::assert(!fs::is_dir(first_directory));
+    testing::assert(!fs::is_dir(second_directory))
 }
 
 fn args_with(values: Vec[string]) -> Vec[string] {
