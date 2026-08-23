@@ -950,9 +950,14 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                     _ => (),
                 }
             }
-            match explicit_receiver_type(value, dot) {
-                Some(receiver_name) => complete_named_methods(result, value, receiver_name, prefix),
-                None => (),
+            match tast::resolve_type(receiver) {
+                Error => match explicit_receiver_type(value, dot) {
+                    Some(receiver_name) => {
+                        complete_named_methods(result, value, receiver_name, prefix)
+                    },
+                    None => (),
+                },
+                _ => (),
             }
         },
         None => match explicit_receiver_type(value, dot) {
