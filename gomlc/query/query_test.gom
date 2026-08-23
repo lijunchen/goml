@@ -187,6 +187,16 @@ fn parses_module_paths_and_package_names() -> unit {
 }
 
 #[test]
+fn parses_module_paths_with_inline_comments() -> unit {
+    match manifest_module_path(
+        "[build] # output settings\n\n[module] # package identity\npath = \"alice::tools\" # canonical path\n",
+    ) {
+        Some(value) => testing::assert_eq(value, "alice::tools"),
+        None => testing::fail("expected module path"),
+    }
+}
+
+#[test]
 fn analyzes_package_files_with_unsaved_overrides() -> unit {
     let root = "../gomlc/testdata/module/project033_cross_file_pattern_constructor";
     let main_path = root + "/main.gom";
