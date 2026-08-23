@@ -604,8 +604,7 @@ func main0() struct{} {
     _goml_m_std_p_io_p_eprint____T__string("")
     var inline23 string = ""
     var inline24 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline23)
-    var inline25_rhs string = "\n"
-    var inline25 string = inline24 + inline25_rhs
+    var inline25 string = inline24 + "\n"
     _goml_m_std_p_internal_p_host_p_eprint(inline25)
     var t1 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
     var t2 string
@@ -614,8 +613,7 @@ func main0() struct{} {
         t2 = "ok"
     case 1:
         var inline21 string = t1._v1_0
-        var inline22_lhs string = "err "
-        var inline22 string = inline22_lhs + inline21
+        var inline22 string = "err " + inline21
         t2 = inline22
     default:
         panic("non-exhaustive match")
@@ -634,8 +632,7 @@ func main0() struct{} {
         t4 = "ok"
     case 1:
         var inline13 string = t3._v1_0
-        var inline14_lhs string = "err "
-        var inline14 string = inline14_lhs + inline13
+        var inline14 string = "err " + inline13
         t4 = inline14
     default:
         panic("non-exhaustive match")
@@ -667,8 +664,7 @@ func main0() struct{} {
         t6 = inline2
     case 1:
         var inline3 string = t5._v1_0
-        var inline4_lhs string = "err "
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "err " + inline3
         t6 = inline4
     default:
         panic("non-exhaustive match")
@@ -813,8 +809,7 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                         }
                         return inline15
                     } else {
-                        var t7_rhs int = 1
-                        var t7 int = index__0 + t7_rhs
+                        var t7 int = index__0 + 1
                         var t8 uint8
                         var inline14 uint8 = _goml_runtime_core_string_byte_get(value__0, t7)
                         t8 = inline14
@@ -835,12 +830,9 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             }
                             return inline6
                         } else {
-                            var t10_rhs uint32 = 31
-                            var t10 uint32 = first__0 & t10_rhs
-                            var t11_rhs int = 6
-                            var t11 uint32 = t10 << t11_rhs
-                            var t12_rhs uint32 = 63
-                            var t12 uint32 = second__0 & t12_rhs
+                            var t10 uint32 = first__0 & 31
+                            var t11 uint32 = t10 << 6
+                            var t12 uint32 = second__0 & 63
                             var t13 uint32 = t11 | t12
                             var inline7 int = 2
                             var inline8 Option__char = __goml_builtin_char_from_uint32(t13)
@@ -874,12 +866,10 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             }
                             return inline24
                         } else {
-                            var t17_rhs int = 1
-                            var t17 int = index__0 + t17_rhs
+                            var t17 int = index__0 + 1
                             var t18 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t17)
                             var second__1 uint32 = uint32(uint8(t18))
-                            var t19_rhs int = 2
-                            var t19 int = index__0 + t19_rhs
+                            var t19 int = index__0 + 2
                             var t20 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t19)
                             var third__0 uint32 = uint32(uint8(t20))
                             var t21 bool = utf8_invalid_continuation(second__1)
@@ -927,17 +917,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 }
                                 return inline16
                             } else {
-                                var t22_rhs uint32 = 15
-                                var t22 uint32 = first__0 & t22_rhs
-                                var t23_rhs int = 12
-                                var t23 uint32 = t22 << t23_rhs
-                                var t24_rhs uint32 = 63
-                                var t24 uint32 = second__1 & t24_rhs
-                                var t25_rhs int = 6
-                                var t25 uint32 = t24 << t25_rhs
+                                var t22 uint32 = first__0 & 15
+                                var t23 uint32 = t22 << 12
+                                var t24 uint32 = second__1 & 63
+                                var t25 uint32 = t24 << 6
                                 var t26 uint32 = t23 | t25
-                                var t27_rhs uint32 = 63
-                                var t27 uint32 = third__0 & t27_rhs
+                                var t27 uint32 = third__0 & 63
                                 var t28 uint32 = t26 | t27
                                 var inline17 int = 3
                                 var inline18 Option__char = __goml_builtin_char_from_uint32(t28)
@@ -967,16 +952,13 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 var t61 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return t61
                             } else {
-                                var t36_rhs int = 1
-                                var t36 int = index__0 + t36_rhs
+                                var t36 int = index__0 + 1
                                 var t37 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t36)
                                 var second__2 uint32 = uint32(uint8(t37))
-                                var t38_rhs int = 2
-                                var t38 int = index__0 + t38_rhs
+                                var t38 int = index__0 + 2
                                 var t39 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t38)
                                 var third__1 uint32 = uint32(uint8(t39))
-                                var t40_rhs int = 3
-                                var t40 int = index__0 + t40_rhs
+                                var t40 int = index__0 + 3
                                 var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
                                 var fourth__0 uint32 = uint32(uint8(t41))
                                 var t42 bool = utf8_invalid_continuation(second__2)
@@ -1022,22 +1004,15 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                     var t43 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return t43
                                 } else {
-                                    var t44_rhs uint32 = 7
-                                    var t44 uint32 = first__0 & t44_rhs
-                                    var t45_rhs int = 18
-                                    var t45 uint32 = t44 << t45_rhs
-                                    var t46_rhs uint32 = 63
-                                    var t46 uint32 = second__2 & t46_rhs
-                                    var t47_rhs int = 12
-                                    var t47 uint32 = t46 << t47_rhs
+                                    var t44 uint32 = first__0 & 7
+                                    var t45 uint32 = t44 << 18
+                                    var t46 uint32 = second__2 & 63
+                                    var t47 uint32 = t46 << 12
                                     var t48 uint32 = t45 | t47
-                                    var t49_rhs uint32 = 63
-                                    var t49 uint32 = third__1 & t49_rhs
-                                    var t50_rhs int = 6
-                                    var t50 uint32 = t49 << t50_rhs
+                                    var t49 uint32 = third__1 & 63
+                                    var t50 uint32 = t49 << 6
                                     var t51 uint32 = t48 | t50
-                                    var t52_rhs uint32 = 63
-                                    var t52 uint32 = fourth__0 & t52_rhs
+                                    var t52 uint32 = fourth__0 & 63
                                     var t53 uint32 = t51 | t52
                                     var t54 Tuple3_4bool_4char_3int = utf8_valid_decode(t53, 4)
                                     return t54
@@ -1083,8 +1058,7 @@ func string_is_char_boundary(value__0 string, index__0 int) bool {
             var t3 uint8
             var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
             t3 = inline0
-            var t4_rhs uint8 = 192
-            var t4 uint8 = t3 & t4_rhs
+            var t4 uint8 = t3 & 192
             var t5 bool = t4 != 128
             return t5
         }

@@ -92,13 +92,11 @@ func main0() struct{} {
     switch t0._tag {
     case 0:
         var inline15 string = t0._v0_0
-        var inline16_lhs string = "ok "
-        var inline16 string = inline16_lhs + inline15
+        var inline16 string = "ok " + inline15
         t1 = inline16
     case 1:
         var inline17 string = t0._v1_0
-        var inline18_lhs string = "err "
-        var inline18 string = inline18_lhs + inline17
+        var inline18 string = "err " + inline17
         t1 = inline18
     default:
         panic("non-exhaustive match")
@@ -119,13 +117,11 @@ func main0() struct{} {
         switch t2._tag {
         case 0:
             var inline2 string = t2._v0_0
-            var inline3_lhs string = "ok "
-            var inline3 string = inline3_lhs + inline2
+            var inline3 string = "ok " + inline2
             t3 = inline3
         case 1:
             var inline4 string = t2._v1_0
-            var inline5_lhs string = "err "
-            var inline5 string = inline5_lhs + inline4
+            var inline5 string = "err " + inline4
             t3 = inline5
         default:
             panic("non-exhaustive match")
@@ -144,13 +140,11 @@ func main0() struct{} {
         switch t2._tag {
         case 0:
             var inline2 string = t2._v0_0
-            var inline3_lhs string = "ok "
-            var inline3 string = inline3_lhs + inline2
+            var inline3 string = "ok " + inline2
             t3 = inline3
         case 1:
             var inline4 string = t2._v1_0
-            var inline5_lhs string = "err "
-            var inline5 string = inline5_lhs + inline4
+            var inline5 string = "err " + inline4
             t3 = inline5
         default:
             panic("non-exhaustive match")

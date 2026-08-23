@@ -1,3 +1,13 @@
+const WRAPPED_I8: i8 = -128;
+const WRAPPED_U8: u8 = 255;
+const WRAPPED_PRODUCT: u8 = 0;
+const WRAPPED_DIVISION: i8 = -128;
+const WRAPPED_NEGATION: i8 = -128;
+const FORWARD_WRAPPED: i8 = -128;
+const MAX_I8: i8 = 127;
+const NEGATIVE_ONE_I16: i16 = -1;
+const PREFIX: string = "fixed";
+
 fn show_i8(value/0: i8) -> unit {
     (println : (i8) -> unit)((value/0 : i8))
 }
@@ -21,5 +31,19 @@ fn main() -> unit {
     (show_i8 : (i8) -> unit)(-128 / -1);
     (show_i8 : (i8) -> unit)(--128);
     (show_i64 : (i64) -> unit)(9223372036854775807 + 1);
-    (show_u64 : (u64) -> unit)(18446744073709551615 + 1)
+    (show_u64 : (u64) -> unit)(18446744073709551615 + 1);
+    (show_i8 : (i8) -> unit)((WRAPPED_I8 : i8));
+    (show_u8 : (u8) -> unit)((WRAPPED_U8 : u8));
+    (show_u8 : (u8) -> unit)((WRAPPED_PRODUCT : u8));
+    (show_i8 : (i8) -> unit)((WRAPPED_DIVISION : i8));
+    (show_i8 : (i8) -> unit)((WRAPPED_NEGATION : i8));
+    (show_i8 : (i8) -> unit)((FORWARD_WRAPPED : i8));
+    (show_i8 : (i8) -> unit)((MAX_I8 : i8) + 1);
+    (show_i8 : (i8) -> unit)((WRAPPED_I8 : i8) / -1);
+    (show_i8 : (i8) -> unit)(-(WRAPPED_I8 : i8));
+    let converted/4: u8 = (i16::to_u8 : (i16) -> u8)((NEGATIVE_ONE_I16 : i16));
+    (show_u8 : (u8) -> unit)((converted/4 : u8));
+    let runtime_value/5: i8 = 127;
+    (show_i8 : (i8) -> unit)((runtime_value/5 : i8) + 1);
+    (println : (string) -> unit)((PREFIX : string) + " width")
 }

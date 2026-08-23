@@ -85,8 +85,7 @@ func find(wanted__0 int) Option__isize {
                 }
                 return t2
             } else {
-                var t3_rhs int = 1
-                var t3 int = value__0 + t3_rhs
+                var t3 int = value__0 + 1
                 ref_set__Ref_3int(current__0, t3)
                 continue
             }

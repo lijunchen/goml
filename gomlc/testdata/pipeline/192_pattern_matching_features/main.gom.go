@@ -271,10 +271,8 @@ func describe(value__0 Maybe, numbers__0 *_goml_vec_int32, view__0 []int32) stri
     if t3 {
         var first__0 int32 = view__0[0]
         var t8 int = len(view__0)
-        var t9_rhs int = 1
-        var t9 int = t8 - t9_rhs
-        var t10_rhs int = 0
-        var t10 int = t9 + t10_rhs
+        var t9 int = t8 - 1
+        var t10 int = t9 + 0
         var last__0 int32 = view__0[t10]
         var t11 bool = first__0 == last__0
         if t11 {
@@ -285,11 +283,9 @@ func describe(value__0 Maybe, numbers__0 *_goml_vec_int32, view__0 []int32) stri
     } else {
         jp2 = "different ends"
     }
-    var t4_rhs string = "/"
-    var t4 string = jp0 + t4_rhs
+    var t4 string = jp0 + "/"
     var t5 string = t4 + jp1
-    var t6_rhs string = "/"
-    var t6 string = t5 + t6_rhs
+    var t6 string = t5 + "/"
     var t7 string = t6 + jp2
     return t7
 }
@@ -412,11 +408,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -436,11 +430,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -467,8 +459,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

@@ -39,27 +39,19 @@ type ParsedFloat struct {
 type Ordering int32
 
 func main0() struct{} {
-    var t0_lhs string = ""
-    var t0_rhs string = "{{"
-    var t0 string = t0_lhs + t0_rhs
+    var t0 string = "" + "{{"
     var t1 bool = t0 == "{{"
     var inline6 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1)
     _goml_runtime_core_string_println(inline6)
-    var t2_lhs string = ""
-    var t2_rhs string = "}}"
-    var t2 string = t2_lhs + t2_rhs
+    var t2 string = "" + "}}"
     var t3 bool = t2 == "}}"
     var inline4 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t3)
     _goml_runtime_core_string_println(inline4)
-    var t4_lhs string = ""
-    var t4_rhs string = "{{"
-    var t4 string = t4_lhs + t4_rhs
+    var t4 string = "" + "{{"
     var t5 bool = t4 == "{{"
     var inline2 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t5)
     _goml_runtime_core_string_println(inline2)
-    var t6_lhs string = ""
-    var t6_rhs string = "}}"
-    var t6 string = t6_lhs + t6_rhs
+    var t6 string = "" + "}}"
     var t7 bool = t6 == "}}"
     var inline0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t7)
     _goml_runtime_core_string_println(inline0)

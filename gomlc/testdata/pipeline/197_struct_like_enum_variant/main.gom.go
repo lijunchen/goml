@@ -150,19 +150,14 @@ func main0() struct{} {
     var t2 string
     var inline4 int32 = 1
     var inline5 int32 = 2
-    var inline6_lhs string = "Key::Point { "
-    var inline6_rhs string = "x: "
-    var inline6 string = inline6_lhs + inline6_rhs
+    var inline6 string = "Key::Point { " + "x: "
     var inline7 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(inline4)
     var inline8 string = inline6 + inline7
-    var inline9_rhs string = ", "
-    var inline9 string = inline8 + inline9_rhs
-    var inline10_rhs string = "y: "
-    var inline10 string = inline9 + inline10_rhs
+    var inline9 string = inline8 + ", "
+    var inline10 string = inline9 + "y: "
     var inline11 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(inline5)
     var inline12 string = inline10 + inline11
-    var inline13_rhs string = " }"
-    var inline13 string = inline12 + inline13_rhs
+    var inline13 string = inline12 + " }"
     t2 = inline13
     var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t2)
     _goml_runtime_core_string_println(inline2)
@@ -201,11 +196,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -225,11 +218,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -256,8 +247,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

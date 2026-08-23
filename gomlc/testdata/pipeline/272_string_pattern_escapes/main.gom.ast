@@ -1,0 +1,18 @@
+package main;
+fn classify(value: string) -> isize {
+    match value {
+        "Aλ" => 1,
+        "\n\r\t\u{8}\u{c}/" => 2,
+        "\"\\" => 3,
+        "\\n" => 4,
+        _ => 0,
+    }
+}
+
+fn main() -> unit {
+    println(classify("Aλ").to_string());
+    println(classify("\n\r\t\u{8}\u{c}/").to_string());
+    println(classify("\"\\").to_string());
+    println(classify("\\n").to_string())
+}
+

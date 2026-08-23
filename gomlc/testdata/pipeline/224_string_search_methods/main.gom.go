@@ -235,8 +235,7 @@ func _goml_m_inherent_i_string_i_string_i_contains(self__0 string, expected__0 s
             var inline11 int = _goml_runtime_core_string_len(expected__0)
             t6 = inline11
             var t7 int = t5 - t6
-            var t8_rhs int = 1
-            var t8 int = t7 + t8_rhs
+            var t8 int = t7 + 1
             var t9 FnIterator__isize
             var inline6 int = 0
             var inline7 *ref_int_x = ref__Ref_3int(inline6)
@@ -358,8 +357,7 @@ func string_is_char_boundary(value__0 string, index__0 int) bool {
             var t3 uint8
             var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
             t3 = inline0
-            var t4_rhs uint8 = 192
-            var t4 uint8 = t3 & t4_rhs
+            var t4 uint8 = t3 & 192
             var t5 bool = t4 != 128
             return t5
         }
@@ -397,8 +395,7 @@ func _goml_m_inherent_i_closure__en_h5b1fcaf2e23588c4625108f446fe7c51_ange__0_i_
     var value__0 int = ref_get__Ref_3int(current__0)
     var t0 bool = value__0 < end__0
     if t0 {
-        var t1_rhs int = 1
-        var t1 int = value__0 + t1_rhs
+        var t1 int = value__0 + 1
         ref_set__Ref_3int(current__0, t1)
         var t2 Option__isize = Option__isize{
             _tag: 1,

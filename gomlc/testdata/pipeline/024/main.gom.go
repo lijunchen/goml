@@ -92,35 +92,26 @@ func line_to_string(l__0 Line) string {
     var inline8 int32 = x0.x
     var inline9 int32 = x0.y
     var inline10 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline8)
-    var inline11_lhs string = "Point { x: "
-    var inline11 string = inline11_lhs + inline10
-    var inline12_rhs string = ", y: "
-    var inline12 string = inline11 + inline12_rhs
+    var inline11 string = "Point { x: " + inline10
+    var inline12 string = inline11 + ", y: "
     var inline13 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline9)
     var inline14 string = inline12 + inline13
-    var inline15_rhs string = " }"
-    var inline15 string = inline14 + inline15_rhs
+    var inline15 string = inline14 + " }"
     t0 = inline15
-    var t1_lhs string = "Line { from: "
-    var t1 string = t1_lhs + t0
-    var t2_rhs string = ", to: "
-    var t2 string = t1 + t2_rhs
+    var t1 string = "Line { from: " + t0
+    var t2 string = t1 + ", to: "
     var t3 string
     var inline0 int32 = x1.x
     var inline1 int32 = x1.y
     var inline2 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline0)
-    var inline3_lhs string = "Point { x: "
-    var inline3 string = inline3_lhs + inline2
-    var inline4_rhs string = ", y: "
-    var inline4 string = inline3 + inline4_rhs
+    var inline3 string = "Point { x: " + inline2
+    var inline4 string = inline3 + ", y: "
     var inline5 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline1)
     var inline6 string = inline4 + inline5
-    var inline7_rhs string = " }"
-    var inline7 string = inline6 + inline7_rhs
+    var inline7 string = inline6 + " }"
     t3 = inline7
     var t4 string = t2 + t3
-    var t5_rhs string = ", color: "
-    var t5 string = t4 + t5_rhs
+    var t5 string = t4 + ", color: "
     var t6 string
     switch x2 {
     case Red:
@@ -133,8 +124,7 @@ func line_to_string(l__0 Line) string {
         panic("non-exhaustive match")
     }
     var t7 string = t5 + t6
-    var t8_rhs string = " }"
-    var t8 string = t7 + t8_rhs
+    var t8 string = t7 + " }"
     return t8
 }
 
@@ -205,11 +195,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -229,11 +217,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -260,8 +246,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

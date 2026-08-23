@@ -247,8 +247,7 @@ func signed_ops() struct{} {
     var t6_lhs int16 = -32767
     var t6_rhs int16 = 1
     var t6 int16 = t6_lhs - t6_rhs
-    var t7_rhs int = 15
-    var t7 int16 = t6 >> t7_rhs
+    var t7 int16 = t6 >> 15
     println__T_i16(t7)
     var t8_lhs int16 = 1
     var t8_rhs int = 14
@@ -264,8 +263,7 @@ func signed_ops() struct{} {
     var t11_lhs int32 = -2147483647
     var t11_rhs int32 = 1
     var t11 int32 = t11_lhs - t11_rhs
-    var t12_rhs int = 31
-    var t12 int32 = t11 >> t12_rhs
+    var t12 int32 = t11 >> 31
     println__T_i32(t12)
     var t13_lhs int32 = 1
     var t13_rhs int = 30
@@ -296,16 +294,13 @@ func precedence() struct{} {
     var t0_lhs uint8 = 3
     var t0_rhs uint8 = 1
     var t0 uint8 = t0_lhs & t0_rhs
-    var t1_lhs uint8 = 2
-    var t1 uint8 = t1_lhs ^ t0
-    var t2_lhs uint8 = 1
-    var t2 uint8 = t2_lhs | t1
+    var t1 uint8 = 2 ^ t0
+    var t2 uint8 = 1 | t1
     println__T_u8(t2)
     var t3_lhs int = 2
     var t3_rhs int = 1
     var t3 int = t3_lhs + t3_rhs
-    var t4_lhs uint8 = 1
-    var t4 uint8 = t4_lhs << t3
+    var t4 uint8 = 1 << t3
     println__T_u8(t4)
     var t5_lhs int = 1
     var t5_rhs int = 2
@@ -327,8 +322,7 @@ func precedence() struct{} {
     _goml_runtime_core_string_println(inline1)
     var t11_operand uint8 = 1
     var t11 uint8 = ^t11_operand
-    var t12_rhs uint8 = 15
-    var t12 uint8 = t11 & t12_rhs
+    var t12 uint8 = t11 & 15
     println__T_u8(t12)
     return struct{}{}
 }
@@ -407,13 +401,11 @@ func main0() struct{} {
     var t0 uint8
     var inline1 uint8 = 10
     var inline2 uint8 = ^inline1
-    var inline3_rhs uint8 = 15
-    var inline3 uint8 = inline2 & inline3_rhs
+    var inline3 uint8 = inline2 & 15
     var inline4_lhs uint8 = 1
     var inline4_rhs int = 4
     var inline4 uint8 = inline4_lhs << inline4_rhs
-    var inline5_rhs uint8 = 31
-    var inline5 uint8 = inline4 % inline5_rhs
+    var inline5 uint8 = inline4 % 31
     var inline6 uint8 = inline3 | inline5
     t0 = inline6
     println__T_u8(t0)
@@ -581,11 +573,9 @@ func __goml_builtin_int8_to_string(value__0 int8) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2_lhs uint64 = 0
-        var inline2 uint64 = inline2_lhs - inline1
+        var inline2 uint64 = 0 - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4_lhs string = "-"
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "-" + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -599,11 +589,9 @@ func __goml_builtin_int16_to_string(value__0 int16) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2_lhs uint64 = 0
-        var inline2 uint64 = inline2_lhs - inline1
+        var inline2 uint64 = 0 - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4_lhs string = "-"
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "-" + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -617,11 +605,9 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2_lhs uint64 = 0
-        var inline2 uint64 = inline2_lhs - inline1
+        var inline2 uint64 = 0 - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4_lhs string = "-"
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "-" + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -634,11 +620,9 @@ func __goml_builtin_int64_to_string(value__0 int64) string {
     var inline0 bool = value__0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(value__0))
-        var inline2_lhs uint64 = 0
-        var inline2 uint64 = inline2_lhs - inline1
+        var inline2 uint64 = 0 - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4_lhs string = "-"
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "-" + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(value__0))
@@ -658,11 +642,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -689,8 +671,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

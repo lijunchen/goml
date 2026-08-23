@@ -29,19 +29,16 @@ type Ordering int32
 func main0() int32 {
     var p__0 Point
     var inline1 int32 = 5
-    var inline2_rhs int32 = 1
-    var inline2 int32 = inline1 + inline2_rhs
+    var inline2 int32 = inline1 + 1
     var inline3 Point = Point{
         x: inline1,
         y: inline2,
     }
     p__0 = inline3
     var t0 int32 = p__0.x
-    var t1_rhs int32 = 1
-    var t1 int32 = t0 + t1_rhs
+    var t1 int32 = t0 + 1
     var t2 int32 = p__0.y
-    var t3_rhs int32 = 2
-    var t3 int32 = t2 - t3_rhs
+    var t3 int32 = t2 - 2
     var t4 int32
     var inline0 int32 = t1 + t3
     t4 = inline0

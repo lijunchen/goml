@@ -282,12 +282,10 @@ func _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(self__0 LegacyKey, other__
 func _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(self__0 LegacyKey) uint64 {
     var t0_source int = 0
     var t0 uint64 = uint64(int(t0_source))
-    var h__0_rhs uint64 = 14695981039346656037
-    var h__0 uint64 = t0 + h__0_rhs
+    var h__0 uint64 = t0 + 14695981039346656037
     var t1_source int = 0
     var t1 uint64 = uint64(int(t1_source))
-    var t2_rhs uint64 = 1099511628211
-    var t2 uint64 = t1 + t2_rhs
+    var t2 uint64 = t1 + 1099511628211
     var t3 uint64 = h__0 * t2
     var t4 int = self__0.value
     var t5 uint64
@@ -299,19 +297,16 @@ func _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(self__0 LegacyKey) uint64 {
 
 func _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(self__0 ModernKey, other__0 ModernKey) bool {
     var t0 int = self__0.value
-    var t1_rhs int = 10
-    var t1 int = t0 % t1_rhs
+    var t1 int = t0 % 10
     var t2 int = other__0.value
-    var t3_rhs int = 10
-    var t3 int = t2 % t3_rhs
+    var t3 int = t2 % 10
     var t4 bool = t1 == t3
     return t4
 }
 
 func _goml_m_trait__impl_i_Hash_i_ModernKey_i_hash(self__0 ModernKey) uint64 {
     var t0 int = self__0.value
-    var t1_rhs int = 10
-    var t1 int = t0 % t1_rhs
+    var t1 int = t0 % 10
     var t2 uint64 = uint64(int(t1))
     return t2
 }
@@ -573,11 +568,9 @@ func equal__T_LegacyKey(left__0 LegacyKey, right__0 LegacyKey) bool {
 
 func equal__T_ModernKey(left__0 ModernKey, right__0 ModernKey) bool {
     var inline0 int = left__0.value
-    var inline1_rhs int = 10
-    var inline1 int = inline0 % inline1_rhs
+    var inline1 int = inline0 % 10
     var inline2 int = right__0.value
-    var inline3_rhs int = 10
-    var inline3 int = inline2 % inline3_rhs
+    var inline3 int = inline2 % 10
     var inline4 bool = inline1 == inline3
     return inline4
 }

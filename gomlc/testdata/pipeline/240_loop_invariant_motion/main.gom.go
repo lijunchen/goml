@@ -69,8 +69,7 @@ func optimized(base__0 int, count__0 int) int {
     var index__0 int = 0
     var result__0 int = 0
     var square__0 int = base__0 * base__0
-    var scaled__0_rhs int = 17
-    var scaled__0 int = square__0 * scaled__0_rhs
+    var scaled__0 int = square__0 * 17
     var offset__0 int = scaled__0 + base__0
     Loop_loop0:
     for {
@@ -78,8 +77,7 @@ func optimized(base__0 int, count__0 int) int {
         if t0 {
             var t1 int = result__0 + offset__0
             result__0 = t1
-            var t2_rhs int = 1
-            var t2 int = index__0 + t2_rhs
+            var t2 int = index__0 + 1
             index__0 = t2
             continue
         } else {
@@ -96,12 +94,10 @@ func guarded(divisor__0 int, count__0 int) int {
     for {
         var t0 bool = index__0 < count__0
         if t0 {
-            var quotient__0_lhs int = 100
-            var quotient__0 int = quotient__0_lhs / divisor__0
+            var quotient__0 int = 100 / divisor__0
             var t1 int = result__0 + quotient__0
             result__0 = t1
-            var t2_rhs int = 1
-            var t2 int = index__0 + t2_rhs
+            var t2 int = index__0 + 1
             index__0 = t2
             continue
         } else {
@@ -119,15 +115,12 @@ func changing(count__0 int) int {
     for {
         var t0 bool = index__0 < count__0
         if t0 {
-            var derived__0_rhs int = 1
-            var derived__0 int = value__0 + derived__0_rhs
+            var derived__0 int = value__0 + 1
             var t1 int = result__0 + derived__0
             result__0 = t1
-            var t2_rhs int = 1
-            var t2 int = value__0 + t2_rhs
+            var t2 int = value__0 + 1
             value__0 = t2
-            var t3_rhs int = 1
-            var t3 int = index__0 + t3_rhs
+            var t3 int = index__0 + 1
             index__0 = t3
             continue
         } else {
@@ -160,11 +153,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -184,11 +175,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -215,8 +204,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

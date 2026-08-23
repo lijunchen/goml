@@ -35,8 +35,7 @@ type TextSource struct {
 type Ordering int32
 
 func _goml_m_trait__impl_i_Label_i_string_i_label(self__0 string) string {
-    var t0_lhs string = "label:"
-    var t0 string = t0_lhs + self__0
+    var t0 string = "label:" + self__0
     return t0
 }
 

@@ -183,8 +183,7 @@ func main0() struct{} {
     var inline30 float64 = dx__0 * dx__0
     var inline31 float64 = dy__0 * dy__0
     var inline32 float64 = inline30 + inline31
-    var inline33_rhs float64 = 2
-    var inline33 float64 = inline32 / inline33_rhs
+    var inline33 float64 = inline32 / 2
     energy__0 = inline33
     var neg_dx__0 float64 = -dx__0
     var t0 float64 = energy__0 + dy__0
@@ -207,8 +206,7 @@ func main0() struct{} {
     var t2 string
     var inline17 string = _goml_runtime_core_bool_to_string(less32__0)
     t2 = inline17
-    var t3_lhs string = "less32="
-    var t3 string = t3_lhs + t2
+    var t3 string = "less32=" + t2
     var inline15 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
     _goml_runtime_core_string_println(inline15)
     var inline11 string = "energy="
@@ -226,8 +224,7 @@ func main0() struct{} {
     var t4 string
     var inline2 string = _goml_runtime_core_bool_to_string(less64__0)
     t4 = inline2
-    var t5_lhs string = "less64="
-    var t5 string = t5_lhs + t4
+    var t5 string = "less64=" + t4
     var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t5)
     _goml_runtime_core_string_println(inline0)
     return struct{}{}
@@ -259,20 +256,15 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string
 
 func format_float_bits(bits__0 uint64, mantissa_bits__0 int, exponent_bits__0 int, exponent_bias__0 int) string {
     var t0 int = mantissa_bits__0 + exponent_bits__0
-    var sign_mask__0_lhs uint64 = 1
-    var sign_mask__0 uint64 = sign_mask__0_lhs << t0
+    var sign_mask__0 uint64 = 1 << t0
     var t1 uint64 = bits__0 & sign_mask__0
     var negative__0 bool = t1 != 0
-    var t2_lhs uint64 = 1
-    var t2 uint64 = t2_lhs << exponent_bits__0
-    var exponent_mask__0_rhs uint64 = 1
-    var exponent_mask__0 uint64 = t2 - exponent_mask__0_rhs
+    var t2 uint64 = 1 << exponent_bits__0
+    var exponent_mask__0 uint64 = t2 - 1
     var t3 uint64 = bits__0 >> mantissa_bits__0
     var exponent__0 uint64 = t3 & exponent_mask__0
-    var t4_lhs uint64 = 1
-    var t4 uint64 = t4_lhs << mantissa_bits__0
-    var t5_rhs uint64 = 1
-    var t5 uint64 = t4 - t5_rhs
+    var t4 uint64 = 1 << mantissa_bits__0
+    var t5 uint64 = t4 - 1
     var fraction__0 uint64 = bits__0 & t5
     var t6 bool = exponent__0 == exponent_mask__0
     if t6 {
@@ -307,16 +299,14 @@ func format_float_bits(bits__0 uint64, mantissa_bits__0 int, exponent_bits__0 in
             if t7 {
                 jp0 = fraction__0
             } else {
-                var t38_lhs uint64 = 1
-                var t38 uint64 = t38_lhs << mantissa_bits__0
+                var t38 uint64 = 1 << mantissa_bits__0
                 var t39 uint64 = fraction__0 | t38
                 jp0 = t39
             }
             var t8 bool = exponent__0 == 0
             var jp1 int
             if t8 {
-                var t33_lhs int = 1
-                var t33 int = t33_lhs - exponent_bias__0
+                var t33 int = 1 - exponent_bias__0
                 var t34 int = t33 - mantissa_bits__0
                 jp1 = t34
             } else {
@@ -392,8 +382,7 @@ func format_float_bits(bits__0 uint64, mantissa_bits__0 int, exponent_bits__0 in
                 return t11
             } else {
                 var count__1 int = 0
-                var t29_lhs int = 0
-                var t29 int = t29_lhs - jp1
+                var t29 int = 0 - jp1
                 Loop_loop1:
                 for {
                     var t30 bool = count__1 < t29
@@ -485,8 +474,7 @@ func float_natural_from_u64(value__0 uint64) FloatNatural {
         var t1 *_goml_vec_uint32 = result__0.words
         var t2 uint32 = uint32(uint64(value__0))
         vec_push__Vec_6uint32(t1, t2)
-        var t3_rhs int = 32
-        var t3 uint64 = value__0 >> t3_rhs
+        var t3 uint64 = value__0 >> 32
         var high__0 uint32 = uint32(uint64(t3))
         var t4 bool = high__0 != 0
         if t4 {
@@ -520,10 +508,8 @@ func float_natural_shift_left(value__0 FloatNatural, bits__0 int) FloatNatural {
                 words: inline5,
             }
             result__0 = inline6
-            var word_shift__0_rhs int = 32
-            var word_shift__0 int = bits__0 / word_shift__0_rhs
-            var bit_shift__0_rhs int = 32
-            var bit_shift__0 int = bits__0 % bit_shift__0_rhs
+            var word_shift__0 int = bits__0 / 32
+            var bit_shift__0 int = bits__0 % 32
             var index__0 int = 0
             Loop_loop0:
             for {
@@ -559,8 +545,7 @@ func float_natural_shift_left(value__0 FloatNatural, bits__0 int) FloatNatural {
                     var t10 *_goml_vec_uint32 = result__0.words
                     var t11 uint32 = uint32(uint64(shifted__0))
                     vec_push__Vec_6uint32(t10, t11)
-                    var t12_rhs int = 32
-                    var t12 uint64 = shifted__0 >> t12_rhs
+                    var t12 uint64 = shifted__0 >> 32
                     carry__0 = t12
                     var compound_old0 int = index__0
                     var compound_value0 int = 1
@@ -602,8 +587,7 @@ func float_natural_decimal(value__0 FloatNatural) string {
             if t11 {
                 var t12 uint32 = float_natural_divide_small(current__0, 10)
                 var t13 uint8 = uint8(uint32(t12))
-                var t14_rhs uint8 = 48
-                var t14 uint8 = t13 + t14_rhs
+                var t14 uint8 = t13 + 48
                 vec_push__Vec_5uint8(reversed__0, t14)
                 continue
             } else {
@@ -626,8 +610,7 @@ func float_natural_decimal(value__0 FloatNatural) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(output__0, t7)
                 var compound_old0 int = offset__0
@@ -651,8 +634,7 @@ func _goml_m_inherent_i_string_i_string_i_byte__len(self__0 string) int {
 }
 
 func rounded_float_digits(exact__0 string, count__0 int) Tuple2_6string_4bool {
-    var t0_rhs int = 1
-    var t0 int = count__0 + t0_rhs
+    var t0 int = count__0 + 1
     var output__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t0)
     var index__0 int = 0
     Loop_loop0:
@@ -689,8 +671,7 @@ func rounded_float_digits(exact__0 string, count__0 int) Tuple2_6string_4bool {
         var inline9 uint8 = _goml_runtime_core_string_byte_get(exact__0, count__0)
         next__0 = inline9
         var trailing__0 bool = false
-        var t3_rhs int = 1
-        var t3 int = count__0 + t3_rhs
+        var t3 int = count__0 + 1
         index__0 = t3
         Loop_loop1:
         for {
@@ -728,13 +709,10 @@ func rounded_float_digits(exact__0 string, count__0 int) Tuple2_6string_4bool {
                     var t24 int
                     var inline6 int = vec_len__Vec_5uint8(output__0)
                     t24 = inline6
-                    var t25_rhs int = 1
-                    var t25 int = t24 - t25_rhs
+                    var t25 int = t24 - 1
                     var t26 uint8 = vec_get__Vec_5uint8(output__0, t25)
-                    var t27_rhs uint8 = 48
-                    var t27 uint8 = t26 - t27_rhs
-                    var t28_rhs uint8 = 2
-                    var t28 uint8 = t27 % t28_rhs
+                    var t27 uint8 = t26 - 48
+                    var t28 uint8 = t27 % 2
                     var t29 bool = t28 == 1
                     jp0 = t29
                 }
@@ -783,8 +761,7 @@ func rounded_float_digits(exact__0 string, count__0 int) Tuple2_6string_4bool {
             var t5 int
             var inline4 int = vec_len__Vec_5uint8(output__0)
             t5 = inline4
-            var t6_rhs int = 1
-            var t6 int = t5 + t6_rhs
+            var t6 int = t5 + 1
             var carried__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t6)
             var inline2 uint8 = 49
             vec_push__Vec_5uint8(carried__0, inline2)
@@ -835,8 +812,7 @@ func trim_float_digits(value__0 string) string {
         var t0 bool = length__0 > 1
         var jp0 bool
         if t0 {
-            var t3_rhs int = 1
-            var t3 int = length__0 - t3_rhs
+            var t3 int = length__0 - 1
             var t4 uint8
             var inline2 uint8 = _goml_runtime_core_string_byte_get(value__0, t3)
             t4 = inline2
@@ -873,8 +849,7 @@ func fixed_float_text(digits__0 string, decimal_point__0 int, negative__0 bool) 
         var inline5 uint8 = 46
         vec_push__Vec_5uint8(bytes__0, inline5)
         var index__0 int = 0
-        var t6_lhs int = 0
-        var t6 int = t6_lhs - decimal_point__0
+        var t6 int = 0 - decimal_point__0
         Loop_loop0:
         for {
             var t7 bool = index__0 < t6
@@ -1029,8 +1004,7 @@ func parsed_float_bits(value__0 string, mantissa_bits__0 int, exponent_bias__0 i
                 jp10 = 11
             }
             var t56 int = mantissa_bits__0 + jp10
-            var t57_lhs uint64 = 1
-            var t57 uint64 = t57_lhs << t56
+            var t57 uint64 = 1 << t56
             jp0 = t57
         } else {
             jp0 = 0
@@ -1042,10 +1016,8 @@ func parsed_float_bits(value__0 string, mantissa_bits__0 int, exponent_bias__0 i
         } else {
             jp1 = 11
         }
-        var t4_lhs uint64 = 1
-        var t4 uint64 = t4_lhs << jp1
-        var t5_rhs uint64 = 1
-        var t5 uint64 = t4 - t5_rhs
+        var t4 uint64 = 1 << jp1
+        var t5 uint64 = t4 - 1
         var exponent_mask__0 uint64 = t5 << mantissa_bits__0
         var t6 int = parsed__0.special
         var t7 bool = t6 == 1
@@ -1060,10 +1032,8 @@ func parsed_float_bits(value__0 string, mantissa_bits__0 int, exponent_bias__0 i
             var t44 int = parsed__0.special
             var t45 bool = t44 == 2
             if t45 {
-                var t46_rhs int = 1
-                var t46 int = mantissa_bits__0 - t46_rhs
-                var t47_lhs uint64 = 1
-                var t47 uint64 = t47_lhs << t46
+                var t46 int = mantissa_bits__0 - 1
+                var t47 uint64 = 1 << t46
                 var t48 uint64 = exponent_mask__0 | t47
                 var t49 bool = mantissa_bits__0 == 52
                 var jp9 uint64
@@ -1141,8 +1111,7 @@ func parsed_float_bits(value__0 string, mantissa_bits__0 int, exponent_bias__0 i
                                 var jp3 FloatNatural
                                 if jp2 {
                                     var t28 int = parsed__0.decimal_exponent
-                                    var t29_lhs int = 0
-                                    var t29 int = t29_lhs - t28
+                                    var t29 int = 0 - t28
                                     var t30 FloatNatural = float_natural_power5(t29)
                                     jp3 = t30
                                 } else {
@@ -1242,8 +1211,7 @@ func parsed_float_bits(value__0 string, mantissa_bits__0 int, exponent_bias__0 i
                         var jp3 FloatNatural
                         if jp2 {
                             var t28 int = parsed__0.decimal_exponent
-                            var t29_lhs int = 0
-                            var t29 int = t29_lhs - t28
+                            var t29 int = 0 - t28
                             var t30 FloatNatural = float_natural_power5(t29)
                             jp3 = t30
                         } else {
@@ -1362,8 +1330,7 @@ func float_natural_multiply_small(value__0 FloatNatural, factor__0 uint32) struc
                 vec_get__Vec_6uint32(place0, index0)
                 var value0 uint32 = uint32(uint64(product__0))
                 vec_set__Vec_6uint32(place0, index0, value0)
-                var t13_rhs int = 32
-                var t13 uint64 = product__0 >> t13_rhs
+                var t13 uint64 = product__0 >> 32
                 carry__0 = t13
                 var compound_old0 int = index__0
                 var compound_value0 int = 1
@@ -1442,8 +1409,7 @@ func float_natural_divide_small(value__0 FloatNatural, divisor__0 uint32) uint32
             var compound_value0 int = 1
             var t5 int = compound_old0 - compound_value0
             index__0 = t5
-            var t7_rhs int = 32
-            var t7 uint64 = remainder__0 << t7_rhs
+            var t7 uint64 = remainder__0 << 32
             var t8 *_goml_vec_uint32 = value__0.words
             var t9 uint32 = vec_get__Vec_6uint32(t8, index__0)
             var t10 uint64 = uint64(uint32(t9))
@@ -1572,8 +1538,7 @@ func parse_float_text(value__0 string) ParsedFloat {
             }
             return t100
         } else {
-            var t5_rhs int = 2
-            var t5 int = index__0 + t5_rhs
+            var t5 int = index__0 + 2
             var t6 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
             var t7 bool = t5 <= t6
             var jp2 bool
@@ -1588,8 +1553,7 @@ func parse_float_text(value__0 string) ParsedFloat {
             }
             var jp3 bool
             if jp2 {
-                var t93_rhs int = 1
-                var t93 int = index__0 + t93_rhs
+                var t93 int = index__0 + 1
                 var t94 uint8
                 var inline17 uint8 = _goml_runtime_core_string_byte_get(value__0, t93)
                 t94 = inline17
@@ -1677,8 +1641,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                             } else {
                                 var t74 bool = current__1 == 95
                                 if t74 {
-                                    var t75_rhs int = 1
-                                    var t75 int = index__0 + t75_rhs
+                                    var t75 int = index__0 + 1
                                     var t76 int
                                     var inline9 int = _goml_runtime_core_string_len(value__0)
                                     t76 = inline9
@@ -1697,8 +1660,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                         }
                                         return inline8
                                     } else {
-                                        var t78_rhs int = 1
-                                        var t78 int = index__0 + t78_rhs
+                                        var t78 int = index__0 + 1
                                         var t79 uint8
                                         var inline6 uint8 = _goml_runtime_core_string_byte_get(value__0, t78)
                                         t79 = inline6
@@ -1870,10 +1832,8 @@ func parse_float_text(value__0 string) ParsedFloat {
                                         previous_digit__0 = true
                                         var t28 bool = exponent__0 < 1000000
                                         if t28 {
-                                            var t31_rhs int = 10
-                                            var t31 int = exponent__0 * t31_rhs
-                                            var t32_rhs uint8 = 48
-                                            var t32 uint8 = current__0 - t32_rhs
+                                            var t31 int = exponent__0 * 10
+                                            var t32 uint8 = current__0 - 48
                                             var t33 int = int(uint8(t32))
                                             var t34 int = t31 + t33
                                             exponent__0 = t34
@@ -1891,8 +1851,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                             if t36 {
                                                 jp11 = true
                                             } else {
-                                                var t46_rhs int = 1
-                                                var t46 int = index__0 + t46_rhs
+                                                var t46 int = index__0 + 1
                                                 var t47 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
                                                 var t48 bool = t46 >= t47
                                                 jp11 = t48
@@ -1901,8 +1860,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                             if jp11 {
                                                 jp12 = true
                                             } else {
-                                                var t43_rhs int = 1
-                                                var t43 int = index__0 + t43_rhs
+                                                var t43 int = index__0 + 1
                                                 var t44 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t43)
                                                 var t45 bool = t44 < 48
                                                 jp12 = t45
@@ -1911,8 +1869,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                             if jp12 {
                                                 jp13 = true
                                             } else {
-                                                var t40_rhs int = 1
-                                                var t40 int = index__0 + t40_rhs
+                                                var t40 int = index__0 + 1
                                                 var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
                                                 var t42 bool = t41 > 57
                                                 jp13 = t42
@@ -1948,8 +1905,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     return t18
                                 } else {
                                     if exponent_negative__0 {
-                                        var t17_lhs int = 0
-                                        var t17 int = t17_lhs - exponent__0
+                                        var t17 int = 0 - exponent__0
                                         exponent__0 = t17
                                     } else {}
                                     var jp7 int
@@ -1961,8 +1917,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     }
                                     var jp8 int
                                     if jp3 {
-                                        var t14_rhs int = 4
-                                        var t14 int = fraction_digits__0 * t14_rhs
+                                        var t14 int = fraction_digits__0 * 4
                                         var t15 int = exponent__0 - t14
                                         jp8 = t15
                                     } else {
@@ -1993,8 +1948,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     return t18
                                 } else {
                                     if exponent_negative__0 {
-                                        var t17_lhs int = 0
-                                        var t17 int = t17_lhs - exponent__0
+                                        var t17 int = 0 - exponent__0
                                         exponent__0 = t17
                                     } else {}
                                     var jp7 int
@@ -2006,8 +1960,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     }
                                     var jp8 int
                                     if jp3 {
-                                        var t14_rhs int = 4
-                                        var t14 int = fraction_digits__0 * t14_rhs
+                                        var t14 int = fraction_digits__0 * 4
                                         var t15 int = exponent__0 - t14
                                         jp8 = t15
                                     } else {
@@ -2099,8 +2052,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                             } else {
                                 var t74 bool = current__1 == 95
                                 if t74 {
-                                    var t75_rhs int = 1
-                                    var t75 int = index__0 + t75_rhs
+                                    var t75 int = index__0 + 1
                                     var t76 int
                                     var inline9 int = _goml_runtime_core_string_len(value__0)
                                     t76 = inline9
@@ -2119,8 +2071,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                         }
                                         return inline8
                                     } else {
-                                        var t78_rhs int = 1
-                                        var t78 int = index__0 + t78_rhs
+                                        var t78 int = index__0 + 1
                                         var t79 uint8
                                         var inline6 uint8 = _goml_runtime_core_string_byte_get(value__0, t78)
                                         t79 = inline6
@@ -2292,10 +2243,8 @@ func parse_float_text(value__0 string) ParsedFloat {
                                         previous_digit__0 = true
                                         var t28 bool = exponent__0 < 1000000
                                         if t28 {
-                                            var t31_rhs int = 10
-                                            var t31 int = exponent__0 * t31_rhs
-                                            var t32_rhs uint8 = 48
-                                            var t32 uint8 = current__0 - t32_rhs
+                                            var t31 int = exponent__0 * 10
+                                            var t32 uint8 = current__0 - 48
                                             var t33 int = int(uint8(t32))
                                             var t34 int = t31 + t33
                                             exponent__0 = t34
@@ -2313,8 +2262,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                             if t36 {
                                                 jp11 = true
                                             } else {
-                                                var t46_rhs int = 1
-                                                var t46 int = index__0 + t46_rhs
+                                                var t46 int = index__0 + 1
                                                 var t47 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
                                                 var t48 bool = t46 >= t47
                                                 jp11 = t48
@@ -2323,8 +2271,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                             if jp11 {
                                                 jp12 = true
                                             } else {
-                                                var t43_rhs int = 1
-                                                var t43 int = index__0 + t43_rhs
+                                                var t43 int = index__0 + 1
                                                 var t44 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t43)
                                                 var t45 bool = t44 < 48
                                                 jp12 = t45
@@ -2333,8 +2280,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                             if jp12 {
                                                 jp13 = true
                                             } else {
-                                                var t40_rhs int = 1
-                                                var t40 int = index__0 + t40_rhs
+                                                var t40 int = index__0 + 1
                                                 var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
                                                 var t42 bool = t41 > 57
                                                 jp13 = t42
@@ -2370,8 +2316,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     return t18
                                 } else {
                                     if exponent_negative__0 {
-                                        var t17_lhs int = 0
-                                        var t17 int = t17_lhs - exponent__0
+                                        var t17 int = 0 - exponent__0
                                         exponent__0 = t17
                                     } else {}
                                     var jp7 int
@@ -2383,8 +2328,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     }
                                     var jp8 int
                                     if jp3 {
-                                        var t14_rhs int = 4
-                                        var t14 int = fraction_digits__0 * t14_rhs
+                                        var t14 int = fraction_digits__0 * 4
                                         var t15 int = exponent__0 - t14
                                         jp8 = t15
                                     } else {
@@ -2415,8 +2359,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     return t18
                                 } else {
                                     if exponent_negative__0 {
-                                        var t17_lhs int = 0
-                                        var t17 int = t17_lhs - exponent__0
+                                        var t17 int = 0 - exponent__0
                                         exponent__0 = t17
                                     } else {}
                                     var jp7 int
@@ -2428,8 +2371,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     }
                                     var jp8 int
                                     if jp3 {
-                                        var t14_rhs int = 4
-                                        var t14 int = fraction_digits__0 * t14_rhs
+                                        var t14 int = fraction_digits__0 * 4
                                         var t15 int = exponent__0 - t14
                                         jp8 = t15
                                     } else {
@@ -2520,8 +2462,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                         } else {
                             var t74 bool = current__1 == 95
                             if t74 {
-                                var t75_rhs int = 1
-                                var t75 int = index__0 + t75_rhs
+                                var t75 int = index__0 + 1
                                 var t76 int
                                 var inline9 int = _goml_runtime_core_string_len(value__0)
                                 t76 = inline9
@@ -2540,8 +2481,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     }
                                     return inline8
                                 } else {
-                                    var t78_rhs int = 1
-                                    var t78 int = index__0 + t78_rhs
+                                    var t78 int = index__0 + 1
                                     var t79 uint8
                                     var inline6 uint8 = _goml_runtime_core_string_byte_get(value__0, t78)
                                     t79 = inline6
@@ -2713,10 +2653,8 @@ func parse_float_text(value__0 string) ParsedFloat {
                                     previous_digit__0 = true
                                     var t28 bool = exponent__0 < 1000000
                                     if t28 {
-                                        var t31_rhs int = 10
-                                        var t31 int = exponent__0 * t31_rhs
-                                        var t32_rhs uint8 = 48
-                                        var t32 uint8 = current__0 - t32_rhs
+                                        var t31 int = exponent__0 * 10
+                                        var t32 uint8 = current__0 - 48
                                         var t33 int = int(uint8(t32))
                                         var t34 int = t31 + t33
                                         exponent__0 = t34
@@ -2734,8 +2672,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                         if t36 {
                                             jp11 = true
                                         } else {
-                                            var t46_rhs int = 1
-                                            var t46 int = index__0 + t46_rhs
+                                            var t46 int = index__0 + 1
                                             var t47 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
                                             var t48 bool = t46 >= t47
                                             jp11 = t48
@@ -2744,8 +2681,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                         if jp11 {
                                             jp12 = true
                                         } else {
-                                            var t43_rhs int = 1
-                                            var t43 int = index__0 + t43_rhs
+                                            var t43 int = index__0 + 1
                                             var t44 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t43)
                                             var t45 bool = t44 < 48
                                             jp12 = t45
@@ -2754,8 +2690,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                         if jp12 {
                                             jp13 = true
                                         } else {
-                                            var t40_rhs int = 1
-                                            var t40 int = index__0 + t40_rhs
+                                            var t40 int = index__0 + 1
                                             var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
                                             var t42 bool = t41 > 57
                                             jp13 = t42
@@ -2791,8 +2726,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                 return t18
                             } else {
                                 if exponent_negative__0 {
-                                    var t17_lhs int = 0
-                                    var t17 int = t17_lhs - exponent__0
+                                    var t17 int = 0 - exponent__0
                                     exponent__0 = t17
                                 } else {}
                                 var jp7 int
@@ -2804,8 +2738,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                 }
                                 var jp8 int
                                 if jp3 {
-                                    var t14_rhs int = 4
-                                    var t14 int = fraction_digits__0 * t14_rhs
+                                    var t14 int = fraction_digits__0 * 4
                                     var t15 int = exponent__0 - t14
                                     jp8 = t15
                                 } else {
@@ -2836,8 +2769,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                 return t18
                             } else {
                                 if exponent_negative__0 {
-                                    var t17_lhs int = 0
-                                    var t17 int = t17_lhs - exponent__0
+                                    var t17 int = 0 - exponent__0
                                     exponent__0 = t17
                                 } else {}
                                 var jp7 int
@@ -2849,8 +2781,7 @@ func parse_float_text(value__0 string) ParsedFloat {
                                 }
                                 var jp8 int
                                 if jp3 {
-                                    var t14_rhs int = 4
-                                    var t14 int = fraction_digits__0 * t14_rhs
+                                    var t14 int = fraction_digits__0 * 4
                                     var t15 int = exponent__0 - t14
                                     jp8 = t15
                                 } else {
@@ -2929,8 +2860,7 @@ func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural,
             var t56 FloatNatural = float_natural_copy(denominator__0)
             jp1 = t56
         } else {
-            var t57_lhs int = 0
-            var t57 int = t57_lhs - binary_shift__0
+            var t57 int = 0 - binary_shift__0
             var t58 FloatNatural = float_natural_shift_left(denominator__0, t57)
             jp1 = t58
         }
@@ -2944,8 +2874,7 @@ func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural,
             var t52 int = float_natural_compare(jp0, t51)
             jp2 = t52
         } else {
-            var t53_lhs int = 0
-            var t53 int = t53_lhs - exponent__0
+            var t53 int = 0 - exponent__0
             var t54 FloatNatural = float_natural_shift_left(jp0, t53)
             var t55 int = float_natural_compare(t54, jp1)
             jp2 = t55
@@ -2957,13 +2886,11 @@ func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural,
             var t49 int = compound_old2 - compound_value2
             exponent__0 = t49
         } else {}
-        var minimum_exponent__0_lhs int = 1
-        var minimum_exponent__0 int = minimum_exponent__0_lhs - exponent_bias__0
+        var minimum_exponent__0 int = 1 - exponent_bias__0
         var t7 bool = exponent__0 > exponent_bias__0
         if t7 {
             var t44 int = exponent_bias__0 + exponent_bias__0
-            var t45_rhs int = 1
-            var t45 int = t44 + t45_rhs
+            var t45 int = t44 + 1
             var t46 uint64 = uint64(int(t45))
             var t47 uint64 = t46 << mantissa_bits__0
             var t48 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
@@ -2994,14 +2921,11 @@ func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural,
                     }
                     return t11
                 } else {
-                    var t12_lhs uint64 = 1
-                    var t12 uint64 = t12_lhs << mantissa_bits__0
+                    var t12 uint64 = 1 << mantissa_bits__0
                     var t13 bool = mantissa__0 >= t12
                     if t13 {
-                        var t14_lhs uint64 = 1
-                        var t14 uint64 = t14_lhs << mantissa_bits__0
-                        var t15_lhs uint64 = 1
-                        var t15 uint64 = t15_lhs << mantissa_bits__0
+                        var t14 uint64 = 1 << mantissa_bits__0
+                        var t15 uint64 = 1 << mantissa_bits__0
                         var t16 uint64 = mantissa__0 - t15
                         var t17 uint64 = t14 | t16
                         var t18 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
@@ -3018,10 +2942,8 @@ func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural,
                     }
                 }
             } else {
-                var t20_rhs int = 1
-                var t20 int = mantissa_bits__0 + t20_rhs
-                var t21_lhs uint64 = 1
-                var t21 uint64 = t21_lhs << t20
+                var t20 int = mantissa_bits__0 + 1
+                var t21 uint64 = 1 << t20
                 var t22 bool = mantissa__0 >= t21
                 if t22 {
                     var compound_old0 uint64 = mantissa__0
@@ -3036,8 +2958,7 @@ func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural,
                 var t23 bool = exponent__0 > exponent_bias__0
                 if t23 {
                     var t24 int = exponent_bias__0 + exponent_bias__0
-                    var t25_rhs int = 1
-                    var t25 int = t24 + t25_rhs
+                    var t25 int = t24 + 1
                     var t26 uint64 = uint64(int(t25))
                     var t27 uint64 = t26 << mantissa_bits__0
                     var t28 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
@@ -3049,8 +2970,7 @@ func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural,
                     var t29 int = exponent__0 + exponent_bias__0
                     var t30 uint64 = uint64(int(t29))
                     var t31 uint64 = t30 << mantissa_bits__0
-                    var t32_lhs uint64 = 1
-                    var t32 uint64 = t32_lhs << mantissa_bits__0
+                    var t32 uint64 = 1 << mantissa_bits__0
                     var t33 uint64 = mantissa__0 - t32
                     var t34 uint64 = t31 | t33
                     var t35 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
@@ -3086,8 +3006,7 @@ func float_natural_trim(value__0 FloatNatural) struct{} {
             var t9 int
             var inline2 int = vec_len__Vec_6uint32(t8)
             t9 = inline2
-            var t10_rhs int = 1
-            var t10 int = t9 - t10_rhs
+            var t10 int = t9 - 1
             var t11 uint32 = vec_get__Vec_6uint32(t7, t10)
             var t12 bool = t11 == 0
             jp0 = t12
@@ -3100,8 +3019,7 @@ func float_natural_trim(value__0 FloatNatural) struct{} {
             var t5 int
             var inline1 int = vec_len__Vec_6uint32(t4)
             t5 = inline1
-            var t6_rhs int = 1
-            var t6 int = t5 - t6_rhs
+            var t6 int = t5 - 1
             vec_truncate__Vec_6uint32(t3, t6)
             continue
         } else {
@@ -3234,8 +3152,7 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
     }
     var jp1 int
     if jp0 {
-        var t4_rhs uint8 = 48
-        var t4 uint8 = value__0 - t4_rhs
+        var t4 uint8 = value__0 - 48
         var t5 int = int(uint8(t4))
         jp1 = t5
         var t1 bool = jp1 < base__0
@@ -3304,10 +3221,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             var inline2 uint8 = inline2_lhs - inline2_rhs
                             var inline3 uint8 = value__0 + inline2
                             t8 = inline3
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3326,10 +3241,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             }
                         } else {
                             t8 = value__0
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3374,10 +3287,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             var inline2 uint8 = inline2_lhs - inline2_rhs
                             var inline3 uint8 = value__0 + inline2
                             t8 = inline3
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3396,10 +3307,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             }
                         } else {
                             t8 = value__0
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3443,10 +3352,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                         var inline2 uint8 = inline2_lhs - inline2_rhs
                         var inline3 uint8 = value__0 + inline2
                         t8 = inline3
-                        var t9_rhs uint8 = 97
-                        var t9 uint8 = t8 - t9_rhs
-                        var t10_rhs uint8 = 10
-                        var t10 uint8 = t9 + t10_rhs
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
                         var t11 int = int(uint8(t10))
                         jp1 = t11
                         var t1 bool = jp1 < base__0
@@ -3465,10 +3372,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                         }
                     } else {
                         t8 = value__0
-                        var t9_rhs uint8 = 97
-                        var t9 uint8 = t8 - t9_rhs
-                        var t10_rhs uint8 = 10
-                        var t10 uint8 = t9 + t10_rhs
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
                         var t11 int = int(uint8(t10))
                         jp1 = t11
                         var t1 bool = jp1 < base__0
@@ -3532,10 +3437,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             var inline2 uint8 = inline2_lhs - inline2_rhs
                             var inline3 uint8 = value__0 + inline2
                             t8 = inline3
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3554,10 +3457,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             }
                         } else {
                             t8 = value__0
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3602,10 +3503,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             var inline2 uint8 = inline2_lhs - inline2_rhs
                             var inline3 uint8 = value__0 + inline2
                             t8 = inline3
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3624,10 +3523,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                             }
                         } else {
                             t8 = value__0
-                            var t9_rhs uint8 = 97
-                            var t9 uint8 = t8 - t9_rhs
-                            var t10_rhs uint8 = 10
-                            var t10 uint8 = t9 + t10_rhs
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
                             var t11 int = int(uint8(t10))
                             jp1 = t11
                             var t1 bool = jp1 < base__0
@@ -3671,10 +3568,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                         var inline2 uint8 = inline2_lhs - inline2_rhs
                         var inline3 uint8 = value__0 + inline2
                         t8 = inline3
-                        var t9_rhs uint8 = 97
-                        var t9 uint8 = t8 - t9_rhs
-                        var t10_rhs uint8 = 10
-                        var t10 uint8 = t9 + t10_rhs
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
                         var t11 int = int(uint8(t10))
                         jp1 = t11
                         var t1 bool = jp1 < base__0
@@ -3693,10 +3588,8 @@ func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
                         }
                     } else {
                         t8 = value__0
-                        var t9_rhs uint8 = 97
-                        var t9 uint8 = t8 - t9_rhs
-                        var t10_rhs uint8 = 10
-                        var t10 uint8 = t9 + t10_rhs
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
                         var t11 int = int(uint8(t10))
                         jp1 = t11
                         var t1 bool = jp1 < base__0
@@ -3752,8 +3645,7 @@ func float_natural_add_small(value__0 FloatNatural, addition__0 uint32) struct{}
             vec_get__Vec_6uint32(place0, index0)
             var value0 uint32 = uint32(uint64(sum__0))
             vec_set__Vec_6uint32(place0, index0, value0)
-            var t8_rhs int = 32
-            var t8 uint64 = sum__0 >> t8_rhs
+            var t8 uint64 = sum__0 >> 32
             carry__0 = t8
             var compound_old0 int = index__0
             var compound_value0 int = 1
@@ -3801,8 +3693,7 @@ func float_natural_bit_length(value__0 FloatNatural) int {
         var t4 int
         var inline1 int = vec_len__Vec_6uint32(t3)
         t4 = inline1
-        var t5_rhs int = 1
-        var t5 int = t4 - t5_rhs
+        var t5 int = t4 - 1
         var high__0 uint32 = vec_get__Vec_6uint32(t2, t5)
         var bits__0 int = 0
         Loop_loop0:
@@ -3826,10 +3717,8 @@ func float_natural_bit_length(value__0 FloatNatural) int {
         var t7 int
         var inline0 int = vec_len__Vec_6uint32(t6)
         t7 = inline0
-        var t8_rhs int = 1
-        var t8 int = t7 - t8_rhs
-        var t9_rhs int = 32
-        var t9 int = t8 * t9_rhs
+        var t8 int = t7 - 1
+        var t9 int = t8 * 32
         var t10 int = t9 + bits__0
         return t10
     }
@@ -3916,8 +3805,7 @@ func float_rational_quotient(numerator__0 FloatNatural, denominator__0 FloatNatu
         var t19 FloatNatural = float_natural_copy(denominator__0)
         jp1 = t19
     } else {
-        var t20_lhs int = 0
-        var t20 int = t20_lhs - shift__0
+        var t20 int = 0 - shift__0
         var t21 FloatNatural = float_natural_shift_left(denominator__0, t20)
         jp1 = t21
     }
@@ -3943,8 +3831,7 @@ func float_rational_quotient(numerator__0 FloatNatural, denominator__0 FloatNatu
             } else {}
             float_natural_subtract(jp0, part__0)
             var compound_old1 uint64 = quotient__0
-            var compound_value1_lhs uint64 = 1
-            var compound_value1 uint64 = compound_value1_lhs << offset__0
+            var compound_value1 uint64 = 1 << offset__0
             var t14 uint64 = compound_old1 | compound_value1
             quotient__0 = t14
             continue
@@ -3961,8 +3848,7 @@ func float_rational_quotient(numerator__0 FloatNatural, denominator__0 FloatNatu
     } else {
         var t5 bool = rounding__0 == 0
         if t5 {
-            var t6_rhs uint64 = 1
-            var t6 uint64 = quotient__0 & t6_rhs
+            var t6 uint64 = quotient__0 & 1
             var t7 bool = t6 == 1
             jp2 = t7
         } else {
@@ -4008,8 +3894,7 @@ func string_is_char_boundary(value__0 string, index__0 int) bool {
             var t3 uint8
             var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
             t3 = inline0
-            var t4_rhs uint8 = 192
-            var t4 uint8 = t3 & t4_rhs
+            var t4 uint8 = t3 & 192
             var t5 bool = t4 != 128
             return t5
         }

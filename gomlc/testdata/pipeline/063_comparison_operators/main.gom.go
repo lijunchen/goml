@@ -44,80 +44,70 @@ func test_int_comparisons() struct{} {
     var c__0 int32 = 10
     var less__0 bool = a__0 < b__0
     var t0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__0)
-    var t1_lhs string = "10 < 20: "
-    var t1 string = t1_lhs + t0
+    var t1 string = "10 < 20: " + t0
     var inline27 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
     _goml_runtime_core_string_println(inline27)
     var greater__0 bool = b__0 > a__0
     var t2 string
     var inline26 string = _goml_runtime_core_bool_to_string(greater__0)
     t2 = inline26
-    var t3_lhs string = "20 > 10: "
-    var t3 string = t3_lhs + t2
+    var t3 string = "20 > 10: " + t2
     var inline24 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
     _goml_runtime_core_string_println(inline24)
     var less_eq1__0 bool = a__0 <= b__0
     var t4 string
     var inline23 string = _goml_runtime_core_bool_to_string(less_eq1__0)
     t4 = inline23
-    var t5_lhs string = "10 <= 20: "
-    var t5 string = t5_lhs + t4
+    var t5 string = "10 <= 20: " + t4
     var inline21 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t5)
     _goml_runtime_core_string_println(inline21)
     var less_eq2__0 bool = a__0 <= c__0
     var t6 string
     var inline20 string = _goml_runtime_core_bool_to_string(less_eq2__0)
     t6 = inline20
-    var t7_lhs string = "10 <= 10: "
-    var t7 string = t7_lhs + t6
+    var t7 string = "10 <= 10: " + t6
     var inline18 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t7)
     _goml_runtime_core_string_println(inline18)
     var greater_eq1__0 bool = b__0 >= a__0
     var t8 string
     var inline17 string = _goml_runtime_core_bool_to_string(greater_eq1__0)
     t8 = inline17
-    var t9_lhs string = "20 >= 10: "
-    var t9 string = t9_lhs + t8
+    var t9 string = "20 >= 10: " + t8
     var inline15 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t9)
     _goml_runtime_core_string_println(inline15)
     var greater_eq2__0 bool = c__0 >= a__0
     var t10 string
     var inline14 string = _goml_runtime_core_bool_to_string(greater_eq2__0)
     t10 = inline14
-    var t11_lhs string = "10 >= 10: "
-    var t11 string = t11_lhs + t10
+    var t11 string = "10 >= 10: " + t10
     var inline12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t11)
     _goml_runtime_core_string_println(inline12)
     var eq1__0 bool = a__0 == c__0
     var t12 string
     var inline11 string = _goml_runtime_core_bool_to_string(eq1__0)
     t12 = inline11
-    var t13_lhs string = "10 == 10: "
-    var t13 string = t13_lhs + t12
+    var t13 string = "10 == 10: " + t12
     var inline9 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t13)
     _goml_runtime_core_string_println(inline9)
     var eq2__0 bool = a__0 == b__0
     var t14 string
     var inline8 string = _goml_runtime_core_bool_to_string(eq2__0)
     t14 = inline8
-    var t15_lhs string = "10 == 20: "
-    var t15 string = t15_lhs + t14
+    var t15 string = "10 == 20: " + t14
     var inline6 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t15)
     _goml_runtime_core_string_println(inline6)
     var neq1__0 bool = a__0 != b__0
     var t16 string
     var inline5 string = _goml_runtime_core_bool_to_string(neq1__0)
     t16 = inline5
-    var t17_lhs string = "10 != 20: "
-    var t17 string = t17_lhs + t16
+    var t17 string = "10 != 20: " + t16
     var inline3 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t17)
     _goml_runtime_core_string_println(inline3)
     var neq2__0 bool = a__0 != c__0
     var t18 string
     var inline2 string = _goml_runtime_core_bool_to_string(neq2__0)
     t18 = inline2
-    var t19_lhs string = "10 != 10: "
-    var t19 string = t19_lhs + t18
+    var t19 string = "10 != 10: " + t18
     var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t19)
     _goml_runtime_core_string_println(inline0)
     return struct{}{}
@@ -129,80 +119,70 @@ func test_float_comparisons() struct{} {
     var z__0 float64 = 3.14
     var less__0 bool = y__0 < x__0
     var t0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__0)
-    var t1_lhs string = "2.71 < 3.14: "
-    var t1 string = t1_lhs + t0
+    var t1 string = "2.71 < 3.14: " + t0
     var inline27 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
     _goml_runtime_core_string_println(inline27)
     var greater__0 bool = x__0 > y__0
     var t2 string
     var inline26 string = _goml_runtime_core_bool_to_string(greater__0)
     t2 = inline26
-    var t3_lhs string = "3.14 > 2.71: "
-    var t3 string = t3_lhs + t2
+    var t3 string = "3.14 > 2.71: " + t2
     var inline24 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
     _goml_runtime_core_string_println(inline24)
     var less_eq1__0 bool = y__0 <= x__0
     var t4 string
     var inline23 string = _goml_runtime_core_bool_to_string(less_eq1__0)
     t4 = inline23
-    var t5_lhs string = "2.71 <= 3.14: "
-    var t5 string = t5_lhs + t4
+    var t5 string = "2.71 <= 3.14: " + t4
     var inline21 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t5)
     _goml_runtime_core_string_println(inline21)
     var less_eq2__0 bool = x__0 <= z__0
     var t6 string
     var inline20 string = _goml_runtime_core_bool_to_string(less_eq2__0)
     t6 = inline20
-    var t7_lhs string = "3.14 <= 3.14: "
-    var t7 string = t7_lhs + t6
+    var t7 string = "3.14 <= 3.14: " + t6
     var inline18 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t7)
     _goml_runtime_core_string_println(inline18)
     var greater_eq1__0 bool = x__0 >= y__0
     var t8 string
     var inline17 string = _goml_runtime_core_bool_to_string(greater_eq1__0)
     t8 = inline17
-    var t9_lhs string = "3.14 >= 2.71: "
-    var t9 string = t9_lhs + t8
+    var t9 string = "3.14 >= 2.71: " + t8
     var inline15 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t9)
     _goml_runtime_core_string_println(inline15)
     var greater_eq2__0 bool = z__0 >= x__0
     var t10 string
     var inline14 string = _goml_runtime_core_bool_to_string(greater_eq2__0)
     t10 = inline14
-    var t11_lhs string = "3.14 >= 3.14: "
-    var t11 string = t11_lhs + t10
+    var t11 string = "3.14 >= 3.14: " + t10
     var inline12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t11)
     _goml_runtime_core_string_println(inline12)
     var eq1__0 bool = x__0 == z__0
     var t12 string
     var inline11 string = _goml_runtime_core_bool_to_string(eq1__0)
     t12 = inline11
-    var t13_lhs string = "3.14 == 3.14: "
-    var t13 string = t13_lhs + t12
+    var t13 string = "3.14 == 3.14: " + t12
     var inline9 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t13)
     _goml_runtime_core_string_println(inline9)
     var eq2__0 bool = x__0 == y__0
     var t14 string
     var inline8 string = _goml_runtime_core_bool_to_string(eq2__0)
     t14 = inline8
-    var t15_lhs string = "3.14 == 2.71: "
-    var t15 string = t15_lhs + t14
+    var t15 string = "3.14 == 2.71: " + t14
     var inline6 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t15)
     _goml_runtime_core_string_println(inline6)
     var neq1__0 bool = x__0 != y__0
     var t16 string
     var inline5 string = _goml_runtime_core_bool_to_string(neq1__0)
     t16 = inline5
-    var t17_lhs string = "3.14 != 2.71: "
-    var t17 string = t17_lhs + t16
+    var t17 string = "3.14 != 2.71: " + t16
     var inline3 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t17)
     _goml_runtime_core_string_println(inline3)
     var neq2__0 bool = x__0 != z__0
     var t18 string
     var inline2 string = _goml_runtime_core_bool_to_string(neq2__0)
     t18 = inline2
-    var t19_lhs string = "3.14 != 3.14: "
-    var t19 string = t19_lhs + t18
+    var t19 string = "3.14 != 3.14: " + t18
     var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t19)
     _goml_runtime_core_string_println(inline0)
     return struct{}{}

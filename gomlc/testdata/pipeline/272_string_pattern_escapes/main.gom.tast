@@ -1,0 +1,24 @@
+fn classify(value/0: string) -> isize {
+    match (value/0 : string) {
+        "Aλ" => 1,
+        "\n\r\t\u{8}\u{c}/" => 2,
+        "\"\\" => 3,
+        "\\n" => 4,
+        _ : string => 0,
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)((classify : (string) -> isize)("Aλ"))
+    );
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)((classify : (string) -> isize)("\n\r\t\u{8}\u{c}/"))
+    );
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)((classify : (string) -> isize)("\"\\"))
+    );
+    (println : (string) -> unit)(
+      (isize::to_string : (isize) -> string)((classify : (string) -> isize)("\\n"))
+    )
+}

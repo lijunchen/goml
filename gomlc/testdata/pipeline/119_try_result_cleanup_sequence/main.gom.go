@@ -85,8 +85,7 @@ func use_handle(open_ok__0 bool, close_ok__0 bool) Result__string__string {
             mtmp1 = inline0
         } else {
             var inline1 string = jp0.name
-            var inline2_lhs string = "close failed for "
-            var inline2 string = inline2_lhs + inline1
+            var inline2 string = "close failed for " + inline1
             var inline3 Result__unit__string = Result__unit__string{
                 _tag: 1,
                 _v1_0: inline2,
@@ -95,8 +94,7 @@ func use_handle(open_ok__0 bool, close_ok__0 bool) Result__string__string {
         }
         switch mtmp1._tag {
         case 0:
-            var t0_lhs string = "closed "
-            var t0 string = t0_lhs + name__0
+            var t0 string = "closed " + name__0
             var t1 Result__string__string = Result__string__string{
                 _tag: 0,
                 _v0_0: t0,
@@ -130,13 +128,11 @@ func main0() struct{} {
     switch t0._tag {
     case 0:
         var inline14 string = t0._v0_0
-        var inline15_lhs string = "ok "
-        var inline15 string = inline15_lhs + inline14
+        var inline15 string = "ok " + inline14
         t1 = inline15
     case 1:
         var inline16 string = t0._v1_0
-        var inline17_lhs string = "err "
-        var inline17 string = inline17_lhs + inline16
+        var inline17 string = "err " + inline16
         t1 = inline17
     default:
         panic("non-exhaustive match")
@@ -148,13 +144,11 @@ func main0() struct{} {
     switch t2._tag {
     case 0:
         var inline8 string = t2._v0_0
-        var inline9_lhs string = "ok "
-        var inline9 string = inline9_lhs + inline8
+        var inline9 string = "ok " + inline8
         t3 = inline9
     case 1:
         var inline10 string = t2._v1_0
-        var inline11_lhs string = "err "
-        var inline11 string = inline11_lhs + inline10
+        var inline11 string = "err " + inline10
         t3 = inline11
     default:
         panic("non-exhaustive match")
@@ -166,13 +160,11 @@ func main0() struct{} {
     switch t4._tag {
     case 0:
         var inline2 string = t4._v0_0
-        var inline3_lhs string = "ok "
-        var inline3 string = inline3_lhs + inline2
+        var inline3 string = "ok " + inline2
         t5 = inline3
     case 1:
         var inline4 string = t4._v1_0
-        var inline5_lhs string = "err "
-        var inline5 string = inline5_lhs + inline4
+        var inline5 string = "err " + inline4
         t5 = inline5
     default:
         panic("non-exhaustive match")

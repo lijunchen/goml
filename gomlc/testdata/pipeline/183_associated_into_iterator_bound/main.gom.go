@@ -188,8 +188,7 @@ func count__B_Numbers(batch__0 Numbers) int32 {
             var t1 int32
             var inline2 int32 = ref_get__Ref_5int32(total__0)
             t1 = inline2
-            var t2_rhs int32 = 1
-            var t2 int32 = t1 + t2_rhs
+            var t2 int32 = t1 + 1
             ref_set__Ref_5int32(total__0, t2)
             continue
         default:
@@ -229,11 +228,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -253,11 +250,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -284,8 +279,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0
@@ -311,8 +305,7 @@ func _goml_m_inherent_i_closure__en_h1275f72f5de770912182f2a5cc7ddfae__i32__0_i_
     var t0 bool = current__0 < len__0
     if t0 {
         var value__0 int32 = vec_get__Vec_5int32(self__0, current__0)
-        var t1_rhs int = 1
-        var t1 int = current__0 + t1_rhs
+        var t1 int = current__0 + 1
         ref_set__Ref_3int(index__0, t1)
         var t2 Option__i32 = Option__i32{
             _tag: 1,

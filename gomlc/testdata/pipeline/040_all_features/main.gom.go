@@ -202,22 +202,18 @@ func _goml_m_trait__impl_i_Describe_i_Tracker_i_describe(self__0 Tracker) string
     var flag__0 bool
     var inline2 bool = ref_get__Ref_4bool(x2)
     flag__0 = inline2
-    var with_label__0_lhs string = "Tracker("
-    var with_label__0 string = with_label__0_lhs + x0
-    var with_count_label__0_rhs string = ", count: "
-    var with_count_label__0 string = with_label__0 + with_count_label__0_rhs
+    var with_label__0 string = "Tracker(" + x0
+    var with_count_label__0 string = with_label__0 + ", count: "
     var t0 string
     var inline1 string = __goml_builtin_int32_to_string(current__0)
     t0 = inline1
     var with_count__0 string = with_count_label__0 + t0
-    var with_flag_label__0_rhs string = ", toggled: "
-    var with_flag_label__0 string = with_count__0 + with_flag_label__0_rhs
+    var with_flag_label__0 string = with_count__0 + ", toggled: "
     var t1 string
     var inline0 string = _goml_runtime_core_bool_to_string(flag__0)
     t1 = inline0
     var t2 string = with_flag_label__0 + t1
-    var t3_rhs string = ")"
-    var t3 string = t2 + t3_rhs
+    var t3 string = t2 + ")"
     return t3
 }
 
@@ -228,10 +224,8 @@ func _goml_m_trait__impl_i_Describe_i_Record____i32_i_describe(self__0 Record__i
         var t0 string
         var inline0 string = __goml_builtin_int32_to_string(x0)
         t0 = inline0
-        var t1_lhs string = "Value("
-        var t1 string = t1_lhs + t0
-        var t2_rhs string = ")"
-        var t2 string = t1 + t2_rhs
+        var t1 string = "Value(" + t0
+        var t2 string = t1 + ")"
         return t2
     case 1:
         var x1 int32 = self__0._v1_0
@@ -239,16 +233,13 @@ func _goml_m_trait__impl_i_Describe_i_Record____i32_i_describe(self__0 Record__i
         var t3 string
         var inline2 string = __goml_builtin_int32_to_string(x1)
         t3 = inline2
-        var prefix__0_lhs string = "Pair("
-        var prefix__0 string = prefix__0_lhs + t3
-        var t4_rhs string = ", "
-        var t4 string = prefix__0 + t4_rhs
+        var prefix__0 string = "Pair(" + t3
+        var t4 string = prefix__0 + ", "
         var t5 string
         var inline1 string = __goml_builtin_int32_to_string(x2)
         t5 = inline1
         var t6 string = t4 + t5
-        var t7_rhs string = ")"
-        var t7 string = t6 + t7_rhs
+        var t7 string = t6 + ")"
         return t7
     case 2:
         return "Empty"
@@ -261,21 +252,16 @@ func _goml_m_trait__impl_i_Describe_i_Record____string_i_describe(self__0 Record
     switch self__0.(type) {
     case Record__string_Value:
         var x0 string = self__0.(Record__string_Value)._0
-        var t0_lhs string = "Value("
-        var t0 string = t0_lhs + x0
-        var t1_rhs string = ")"
-        var t1 string = t0 + t1_rhs
+        var t0 string = "Value(" + x0
+        var t1 string = t0 + ")"
         return t1
     case Record__string_Pair:
         var x1 string = self__0.(Record__string_Pair)._0
         var x2 string = self__0.(Record__string_Pair)._1
-        var prefix__0_lhs string = "Pair("
-        var prefix__0 string = prefix__0_lhs + x1
-        var t2_rhs string = ", "
-        var t2 string = prefix__0 + t2_rhs
+        var prefix__0 string = "Pair(" + x1
+        var t2 string = prefix__0 + ", "
         var t3 string = t2 + x2
-        var t4_rhs string = ")"
-        var t4 string = t3 + t4_rhs
+        var t4 string = t3 + ")"
         return t4
     case Record__string_Empty:
         return "Empty"
@@ -288,20 +274,17 @@ func format_total(total__0 int32) string {
     var t0 string
     var inline0 string = __goml_builtin_int32_to_string(total__0)
     t0 = inline0
-    var t1_lhs string = "total: "
-    var t1 string = t1_lhs + t0
+    var t1 string = "total: " + t0
     return t1
 }
 
 func increment(value__0 int32) int32 {
-    var t0_rhs int32 = 1
-    var t0 int32 = value__0 + t0_rhs
+    var t0 int32 = value__0 + 1
     return t0
 }
 
 func triple(value__0 int32) int32 {
-    var t0_rhs int32 = 3
-    var t0 int32 = value__0 * t0_rhs
+    var t0 int32 = value__0 * 3
     return t0
 }
 
@@ -414,8 +397,7 @@ func main0() struct{} {
     switch stringified__0._tag {
     case 0:
         var x4 string = stringified__0._v0_0
-        var t3_lhs string = "Snapshot: "
-        var t3 string = t3_lhs + x4
+        var t3 string = "Snapshot: " + x4
         jp1 = t3
     case 1:
         jp1 = "Snapshot: none"
@@ -429,8 +411,7 @@ func main0() struct{} {
     var inline17 string = __goml_builtin_int32_to_string(second_result__0)
     t2 = inline17
     var pair_text__0 string
-    var inline15_rhs string = " -> "
-    var inline15 string = t1 + inline15_rhs
+    var inline15 string = t1 + " -> "
     var inline16 string = inline15 + t2
     pair_text__0 = inline16
     var bool_text__0 string
@@ -485,11 +466,9 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2_lhs uint64 = 0
-        var inline2 uint64 = inline2_lhs - inline1
+        var inline2 uint64 = 0 - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4_lhs string = "-"
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "-" + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -513,11 +492,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -544,8 +521,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

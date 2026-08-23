@@ -1,0 +1,223 @@
+FILE@0..378
+  FN@0..180
+    FnKeyword@0..2 "fn"
+    Whitespace@2..3 " "
+    Ident@3..11 "classify"
+    PARAM_LIST@11..27
+      LParen@11..12 "("
+      PARAM@12..25
+        Ident@12..17 "value"
+        Colon@17..18 ":"
+        Whitespace@18..19 " "
+        TYPE_STRING@19..25
+          StringKeyword@19..25 "string"
+      RParen@25..26 ")"
+      Whitespace@26..27 " "
+    Arrow@27..29 "->"
+    Whitespace@29..30 " "
+    TYPE_INT@30..36
+      IsizeKeyword@30..35 "isize"
+      Whitespace@35..36 " "
+    BLOCK@36..180
+      LBrace@36..37 "{"
+      Whitespace@37..42 "\n    "
+      EXPR_MATCH@42..177
+        MatchKeyword@42..47 "match"
+        Whitespace@47..48 " "
+        EXPR_IDENT@48..54
+          PATH@48..54
+            Ident@48..53 "value"
+            Whitespace@53..54 " "
+        MATCH_ARM_LIST@54..177
+          LBrace@54..55 "{"
+          Whitespace@55..64 "\n        "
+          MATCH_ARM@64..83
+            PATTERN_STRING@64..79
+              Str@64..78 "\"\\u0041\\u03BB\""
+              Whitespace@78..79 " "
+            FatArrow@79..81 "=>"
+            Whitespace@81..82 " "
+            EXPR_INT@82..83
+              Int@82..83 "1"
+          Comma@83..84 ","
+          Whitespace@84..93 "\n        "
+          MATCH_ARM@93..112
+            PATTERN_STRING@93..108
+              Str@93..107 "\"\\n\\r\\t\\b\\f\\/\""
+              Whitespace@107..108 " "
+            FatArrow@108..110 "=>"
+            Whitespace@110..111 " "
+            EXPR_INT@111..112
+              Int@111..112 "2"
+          Comma@112..113 ","
+          Whitespace@113..122 "\n        "
+          MATCH_ARM@122..133
+            PATTERN_STRING@122..129
+              Str@122..128 "\"\\\"\\\\\""
+              Whitespace@128..129 " "
+            FatArrow@129..131 "=>"
+            Whitespace@131..132 " "
+            EXPR_INT@132..133
+              Int@132..133 "3"
+          Comma@133..134 ","
+          Whitespace@134..143 "\n        "
+          MATCH_ARM@143..153
+            PATTERN_STRING@143..149
+              RawStr@143..148 "r\"\\n\""
+              Whitespace@148..149 " "
+            FatArrow@149..151 "=>"
+            Whitespace@151..152 " "
+            EXPR_INT@152..153
+              Int@152..153 "4"
+          Comma@153..154 ","
+          Whitespace@154..163 "\n        "
+          MATCH_ARM@163..169
+            PATTERN_WILDCARD@163..165
+              WildcardKeyword@163..164 "_"
+              Whitespace@164..165 " "
+            FatArrow@165..167 "=>"
+            Whitespace@167..168 " "
+            EXPR_INT@168..169
+              Int@168..169 "0"
+          Comma@169..170 ","
+          Whitespace@170..175 "\n    "
+          RBrace@175..176 "}"
+          Whitespace@176..177 "\n"
+      RBrace@177..178 "}"
+      Whitespace@178..180 "\n\n"
+  FN@180..378
+    FnKeyword@180..182 "fn"
+    Whitespace@182..183 " "
+    Ident@183..187 "main"
+    PARAM_LIST@187..190
+      LParen@187..188 "("
+      RParen@188..189 ")"
+      Whitespace@189..190 " "
+    Arrow@190..192 "->"
+    Whitespace@192..193 " "
+    TYPE_UNIT@193..198
+      UnitKeyword@193..197 "unit"
+      Whitespace@197..198 " "
+    BLOCK@198..378
+      LBrace@198..199 "{"
+      Whitespace@199..204 "\n    "
+      STMT_EXPR@204..246
+        EXPR_CALL@204..240
+          EXPR_IDENT@204..211
+            PATH@204..211
+              Ident@204..211 "println"
+          ARG_LIST@211..240
+            LParen@211..212 "("
+            ARG@212..239
+              EXPR_CALL@212..239
+                EXPR_BINARY@212..237
+                  EXPR_CALL@212..227
+                    EXPR_IDENT@212..220
+                      PATH@212..220
+                        Ident@212..220 "classify"
+                    ARG_LIST@220..227
+                      LParen@220..221 "("
+                      ARG@221..226
+                        EXPR_STR@221..226
+                          Str@221..226 "\"Aλ\""
+                      RParen@226..227 ")"
+                  Dot@227..228 "."
+                  EXPR_IDENT@228..237
+                    PATH@228..237
+                      Ident@228..237 "to_string"
+                ARG_LIST@237..239
+                  LParen@237..238 "("
+                  RParen@238..239 ")"
+            RParen@239..240 ")"
+        Semi@240..241 ";"
+        Whitespace@241..246 "\n    "
+      STMT_EXPR@246..296
+        EXPR_CALL@246..290
+          EXPR_IDENT@246..253
+            PATH@246..253
+              Ident@246..253 "println"
+          ARG_LIST@253..290
+            LParen@253..254 "("
+            ARG@254..289
+              EXPR_CALL@254..289
+                EXPR_BINARY@254..287
+                  EXPR_CALL@254..277
+                    EXPR_IDENT@254..262
+                      PATH@254..262
+                        Ident@254..262 "classify"
+                    ARG_LIST@262..277
+                      LParen@262..263 "("
+                      ARG@263..276
+                        EXPR_STR@263..276
+                          Str@263..276 "\"\\n\\r\\t\\b\\f/\""
+                      RParen@276..277 ")"
+                  Dot@277..278 "."
+                  EXPR_IDENT@278..287
+                    PATH@278..287
+                      Ident@278..287 "to_string"
+                ARG_LIST@287..289
+                  LParen@287..288 "("
+                  RParen@288..289 ")"
+            RParen@289..290 ")"
+        Semi@290..291 ";"
+        Whitespace@291..296 "\n    "
+      STMT_EXPR@296..339
+        EXPR_CALL@296..333
+          EXPR_IDENT@296..303
+            PATH@296..303
+              Ident@296..303 "println"
+          ARG_LIST@303..333
+            LParen@303..304 "("
+            ARG@304..332
+              EXPR_CALL@304..332
+                EXPR_BINARY@304..330
+                  EXPR_CALL@304..320
+                    EXPR_IDENT@304..312
+                      PATH@304..312
+                        Ident@304..312 "classify"
+                    ARG_LIST@312..320
+                      LParen@312..313 "("
+                      ARG@313..319
+                        EXPR_STR@313..319
+                          Str@313..319 "\"\\\"\\\\\""
+                      RParen@319..320 ")"
+                  Dot@320..321 "."
+                  EXPR_IDENT@321..330
+                    PATH@321..330
+                      Ident@321..330 "to_string"
+                ARG_LIST@330..332
+                  LParen@330..331 "("
+                  RParen@331..332 ")"
+            RParen@332..333 ")"
+        Semi@333..334 ";"
+        Whitespace@334..339 "\n    "
+      EXPR_CALL@339..376
+        EXPR_IDENT@339..346
+          PATH@339..346
+            Ident@339..346 "println"
+        ARG_LIST@346..376
+          LParen@346..347 "("
+          ARG@347..374
+            EXPR_CALL@347..374
+              EXPR_BINARY@347..372
+                EXPR_CALL@347..362
+                  EXPR_IDENT@347..355
+                    PATH@347..355
+                      Ident@347..355 "classify"
+                  ARG_LIST@355..362
+                    LParen@355..356 "("
+                    ARG@356..361
+                      EXPR_STR@356..361
+                        Str@356..361 "\"\\\\n\""
+                    RParen@361..362 ")"
+                Dot@362..363 "."
+                EXPR_IDENT@363..372
+                  PATH@363..372
+                    Ident@363..372 "to_string"
+              ARG_LIST@372..374
+                LParen@372..373 "("
+                RParen@373..374 ")"
+          RParen@374..375 ")"
+          Whitespace@375..376 "\n"
+      RBrace@376..377 "}"
+      Whitespace@377..378 "\n"

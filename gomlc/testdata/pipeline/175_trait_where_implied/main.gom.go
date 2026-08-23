@@ -40,8 +40,7 @@ type Ordering int32
 
 func _goml_m_trait__impl_i_Ready_i_Worker_i_state(self__0 Worker) string {
     var t0 string = self__0.name
-    var t1_rhs string = ":ready"
-    var t1 string = t0 + t1_rhs
+    var t1 string = t0 + ":ready"
     return t1
 }
 

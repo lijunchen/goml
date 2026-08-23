@@ -93,8 +93,7 @@ type Result__i32__string struct {
 func use_try(counter__0 *ref_int32_x, ok__0 bool) Result__i32__string {
     var mtmp0 Result__i32__string
     var inline1 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(counter__0)
-    var inline2_rhs int32 = 1
-    var inline2 int32 = inline1 + inline2_rhs
+    var inline2 int32 = inline1 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(counter__0, inline2)
     if ok__0 {
         var inline4 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(counter__0)
@@ -143,13 +142,11 @@ func show(res__0 Result__i32__string) string {
         var t0 string
         var inline0 string = __goml_builtin_int32_to_string(x0)
         t0 = inline0
-        var t1_lhs string = "ok "
-        var t1 string = t1_lhs + t0
+        var t1 string = "ok " + t0
         return t1
     case 1:
         var x1 string = res__0._v1_0
-        var t2_lhs string = "err "
-        var t2 string = t2_lhs + x1
+        var t2 string = "err " + x1
         return t2
     default:
         panic("non-exhaustive match")
@@ -162,8 +159,7 @@ func main0() struct{} {
     var inline13 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__i32(0)
     var inline14 Result__i32__string = use_try(inline13, inline12)
     var inline15 string = show(inline14)
-    var inline16_rhs string = " count="
-    var inline16 string = inline15 + inline16_rhs
+    var inline16 string = inline15 + " count="
     var inline17 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline13)
     var inline18 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline17)
     var inline19 string = inline16 + inline18
@@ -175,8 +171,7 @@ func main0() struct{} {
     var inline3 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__i32(0)
     var inline4 Result__i32__string = use_try(inline3, inline2)
     var inline5 string = show(inline4)
-    var inline6_rhs string = " count="
-    var inline6 string = inline5 + inline6_rhs
+    var inline6 string = inline5 + " count="
     var inline7 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline3)
     var inline8 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline7)
     var inline9 string = inline6 + inline8
@@ -212,11 +207,9 @@ func __goml_builtin_int32_to_string(value__0 int32) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2_lhs uint64 = 0
-        var inline2 uint64 = inline2_lhs - inline1
+        var inline2 uint64 = 0 - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4_lhs string = "-"
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "-" + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -233,11 +226,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -257,11 +248,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -288,8 +277,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

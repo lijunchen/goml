@@ -1410,8 +1410,7 @@ func _goml_m_inherent_i_std_p_text__h0034629766b91c65ed1f7160ea470eda_i_write__s
         var t1 bool = for_index0 < length__0
         if t1 {
             var for_item0 int = for_index0
-            var t2_rhs int = 1
-            var t2 int = for_index0 + t2_rhs
+            var t2 int = for_index0 + 1
             for_index0 = t2
             var t3 *_goml_vec_uint8 = self__0.values
             var t4 uint8
@@ -1435,10 +1434,8 @@ func _goml_m_inherent_i_std_p_text__he83b4afafc069a3c24c64018b13ca033_r_i_write_
 }
 
 func _goml_m_std_p_json_p_json__error(value__0 _goml_m_std_p_json_p_JsonParser, message__0 string) string {
-    var t0_lhs string = ""
-    var t0 string = t0_lhs + message__0
-    var t1_rhs string = " at byte "
-    var t1 string = t0 + t1_rhs
+    var t0 string = "" + message__0
+    var t1 string = t0 + " at byte "
     var t2 *ref_int_x = value__0.index
     var t3 int
     var inline1 int = ref_get__Ref_3int(t2)
@@ -1502,8 +1499,7 @@ func _goml_m_std_p_json_p_skip__json__whitespace(value__0 _goml_m_std_p_json_p_J
             var t7 int
             var inline1 int = ref_get__Ref_3int(t6)
             t7 = inline1
-            var t8_rhs int = 1
-            var t8 int = t7 + t8_rhs
+            var t8 int = t7 + 1
             ref_set__Ref_3int(t5, t8)
             continue
         } else {
@@ -1523,8 +1519,7 @@ func _goml_m_std_p_json_p_hex__digit(value__0 uint8) Option__u32 {
         jp0 = false
     }
     if jp0 {
-        var t1_rhs uint8 = 48
-        var t1 uint8 = value__0 - t1_rhs
+        var t1 uint8 = value__0 - 48
         var t2 uint32 = uint32(uint8(t1))
         var t3 Option__u32 = Option__u32{
             _tag: 1,
@@ -1541,10 +1536,8 @@ func _goml_m_std_p_json_p_hex__digit(value__0 uint8) Option__u32 {
             jp1 = false
         }
         if jp1 {
-            var t5_rhs uint8 = 65
-            var t5 uint8 = value__0 - t5_rhs
-            var t6_rhs uint8 = 10
-            var t6 uint8 = t5 + t6_rhs
+            var t5 uint8 = value__0 - 65
+            var t6 uint8 = t5 + 10
             var t7 uint32 = uint32(uint8(t6))
             var t8 Option__u32 = Option__u32{
                 _tag: 1,
@@ -1561,10 +1554,8 @@ func _goml_m_std_p_json_p_hex__digit(value__0 uint8) Option__u32 {
                 jp2 = false
             }
             if jp2 {
-                var t10_rhs uint8 = 97
-                var t10 uint8 = value__0 - t10_rhs
-                var t11_rhs uint8 = 10
-                var t11 uint8 = t10 + t11_rhs
+                var t10 uint8 = value__0 - 97
+                var t11 uint8 = t10 + 10
                 var t12 uint32 = uint32(uint8(t11))
                 var t13 Option__u32 = Option__u32{
                     _tag: 1,
@@ -1585,8 +1576,7 @@ func _goml_m_std_p_json_p_parse__hex__quad(value__0 _goml_m_std_p_json_p_JsonPar
     var t1 int
     var inline19 int = ref_get__Ref_3int(t0)
     t1 = inline19
-    var t2_rhs int = 4
-    var t2 int = t1 + t2_rhs
+    var t2 int = t1 + 4
     var t3 string = value__0.input
     var t4 int
     var inline18 int = _goml_runtime_core_string_len(t3)
@@ -1595,10 +1585,8 @@ func _goml_m_std_p_json_p_parse__hex__quad(value__0 _goml_m_std_p_json_p_JsonPar
     if t5 {
         var t6 string
         var inline0 string = "incomplete unicode escape"
-        var inline1_lhs string = ""
-        var inline1 string = inline1_lhs + inline0
-        var inline2_rhs string = " at byte "
-        var inline2 string = inline1 + inline2_rhs
+        var inline1 string = "" + inline0
+        var inline2 string = inline1 + " at byte "
         var inline3 *ref_int_x = value__0.index
         var inline4 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline3)
         var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
@@ -1619,8 +1607,7 @@ func _goml_m_std_p_json_p_parse__hex__quad(value__0 _goml_m_std_p_json_p_JsonPar
             var t13 bool = for_index0 < for_limit0
             if t13 {
                 var for_item0 int = for_index0
-                var t14_rhs int = 1
-                var t14 int = for_index0 + t14_rhs
+                var t14 int = for_index0 + 1
                 for_index0 = t14
                 var t15 string = value__0.input
                 var t16 *ref_int_x = value__0.index
@@ -1636,10 +1623,8 @@ func _goml_m_std_p_json_p_parse__hex__quad(value__0 _goml_m_std_p_json_p_JsonPar
                 case 0:
                     var t20 string
                     var inline9 string = "invalid unicode escape"
-                    var inline10_lhs string = ""
-                    var inline10 string = inline10_lhs + inline9
-                    var inline11_rhs string = " at byte "
-                    var inline11 string = inline10 + inline11_rhs
+                    var inline10 string = "" + inline9
+                    var inline11 string = inline10 + " at byte "
                     var inline12 *ref_int_x = value__0.index
                     var inline13 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline12)
                     var inline14 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline13)
@@ -1652,8 +1637,7 @@ func _goml_m_std_p_json_p_parse__hex__quad(value__0 _goml_m_std_p_json_p_JsonPar
                     return t21
                 case 1:
                     var x0 uint32 = mtmp0._v1_0
-                    var t22_rhs uint32 = 16
-                    var t22 uint32 = result__0 * t22_rhs
+                    var t22 uint32 = result__0 * 16
                     var t23 uint32 = t22 + x0
                     result__0 = t23
                     continue
@@ -1669,8 +1653,7 @@ func _goml_m_std_p_json_p_parse__hex__quad(value__0 _goml_m_std_p_json_p_JsonPar
         var t10 int
         var inline8 int = ref_get__Ref_3int(t9)
         t10 = inline8
-        var t11_rhs int = 4
-        var t11 int = t10 + t11_rhs
+        var t11 int = t10 + 4
         ref_set__Ref_3int(t8, t11)
         var t12 Result__u32__string = Result__u32__string{
             _tag: 0,
@@ -1688,10 +1671,8 @@ func _goml_m_std_p_json_p_write__codepoint(value__0 _goml_m_std_p_json_p_JsonPar
     case 0:
         var t0 string
         var inline0 string = "invalid unicode codepoint"
-        var inline1_lhs string = ""
-        var inline1 string = inline1_lhs + inline0
-        var inline2_rhs string = " at byte "
-        var inline2 string = inline1 + inline2_rhs
+        var inline1 string = "" + inline0
+        var inline2 string = inline1 + " at byte "
         var inline3 *ref_int_x = value__0.index
         var inline4 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline3)
         var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
@@ -1736,8 +1717,7 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__0 _goml_m_std_p_json_p_J
             var t2 int
             var inline27 int = ref_get__Ref_3int(t1)
             t2 = inline27
-            var t3_rhs int = 2
-            var t3 int = t2 + t3_rhs
+            var t3 int = t2 + 2
             var t4 string = value__0.input
             var t5 int
             var inline26 int = _goml_runtime_core_string_len(t4)
@@ -1767,8 +1747,7 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__0 _goml_m_std_p_json_p_J
                 var t25 int
                 var inline23 int = ref_get__Ref_3int(t24)
                 t25 = inline23
-                var t26_rhs int = 1
-                var t26 int = t25 + t26_rhs
+                var t26 int = t25 + 1
                 var t27 uint8
                 var inline22 uint8 = _goml_runtime_core_string_byte_get(t23, t26)
                 t27 = inline22
@@ -1778,10 +1757,8 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__0 _goml_m_std_p_json_p_J
             if jp3 {
                 var t7 string
                 var inline0 string = "missing low surrogate"
-                var inline1_lhs string = ""
-                var inline1 string = inline1_lhs + inline0
-                var inline2_rhs string = " at byte "
-                var inline2 string = inline1 + inline2_rhs
+                var inline1 string = "" + inline0
+                var inline2 string = inline1 + " at byte "
                 var inline3 *ref_int_x = value__0.index
                 var inline4 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline3)
                 var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
@@ -1798,8 +1775,7 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__0 _goml_m_std_p_json_p_J
                 var t11 int
                 var inline21 int = ref_get__Ref_3int(t10)
                 t11 = inline21
-                var t12_rhs int = 2
-                var t12 int = t11 + t12_rhs
+                var t12 int = t11 + 2
                 ref_set__Ref_3int(t9, t12)
                 var mtmp1 Result__u32__string = _goml_m_std_p_json_p_parse__hex__quad(value__0)
                 var jp4 uint32
@@ -1818,10 +1794,8 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__0 _goml_m_std_p_json_p_J
                     if jp5 {
                         var t14 string
                         var inline7 string = "invalid low surrogate"
-                        var inline8_lhs string = ""
-                        var inline8 string = inline8_lhs + inline7
-                        var inline9_rhs string = " at byte "
-                        var inline9 string = inline8 + inline9_rhs
+                        var inline8 string = "" + inline7
+                        var inline9 string = inline8 + " at byte "
                         var inline10 *ref_int_x = value__0.index
                         var inline11 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline10)
                         var inline12 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline11)
@@ -1833,15 +1807,11 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__0 _goml_m_std_p_json_p_J
                         }
                         return t15
                     } else {
-                        var t16_rhs uint32 = 55296
-                        var t16 uint32 = jp0 - t16_rhs
-                        var t17_rhs uint32 = 1024
-                        var t17 uint32 = t16 * t17_rhs
-                        var t18_lhs uint32 = 65536
-                        var t18 uint32 = t18_lhs + t17
+                        var t16 uint32 = jp0 - 55296
+                        var t17 uint32 = t16 * 1024
+                        var t18 uint32 = 65536 + t17
                         var t19 uint32 = t18 + jp4
-                        var t20_rhs uint32 = 56320
-                        var t20 uint32 = t19 - t20_rhs
+                        var t20 uint32 = t19 - 56320
                         var inline14 Option__char = char_from_u32(t20)
                         switch inline14._tag {
                         case 0:
@@ -1886,10 +1856,8 @@ func _goml_m_std_p_json_p_parse__unicode__escape(value__0 _goml_m_std_p_json_p_J
             if jp6 {
                 var t35 string
                 var inline28 string = "unexpected low surrogate"
-                var inline29_lhs string = ""
-                var inline29 string = inline29_lhs + inline28
-                var inline30_rhs string = " at byte "
-                var inline30 string = inline29 + inline30_rhs
+                var inline29 string = "" + inline28
+                var inline30 string = inline29 + " at byte "
                 var inline31 *ref_int_x = value__0.index
                 var inline32 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline31)
                 var inline33 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline32)
@@ -1941,10 +1909,8 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
     if jp0 {
         var t86 string
         var inline23 string = "expected string"
-        var inline24_lhs string = ""
-        var inline24 string = inline24_lhs + inline23
-        var inline25_rhs string = " at byte "
-        var inline25 string = inline24 + inline25_rhs
+        var inline24 string = "" + inline23
+        var inline25 string = inline24 + " at byte "
         var inline26 *ref_int_x = value__0.index
         var inline27 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline26)
         var inline28 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline27)
@@ -1961,8 +1927,7 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
         var t90 int
         var inline31 int = ref_get__Ref_3int(t89)
         t90 = inline31
-        var t91_rhs int = 1
-        var t91 int = t90 + t91_rhs
+        var t91 int = t90 + 1
         ref_set__Ref_3int(t88, t91)
         var builder__0 _goml_m_std_p_text_p_StringBuilder = _goml_m_inherent_i_std_p_text_p_StringBuilder_i_std_p_text_p_StringBuilder_i_new()
         var t5 *ref_int_x = value__0.index
@@ -2002,8 +1967,7 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                     var t22 int
                     var inline4 int = ref_get__Ref_3int(t21)
                     t22 = inline4
-                    var t23_rhs int = 1
-                    var t23 int = t22 + t23_rhs
+                    var t23 int = t22 + 1
                     ref_set__Ref_3int(t20, t23)
                     var t24 string
                     var inline0 *_goml_vec_uint8 = builder__0.values
@@ -2035,8 +1999,7 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                         var t35 *ref_int_x = value__0.index
                         var t36 *ref_int_x = value__0.index
                         var t37 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t36)
-                        var t38_rhs int = 1
-                        var t38 int = t37 + t38_rhs
+                        var t38 int = t37 + 1
                         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t35, t38)
                         var t39 *ref_int_x = value__0.index
                         var t40 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t39)
@@ -2046,10 +2009,8 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                         if t43 {
                             var t71 string
                             var inline14 string = "incomplete escape"
-                            var inline15_lhs string = ""
-                            var inline15 string = inline15_lhs + inline14
-                            var inline16_rhs string = " at byte "
-                            var inline16 string = inline15 + inline16_rhs
+                            var inline15 string = "" + inline14
+                            var inline16 string = inline15 + " at byte "
                             var inline17 *ref_int_x = value__0.index
                             var inline18 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline17)
                             var inline19 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline18)
@@ -2068,8 +2029,7 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                             var t47 *ref_int_x = value__0.index
                             var t48 *ref_int_x = value__0.index
                             var t49 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t48)
-                            var t50_rhs int = 1
-                            var t50 int = t49 + t50_rhs
+                            var t50 int = t49 + 1
                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t47, t50)
                             var t51 bool = escape__0 == 34
                             if t51 {
@@ -2212,8 +2172,7 @@ func _goml_m_std_p_json_p_parse__json__string(value__0 _goml_m_std_p_json_p_Json
                             var t81 *ref_int_x = value__0.index
                             var t82 *ref_int_x = value__0.index
                             var t83 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t82)
-                            var t84_rhs int = 1
-                            var t84 int = t83 + t84_rhs
+                            var t84 int = t83 + 1
                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t81, t84)
                             continue
                         }
@@ -2274,8 +2233,7 @@ func _goml_m_std_p_json_p_parse__digits(value__0 _goml_m_std_p_json_p_JsonParser
             var t11 int
             var inline2 int = ref_get__Ref_3int(t10)
             t11 = inline2
-            var t12_rhs int = 1
-            var t12 int = t11 + t12_rhs
+            var t12 int = t11 + 1
             ref_set__Ref_3int(t9, t12)
             continue
         } else {
@@ -2304,8 +2262,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
         var t105 int
         var inline33 int = ref_get__Ref_3int(t104)
         t105 = inline33
-        var t106_rhs int = 1
-        var t106 int = t105 + t106_rhs
+        var t106 int = t105 + 1
         ref_set__Ref_3int(t103, t106)
     } else {}
     var t6 *ref_int_x = value__0.index
@@ -2316,10 +2273,8 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
     if t10 {
         var t77 string
         var inline1 string = "incomplete number"
-        var inline2_lhs string = ""
-        var inline2 string = inline2_lhs + inline1
-        var inline3_rhs string = " at byte "
-        var inline3 string = inline2 + inline3_rhs
+        var inline2 string = "" + inline1
+        var inline3 string = inline2 + " at byte "
         var inline4 *ref_int_x = value__0.index
         var inline5 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline4)
         var inline6 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline5)
@@ -2346,8 +2301,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
             var t86 int
             var inline22 int = ref_get__Ref_3int(t85)
             t86 = inline22
-            var t87_rhs int = 1
-            var t87 int = t86 + t87_rhs
+            var t87 int = t86 + 1
             ref_set__Ref_3int(t84, t87)
             var t88 *ref_int_x = value__0.index
             var t89 int
@@ -2381,10 +2335,8 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
             if jp3 {
                 var t93 string
                 var inline8 string = "invalid leading zero"
-                var inline9_lhs string = ""
-                var inline9 string = inline9_lhs + inline8
-                var inline10_rhs string = " at byte "
-                var inline10 string = inline9 + inline10_rhs
+                var inline9 string = "" + inline8
+                var inline10 string = inline9 + " at byte "
                 var inline11 *ref_int_x = value__0.index
                 var inline12 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline11)
                 var inline13 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline12)
@@ -2418,8 +2370,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                     var t64 *ref_int_x = value__0.index
                     var t65 *ref_int_x = value__0.index
                     var t66 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t65)
-                    var t67_rhs int = 1
-                    var t67 int = t66 + t67_rhs
+                    var t67 int = t66 + 1
                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t64, t67)
                     var t68 bool = _goml_m_std_p_json_p_parse__digits(value__0)
                     var t69 bool = !t68
@@ -2460,8 +2411,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                             var t26 *ref_int_x = value__0.index
                             var t27 *ref_int_x = value__0.index
                             var t28 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t27)
-                            var t29_rhs int = 1
-                            var t29 int = t28 + t29_rhs
+                            var t29 int = t28 + 1
                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t26, t29)
                             var t30 *ref_int_x = value__0.index
                             var t31 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t30)
@@ -2492,8 +2442,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                                 var t39 *ref_int_x = value__0.index
                                 var t40 *ref_int_x = value__0.index
                                 var t41 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t40)
-                                var t42_rhs int = 1
-                                var t42 int = t41 + t42_rhs
+                                var t42 int = t41 + 1
                                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t39, t42)
                             } else {}
                             var t35 bool = _goml_m_std_p_json_p_parse__digits(value__0)
@@ -2558,8 +2507,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                         var t26 *ref_int_x = value__0.index
                         var t27 *ref_int_x = value__0.index
                         var t28 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t27)
-                        var t29_rhs int = 1
-                        var t29 int = t28 + t29_rhs
+                        var t29 int = t28 + 1
                         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t26, t29)
                         var t30 *ref_int_x = value__0.index
                         var t31 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t30)
@@ -2590,8 +2538,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                             var t39 *ref_int_x = value__0.index
                             var t40 *ref_int_x = value__0.index
                             var t41 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t40)
-                            var t42_rhs int = 1
-                            var t42 int = t41 + t42_rhs
+                            var t42 int = t41 + 1
                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t39, t42)
                         } else {}
                         var t35 bool = _goml_m_std_p_json_p_parse__digits(value__0)
@@ -2633,10 +2580,8 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
             if t100 {
                 var t101 string
                 var inline23 string = "expected number"
-                var inline24_lhs string = ""
-                var inline24 string = inline24_lhs + inline23
-                var inline25_rhs string = " at byte "
-                var inline25 string = inline24 + inline25_rhs
+                var inline24 string = "" + inline23
+                var inline25 string = inline24 + " at byte "
                 var inline26 *ref_int_x = value__0.index
                 var inline27 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline26)
                 var inline28 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline27)
@@ -2670,8 +2615,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                     var t64 *ref_int_x = value__0.index
                     var t65 *ref_int_x = value__0.index
                     var t66 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t65)
-                    var t67_rhs int = 1
-                    var t67 int = t66 + t67_rhs
+                    var t67 int = t66 + 1
                     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t64, t67)
                     var t68 bool = _goml_m_std_p_json_p_parse__digits(value__0)
                     var t69 bool = !t68
@@ -2712,8 +2656,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                             var t26 *ref_int_x = value__0.index
                             var t27 *ref_int_x = value__0.index
                             var t28 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t27)
-                            var t29_rhs int = 1
-                            var t29 int = t28 + t29_rhs
+                            var t29 int = t28 + 1
                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t26, t29)
                             var t30 *ref_int_x = value__0.index
                             var t31 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t30)
@@ -2744,8 +2687,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                                 var t39 *ref_int_x = value__0.index
                                 var t40 *ref_int_x = value__0.index
                                 var t41 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t40)
-                                var t42_rhs int = 1
-                                var t42 int = t41 + t42_rhs
+                                var t42 int = t41 + 1
                                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t39, t42)
                             } else {}
                             var t35 bool = _goml_m_std_p_json_p_parse__digits(value__0)
@@ -2810,8 +2752,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                         var t26 *ref_int_x = value__0.index
                         var t27 *ref_int_x = value__0.index
                         var t28 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t27)
-                        var t29_rhs int = 1
-                        var t29 int = t28 + t29_rhs
+                        var t29 int = t28 + 1
                         _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t26, t29)
                         var t30 *ref_int_x = value__0.index
                         var t31 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t30)
@@ -2842,8 +2783,7 @@ func _goml_m_std_p_json_p_parse__json__number__text(value__0 _goml_m_std_p_json_
                             var t39 *ref_int_x = value__0.index
                             var t40 *ref_int_x = value__0.index
                             var t41 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t40)
-                            var t42_rhs int = 1
-                            var t42 int = t41 + t42_rhs
+                            var t42 int = t41 + 1
                             _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t39, t42)
                         } else {}
                         var t35 bool = _goml_m_std_p_json_p_parse__digits(value__0)
@@ -2939,10 +2879,8 @@ func _goml_m_std_p_json_p_parse__json__literal(value__0 _goml_m_std_p_json_p_Jso
     } else {
         var t13 string
         var inline3 string = "invalid literal"
-        var inline4_lhs string = ""
-        var inline4 string = inline4_lhs + inline3
-        var inline5_rhs string = " at byte "
-        var inline5 string = inline4 + inline5_rhs
+        var inline4 string = "" + inline3
+        var inline5 string = inline4 + " at byte "
         var inline6 *ref_int_x = value__0.index
         var inline7 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline6)
         var inline8 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline7)
@@ -2960,8 +2898,7 @@ func _goml_m_std_p_json_p_parse__json__array(value__0 _goml_m_std_p_json_p_JsonP
     var t0 *ref_int_x = value__0.index
     var t1 *ref_int_x = value__0.index
     var t2 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t1)
-    var t3_rhs int = 1
-    var t3 int = t2 + t3_rhs
+    var t3 int = t2 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t0, t3)
     _goml_m_std_p_json_p_skip__json__whitespace(value__0)
     var result__0 *_goml_vec__goml_m_std_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__std_p_json_p_Value()
@@ -2991,8 +2928,7 @@ func _goml_m_std_p_json_p_parse__json__array(value__0 _goml_m_std_p_json_p_JsonP
         var t49 int
         var inline28 int = ref_get__Ref_3int(t48)
         t49 = inline28
-        var t50_rhs int = 1
-        var t50 int = t49 + t50_rhs
+        var t50 int = t49 + 1
         ref_set__Ref_3int(t47, t50)
         var t51 _goml_m_std_p_json_p_Value = _goml_m_std_p_json_p_Value_Array{
             _0: result__0,
@@ -3035,10 +2971,8 @@ func _goml_m_std_p_json_p_parse__json__array(value__0 _goml_m_std_p_json_p_JsonP
                     if t20 {
                         var t21 string
                         var inline0 string = "unterminated array"
-                        var inline1_lhs string = ""
-                        var inline1 string = inline1_lhs + inline0
-                        var inline2_rhs string = " at byte "
-                        var inline2 string = inline1 + inline2_rhs
+                        var inline1 string = "" + inline0
+                        var inline2 string = inline1 + " at byte "
                         var inline3 *ref_int_x = value__0.index
                         var inline4 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline3)
                         var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
@@ -3065,8 +2999,7 @@ func _goml_m_std_p_json_p_parse__json__array(value__0 _goml_m_std_p_json_p_JsonP
                             var t30 int
                             var inline8 int = ref_get__Ref_3int(t29)
                             t30 = inline8
-                            var t31_rhs int = 1
-                            var t31 int = t30 + t31_rhs
+                            var t31 int = t30 + 1
                             ref_set__Ref_3int(t28, t31)
                             var t32 _goml_m_std_p_json_p_Value = _goml_m_std_p_json_p_Value_Array{
                                 _0: result__0,
@@ -3092,18 +3025,15 @@ func _goml_m_std_p_json_p_parse__json__array(value__0 _goml_m_std_p_json_p_JsonP
                                 var t41 int
                                 var inline10 int = ref_get__Ref_3int(t40)
                                 t41 = inline10
-                                var t42_rhs int = 1
-                                var t42 int = t41 + t42_rhs
+                                var t42 int = t41 + 1
                                 ref_set__Ref_3int(t39, t42)
                                 _goml_m_std_p_json_p_skip__json__whitespace(value__0)
                                 continue
                             } else {
                                 var t44 string
                                 var inline11 string = "expected array separator"
-                                var inline12_lhs string = ""
-                                var inline12 string = inline12_lhs + inline11
-                                var inline13_rhs string = " at byte "
-                                var inline13 string = inline12 + inline13_rhs
+                                var inline12 string = "" + inline11
+                                var inline13 string = inline12 + " at byte "
                                 var inline14 *ref_int_x = value__0.index
                                 var inline15 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline14)
                                 var inline16 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline15)
@@ -3144,8 +3074,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__0 _goml_m_std_p_json_p_Json
     var t0 *ref_int_x = value__0.index
     var t1 *ref_int_x = value__0.index
     var t2 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(t1)
-    var t3_rhs int = 1
-    var t3 int = t2 + t3_rhs
+    var t3 int = t2 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(t0, t3)
     _goml_m_std_p_json_p_skip__json__whitespace(value__0)
     var result__0 *_goml_vec__goml_m_Tuple2__6string__16std_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_h57e42dbef834e6b8ee6cf77cf9eb9d23_json_p_Value_q_()
@@ -3175,8 +3104,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__0 _goml_m_std_p_json_p_Json
         var t67 int
         var inline31 int = ref_get__Ref_3int(t66)
         t67 = inline31
-        var t68_rhs int = 1
-        var t68 int = t67 + t68_rhs
+        var t68 int = t67 + 1
         ref_set__Ref_3int(t65, t68)
         var t69 _goml_m_std_p_json_p_Value = Object{
             _0: result__0,
@@ -3225,10 +3153,8 @@ func _goml_m_std_p_json_p_parse__json__object(value__0 _goml_m_std_p_json_p_Json
                     if jp2 {
                         var t53 string
                         var inline19 string = "expected object colon"
-                        var inline20_lhs string = ""
-                        var inline20 string = inline20_lhs + inline19
-                        var inline21_rhs string = " at byte "
-                        var inline21 string = inline20 + inline21_rhs
+                        var inline20 string = "" + inline19
+                        var inline21 string = inline20 + " at byte "
                         var inline22 *ref_int_x = value__0.index
                         var inline23 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline22)
                         var inline24 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline23)
@@ -3245,8 +3171,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__0 _goml_m_std_p_json_p_Json
                         var t57 int
                         var inline27 int = ref_get__Ref_3int(t56)
                         t57 = inline27
-                        var t58_rhs int = 1
-                        var t58 int = t57 + t58_rhs
+                        var t58 int = t57 + 1
                         ref_set__Ref_3int(t55, t58)
                         _goml_m_std_p_json_p_skip__json__whitespace(value__0)
                         var mtmp1 _goml_m_Result____std_p_json_p_Value____string = _goml_m_std_p_json_p_parse__json__value(value__0)
@@ -3269,10 +3194,8 @@ func _goml_m_std_p_json_p_parse__json__object(value__0 _goml_m_std_p_json_p_Json
                             if t26 {
                                 var t27 string
                                 var inline0 string = "unterminated object"
-                                var inline1_lhs string = ""
-                                var inline1 string = inline1_lhs + inline0
-                                var inline2_rhs string = " at byte "
-                                var inline2 string = inline1 + inline2_rhs
+                                var inline1 string = "" + inline0
+                                var inline2 string = inline1 + " at byte "
                                 var inline3 *ref_int_x = value__0.index
                                 var inline4 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline3)
                                 var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
@@ -3295,8 +3218,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__0 _goml_m_std_p_json_p_Json
                                     var t36 int
                                     var inline8 int = ref_get__Ref_3int(t35)
                                     t36 = inline8
-                                    var t37_rhs int = 1
-                                    var t37 int = t36 + t37_rhs
+                                    var t37 int = t36 + 1
                                     ref_set__Ref_3int(t34, t37)
                                     var t38 _goml_m_std_p_json_p_Value = Object{
                                         _0: result__0,
@@ -3320,18 +3242,15 @@ func _goml_m_std_p_json_p_parse__json__object(value__0 _goml_m_std_p_json_p_Json
                                         var t47 int
                                         var inline10 int = ref_get__Ref_3int(t46)
                                         t47 = inline10
-                                        var t48_rhs int = 1
-                                        var t48 int = t47 + t48_rhs
+                                        var t48 int = t47 + 1
                                         ref_set__Ref_3int(t45, t48)
                                         _goml_m_std_p_json_p_skip__json__whitespace(value__0)
                                         continue
                                     } else {
                                         var t50 string
                                         var inline11 string = "expected object separator"
-                                        var inline12_lhs string = ""
-                                        var inline12 string = inline12_lhs + inline11
-                                        var inline13_rhs string = " at byte "
-                                        var inline13 string = inline12 + inline13_rhs
+                                        var inline12 string = "" + inline11
+                                        var inline13 string = inline12 + " at byte "
                                         var inline14 *ref_int_x = value__0.index
                                         var inline15 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline14)
                                         var inline16 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline15)
@@ -3393,10 +3312,8 @@ func _goml_m_std_p_json_p_parse__json__value(value__0 _goml_m_std_p_json_p_JsonP
     if t4 {
         var t5 string
         var inline0 string = "expected JSON value"
-        var inline1_lhs string = ""
-        var inline1 string = inline1_lhs + inline0
-        var inline2_rhs string = " at byte "
-        var inline2 string = inline1 + inline2_rhs
+        var inline1 string = "" + inline0
+        var inline2 string = inline1 + " at byte "
         var inline3 *ref_int_x = value__0.index
         var inline4 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline3)
         var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
@@ -3503,10 +3420,8 @@ func _goml_m_std_p_json_p_parse__json__value(value__0 _goml_m_std_p_json_p_JsonP
             } else {
                 var t21 string
                 var inline14 string = "unexpected JSON token"
-                var inline15_lhs string = ""
-                var inline15 string = inline15_lhs + inline14
-                var inline16_rhs string = " at byte "
-                var inline16 string = inline15 + inline16_rhs
+                var inline15 string = "" + inline14
+                var inline16 string = inline15 + " at byte "
                 var inline17 *ref_int_x = value__0.index
                 var inline18 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline17)
                 var inline19 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline18)
@@ -3554,10 +3469,8 @@ func _goml_m_std_p_json_p_parse(input__0 string) _goml_m_Result____std_p_json_p_
         } else {
             var t5 string
             var inline0 string = "trailing JSON data"
-            var inline1_lhs string = ""
-            var inline1 string = inline1_lhs + inline0
-            var inline2_rhs string = " at byte "
-            var inline2 string = inline1 + inline2_rhs
+            var inline1 string = "" + inline0
+            var inline2 string = inline1 + " at byte "
             var inline3 *ref_int_x = parser__0.index
             var inline4 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(inline3)
             var inline5 string = _goml_m_inherent_i_isize_i_isize_i_to__string(inline4)
@@ -3595,8 +3508,7 @@ func _goml_m_std_p_json_p_write__json__string(builder__0 _goml_m_std_p_text_p_St
         var t5 bool = for_index0 < for_limit0
         if t5 {
             var for_item0 int = for_index0
-            var t6_rhs int = 1
-            var t6 int = for_index0 + t6_rhs
+            var t6 int = for_index0 + 1
             for_index0 = t6
             var byte__0 uint8
             var inline15 uint8 = _goml_runtime_core_string_byte_get(value__0, for_item0)
@@ -3688,16 +3600,14 @@ func _goml_m_std_p_json_p_write__json__string(builder__0 _goml_m_std_p_text_p_St
                                             _goml_m_inherent_i_std_p_text__h0034629766b91c65ed1f7160ea470eda_i_write__string(builder__0, "\\r")
                                         } else {
                                             _goml_m_inherent_i_std_p_text__h0034629766b91c65ed1f7160ea470eda_i_write__string(builder__0, "\\u00")
-                                            var t24_rhs uint8 = 16
-                                            var t24 uint8 = byte__0 / t24_rhs
+                                            var t24 uint8 = byte__0 / 16
                                             var t25 rune
                                             var inline12 int = int(uint8(t24))
                                             var inline13 rune = _goml_m_inherent_i_string_i_string_i_get("0123456789abcdef", inline12)
                                             t25 = inline13
                                             var inline10 string = _goml_m_inherent_i_char_i_char_i_to__string(t25)
                                             _goml_m_inherent_i_std_p_text__h0034629766b91c65ed1f7160ea470eda_i_write__string(builder__0, inline10)
-                                            var t26_rhs uint8 = 16
-                                            var t26 uint8 = byte__0 % t26_rhs
+                                            var t26 uint8 = byte__0 % 16
                                             var t27 rune
                                             var inline8 int = int(uint8(t26))
                                             var inline9 rune = _goml_m_inherent_i_string_i_string_i_get("0123456789abcdef", inline8)
@@ -3711,8 +3621,7 @@ func _goml_m_std_p_json_p_write__json__string(builder__0 _goml_m_std_p_text_p_St
                         }
                     }
                 }
-                var t10_rhs int = 1
-                var t10 int = for_item0 + t10_rhs
+                var t10 int = for_item0 + 1
                 start__0 = t10
                 continue
             } else {
@@ -3756,8 +3665,7 @@ func _goml_m_std_p_json_p_write__json__value(builder__0 _goml_m_std_p_text_p_Str
             var t0 bool = for_index0 < for_limit0
             if t0 {
                 var for_item0 Tuple2_6string_26_goml_m_std_p_json_p_Value = vec_get___goml_m_Vec__33Tuple2__6string__16std_p_json_p_Value(x0, for_index0)
-                var t1_rhs int = 1
-                var t1 int = for_index0 + t1_rhs
+                var t1 int = for_index0 + 1
                 for_index0 = t1
                 var t2 bool = index__0 > 0
                 if t2 {
@@ -3798,8 +3706,7 @@ func _goml_m_std_p_json_p_write__json__value(builder__0 _goml_m_std_p_text_p_Str
             var t7 bool = for_index1 < for_limit1
             if t7 {
                 var for_item1 _goml_m_std_p_json_p_Value = vec_get___goml_m_Vec__16std_p_json_p_Value(x1, for_index1)
-                var t8_rhs int = 1
-                var t8 int = for_index1 + t8_rhs
+                var t8 int = for_index1 + 1
                 for_index1 = t8
                 var t9 bool = index__1 > 0
                 if t9 {
@@ -3872,8 +3779,7 @@ func _goml_m_std_p_json_p_field(value__0 _goml_m_std_p_json_p_Value, name__0 str
             var t0 bool = for_index0 < for_limit0
             if t0 {
                 var for_item0 Tuple2_6string_26_goml_m_std_p_json_p_Value = vec_get___goml_m_Vec__33Tuple2__6string__16std_p_json_p_Value(x0, for_index0)
-                var t1_rhs int = 1
-                var t1 int = for_index0 + t1_rhs
+                var t1 int = for_index0 + 1
                 for_index0 = t1
                 var t2 string = for_item0._0
                 var t3 bool = t2 == name__0
@@ -3956,10 +3862,8 @@ func _goml_m_std_p_json_p_parse__json__int__text(value__0 string) Option__isize 
                             _tag: 0,
                         }
                     } else {
-                        var t12_rhs int = 10
-                        var t12 int = result__0 * t12_rhs
-                        var t13_rhs uint8 = 48
-                        var t13 uint8 = byte__0 - t13_rhs
+                        var t12 int = result__0 * 10
+                        var t13 uint8 = byte__0 - 48
                         var t14 int = int(uint8(t13))
                         var t15 int = t12 + t14
                         result__0 = t15
@@ -3975,8 +3879,7 @@ func _goml_m_std_p_json_p_parse__json__int__text(value__0 string) Option__isize 
             }
             var jp1 int
             if negative__0 {
-                var t6_lhs int = 0
-                var t6 int = t6_lhs - result__0
+                var t6 int = 0 - result__0
                 jp1 = t6
             } else {
                 jp1 = result__0
@@ -4443,8 +4346,7 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                         }
                         return inline15
                     } else {
-                        var t7_rhs int = 1
-                        var t7 int = index__0 + t7_rhs
+                        var t7 int = index__0 + 1
                         var t8 uint8
                         var inline14 uint8 = _goml_runtime_core_string_byte_get(value__0, t7)
                         t8 = inline14
@@ -4465,12 +4367,9 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             }
                             return inline6
                         } else {
-                            var t10_rhs uint32 = 31
-                            var t10 uint32 = first__0 & t10_rhs
-                            var t11_rhs int = 6
-                            var t11 uint32 = t10 << t11_rhs
-                            var t12_rhs uint32 = 63
-                            var t12 uint32 = second__0 & t12_rhs
+                            var t10 uint32 = first__0 & 31
+                            var t11 uint32 = t10 << 6
+                            var t12 uint32 = second__0 & 63
                             var t13 uint32 = t11 | t12
                             var inline7 int = 2
                             var inline8 Option__char = __goml_builtin_char_from_uint32(t13)
@@ -4504,12 +4403,10 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                             }
                             return inline24
                         } else {
-                            var t17_rhs int = 1
-                            var t17 int = index__0 + t17_rhs
+                            var t17 int = index__0 + 1
                             var t18 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t17)
                             var second__1 uint32 = uint32(uint8(t18))
-                            var t19_rhs int = 2
-                            var t19 int = index__0 + t19_rhs
+                            var t19 int = index__0 + 2
                             var t20 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t19)
                             var third__0 uint32 = uint32(uint8(t20))
                             var t21 bool = utf8_invalid_continuation(second__1)
@@ -4557,17 +4454,12 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 }
                                 return inline16
                             } else {
-                                var t22_rhs uint32 = 15
-                                var t22 uint32 = first__0 & t22_rhs
-                                var t23_rhs int = 12
-                                var t23 uint32 = t22 << t23_rhs
-                                var t24_rhs uint32 = 63
-                                var t24 uint32 = second__1 & t24_rhs
-                                var t25_rhs int = 6
-                                var t25 uint32 = t24 << t25_rhs
+                                var t22 uint32 = first__0 & 15
+                                var t23 uint32 = t22 << 12
+                                var t24 uint32 = second__1 & 63
+                                var t25 uint32 = t24 << 6
                                 var t26 uint32 = t23 | t25
-                                var t27_rhs uint32 = 63
-                                var t27 uint32 = third__0 & t27_rhs
+                                var t27 uint32 = third__0 & 63
                                 var t28 uint32 = t26 | t27
                                 var inline17 int = 3
                                 var inline18 Option__char = __goml_builtin_char_from_uint32(t28)
@@ -4597,16 +4489,13 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                 var t61 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                 return t61
                             } else {
-                                var t36_rhs int = 1
-                                var t36 int = index__0 + t36_rhs
+                                var t36 int = index__0 + 1
                                 var t37 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t36)
                                 var second__2 uint32 = uint32(uint8(t37))
-                                var t38_rhs int = 2
-                                var t38 int = index__0 + t38_rhs
+                                var t38 int = index__0 + 2
                                 var t39 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t38)
                                 var third__1 uint32 = uint32(uint8(t39))
-                                var t40_rhs int = 3
-                                var t40 int = index__0 + t40_rhs
+                                var t40 int = index__0 + 3
                                 var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
                                 var fourth__0 uint32 = uint32(uint8(t41))
                                 var t42 bool = utf8_invalid_continuation(second__2)
@@ -4652,22 +4541,15 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
                                     var t43 Tuple3_4bool_4char_3int = utf8_invalid_decode()
                                     return t43
                                 } else {
-                                    var t44_rhs uint32 = 7
-                                    var t44 uint32 = first__0 & t44_rhs
-                                    var t45_rhs int = 18
-                                    var t45 uint32 = t44 << t45_rhs
-                                    var t46_rhs uint32 = 63
-                                    var t46 uint32 = second__2 & t46_rhs
-                                    var t47_rhs int = 12
-                                    var t47 uint32 = t46 << t47_rhs
+                                    var t44 uint32 = first__0 & 7
+                                    var t45 uint32 = t44 << 18
+                                    var t46 uint32 = second__2 & 63
+                                    var t47 uint32 = t46 << 12
                                     var t48 uint32 = t45 | t47
-                                    var t49_rhs uint32 = 63
-                                    var t49 uint32 = third__1 & t49_rhs
-                                    var t50_rhs int = 6
-                                    var t50 uint32 = t49 << t50_rhs
+                                    var t49 uint32 = third__1 & 63
+                                    var t50 uint32 = t49 << 6
                                     var t51 uint32 = t48 | t50
-                                    var t52_rhs uint32 = 63
-                                    var t52 uint32 = fourth__0 & t52_rhs
+                                    var t52 uint32 = fourth__0 & 63
                                     var t53 uint32 = t51 | t52
                                     var t54 Tuple3_4bool_4char_3int = utf8_valid_decode(t53, 4)
                                     return t54
@@ -4689,11 +4571,9 @@ func __goml_builtin_int_to_string(value__0 int) string {
     var inline0 bool = t0 < 0
     if inline0 {
         var inline1 uint64 = uint64(int64(t0))
-        var inline2_lhs uint64 = 0
-        var inline2 uint64 = inline2_lhs - inline1
+        var inline2 uint64 = 0 - inline1
         var inline3 string = decimal_string(inline2)
-        var inline4_lhs string = "-"
-        var inline4 string = inline4_lhs + inline3
+        var inline4 string = "-" + inline3
         return inline4
     } else {
         var inline5 uint64 = uint64(int64(t0))
@@ -4840,11 +4720,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -4864,11 +4742,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -4895,8 +4771,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0
@@ -4957,8 +4832,7 @@ func string_is_char_boundary(value__0 string, index__0 int) bool {
             var t3 uint8
             var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
             t3 = inline0
-            var t4_rhs uint8 = 192
-            var t4 uint8 = t3 & t4_rhs
+            var t4 uint8 = t3 & 192
             var t5 bool = t4 != 128
             return t5
         }

@@ -132,8 +132,7 @@ func int_list_length(xs__0 List__i32) int32 {
     case List__i32_Cons:
         var x0 List__i32 = xs__0.(List__i32_Cons)._1
         var t0 int32 = int_list_length(x0)
-        var t1_lhs int32 = 1
-        var t1 int32 = t1_lhs + t0
+        var t1 int32 = 1 + t0
         return t1
     default:
         panic("non-exhaustive match")
@@ -213,8 +212,7 @@ func list_length__T_isize(xs__0 List__isize) int32 {
     case List__isize_Cons:
         var x0 List__isize = xs__0.(List__isize_Cons)._1
         var t0 int32 = list_length__T_isize(x0)
-        var t1_lhs int32 = 1
-        var t1 int32 = t1_lhs + t0
+        var t1 int32 = 1 + t0
         return t1
     default:
         panic("non-exhaustive match")
@@ -228,8 +226,7 @@ func list_length__T_unit(xs__0 List__unit) int32 {
     case List__unit_Cons:
         var x0 List__unit = xs__0.(List__unit_Cons)._1
         var t0 int32 = list_length__T_unit(x0)
-        var t1_lhs int32 = 1
-        var t1 int32 = t1_lhs + t0
+        var t1 int32 = 1 + t0
         return t1
     default:
         panic("non-exhaustive match")
@@ -243,8 +240,7 @@ func list_length__T_bool(xs__0 List__bool) int32 {
     case List__bool_Cons:
         var x0 List__bool = xs__0.(List__bool_Cons)._1
         var t0 int32 = list_length__T_bool(x0)
-        var t1_lhs int32 = 1
-        var t1 int32 = t1_lhs + t0
+        var t1 int32 = 1 + t0
         return t1
     default:
         panic("non-exhaustive match")
@@ -261,11 +257,9 @@ func signed_decimal_string(value__0 int64) string {
     var t0 bool = value__0 < 0
     if t0 {
         var t1 uint64 = uint64(int64(value__0))
-        var t2_lhs uint64 = 0
-        var t2 uint64 = t2_lhs - t1
+        var t2 uint64 = 0 - t1
         var t3 string = decimal_string(t2)
-        var t4_lhs string = "-"
-        var t4 string = t4_lhs + t3
+        var t4 string = "-" + t3
         return t4
     } else {
         var t5 uint64 = uint64(int64(value__0))
@@ -285,11 +279,9 @@ func decimal_string(value__0 uint64) string {
         for {
             var t10 bool = remaining__0 > 0
             if t10 {
-                var t11_rhs uint64 = 10
-                var t11 uint64 = remaining__0 % t11_rhs
+                var t11 uint64 = remaining__0 % 10
                 var t12 uint8 = uint8(uint64(t11))
-                var t13_rhs uint8 = 48
-                var t13 uint8 = t12 + t13_rhs
+                var t13 uint8 = t12 + 48
                 vec_push__Vec_5uint8(reversed__0, t13)
                 var compound_old1 uint64 = remaining__0
                 var compound_value1 uint64 = 10
@@ -316,8 +308,7 @@ func decimal_string(value__0 uint64) string {
                 var inline1 int = vec_len__Vec_5uint8(reversed__0)
                 t4 = inline1
                 var t5 int = t4 - offset__0
-                var t6_rhs int = 1
-                var t6 int = t5 - t6_rhs
+                var t6 int = t5 - 1
                 var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
                 vec_push__Vec_5uint8(bytes__0, t7)
                 var compound_old0 int = offset__0

@@ -1,3 +1,13 @@
+const WRAPPED_I8: i8 = -128;
+const WRAPPED_U8: u8 = 255;
+const WRAPPED_PRODUCT: u8 = 0;
+const WRAPPED_DIVISION: i8 = -128;
+const WRAPPED_NEGATION: i8 = -128;
+const FORWARD_WRAPPED: i8 = -128;
+const MAX_I8: i8 = 127;
+const NEGATIVE_ONE_I16: i16 = -1;
+const PREFIX: string = "fixed";
+
 fn show_i8(value/0: i8) -> unit {
   println__T_i0(value/0)
 }
@@ -21,7 +31,21 @@ fn main() -> unit {
   let _wild3 = show_i0((-128 / -1)) in
   let _wild4 = show_i0((--128)) in
   let _wild5 = show_i1((9223372036854775807 + 1)) in
-  show_u1((18446744073709551615 + 1))
+  let _wild6 = show_u1((18446744073709551615 + 1)) in
+  let _wild7 = show_i0(WRAPPED_I0) in
+  let _wild8 = show_u0(WRAPPED_U0) in
+  let _wild9 = show_u0(WRAPPED_PRODUCT) in
+  let _wild10 = show_i0(WRAPPED_DIVISION) in
+  let _wild11 = show_i0(WRAPPED_NEGATION) in
+  let _wild12 = show_i0(FORWARD_WRAPPED) in
+  let _wild13 = show_i0((MAX_I0 + 1)) in
+  let _wild14 = show_i0((WRAPPED_I0 / -1)) in
+  let _wild15 = show_i0((-WRAPPED_I0)) in
+  let converted/0 = (NEGATIVE_ONE_I0 as u8) in
+  let _wild16 = show_u0(converted/0) in
+  let runtime_value/0 = 127 in
+  let _wild17 = show_i0((runtime_value/0 + 1)) in
+  println__T_string((PREFIX + " width"))
 }
 
 fn println__T_i8(value/0: i8) -> unit {
@@ -40,6 +64,10 @@ fn println__T_u64(value/0: u64) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/0))
 }
 
+fn println__T_string(value/0: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
+}
+
 fn trait_impl#ToString#i8#to_string(self/0: i8) -> string {
   __goml_builtin_int8_to_string(self/0)
 }
@@ -54,6 +82,10 @@ fn trait_impl#ToString#i64#to_string(self/0: i64) -> string {
 
 fn trait_impl#ToString#u64#to_string(self/0: u64) -> string {
   __goml_builtin_uint64_to_string(self/0)
+}
+
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
 }
 
 fn __goml_builtin_int8_to_string(value/0: i8) -> string {

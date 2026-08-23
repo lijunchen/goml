@@ -58,13 +58,11 @@ func main0() struct{} {
     switch t0._tag {
     case 0:
         var inline13 string = t0._v0_0
-        var inline14_lhs string = "ok "
-        var inline14 string = inline14_lhs + inline13
+        var inline14 string = "ok " + inline13
         t1 = inline14
     case 1:
         var inline15 string = t0._v1_0
-        var inline16_lhs string = "err "
-        var inline16 string = inline16_lhs + inline15
+        var inline16 string = "err " + inline15
         t1 = inline16
     default:
         panic("non-exhaustive match")
@@ -87,13 +85,11 @@ func main0() struct{} {
     switch t2._tag {
     case 0:
         var inline2 string = t2._v0_0
-        var inline3_lhs string = "ok "
-        var inline3 string = inline3_lhs + inline2
+        var inline3 string = "ok " + inline2
         t3 = inline3
     case 1:
         var inline4 string = t2._v1_0
-        var inline5_lhs string = "err "
-        var inline5 string = inline5_lhs + inline4
+        var inline5 string = "err " + inline4
         t3 = inline5
     default:
         panic("non-exhaustive match")
@@ -129,8 +125,7 @@ func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env0
     case 0:
         var x0 string = mtmp0._v0_0
         jp0 = x0
-        var t0_rhs string = ":"
-        var t0 string = prefix__0 + t0_rhs
+        var t0 string = prefix__0 + ":"
         var t1 string = t0 + jp0
         var t2 Result__string__string = Result__string__string{
             _tag: 0,
