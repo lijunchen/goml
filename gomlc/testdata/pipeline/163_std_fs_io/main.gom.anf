@@ -1,8 +1,10 @@
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  let t0 = [] in
-  let t1 = @intrinsic(vec.from_array)(t0) in
-  let t2 = std::bytes::Bytes { values: t1 } in
-  t2
+  join inline_cont0(t0: Vec[u8]) -> std::bytes::Bytes {
+    let t1 = std::bytes::Bytes { values: t0 } in
+    t1
+  } in
+  let inline0 = @intrinsic(vec.new)() in
+  jump inline_cont0(inline0)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -2281,67 +2283,71 @@ fn std::fs::read_dir_structured(path/0: string) -> Result__Vec[std::fs::DirEntry
         jump inline_join0(Tag_0)
       }
     } else {
-      let t3 = [] in
-      let entries/0 = @intrinsic(vec.from_array)(t3) in
-      let for_limit0 = @intrinsic(vec.len)(x1) in
-      let for_index0 = 0 in
-      join exit0() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-        let t4 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Ok(entries/0) in
-        t4
-      } in
-      joinrec {
-        join loop0() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-          let t5 = (for_index0 < for_limit0) in
-          if t5 {
-            let for_item0 = @intrinsic(vec.get)(x1, for_index0) in
-            let t6 = (for_index0 + 1) in
-            let _wild0 = for_index0 = t6 in
-            join inline_cont2(
-              entry_path/0: string
-            ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-              join inline_cont3(
-                mtmp1: Result__std::fs::Metadata__std::fs::Error
-              ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-                match mtmp1 {
-                  Tag_0 => {
-                    let x6 = Result__std::fs::Metadata__std::fs::Error::Ok._0(mtmp1) in
-                    join inline_cont4(
-                      t7: std::fs::FileType
-                    ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
-                      let t8 =
-                        std::fs::DirEntry {
-                          name_value: for_item0,
-                          path_value: entry_path/0,
-                          file_type_value: t7
-                        } in
-                      let inline6 = @intrinsic(vec.push)(entries/0, t8) in
-                      jump loop0()
-                    } in
-                    let inline7 = std::fs::Metadata.file_type_value(x6) in
-                    jump inline_cont4(inline7)
-                  },
-                  Tag_1 => {
-                    let x7 = Result__std::fs::Metadata__std::fs::Error::Err._0(mtmp1) in
-                    let t9 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(x7) in
-                    t9
-                  },
-                }
-              } in
-              let inline8 = std::fs::query_metadata(entry_path/0, false) in
-              jump inline_cont3(inline8)
-            } in
-            let inline9 = @runtime(std.path.join)(path/0, for_item0) in
-            jump inline_cont2(inline9)
-          } else {
-            jump exit0()
-          }
+      join inline_cont2(
+        entries/0: Vec[std::fs::DirEntry]
+      ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+        let for_limit0 = @intrinsic(vec.len)(x1) in
+        let for_index0 = 0 in
+        join exit0() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+          let t3 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Ok(entries/0) in
+          t3
         } in
+        joinrec {
+          join loop0() -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+            let t4 = (for_index0 < for_limit0) in
+            if t4 {
+              let for_item0 = @intrinsic(vec.get)(x1, for_index0) in
+              let t5 = (for_index0 + 1) in
+              let _wild0 = for_index0 = t5 in
+              join inline_cont3(
+                entry_path/0: string
+              ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+                join inline_cont4(
+                  mtmp1: Result__std::fs::Metadata__std::fs::Error
+                ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+                  match mtmp1 {
+                    Tag_0 => {
+                      let x6 = Result__std::fs::Metadata__std::fs::Error::Ok._0(mtmp1) in
+                      join inline_cont5(
+                        t6: std::fs::FileType
+                      ) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+                        let t7 =
+                          std::fs::DirEntry {
+                            name_value: for_item0,
+                            path_value: entry_path/0,
+                            file_type_value: t6
+                          } in
+                        let inline6 = @intrinsic(vec.push)(entries/0, t7) in
+                        jump loop0()
+                      } in
+                      let inline7 = std::fs::Metadata.file_type_value(x6) in
+                      jump inline_cont5(inline7)
+                    },
+                    Tag_1 => {
+                      let x7 = Result__std::fs::Metadata__std::fs::Error::Err._0(mtmp1) in
+                      let t8 = Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(x7) in
+                      t8
+                    },
+                  }
+                } in
+                let inline8 = std::fs::query_metadata(entry_path/0, false) in
+                jump inline_cont4(inline8)
+              } in
+              let inline9 = @runtime(std.path.join)(path/0, for_item0) in
+              jump inline_cont3(inline9)
+            } else {
+              jump exit0()
+            }
+          } in
+        } in
+        jump loop0()
       } in
-      jump loop0()
+      let inline10 = @intrinsic(vec.new)() in
+      jump inline_cont2(inline10)
     }
   } in
-  let inline10 = @runtime(std.fs.read_dir.v2)(path/0) in
-  jump inline_cont0(inline10)
+  let inline11 = @runtime(std.fs.read_dir.v2)(path/0) in
+  jump inline_cont0(inline11)
 }
 
 fn std::fs::read_file(path/0: string) -> Result__string__string {
@@ -2658,6 +2664,11 @@ fn main() -> unit {
   jump inline_cont0(inline28)
 }
 
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  let t0 = @intrinsic(vec.new)() in
+  t0
+}
+
 fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {
   let t0 = @intrinsic(vec.with_capacity)(capacity/0) in
   t0
@@ -2821,6 +2832,11 @@ fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option_
       }
     },
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() -> Vec[std::fs::DirEntry] {
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(

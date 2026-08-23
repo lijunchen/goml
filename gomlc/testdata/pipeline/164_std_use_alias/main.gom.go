@@ -384,18 +384,18 @@ func _goml_m_std_p_internal_p_host_p_println(value__28 string) struct{} {
 }
 
 func main0() struct{} {
-    var t1585 *_goml_vec_string
-    var inline2715 *_goml_vec_string = _goml_m_std_p_internal_p_host_p_args()
-    t1585 = inline2715
-    var t1586 int
-    var inline2713 int = vec_len__Vec_6string(t1585)
-    t1586 = inline2713
-    var t1587 bool = t1586 > 0
-    var t1588 string
-    var inline2711 string = _goml_runtime_core_bool_to_string(t1587)
-    t1588 = inline2711
-    var inline2708 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1588)
-    _goml_m_std_p_internal_p_host_p_println(inline2708)
+    var t1582 *_goml_vec_string
+    var inline2724 *_goml_vec_string = _goml_m_std_p_internal_p_host_p_args()
+    t1582 = inline2724
+    var t1583 int
+    var inline2722 int = vec_len__Vec_6string(t1582)
+    t1583 = inline2722
+    var t1584 bool = t1583 > 0
+    var t1585 string
+    var inline2720 string = _goml_runtime_core_bool_to_string(t1584)
+    t1585 = inline2720
+    var inline2717 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1585)
+    _goml_m_std_p_internal_p_host_p_println(inline2717)
     return struct{}{}
 }
 

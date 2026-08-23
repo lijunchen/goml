@@ -3315,8 +3315,8 @@ fn main() -> unit {
         }
       }
     ) in
-  let empty_values/0 = @intrinsic(vec.from_array)([]) in
-  let empty_table/0 = @intrinsic(hashmap.from_array)([]) in
+  let empty_values/0 = inherent#Vec#Vec[isize]#new() in
+  let empty_table/0 = inherent#HashMap#HashMap[string,isize]#new() in
   let _wild17 =
     println(
       ((("" + "empty=") +

@@ -1,5 +1,5 @@
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#new__T_u0() }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -1882,7 +1882,7 @@ fn std::fs::read_dir_structured(path/0: string) -> Result__Vec[std::fs::DirEntry
                       }
                   } else {
                       {
-                        let entries/0 = @intrinsic(vec.from_array)([]) in
+                        let entries/0 = inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() in
                         let _wild0 =
                           {
                             let for_source0 = names/0 in
@@ -2277,6 +2277,10 @@ fn main() -> unit {
   }
 }
 
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
@@ -2456,6 +2460,10 @@ fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option_
       }
     }
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() -> Vec[std::fs::DirEntry] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(

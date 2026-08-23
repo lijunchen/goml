@@ -34,7 +34,7 @@ fn main() -> unit {
     ) in
   let _wild4 =
     println__T_string(trait_impl#ToString#bool#to_string(contains_any__T_isize(values/0, 3))) in
-  let empty/0 = @intrinsic(vec.from_array)([]) in
+  let empty/0 = inherent#Vec#Vec[T]#new__T_string() in
   println__T_string(
     trait_impl#ToString#bool#to_string(inherent#Vec#Vec[T]#contains__T_string(empty/0, "x"))
   )
@@ -111,6 +111,10 @@ fn inherent#Vec#Vec[T]#contains__T_Pair(self/0: Vec[Pair], expected/0: Pair) -> 
 
 fn contains_any__T_isize(values/0: Vec[isize], expected/0: isize) -> bool {
   inherent#Vec#Vec[T]#contains__T_isize(values/0, expected/0)
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  @intrinsic(vec.new)()
 }
 
 fn trait_impl#ToString#string#to_string(self/0: string) -> string {

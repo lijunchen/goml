@@ -4901,7 +4901,7 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[u8]#new() }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -5929,7 +5929,7 @@ fn std::ascii::escape_default(value/0: u8) -> string {
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
-  std::text::StringBuilder { values: @intrinsic(vec.from_array)([]) }
+  std::text::StringBuilder { values: inherent#Vec#Vec[u8]#new() }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
@@ -6315,7 +6315,7 @@ fn std::env::var_structured(name/0: string) -> Result[string, std::env::VarError
 }
 
 fn std::env::vars() -> Vec[(string, string)] {
-  let result/0 = @intrinsic(vec.from_array)([]) in
+  let result/0 = inherent#Vec#Vec[(string,string)]#new() in
   let _wild0 =
     {
       let for_source0 = std::internal::host::env_vars() in

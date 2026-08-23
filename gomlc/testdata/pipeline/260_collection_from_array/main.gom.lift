@@ -44,9 +44,9 @@ fn main() -> unit {
         ":") +
         inherent#isize#isize#to_string(@intrinsic(vec.get)(values/0, 2)))
     ) in
-  let empty/0 = @intrinsic(vec.from_array)([]) in
+  let empty/0 = inherent#Vec#Vec[T]#new__T_isize() in
   let _wild1 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(empty/0)) in
-  let inferred_empty/0 = @intrinsic(vec.from_array)([]) in
+  let inferred_empty/0 = inherent#Vec#Vec[T]#new__T_isize() in
   let _wild2 = println__T_isize(inherent#Vec#Vec[T]#len__T_isize(inferred_empty/0)) in
   let source/0 = [inherent#Ref#Ref[T]#new__T_isize(1), inherent#Ref#Ref[T]#new__T_isize(2)] in
   let copied/0 = @intrinsic(vec.from_array)(source/0) in
@@ -98,9 +98,9 @@ fn main() -> unit {
   let make_map/0 = @intrinsic(hashmap.from_array) in
   let words/0 = make_map/0([("a", 1), ("b", 2)]) in
   let _wild8 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(words/0)) in
-  let no_words/0 = @intrinsic(hashmap.from_array)([]) in
+  let no_words/0 = inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() in
   let _wild9 = println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(no_words/0)) in
-  let inferred_no_words/0 = @intrinsic(hashmap.from_array)([]) in
+  let inferred_no_words/0 = inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() in
   let _wild10 =
     println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(inferred_no_words/0)) in
   let pairs/0 = @intrinsic(vec.from_array)([(1, "a"), (2, "b")]) in
@@ -150,6 +150,10 @@ fn inherent#isize#isize#to_string(self/0: isize) -> string {
   __goml_builtin_int_to_string(self/0)
 }
 
+fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
+  @intrinsic(vec.new)()
+}
+
 fn println__T_isize(value/0: isize) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
@@ -179,6 +183,10 @@ fn inherent#HashMap#HashMap[K,V]#get__K_LoggedKey__V_isize(
 
 fn inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(self/0: HashMap[string, isize]) -> isize {
   @intrinsic(hashmap.len)(self/0)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() -> HashMap[string, isize] {
+  @intrinsic(hashmap.new)()
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_string__V_Vec[isize](

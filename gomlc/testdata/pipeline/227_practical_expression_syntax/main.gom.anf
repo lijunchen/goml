@@ -106,44 +106,42 @@ fn main() -> unit {
   let t43 = inherent#isize#isize#to_string(t42) in
   let t44 = ("" + t43) in
   let t45 = (t44 + ",") in
-  join inline_cont0(t46: isize) -> unit {
-    join inline_cont1(t47: string) -> unit {
-      let t48 = (t45 + t47) in
-      join inline_cont2(_wild7: unit) -> unit {
-        join inline_cont3(_wild8: unit) -> unit {
-          let t49 = ("" + "k") in
-          join inline_cont4(t50: isize) -> unit {
-            join inline_cont5(t51: string) -> unit {
-              let t52 = (t49 + t51) in
-              join inline_cont6(t53: isize) -> unit {
-                let t54 = (t52, t53) in
-                join inline_cont7(t55: isize) -> unit {
-                  let t56 = ("same", t55) in
-                  join inline_cont8(t57: isize) -> unit {
-                    let t58 = ("same", t57) in
-                    let t59 = [t54, t56, t58] in
-                    let table/0 = @intrinsic(hashmap.from_array)(t59) in
-                    join inline_cont9(t60: string) -> unit {
-                      join inline_cont10(_wild9: unit) -> unit {
-                        join inline_cont11(mtmp0: Option__isize) -> unit {
-                          join k0(jp0: string) -> unit {
-                            join inline_cont12(_wild10: unit) -> unit {
-                              let t61 = [] in
-                              let empty_values/0 = @intrinsic(vec.from_array)(t61) in
-                              let t62 = [] in
-                              let empty_table/0 = @intrinsic(hashmap.from_array)(t62) in
-                              let t63 = ("" + "empty=") in
-                              join inline_cont13(t64: isize) -> unit {
-                                join inline_cont14(t65: isize) -> unit {
-                                  let t66 = (t64 + t65) in
-                                  join inline_cont15(t67: string) -> unit {
-                                    let t68 = (t63 + t67) in
-                                    let t69 = (t68 + " {ok}") in
-                                    let inline0 = trait_impl#ToString#string#to_string(t69) in
+  let t46 = inherent#Vec#Vec[T]#get__T_isize(values/0, 1) in
+  let t47 = inherent#isize#isize#to_string(t46) in
+  let t48 = (t45 + t47) in
+  join inline_cont0(_wild7: unit) -> unit {
+    join inline_cont1(_wild8: unit) -> unit {
+      let t49 = ("" + "k") in
+      join inline_cont2(t50: isize) -> unit {
+        join inline_cont3(t51: string) -> unit {
+          let t52 = (t49 + t51) in
+          join inline_cont4(t53: isize) -> unit {
+            let t54 = (t52, t53) in
+            join inline_cont5(t55: isize) -> unit {
+              let t56 = ("same", t55) in
+              join inline_cont6(t57: isize) -> unit {
+                let t58 = ("same", t57) in
+                let t59 = [t54, t56, t58] in
+                let table/0 = @intrinsic(hashmap.from_array)(t59) in
+                join inline_cont7(t60: string) -> unit {
+                  join inline_cont8(_wild9: unit) -> unit {
+                    join inline_cont9(mtmp0: Option__isize) -> unit {
+                      join k0(jp0: string) -> unit {
+                        join inline_cont10(_wild10: unit) -> unit {
+                          join inline_cont11(empty_values/0: Vec[isize]) -> unit {
+                            join inline_cont12(empty_table/0: HashMap[string, isize]) -> unit {
+                              let t61 = ("" + "empty=") in
+                              join inline_cont13(t62: isize) -> unit {
+                                join inline_cont14(t63: isize) -> unit {
+                                  let t64 = (t62 + t63) in
+                                  join inline_cont15(t65: string) -> unit {
+                                    let t66 = (t61 + t65) in
+                                    let t67 = (t66 + " {ok}") in
+                                    let inline0 = trait_impl#ToString#string#to_string(t67) in
                                     let inline1 = @runtime(core.string_println)(inline0) in
                                     ()
                                   } in
-                                  let inline2 = __goml_builtin_int_to_string(t66) in
+                                  let inline2 = __goml_builtin_int_to_string(t64) in
                                   jump inline_cont15(inline2)
                                 } in
                                 let inline3 = @intrinsic(hashmap.len)(empty_table/0) in
@@ -152,77 +150,76 @@ fn main() -> unit {
                               let inline4 = @intrinsic(vec.len)(empty_values/0) in
                               jump inline_cont13(inline4)
                             } in
-                            let inline5 = trait_impl#ToString#string#to_string(jp0) in
-                            let inline6 = @runtime(core.string_println)(inline5) in
-                            jump inline_cont12(())
+                            let inline5 = @intrinsic(hashmap.new)() in
+                            jump inline_cont12(inline5)
                           } in
-                          match mtmp0 {
-                            Tag_0 => {
-                              jump k0("missing")
-                            },
-                            Tag_1 => {
-                              let x0 = Option__isize::Some._0(mtmp0) in
-                              let inline7 = __goml_builtin_int_to_string(x0) in
-                              jump k0(inline7)
-                            },
-                          }
+                          let inline6 = @intrinsic(vec.new)() in
+                          jump inline_cont11(inline6)
                         } in
-                        let inline8 = "same" in
-                        let inline9 = @intrinsic(hashmap.get)(table/0, inline8) in
-                        jump inline_cont11(inline9)
+                        let inline7 = trait_impl#ToString#string#to_string(jp0) in
+                        let inline8 = @runtime(core.string_println)(inline7) in
+                        jump inline_cont10(())
                       } in
-                      let inline10 = trait_impl#ToString#string#to_string(t60) in
-                      let inline11 = @runtime(core.string_println)(inline10) in
-                      jump inline_cont10(())
+                      match mtmp0 {
+                        Tag_0 => {
+                          jump k0("missing")
+                        },
+                        Tag_1 => {
+                          let x0 = Option__isize::Some._0(mtmp0) in
+                          let inline9 = __goml_builtin_int_to_string(x0) in
+                          jump k0(inline9)
+                        },
+                      }
                     } in
-                    let inline12 = @intrinsic(ref.get)(log/0) in
-                    jump inline_cont9(inline12)
+                    let inline10 = "same" in
+                    let inline11 = @intrinsic(hashmap.get)(table/0, inline10) in
+                    jump inline_cont9(inline11)
                   } in
-                  let inline13 = "B" in
-                  let inline14 = 2 in
-                  let inline15 = inherent#Ref#Ref[T]#get__T_string(log/0) in
-                  let inline16 = (inline15 + inline13) in
-                  let inline17 = inherent#Ref#Ref[T]#set__T_string(log/0, inline16) in
-                  jump inline_cont8(inline14)
+                  let inline12 = trait_impl#ToString#string#to_string(t60) in
+                  let inline13 = @runtime(core.string_println)(inline12) in
+                  jump inline_cont8(())
                 } in
-                let inline18 = "A" in
-                let inline19 = 1 in
-                let inline20 = inherent#Ref#Ref[T]#get__T_string(log/0) in
-                let inline21 = (inline20 + inline18) in
-                let inline22 = inherent#Ref#Ref[T]#set__T_string(log/0, inline21) in
-                jump inline_cont7(inline19)
+                let inline14 = @intrinsic(ref.get)(log/0) in
+                jump inline_cont7(inline14)
               } in
-              let inline23 = "V" in
-              let inline24 = 11 in
-              let inline25 = inherent#Ref#Ref[T]#get__T_string(log/0) in
-              let inline26 = (inline25 + inline23) in
-              let inline27 = inherent#Ref#Ref[T]#set__T_string(log/0, inline26) in
-              jump inline_cont6(inline24)
+              let inline15 = "B" in
+              let inline16 = 2 in
+              let inline17 = inherent#Ref#Ref[T]#get__T_string(log/0) in
+              let inline18 = (inline17 + inline15) in
+              let inline19 = inherent#Ref#Ref[T]#set__T_string(log/0, inline18) in
+              jump inline_cont6(inline16)
             } in
-            let inline28 = __goml_builtin_int_to_string(t50) in
-            jump inline_cont5(inline28)
+            let inline20 = "A" in
+            let inline21 = 1 in
+            let inline22 = inherent#Ref#Ref[T]#get__T_string(log/0) in
+            let inline23 = (inline22 + inline20) in
+            let inline24 = inherent#Ref#Ref[T]#set__T_string(log/0, inline23) in
+            jump inline_cont5(inline21)
           } in
-          let inline29 = "K" in
-          let inline30 = 1 in
-          let inline31 = inherent#Ref#Ref[T]#get__T_string(log/0) in
-          let inline32 = (inline31 + inline29) in
-          let inline33 = inherent#Ref#Ref[T]#set__T_string(log/0, inline32) in
-          jump inline_cont4(inline30)
+          let inline25 = "V" in
+          let inline26 = 11 in
+          let inline27 = inherent#Ref#Ref[T]#get__T_string(log/0) in
+          let inline28 = (inline27 + inline25) in
+          let inline29 = inherent#Ref#Ref[T]#set__T_string(log/0, inline28) in
+          jump inline_cont4(inline26)
         } in
-        let inline34 = "" in
-        let inline35 = @intrinsic(ref.set)(log/0, inline34) in
-        jump inline_cont3(())
+        let inline30 = __goml_builtin_int_to_string(t50) in
+        jump inline_cont3(inline30)
       } in
-      let inline36 = trait_impl#ToString#string#to_string(t48) in
-      let inline37 = @runtime(core.string_println)(inline36) in
-      jump inline_cont2(())
+      let inline31 = "K" in
+      let inline32 = 1 in
+      let inline33 = inherent#Ref#Ref[T]#get__T_string(log/0) in
+      let inline34 = (inline33 + inline31) in
+      let inline35 = inherent#Ref#Ref[T]#set__T_string(log/0, inline34) in
+      jump inline_cont2(inline32)
     } in
-    let inline38 = __goml_builtin_int_to_string(t46) in
-    jump inline_cont1(inline38)
+    let inline36 = "" in
+    let inline37 = @intrinsic(ref.set)(log/0, inline36) in
+    jump inline_cont1(())
   } in
-  let inline39 = 1 in
-  let inline40 = @intrinsic(vec.get)(values/0, inline39) in
-  jump inline_cont0(inline40)
+  let inline38 = trait_impl#ToString#string#to_string(t48) in
+  let inline39 = @runtime(core.string_println)(inline38) in
+  jump inline_cont0(())
 }
 
 fn inherent#Ref#Ref[T]#get__T_string(self/0: Ref[string]) -> string {
@@ -264,6 +261,16 @@ fn inherent#HashMap#HashMap[K,V]#get__K_string__V_isize(
   key/0: string
 ) -> Option__isize {
   let t0 = @intrinsic(hashmap.get)(self/0, key/0) in
+  t0
+}
+
+fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
+  let t0 = @intrinsic(vec.new)() in
+  t0
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() -> HashMap[string, isize] {
+  let t0 = @intrinsic(hashmap.new)() in
   t0
 }
 

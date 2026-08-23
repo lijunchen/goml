@@ -3050,6 +3050,10 @@ fn trait_impl#IntoIterator#I#into_iter[I](self/0: I) -> I {
   self/0
 }
 
+fn inherent#Vec#Vec[T]#new[T]() -> Vec[T] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#push[T](self/0: Vec[T], elem/0: T) -> unit {
   @intrinsic(vec.push)(self/0, elem/0)
 }
@@ -3192,6 +3196,10 @@ fn inherent#FrozenVec#FrozenVec[T]#iter[T](self/0: FrozenVec[T]) -> FnIterator[T
   inherent#Vec#Vec[T]#iter(FrozenVec.values(self/0))
 }
 
+fn inherent#OnceCell#OnceCell[T]#new[T]() -> OnceCell[T] {
+  @intrinsic(once_cell.new)()
+}
+
 fn trait_impl#IntoIterator#Vec[T]#into_iter[T](self/0: Vec[T]) -> FnIterator[T] {
   inherent#Vec#Vec[T]#iter(self/0)
 }
@@ -3229,6 +3237,10 @@ fn trait_impl#IntoIterator#Slice[T]#into_iter[T](self/0: Slice[T]) -> FnIterator
   inherent#Slice#Slice[T]#iter(self/0)
 }
 
+fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
+  @intrinsic(hashmap.new)()
+}
+
 fn inherent#HashMap#HashMap[K,V]#get[K, V](self/0: HashMap[K, V], key/0: K) -> Option[V] {
   @intrinsic(hashmap.get)(self/0, key/0)
 }
@@ -3241,8 +3253,16 @@ fn inherent#HashMap#HashMap[K,V]#contains[K, V](self/0: HashMap[K, V], key/0: K)
   @intrinsic(hashmap.contains)(self/0, key/0)
 }
 
+fn inherent#Ref#Ref[T]#new[T](value/0: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/0)
+}
+
 fn inherent#Ref#Ref[T]#get[T](self/0: Ref[T]) -> T {
   @intrinsic(ref.get)(self/0)
+}
+
+fn inherent#Channel#Channel[T]#new[T](capacity/0: isize) -> Channel[T] {
+  @intrinsic(channel.new)(capacity/0)
 }
 
 fn trait_impl#ToString#usize#to_string(self/0: usize) -> string {
@@ -3420,6 +3440,6 @@ fn main() -> unit {
       )
     ) in
   let _wild4 = println(trait_call[ToString::to_string](contains_any(values/0, 3))) in
-  let empty/0 = @intrinsic(vec.from_array)([]) in
+  let empty/0 = inherent#Vec#Vec[string]#new() in
   println(trait_call[ToString::to_string](inherent#Vec#Vec[string]#contains(empty/0, "x")))
 }

@@ -39,55 +39,57 @@ fn main() -> unit {
                   join inline_cont8(t13: bool) -> unit {
                     join inline_cont9(t14: string) -> unit {
                       join inline_cont10(_wild4: unit) -> unit {
-                        let t15 = [] in
-                        let empty/0 = @intrinsic(vec.from_array)(t15) in
-                        let t16 = inherent#Vec#Vec[T]#contains__T_string(empty/0, "x") in
-                        join inline_cont11(t17: string) -> unit {
-                          let inline0 = trait_impl#ToString#string#to_string(t17) in
-                          let inline1 = @runtime(core.string_println)(inline0) in
-                          ()
+                        join inline_cont11(empty/0: Vec[string]) -> unit {
+                          let t15 = inherent#Vec#Vec[T]#contains__T_string(empty/0, "x") in
+                          join inline_cont12(t16: string) -> unit {
+                            let inline0 = trait_impl#ToString#string#to_string(t16) in
+                            let inline1 = @runtime(core.string_println)(inline0) in
+                            ()
+                          } in
+                          let inline2 = @runtime(core.bool_to_string)(t15) in
+                          jump inline_cont12(inline2)
                         } in
-                        let inline2 = @runtime(core.bool_to_string)(t16) in
-                        jump inline_cont11(inline2)
+                        let inline3 = @intrinsic(vec.new)() in
+                        jump inline_cont11(inline3)
                       } in
-                      let inline3 = trait_impl#ToString#string#to_string(t14) in
-                      let inline4 = @runtime(core.string_println)(inline3) in
+                      let inline4 = trait_impl#ToString#string#to_string(t14) in
+                      let inline5 = @runtime(core.string_println)(inline4) in
                       jump inline_cont10(())
                     } in
-                    let inline5 = @runtime(core.bool_to_string)(t13) in
-                    jump inline_cont9(inline5)
+                    let inline6 = @runtime(core.bool_to_string)(t13) in
+                    jump inline_cont9(inline6)
                   } in
-                  let inline6 = 3 in
-                  let inline7 = inherent#Vec#Vec[T]#contains__T_isize(values/0, inline6) in
-                  jump inline_cont8(inline7)
+                  let inline7 = 3 in
+                  let inline8 = inherent#Vec#Vec[T]#contains__T_isize(values/0, inline7) in
+                  jump inline_cont8(inline8)
                 } in
-                let inline8 = trait_impl#ToString#string#to_string(t12) in
-                let inline9 = @runtime(core.string_println)(inline8) in
+                let inline9 = trait_impl#ToString#string#to_string(t12) in
+                let inline10 = @runtime(core.string_println)(inline9) in
                 jump inline_cont7(())
               } in
-              let inline10 = @runtime(core.bool_to_string)(t11) in
-              jump inline_cont6(inline10)
+              let inline11 = @runtime(core.bool_to_string)(t11) in
+              jump inline_cont6(inline11)
             } in
-            let inline11 = trait_impl#ToString#string#to_string(t7) in
-            let inline12 = @runtime(core.string_println)(inline11) in
+            let inline12 = trait_impl#ToString#string#to_string(t7) in
+            let inline13 = @runtime(core.string_println)(inline12) in
             jump inline_cont5(())
           } in
-          let inline13 = @runtime(core.bool_to_string)(t6) in
-          jump inline_cont4(inline13)
+          let inline14 = @runtime(core.bool_to_string)(t6) in
+          jump inline_cont4(inline14)
         } in
-        let inline14 = trait_impl#ToString#string#to_string(t4) in
-        let inline15 = @runtime(core.string_println)(inline14) in
+        let inline15 = trait_impl#ToString#string#to_string(t4) in
+        let inline16 = @runtime(core.string_println)(inline15) in
         jump inline_cont3(())
       } in
-      let inline16 = @runtime(core.bool_to_string)(t3) in
-      jump inline_cont2(inline16)
+      let inline17 = @runtime(core.bool_to_string)(t3) in
+      jump inline_cont2(inline17)
     } in
-    let inline17 = trait_impl#ToString#string#to_string(t2) in
-    let inline18 = @runtime(core.string_println)(inline17) in
+    let inline18 = trait_impl#ToString#string#to_string(t2) in
+    let inline19 = @runtime(core.string_println)(inline18) in
     jump inline_cont1(())
   } in
-  let inline19 = @runtime(core.bool_to_string)(t1) in
-  jump inline_cont0(inline19)
+  let inline20 = @runtime(core.bool_to_string)(t1) in
+  jump inline_cont0(inline20)
 }
 
 fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
@@ -236,6 +238,11 @@ fn inherent#Vec#Vec[T]#contains__T_Pair(self/0: Vec[Pair], expected/0: Pair) -> 
 
 fn contains_any__T_isize(values/0: Vec[isize], expected/0: isize) -> bool {
   let t0 = inherent#Vec#Vec[T]#contains__T_isize(values/0, expected/0) in
+  t0
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  let t0 = @intrinsic(vec.new)() in
   t0
 }
 

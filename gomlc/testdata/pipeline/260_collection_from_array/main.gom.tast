@@ -50,10 +50,9 @@ fn main() -> unit {
         ":" +
         (isize::to_string : (isize) -> string)((values/10 : Vec[isize])[2])
     );
-    let empty/11: Vec[isize] = (@intrinsic(vec.from_array) : ([isize; 0]) -> Vec[isize])([]);
+    let empty/11: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
     (println : (isize) -> unit)((Vec[isize]::len : (Vec[isize]) -> isize)((empty/11 : Vec[isize])));
-    let inferred_empty/12: Vec[isize] =
-      (@intrinsic(vec.from_array) : ([isize; 0]) -> Vec[isize])([]);
+    let inferred_empty/12: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
     (println : (isize) -> unit)(
       (Vec[isize]::len : (Vec[isize]) -> isize)((inferred_empty/12 : Vec[isize]))
     );
@@ -118,14 +117,14 @@ fn main() -> unit {
       )
     );
     let no_words/20: HashMap[string, isize] =
-      (@intrinsic(hashmap.from_array) : ([(string, isize); 0]) -> HashMap[string, isize])([]);
+      (HashMap[string, isize]::new : () -> HashMap[string, isize])();
     (println : (isize) -> unit)(
       (HashMap[string, isize]::len : (HashMap[string, isize]) -> isize)(
         (no_words/20 : HashMap[string, isize])
       )
     );
     let inferred_no_words/21: HashMap[string, isize] =
-      (@intrinsic(hashmap.from_array) : ([(string, isize); 0]) -> HashMap[string, isize])([]);
+      (HashMap[string, isize]::new : () -> HashMap[string, isize])();
     (println : (isize) -> unit)(
       (HashMap[string, isize]::len : (HashMap[string, isize]) -> isize)(
         (inferred_no_words/21 : HashMap[string, isize])

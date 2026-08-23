@@ -384,7 +384,7 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#new__T_u0() }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -1206,7 +1206,7 @@ fn std::ascii::escape_default(value/0: u8) -> string {
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
-  std::text::StringBuilder { values: @intrinsic(vec.from_array)([]) }
+  std::text::StringBuilder { values: inherent#Vec#Vec[T]#new__T_u0() }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
@@ -1500,7 +1500,7 @@ fn std::env::var_structured(name/0: string) -> Result__string__std::env::VarErro
 }
 
 fn std::env::vars() -> Vec[(string, string)] {
-  let result/0 = @intrinsic(vec.from_array)([]) in
+  let result/0 = inherent#Vec#Vec[T]#new__T_(string,string)() in
   let _wild0 =
     let for_source0 = std::internal::host::env_vars() in
     let for_limit0 = @intrinsic(vec.len)(for_source0) in
@@ -1596,6 +1596,10 @@ fn main() -> unit {
   std::io::println__T_string(
     trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(std::env::args()) > 0))
   )
+}
+
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {
@@ -2342,6 +2346,10 @@ fn inherent#string#string#to_ascii_uppercase(self/0: string) -> string {
   let x1 = mtmp0.1 in
   let result/0 = x1 in
   result/0
+}
+
+fn inherent#Vec#Vec[T]#new__T_(string,string)() -> Vec[(string, string)] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,string)(

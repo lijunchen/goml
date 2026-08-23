@@ -3231,9 +3231,9 @@ fn main() -> unit {
         ":") +
         inherent#isize#isize#to_string(@intrinsic(vec.get)(values/0, 2)))
     ) in
-  let empty/0 = @intrinsic(vec.from_array)([]) in
+  let empty/0 = inherent#Vec#Vec[isize]#new() in
   let _wild1 = println(inherent#Vec#Vec[isize]#len(empty/0)) in
-  let inferred_empty/0 = @intrinsic(vec.from_array)([]) in
+  let inferred_empty/0 = inherent#Vec#Vec[isize]#new() in
   let _wild2 = println(inherent#Vec#Vec[isize]#len(inferred_empty/0)) in
   let source/0 = [inherent#Ref#Ref[isize]#new(1), inherent#Ref#Ref[isize]#new(2)] in
   let copied/0 = @intrinsic(vec.from_array)(source/0) in
@@ -3290,9 +3290,9 @@ fn main() -> unit {
   let make_map/0 = @intrinsic(hashmap.from_array) in
   let words/0 = make_map/0([("a", 1), ("b", 2)]) in
   let _wild8 = println(inherent#HashMap#HashMap[string,isize]#len(words/0)) in
-  let no_words/0 = @intrinsic(hashmap.from_array)([]) in
+  let no_words/0 = inherent#HashMap#HashMap[string,isize]#new() in
   let _wild9 = println(inherent#HashMap#HashMap[string,isize]#len(no_words/0)) in
-  let inferred_no_words/0 = @intrinsic(hashmap.from_array)([]) in
+  let inferred_no_words/0 = inherent#HashMap#HashMap[string,isize]#new() in
   let _wild10 = println(inherent#HashMap#HashMap[string,isize]#len(inferred_no_words/0)) in
   let pairs/0 = @intrinsic(vec.from_array)([(1, "a"), (2, "b")]) in
   let nested/0 =

@@ -3293,7 +3293,7 @@ fn trait_impl#Eq#Ordering#__marker() -> unit {
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[u8]#new() }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -5184,7 +5184,7 @@ fn std::fs::read_dir_structured(path/0: string) -> Result[Vec[std::fs::DirEntry]
                       }
                   } else {
                       {
-                        let entries/0 = @intrinsic(vec.from_array)([]) in
+                        let entries/0 = inherent#Vec#Vec[std::fs::DirEntry]#new() in
                         let _wild0 =
                           {
                             let for_source0 = names/0 in

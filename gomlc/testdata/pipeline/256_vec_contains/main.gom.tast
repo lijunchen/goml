@@ -44,7 +44,7 @@ fn main() -> unit {
         (contains_any : (Vec[isize], isize) -> bool)((values/4 : Vec[isize]), 3)
       )
     );
-    let empty/7: Vec[string] = (@intrinsic(vec.from_array) : ([string; 0]) -> Vec[string])([]);
+    let empty/7: Vec[string] = (Vec[string]::new : () -> Vec[string])();
     (println : (string) -> unit)(
       (ToString::to_string : (bool) -> string)(
         (Vec[string]::contains : (Vec[string], string) -> bool)((empty/7 : Vec[string]), "x")

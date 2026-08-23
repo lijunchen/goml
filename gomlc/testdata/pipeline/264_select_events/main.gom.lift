@@ -566,7 +566,7 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#new__T_u0() }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -1802,6 +1802,10 @@ fn inherent#Channel#Channel[T]#new__T_unit(capacity/0: isize) -> Channel[unit] {
 
 fn inherent#Channel#Channel[T]#send__T_unit(self/0: Channel[unit], value/0: unit) -> unit {
   @intrinsic(channel.send)(self/0, value/0)
+}
+
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {

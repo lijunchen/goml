@@ -4206,7 +4206,7 @@ fn std::task::join_all_results(tasks/0: Vec[std::task::Task[Result[T, E]]]) -> R
     inherent#Vec#Vec[T]#with_capacity(
       inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/0)
     ) in
-  let errors/0 = @intrinsic(vec.from_array)([]) in
+  let errors/0 = inherent#Vec#Vec[E]#new() in
   let _wild0 =
     {
       let for_source0 = tasks/0 in
@@ -4266,7 +4266,7 @@ fn std::task::join_all_indexed_results(tasks/0: Vec[std::task::Task[Result[T, E]
     inherent#Vec#Vec[T]#with_capacity(
       inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/0)
     ) in
-  let errors/0 = @intrinsic(vec.from_array)([]) in
+  let errors/0 = inherent#Vec#Vec[std::task::IndexedError[E]]#new() in
   let _wild0 =
     {
       let for_index0 = 0 in
@@ -4545,7 +4545,7 @@ fn std::task::for_each_concurrent(
         } in
       let _wild12 = inherent#Channel#Channel[(isize,T)]#close(work/0) in
       let _wild13 = inherent#Channel#Channel[(isize,Result[unit,E])]#close(results/0) in
-      let errors/0 = @intrinsic(vec.from_array)([]) in
+      let errors/0 = inherent#Vec#Vec[std::task::IndexedError[E]]#new() in
       let _wild14 =
         {
           let for_index2 = 0 in
@@ -5037,7 +5037,7 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[u8]#new() }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(

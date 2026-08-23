@@ -41,7 +41,7 @@ fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> u
 }
 
 fn main() -> unit {
-  let _wild0 = check_utf0(@intrinsic(vec.from_array)([]), true) in
+  let _wild0 = check_utf0(inherent#Vec#Vec[T]#new__T_u0(), true) in
   let _wild1 = check_utf0(@intrinsic(vec.from_array)([0]), true) in
   let _wild2 = check_utf0(@intrinsic(vec.from_array)([127]), true) in
   let _wild3 = check_scalar(@intrinsic(vec.from_array)([194, 128]), 128, 2) in
@@ -119,6 +119,10 @@ fn inherent#string#string#decode_at(self/0: string, index/0: isize) -> Option__(
   } else {
       Option__(char,isize)::None
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  @intrinsic(vec.new)()
 }
 
 fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {

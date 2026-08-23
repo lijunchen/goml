@@ -148,7 +148,7 @@ fn main() -> unit {
         )
       )
     );
-    let empty/20: Vec[isize] = (@intrinsic(vec.from_array) : ([isize; 0]) -> Vec[isize])([]);
+    let empty/20: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
     (println : (string) -> unit)(
       (Vec[isize]::join : (Vec[isize], string) -> string)((empty/20 : Vec[isize]), ",")
     );

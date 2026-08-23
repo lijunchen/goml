@@ -119,9 +119,9 @@ fn main() -> unit {
           Option::None => "missing",
       }
     );
-    let empty_values/18: Vec[isize] = (@intrinsic(vec.from_array) : ([isize; 0]) -> Vec[isize])([]);
+    let empty_values/18: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
     let empty_table/19: HashMap[string, isize] =
-      (@intrinsic(hashmap.from_array) : ([(string, isize); 0]) -> HashMap[string, isize])([]);
+      (HashMap[string, isize]::new : () -> HashMap[string, isize])();
     (println : (string) -> unit)(
       "" + "empty=" +
         (isize::to_string : (isize) -> string)(

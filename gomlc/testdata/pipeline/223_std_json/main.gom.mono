@@ -384,7 +384,7 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: @intrinsic(vec.from_array)([]) }
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#new__T_u0() }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -2683,7 +2683,7 @@ fn std::serde::variant_parts(
         {
           let name/0 = x0 in
           Result__(string,isize,Vec[(string,std::serde::Value)])__string::Ok(
-            (name/0, 0, @intrinsic(vec.from_array)([]))
+            (name/0, 0, inherent#Vec#Vec[T]#new__T_(string,std::serde::Value)())
           )
         }
       }
@@ -2841,7 +2841,7 @@ fn std::serde::value_deserializer(value/0: std::serde::Value) -> std::serde::Val
     current: inherent#Ref#Ref[T]#new__T_Option[std::serde::Value](
       Option__std::serde::Value::Some(value/0)
     ),
-    frames: @intrinsic(vec.from_array)([])
+    frames: inherent#Vec#Vec[T]#new__T_std::serde::ValueDeserializeFrame()
   }
 }
 
@@ -6033,7 +6033,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#error(
 
 fn std::serde::value_serializer() -> std::serde::ValueSerializer {
   std::serde::ValueSerializer {
-    frames: @intrinsic(vec.from_array)([]),
+    frames: inherent#Vec#Vec[T]#new__T_std::serde::ValueSerializeFrame(),
     result: inherent#Ref#Ref[T]#new__T_Option[std::serde::Value](Option__std::serde::Value::None)
   }
 }
@@ -6607,7 +6607,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_optional(
   std::serde::begin_value_frame(
     self/0,
     std::serde::ValueSerializeFrame::Optional(
-      @intrinsic(vec.from_array)([]),
+      inherent#Vec#Vec[T]#new__T_std::serde::Value(),
       present/0,
       inherent#Ref#Ref[T]#new__T_bool(present/0)
     )
@@ -7834,7 +7834,7 @@ fn std::ascii::escape_default(value/0: u8) -> string {
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
-  std::text::StringBuilder { values: @intrinsic(vec.from_array)([]) }
+  std::text::StringBuilder { values: inherent#Vec#Vec[T]#new__T_u0() }
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
@@ -8286,7 +8286,7 @@ fn std::json::expected_json_value(
 fn std::json::json_deserializer(input/0: string) -> std::json::JsonDeserializer {
   std::json::JsonDeserializer {
     parser: std::json::json_parser(input/0),
-    frames: @intrinsic(vec.from_array)([])
+    frames: inherent#Vec#Vec[T]#new__T_std::json::JsonDeserializeFrame()
   }
 }
 
@@ -10390,7 +10390,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_b
         },
       }
     } in
-  let values/0 = @intrinsic(vec.from_array)([]) in
+  let values/0 = inherent#Vec#Vec[T]#new__T_u0() in
   let first/0 = true in
   let _wild1 =
     while true {
@@ -13657,7 +13657,7 @@ fn std::json::parse_json_array(value/0: std::json::JsonParser) -> Result__std::j
       (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(value/0)) + 1)
     ) in
   let _wild1 = std::json::skip_json_whitespace(value/0) in
-  let result/0 = @intrinsic(vec.from_array)([]) in
+  let result/0 = inherent#Vec#Vec[T]#new__T_std::json::Value() in
   let _wild2 =
     if if (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(value/0)) <
       inherent#string#string#byte_len(std::json::JsonParser.input(value/0))) {
@@ -13773,7 +13773,7 @@ fn std::json::parse_json_object(
       (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(value/0)) + 1)
     ) in
   let _wild1 = std::json::skip_json_whitespace(value/0) in
-  let result/0 = @intrinsic(vec.from_array)([]) in
+  let result/0 = inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() in
   let _wild2 =
     if if (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(value/0)) <
       inherent#string#string#byte_len(std::json::JsonParser.input(value/0))) {
@@ -14578,7 +14578,7 @@ fn std::json::object(fields/0: Vec[(string, std::json::Value)]) -> std::json::Va
 fn std::json::json_serializer() -> std::json::JsonSerializer {
   std::json::JsonSerializer {
     builder: inherent#std::text::StringBuilder#std::text::StringBuilder#new(),
-    frames: @intrinsic(vec.from_array)([]),
+    frames: inherent#Vec#Vec[T]#new__T_std::json::JsonSerializeFrame(),
     root_written: inherent#Ref#Ref[T]#new__T_bool(false)
   }
 }
@@ -17243,6 +17243,10 @@ fn main() -> unit {
   println__T_string(std::json::encode(value/0))
 }
 
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
@@ -17492,6 +17496,10 @@ fn inherent#isize#isize#to_string(self/0: isize) -> string {
   __goml_builtin_int_to_string(self/0)
 }
 
+fn inherent#Vec#Vec[T]#new__T_(string,std::serde::Value)() -> Vec[(string, std::serde::Value)] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#len__T_std::serde::Value(self/0: Vec[std::serde::Value]) -> isize {
   @intrinsic(vec.len)(self/0)
 }
@@ -17513,6 +17521,12 @@ fn inherent#Ref#Ref[T]#new__T_Option[std::serde::Value](value/0: Option__std::se
   Option__std::serde::Value
 ] {
   @intrinsic(ref.new)(value/0)
+}
+
+fn inherent#Vec#Vec[T]#new__T_std::serde::ValueDeserializeFrame() -> Vec[
+  std::serde::ValueDeserializeFrame
+] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
@@ -17663,6 +17677,12 @@ fn std::serde::trait_default#Deserializer#error__Self_std::serde::ValueDeseriali
   message/0
 }
 
+fn inherent#Vec#Vec[T]#new__T_std::serde::ValueSerializeFrame() -> Vec[
+  std::serde::ValueSerializeFrame
+] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
   self/0: Vec[std::serde::ValueSerializeFrame]
 ) -> bool {
@@ -17727,6 +17747,10 @@ fn inherent#Vec#Vec[T]#with_capacity__T_std::serde::Value(capacity/0: isize) -> 
   std::serde::Value
 ] {
   @intrinsic(vec.with_capacity)(capacity/0)
+}
+
+fn inherent#Vec#Vec[T]#new__T_std::serde::Value() -> Vec[std::serde::Value] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#pop__T_std::serde::ValueSerializeFrame(
@@ -18716,6 +18740,12 @@ fn inherent#string#string#contains(self/0: string, expected/0: string) -> bool {
   }
 }
 
+fn inherent#Vec#Vec[T]#new__T_std::json::JsonDeserializeFrame() -> Vec[
+  std::json::JsonDeserializeFrame
+] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#is_empty__T_std::json::JsonDeserializeFrame(
   self/0: Vec[std::json::JsonDeserializeFrame]
 ) -> bool {
@@ -18790,6 +18820,10 @@ fn char_from_u32(value/0: u32) -> Option__char {
   __goml_builtin_char_from_uint0(value/0)
 }
 
+fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#push__T_std::json::Value(
   self/0: Vec[std::json::Value],
   elem/0: std::json::Value
@@ -18797,11 +18831,21 @@ fn inherent#Vec#Vec[T]#push__T_std::json::Value(
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
+fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::json::Value)] {
+  @intrinsic(vec.new)()
+}
+
 fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
   self/0: Vec[(string, std::json::Value)],
   elem/0: (string, std::json::Value)
 ) -> unit {
   @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Vec#Vec[T]#new__T_std::json::JsonSerializeFrame() -> Vec[
+  std::json::JsonSerializeFrame
+] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(

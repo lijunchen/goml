@@ -861,7 +861,7 @@ fn main() -> unit {
         inherent#FrozenVec#FrozenVec[T]#contains__T_isize(frozen/0, 3)
       )
     ) in
-  let empty/0 = @intrinsic(vec.from_array)([]) in
+  let empty/0 = inherent#Vec#Vec[T]#new__T_isize() in
   let _wild18 = println__T_string(inherent#Vec#Vec[T]#join__T_isize(empty/0, ",")) in
   println__T_string(
     trait_impl#ToString#bool#to_string(
@@ -2232,6 +2232,10 @@ fn inherent#FrozenVec#FrozenVec[T]#contains__T_isize(
         ()
     } in
   false
+}
+
+fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
+  @intrinsic(vec.new)()
 }
 
 fn inherent#Option#Option[T]#is_none__T_isize(self/0: Option__isize) -> bool {

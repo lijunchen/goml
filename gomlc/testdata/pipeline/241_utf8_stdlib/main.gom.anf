@@ -79,86 +79,85 @@ fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> u
 }
 
 fn main() -> unit {
-  let t0 = [] in
-  let t1 = @intrinsic(vec.from_array)(t0) in
-  let _wild0 = check_utf0(t1, true) in
-  let t2 = [0] in
-  let t3 = @intrinsic(vec.from_array)(t2) in
-  let _wild1 = check_utf0(t3, true) in
-  let t4 = [127] in
-  let t5 = @intrinsic(vec.from_array)(t4) in
-  let _wild2 = check_utf0(t5, true) in
-  let t6 = [194, 128] in
-  let t7 = @intrinsic(vec.from_array)(t6) in
-  let _wild3 = check_scalar(t7, 128, 2) in
-  let t8 = [223, 191] in
-  let t9 = @intrinsic(vec.from_array)(t8) in
-  let _wild4 = check_scalar(t9, 2047, 2) in
-  let t10 = [224, 160, 128] in
-  let t11 = @intrinsic(vec.from_array)(t10) in
-  let _wild5 = check_scalar(t11, 2048, 3) in
-  let t12 = [237, 159, 191] in
-  let t13 = @intrinsic(vec.from_array)(t12) in
-  let _wild6 = check_scalar(t13, 55295, 3) in
-  let t14 = [238, 128, 128] in
-  let t15 = @intrinsic(vec.from_array)(t14) in
-  let _wild7 = check_scalar(t15, 57344, 3) in
-  let t16 = [239, 191, 189] in
-  let t17 = @intrinsic(vec.from_array)(t16) in
-  let _wild8 = check_scalar(t17, 65533, 3) in
-  let t18 = [239, 191, 191] in
-  let t19 = @intrinsic(vec.from_array)(t18) in
-  let _wild9 = check_scalar(t19, 65535, 3) in
-  let t20 = [240, 144, 128, 128] in
-  let t21 = @intrinsic(vec.from_array)(t20) in
-  let _wild10 = check_scalar(t21, 65536, 4) in
-  let t22 = [244, 143, 191, 191] in
-  let t23 = @intrinsic(vec.from_array)(t22) in
-  let _wild11 = check_scalar(t23, 1114111, 4) in
-  let t24 = [128] in
-  let t25 = @intrinsic(vec.from_array)(t24) in
-  let _wild12 = check_utf0(t25, false) in
-  let t26 = [191] in
-  let t27 = @intrinsic(vec.from_array)(t26) in
-  let _wild13 = check_utf0(t27, false) in
-  let t28 = [192, 128] in
-  let t29 = @intrinsic(vec.from_array)(t28) in
-  let _wild14 = check_utf0(t29, false) in
-  let t30 = [193, 191] in
-  let t31 = @intrinsic(vec.from_array)(t30) in
-  let _wild15 = check_utf0(t31, false) in
-  let t32 = [194] in
-  let t33 = @intrinsic(vec.from_array)(t32) in
-  let _wild16 = check_utf0(t33, false) in
-  let t34 = [194, 127] in
-  let t35 = @intrinsic(vec.from_array)(t34) in
-  let _wild17 = check_utf0(t35, false) in
-  let t36 = [224, 159, 191] in
-  let t37 = @intrinsic(vec.from_array)(t36) in
-  let _wild18 = check_utf0(t37, false) in
-  let t38 = [225, 128] in
-  let t39 = @intrinsic(vec.from_array)(t38) in
-  let _wild19 = check_utf0(t39, false) in
-  let t40 = [225, 128, 127] in
-  let t41 = @intrinsic(vec.from_array)(t40) in
-  let _wild20 = check_utf0(t41, false) in
-  let t42 = [237, 160, 128] in
-  let t43 = @intrinsic(vec.from_array)(t42) in
-  let _wild21 = check_utf0(t43, false) in
-  let t44 = [240, 143, 191, 191] in
-  let t45 = @intrinsic(vec.from_array)(t44) in
-  let _wild22 = check_utf0(t45, false) in
-  let t46 = [240, 144, 128] in
-  let t47 = @intrinsic(vec.from_array)(t46) in
+  let t0 = inherent#Vec#Vec[T]#new__T_u0() in
+  let _wild0 = check_utf0(t0, true) in
+  let t1 = [0] in
+  let t2 = @intrinsic(vec.from_array)(t1) in
+  let _wild1 = check_utf0(t2, true) in
+  let t3 = [127] in
+  let t4 = @intrinsic(vec.from_array)(t3) in
+  let _wild2 = check_utf0(t4, true) in
+  let t5 = [194, 128] in
+  let t6 = @intrinsic(vec.from_array)(t5) in
+  let _wild3 = check_scalar(t6, 128, 2) in
+  let t7 = [223, 191] in
+  let t8 = @intrinsic(vec.from_array)(t7) in
+  let _wild4 = check_scalar(t8, 2047, 2) in
+  let t9 = [224, 160, 128] in
+  let t10 = @intrinsic(vec.from_array)(t9) in
+  let _wild5 = check_scalar(t10, 2048, 3) in
+  let t11 = [237, 159, 191] in
+  let t12 = @intrinsic(vec.from_array)(t11) in
+  let _wild6 = check_scalar(t12, 55295, 3) in
+  let t13 = [238, 128, 128] in
+  let t14 = @intrinsic(vec.from_array)(t13) in
+  let _wild7 = check_scalar(t14, 57344, 3) in
+  let t15 = [239, 191, 189] in
+  let t16 = @intrinsic(vec.from_array)(t15) in
+  let _wild8 = check_scalar(t16, 65533, 3) in
+  let t17 = [239, 191, 191] in
+  let t18 = @intrinsic(vec.from_array)(t17) in
+  let _wild9 = check_scalar(t18, 65535, 3) in
+  let t19 = [240, 144, 128, 128] in
+  let t20 = @intrinsic(vec.from_array)(t19) in
+  let _wild10 = check_scalar(t20, 65536, 4) in
+  let t21 = [244, 143, 191, 191] in
+  let t22 = @intrinsic(vec.from_array)(t21) in
+  let _wild11 = check_scalar(t22, 1114111, 4) in
+  let t23 = [128] in
+  let t24 = @intrinsic(vec.from_array)(t23) in
+  let _wild12 = check_utf0(t24, false) in
+  let t25 = [191] in
+  let t26 = @intrinsic(vec.from_array)(t25) in
+  let _wild13 = check_utf0(t26, false) in
+  let t27 = [192, 128] in
+  let t28 = @intrinsic(vec.from_array)(t27) in
+  let _wild14 = check_utf0(t28, false) in
+  let t29 = [193, 191] in
+  let t30 = @intrinsic(vec.from_array)(t29) in
+  let _wild15 = check_utf0(t30, false) in
+  let t31 = [194] in
+  let t32 = @intrinsic(vec.from_array)(t31) in
+  let _wild16 = check_utf0(t32, false) in
+  let t33 = [194, 127] in
+  let t34 = @intrinsic(vec.from_array)(t33) in
+  let _wild17 = check_utf0(t34, false) in
+  let t35 = [224, 159, 191] in
+  let t36 = @intrinsic(vec.from_array)(t35) in
+  let _wild18 = check_utf0(t36, false) in
+  let t37 = [225, 128] in
+  let t38 = @intrinsic(vec.from_array)(t37) in
+  let _wild19 = check_utf0(t38, false) in
+  let t39 = [225, 128, 127] in
+  let t40 = @intrinsic(vec.from_array)(t39) in
+  let _wild20 = check_utf0(t40, false) in
+  let t41 = [237, 160, 128] in
+  let t42 = @intrinsic(vec.from_array)(t41) in
+  let _wild21 = check_utf0(t42, false) in
+  let t43 = [240, 143, 191, 191] in
+  let t44 = @intrinsic(vec.from_array)(t43) in
+  let _wild22 = check_utf0(t44, false) in
+  let t45 = [240, 144, 128] in
+  let t46 = @intrinsic(vec.from_array)(t45) in
   join inline_cont0(_wild23: unit) -> unit {
-    let t48 = [244, 144, 128, 128] in
-    let t49 = @intrinsic(vec.from_array)(t48) in
+    let t47 = [244, 144, 128, 128] in
+    let t48 = @intrinsic(vec.from_array)(t47) in
     join inline_cont1(_wild24: unit) -> unit {
-      let t50 = [245, 128, 128, 128] in
-      let t51 = @intrinsic(vec.from_array)(t50) in
+      let t49 = [245, 128, 128, 128] in
+      let t50 = @intrinsic(vec.from_array)(t49) in
       let inline0 = false in
-      let inline1 = inherent#Vec#Vec[T]#len__T_u0(t51) in
-      let inline2 = string_from_utf0(t51) in
+      let inline1 = inherent#Vec#Vec[T]#len__T_u0(t50) in
+      let inline2 = string_from_utf0(t50) in
       let inline3 = inline2.0 in
       let inline4 = inline2.1 in
       let inline5 = (inline3 == inline0) in
@@ -175,8 +174,8 @@ fn main() -> unit {
       }
     } in
     let inline12 = false in
-    let inline13 = inherent#Vec#Vec[T]#len__T_u0(t49) in
-    let inline14 = string_from_utf0(t49) in
+    let inline13 = inherent#Vec#Vec[T]#len__T_u0(t48) in
+    let inline14 = string_from_utf0(t48) in
     let inline15 = inline14.0 in
     let inline16 = inline14.1 in
     let inline17 = (inline15 == inline12) in
@@ -193,8 +192,8 @@ fn main() -> unit {
     }
   } in
   let inline24 = false in
-  let inline25 = inherent#Vec#Vec[T]#len__T_u0(t47) in
-  let inline26 = string_from_utf0(t47) in
+  let inline25 = inherent#Vec#Vec[T]#len__T_u0(t46) in
+  let inline26 = string_from_utf0(t46) in
   let inline27 = inline26.0 in
   let inline28 = inline26.1 in
   let inline29 = (inline27 == inline24) in
@@ -278,6 +277,11 @@ fn inherent#string#string#decode_at(self/0: string, index/0: isize) -> Option__(
   } else {
     Tag_0
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
 fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {

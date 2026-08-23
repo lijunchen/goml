@@ -116,8 +116,8 @@ fn main() -> unit {
         },
       }
     ) in
-  let empty_values/0 = @intrinsic(vec.from_array)([]) in
-  let empty_table/0 = @intrinsic(hashmap.from_array)([]) in
+  let empty_values/0 = inherent#Vec#Vec[T]#new__T_isize() in
+  let empty_table/0 = inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() in
   let _wild17 =
     println__T_string(
       ((("" + "empty=") +
@@ -159,6 +159,14 @@ fn inherent#HashMap#HashMap[K,V]#get__K_string__V_isize(
   key/0: string
 ) -> Option__isize {
   @intrinsic(hashmap.get)(self/0, key/0)
+}
+
+fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() -> HashMap[string, isize] {
+  @intrinsic(hashmap.new)()
 }
 
 fn inherent#Vec#Vec[T]#len__T_isize(self/0: Vec[isize]) -> isize {

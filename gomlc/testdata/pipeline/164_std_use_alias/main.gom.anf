@@ -459,10 +459,12 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  let t0 = [] in
-  let t1 = @intrinsic(vec.from_array)(t0) in
-  let t2 = std::bytes::Bytes { values: t1 } in
-  t2
+  join inline_cont0(t0: Vec[u8]) -> std::bytes::Bytes {
+    let t1 = std::bytes::Bytes { values: t0 } in
+    t1
+  } in
+  let inline0 = @intrinsic(vec.new)() in
+  jump inline_cont0(inline0)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
@@ -1879,10 +1881,12 @@ fn std::ascii::escape_default(value/0: u8) -> string {
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
-  let t0 = [] in
-  let t1 = @intrinsic(vec.from_array)(t0) in
-  let t2 = std::text::StringBuilder { values: t1 } in
-  t2
+  join inline_cont0(t0: Vec[u8]) -> std::text::StringBuilder {
+    let t1 = std::text::StringBuilder { values: t0 } in
+    t1
+  } in
+  let inline0 = @intrinsic(vec.new)() in
+  jump inline_cont0(inline0)
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
@@ -2309,47 +2313,49 @@ fn std::env::var_structured(name/0: string) -> Result__string__std::env::VarErro
 }
 
 fn std::env::vars() -> Vec[(string, string)] {
-  let t0 = [] in
-  let result/0 = @intrinsic(vec.from_array)(t0) in
-  join inline_cont0(for_source0: Vec[string]) -> Vec[(string, string)] {
-    let for_limit0 = @intrinsic(vec.len)(for_source0) in
-    let for_index0 = 0 in
-    join exit0() -> Vec[(string, string)] {
-      result/0
-    } in
-    joinrec {
-      join loop0() -> Vec[(string, string)] {
-        let t1 = (for_index0 < for_limit0) in
-        if t1 {
-          let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
-          let t2 = (for_index0 + 1) in
-          let _wild0 = for_index0 = t2 in
-          join inline_cont1(mtmp0: Option__(string,string)) -> Vec[(string, string)] {
-            match mtmp0 {
-              Tag_0 => {
-                let t3 = (for_item0, "") in
-                let inline0 = @intrinsic(vec.push)(result/0, t3) in
-                jump loop0()
-              },
-              Tag_1 => {
-                let x0 = Option__(string,string)::Some._0(mtmp0) in
-                let inline1 = @intrinsic(vec.push)(result/0, x0) in
-                jump loop0()
-              },
-            }
-          } in
-          let inline2 = "=" in
-          let inline3 = inherent#string#string#split_once(for_item0, inline2) in
-          jump inline_cont1(inline3)
-        } else {
-          jump exit0()
-        }
+  join inline_cont0(result/0: Vec[(string, string)]) -> Vec[(string, string)] {
+    join inline_cont1(for_source0: Vec[string]) -> Vec[(string, string)] {
+      let for_limit0 = @intrinsic(vec.len)(for_source0) in
+      let for_index0 = 0 in
+      join exit0() -> Vec[(string, string)] {
+        result/0
       } in
+      joinrec {
+        join loop0() -> Vec[(string, string)] {
+          let t0 = (for_index0 < for_limit0) in
+          if t0 {
+            let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+            let t1 = (for_index0 + 1) in
+            let _wild0 = for_index0 = t1 in
+            join inline_cont2(mtmp0: Option__(string,string)) -> Vec[(string, string)] {
+              match mtmp0 {
+                Tag_0 => {
+                  let t2 = (for_item0, "") in
+                  let inline0 = @intrinsic(vec.push)(result/0, t2) in
+                  jump loop0()
+                },
+                Tag_1 => {
+                  let x0 = Option__(string,string)::Some._0(mtmp0) in
+                  let inline1 = @intrinsic(vec.push)(result/0, x0) in
+                  jump loop0()
+                },
+              }
+            } in
+            let inline2 = "=" in
+            let inline3 = inherent#string#string#split_once(for_item0, inline2) in
+            jump inline_cont2(inline3)
+          } else {
+            jump exit0()
+          }
+        } in
+      } in
+      jump loop0()
     } in
-    jump loop0()
+    let inline4 = @runtime(std.env.vars)() in
+    jump inline_cont1(inline4)
   } in
-  let inline4 = @runtime(std.env.vars)() in
-  jump inline_cont0(inline4)
+  let inline5 = @intrinsic(vec.new)() in
+  jump inline_cont0(inline5)
 }
 
 fn inherent#std::env::VarError#std::env::VarError#new(
@@ -2475,6 +2481,11 @@ fn main() -> unit {
   } in
   let inline4 = std::internal::host::args() in
   jump inline_cont0(inline4)
+}
+
+fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {
@@ -3798,6 +3809,11 @@ fn inherent#string#string#to_ascii_uppercase(self/0: string) -> string {
   } in
   let inline11 = @runtime(core.string_to_bytes)(self/0) in
   jump inline_cont0(inline11)
+}
+
+fn inherent#Vec#Vec[T]#new__T_(string,string)() -> Vec[(string, string)] {
+  let t0 = @intrinsic(vec.new)() in
+  t0
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,string)(

@@ -34,9 +34,9 @@ fn main() -> unit {
     let make_vec: ([isize; 3]) -> Vec[isize] = Vec::from_array;
     let values = make_vec([1, 2, 3]);
     println(f"{values.len()}:{values[0]}:{values[2]}");
-    let empty: Vec[isize] = Vec::[isize]::from_array([]);
+    let empty: Vec[isize] = Vec::[isize]::new();
     println(empty.len());
-    let inferred_empty: Vec[isize] = Vec::from_array([]);
+    let inferred_empty: Vec[isize] = Vec::new();
     println(inferred_empty.len());
     let mut source = [Ref::new(1), Ref::new(2)];
     let copied = Vec::from_array(source);
@@ -61,9 +61,9 @@ fn main() -> unit {
     let make_map: ([(string, isize); 2]) -> HashMap[string, isize] = HashMap::from_array;
     let words = make_map([("a", 1), ("b", 2)]);
     println(words.len());
-    let no_words = HashMap::[string, isize]::from_array([]);
+    let no_words = HashMap::[string, isize]::new();
     println(no_words.len());
-    let inferred_no_words: HashMap[string, isize] = HashMap::from_array([]);
+    let inferred_no_words: HashMap[string, isize] = HashMap::new();
     println(inferred_no_words.len());
     let pairs = Vec::from_array([(1, "a"), (2, "b")]);
     let nested = Vec::from_array([Vec::from_array([1, 2]), Vec::from_array([3, 4])]);
