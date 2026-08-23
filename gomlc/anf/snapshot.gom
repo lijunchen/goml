@@ -69,11 +69,7 @@ fn collect_block_locals(values: HashMap[string, unit], value: Block) -> unit {
     collect_term_locals(values, value.term)
 }
 
-fn snapshot_names_new(
-    value: Function,
-    canonicalize_all_locals: bool,
-    reserved: Vec[string],
-) -> SnapshotNames {
+fn snapshot_names_new(value: Function, canonicalize_all_locals: bool, reserved: Vec[string]) -> SnapshotNames {
     let declared_locals: HashMap[string, unit] = HashMap::new();
     for param in value.params {
         collect_local(declared_locals, param.0)
@@ -305,11 +301,7 @@ fn snapshot_term(names: SnapshotNames, value: Term) -> Term {
     }
 }
 
-fn snapshot_function(
-    value: Function,
-    canonicalize_all_locals: bool,
-    reserved: Vec[string],
-) -> Function {
+fn snapshot_function(value: Function, canonicalize_all_locals: bool, reserved: Vec[string]) -> Function {
     let names = snapshot_names_new(value, canonicalize_all_locals, reserved);
     let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
     for param in value.params {
