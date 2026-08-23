@@ -251,12 +251,26 @@ fn symbol_owner_matches(symbol: Symbol, owner: string) -> bool {
     owner_name_matches(symbol_owner(symbol.qualified_name), owner)
 }
 
+fn member_access_dot(value: Analysis, offset: isize) -> Option[isize] {
+    match token_at(value.syntax, offset) {
+        Some(token) => match significant_token_before(value, token.start) {
+            Some(previous) => if lexer::token_kind_equal(previous.kind, lexer::TokenKind::Dot) {
+                Option::Some(previous.start)
+            } else {
+                Option::None
+            },
+            None => Option::None,
+        },
+        None => Option::None,
+    }
+}
+
 fn member_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
     let exact: Vec[DefinitionResult] = Vec::new();
     let fallback: Vec[DefinitionResult] = Vec::new();
     match token_at(value.syntax, offset) {
-        Some(token) => if token.start > 0 && value.source.byte_get(token.start - 1) == b'.' {
-            match receiver_type(value, token.start - 1) {
+        Some(token) => match member_access_dot(value, offset) {
+            Some(dot) => match receiver_type(value, dot) {
                 Some(receiver) => {
                     let owner = type_owner_name(receiver);
                     for symbol in build_symbol_index(value).symbols {
@@ -280,8 +294,9 @@ fn member_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
                     }
                 },
                 None => (),
-            }
-        } else {},
+            },
+            None => (),
+        },
         None => (),
     };
     if !exact.is_empty() {
@@ -545,6 +560,7 @@ pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult]
     if !result.is_empty() {
         return result
     } else {};
+    let member_access = member_access_dot(value, offset).is_some();
     let mut reference: Option[tast::ReferenceFact] = Option::None;
     let mut width = 2147483647;
     for fact in value.checked.typeck_results.references {
@@ -563,6 +579,15 @@ pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult]
         for definition in struct_field_definitions(value, offset) {
             push_definition(result, definition)
         }
+    } else {};
+    if member_access {
+        if result.is_empty() {
+            match semantic_definition(value, offset) {
+                Some(definition) => result.push(definition),
+                None => (),
+            }
+        } else {};
+        return result
     } else {};
     match reference {
         Some(fact) => match fact.target {
