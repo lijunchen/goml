@@ -149,7 +149,18 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
                 testing::fail("failed to write " + main_file + ": " + message);
                 return ""
             },
-        }
+        };
+        if fs::is_file(executable) {
+            match fs::remove_file(executable) {
+                Ok(()) => (),
+                Err(message) => {
+                    testing::fail(
+                        "failed to remove stale executable " + executable + ": " + message,
+                    );
+                    return ""
+                },
+            }
+        } else {}
     };
     let interpreted = if source_current && fs::is_file(executable)
         || !go_backend::yaegi_compatible(source) {
