@@ -1347,6 +1347,32 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
 }
 
 #[test]
+fn rejects_invalid_range_pattern_endpoint_types() -> unit {
+    let expected = "Range pattern endpoints must be integer or character literals";
+    let boolean = checked_diagnostics(
+        "fn classify(value: bool) -> bool { match value { false..=true => true, _ => false } }",
+    );
+    testing::assert_eq(boolean.len(), 1);
+    testing::assert_eq(boolean[0].message, expected);
+    let string_result = checked_diagnostics(
+        "fn classify(value: string) -> bool { match value { \"a\"..=\"z\" => true, _ => false } }",
+    );
+    testing::assert_eq(string_result.len(), 1);
+    testing::assert_eq(string_result[0].message, expected);
+    let float_result = checked_diagnostics(
+        "fn classify(value: f64) -> bool { match value { 1.0..=2.0 => true, _ => false } }",
+    );
+    testing::assert_eq(float_result.len(), 1);
+    testing::assert_eq(float_result[0].message, expected);
+    testing::assert_eq(
+        checked_diagnostics(
+            "fn integer(value: i16) -> bool { match value { -2..=2 => true, _ => false } } fn byte(value: u8) -> bool { match value { b'a'..=b'z' => true, _ => false } } fn character(value: char) -> bool { match value { 'a'..='z' => true, _ => false } }",
+        ).len(),
+        0,
+    )
+}
+
+#[test]
 fn checks_loop_control_contexts_and_impl_overlap() -> unit {
     let condition = check(
         hir::lower(
