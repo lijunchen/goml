@@ -66,16 +66,19 @@ fn extern_parameter_names(value: ast::ExternFunction) -> Vec[string] {
     result
 }
 
-fn item_parameter_names(value: ast::Item, expected: string, expected_owner: Option[string]) -> Option[
-    Vec[string],
-] {
+fn item_parameter_names(
+    value: ast::Item,
+    expected: string,
+    expected_owner: Option[string],
+    allow_unresolved: bool,
+) -> Option[Vec[string]] {
     match value {
-        Function(function) => if function.name == expected {
+        Function(function) => if expected_owner.is_none() && function.name == expected {
             Option::Some(function_parameter_names(function))
         } else {
             Option::None
         },
-        ExternFunction(function) => if function.name == expected {
+        ExternFunction(function) => if expected_owner.is_none() && function.name == expected {
             Option::Some(extern_parameter_names(function))
         } else {
             Option::None
@@ -88,7 +91,9 @@ fn item_parameter_names(value: ast::Item, expected: string, expected_owner: Opti
                     } else {},
                     None => return Option::None,
                 },
-                None => (),
+                None => if !allow_unresolved {
+                    return Option::None
+                } else {},
             };
             let mut index = block.methods.len() - 1;
             while index >= 0 {
@@ -106,7 +111,9 @@ fn item_parameter_names(value: ast::Item, expected: string, expected_owner: Opti
                 Some(owner) => if short_type_name(definition.name) != short_type_name(owner) {
                     return Option::None
                 } else {},
-                None => (),
+                None => if !allow_unresolved {
+                    return Option::None
+                } else {},
             };
             let mut index = definition.method_sigs.len() - 1;
             while index >= 0 {
@@ -140,12 +147,20 @@ fn signature_target_owner(value: tast::ReferenceTarget) -> Option[string] {
     }
 }
 
-fn file_parameter_names(file: ast::File, expected: string, expected_owner: Option[string]) -> Option[
-    Vec[string],
-] {
+fn file_parameter_names(
+    file: ast::File,
+    expected: string,
+    expected_owner: Option[string],
+    allow_unresolved: bool,
+) -> Option[Vec[string]] {
     let mut item_index = file.items.len() - 1;
     while item_index >= 0 {
-        match item_parameter_names(file.items[item_index], expected, expected_owner) {
+        match item_parameter_names(
+            file.items[item_index],
+            expected,
+            expected_owner,
+            allow_unresolved,
+        ) {
             Some(names) => return Option::Some(names),
             None => {
                 item_index = item_index - 1;
@@ -155,12 +170,114 @@ fn file_parameter_names(file: ast::File, expected: string, expected_owner: Optio
     Option::None
 }
 
-fn current_package_function(value: Analysis, target: tast::ReferenceTarget) -> bool {
-    match target {
-        Callable(Function(name)) => name.starts_with(value.package_name + "::"),
-        Definition(_) => true,
-        _ => false,
+fn exact_function_symbol(value: Analysis, qualified_name: string) -> Option[Symbol] {
+    for symbol in build_symbol_index(value).symbols {
+        if symbol.qualified_name == qualified_name
+            && match symbol.kind {
+                Function => true,
+                _ => false,
+            } {
+            return Option::Some(symbol)
+        } else {}
     }
+    Option::None
+}
+
+fn method_signature_symbol(value: Analysis, owner: string, name: string) -> Option[Symbol] {
+    let result: Vec[Symbol] = Vec::new();
+    let qualified = short_type_name(owner) != owner;
+    for symbol in build_symbol_index(value).symbols {
+        let actual_owner = symbol_owner(symbol.qualified_name);
+        if match symbol.kind {
+            Method => true,
+            _ => false,
+        }
+            && symbol.name == name
+            && if qualified {
+                actual_owner == owner
+            } else {
+                actual_owner == value.package_name + "::" + owner
+                    || actual_owner == "builtin::" + owner
+                    || actual_owner == "prelude::" + owner
+            } {
+            result.push(symbol)
+        } else {}
+    }
+    if result.len() == 1 {
+        Option::Some(result[0])
+    } else {
+        Option::None
+    }
+}
+
+fn signature_target_symbol(value: Analysis, fact: tast::CallFact) -> Option[Symbol] {
+    match fact.target {
+        Callable(Function(name)) => exact_function_symbol(value, name),
+        Callable(LangItem { item: _, function_name }) => {
+            exact_function_symbol(value, function_name)
+        },
+        Callable(TraitMethod { trait_ref, method_name, .. },) => {
+            method_signature_symbol(value, trait_ref.name, method_name)
+        },
+        Callable(DynTraitMethod { trait_name, dispatch_name: _, method_name },) => {
+            method_signature_symbol(value, trait_name, method_name)
+        },
+        Callable(InherentMethod { receiver_ty, method_name },) => {
+            method_signature_symbol(value, type_owner_name(receiver_ty), method_name)
+        },
+        Definition(_) => exact_function_symbol(
+            value,
+            value.package_name + "::" + short_type_name(call_target_name(value, fact)),
+        ),
+        _ => Option::None,
+    }
+}
+
+fn symbol_parameter_names(
+    value: Analysis,
+    symbol: Symbol,
+    expected: string,
+    expected_owner: Option[string],
+) -> Option[Vec[string]] {
+    if symbol.source_path == value.source_path {
+        match value.lowered.ast {
+            Some(file) => file_parameter_names(file, expected, expected_owner, false),
+            None => Option::None,
+        }
+    } else {
+        match source_by_path(value.sources, symbol.source_path) {
+            Some(source) => match ast::lower(parser::parse(source.source)).ast {
+                Some(file) => file_parameter_names(file, expected, expected_owner, false),
+                None => Option::None,
+            },
+            None => Option::None,
+        }
+    }
+}
+
+fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[string]] {
+    match value.lowered.ast {
+        Some(file) => match file_parameter_names(file, expected, Option::None, true) {
+            Some(names) => return Option::Some(names),
+            None => (),
+        },
+        None => (),
+    };
+    let mut source_index = value.sources.len() - 1;
+    while source_index >= 0 {
+        let source = value.sources[source_index];
+        if source.path == value.source_path {} else {
+            match ast::lower(parser::parse(source.source)).ast {
+                Some(file) => match file_parameter_names(file, expected, Option::None, true) {
+                    Some(names) => return Option::Some(names),
+                    None => (),
+                },
+                None => (),
+            }
+        };
+        source_index = source_index - 1;
+    }
+    Option::None
 }
 
 fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Vec[string]] {
@@ -172,33 +289,13 @@ fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Ve
     };
     let expected = short_type_name(call_target_name(value, fact));
     let expected_owner = signature_target_owner(fact.target);
-    let checked_current = current_package_function(value, fact.target);
-    if checked_current {
-        let lowered = value.lowered;
-        match lowered.ast {
-            Some(file) => match file_parameter_names(file, expected, expected_owner) {
-                Some(names) => return Option::Some(names),
-                None => (),
-            },
-            None => (),
-        }
-    } else {};
-    let mut source_index = value.sources.len() - 1;
-    while source_index >= 0 {
-        let source = value.sources[source_index];
-        if checked_current && source.path == value.source_path {} else {
-            let lowered = ast::lower(parser::parse(source.source));
-            match lowered.ast {
-                Some(file) => match file_parameter_names(file, expected, expected_owner) {
-                    Some(names) => return Option::Some(names),
-                    None => (),
-                },
-                None => (),
-            }
-        };
-        source_index = source_index - 1;
+    match fact.target {
+        Unresolved(_) => unresolved_parameter_names(value, expected),
+        _ => match signature_target_symbol(value, fact) {
+            Some(symbol) => symbol_parameter_names(value, symbol, expected, expected_owner),
+            None => Option::None,
+        },
     }
-    Option::None
 }
 
 fn signature_parameters(value: Analysis, fact: tast::CallFact, types: Vec[tast::Type]) -> Vec[
