@@ -1561,6 +1561,61 @@ fn shows_generic_method_parameters_in_hover_and_concrete_signature_help() -> uni
 }
 
 #[test]
+fn keeps_hover_types_for_canonical_declarations() -> unit {
+    let root = "/tmp/goml-query-hover-owner-collision";
+    let left_dir = root + "/left";
+    let right_dir = root + "/right";
+    for directory in Vec::from_array([root, left_dir, right_dir]) {
+        match fs::create_dir_all(directory) {
+            Ok(()) => (),
+            Err(error) => testing::fail(error),
+        }
+    }
+    let left_path = left_dir + "/left.gom";
+    let right_path = right_dir + "/right.gom";
+    let left_source = "package left; use module::right; type Label = isize; const answer: Label = 1; trait Choose { fn choose(self: Self, trait_value: string) -> string; } struct Item {} impl Choose for Item { fn choose(self: Item, implementation_value: string) -> string { implementation_value } } impl Item { fn choose(self: Item, inherent_value: isize) -> isize { inherent_value } } pub fn select(value: isize) -> isize { value } pub fn use_right(value: string) -> string { right::select(value) }";
+    let right_source = "package right; pub type Label = string; pub const answer: Label = \"right\"; pub fn select(value: string) -> string { value }";
+    write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::hover_owner_collision\"\n");
+    write_query_fixture(left_path, left_source);
+    write_query_fixture(right_path, right_source);
+    let analysis = analyze(left_path, left_source);
+    assert_no_diagnostics(analysis);
+    for expected in Vec::from_array(
+        [
+            ("type Label", "type ".byte_len(), "isize"),
+            ("const answer", "const ".byte_len(), "isize"),
+            ("fn select(value: isize)", "fn ".byte_len(), "(isize) -> isize"),
+        ],
+    ) {
+        match last_substring(left_source, expected.0) {
+            Some(offset) => match hover(analysis, offset + expected.1) {
+                Some(result) => testing::assert_eq(result.contents, expected.2),
+                None => testing::fail("expected declaration hover for " + expected.0),
+            },
+            None => testing::fail("expected declaration " + expected.0),
+        }
+    }
+    for expected in Vec::from_array(
+        [
+            ("fn choose(self: Self", "string", "isize"),
+            ("fn choose(self: Item, implementation", "string", "isize"),
+            ("fn choose(self: Item, inherent", "isize", "string"),
+        ],
+    ) {
+        match last_substring(left_source, expected.0) {
+            Some(offset) => match hover(analysis, offset + "fn ".byte_len()) {
+                Some(result) => {
+                    testing::assert(result.contents.contains(expected.1));
+                    testing::assert(!result.contents.contains(expected.2))
+                },
+                None => testing::fail("expected method hover for " + expected.0),
+            },
+            None => testing::fail("expected method " + expected.0),
+        }
+    }
+}
+
+#[test]
 fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
     let source = "type Count = i32; const answer: Count = 42; fn main() -> i32 { answer }";
     let analysis = analyze("main.gom", source);
