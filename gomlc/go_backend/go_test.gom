@@ -543,6 +543,18 @@ fn stores_vec_from_array_header_and_items_together() -> unit {
 }
 
 #[test]
+fn builds_hashmap_array_literals_directly() -> unit {
+    let output = encode(
+        lower_linked_source(
+            "fn main() -> unit { let values = HashMap::from_array([(\"a\", 1), (\"b\", 2)]); println(values.len()) }",
+        ),
+    );
+    testing::assert(string_contains(output, "indices: make(map[string]int, 2),"));
+    testing::assert(string_contains(output, "entries: make([]hashmap_string_int_x_entry, 0, 2),"));
+    testing::assert(!string_contains(output, "for _, entry := range values"))
+}
+
+#[test]
 fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
     let Ok(builtin) = tast::builtin_contract() else {
         testing::fail("expected builtin contract");
