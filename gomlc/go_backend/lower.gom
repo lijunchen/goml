@@ -18,7 +18,7 @@ pub struct FunctionNames {
 struct LowerEnv {
     builtin: tast::BuiltinContract,
     joins: Vec[anf::JoinBind],
-    collection_arrays: HashMap[string, anf::Value],
+    collection_array_consumers: HashMap[string, anf::Value],
     emitted_loop_labels: Vec[string],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
@@ -2318,7 +2318,7 @@ fn compile_hashmap_array_literal_let(env: LowerEnv, value: anf::LetBind) -> Opti
         Call { func: Callable { callable: Intrinsic(key), ty: _ }, args, ty: _ } if key
             == "hashmap.from_array"
             && args.len() == 1 => match args[0] {
-            Var { name, ty: _ } => match env.collection_arrays[name] {
+            Var { name: _, ty: _ } => match env.collection_array_consumers[value.name] {
                 Some(Array { items, ty: _ }) => {
                     Option::Some(compile_hashmap_array_literal(env, value, items))
                 },
@@ -2330,14 +2330,14 @@ fn compile_hashmap_array_literal_let(env: LowerEnv, value: anf::LetBind) -> Opti
     }
 }
 
-fn collection_array_argument(value: anf::Bind) -> Option[string] {
+fn collection_array_consumer(value: anf::Bind) -> Option[(string, string)] {
     match value {
         Let(anf::LetBind {
-            name: _,
+            name: consumer,
             value: Call { func: Callable { callable: Intrinsic(key), ty: _ }, args, ty: _ },
             ty: _,
         }) if key == "hashmap.from_array" && args.len() == 1 => match args[0] {
-            Var { name, ty: _ } => Option::Some(name),
+            Var { name, ty: _ } => Option::Some((consumer, name)),
             _ => Option::None,
         },
         _ => Option::None,
@@ -2383,9 +2383,9 @@ fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Bl
         match value.binds[index] {
             Let(bind) => match bind.value {
                 Array { items, ty } if index + 1 < value.binds.len() => {
-                    match collection_array_argument(value.binds[index + 1]) {
-                        Some(name) => if name == bind.name {
-                            result[name] = anf::Value::Array { items, ty };
+                    match collection_array_consumer(value.binds[index + 1]) {
+                        Some(consumer) => if consumer.1 == bind.name {
+                            result[consumer.0] = anf::Value::Array { items, ty };
                         } else {},
                         None => (),
                     }
@@ -5069,8 +5069,8 @@ fn compile_function(
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(joins, value.body);
-    let collection_arrays: HashMap[string, anf::Value] = HashMap::new();
-    collect_collection_arrays(collection_arrays, value.body);
+    let collection_array_consumers: HashMap[string, anf::Value] = HashMap::new();
+    collect_collection_arrays(collection_array_consumers, value.body);
     let params: Vec[(string, Type)] = Vec::new();
     let pointer_vars: HashMap[string, bool] = HashMap::new();
     let copied_params: Vec[(string, string, Type)] = Vec::new();
@@ -5100,7 +5100,7 @@ fn compile_function(
     let env = LowerEnv {
         builtin,
         joins,
-        collection_arrays,
+        collection_array_consumers,
         emitted_loop_labels: Vec::new(),
         variants,
         structs,
