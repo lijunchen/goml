@@ -993,6 +993,21 @@ fn completes_scope_and_struct_members() -> unit {
 }
 
 #[test]
+fn keeps_member_completion_on_the_semantic_receiver() -> unit {
+    let source = "struct A {} impl A { fn only_a(self: A) -> unit { () } } struct B {} impl B { fn only_b(self: B) -> unit { () } } fn first(value: A) -> unit { value.only_a() } fn second(value: B) -> unit { () }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "value.only_a") {
+        Some(offset) => {
+            let items = completions(analysis, offset + "value.".byte_len());
+            testing::assert(has_completion(items, "only_a"));
+            testing::assert(!has_completion(items, "only_b"))
+        },
+        None => testing::fail("expected member access"),
+    }
+}
+
+#[test]
 fn separates_members_for_same_named_types_across_packages() -> unit {
     let root = "/tmp/goml-query-owner-collision";
     let left_dir = root + "/left";
