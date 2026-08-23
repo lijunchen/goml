@@ -731,6 +731,7 @@ fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstru
 
 fn coverage_domain_uncached(ctx: CoverageContext, ty: Type) -> Option[Vec[CoverageConstructor]] {
     match prune(ty) {
+        Never => Option::Some(Vec::new()),
         Unit => Option::Some(
             Vec::from_array([CoverageConstructor { key: "unit", fields: Vec::new() }]),
         ),
