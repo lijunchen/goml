@@ -317,21 +317,8 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
     ResolvedUses { aliases, traits, public_reexports, diagnostics }
 }
 
-fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
-    resolved_uses_from_file(file).aliases
-}
-
-fn trait_uses_from_file(file: ast::File) -> Vec[string] {
-    resolved_uses_from_file(file).traits
-}
-
-fn public_reexports_from_file(file: ast::File) -> Vec[(string, string)] {
-    resolved_uses_from_file(file).public_reexports
-}
-
-fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
+fn import_aliases_from_file(file: ast::File, aliases: Vec[AliasEntry]) -> Vec[ImportAlias] {
     let result: Vec[ImportAlias] = Vec::from_array([]);
-    let aliases = aliases_from_file(file);
     for use_decl in file.uses {
         if !use_decl.items.is_empty() {
             let target = path_segments(use_decl.path);
@@ -352,9 +339,9 @@ fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
     result
 }
 
-fn imports_from_file(file: ast::File) -> Vec[string] {
+fn imports_from_aliases(aliases: Vec[AliasEntry]) -> Vec[string] {
     let result: Vec[string] = Vec::from_array([]);
-    for entry in resolved_uses_from_file(file).aliases {
+    for entry in aliases {
         if entry.item {
             result.push(join_segments(entry.target))
         } else {}
@@ -1830,8 +1817,7 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
     }
 }
 
-fn file_context(base: LowerCtx, file: ast::File, diagnostics: Vec[Diagnostic]) -> LowerCtx {
-    let resolved = resolved_uses_from_file(file);
+fn file_context(base: LowerCtx, resolved: ResolvedUses, diagnostics: Vec[Diagnostic]) -> LowerCtx {
     for message in resolved.diagnostics {
         diagnostics.push(Diagnostic { message, span: Option::None })
     }
@@ -1874,7 +1860,8 @@ fn lower_file_with_context(
     item_offset: isize,
     diagnostics: Vec[Diagnostic],
 ) -> File {
-    let ctx = file_context(base, file, diagnostics);
+    let resolved = resolved_uses_from_file(file);
+    let ctx = file_context(base, resolved, diagnostics);
     let items: Vec[Item] = Vec::from_array([]);
     let mut index = item_offset;
     for item in file.items {
@@ -1941,15 +1928,15 @@ fn lower_file_with_context(
             canonical_package_name + "/" + basename(source_path)
         },
         source_path,
-        imports: imports_from_file(file),
-        import_aliases: import_aliases_from_file(file),
+        imports: imports_from_aliases(resolved.aliases),
+        import_aliases: import_aliases_from_file(file, resolved.aliases),
         use_traits: if qualify_imports {
-            trait_uses_from_file(file)
+            resolved.traits
         } else {
             Vec::from_array([])
         },
         public_reexports: if qualify_imports {
-            public_reexports_from_file(file)
+            resolved.public_reexports
         } else {
             Vec::from_array([])
         },
