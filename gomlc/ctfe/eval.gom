@@ -322,6 +322,54 @@ fn restore_locals(target: Vec[Option[ctir::CtValue]], saved: Vec[Option[ctir::Ct
     }
 }
 
+fn restore_pattern_local(
+    target: Vec[Option[ctir::CtValue]],
+    saved: Vec[Option[ctir::CtValue]],
+    slot: isize,
+) -> unit {
+    if slot >= 0 && slot < target.len() && slot < saved.len() {
+        target.set(slot, saved[slot])
+    } else {}
+}
+
+fn restore_pattern_locals(
+    target: Vec[Option[ctir::CtValue]],
+    saved: Vec[Option[ctir::CtValue]],
+    pattern: ctir::CtPattern,
+) -> unit {
+    match pattern {
+        ctir::CtPattern::Bind { slot } => restore_pattern_local(target, saved, slot),
+        ctir::CtPattern::Tuple(patterns) | ctir::CtPattern::Or(patterns) => for pattern in patterns {
+            restore_pattern_locals(target, saved, pattern)
+        },
+        ctir::CtPattern::Array { prefix, rest, suffix } => {
+            for pattern in prefix {
+                restore_pattern_locals(target, saved, pattern)
+            }
+            match rest {
+                Some(slot) => restore_pattern_local(target, saved, slot),
+                None => (),
+            }
+            for pattern in suffix {
+                restore_pattern_locals(target, saved, pattern)
+            }
+        },
+        ctir::CtPattern::Struct { name: _, fields } => for field in fields {
+            restore_pattern_locals(target, saved, field.1)
+        },
+        ctir::CtPattern::Enum { name: _, variant: _, fields } => for pattern in fields {
+            restore_pattern_locals(target, saved, pattern)
+        },
+        ctir::CtPattern::Alias { slot, pattern } => {
+            restore_pattern_local(target, saved, slot);
+            restore_pattern_locals(target, saved, pattern)
+        },
+        ctir::CtPattern::Wild | ctir::CtPattern::Value(_) | ctir::CtPattern::Constant { .. } | ctir::CtPattern::Range {
+            ..,
+        } => (),
+    }
+}
+
 fn set_local(frame: EvalFrame, slot: isize, value: ctir::CtValue) -> bool {
     if slot < 0 || slot >= frame.locals.len() {
         false
@@ -1265,10 +1313,10 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
                     if guard {
                         return eval_expr(state, module, frame, arm.body)
                     } else {
-                        restore_locals(frame.locals, saved)
+                        restore_pattern_locals(frame.locals, saved, arm.pattern)
                     }
                 } else {
-                    restore_locals(frame.locals, saved)
+                    restore_pattern_locals(frame.locals, saved, arm.pattern)
                 }
             }
             Result::Err(
