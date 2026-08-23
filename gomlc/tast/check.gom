@@ -3191,6 +3191,120 @@ fn pattern_has_or_binding_diagnostic(ctx: Checker, span: ast::Span) -> bool {
     false
 }
 
+struct OrPatternBinding {
+    name: string,
+    is_mut: bool,
+    ty: Type,
+}
+
+fn find_or_pattern_binding(values: Vec[OrPatternBinding], name: string) -> Option[OrPatternBinding] {
+    for value in values {
+        if value.name == name {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn push_or_pattern_binding(
+    values: Vec[OrPatternBinding],
+    name: string,
+    is_mut: bool,
+    ty: Type,
+) -> unit {
+    if find_or_pattern_binding(values, name).is_some() {} else {
+        values.push(OrPatternBinding { name, is_mut, ty })
+    }
+}
+
+fn collect_or_pattern_bindings(values: Vec[OrPatternBinding], value: Pat) -> unit {
+    match value {
+        Var { name, is_mut, ty } => push_or_pattern_binding(values, name, is_mut, ty),
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } => for arg in args {
+            collect_or_pattern_bindings(values, arg)
+        },
+        Array { prefix, rest, suffix, ty: _ } => {
+            for value in prefix {
+                collect_or_pattern_bindings(values, value)
+            }
+            match rest {
+                Some(value) => match value.binding {
+                    Some(name) => push_or_pattern_binding(values, name, false, value.ty),
+                    None => (),
+                },
+                None => (),
+            };
+            for value in suffix {
+                collect_or_pattern_bindings(values, value)
+            }
+        },
+        Alias { name, pat, ty } => {
+            push_or_pattern_binding(values, name, false, ty);
+            collect_or_pattern_bindings(values, pat)
+        },
+        Or { pats, ty: _ } => if !pats.is_empty() {
+            collect_or_pattern_bindings(values, pats[0])
+        } else {},
+        Constant { name: _, ty: _ } | Prim { value: _, ty: _ } | Range {
+            start: _,
+            end: _,
+            inclusive: _,
+            ty: _,
+        } | Wild { ty: _ } => (),
+    }
+}
+
+fn or_pattern_bindings(value: Pat) -> Vec[OrPatternBinding] {
+    let result: Vec[OrPatternBinding] = Vec::new();
+    collect_or_pattern_bindings(result, value);
+    result
+}
+
+fn or_pattern_binding_hint(name: string) -> string {
+    match text::rfind(name, "/") {
+        Some(index) => name.byte_slice(0, index),
+        None => name,
+    }
+}
+
+fn validate_or_pattern_bindings(ctx: Checker, values: Vec[Pat]) -> unit {
+    if values.is_empty() {
+        return
+    } else {};
+    let expected = or_pattern_bindings(values[0]);
+    for index in 1..values.len() {
+        let actual = or_pattern_bindings(values[index]);
+        for binding in expected {
+            match find_or_pattern_binding(actual, binding.name) {
+                Some(value) => {
+                    let expected_ty = normalize_type(ctx, binding.ty);
+                    let actual_ty = normalize_type(ctx, value.ty);
+                    let expected_text = diagnostic_type_text(expected_ty);
+                    let actual_text = diagnostic_type_text(actual_ty);
+                    if unify(actual_ty, expected_ty) {} else {
+                        push_diagnostic(
+                            ctx,
+                            "Or-pattern binding `" + or_pattern_binding_hint(binding.name)
+                                + "` has inconsistent types: expected "
+                                + expected_text
+                                + ", found "
+                                + actual_text,
+                        )
+                    };
+                    if binding.is_mut == value.is_mut {} else {
+                        push_diagnostic(
+                            ctx,
+                            "Or-pattern binding `" + or_pattern_binding_hint(binding.name)
+                                + "` has inconsistent mutability",
+                        )
+                    }
+                },
+                None => (),
+            }
+        }
+    }
+}
+
 fn tast_pattern_binding_count(value: Pat) -> isize {
     match value {
         Var { name: _, is_mut: _, ty: _ } => 1,
@@ -5567,6 +5681,7 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 for value in values {
                     items.push(check_pattern(ctx, value, expected))
                 }
+                validate_or_pattern_bindings(ctx, items);
                 Pat::Or { pats: items, ty: expected }
             },
             Range { start, end, inclusive } => {
