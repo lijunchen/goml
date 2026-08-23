@@ -133,6 +133,24 @@ fn separates_top_level_and_local_go_names() -> unit {
     testing::assert_eq(local_ident(type_names, "Marker"), "_goml_local_Marker")
 }
 
+#[test]
+fn detects_yaegi_incompatible_select_control_flow() -> unit {
+    testing::assert(
+        !yaegi_compatible(
+            "Loop_outer:\nfor {\n    select {\n    default:\n        break Loop_outer\n    }\n}\n",
+        ),
+    );
+    testing::assert(
+        !yaegi_compatible(
+            "Loop_outer:\nfor {\n    select {\n    default:\n        continue Loop_outer\n    }\n}\n",
+        ),
+    );
+    testing::assert(yaegi_compatible("select {\ndefault:\n    break\n}\n"));
+    testing::assert(
+        yaegi_compatible("select {\ndefault:\n}\nLoop_outer:\nfor {\n    break Loop_outer\n}\n"),
+    )
+}
+
 fn lower_linked_source(source: string) -> File {
     let counter = Ref::new(0);
     let builtins = test_builtins(counter);
