@@ -12,6 +12,10 @@ const FORWARD_WRAPPED: i8 = MAX_I8 + 1;
 
 const MAX_I8: i8 = 127;
 
+const NEGATIVE_ONE_I16: i16 = -1;
+
+const PREFIX: string = "fixed";
+
 fn show_i8(value: i8) -> unit {
     println(value)
 }
@@ -41,5 +45,13 @@ fn main() -> unit {
     show_u8(WRAPPED_PRODUCT);
     show_i8(WRAPPED_DIVISION);
     show_i8(WRAPPED_NEGATION);
-    show_i8(FORWARD_WRAPPED)
+    show_i8(FORWARD_WRAPPED);
+    show_i8(MAX_I8 + 1);
+    show_i8(WRAPPED_I8 / -1);
+    show_i8(-WRAPPED_I8);
+    let converted: u8 = NEGATIVE_ONE_I16.to_u8();
+    show_u8(converted);
+    let runtime_value: i8 = 127;
+    show_i8(runtime_value + 1);
+    println(PREFIX + " width")
 }
