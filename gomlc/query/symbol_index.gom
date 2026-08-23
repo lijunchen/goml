@@ -248,12 +248,13 @@ fn symbol_has_receiver(syntax: SyntaxIndex, node: SyntaxNode, kind: SymbolKind) 
             let mut first: Option[SyntaxNode] = Option::None;
             for candidate in syntax.nodes {
                 if cst::node_kind_equal(candidate.kind, cst::NodeKind::PARAM)
-                    && candidate.start >= node.start && candidate.end <= node.end
+                    && candidate.start >= node.start
+                    && candidate.end <= node.end
                     && match first {
                         Some(existing) => candidate.start < existing.start,
                         None => true,
                     } {
-                    first = Option::Some(candidate)
+                    first = Option::Some(candidate);
                 } else {}
             }
             match first {

@@ -569,12 +569,7 @@ fn completion_symbol_visible(value: Analysis, symbol: Symbol) -> bool {
     symbol.package_name == value.package_name || symbol.public
 }
 
-fn visible_method_symbol(
-    value: Analysis,
-    owner: string,
-    name: string,
-    require_receiver: bool,
-) -> bool {
+fn visible_method_symbol(value: Analysis, owner: string, name: string, require_receiver: bool) -> bool {
     for symbol in build_symbol_index(value).symbols {
         if match symbol.kind {
             Method => true,
@@ -590,11 +585,7 @@ fn visible_method_symbol(
     false
 }
 
-fn visible_environment_method(
-    value: Analysis,
-    method: tast::MethodInfo,
-    require_receiver: bool,
-) -> bool {
+fn visible_environment_method(value: Analysis, method: tast::MethodInfo, require_receiver: bool) -> bool {
     visible_method_symbol(
         value,
         method_owner(method),
@@ -845,7 +836,8 @@ fn complete_named_methods(
                 qualified_owner(symbol.qualified_name),
                 receiver_name,
             )
-            && completion_symbol_visible(value, symbol) && symbol.has_receiver {
+            && completion_symbol_visible(value, symbol)
+            && symbol.has_receiver {
             push_completion(
                 result,
                 CompletionItem {

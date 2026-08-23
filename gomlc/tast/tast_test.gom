@@ -1313,10 +1313,7 @@ fn validates_fixed_array_pattern_lengths() -> unit {
         "fn choose(value: [i32; 1]) -> i32 { match value { [first, .., last] => first + last, _ => 0 } }",
     );
     testing::assert(
-        has_diagnostic(
-            rest_too_long,
-            "Array length mismatch: expected [i32; 2], found [i32; 1]",
-        ),
+        has_diagnostic(rest_too_long, "Array length mismatch: expected [i32; 2], found [i32; 1]"),
     );
     testing::assert_eq(
         checked_diagnostics(
