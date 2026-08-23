@@ -1302,6 +1302,15 @@ fn checks_dynamic_guarded_arm_usefulness() -> unit {
 }
 
 #[test]
+fn suppresses_match_coverage_after_pattern_errors() -> unit {
+    let diagnostics = checked_diagnostics(
+        "struct Pair { left: bool, right: bool } fn choose(value: Pair) -> i32 { match value { Pair { left: true } => 1, Pair { left: true, right: false } => 2, _ => 3 } }",
+    );
+    testing::assert_eq(diagnostics.len(), 1);
+    testing::assert_eq(diagnostics[0].message, "Struct pattern Pair missing field right")
+}
+
+#[test]
 fn validates_or_pattern_binding_consistency() -> unit {
     let types = checked_diagnostics(
         "enum Value { Number(i32), Text(string) } fn inspect(value: Value) -> unit { match value { Value::Number(item) | Value::Text(item) => () } }",
