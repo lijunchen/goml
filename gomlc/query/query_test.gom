@@ -1573,7 +1573,7 @@ fn keeps_hover_types_for_canonical_declarations() -> unit {
     }
     let left_path = left_dir + "/left.gom";
     let right_path = right_dir + "/right.gom";
-    let left_source = "package left; use module::right; type Label = isize; const answer: Label = 1; trait Choose { fn choose(self: Self, trait_value: string) -> string; } struct Item {} impl Choose for Item { fn choose(self: Item, implementation_value: string) -> string { implementation_value } } impl Item { fn choose(self: Item, inherent_value: isize) -> isize { inherent_value } } pub fn select(value: isize) -> isize { value } pub fn use_right(value: string) -> string { right::select(value) }";
+    let left_source = "package left; use module::right; type Label = isize; const answer: Label = 1; trait Choose { fn choose(self: Self, trait_value: string) -> string; } struct Item {} impl Choose for Item { fn choose(self: Item, implementation_value: string) -> string { implementation_value } } impl Item { fn choose(self: Item, inherent_value: isize) -> isize { inherent_value } } struct TraitOnly {} impl Choose for TraitOnly { fn choose(self: TraitOnly, trait_only_value: string) -> string { trait_only_value } } pub fn select(value: isize) -> isize { value } pub fn use_right(value: string) -> string { right::select(value) } fn use_item(value: Item) -> isize { value.choose(1) } fn use_trait(value: TraitOnly) -> string { value.choose(\"trait\") }";
     let right_source = "package right; pub type Label = string; pub const answer: Label = \"right\"; pub fn select(value: string) -> string { value }";
     write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::hover_owner_collision\"\n");
     write_query_fixture(left_path, left_source);
@@ -1611,6 +1611,21 @@ fn keeps_hover_types_for_canonical_declarations() -> unit {
                 None => testing::fail("expected method hover for " + expected.0),
             },
             None => testing::fail("expected method " + expected.0),
+        }
+    }
+    for expected in Vec::from_array(
+        [
+            ("value.choose(1)", "fn choose(self: Item, inherent"),
+            ("value.choose(\"trait\")", "fn choose(self: Self"),
+        ],
+    ) {
+        match (last_substring(left_source, expected.0), last_substring(left_source, expected.1)) {
+            (Some(call), Some(declaration)) => {
+                let definitions = goto_definitions(analysis, call + "value.".byte_len());
+                testing::assert_eq(definitions.len(), 1);
+                testing::assert_eq(definitions[0].span.start, declaration + "fn ".byte_len())
+            },
+            _ => testing::fail("expected method definition fixture"),
         }
     }
 }
