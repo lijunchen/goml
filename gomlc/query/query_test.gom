@@ -937,6 +937,75 @@ fn completes_scope_and_struct_members() -> unit {
 }
 
 #[test]
+fn separates_members_for_same_named_types_across_packages() -> unit {
+    let root = "/tmp/goml-query-owner-collision";
+    let left_dir = root + "/left";
+    let right_dir = root + "/right";
+    for directory in Vec::from_array([root, left_dir, right_dir]) {
+        match fs::create_dir_all(directory) {
+            Ok(()) => (),
+            Err(error) => testing::fail(error),
+        }
+    }
+    let left_path = left_dir + "/item.gom";
+    let right_path = right_dir + "/item.gom";
+    let main_path = root + "/main.gom";
+    let left_source = "package shared; use module::right as right; pub struct Item { pub left_only: isize, } impl Item { pub fn left_method(self: Item) -> isize { self.left_only } pub fn common(self: Item, value: isize) -> isize { value } } pub fn accept_right(value: right::Item) -> unit { () }";
+    let right_source = "package shared; pub struct Item { pub right_only: isize, } impl Item { pub fn right_method(self: Item) -> isize { self.right_only } pub fn common(self: Item, value: string) -> string { value } }";
+    let main_source = "package main; use module::left as left; use module::right as right; fn main() -> unit { let left_value = left::Item { left_only: 1 }; let right_value = right::Item { right_only: 2 }; println(left_value.left_only); println(right_value.right_only) }";
+    write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::owner_collision\"\n");
+    write_query_fixture(left_path, left_source);
+    write_query_fixture(right_path, right_source);
+    write_query_fixture(main_path, main_source);
+    let analysis = analyze(main_path, main_source);
+    assert_no_diagnostics(analysis);
+    match last_substring(main_source, "left_value.left_only") {
+        Some(offset) => {
+            let items = completions(analysis, offset + "left_value.".byte_len());
+            testing::assert(has_completion(items, "left_only"));
+            testing::assert(has_completion(items, "left_method"));
+            testing::assert(!has_completion(items, "right_only"));
+            testing::assert(!has_completion(items, "right_method"))
+        },
+        None => testing::fail("expected left member access"),
+    };
+    match last_substring(main_source, "right_value.right_only") {
+        Some(offset) => {
+            let items = completions(analysis, offset + "right_value.".byte_len());
+            testing::assert(has_completion(items, "right_only"));
+            testing::assert(has_completion(items, "right_method"));
+            testing::assert(!has_completion(items, "left_only"));
+            testing::assert(!has_completion(items, "left_method"))
+        },
+        None => testing::fail("expected right member access"),
+    };
+    let invalid_source = "package main; use module::left as left; use module::right as right; fn main() -> unit { let left_value = left::Item { left_only: 1 }; println(left_value.right_only) }";
+    match last_substring(invalid_source, "left_value.right_only") {
+        Some(offset) => testing::assert_eq(
+            goto_definitions(
+                analyze(main_path, invalid_source),
+                offset + "left_value.".byte_len() + 1,
+            )
+            .len(),
+            0,
+        ),
+        None => testing::fail("expected invalid member access"),
+    };
+    let left_analysis = analyze(left_path, left_source);
+    assert_no_diagnostics(left_analysis);
+    match last_substring(left_source, "fn common") {
+        Some(offset) => match hover(left_analysis, offset + "fn ".byte_len()) {
+            Some(result) => testing::assert_eq(
+                result.contents,
+                "(query::owner_collision::left::Item, isize) -> isize",
+            ),
+            None => testing::fail("expected left method hover"),
+        },
+        None => testing::fail("expected left method definition"),
+    }
+}
+
+#[test]
 fn completes_incomplete_member_and_enum_paths() -> unit {
     let member_source = "struct Point { x: i32 } fn main() -> unit { let point = Point { x: 1 }; let _ = point.; () }";
     testing::assert(
