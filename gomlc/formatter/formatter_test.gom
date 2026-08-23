@@ -332,6 +332,14 @@ fn removes_redundant_unit_expressions_and_semicolons() -> unit {
 }
 
 #[test]
+fn preserves_semicolons_after_labeled_while_and_for_statements() -> unit {
+    expect_format(
+        "fn main(values:Vec[isize])->unit{'retry:while false{continue 'retry;};println(1);'items:for value in values{let _=value;break 'items;};println(2)}",
+        "fn main(values: Vec[isize]) -> unit {\n    'retry: while false {\n        continue 'retry;\n    };\n    println(1);\n    'items: for value in values {\n        let _ = value;\n        break 'items;\n    };\n    println(2)\n}\n",
+    )
+}
+
+#[test]
 fn formats_enum_variants_like_rustfmt() -> unit {
     expect_format(
         "enum Compact[T]{None,One{value:T},Two(T)}enum Expanded[T]{One{value:T},Pair{left:T,right:T},Other{value:T}}enum Wide{First{value:ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth},Second{value:isize}}",
