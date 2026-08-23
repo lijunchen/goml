@@ -7,6 +7,7 @@ struct SnapshotNames {
     locals: snapshot_names::Names,
     joins: snapshot_names::Names,
     declared_locals: HashMap[string, unit],
+    canonicalize_all_locals: bool,
 }
 
 fn collect_local(values: HashMap[string, unit], name: string) -> unit {
@@ -68,7 +69,7 @@ fn collect_block_locals(values: HashMap[string, unit], value: Block) -> unit {
     collect_term_locals(values, value.term)
 }
 
-fn snapshot_names_new(value: Function) -> SnapshotNames {
+fn snapshot_names_new(value: Function, canonicalize_all_locals: bool) -> SnapshotNames {
     let declared_locals: HashMap[string, unit] = HashMap::new();
     for param in value.params {
         collect_local(declared_locals, param.0)
@@ -78,11 +79,12 @@ fn snapshot_names_new(value: Function) -> SnapshotNames {
         locals: snapshot_names::names(),
         joins: snapshot_names::names(),
         declared_locals,
+        canonicalize_all_locals,
     }
 }
 
 fn snapshot_local(names: SnapshotNames, value: string) -> string {
-    if names.declared_locals.contains(value) {
+    if names.canonicalize_all_locals || names.declared_locals.contains(value) {
         snapshot_names::canonical(names.locals, value)
     } else {
         value
@@ -295,8 +297,8 @@ fn snapshot_term(names: SnapshotNames, value: Term) -> Term {
     }
 }
 
-fn snapshot_function(value: Function) -> Function {
-    let names = snapshot_names_new(value);
+fn snapshot_function(value: Function, canonicalize_all_locals: bool) -> Function {
+    let names = snapshot_names_new(value, canonicalize_all_locals);
     let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
     for param in value.params {
         params.push((snapshot_local(names, param.0), param.1))
@@ -312,10 +314,10 @@ fn snapshot_function(value: Function) -> Function {
     }
 }
 
-pub fn canonicalize_names(value: File) -> File {
+fn canonicalize_file(value: File, canonicalize_all_locals: bool) -> File {
     let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
     for function in value.functions {
-        functions.push(snapshot_function(function))
+        functions.push(snapshot_function(function, canonicalize_all_locals))
     }
     File {
         functions,
@@ -328,6 +330,10 @@ pub fn canonicalize_names(value: File) -> File {
     }
 }
 
+pub fn canonicalize_names(value: File) -> File {
+    canonicalize_file(value, false)
+}
+
 pub fn encode_snapshot(value: File) -> string {
-    encode(canonicalize_names(value))
+    encode(canonicalize_file(value, true))
 }
