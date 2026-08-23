@@ -3810,17 +3810,19 @@ fn merge_loop_outcomes(target: LoopOutcomes, value: LoopOutcomes) -> LoopOutcome
 fn block_loop_outcomes(
     value: anf::Block,
     loop_name: string,
+    external_exit: string,
     parent: Vec[anf::JoinBind],
     internal_joins: Vec[anf::JoinBind],
     visited: Vec[string],
 ) -> LoopOutcomes {
     let joins = scoped_joins(parent, value);
-    term_loop_outcomes(value.term, loop_name, joins, internal_joins, visited)
+    term_loop_outcomes(value.term, loop_name, external_exit, joins, internal_joins, visited)
 }
 
 fn term_loop_outcomes(
     value: anf::Term,
     loop_name: string,
+    external_exit: string,
     joins: Vec[anf::JoinBind],
     internal_joins: Vec[anf::JoinBind],
     visited: Vec[string],
@@ -3829,6 +3831,12 @@ fn term_loop_outcomes(
         Jump { target, args, ret_ty: _ } => if target == loop_name {
             if args.is_empty() {
                 LoopOutcomes { has_continue: true, exits: Vec::new(), valid: true }
+            } else {
+                invalid_loop_outcomes()
+            }
+        } else if external_exit != "" && target == external_exit {
+            if args.is_empty() {
+                LoopOutcomes { has_continue: false, exits: Vec::from_array([target]), valid: true }
             } else {
                 invalid_loop_outcomes()
             }
@@ -3842,6 +3850,7 @@ fn term_loop_outcomes(
                         let result = block_loop_outcomes(
                             join.body,
                             loop_name,
+                            external_exit,
                             joins,
                             internal_joins,
                             visited,
@@ -3860,6 +3869,7 @@ fn term_loop_outcomes(
                         let result = block_loop_outcomes(
                             join.body,
                             loop_name,
+                            external_exit,
                             joins,
                             internal_joins,
                             visited,
@@ -3876,11 +3886,11 @@ fn term_loop_outcomes(
             let mut result = new_loop_outcomes();
             result = merge_loop_outcomes(
                 result,
-                block_loop_outcomes(then_, loop_name, joins, internal_joins, visited),
+                block_loop_outcomes(then_, loop_name, external_exit, joins, internal_joins, visited),
             );
             result = merge_loop_outcomes(
                 result,
-                block_loop_outcomes(else_, loop_name, joins, internal_joins, visited),
+                block_loop_outcomes(else_, loop_name, external_exit, joins, internal_joins, visited),
             );
             result
         },
@@ -3890,7 +3900,14 @@ fn term_loop_outcomes(
             for arm in arms {
                 result = merge_loop_outcomes(
                     result,
-                    block_loop_outcomes(arm.body, loop_name, joins, internal_joins, visited),
+                    block_loop_outcomes(
+                        arm.body,
+                        loop_name,
+                        external_exit,
+                        joins,
+                        internal_joins,
+                        visited,
+                    ),
                 );
                 branches = branches + 1;
             }
@@ -3898,7 +3915,14 @@ fn term_loop_outcomes(
                 Some(body) => {
                     result = merge_loop_outcomes(
                         result,
-                        block_loop_outcomes(body, loop_name, joins, internal_joins, visited),
+                        block_loop_outcomes(
+                            body,
+                            loop_name,
+                            external_exit,
+                            joins,
+                            internal_joins,
+                            visited,
+                        ),
                     );
                     branches = branches + 1;
                 },
@@ -3920,6 +3944,7 @@ fn term_loop_outcomes(
                             Receive { body, .. } | Send { body, .. } => body,
                         },
                         loop_name,
+                        external_exit,
                         joins,
                         internal_joins,
                         visited,
@@ -3931,7 +3956,14 @@ fn term_loop_outcomes(
                 Some(body) => {
                     result = merge_loop_outcomes(
                         result,
-                        block_loop_outcomes(body, loop_name, joins, internal_joins, visited),
+                        block_loop_outcomes(
+                            body,
+                            loop_name,
+                            external_exit,
+                            joins,
+                            internal_joins,
+                            visited,
+                        ),
                     );
                     branches = branches + 1;
                 },
@@ -3955,7 +3987,7 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
     };
     let internal_joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(internal_joins, value);
-    let outcomes = block_loop_outcomes(value, loop_name, parent, internal_joins, Vec::new());
+    let outcomes = block_loop_outcomes(value, loop_name, "", parent, internal_joins, Vec::new());
     if !outcomes.valid || !outcomes.has_continue || outcomes.exits.is_empty() {
         return Option::None
     } else {};
@@ -3966,6 +3998,36 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
         } else {}
     }
     Option::Some(target)
+}
+
+fn nested_loop_outer_exit_target(
+    value: anf::Block,
+    loop_name: string,
+    outer_loop_name: string,
+    parent: Vec[anf::JoinBind],
+) -> Option[string] {
+    if outer_loop_name == "" {
+        return Option::None
+    } else {};
+    let internal_joins: Vec[anf::JoinBind] = Vec::new();
+    collect_joins_block(internal_joins, value);
+    let outcomes = block_loop_outcomes(
+        value,
+        loop_name,
+        outer_loop_name,
+        parent,
+        internal_joins,
+        Vec::new(),
+    );
+    if !outcomes.valid || !outcomes.has_continue || outcomes.exits.is_empty() {
+        return Option::None
+    } else {};
+    for target in outcomes.exits {
+        if target != outer_loop_name {
+            return Option::None
+        } else {}
+    }
+    Option::Some(outer_loop_name)
 }
 
 fn find_loop_exit(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
@@ -4483,25 +4545,37 @@ fn compile_joinrec_in_loop(
     let loop_names: Vec[string] = Vec::new();
     let single = values.len() == 1;
     for value in values {
-        match find_loop_exit(value.body, value.name, env.joins) {
+        let exit_target = if single {
+            match nested_loop_outer_exit_target(value.body, value.name, outer_loop_name, env.joins) {
+                Some(target) => Option::Some(target),
+                None => find_loop_exit(value.body, value.name, env.joins),
+            }
+        } else {
+            find_loop_exit(value.body, value.name, env.joins)
+        };
+        match exit_target {
             Some(exit_name) => {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, exit_name, label);
                 stmts.push(loop_stmt(label, body));
-                match find_join(env.joins, exit_name) {
-                    Some(exit) => {
-                        append_stmts(
-                            stmts,
-                            compile_loop_block(
-                                env,
-                                exit.body,
-                                outer_loop_name,
-                                outer_exit_name,
-                                outer_label,
-                            ).stmts,
-                        )
-                    },
-                    None => (),
+                if exit_name == outer_loop_name {
+                    stmts.push(Stmt::Continue)
+                } else {
+                    match find_join(env.joins, exit_name) {
+                        Some(exit) => {
+                            append_stmts(
+                                stmts,
+                                compile_loop_block(
+                                    env,
+                                    exit.body,
+                                    outer_loop_name,
+                                    outer_exit_name,
+                                    outer_label,
+                                ).stmts,
+                            )
+                        },
+                        None => (),
+                    }
                 };
                 loop_names.push(value.name)
             },
