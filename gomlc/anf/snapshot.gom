@@ -69,14 +69,22 @@ fn collect_block_locals(values: HashMap[string, unit], value: Block) -> unit {
     collect_term_locals(values, value.term)
 }
 
-fn snapshot_names_new(value: Function, canonicalize_all_locals: bool) -> SnapshotNames {
+fn snapshot_names_new(
+    value: Function,
+    canonicalize_all_locals: bool,
+    reserved: Vec[string],
+) -> SnapshotNames {
     let declared_locals: HashMap[string, unit] = HashMap::new();
     for param in value.params {
         collect_local(declared_locals, param.0)
     }
     collect_block_locals(declared_locals, value.body);
+    let locals = snapshot_names::names();
+    for name in reserved {
+        let _ = snapshot_names::canonical(locals, name);
+    }
     SnapshotNames {
-        locals: snapshot_names::names(),
+        locals,
         joins: snapshot_names::names(),
         declared_locals,
         canonicalize_all_locals,
@@ -297,8 +305,12 @@ fn snapshot_term(names: SnapshotNames, value: Term) -> Term {
     }
 }
 
-fn snapshot_function(value: Function, canonicalize_all_locals: bool) -> Function {
-    let names = snapshot_names_new(value, canonicalize_all_locals);
+fn snapshot_function(
+    value: Function,
+    canonicalize_all_locals: bool,
+    reserved: Vec[string],
+) -> Function {
+    let names = snapshot_names_new(value, canonicalize_all_locals, reserved);
     let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
     for param in value.params {
         params.push((snapshot_local(names, param.0), param.1))
@@ -315,9 +327,19 @@ fn snapshot_function(value: Function, canonicalize_all_locals: bool) -> Function
 }
 
 fn canonicalize_file(value: File, canonicalize_all_locals: bool) -> File {
+    let reserved: Vec[string] = Vec::new();
+    for function in value.functions {
+        reserved.push(function.name)
+    }
+    for constant in value.constants {
+        reserved.push(constant.name)
+    }
+    for static_value in value.statics {
+        reserved.push(static_value.name)
+    }
     let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
     for function in value.functions {
-        functions.push(snapshot_function(function, canonicalize_all_locals))
+        functions.push(snapshot_function(function, canonicalize_all_locals, reserved))
     }
     File {
         functions,
