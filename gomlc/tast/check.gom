@@ -5353,7 +5353,15 @@ fn check_array_pattern(
     suffix: Vec[hir::Pat],
     expected: Type,
 ) -> Pat {
-    let (elem, rest_ty) = array_pattern_types(ctx, expected, prefix.len() + suffix.len());
+    let fixed_count = prefix.len() + suffix.len();
+    match prune(expected) {
+        Array { len: length, elem } => if (rest.is_some() && fixed_count > length)
+            || (rest.is_none() && fixed_count != length) {
+            expect_type(ctx, expected, Type::Array { len: fixed_count, elem })
+        } else {},
+        _ => (),
+    };
+    let (elem, rest_ty) = array_pattern_types(ctx, expected, fixed_count);
     let typed_prefix: Vec[Pat] = Vec::new();
     for value in prefix {
         typed_prefix.push(check_pattern(ctx, value, elem))
