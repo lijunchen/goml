@@ -1278,6 +1278,24 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
 }
 
 #[test]
+fn checks_dynamic_guarded_arm_usefulness() -> unit {
+    let dynamic = checked_diagnostics(
+        "fn choose(value: bool, enabled: bool) -> isize { match value { true if enabled => 1, true if !enabled => 2, true => 3, false => 0 } }",
+    );
+    testing::assert_eq(dynamic.len(), 0);
+    let covered = checked_diagnostics(
+        "fn choose(value: bool, enabled: bool) -> isize { match value { true => 1, true if enabled => 2, false => 0 } }",
+    );
+    testing::assert_eq(covered.len(), 1);
+    testing::assert_eq(covered[0].message, "Unreachable match arm");
+    let constant_false = checked_diagnostics(
+        "fn choose(value: bool) -> isize { match value { true if false => 1, true => 2, false => 0 } }",
+    );
+    testing::assert_eq(constant_false.len(), 1);
+    testing::assert_eq(constant_false[0].message, "Unreachable match arm")
+}
+
+#[test]
 fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
     testing::assert_eq(
         coverage_decrement_magnitude("100000000000000000000"),
