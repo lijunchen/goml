@@ -850,9 +850,9 @@ fn keeps_signature_names_for_canonical_cross_package_targets() -> unit {
     let left_path = left_dir + "/item.gom";
     let right_path = right_dir + "/item.gom";
     let main_path = root + "/main.gom";
-    let left_source = "package shared; pub struct Item {} impl Item { pub fn choose(self: Item, left_method_value: isize) -> isize { left_method_value } } pub fn call(left_function_value: isize) -> isize { left_function_value }";
+    let left_source = "package shared; pub struct Item {} pub trait Choose { fn choose(self: Self, trait_value: string) -> string; } impl Choose for Item { fn choose(self: Item, implementation_value: string) -> string { implementation_value } } impl Item { pub fn choose(self: Item, left_method_value: isize) -> isize { left_method_value } } pub fn call(left_function_value: isize) -> isize { left_function_value } #[go_ffi(\"strings\", \"external_call\")] pub extern fn external_call(extern_value: string) -> string;";
     let right_source = "package shared; pub struct Item {} impl Item { pub fn choose(self: Item, right_method_value: isize) -> isize { right_method_value } } pub fn call(right_function_value: isize) -> isize { right_function_value }";
-    let main_source = "package main; use module::left as left; use module::right as right; fn main() -> unit { let left_value = left::Item {}; let right_value = right::Item {}; println(left_value.choose(1)); println(right_value.choose(2)); println(left::call(3)); println(right::call(4)) }";
+    let main_source = "package main; use module::left as left; use module::right as right; fn main() -> unit { let left_value = left::Item {}; let right_value = right::Item {}; println(left_value.choose(1)); println(right_value.choose(2)); println(left::call(3)); println(right::call(4)); println(left::external_call(\"value\")); println(left::Choose::choose(left_value, \"trait\")) }";
     write_query_fixture(
         root + "/goml.toml",
         "[module]\npath = \"query::signature_owner_collision\"\n",
@@ -868,6 +868,7 @@ fn keeps_signature_names_for_canonical_cross_package_targets() -> unit {
             ("right_value.choose(", "(right_method_value: isize) -> isize"),
             ("left::call(", "(left_function_value: isize) -> isize"),
             ("right::call(", "(right_function_value: isize) -> isize"),
+            ("left::external_call(", "(extern_value: string) -> string"),
         ],
     ) {
         match last_substring(main_source, expected.0) {
@@ -877,6 +878,17 @@ fn keeps_signature_names_for_canonical_cross_package_targets() -> unit {
             },
             None => testing::fail("expected call " + expected.0),
         }
+    }
+    match last_substring(main_source, "left::Choose::choose(") {
+        Some(offset) => match signature_help(analysis, offset + "left::Choose::choose(".byte_len()) {
+            Some(signature) => {
+                testing::assert(signature.label.contains("trait_value: string"));
+                testing::assert(!signature.label.contains("implementation_value"));
+                testing::assert(!signature.label.contains("left_method_value"))
+            },
+            None => testing::fail("expected trait UFCS signature help"),
+        },
+        None => testing::fail("expected trait UFCS call"),
     }
 }
 
