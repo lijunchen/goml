@@ -1,3 +1,18 @@
+fn trait_impl#Hash#DerivedKey#hash(self/0: DerivedKey) -> u64 {
+  let h/0 = ((0 as u64) + 14695981039346656037) in
+  let h/1 =
+    ((h/0 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#isize#hash(DerivedKey.id(self/0))) in
+  h/1
+}
+
+fn trait_impl#PartialEq#DerivedKey#eq(self/0: DerivedKey, other/0: DerivedKey) -> bool {
+  if true {
+      trait_impl#PartialEq#isize#eq(DerivedKey.id(self/0), DerivedKey.id(other/0))
+  } else {
+      false
+  }
+}
+
 fn trait_impl#PartialEq#LoggedKey#eq(self/0: LoggedKey, other/0: LoggedKey) -> bool {
   let _wild0 =
     inherent#Ref#Ref[T]#set__T_string(
@@ -103,6 +118,81 @@ fn main() -> unit {
   let inferred_no_words/0 = inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() in
   let _wild10 =
     println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(inferred_no_words/0)) in
+  let native_entries/0 = [(1, 10)] in
+  let native_first/0 = @intrinsic(hashmap.from_array)(native_entries/0) in
+  let _wild11 =
+    let place_root1 = native_entries/0 in
+    let index1 = 0 in
+    let place1 = @intrinsic(array.get)(place_root1, index1) in
+    let value1 = (2, 20) in
+    native_entries/0 = @intrinsic(array.set)(place_root1, index1, value1) in
+  let native_second/0 = @intrinsic(hashmap.from_array)(native_entries/0) in
+  let _wild12 =
+    println__T_string(
+      ((((("" +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[T]#unwrap_or__T_isize(
+            inherent#HashMap#HashMap[K,V]#get__K_isize__V_isize(native_first/0, 1),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[T]#unwrap_or__T_isize(
+            inherent#HashMap#HashMap[K,V]#get__K_isize__V_isize(native_second/0, 1),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[T]#unwrap_or__T_isize(
+            inherent#HashMap#HashMap[K,V]#get__K_isize__V_isize(native_second/0, 2),
+            0
+          )
+        ))
+    ) in
+  let derived_entries/0 = [(DerivedKey { id: 1 }, 30)] in
+  let derived_first/0 = @intrinsic(hashmap.from_array)(derived_entries/0) in
+  let _wild13 =
+    let place_root2 = derived_entries/0 in
+    let index2 = 0 in
+    let place2 = @intrinsic(array.get)(place_root2, index2) in
+    let value2 = (DerivedKey { id: 2 }, 40) in
+    derived_entries/0 = @intrinsic(array.set)(place_root2, index2, value2) in
+  let derived_second/0 = @intrinsic(hashmap.from_array)(derived_entries/0) in
+  let _wild14 =
+    println__T_string(
+      ((((("" +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[T]#unwrap_or__T_isize(
+            inherent#HashMap#HashMap[K,V]#get__K_DerivedKey__V_isize(
+              derived_first/0,
+              DerivedKey { id: 1 }
+            ),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[T]#unwrap_or__T_isize(
+            inherent#HashMap#HashMap[K,V]#get__K_DerivedKey__V_isize(
+              derived_second/0,
+              DerivedKey { id: 1 }
+            ),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[T]#unwrap_or__T_isize(
+            inherent#HashMap#HashMap[K,V]#get__K_DerivedKey__V_isize(
+              derived_second/0,
+              DerivedKey { id: 2 }
+            ),
+            0
+          )
+        ))
+    ) in
   let pairs/0 = @intrinsic(vec.from_array)([(1, "a"), (2, "b")]) in
   let nested/0 =
     @intrinsic(vec.from_array)(
@@ -128,6 +218,14 @@ fn main() -> unit {
       ":") +
       inherent#isize#isize#to_string(nested_value/0))
   )
+}
+
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  @runtime(core.int_hash)(self/0)
+}
+
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
 fn inherent#Ref#Ref[T]#get__T_string(self/0: Ref[string]) -> string {
@@ -187,6 +285,33 @@ fn inherent#HashMap#HashMap[K,V]#len__K_string__V_isize(self/0: HashMap[string, 
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() -> HashMap[string, isize] {
   @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_isize__V_isize(
+  self/0: HashMap[isize, isize],
+  key/0: isize
+) -> Option__isize {
+  @intrinsic(hashmap.get)(self/0, key/0)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/0: isize) -> isize {
+  match self/0 {
+    Option__isize::None => {
+      fallback/0
+    },
+    Option__isize::Some(x0) => {
+      let x0 = Option__isize::Some._0(self/0) in
+      let value/0 = x0 in
+      value/0
+    },
+  }
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_DerivedKey__V_isize(
+  self/0: HashMap[DerivedKey, isize],
+  key/0: DerivedKey
+) -> Option__isize {
+  @intrinsic(hashmap.get)(self/0, key/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_string__V_Vec[isize](
@@ -273,12 +398,4 @@ fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
 
 fn trait_impl#Hash#string#hash(self/0: string) -> u64 {
   @runtime(core.string_hash)(self/0)
-}
-
-fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
-  (self/0 == other/0)
-}
-
-fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
-  @runtime(core.int_hash)(self/0)
 }

@@ -3150,6 +3150,42 @@ fn trait_impl#Hash#usize#hash(self/0: usize) -> u64 {
   @runtime(core.uint_hash)(self/0)
 }
 
+fn inherent#Option#Option[T]#unwrap_or[T](self/0: Option[T], fallback/0: T) -> T {
+  match self/0 {
+    Option::None => {
+      fallback/0
+    },
+    Option::Some(x0) => {
+      {
+        let x0 = Option::Some._0(self/0) in
+        {
+          let value/0 = x0 in
+          value/0
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/0: Result[T, E], fallback/0: T) -> T {
+  match self/0 {
+    Result::Ok(x0) => {
+      {
+        let x0 = Result::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          value/0
+        }
+      }
+    },
+    Result::Err(x1) => {
+      {
+        fallback/0
+      }
+    },
+  }
+}
+
 fn trait_impl#PartialEq#Ordering#eq(self/0: Ordering, other/0: Ordering) -> bool {
   match self/0 {
     Ordering::Less => {
@@ -3185,6 +3221,27 @@ fn trait_impl#Eq#Ordering#__marker() -> unit {
 
 fn println(value/0: T) -> unit {
   @runtime(core.string_println)(trait_call[ToString::to_string](value/0))
+}
+
+fn trait_impl#Hash#DerivedKey#hash(self/0: DerivedKey) -> u64 {
+  {
+    let h/0 = ((0 as u64) + 14695981039346656037) in
+    let h/1 =
+      ((h/0 * ((0 as u64) + 1099511628211)) + trait_call[Hash::hash](DerivedKey.id(self/0))) in
+    h/1
+  }
+}
+
+fn trait_impl#PartialEq#DerivedKey#eq(self/0: DerivedKey, other/0: DerivedKey) -> bool {
+  if true {
+      trait_call[PartialEq::eq](DerivedKey.id(self/0), DerivedKey.id(other/0))
+  } else {
+      false
+  }
+}
+
+fn trait_impl#Eq#DerivedKey#__marker() -> unit {
+  ()
 }
 
 fn trait_impl#PartialEq#LoggedKey#eq(self/0: LoggedKey, other/0: LoggedKey) -> bool {
@@ -3294,6 +3351,76 @@ fn main() -> unit {
   let _wild9 = println(inherent#HashMap#HashMap[string,isize]#len(no_words/0)) in
   let inferred_no_words/0 = inherent#HashMap#HashMap[string,isize]#new() in
   let _wild10 = println(inherent#HashMap#HashMap[string,isize]#len(inferred_no_words/0)) in
+  let native_entries/0 = [(1, 10)] in
+  let native_first/0 = @intrinsic(hashmap.from_array)(native_entries/0) in
+  let _wild11 =
+    {
+      let place_root1 = native_entries/0 in
+      let index1 = 0 in
+      let place1 = @intrinsic(array.get)(place_root1, index1) in
+      let value1 = (2, 20) in
+      native_entries/0 = @intrinsic(array.set)(place_root1, index1, value1)
+    } in
+  let native_second/0 = @intrinsic(hashmap.from_array)(native_entries/0) in
+  let _wild12 =
+    println(
+      ((((("" +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[isize]#unwrap_or(
+            inherent#HashMap#HashMap[isize,isize]#get(native_first/0, 1),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[isize]#unwrap_or(
+            inherent#HashMap#HashMap[isize,isize]#get(native_second/0, 1),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[isize]#unwrap_or(
+            inherent#HashMap#HashMap[isize,isize]#get(native_second/0, 2),
+            0
+          )
+        ))
+    ) in
+  let derived_entries/0 = [(DerivedKey { id: 1 }, 30)] in
+  let derived_first/0 = @intrinsic(hashmap.from_array)(derived_entries/0) in
+  let _wild13 =
+    {
+      let place_root2 = derived_entries/0 in
+      let index2 = 0 in
+      let place2 = @intrinsic(array.get)(place_root2, index2) in
+      let value2 = (DerivedKey { id: 2 }, 40) in
+      derived_entries/0 = @intrinsic(array.set)(place_root2, index2, value2)
+    } in
+  let derived_second/0 = @intrinsic(hashmap.from_array)(derived_entries/0) in
+  let _wild14 =
+    println(
+      ((((("" +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[isize]#unwrap_or(
+            inherent#HashMap#HashMap[DerivedKey,isize]#get(derived_first/0, DerivedKey { id: 1 }),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[isize]#unwrap_or(
+            inherent#HashMap#HashMap[DerivedKey,isize]#get(derived_second/0, DerivedKey { id: 1 }),
+            0
+          )
+        )) +
+        ":") +
+        inherent#isize#isize#to_string(
+          inherent#Option#Option[isize]#unwrap_or(
+            inherent#HashMap#HashMap[DerivedKey,isize]#get(derived_second/0, DerivedKey { id: 2 }),
+            0
+          )
+        ))
+    ) in
   let pairs/0 = @intrinsic(vec.from_array)([(1, "a"), (2, "b")]) in
   let nested/0 =
     @intrinsic(vec.from_array)(

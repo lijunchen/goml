@@ -4,6 +4,29 @@ struct LoggedKey {
     log: Ref[string],
 }
 
+#[derive(Hash, PartialEq, Eq)]
+struct DerivedKey {
+    id: isize,
+}
+
+impl Hash for DerivedKey {
+  fn hash(self: DerivedKey) -> u64 {
+      {
+          let h = 0.to_u64() + 14695981039346656037;
+          let h = h * 0.to_u64() + 1099511628211 + Hash::hash(self.id);
+          h
+      }
+  }
+}
+
+impl PartialEq for DerivedKey {
+  fn eq(self: DerivedKey, other: DerivedKey) -> bool {
+      true && PartialEq::eq(self.id, other.id)
+  }
+}
+
+impl Eq for DerivedKey where isize: Eq {}
+
 impl PartialEq for LoggedKey {
   fn eq(self: LoggedKey, other: LoggedKey) -> bool {
       self.log.set(self.log.get() + "E");
@@ -65,6 +88,24 @@ fn main() -> unit {
     println(no_words.len());
     let inferred_no_words: HashMap[string, isize] = HashMap::new();
     println(inferred_no_words.len());
+    let mut native_entries = [(1, 10)];
+    let native_first = HashMap::from_array(native_entries);
+    native_entries[0] = (2, 20);
+    let native_second = HashMap::from_array(native_entries);
+    println(
+      f"{native_first.get(1).unwrap_or(0)}:{native_second.get(1).unwrap_or(0)}:{native_second.get(
+        2
+      ).unwrap_or(0)}"
+    );
+    let mut derived_entries = [(DerivedKey { id: 1 }, 30)];
+    let derived_first = HashMap::from_array(derived_entries);
+    derived_entries[0] = (DerivedKey { id: 2 }, 40);
+    let derived_second = HashMap::from_array(derived_entries);
+    println(
+      f"{derived_first.get(DerivedKey { id: 1 }).unwrap_or(0)}:{derived_second.get(
+        DerivedKey { id: 1 }
+      ).unwrap_or(0)}:{derived_second.get(DerivedKey { id: 2 }).unwrap_or(0)}"
+    );
     let pairs = Vec::from_array([(1, "a"), (2, "b")]);
     let nested = Vec::from_array([Vec::from_array([1, 2]), Vec::from_array([3, 4])]);
     let nested_map = HashMap::from_array([("values", Vec::from_array([5, 6]))]);
