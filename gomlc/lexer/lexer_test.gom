@@ -18,6 +18,15 @@ fn assert_token(
     testing::assert_eq(token.end, end)
 }
 
+fn assert_error_token(tokens: Vec[Token], index: isize, message: string) -> unit {
+    let token = tokens.get(index);
+    testing::assert(token_kind_equal(token.kind, TokenKind::Error));
+    match token.error {
+        Some(error) => testing::assert_eq(error.message, message),
+        None => testing::fail("expected lexer error metadata"),
+    }
+}
+
 #[test]
 fn lexes_basic_tokens() -> unit {
     let tokens = lex("let a = 123");
@@ -167,6 +176,34 @@ fn lexes_strings_chars_comments_and_multiline_strings() -> unit {
     testing::assert_eq(tokens.get(8).text, "\\\\first\n  \\\\second");
     testing::assert(token_kind_equal(tokens.get(9).kind, TokenKind::Whitespace));
     testing::assert(token_kind_equal(tokens.get(10).kind, TokenKind::Ident))
+}
+
+#[test]
+fn rejects_surrogate_unicode_escapes() -> unit {
+    assert_error_token(lex("\"\\uD800\""), 0, "invalid escape sequence in string literal");
+    assert_error_token(lex("\"\\uDFFF\""), 0, "invalid escape sequence in string literal");
+    assert_error_token(
+        lex("f\"\\uD800\""),
+        1,
+        "invalid escape sequence in interpolated string literal",
+    );
+    assert_error_token(
+        lex("f\"\\uDFFF\""),
+        1,
+        "invalid escape sequence in interpolated string literal",
+    );
+    assert_error_token(lex("'\\uD800'"), 0, "invalid character literal");
+    assert_error_token(lex("'\\uDFFF'"), 0, "invalid character literal");
+    let strings = lex("\"\\uD7FF\\uE000\"");
+    testing::assert_eq(strings.len(), 1);
+    testing::assert(token_kind_equal(strings.get(0).kind, TokenKind::Str));
+    let interpolated = lex("f\"\\uD7FF\\uE000\"");
+    testing::assert_eq(interpolated.len(), 3);
+    testing::assert(token_kind_equal(interpolated.get(1).kind, TokenKind::FStringText));
+    let chars = lex("'\\uD7FF' '\\uE000'");
+    testing::assert_eq(chars.len(), 3);
+    testing::assert(token_kind_equal(chars.get(0).kind, TokenKind::CharLit));
+    testing::assert(token_kind_equal(chars.get(2).kind, TokenKind::CharLit))
 }
 
 #[test]
