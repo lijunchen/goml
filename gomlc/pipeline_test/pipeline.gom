@@ -105,7 +105,16 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
                 testing::fail("failed to write Go source: " + message);
                 return ""
             },
-        }
+        };
+        if fs::is_file(executable) {
+            match fs::remove_file(executable) {
+                Ok(()) => (),
+                Err(message) => {
+                    testing::fail("failed to remove stale executable: " + message);
+                    return ""
+                },
+            }
+        } else {}
     };
     let interpreted = if source_current && fs::is_file(executable)
         || !go_backend::yaegi_compatible(go_source) {
