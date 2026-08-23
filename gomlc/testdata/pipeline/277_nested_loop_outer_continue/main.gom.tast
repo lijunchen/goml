@@ -1,0 +1,56 @@
+fn unique_outer_continue() -> isize {
+    let rounds/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    loop {
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+          (rounds/0 : Ref[isize]),
+          (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) + 1
+        );
+        if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) == 2 {
+            {
+                break (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize]))
+            }
+        } else {
+            {
+                loop {
+                    if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) == 1 {
+                        {
+                            continue@1
+                        }
+                    } else {
+                        {
+                            continue
+                        }
+                    }
+                };
+                break 99
+            }
+        }
+    }
+}
+
+fn mixed_outer_continue_and_local_exit() -> isize {
+    let rounds/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    loop {
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+          (rounds/1 : Ref[isize]),
+          (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) + 1
+        );
+        loop {
+            if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) == 1 {
+                {
+                    continue@1
+                }
+            } else {
+                {
+                    break
+                }
+            }
+        };
+        break 12
+    }
+}
+
+fn main() -> unit {
+    (println : (isize) -> unit)((unique_outer_continue : () -> isize)());
+    (println : (isize) -> unit)((mixed_outer_continue_and_local_exit : () -> isize)())
+}

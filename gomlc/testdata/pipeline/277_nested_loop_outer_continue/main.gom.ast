@@ -1,0 +1,52 @@
+package main;
+fn unique_outer_continue() -> isize {
+    let rounds = Ref::new(0);
+    'outer: loop {
+        rounds.set(rounds.get() + 1);
+        if rounds.get() == 2 {
+            {
+                break 'outer rounds.get()
+            }
+        } else {
+            {
+                loop {
+                    if rounds.get() == 1 {
+                        {
+                            continue 'outer
+                        }
+                    } else {
+                        {
+                            continue
+                        }
+                    }
+                };
+                break 'outer 99
+            }
+        }
+    }
+}
+
+fn mixed_outer_continue_and_local_exit() -> isize {
+    let rounds = Ref::new(0);
+    'outer: loop {
+        rounds.set(rounds.get() + 1);
+        loop {
+            if rounds.get() == 1 {
+                {
+                    continue 'outer
+                }
+            } else {
+                {
+                    break
+                }
+            }
+        };
+        break 'outer 12
+    }
+}
+
+fn main() -> unit {
+    println(unique_outer_continue());
+    println(mixed_outer_continue_and_local_exit())
+}
+

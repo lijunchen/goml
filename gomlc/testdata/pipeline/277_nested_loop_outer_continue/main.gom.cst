@@ -1,0 +1,403 @@
+FILE@0..871
+  FN@0..439
+    FnKeyword@0..2 "fn"
+    Whitespace@2..3 " "
+    Ident@3..24 "unique_outer_continue"
+    PARAM_LIST@24..27
+      LParen@24..25 "("
+      RParen@25..26 ")"
+      Whitespace@26..27 " "
+    Arrow@27..29 "->"
+    Whitespace@29..30 " "
+    TYPE_INT@30..36
+      IsizeKeyword@30..35 "isize"
+      Whitespace@35..36 " "
+    BLOCK@36..439
+      LBrace@36..37 "{"
+      Whitespace@37..42 "\n    "
+      STMT_LET@42..72
+        LetKeyword@42..45 "let"
+        Whitespace@45..46 " "
+        PATTERN_VARIABLE@46..53
+          Ident@46..52 "rounds"
+          Whitespace@52..53 " "
+        Eq@53..54 "="
+        Whitespace@54..55 " "
+        EXPR_CALL@55..66
+          EXPR_IDENT@55..63
+            PATH@55..63
+              Ident@55..58 "Ref"
+              ColonColon@58..60 "::"
+              Ident@60..63 "new"
+          ARG_LIST@63..66
+            LParen@63..64 "("
+            ARG@64..65
+              EXPR_INT@64..65
+                Int@64..65 "0"
+            RParen@65..66 ")"
+        Semi@66..67 ";"
+        Whitespace@67..72 "\n    "
+      EXPR_LOOP@72..436
+        Label@72..78 "'outer"
+        Colon@78..79 ":"
+        Whitespace@79..80 " "
+        LoopKeyword@80..84 "loop"
+        Whitespace@84..85 " "
+        BLOCK@85..436
+          LBrace@85..86 "{"
+          Whitespace@86..95 "\n        "
+          STMT_EXPR@95..133
+            EXPR_CALL@95..123
+              EXPR_BINARY@95..105
+                EXPR_IDENT@95..101
+                  PATH@95..101
+                    Ident@95..101 "rounds"
+                Dot@101..102 "."
+                EXPR_IDENT@102..105
+                  PATH@102..105
+                    Ident@102..105 "set"
+              ARG_LIST@105..123
+                LParen@105..106 "("
+                ARG@106..122
+                  EXPR_BINARY@106..122
+                    EXPR_CALL@106..119
+                      EXPR_BINARY@106..116
+                        EXPR_IDENT@106..112
+                          PATH@106..112
+                            Ident@106..112 "rounds"
+                        Dot@112..113 "."
+                        EXPR_IDENT@113..116
+                          PATH@113..116
+                            Ident@113..116 "get"
+                      ARG_LIST@116..119
+                        LParen@116..117 "("
+                        RParen@117..118 ")"
+                        Whitespace@118..119 " "
+                    Plus@119..120 "+"
+                    Whitespace@120..121 " "
+                    EXPR_INT@121..122
+                      Int@121..122 "1"
+                RParen@122..123 ")"
+            Semi@123..124 ";"
+            Whitespace@124..133 "\n        "
+          EXPR_IF@133..434
+            IfKeyword@133..135 "if"
+            Whitespace@135..136 " "
+            EXPR_IF_COND@136..154
+              EXPR_BINARY@136..154
+                EXPR_CALL@136..149
+                  EXPR_BINARY@136..146
+                    EXPR_IDENT@136..142
+                      PATH@136..142
+                        Ident@136..142 "rounds"
+                    Dot@142..143 "."
+                    EXPR_IDENT@143..146
+                      PATH@143..146
+                        Ident@143..146 "get"
+                  ARG_LIST@146..149
+                    LParen@146..147 "("
+                    RParen@147..148 ")"
+                    Whitespace@148..149 " "
+                EqEq@149..151 "=="
+                Whitespace@151..152 " "
+                EXPR_INT@152..154
+                  Int@152..153 "2"
+                  Whitespace@153..154 " "
+            EXPR_IF_THEN@154..204
+              BLOCK@154..204
+                LBrace@154..155 "{"
+                Whitespace@155..168 "\n            "
+                EXPR_BREAK@168..202
+                  BreakKeyword@168..173 "break"
+                  Whitespace@173..174 " "
+                  Label@174..180 "'outer"
+                  Whitespace@180..181 " "
+                  EXPR_CALL@181..202
+                    EXPR_BINARY@181..191
+                      EXPR_IDENT@181..187
+                        PATH@181..187
+                          Ident@181..187 "rounds"
+                      Dot@187..188 "."
+                      EXPR_IDENT@188..191
+                        PATH@188..191
+                          Ident@188..191 "get"
+                    ARG_LIST@191..202
+                      LParen@191..192 "("
+                      RParen@192..193 ")"
+                      Whitespace@193..202 "\n        "
+                RBrace@202..203 "}"
+                Whitespace@203..204 " "
+            ElseKeyword@204..208 "else"
+            Whitespace@208..209 " "
+            EXPR_IF_ELSE@209..434
+              BLOCK@209..434
+                LBrace@209..210 "{"
+                Whitespace@210..223 "\n            "
+                STMT_EXPR@223..404
+                  EXPR_LOOP@223..390
+                    LoopKeyword@223..227 "loop"
+                    Whitespace@227..228 " "
+                    BLOCK@228..390
+                      LBrace@228..229 "{"
+                      Whitespace@229..246 "\n                "
+                      EXPR_IF@246..389
+                        IfKeyword@246..248 "if"
+                        Whitespace@248..249 " "
+                        EXPR_IF_COND@249..267
+                          EXPR_BINARY@249..267
+                            EXPR_CALL@249..262
+                              EXPR_BINARY@249..259
+                                EXPR_IDENT@249..255
+                                  PATH@249..255
+                                    Ident@249..255 "rounds"
+                                Dot@255..256 "."
+                                EXPR_IDENT@256..259
+                                  PATH@256..259
+                                    Ident@256..259 "get"
+                              ARG_LIST@259..262
+                                LParen@259..260 "("
+                                RParen@260..261 ")"
+                                Whitespace@261..262 " "
+                            EqEq@262..264 "=="
+                            Whitespace@264..265 " "
+                            EXPR_INT@265..267
+                              Int@265..266 "1"
+                              Whitespace@266..267 " "
+                        EXPR_IF_THEN@267..323
+                          BLOCK@267..323
+                            LBrace@267..268 "{"
+                            Whitespace@268..289 "\n                    "
+                            EXPR_CONTINUE@289..321
+                              ContinueKeyword@289..297 "continue"
+                              Whitespace@297..298 " "
+                              Label@298..304 "'outer"
+                              Whitespace@304..321 "\n                "
+                            RBrace@321..322 "}"
+                            Whitespace@322..323 " "
+                        ElseKeyword@323..327 "else"
+                        Whitespace@327..328 " "
+                        EXPR_IF_ELSE@328..389
+                          BLOCK@328..389
+                            LBrace@328..329 "{"
+                            Whitespace@329..350 "\n                    "
+                            EXPR_CONTINUE@350..375
+                              ContinueKeyword@350..358 "continue"
+                              Whitespace@358..375 "\n                "
+                            RBrace@375..376 "}"
+                            Whitespace@376..389 "\n            "
+                      RBrace@389..390 "}"
+                  Semi@390..391 ";"
+                  Whitespace@391..404 "\n            "
+                EXPR_BREAK@404..428
+                  BreakKeyword@404..409 "break"
+                  Whitespace@409..410 " "
+                  Label@410..416 "'outer"
+                  Whitespace@416..417 " "
+                  EXPR_INT@417..428
+                    Int@417..419 "99"
+                    Whitespace@419..428 "\n        "
+                RBrace@428..429 "}"
+                Whitespace@429..434 "\n    "
+          RBrace@434..435 "}"
+          Whitespace@435..436 "\n"
+      RBrace@436..437 "}"
+      Whitespace@437..439 "\n\n"
+  FN@439..760
+    FnKeyword@439..441 "fn"
+    Whitespace@441..442 " "
+    Ident@442..477 "mixed_outer_continue_ ..."
+    PARAM_LIST@477..480
+      LParen@477..478 "("
+      RParen@478..479 ")"
+      Whitespace@479..480 " "
+    Arrow@480..482 "->"
+    Whitespace@482..483 " "
+    TYPE_INT@483..489
+      IsizeKeyword@483..488 "isize"
+      Whitespace@488..489 " "
+    BLOCK@489..760
+      LBrace@489..490 "{"
+      Whitespace@490..495 "\n    "
+      STMT_LET@495..525
+        LetKeyword@495..498 "let"
+        Whitespace@498..499 " "
+        PATTERN_VARIABLE@499..506
+          Ident@499..505 "rounds"
+          Whitespace@505..506 " "
+        Eq@506..507 "="
+        Whitespace@507..508 " "
+        EXPR_CALL@508..519
+          EXPR_IDENT@508..516
+            PATH@508..516
+              Ident@508..511 "Ref"
+              ColonColon@511..513 "::"
+              Ident@513..516 "new"
+          ARG_LIST@516..519
+            LParen@516..517 "("
+            ARG@517..518
+              EXPR_INT@517..518
+                Int@517..518 "0"
+            RParen@518..519 ")"
+        Semi@519..520 ";"
+        Whitespace@520..525 "\n    "
+      EXPR_LOOP@525..757
+        Label@525..531 "'outer"
+        Colon@531..532 ":"
+        Whitespace@532..533 " "
+        LoopKeyword@533..537 "loop"
+        Whitespace@537..538 " "
+        BLOCK@538..757
+          LBrace@538..539 "{"
+          Whitespace@539..548 "\n        "
+          STMT_EXPR@548..586
+            EXPR_CALL@548..576
+              EXPR_BINARY@548..558
+                EXPR_IDENT@548..554
+                  PATH@548..554
+                    Ident@548..554 "rounds"
+                Dot@554..555 "."
+                EXPR_IDENT@555..558
+                  PATH@555..558
+                    Ident@555..558 "set"
+              ARG_LIST@558..576
+                LParen@558..559 "("
+                ARG@559..575
+                  EXPR_BINARY@559..575
+                    EXPR_CALL@559..572
+                      EXPR_BINARY@559..569
+                        EXPR_IDENT@559..565
+                          PATH@559..565
+                            Ident@559..565 "rounds"
+                        Dot@565..566 "."
+                        EXPR_IDENT@566..569
+                          PATH@566..569
+                            Ident@566..569 "get"
+                      ARG_LIST@569..572
+                        LParen@569..570 "("
+                        RParen@570..571 ")"
+                        Whitespace@571..572 " "
+                    Plus@572..573 "+"
+                    Whitespace@573..574 " "
+                    EXPR_INT@574..575
+                      Int@574..575 "1"
+                RParen@575..576 ")"
+            Semi@576..577 ";"
+            Whitespace@577..586 "\n        "
+          STMT_EXPR@586..735
+            EXPR_LOOP@586..735
+              LoopKeyword@586..590 "loop"
+              Whitespace@590..591 " "
+              BLOCK@591..735
+                LBrace@591..592 "{"
+                Whitespace@592..605 "\n            "
+                EXPR_IF@605..725
+                  IfKeyword@605..607 "if"
+                  Whitespace@607..608 " "
+                  EXPR_IF_COND@608..626
+                    EXPR_BINARY@608..626
+                      EXPR_CALL@608..621
+                        EXPR_BINARY@608..618
+                          EXPR_IDENT@608..614
+                            PATH@608..614
+                              Ident@608..614 "rounds"
+                          Dot@614..615 "."
+                          EXPR_IDENT@615..618
+                            PATH@615..618
+                              Ident@615..618 "get"
+                        ARG_LIST@618..621
+                          LParen@618..619 "("
+                          RParen@619..620 ")"
+                          Whitespace@620..621 " "
+                      EqEq@621..623 "=="
+                      Whitespace@623..624 " "
+                      EXPR_INT@624..626
+                        Int@624..625 "1"
+                        Whitespace@625..626 " "
+                  EXPR_IF_THEN@626..674
+                    BLOCK@626..674
+                      LBrace@626..627 "{"
+                      Whitespace@627..644 "\n                "
+                      EXPR_CONTINUE@644..672
+                        ContinueKeyword@644..652 "continue"
+                        Whitespace@652..653 " "
+                        Label@653..659 "'outer"
+                        Whitespace@659..672 "\n            "
+                      RBrace@672..673 "}"
+                      Whitespace@673..674 " "
+                  ElseKeyword@674..678 "else"
+                  Whitespace@678..679 " "
+                  EXPR_IF_ELSE@679..725
+                    BLOCK@679..725
+                      LBrace@679..680 "{"
+                      Whitespace@680..697 "\n                "
+                      EXPR_BREAK@697..715
+                        BreakKeyword@697..702 "break"
+                        Whitespace@702..715 "\n            "
+                      RBrace@715..716 "}"
+                      Whitespace@716..725 "\n        "
+                RBrace@725..726 "}"
+                Whitespace@726..735 "\n        "
+          EXPR_BREAK@735..755
+            BreakKeyword@735..740 "break"
+            Whitespace@740..741 " "
+            Label@741..747 "'outer"
+            Whitespace@747..748 " "
+            EXPR_INT@748..755
+              Int@748..750 "12"
+              Whitespace@750..755 "\n    "
+          RBrace@755..756 "}"
+          Whitespace@756..757 "\n"
+      RBrace@757..758 "}"
+      Whitespace@758..760 "\n\n"
+  FN@760..871
+    FnKeyword@760..762 "fn"
+    Whitespace@762..763 " "
+    Ident@763..767 "main"
+    PARAM_LIST@767..770
+      LParen@767..768 "("
+      RParen@768..769 ")"
+      Whitespace@769..770 " "
+    Arrow@770..772 "->"
+    Whitespace@772..773 " "
+    TYPE_UNIT@773..778
+      UnitKeyword@773..777 "unit"
+      Whitespace@777..778 " "
+    BLOCK@778..871
+      LBrace@778..779 "{"
+      Whitespace@779..784 "\n    "
+      STMT_EXPR@784..822
+        EXPR_CALL@784..816
+          EXPR_IDENT@784..791
+            PATH@784..791
+              Ident@784..791 "println"
+          ARG_LIST@791..816
+            LParen@791..792 "("
+            ARG@792..815
+              EXPR_CALL@792..815
+                EXPR_IDENT@792..813
+                  PATH@792..813
+                    Ident@792..813 "unique_outer_continue"
+                ARG_LIST@813..815
+                  LParen@813..814 "("
+                  RParen@814..815 ")"
+            RParen@815..816 ")"
+        Semi@816..817 ";"
+        Whitespace@817..822 "\n    "
+      EXPR_CALL@822..869
+        EXPR_IDENT@822..829
+          PATH@822..829
+            Ident@822..829 "println"
+        ARG_LIST@829..869
+          LParen@829..830 "("
+          ARG@830..867
+            EXPR_CALL@830..867
+              EXPR_IDENT@830..865
+                PATH@830..865
+                  Ident@830..865 "mixed_outer_continue_ ..."
+              ARG_LIST@865..867
+                LParen@865..866 "("
+                RParen@866..867 ")"
+          RParen@867..868 ")"
+          Whitespace@868..869 "\n"
+      RBrace@869..870 "}"
+      Whitespace@870..871 "\n"
