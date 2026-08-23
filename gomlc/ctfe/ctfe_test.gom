@@ -47,6 +47,35 @@ fn bool_expr(value: bool) -> ctir::CtExpr {
     }
 }
 
+fn unit_expr() -> ctir::CtExpr {
+    ctir::CtExpr {
+        kind: ctir::CtExprKind::Value(ctir::CtValue::Unit),
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    }
+}
+
+fn loop_then(control: ctir::CtExpr) -> ctir::CtExpr {
+    let loop_expr = ctir::CtExpr {
+        kind: ctir::CtExprKind::While { target: 7, condition: bool_expr(false), body: unit_expr() },
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    };
+    ctir::CtExpr {
+        kind: ctir::CtExprKind::Block(
+            ctir::CtBlock {
+                statements: Vec::from_array(
+                    [ctir::CtStmt::Expr(loop_expr), ctir::CtStmt::Expr(control)],
+                ),
+                tail: Option::None,
+                origin: 0,
+            },
+        ),
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    }
+}
+
 fn compile_error_expr(message: string) -> ctir::CtExpr {
     ctir::CtExpr {
         kind: ctir::CtExprKind::CompileError(
@@ -352,6 +381,34 @@ fn evaluates_local_state_and_loops() -> unit {
         expect_int(evaluate_site(module, Vec::from_array([]), 0, default_limits())),
         10,
     )
+}
+
+#[test]
+fn rejects_loop_control_after_loop_scope() -> unit {
+    let sibling_break = ctir::CtExpr {
+        kind: ctir::CtExprKind::Break { target: 7, value: Option::None },
+        ty: ctir::CtType::Never,
+        origin: 0,
+    };
+    match verify_module(
+        expression_module(loop_then(sibling_break), Vec::from_array([])),
+        Vec::from_array([]),
+    ) {
+        Err(error) => testing::assert_eq(error, "CTIR break target is not in scope"),
+        Ok(()) => testing::fail("expected sibling break target rejection"),
+    };
+    let sibling_continue = ctir::CtExpr {
+        kind: ctir::CtExprKind::Continue { target: 7 },
+        ty: ctir::CtType::Never,
+        origin: 0,
+    };
+    match verify_module(
+        expression_module(loop_then(sibling_continue), Vec::from_array([])),
+        Vec::from_array([]),
+    ) {
+        Err(error) => testing::assert_eq(error, "CTIR continue target is not in scope"),
+        Ok(()) => testing::fail("expected sibling continue target rejection"),
+    }
 }
 
 #[test]
