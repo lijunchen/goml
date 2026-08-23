@@ -49,9 +49,25 @@ pub fn server_running(value: Server) -> bool {
     value.running.get()
 }
 
-pub fn invalidate_analyses(value: Server) -> unit {
+fn advance_generation(value: Server) -> unit {
     value.generation.set(value.generation.get() + 1);
     value.line_indexes.clear()
+}
+
+pub fn invalidate_analyses(value: Server) -> unit {
+    value.analyses.clear();
+    advance_generation(value)
+}
+
+fn invalidate_other_analyses(value: Server, path: string) -> unit {
+    let mut index = value.analyses.len();
+    while index > 0 {
+        index = index - 1;
+        if value.analyses[index].path != path {
+            let _ = value.analyses.remove(index);
+        } else {}
+    }
+    advance_generation(value)
 }
 
 fn analysis_index(value: Server, path: string) -> Option[isize] {
@@ -112,11 +128,12 @@ fn source_line_index(value: Server, source_path: string, source: string) -> text
 }
 
 pub fn open_document(value: Server, document: Document) -> unit {
+    let path = document.path;
     match document_index(value, document.uri) {
         Some(index) => value.documents.set(index, document),
         None => value.documents.push(document),
     };
-    invalidate_analyses(value)
+    invalidate_other_analyses(value, path)
 }
 
 pub fn change_document(value: Server, uri: string, text: string, version: isize) -> unit {
@@ -133,7 +150,7 @@ pub fn change_document(value: Server, uri: string, text: string, version: isize)
                     line_index: line_index(text),
                 },
             );
-            invalidate_analyses(value)
+            invalidate_other_analyses(value, current.path)
         },
         None => (),
     }
@@ -142,14 +159,7 @@ pub fn change_document(value: Server, uri: string, text: string, version: isize)
 pub fn close_document(value: Server, uri: string) -> unit {
     match document_index(value, uri) {
         Some(index) => {
-            let document = value.documents[index];
             let _ = value.documents.remove(index);
-            match analysis_index(value, document.path) {
-                Some(analysis) => {
-                    let _ = value.analyses.remove(analysis);
-                },
-                None => (),
-            };
             invalidate_analyses(value)
         },
         None => (),
