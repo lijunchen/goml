@@ -979,7 +979,7 @@ fn separates_members_for_same_named_types_across_packages() -> unit {
         },
         None => testing::fail("expected right member access"),
     };
-    let invalid_source = "package main; use module::left as left; use module::right as right; fn main() -> unit { let left_value = left::Item { left_only: 1 }; println(left_value.right_only) }";
+    let invalid_source = "package main; use module::left as left; use module::right as right; fn main() -> unit { let left_value = left::Item { left_only: 1 }; println(left_value.right_only); println(left_value.right_method()) }";
     match last_substring(invalid_source, "left_value.right_only") {
         Some(offset) => testing::assert_eq(
             goto_definitions(
@@ -989,6 +989,17 @@ fn separates_members_for_same_named_types_across_packages() -> unit {
             0,
         ),
         None => testing::fail("expected invalid member access"),
+    };
+    match last_substring(invalid_source, "left_value.right_method") {
+        Some(offset) => testing::assert_eq(
+            goto_definitions(
+                analyze(main_path, invalid_source),
+                offset + "left_value.".byte_len() + 1,
+            )
+            .len(),
+            0,
+        ),
+        None => testing::fail("expected invalid method access"),
     };
     let left_analysis = analyze(left_path, left_source);
     assert_no_diagnostics(left_analysis);
