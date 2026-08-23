@@ -1827,6 +1827,9 @@ fn match_coverage_diagnostics(
     dependencies: Vec[ctir::CtModule],
 ) -> Vec[Diagnostic] {
     let diagnostics: Vec[Diagnostic] = Vec::new();
+    if value.invalid_patterns || bool_values_contain(value.invalid_pattern_arms, true) {
+        return diagnostics
+    } else {};
     let arms = resolve_finalized_arms(arms, module, dependencies);
     if match_arms_have_constants(arms) {
         return diagnostics
