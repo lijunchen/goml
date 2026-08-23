@@ -1633,7 +1633,7 @@ fn coverage_guard_may_match(value: Option[Expr]) -> bool {
 fn match_is_exhaustive(ctx: CoverageContext, ty: Type, arms: Vec[Arm]) -> bool {
     let matrix: Vec[Vec[CoveragePat]] = Vec::new();
     for arm in arms {
-        if coverage_guard_may_match(arm.guard) {
+        if coverage_guard(arm.guard) {
             for pattern in coverage_patterns(arm.pat) {
                 matrix.push(Vec::from_array([pattern]))
             }

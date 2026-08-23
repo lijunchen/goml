@@ -3247,6 +3247,19 @@ fn tast_or_pattern_binding_mismatch(value: Pat) -> bool {
     }
 }
 
+fn match_arms_all_never(values: Vec[Arm]) -> bool {
+    if values.is_empty() {
+        return false
+    } else {};
+    for value in values {
+        match resolve_type(expr_type(value.body)) {
+            Never => (),
+            _ => return false,
+        }
+    }
+    true
+}
+
 fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expected: Option[Type]) -> Expr {
     let scrutinee_always_exits = hir_expr_always_exits_loop_control(source);
     let scrutinee = check_expr(ctx, source, Option::None);
@@ -3286,6 +3299,13 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
         && is_numeric_type(expr_type(scrutinee)) {
         let _ = resolve_type(expr_type(scrutinee));
     } else {};
+    let match_ty = if !bool_values_contain(pattern_errors, true)
+        && match_arms_all_never(typed_arms)
+        && match_is_exhaustive(coverage_context(ctx), expr_type(scrutinee), typed_arms) {
+        Type::Never
+    } else {
+        result_ty
+    };
     Expr::Match {
         expr: scrutinee,
         arms: typed_arms,
@@ -3298,7 +3318,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
                 invalid_patterns: bool_values_contain(pattern_errors, true),
             },
         ),
-        ty: result_ty,
+        ty: match_ty,
     }
 }
 
