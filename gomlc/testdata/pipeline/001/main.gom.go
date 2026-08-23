@@ -39,15 +39,15 @@ type ParsedFloat struct {
 type Ordering int32
 
 func main0() struct{} {
-    var x801 bool = false
-    var inline812 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x801)
-    _goml_runtime_core_string_print(inline812)
+    var x0 bool = false
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x0)
+    _goml_runtime_core_string_print(inline0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
-    var t810 string = _goml_runtime_core_bool_to_string(self__401)
-    return t810
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
+    var t0 string = _goml_runtime_core_bool_to_string(self__0)
+    return t0
 }
 
 func main() {

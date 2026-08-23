@@ -74,120 +74,120 @@ type ParsedFloat struct {
 type Ordering int32
 
 func main0() struct{} {
-    var a__7 int32
-    var inline904 int32 = 1
-    a__7 = inline904
-    var b__8 int32
-    var inline902 int32 = 2
-    b__8 = inline902
-    var c__9 int32
-    var inline900 int32 = a__7 + b__8
-    c__9 = inline900
-    var inline897 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(c__9)
-    println__T_string(inline897)
-    var a__10 int32
-    var inline895 int32 = 3
-    a__10 = inline895
-    var b__11 int32
-    var inline893 int32 = 4
-    b__11 = inline893
-    var c__12 bool
-    var inline891 bool = a__10 < b__11
-    c__12 = inline891
-    var inline888 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(c__12)
-    println__T_string(inline888)
+    var a__0 int32
+    var inline10 int32 = 1
+    a__0 = inline10
+    var b__0 int32
+    var inline9 int32 = 2
+    b__0 = inline9
+    var c__0 int32
+    var inline8 int32 = a__0 + b__0
+    c__0 = inline8
+    var inline6 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(c__0)
+    println__T_string(inline6)
+    var a__1 int32
+    var inline5 int32 = 3
+    a__1 = inline5
+    var b__1 int32
+    var inline4 int32 = 4
+    b__1 = inline4
+    var c__1 bool
+    var inline3 bool = a__1 < b__1
+    c__1 = inline3
+    var inline1 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(c__1)
+    println__T_string(inline1)
     return struct{}{}
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t814 string
-    t814 = value__1
-    _goml_runtime_core_string_println(t814)
+func println__T_string(value__0 string) struct{} {
+    var t0 string
+    t0 = value__0
+    _goml_runtime_core_string_println(t0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__407 int32) string {
-    var inline907 int64 = int64(int32(self__407))
-    var inline908 string = signed_decimal_string(inline907)
-    return inline908
+func _goml_m_trait__impl_i_ToString_i_i32_i_to__string(self__0 int32) string {
+    var inline0 int64 = int64(int32(self__0))
+    var inline1 string = signed_decimal_string(inline0)
+    return inline1
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
-    var t821 string = _goml_runtime_core_bool_to_string(self__401)
-    return t821
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
+    var t0 string = _goml_runtime_core_bool_to_string(self__0)
+    return t0
 }
 
-func signed_decimal_string(value__214 int64) string {
-    var t838 bool = value__214 < 0
-    if t838 {
-        var t839 uint64 = uint64(int64(value__214))
-        var t840 uint64 = 0 - t839
-        var t841 string = decimal_string(t840)
-        var t842 string = "-" + t841
-        return t842
+func signed_decimal_string(value__0 int64) string {
+    var t0 bool = value__0 < 0
+    if t0 {
+        var t1 uint64 = uint64(int64(value__0))
+        var t2 uint64 = 0 - t1
+        var t3 string = decimal_string(t2)
+        var t4 string = "-" + t3
+        return t4
     } else {
-        var t843 uint64 = uint64(int64(value__214))
-        var t844 string = decimal_string(t843)
-        return t844
+        var t5 uint64 = uint64(int64(value__0))
+        var t6 string = decimal_string(t5)
+        return t6
     }
 }
 
-func decimal_string(value__208 uint64) string {
-    var t867 bool = value__208 == 0
-    if t867 {
+func decimal_string(value__0 uint64) string {
+    var t0 bool = value__0 == 0
+    if t0 {
         return "0"
     } else {
-        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
-        var remaining__210 uint64 = value__208
-        Loop_loop860:
+        var reversed__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__0 uint64 = value__0
+        Loop_loop0:
         for {
-            var t861 bool = remaining__210 > 0
-            if t861 {
-                var t862_rhs uint64 = 10
-                var t862 uint64 = remaining__210 % t862_rhs
-                var t863 uint8 = uint8(uint64(t862))
-                var t864 uint8 = t863 + 48
-                vec_push__Vec_5uint8(reversed__209, t864)
-                var compound_old353 uint64 = remaining__210
-                var compound_value354 uint64 = 10
-                var t865 uint64 = compound_old353 / compound_value354
-                remaining__210 = t865
+            var t10 bool = remaining__0 > 0
+            if t10 {
+                var t11_rhs uint64 = 10
+                var t11 uint64 = remaining__0 % t11_rhs
+                var t12 uint8 = uint8(uint64(t11))
+                var t13 uint8 = t12 + 48
+                vec_push__Vec_5uint8(reversed__0, t13)
+                var compound_old1 uint64 = remaining__0
+                var compound_value1 uint64 = 10
+                var t14 uint64 = compound_old1 / compound_value1
+                remaining__0 = t14
                 continue
             } else {
-                break Loop_loop860
+                break Loop_loop0
             }
         }
-        var t849 int
-        var inline926 int = vec_len__Vec_5uint8(reversed__209)
-        t849 = inline926
-        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t849)
-        var offset__212 int = 0
-        Loop_loop851:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var bytes__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t852 int
-            var inline924 int = vec_len__Vec_5uint8(reversed__209)
-            t852 = inline924
-            var t853 bool = offset__212 < t852
-            if t853 {
-                var t854 int
-                var inline922 int = vec_len__Vec_5uint8(reversed__209)
-                t854 = inline922
-                var t855 int = t854 - offset__212
-                var t856 int = t855 - 1
-                var t857 uint8 = vec_get__Vec_5uint8(reversed__209, t856)
-                vec_push__Vec_5uint8(bytes__211, t857)
-                var compound_old358 int = offset__212
-                var compound_value359 int = 1
-                var t858 int = compound_old358 + compound_value359
-                offset__212 = t858
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(bytes__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop851
+                break Loop_loop1
             }
         }
-        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
-        var x364 string = mtmp362._1
-        return x364
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 

@@ -31,14 +31,14 @@ type ParsedFloat struct {
 type Ordering int32
 
 func main0() struct{} {
-    var inline807 string = "continued"
-    var inline808 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline807)
-    _goml_runtime_core_string_println(inline808)
+    var inline0 string = "continued"
+    var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
+    _goml_runtime_core_string_println(inline1)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
 func main() {

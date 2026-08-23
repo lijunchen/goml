@@ -35,8 +35,8 @@ const (
 )
 
 func main0() Signal {
-    var current__2 Color = Color_Red
-    switch current__2 {
+    var current__0 Color = Color_Red
+    switch current__0 {
     case Color_Red:
         return Yellow
     case Green:

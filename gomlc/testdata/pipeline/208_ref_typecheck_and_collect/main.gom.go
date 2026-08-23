@@ -42,13 +42,13 @@ type Ordering int32
 
 func main0() int32 {
     var value__0 *ref_int32_x
-    var inline820 int32 = 1
-    var inline821 *ref_int32_x = ref__Ref_5int32(inline820)
-    value__0 = inline821
-    var inline817 int32 = 2
-    ref_set__Ref_5int32(value__0, inline817)
-    var inline815 int32 = ref_get__Ref_5int32(value__0)
-    return inline815
+    var inline3 int32 = 1
+    var inline4 *ref_int32_x = ref__Ref_5int32(inline3)
+    value__0 = inline4
+    var inline1 int32 = 2
+    ref_set__Ref_5int32(value__0, inline1)
+    var inline0 int32 = ref_get__Ref_5int32(value__0)
+    return inline0
 }
 
 func main() {

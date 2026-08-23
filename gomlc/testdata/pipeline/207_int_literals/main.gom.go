@@ -186,202 +186,202 @@ type ParsedFloat struct {
 type Ordering int32
 
 func increment(value__0 uint8) uint8 {
-    var t809 uint8 = value__0 + 1
-    return t809
+    var t0 uint8 = value__0 + 1
+    return t0
 }
 
 func main0() struct{} {
-    var default_integer__2 int = 40
-    var default_float__3 float64 = 0.5
-    var small__4 uint8 = 41
-    var inferred__5 [2]uint8 = [2]uint8{small__4, 2}
-    var jp819 uint8
-    jp819 = 1
-    var values__7 [2]uint16 = [2]uint16{10, 20}
-    var delayed__8 *ref_uint32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__u32(0)
-    var byte__9 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get("A", 0)
-    var t820 int = default_integer__2 + 2
-    var t821 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t820)
-    println__T_string(t821)
-    var t822 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(default_float__3)
-    println__T_string(t822)
-    var t823 uint8 = increment(small__4)
-    var t824 string
-    var inline1964 string = __goml_builtin_uint8_to_string(t823)
-    t824 = inline1964
-    var inline1961 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t824)
-    _goml_runtime_core_string_println(inline1961)
-    var t825 uint8 = array_get__Array_2_5uint8(inferred__5, 1)
-    var t826 string
-    var inline1959 string = __goml_builtin_uint8_to_string(t825)
-    t826 = inline1959
-    var inline1956 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t826)
-    _goml_runtime_core_string_println(inline1956)
-    var t827 string
-    var inline1954 string = __goml_builtin_uint8_to_string(jp819)
-    t827 = inline1954
-    var inline1951 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t827)
-    _goml_runtime_core_string_println(inline1951)
-    var t828 uint16 = array_get__Array_2_6uint16(values__7, 1)
-    var t829 string
-    var inline1949 string = __goml_builtin_uint16_to_string(t828)
-    t829 = inline1949
-    var inline1946 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t829)
-    _goml_runtime_core_string_println(inline1946)
-    var t830 float32
-    t830 = 1
-    var t831 string
-    var inline1943 string = __goml_builtin_float32_to_string(t830)
-    t831 = inline1943
-    var inline1940 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t831)
-    _goml_runtime_core_string_println(inline1940)
-    var t832 int16
-    t832 = 2
-    var t833 string
-    var inline1937 string = __goml_builtin_int16_to_string(t832)
-    t833 = inline1937
-    var inline1934 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t833)
-    _goml_runtime_core_string_println(inline1934)
-    var t834 uint32
-    var inline1932 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__u32(delayed__8)
-    t834 = inline1932
-    var t835 string
-    var inline1930 string = __goml_builtin_uint32_to_string(t834)
-    t835 = inline1930
-    var inline1927 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t835)
-    _goml_runtime_core_string_println(inline1927)
-    var t836 bool = byte__9 == 65
-    var t837 string
-    var inline1925 string = _goml_runtime_core_bool_to_string(t836)
-    t837 = inline1925
-    var inline1922 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t837)
-    _goml_runtime_core_string_println(inline1922)
-    var jp839 string
-    switch byte__9 {
+    var default_integer__0 int = 40
+    var default_float__0 float64 = 0.5
+    var small__0 uint8 = 41
+    var inferred__0 [2]uint8 = [2]uint8{small__0, 2}
+    var jp0 uint8
+    jp0 = 1
+    var values__0 [2]uint16 = [2]uint16{10, 20}
+    var delayed__0 *ref_uint32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__u32(0)
+    var byte__0 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get("A", 0)
+    var t0 int = default_integer__0 + 2
+    var t1 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t0)
+    println__T_string(t1)
+    var t2 string = _goml_m_trait__impl_i_ToString_i_f64_i_to__string(default_float__0)
+    println__T_string(t2)
+    var t3 uint8 = increment(small__0)
+    var t4 string
+    var inline26 string = __goml_builtin_uint8_to_string(t3)
+    t4 = inline26
+    var inline24 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t4)
+    _goml_runtime_core_string_println(inline24)
+    var t5 uint8 = array_get__Array_2_5uint8(inferred__0, 1)
+    var t6 string
+    var inline23 string = __goml_builtin_uint8_to_string(t5)
+    t6 = inline23
+    var inline21 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t6)
+    _goml_runtime_core_string_println(inline21)
+    var t7 string
+    var inline20 string = __goml_builtin_uint8_to_string(jp0)
+    t7 = inline20
+    var inline18 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t7)
+    _goml_runtime_core_string_println(inline18)
+    var t8 uint16 = array_get__Array_2_6uint16(values__0, 1)
+    var t9 string
+    var inline17 string = __goml_builtin_uint16_to_string(t8)
+    t9 = inline17
+    var inline15 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t9)
+    _goml_runtime_core_string_println(inline15)
+    var t10 float32
+    t10 = 1
+    var t11 string
+    var inline14 string = __goml_builtin_float32_to_string(t10)
+    t11 = inline14
+    var inline12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t11)
+    _goml_runtime_core_string_println(inline12)
+    var t12 int16
+    t12 = 2
+    var t13 string
+    var inline11 string = __goml_builtin_int16_to_string(t12)
+    t13 = inline11
+    var inline9 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t13)
+    _goml_runtime_core_string_println(inline9)
+    var t14 uint32
+    var inline8 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__u32(delayed__0)
+    t14 = inline8
+    var t15 string
+    var inline7 string = __goml_builtin_uint32_to_string(t14)
+    t15 = inline7
+    var inline5 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t15)
+    _goml_runtime_core_string_println(inline5)
+    var t16 bool = byte__0 == 65
+    var t17 string
+    var inline4 string = _goml_runtime_core_bool_to_string(t16)
+    t17 = inline4
+    var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t17)
+    _goml_runtime_core_string_println(inline2)
+    var jp1 string
+    switch byte__0 {
     case 65:
-        jp839 = "byte"
+        jp1 = "byte"
     default:
-        jp839 = "other"
+        jp1 = "other"
     }
-    var inline1919 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp839)
-    _goml_runtime_core_string_println(inline1919)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp1)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__u32(self__685 *ref_uint32_x) uint32 {
-    var t842 uint32 = ref_get__Ref_6uint32(self__685)
-    return t842
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__u32(self__0 *ref_uint32_x) uint32 {
+    var t0 uint32 = ref_get__Ref_6uint32(self__0)
+    return t0
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__u32(value__684 uint32) *ref_uint32_x {
-    var t845 *ref_uint32_x = ref__Ref_6uint32(value__684)
-    return t845
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__u32(value__0 uint32) *ref_uint32_x {
+    var t0 *ref_uint32_x = ref__Ref_6uint32(value__0)
+    return t0
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__get(self__292 string, index__293 int) uint8 {
-    var t848 uint8 = _goml_runtime_core_string_byte_get(self__292, index__293)
-    return t848
+func _goml_m_inherent_i_string_i_string_i_byte__get(self__0 string, index__0 int) uint8 {
+    var t0 uint8 = _goml_runtime_core_string_byte_get(self__0, index__0)
+    return t0
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t850 string
-    t850 = value__1
-    _goml_runtime_core_string_println(t850)
+func println__T_string(value__0 string) struct{} {
+    var t0 string
+    t0 = value__0
+    _goml_runtime_core_string_println(t0)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_isize_i_isize_i_to__string(self__285 int) string {
-    var inline1967 int64 = int64(int(self__285))
-    var inline1968 string = signed_decimal_string(inline1967)
-    return inline1968
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__0 int) string {
+    var inline0 int64 = int64(int(self__0))
+    var inline1 string = signed_decimal_string(inline0)
+    return inline1
 }
 
-func _goml_m_trait__impl_i_ToString_i_f64_i_to__string(self__414 float64) string {
-    var inline1970 uint64 = _goml_ffi_math_x00_Float64bits_x0__q__m__z_u64_h771d143dab10df93b09bfe0f407ff63e(self__414)
-    var inline1971 string = format_float_bits(inline1970, 52, 11, 1023)
-    return inline1971
+func _goml_m_trait__impl_i_ToString_i_f64_i_to__string(self__0 float64) string {
+    var inline0 uint64 = _goml_ffi_math_x00_Float64bits_x0__q__m__z_u64_h771d143dab10df93b09bfe0f407ff63e(self__0)
+    var inline1 string = format_float_bits(inline0, 52, 11, 1023)
+    return inline1
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
-func __goml_builtin_uint8_to_string(value__228 uint8) string {
-    var t888 uint64 = uint64(uint8(value__228))
-    var t889 string = decimal_string(t888)
-    return t889
+func __goml_builtin_uint8_to_string(value__0 uint8) string {
+    var t0 uint64 = uint64(uint8(value__0))
+    var t1 string = decimal_string(t0)
+    return t1
 }
 
-func __goml_builtin_uint16_to_string(value__229 uint16) string {
-    var t892 uint64 = uint64(uint16(value__229))
-    var t893 string = decimal_string(t892)
-    return t893
+func __goml_builtin_uint16_to_string(value__0 uint16) string {
+    var t0 uint64 = uint64(uint16(value__0))
+    var t1 string = decimal_string(t0)
+    return t1
 }
 
-func __goml_builtin_float32_to_string(value__194 float32) string {
-    var t896 uint32 = _goml_ffi_math_x00_Float32bits_x0__q__m__z_u32_hbbf8d280343f673a9e2fd959393f1495(value__194)
-    var t897 uint64 = uint64(uint32(t896))
-    var t898 string = format_float_bits(t897, 23, 8, 127)
-    return t898
+func __goml_builtin_float32_to_string(value__0 float32) string {
+    var t0 uint32 = _goml_ffi_math_x00_Float32bits_x0__q__m__z_u32_hbbf8d280343f673a9e2fd959393f1495(value__0)
+    var t1 uint64 = uint64(uint32(t0))
+    var t2 string = format_float_bits(t1, 23, 8, 127)
+    return t2
 }
 
-func __goml_builtin_int16_to_string(value__224 int16) string {
-    var t901 int64 = int64(int16(value__224))
-    var inline1997 bool = t901 < 0
-    if inline1997 {
-        var inline1998 uint64 = uint64(int64(t901))
-        var inline1999 uint64 = 0 - inline1998
-        var inline2000 string = decimal_string(inline1999)
-        var inline2001 string = "-" + inline2000
-        return inline2001
+func __goml_builtin_int16_to_string(value__0 int16) string {
+    var t0 int64 = int64(int16(value__0))
+    var inline0 bool = t0 < 0
+    if inline0 {
+        var inline1 uint64 = uint64(int64(t0))
+        var inline2 uint64 = 0 - inline1
+        var inline3 string = decimal_string(inline2)
+        var inline4 string = "-" + inline3
+        return inline4
     } else {
-        var inline2002 uint64 = uint64(int64(t901))
-        var inline2003 string = decimal_string(inline2002)
-        return inline2003
+        var inline5 uint64 = uint64(int64(t0))
+        var inline6 string = decimal_string(inline5)
+        return inline6
     }
 }
 
-func __goml_builtin_uint32_to_string(value__230 uint32) string {
-    var t905 uint64 = uint64(uint32(value__230))
-    var t906 string = decimal_string(t905)
-    return t906
+func __goml_builtin_uint32_to_string(value__0 uint32) string {
+    var t0 uint64 = uint64(uint32(value__0))
+    var t1 string = decimal_string(t0)
+    return t1
 }
 
-func signed_decimal_string(value__214 int64) string {
-    var t911 bool = value__214 < 0
-    if t911 {
-        var t912 uint64 = uint64(int64(value__214))
-        var t913 uint64 = 0 - t912
-        var t914 string = decimal_string(t913)
-        var t915 string = "-" + t914
-        return t915
+func signed_decimal_string(value__0 int64) string {
+    var t0 bool = value__0 < 0
+    if t0 {
+        var t1 uint64 = uint64(int64(value__0))
+        var t2 uint64 = 0 - t1
+        var t3 string = decimal_string(t2)
+        var t4 string = "-" + t3
+        return t4
     } else {
-        var t916 uint64 = uint64(int64(value__214))
-        var t917 string = decimal_string(t916)
-        return t917
+        var t5 uint64 = uint64(int64(value__0))
+        var t6 string = decimal_string(t5)
+        return t6
     }
 }
 
-func format_float_bits(bits__160 uint64, mantissa_bits__161 int, exponent_bits__162 int, exponent_bias__163 int) string {
-    var t920 int = mantissa_bits__161 + exponent_bits__162
-    var sign_mask__164_lhs uint64 = 1
-    var sign_mask__164 uint64 = sign_mask__164_lhs << t920
-    var t921 uint64 = bits__160 & sign_mask__164
-    var negative__165 bool = t921 != 0
-    var t922_lhs uint64 = 1
-    var t922 uint64 = t922_lhs << exponent_bits__162
-    var exponent_mask__166 uint64 = t922 - 1
-    var t923 uint64 = bits__160 >> mantissa_bits__161
-    var exponent__167 uint64 = t923 & exponent_mask__166
-    var t924_lhs uint64 = 1
-    var t924 uint64 = t924_lhs << mantissa_bits__161
-    var t925 uint64 = t924 - 1
-    var fraction__168 uint64 = bits__160 & t925
-    var t989 bool = exponent__167 == exponent_mask__166
-    if t989 {
-        var t991 bool = fraction__168 == 0
-        if t991 {
-            if negative__165 {
+func format_float_bits(bits__0 uint64, mantissa_bits__0 int, exponent_bits__0 int, exponent_bias__0 int) string {
+    var t0 int = mantissa_bits__0 + exponent_bits__0
+    var sign_mask__0_lhs uint64 = 1
+    var sign_mask__0 uint64 = sign_mask__0_lhs << t0
+    var t1 uint64 = bits__0 & sign_mask__0
+    var negative__0 bool = t1 != 0
+    var t2_lhs uint64 = 1
+    var t2 uint64 = t2_lhs << exponent_bits__0
+    var exponent_mask__0 uint64 = t2 - 1
+    var t3 uint64 = bits__0 >> mantissa_bits__0
+    var exponent__0 uint64 = t3 & exponent_mask__0
+    var t4_lhs uint64 = 1
+    var t4 uint64 = t4_lhs << mantissa_bits__0
+    var t5 uint64 = t4 - 1
+    var fraction__0 uint64 = bits__0 & t5
+    var t6 bool = exponent__0 == exponent_mask__0
+    if t6 {
+        var t40 bool = fraction__0 == 0
+        if t40 {
+            if negative__0 {
                 return "-inf"
             } else {
                 return "inf"
@@ -390,1088 +390,1088 @@ func format_float_bits(bits__160 uint64, mantissa_bits__161 int, exponent_bits__
             return "NaN"
         }
     } else {
-        var t997 bool = exponent__167 == 0
-        var jp995 bool
-        if t997 {
-            var t998 bool = fraction__168 == 0
-            jp995 = t998
+        var t41 bool = exponent__0 == 0
+        var jp9 bool
+        if t41 {
+            var t42 bool = fraction__0 == 0
+            jp9 = t42
         } else {
-            jp995 = false
+            jp9 = false
         }
-        if jp995 {
-            if negative__165 {
+        if jp9 {
+            if negative__0 {
                 return "-0"
             } else {
                 return "0"
             }
         } else {
-            var t986 bool = exponent__167 == 0
-            var jp928 uint64
-            if t986 {
-                jp928 = fraction__168
+            var t7 bool = exponent__0 == 0
+            var jp0 uint64
+            if t7 {
+                jp0 = fraction__0
             } else {
-                var t987_lhs uint64 = 1
-                var t987 uint64 = t987_lhs << mantissa_bits__161
-                var t988 uint64 = fraction__168 | t987
-                jp928 = t988
+                var t38_lhs uint64 = 1
+                var t38 uint64 = t38_lhs << mantissa_bits__0
+                var t39 uint64 = fraction__0 | t38
+                jp0 = t39
             }
-            var t980 bool = exponent__167 == 0
-            var jp930 int
-            if t980 {
-                var t981 int = 1 - exponent_bias__163
-                var t982 int = t981 - mantissa_bits__161
-                jp930 = t982
+            var t8 bool = exponent__0 == 0
+            var jp1 int
+            if t8 {
+                var t33 int = 1 - exponent_bias__0
+                var t34 int = t33 - mantissa_bits__0
+                jp1 = t34
             } else {
-                var t983 int = int(uint64(exponent__167))
-                var t984 int = t983 - exponent_bias__163
-                var t985 int = t984 - mantissa_bits__161
-                jp930 = t985
+                var t35 int = int(uint64(exponent__0))
+                var t36 int = t35 - exponent_bias__0
+                var t37 int = t36 - mantissa_bits__0
+                jp1 = t37
             }
-            var exact_value__171 FloatNatural = float_natural_from_u64(jp928)
-            var t935 bool = jp930 >= 0
-            var jp932 int
-            if t935 {
-                var shifted__172 FloatNatural = float_natural_shift_left(exact_value__171, jp930)
-                var digits__173 string = float_natural_decimal(shifted__172)
-                var t954 bool = mantissa_bits__161 == 23
-                var jp937 int
-                if t954 {
-                    jp937 = 9
+            var exact_value__0 FloatNatural = float_natural_from_u64(jp0)
+            var t9 bool = jp1 >= 0
+            var jp2 int
+            if t9 {
+                var shifted__0 FloatNatural = float_natural_shift_left(exact_value__0, jp1)
+                var digits__0 string = float_natural_decimal(shifted__0)
+                var t12 bool = mantissa_bits__0 == 23
+                var jp3 int
+                if t12 {
+                    jp3 = 9
                 } else {
-                    jp937 = 17
+                    jp3 = 17
                 }
-                var t951 int
-                var inline2011 int = _goml_runtime_core_string_len(digits__173)
-                t951 = inline2011
-                var t952 bool = t951 < jp937
-                var jp939 int
-                if t952 {
-                    var inline2005 int = _goml_runtime_core_string_len(digits__173)
-                    jp939 = inline2005
+                var t13 int
+                var inline3 int = _goml_runtime_core_string_len(digits__0)
+                t13 = inline3
+                var t14 bool = t13 < jp3
+                var jp4 int
+                if t14 {
+                    var inline2 int = _goml_runtime_core_string_len(digits__0)
+                    jp4 = inline2
                 } else {
-                    jp939 = jp937
+                    jp4 = jp3
                 }
-                var count__176 int = 1
-                Loop_loop942:
+                var count__0 int = 1
+                Loop_loop0:
                 for {
-                    var t943 bool = count__176 <= jp939
-                    if t943 {
-                        var mtmp317 Tuple2_6string_4bool = rounded_float_digits(digits__173, count__176)
-                        var x318 string = mtmp317._0
-                        var x319 bool = mtmp317._1
-                        var rounded__179 string = trim_float_digits(x318)
-                        var t944 int
-                        var inline2007 int = _goml_runtime_core_string_len(digits__173)
-                        t944 = inline2007
-                        var jp946 int
-                        if x319 {
-                            jp946 = 1
+                    var t15 bool = count__0 <= jp4
+                    if t15 {
+                        var mtmp0 Tuple2_6string_4bool = rounded_float_digits(digits__0, count__0)
+                        var x0 string = mtmp0._0
+                        var x1 bool = mtmp0._1
+                        var rounded__0 string = trim_float_digits(x0)
+                        var t16 int
+                        var inline1 int = _goml_runtime_core_string_len(digits__0)
+                        t16 = inline1
+                        var jp5 int
+                        if x1 {
+                            jp5 = 1
                         } else {
-                            jp946 = 0
+                            jp5 = 0
                         }
-                        var point__180 int = t944 + jp946
-                        var candidate__181 string = fixed_float_text(rounded__179, point__180, negative__165)
-                        var mtmp320 Tuple2_4bool_6uint64 = parsed_float_bits(candidate__181, mantissa_bits__161, exponent_bias__163)
-                        var x322 uint64 = mtmp320._1
-                        var t950 bool = x322 == bits__160
-                        if t950 {
-                            return candidate__181
+                        var point__0 int = t16 + jp5
+                        var candidate__0 string = fixed_float_text(rounded__0, point__0, negative__0)
+                        var mtmp1 Tuple2_4bool_6uint64 = parsed_float_bits(candidate__0, mantissa_bits__0, exponent_bias__0)
+                        var x2 uint64 = mtmp1._1
+                        var t17 bool = x2 == bits__0
+                        if t17 {
+                            return candidate__0
                         } else {
-                            var compound_old324 int = count__176
-                            var compound_value325 int = 1
-                            var t948 int = compound_old324 + compound_value325
-                            count__176 = t948
+                            var compound_old0 int = count__0
+                            var compound_value0 int = 1
+                            var t18 int = compound_old0 + compound_value0
+                            count__0 = t18
                             continue
                         }
                     } else {
-                        break Loop_loop942
+                        break Loop_loop0
                     }
                 }
-                var inline2009 int = _goml_runtime_core_string_len(digits__173)
-                jp932 = inline2009
-                var t933 string = float_natural_decimal(exact_value__171)
-                var t934 string = fixed_float_text(t933, jp932, negative__165)
-                return t934
+                var inline0 int = _goml_runtime_core_string_len(digits__0)
+                jp2 = inline0
+                var t10 string = float_natural_decimal(exact_value__0)
+                var t11 string = fixed_float_text(t10, jp2, negative__0)
+                return t11
             } else {
-                var count__183 int = 0
-                var t976 int = 0 - jp930
-                Loop_loop975:
+                var count__1 int = 0
+                var t29 int = 0 - jp1
+                Loop_loop1:
                 for {
-                    var t977 bool = count__183 < t976
-                    if t977 {
-                        float_natural_multiply_small(exact_value__171, 5)
-                        var compound_old329 int = count__183
-                        var compound_value330 int = 1
-                        var t978 int = compound_old329 + compound_value330
-                        count__183 = t978
+                    var t30 bool = count__1 < t29
+                    if t30 {
+                        float_natural_multiply_small(exact_value__0, 5)
+                        var compound_old2 int = count__1
+                        var compound_value2 int = 1
+                        var t31 int = compound_old2 + compound_value2
+                        count__1 = t31
                         continue
                     } else {
-                        break Loop_loop975
+                        break Loop_loop1
                     }
                 }
-                var digits__184 string = float_natural_decimal(exact_value__171)
-                var t956 int
-                var inline2017 int = _goml_runtime_core_string_len(digits__184)
-                t956 = inline2017
-                var point__185 int = t956 + jp930
-                var t974 bool = mantissa_bits__161 == 23
-                var jp958 int
-                if t974 {
-                    jp958 = 9
+                var digits__1 string = float_natural_decimal(exact_value__0)
+                var t20 int
+                var inline6 int = _goml_runtime_core_string_len(digits__1)
+                t20 = inline6
+                var point__1 int = t20 + jp1
+                var t21 bool = mantissa_bits__0 == 23
+                var jp6 int
+                if t21 {
+                    jp6 = 9
                 } else {
-                    jp958 = 17
+                    jp6 = 17
                 }
-                var t971 int
-                var inline2015 int = _goml_runtime_core_string_len(digits__184)
-                t971 = inline2015
-                var t972 bool = t971 < jp958
-                var jp960 int
-                if t972 {
-                    var inline2013 int = _goml_runtime_core_string_len(digits__184)
-                    jp960 = inline2013
+                var t22 int
+                var inline5 int = _goml_runtime_core_string_len(digits__1)
+                t22 = inline5
+                var t23 bool = t22 < jp6
+                var jp7 int
+                if t23 {
+                    var inline4 int = _goml_runtime_core_string_len(digits__1)
+                    jp7 = inline4
                 } else {
-                    jp960 = jp958
+                    jp7 = jp6
                 }
-                count__183 = 1
-                Loop_loop962:
+                count__1 = 1
+                Loop_loop2:
                 for {
-                    var t963 bool = count__183 <= jp960
-                    if t963 {
-                        var mtmp334 Tuple2_6string_4bool = rounded_float_digits(digits__184, count__183)
-                        var x335 string = mtmp334._0
-                        var x336 bool = mtmp334._1
-                        var rounded__190 string = trim_float_digits(x335)
-                        var jp965 int
-                        if x336 {
-                            jp965 = 1
+                    var t24 bool = count__1 <= jp7
+                    if t24 {
+                        var mtmp2 Tuple2_6string_4bool = rounded_float_digits(digits__1, count__1)
+                        var x3 string = mtmp2._0
+                        var x4 bool = mtmp2._1
+                        var rounded__1 string = trim_float_digits(x3)
+                        var jp8 int
+                        if x4 {
+                            jp8 = 1
                         } else {
-                            jp965 = 0
+                            jp8 = 0
                         }
-                        var t966 int = point__185 + jp965
-                        var candidate__191 string = fixed_float_text(rounded__190, t966, negative__165)
-                        var mtmp337 Tuple2_4bool_6uint64 = parsed_float_bits(candidate__191, mantissa_bits__161, exponent_bias__163)
-                        var x339 uint64 = mtmp337._1
-                        var t970 bool = x339 == bits__160
-                        if t970 {
-                            return candidate__191
+                        var t25 int = point__1 + jp8
+                        var candidate__1 string = fixed_float_text(rounded__1, t25, negative__0)
+                        var mtmp3 Tuple2_4bool_6uint64 = parsed_float_bits(candidate__1, mantissa_bits__0, exponent_bias__0)
+                        var x5 uint64 = mtmp3._1
+                        var t26 bool = x5 == bits__0
+                        if t26 {
+                            return candidate__1
                         } else {
-                            var compound_old341 int = count__183
-                            var compound_value342 int = 1
-                            var t968 int = compound_old341 + compound_value342
-                            count__183 = t968
+                            var compound_old1 int = count__1
+                            var compound_value1 int = 1
+                            var t27 int = compound_old1 + compound_value1
+                            count__1 = t27
                             continue
                         }
                     } else {
-                        break Loop_loop962
+                        break Loop_loop2
                     }
                 }
-                jp932 = point__185
-                var t933 string = float_natural_decimal(exact_value__171)
-                var t934 string = fixed_float_text(t933, jp932, negative__165)
-                return t934
+                jp2 = point__1
+                var t10 string = float_natural_decimal(exact_value__0)
+                var t11 string = fixed_float_text(t10, jp2, negative__0)
+                return t11
             }
         }
     }
 }
 
-func decimal_string(value__208 uint64) string {
-    var t1021 bool = value__208 == 0
-    if t1021 {
+func decimal_string(value__0 uint64) string {
+    var t0 bool = value__0 == 0
+    if t0 {
         return "0"
     } else {
-        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
-        var remaining__210 uint64 = value__208
-        Loop_loop1014:
+        var reversed__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__0 uint64 = value__0
+        Loop_loop0:
         for {
-            var t1015 bool = remaining__210 > 0
-            if t1015 {
-                var t1016_rhs uint64 = 10
-                var t1016 uint64 = remaining__210 % t1016_rhs
-                var t1017 uint8 = uint8(uint64(t1016))
-                var t1018 uint8 = t1017 + 48
-                vec_push__Vec_5uint8(reversed__209, t1018)
-                var compound_old353 uint64 = remaining__210
-                var compound_value354 uint64 = 10
-                var t1019 uint64 = compound_old353 / compound_value354
-                remaining__210 = t1019
+            var t10 bool = remaining__0 > 0
+            if t10 {
+                var t11_rhs uint64 = 10
+                var t11 uint64 = remaining__0 % t11_rhs
+                var t12 uint8 = uint8(uint64(t11))
+                var t13 uint8 = t12 + 48
+                vec_push__Vec_5uint8(reversed__0, t13)
+                var compound_old1 uint64 = remaining__0
+                var compound_value1 uint64 = 10
+                var t14 uint64 = compound_old1 / compound_value1
+                remaining__0 = t14
                 continue
             } else {
-                break Loop_loop1014
+                break Loop_loop0
             }
         }
-        var t1003 int
-        var inline2027 int = vec_len__Vec_5uint8(reversed__209)
-        t1003 = inline2027
-        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1003)
-        var offset__212 int = 0
-        Loop_loop1005:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var bytes__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t1006 int
-            var inline2025 int = vec_len__Vec_5uint8(reversed__209)
-            t1006 = inline2025
-            var t1007 bool = offset__212 < t1006
-            if t1007 {
-                var t1008 int
-                var inline2023 int = vec_len__Vec_5uint8(reversed__209)
-                t1008 = inline2023
-                var t1009 int = t1008 - offset__212
-                var t1010 int = t1009 - 1
-                var t1011 uint8 = vec_get__Vec_5uint8(reversed__209, t1010)
-                vec_push__Vec_5uint8(bytes__211, t1011)
-                var compound_old358 int = offset__212
-                var compound_value359 int = 1
-                var t1012 int = compound_old358 + compound_value359
-                offset__212 = t1012
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(bytes__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop1005
+                break Loop_loop1
             }
         }
-        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
-        var x364 string = mtmp362._1
-        return x364
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 
-func float_natural_from_u64(value__1 uint64) FloatNatural {
-    var result__2 FloatNatural
-    var inline2033 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-    var inline2034 FloatNatural = FloatNatural{
-        words: inline2033,
+func float_natural_from_u64(value__0 uint64) FloatNatural {
+    var result__0 FloatNatural
+    var inline2 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+    var inline3 FloatNatural = FloatNatural{
+        words: inline2,
     }
-    result__2 = inline2034
-    var t1025 bool = value__1 != 0
-    if t1025 {
-        var t1026 *_goml_vec_uint32 = result__2.words
-        var t1027 uint32 = uint32(uint64(value__1))
-        vec_push__Vec_6uint32(t1026, t1027)
-        var t1028_rhs int = 32
-        var t1028 uint64 = value__1 >> t1028_rhs
-        var high__3 uint32 = uint32(uint64(t1028))
-        var t1030 bool = high__3 != 0
-        if t1030 {
-            var t1031 *_goml_vec_uint32 = result__2.words
-            vec_push__Vec_6uint32(t1031, high__3)
+    result__0 = inline3
+    var t0 bool = value__0 != 0
+    if t0 {
+        var t1 *_goml_vec_uint32 = result__0.words
+        var t2 uint32 = uint32(uint64(value__0))
+        vec_push__Vec_6uint32(t1, t2)
+        var t3_rhs int = 32
+        var t3 uint64 = value__0 >> t3_rhs
+        var high__0 uint32 = uint32(uint64(t3))
+        var t4 bool = high__0 != 0
+        if t4 {
+            var t5 *_goml_vec_uint32 = result__0.words
+            vec_push__Vec_6uint32(t5, high__0)
         } else {}
     } else {}
-    return result__2
+    return result__0
 }
 
-func float_natural_shift_left(value__28 FloatNatural, bits__29 int) FloatNatural {
-    var t1060 bool
-    var inline2051 *_goml_vec_uint32 = value__28.words
-    var inline2052 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline2051)
-    t1060 = inline2052
-    if t1060 {
-        var inline2036 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-        var inline2037 FloatNatural = FloatNatural{
-            words: inline2036,
+func float_natural_shift_left(value__0 FloatNatural, bits__0 int) FloatNatural {
+    var t0 bool
+    var inline9 *_goml_vec_uint32 = value__0.words
+    var inline10 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline9)
+    t0 = inline10
+    if t0 {
+        var inline7 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+        var inline8 FloatNatural = FloatNatural{
+            words: inline7,
         }
-        return inline2037
+        return inline8
     } else {
-        var t1063 bool = bits__29 == 0
-        if t1063 {
-            var t1064 FloatNatural = float_natural_copy(value__28)
-            return t1064
+        var t19 bool = bits__0 == 0
+        if t19 {
+            var t20 FloatNatural = float_natural_copy(value__0)
+            return t20
         } else {
-            var result__30 FloatNatural
-            var inline2048 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-            var inline2049 FloatNatural = FloatNatural{
-                words: inline2048,
+            var result__0 FloatNatural
+            var inline5 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+            var inline6 FloatNatural = FloatNatural{
+                words: inline5,
             }
-            result__30 = inline2049
-            var word_shift__31 int = bits__29 / 32
-            var bit_shift__32_rhs int = 32
-            var bit_shift__32 int = bits__29 % bit_shift__32_rhs
-            var index__33 int = 0
-            Loop_loop1055:
+            result__0 = inline6
+            var word_shift__0 int = bits__0 / 32
+            var bit_shift__0_rhs int = 32
+            var bit_shift__0 int = bits__0 % bit_shift__0_rhs
+            var index__0 int = 0
+            Loop_loop0:
             for {
-                var t1056 bool = index__33 < word_shift__31
-                if t1056 {
-                    var t1057 *_goml_vec_uint32 = result__30.words
-                    var inline2039 uint32 = 0
-                    vec_push__Vec_6uint32(t1057, inline2039)
-                    var compound_old52 int = index__33
-                    var compound_value53 int = 1
-                    var t1058 int = compound_old52 + compound_value53
-                    index__33 = t1058
+                var t15 bool = index__0 < word_shift__0
+                if t15 {
+                    var t16 *_goml_vec_uint32 = result__0.words
+                    var inline3 uint32 = 0
+                    vec_push__Vec_6uint32(t16, inline3)
+                    var compound_old1 int = index__0
+                    var compound_value1 int = 1
+                    var t17 int = compound_old1 + compound_value1
+                    index__0 = t17
                     continue
                 } else {
-                    break Loop_loop1055
+                    break Loop_loop0
                 }
             }
-            var carry__34 uint64 = 0
-            index__33 = 0
-            Loop_loop1043:
+            var carry__0 uint64 = 0
+            index__0 = 0
+            Loop_loop1:
             for {
-                var t1044 *_goml_vec_uint32 = value__28.words
-                var t1045 int
-                var inline2044 int = vec_len__Vec_6uint32(t1044)
-                t1045 = inline2044
-                var t1046 bool = index__33 < t1045
-                if t1046 {
-                    var t1047 *_goml_vec_uint32 = value__28.words
-                    var word__35 uint32 = vec_get__Vec_6uint32(t1047, index__33)
-                    var t1048 uint64 = uint64(uint32(word__35))
-                    var t1049 uint64 = t1048 << bit_shift__32
-                    var shifted__36 uint64 = t1049 | carry__34
-                    var t1050 *_goml_vec_uint32 = result__30.words
-                    var t1051 uint32 = uint32(uint64(shifted__36))
-                    vec_push__Vec_6uint32(t1050, t1051)
-                    var t1052_rhs int = 32
-                    var t1052 uint64 = shifted__36 >> t1052_rhs
-                    carry__34 = t1052
-                    var compound_old59 int = index__33
-                    var compound_value60 int = 1
-                    var t1053 int = compound_old59 + compound_value60
-                    index__33 = t1053
+                var t4 *_goml_vec_uint32 = value__0.words
+                var t5 int
+                var inline2 int = vec_len__Vec_6uint32(t4)
+                t5 = inline2
+                var t6 bool = index__0 < t5
+                if t6 {
+                    var t7 *_goml_vec_uint32 = value__0.words
+                    var word__0 uint32 = vec_get__Vec_6uint32(t7, index__0)
+                    var t8 uint64 = uint64(uint32(word__0))
+                    var t9 uint64 = t8 << bit_shift__0
+                    var shifted__0 uint64 = t9 | carry__0
+                    var t10 *_goml_vec_uint32 = result__0.words
+                    var t11 uint32 = uint32(uint64(shifted__0))
+                    vec_push__Vec_6uint32(t10, t11)
+                    var t12_rhs int = 32
+                    var t12 uint64 = shifted__0 >> t12_rhs
+                    carry__0 = t12
+                    var compound_old0 int = index__0
+                    var compound_value0 int = 1
+                    var t13 int = compound_old0 + compound_value0
+                    index__0 = t13
                     continue
                 } else {
-                    break Loop_loop1043
+                    break Loop_loop1
                 }
             }
-            var t1039 bool = carry__34 != 0
-            if t1039 {
-                var t1040 *_goml_vec_uint32 = result__30.words
-                var t1041 uint32 = uint32(uint64(carry__34))
-                vec_push__Vec_6uint32(t1040, t1041)
+            var t1 bool = carry__0 != 0
+            if t1 {
+                var t2 *_goml_vec_uint32 = result__0.words
+                var t3 uint32 = uint32(uint64(carry__0))
+                vec_push__Vec_6uint32(t2, t3)
             } else {}
-            return result__30
+            return result__0
         }
     }
 }
 
-func float_natural_decimal(value__49 FloatNatural) string {
-    var t1087 bool
-    var inline2067 *_goml_vec_uint32 = value__49.words
-    var inline2068 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline2067)
-    t1087 = inline2068
-    if t1087 {
+func float_natural_decimal(value__0 FloatNatural) string {
+    var t0 bool
+    var inline7 *_goml_vec_uint32 = value__0.words
+    var inline8 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline7)
+    t0 = inline8
+    if t0 {
         return "0"
     } else {
-        var current__50 FloatNatural = float_natural_copy(value__49)
-        var reversed__51 *_goml_vec_uint8 = vec_new__Vec_5uint8()
-        Loop_loop1080:
+        var current__0 FloatNatural = float_natural_copy(value__0)
+        var reversed__0 *_goml_vec_uint8 = vec_new__Vec_5uint8()
+        Loop_loop0:
         for {
-            var t1081 bool
-            var inline2056 *_goml_vec_uint32 = current__50.words
-            var inline2057 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline2056)
-            t1081 = inline2057
-            var t1082 bool = !t1081
-            if t1082 {
-                var t1083 uint32 = float_natural_divide_small(current__50, 10)
-                var t1084 uint8 = uint8(uint32(t1083))
-                var t1085 uint8 = t1084 + 48
-                vec_push__Vec_5uint8(reversed__51, t1085)
+            var t10 bool
+            var inline5 *_goml_vec_uint32 = current__0.words
+            var inline6 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline5)
+            t10 = inline6
+            var t11 bool = !t10
+            if t11 {
+                var t12 uint32 = float_natural_divide_small(current__0, 10)
+                var t13 uint8 = uint8(uint32(t12))
+                var t14 uint8 = t13 + 48
+                vec_push__Vec_5uint8(reversed__0, t14)
                 continue
             } else {
-                break Loop_loop1080
+                break Loop_loop0
             }
         }
-        var t1069 int
-        var inline2065 int = vec_len__Vec_5uint8(reversed__51)
-        t1069 = inline2065
-        var output__52 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1069)
-        var offset__53 int = 0
-        Loop_loop1071:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var output__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t1072 int
-            var inline2063 int = vec_len__Vec_5uint8(reversed__51)
-            t1072 = inline2063
-            var t1073 bool = offset__53 < t1072
-            if t1073 {
-                var t1074 int
-                var inline2061 int = vec_len__Vec_5uint8(reversed__51)
-                t1074 = inline2061
-                var t1075 int = t1074 - offset__53
-                var t1076 int = t1075 - 1
-                var t1077 uint8 = vec_get__Vec_5uint8(reversed__51, t1076)
-                vec_push__Vec_5uint8(output__52, t1077)
-                var compound_old98 int = offset__53
-                var compound_value99 int = 1
-                var t1078 int = compound_old98 + compound_value99
-                offset__53 = t1078
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(output__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop1071
+                break Loop_loop1
             }
         }
-        var mtmp102 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__52)
-        var x104 string = mtmp102._1
-        return x104
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__len(self__289 string) int {
-    var t1090 int = _goml_runtime_core_string_len(self__289)
-    return t1090
+func _goml_m_inherent_i_string_i_string_i_byte__len(self__0 string) int {
+    var t0 int = _goml_runtime_core_string_len(self__0)
+    return t0
 }
 
-func rounded_float_digits(exact__145 string, count__146 int) Tuple2_6string_4bool {
-    var t1093 int = count__146 + 1
-    var output__147 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1093)
-    var index__148 int = 0
-    Loop_loop1148:
+func rounded_float_digits(exact__0 string, count__0 int) Tuple2_6string_4bool {
+    var t0 int = count__0 + 1
+    var output__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t0)
+    var index__0 int = 0
+    Loop_loop0:
     for {
-        var t1149 bool = index__148 < count__146
-        if t1149 {
-            var t1150 uint8
-            var inline2072 uint8 = _goml_runtime_core_string_byte_get(exact__145, index__148)
-            t1150 = inline2072
-            vec_push__Vec_5uint8(output__147, t1150)
-            var compound_old267 int = index__148
-            var compound_value268 int = 1
-            var t1151 int = compound_old267 + compound_value268
-            index__148 = t1151
+        var t37 bool = index__0 < count__0
+        if t37 {
+            var t38 uint8
+            var inline12 uint8 = _goml_runtime_core_string_byte_get(exact__0, index__0)
+            t38 = inline12
+            vec_push__Vec_5uint8(output__0, t38)
+            var compound_old3 int = index__0
+            var compound_value3 int = 1
+            var t39 int = compound_old3 + compound_value3
+            index__0 = t39
             continue
         } else {
-            break Loop_loop1148
+            break Loop_loop0
         }
     }
-    var t1145 int
-    var inline2093 int = _goml_runtime_core_string_len(exact__145)
-    t1145 = inline2093
-    var t1146 bool = count__146 == t1145
-    if t1146 {
-        var mtmp271 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__147)
-        var x273 string = mtmp271._1
-        var t1147 Tuple2_6string_4bool = Tuple2_6string_4bool{
-            _0: x273,
+    var t1 int
+    var inline10 int = _goml_runtime_core_string_len(exact__0)
+    t1 = inline10
+    var t2 bool = count__0 == t1
+    if t2 {
+        var mtmp3 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__0)
+        var x3 string = mtmp3._1
+        var t36 Tuple2_6string_4bool = Tuple2_6string_4bool{
+            _0: x3,
             _1: false,
         }
-        return t1147
+        return t36
     } else {
-        var next__150 uint8
-        var inline2091 uint8 = _goml_runtime_core_string_byte_get(exact__145, count__146)
-        next__150 = inline2091
-        var trailing__151 bool = false
-        var t1096 int = count__146 + 1
-        index__148 = t1096
-        Loop_loop1137:
+        var next__0 uint8
+        var inline9 uint8 = _goml_runtime_core_string_byte_get(exact__0, count__0)
+        next__0 = inline9
+        var trailing__0 bool = false
+        var t3 int = count__0 + 1
+        index__0 = t3
+        Loop_loop1:
         for {
-            var t1138 int
-            var inline2076 int = _goml_runtime_core_string_len(exact__145)
-            t1138 = inline2076
-            var t1139 bool = index__148 < t1138
-            if t1139 {
-                var t1143 uint8
-                var inline2074 uint8 = _goml_runtime_core_string_byte_get(exact__145, index__148)
-                t1143 = inline2074
-                var t1144 bool = t1143 != 48
-                if t1144 {
-                    trailing__151 = true
+            var t30 int
+            var inline8 int = _goml_runtime_core_string_len(exact__0)
+            t30 = inline8
+            var t31 bool = index__0 < t30
+            if t31 {
+                var t32 uint8
+                var inline7 uint8 = _goml_runtime_core_string_byte_get(exact__0, index__0)
+                t32 = inline7
+                var t33 bool = t32 != 48
+                if t33 {
+                    trailing__0 = true
                 } else {}
-                var compound_old278 int = index__148
-                var compound_value279 int = 1
-                var t1141 int = compound_old278 + compound_value279
-                index__148 = t1141
+                var compound_old2 int = index__0
+                var compound_value2 int = 1
+                var t34 int = compound_old2 + compound_value2
+                index__0 = t34
                 continue
             } else {
-                break Loop_loop1137
+                break Loop_loop1
             }
         }
-        var t1125 bool = next__150 > 53
-        var jp1099 bool
-        if t1125 {
-            jp1099 = true
+        var t4 bool = next__0 > 53
+        var jp0 bool
+        if t4 {
+            jp0 = true
         } else {
-            var t1128 bool = next__150 == 53
-            if t1128 {
-                if trailing__151 {
-                    jp1099 = true
+            var t23 bool = next__0 == 53
+            if t23 {
+                if trailing__0 {
+                    jp0 = true
                 } else {
-                    var t1131 int
-                    var inline2078 int = vec_len__Vec_5uint8(output__147)
-                    t1131 = inline2078
-                    var t1132 int = t1131 - 1
-                    var t1133 uint8 = vec_get__Vec_5uint8(output__147, t1132)
-                    var t1134 uint8 = t1133 - 48
-                    var t1135_rhs uint8 = 2
-                    var t1135 uint8 = t1134 % t1135_rhs
-                    var t1136 bool = t1135 == 1
-                    jp1099 = t1136
+                    var t24 int
+                    var inline6 int = vec_len__Vec_5uint8(output__0)
+                    t24 = inline6
+                    var t25 int = t24 - 1
+                    var t26 uint8 = vec_get__Vec_5uint8(output__0, t25)
+                    var t27 uint8 = t26 - 48
+                    var t28_rhs uint8 = 2
+                    var t28 uint8 = t27 % t28_rhs
+                    var t29 bool = t28 == 1
+                    jp0 = t29
                 }
             } else {
-                jp1099 = false
+                jp0 = false
             }
         }
-        if jp1099 {
-            var index__153 int
-            var inline2089 int = vec_len__Vec_5uint8(output__147)
-            index__153 = inline2089
-            Loop_loop1113:
+        if jp0 {
+            var index__1 int
+            var inline5 int = vec_len__Vec_5uint8(output__0)
+            index__1 = inline5
+            Loop_loop2:
             for {
-                var t1114 bool = index__153 > 0
-                if t1114 {
-                    var compound_old282 int = index__153
-                    var compound_value283 int = 1
-                    var t1115 int = compound_old282 - compound_value283
-                    index__153 = t1115
-                    var t1118 uint8 = vec_get__Vec_5uint8(output__147, index__153)
-                    var t1119 bool = t1118 < 57
-                    if t1119 {
-                        var index286 int = index__153
-                        var place287 uint8 = vec_get__Vec_5uint8(output__147, index286)
-                        var value288 uint8 = 1
-                        var t1120 uint8 = place287 + value288
-                        vec_set__Vec_5uint8(output__147, index286, t1120)
-                        var mtmp290 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__147)
-                        var x292 string = mtmp290._1
-                        var t1122 Tuple2_6string_4bool = Tuple2_6string_4bool{
-                            _0: x292,
+                var t13 bool = index__1 > 0
+                if t13 {
+                    var compound_old1 int = index__1
+                    var compound_value1 int = 1
+                    var t14 int = compound_old1 - compound_value1
+                    index__1 = t14
+                    var t16 uint8 = vec_get__Vec_5uint8(output__0, index__1)
+                    var t17 bool = t16 < 57
+                    if t17 {
+                        var index0 int = index__1
+                        var place0 uint8 = vec_get__Vec_5uint8(output__0, index0)
+                        var value0 uint8 = 1
+                        var t18 uint8 = place0 + value0
+                        vec_set__Vec_5uint8(output__0, index0, t18)
+                        var mtmp1 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__0)
+                        var x1 string = mtmp1._1
+                        var t20 Tuple2_6string_4bool = Tuple2_6string_4bool{
+                            _0: x1,
                             _1: false,
                         }
-                        return t1122
+                        return t20
                     } else {
-                        var index294 int = index__153
-                        vec_get__Vec_5uint8(output__147, index294)
-                        var value296 uint8 = 48
-                        vec_set__Vec_5uint8(output__147, index294, value296)
+                        var index1 int = index__1
+                        vec_get__Vec_5uint8(output__0, index1)
+                        var value1 uint8 = 48
+                        vec_set__Vec_5uint8(output__0, index1, value1)
                         continue
                     }
                 } else {
-                    break Loop_loop1113
+                    break Loop_loop2
                 }
             }
-            var t1103 int
-            var inline2087 int = vec_len__Vec_5uint8(output__147)
-            t1103 = inline2087
-            var t1104 int = t1103 + 1
-            var carried__155 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1104)
-            var inline2084 uint8 = 49
-            vec_push__Vec_5uint8(carried__155, inline2084)
-            index__153 = 0
-            Loop_loop1107:
+            var t5 int
+            var inline4 int = vec_len__Vec_5uint8(output__0)
+            t5 = inline4
+            var t6 int = t5 + 1
+            var carried__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t6)
+            var inline2 uint8 = 49
+            vec_push__Vec_5uint8(carried__0, inline2)
+            index__1 = 0
+            Loop_loop3:
             for {
-                var t1108 int
-                var inline2082 int = vec_len__Vec_5uint8(output__147)
-                t1108 = inline2082
-                var t1109 bool = index__153 < t1108
-                if t1109 {
-                    var t1110 uint8 = vec_get__Vec_5uint8(output__147, index__153)
-                    vec_push__Vec_5uint8(carried__155, t1110)
-                    var compound_old302 int = index__153
-                    var compound_value303 int = 1
-                    var t1111 int = compound_old302 + compound_value303
-                    index__153 = t1111
+                var t8 int
+                var inline1 int = vec_len__Vec_5uint8(output__0)
+                t8 = inline1
+                var t9 bool = index__1 < t8
+                if t9 {
+                    var t10 uint8 = vec_get__Vec_5uint8(output__0, index__1)
+                    vec_push__Vec_5uint8(carried__0, t10)
+                    var compound_old0 int = index__1
+                    var compound_value0 int = 1
+                    var t11 int = compound_old0 + compound_value0
+                    index__1 = t11
                     continue
                 } else {
-                    break Loop_loop1107
+                    break Loop_loop3
                 }
             }
-            var mtmp306 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(carried__155)
-            var x308 string = mtmp306._1
-            var t1106 Tuple2_6string_4bool = Tuple2_6string_4bool{
-                _0: x308,
+            var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(carried__0)
+            var x0 string = mtmp0._1
+            var t7 Tuple2_6string_4bool = Tuple2_6string_4bool{
+                _0: x0,
                 _1: true,
             }
-            return t1106
+            return t7
         } else {
-            var mtmp309 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__147)
-            var x311 string = mtmp309._1
-            var t1124 Tuple2_6string_4bool = Tuple2_6string_4bool{
-                _0: x311,
+            var mtmp2 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(output__0)
+            var x2 string = mtmp2._1
+            var t22 Tuple2_6string_4bool = Tuple2_6string_4bool{
+                _0: x2,
                 _1: false,
             }
-            return t1124
+            return t22
         }
     }
 }
 
-func trim_float_digits(value__158 string) string {
-    var length__159 int
-    var inline2100 int = _goml_runtime_core_string_len(value__158)
-    length__159 = inline2100
-    Loop_loop1157:
+func trim_float_digits(value__0 string) string {
+    var length__0 int
+    var inline3 int = _goml_runtime_core_string_len(value__0)
+    length__0 = inline3
+    Loop_loop0:
     for {
-        var t1162 bool = length__159 > 1
-        var jp1159 bool
-        if t1162 {
-            var t1163 int = length__159 - 1
-            var t1164 uint8
-            var inline2095 uint8 = _goml_runtime_core_string_byte_get(value__158, t1163)
-            t1164 = inline2095
-            var t1165 bool = t1164 == 48
-            jp1159 = t1165
+        var t0 bool = length__0 > 1
+        var jp0 bool
+        if t0 {
+            var t3 int = length__0 - 1
+            var t4 uint8
+            var inline2 uint8 = _goml_runtime_core_string_byte_get(value__0, t3)
+            t4 = inline2
+            var t5 bool = t4 == 48
+            jp0 = t5
         } else {
-            jp1159 = false
+            jp0 = false
         }
-        if jp1159 {
-            var compound_old312 int = length__159
-            var compound_value313 int = 1
-            var t1160 int = compound_old312 - compound_value313
-            length__159 = t1160
+        if jp0 {
+            var compound_old0 int = length__0
+            var compound_value0 int = 1
+            var t1 int = compound_old0 - compound_value0
+            length__0 = t1
             continue
         } else {
-            break Loop_loop1157
+            break Loop_loop0
         }
     }
-    var inline2097 int = 0
-    var inline2098 string = string_byte_slice(value__158, inline2097, length__159)
-    return inline2098
+    var inline0 int = 0
+    var inline1 string = string_byte_slice(value__0, inline0, length__0)
+    return inline1
 }
 
-func fixed_float_text(digits__137 string, decimal_point__138 int, negative__139 bool) string {
-    var bytes__140 *_goml_vec_uint8 = vec_new__Vec_5uint8()
-    if negative__139 {
-        var inline2102 uint8 = 45
-        vec_push__Vec_5uint8(bytes__140, inline2102)
+func fixed_float_text(digits__0 string, decimal_point__0 int, negative__0 bool) string {
+    var bytes__0 *_goml_vec_uint8 = vec_new__Vec_5uint8()
+    if negative__0 {
+        var inline22 uint8 = 45
+        vec_push__Vec_5uint8(bytes__0, inline22)
     } else {}
-    var t1170 bool = decimal_point__138 <= 0
-    if t1170 {
-        var inline2117 uint8 = 48
-        vec_push__Vec_5uint8(bytes__140, inline2117)
-        var inline2114 uint8 = 46
-        vec_push__Vec_5uint8(bytes__140, inline2114)
-        var index__141 int = 0
-        var t1180 int = 0 - decimal_point__138
-        Loop_loop1179:
+    var t0 bool = decimal_point__0 <= 0
+    if t0 {
+        var inline7 uint8 = 48
+        vec_push__Vec_5uint8(bytes__0, inline7)
+        var inline5 uint8 = 46
+        vec_push__Vec_5uint8(bytes__0, inline5)
+        var index__0 int = 0
+        var t6 int = 0 - decimal_point__0
+        Loop_loop0:
         for {
-            var t1181 bool = index__141 < t1180
-            if t1181 {
-                var inline2105 uint8 = 48
-                vec_push__Vec_5uint8(bytes__140, inline2105)
-                var compound_old234 int = index__141
-                var compound_value235 int = 1
-                var t1182 int = compound_old234 + compound_value235
-                index__141 = t1182
+            var t7 bool = index__0 < t6
+            if t7 {
+                var inline3 uint8 = 48
+                vec_push__Vec_5uint8(bytes__0, inline3)
+                var compound_old1 int = index__0
+                var compound_value1 int = 1
+                var t8 int = compound_old1 + compound_value1
+                index__0 = t8
                 continue
             } else {
-                break Loop_loop1179
+                break Loop_loop0
             }
         }
-        index__141 = 0
-        Loop_loop1173:
+        index__0 = 0
+        Loop_loop1:
         for {
-            var t1174 int
-            var inline2112 int = _goml_runtime_core_string_len(digits__137)
-            t1174 = inline2112
-            var t1175 bool = index__141 < t1174
-            if t1175 {
-                var t1176 uint8
-                var inline2110 uint8 = _goml_runtime_core_string_byte_get(digits__137, index__141)
-                t1176 = inline2110
-                vec_push__Vec_5uint8(bytes__140, t1176)
-                var compound_old240 int = index__141
-                var compound_value241 int = 1
-                var t1177 int = compound_old240 + compound_value241
-                index__141 = t1177
+            var t1 int
+            var inline2 int = _goml_runtime_core_string_len(digits__0)
+            t1 = inline2
+            var t2 bool = index__0 < t1
+            if t2 {
+                var t3 uint8
+                var inline1 uint8 = _goml_runtime_core_string_byte_get(digits__0, index__0)
+                t3 = inline1
+                vec_push__Vec_5uint8(bytes__0, t3)
+                var compound_old0 int = index__0
+                var compound_value0 int = 1
+                var t4 int = compound_old0 + compound_value0
+                index__0 = t4
                 continue
             } else {
-                break Loop_loop1173
+                break Loop_loop1
             }
         }
-        var mtmp263 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__140)
-        var x265 string = mtmp263._1
-        return x265
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     } else {
-        var t1185 int
-        var inline2142 int = _goml_runtime_core_string_len(digits__137)
-        t1185 = inline2142
-        var t1186 bool = decimal_point__138 >= t1185
-        if t1186 {
-            var index__142 int = 0
-            Loop_loop1193:
+        var t10 int
+        var inline21 int = _goml_runtime_core_string_len(digits__0)
+        t10 = inline21
+        var t11 bool = decimal_point__0 >= t10
+        if t11 {
+            var index__1 int = 0
+            Loop_loop2:
             for {
-                var t1194 int
-                var inline2124 int = _goml_runtime_core_string_len(digits__137)
-                t1194 = inline2124
-                var t1195 bool = index__142 < t1194
-                if t1195 {
-                    var t1196 uint8
-                    var inline2122 uint8 = _goml_runtime_core_string_byte_get(digits__137, index__142)
-                    t1196 = inline2122
-                    vec_push__Vec_5uint8(bytes__140, t1196)
-                    var compound_old244 int = index__142
-                    var compound_value245 int = 1
-                    var t1197 int = compound_old244 + compound_value245
-                    index__142 = t1197
+                var t15 int
+                var inline13 int = _goml_runtime_core_string_len(digits__0)
+                t15 = inline13
+                var t16 bool = index__1 < t15
+                if t16 {
+                    var t17 uint8
+                    var inline12 uint8 = _goml_runtime_core_string_byte_get(digits__0, index__1)
+                    t17 = inline12
+                    vec_push__Vec_5uint8(bytes__0, t17)
+                    var compound_old3 int = index__1
+                    var compound_value3 int = 1
+                    var t18 int = compound_old3 + compound_value3
+                    index__1 = t18
                     continue
                 } else {
-                    break Loop_loop1193
+                    break Loop_loop2
                 }
             }
-            Loop_loop1189:
+            Loop_loop3:
             for {
-                var t1190 bool = index__142 < decimal_point__138
-                if t1190 {
-                    var inline2126 uint8 = 48
-                    vec_push__Vec_5uint8(bytes__140, inline2126)
-                    var compound_old249 int = index__142
-                    var compound_value250 int = 1
-                    var t1191 int = compound_old249 + compound_value250
-                    index__142 = t1191
+                var t12 bool = index__1 < decimal_point__0
+                if t12 {
+                    var inline9 uint8 = 48
+                    vec_push__Vec_5uint8(bytes__0, inline9)
+                    var compound_old2 int = index__1
+                    var compound_value2 int = 1
+                    var t13 int = compound_old2 + compound_value2
+                    index__1 = t13
                     continue
                 } else {
-                    break Loop_loop1189
+                    break Loop_loop3
                 }
             }
-            var mtmp263 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__140)
-            var x265 string = mtmp263._1
-            return x265
+            var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+            var x0 string = mtmp0._1
+            return x0
         } else {
-            var index__143 int = 0
-            Loop_loop1207:
+            var index__2 int = 0
+            Loop_loop4:
             for {
-                var t1208 bool = index__143 < decimal_point__138
-                if t1208 {
-                    var t1209 uint8
-                    var inline2131 uint8 = _goml_runtime_core_string_byte_get(digits__137, index__143)
-                    t1209 = inline2131
-                    vec_push__Vec_5uint8(bytes__140, t1209)
-                    var compound_old253 int = index__143
-                    var compound_value254 int = 1
-                    var t1210 int = compound_old253 + compound_value254
-                    index__143 = t1210
+                var t25 bool = index__2 < decimal_point__0
+                if t25 {
+                    var t26 uint8
+                    var inline20 uint8 = _goml_runtime_core_string_byte_get(digits__0, index__2)
+                    t26 = inline20
+                    vec_push__Vec_5uint8(bytes__0, t26)
+                    var compound_old5 int = index__2
+                    var compound_value5 int = 1
+                    var t27 int = compound_old5 + compound_value5
+                    index__2 = t27
                     continue
                 } else {
-                    break Loop_loop1207
+                    break Loop_loop4
                 }
             }
-            var inline2139 uint8 = 46
-            vec_push__Vec_5uint8(bytes__140, inline2139)
-            Loop_loop1201:
+            var inline17 uint8 = 46
+            vec_push__Vec_5uint8(bytes__0, inline17)
+            Loop_loop5:
             for {
-                var t1202 int
-                var inline2137 int = _goml_runtime_core_string_len(digits__137)
-                t1202 = inline2137
-                var t1203 bool = index__143 < t1202
-                if t1203 {
-                    var t1204 uint8
-                    var inline2135 uint8 = _goml_runtime_core_string_byte_get(digits__137, index__143)
-                    t1204 = inline2135
-                    vec_push__Vec_5uint8(bytes__140, t1204)
-                    var compound_old259 int = index__143
-                    var compound_value260 int = 1
-                    var t1205 int = compound_old259 + compound_value260
-                    index__143 = t1205
+                var t20 int
+                var inline16 int = _goml_runtime_core_string_len(digits__0)
+                t20 = inline16
+                var t21 bool = index__2 < t20
+                if t21 {
+                    var t22 uint8
+                    var inline15 uint8 = _goml_runtime_core_string_byte_get(digits__0, index__2)
+                    t22 = inline15
+                    vec_push__Vec_5uint8(bytes__0, t22)
+                    var compound_old4 int = index__2
+                    var compound_value4 int = 1
+                    var t23 int = compound_old4 + compound_value4
+                    index__2 = t23
                     continue
                 } else {
-                    break Loop_loop1201
+                    break Loop_loop5
                 }
             }
-            var mtmp263 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__140)
-            var x265 string = mtmp263._1
-            return x265
+            var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+            var x0 string = mtmp0._1
+            return x0
         }
     }
 }
 
-func parsed_float_bits(value__107 string, mantissa_bits__108 int, exponent_bias__109 int) Tuple2_4bool_6uint64 {
-    var parsed__110 ParsedFloat = parse_float_text(value__107)
-    var t1306 bool = parsed__110.valid
-    var t1307 bool = !t1306
-    if t1307 {
-        var t1308 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+func parsed_float_bits(value__0 string, mantissa_bits__0 int, exponent_bias__0 int) Tuple2_4bool_6uint64 {
+    var parsed__0 ParsedFloat = parse_float_text(value__0)
+    var t0 bool = parsed__0.valid
+    var t1 bool = !t0
+    if t1 {
+        var t58 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
             _0: false,
             _1: 0,
         }
-        return t1308
+        return t58
     } else {
-        var t1300 bool = parsed__110.negative
-        var jp1217 uint64
-        if t1300 {
-            var t1305 bool = mantissa_bits__108 == 23
-            var jp1302 int
-            if t1305 {
-                jp1302 = 8
+        var t2 bool = parsed__0.negative
+        var jp0 uint64
+        if t2 {
+            var t55 bool = mantissa_bits__0 == 23
+            var jp10 int
+            if t55 {
+                jp10 = 8
             } else {
-                jp1302 = 11
+                jp10 = 11
             }
-            var t1303 int = mantissa_bits__108 + jp1302
-            var t1304_lhs uint64 = 1
-            var t1304 uint64 = t1304_lhs << t1303
-            jp1217 = t1304
+            var t56 int = mantissa_bits__0 + jp10
+            var t57_lhs uint64 = 1
+            var t57 uint64 = t57_lhs << t56
+            jp0 = t57
         } else {
-            jp1217 = 0
+            jp0 = 0
         }
-        var t1299 bool = mantissa_bits__108 == 23
-        var jp1219 int
-        if t1299 {
-            jp1219 = 8
+        var t3 bool = mantissa_bits__0 == 23
+        var jp1 int
+        if t3 {
+            jp1 = 8
         } else {
-            jp1219 = 11
+            jp1 = 11
         }
-        var t1220_lhs uint64 = 1
-        var t1220 uint64 = t1220_lhs << jp1219
-        var t1221 uint64 = t1220 - 1
-        var exponent_mask__112 uint64 = t1221 << mantissa_bits__108
-        var t1277 int = parsed__110.special
-        var t1278 bool = t1277 == 1
-        if t1278 {
-            var t1279 uint64 = jp1217 | exponent_mask__112
-            var t1280 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+        var t4_lhs uint64 = 1
+        var t4 uint64 = t4_lhs << jp1
+        var t5 uint64 = t4 - 1
+        var exponent_mask__0 uint64 = t5 << mantissa_bits__0
+        var t6 int = parsed__0.special
+        var t7 bool = t6 == 1
+        if t7 {
+            var t42 uint64 = jp0 | exponent_mask__0
+            var t43 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
                 _0: true,
-                _1: t1279,
+                _1: t42,
             }
-            return t1280
+            return t43
         } else {
-            var t1282 int = parsed__110.special
-            var t1283 bool = t1282 == 2
-            if t1283 {
-                var t1287 int = mantissa_bits__108 - 1
-                var t1288_lhs uint64 = 1
-                var t1288 uint64 = t1288_lhs << t1287
-                var t1289 uint64 = exponent_mask__112 | t1288
-                var t1294 bool = mantissa_bits__108 == 52
-                var jp1291 uint64
-                if t1294 {
-                    jp1291 = 1
+            var t44 int = parsed__0.special
+            var t45 bool = t44 == 2
+            if t45 {
+                var t46 int = mantissa_bits__0 - 1
+                var t47_lhs uint64 = 1
+                var t47 uint64 = t47_lhs << t46
+                var t48 uint64 = exponent_mask__0 | t47
+                var t49 bool = mantissa_bits__0 == 52
+                var jp9 uint64
+                if t49 {
+                    jp9 = 1
                 } else {
-                    jp1291 = 0
+                    jp9 = 0
                 }
-                var t1292 uint64 = t1289 | jp1291
-                var t1293 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                var t50 uint64 = t48 | jp9
+                var t51 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
                     _0: true,
-                    _1: t1292,
+                    _1: t50,
                 }
-                return t1293
+                return t51
             } else {
-                var t1296 FloatNatural = parsed__110.numerator
-                var t1297 bool
-                var inline2144 *_goml_vec_uint32 = t1296.words
-                var inline2145 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline2144)
-                t1297 = inline2145
-                if t1297 {
-                    var t1298 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                var t52 FloatNatural = parsed__0.numerator
+                var t53 bool
+                var inline3 *_goml_vec_uint32 = t52.words
+                var inline4 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline3)
+                t53 = inline4
+                if t53 {
+                    var t54 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
                         _0: true,
-                        _1: jp1217,
+                        _1: jp0,
                     }
-                    return t1298
+                    return t54
                 } else {
-                    var t1260 bool = parsed__110.hexadecimal
-                    var t1261 bool = !t1260
-                    if t1261 {
-                        var t1262 int = parsed__110.significant_digits
-                        var t1263 int = parsed__110.decimal_exponent
-                        var decimal_position__113 int = t1262 + t1263
-                        var t1276 bool = mantissa_bits__108 == 23
-                        var jp1265 int
-                        if t1276 {
-                            jp1265 = 40
+                    var t8 bool = parsed__0.hexadecimal
+                    var t9 bool = !t8
+                    if t9 {
+                        var t33 int = parsed__0.significant_digits
+                        var t34 int = parsed__0.decimal_exponent
+                        var decimal_position__0 int = t33 + t34
+                        var t35 bool = mantissa_bits__0 == 23
+                        var jp7 int
+                        if t35 {
+                            jp7 = 40
                         } else {
-                            jp1265 = 310
+                            jp7 = 310
                         }
-                        var t1275 bool = mantissa_bits__108 == 23
-                        var jp1267 int
-                        if t1275 {
-                            jp1267 = -46
+                        var t36 bool = mantissa_bits__0 == 23
+                        var jp8 int
+                        if t36 {
+                            jp8 = -46
                         } else {
-                            jp1267 = -325
+                            jp8 = -325
                         }
-                        var t1269 bool = decimal_position__113 > jp1265
-                        if t1269 {
-                            var t1270 uint64 = jp1217 | exponent_mask__112
-                            var t1271 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                        var t37 bool = decimal_position__0 > jp7
+                        if t37 {
+                            var t38 uint64 = jp0 | exponent_mask__0
+                            var t39 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
                                 _0: false,
-                                _1: t1270,
+                                _1: t38,
                             }
-                            return t1271
+                            return t39
                         } else {
-                            var t1273 bool = decimal_position__113 < jp1267
-                            if t1273 {
-                                var t1274 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                            var t40 bool = decimal_position__0 < jp8
+                            if t40 {
+                                var t41 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
                                     _0: true,
-                                    _1: jp1217,
+                                    _1: jp0,
                                 }
-                                return t1274
+                                return t41
                             } else {
-                                var t1256 bool = parsed__110.hexadecimal
-                                var t1257 bool = !t1256
-                                var jp1251 bool
-                                if t1257 {
-                                    var t1258 int = parsed__110.decimal_exponent
-                                    var t1259 bool = t1258 < 0
-                                    jp1251 = t1259
+                                var t10 bool = parsed__0.hexadecimal
+                                var t11 bool = !t10
+                                var jp2 bool
+                                if t11 {
+                                    var t31 int = parsed__0.decimal_exponent
+                                    var t32 bool = t31 < 0
+                                    jp2 = t32
                                 } else {
-                                    jp1251 = false
+                                    jp2 = false
                                 }
-                                var jp1225 FloatNatural
-                                if jp1251 {
-                                    var t1252 int = parsed__110.decimal_exponent
-                                    var t1253 int = 0 - t1252
-                                    var t1254 FloatNatural = float_natural_power5(t1253)
-                                    jp1225 = t1254
+                                var jp3 FloatNatural
+                                if jp2 {
+                                    var t28 int = parsed__0.decimal_exponent
+                                    var t29 int = 0 - t28
+                                    var t30 FloatNatural = float_natural_power5(t29)
+                                    jp3 = t30
                                 } else {
-                                    var inline2147 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-                                    vec_push__Vec_6uint32(inline2147, 1)
-                                    var inline2149 FloatNatural = FloatNatural{
-                                        words: inline2147,
+                                    var inline0 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+                                    vec_push__Vec_6uint32(inline0, 1)
+                                    var inline2 FloatNatural = FloatNatural{
+                                        words: inline0,
                                     }
-                                    jp1225 = inline2149
+                                    jp3 = inline2
                                 }
-                                var t1246 bool = parsed__110.hexadecimal
-                                var t1247 bool = !t1246
-                                var jp1237 bool
-                                if t1247 {
-                                    var t1248 int = parsed__110.decimal_exponent
-                                    var t1249 bool = t1248 > 0
-                                    jp1237 = t1249
+                                var t12 bool = parsed__0.hexadecimal
+                                var t13 bool = !t12
+                                var jp4 bool
+                                if t13 {
+                                    var t26 int = parsed__0.decimal_exponent
+                                    var t27 bool = t26 > 0
+                                    jp4 = t27
                                 } else {
-                                    jp1237 = false
+                                    jp4 = false
                                 }
-                                var jp1227 FloatNatural
-                                if jp1237 {
-                                    var t1238 FloatNatural = parsed__110.numerator
-                                    var result__117 FloatNatural = float_natural_copy(t1238)
-                                    var count__118 int = 0
-                                    Loop_loop1240:
+                                var jp5 FloatNatural
+                                if jp4 {
+                                    var t20 FloatNatural = parsed__0.numerator
+                                    var result__0 FloatNatural = float_natural_copy(t20)
+                                    var count__0 int = 0
+                                    Loop_loop0:
                                     for {
-                                        var t1241 int = parsed__110.decimal_exponent
-                                        var t1242 bool = count__118 < t1241
-                                        if t1242 {
-                                            float_natural_multiply_small(result__117, 5)
-                                            var compound_old213 int = count__118
-                                            var compound_value214 int = 1
-                                            var t1243 int = compound_old213 + compound_value214
-                                            count__118 = t1243
+                                        var t21 int = parsed__0.decimal_exponent
+                                        var t22 bool = count__0 < t21
+                                        if t22 {
+                                            float_natural_multiply_small(result__0, 5)
+                                            var compound_old0 int = count__0
+                                            var compound_value0 int = 1
+                                            var t23 int = compound_old0 + compound_value0
+                                            count__0 = t23
                                             continue
                                         } else {
-                                            break Loop_loop1240
+                                            break Loop_loop0
                                         }
                                     }
-                                    jp1227 = result__117
-                                    var t1233 bool = parsed__110.hexadecimal
-                                    var jp1229 int
-                                    if t1233 {
-                                        var t1234 int = parsed__110.binary_exponent
-                                        jp1229 = t1234
+                                    jp5 = result__0
+                                    var t14 bool = parsed__0.hexadecimal
+                                    var jp6 int
+                                    if t14 {
+                                        var t18 int = parsed__0.binary_exponent
+                                        jp6 = t18
                                     } else {
-                                        var t1235 int = parsed__110.decimal_exponent
-                                        jp1229 = t1235
+                                        var t19 int = parsed__0.decimal_exponent
+                                        jp6 = t19
                                     }
-                                    var mtmp217 Tuple2_6uint64_4bool = float_rational_bits(jp1227, jp1225, jp1229, mantissa_bits__108, exponent_bias__109)
-                                    var x218 uint64 = mtmp217._0
-                                    var x219 bool = mtmp217._1
-                                    var t1230 bool = !x219
-                                    var t1231 uint64 = jp1217 | x218
-                                    var t1232 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
-                                        _0: t1230,
-                                        _1: t1231,
+                                    var mtmp0 Tuple2_6uint64_4bool = float_rational_bits(jp5, jp3, jp6, mantissa_bits__0, exponent_bias__0)
+                                    var x0 uint64 = mtmp0._0
+                                    var x1 bool = mtmp0._1
+                                    var t15 bool = !x1
+                                    var t16 uint64 = jp0 | x0
+                                    var t17 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                                        _0: t15,
+                                        _1: t16,
                                     }
-                                    return t1232
+                                    return t17
                                 } else {
-                                    var t1245 FloatNatural = parsed__110.numerator
-                                    jp1227 = t1245
-                                    var t1233 bool = parsed__110.hexadecimal
-                                    var jp1229 int
-                                    if t1233 {
-                                        var t1234 int = parsed__110.binary_exponent
-                                        jp1229 = t1234
+                                    var t25 FloatNatural = parsed__0.numerator
+                                    jp5 = t25
+                                    var t14 bool = parsed__0.hexadecimal
+                                    var jp6 int
+                                    if t14 {
+                                        var t18 int = parsed__0.binary_exponent
+                                        jp6 = t18
                                     } else {
-                                        var t1235 int = parsed__110.decimal_exponent
-                                        jp1229 = t1235
+                                        var t19 int = parsed__0.decimal_exponent
+                                        jp6 = t19
                                     }
-                                    var mtmp217 Tuple2_6uint64_4bool = float_rational_bits(jp1227, jp1225, jp1229, mantissa_bits__108, exponent_bias__109)
-                                    var x218 uint64 = mtmp217._0
-                                    var x219 bool = mtmp217._1
-                                    var t1230 bool = !x219
-                                    var t1231 uint64 = jp1217 | x218
-                                    var t1232 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
-                                        _0: t1230,
-                                        _1: t1231,
+                                    var mtmp0 Tuple2_6uint64_4bool = float_rational_bits(jp5, jp3, jp6, mantissa_bits__0, exponent_bias__0)
+                                    var x0 uint64 = mtmp0._0
+                                    var x1 bool = mtmp0._1
+                                    var t15 bool = !x1
+                                    var t16 uint64 = jp0 | x0
+                                    var t17 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                                        _0: t15,
+                                        _1: t16,
                                     }
-                                    return t1232
+                                    return t17
                                 }
                             }
                         }
                     } else {
-                        var t1256 bool = parsed__110.hexadecimal
-                        var t1257 bool = !t1256
-                        var jp1251 bool
-                        if t1257 {
-                            var t1258 int = parsed__110.decimal_exponent
-                            var t1259 bool = t1258 < 0
-                            jp1251 = t1259
+                        var t10 bool = parsed__0.hexadecimal
+                        var t11 bool = !t10
+                        var jp2 bool
+                        if t11 {
+                            var t31 int = parsed__0.decimal_exponent
+                            var t32 bool = t31 < 0
+                            jp2 = t32
                         } else {
-                            jp1251 = false
+                            jp2 = false
                         }
-                        var jp1225 FloatNatural
-                        if jp1251 {
-                            var t1252 int = parsed__110.decimal_exponent
-                            var t1253 int = 0 - t1252
-                            var t1254 FloatNatural = float_natural_power5(t1253)
-                            jp1225 = t1254
+                        var jp3 FloatNatural
+                        if jp2 {
+                            var t28 int = parsed__0.decimal_exponent
+                            var t29 int = 0 - t28
+                            var t30 FloatNatural = float_natural_power5(t29)
+                            jp3 = t30
                         } else {
-                            var inline2147 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-                            vec_push__Vec_6uint32(inline2147, 1)
-                            var inline2149 FloatNatural = FloatNatural{
-                                words: inline2147,
+                            var inline0 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+                            vec_push__Vec_6uint32(inline0, 1)
+                            var inline2 FloatNatural = FloatNatural{
+                                words: inline0,
                             }
-                            jp1225 = inline2149
+                            jp3 = inline2
                         }
-                        var t1246 bool = parsed__110.hexadecimal
-                        var t1247 bool = !t1246
-                        var jp1237 bool
-                        if t1247 {
-                            var t1248 int = parsed__110.decimal_exponent
-                            var t1249 bool = t1248 > 0
-                            jp1237 = t1249
+                        var t12 bool = parsed__0.hexadecimal
+                        var t13 bool = !t12
+                        var jp4 bool
+                        if t13 {
+                            var t26 int = parsed__0.decimal_exponent
+                            var t27 bool = t26 > 0
+                            jp4 = t27
                         } else {
-                            jp1237 = false
+                            jp4 = false
                         }
-                        var jp1227 FloatNatural
-                        if jp1237 {
-                            var t1238 FloatNatural = parsed__110.numerator
-                            var result__117 FloatNatural = float_natural_copy(t1238)
-                            var count__118 int = 0
-                            Loop_loop1240__2:
+                        var jp5 FloatNatural
+                        if jp4 {
+                            var t20 FloatNatural = parsed__0.numerator
+                            var result__0 FloatNatural = float_natural_copy(t20)
+                            var count__0 int = 0
+                            Loop_loop0__2:
                             for {
-                                var t1241 int = parsed__110.decimal_exponent
-                                var t1242 bool = count__118 < t1241
-                                if t1242 {
-                                    float_natural_multiply_small(result__117, 5)
-                                    var compound_old213 int = count__118
-                                    var compound_value214 int = 1
-                                    var t1243 int = compound_old213 + compound_value214
-                                    count__118 = t1243
+                                var t21 int = parsed__0.decimal_exponent
+                                var t22 bool = count__0 < t21
+                                if t22 {
+                                    float_natural_multiply_small(result__0, 5)
+                                    var compound_old0 int = count__0
+                                    var compound_value0 int = 1
+                                    var t23 int = compound_old0 + compound_value0
+                                    count__0 = t23
                                     continue
                                 } else {
-                                    break Loop_loop1240__2
+                                    break Loop_loop0__2
                                 }
                             }
-                            jp1227 = result__117
-                            var t1233 bool = parsed__110.hexadecimal
-                            var jp1229 int
-                            if t1233 {
-                                var t1234 int = parsed__110.binary_exponent
-                                jp1229 = t1234
+                            jp5 = result__0
+                            var t14 bool = parsed__0.hexadecimal
+                            var jp6 int
+                            if t14 {
+                                var t18 int = parsed__0.binary_exponent
+                                jp6 = t18
                             } else {
-                                var t1235 int = parsed__110.decimal_exponent
-                                jp1229 = t1235
+                                var t19 int = parsed__0.decimal_exponent
+                                jp6 = t19
                             }
-                            var mtmp217 Tuple2_6uint64_4bool = float_rational_bits(jp1227, jp1225, jp1229, mantissa_bits__108, exponent_bias__109)
-                            var x218 uint64 = mtmp217._0
-                            var x219 bool = mtmp217._1
-                            var t1230 bool = !x219
-                            var t1231 uint64 = jp1217 | x218
-                            var t1232 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
-                                _0: t1230,
-                                _1: t1231,
+                            var mtmp0 Tuple2_6uint64_4bool = float_rational_bits(jp5, jp3, jp6, mantissa_bits__0, exponent_bias__0)
+                            var x0 uint64 = mtmp0._0
+                            var x1 bool = mtmp0._1
+                            var t15 bool = !x1
+                            var t16 uint64 = jp0 | x0
+                            var t17 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                                _0: t15,
+                                _1: t16,
                             }
-                            return t1232
+                            return t17
                         } else {
-                            var t1245 FloatNatural = parsed__110.numerator
-                            jp1227 = t1245
-                            var t1233 bool = parsed__110.hexadecimal
-                            var jp1229 int
-                            if t1233 {
-                                var t1234 int = parsed__110.binary_exponent
-                                jp1229 = t1234
+                            var t25 FloatNatural = parsed__0.numerator
+                            jp5 = t25
+                            var t14 bool = parsed__0.hexadecimal
+                            var jp6 int
+                            if t14 {
+                                var t18 int = parsed__0.binary_exponent
+                                jp6 = t18
                             } else {
-                                var t1235 int = parsed__110.decimal_exponent
-                                jp1229 = t1235
+                                var t19 int = parsed__0.decimal_exponent
+                                jp6 = t19
                             }
-                            var mtmp217 Tuple2_6uint64_4bool = float_rational_bits(jp1227, jp1225, jp1229, mantissa_bits__108, exponent_bias__109)
-                            var x218 uint64 = mtmp217._0
-                            var x219 bool = mtmp217._1
-                            var t1230 bool = !x219
-                            var t1231 uint64 = jp1217 | x218
-                            var t1232 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
-                                _0: t1230,
-                                _1: t1231,
+                            var mtmp0 Tuple2_6uint64_4bool = float_rational_bits(jp5, jp3, jp6, mantissa_bits__0, exponent_bias__0)
+                            var x0 uint64 = mtmp0._0
+                            var x1 bool = mtmp0._1
+                            var t15 bool = !x1
+                            var t16 uint64 = jp0 | x0
+                            var t17 Tuple2_4bool_6uint64 = Tuple2_4bool_6uint64{
+                                _0: t15,
+                                _1: t16,
                             }
-                            return t1232
+                            return t17
                         }
                     }
                 }
@@ -1480,51 +1480,51 @@ func parsed_float_bits(value__107 string, mantissa_bits__108 int, exponent_bias_
     }
 }
 
-func float_natural_multiply_small(value__15 FloatNatural, factor__16 uint32) struct{} {
-    var t1330 bool = factor__16 == 0
-    if t1330 {
-        var t1331 *_goml_vec_uint32 = value__15.words
-        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__u32(t1331, 0)
+func float_natural_multiply_small(value__0 FloatNatural, factor__0 uint32) struct{} {
+    var t0 bool = factor__0 == 0
+    if t0 {
+        var t16 *_goml_vec_uint32 = value__0.words
+        _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__u32(t16, 0)
         return struct{}{}
     } else {
-        var carry__17 uint64 = 0
-        var index__18 int = 0
-        var t1324 uint64 = uint64(uint32(factor__16))
-        Loop_loop1317:
+        var carry__0 uint64 = 0
+        var index__0 int = 0
+        var t4 uint64 = uint64(uint32(factor__0))
+        Loop_loop0:
         for {
-            var t1318 *_goml_vec_uint32 = value__15.words
-            var t1319 int
-            var inline2153 int = vec_len__Vec_6uint32(t1318)
-            t1319 = inline2153
-            var t1320 bool = index__18 < t1319
-            if t1320 {
-                var t1321 *_goml_vec_uint32 = value__15.words
-                var t1322 uint32 = vec_get__Vec_6uint32(t1321, index__18)
-                var t1323 uint64 = uint64(uint32(t1322))
-                var t1325 uint64 = t1323 * t1324
-                var product__19 uint64 = t1325 + carry__17
-                var place24 *_goml_vec_uint32 = value__15.words
-                var index25 int = index__18
-                vec_get__Vec_6uint32(place24, index25)
-                var value27 uint32 = uint32(uint64(product__19))
-                vec_set__Vec_6uint32(place24, index25, value27)
-                var t1327_rhs int = 32
-                var t1327 uint64 = product__19 >> t1327_rhs
-                carry__17 = t1327
-                var compound_old30 int = index__18
-                var compound_value31 int = 1
-                var t1328 int = compound_old30 + compound_value31
-                index__18 = t1328
+            var t5 *_goml_vec_uint32 = value__0.words
+            var t6 int
+            var inline1 int = vec_len__Vec_6uint32(t5)
+            t6 = inline1
+            var t7 bool = index__0 < t6
+            if t7 {
+                var t8 *_goml_vec_uint32 = value__0.words
+                var t9 uint32 = vec_get__Vec_6uint32(t8, index__0)
+                var t10 uint64 = uint64(uint32(t9))
+                var t11 uint64 = t10 * t4
+                var product__0 uint64 = t11 + carry__0
+                var place0 *_goml_vec_uint32 = value__0.words
+                var index0 int = index__0
+                vec_get__Vec_6uint32(place0, index0)
+                var value0 uint32 = uint32(uint64(product__0))
+                vec_set__Vec_6uint32(place0, index0, value0)
+                var t13_rhs int = 32
+                var t13 uint64 = product__0 >> t13_rhs
+                carry__0 = t13
+                var compound_old0 int = index__0
+                var compound_value0 int = 1
+                var t14 int = compound_old0 + compound_value0
+                index__0 = t14
                 continue
             } else {
-                break Loop_loop1317
+                break Loop_loop0
             }
         }
-        var t1313 bool = carry__17 != 0
-        if t1313 {
-            var t1314 *_goml_vec_uint32 = value__15.words
-            var t1315 uint32 = uint32(uint64(carry__17))
-            vec_push__Vec_6uint32(t1314, t1315)
+        var t1 bool = carry__0 != 0
+        if t1 {
+            var t2 *_goml_vec_uint32 = value__0.words
+            var t3 uint32 = uint32(uint64(carry__0))
+            vec_push__Vec_6uint32(t2, t3)
             return struct{}{}
         } else {
             return struct{}{}
@@ -1533,1444 +1533,1444 @@ func float_natural_multiply_small(value__15 FloatNatural, factor__16 uint32) str
 }
 
 func float_natural_zero() FloatNatural {
-    var t1339 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-    var t1340 FloatNatural = FloatNatural{
-        words: t1339,
+    var t0 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+    var t1 FloatNatural = FloatNatural{
+        words: t0,
     }
-    return t1340
+    return t1
 }
 
-func float_natural_copy(value__4 FloatNatural) FloatNatural {
-    var result__5 FloatNatural
-    var inline2164 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-    var inline2165 FloatNatural = FloatNatural{
-        words: inline2164,
+func float_natural_copy(value__0 FloatNatural) FloatNatural {
+    var result__0 FloatNatural
+    var inline2 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+    var inline3 FloatNatural = FloatNatural{
+        words: inline2,
     }
-    result__5 = inline2165
-    var index__6 int = 0
-    Loop_loop1350:
+    result__0 = inline3
+    var index__0 int = 0
+    Loop_loop0:
     for {
-        var t1351 *_goml_vec_uint32 = value__4.words
-        var t1352 int
-        var inline2162 int = vec_len__Vec_6uint32(t1351)
-        t1352 = inline2162
-        var t1353 bool = index__6 < t1352
-        if t1353 {
-            var t1354 *_goml_vec_uint32 = result__5.words
-            var t1355 *_goml_vec_uint32 = value__4.words
-            var t1356 uint32 = vec_get__Vec_6uint32(t1355, index__6)
-            vec_push__Vec_6uint32(t1354, t1356)
-            var compound_old4 int = index__6
-            var compound_value5 int = 1
-            var t1357 int = compound_old4 + compound_value5
-            index__6 = t1357
+        var t0 *_goml_vec_uint32 = value__0.words
+        var t1 int
+        var inline1 int = vec_len__Vec_6uint32(t0)
+        t1 = inline1
+        var t2 bool = index__0 < t1
+        if t2 {
+            var t3 *_goml_vec_uint32 = result__0.words
+            var t4 *_goml_vec_uint32 = value__0.words
+            var t5 uint32 = vec_get__Vec_6uint32(t4, index__0)
+            vec_push__Vec_6uint32(t3, t5)
+            var compound_old0 int = index__0
+            var compound_value0 int = 1
+            var t6 int = compound_old0 + compound_value0
+            index__0 = t6
             continue
         } else {
-            break Loop_loop1350
+            break Loop_loop0
         }
     }
-    return result__5
+    return result__0
 }
 
-func float_natural_divide_small(value__44 FloatNatural, divisor__45 uint32) uint32 {
-    var remainder__46 uint64 = 0
-    var t1364 *_goml_vec_uint32 = value__44.words
-    var index__47 int
-    var inline2167 int = vec_len__Vec_6uint32(t1364)
-    index__47 = inline2167
-    var t1375 uint64 = uint64(uint32(divisor__45))
-    var t1378 uint64 = uint64(uint32(divisor__45))
-    Loop_loop1367:
+func float_natural_divide_small(value__0 FloatNatural, divisor__0 uint32) uint32 {
+    var remainder__0 uint64 = 0
+    var t0 *_goml_vec_uint32 = value__0.words
+    var index__0 int
+    var inline0 int = vec_len__Vec_6uint32(t0)
+    index__0 = inline0
+    var t2 uint64 = uint64(uint32(divisor__0))
+    var t3 uint64 = uint64(uint32(divisor__0))
+    Loop_loop0:
     for {
-        var t1368 bool = index__47 > 0
-        if t1368 {
-            var compound_old83 int = index__47
-            var compound_value84 int = 1
-            var t1369 int = compound_old83 - compound_value84
-            index__47 = t1369
-            var t1371_rhs int = 32
-            var t1371 uint64 = remainder__46 << t1371_rhs
-            var t1372 *_goml_vec_uint32 = value__44.words
-            var t1373 uint32 = vec_get__Vec_6uint32(t1372, index__47)
-            var t1374 uint64 = uint64(uint32(t1373))
-            var current__48 uint64 = t1371 | t1374
-            var place87 *_goml_vec_uint32 = value__44.words
-            var index88 int = index__47
-            vec_get__Vec_6uint32(place87, index88)
-            var t1376 uint64 = current__48 / t1375
-            var value90 uint32 = uint32(uint64(t1376))
-            vec_set__Vec_6uint32(place87, index88, value90)
-            var t1379 uint64 = current__48 % t1378
-            remainder__46 = t1379
+        var t4 bool = index__0 > 0
+        if t4 {
+            var compound_old0 int = index__0
+            var compound_value0 int = 1
+            var t5 int = compound_old0 - compound_value0
+            index__0 = t5
+            var t7_rhs int = 32
+            var t7 uint64 = remainder__0 << t7_rhs
+            var t8 *_goml_vec_uint32 = value__0.words
+            var t9 uint32 = vec_get__Vec_6uint32(t8, index__0)
+            var t10 uint64 = uint64(uint32(t9))
+            var current__0 uint64 = t7 | t10
+            var place0 *_goml_vec_uint32 = value__0.words
+            var index0 int = index__0
+            vec_get__Vec_6uint32(place0, index0)
+            var t11 uint64 = current__0 / t2
+            var value0 uint32 = uint32(uint64(t11))
+            vec_set__Vec_6uint32(place0, index0, value0)
+            var t13 uint64 = current__0 % t3
+            remainder__0 = t13
             continue
         } else {
-            break Loop_loop1367
+            break Loop_loop0
         }
     }
-    float_natural_trim(value__44)
-    var t1366 uint32 = uint32(uint64(remainder__46))
-    return t1366
+    float_natural_trim(value__0)
+    var t1 uint32 = uint32(uint64(remainder__0))
+    return t1
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__slice(self__294 string, start__295 int, end__296 int) string {
-    var inline2169 bool = string_is_char_boundary(self__294, start__295)
-    var inline2171 bool
-    if inline2169 {
-        var inline2174 bool = string_is_char_boundary(self__294, end__296)
-        inline2171 = inline2174
+func _goml_m_inherent_i_string_i_string_i_byte__slice(self__0 string, start__0 int, end__0 int) string {
+    var inline0 bool = string_is_char_boundary(self__0, start__0)
+    var inline1 bool
+    if inline0 {
+        var inline4 bool = string_is_char_boundary(self__0, end__0)
+        inline1 = inline4
     } else {
-        inline2171 = false
+        inline1 = false
     }
-    if inline2171 {
-        var inline2172 string = _goml_runtime_core_string_byte_slice(self__294, start__295, end__296)
-        return inline2172
+    if inline1 {
+        var inline2 string = _goml_runtime_core_string_byte_slice(self__0, start__0, end__0)
+        return inline2
     } else {
-        var inline2173 string = _goml_runtime_core_string_byte_slice(self__294, -1, -1)
-        return inline2173
+        var inline3 string = _goml_runtime_core_string_byte_slice(self__0, -1, -1)
+        return inline3
     }
 }
 
-func parse_float_text(value__84 string) ParsedFloat {
-    var t1567 bool = string_equals_ascii_case(value__84, "nan")
-    if t1567 {
-        var t1568 FloatNatural
-        var inline2176 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-        var inline2177 FloatNatural = FloatNatural{
-            words: inline2176,
+func parse_float_text(value__0 string) ParsedFloat {
+    var t0 bool = string_equals_ascii_case(value__0, "nan")
+    if t0 {
+        var t110 FloatNatural
+        var inline24 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+        var inline25 FloatNatural = FloatNatural{
+            words: inline24,
         }
-        t1568 = inline2177
-        var t1569 ParsedFloat = ParsedFloat{
+        t110 = inline25
+        var t111 ParsedFloat = ParsedFloat{
             valid: true,
             negative: false,
             special: 2,
-            numerator: t1568,
+            numerator: t110,
             decimal_exponent: 0,
             binary_exponent: 0,
             hexadecimal: false,
             significant_digits: 0,
         }
-        return t1569
+        return t111
     } else {
-        var index__85 int = 0
-        var negative__86 bool = false
-        var t1559 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-        var t1560 bool = index__85 < t1559
-        var jp1554 bool
-        if t1560 {
-            var t1563 uint8
-            var inline2181 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-            t1563 = inline2181
-            var t1564 bool = t1563 == 43
-            if t1564 {
-                jp1554 = true
+        var index__0 int = 0
+        var negative__0 bool = false
+        var t1 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+        var t2 bool = index__0 < t1
+        var jp0 bool
+        if t2 {
+            var t106 uint8
+            var inline23 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+            t106 = inline23
+            var t107 bool = t106 == 43
+            if t107 {
+                jp0 = true
             } else {
-                var t1565 uint8
-                var inline2179 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                t1565 = inline2179
-                var t1566 bool = t1565 == 45
-                jp1554 = t1566
+                var t108 uint8
+                var inline22 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                t108 = inline22
+                var t109 bool = t108 == 45
+                jp0 = t109
             }
         } else {
-            jp1554 = false
+            jp0 = false
         }
-        if jp1554 {
-            var t1555 uint8
-            var inline2183 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-            t1555 = inline2183
-            var t1556 bool = t1555 == 45
-            negative__86 = t1556
-            var compound_old140 int = index__85
-            var compound_value141 int = 1
-            var t1557 int = compound_old140 + compound_value141
-            index__85 = t1557
+        if jp0 {
+            var t102 uint8
+            var inline21 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+            t102 = inline21
+            var t103 bool = t102 == 45
+            negative__0 = t103
+            var compound_old10 int = index__0
+            var compound_value10 int = 1
+            var t104 int = compound_old10 + compound_value10
+            index__0 = t104
         } else {}
-        var t1387 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-        var special_text__87 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__84, index__85, t1387)
-        var t1551 bool = string_equals_ascii_case(special_text__87, "inf")
-        var jp1548 bool
-        if t1551 {
-            jp1548 = true
+        var t3 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+        var special_text__0 string = _goml_m_inherent_i_string_i_string_i_byte__slice(value__0, index__0, t3)
+        var t4 bool = string_equals_ascii_case(special_text__0, "inf")
+        var jp1 bool
+        if t4 {
+            jp1 = true
         } else {
-            var t1552 bool = string_equals_ascii_case(special_text__87, "infinity")
-            jp1548 = t1552
+            var t101 bool = string_equals_ascii_case(special_text__0, "infinity")
+            jp1 = t101
         }
-        if jp1548 {
-            var t1549 FloatNatural
-            var inline2185 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-            var inline2186 FloatNatural = FloatNatural{
-                words: inline2185,
+        if jp1 {
+            var t99 FloatNatural
+            var inline19 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+            var inline20 FloatNatural = FloatNatural{
+                words: inline19,
             }
-            t1549 = inline2186
-            var t1550 ParsedFloat = ParsedFloat{
+            t99 = inline20
+            var t100 ParsedFloat = ParsedFloat{
                 valid: true,
-                negative: negative__86,
+                negative: negative__0,
                 special: 1,
-                numerator: t1549,
+                numerator: t99,
                 decimal_exponent: 0,
                 binary_exponent: 0,
                 hexadecimal: false,
                 significant_digits: 0,
             }
-            return t1550
+            return t100
         } else {
-            var t1542 int = index__85 + 2
-            var t1543 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-            var t1544 bool = t1542 <= t1543
-            var jp1537 bool
-            if t1544 {
-                var t1545 uint8
-                var inline2188 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                t1545 = inline2188
-                var t1546 bool = t1545 == 48
-                jp1537 = t1546
+            var t5 int = index__0 + 2
+            var t6 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+            var t7 bool = t5 <= t6
+            var jp2 bool
+            if t7 {
+                var t97 uint8
+                var inline18 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                t97 = inline18
+                var t98 bool = t97 == 48
+                jp2 = t98
             } else {
-                jp1537 = false
+                jp2 = false
             }
-            var jp1390 bool
-            if jp1537 {
-                var t1538 int = index__85 + 1
-                var t1539 uint8
-                var inline2197 uint8 = _goml_runtime_core_string_byte_get(value__84, t1538)
-                t1539 = inline2197
-                var t1540 uint8
-                var inline2190 bool = t1539 >= 65
-                var inline2192 bool
-                if inline2190 {
-                    var inline2195 bool = t1539 <= 90
-                    inline2192 = inline2195
+            var jp3 bool
+            if jp2 {
+                var t93 int = index__0 + 1
+                var t94 uint8
+                var inline17 uint8 = _goml_runtime_core_string_byte_get(value__0, t93)
+                t94 = inline17
+                var t95 uint8
+                var inline12 bool = t94 >= 65
+                var inline13 bool
+                if inline12 {
+                    var inline16 bool = t94 <= 90
+                    inline13 = inline16
                 } else {
-                    inline2192 = false
+                    inline13 = false
                 }
-                if inline2192 {
-                    var inline2193 uint8 = 97 - 65
-                    var inline2194 uint8 = t1539 + inline2193
-                    t1540 = inline2194
-                    var t1541 bool = t1540 == 120
-                    jp1390 = t1541
-                    if jp1390 {
-                        var compound_old145 int = index__85
-                        var compound_value146 int = 2
-                        var t1534 int = compound_old145 + compound_value146
-                        index__85 = t1534
+                if inline13 {
+                    var inline14 uint8 = 97 - 65
+                    var inline15 uint8 = t94 + inline14
+                    t95 = inline15
+                    var t96 bool = t95 == 120
+                    jp3 = t96
+                    if jp3 {
+                        var compound_old9 int = index__0
+                        var compound_value9 int = 2
+                        var t91 int = compound_old9 + compound_value9
+                        index__0 = t91
                     } else {}
-                    var mantissa_start__89 int = index__85
-                    var jp1393 int
-                    if jp1390 {
-                        jp1393 = 16
+                    var mantissa_start__0 int = index__0
+                    var jp4 int
+                    if jp3 {
+                        jp4 = 16
                     } else {
-                        jp1393 = 10
+                        jp4 = 10
                     }
-                    var numerator__91 FloatNatural = float_natural_zero()
-                    var saw_digit__92 bool = false
-                    var saw_dot__93 bool = false
-                    var fraction_digits__94 int = 0
-                    var significant_digits__95 int = 0
-                    var previous_digit__96 bool = false
-                    var t1487 uint32 = uint32(int(jp1393))
-                    Loop_loop1483:
+                    var numerator__0 FloatNatural = float_natural_zero()
+                    var saw_digit__0 bool = false
+                    var saw_dot__0 bool = false
+                    var fraction_digits__0 int = 0
+                    var significant_digits__0 int = 0
+                    var previous_digit__0 bool = false
+                    var t62 uint32 = uint32(int(jp4))
+                    Loop_loop0:
                     for {
-                        var t1484 int
-                        var inline2211 int = _goml_runtime_core_string_len(value__84)
-                        t1484 = inline2211
-                        var t1485 bool = index__85 < t1484
-                        if t1485 {
-                            var current__97 uint8
-                            var inline2209 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                            current__97 = inline2209
-                            var mtmp149 Tuple2_4bool_3int = float_digit(current__97, jp1393)
-                            var x150 bool = mtmp149._0
-                            var x151 int = mtmp149._1
-                            if x150 {
-                                float_natural_multiply_small(numerator__91, t1487)
-                                var t1488 uint32 = uint32(int(x151))
-                                float_natural_add_small(numerator__91, t1488)
-                                saw_digit__92 = true
-                                previous_digit__96 = true
-                                if saw_dot__93 {
-                                    var compound_old156 int = fraction_digits__94
-                                    var compound_value157 int = 1
-                                    var t1499 int = compound_old156 + compound_value157
-                                    fraction_digits__94 = t1499
+                        var t63 int
+                        var inline11 int = _goml_runtime_core_string_len(value__0)
+                        t63 = inline11
+                        var t64 bool = index__0 < t63
+                        if t64 {
+                            var current__1 uint8
+                            var inline10 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                            current__1 = inline10
+                            var mtmp0 Tuple2_4bool_3int = float_digit(current__1, jp4)
+                            var x0 bool = mtmp0._0
+                            var x1 int = mtmp0._1
+                            if x0 {
+                                float_natural_multiply_small(numerator__0, t62)
+                                var t65 uint32 = uint32(int(x1))
+                                float_natural_add_small(numerator__0, t65)
+                                saw_digit__0 = true
+                                previous_digit__0 = true
+                                if saw_dot__0 {
+                                    var compound_old6 int = fraction_digits__0
+                                    var compound_value6 int = 1
+                                    var t72 int = compound_old6 + compound_value6
+                                    fraction_digits__0 = t72
                                 } else {}
-                                var t1497 bool = significant_digits__95 > 0
-                                var jp1494 bool
-                                if t1497 {
-                                    jp1494 = true
+                                var t66 bool = significant_digits__0 > 0
+                                var jp14 bool
+                                if t66 {
+                                    jp14 = true
                                 } else {
-                                    var t1498 bool = x151 != 0
-                                    jp1494 = t1498
+                                    var t71 bool = x1 != 0
+                                    jp14 = t71
                                 }
-                                if jp1494 {
-                                    var compound_old160 int = significant_digits__95
-                                    var compound_value161 int = 1
-                                    var t1495 int = compound_old160 + compound_value161
-                                    significant_digits__95 = t1495
+                                if jp14 {
+                                    var compound_old5 int = significant_digits__0
+                                    var compound_value5 int = 1
+                                    var t69 int = compound_old5 + compound_value5
+                                    significant_digits__0 = t69
                                 } else {}
-                                var compound_old164 int = index__85
-                                var compound_value165 int = 1
-                                var t1491 int = compound_old164 + compound_value165
-                                index__85 = t1491
+                                var compound_old4 int = index__0
+                                var compound_value4 int = 1
+                                var t67 int = compound_old4 + compound_value4
+                                index__0 = t67
                                 continue
                             } else {
-                                var t1502 bool = current__97 == 95
-                                if t1502 {
-                                    var t1523 int = index__85 + 1
-                                    var t1524 int
-                                    var inline2207 int = _goml_runtime_core_string_len(value__84)
-                                    t1524 = inline2207
-                                    var t1525 bool = t1523 >= t1524
-                                    if t1525 {
-                                        var inline2199 FloatNatural = float_natural_zero()
-                                        var inline2200 ParsedFloat = ParsedFloat{
+                                var t74 bool = current__1 == 95
+                                if t74 {
+                                    var t75 int = index__0 + 1
+                                    var t76 int
+                                    var inline9 int = _goml_runtime_core_string_len(value__0)
+                                    t76 = inline9
+                                    var t77 bool = t75 >= t76
+                                    if t77 {
+                                        var inline7 FloatNatural = float_natural_zero()
+                                        var inline8 ParsedFloat = ParsedFloat{
                                             valid: false,
                                             negative: false,
                                             special: 0,
-                                            numerator: inline2199,
+                                            numerator: inline7,
                                             decimal_exponent: 0,
                                             binary_exponent: 0,
                                             hexadecimal: false,
                                             significant_digits: 0,
                                         }
-                                        return inline2200
+                                        return inline8
                                     } else {
-                                        var t1504 int = index__85 + 1
-                                        var t1505 uint8
-                                        var inline2205 uint8 = _goml_runtime_core_string_byte_get(value__84, t1504)
-                                        t1505 = inline2205
-                                        var mtmp168 Tuple2_4bool_3int = float_digit(t1505, jp1393)
-                                        var x169 bool = mtmp168._0
-                                        var jp1520 bool
-                                        if jp1390 {
-                                            var t1522 bool = !saw_digit__92
-                                            jp1520 = t1522
+                                        var t78 int = index__0 + 1
+                                        var t79 uint8
+                                        var inline6 uint8 = _goml_runtime_core_string_byte_get(value__0, t78)
+                                        t79 = inline6
+                                        var mtmp1 Tuple2_4bool_3int = float_digit(t79, jp4)
+                                        var x2 bool = mtmp1._0
+                                        var jp15 bool
+                                        if jp3 {
+                                            var t86 bool = !saw_digit__0
+                                            jp15 = t86
                                         } else {
-                                            jp1520 = false
+                                            jp15 = false
                                         }
-                                        var jp1507 bool
-                                        if jp1520 {
-                                            var t1521 bool = index__85 == mantissa_start__89
-                                            jp1507 = t1521
+                                        var jp16 bool
+                                        if jp15 {
+                                            var t85 bool = index__0 == mantissa_start__0
+                                            jp16 = t85
                                         } else {
-                                            jp1507 = false
+                                            jp16 = false
                                         }
-                                        var t1517 bool = !previous_digit__96
-                                        var jp1515 bool
-                                        if t1517 {
-                                            var t1518 bool = !jp1507
-                                            jp1515 = t1518
+                                        var t80 bool = !previous_digit__0
+                                        var jp17 bool
+                                        if t80 {
+                                            var t84 bool = !jp16
+                                            jp17 = t84
                                         } else {
-                                            jp1515 = false
+                                            jp17 = false
                                         }
-                                        var jp1512 bool
-                                        if jp1515 {
-                                            jp1512 = true
+                                        var jp18 bool
+                                        if jp17 {
+                                            jp18 = true
                                         } else {
-                                            var t1516 bool = !x169
-                                            jp1512 = t1516
+                                            var t83 bool = !x2
+                                            jp18 = t83
                                         }
-                                        if jp1512 {
-                                            var inline2202 FloatNatural = float_natural_zero()
-                                            var inline2203 ParsedFloat = ParsedFloat{
+                                        if jp18 {
+                                            var inline4 FloatNatural = float_natural_zero()
+                                            var inline5 ParsedFloat = ParsedFloat{
                                                 valid: false,
                                                 negative: false,
                                                 special: 0,
-                                                numerator: inline2202,
+                                                numerator: inline4,
                                                 decimal_exponent: 0,
                                                 binary_exponent: 0,
                                                 hexadecimal: false,
                                                 significant_digits: 0,
                                             }
-                                            return inline2203
+                                            return inline5
                                         } else {
-                                            previous_digit__96 = false
-                                            var compound_old173 int = index__85
-                                            var compound_value174 int = 1
-                                            var t1509 int = compound_old173 + compound_value174
-                                            index__85 = t1509
+                                            previous_digit__0 = false
+                                            var compound_old7 int = index__0
+                                            var compound_value7 int = 1
+                                            var t81 int = compound_old7 + compound_value7
+                                            index__0 = t81
                                             continue
                                         }
                                     }
                                 } else {
-                                    var t1532 bool = current__97 == 46
-                                    var jp1529 bool
-                                    if t1532 {
-                                        var t1533 bool = !saw_dot__93
-                                        jp1529 = t1533
+                                    var t87 bool = current__1 == 46
+                                    var jp19 bool
+                                    if t87 {
+                                        var t90 bool = !saw_dot__0
+                                        jp19 = t90
                                     } else {
-                                        jp1529 = false
+                                        jp19 = false
                                     }
-                                    if jp1529 {
-                                        saw_dot__93 = true
-                                        previous_digit__96 = false
-                                        var compound_old178 int = index__85
-                                        var compound_value179 int = 1
-                                        var t1530 int = compound_old178 + compound_value179
-                                        index__85 = t1530
+                                    if jp19 {
+                                        saw_dot__0 = true
+                                        previous_digit__0 = false
+                                        var compound_old8 int = index__0
+                                        var compound_value8 int = 1
+                                        var t88 int = compound_old8 + compound_value8
+                                        index__0 = t88
                                         continue
                                     } else {
-                                        break Loop_loop1483
+                                        break Loop_loop0
                                     }
                                 }
                             }
                         } else {
-                            break Loop_loop1483
+                            break Loop_loop0
                         }
                     }
-                    var t1481 bool = !saw_digit__92
-                    if t1481 {
-                        var inline2213 FloatNatural = float_natural_zero()
-                        var inline2214 ParsedFloat = ParsedFloat{
+                    var t8 bool = !saw_digit__0
+                    if t8 {
+                        var inline2 FloatNatural = float_natural_zero()
+                        var inline3 ParsedFloat = ParsedFloat{
                             valid: false,
                             negative: false,
                             special: 0,
-                            numerator: inline2213,
+                            numerator: inline2,
                             decimal_exponent: 0,
                             binary_exponent: 0,
                             hexadecimal: false,
                             significant_digits: 0,
                         }
-                        return inline2214
+                        return inline3
                     } else {
-                        var jp1397 uint8
-                        if jp1390 {
-                            jp1397 = 112
+                        var jp5 uint8
+                        if jp3 {
+                            jp5 = 112
                         } else {
-                            jp1397 = 101
+                            jp5 = 101
                         }
-                        var exponent__103 int = 0
-                        var exponent_negative__104 bool = false
-                        var t1476 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                        var t1477 bool = index__85 < t1476
-                        var jp1414 bool
-                        if t1477 {
-                            var t1478 uint8
-                            var inline2216 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                            t1478 = inline2216
-                            var t1479 uint8 = ascii_lower(t1478)
-                            var t1480 bool = t1479 == jp1397
-                            jp1414 = t1480
+                        var exponent__0 int = 0
+                        var exponent_negative__0 bool = false
+                        var t9 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                        var t10 bool = index__0 < t9
+                        var jp6 bool
+                        if t10 {
+                            var t59 uint8
+                            var inline1 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                            t59 = inline1
+                            var t60 uint8 = ascii_lower(t59)
+                            var t61 bool = t60 == jp5
+                            jp6 = t61
                         } else {
-                            jp1414 = false
+                            jp6 = false
                         }
-                        if jp1414 {
-                            var compound_old183 int = index__85
-                            var compound_value184 int = 1
-                            var t1415 int = compound_old183 + compound_value184
-                            index__85 = t1415
-                            var t1466 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                            var t1467 bool = index__85 < t1466
-                            var jp1461 bool
-                            if t1467 {
-                                var t1470 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                                var t1471 bool = t1470 == 43
-                                if t1471 {
-                                    jp1461 = true
+                        if jp6 {
+                            var compound_old0 int = index__0
+                            var compound_value0 int = 1
+                            var t19 int = compound_old0 + compound_value0
+                            index__0 = t19
+                            var t21 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                            var t22 bool = index__0 < t21
+                            var jp9 bool
+                            if t22 {
+                                var t54 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                                var t55 bool = t54 == 43
+                                if t55 {
+                                    jp9 = true
                                 } else {
-                                    var t1472 uint8
-                                    var inline2218 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                                    t1472 = inline2218
-                                    var t1473 bool = t1472 == 45
-                                    jp1461 = t1473
+                                    var t56 uint8
+                                    var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                                    t56 = inline0
+                                    var t57 bool = t56 == 45
+                                    jp9 = t57
                                 }
                             } else {
-                                jp1461 = false
+                                jp9 = false
                             }
-                            if jp1461 {
-                                var t1462 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                                var t1463 bool = t1462 == 45
-                                exponent_negative__104 = t1463
-                                var compound_old187 int = index__85
-                                var compound_value188 int = 1
-                                var t1464 int = compound_old187 + compound_value188
-                                index__85 = t1464
+                            if jp9 {
+                                var t50 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                                var t51 bool = t50 == 45
+                                exponent_negative__0 = t51
+                                var compound_old3 int = index__0
+                                var compound_value3 int = 1
+                                var t52 int = compound_old3 + compound_value3
+                                index__0 = t52
                             } else {}
-                            var exponent_digits__105 bool = false
-                            previous_digit__96 = false
-                            Loop_loop1422:
+                            var exponent_digits__0 bool = false
+                            previous_digit__0 = false
+                            Loop_loop1:
                             for {
-                                var t1423 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                var t1424 bool = index__85 < t1423
-                                if t1424 {
-                                    var current__106 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                                    var t1458 bool = current__106 >= 48
-                                    var jp1427 bool
-                                    if t1458 {
-                                        var t1459 bool = current__106 <= 57
-                                        jp1427 = t1459
+                                var t25 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                var t26 bool = index__0 < t25
+                                if t26 {
+                                    var current__0 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                                    var t27 bool = current__0 >= 48
+                                    var jp10 bool
+                                    if t27 {
+                                        var t49 bool = current__0 <= 57
+                                        jp10 = t49
                                     } else {
-                                        jp1427 = false
+                                        jp10 = false
                                     }
-                                    if jp1427 {
-                                        exponent_digits__105 = true
-                                        previous_digit__96 = true
-                                        var t1431 bool = exponent__103 < 1000000
-                                        if t1431 {
-                                            var t1432 int = exponent__103 * 10
-                                            var t1433 uint8 = current__106 - 48
-                                            var t1434 int = int(uint8(t1433))
-                                            var t1435 int = t1432 + t1434
-                                            exponent__103 = t1435
+                                    if jp10 {
+                                        exponent_digits__0 = true
+                                        previous_digit__0 = true
+                                        var t28 bool = exponent__0 < 1000000
+                                        if t28 {
+                                            var t31 int = exponent__0 * 10
+                                            var t32 uint8 = current__0 - 48
+                                            var t33 int = int(uint8(t32))
+                                            var t34 int = t31 + t33
+                                            exponent__0 = t34
                                         } else {}
-                                        var compound_old196 int = index__85
-                                        var compound_value197 int = 1
-                                        var t1429 int = compound_old196 + compound_value197
-                                        index__85 = t1429
+                                        var compound_old1 int = index__0
+                                        var compound_value1 int = 1
+                                        var t29 int = compound_old1 + compound_value1
+                                        index__0 = t29
                                         continue
                                     } else {
-                                        var t1437 bool = current__106 == 95
-                                        if t1437 {
-                                            var t1454 bool = !previous_digit__96
-                                            var jp1450 bool
-                                            if t1454 {
-                                                jp1450 = true
+                                        var t35 bool = current__0 == 95
+                                        if t35 {
+                                            var t36 bool = !previous_digit__0
+                                            var jp11 bool
+                                            if t36 {
+                                                jp11 = true
                                             } else {
-                                                var t1455 int = index__85 + 1
-                                                var t1456 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                                var t1457 bool = t1455 >= t1456
-                                                jp1450 = t1457
+                                                var t46 int = index__0 + 1
+                                                var t47 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                                var t48 bool = t46 >= t47
+                                                jp11 = t48
                                             }
-                                            var jp1445 bool
-                                            if jp1450 {
-                                                jp1445 = true
+                                            var jp12 bool
+                                            if jp11 {
+                                                jp12 = true
                                             } else {
-                                                var t1451 int = index__85 + 1
-                                                var t1452 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, t1451)
-                                                var t1453 bool = t1452 < 48
-                                                jp1445 = t1453
+                                                var t43 int = index__0 + 1
+                                                var t44 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t43)
+                                                var t45 bool = t44 < 48
+                                                jp12 = t45
                                             }
-                                            var jp1442 bool
-                                            if jp1445 {
-                                                jp1442 = true
+                                            var jp13 bool
+                                            if jp12 {
+                                                jp13 = true
                                             } else {
-                                                var t1446 int = index__85 + 1
-                                                var t1447 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, t1446)
-                                                var t1448 bool = t1447 > 57
-                                                jp1442 = t1448
+                                                var t40 int = index__0 + 1
+                                                var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
+                                                var t42 bool = t41 > 57
+                                                jp13 = t42
                                             }
-                                            if jp1442 {
-                                                var t1443 ParsedFloat = invalid_parsed_float()
-                                                return t1443
+                                            if jp13 {
+                                                var t39 ParsedFloat = invalid_parsed_float()
+                                                return t39
                                             } else {
-                                                previous_digit__96 = false
-                                                var compound_old201 int = index__85
-                                                var compound_value202 int = 1
-                                                var t1439 int = compound_old201 + compound_value202
-                                                index__85 = t1439
+                                                previous_digit__0 = false
+                                                var compound_old2 int = index__0
+                                                var compound_value2 int = 1
+                                                var t37 int = compound_old2 + compound_value2
+                                                index__0 = t37
                                                 continue
                                             }
                                         } else {
-                                            break Loop_loop1422
+                                            break Loop_loop1
                                         }
                                     }
                                 } else {
-                                    break Loop_loop1422
+                                    break Loop_loop1
                                 }
                             }
-                            var t1420 bool = !exponent_digits__105
-                            if t1420 {
-                                var t1421 ParsedFloat = invalid_parsed_float()
-                                return t1421
+                            var t23 bool = !exponent_digits__0
+                            if t23 {
+                                var t24 ParsedFloat = invalid_parsed_float()
+                                return t24
                             } else {
-                                var t1410 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                var t1411 bool = index__85 != t1410
-                                if t1411 {
-                                    var t1412 ParsedFloat = invalid_parsed_float()
-                                    return t1412
+                                var t11 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                var t12 bool = index__0 != t11
+                                if t12 {
+                                    var t18 ParsedFloat = invalid_parsed_float()
+                                    return t18
                                 } else {
-                                    if exponent_negative__104 {
-                                        var t1409 int = 0 - exponent__103
-                                        exponent__103 = t1409
+                                    if exponent_negative__0 {
+                                        var t17 int = 0 - exponent__0
+                                        exponent__0 = t17
                                     } else {}
-                                    var jp1402 int
-                                    if jp1390 {
-                                        jp1402 = 0
+                                    var jp7 int
+                                    if jp3 {
+                                        jp7 = 0
                                     } else {
-                                        var t1408 int = exponent__103 - fraction_digits__94
-                                        jp1402 = t1408
+                                        var t16 int = exponent__0 - fraction_digits__0
+                                        jp7 = t16
                                     }
-                                    var jp1404 int
-                                    if jp1390 {
-                                        var t1406 int = fraction_digits__94 * 4
-                                        var t1407 int = exponent__103 - t1406
-                                        jp1404 = t1407
+                                    var jp8 int
+                                    if jp3 {
+                                        var t14 int = fraction_digits__0 * 4
+                                        var t15 int = exponent__0 - t14
+                                        jp8 = t15
                                     } else {
-                                        jp1404 = 0
+                                        jp8 = 0
                                     }
-                                    var t1405 ParsedFloat = ParsedFloat{
+                                    var t13 ParsedFloat = ParsedFloat{
                                         valid: true,
-                                        negative: negative__86,
+                                        negative: negative__0,
                                         special: 0,
-                                        numerator: numerator__91,
-                                        decimal_exponent: jp1402,
-                                        binary_exponent: jp1404,
-                                        hexadecimal: jp1390,
-                                        significant_digits: significant_digits__95,
+                                        numerator: numerator__0,
+                                        decimal_exponent: jp7,
+                                        binary_exponent: jp8,
+                                        hexadecimal: jp3,
+                                        significant_digits: significant_digits__0,
                                     }
-                                    return t1405
+                                    return t13
                                 }
                             }
                         } else {
-                            if jp1390 {
-                                var t1475 ParsedFloat = invalid_parsed_float()
-                                return t1475
+                            if jp3 {
+                                var t58 ParsedFloat = invalid_parsed_float()
+                                return t58
                             } else {
-                                var t1410 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                var t1411 bool = index__85 != t1410
-                                if t1411 {
-                                    var t1412 ParsedFloat = invalid_parsed_float()
-                                    return t1412
+                                var t11 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                var t12 bool = index__0 != t11
+                                if t12 {
+                                    var t18 ParsedFloat = invalid_parsed_float()
+                                    return t18
                                 } else {
-                                    if exponent_negative__104 {
-                                        var t1409 int = 0 - exponent__103
-                                        exponent__103 = t1409
+                                    if exponent_negative__0 {
+                                        var t17 int = 0 - exponent__0
+                                        exponent__0 = t17
                                     } else {}
-                                    var jp1402 int
-                                    if jp1390 {
-                                        jp1402 = 0
+                                    var jp7 int
+                                    if jp3 {
+                                        jp7 = 0
                                     } else {
-                                        var t1408 int = exponent__103 - fraction_digits__94
-                                        jp1402 = t1408
+                                        var t16 int = exponent__0 - fraction_digits__0
+                                        jp7 = t16
                                     }
-                                    var jp1404 int
-                                    if jp1390 {
-                                        var t1406 int = fraction_digits__94 * 4
-                                        var t1407 int = exponent__103 - t1406
-                                        jp1404 = t1407
+                                    var jp8 int
+                                    if jp3 {
+                                        var t14 int = fraction_digits__0 * 4
+                                        var t15 int = exponent__0 - t14
+                                        jp8 = t15
                                     } else {
-                                        jp1404 = 0
+                                        jp8 = 0
                                     }
-                                    var t1405 ParsedFloat = ParsedFloat{
+                                    var t13 ParsedFloat = ParsedFloat{
                                         valid: true,
-                                        negative: negative__86,
+                                        negative: negative__0,
                                         special: 0,
-                                        numerator: numerator__91,
-                                        decimal_exponent: jp1402,
-                                        binary_exponent: jp1404,
-                                        hexadecimal: jp1390,
-                                        significant_digits: significant_digits__95,
+                                        numerator: numerator__0,
+                                        decimal_exponent: jp7,
+                                        binary_exponent: jp8,
+                                        hexadecimal: jp3,
+                                        significant_digits: significant_digits__0,
                                     }
-                                    return t1405
+                                    return t13
                                 }
                             }
                         }
                     }
                 } else {
-                    t1540 = t1539
-                    var t1541 bool = t1540 == 120
-                    jp1390 = t1541
-                    if jp1390 {
-                        var compound_old145 int = index__85
-                        var compound_value146 int = 2
-                        var t1534 int = compound_old145 + compound_value146
-                        index__85 = t1534
+                    t95 = t94
+                    var t96 bool = t95 == 120
+                    jp3 = t96
+                    if jp3 {
+                        var compound_old9 int = index__0
+                        var compound_value9 int = 2
+                        var t91 int = compound_old9 + compound_value9
+                        index__0 = t91
                     } else {}
-                    var mantissa_start__89 int = index__85
-                    var jp1393 int
-                    if jp1390 {
-                        jp1393 = 16
+                    var mantissa_start__0 int = index__0
+                    var jp4 int
+                    if jp3 {
+                        jp4 = 16
                     } else {
-                        jp1393 = 10
+                        jp4 = 10
                     }
-                    var numerator__91 FloatNatural = float_natural_zero()
-                    var saw_digit__92 bool = false
-                    var saw_dot__93 bool = false
-                    var fraction_digits__94 int = 0
-                    var significant_digits__95 int = 0
-                    var previous_digit__96 bool = false
-                    var t1487 uint32 = uint32(int(jp1393))
-                    Loop_loop1483__2:
+                    var numerator__0 FloatNatural = float_natural_zero()
+                    var saw_digit__0 bool = false
+                    var saw_dot__0 bool = false
+                    var fraction_digits__0 int = 0
+                    var significant_digits__0 int = 0
+                    var previous_digit__0 bool = false
+                    var t62 uint32 = uint32(int(jp4))
+                    Loop_loop0__2:
                     for {
-                        var t1484 int
-                        var inline2211 int = _goml_runtime_core_string_len(value__84)
-                        t1484 = inline2211
-                        var t1485 bool = index__85 < t1484
-                        if t1485 {
-                            var current__97 uint8
-                            var inline2209 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                            current__97 = inline2209
-                            var mtmp149 Tuple2_4bool_3int = float_digit(current__97, jp1393)
-                            var x150 bool = mtmp149._0
-                            var x151 int = mtmp149._1
-                            if x150 {
-                                float_natural_multiply_small(numerator__91, t1487)
-                                var t1488 uint32 = uint32(int(x151))
-                                float_natural_add_small(numerator__91, t1488)
-                                saw_digit__92 = true
-                                previous_digit__96 = true
-                                if saw_dot__93 {
-                                    var compound_old156 int = fraction_digits__94
-                                    var compound_value157 int = 1
-                                    var t1499 int = compound_old156 + compound_value157
-                                    fraction_digits__94 = t1499
+                        var t63 int
+                        var inline11 int = _goml_runtime_core_string_len(value__0)
+                        t63 = inline11
+                        var t64 bool = index__0 < t63
+                        if t64 {
+                            var current__1 uint8
+                            var inline10 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                            current__1 = inline10
+                            var mtmp0 Tuple2_4bool_3int = float_digit(current__1, jp4)
+                            var x0 bool = mtmp0._0
+                            var x1 int = mtmp0._1
+                            if x0 {
+                                float_natural_multiply_small(numerator__0, t62)
+                                var t65 uint32 = uint32(int(x1))
+                                float_natural_add_small(numerator__0, t65)
+                                saw_digit__0 = true
+                                previous_digit__0 = true
+                                if saw_dot__0 {
+                                    var compound_old6 int = fraction_digits__0
+                                    var compound_value6 int = 1
+                                    var t72 int = compound_old6 + compound_value6
+                                    fraction_digits__0 = t72
                                 } else {}
-                                var t1497 bool = significant_digits__95 > 0
-                                var jp1494 bool
-                                if t1497 {
-                                    jp1494 = true
+                                var t66 bool = significant_digits__0 > 0
+                                var jp14 bool
+                                if t66 {
+                                    jp14 = true
                                 } else {
-                                    var t1498 bool = x151 != 0
-                                    jp1494 = t1498
+                                    var t71 bool = x1 != 0
+                                    jp14 = t71
                                 }
-                                if jp1494 {
-                                    var compound_old160 int = significant_digits__95
-                                    var compound_value161 int = 1
-                                    var t1495 int = compound_old160 + compound_value161
-                                    significant_digits__95 = t1495
+                                if jp14 {
+                                    var compound_old5 int = significant_digits__0
+                                    var compound_value5 int = 1
+                                    var t69 int = compound_old5 + compound_value5
+                                    significant_digits__0 = t69
                                 } else {}
-                                var compound_old164 int = index__85
-                                var compound_value165 int = 1
-                                var t1491 int = compound_old164 + compound_value165
-                                index__85 = t1491
+                                var compound_old4 int = index__0
+                                var compound_value4 int = 1
+                                var t67 int = compound_old4 + compound_value4
+                                index__0 = t67
                                 continue
                             } else {
-                                var t1502 bool = current__97 == 95
-                                if t1502 {
-                                    var t1523 int = index__85 + 1
-                                    var t1524 int
-                                    var inline2207 int = _goml_runtime_core_string_len(value__84)
-                                    t1524 = inline2207
-                                    var t1525 bool = t1523 >= t1524
-                                    if t1525 {
-                                        var inline2199 FloatNatural = float_natural_zero()
-                                        var inline2200 ParsedFloat = ParsedFloat{
+                                var t74 bool = current__1 == 95
+                                if t74 {
+                                    var t75 int = index__0 + 1
+                                    var t76 int
+                                    var inline9 int = _goml_runtime_core_string_len(value__0)
+                                    t76 = inline9
+                                    var t77 bool = t75 >= t76
+                                    if t77 {
+                                        var inline7 FloatNatural = float_natural_zero()
+                                        var inline8 ParsedFloat = ParsedFloat{
                                             valid: false,
                                             negative: false,
                                             special: 0,
-                                            numerator: inline2199,
+                                            numerator: inline7,
                                             decimal_exponent: 0,
                                             binary_exponent: 0,
                                             hexadecimal: false,
                                             significant_digits: 0,
                                         }
-                                        return inline2200
+                                        return inline8
                                     } else {
-                                        var t1504 int = index__85 + 1
-                                        var t1505 uint8
-                                        var inline2205 uint8 = _goml_runtime_core_string_byte_get(value__84, t1504)
-                                        t1505 = inline2205
-                                        var mtmp168 Tuple2_4bool_3int = float_digit(t1505, jp1393)
-                                        var x169 bool = mtmp168._0
-                                        var jp1520 bool
-                                        if jp1390 {
-                                            var t1522 bool = !saw_digit__92
-                                            jp1520 = t1522
+                                        var t78 int = index__0 + 1
+                                        var t79 uint8
+                                        var inline6 uint8 = _goml_runtime_core_string_byte_get(value__0, t78)
+                                        t79 = inline6
+                                        var mtmp1 Tuple2_4bool_3int = float_digit(t79, jp4)
+                                        var x2 bool = mtmp1._0
+                                        var jp15 bool
+                                        if jp3 {
+                                            var t86 bool = !saw_digit__0
+                                            jp15 = t86
                                         } else {
-                                            jp1520 = false
+                                            jp15 = false
                                         }
-                                        var jp1507 bool
-                                        if jp1520 {
-                                            var t1521 bool = index__85 == mantissa_start__89
-                                            jp1507 = t1521
+                                        var jp16 bool
+                                        if jp15 {
+                                            var t85 bool = index__0 == mantissa_start__0
+                                            jp16 = t85
                                         } else {
-                                            jp1507 = false
+                                            jp16 = false
                                         }
-                                        var t1517 bool = !previous_digit__96
-                                        var jp1515 bool
-                                        if t1517 {
-                                            var t1518 bool = !jp1507
-                                            jp1515 = t1518
+                                        var t80 bool = !previous_digit__0
+                                        var jp17 bool
+                                        if t80 {
+                                            var t84 bool = !jp16
+                                            jp17 = t84
                                         } else {
-                                            jp1515 = false
+                                            jp17 = false
                                         }
-                                        var jp1512 bool
-                                        if jp1515 {
-                                            jp1512 = true
+                                        var jp18 bool
+                                        if jp17 {
+                                            jp18 = true
                                         } else {
-                                            var t1516 bool = !x169
-                                            jp1512 = t1516
+                                            var t83 bool = !x2
+                                            jp18 = t83
                                         }
-                                        if jp1512 {
-                                            var inline2202 FloatNatural = float_natural_zero()
-                                            var inline2203 ParsedFloat = ParsedFloat{
+                                        if jp18 {
+                                            var inline4 FloatNatural = float_natural_zero()
+                                            var inline5 ParsedFloat = ParsedFloat{
                                                 valid: false,
                                                 negative: false,
                                                 special: 0,
-                                                numerator: inline2202,
+                                                numerator: inline4,
                                                 decimal_exponent: 0,
                                                 binary_exponent: 0,
                                                 hexadecimal: false,
                                                 significant_digits: 0,
                                             }
-                                            return inline2203
+                                            return inline5
                                         } else {
-                                            previous_digit__96 = false
-                                            var compound_old173 int = index__85
-                                            var compound_value174 int = 1
-                                            var t1509 int = compound_old173 + compound_value174
-                                            index__85 = t1509
+                                            previous_digit__0 = false
+                                            var compound_old7 int = index__0
+                                            var compound_value7 int = 1
+                                            var t81 int = compound_old7 + compound_value7
+                                            index__0 = t81
                                             continue
                                         }
                                     }
                                 } else {
-                                    var t1532 bool = current__97 == 46
-                                    var jp1529 bool
-                                    if t1532 {
-                                        var t1533 bool = !saw_dot__93
-                                        jp1529 = t1533
+                                    var t87 bool = current__1 == 46
+                                    var jp19 bool
+                                    if t87 {
+                                        var t90 bool = !saw_dot__0
+                                        jp19 = t90
                                     } else {
-                                        jp1529 = false
+                                        jp19 = false
                                     }
-                                    if jp1529 {
-                                        saw_dot__93 = true
-                                        previous_digit__96 = false
-                                        var compound_old178 int = index__85
-                                        var compound_value179 int = 1
-                                        var t1530 int = compound_old178 + compound_value179
-                                        index__85 = t1530
+                                    if jp19 {
+                                        saw_dot__0 = true
+                                        previous_digit__0 = false
+                                        var compound_old8 int = index__0
+                                        var compound_value8 int = 1
+                                        var t88 int = compound_old8 + compound_value8
+                                        index__0 = t88
                                         continue
                                     } else {
-                                        break Loop_loop1483__2
+                                        break Loop_loop0__2
                                     }
                                 }
                             }
                         } else {
-                            break Loop_loop1483__2
+                            break Loop_loop0__2
                         }
                     }
-                    var t1481 bool = !saw_digit__92
-                    if t1481 {
-                        var inline2213 FloatNatural = float_natural_zero()
-                        var inline2214 ParsedFloat = ParsedFloat{
+                    var t8 bool = !saw_digit__0
+                    if t8 {
+                        var inline2 FloatNatural = float_natural_zero()
+                        var inline3 ParsedFloat = ParsedFloat{
                             valid: false,
                             negative: false,
                             special: 0,
-                            numerator: inline2213,
+                            numerator: inline2,
                             decimal_exponent: 0,
                             binary_exponent: 0,
                             hexadecimal: false,
                             significant_digits: 0,
                         }
-                        return inline2214
+                        return inline3
                     } else {
-                        var jp1397 uint8
-                        if jp1390 {
-                            jp1397 = 112
+                        var jp5 uint8
+                        if jp3 {
+                            jp5 = 112
                         } else {
-                            jp1397 = 101
+                            jp5 = 101
                         }
-                        var exponent__103 int = 0
-                        var exponent_negative__104 bool = false
-                        var t1476 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                        var t1477 bool = index__85 < t1476
-                        var jp1414 bool
-                        if t1477 {
-                            var t1478 uint8
-                            var inline2216 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                            t1478 = inline2216
-                            var t1479 uint8 = ascii_lower(t1478)
-                            var t1480 bool = t1479 == jp1397
-                            jp1414 = t1480
+                        var exponent__0 int = 0
+                        var exponent_negative__0 bool = false
+                        var t9 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                        var t10 bool = index__0 < t9
+                        var jp6 bool
+                        if t10 {
+                            var t59 uint8
+                            var inline1 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                            t59 = inline1
+                            var t60 uint8 = ascii_lower(t59)
+                            var t61 bool = t60 == jp5
+                            jp6 = t61
                         } else {
-                            jp1414 = false
+                            jp6 = false
                         }
-                        if jp1414 {
-                            var compound_old183 int = index__85
-                            var compound_value184 int = 1
-                            var t1415 int = compound_old183 + compound_value184
-                            index__85 = t1415
-                            var t1466 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                            var t1467 bool = index__85 < t1466
-                            var jp1461 bool
-                            if t1467 {
-                                var t1470 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                                var t1471 bool = t1470 == 43
-                                if t1471 {
-                                    jp1461 = true
+                        if jp6 {
+                            var compound_old0 int = index__0
+                            var compound_value0 int = 1
+                            var t19 int = compound_old0 + compound_value0
+                            index__0 = t19
+                            var t21 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                            var t22 bool = index__0 < t21
+                            var jp9 bool
+                            if t22 {
+                                var t54 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                                var t55 bool = t54 == 43
+                                if t55 {
+                                    jp9 = true
                                 } else {
-                                    var t1472 uint8
-                                    var inline2218 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                                    t1472 = inline2218
-                                    var t1473 bool = t1472 == 45
-                                    jp1461 = t1473
+                                    var t56 uint8
+                                    var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                                    t56 = inline0
+                                    var t57 bool = t56 == 45
+                                    jp9 = t57
                                 }
                             } else {
-                                jp1461 = false
+                                jp9 = false
                             }
-                            if jp1461 {
-                                var t1462 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                                var t1463 bool = t1462 == 45
-                                exponent_negative__104 = t1463
-                                var compound_old187 int = index__85
-                                var compound_value188 int = 1
-                                var t1464 int = compound_old187 + compound_value188
-                                index__85 = t1464
+                            if jp9 {
+                                var t50 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                                var t51 bool = t50 == 45
+                                exponent_negative__0 = t51
+                                var compound_old3 int = index__0
+                                var compound_value3 int = 1
+                                var t52 int = compound_old3 + compound_value3
+                                index__0 = t52
                             } else {}
-                            var exponent_digits__105 bool = false
-                            previous_digit__96 = false
-                            Loop_loop1422__2:
+                            var exponent_digits__0 bool = false
+                            previous_digit__0 = false
+                            Loop_loop1__2:
                             for {
-                                var t1423 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                var t1424 bool = index__85 < t1423
-                                if t1424 {
-                                    var current__106 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                                    var t1458 bool = current__106 >= 48
-                                    var jp1427 bool
-                                    if t1458 {
-                                        var t1459 bool = current__106 <= 57
-                                        jp1427 = t1459
+                                var t25 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                var t26 bool = index__0 < t25
+                                if t26 {
+                                    var current__0 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                                    var t27 bool = current__0 >= 48
+                                    var jp10 bool
+                                    if t27 {
+                                        var t49 bool = current__0 <= 57
+                                        jp10 = t49
                                     } else {
-                                        jp1427 = false
+                                        jp10 = false
                                     }
-                                    if jp1427 {
-                                        exponent_digits__105 = true
-                                        previous_digit__96 = true
-                                        var t1431 bool = exponent__103 < 1000000
-                                        if t1431 {
-                                            var t1432 int = exponent__103 * 10
-                                            var t1433 uint8 = current__106 - 48
-                                            var t1434 int = int(uint8(t1433))
-                                            var t1435 int = t1432 + t1434
-                                            exponent__103 = t1435
+                                    if jp10 {
+                                        exponent_digits__0 = true
+                                        previous_digit__0 = true
+                                        var t28 bool = exponent__0 < 1000000
+                                        if t28 {
+                                            var t31 int = exponent__0 * 10
+                                            var t32 uint8 = current__0 - 48
+                                            var t33 int = int(uint8(t32))
+                                            var t34 int = t31 + t33
+                                            exponent__0 = t34
                                         } else {}
-                                        var compound_old196 int = index__85
-                                        var compound_value197 int = 1
-                                        var t1429 int = compound_old196 + compound_value197
-                                        index__85 = t1429
+                                        var compound_old1 int = index__0
+                                        var compound_value1 int = 1
+                                        var t29 int = compound_old1 + compound_value1
+                                        index__0 = t29
                                         continue
                                     } else {
-                                        var t1437 bool = current__106 == 95
-                                        if t1437 {
-                                            var t1454 bool = !previous_digit__96
-                                            var jp1450 bool
-                                            if t1454 {
-                                                jp1450 = true
+                                        var t35 bool = current__0 == 95
+                                        if t35 {
+                                            var t36 bool = !previous_digit__0
+                                            var jp11 bool
+                                            if t36 {
+                                                jp11 = true
                                             } else {
-                                                var t1455 int = index__85 + 1
-                                                var t1456 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                                var t1457 bool = t1455 >= t1456
-                                                jp1450 = t1457
+                                                var t46 int = index__0 + 1
+                                                var t47 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                                var t48 bool = t46 >= t47
+                                                jp11 = t48
                                             }
-                                            var jp1445 bool
-                                            if jp1450 {
-                                                jp1445 = true
+                                            var jp12 bool
+                                            if jp11 {
+                                                jp12 = true
                                             } else {
-                                                var t1451 int = index__85 + 1
-                                                var t1452 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, t1451)
-                                                var t1453 bool = t1452 < 48
-                                                jp1445 = t1453
+                                                var t43 int = index__0 + 1
+                                                var t44 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t43)
+                                                var t45 bool = t44 < 48
+                                                jp12 = t45
                                             }
-                                            var jp1442 bool
-                                            if jp1445 {
-                                                jp1442 = true
+                                            var jp13 bool
+                                            if jp12 {
+                                                jp13 = true
                                             } else {
-                                                var t1446 int = index__85 + 1
-                                                var t1447 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, t1446)
-                                                var t1448 bool = t1447 > 57
-                                                jp1442 = t1448
+                                                var t40 int = index__0 + 1
+                                                var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
+                                                var t42 bool = t41 > 57
+                                                jp13 = t42
                                             }
-                                            if jp1442 {
-                                                var t1443 ParsedFloat = invalid_parsed_float()
-                                                return t1443
+                                            if jp13 {
+                                                var t39 ParsedFloat = invalid_parsed_float()
+                                                return t39
                                             } else {
-                                                previous_digit__96 = false
-                                                var compound_old201 int = index__85
-                                                var compound_value202 int = 1
-                                                var t1439 int = compound_old201 + compound_value202
-                                                index__85 = t1439
+                                                previous_digit__0 = false
+                                                var compound_old2 int = index__0
+                                                var compound_value2 int = 1
+                                                var t37 int = compound_old2 + compound_value2
+                                                index__0 = t37
                                                 continue
                                             }
                                         } else {
-                                            break Loop_loop1422__2
+                                            break Loop_loop1__2
                                         }
                                     }
                                 } else {
-                                    break Loop_loop1422__2
+                                    break Loop_loop1__2
                                 }
                             }
-                            var t1420 bool = !exponent_digits__105
-                            if t1420 {
-                                var t1421 ParsedFloat = invalid_parsed_float()
-                                return t1421
+                            var t23 bool = !exponent_digits__0
+                            if t23 {
+                                var t24 ParsedFloat = invalid_parsed_float()
+                                return t24
                             } else {
-                                var t1410 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                var t1411 bool = index__85 != t1410
-                                if t1411 {
-                                    var t1412 ParsedFloat = invalid_parsed_float()
-                                    return t1412
+                                var t11 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                var t12 bool = index__0 != t11
+                                if t12 {
+                                    var t18 ParsedFloat = invalid_parsed_float()
+                                    return t18
                                 } else {
-                                    if exponent_negative__104 {
-                                        var t1409 int = 0 - exponent__103
-                                        exponent__103 = t1409
+                                    if exponent_negative__0 {
+                                        var t17 int = 0 - exponent__0
+                                        exponent__0 = t17
                                     } else {}
-                                    var jp1402 int
-                                    if jp1390 {
-                                        jp1402 = 0
+                                    var jp7 int
+                                    if jp3 {
+                                        jp7 = 0
                                     } else {
-                                        var t1408 int = exponent__103 - fraction_digits__94
-                                        jp1402 = t1408
+                                        var t16 int = exponent__0 - fraction_digits__0
+                                        jp7 = t16
                                     }
-                                    var jp1404 int
-                                    if jp1390 {
-                                        var t1406 int = fraction_digits__94 * 4
-                                        var t1407 int = exponent__103 - t1406
-                                        jp1404 = t1407
+                                    var jp8 int
+                                    if jp3 {
+                                        var t14 int = fraction_digits__0 * 4
+                                        var t15 int = exponent__0 - t14
+                                        jp8 = t15
                                     } else {
-                                        jp1404 = 0
+                                        jp8 = 0
                                     }
-                                    var t1405 ParsedFloat = ParsedFloat{
+                                    var t13 ParsedFloat = ParsedFloat{
                                         valid: true,
-                                        negative: negative__86,
+                                        negative: negative__0,
                                         special: 0,
-                                        numerator: numerator__91,
-                                        decimal_exponent: jp1402,
-                                        binary_exponent: jp1404,
-                                        hexadecimal: jp1390,
-                                        significant_digits: significant_digits__95,
+                                        numerator: numerator__0,
+                                        decimal_exponent: jp7,
+                                        binary_exponent: jp8,
+                                        hexadecimal: jp3,
+                                        significant_digits: significant_digits__0,
                                     }
-                                    return t1405
+                                    return t13
                                 }
                             }
                         } else {
-                            if jp1390 {
-                                var t1475 ParsedFloat = invalid_parsed_float()
-                                return t1475
+                            if jp3 {
+                                var t58 ParsedFloat = invalid_parsed_float()
+                                return t58
                             } else {
-                                var t1410 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                var t1411 bool = index__85 != t1410
-                                if t1411 {
-                                    var t1412 ParsedFloat = invalid_parsed_float()
-                                    return t1412
+                                var t11 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                var t12 bool = index__0 != t11
+                                if t12 {
+                                    var t18 ParsedFloat = invalid_parsed_float()
+                                    return t18
                                 } else {
-                                    if exponent_negative__104 {
-                                        var t1409 int = 0 - exponent__103
-                                        exponent__103 = t1409
+                                    if exponent_negative__0 {
+                                        var t17 int = 0 - exponent__0
+                                        exponent__0 = t17
                                     } else {}
-                                    var jp1402 int
-                                    if jp1390 {
-                                        jp1402 = 0
+                                    var jp7 int
+                                    if jp3 {
+                                        jp7 = 0
                                     } else {
-                                        var t1408 int = exponent__103 - fraction_digits__94
-                                        jp1402 = t1408
+                                        var t16 int = exponent__0 - fraction_digits__0
+                                        jp7 = t16
                                     }
-                                    var jp1404 int
-                                    if jp1390 {
-                                        var t1406 int = fraction_digits__94 * 4
-                                        var t1407 int = exponent__103 - t1406
-                                        jp1404 = t1407
+                                    var jp8 int
+                                    if jp3 {
+                                        var t14 int = fraction_digits__0 * 4
+                                        var t15 int = exponent__0 - t14
+                                        jp8 = t15
                                     } else {
-                                        jp1404 = 0
+                                        jp8 = 0
                                     }
-                                    var t1405 ParsedFloat = ParsedFloat{
+                                    var t13 ParsedFloat = ParsedFloat{
                                         valid: true,
-                                        negative: negative__86,
+                                        negative: negative__0,
                                         special: 0,
-                                        numerator: numerator__91,
-                                        decimal_exponent: jp1402,
-                                        binary_exponent: jp1404,
-                                        hexadecimal: jp1390,
-                                        significant_digits: significant_digits__95,
+                                        numerator: numerator__0,
+                                        decimal_exponent: jp7,
+                                        binary_exponent: jp8,
+                                        hexadecimal: jp3,
+                                        significant_digits: significant_digits__0,
                                     }
-                                    return t1405
+                                    return t13
                                 }
                             }
                         }
                     }
                 }
             } else {
-                jp1390 = false
-                if jp1390 {
-                    var compound_old145 int = index__85
-                    var compound_value146 int = 2
-                    var t1534 int = compound_old145 + compound_value146
-                    index__85 = t1534
+                jp3 = false
+                if jp3 {
+                    var compound_old9 int = index__0
+                    var compound_value9 int = 2
+                    var t91 int = compound_old9 + compound_value9
+                    index__0 = t91
                 } else {}
-                var mantissa_start__89 int = index__85
-                var jp1393 int
-                if jp1390 {
-                    jp1393 = 16
+                var mantissa_start__0 int = index__0
+                var jp4 int
+                if jp3 {
+                    jp4 = 16
                 } else {
-                    jp1393 = 10
+                    jp4 = 10
                 }
-                var numerator__91 FloatNatural = float_natural_zero()
-                var saw_digit__92 bool = false
-                var saw_dot__93 bool = false
-                var fraction_digits__94 int = 0
-                var significant_digits__95 int = 0
-                var previous_digit__96 bool = false
-                var t1487 uint32 = uint32(int(jp1393))
-                Loop_loop1483__3:
+                var numerator__0 FloatNatural = float_natural_zero()
+                var saw_digit__0 bool = false
+                var saw_dot__0 bool = false
+                var fraction_digits__0 int = 0
+                var significant_digits__0 int = 0
+                var previous_digit__0 bool = false
+                var t62 uint32 = uint32(int(jp4))
+                Loop_loop0__3:
                 for {
-                    var t1484 int
-                    var inline2211 int = _goml_runtime_core_string_len(value__84)
-                    t1484 = inline2211
-                    var t1485 bool = index__85 < t1484
-                    if t1485 {
-                        var current__97 uint8
-                        var inline2209 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                        current__97 = inline2209
-                        var mtmp149 Tuple2_4bool_3int = float_digit(current__97, jp1393)
-                        var x150 bool = mtmp149._0
-                        var x151 int = mtmp149._1
-                        if x150 {
-                            float_natural_multiply_small(numerator__91, t1487)
-                            var t1488 uint32 = uint32(int(x151))
-                            float_natural_add_small(numerator__91, t1488)
-                            saw_digit__92 = true
-                            previous_digit__96 = true
-                            if saw_dot__93 {
-                                var compound_old156 int = fraction_digits__94
-                                var compound_value157 int = 1
-                                var t1499 int = compound_old156 + compound_value157
-                                fraction_digits__94 = t1499
+                    var t63 int
+                    var inline11 int = _goml_runtime_core_string_len(value__0)
+                    t63 = inline11
+                    var t64 bool = index__0 < t63
+                    if t64 {
+                        var current__1 uint8
+                        var inline10 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                        current__1 = inline10
+                        var mtmp0 Tuple2_4bool_3int = float_digit(current__1, jp4)
+                        var x0 bool = mtmp0._0
+                        var x1 int = mtmp0._1
+                        if x0 {
+                            float_natural_multiply_small(numerator__0, t62)
+                            var t65 uint32 = uint32(int(x1))
+                            float_natural_add_small(numerator__0, t65)
+                            saw_digit__0 = true
+                            previous_digit__0 = true
+                            if saw_dot__0 {
+                                var compound_old6 int = fraction_digits__0
+                                var compound_value6 int = 1
+                                var t72 int = compound_old6 + compound_value6
+                                fraction_digits__0 = t72
                             } else {}
-                            var t1497 bool = significant_digits__95 > 0
-                            var jp1494 bool
-                            if t1497 {
-                                jp1494 = true
+                            var t66 bool = significant_digits__0 > 0
+                            var jp14 bool
+                            if t66 {
+                                jp14 = true
                             } else {
-                                var t1498 bool = x151 != 0
-                                jp1494 = t1498
+                                var t71 bool = x1 != 0
+                                jp14 = t71
                             }
-                            if jp1494 {
-                                var compound_old160 int = significant_digits__95
-                                var compound_value161 int = 1
-                                var t1495 int = compound_old160 + compound_value161
-                                significant_digits__95 = t1495
+                            if jp14 {
+                                var compound_old5 int = significant_digits__0
+                                var compound_value5 int = 1
+                                var t69 int = compound_old5 + compound_value5
+                                significant_digits__0 = t69
                             } else {}
-                            var compound_old164 int = index__85
-                            var compound_value165 int = 1
-                            var t1491 int = compound_old164 + compound_value165
-                            index__85 = t1491
+                            var compound_old4 int = index__0
+                            var compound_value4 int = 1
+                            var t67 int = compound_old4 + compound_value4
+                            index__0 = t67
                             continue
                         } else {
-                            var t1502 bool = current__97 == 95
-                            if t1502 {
-                                var t1523 int = index__85 + 1
-                                var t1524 int
-                                var inline2207 int = _goml_runtime_core_string_len(value__84)
-                                t1524 = inline2207
-                                var t1525 bool = t1523 >= t1524
-                                if t1525 {
-                                    var inline2199 FloatNatural = float_natural_zero()
-                                    var inline2200 ParsedFloat = ParsedFloat{
+                            var t74 bool = current__1 == 95
+                            if t74 {
+                                var t75 int = index__0 + 1
+                                var t76 int
+                                var inline9 int = _goml_runtime_core_string_len(value__0)
+                                t76 = inline9
+                                var t77 bool = t75 >= t76
+                                if t77 {
+                                    var inline7 FloatNatural = float_natural_zero()
+                                    var inline8 ParsedFloat = ParsedFloat{
                                         valid: false,
                                         negative: false,
                                         special: 0,
-                                        numerator: inline2199,
+                                        numerator: inline7,
                                         decimal_exponent: 0,
                                         binary_exponent: 0,
                                         hexadecimal: false,
                                         significant_digits: 0,
                                     }
-                                    return inline2200
+                                    return inline8
                                 } else {
-                                    var t1504 int = index__85 + 1
-                                    var t1505 uint8
-                                    var inline2205 uint8 = _goml_runtime_core_string_byte_get(value__84, t1504)
-                                    t1505 = inline2205
-                                    var mtmp168 Tuple2_4bool_3int = float_digit(t1505, jp1393)
-                                    var x169 bool = mtmp168._0
-                                    var jp1520 bool
-                                    if jp1390 {
-                                        var t1522 bool = !saw_digit__92
-                                        jp1520 = t1522
+                                    var t78 int = index__0 + 1
+                                    var t79 uint8
+                                    var inline6 uint8 = _goml_runtime_core_string_byte_get(value__0, t78)
+                                    t79 = inline6
+                                    var mtmp1 Tuple2_4bool_3int = float_digit(t79, jp4)
+                                    var x2 bool = mtmp1._0
+                                    var jp15 bool
+                                    if jp3 {
+                                        var t86 bool = !saw_digit__0
+                                        jp15 = t86
                                     } else {
-                                        jp1520 = false
+                                        jp15 = false
                                     }
-                                    var jp1507 bool
-                                    if jp1520 {
-                                        var t1521 bool = index__85 == mantissa_start__89
-                                        jp1507 = t1521
+                                    var jp16 bool
+                                    if jp15 {
+                                        var t85 bool = index__0 == mantissa_start__0
+                                        jp16 = t85
                                     } else {
-                                        jp1507 = false
+                                        jp16 = false
                                     }
-                                    var t1517 bool = !previous_digit__96
-                                    var jp1515 bool
-                                    if t1517 {
-                                        var t1518 bool = !jp1507
-                                        jp1515 = t1518
+                                    var t80 bool = !previous_digit__0
+                                    var jp17 bool
+                                    if t80 {
+                                        var t84 bool = !jp16
+                                        jp17 = t84
                                     } else {
-                                        jp1515 = false
+                                        jp17 = false
                                     }
-                                    var jp1512 bool
-                                    if jp1515 {
-                                        jp1512 = true
+                                    var jp18 bool
+                                    if jp17 {
+                                        jp18 = true
                                     } else {
-                                        var t1516 bool = !x169
-                                        jp1512 = t1516
+                                        var t83 bool = !x2
+                                        jp18 = t83
                                     }
-                                    if jp1512 {
-                                        var inline2202 FloatNatural = float_natural_zero()
-                                        var inline2203 ParsedFloat = ParsedFloat{
+                                    if jp18 {
+                                        var inline4 FloatNatural = float_natural_zero()
+                                        var inline5 ParsedFloat = ParsedFloat{
                                             valid: false,
                                             negative: false,
                                             special: 0,
-                                            numerator: inline2202,
+                                            numerator: inline4,
                                             decimal_exponent: 0,
                                             binary_exponent: 0,
                                             hexadecimal: false,
                                             significant_digits: 0,
                                         }
-                                        return inline2203
+                                        return inline5
                                     } else {
-                                        previous_digit__96 = false
-                                        var compound_old173 int = index__85
-                                        var compound_value174 int = 1
-                                        var t1509 int = compound_old173 + compound_value174
-                                        index__85 = t1509
+                                        previous_digit__0 = false
+                                        var compound_old7 int = index__0
+                                        var compound_value7 int = 1
+                                        var t81 int = compound_old7 + compound_value7
+                                        index__0 = t81
                                         continue
                                     }
                                 }
                             } else {
-                                var t1532 bool = current__97 == 46
-                                var jp1529 bool
-                                if t1532 {
-                                    var t1533 bool = !saw_dot__93
-                                    jp1529 = t1533
+                                var t87 bool = current__1 == 46
+                                var jp19 bool
+                                if t87 {
+                                    var t90 bool = !saw_dot__0
+                                    jp19 = t90
                                 } else {
-                                    jp1529 = false
+                                    jp19 = false
                                 }
-                                if jp1529 {
-                                    saw_dot__93 = true
-                                    previous_digit__96 = false
-                                    var compound_old178 int = index__85
-                                    var compound_value179 int = 1
-                                    var t1530 int = compound_old178 + compound_value179
-                                    index__85 = t1530
+                                if jp19 {
+                                    saw_dot__0 = true
+                                    previous_digit__0 = false
+                                    var compound_old8 int = index__0
+                                    var compound_value8 int = 1
+                                    var t88 int = compound_old8 + compound_value8
+                                    index__0 = t88
                                     continue
                                 } else {
-                                    break Loop_loop1483__3
+                                    break Loop_loop0__3
                                 }
                             }
                         }
                     } else {
-                        break Loop_loop1483__3
+                        break Loop_loop0__3
                     }
                 }
-                var t1481 bool = !saw_digit__92
-                if t1481 {
-                    var inline2213 FloatNatural = float_natural_zero()
-                    var inline2214 ParsedFloat = ParsedFloat{
+                var t8 bool = !saw_digit__0
+                if t8 {
+                    var inline2 FloatNatural = float_natural_zero()
+                    var inline3 ParsedFloat = ParsedFloat{
                         valid: false,
                         negative: false,
                         special: 0,
-                        numerator: inline2213,
+                        numerator: inline2,
                         decimal_exponent: 0,
                         binary_exponent: 0,
                         hexadecimal: false,
                         significant_digits: 0,
                     }
-                    return inline2214
+                    return inline3
                 } else {
-                    var jp1397 uint8
-                    if jp1390 {
-                        jp1397 = 112
+                    var jp5 uint8
+                    if jp3 {
+                        jp5 = 112
                     } else {
-                        jp1397 = 101
+                        jp5 = 101
                     }
-                    var exponent__103 int = 0
-                    var exponent_negative__104 bool = false
-                    var t1476 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                    var t1477 bool = index__85 < t1476
-                    var jp1414 bool
-                    if t1477 {
-                        var t1478 uint8
-                        var inline2216 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                        t1478 = inline2216
-                        var t1479 uint8 = ascii_lower(t1478)
-                        var t1480 bool = t1479 == jp1397
-                        jp1414 = t1480
+                    var exponent__0 int = 0
+                    var exponent_negative__0 bool = false
+                    var t9 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                    var t10 bool = index__0 < t9
+                    var jp6 bool
+                    if t10 {
+                        var t59 uint8
+                        var inline1 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                        t59 = inline1
+                        var t60 uint8 = ascii_lower(t59)
+                        var t61 bool = t60 == jp5
+                        jp6 = t61
                     } else {
-                        jp1414 = false
+                        jp6 = false
                     }
-                    if jp1414 {
-                        var compound_old183 int = index__85
-                        var compound_value184 int = 1
-                        var t1415 int = compound_old183 + compound_value184
-                        index__85 = t1415
-                        var t1466 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                        var t1467 bool = index__85 < t1466
-                        var jp1461 bool
-                        if t1467 {
-                            var t1470 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                            var t1471 bool = t1470 == 43
-                            if t1471 {
-                                jp1461 = true
+                    if jp6 {
+                        var compound_old0 int = index__0
+                        var compound_value0 int = 1
+                        var t19 int = compound_old0 + compound_value0
+                        index__0 = t19
+                        var t21 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                        var t22 bool = index__0 < t21
+                        var jp9 bool
+                        if t22 {
+                            var t54 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                            var t55 bool = t54 == 43
+                            if t55 {
+                                jp9 = true
                             } else {
-                                var t1472 uint8
-                                var inline2218 uint8 = _goml_runtime_core_string_byte_get(value__84, index__85)
-                                t1472 = inline2218
-                                var t1473 bool = t1472 == 45
-                                jp1461 = t1473
+                                var t56 uint8
+                                var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                                t56 = inline0
+                                var t57 bool = t56 == 45
+                                jp9 = t57
                             }
                         } else {
-                            jp1461 = false
+                            jp9 = false
                         }
-                        if jp1461 {
-                            var t1462 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                            var t1463 bool = t1462 == 45
-                            exponent_negative__104 = t1463
-                            var compound_old187 int = index__85
-                            var compound_value188 int = 1
-                            var t1464 int = compound_old187 + compound_value188
-                            index__85 = t1464
+                        if jp9 {
+                            var t50 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                            var t51 bool = t50 == 45
+                            exponent_negative__0 = t51
+                            var compound_old3 int = index__0
+                            var compound_value3 int = 1
+                            var t52 int = compound_old3 + compound_value3
+                            index__0 = t52
                         } else {}
-                        var exponent_digits__105 bool = false
-                        previous_digit__96 = false
-                        Loop_loop1422__3:
+                        var exponent_digits__0 bool = false
+                        previous_digit__0 = false
+                        Loop_loop1__3:
                         for {
-                            var t1423 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                            var t1424 bool = index__85 < t1423
-                            if t1424 {
-                                var current__106 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, index__85)
-                                var t1458 bool = current__106 >= 48
-                                var jp1427 bool
-                                if t1458 {
-                                    var t1459 bool = current__106 <= 57
-                                    jp1427 = t1459
+                            var t25 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                            var t26 bool = index__0 < t25
+                            if t26 {
+                                var current__0 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, index__0)
+                                var t27 bool = current__0 >= 48
+                                var jp10 bool
+                                if t27 {
+                                    var t49 bool = current__0 <= 57
+                                    jp10 = t49
                                 } else {
-                                    jp1427 = false
+                                    jp10 = false
                                 }
-                                if jp1427 {
-                                    exponent_digits__105 = true
-                                    previous_digit__96 = true
-                                    var t1431 bool = exponent__103 < 1000000
-                                    if t1431 {
-                                        var t1432 int = exponent__103 * 10
-                                        var t1433 uint8 = current__106 - 48
-                                        var t1434 int = int(uint8(t1433))
-                                        var t1435 int = t1432 + t1434
-                                        exponent__103 = t1435
+                                if jp10 {
+                                    exponent_digits__0 = true
+                                    previous_digit__0 = true
+                                    var t28 bool = exponent__0 < 1000000
+                                    if t28 {
+                                        var t31 int = exponent__0 * 10
+                                        var t32 uint8 = current__0 - 48
+                                        var t33 int = int(uint8(t32))
+                                        var t34 int = t31 + t33
+                                        exponent__0 = t34
                                     } else {}
-                                    var compound_old196 int = index__85
-                                    var compound_value197 int = 1
-                                    var t1429 int = compound_old196 + compound_value197
-                                    index__85 = t1429
+                                    var compound_old1 int = index__0
+                                    var compound_value1 int = 1
+                                    var t29 int = compound_old1 + compound_value1
+                                    index__0 = t29
                                     continue
                                 } else {
-                                    var t1437 bool = current__106 == 95
-                                    if t1437 {
-                                        var t1454 bool = !previous_digit__96
-                                        var jp1450 bool
-                                        if t1454 {
-                                            jp1450 = true
+                                    var t35 bool = current__0 == 95
+                                    if t35 {
+                                        var t36 bool = !previous_digit__0
+                                        var jp11 bool
+                                        if t36 {
+                                            jp11 = true
                                         } else {
-                                            var t1455 int = index__85 + 1
-                                            var t1456 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                                            var t1457 bool = t1455 >= t1456
-                                            jp1450 = t1457
+                                            var t46 int = index__0 + 1
+                                            var t47 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                                            var t48 bool = t46 >= t47
+                                            jp11 = t48
                                         }
-                                        var jp1445 bool
-                                        if jp1450 {
-                                            jp1445 = true
+                                        var jp12 bool
+                                        if jp11 {
+                                            jp12 = true
                                         } else {
-                                            var t1451 int = index__85 + 1
-                                            var t1452 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, t1451)
-                                            var t1453 bool = t1452 < 48
-                                            jp1445 = t1453
+                                            var t43 int = index__0 + 1
+                                            var t44 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t43)
+                                            var t45 bool = t44 < 48
+                                            jp12 = t45
                                         }
-                                        var jp1442 bool
-                                        if jp1445 {
-                                            jp1442 = true
+                                        var jp13 bool
+                                        if jp12 {
+                                            jp13 = true
                                         } else {
-                                            var t1446 int = index__85 + 1
-                                            var t1447 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__84, t1446)
-                                            var t1448 bool = t1447 > 57
-                                            jp1442 = t1448
+                                            var t40 int = index__0 + 1
+                                            var t41 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__0, t40)
+                                            var t42 bool = t41 > 57
+                                            jp13 = t42
                                         }
-                                        if jp1442 {
-                                            var t1443 ParsedFloat = invalid_parsed_float()
-                                            return t1443
+                                        if jp13 {
+                                            var t39 ParsedFloat = invalid_parsed_float()
+                                            return t39
                                         } else {
-                                            previous_digit__96 = false
-                                            var compound_old201 int = index__85
-                                            var compound_value202 int = 1
-                                            var t1439 int = compound_old201 + compound_value202
-                                            index__85 = t1439
+                                            previous_digit__0 = false
+                                            var compound_old2 int = index__0
+                                            var compound_value2 int = 1
+                                            var t37 int = compound_old2 + compound_value2
+                                            index__0 = t37
                                             continue
                                         }
                                     } else {
-                                        break Loop_loop1422__3
+                                        break Loop_loop1__3
                                     }
                                 }
                             } else {
-                                break Loop_loop1422__3
+                                break Loop_loop1__3
                             }
                         }
-                        var t1420 bool = !exponent_digits__105
-                        if t1420 {
-                            var t1421 ParsedFloat = invalid_parsed_float()
-                            return t1421
+                        var t23 bool = !exponent_digits__0
+                        if t23 {
+                            var t24 ParsedFloat = invalid_parsed_float()
+                            return t24
                         } else {
-                            var t1410 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                            var t1411 bool = index__85 != t1410
-                            if t1411 {
-                                var t1412 ParsedFloat = invalid_parsed_float()
-                                return t1412
+                            var t11 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                            var t12 bool = index__0 != t11
+                            if t12 {
+                                var t18 ParsedFloat = invalid_parsed_float()
+                                return t18
                             } else {
-                                if exponent_negative__104 {
-                                    var t1409 int = 0 - exponent__103
-                                    exponent__103 = t1409
+                                if exponent_negative__0 {
+                                    var t17 int = 0 - exponent__0
+                                    exponent__0 = t17
                                 } else {}
-                                var jp1402 int
-                                if jp1390 {
-                                    jp1402 = 0
+                                var jp7 int
+                                if jp3 {
+                                    jp7 = 0
                                 } else {
-                                    var t1408 int = exponent__103 - fraction_digits__94
-                                    jp1402 = t1408
+                                    var t16 int = exponent__0 - fraction_digits__0
+                                    jp7 = t16
                                 }
-                                var jp1404 int
-                                if jp1390 {
-                                    var t1406 int = fraction_digits__94 * 4
-                                    var t1407 int = exponent__103 - t1406
-                                    jp1404 = t1407
+                                var jp8 int
+                                if jp3 {
+                                    var t14 int = fraction_digits__0 * 4
+                                    var t15 int = exponent__0 - t14
+                                    jp8 = t15
                                 } else {
-                                    jp1404 = 0
+                                    jp8 = 0
                                 }
-                                var t1405 ParsedFloat = ParsedFloat{
+                                var t13 ParsedFloat = ParsedFloat{
                                     valid: true,
-                                    negative: negative__86,
+                                    negative: negative__0,
                                     special: 0,
-                                    numerator: numerator__91,
-                                    decimal_exponent: jp1402,
-                                    binary_exponent: jp1404,
-                                    hexadecimal: jp1390,
-                                    significant_digits: significant_digits__95,
+                                    numerator: numerator__0,
+                                    decimal_exponent: jp7,
+                                    binary_exponent: jp8,
+                                    hexadecimal: jp3,
+                                    significant_digits: significant_digits__0,
                                 }
-                                return t1405
+                                return t13
                             }
                         }
                     } else {
-                        if jp1390 {
-                            var t1475 ParsedFloat = invalid_parsed_float()
-                            return t1475
+                        if jp3 {
+                            var t58 ParsedFloat = invalid_parsed_float()
+                            return t58
                         } else {
-                            var t1410 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__84)
-                            var t1411 bool = index__85 != t1410
-                            if t1411 {
-                                var t1412 ParsedFloat = invalid_parsed_float()
-                                return t1412
+                            var t11 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__0)
+                            var t12 bool = index__0 != t11
+                            if t12 {
+                                var t18 ParsedFloat = invalid_parsed_float()
+                                return t18
                             } else {
-                                if exponent_negative__104 {
-                                    var t1409 int = 0 - exponent__103
-                                    exponent__103 = t1409
+                                if exponent_negative__0 {
+                                    var t17 int = 0 - exponent__0
+                                    exponent__0 = t17
                                 } else {}
-                                var jp1402 int
-                                if jp1390 {
-                                    jp1402 = 0
+                                var jp7 int
+                                if jp3 {
+                                    jp7 = 0
                                 } else {
-                                    var t1408 int = exponent__103 - fraction_digits__94
-                                    jp1402 = t1408
+                                    var t16 int = exponent__0 - fraction_digits__0
+                                    jp7 = t16
                                 }
-                                var jp1404 int
-                                if jp1390 {
-                                    var t1406 int = fraction_digits__94 * 4
-                                    var t1407 int = exponent__103 - t1406
-                                    jp1404 = t1407
+                                var jp8 int
+                                if jp3 {
+                                    var t14 int = fraction_digits__0 * 4
+                                    var t15 int = exponent__0 - t14
+                                    jp8 = t15
                                 } else {
-                                    jp1404 = 0
+                                    jp8 = 0
                                 }
-                                var t1405 ParsedFloat = ParsedFloat{
+                                var t13 ParsedFloat = ParsedFloat{
                                     valid: true,
-                                    negative: negative__86,
+                                    negative: negative__0,
                                     special: 0,
-                                    numerator: numerator__91,
-                                    decimal_exponent: jp1402,
-                                    binary_exponent: jp1404,
-                                    hexadecimal: jp1390,
-                                    significant_digits: significant_digits__95,
+                                    numerator: numerator__0,
+                                    decimal_exponent: jp7,
+                                    binary_exponent: jp8,
+                                    hexadecimal: jp3,
+                                    significant_digits: significant_digits__0,
                                 }
-                                return t1405
+                                return t13
                             }
                         }
                     }
@@ -2980,965 +2980,965 @@ func parse_float_text(value__84 string) ParsedFloat {
     }
 }
 
-func float_natural_power5(exponent__25 int) FloatNatural {
-    var result__26 FloatNatural
-    var inline2220 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-    vec_push__Vec_6uint32(inline2220, 1)
-    var inline2222 FloatNatural = FloatNatural{
-        words: inline2220,
+func float_natural_power5(exponent__0 int) FloatNatural {
+    var result__0 FloatNatural
+    var inline0 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+    vec_push__Vec_6uint32(inline0, 1)
+    var inline2 FloatNatural = FloatNatural{
+        words: inline0,
     }
-    result__26 = inline2222
-    var count__27 int = 0
-    Loop_loop1573:
+    result__0 = inline2
+    var count__0 int = 0
+    Loop_loop0:
     for {
-        var t1574 bool = count__27 < exponent__25
-        if t1574 {
-            float_natural_multiply_small(result__26, 5)
-            var compound_old46 int = count__27
-            var compound_value47 int = 1
-            var t1575 int = compound_old46 + compound_value47
-            count__27 = t1575
+        var t0 bool = count__0 < exponent__0
+        if t0 {
+            float_natural_multiply_small(result__0, 5)
+            var compound_old0 int = count__0
+            var compound_value0 int = 1
+            var t1 int = compound_old0 + compound_value0
+            count__0 = t1
             continue
         } else {
-            break Loop_loop1573
+            break Loop_loop0
         }
     }
-    return result__26
+    return result__0
 }
 
-func float_rational_bits(numerator__65 FloatNatural, denominator__66 FloatNatural, binary_shift__67 int, mantissa_bits__68 int, exponent_bias__69 int) Tuple2_6uint64_4bool {
-    var t1662 bool
-    var inline2224 *_goml_vec_uint32 = numerator__65.words
-    var inline2225 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline2224)
-    t1662 = inline2225
-    if t1662 {
-        var t1663 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
+func float_rational_bits(numerator__0 FloatNatural, denominator__0 FloatNatural, binary_shift__0 int, mantissa_bits__0 int, exponent_bias__0 int) Tuple2_6uint64_4bool {
+    var t0 bool
+    var inline0 *_goml_vec_uint32 = numerator__0.words
+    var inline1 bool = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(inline0)
+    t0 = inline1
+    if t0 {
+        var t61 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
             _0: 0,
             _1: false,
         }
-        return t1663
+        return t61
     } else {
-        var t1659 bool = binary_shift__67 >= 0
-        var jp1584 FloatNatural
-        if t1659 {
-            var t1660 FloatNatural = float_natural_shift_left(numerator__65, binary_shift__67)
-            jp1584 = t1660
+        var t1 bool = binary_shift__0 >= 0
+        var jp0 FloatNatural
+        if t1 {
+            var t59 FloatNatural = float_natural_shift_left(numerator__0, binary_shift__0)
+            jp0 = t59
         } else {
-            var t1661 FloatNatural = float_natural_copy(numerator__65)
-            jp1584 = t1661
+            var t60 FloatNatural = float_natural_copy(numerator__0)
+            jp0 = t60
         }
-        var t1655 bool = binary_shift__67 >= 0
-        var jp1586 FloatNatural
-        if t1655 {
-            var t1656 FloatNatural = float_natural_copy(denominator__66)
-            jp1586 = t1656
+        var t2 bool = binary_shift__0 >= 0
+        var jp1 FloatNatural
+        if t2 {
+            var t56 FloatNatural = float_natural_copy(denominator__0)
+            jp1 = t56
         } else {
-            var t1657 int = 0 - binary_shift__67
-            var t1658 FloatNatural = float_natural_shift_left(denominator__66, t1657)
-            jp1586 = t1658
+            var t57 int = 0 - binary_shift__0
+            var t58 FloatNatural = float_natural_shift_left(denominator__0, t57)
+            jp1 = t58
         }
-        var t1587 int = float_natural_bit_length(jp1584)
-        var t1588 int = float_natural_bit_length(jp1586)
-        var exponent__72 int = t1587 - t1588
-        var t1649 bool = exponent__72 >= 0
-        var jp1590 int
-        if t1649 {
-            var t1650 FloatNatural = float_natural_shift_left(jp1586, exponent__72)
-            var t1651 int = float_natural_compare(jp1584, t1650)
-            jp1590 = t1651
+        var t3 int = float_natural_bit_length(jp0)
+        var t4 int = float_natural_bit_length(jp1)
+        var exponent__0 int = t3 - t4
+        var t5 bool = exponent__0 >= 0
+        var jp2 int
+        if t5 {
+            var t51 FloatNatural = float_natural_shift_left(jp1, exponent__0)
+            var t52 int = float_natural_compare(jp0, t51)
+            jp2 = t52
         } else {
-            var t1652 int = 0 - exponent__72
-            var t1653 FloatNatural = float_natural_shift_left(jp1584, t1652)
-            var t1654 int = float_natural_compare(t1653, jp1586)
-            jp1590 = t1654
+            var t53 int = 0 - exponent__0
+            var t54 FloatNatural = float_natural_shift_left(jp0, t53)
+            var t55 int = float_natural_compare(t54, jp1)
+            jp2 = t55
         }
-        var t1646 bool = jp1590 < 0
-        if t1646 {
-            var compound_old120 int = exponent__72
-            var compound_value121 int = 1
-            var t1647 int = compound_old120 - compound_value121
-            exponent__72 = t1647
+        var t6 bool = jp2 < 0
+        if t6 {
+            var compound_old2 int = exponent__0
+            var compound_value2 int = 1
+            var t49 int = compound_old2 - compound_value2
+            exponent__0 = t49
         } else {}
-        var minimum_exponent__74 int = 1 - exponent_bias__69
-        var t1640 bool = exponent__72 > exponent_bias__69
-        if t1640 {
-            var t1641 int = exponent_bias__69 + exponent_bias__69
-            var t1642 int = t1641 + 1
-            var t1643 uint64 = uint64(int(t1642))
-            var t1644 uint64 = t1643 << mantissa_bits__68
-            var t1645 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
-                _0: t1644,
+        var minimum_exponent__0 int = 1 - exponent_bias__0
+        var t7 bool = exponent__0 > exponent_bias__0
+        if t7 {
+            var t44 int = exponent_bias__0 + exponent_bias__0
+            var t45 int = t44 + 1
+            var t46 uint64 = uint64(int(t45))
+            var t47 uint64 = t46 << mantissa_bits__0
+            var t48 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
+                _0: t47,
                 _1: true,
             }
-            return t1645
+            return t48
         } else {
-            var t1635 bool = exponent__72 < minimum_exponent__74
-            var jp1594 uint64
-            if t1635 {
-                var t1636 int = mantissa_bits__68 - minimum_exponent__74
-                var t1637 uint64 = float_rational_quotient(jp1584, jp1586, t1636)
-                jp1594 = t1637
+            var t8 bool = exponent__0 < minimum_exponent__0
+            var jp3 uint64
+            if t8 {
+                var t40 int = mantissa_bits__0 - minimum_exponent__0
+                var t41 uint64 = float_rational_quotient(jp0, jp1, t40)
+                jp3 = t41
             } else {
-                var t1638 int = mantissa_bits__68 - exponent__72
-                var t1639 uint64 = float_rational_quotient(jp1584, jp1586, t1638)
-                jp1594 = t1639
+                var t42 int = mantissa_bits__0 - exponent__0
+                var t43 uint64 = float_rational_quotient(jp0, jp1, t42)
+                jp3 = t43
             }
-            var mantissa__76 uint64 = jp1594
-            var t1597 bool = exponent__72 < minimum_exponent__74
-            if t1597 {
-                var t1600 bool = mantissa__76 == 0
-                if t1600 {
-                    var t1601 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
+            var mantissa__0 uint64 = jp3
+            var t9 bool = exponent__0 < minimum_exponent__0
+            if t9 {
+                var t10 bool = mantissa__0 == 0
+                if t10 {
+                    var t11 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
                         _0: 0,
                         _1: false,
                     }
-                    return t1601
+                    return t11
                 } else {
-                    var t1604_lhs uint64 = 1
-                    var t1604 uint64 = t1604_lhs << mantissa_bits__68
-                    var t1605 bool = mantissa__76 >= t1604
-                    if t1605 {
-                        var t1606_lhs uint64 = 1
-                        var t1606 uint64 = t1606_lhs << mantissa_bits__68
-                        var t1607_lhs uint64 = 1
-                        var t1607 uint64 = t1607_lhs << mantissa_bits__68
-                        var t1608 uint64 = mantissa__76 - t1607
-                        var t1609 uint64 = t1606 | t1608
-                        var t1610 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
-                            _0: t1609,
+                    var t12_lhs uint64 = 1
+                    var t12 uint64 = t12_lhs << mantissa_bits__0
+                    var t13 bool = mantissa__0 >= t12
+                    if t13 {
+                        var t14_lhs uint64 = 1
+                        var t14 uint64 = t14_lhs << mantissa_bits__0
+                        var t15_lhs uint64 = 1
+                        var t15 uint64 = t15_lhs << mantissa_bits__0
+                        var t16 uint64 = mantissa__0 - t15
+                        var t17 uint64 = t14 | t16
+                        var t18 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
+                            _0: t17,
                             _1: false,
                         }
-                        return t1610
+                        return t18
                     } else {
-                        var t1611 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
-                            _0: mantissa__76,
+                        var t19 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
+                            _0: mantissa__0,
                             _1: false,
                         }
-                        return t1611
+                        return t19
                     }
                 }
             } else {
-                var t1628 int = mantissa_bits__68 + 1
-                var t1629_lhs uint64 = 1
-                var t1629 uint64 = t1629_lhs << t1628
-                var t1630 bool = mantissa__76 >= t1629
-                if t1630 {
-                    var compound_old125 uint64 = mantissa__76
-                    var compound_value126 int = 1
-                    var t1631 uint64 = compound_old125 >> compound_value126
-                    mantissa__76 = t1631
-                    var compound_old128 int = exponent__72
-                    var compound_value129 int = 1
-                    var t1633 int = compound_old128 + compound_value129
-                    exponent__72 = t1633
+                var t20 int = mantissa_bits__0 + 1
+                var t21_lhs uint64 = 1
+                var t21 uint64 = t21_lhs << t20
+                var t22 bool = mantissa__0 >= t21
+                if t22 {
+                    var compound_old0 uint64 = mantissa__0
+                    var compound_value0 int = 1
+                    var t36 uint64 = compound_old0 >> compound_value0
+                    mantissa__0 = t36
+                    var compound_old1 int = exponent__0
+                    var compound_value1 int = 1
+                    var t38 int = compound_old1 + compound_value1
+                    exponent__0 = t38
                 } else {}
-                var t1615 bool = exponent__72 > exponent_bias__69
-                if t1615 {
-                    var t1616 int = exponent_bias__69 + exponent_bias__69
-                    var t1617 int = t1616 + 1
-                    var t1618 uint64 = uint64(int(t1617))
-                    var t1619 uint64 = t1618 << mantissa_bits__68
-                    var t1620 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
-                        _0: t1619,
+                var t23 bool = exponent__0 > exponent_bias__0
+                if t23 {
+                    var t24 int = exponent_bias__0 + exponent_bias__0
+                    var t25 int = t24 + 1
+                    var t26 uint64 = uint64(int(t25))
+                    var t27 uint64 = t26 << mantissa_bits__0
+                    var t28 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
+                        _0: t27,
                         _1: true,
                     }
-                    return t1620
+                    return t28
                 } else {
-                    var t1621 int = exponent__72 + exponent_bias__69
-                    var t1622 uint64 = uint64(int(t1621))
-                    var t1623 uint64 = t1622 << mantissa_bits__68
-                    var t1624_lhs uint64 = 1
-                    var t1624 uint64 = t1624_lhs << mantissa_bits__68
-                    var t1625 uint64 = mantissa__76 - t1624
-                    var t1626 uint64 = t1623 | t1625
-                    var t1627 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
-                        _0: t1626,
+                    var t29 int = exponent__0 + exponent_bias__0
+                    var t30 uint64 = uint64(int(t29))
+                    var t31 uint64 = t30 << mantissa_bits__0
+                    var t32_lhs uint64 = 1
+                    var t32 uint64 = t32_lhs << mantissa_bits__0
+                    var t33 uint64 = mantissa__0 - t32
+                    var t34 uint64 = t31 | t33
+                    var t35 Tuple2_6uint64_4bool = Tuple2_6uint64_4bool{
+                        _0: t34,
                         _1: false,
                     }
-                    return t1627
+                    return t35
                 }
             }
         }
     }
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(self__528 *_goml_vec_uint32) bool {
-    var t1668 int = vec_len__Vec_6uint32(self__528)
-    var t1669 bool = t1668 == 0
-    return t1669
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_is__empty____T__u32(self__0 *_goml_vec_uint32) bool {
+    var t0 int = vec_len__Vec_6uint32(self__0)
+    var t1 bool = t0 == 0
+    return t1
 }
 
-func float_natural_trim(value__7 FloatNatural) struct{} {
-    Loop_loop1672:
+func float_natural_trim(value__0 FloatNatural) struct{} {
+    Loop_loop0:
     for {
-        var t1680 *_goml_vec_uint32 = value__7.words
-        var t1681 bool
-        var inline2236 int = vec_len__Vec_6uint32(t1680)
-        var inline2237 bool = inline2236 == 0
-        t1681 = inline2237
-        var t1682 bool = !t1681
-        var jp1674 bool
-        if t1682 {
-            var t1683 *_goml_vec_uint32 = value__7.words
-            var t1684 *_goml_vec_uint32 = value__7.words
-            var t1685 int
-            var inline2230 int = vec_len__Vec_6uint32(t1684)
-            t1685 = inline2230
-            var t1686 int = t1685 - 1
-            var t1687 uint32 = vec_get__Vec_6uint32(t1683, t1686)
-            var t1688 bool = t1687 == 0
-            jp1674 = t1688
+        var t0 *_goml_vec_uint32 = value__0.words
+        var t1 bool
+        var inline3 int = vec_len__Vec_6uint32(t0)
+        var inline4 bool = inline3 == 0
+        t1 = inline4
+        var t2 bool = !t1
+        var jp0 bool
+        if t2 {
+            var t7 *_goml_vec_uint32 = value__0.words
+            var t8 *_goml_vec_uint32 = value__0.words
+            var t9 int
+            var inline2 int = vec_len__Vec_6uint32(t8)
+            t9 = inline2
+            var t10 int = t9 - 1
+            var t11 uint32 = vec_get__Vec_6uint32(t7, t10)
+            var t12 bool = t11 == 0
+            jp0 = t12
         } else {
-            jp1674 = false
+            jp0 = false
         }
-        if jp1674 {
-            var t1675 *_goml_vec_uint32 = value__7.words
-            var t1676 *_goml_vec_uint32 = value__7.words
-            var t1677 int
-            var inline2234 int = vec_len__Vec_6uint32(t1676)
-            t1677 = inline2234
-            var t1678 int = t1677 - 1
-            vec_truncate__Vec_6uint32(t1675, t1678)
+        if jp0 {
+            var t3 *_goml_vec_uint32 = value__0.words
+            var t4 *_goml_vec_uint32 = value__0.words
+            var t5 int
+            var inline1 int = vec_len__Vec_6uint32(t4)
+            t5 = inline1
+            var t6 int = t5 - 1
+            vec_truncate__Vec_6uint32(t3, t6)
             continue
         } else {
-            break Loop_loop1672
+            break Loop_loop0
         }
     }
     return struct{}{}
 }
 
-func string_byte_slice(value__274 string, start__275 int, end__276 int) string {
-    var t1697 bool = string_is_char_boundary(value__274, start__275)
-    var jp1694 bool
-    if t1697 {
-        var t1698 bool = string_is_char_boundary(value__274, end__276)
-        jp1694 = t1698
+func string_byte_slice(value__0 string, start__0 int, end__0 int) string {
+    var t0 bool = string_is_char_boundary(value__0, start__0)
+    var jp0 bool
+    if t0 {
+        var t3 bool = string_is_char_boundary(value__0, end__0)
+        jp0 = t3
     } else {
-        jp1694 = false
+        jp0 = false
     }
-    if jp1694 {
-        var t1695 string = _goml_runtime_core_string_byte_slice(value__274, start__275, end__276)
-        return t1695
+    if jp0 {
+        var t1 string = _goml_runtime_core_string_byte_slice(value__0, start__0, end__0)
+        return t1
     } else {
-        var t1696 string = _goml_runtime_core_string_byte_slice(value__274, -1, -1)
-        return t1696
+        var t2 string = _goml_runtime_core_string_byte_slice(value__0, -1, -1)
+        return t2
     }
 }
 
-func string_equals_ascii_case(value__78 string, expected__79 string) bool {
-    var t1713 int
-    var inline2254 int = _goml_runtime_core_string_len(value__78)
-    t1713 = inline2254
-    var t1714 int
-    var inline2252 int = _goml_runtime_core_string_len(expected__79)
-    t1714 = inline2252
-    var t1715 bool = t1713 != t1714
-    if t1715 {
+func string_equals_ascii_case(value__0 string, expected__0 string) bool {
+    var t0 int
+    var inline9 int = _goml_runtime_core_string_len(value__0)
+    t0 = inline9
+    var t1 int
+    var inline8 int = _goml_runtime_core_string_len(expected__0)
+    t1 = inline8
+    var t2 bool = t0 != t1
+    if t2 {
         return false
     } else {
-        var index__80 int = 0
-        var inline2244 uint8 = 97 - 65
-        Loop_loop1703:
+        var index__0 int = 0
+        var inline0 uint8 = 97 - 65
+        Loop_loop0:
         for {
-            var t1704 int
-            var inline2250 int = _goml_runtime_core_string_len(value__78)
-            t1704 = inline2250
-            var t1705 bool = index__80 < t1704
-            if t1705 {
-                var t1709 uint8
-                var inline2248 uint8 = _goml_runtime_core_string_byte_get(value__78, index__80)
-                t1709 = inline2248
-                var t1710 uint8
-                var inline2241 bool = t1709 >= 65
-                var inline2243 bool
-                if inline2241 {
-                    var inline2246 bool = t1709 <= 90
-                    inline2243 = inline2246
+            var t3 int
+            var inline7 int = _goml_runtime_core_string_len(value__0)
+            t3 = inline7
+            var t4 bool = index__0 < t3
+            if t4 {
+                var t5 uint8
+                var inline6 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+                t5 = inline6
+                var t6 uint8
+                var inline2 bool = t5 >= 65
+                var inline3 bool
+                if inline2 {
+                    var inline5 bool = t5 <= 90
+                    inline3 = inline5
                 } else {
-                    inline2243 = false
+                    inline3 = false
                 }
-                if inline2243 {
-                    var inline2245 uint8 = t1709 + inline2244
-                    t1710 = inline2245
-                    var t1711 uint8
-                    var inline2239 uint8 = _goml_runtime_core_string_byte_get(expected__79, index__80)
-                    t1711 = inline2239
-                    var t1712 bool = t1710 != t1711
-                    if t1712 {
+                if inline3 {
+                    var inline4 uint8 = t5 + inline0
+                    t6 = inline4
+                    var t7 uint8
+                    var inline1 uint8 = _goml_runtime_core_string_byte_get(expected__0, index__0)
+                    t7 = inline1
+                    var t8 bool = t6 != t7
+                    if t8 {
                         return false
                     } else {
-                        var compound_old134 int = index__80
-                        var compound_value135 int = 1
-                        var t1707 int = compound_old134 + compound_value135
-                        index__80 = t1707
+                        var compound_old0 int = index__0
+                        var compound_value0 int = 1
+                        var t9 int = compound_old0 + compound_value0
+                        index__0 = t9
                         continue
                     }
                 } else {
-                    t1710 = t1709
-                    var t1711 uint8
-                    var inline2239 uint8 = _goml_runtime_core_string_byte_get(expected__79, index__80)
-                    t1711 = inline2239
-                    var t1712 bool = t1710 != t1711
-                    if t1712 {
+                    t6 = t5
+                    var t7 uint8
+                    var inline1 uint8 = _goml_runtime_core_string_byte_get(expected__0, index__0)
+                    t7 = inline1
+                    var t8 bool = t6 != t7
+                    if t8 {
                         return false
                     } else {
-                        var compound_old134 int = index__80
-                        var compound_value135 int = 1
-                        var t1707 int = compound_old134 + compound_value135
-                        index__80 = t1707
+                        var compound_old0 int = index__0
+                        var compound_value0 int = 1
+                        var t9 int = compound_old0 + compound_value0
+                        index__0 = t9
                         continue
                     }
                 }
             } else {
-                break Loop_loop1703
+                break Loop_loop0
             }
         }
         return true
     }
 }
 
-func ascii_lower(value__77 uint8) uint8 {
-    var t1724 bool = value__77 >= 65
-    var jp1721 bool
-    if t1724 {
-        var t1725 bool = value__77 <= 90
-        jp1721 = t1725
+func ascii_lower(value__0 uint8) uint8 {
+    var t0 bool = value__0 >= 65
+    var jp0 bool
+    if t0 {
+        var t3 bool = value__0 <= 90
+        jp0 = t3
     } else {
-        jp1721 = false
+        jp0 = false
     }
-    if jp1721 {
-        var t1722 uint8 = 97 - 65
-        var t1723 uint8 = value__77 + t1722
-        return t1723
+    if jp0 {
+        var t1 uint8 = 97 - 65
+        var t2 uint8 = value__0 + t1
+        return t2
     } else {
-        return value__77
+        return value__0
     }
 }
 
-func float_digit(value__81 uint8, base__82 int) Tuple2_4bool_3int {
-    var t1752 bool = value__81 >= 48
-    var jp1736 bool
-    if t1752 {
-        var t1753 bool = value__81 <= 57
-        jp1736 = t1753
+func float_digit(value__0 uint8, base__0 int) Tuple2_4bool_3int {
+    var t0 bool = value__0 >= 48
+    var jp0 bool
+    if t0 {
+        var t15 bool = value__0 <= 57
+        jp0 = t15
     } else {
-        jp1736 = false
+        jp0 = false
     }
-    var jp1729 int
-    if jp1736 {
-        var t1737 uint8 = value__81 - 48
-        var t1738 int = int(uint8(t1737))
-        jp1729 = t1738
-        var t1732 bool = jp1729 < base__82
-        if t1732 {
-            var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+    var jp1 int
+    if jp0 {
+        var t4 uint8 = value__0 - 48
+        var t5 int = int(uint8(t4))
+        jp1 = t5
+        var t1 bool = jp1 < base__0
+        if t1 {
+            var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                 _0: true,
-                _1: jp1729,
+                _1: jp1,
             }
-            return t1733
+            return t2
         } else {
-            var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+            var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                 _0: false,
                 _1: 0,
             }
-            return t1734
+            return t3
         }
     } else {
-        var t1748 uint8
-        var inline2270 bool = value__81 >= 65
-        var inline2272 bool
-        if inline2270 {
-            var inline2275 bool = value__81 <= 90
-            inline2272 = inline2275
+        var t6 uint8
+        var inline10 bool = value__0 >= 65
+        var inline11 bool
+        if inline10 {
+            var inline14 bool = value__0 <= 90
+            inline11 = inline14
         } else {
-            inline2272 = false
+            inline11 = false
         }
-        if inline2272 {
-            var inline2273 uint8 = 97 - 65
-            var inline2274 uint8 = value__81 + inline2273
-            t1748 = inline2274
-            var t1749 bool = t1748 >= 97
-            var jp1742 bool
-            if t1749 {
-                var t1750 uint8
-                var inline2256 bool = value__81 >= 65
-                var inline2258 bool
-                if inline2256 {
-                    var inline2261 bool = value__81 <= 90
-                    inline2258 = inline2261
+        if inline11 {
+            var inline12 uint8 = 97 - 65
+            var inline13 uint8 = value__0 + inline12
+            t6 = inline13
+            var t7 bool = t6 >= 97
+            var jp2 bool
+            if t7 {
+                var t13 uint8
+                var inline5 bool = value__0 >= 65
+                var inline6 bool
+                if inline5 {
+                    var inline9 bool = value__0 <= 90
+                    inline6 = inline9
                 } else {
-                    inline2258 = false
+                    inline6 = false
                 }
-                if inline2258 {
-                    var inline2259 uint8 = 97 - 65
-                    var inline2260 uint8 = value__81 + inline2259
-                    t1750 = inline2260
-                    var t1751 bool = t1750 <= 102
-                    jp1742 = t1751
-                    if jp1742 {
-                        var t1743 uint8
-                        var inline2263 bool = value__81 >= 65
-                        var inline2265 bool
-                        if inline2263 {
-                            var inline2268 bool = value__81 <= 90
-                            inline2265 = inline2268
+                if inline6 {
+                    var inline7 uint8 = 97 - 65
+                    var inline8 uint8 = value__0 + inline7
+                    t13 = inline8
+                    var t14 bool = t13 <= 102
+                    jp2 = t14
+                    if jp2 {
+                        var t8 uint8
+                        var inline0 bool = value__0 >= 65
+                        var inline1 bool
+                        if inline0 {
+                            var inline4 bool = value__0 <= 90
+                            inline1 = inline4
                         } else {
-                            inline2265 = false
+                            inline1 = false
                         }
-                        if inline2265 {
-                            var inline2266 uint8 = 97 - 65
-                            var inline2267 uint8 = value__81 + inline2266
-                            t1743 = inline2267
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        if inline1 {
+                            var inline2 uint8 = 97 - 65
+                            var inline3 uint8 = value__0 + inline2
+                            t8 = inline3
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         } else {
-                            t1743 = value__81
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            t8 = value__0
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         }
                     } else {
-                        var t1747 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        var t12 Tuple2_4bool_3int = Tuple2_4bool_3int{
                             _0: false,
                             _1: 0,
                         }
-                        return t1747
+                        return t12
                     }
                 } else {
-                    t1750 = value__81
-                    var t1751 bool = t1750 <= 102
-                    jp1742 = t1751
-                    if jp1742 {
-                        var t1743 uint8
-                        var inline2263 bool = value__81 >= 65
-                        var inline2265 bool
-                        if inline2263 {
-                            var inline2268 bool = value__81 <= 90
-                            inline2265 = inline2268
+                    t13 = value__0
+                    var t14 bool = t13 <= 102
+                    jp2 = t14
+                    if jp2 {
+                        var t8 uint8
+                        var inline0 bool = value__0 >= 65
+                        var inline1 bool
+                        if inline0 {
+                            var inline4 bool = value__0 <= 90
+                            inline1 = inline4
                         } else {
-                            inline2265 = false
+                            inline1 = false
                         }
-                        if inline2265 {
-                            var inline2266 uint8 = 97 - 65
-                            var inline2267 uint8 = value__81 + inline2266
-                            t1743 = inline2267
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        if inline1 {
+                            var inline2 uint8 = 97 - 65
+                            var inline3 uint8 = value__0 + inline2
+                            t8 = inline3
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         } else {
-                            t1743 = value__81
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            t8 = value__0
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         }
                     } else {
-                        var t1747 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        var t12 Tuple2_4bool_3int = Tuple2_4bool_3int{
                             _0: false,
                             _1: 0,
                         }
-                        return t1747
+                        return t12
                     }
                 }
             } else {
-                jp1742 = false
-                if jp1742 {
-                    var t1743 uint8
-                    var inline2263 bool = value__81 >= 65
-                    var inline2265 bool
-                    if inline2263 {
-                        var inline2268 bool = value__81 <= 90
-                        inline2265 = inline2268
+                jp2 = false
+                if jp2 {
+                    var t8 uint8
+                    var inline0 bool = value__0 >= 65
+                    var inline1 bool
+                    if inline0 {
+                        var inline4 bool = value__0 <= 90
+                        inline1 = inline4
                     } else {
-                        inline2265 = false
+                        inline1 = false
                     }
-                    if inline2265 {
-                        var inline2266 uint8 = 97 - 65
-                        var inline2267 uint8 = value__81 + inline2266
-                        t1743 = inline2267
-                        var t1744 uint8 = t1743 - 97
-                        var t1745 uint8 = t1744 + 10
-                        var t1746 int = int(uint8(t1745))
-                        jp1729 = t1746
-                        var t1732 bool = jp1729 < base__82
-                        if t1732 {
-                            var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                    if inline1 {
+                        var inline2 uint8 = 97 - 65
+                        var inline3 uint8 = value__0 + inline2
+                        t8 = inline3
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
+                        var t11 int = int(uint8(t10))
+                        jp1 = t11
+                        var t1 bool = jp1 < base__0
+                        if t1 {
+                            var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: true,
-                                _1: jp1729,
+                                _1: jp1,
                             }
-                            return t1733
+                            return t2
                         } else {
-                            var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: false,
                                 _1: 0,
                             }
-                            return t1734
+                            return t3
                         }
                     } else {
-                        t1743 = value__81
-                        var t1744 uint8 = t1743 - 97
-                        var t1745 uint8 = t1744 + 10
-                        var t1746 int = int(uint8(t1745))
-                        jp1729 = t1746
-                        var t1732 bool = jp1729 < base__82
-                        if t1732 {
-                            var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        t8 = value__0
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
+                        var t11 int = int(uint8(t10))
+                        jp1 = t11
+                        var t1 bool = jp1 < base__0
+                        if t1 {
+                            var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: true,
-                                _1: jp1729,
+                                _1: jp1,
                             }
-                            return t1733
+                            return t2
                         } else {
-                            var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: false,
                                 _1: 0,
                             }
-                            return t1734
+                            return t3
                         }
                     }
                 } else {
-                    var t1747 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                    var t12 Tuple2_4bool_3int = Tuple2_4bool_3int{
                         _0: false,
                         _1: 0,
                     }
-                    return t1747
+                    return t12
                 }
             }
         } else {
-            t1748 = value__81
-            var t1749 bool = t1748 >= 97
-            var jp1742 bool
-            if t1749 {
-                var t1750 uint8
-                var inline2256 bool = value__81 >= 65
-                var inline2258 bool
-                if inline2256 {
-                    var inline2261 bool = value__81 <= 90
-                    inline2258 = inline2261
+            t6 = value__0
+            var t7 bool = t6 >= 97
+            var jp2 bool
+            if t7 {
+                var t13 uint8
+                var inline5 bool = value__0 >= 65
+                var inline6 bool
+                if inline5 {
+                    var inline9 bool = value__0 <= 90
+                    inline6 = inline9
                 } else {
-                    inline2258 = false
+                    inline6 = false
                 }
-                if inline2258 {
-                    var inline2259 uint8 = 97 - 65
-                    var inline2260 uint8 = value__81 + inline2259
-                    t1750 = inline2260
-                    var t1751 bool = t1750 <= 102
-                    jp1742 = t1751
-                    if jp1742 {
-                        var t1743 uint8
-                        var inline2263 bool = value__81 >= 65
-                        var inline2265 bool
-                        if inline2263 {
-                            var inline2268 bool = value__81 <= 90
-                            inline2265 = inline2268
+                if inline6 {
+                    var inline7 uint8 = 97 - 65
+                    var inline8 uint8 = value__0 + inline7
+                    t13 = inline8
+                    var t14 bool = t13 <= 102
+                    jp2 = t14
+                    if jp2 {
+                        var t8 uint8
+                        var inline0 bool = value__0 >= 65
+                        var inline1 bool
+                        if inline0 {
+                            var inline4 bool = value__0 <= 90
+                            inline1 = inline4
                         } else {
-                            inline2265 = false
+                            inline1 = false
                         }
-                        if inline2265 {
-                            var inline2266 uint8 = 97 - 65
-                            var inline2267 uint8 = value__81 + inline2266
-                            t1743 = inline2267
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        if inline1 {
+                            var inline2 uint8 = 97 - 65
+                            var inline3 uint8 = value__0 + inline2
+                            t8 = inline3
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         } else {
-                            t1743 = value__81
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            t8 = value__0
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         }
                     } else {
-                        var t1747 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        var t12 Tuple2_4bool_3int = Tuple2_4bool_3int{
                             _0: false,
                             _1: 0,
                         }
-                        return t1747
+                        return t12
                     }
                 } else {
-                    t1750 = value__81
-                    var t1751 bool = t1750 <= 102
-                    jp1742 = t1751
-                    if jp1742 {
-                        var t1743 uint8
-                        var inline2263 bool = value__81 >= 65
-                        var inline2265 bool
-                        if inline2263 {
-                            var inline2268 bool = value__81 <= 90
-                            inline2265 = inline2268
+                    t13 = value__0
+                    var t14 bool = t13 <= 102
+                    jp2 = t14
+                    if jp2 {
+                        var t8 uint8
+                        var inline0 bool = value__0 >= 65
+                        var inline1 bool
+                        if inline0 {
+                            var inline4 bool = value__0 <= 90
+                            inline1 = inline4
                         } else {
-                            inline2265 = false
+                            inline1 = false
                         }
-                        if inline2265 {
-                            var inline2266 uint8 = 97 - 65
-                            var inline2267 uint8 = value__81 + inline2266
-                            t1743 = inline2267
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        if inline1 {
+                            var inline2 uint8 = 97 - 65
+                            var inline3 uint8 = value__0 + inline2
+                            t8 = inline3
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         } else {
-                            t1743 = value__81
-                            var t1744 uint8 = t1743 - 97
-                            var t1745 uint8 = t1744 + 10
-                            var t1746 int = int(uint8(t1745))
-                            jp1729 = t1746
-                            var t1732 bool = jp1729 < base__82
-                            if t1732 {
-                                var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            t8 = value__0
+                            var t9 uint8 = t8 - 97
+                            var t10 uint8 = t9 + 10
+                            var t11 int = int(uint8(t10))
+                            jp1 = t11
+                            var t1 bool = jp1 < base__0
+                            if t1 {
+                                var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: true,
-                                    _1: jp1729,
+                                    _1: jp1,
                                 }
-                                return t1733
+                                return t2
                             } else {
-                                var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                                var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                     _0: false,
                                     _1: 0,
                                 }
-                                return t1734
+                                return t3
                             }
                         }
                     } else {
-                        var t1747 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        var t12 Tuple2_4bool_3int = Tuple2_4bool_3int{
                             _0: false,
                             _1: 0,
                         }
-                        return t1747
+                        return t12
                     }
                 }
             } else {
-                jp1742 = false
-                if jp1742 {
-                    var t1743 uint8
-                    var inline2263 bool = value__81 >= 65
-                    var inline2265 bool
-                    if inline2263 {
-                        var inline2268 bool = value__81 <= 90
-                        inline2265 = inline2268
+                jp2 = false
+                if jp2 {
+                    var t8 uint8
+                    var inline0 bool = value__0 >= 65
+                    var inline1 bool
+                    if inline0 {
+                        var inline4 bool = value__0 <= 90
+                        inline1 = inline4
                     } else {
-                        inline2265 = false
+                        inline1 = false
                     }
-                    if inline2265 {
-                        var inline2266 uint8 = 97 - 65
-                        var inline2267 uint8 = value__81 + inline2266
-                        t1743 = inline2267
-                        var t1744 uint8 = t1743 - 97
-                        var t1745 uint8 = t1744 + 10
-                        var t1746 int = int(uint8(t1745))
-                        jp1729 = t1746
-                        var t1732 bool = jp1729 < base__82
-                        if t1732 {
-                            var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                    if inline1 {
+                        var inline2 uint8 = 97 - 65
+                        var inline3 uint8 = value__0 + inline2
+                        t8 = inline3
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
+                        var t11 int = int(uint8(t10))
+                        jp1 = t11
+                        var t1 bool = jp1 < base__0
+                        if t1 {
+                            var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: true,
-                                _1: jp1729,
+                                _1: jp1,
                             }
-                            return t1733
+                            return t2
                         } else {
-                            var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: false,
                                 _1: 0,
                             }
-                            return t1734
+                            return t3
                         }
                     } else {
-                        t1743 = value__81
-                        var t1744 uint8 = t1743 - 97
-                        var t1745 uint8 = t1744 + 10
-                        var t1746 int = int(uint8(t1745))
-                        jp1729 = t1746
-                        var t1732 bool = jp1729 < base__82
-                        if t1732 {
-                            var t1733 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                        t8 = value__0
+                        var t9 uint8 = t8 - 97
+                        var t10 uint8 = t9 + 10
+                        var t11 int = int(uint8(t10))
+                        jp1 = t11
+                        var t1 bool = jp1 < base__0
+                        if t1 {
+                            var t2 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: true,
-                                _1: jp1729,
+                                _1: jp1,
                             }
-                            return t1733
+                            return t2
                         } else {
-                            var t1734 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                            var t3 Tuple2_4bool_3int = Tuple2_4bool_3int{
                                 _0: false,
                                 _1: 0,
                             }
-                            return t1734
+                            return t3
                         }
                     }
                 } else {
-                    var t1747 Tuple2_4bool_3int = Tuple2_4bool_3int{
+                    var t12 Tuple2_4bool_3int = Tuple2_4bool_3int{
                         _0: false,
                         _1: 0,
                     }
-                    return t1747
+                    return t12
                 }
             }
         }
     }
 }
 
-func float_natural_add_small(value__20 FloatNatural, addition__21 uint32) struct{} {
-    var carry__22 uint64 = uint64(uint32(addition__21))
-    var index__23 int = 0
-    Loop_loop1756:
+func float_natural_add_small(value__0 FloatNatural, addition__0 uint32) struct{} {
+    var carry__0 uint64 = uint64(uint32(addition__0))
+    var index__0 int = 0
+    Loop_loop0:
     for {
-        var t1757 bool = carry__22 != 0
-        if t1757 {
-            var t1766 *_goml_vec_uint32 = value__20.words
-            var t1767 int
-            var inline2280 int = vec_len__Vec_6uint32(t1766)
-            t1767 = inline2280
-            var t1768 bool = index__23 == t1767
-            if t1768 {
-                var t1769 *_goml_vec_uint32 = value__20.words
-                var inline2277 uint32 = 0
-                vec_push__Vec_6uint32(t1769, inline2277)
+        var t0 bool = carry__0 != 0
+        if t0 {
+            var t1 *_goml_vec_uint32 = value__0.words
+            var t2 int
+            var inline2 int = vec_len__Vec_6uint32(t1)
+            t2 = inline2
+            var t3 bool = index__0 == t2
+            if t3 {
+                var t11 *_goml_vec_uint32 = value__0.words
+                var inline0 uint32 = 0
+                vec_push__Vec_6uint32(t11, inline0)
             } else {}
-            var t1759 *_goml_vec_uint32 = value__20.words
-            var t1760 uint32 = vec_get__Vec_6uint32(t1759, index__23)
-            var t1761 uint64 = uint64(uint32(t1760))
-            var sum__24 uint64 = t1761 + carry__22
-            var place36 *_goml_vec_uint32 = value__20.words
-            var index37 int = index__23
-            vec_get__Vec_6uint32(place36, index37)
-            var value39 uint32 = uint32(uint64(sum__24))
-            vec_set__Vec_6uint32(place36, index37, value39)
-            var t1763_rhs int = 32
-            var t1763 uint64 = sum__24 >> t1763_rhs
-            carry__22 = t1763
-            var compound_old42 int = index__23
-            var compound_value43 int = 1
-            var t1764 int = compound_old42 + compound_value43
-            index__23 = t1764
+            var t4 *_goml_vec_uint32 = value__0.words
+            var t5 uint32 = vec_get__Vec_6uint32(t4, index__0)
+            var t6 uint64 = uint64(uint32(t5))
+            var sum__0 uint64 = t6 + carry__0
+            var place0 *_goml_vec_uint32 = value__0.words
+            var index0 int = index__0
+            vec_get__Vec_6uint32(place0, index0)
+            var value0 uint32 = uint32(uint64(sum__0))
+            vec_set__Vec_6uint32(place0, index0, value0)
+            var t8_rhs int = 32
+            var t8 uint64 = sum__0 >> t8_rhs
+            carry__0 = t8
+            var compound_old0 int = index__0
+            var compound_value0 int = 1
+            var t9 int = compound_old0 + compound_value0
+            index__0 = t9
             continue
         } else {
-            break Loop_loop1756
+            break Loop_loop0
         }
     }
     return struct{}{}
 }
 
 func invalid_parsed_float() ParsedFloat {
-    var t1773 FloatNatural
-    var inline2282 *_goml_vec_uint32 = vec_new__Vec_6uint32()
-    var inline2283 FloatNatural = FloatNatural{
-        words: inline2282,
+    var t0 FloatNatural
+    var inline0 *_goml_vec_uint32 = vec_new__Vec_6uint32()
+    var inline1 FloatNatural = FloatNatural{
+        words: inline0,
     }
-    t1773 = inline2283
-    var t1774 ParsedFloat = ParsedFloat{
+    t0 = inline1
+    var t1 ParsedFloat = ParsedFloat{
         valid: false,
         negative: false,
         special: 0,
-        numerator: t1773,
+        numerator: t0,
         decimal_exponent: 0,
         binary_exponent: 0,
         hexadecimal: false,
         significant_digits: 0,
     }
-    return t1774
+    return t1
 }
 
-func float_natural_bit_length(value__9 FloatNatural) int {
-    var t1794 *_goml_vec_uint32 = value__9.words
-    var t1795 bool
-    var inline2289 int = vec_len__Vec_6uint32(t1794)
-    var inline2290 bool = inline2289 == 0
-    t1795 = inline2290
-    if t1795 {
+func float_natural_bit_length(value__0 FloatNatural) int {
+    var t0 *_goml_vec_uint32 = value__0.words
+    var t1 bool
+    var inline2 int = vec_len__Vec_6uint32(t0)
+    var inline3 bool = inline2 == 0
+    t1 = inline3
+    if t1 {
         return 0
     } else {
-        var t1778 *_goml_vec_uint32 = value__9.words
-        var t1779 *_goml_vec_uint32 = value__9.words
-        var t1780 int
-        var inline2287 int = vec_len__Vec_6uint32(t1779)
-        t1780 = inline2287
-        var t1781 int = t1780 - 1
-        var high__10 uint32 = vec_get__Vec_6uint32(t1778, t1781)
-        var bits__11 int = 0
-        Loop_loop1788:
+        var t2 *_goml_vec_uint32 = value__0.words
+        var t3 *_goml_vec_uint32 = value__0.words
+        var t4 int
+        var inline1 int = vec_len__Vec_6uint32(t3)
+        t4 = inline1
+        var t5 int = t4 - 1
+        var high__0 uint32 = vec_get__Vec_6uint32(t2, t5)
+        var bits__0 int = 0
+        Loop_loop0:
         for {
-            var t1789 bool = high__10 != 0
-            if t1789 {
-                var compound_old9 uint32 = high__10
-                var compound_value10 int = 1
-                var t1790 uint32 = compound_old9 >> compound_value10
-                high__10 = t1790
-                var compound_old12 int = bits__11
-                var compound_value13 int = 1
-                var t1792 int = compound_old12 + compound_value13
-                bits__11 = t1792
+            var t11 bool = high__0 != 0
+            if t11 {
+                var compound_old0 uint32 = high__0
+                var compound_value0 int = 1
+                var t12 uint32 = compound_old0 >> compound_value0
+                high__0 = t12
+                var compound_old1 int = bits__0
+                var compound_value1 int = 1
+                var t14 int = compound_old1 + compound_value1
+                bits__0 = t14
                 continue
             } else {
-                break Loop_loop1788
+                break Loop_loop0
             }
         }
-        var t1783 *_goml_vec_uint32 = value__9.words
-        var t1784 int
-        var inline2285 int = vec_len__Vec_6uint32(t1783)
-        t1784 = inline2285
-        var t1785 int = t1784 - 1
-        var t1786 int = t1785 * 32
-        var t1787 int = t1786 + bits__11
-        return t1787
+        var t6 *_goml_vec_uint32 = value__0.words
+        var t7 int
+        var inline0 int = vec_len__Vec_6uint32(t6)
+        t7 = inline0
+        var t8 int = t7 - 1
+        var t9 int = t8 * 32
+        var t10 int = t9 + bits__0
+        return t10
     }
 }
 
-func float_natural_compare(left__12 FloatNatural, right__13 FloatNatural) int {
-    var t1817 *_goml_vec_uint32 = left__12.words
-    var t1818 int
-    var inline2300 int = vec_len__Vec_6uint32(t1817)
-    t1818 = inline2300
-    var t1819 *_goml_vec_uint32 = right__13.words
-    var t1820 int
-    var inline2298 int = vec_len__Vec_6uint32(t1819)
-    t1820 = inline2298
-    var t1821 bool = t1818 < t1820
-    if t1821 {
+func float_natural_compare(left__0 FloatNatural, right__0 FloatNatural) int {
+    var t0 *_goml_vec_uint32 = left__0.words
+    var t1 int
+    var inline4 int = vec_len__Vec_6uint32(t0)
+    t1 = inline4
+    var t2 *_goml_vec_uint32 = right__0.words
+    var t3 int
+    var inline3 int = vec_len__Vec_6uint32(t2)
+    t3 = inline3
+    var t4 bool = t1 < t3
+    if t4 {
         return -1
     } else {
-        var t1823 *_goml_vec_uint32 = left__12.words
-        var t1824 int
-        var inline2294 int = vec_len__Vec_6uint32(t1823)
-        t1824 = inline2294
-        var t1825 *_goml_vec_uint32 = right__13.words
-        var t1826 int
-        var inline2292 int = vec_len__Vec_6uint32(t1825)
-        t1826 = inline2292
-        var t1827 bool = t1824 > t1826
-        if t1827 {
+        var t19 *_goml_vec_uint32 = left__0.words
+        var t20 int
+        var inline2 int = vec_len__Vec_6uint32(t19)
+        t20 = inline2
+        var t21 *_goml_vec_uint32 = right__0.words
+        var t22 int
+        var inline1 int = vec_len__Vec_6uint32(t21)
+        t22 = inline1
+        var t23 bool = t20 > t22
+        if t23 {
             return 1
         } else {
-            var t1799 *_goml_vec_uint32 = left__12.words
-            var index__14 int
-            var inline2296 int = vec_len__Vec_6uint32(t1799)
-            index__14 = inline2296
-            Loop_loop1801:
+            var t5 *_goml_vec_uint32 = left__0.words
+            var index__0 int
+            var inline0 int = vec_len__Vec_6uint32(t5)
+            index__0 = inline0
+            Loop_loop0:
             for {
-                var t1802 bool = index__14 > 0
-                if t1802 {
-                    var compound_old17 int = index__14
-                    var compound_value18 int = 1
-                    var t1803 int = compound_old17 - compound_value18
-                    index__14 = t1803
-                    var t1806 *_goml_vec_uint32 = left__12.words
-                    var t1807 uint32 = vec_get__Vec_6uint32(t1806, index__14)
-                    var t1808 *_goml_vec_uint32 = right__13.words
-                    var t1809 uint32 = vec_get__Vec_6uint32(t1808, index__14)
-                    var t1810 bool = t1807 < t1809
-                    if t1810 {
+                var t6 bool = index__0 > 0
+                if t6 {
+                    var compound_old0 int = index__0
+                    var compound_value0 int = 1
+                    var t7 int = compound_old0 - compound_value0
+                    index__0 = t7
+                    var t9 *_goml_vec_uint32 = left__0.words
+                    var t10 uint32 = vec_get__Vec_6uint32(t9, index__0)
+                    var t11 *_goml_vec_uint32 = right__0.words
+                    var t12 uint32 = vec_get__Vec_6uint32(t11, index__0)
+                    var t13 bool = t10 < t12
+                    if t13 {
                         return -1
                     } else {
-                        var t1812 *_goml_vec_uint32 = left__12.words
-                        var t1813 uint32 = vec_get__Vec_6uint32(t1812, index__14)
-                        var t1814 *_goml_vec_uint32 = right__13.words
-                        var t1815 uint32 = vec_get__Vec_6uint32(t1814, index__14)
-                        var t1816 bool = t1813 > t1815
-                        if t1816 {
+                        var t14 *_goml_vec_uint32 = left__0.words
+                        var t15 uint32 = vec_get__Vec_6uint32(t14, index__0)
+                        var t16 *_goml_vec_uint32 = right__0.words
+                        var t17 uint32 = vec_get__Vec_6uint32(t16, index__0)
+                        var t18 bool = t15 > t17
+                        if t18 {
                             return 1
                         } else {
                             continue
                         }
                     }
                 } else {
-                    break Loop_loop1801
+                    break Loop_loop0
                 }
             }
             return 0
@@ -3946,180 +3946,180 @@ func float_natural_compare(left__12 FloatNatural, right__13 FloatNatural) int {
     }
 }
 
-func float_rational_quotient(numerator__55 FloatNatural, denominator__56 FloatNatural, shift__57 int) uint64 {
-    var t1863 bool = shift__57 >= 0
-    var jp1831 FloatNatural
-    if t1863 {
-        var t1864 FloatNatural = float_natural_shift_left(numerator__55, shift__57)
-        jp1831 = t1864
+func float_rational_quotient(numerator__0 FloatNatural, denominator__0 FloatNatural, shift__0 int) uint64 {
+    var t0 bool = shift__0 >= 0
+    var jp0 FloatNatural
+    if t0 {
+        var t22 FloatNatural = float_natural_shift_left(numerator__0, shift__0)
+        jp0 = t22
     } else {
-        var t1865 FloatNatural = float_natural_copy(numerator__55)
-        jp1831 = t1865
+        var t23 FloatNatural = float_natural_copy(numerator__0)
+        jp0 = t23
     }
-    var t1859 bool = shift__57 >= 0
-    var jp1833 FloatNatural
-    if t1859 {
-        var t1860 FloatNatural = float_natural_copy(denominator__56)
-        jp1833 = t1860
+    var t1 bool = shift__0 >= 0
+    var jp1 FloatNatural
+    if t1 {
+        var t19 FloatNatural = float_natural_copy(denominator__0)
+        jp1 = t19
     } else {
-        var t1861 int = 0 - shift__57
-        var t1862 FloatNatural = float_natural_shift_left(denominator__56, t1861)
-        jp1833 = t1862
+        var t20 int = 0 - shift__0
+        var t21 FloatNatural = float_natural_shift_left(denominator__0, t20)
+        jp1 = t21
     }
-    var quotient__60 uint64 = 0
-    Loop_loop1846:
+    var quotient__0 uint64 = 0
+    Loop_loop0:
     for {
-        var t1847 int = float_natural_compare(jp1831, jp1833)
-        var t1848 bool = t1847 >= 0
-        if t1848 {
-            var t1849 int = float_natural_bit_length(jp1831)
-            var t1850 int = float_natural_bit_length(jp1833)
-            var offset__61 int = t1849 - t1850
-            var part__62 FloatNatural = float_natural_shift_left(jp1833, offset__61)
-            var t1854 int = float_natural_compare(jp1831, part__62)
-            var t1855 bool = t1854 < 0
-            if t1855 {
-                var compound_old105 int = offset__61
-                var compound_value106 int = 1
-                var t1856 int = compound_old105 - compound_value106
-                offset__61 = t1856
-                var t1858 FloatNatural = float_natural_shift_left(jp1833, offset__61)
-                part__62 = t1858
+        var t8 int = float_natural_compare(jp0, jp1)
+        var t9 bool = t8 >= 0
+        if t9 {
+            var t10 int = float_natural_bit_length(jp0)
+            var t11 int = float_natural_bit_length(jp1)
+            var offset__0 int = t10 - t11
+            var part__0 FloatNatural = float_natural_shift_left(jp1, offset__0)
+            var t12 int = float_natural_compare(jp0, part__0)
+            var t13 bool = t12 < 0
+            if t13 {
+                var compound_old2 int = offset__0
+                var compound_value2 int = 1
+                var t16 int = compound_old2 - compound_value2
+                offset__0 = t16
+                var t18 FloatNatural = float_natural_shift_left(jp1, offset__0)
+                part__0 = t18
             } else {}
-            float_natural_subtract(jp1831, part__62)
-            var compound_old111 uint64 = quotient__60
-            var compound_value112_lhs uint64 = 1
-            var compound_value112 uint64 = compound_value112_lhs << offset__61
-            var t1852 uint64 = compound_old111 | compound_value112
-            quotient__60 = t1852
+            float_natural_subtract(jp0, part__0)
+            var compound_old1 uint64 = quotient__0
+            var compound_value1_lhs uint64 = 1
+            var compound_value1 uint64 = compound_value1_lhs << offset__0
+            var t14 uint64 = compound_old1 | compound_value1
+            quotient__0 = t14
             continue
         } else {
-            break Loop_loop1846
+            break Loop_loop0
         }
     }
-    var doubled__63 FloatNatural = float_natural_shift_left(jp1831, 1)
-    var rounding__64 int = float_natural_compare(doubled__63, jp1833)
-    var t1840 bool = rounding__64 > 0
-    var jp1837 bool
-    if t1840 {
-        jp1837 = true
+    var doubled__0 FloatNatural = float_natural_shift_left(jp0, 1)
+    var rounding__0 int = float_natural_compare(doubled__0, jp1)
+    var t2 bool = rounding__0 > 0
+    var jp2 bool
+    if t2 {
+        jp2 = true
     } else {
-        var t1843 bool = rounding__64 == 0
-        if t1843 {
-            var t1844_rhs uint64 = 1
-            var t1844 uint64 = quotient__60 & t1844_rhs
-            var t1845 bool = t1844 == 1
-            jp1837 = t1845
+        var t5 bool = rounding__0 == 0
+        if t5 {
+            var t6_rhs uint64 = 1
+            var t6 uint64 = quotient__0 & t6_rhs
+            var t7 bool = t6 == 1
+            jp2 = t7
         } else {
-            jp1837 = false
+            jp2 = false
         }
     }
-    if jp1837 {
-        var compound_old115 uint64 = quotient__60
-        var compound_value116 uint64 = 1
-        var t1838 uint64 = compound_old115 + compound_value116
-        quotient__60 = t1838
+    if jp2 {
+        var compound_old0 uint64 = quotient__0
+        var compound_value0 uint64 = 1
+        var t3 uint64 = compound_old0 + compound_value0
+        quotient__0 = t3
     } else {}
-    return quotient__60
+    return quotient__0
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__u32(self__531 *_goml_vec_uint32, len__532 int) struct{} {
-    vec_truncate__Vec_6uint32(self__531, len__532)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_truncate____T__u32(self__0 *_goml_vec_uint32, len__0 int) struct{} {
+    vec_truncate__Vec_6uint32(self__0, len__0)
     return struct{}{}
 }
 
-func string_is_char_boundary(value__268 string, index__269 int) bool {
-    var t1881 bool = index__269 < 0
-    var jp1873 bool
-    if t1881 {
-        jp1873 = true
+func string_is_char_boundary(value__0 string, index__0 int) bool {
+    var t0 bool = index__0 < 0
+    var jp0 bool
+    if t0 {
+        jp0 = true
     } else {
-        var t1882 int
-        var inline2302 int = _goml_runtime_core_string_len(value__268)
-        t1882 = inline2302
-        var t1883 bool = index__269 > t1882
-        jp1873 = t1883
+        var t6 int
+        var inline2 int = _goml_runtime_core_string_len(value__0)
+        t6 = inline2
+        var t7 bool = index__0 > t6
+        jp0 = t7
     }
-    if jp1873 {
+    if jp0 {
         return false
     } else {
-        var t1876 int
-        var inline2306 int = _goml_runtime_core_string_len(value__268)
-        t1876 = inline2306
-        var t1877 bool = index__269 == t1876
-        if t1877 {
+        var t1 int
+        var inline1 int = _goml_runtime_core_string_len(value__0)
+        t1 = inline1
+        var t2 bool = index__0 == t1
+        if t2 {
             return true
         } else {
-            var t1878 uint8
-            var inline2304 uint8 = _goml_runtime_core_string_byte_get(value__268, index__269)
-            t1878 = inline2304
-            var t1879_rhs uint8 = 192
-            var t1879 uint8 = t1878 & t1879_rhs
-            var t1880 bool = t1879 != 128
-            return t1880
+            var t3 uint8
+            var inline0 uint8 = _goml_runtime_core_string_byte_get(value__0, index__0)
+            t3 = inline0
+            var t4_rhs uint8 = 192
+            var t4 uint8 = t3 & t4_rhs
+            var t5 bool = t4 != 128
+            return t5
         }
     }
 }
 
-func float_natural_subtract(value__37 FloatNatural, other__38 FloatNatural) struct{} {
-    var base__39 uint64 = 4294967296
-    var borrow__40 uint64 = 0
-    var index__41 int = 0
-    Loop_loop1887:
+func float_natural_subtract(value__0 FloatNatural, other__0 FloatNatural) struct{} {
+    var base__0 uint64 = 4294967296
+    var borrow__0 uint64 = 0
+    var index__0 int = 0
+    Loop_loop0:
     for {
-        var t1888 *_goml_vec_uint32 = value__37.words
-        var t1889 int
-        var inline2310 int = vec_len__Vec_6uint32(t1888)
-        t1889 = inline2310
-        var t1890 bool = index__41 < t1889
-        if t1890 {
-            var t1904 *_goml_vec_uint32 = other__38.words
-            var t1905 int
-            var inline2308 int = vec_len__Vec_6uint32(t1904)
-            t1905 = inline2308
-            var t1906 bool = index__41 < t1905
-            var jp1892 uint64
-            if t1906 {
-                var t1907 *_goml_vec_uint32 = other__38.words
-                var t1908 uint32 = vec_get__Vec_6uint32(t1907, index__41)
-                var t1909 uint64 = uint64(uint32(t1908))
-                jp1892 = t1909
+        var t1 *_goml_vec_uint32 = value__0.words
+        var t2 int
+        var inline1 int = vec_len__Vec_6uint32(t1)
+        t2 = inline1
+        var t3 bool = index__0 < t2
+        if t3 {
+            var t4 *_goml_vec_uint32 = other__0.words
+            var t5 int
+            var inline0 int = vec_len__Vec_6uint32(t4)
+            t5 = inline0
+            var t6 bool = index__0 < t5
+            var jp0 uint64
+            if t6 {
+                var t17 *_goml_vec_uint32 = other__0.words
+                var t18 uint32 = vec_get__Vec_6uint32(t17, index__0)
+                var t19 uint64 = uint64(uint32(t18))
+                jp0 = t19
             } else {
-                jp1892 = 0
+                jp0 = 0
             }
-            var right__42 uint64 = jp1892 + borrow__40
-            var t1893 *_goml_vec_uint32 = value__37.words
-            var t1894 uint32 = vec_get__Vec_6uint32(t1893, index__41)
-            var left__43 uint64 = uint64(uint32(t1894))
-            var t1898 bool = left__43 >= right__42
-            if t1898 {
-                var place65 *_goml_vec_uint32 = value__37.words
-                var index66 int = index__41
-                vec_get__Vec_6uint32(place65, index66)
-                var t1899 uint64 = left__43 - right__42
-                var value68 uint32 = uint32(uint64(t1899))
-                vec_set__Vec_6uint32(place65, index66, value68)
-                borrow__40 = 0
+            var right__0 uint64 = jp0 + borrow__0
+            var t7 *_goml_vec_uint32 = value__0.words
+            var t8 uint32 = vec_get__Vec_6uint32(t7, index__0)
+            var left__0 uint64 = uint64(uint32(t8))
+            var t9 bool = left__0 >= right__0
+            if t9 {
+                var place0 *_goml_vec_uint32 = value__0.words
+                var index0 int = index__0
+                vec_get__Vec_6uint32(place0, index0)
+                var t12 uint64 = left__0 - right__0
+                var value0 uint32 = uint32(uint64(t12))
+                vec_set__Vec_6uint32(place0, index0, value0)
+                borrow__0 = 0
             } else {
-                var place72 *_goml_vec_uint32 = value__37.words
-                var index73 int = index__41
-                vec_get__Vec_6uint32(place72, index73)
-                var t1901 uint64 = base__39 + left__43
-                var t1902 uint64 = t1901 - right__42
-                var value75 uint32 = uint32(uint64(t1902))
-                vec_set__Vec_6uint32(place72, index73, value75)
-                borrow__40 = 1
+                var place2 *_goml_vec_uint32 = value__0.words
+                var index1 int = index__0
+                vec_get__Vec_6uint32(place2, index1)
+                var t14 uint64 = base__0 + left__0
+                var t15 uint64 = t14 - right__0
+                var value1 uint32 = uint32(uint64(t15))
+                vec_set__Vec_6uint32(place2, index1, value1)
+                borrow__0 = 1
             }
-            var compound_old79 int = index__41
-            var compound_value80 int = 1
-            var t1896 int = compound_old79 + compound_value80
-            index__41 = t1896
+            var compound_old0 int = index__0
+            var compound_value0 int = 1
+            var t10 int = compound_old0 + compound_value0
+            index__0 = t10
             continue
         } else {
-            break Loop_loop1887
+            break Loop_loop0
         }
     }
-    float_natural_trim(value__37)
+    float_natural_trim(value__0)
     return struct{}{}
 }
 

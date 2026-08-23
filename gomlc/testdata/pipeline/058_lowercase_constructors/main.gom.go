@@ -32,24 +32,24 @@ type Maybe__i32 struct {
 }
 
 func main0() int32 {
-    var commute_field834 int32
-    var inline832 int32 = 5
-    commute_field834 = inline832
-    var pt__7 Point
-    var inline829 int32 = 7
-    var inline830 Point = Point{
-        x: commute_field834,
-        y: inline829,
+    var commute_field0 int32
+    var inline5 int32 = 5
+    commute_field0 = inline5
+    var pt__0 Point
+    var inline3 int32 = 7
+    var inline4 Point = Point{
+        x: commute_field0,
+        y: inline3,
     }
-    pt__7 = inline830
-    var t816 int32 = pt__7.x
-    var t819 int32
-    var inline823 int32 = pt__7.x
-    var inline824 int32 = pt__7.y
-    var inline827 int32 = inline823 + inline824
-    t819 = inline827
-    var t820 int32 = t816 + t819
-    return t820
+    pt__0 = inline4
+    var t0 int32 = pt__0.x
+    var t1 int32
+    var inline0 int32 = pt__0.x
+    var inline1 int32 = pt__0.y
+    var inline2 int32 = inline0 + inline1
+    t1 = inline2
+    var t2 int32 = t0 + t1
+    return t2
 }
 
 func main() {

@@ -171,184 +171,184 @@ var VALUES *OnceCell__FrozenVec__isize = func() *OnceCell__FrozenVec__isize {
 }()
 
 func values() FrozenVec__isize {
-    var t802 closure_env_values_0 = closure_env_values_0{}
-    var t803 func() FrozenVec__isize = func() FrozenVec__isize {
-        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(t802)
+    var t0 closure_env_values_0 = closure_env_values_0{}
+    var t1 func() FrozenVec__isize = func() FrozenVec__isize {
+        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(t0)
     }
-    var inline909 FrozenVec__isize = once_cell_get_or_init__OnceCell__FrozenVec__isize(VALUES, t803)
-    return inline909
+    var inline0 FrozenVec__isize = once_cell_get_or_init__OnceCell__FrozenVec__isize(VALUES, t1)
+    return inline0
 }
 
 func main0() struct{} {
     var frozen__0 FrozenVec__isize
-    var inline948 closure_env_values_0 = closure_env_values_0{}
-    var inline949 func() FrozenVec__isize = func() FrozenVec__isize {
-        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline948)
+    var inline25 closure_env_values_0 = closure_env_values_0{}
+    var inline26 func() FrozenVec__isize = func() FrozenVec__isize {
+        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline25)
     }
-    var inline950 FrozenVec__isize = _goml_m_inherent_i_OnceCell_i__hc919cf300d97b8e399cb9d4664fdfe6e_nVec_l_isize_r_(VALUES, inline949)
-    frozen__0 = inline950
-    var copy__1 *_goml_vec_int
-    var inline945 *_goml_vec_int = frozen__0.values
-    var inline946 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__isize(inline945)
-    copy__1 = inline946
-    var inline941 int = 0
-    var inline942 int = 9
-    vec_set__Vec_3int(copy__1, inline941, inline942)
-    var t806 int
-    var inline937 int = 0
-    var inline938 *_goml_vec_int = frozen__0.values
-    var inline939 int = vec_get__Vec_3int(inline938, inline937)
-    t806 = inline939
-    var t807 string
-    var inline935 string = __goml_builtin_int_to_string(t806)
-    t807 = inline935
-    var inline932 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t807)
-    _goml_runtime_core_string_println(inline932)
-    var t808 int
-    var inline929 int = 0
-    var inline930 int = vec_get__Vec_3int(copy__1, inline929)
-    t808 = inline930
-    var t809 string
-    var inline927 string = __goml_builtin_int_to_string(t808)
-    t809 = inline927
-    var inline924 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t809)
-    _goml_runtime_core_string_println(inline924)
-    var t810 FrozenVec__isize
-    var inline920 closure_env_values_0 = closure_env_values_0{}
-    var inline921 func() FrozenVec__isize = func() FrozenVec__isize {
-        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline920)
+    var inline27 FrozenVec__isize = _goml_m_inherent_i_OnceCell_i__hc919cf300d97b8e399cb9d4664fdfe6e_nVec_l_isize_r_(VALUES, inline26)
+    frozen__0 = inline27
+    var copy__0 *_goml_vec_int
+    var inline23 *_goml_vec_int = frozen__0.values
+    var inline24 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__isize(inline23)
+    copy__0 = inline24
+    var inline20 int = 0
+    var inline21 int = 9
+    vec_set__Vec_3int(copy__0, inline20, inline21)
+    var t0 int
+    var inline17 int = 0
+    var inline18 *_goml_vec_int = frozen__0.values
+    var inline19 int = vec_get__Vec_3int(inline18, inline17)
+    t0 = inline19
+    var t1 string
+    var inline16 string = __goml_builtin_int_to_string(t0)
+    t1 = inline16
+    var inline14 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
+    _goml_runtime_core_string_println(inline14)
+    var t2 int
+    var inline12 int = 0
+    var inline13 int = vec_get__Vec_3int(copy__0, inline12)
+    t2 = inline13
+    var t3 string
+    var inline11 string = __goml_builtin_int_to_string(t2)
+    t3 = inline11
+    var inline9 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
+    _goml_runtime_core_string_println(inline9)
+    var t4 FrozenVec__isize
+    var inline6 closure_env_values_0 = closure_env_values_0{}
+    var inline7 func() FrozenVec__isize = func() FrozenVec__isize {
+        return _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(inline6)
     }
-    var inline922 FrozenVec__isize = _goml_m_inherent_i_OnceCell_i__hc919cf300d97b8e399cb9d4664fdfe6e_nVec_l_isize_r_(VALUES, inline921)
-    t810 = inline922
-    var t811 int
-    var inline916 int = 1
-    var inline917 *_goml_vec_int = t810.values
-    var inline918 int = vec_get__Vec_3int(inline917, inline916)
-    t811 = inline918
-    var t812 string
-    var inline914 string = __goml_builtin_int_to_string(t811)
-    t812 = inline914
-    var inline911 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t812)
-    _goml_runtime_core_string_println(inline911)
+    var inline8 FrozenVec__isize = _goml_m_inherent_i_OnceCell_i__hc919cf300d97b8e399cb9d4664fdfe6e_nVec_l_isize_r_(VALUES, inline7)
+    t4 = inline8
+    var t5 int
+    var inline3 int = 1
+    var inline4 *_goml_vec_int = t4.values
+    var inline5 int = vec_get__Vec_3int(inline4, inline3)
+    t5 = inline5
+    var t6 string
+    var inline2 string = __goml_builtin_int_to_string(t5)
+    t6 = inline2
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t6)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_OnceCell_i__hc919cf300d97b8e399cb9d4664fdfe6e_nVec_l_isize_r_(self__655 *OnceCell__FrozenVec__isize, init__656 func() FrozenVec__isize) FrozenVec__isize {
-    var t820 FrozenVec__isize = once_cell_get_or_init__OnceCell__FrozenVec__isize(self__655, init__656)
-    return t820
+func _goml_m_inherent_i_OnceCell_i__hc919cf300d97b8e399cb9d4664fdfe6e_nVec_l_isize_r_(self__0 *OnceCell__FrozenVec__isize, init__0 func() FrozenVec__isize) FrozenVec__isize {
+    var t0 FrozenVec__isize = once_cell_get_or_init__OnceCell__FrozenVec__isize(self__0, init__0)
+    return t0
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__isize(self__517 *_goml_vec_int) *_goml_vec_int {
-    var t842 int
-    var inline962 int = vec_len__Vec_3int(self__517)
-    t842 = inline962
-    var result__518 *_goml_vec_int
-    var inline960 *_goml_vec_int = vec_with_capacity__Vec_3int(t842)
-    result__518 = inline960
-    var index__519 int = 0
-    Loop_loop844:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__isize(self__0 *_goml_vec_int) *_goml_vec_int {
+    var t0 int
+    var inline3 int = vec_len__Vec_3int(self__0)
+    t0 = inline3
+    var result__0 *_goml_vec_int
+    var inline2 *_goml_vec_int = vec_with_capacity__Vec_3int(t0)
+    result__0 = inline2
+    var index__0 int = 0
+    Loop_loop0:
     for {
-        var t845 int
-        var inline958 int = vec_len__Vec_3int(self__517)
-        t845 = inline958
-        var t846 bool = index__519 < t845
-        if t846 {
-            var t847 int = vec_get__Vec_3int(self__517, index__519)
-            vec_push__Vec_3int(result__518, t847)
-            var compound_old581 int = index__519
-            var compound_value582 int = 1
-            var t848 int = compound_old581 + compound_value582
-            index__519 = t848
+        var t1 int
+        var inline1 int = vec_len__Vec_3int(self__0)
+        t1 = inline1
+        var t2 bool = index__0 < t1
+        if t2 {
+            var t3 int = vec_get__Vec_3int(self__0, index__0)
+            vec_push__Vec_3int(result__0, t3)
+            var compound_old0 int = index__0
+            var compound_value0 int = 1
+            var t4 int = compound_old0 + compound_value0
+            index__0 = t4
             continue
         } else {
-            break Loop_loop844
+            break Loop_loop0
         }
     }
-    return result__518
+    return result__0
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
-func __goml_builtin_int_to_string(value__222 int) string {
-    var t854 int64 = int64(int(value__222))
-    var inline964 bool = t854 < 0
-    if inline964 {
-        var inline965 uint64 = uint64(int64(t854))
-        var inline966 uint64 = 0 - inline965
-        var inline967 string = decimal_string(inline966)
-        var inline968 string = "-" + inline967
-        return inline968
+func __goml_builtin_int_to_string(value__0 int) string {
+    var t0 int64 = int64(int(value__0))
+    var inline0 bool = t0 < 0
+    if inline0 {
+        var inline1 uint64 = uint64(int64(t0))
+        var inline2 uint64 = 0 - inline1
+        var inline3 string = decimal_string(inline2)
+        var inline4 string = "-" + inline3
+        return inline4
     } else {
-        var inline969 uint64 = uint64(int64(t854))
-        var inline970 string = decimal_string(inline969)
-        return inline970
+        var inline5 uint64 = uint64(int64(t0))
+        var inline6 string = decimal_string(inline5)
+        return inline6
     }
 }
 
-func decimal_string(value__208 uint64) string {
-    var t897 bool = value__208 == 0
-    if t897 {
+func decimal_string(value__0 uint64) string {
+    var t0 bool = value__0 == 0
+    if t0 {
         return "0"
     } else {
-        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
-        var remaining__210 uint64 = value__208
-        Loop_loop890:
+        var reversed__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__0 uint64 = value__0
+        Loop_loop0:
         for {
-            var t891 bool = remaining__210 > 0
-            if t891 {
-                var t892_rhs uint64 = 10
-                var t892 uint64 = remaining__210 % t892_rhs
-                var t893 uint8 = uint8(uint64(t892))
-                var t894 uint8 = t893 + 48
-                vec_push__Vec_5uint8(reversed__209, t894)
-                var compound_old353 uint64 = remaining__210
-                var compound_value354 uint64 = 10
-                var t895 uint64 = compound_old353 / compound_value354
-                remaining__210 = t895
+            var t10 bool = remaining__0 > 0
+            if t10 {
+                var t11_rhs uint64 = 10
+                var t11 uint64 = remaining__0 % t11_rhs
+                var t12 uint8 = uint8(uint64(t11))
+                var t13 uint8 = t12 + 48
+                vec_push__Vec_5uint8(reversed__0, t13)
+                var compound_old1 uint64 = remaining__0
+                var compound_value1 uint64 = 10
+                var t14 uint64 = compound_old1 / compound_value1
+                remaining__0 = t14
                 continue
             } else {
-                break Loop_loop890
+                break Loop_loop0
             }
         }
-        var t879 int
-        var inline980 int = vec_len__Vec_5uint8(reversed__209)
-        t879 = inline980
-        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t879)
-        var offset__212 int = 0
-        Loop_loop881:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var bytes__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t882 int
-            var inline978 int = vec_len__Vec_5uint8(reversed__209)
-            t882 = inline978
-            var t883 bool = offset__212 < t882
-            if t883 {
-                var t884 int
-                var inline976 int = vec_len__Vec_5uint8(reversed__209)
-                t884 = inline976
-                var t885 int = t884 - offset__212
-                var t886 int = t885 - 1
-                var t887 uint8 = vec_get__Vec_5uint8(reversed__209, t886)
-                vec_push__Vec_5uint8(bytes__211, t887)
-                var compound_old358 int = offset__212
-                var compound_value359 int = 1
-                var t888 int = compound_old358 + compound_value359
-                offset__212 = t888
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(bytes__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop881
+                break Loop_loop1
             }
         }
-        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
-        var x364 string = mtmp362._1
-        return x364
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 
-func _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(env799 closure_env_values_0) FrozenVec__isize {
-    var t905 [3]int = [3]int{1, 2, 3}
-    var t906 *_goml_vec_int = func(values [3]int) *_goml_vec_int {
+func _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_apply(env0 closure_env_values_0) FrozenVec__isize {
+    var t0 [3]int = [3]int{1, 2, 3}
+    var t1 *_goml_vec_int = func(values [3]int) *_goml_vec_int {
         var storage struct {
             vector _goml_vec_int
             values [3]int
@@ -356,12 +356,12 @@ func _goml_m_inherent_i_closure__env__values__0_i_closure__env__values__0_i_appl
         storage.values = values
         storage.vector.items = storage.values[0:len(storage.values)]
         return &storage.vector
-    }(t905)
-    var inline982 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__isize(t906)
-    var inline983 FrozenVec__isize = FrozenVec__isize{
-        values: inline982,
+    }(t0)
+    var inline0 *_goml_vec_int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_copy____T__isize(t1)
+    var inline1 FrozenVec__isize = FrozenVec__isize{
+        values: inline0,
     }
-    return inline983
+    return inline1
 }
 
 func main() {

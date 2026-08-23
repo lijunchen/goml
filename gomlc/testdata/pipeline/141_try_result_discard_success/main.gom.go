@@ -38,127 +38,127 @@ type Result__string__string struct {
 
 func parse_text(ok__0 bool) Result__string__string {
     if ok__0 {
-        var t808 Result__string__string = Result__string__string{
+        var t0 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: "ignored",
         }
-        return t808
+        return t0
     } else {
-        var t809 Result__string__string = Result__string__string{
+        var t1 Result__string__string = Result__string__string{
             _tag: 1,
             _v1_0: "parse failed",
         }
-        return t809
+        return t1
     }
 }
 
-func check(ok__1 bool) Result__string__string {
-    var mtmp796 Result__string__string
-    if ok__1 {
-        var inline833 Result__string__string = Result__string__string{
+func check(ok__0 bool) Result__string__string {
+    var mtmp0 Result__string__string
+    if ok__0 {
+        var inline0 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: "ignored",
         }
-        mtmp796 = inline833
+        mtmp0 = inline0
     } else {
-        var inline834 Result__string__string = Result__string__string{
+        var inline1 Result__string__string = Result__string__string{
             _tag: 1,
             _v1_0: "parse failed",
         }
-        mtmp796 = inline834
+        mtmp0 = inline1
     }
-    switch mtmp796._tag {
+    switch mtmp0._tag {
     case 0:
-        var t814 Result__string__string = Result__string__string{
+        var t0 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: "ok",
         }
-        return t814
+        return t0
     case 1:
-        var x798 string = mtmp796._v1_0
-        var t815 Result__string__string = Result__string__string{
+        var x1 string = mtmp0._v1_0
+        var t1 Result__string__string = Result__string__string{
             _tag: 1,
-            _v1_0: x798,
+            _v1_0: x1,
         }
-        return t815
+        return t1
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t823 Result__string__string = check(true)
-    var t824 string
-    switch t823._tag {
+    var t0 Result__string__string = check(true)
+    var t1 string
+    switch t0._tag {
     case 0:
-        var inline861 string = t823._v0_0
-        var inline863 string = "ok " + inline861
-        t824 = inline863
+        var inline15 string = t0._v0_0
+        var inline16 string = "ok " + inline15
+        t1 = inline16
     case 1:
-        var inline864 string = t823._v1_0
-        var inline866 string = "err " + inline864
-        t824 = inline866
+        var inline17 string = t0._v1_0
+        var inline18 string = "err " + inline17
+        t1 = inline18
     default:
         panic("non-exhaustive match")
     }
-    var inline858 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t824)
-    _goml_runtime_core_string_println(inline858)
-    var t825 Result__string__string
-    var inline846 bool = false
-    var inline847 Result__string__string = parse_text(inline846)
-    switch inline847._tag {
+    var inline13 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
+    _goml_runtime_core_string_println(inline13)
+    var t2 Result__string__string
+    var inline6 bool = false
+    var inline7 Result__string__string = parse_text(inline6)
+    switch inline7._tag {
     case 0:
-        var inline851 Result__string__string = Result__string__string{
+        var inline9 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: "ok",
         }
-        t825 = inline851
-        var t826 string
-        switch t825._tag {
+        t2 = inline9
+        var t3 string
+        switch t2._tag {
         case 0:
-            var inline839 string = t825._v0_0
-            var inline841 string = "ok " + inline839
-            t826 = inline841
+            var inline2 string = t2._v0_0
+            var inline3 string = "ok " + inline2
+            t3 = inline3
         case 1:
-            var inline842 string = t825._v1_0
-            var inline844 string = "err " + inline842
-            t826 = inline844
+            var inline4 string = t2._v1_0
+            var inline5 string = "err " + inline4
+            t3 = inline5
         default:
             panic("non-exhaustive match")
         }
-        var inline836 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t826)
-        _goml_runtime_core_string_println(inline836)
+        var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
+        _goml_runtime_core_string_println(inline0)
         return struct{}{}
     case 1:
-        var inline854 string = inline847._v1_0
-        var inline856 Result__string__string = Result__string__string{
+        var inline11 string = inline7._v1_0
+        var inline12 Result__string__string = Result__string__string{
             _tag: 1,
-            _v1_0: inline854,
+            _v1_0: inline11,
         }
-        t825 = inline856
-        var t826 string
-        switch t825._tag {
+        t2 = inline12
+        var t3 string
+        switch t2._tag {
         case 0:
-            var inline839 string = t825._v0_0
-            var inline841 string = "ok " + inline839
-            t826 = inline841
+            var inline2 string = t2._v0_0
+            var inline3 string = "ok " + inline2
+            t3 = inline3
         case 1:
-            var inline842 string = t825._v1_0
-            var inline844 string = "err " + inline842
-            t826 = inline844
+            var inline4 string = t2._v1_0
+            var inline5 string = "err " + inline4
+            t3 = inline5
         default:
             panic("non-exhaustive match")
         }
-        var inline836 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t826)
-        _goml_runtime_core_string_println(inline836)
+        var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
+        _goml_runtime_core_string_println(inline0)
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
 func main() {

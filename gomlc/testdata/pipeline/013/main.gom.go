@@ -37,15 +37,15 @@ type Ordering int32
 
 func main0() struct{} {
     var s__0 string = "abcde"
-    var inline811 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(s__0)
-    _goml_runtime_core_string_println(inline811)
-    var inline808 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(s__0)
-    _goml_runtime_core_string_print(inline808)
+    var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(s__0)
+    _goml_runtime_core_string_println(inline2)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(s__0)
+    _goml_runtime_core_string_print(inline0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
 func main() {

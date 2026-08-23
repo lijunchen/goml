@@ -39,34 +39,34 @@ type Station struct {
 type Ordering int32
 
 func _goml_m_trait__impl_i_Ready_i_Worker_i_state(self__0 Worker) string {
-    var t799 string = self__0.name
-    var t800 string = t799 + ":ready"
-    return t800
+    var t0 string = self__0.name
+    var t1 string = t0 + ":ready"
+    return t1
 }
 
-func _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(self__1 Station) Worker {
-    var t803 Worker = self__1.worker
-    return t803
+func _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(self__0 Station) Worker {
+    var t0 Worker = self__0.worker
+    return t0
 }
 
 func main0() struct{} {
-    var t805 Worker = Worker{
+    var t0 Worker = Worker{
         name: "build",
     }
-    var t806 Station = Station{
-        worker: t805,
+    var t1 Station = Station{
+        worker: t0,
     }
-    var t807 string
-    var inline821 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(t806)
-    var inline822 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(inline821)
-    t807 = inline822
-    var inline818 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t807)
-    _goml_runtime_core_string_println(inline818)
+    var t2 string
+    var inline2 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(t1)
+    var inline3 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(inline2)
+    t2 = inline3
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t2)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
 func main() {

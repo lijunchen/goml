@@ -32,16 +32,16 @@ type Ordering int32
 
 func main0() struct{} {
     var poem__0 string = "roses are red\nviolets are blue\n\"quotes\" stay quoted\nbackslash \\\\\\\\ stays too"
-    var trailing_blank__1 string = "line one\n\nline three"
-    var inline808 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(poem__0)
-    _goml_runtime_core_string_println(inline808)
-    var inline805 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(trailing_blank__1)
-    _goml_runtime_core_string_println(inline805)
+    var trailing_blank__0 string = "line one\n\nline three"
+    var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(poem__0)
+    _goml_runtime_core_string_println(inline2)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(trailing_blank__0)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
 func main() {

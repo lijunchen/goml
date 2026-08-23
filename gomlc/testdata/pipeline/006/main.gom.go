@@ -39,22 +39,22 @@ type ParsedFloat struct {
 type Ordering int32
 
 func main0() struct{} {
-    var x796 bool = true
-    var x797 bool = false
-    switch x796 {
+    var x0 bool = true
+    var x1 bool = false
+    switch x0 {
     case true:
-        var inline813 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x797)
-        _goml_runtime_core_string_print(inline813)
+        var inline2 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x1)
+        _goml_runtime_core_string_print(inline2)
     case false:
     default:
         panic("non-exhaustive match")
     }
-    var x799 bool = true
-    var x800 bool = true
-    switch x799 {
+    var x2 bool = true
+    var x3 bool = true
+    switch x2 {
     case true:
-        var inline816 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x800)
-        _goml_runtime_core_string_print(inline816)
+        var inline0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x3)
+        _goml_runtime_core_string_print(inline0)
         return struct{}{}
     case false:
         return struct{}{}
@@ -63,9 +63,9 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
-    var t811 string = _goml_runtime_core_bool_to_string(self__401)
-    return t811
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
+    var t0 string = _goml_runtime_core_bool_to_string(self__0)
+    return t0
 }
 
 func main() {

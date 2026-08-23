@@ -56,19 +56,19 @@ func _goml_m_trait__impl_i_Display_i_S_i_show(self__0 S) string {
 }
 
 func main0() struct{} {
-    var t801 S = S{}
+    var t0 S = S{}
     _ = dyn__Display{
-        data: t801,
+        data: t0,
         vtable: dyn__Display__vtable__S(),
     }
-    var inline811 string = "ok"
-    var inline812 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline811)
-    _goml_runtime_core_string_println(inline812)
+    var inline0 string = "ok"
+    var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
+    _goml_runtime_core_string_println(inline1)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
 func main() {

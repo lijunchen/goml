@@ -32,22 +32,22 @@ type Ordering int32
 
 func main0() struct{} {
     var x__0 uint8 = 5
-    var jp799 string
+    var jp0 string
     switch x__0 {
     case 0:
-        jp799 = "zero"
+        jp0 = "zero"
     case 1:
-        jp799 = "one"
+        jp0 = "one"
     default:
-        jp799 = "other"
+        jp0 = "other"
     }
-    var inline806 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp799)
-    _goml_runtime_core_string_println(inline806)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp0)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
 func main() {

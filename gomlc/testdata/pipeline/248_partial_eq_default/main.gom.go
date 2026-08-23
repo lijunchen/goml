@@ -129,113 +129,113 @@ type Selected__isize struct {
     _v1_0 *ref_NoDefault_x
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(self__0 Settings, other__1 Settings) bool {
-    var jp828 bool
-    var t832 bool = self__0.enabled
-    var t833 bool = other__1.enabled
-    var inline1029 bool = t832 == t833
-    jp828 = inline1029
-    var jp823 bool
-    if jp828 {
-        var t829 int = self__0.retries
-        var t830 int = other__1.retries
-        var inline1031 bool = t829 == t830
-        jp823 = inline1031
+func _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(self__0 Settings, other__0 Settings) bool {
+    var jp0 bool
+    var t4 bool = self__0.enabled
+    var t5 bool = other__0.enabled
+    var inline2 bool = t4 == t5
+    jp0 = inline2
+    var jp1 bool
+    if jp0 {
+        var t2 int = self__0.retries
+        var t3 int = other__0.retries
+        var inline1 bool = t2 == t3
+        jp1 = inline1
     } else {
-        jp823 = false
+        jp1 = false
     }
-    if jp823 {
-        var t824 string = self__0.label
-        var t825 string = other__1.label
-        var inline1033 bool = t824 == t825
-        return inline1033
+    if jp1 {
+        var t0 string = self__0.label
+        var t1 string = other__0.label
+        var inline0 bool = t0 == t1
+        return inline0
     } else {
         return false
     }
 }
 
 func _goml_m_trait__impl_i_Default_i_Settings_i_default() Settings {
-    var t837 bool
-    t837 = false
-    var t838 int
-    t838 = 0
-    var t839 string
-    t839 = ""
-    var t840 Settings = Settings{
-        enabled: t837,
-        retries: t838,
-        label: t839,
+    var t0 bool
+    t0 = false
+    var t1 int
+    t1 = 0
+    var t2 string
+    t2 = ""
+    var t3 Settings = Settings{
+        enabled: t0,
+        retries: t1,
+        label: t2,
     }
-    return t840
+    return t3
 }
 
-func _goml_m_trait__impl_i_Debug_i_Settings_i_debug(self__2 Settings) string {
-    var x797 bool = self__2.enabled
-    var x798 int = self__2.retries
-    var x799 string = self__2.label
-    var t843 string = "Settings { " + "enabled: "
-    var t844 string
-    var inline1042 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x797)
-    t844 = inline1042
-    var t845 string = t843 + t844
-    var t846 string = t845 + ", "
-    var t847 string = t846 + "retries: "
-    var t848 string
-    var inline1040 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x798)
-    t848 = inline1040
-    var t849 string = t847 + t848
-    var t850 string = t849 + ", "
-    var t851 string = t850 + "label: "
-    var t852 string
-    var inline1038 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x799)
-    t852 = inline1038
-    var t853 string = t851 + t852
-    var t854 string = t853 + " }"
-    return t854
+func _goml_m_trait__impl_i_Debug_i_Settings_i_debug(self__0 Settings) string {
+    var x0 bool = self__0.enabled
+    var x1 int = self__0.retries
+    var x2 string = self__0.label
+    var t0 string = "Settings { " + "enabled: "
+    var t1 string
+    var inline2 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x0)
+    t1 = inline2
+    var t2 string = t0 + t1
+    var t3 string = t2 + ", "
+    var t4 string = t3 + "retries: "
+    var t5 string
+    var inline1 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x1)
+    t5 = inline1
+    var t6 string = t4 + t5
+    var t7 string = t6 + ", "
+    var t8 string = t7 + "label: "
+    var t9 string
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x2)
+    t9 = inline0
+    var t10 string = t8 + t9
+    var t11 string = t10 + " }"
+    return t11
 }
 
 func _goml_m_trait__impl_i_Default_i_Empty_i_default() Empty {
-    var t857 Empty = Empty{}
-    return t857
+    var t0 Empty = Empty{}
+    return t0
 }
 
-func _goml_m_trait__impl_i_Debug_i_Empty_i_debug(self__6 Empty) string {
+func _goml_m_trait__impl_i_Debug_i_Empty_i_debug(self__0 Empty) string {
     return "Empty {}"
 }
 
-func _goml_m_trait__impl_i_Debug_i_State_i_debug(self__7 State) string {
-    switch self__7._tag {
+func _goml_m_trait__impl_i_Debug_i_State_i_debug(self__0 State) string {
+    switch self__0._tag {
     case 0:
         return "State::Idle"
     case 1:
-        var x800 int = self__7._v1_0
-        var t866 string
-        var inline1044 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x800)
-        t866 = inline1044
-        var t867 string = "State::Running(" + t866
-        var t868 string = t867 + ")"
-        return t868
+        var x0 int = self__0._v1_0
+        var t0 string
+        var inline0 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x0)
+        t0 = inline0
+        var t1 string = "State::Running(" + t0
+        var t2 string = t1 + ")"
+        return t2
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__9 Message) string {
-    switch self__9._tag {
+func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__0 Message) string {
+    switch self__0._tag {
     case 0:
-        var x801 string = self__9._v0_0
-        var x802 int = self__9._v0_1
-        var t878 string
-        var inline1050 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x801)
-        t878 = inline1050
-        var t879 string = "Message::Data(" + t878
-        var t880 string = t879 + ", "
-        var t881 string
-        var inline1048 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x802)
-        t881 = inline1048
-        var t882 string = t880 + t881
-        var t883 string = t882 + ")"
-        return t883
+        var x0 string = self__0._v0_0
+        var x1 int = self__0._v0_1
+        var t0 string
+        var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x0)
+        t0 = inline1
+        var t1 string = "Message::Data(" + t0
+        var t2 string = t1 + ", "
+        var t3 string
+        var inline0 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(x1)
+        t3 = inline0
+        var t4 string = t2 + t3
+        var t5 string = t4 + ")"
+        return t5
     case 1:
         return "Message::Empty"
     default:
@@ -244,120 +244,120 @@ func _goml_m_trait__impl_i_Debug_i_Message_i_debug(self__9 Message) string {
 }
 
 func main0() struct{} {
-    var settings__15 Settings = _goml_m_trait__impl_i_Default_i_Settings_i_default()
-    var t902 string = _goml_m_trait__impl_i_Debug_i_Settings_i_debug(settings__15)
-    println__T_string(t902)
-    var t903 Settings = Settings{
+    var settings__0 Settings = _goml_m_trait__impl_i_Default_i_Settings_i_default()
+    var t0 string = _goml_m_trait__impl_i_Debug_i_Settings_i_debug(settings__0)
+    println__T_string(t0)
+    var t1 Settings = Settings{
         enabled: false,
         retries: 0,
         label: "",
     }
-    var t904 bool = _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(settings__15, t903)
-    var t905 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t904)
-    println__T_string(t905)
-    var empty__16 Empty = _goml_m_trait__impl_i_Default_i_Empty_i_default()
-    var t906 string = _goml_m_trait__impl_i_Debug_i_Empty_i_debug(empty__16)
-    println__T_string(t906)
-    var pair__17 PairDefaults__isize = _goml_m_trait__impl_i_Default_i_PairDefaults____isize_i_default()
-    var t907 int = pair__17.first
-    var t908 int = pair__17.second
-    var t909 int = t907 + t908
-    var t910 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t909)
-    println__T_string(t910)
-    var t911 Option__isize = pair__17.nested
-    var t912 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__isize(t911)
-    var t913 string
-    var inline1102 string = _goml_runtime_core_bool_to_string(t912)
-    t913 = inline1102
-    println__T_string(t913)
-    var state__18 State
-    state__18 = State{
+    var t2 bool = _goml_m_trait__impl_i_PartialEq_i_Settings_i_eq(settings__0, t1)
+    var t3 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t2)
+    println__T_string(t3)
+    var empty__0 Empty = _goml_m_trait__impl_i_Default_i_Empty_i_default()
+    var t4 string = _goml_m_trait__impl_i_Debug_i_Empty_i_debug(empty__0)
+    println__T_string(t4)
+    var pair__0 PairDefaults__isize = _goml_m_trait__impl_i_Default_i_PairDefaults____isize_i_default()
+    var t5 int = pair__0.first
+    var t6 int = pair__0.second
+    var t7 int = t5 + t6
+    var t8 string = _goml_m_inherent_i_isize_i_isize_i_to__string(t7)
+    println__T_string(t8)
+    var t9 Option__isize = pair__0.nested
+    var t10 bool = _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__isize(t9)
+    var t11 string
+    var inline30 string = _goml_runtime_core_bool_to_string(t10)
+    t11 = inline30
+    println__T_string(t11)
+    var state__0 State
+    state__0 = State{
         _tag: 0,
     }
-    var t914 string = _goml_m_trait__impl_i_Debug_i_State_i_debug(state__18)
-    var inline1098 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t914)
-    _goml_runtime_core_string_println(inline1098)
-    var message__19 Message
-    var inline1094 string = _goml_m_trait__impl_i_Default_i_string_i_default()
-    var inline1095 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
-    var inline1096 Message = Message{
+    var t12 string = _goml_m_trait__impl_i_Debug_i_State_i_debug(state__0)
+    var inline28 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t12)
+    _goml_runtime_core_string_println(inline28)
+    var message__0 Message
+    var inline25 string = _goml_m_trait__impl_i_Default_i_string_i_default()
+    var inline26 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
+    var inline27 Message = Message{
         _tag: 0,
-        _v0_0: inline1094,
-        _v0_1: inline1095,
+        _v0_0: inline25,
+        _v0_1: inline26,
     }
-    message__19 = inline1096
-    var t915 string = _goml_m_trait__impl_i_Debug_i_Message_i_debug(message__19)
-    var inline1091 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t915)
-    _goml_runtime_core_string_println(inline1091)
-    var event__20 Event
-    var inline1087 string = _goml_m_trait__impl_i_Default_i_string_i_default()
-    var inline1088 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
-    var inline1089 Event = Event{
+    message__0 = inline27
+    var t13 string = _goml_m_trait__impl_i_Debug_i_Message_i_debug(message__0)
+    var inline23 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t13)
+    _goml_runtime_core_string_println(inline23)
+    var event__0 Event
+    var inline20 string = _goml_m_trait__impl_i_Default_i_string_i_default()
+    var inline21 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
+    var inline22 Event = Event{
         _tag: 0,
-        _v0_0: inline1087,
-        _v0_1: inline1088,
+        _v0_0: inline20,
+        _v0_1: inline21,
     }
-    event__20 = inline1089
-    var t916 string
-    switch event__20._tag {
+    event__0 = inline22
+    var t14 string
+    switch event__0._tag {
     case 0:
-        var inline1074 string = event__20._v0_0
-        var inline1075 int = event__20._v0_1
-        var inline1078 string = "Event::Data { " + "name: "
-        var inline1079 string = _goml_m_trait__impl_i_Debug_i_string_i_debug(inline1074)
-        var inline1080 string = inline1078 + inline1079
-        var inline1081 string = inline1080 + ", "
-        var inline1082 string = inline1081 + "count: "
-        var inline1083 string = _goml_m_trait__impl_i_Debug_i_isize_i_debug(inline1075)
-        var inline1084 string = inline1082 + inline1083
-        var inline1085 string = inline1084 + " }"
-        t916 = inline1085
+        var inline10 string = event__0._v0_0
+        var inline11 int = event__0._v0_1
+        var inline12 string = "Event::Data { " + "name: "
+        var inline13 string = _goml_m_trait__impl_i_Debug_i_string_i_debug(inline10)
+        var inline14 string = inline12 + inline13
+        var inline15 string = inline14 + ", "
+        var inline16 string = inline15 + "count: "
+        var inline17 string = _goml_m_trait__impl_i_Debug_i_isize_i_debug(inline11)
+        var inline18 string = inline16 + inline17
+        var inline19 string = inline18 + " }"
+        t14 = inline19
     case 1:
-        t916 = "Event::Empty"
+        t14 = "Event::Empty"
     default:
         panic("non-exhaustive match")
     }
-    var inline1071 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t916)
-    _goml_runtime_core_string_println(inline1071)
-    var lazy__21 Lazy__NoDefault
-    lazy__21 = Lazy__NoDefault{
+    var inline8 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t14)
+    _goml_runtime_core_string_println(inline8)
+    var lazy__0 Lazy__NoDefault
+    lazy__0 = Lazy__NoDefault{
         _tag: 0,
     }
-    var jp918 string
-    switch lazy__21._tag {
+    var jp0 string
+    switch lazy__0._tag {
     case 0:
-        jp918 = "empty"
+        jp0 = "empty"
     case 1:
-        jp918 = "value"
+        jp0 = "value"
     default:
         panic("non-exhaustive match")
     }
-    var inline1067 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp918)
-    _goml_runtime_core_string_println(inline1067)
-    var selected__22 Selected__isize
-    var inline1063 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
-    var inline1064 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
-    var inline1065 Selected__isize = Selected__isize{
+    var inline6 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp0)
+    _goml_runtime_core_string_println(inline6)
+    var selected__0 Selected__isize
+    var inline3 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
+    var inline4 int = _goml_m_trait__impl_i_Default_i_isize_i_default()
+    var inline5 Selected__isize = Selected__isize{
         _tag: 0,
-        _v0_0: inline1063,
-        _v0_1: inline1064,
+        _v0_0: inline3,
+        _v0_1: inline4,
     }
-    selected__22 = inline1065
-    var jp920 string
-    switch selected__22._tag {
+    selected__0 = inline5
+    var jp1 string
+    switch selected__0._tag {
     case 0:
-        var x815 int = selected__22._v0_0
-        var x816 int = selected__22._v0_1
-        var t922 int = x815 + x816
-        var inline1058 string = __goml_builtin_int_to_string(t922)
-        jp920 = inline1058
+        var x0 int = selected__0._v0_0
+        var x1 int = selected__0._v0_1
+        var t15 int = x0 + x1
+        var inline2 string = __goml_builtin_int_to_string(t15)
+        jp1 = inline2
     case 1:
-        jp920 = "ignored"
+        jp1 = "ignored"
     default:
         panic("non-exhaustive match")
     }
-    var inline1060 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp920)
-    _goml_runtime_core_string_println(inline1060)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp1)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
@@ -369,161 +369,161 @@ func _goml_m_trait__impl_i_Default_i_string_i_default() string {
     return ""
 }
 
-func _goml_m_trait__impl_i_Debug_i_isize_i_debug(self__419 int) string {
-    var inline1106 string = __goml_builtin_int_to_string(self__419)
-    return inline1106
+func _goml_m_trait__impl_i_Debug_i_isize_i_debug(self__0 int) string {
+    var inline0 string = __goml_builtin_int_to_string(self__0)
+    return inline0
 }
 
-func _goml_m_trait__impl_i_Debug_i_string_i_debug(self__417 string) string {
-    return self__417
+func _goml_m_trait__impl_i_Debug_i_string_i_debug(self__0 string) string {
+    return self__0
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t949 string
-    t949 = value__1
-    _goml_runtime_core_string_println(t949)
+func println__T_string(value__0 string) struct{} {
+    var t0 string
+    t0 = value__0
+    _goml_runtime_core_string_println(t0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
-    var t953 string = _goml_runtime_core_bool_to_string(self__401)
-    return t953
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
+    var t0 string = _goml_runtime_core_bool_to_string(self__0)
+    return t0
 }
 
 func _goml_m_trait__impl_i_Default_i_PairDefaults____isize_i_default() PairDefaults__isize {
-    var t956 int
-    t956 = 0
-    var t957 int
-    t957 = 0
-    var t958 Option__isize
-    t958 = Option__isize{
+    var t0 int
+    t0 = 0
+    var t1 int
+    t1 = 0
+    var t2 Option__isize
+    t2 = Option__isize{
         _tag: 0,
     }
-    var t959 PairDefaults__isize = PairDefaults__isize{
-        first: t956,
-        second: t957,
-        nested: t958,
+    var t3 PairDefaults__isize = PairDefaults__isize{
+        first: t0,
+        second: t1,
+        nested: t2,
     }
-    return t959
+    return t3
 }
 
-func _goml_m_inherent_i_isize_i_isize_i_to__string(self__285 int) string {
-    var inline1113 int64 = int64(int(self__285))
-    var inline1114 string = signed_decimal_string(inline1113)
-    return inline1114
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__0 int) string {
+    var inline0 int64 = int64(int(self__0))
+    var inline1 string = signed_decimal_string(inline0)
+    return inline1
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__isize(self__719 Option__isize) bool {
-    var t965 bool
-    switch self__719._tag {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_is__none____T__isize(self__0 Option__isize) bool {
+    var t0 bool
+    switch self__0._tag {
     case 0:
-        t965 = false
+        t0 = false
     case 1:
-        t965 = true
+        t0 = true
     default:
         panic("non-exhaustive match")
     }
-    var t966 bool = !t965
-    return t966
+    var t1 bool = !t0
+    return t1
 }
 
-func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__404 int) string {
-    var inline1119 int64 = int64(int(self__404))
-    var inline1120 string = signed_decimal_string(inline1119)
-    return inline1120
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__0 int) string {
+    var inline0 int64 = int64(int(self__0))
+    var inline1 string = signed_decimal_string(inline0)
+    return inline1
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
-func __goml_builtin_int_to_string(value__222 int) string {
-    var t983 int64 = int64(int(value__222))
-    var inline1122 bool = t983 < 0
-    if inline1122 {
-        var inline1123 uint64 = uint64(int64(t983))
-        var inline1124 uint64 = 0 - inline1123
-        var inline1125 string = decimal_string(inline1124)
-        var inline1126 string = "-" + inline1125
-        return inline1126
+func __goml_builtin_int_to_string(value__0 int) string {
+    var t0 int64 = int64(int(value__0))
+    var inline0 bool = t0 < 0
+    if inline0 {
+        var inline1 uint64 = uint64(int64(t0))
+        var inline2 uint64 = 0 - inline1
+        var inline3 string = decimal_string(inline2)
+        var inline4 string = "-" + inline3
+        return inline4
     } else {
-        var inline1127 uint64 = uint64(int64(t983))
-        var inline1128 string = decimal_string(inline1127)
-        return inline1128
+        var inline5 uint64 = uint64(int64(t0))
+        var inline6 string = decimal_string(inline5)
+        return inline6
     }
 }
 
-func signed_decimal_string(value__214 int64) string {
-    var t993 bool = value__214 < 0
-    if t993 {
-        var t994 uint64 = uint64(int64(value__214))
-        var t995 uint64 = 0 - t994
-        var t996 string = decimal_string(t995)
-        var t997 string = "-" + t996
-        return t997
+func signed_decimal_string(value__0 int64) string {
+    var t0 bool = value__0 < 0
+    if t0 {
+        var t1 uint64 = uint64(int64(value__0))
+        var t2 uint64 = 0 - t1
+        var t3 string = decimal_string(t2)
+        var t4 string = "-" + t3
+        return t4
     } else {
-        var t998 uint64 = uint64(int64(value__214))
-        var t999 string = decimal_string(t998)
-        return t999
+        var t5 uint64 = uint64(int64(value__0))
+        var t6 string = decimal_string(t5)
+        return t6
     }
 }
 
-func decimal_string(value__208 uint64) string {
-    var t1022 bool = value__208 == 0
-    if t1022 {
+func decimal_string(value__0 uint64) string {
+    var t0 bool = value__0 == 0
+    if t0 {
         return "0"
     } else {
-        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
-        var remaining__210 uint64 = value__208
-        Loop_loop1015:
+        var reversed__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__0 uint64 = value__0
+        Loop_loop0:
         for {
-            var t1016 bool = remaining__210 > 0
-            if t1016 {
-                var t1017_rhs uint64 = 10
-                var t1017 uint64 = remaining__210 % t1017_rhs
-                var t1018 uint8 = uint8(uint64(t1017))
-                var t1019 uint8 = t1018 + 48
-                vec_push__Vec_5uint8(reversed__209, t1019)
-                var compound_old353 uint64 = remaining__210
-                var compound_value354 uint64 = 10
-                var t1020 uint64 = compound_old353 / compound_value354
-                remaining__210 = t1020
+            var t10 bool = remaining__0 > 0
+            if t10 {
+                var t11_rhs uint64 = 10
+                var t11 uint64 = remaining__0 % t11_rhs
+                var t12 uint8 = uint8(uint64(t11))
+                var t13 uint8 = t12 + 48
+                vec_push__Vec_5uint8(reversed__0, t13)
+                var compound_old1 uint64 = remaining__0
+                var compound_value1 uint64 = 10
+                var t14 uint64 = compound_old1 / compound_value1
+                remaining__0 = t14
                 continue
             } else {
-                break Loop_loop1015
+                break Loop_loop0
             }
         }
-        var t1004 int
-        var inline1138 int = vec_len__Vec_5uint8(reversed__209)
-        t1004 = inline1138
-        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1004)
-        var offset__212 int = 0
-        Loop_loop1006:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var bytes__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t1007 int
-            var inline1136 int = vec_len__Vec_5uint8(reversed__209)
-            t1007 = inline1136
-            var t1008 bool = offset__212 < t1007
-            if t1008 {
-                var t1009 int
-                var inline1134 int = vec_len__Vec_5uint8(reversed__209)
-                t1009 = inline1134
-                var t1010 int = t1009 - offset__212
-                var t1011 int = t1010 - 1
-                var t1012 uint8 = vec_get__Vec_5uint8(reversed__209, t1011)
-                vec_push__Vec_5uint8(bytes__211, t1012)
-                var compound_old358 int = offset__212
-                var compound_value359 int = 1
-                var t1013 int = compound_old358 + compound_value359
-                offset__212 = t1013
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(bytes__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop1006
+                break Loop_loop1
             }
         }
-        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
-        var x364 string = mtmp362._1
-        return x364
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 

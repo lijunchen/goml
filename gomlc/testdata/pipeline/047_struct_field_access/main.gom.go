@@ -27,23 +27,23 @@ type Point struct {
 type Ordering int32
 
 func main0() int32 {
-    var p__2 Point
-    var inline819 int32 = 5
-    var inline820 int32 = inline819 + 1
-    var inline821 Point = Point{
-        x: inline819,
-        y: inline820,
+    var p__0 Point
+    var inline1 int32 = 5
+    var inline2 int32 = inline1 + 1
+    var inline3 Point = Point{
+        x: inline1,
+        y: inline2,
     }
-    p__2 = inline821
-    var t807 int32 = p__2.x
-    var t808 int32 = t807 + 1
-    var t809 int32 = p__2.y
-    var t810 int32 = t809 - 2
-    var t812 int32
-    var inline817 int32 = t808 + t810
-    t812 = inline817
-    var t813 int32 = t808 + t812
-    return t813
+    p__0 = inline3
+    var t0 int32 = p__0.x
+    var t1 int32 = t0 + 1
+    var t2 int32 = p__0.y
+    var t3 int32 = t2 - 2
+    var t4 int32
+    var inline0 int32 = t1 + t3
+    t4 = inline0
+    var t5 int32 = t1 + t4
+    return t5
 }
 
 func main() {

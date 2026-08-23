@@ -340,31 +340,31 @@ type Result__Typ__string struct {
 }
 
 func state_new() CheckerState {
-    var t994 *ref_int32_x
-    var inline1606 int32 = 0
-    var inline1607 *ref_int32_x = ref__Ref_5int32(inline1606)
-    t994 = inline1607
-    var t995 *ref_int32_x
-    var inline1603 int32 = 1
-    var inline1604 *ref_int32_x = ref__Ref_5int32(inline1603)
-    t995 = inline1604
-    var t996 CheckerState = CheckerState{
-        gensym_counter: t994,
-        current_level: t995,
+    var t0 *ref_int32_x
+    var inline2 int32 = 0
+    var inline3 *ref_int32_x = ref__Ref_5int32(inline2)
+    t0 = inline3
+    var t1 *ref_int32_x
+    var inline0 int32 = 1
+    var inline1 *ref_int32_x = ref__Ref_5int32(inline0)
+    t1 = inline1
+    var t2 CheckerState = CheckerState{
+        gensym_counter: t0,
+        current_level: t1,
     }
-    return t996
+    return t2
 }
 
-func reset_type_variables(st__2 CheckerState) struct{} {
-    var inline1618 *ref_int32_x = st__2.gensym_counter
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1618, 0)
-    var inline1615 *ref_int32_x = st__2.current_level
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1615, 1)
+func reset_type_variables(st__0 CheckerState) struct{} {
+    var inline2 *ref_int32_x = st__0.gensym_counter
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline2, 0)
+    var inline0 *ref_int32_x = st__0.current_level
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline0, 1)
     return struct{}{}
 }
 
-func nth_letter(n__9 int32) rune {
-    switch n__9 {
+func nth_letter(n__0 int32) rune {
+    switch n__0 {
     case 0:
         return 97
     case 1:
@@ -422,40 +422,40 @@ func nth_letter(n__9 int32) rune {
     }
 }
 
-func gensym(st__10 CheckerState) string {
-    var t1022 *ref_int32_x = st__10.gensym_counter
-    var n__11 int32
-    var inline1635 int32 = ref_get__Ref_5int32(t1022)
-    n__11 = inline1635
-    var t1023 *ref_int32_x = st__10.gensym_counter
-    var t1024 int32 = n__11 + 1
-    ref_set__Ref_5int32(t1023, t1024)
-    var t1027 bool = n__11 < 26
-    if t1027 {
-        var t1028 rune = nth_letter(n__11)
-        var inline1629 string = char_to_string(t1028)
-        return inline1629
+func gensym(st__0 CheckerState) string {
+    var t0 *ref_int32_x = st__0.gensym_counter
+    var n__0 int32
+    var inline3 int32 = ref_get__Ref_5int32(t0)
+    n__0 = inline3
+    var t1 *ref_int32_x = st__0.gensym_counter
+    var t2 int32 = n__0 + 1
+    ref_set__Ref_5int32(t1, t2)
+    var t3 bool = n__0 < 26
+    if t3 {
+        var t4 rune = nth_letter(n__0)
+        var inline0 string = char_to_string(t4)
+        return inline0
     } else {
-        var t1030 string
-        var inline1631 string = __goml_builtin_int32_to_string(n__11)
-        t1030 = inline1631
-        var t1031 string = "t" + t1030
-        return t1031
+        var t5 string
+        var inline1 string = __goml_builtin_int32_to_string(n__0)
+        t5 = inline1
+        var t6 string = "t" + t5
+        return t6
     }
 }
 
-func typ_is_arrow(ty__15 Typ) bool {
-    switch ty__15.(type) {
+func typ_is_arrow(ty__0 Typ) bool {
+    switch ty__0.(type) {
     case TVar:
-        var x802 *ref_Tv_x = ty__15.(TVar)._0
-        var mtmp806 Tv
-        var inline1652 Tv = ref_get__Ref_2Tv(x802)
-        mtmp806 = inline1652
-        switch mtmp806.(type) {
+        var x0 *ref_Tv_x = ty__0.(TVar)._0
+        var mtmp0 Tv
+        var inline0 Tv = ref_get__Ref_2Tv(x0)
+        mtmp0 = inline0
+        switch mtmp0.(type) {
         case Link:
-            var x809 Typ = mtmp806.(Link)._0
-            var t1044 bool = typ_is_arrow(x809)
-            return t1044
+            var x1 Typ = mtmp0.(Link)._0
+            var t0 bool = typ_is_arrow(x1)
+            return t0
         default:
             return false
         }
@@ -466,794 +466,794 @@ func typ_is_arrow(ty__15 Typ) bool {
     }
 }
 
-func typ_to_string(ty__18 Typ) string {
-    switch ty__18.(type) {
+func typ_to_string(ty__0 Typ) string {
+    switch ty__0.(type) {
     case TVar:
-        var x810 *ref_Tv_x = ty__18.(TVar)._0
-        var mtmp814 Tv
-        var inline1654 Tv = ref_get__Ref_2Tv(x810)
-        mtmp814 = inline1654
-        switch mtmp814.(type) {
+        var x0 *ref_Tv_x = ty__0.(TVar)._0
+        var mtmp0 Tv
+        var inline0 Tv = ref_get__Ref_2Tv(x0)
+        mtmp0 = inline0
+        switch mtmp0.(type) {
         case Unbound:
-            var x815 string = mtmp814.(Unbound)._0
-            var t1051 string = "'" + x815
-            return t1051
+            var x1 string = mtmp0.(Unbound)._0
+            var t0 string = "'" + x1
+            return t0
         case Link:
-            var x817 Typ = mtmp814.(Link)._0
-            var t1052 string = typ_to_string(x817)
-            return t1052
+            var x2 Typ = mtmp0.(Link)._0
+            var t1 string = typ_to_string(x2)
+            return t1
         default:
             panic("non-exhaustive match")
         }
     case QVar:
-        var x811 string = ty__18.(QVar)._0
-        var t1053 string = "'" + x811
-        return t1053
+        var x3 string = ty__0.(QVar)._0
+        var t2 string = "'" + x3
+        return t2
     case TArrow:
-        var x812 Typ = ty__18.(TArrow)._0
-        var x813 Typ = ty__18.(TArrow)._1
-        var t1058 bool = typ_is_arrow(x812)
-        var jp1055 string
-        if t1058 {
-            var t1059 string = typ_to_string(x812)
-            var t1060 string = "(" + t1059
-            var t1061 string = t1060 + ")"
-            jp1055 = t1061
+        var x4 Typ = ty__0.(TArrow)._0
+        var x5 Typ = ty__0.(TArrow)._1
+        var t3 bool = typ_is_arrow(x4)
+        var jp0 string
+        if t3 {
+            var t6 string = typ_to_string(x4)
+            var t7 string = "(" + t6
+            var t8 string = t7 + ")"
+            jp0 = t8
         } else {
-            var t1062 string = typ_to_string(x812)
-            jp1055 = t1062
+            var t9 string = typ_to_string(x4)
+            jp0 = t9
         }
-        var s2__26 string = typ_to_string(x813)
-        var t1056 string = jp1055 + " -> "
-        var t1057 string = t1056 + s2__26
-        return t1057
+        var s2__0 string = typ_to_string(x5)
+        var t4 string = jp0 + " -> "
+        var t5 string = t4 + s2__0
+        return t5
     default:
         panic("non-exhaustive match")
     }
 }
 
 func env_empty() *_goml_vec_EnvEntry {
-    var inline1656 *_goml_vec_EnvEntry = vec_new__Vec_8EnvEntry()
-    return inline1656
+    var inline0 *_goml_vec_EnvEntry = vec_new__Vec_8EnvEntry()
+    return inline0
 }
 
-func env_lookup(env__28 *_goml_vec_EnvEntry, name__29 string) Option__Typ {
-    var t1067 int
-    var inline1682 int = vec_len__Vec_8EnvEntry(env__28)
-    t1067 = inline1682
-    var t1068 int = t1067 - 1
-    var i__30 *ref_int_x
-    var inline1680 *ref_int_x = ref__Ref_3int(t1068)
-    i__30 = inline1680
-    var found__31 *ref_Option__Typ_x
-    var inline1678 *ref_Option__Typ_x = ref__Ref_11Option__Typ(Option__Typ{
+func env_lookup(env__0 *_goml_vec_EnvEntry, name__0 string) Option__Typ {
+    var t0 int
+    var inline13 int = vec_len__Vec_8EnvEntry(env__0)
+    t0 = inline13
+    var t1 int = t0 - 1
+    var i__0 *ref_int_x
+    var inline12 *ref_int_x = ref__Ref_3int(t1)
+    i__0 = inline12
+    var found__0 *ref_Option__Typ_x
+    var inline11 *ref_Option__Typ_x = ref__Ref_11Option__Typ(Option__Typ{
         _tag: 0,
     })
-    found__31 = inline1678
-    var done__32 *ref_bool_x
-    var inline1675 bool = false
-    var inline1676 *ref_bool_x = ref__Ref_4bool(inline1675)
-    done__32 = inline1676
-    Loop_loop1071:
+    found__0 = inline11
+    var done__0 *ref_bool_x
+    var inline9 bool = false
+    var inline10 *ref_bool_x = ref__Ref_4bool(inline9)
+    done__0 = inline10
+    Loop_loop0:
     for {
-        var t1084 bool
-        var inline1671 bool = ref_get__Ref_4bool(done__32)
-        t1084 = inline1671
-        var t1085 bool = !t1084
-        var jp1073 bool
-        if t1085 {
-            var t1086 int
-            var inline1658 int = ref_get__Ref_3int(i__30)
-            t1086 = inline1658
-            var t1087 bool = t1086 >= 0
-            jp1073 = t1087
+        var t2 bool
+        var inline8 bool = ref_get__Ref_4bool(done__0)
+        t2 = inline8
+        var t3 bool = !t2
+        var jp0 bool
+        if t3 {
+            var t11 int
+            var inline7 int = ref_get__Ref_3int(i__0)
+            t11 = inline7
+            var t12 bool = t11 >= 0
+            jp0 = t12
         } else {
-            jp1073 = false
+            jp0 = false
         }
-        if jp1073 {
-            var t1074 int
-            var inline1669 int = ref_get__Ref_3int(i__30)
-            t1074 = inline1669
-            var entry__33 EnvEntry = vec_get__Vec_8EnvEntry(env__28, t1074)
-            var t1076 string = entry__33.name
-            var t1077 bool = t1076 == name__29
-            if t1077 {
-                var t1078 Typ = entry__33.ty
-                var t1079 Option__Typ = Option__Typ{
+        if jp0 {
+            var t4 int
+            var inline6 int = ref_get__Ref_3int(i__0)
+            t4 = inline6
+            var entry__0 EnvEntry = vec_get__Vec_8EnvEntry(env__0, t4)
+            var t5 string = entry__0.name
+            var t6 bool = t5 == name__0
+            if t6 {
+                var t7 Typ = entry__0.ty
+                var t8 Option__Typ = Option__Typ{
                     _tag: 1,
-                    _v1_0: t1078,
+                    _v1_0: t7,
                 }
-                ref_set__Ref_11Option__Typ(found__31, t1079)
-                var inline1660 bool = true
-                ref_set__Ref_4bool(done__32, inline1660)
+                ref_set__Ref_11Option__Typ(found__0, t8)
+                var inline1 bool = true
+                ref_set__Ref_4bool(done__0, inline1)
                 continue
             } else {
-                var t1081 int
-                var inline1667 int = ref_get__Ref_3int(i__30)
-                t1081 = inline1667
-                var t1082 int = t1081 - 1
-                ref_set__Ref_3int(i__30, t1082)
+                var t9 int
+                var inline5 int = ref_get__Ref_3int(i__0)
+                t9 = inline5
+                var t10 int = t9 - 1
+                ref_set__Ref_3int(i__0, t10)
                 continue
             }
         } else {
-            break Loop_loop1071
+            break Loop_loop0
         }
     }
-    var inline1673 Option__Typ = ref_get__Ref_11Option__Typ(found__31)
-    return inline1673
+    var inline0 Option__Typ = ref_get__Ref_11Option__Typ(found__0)
+    return inline0
 }
 
-func subst_lookup(subst__34 *_goml_vec_SubstEntry, name__35 string) Option__Typ {
-    var t1090 int
-    var inline1708 int = vec_len__Vec_10SubstEntry(subst__34)
-    t1090 = inline1708
-    var t1091 int = t1090 - 1
-    var i__36 *ref_int_x
-    var inline1706 *ref_int_x = ref__Ref_3int(t1091)
-    i__36 = inline1706
-    var found__37 *ref_Option__Typ_x
-    var inline1704 *ref_Option__Typ_x = ref__Ref_11Option__Typ(Option__Typ{
+func subst_lookup(subst__0 *_goml_vec_SubstEntry, name__0 string) Option__Typ {
+    var t0 int
+    var inline13 int = vec_len__Vec_10SubstEntry(subst__0)
+    t0 = inline13
+    var t1 int = t0 - 1
+    var i__0 *ref_int_x
+    var inline12 *ref_int_x = ref__Ref_3int(t1)
+    i__0 = inline12
+    var found__0 *ref_Option__Typ_x
+    var inline11 *ref_Option__Typ_x = ref__Ref_11Option__Typ(Option__Typ{
         _tag: 0,
     })
-    found__37 = inline1704
-    var done__38 *ref_bool_x
-    var inline1701 bool = false
-    var inline1702 *ref_bool_x = ref__Ref_4bool(inline1701)
-    done__38 = inline1702
-    Loop_loop1094:
+    found__0 = inline11
+    var done__0 *ref_bool_x
+    var inline9 bool = false
+    var inline10 *ref_bool_x = ref__Ref_4bool(inline9)
+    done__0 = inline10
+    Loop_loop0:
     for {
-        var t1107 bool
-        var inline1697 bool = ref_get__Ref_4bool(done__38)
-        t1107 = inline1697
-        var t1108 bool = !t1107
-        var jp1096 bool
-        if t1108 {
-            var t1109 int
-            var inline1684 int = ref_get__Ref_3int(i__36)
-            t1109 = inline1684
-            var t1110 bool = t1109 >= 0
-            jp1096 = t1110
+        var t2 bool
+        var inline8 bool = ref_get__Ref_4bool(done__0)
+        t2 = inline8
+        var t3 bool = !t2
+        var jp0 bool
+        if t3 {
+            var t11 int
+            var inline7 int = ref_get__Ref_3int(i__0)
+            t11 = inline7
+            var t12 bool = t11 >= 0
+            jp0 = t12
         } else {
-            jp1096 = false
+            jp0 = false
         }
-        if jp1096 {
-            var t1097 int
-            var inline1695 int = ref_get__Ref_3int(i__36)
-            t1097 = inline1695
-            var entry__39 SubstEntry = vec_get__Vec_10SubstEntry(subst__34, t1097)
-            var t1099 string = entry__39.name
-            var t1100 bool = t1099 == name__35
-            if t1100 {
-                var t1101 Typ = entry__39.ty
-                var t1102 Option__Typ = Option__Typ{
+        if jp0 {
+            var t4 int
+            var inline6 int = ref_get__Ref_3int(i__0)
+            t4 = inline6
+            var entry__0 SubstEntry = vec_get__Vec_10SubstEntry(subst__0, t4)
+            var t5 string = entry__0.name
+            var t6 bool = t5 == name__0
+            if t6 {
+                var t7 Typ = entry__0.ty
+                var t8 Option__Typ = Option__Typ{
                     _tag: 1,
-                    _v1_0: t1101,
+                    _v1_0: t7,
                 }
-                ref_set__Ref_11Option__Typ(found__37, t1102)
-                var inline1686 bool = true
-                ref_set__Ref_4bool(done__38, inline1686)
+                ref_set__Ref_11Option__Typ(found__0, t8)
+                var inline1 bool = true
+                ref_set__Ref_4bool(done__0, inline1)
                 continue
             } else {
-                var t1104 int
-                var inline1693 int = ref_get__Ref_3int(i__36)
-                t1104 = inline1693
-                var t1105 int = t1104 - 1
-                ref_set__Ref_3int(i__36, t1105)
+                var t9 int
+                var inline5 int = ref_get__Ref_3int(i__0)
+                t9 = inline5
+                var t10 int = t9 - 1
+                ref_set__Ref_3int(i__0, t10)
                 continue
             }
         } else {
-            break Loop_loop1094
+            break Loop_loop0
         }
     }
-    var inline1699 Option__Typ = ref_get__Ref_11Option__Typ(found__37)
-    return inline1699
+    var inline0 Option__Typ = ref_get__Ref_11Option__Typ(found__0)
+    return inline0
 }
 
-func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__string {
-    switch ty__42.(type) {
+func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) Result__unit__string {
+    switch ty__0.(type) {
     case TVar:
-        var x822 *ref_Tv_x = ty__42.(TVar)._0
-        var t1117 bool = ptr_eq__Ref_2Tv(tvr__41, x822)
-        if t1117 {
-            var t1118 Result__unit__string = Result__unit__string{
+        var x0 *ref_Tv_x = ty__0.(TVar)._0
+        var t0 bool = ptr_eq__Ref_2Tv(tvr__0, x0)
+        if t0 {
+            var t1 Result__unit__string = Result__unit__string{
                 _tag: 1,
                 _v1_0: "occurs check",
             }
-            return t1118
+            return t1
         } else {
-            var mtmp826 Tv
-            var inline1716 Tv = ref_get__Ref_2Tv(x822)
-            mtmp826 = inline1716
-            switch mtmp826.(type) {
+            var mtmp0 Tv
+            var inline3 Tv = ref_get__Ref_2Tv(x0)
+            mtmp0 = inline3
+            switch mtmp0.(type) {
             case Unbound:
-                var x827 string = mtmp826.(Unbound)._0
-                var x828 int32 = mtmp826.(Unbound)._1
-                var mtmp830 Tv
-                var inline1714 Tv = ref_get__Ref_2Tv(tvr__41)
-                mtmp830 = inline1714
-                var jp1122 int32
-                switch mtmp830.(type) {
+                var x1 string = mtmp0.(Unbound)._0
+                var x2 int32 = mtmp0.(Unbound)._1
+                var mtmp1 Tv
+                var inline2 Tv = ref_get__Ref_2Tv(tvr__0)
+                mtmp1 = inline2
+                var jp0 int32
+                switch mtmp1.(type) {
                 case Unbound:
-                    var x832 int32 = mtmp830.(Unbound)._1
-                    var inline1710 bool = x832 < x828
-                    if inline1710 {
-                        jp1122 = x832
+                    var x3 int32 = mtmp1.(Unbound)._1
+                    var inline1 bool = x3 < x2
+                    if inline1 {
+                        jp0 = x3
                     } else {
-                        jp1122 = x828
+                        jp0 = x2
                     }
                 default:
-                    jp1122 = x828
+                    jp0 = x2
                 }
-                var t1123 Tv = Unbound{
-                    _0: x827,
-                    _1: jp1122,
+                var t2 Tv = Unbound{
+                    _0: x1,
+                    _1: jp0,
                 }
-                ref_set__Ref_2Tv(x822, t1123)
-                var t1124 Result__unit__string = Result__unit__string{
+                ref_set__Ref_2Tv(x0, t2)
+                var t3 Result__unit__string = Result__unit__string{
                     _tag: 0,
                     _v0_0: struct{}{},
                 }
-                return t1124
+                return t3
             case Link:
-                var x829 Typ = mtmp826.(Link)._0
-                var t1126 Result__unit__string = occurs(st__40, tvr__41, x829)
-                return t1126
+                var x4 Typ = mtmp0.(Link)._0
+                var t4 Result__unit__string = occurs(st__0, tvr__0, x4)
+                return t4
             default:
                 panic("non-exhaustive match")
             }
         }
     case TArrow:
-        var x824 Typ = ty__42.(TArrow)._0
-        var x825 Typ = ty__42.(TArrow)._1
-        var mtmp835 Result__unit__string = occurs(st__40, tvr__41, x824)
-        switch mtmp835._tag {
+        var x5 Typ = ty__0.(TArrow)._0
+        var x6 Typ = ty__0.(TArrow)._1
+        var mtmp3 Result__unit__string = occurs(st__0, tvr__0, x5)
+        switch mtmp3._tag {
         case 0:
-            var t1129 Result__unit__string = occurs(st__40, tvr__41, x825)
-            return t1129
+            var t5 Result__unit__string = occurs(st__0, tvr__0, x6)
+            return t5
         case 1:
-            var x837 string = mtmp835._v1_0
-            var t1130 Result__unit__string = Result__unit__string{
+            var x7 string = mtmp3._v1_0
+            var t6 Result__unit__string = Result__unit__string{
                 _tag: 1,
-                _v1_0: x837,
+                _v1_0: x7,
             }
-            return t1130
+            return t6
         default:
             panic("non-exhaustive match")
         }
     default:
-        var t1131 Result__unit__string = Result__unit__string{
+        var t7 Result__unit__string = Result__unit__string{
             _tag: 0,
             _v0_0: struct{}{},
         }
-        return t1131
+        return t7
     }
 }
 
-func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
-    switch t2__54.(type) {
+func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
+    switch t2__0.(type) {
     case TVar:
-        var x841 *ref_Tv_x = t2__54.(TVar)._0
-        switch t1__53.(type) {
+        var x0 *ref_Tv_x = t2__0.(TVar)._0
+        switch t1__0.(type) {
         case TVar:
-            var x845 *ref_Tv_x = t1__53.(TVar)._0
-            var t1140 bool = ptr_eq__Ref_2Tv(x845, x841)
-            if t1140 {
-                var t1141 Result__unit__string = Result__unit__string{
+            var x1 *ref_Tv_x = t1__0.(TVar)._0
+            var t0 bool = ptr_eq__Ref_2Tv(x1, x0)
+            if t0 {
+                var t1 Result__unit__string = Result__unit__string{
                     _tag: 0,
                     _v0_0: struct{}{},
                 }
-                return t1141
+                return t1
             } else {
-                var mtmp849 Tv
-                var inline1722 Tv = ref_get__Ref_2Tv(x845)
-                mtmp849 = inline1722
-                switch mtmp849.(type) {
+                var mtmp0 Tv
+                var inline2 Tv = ref_get__Ref_2Tv(x1)
+                mtmp0 = inline2
+                switch mtmp0.(type) {
                 case Unbound:
-                    var mtmp853 Tv
-                    var inline1720 Tv = ref_get__Ref_2Tv(x841)
-                    mtmp853 = inline1720
-                    switch mtmp853.(type) {
+                    var mtmp1 Tv
+                    var inline1 Tv = ref_get__Ref_2Tv(x0)
+                    mtmp1 = inline1
+                    switch mtmp1.(type) {
                     case Unbound:
-                        var t1146 Typ = TVar{
-                            _0: x841,
+                        var t2 Typ = TVar{
+                            _0: x0,
                         }
-                        var mtmp857 Result__unit__string = occurs(st__52, x845, t1146)
-                        switch mtmp857._tag {
+                        var mtmp2 Result__unit__string = occurs(st__0, x1, t2)
+                        switch mtmp2._tag {
                         case 0:
-                            var t1149 Typ = TVar{
-                                _0: x841,
+                            var t3 Typ = TVar{
+                                _0: x0,
                             }
-                            var t1150 Tv = Link{
-                                _0: t1149,
+                            var t4 Tv = Link{
+                                _0: t3,
                             }
-                            ref_set__Ref_2Tv(x845, t1150)
-                            var t1151 Result__unit__string = Result__unit__string{
+                            ref_set__Ref_2Tv(x1, t4)
+                            var t5 Result__unit__string = Result__unit__string{
                                 _tag: 0,
                                 _v0_0: struct{}{},
                             }
-                            return t1151
+                            return t5
                         case 1:
-                            var x859 string = mtmp857._v1_0
-                            var t1152 Result__unit__string = Result__unit__string{
+                            var x2 string = mtmp2._v1_0
+                            var t6 Result__unit__string = Result__unit__string{
                                 _tag: 1,
-                                _v1_0: x859,
+                                _v1_0: x2,
                             }
-                            return t1152
+                            return t6
                         default:
                             panic("non-exhaustive match")
                         }
                     case Link:
-                        var x856 Typ = mtmp853.(Link)._0
-                        var t1153 Typ = TVar{
-                            _0: x845,
+                        var x3 Typ = mtmp1.(Link)._0
+                        var t7 Typ = TVar{
+                            _0: x1,
                         }
-                        var t1154 Result__unit__string = unify(st__52, t1153, x856)
-                        return t1154
+                        var t8 Result__unit__string = unify(st__0, t7, x3)
+                        return t8
                     default:
                         panic("non-exhaustive match")
                     }
                 case Link:
-                    var x852 Typ = mtmp849.(Link)._0
-                    var t1155 Typ = TVar{
-                        _0: x841,
+                    var x4 Typ = mtmp0.(Link)._0
+                    var t9 Typ = TVar{
+                        _0: x0,
                     }
-                    var t1156 Result__unit__string = unify(st__52, x852, t1155)
-                    return t1156
+                    var t10 Result__unit__string = unify(st__0, x4, t9)
+                    return t10
                 default:
                     panic("non-exhaustive match")
                 }
             }
         default:
-            var mtmp861 Tv
-            var inline1726 Tv = ref_get__Ref_2Tv(x841)
-            mtmp861 = inline1726
-            switch mtmp861.(type) {
+            var mtmp4 Tv
+            var inline4 Tv = ref_get__Ref_2Tv(x0)
+            mtmp4 = inline4
+            switch mtmp4.(type) {
             case Unbound:
-                var mtmp865 Result__unit__string = occurs(st__52, x841, t1__53)
-                switch mtmp865._tag {
+                var mtmp5 Result__unit__string = occurs(st__0, x0, t1__0)
+                switch mtmp5._tag {
                 case 0:
-                    var t1161 Tv = Link{
-                        _0: t1__53,
+                    var t11 Tv = Link{
+                        _0: t1__0,
                     }
-                    ref_set__Ref_2Tv(x841, t1161)
-                    var t1162 Result__unit__string = Result__unit__string{
+                    ref_set__Ref_2Tv(x0, t11)
+                    var t12 Result__unit__string = Result__unit__string{
                         _tag: 0,
                         _v0_0: struct{}{},
                     }
-                    return t1162
+                    return t12
                 case 1:
-                    var x867 string = mtmp865._v1_0
-                    var t1163 Result__unit__string = Result__unit__string{
+                    var x5 string = mtmp5._v1_0
+                    var t13 Result__unit__string = Result__unit__string{
                         _tag: 1,
-                        _v1_0: x867,
+                        _v1_0: x5,
                     }
-                    return t1163
+                    return t13
                 default:
                     panic("non-exhaustive match")
                 }
             case Link:
-                var x864 Typ = mtmp861.(Link)._0
-                var t1164 Result__unit__string = unify(st__52, t1__53, x864)
-                return t1164
+                var x6 Typ = mtmp4.(Link)._0
+                var t14 Result__unit__string = unify(st__0, t1__0, x6)
+                return t14
             default:
                 panic("non-exhaustive match")
             }
         }
     case TArrow:
-        var x843 Typ = t2__54.(TArrow)._0
-        var x844 Typ = t2__54.(TArrow)._1
-        switch t1__53.(type) {
+        var x7 Typ = t2__0.(TArrow)._0
+        var x8 Typ = t2__0.(TArrow)._1
+        switch t1__0.(type) {
         case TVar:
-            var x869 *ref_Tv_x = t1__53.(TVar)._0
-            var mtmp873 Tv
-            var inline1730 Tv = ref_get__Ref_2Tv(x869)
-            mtmp873 = inline1730
-            switch mtmp873.(type) {
+            var x9 *ref_Tv_x = t1__0.(TVar)._0
+            var mtmp7 Tv
+            var inline6 Tv = ref_get__Ref_2Tv(x9)
+            mtmp7 = inline6
+            switch mtmp7.(type) {
             case Unbound:
-                var mtmp877 Result__unit__string = occurs(st__52, x869, t2__54)
-                switch mtmp877._tag {
+                var mtmp8 Result__unit__string = occurs(st__0, x9, t2__0)
+                switch mtmp8._tag {
                 case 0:
-                    var t1171 Tv = Link{
-                        _0: t2__54,
+                    var t15 Tv = Link{
+                        _0: t2__0,
                     }
-                    ref_set__Ref_2Tv(x869, t1171)
-                    var t1172 Result__unit__string = Result__unit__string{
+                    ref_set__Ref_2Tv(x9, t15)
+                    var t16 Result__unit__string = Result__unit__string{
                         _tag: 0,
                         _v0_0: struct{}{},
                     }
-                    return t1172
+                    return t16
                 case 1:
-                    var x879 string = mtmp877._v1_0
-                    var t1173 Result__unit__string = Result__unit__string{
+                    var x10 string = mtmp8._v1_0
+                    var t17 Result__unit__string = Result__unit__string{
                         _tag: 1,
-                        _v1_0: x879,
+                        _v1_0: x10,
                     }
-                    return t1173
+                    return t17
                 default:
                     panic("non-exhaustive match")
                 }
             case Link:
-                var x876 Typ = mtmp873.(Link)._0
-                var t1174 Result__unit__string = unify(st__52, x876, t2__54)
-                return t1174
+                var x11 Typ = mtmp7.(Link)._0
+                var t18 Result__unit__string = unify(st__0, x11, t2__0)
+                return t18
             default:
                 panic("non-exhaustive match")
             }
         case TArrow:
-            var x871 Typ = t1__53.(TArrow)._0
-            var x872 Typ = t1__53.(TArrow)._1
-            var mtmp881 Result__unit__string = unify(st__52, x871, x843)
-            switch mtmp881._tag {
+            var x12 Typ = t1__0.(TArrow)._0
+            var x13 Typ = t1__0.(TArrow)._1
+            var mtmp10 Result__unit__string = unify(st__0, x12, x7)
+            switch mtmp10._tag {
             case 0:
-                var t1177 Result__unit__string = unify(st__52, x872, x844)
-                return t1177
+                var t19 Result__unit__string = unify(st__0, x13, x8)
+                return t19
             case 1:
-                var x883 string = mtmp881._v1_0
-                var t1178 Result__unit__string = Result__unit__string{
+                var x14 string = mtmp10._v1_0
+                var t20 Result__unit__string = Result__unit__string{
                     _tag: 1,
-                    _v1_0: x883,
+                    _v1_0: x14,
                 }
-                return t1178
+                return t20
             default:
                 panic("non-exhaustive match")
             }
         default:
-            var t1179 Result__unit__string = Result__unit__string{
+            var t21 Result__unit__string = Result__unit__string{
                 _tag: 1,
                 _v1_0: "unify error",
             }
-            return t1179
+            return t21
         }
     default:
-        switch t1__53.(type) {
+        switch t1__0.(type) {
         case TVar:
-            var x884 *ref_Tv_x = t1__53.(TVar)._0
-            var mtmp888 Tv
-            var inline1734 Tv = ref_get__Ref_2Tv(x884)
-            mtmp888 = inline1734
-            switch mtmp888.(type) {
+            var x15 *ref_Tv_x = t1__0.(TVar)._0
+            var mtmp11 Tv
+            var inline8 Tv = ref_get__Ref_2Tv(x15)
+            mtmp11 = inline8
+            switch mtmp11.(type) {
             case Unbound:
-                var mtmp892 Result__unit__string = occurs(st__52, x884, t2__54)
-                switch mtmp892._tag {
+                var mtmp12 Result__unit__string = occurs(st__0, x15, t2__0)
+                switch mtmp12._tag {
                 case 0:
-                    var t1186 Tv = Link{
-                        _0: t2__54,
+                    var t22 Tv = Link{
+                        _0: t2__0,
                     }
-                    ref_set__Ref_2Tv(x884, t1186)
-                    var t1187 Result__unit__string = Result__unit__string{
+                    ref_set__Ref_2Tv(x15, t22)
+                    var t23 Result__unit__string = Result__unit__string{
                         _tag: 0,
                         _v0_0: struct{}{},
                     }
-                    return t1187
+                    return t23
                 case 1:
-                    var x894 string = mtmp892._v1_0
-                    var t1188 Result__unit__string = Result__unit__string{
+                    var x16 string = mtmp12._v1_0
+                    var t24 Result__unit__string = Result__unit__string{
                         _tag: 1,
-                        _v1_0: x894,
+                        _v1_0: x16,
                     }
-                    return t1188
+                    return t24
                 default:
                     panic("non-exhaustive match")
                 }
             case Link:
-                var x891 Typ = mtmp888.(Link)._0
-                var t1189 Result__unit__string = unify(st__52, x891, t2__54)
-                return t1189
+                var x17 Typ = mtmp11.(Link)._0
+                var t25 Result__unit__string = unify(st__0, x17, t2__0)
+                return t25
             default:
                 panic("non-exhaustive match")
             }
         default:
-            var t1190 Result__unit__string = Result__unit__string{
+            var t26 Result__unit__string = Result__unit__string{
                 _tag: 1,
                 _v1_0: "unify error",
             }
-            return t1190
+            return t26
         }
     }
 }
 
-func gen(st__73 CheckerState, ty__74 Typ) Typ {
-    switch ty__74.(type) {
+func gen(st__0 CheckerState, ty__0 Typ) Typ {
+    switch ty__0.(type) {
     case TVar:
-        var x896 *ref_Tv_x = ty__74.(TVar)._0
-        var mtmp900 Tv
-        var inline1738 Tv = ref_get__Ref_2Tv(x896)
-        mtmp900 = inline1738
-        switch mtmp900.(type) {
+        var x0 *ref_Tv_x = ty__0.(TVar)._0
+        var mtmp0 Tv
+        var inline1 Tv = ref_get__Ref_2Tv(x0)
+        mtmp0 = inline1
+        switch mtmp0.(type) {
         case Unbound:
-            var x901 string = mtmp900.(Unbound)._0
-            var x902 int32 = mtmp900.(Unbound)._1
-            var t1197 *ref_int32_x = st__73.current_level
-            var cur__78 int32
-            var inline1736 int32 = ref_get__Ref_5int32(t1197)
-            cur__78 = inline1736
-            var t1200 bool = x902 > cur__78
-            if t1200 {
-                var t1201 Typ = QVar{
-                    _0: x901,
+            var x1 string = mtmp0.(Unbound)._0
+            var x2 int32 = mtmp0.(Unbound)._1
+            var t0 *ref_int32_x = st__0.current_level
+            var cur__0 int32
+            var inline0 int32 = ref_get__Ref_5int32(t0)
+            cur__0 = inline0
+            var t1 bool = x2 > cur__0
+            if t1 {
+                var t2 Typ = QVar{
+                    _0: x1,
                 }
-                return t1201
+                return t2
             } else {
-                var t1202 Typ = TVar{
-                    _0: x896,
+                var t3 Typ = TVar{
+                    _0: x0,
                 }
-                return t1202
+                return t3
             }
         case Link:
-            var x903 Typ = mtmp900.(Link)._0
-            var t1203 Typ = gen(st__73, x903)
-            return t1203
+            var x3 Typ = mtmp0.(Link)._0
+            var t4 Typ = gen(st__0, x3)
+            return t4
         default:
             panic("non-exhaustive match")
         }
     case TArrow:
-        var x898 Typ = ty__74.(TArrow)._0
-        var x899 Typ = ty__74.(TArrow)._1
-        var t1204 Typ = gen(st__73, x898)
-        var t1205 Typ = gen(st__73, x899)
-        var t1206 Typ = TArrow{
-            _0: t1204,
-            _1: t1205,
+        var x4 Typ = ty__0.(TArrow)._0
+        var x5 Typ = ty__0.(TArrow)._1
+        var t5 Typ = gen(st__0, x4)
+        var t6 Typ = gen(st__0, x5)
+        var t7 Typ = TArrow{
+            _0: t5,
+            _1: t6,
         }
-        return t1206
+        return t7
     default:
-        return ty__74
+        return ty__0
     }
 }
 
-func inst_loop(st__83 CheckerState, subst__84 *_goml_vec_SubstEntry, ty__85 Typ) Tuple2_3Typ_16Vec_10SubstEntry {
-    switch ty__85.(type) {
+func inst_loop(st__0 CheckerState, subst__0 *_goml_vec_SubstEntry, ty__0 Typ) Tuple2_3Typ_16Vec_10SubstEntry {
+    switch ty__0.(type) {
     case TVar:
-        var x904 *ref_Tv_x = ty__85.(TVar)._0
-        var mtmp908 Tv
-        var inline1740 Tv = ref_get__Ref_2Tv(x904)
-        mtmp908 = inline1740
-        switch mtmp908.(type) {
+        var x0 *ref_Tv_x = ty__0.(TVar)._0
+        var mtmp0 Tv
+        var inline0 Tv = ref_get__Ref_2Tv(x0)
+        mtmp0 = inline0
+        switch mtmp0.(type) {
         case Link:
-            var x911 Typ = mtmp908.(Link)._0
-            var t1213 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, x911)
-            return t1213
+            var x1 Typ = mtmp0.(Link)._0
+            var t0 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, subst__0, x1)
+            return t0
         default:
-            var t1214 Typ = TVar{
-                _0: x904,
+            var t1 Typ = TVar{
+                _0: x0,
             }
-            var t1215 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
-                _0: t1214,
-                _1: subst__84,
+            var t2 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
+                _0: t1,
+                _1: subst__0,
             }
-            return t1215
+            return t2
         }
     case QVar:
-        var x905 string = ty__85.(QVar)._0
-        var mtmp912 Option__Typ = subst_lookup(subst__84, x905)
-        switch mtmp912._tag {
+        var x2 string = ty__0.(QVar)._0
+        var mtmp1 Option__Typ = subst_lookup(subst__0, x2)
+        switch mtmp1._tag {
         case 0:
-            var tv__88 Typ
-            var inline1742 string = gensym(st__83)
-            var inline1743 *ref_int32_x = st__83.current_level
-            var inline1744 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1743)
-            var inline1745 Tv = Unbound{
-                _0: inline1742,
-                _1: inline1744,
+            var tv__0 Typ
+            var inline1 string = gensym(st__0)
+            var inline2 *ref_int32_x = st__0.current_level
+            var inline3 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline2)
+            var inline4 Tv = Unbound{
+                _0: inline1,
+                _1: inline3,
             }
-            var inline1746 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline1745)
-            var inline1747 Typ = TVar{
-                _0: inline1746,
+            var inline5 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline4)
+            var inline6 Typ = TVar{
+                _0: inline5,
             }
-            tv__88 = inline1747
-            var t1218 SubstEntry = SubstEntry{
-                name: x905,
-                ty: tv__88,
+            tv__0 = inline6
+            var t3 SubstEntry = SubstEntry{
+                name: x2,
+                ty: tv__0,
             }
-            var new_subst__89 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(subst__84, t1218)
-            var t1219 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
-                _0: tv__88,
-                _1: new_subst__89,
+            var new_subst__0 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(subst__0, t3)
+            var t4 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
+                _0: tv__0,
+                _1: new_subst__0,
             }
-            return t1219
+            return t4
         case 1:
-            var x913 Typ = mtmp912._v1_0
-            var t1220 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
-                _0: x913,
-                _1: subst__84,
+            var x3 Typ = mtmp1._v1_0
+            var t5 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
+                _0: x3,
+                _1: subst__0,
             }
-            return t1220
+            return t5
         default:
             panic("non-exhaustive match")
         }
     case TArrow:
-        var x906 Typ = ty__85.(TArrow)._0
-        var x907 Typ = ty__85.(TArrow)._1
-        var mtmp914 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, x906)
-        var x915 Typ = mtmp914._0
-        var x916 *_goml_vec_SubstEntry = mtmp914._1
-        var mtmp917 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, x916, x907)
-        var x918 Typ = mtmp917._0
-        var x919 *_goml_vec_SubstEntry = mtmp917._1
-        var t1221 Typ = TArrow{
-            _0: x915,
-            _1: x918,
+        var x4 Typ = ty__0.(TArrow)._0
+        var x5 Typ = ty__0.(TArrow)._1
+        var mtmp2 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, subst__0, x4)
+        var x6 Typ = mtmp2._0
+        var x7 *_goml_vec_SubstEntry = mtmp2._1
+        var mtmp3 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, x7, x5)
+        var x8 Typ = mtmp3._0
+        var x9 *_goml_vec_SubstEntry = mtmp3._1
+        var t6 Typ = TArrow{
+            _0: x6,
+            _1: x8,
         }
-        var t1222 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
-            _0: t1221,
-            _1: x919,
+        var t7 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
+            _0: t6,
+            _1: x9,
         }
-        return t1222
+        return t7
     default:
         panic("non-exhaustive match")
     }
 }
 
-func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Result__Typ__string {
-    switch e__104.(type) {
+func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Typ__string {
+    switch e__0.(type) {
     case Var:
-        var x923 string = e__104.(Var)._0
-        var mtmp931 Option__Typ = env_lookup(env__103, x923)
-        switch mtmp931._tag {
+        var x0 string = e__0.(Var)._0
+        var mtmp0 Option__Typ = env_lookup(env__0, x0)
+        switch mtmp0._tag {
         case 0:
-            var t1231 Result__Typ__string = Result__Typ__string{
+            var t0 Result__Typ__string = Result__Typ__string{
                 _tag: 1,
                 _v1_0: "unbound var",
             }
-            return t1231
+            return t0
         case 1:
-            var x932 Typ = mtmp931._v1_0
-            var t1232 Typ
-            var inline1751 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry()
-            var inline1752 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__102, inline1751, x932)
-            var inline1753 Typ = inline1752._0
-            t1232 = inline1753
-            var t1233 Result__Typ__string = Result__Typ__string{
+            var x1 Typ = mtmp0._v1_0
+            var t1 Typ
+            var inline0 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry()
+            var inline1 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__0, inline0, x1)
+            var inline2 Typ = inline1._0
+            t1 = inline2
+            var t2 Result__Typ__string = Result__Typ__string{
                 _tag: 0,
-                _v0_0: t1232,
+                _v0_0: t1,
             }
-            return t1233
+            return t2
         default:
             panic("non-exhaustive match")
         }
     case App:
-        var x924 Exp = e__104.(App)._0
-        var x925 Exp = e__104.(App)._1
-        var mtmp933 Result__Typ__string = typeof(st__102, env__103, x924)
-        switch mtmp933._tag {
+        var x2 Exp = e__0.(App)._0
+        var x3 Exp = e__0.(App)._1
+        var mtmp1 Result__Typ__string = typeof(st__0, env__0, x2)
+        switch mtmp1._tag {
         case 0:
-            var x934 Typ = mtmp933._v0_0
-            var mtmp936 Result__Typ__string = typeof(st__102, env__103, x925)
-            switch mtmp936._tag {
+            var x4 Typ = mtmp1._v0_0
+            var mtmp2 Result__Typ__string = typeof(st__0, env__0, x3)
+            switch mtmp2._tag {
             case 0:
-                var x937 Typ = mtmp936._v0_0
-                var ty_res__119 Typ
-                var inline1756 string = gensym(st__102)
-                var inline1757 *ref_int32_x = st__102.current_level
-                var inline1758 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1757)
-                var inline1759 Tv = Unbound{
-                    _0: inline1756,
-                    _1: inline1758,
+                var x5 Typ = mtmp2._v0_0
+                var ty_res__0 Typ
+                var inline3 string = gensym(st__0)
+                var inline4 *ref_int32_x = st__0.current_level
+                var inline5 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline4)
+                var inline6 Tv = Unbound{
+                    _0: inline3,
+                    _1: inline5,
                 }
-                var inline1760 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline1759)
-                var inline1761 Typ = TVar{
-                    _0: inline1760,
+                var inline7 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline6)
+                var inline8 Typ = TVar{
+                    _0: inline7,
                 }
-                ty_res__119 = inline1761
-                var arrow__120 Typ = TArrow{
-                    _0: x937,
-                    _1: ty_res__119,
+                ty_res__0 = inline8
+                var arrow__0 Typ = TArrow{
+                    _0: x5,
+                    _1: ty_res__0,
                 }
-                var mtmp939 Result__unit__string = unify(st__102, x934, arrow__120)
-                switch mtmp939._tag {
+                var mtmp3 Result__unit__string = unify(st__0, x4, arrow__0)
+                switch mtmp3._tag {
                 case 0:
-                    var t1240 Result__Typ__string = Result__Typ__string{
+                    var t3 Result__Typ__string = Result__Typ__string{
                         _tag: 0,
-                        _v0_0: ty_res__119,
+                        _v0_0: ty_res__0,
                     }
-                    return t1240
+                    return t3
                 case 1:
-                    var x941 string = mtmp939._v1_0
-                    var t1241 Result__Typ__string = Result__Typ__string{
+                    var x6 string = mtmp3._v1_0
+                    var t4 Result__Typ__string = Result__Typ__string{
                         _tag: 1,
-                        _v1_0: x941,
+                        _v1_0: x6,
                     }
-                    return t1241
+                    return t4
                 default:
                     panic("non-exhaustive match")
                 }
             case 1:
-                var x938 string = mtmp936._v1_0
-                var t1242 Result__Typ__string = Result__Typ__string{
+                var x7 string = mtmp2._v1_0
+                var t5 Result__Typ__string = Result__Typ__string{
                     _tag: 1,
-                    _v1_0: x938,
+                    _v1_0: x7,
                 }
-                return t1242
+                return t5
             default:
                 panic("non-exhaustive match")
             }
         case 1:
-            var x935 string = mtmp933._v1_0
-            var t1243 Result__Typ__string = Result__Typ__string{
+            var x8 string = mtmp1._v1_0
+            var t6 Result__Typ__string = Result__Typ__string{
                 _tag: 1,
-                _v1_0: x935,
+                _v1_0: x8,
             }
-            return t1243
+            return t6
         default:
             panic("non-exhaustive match")
         }
     case Lam:
-        var x926 string = e__104.(Lam)._0
-        var x927 Exp = e__104.(Lam)._1
-        var ty_x__109 Typ
-        var inline1763 string = gensym(st__102)
-        var inline1764 *ref_int32_x = st__102.current_level
-        var inline1765 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1764)
-        var inline1766 Tv = Unbound{
-            _0: inline1763,
-            _1: inline1765,
+        var x9 string = e__0.(Lam)._0
+        var x10 Exp = e__0.(Lam)._1
+        var ty_x__0 Typ
+        var inline9 string = gensym(st__0)
+        var inline10 *ref_int32_x = st__0.current_level
+        var inline11 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline10)
+        var inline12 Tv = Unbound{
+            _0: inline9,
+            _1: inline11,
         }
-        var inline1767 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline1766)
-        var inline1768 Typ = TVar{
-            _0: inline1767,
+        var inline13 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(inline12)
+        var inline14 Typ = TVar{
+            _0: inline13,
         }
-        ty_x__109 = inline1768
-        var t1244 EnvEntry = EnvEntry{
-            name: x926,
-            ty: ty_x__109,
+        ty_x__0 = inline14
+        var t7 EnvEntry = EnvEntry{
+            name: x9,
+            ty: ty_x__0,
         }
-        var env2__110 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__103, t1244)
-        var mtmp942 Result__Typ__string = typeof(st__102, env2__110, x927)
-        switch mtmp942._tag {
+        var env2__0 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__0, t7)
+        var mtmp4 Result__Typ__string = typeof(st__0, env2__0, x10)
+        switch mtmp4._tag {
         case 0:
-            var x943 Typ = mtmp942._v0_0
-            var t1247 Typ = TArrow{
-                _0: ty_x__109,
-                _1: x943,
+            var x11 Typ = mtmp4._v0_0
+            var t8 Typ = TArrow{
+                _0: ty_x__0,
+                _1: x11,
             }
-            var t1248 Result__Typ__string = Result__Typ__string{
+            var t9 Result__Typ__string = Result__Typ__string{
                 _tag: 0,
-                _v0_0: t1247,
+                _v0_0: t8,
             }
-            return t1248
+            return t9
         case 1:
-            var x944 string = mtmp942._v1_0
-            var t1249 Result__Typ__string = Result__Typ__string{
+            var x12 string = mtmp4._v1_0
+            var t10 Result__Typ__string = Result__Typ__string{
                 _tag: 1,
-                _v1_0: x944,
+                _v1_0: x12,
             }
-            return t1249
+            return t10
         default:
             panic("non-exhaustive match")
         }
     case Let:
-        var x928 string = e__104.(Let)._0
-        var x929 Exp = e__104.(Let)._1
-        var x930 Exp = e__104.(Let)._2
-        var inline1776 *ref_int32_x = st__102.current_level
-        var inline1777 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1776)
-        var inline1778 *ref_int32_x = st__102.current_level
-        var inline1779 int32 = inline1777 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1778, inline1779)
-        var ty_e__125 Result__Typ__string = typeof(st__102, env__103, x929)
-        var inline1770 *ref_int32_x = st__102.current_level
-        var inline1771 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline1770)
-        var inline1772 *ref_int32_x = st__102.current_level
-        var inline1773 int32 = inline1771 - 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1772, inline1773)
-        switch ty_e__125._tag {
+        var x13 string = e__0.(Let)._0
+        var x14 Exp = e__0.(Let)._1
+        var x15 Exp = e__0.(Let)._2
+        var inline20 *ref_int32_x = st__0.current_level
+        var inline21 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline20)
+        var inline22 *ref_int32_x = st__0.current_level
+        var inline23 int32 = inline21 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline22, inline23)
+        var ty_e__0 Result__Typ__string = typeof(st__0, env__0, x14)
+        var inline15 *ref_int32_x = st__0.current_level
+        var inline16 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(inline15)
+        var inline17 *ref_int32_x = st__0.current_level
+        var inline18 int32 = inline16 - 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline17, inline18)
+        switch ty_e__0._tag {
         case 0:
-            var x947 Typ = ty_e__125._v0_0
-            var t1252 Typ = gen(st__102, x947)
-            var t1253 EnvEntry = EnvEntry{
-                name: x928,
-                ty: t1252,
+            var x16 Typ = ty_e__0._v0_0
+            var t11 Typ = gen(st__0, x16)
+            var t12 EnvEntry = EnvEntry{
+                name: x13,
+                ty: t11,
             }
-            var env2__128 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__103, t1253)
-            var t1254 Result__Typ__string = typeof(st__102, env2__128, x930)
-            return t1254
+            var env2__1 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__0, t12)
+            var t13 Result__Typ__string = typeof(st__0, env2__1, x15)
+            return t13
         case 1:
-            var x948 string = ty_e__125._v1_0
-            var t1255 Result__Typ__string = Result__Typ__string{
+            var x17 string = ty_e__0._v1_0
+            var t14 Result__Typ__string = Result__Typ__string{
                 _tag: 1,
-                _v1_0: x948,
+                _v1_0: x17,
             }
-            return t1255
+            return t14
         default:
             panic("non-exhaustive match")
         }
@@ -1262,54 +1262,54 @@ func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Resu
     }
 }
 
-func exp_var(name__129 string) Exp {
-    var t1258 Exp = Var{
-        _0: name__129,
+func exp_var(name__0 string) Exp {
+    var t0 Exp = Var{
+        _0: name__0,
     }
-    return t1258
+    return t0
 }
 
-func exp_lam(name__130 string, body__131 Exp) Exp {
-    var t1261 Exp = Lam{
-        _0: name__130,
-        _1: body__131,
+func exp_lam(name__0 string, body__0 Exp) Exp {
+    var t0 Exp = Lam{
+        _0: name__0,
+        _1: body__0,
     }
-    return t1261
+    return t0
 }
 
-func exp_app(a__132 Exp, b__133 Exp) Exp {
-    var t1264 Exp = App{
-        _0: a__132,
-        _1: b__133,
+func exp_app(a__0 Exp, b__0 Exp) Exp {
+    var t0 Exp = App{
+        _0: a__0,
+        _1: b__0,
     }
-    return t1264
+    return t0
 }
 
-func exp_let(name__134 string, a__135 Exp, b__136 Exp) Exp {
-    var t1267 Exp = Let{
-        _0: name__134,
-        _1: a__135,
-        _2: b__136,
+func exp_let(name__0 string, a__0 Exp, b__0 Exp) Exp {
+    var t0 Exp = Let{
+        _0: name__0,
+        _1: a__0,
+        _2: b__0,
     }
-    return t1267
+    return t0
 }
 
-func show_result(label__137 string, res__138 Result__Typ__string) struct{} {
-    switch res__138._tag {
+func show_result(label__0 string, res__0 Result__Typ__string) struct{} {
+    switch res__0._tag {
     case 0:
-        var x949 Typ = res__138._v0_0
-        var t1270 string = label__137 + ": "
-        var t1271 string = typ_to_string(x949)
-        var t1272 string = t1270 + t1271
-        var inline1782 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1272)
-        _goml_runtime_core_string_println(inline1782)
+        var x0 Typ = res__0._v0_0
+        var t0 string = label__0 + ": "
+        var t1 string = typ_to_string(x0)
+        var t2 string = t0 + t1
+        var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t2)
+        _goml_runtime_core_string_println(inline0)
         return struct{}{}
     case 1:
-        var x950 string = res__138._v1_0
-        var t1274 string = label__137 + ": "
-        var t1275 string = t1274 + x950
-        var inline1785 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1275)
-        _goml_runtime_core_string_println(inline1785)
+        var x1 string = res__0._v1_0
+        var t3 string = label__0 + ": "
+        var t4 string = t3 + x1
+        var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t4)
+        _goml_runtime_core_string_println(inline2)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -1317,482 +1317,482 @@ func show_result(label__137 string, res__138 Result__Typ__string) struct{} {
 }
 
 func main0() struct{} {
-    var st__141 CheckerState = state_new()
-    var t1278 Exp = exp_var("x")
-    var id__142 Exp = exp_lam("x", t1278)
-    var t1279 Exp = exp_var("x")
-    var t1280 Exp = exp_var("y")
-    var t1281 Exp = exp_app(t1279, t1280)
-    var t1282 Exp = exp_lam("y", t1281)
-    var c1__143 Exp = exp_lam("x", t1282)
-    reset_type_variables(st__141)
-    var t1283 *_goml_vec_EnvEntry = env_empty()
-    var t1284 Result__Typ__string = typeof(st__141, t1283, id__142)
-    show_result("id", t1284)
-    reset_type_variables(st__141)
-    var t1285 *_goml_vec_EnvEntry = env_empty()
-    var t1286 Result__Typ__string = typeof(st__141, t1285, c1__143)
-    show_result("c1", t1286)
-    reset_type_variables(st__141)
-    var t1287 *_goml_vec_EnvEntry = env_empty()
-    var t1288 Exp = exp_var("x")
-    var t1289 Exp = exp_let("x", c1__143, t1288)
-    var t1290 Result__Typ__string = typeof(st__141, t1287, t1289)
-    show_result("let_x_c1_x", t1290)
-    reset_type_variables(st__141)
-    var t1291 *_goml_vec_EnvEntry = env_empty()
-    var t1292 Exp = exp_var("z")
-    var t1293 Exp = exp_lam("z", t1292)
-    var t1294 Exp = exp_var("y")
-    var t1295 Exp = exp_let("y", t1293, t1294)
-    var t1296 Result__Typ__string = typeof(st__141, t1291, t1295)
-    show_result("let_y_id_y", t1296)
-    reset_type_variables(st__141)
-    var t1297 *_goml_vec_EnvEntry = env_empty()
-    var t1298 Exp = exp_var("z")
-    var t1299 Exp = exp_lam("z", t1298)
-    var t1300 Exp = exp_var("y")
-    var t1301 Exp = exp_let("y", t1299, t1300)
-    var t1302 Exp = exp_lam("x", t1301)
-    var t1303 Result__Typ__string = typeof(st__141, t1297, t1302)
-    show_result("lam_x_let_y_id_y", t1303)
-    reset_type_variables(st__141)
-    var t1304 *_goml_vec_EnvEntry = env_empty()
-    var t1305 Exp = exp_var("z")
-    var t1306 Exp = exp_lam("z", t1305)
-    var t1307 Exp = exp_var("y")
-    var t1308 Exp = exp_var("x")
-    var t1309 Exp = exp_app(t1307, t1308)
-    var t1310 Exp = exp_let("y", t1306, t1309)
-    var t1311 Exp = exp_lam("x", t1310)
-    var t1312 Result__Typ__string = typeof(st__141, t1304, t1311)
-    show_result("lam_x_let_y_id_yx", t1312)
-    reset_type_variables(st__141)
-    var t1313 *_goml_vec_EnvEntry = env_empty()
-    var t1314 Exp = exp_var("x")
-    var t1315 Exp = exp_var("x")
-    var t1316 Exp = exp_app(t1314, t1315)
-    var t1317 Exp = exp_lam("x", t1316)
-    var t1318 Result__Typ__string = typeof(st__141, t1313, t1317)
-    show_result("self_apply", t1318)
-    reset_type_variables(st__141)
-    var t1319 *_goml_vec_EnvEntry = env_empty()
-    var t1320 Exp = exp_var("x")
-    var t1321 Exp = exp_var("x")
-    var t1322 Exp = exp_let("x", t1320, t1321)
-    var t1323 Result__Typ__string = typeof(st__141, t1319, t1322)
-    show_result("unbound_var", t1323)
-    reset_type_variables(st__141)
-    var t1324 *_goml_vec_EnvEntry = env_empty()
-    var t1325 Exp = exp_var("y")
-    var t1326 Exp = exp_var("y")
-    var t1327 Exp = exp_var("z")
-    var t1328 Exp = exp_app(t1326, t1327)
-    var t1329 Exp = exp_lam("z", t1328)
-    var t1330 Exp = exp_app(t1325, t1329)
-    var t1331 Exp = exp_lam("y", t1330)
-    var t1332 Result__Typ__string = typeof(st__141, t1324, t1331)
-    show_result("max_heiber", t1332)
-    reset_type_variables(st__141)
-    var t1333 *_goml_vec_EnvEntry = env_empty()
-    var t1334 Exp = exp_var("k")
-    var t1335 Exp = exp_var("k")
-    var t1336 Exp = exp_var("x")
-    var t1337 Exp = exp_app(t1335, t1336)
-    var t1338 Exp = exp_var("y")
-    var t1339 Exp = exp_app(t1337, t1338)
-    var t1340 Exp = exp_app(t1334, t1339)
-    var t1341 Exp = exp_var("k")
-    var t1342 Exp = exp_var("y")
-    var t1343 Exp = exp_app(t1341, t1342)
-    var t1344 Exp = exp_var("x")
-    var t1345 Exp = exp_app(t1343, t1344)
-    var t1346 Exp = exp_app(t1340, t1345)
-    var t1347 Exp = exp_lam("k", t1346)
-    var t1348 Exp = exp_lam("y", t1347)
-    var t1349 Exp = exp_lam("x", t1348)
-    var t1350 Result__Typ__string = typeof(st__141, t1333, t1349)
-    show_result("kirang", t1350)
-    reset_type_variables(st__141)
-    var t1351 *_goml_vec_EnvEntry = env_empty()
-    var t1352 Exp = exp_var("id")
-    var t1353 Exp = exp_var("id")
-    var t1354 Exp = exp_app(t1352, t1353)
-    var t1355 Exp = exp_let("id", id__142, t1354)
-    var t1356 Result__Typ__string = typeof(st__141, t1351, t1355)
-    show_result("let_id_idid", t1356)
-    reset_type_variables(st__141)
-    var t1357 *_goml_vec_EnvEntry = env_empty()
-    var t1358 Exp = exp_var("x")
-    var t1359 Exp = exp_app(t1358, id__142)
-    var t1360 Exp = exp_var("z")
-    var t1361 Exp = exp_let("z", t1359, t1360)
-    var t1362 Exp = exp_var("y")
-    var t1363 Exp = exp_let("y", t1361, t1362)
-    var t1364 Exp = exp_let("x", c1__143, t1363)
-    var t1365 Result__Typ__string = typeof(st__141, t1357, t1364)
-    show_result("nested_lets", t1365)
-    reset_type_variables(st__141)
-    var t1366 *_goml_vec_EnvEntry = env_empty()
-    var t1367 Exp = exp_var("x")
-    var t1368 Exp = exp_var("y")
-    var t1369 Exp = exp_app(t1367, t1368)
-    var t1370 Exp = exp_var("y")
-    var t1371 Exp = exp_var("x")
-    var t1372 Exp = exp_app(t1370, t1371)
-    var t1373 Exp = exp_lam("x", t1372)
-    var t1374 Exp = exp_let("x", t1369, t1373)
-    var t1375 Exp = exp_lam("y", t1374)
-    var t1376 Exp = exp_lam("x", t1375)
-    var t1377 Result__Typ__string = typeof(st__141, t1366, t1376)
-    show_result("fun_x_fun_y_let_x_xy_fun_x_yx", t1377)
-    reset_type_variables(st__141)
-    var t1378 *_goml_vec_EnvEntry = env_empty()
-    var t1379 Exp = exp_var("x")
-    var t1380 Exp = exp_var("y")
-    var t1381 Exp = exp_let("y", t1379, t1380)
-    var t1382 Exp = exp_lam("x", t1381)
-    var t1383 Result__Typ__string = typeof(st__141, t1378, t1382)
-    show_result("sound_gen_1", t1383)
-    reset_type_variables(st__141)
-    var t1384 *_goml_vec_EnvEntry = env_empty()
-    var t1385 Exp = exp_var("x")
-    var t1386 Exp = exp_lam("z", t1385)
-    var t1387 Exp = exp_var("y")
-    var t1388 Exp = exp_let("y", t1386, t1387)
-    var t1389 Exp = exp_lam("x", t1388)
-    var t1390 Result__Typ__string = typeof(st__141, t1384, t1389)
-    show_result("sound_gen_2", t1390)
-    reset_type_variables(st__141)
-    var t1391 *_goml_vec_EnvEntry = env_empty()
-    var t1392 Exp = exp_var("x")
-    var t1393 Exp = exp_var("z")
-    var t1394 Exp = exp_app(t1392, t1393)
-    var t1395 Exp = exp_lam("z", t1394)
-    var t1396 Exp = exp_var("y")
-    var t1397 Exp = exp_let("y", t1395, t1396)
-    var t1398 Exp = exp_lam("x", t1397)
-    var t1399 Result__Typ__string = typeof(st__141, t1391, t1398)
-    show_result("sound_gen_3", t1399)
-    reset_type_variables(st__141)
-    var t1400 *_goml_vec_EnvEntry = env_empty()
-    var t1401 Exp = exp_var("x")
-    var t1402 Exp = exp_var("y")
-    var t1403 Exp = exp_app(t1401, t1402)
-    var t1404 Exp = exp_var("x")
-    var t1405 Exp = exp_var("y")
-    var t1406 Exp = exp_app(t1404, t1405)
-    var t1407 Exp = exp_let("x", t1403, t1406)
-    var t1408 Exp = exp_lam("y", t1407)
-    var t1409 Exp = exp_lam("x", t1408)
-    var t1410 Result__Typ__string = typeof(st__141, t1400, t1409)
-    show_result("double_apply", t1410)
-    reset_type_variables(st__141)
-    var t1411 *_goml_vec_EnvEntry = env_empty()
-    var t1412 Exp = exp_var("x")
-    var t1413 Exp = exp_var("y")
-    var t1414 Exp = exp_var("y")
-    var t1415 Exp
-    var inline1844 Exp = App{
-        _0: t1413,
-        _1: t1414,
+    var st__0 CheckerState = state_new()
+    var t0 Exp = exp_var("x")
+    var id__0 Exp = exp_lam("x", t0)
+    var t1 Exp = exp_var("x")
+    var t2 Exp = exp_var("y")
+    var t3 Exp = exp_app(t1, t2)
+    var t4 Exp = exp_lam("y", t3)
+    var c1__0 Exp = exp_lam("x", t4)
+    reset_type_variables(st__0)
+    var t5 *_goml_vec_EnvEntry = env_empty()
+    var t6 Result__Typ__string = typeof(st__0, t5, id__0)
+    show_result("id", t6)
+    reset_type_variables(st__0)
+    var t7 *_goml_vec_EnvEntry = env_empty()
+    var t8 Result__Typ__string = typeof(st__0, t7, c1__0)
+    show_result("c1", t8)
+    reset_type_variables(st__0)
+    var t9 *_goml_vec_EnvEntry = env_empty()
+    var t10 Exp = exp_var("x")
+    var t11 Exp = exp_let("x", c1__0, t10)
+    var t12 Result__Typ__string = typeof(st__0, t9, t11)
+    show_result("let_x_c1_x", t12)
+    reset_type_variables(st__0)
+    var t13 *_goml_vec_EnvEntry = env_empty()
+    var t14 Exp = exp_var("z")
+    var t15 Exp = exp_lam("z", t14)
+    var t16 Exp = exp_var("y")
+    var t17 Exp = exp_let("y", t15, t16)
+    var t18 Result__Typ__string = typeof(st__0, t13, t17)
+    show_result("let_y_id_y", t18)
+    reset_type_variables(st__0)
+    var t19 *_goml_vec_EnvEntry = env_empty()
+    var t20 Exp = exp_var("z")
+    var t21 Exp = exp_lam("z", t20)
+    var t22 Exp = exp_var("y")
+    var t23 Exp = exp_let("y", t21, t22)
+    var t24 Exp = exp_lam("x", t23)
+    var t25 Result__Typ__string = typeof(st__0, t19, t24)
+    show_result("lam_x_let_y_id_y", t25)
+    reset_type_variables(st__0)
+    var t26 *_goml_vec_EnvEntry = env_empty()
+    var t27 Exp = exp_var("z")
+    var t28 Exp = exp_lam("z", t27)
+    var t29 Exp = exp_var("y")
+    var t30 Exp = exp_var("x")
+    var t31 Exp = exp_app(t29, t30)
+    var t32 Exp = exp_let("y", t28, t31)
+    var t33 Exp = exp_lam("x", t32)
+    var t34 Result__Typ__string = typeof(st__0, t26, t33)
+    show_result("lam_x_let_y_id_yx", t34)
+    reset_type_variables(st__0)
+    var t35 *_goml_vec_EnvEntry = env_empty()
+    var t36 Exp = exp_var("x")
+    var t37 Exp = exp_var("x")
+    var t38 Exp = exp_app(t36, t37)
+    var t39 Exp = exp_lam("x", t38)
+    var t40 Result__Typ__string = typeof(st__0, t35, t39)
+    show_result("self_apply", t40)
+    reset_type_variables(st__0)
+    var t41 *_goml_vec_EnvEntry = env_empty()
+    var t42 Exp = exp_var("x")
+    var t43 Exp = exp_var("x")
+    var t44 Exp = exp_let("x", t42, t43)
+    var t45 Result__Typ__string = typeof(st__0, t41, t44)
+    show_result("unbound_var", t45)
+    reset_type_variables(st__0)
+    var t46 *_goml_vec_EnvEntry = env_empty()
+    var t47 Exp = exp_var("y")
+    var t48 Exp = exp_var("y")
+    var t49 Exp = exp_var("z")
+    var t50 Exp = exp_app(t48, t49)
+    var t51 Exp = exp_lam("z", t50)
+    var t52 Exp = exp_app(t47, t51)
+    var t53 Exp = exp_lam("y", t52)
+    var t54 Result__Typ__string = typeof(st__0, t46, t53)
+    show_result("max_heiber", t54)
+    reset_type_variables(st__0)
+    var t55 *_goml_vec_EnvEntry = env_empty()
+    var t56 Exp = exp_var("k")
+    var t57 Exp = exp_var("k")
+    var t58 Exp = exp_var("x")
+    var t59 Exp = exp_app(t57, t58)
+    var t60 Exp = exp_var("y")
+    var t61 Exp = exp_app(t59, t60)
+    var t62 Exp = exp_app(t56, t61)
+    var t63 Exp = exp_var("k")
+    var t64 Exp = exp_var("y")
+    var t65 Exp = exp_app(t63, t64)
+    var t66 Exp = exp_var("x")
+    var t67 Exp = exp_app(t65, t66)
+    var t68 Exp = exp_app(t62, t67)
+    var t69 Exp = exp_lam("k", t68)
+    var t70 Exp = exp_lam("y", t69)
+    var t71 Exp = exp_lam("x", t70)
+    var t72 Result__Typ__string = typeof(st__0, t55, t71)
+    show_result("kirang", t72)
+    reset_type_variables(st__0)
+    var t73 *_goml_vec_EnvEntry = env_empty()
+    var t74 Exp = exp_var("id")
+    var t75 Exp = exp_var("id")
+    var t76 Exp = exp_app(t74, t75)
+    var t77 Exp = exp_let("id", id__0, t76)
+    var t78 Result__Typ__string = typeof(st__0, t73, t77)
+    show_result("let_id_idid", t78)
+    reset_type_variables(st__0)
+    var t79 *_goml_vec_EnvEntry = env_empty()
+    var t80 Exp = exp_var("x")
+    var t81 Exp = exp_app(t80, id__0)
+    var t82 Exp = exp_var("z")
+    var t83 Exp = exp_let("z", t81, t82)
+    var t84 Exp = exp_var("y")
+    var t85 Exp = exp_let("y", t83, t84)
+    var t86 Exp = exp_let("x", c1__0, t85)
+    var t87 Result__Typ__string = typeof(st__0, t79, t86)
+    show_result("nested_lets", t87)
+    reset_type_variables(st__0)
+    var t88 *_goml_vec_EnvEntry = env_empty()
+    var t89 Exp = exp_var("x")
+    var t90 Exp = exp_var("y")
+    var t91 Exp = exp_app(t89, t90)
+    var t92 Exp = exp_var("y")
+    var t93 Exp = exp_var("x")
+    var t94 Exp = exp_app(t92, t93)
+    var t95 Exp = exp_lam("x", t94)
+    var t96 Exp = exp_let("x", t91, t95)
+    var t97 Exp = exp_lam("y", t96)
+    var t98 Exp = exp_lam("x", t97)
+    var t99 Result__Typ__string = typeof(st__0, t88, t98)
+    show_result("fun_x_fun_y_let_x_xy_fun_x_yx", t99)
+    reset_type_variables(st__0)
+    var t100 *_goml_vec_EnvEntry = env_empty()
+    var t101 Exp = exp_var("x")
+    var t102 Exp = exp_var("y")
+    var t103 Exp = exp_let("y", t101, t102)
+    var t104 Exp = exp_lam("x", t103)
+    var t105 Result__Typ__string = typeof(st__0, t100, t104)
+    show_result("sound_gen_1", t105)
+    reset_type_variables(st__0)
+    var t106 *_goml_vec_EnvEntry = env_empty()
+    var t107 Exp = exp_var("x")
+    var t108 Exp = exp_lam("z", t107)
+    var t109 Exp = exp_var("y")
+    var t110 Exp = exp_let("y", t108, t109)
+    var t111 Exp = exp_lam("x", t110)
+    var t112 Result__Typ__string = typeof(st__0, t106, t111)
+    show_result("sound_gen_2", t112)
+    reset_type_variables(st__0)
+    var t113 *_goml_vec_EnvEntry = env_empty()
+    var t114 Exp = exp_var("x")
+    var t115 Exp = exp_var("z")
+    var t116 Exp = exp_app(t114, t115)
+    var t117 Exp = exp_lam("z", t116)
+    var t118 Exp = exp_var("y")
+    var t119 Exp = exp_let("y", t117, t118)
+    var t120 Exp = exp_lam("x", t119)
+    var t121 Result__Typ__string = typeof(st__0, t113, t120)
+    show_result("sound_gen_3", t121)
+    reset_type_variables(st__0)
+    var t122 *_goml_vec_EnvEntry = env_empty()
+    var t123 Exp = exp_var("x")
+    var t124 Exp = exp_var("y")
+    var t125 Exp = exp_app(t123, t124)
+    var t126 Exp = exp_var("x")
+    var t127 Exp = exp_var("y")
+    var t128 Exp = exp_app(t126, t127)
+    var t129 Exp = exp_let("x", t125, t128)
+    var t130 Exp = exp_lam("y", t129)
+    var t131 Exp = exp_lam("x", t130)
+    var t132 Result__Typ__string = typeof(st__0, t122, t131)
+    show_result("double_apply", t132)
+    reset_type_variables(st__0)
+    var t133 *_goml_vec_EnvEntry = env_empty()
+    var t134 Exp = exp_var("x")
+    var t135 Exp = exp_var("y")
+    var t136 Exp = exp_var("y")
+    var t137 Exp
+    var inline39 Exp = App{
+        _0: t135,
+        _1: t136,
     }
-    t1415 = inline1844
-    var t1416 Exp
-    var inline1841 string = "y"
-    var inline1842 Exp = Let{
-        _0: inline1841,
-        _1: t1412,
-        _2: t1415,
+    t137 = inline39
+    var t138 Exp
+    var inline37 string = "y"
+    var inline38 Exp = Let{
+        _0: inline37,
+        _1: t134,
+        _2: t137,
     }
-    t1416 = inline1842
-    var t1417 Exp
-    var inline1838 string = "x"
-    var inline1839 Exp = Lam{
-        _0: inline1838,
-        _1: t1416,
+    t138 = inline38
+    var t139 Exp
+    var inline35 string = "x"
+    var inline36 Exp = Lam{
+        _0: inline35,
+        _1: t138,
     }
-    t1417 = inline1839
-    var t1418 Result__Typ__string = typeof(st__141, t1411, t1417)
-    show_result("sound_gen_occurs", t1418)
-    var inline1835 *ref_int32_x = st__141.gensym_counter
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline1835, 0)
-    var t1419 *_goml_vec_EnvEntry
-    var inline1833 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
-    t1419 = inline1833
-    var t1420 Exp
-    var inline1830 string = "x"
-    var inline1831 Exp = Var{
-        _0: inline1830,
+    t139 = inline36
+    var t140 Result__Typ__string = typeof(st__0, t133, t139)
+    show_result("sound_gen_occurs", t140)
+    var inline33 *ref_int32_x = st__0.gensym_counter
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(inline33, 0)
+    var t141 *_goml_vec_EnvEntry
+    var inline32 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
+    t141 = inline32
+    var t142 Exp
+    var inline30 string = "x"
+    var inline31 Exp = Var{
+        _0: inline30,
     }
-    t1420 = inline1831
-    var t1421 Exp
-    var inline1828 Exp = App{
-        _0: t1420,
-        _1: id__142,
+    t142 = inline31
+    var t143 Exp
+    var inline29 Exp = App{
+        _0: t142,
+        _1: id__0,
     }
-    t1421 = inline1828
-    var t1422 Exp
-    var inline1825 string = "z"
-    var inline1826 Exp = Var{
-        _0: inline1825,
+    t143 = inline29
+    var t144 Exp
+    var inline27 string = "z"
+    var inline28 Exp = Var{
+        _0: inline27,
     }
-    t1422 = inline1826
-    var t1423 Exp
-    var inline1822 string = "z"
-    var inline1823 Exp = Let{
-        _0: inline1822,
-        _1: t1421,
-        _2: t1422,
+    t144 = inline28
+    var t145 Exp
+    var inline25 string = "z"
+    var inline26 Exp = Let{
+        _0: inline25,
+        _1: t143,
+        _2: t144,
     }
-    t1423 = inline1823
-    var t1424 Exp
-    var inline1819 string = "y"
-    var inline1820 Exp = Var{
-        _0: inline1819,
+    t145 = inline26
+    var t146 Exp
+    var inline23 string = "y"
+    var inline24 Exp = Var{
+        _0: inline23,
     }
-    t1424 = inline1820
-    var t1425 Exp
-    var inline1816 string = "y"
-    var inline1817 Exp = Let{
-        _0: inline1816,
-        _1: t1423,
-        _2: t1424,
+    t146 = inline24
+    var t147 Exp
+    var inline21 string = "y"
+    var inline22 Exp = Let{
+        _0: inline21,
+        _1: t145,
+        _2: t146,
     }
-    t1425 = inline1817
-    var t1426 Exp
-    var inline1813 string = "x"
-    var inline1814 Exp = Lam{
-        _0: inline1813,
-        _1: t1425,
+    t147 = inline22
+    var t148 Exp
+    var inline19 string = "x"
+    var inline20 Exp = Lam{
+        _0: inline19,
+        _1: t147,
     }
-    t1426 = inline1814
-    var t1427 Result__Typ__string = typeof(st__141, t1419, t1426)
-    var inline1800 string = "fun_x_let_y_let_z_x_id_z_y"
-    switch t1427._tag {
+    t148 = inline20
+    var t149 Result__Typ__string = typeof(st__0, t141, t148)
+    var inline9 string = "fun_x_let_y_let_z_x_id_z_y"
+    switch t149._tag {
     case 0:
-        var inline1801 Typ = t1427._v0_0
-        var inline1803 string = inline1800 + ": "
-        var inline1804 string = typ_to_string(inline1801)
-        var inline1805 string = inline1803 + inline1804
-        println__T_string(inline1805)
+        var inline10 Typ = t149._v0_0
+        var inline11 string = inline9 + ": "
+        var inline12 string = typ_to_string(inline10)
+        var inline13 string = inline11 + inline12
+        println__T_string(inline13)
     case 1:
-        var inline1807 string = t1427._v1_0
-        var inline1809 string = inline1800 + ": "
-        var inline1810 string = inline1809 + inline1807
-        println__T_string(inline1810)
+        var inline15 string = t149._v1_0
+        var inline16 string = inline9 + ": "
+        var inline17 string = inline16 + inline15
+        println__T_string(inline17)
     default:
         panic("non-exhaustive match")
     }
-    var inline1796 string = ""
-    var inline1797 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1796)
-    _goml_runtime_core_string_println(inline1797)
-    var inline1792 string = "All Done"
-    var inline1793 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1792)
-    _goml_runtime_core_string_println(inline1793)
-    var inline1788 string = ""
-    var inline1789 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline1788)
-    _goml_runtime_core_string_println(inline1789)
+    var inline6 string = ""
+    var inline7 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline6)
+    _goml_runtime_core_string_println(inline7)
+    var inline3 string = "All Done"
+    var inline4 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline3)
+    _goml_runtime_core_string_println(inline4)
+    var inline0 string = ""
+    var inline1 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline0)
+    _goml_runtime_core_string_println(inline1)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(self__686 *ref_int32_x, value__687 int32) struct{} {
-    ref_set__Ref_5int32(self__686, value__687)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__i32(self__0 *ref_int32_x, value__0 int32) struct{} {
+    ref_set__Ref_5int32(self__0, value__0)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(self__685 *ref_int32_x) int32 {
-    var t1435 int32 = ref_get__Ref_5int32(self__685)
-    return t1435
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__i32(self__0 *ref_int32_x) int32 {
+    var t0 int32 = ref_get__Ref_5int32(self__0)
+    return t0
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__684 Tv) *ref_Tv_x {
-    var t1444 *ref_Tv_x = ref__Ref_2Tv(value__684)
-    return t1444
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__0 Tv) *ref_Tv_x {
+    var t0 *ref_Tv_x = ref__Ref_2Tv(value__0)
+    return t0
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry() *_goml_vec_EnvEntry {
-    var t1450 *_goml_vec_EnvEntry = vec_new__Vec_8EnvEntry()
-    return t1450
+    var t0 *_goml_vec_EnvEntry = vec_new__Vec_8EnvEntry()
+    return t0
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__513 *_goml_vec_SubstEntry, elem__514 SubstEntry) *_goml_vec_SubstEntry {
-    var t1485 int
-    var inline1862 int = vec_len__Vec_10SubstEntry(self__513)
-    t1485 = inline1862
-    var t1486 int = t1485 + 1
-    var result__515 *_goml_vec_SubstEntry
-    var inline1860 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(t1486)
-    result__515 = inline1860
-    var index__516 int = 0
-    Loop_loop1488:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__0 *_goml_vec_SubstEntry, elem__0 SubstEntry) *_goml_vec_SubstEntry {
+    var t0 int
+    var inline4 int = vec_len__Vec_10SubstEntry(self__0)
+    t0 = inline4
+    var t1 int = t0 + 1
+    var result__0 *_goml_vec_SubstEntry
+    var inline3 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(t1)
+    result__0 = inline3
+    var index__0 int = 0
+    Loop_loop0:
     for {
-        var t1489 int
-        var inline1856 int = vec_len__Vec_10SubstEntry(self__513)
-        t1489 = inline1856
-        var t1490 bool = index__516 < t1489
-        if t1490 {
-            var t1491 SubstEntry = vec_get__Vec_10SubstEntry(self__513, index__516)
-            vec_push__Vec_10SubstEntry(result__515, t1491)
-            var compound_old575 int = index__516
-            var compound_value576 int = 1
-            var t1492 int = compound_old575 + compound_value576
-            index__516 = t1492
+        var t2 int
+        var inline2 int = vec_len__Vec_10SubstEntry(self__0)
+        t2 = inline2
+        var t3 bool = index__0 < t2
+        if t3 {
+            var t4 SubstEntry = vec_get__Vec_10SubstEntry(self__0, index__0)
+            vec_push__Vec_10SubstEntry(result__0, t4)
+            var compound_old0 int = index__0
+            var compound_value0 int = 1
+            var t5 int = compound_old0 + compound_value0
+            index__0 = t5
             continue
         } else {
-            break Loop_loop1488
+            break Loop_loop0
         }
     }
-    vec_push__Vec_10SubstEntry(result__515, elem__514)
-    return result__515
+    vec_push__Vec_10SubstEntry(result__0, elem__0)
+    return result__0
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry() *_goml_vec_SubstEntry {
-    var t1496 *_goml_vec_SubstEntry = vec_new__Vec_10SubstEntry()
-    return t1496
+    var t0 *_goml_vec_SubstEntry = vec_new__Vec_10SubstEntry()
+    return t0
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__513 *_goml_vec_EnvEntry, elem__514 EnvEntry) *_goml_vec_EnvEntry {
-    var t1499 int
-    var inline1872 int = vec_len__Vec_8EnvEntry(self__513)
-    t1499 = inline1872
-    var t1500 int = t1499 + 1
-    var result__515 *_goml_vec_EnvEntry
-    var inline1870 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(t1500)
-    result__515 = inline1870
-    var index__516 int = 0
-    Loop_loop1502:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__0 *_goml_vec_EnvEntry, elem__0 EnvEntry) *_goml_vec_EnvEntry {
+    var t0 int
+    var inline4 int = vec_len__Vec_8EnvEntry(self__0)
+    t0 = inline4
+    var t1 int = t0 + 1
+    var result__0 *_goml_vec_EnvEntry
+    var inline3 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(t1)
+    result__0 = inline3
+    var index__0 int = 0
+    Loop_loop0:
     for {
-        var t1503 int
-        var inline1866 int = vec_len__Vec_8EnvEntry(self__513)
-        t1503 = inline1866
-        var t1504 bool = index__516 < t1503
-        if t1504 {
-            var t1505 EnvEntry = vec_get__Vec_8EnvEntry(self__513, index__516)
-            vec_push__Vec_8EnvEntry(result__515, t1505)
-            var compound_old575 int = index__516
-            var compound_value576 int = 1
-            var t1506 int = compound_old575 + compound_value576
-            index__516 = t1506
+        var t2 int
+        var inline2 int = vec_len__Vec_8EnvEntry(self__0)
+        t2 = inline2
+        var t3 bool = index__0 < t2
+        if t3 {
+            var t4 EnvEntry = vec_get__Vec_8EnvEntry(self__0, index__0)
+            vec_push__Vec_8EnvEntry(result__0, t4)
+            var compound_old0 int = index__0
+            var compound_value0 int = 1
+            var t5 int = compound_old0 + compound_value0
+            index__0 = t5
             continue
         } else {
-            break Loop_loop1502
+            break Loop_loop0
         }
     }
-    vec_push__Vec_8EnvEntry(result__515, elem__514)
-    return result__515
+    vec_push__Vec_8EnvEntry(result__0, elem__0)
+    return result__0
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t1509 string
-    t1509 = value__1
-    _goml_runtime_core_string_println(t1509)
+func println__T_string(value__0 string) struct{} {
+    var t0 string
+    t0 = value__0
+    _goml_runtime_core_string_println(t0)
     return struct{}{}
 }
 
-func char_to_string(value__282 rune) string {
-    var t1515 uint32 = uint32(rune(value__282))
-    var t1516 bool
-    var inline1875 bool = t1515 <= 1114111
-    if inline1875 {
-        var inline1876 bool = t1515 >= 55296
-        var inline1878 bool
-        if inline1876 {
-            var inline1880 bool = t1515 <= 57343
-            inline1878 = inline1880
+func char_to_string(value__0 rune) string {
+    var t0 uint32 = uint32(rune(value__0))
+    var t1 bool
+    var inline0 bool = t0 <= 1114111
+    if inline0 {
+        var inline1 bool = t0 >= 55296
+        var inline2 bool
+        if inline1 {
+            var inline4 bool = t0 <= 57343
+            inline2 = inline4
         } else {
-            inline1878 = false
+            inline2 = false
         }
-        var inline1879 bool = !inline1878
-        t1516 = inline1879
+        var inline3 bool = !inline2
+        t1 = inline3
     } else {
-        t1516 = false
+        t1 = false
     }
-    if t1516 {
-        var t1517 string = _goml_runtime_core_char_to_string(value__282)
-        return t1517
+    if t1 {
+        var t2 string = _goml_runtime_core_char_to_string(value__0)
+        return t2
     } else {
         _goml_runtime_core_string_get("", -1)
         return ""
     }
 }
 
-func __goml_builtin_int32_to_string(value__225 int32) string {
-    var t1520 int64 = int64(int32(value__225))
-    var inline1882 bool = t1520 < 0
-    if inline1882 {
-        var inline1883 uint64 = uint64(int64(t1520))
-        var inline1884 uint64 = 0 - inline1883
-        var inline1885 string = decimal_string(inline1884)
-        var inline1886 string = "-" + inline1885
-        return inline1886
+func __goml_builtin_int32_to_string(value__0 int32) string {
+    var t0 int64 = int64(int32(value__0))
+    var inline0 bool = t0 < 0
+    if inline0 {
+        var inline1 uint64 = uint64(int64(t0))
+        var inline2 uint64 = 0 - inline1
+        var inline3 string = decimal_string(inline2)
+        var inline4 string = "-" + inline3
+        return inline4
     } else {
-        var inline1887 uint64 = uint64(int64(t1520))
-        var inline1888 string = decimal_string(inline1887)
-        return inline1888
+        var inline5 uint64 = uint64(int64(t0))
+        var inline6 string = decimal_string(inline5)
+        return inline6
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
-func decimal_string(value__208 uint64) string {
-    var t1577 bool = value__208 == 0
-    if t1577 {
+func decimal_string(value__0 uint64) string {
+    var t0 bool = value__0 == 0
+    if t0 {
         return "0"
     } else {
-        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
-        var remaining__210 uint64 = value__208
-        Loop_loop1570:
+        var reversed__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__0 uint64 = value__0
+        Loop_loop0:
         for {
-            var t1571 bool = remaining__210 > 0
-            if t1571 {
-                var t1572_rhs uint64 = 10
-                var t1572 uint64 = remaining__210 % t1572_rhs
-                var t1573 uint8 = uint8(uint64(t1572))
-                var t1574 uint8 = t1573 + 48
-                vec_push__Vec_5uint8(reversed__209, t1574)
-                var compound_old353 uint64 = remaining__210
-                var compound_value354 uint64 = 10
-                var t1575 uint64 = compound_old353 / compound_value354
-                remaining__210 = t1575
+            var t10 bool = remaining__0 > 0
+            if t10 {
+                var t11_rhs uint64 = 10
+                var t11 uint64 = remaining__0 % t11_rhs
+                var t12 uint8 = uint8(uint64(t11))
+                var t13 uint8 = t12 + 48
+                vec_push__Vec_5uint8(reversed__0, t13)
+                var compound_old1 uint64 = remaining__0
+                var compound_value1 uint64 = 10
+                var t14 uint64 = compound_old1 / compound_value1
+                remaining__0 = t14
                 continue
             } else {
-                break Loop_loop1570
+                break Loop_loop0
             }
         }
-        var t1559 int
-        var inline1898 int = vec_len__Vec_5uint8(reversed__209)
-        t1559 = inline1898
-        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1559)
-        var offset__212 int = 0
-        Loop_loop1561:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var bytes__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t1562 int
-            var inline1896 int = vec_len__Vec_5uint8(reversed__209)
-            t1562 = inline1896
-            var t1563 bool = offset__212 < t1562
-            if t1563 {
-                var t1564 int
-                var inline1894 int = vec_len__Vec_5uint8(reversed__209)
-                t1564 = inline1894
-                var t1565 int = t1564 - offset__212
-                var t1566 int = t1565 - 1
-                var t1567 uint8 = vec_get__Vec_5uint8(reversed__209, t1566)
-                vec_push__Vec_5uint8(bytes__211, t1567)
-                var compound_old358 int = offset__212
-                var compound_value359 int = 1
-                var t1568 int = compound_old358 + compound_value359
-                offset__212 = t1568
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(bytes__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop1561
+                break Loop_loop1
             }
         }
-        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
-        var x364 string = mtmp362._1
-        return x364
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 

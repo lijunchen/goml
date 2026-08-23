@@ -119,8 +119,8 @@ const (
     CLASSIFIED_AT_COMPILE_TIME int = 1
 )
 
-func classify(value__1 int) string {
-    switch value__1 {
+func classify(value__0 int) string {
+    switch value__0 {
     case 42:
         return "known"
     case 7:
@@ -130,8 +130,8 @@ func classify(value__1 int) string {
     }
 }
 
-func classify_bool(value__2 bool) string {
-    switch value__2 {
+func classify_bool(value__0 bool) string {
+    switch value__0 {
     case true:
         return "enabled"
     case false:
@@ -141,44 +141,44 @@ func classify_bool(value__2 bool) string {
     }
 }
 
-func classify_computed_bool(value__3 bool) string {
-    var t851 bool = value__3 == COMPUTED_ENABLED
-    if t851 {
+func classify_computed_bool(value__0 bool) string {
+    var t0 bool = value__0 == COMPUTED_ENABLED
+    if t0 {
         return "enabled"
     } else {
-        var t854 bool = value__3 == false
-        if t854 {
+        var t1 bool = value__0 == false
+        if t1 {
             return "disabled"
         } else {
-            var t855 string = missing__string("")
-            return t855
+            var t2 string = missing__string("")
+            return t2
         }
     }
 }
 
-func classify_comptime_guard(value__4 bool) string {
-    var t860 bool = value__4 == true
-    var jp859 string
-    if t860 {
-        jp859 = "enabled"
+func classify_comptime_guard(value__0 bool) string {
+    var t0 bool = value__0 == true
+    var jp0 string
+    if t0 {
+        jp0 = "enabled"
     } else {
-        var t869 bool = value__4 == false
-        if t869 {
-            jp859 = "disabled"
+        var t1 bool = value__0 == false
+        if t1 {
+            jp0 = "disabled"
         } else {
-            var t870 string = missing__string("")
-            jp859 = t870
+            var t2 string = missing__string("")
+            jp0 = t2
         }
     }
-    return jp859
+    return jp0
 }
 
-func classify_pair(value__6 Tuple2_3int_5uint8) bool {
-    var x799 int = value__6._0
-    var x800 uint8 = value__6._1
-    switch x800 {
+func classify_pair(value__0 Tuple2_3int_5uint8) bool {
+    var x0 int = value__0._0
+    var x1 uint8 = value__0._1
+    switch x1 {
     case 65:
-        switch x799 {
+        switch x0 {
         case 42:
             return true
         default:
@@ -189,8 +189,8 @@ func classify_pair(value__6 Tuple2_3int_5uint8) bool {
     }
 }
 
-func classify_string(value__7 string) bool {
-    switch value__7 {
+func classify_string(value__0 string) bool {
+    switch value__0 {
     case "hello":
         return true
     default:
@@ -198,9 +198,9 @@ func classify_string(value__7 string) bool {
     }
 }
 
-func classify_float(value__8 float64) bool {
-    var t885 bool = value__8 == RATIO
-    if t885 {
+func classify_float(value__0 float64) bool {
+    var t0 bool = value__0 == RATIO
+    if t0 {
         return true
     } else {
         return false
@@ -208,225 +208,225 @@ func classify_float(value__8 float64) bool {
 }
 
 func for_binding() int {
-    var total__14 *ref_int_x
-    var inline1013 int = 0
-    var inline1014 *ref_int_x = ref__Ref_3int(inline1013)
-    total__14 = inline1014
-    var for_source804 [2]int = [2]int{1, 2}
-    var for_limit805 int = 2
-    var for_index806 int = 0
-    Loop_loop902:
+    var total__0 *ref_int_x
+    var inline3 int = 0
+    var inline4 *ref_int_x = ref__Ref_3int(inline3)
+    total__0 = inline4
+    var for_source0 [2]int = [2]int{1, 2}
+    var for_limit0 int = 2
+    var for_index0 int = 0
+    Loop_loop0:
     for {
-        var t903 bool = for_index806 < for_limit805
-        if t903 {
-            var for_item807 int = array_get__Array_2_3int(for_source804, for_index806)
-            var t904 int = for_index806 + 1
-            for_index806 = t904
-            var t905 int
-            var inline1009 int = ref_get__Ref_3int(total__14)
-            t905 = inline1009
-            var t906 int = t905 + for_item807
-            ref_set__Ref_3int(total__14, t906)
+        var t0 bool = for_index0 < for_limit0
+        if t0 {
+            var for_item0 int = array_get__Array_2_3int(for_source0, for_index0)
+            var t1 int = for_index0 + 1
+            for_index0 = t1
+            var t2 int
+            var inline2 int = ref_get__Ref_3int(total__0)
+            t2 = inline2
+            var t3 int = t2 + for_item0
+            ref_set__Ref_3int(total__0, t3)
             continue
         } else {
-            break Loop_loop902
+            break Loop_loop0
         }
     }
-    var inline1011 int = ref_get__Ref_3int(total__14)
-    return inline1011
+    var inline0 int = ref_get__Ref_3int(total__0)
+    return inline0
 }
 
 func main0() struct{} {
-    var t909 string = classify(42)
-    println__T_string(t909)
-    var t910 string = classify(7)
-    println__T_string(t910)
-    var t911 string = classify(0)
-    println__T_string(t911)
-    var t912 string = classify_bool(true)
-    println__T_string(t912)
-    var t913 string = classify_bool(false)
-    println__T_string(t913)
-    var t914 string = classify_computed_bool(true)
-    println__T_string(t914)
-    var t915 string = classify_computed_bool(false)
-    println__T_string(t915)
-    var t916 string = classify_comptime_guard(true)
-    println__T_string(t916)
-    var t917 string = classify_comptime_guard(false)
-    println__T_string(t917)
-    var t918 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
+    var t0 string = classify(42)
+    println__T_string(t0)
+    var t1 string = classify(7)
+    println__T_string(t1)
+    var t2 string = classify(0)
+    println__T_string(t2)
+    var t3 string = classify_bool(true)
+    println__T_string(t3)
+    var t4 string = classify_bool(false)
+    println__T_string(t4)
+    var t5 string = classify_computed_bool(true)
+    println__T_string(t5)
+    var t6 string = classify_computed_bool(false)
+    println__T_string(t6)
+    var t7 string = classify_comptime_guard(true)
+    println__T_string(t7)
+    var t8 string = classify_comptime_guard(false)
+    println__T_string(t8)
+    var t9 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
         _0: 42,
         _1: 65,
     }
-    var t919 bool = classify_pair(t918)
-    println__T_bool(t919)
-    var t920 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
+    var t10 bool = classify_pair(t9)
+    println__T_bool(t10)
+    var t11 Tuple2_3int_5uint8 = Tuple2_3int_5uint8{
         _0: 42,
         _1: 66,
     }
-    var t921 bool = classify_pair(t920)
-    println__T_bool(t921)
-    var t922 bool = classify_string("hello")
-    println__T_bool(t922)
-    var t923 bool = classify_float(1.5)
-    var inline1056 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t923)
-    _goml_runtime_core_string_println(inline1056)
-    var t924 int
-    var inline1054 int = 9
-    t924 = inline1054
-    var inline1051 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t924)
-    _goml_runtime_core_string_println(inline1051)
-    var t925 int
-    var inline1047 int = 11
-    t925 = inline1047
-    var inline1044 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t925)
-    _goml_runtime_core_string_println(inline1044)
-    var t926 bool
-    var inline1042 int = 42
-    switch inline1042 {
+    var t12 bool = classify_pair(t11)
+    println__T_bool(t12)
+    var t13 bool = classify_string("hello")
+    println__T_bool(t13)
+    var t14 bool = classify_float(1.5)
+    var inline22 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t14)
+    _goml_runtime_core_string_println(inline22)
+    var t15 int
+    var inline21 int = 9
+    t15 = inline21
+    var inline19 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t15)
+    _goml_runtime_core_string_println(inline19)
+    var t16 int
+    var inline18 int = 11
+    t16 = inline18
+    var inline16 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t16)
+    _goml_runtime_core_string_println(inline16)
+    var t17 bool
+    var inline15 int = 42
+    switch inline15 {
     case 42:
-        t926 = true
+        t17 = true
     default:
-        t926 = false
+        t17 = false
     }
-    var inline1039 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t926)
-    _goml_runtime_core_string_println(inline1039)
-    var t927 bool
-    var inline1037 int = 41
-    switch inline1037 {
+    var inline13 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t17)
+    _goml_runtime_core_string_println(inline13)
+    var t18 bool
+    var inline12 int = 41
+    switch inline12 {
     case 42:
-        t927 = true
+        t18 = true
     default:
-        t927 = false
+        t18 = false
     }
-    var inline1034 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t927)
-    _goml_runtime_core_string_println(inline1034)
-    var t928 bool
-    var inline1031 int = 42
-    switch inline1031 {
+    var inline10 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t18)
+    _goml_runtime_core_string_println(inline10)
+    var t19 bool
+    var inline9 int = 42
+    switch inline9 {
     case 42:
-        t928 = true
+        t19 = true
     default:
-        t928 = false
+        t19 = false
     }
-    var inline1028 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t928)
-    _goml_runtime_core_string_println(inline1028)
-    var t929 bool
-    var inline1025 int = 41
-    switch inline1025 {
+    var inline7 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t19)
+    _goml_runtime_core_string_println(inline7)
+    var t20 bool
+    var inline6 int = 41
+    switch inline6 {
     case 42:
-        t929 = true
+        t20 = true
     default:
-        t929 = false
+        t20 = false
     }
-    var inline1022 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t929)
-    _goml_runtime_core_string_println(inline1022)
-    var t930 int = for_binding()
-    var inline1019 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t930)
-    _goml_runtime_core_string_println(inline1019)
-    var inline1016 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(CLASSIFIED_AT_COMPILE_TIME)
-    _goml_runtime_core_string_println(inline1016)
+    var inline4 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t20)
+    _goml_runtime_core_string_println(inline4)
+    var t21 int = for_binding()
+    var inline2 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t21)
+    _goml_runtime_core_string_println(inline2)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(CLASSIFIED_AT_COMPILE_TIME)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t941 string
-    t941 = value__1
-    _goml_runtime_core_string_println(t941)
+func println__T_string(value__0 string) struct{} {
+    var t0 string
+    t0 = value__0
+    _goml_runtime_core_string_println(t0)
     return struct{}{}
 }
 
-func println__T_bool(value__1 bool) struct{} {
-    var t944 string
-    var inline1060 string = _goml_runtime_core_bool_to_string(value__1)
-    t944 = inline1060
-    _goml_runtime_core_string_println(t944)
+func println__T_bool(value__0 bool) struct{} {
+    var t0 string
+    var inline0 string = _goml_runtime_core_bool_to_string(value__0)
+    t0 = inline0
+    _goml_runtime_core_string_println(t0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
-    var t953 string = _goml_runtime_core_bool_to_string(self__401)
-    return t953
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
+    var t0 string = _goml_runtime_core_bool_to_string(self__0)
+    return t0
 }
 
-func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__404 int) string {
-    var inline1064 int64 = int64(int(self__404))
-    var inline1065 string = signed_decimal_string(inline1064)
-    return inline1065
+func _goml_m_trait__impl_i_ToString_i_isize_i_to__string(self__0 int) string {
+    var inline0 int64 = int64(int(self__0))
+    var inline1 string = signed_decimal_string(inline0)
+    return inline1
 }
 
-func signed_decimal_string(value__214 int64) string {
-    var t965 bool = value__214 < 0
-    if t965 {
-        var t966 uint64 = uint64(int64(value__214))
-        var t967 uint64 = 0 - t966
-        var t968 string = decimal_string(t967)
-        var t969 string = "-" + t968
-        return t969
+func signed_decimal_string(value__0 int64) string {
+    var t0 bool = value__0 < 0
+    if t0 {
+        var t1 uint64 = uint64(int64(value__0))
+        var t2 uint64 = 0 - t1
+        var t3 string = decimal_string(t2)
+        var t4 string = "-" + t3
+        return t4
     } else {
-        var t970 uint64 = uint64(int64(value__214))
-        var t971 string = decimal_string(t970)
-        return t971
+        var t5 uint64 = uint64(int64(value__0))
+        var t6 string = decimal_string(t5)
+        return t6
     }
 }
 
-func decimal_string(value__208 uint64) string {
-    var t994 bool = value__208 == 0
-    if t994 {
+func decimal_string(value__0 uint64) string {
+    var t0 bool = value__0 == 0
+    if t0 {
         return "0"
     } else {
-        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
-        var remaining__210 uint64 = value__208
-        Loop_loop987:
+        var reversed__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__0 uint64 = value__0
+        Loop_loop0:
         for {
-            var t988 bool = remaining__210 > 0
-            if t988 {
-                var t989_rhs uint64 = 10
-                var t989 uint64 = remaining__210 % t989_rhs
-                var t990 uint8 = uint8(uint64(t989))
-                var t991 uint8 = t990 + 48
-                vec_push__Vec_5uint8(reversed__209, t991)
-                var compound_old353 uint64 = remaining__210
-                var compound_value354 uint64 = 10
-                var t992 uint64 = compound_old353 / compound_value354
-                remaining__210 = t992
+            var t10 bool = remaining__0 > 0
+            if t10 {
+                var t11_rhs uint64 = 10
+                var t11 uint64 = remaining__0 % t11_rhs
+                var t12 uint8 = uint8(uint64(t11))
+                var t13 uint8 = t12 + 48
+                vec_push__Vec_5uint8(reversed__0, t13)
+                var compound_old1 uint64 = remaining__0
+                var compound_value1 uint64 = 10
+                var t14 uint64 = compound_old1 / compound_value1
+                remaining__0 = t14
                 continue
             } else {
-                break Loop_loop987
+                break Loop_loop0
             }
         }
-        var t976 int
-        var inline1083 int = vec_len__Vec_5uint8(reversed__209)
-        t976 = inline1083
-        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t976)
-        var offset__212 int = 0
-        Loop_loop978:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var bytes__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t979 int
-            var inline1081 int = vec_len__Vec_5uint8(reversed__209)
-            t979 = inline1081
-            var t980 bool = offset__212 < t979
-            if t980 {
-                var t981 int
-                var inline1079 int = vec_len__Vec_5uint8(reversed__209)
-                t981 = inline1079
-                var t982 int = t981 - offset__212
-                var t983 int = t982 - 1
-                var t984 uint8 = vec_get__Vec_5uint8(reversed__209, t983)
-                vec_push__Vec_5uint8(bytes__211, t984)
-                var compound_old358 int = offset__212
-                var compound_value359 int = 1
-                var t985 int = compound_old358 + compound_value359
-                offset__212 = t985
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(bytes__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop978
+                break Loop_loop1
             }
         }
-        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
-        var x364 string = mtmp362._1
-        return x364
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 

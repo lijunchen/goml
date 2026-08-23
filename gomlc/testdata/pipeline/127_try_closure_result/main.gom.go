@@ -42,103 +42,103 @@ type Result__string__string struct {
 }
 
 func main0() struct{} {
-    var t821 Result__string__string
-    var inline865 string = "outer"
-    var inline866 bool = true
-    var inline867 closure_env_run_0 = closure_env_run_0{
-        ok_0: inline866,
-        prefix_1: inline865,
+    var t0 Result__string__string
+    var inline17 string = "outer"
+    var inline18 bool = true
+    var inline19 closure_env_run_0 = closure_env_run_0{
+        ok_0: inline18,
+        prefix_1: inline17,
     }
-    var inline868 func() Result__string__string = func() Result__string__string {
-        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline867)
+    var inline20 func() Result__string__string = func() Result__string__string {
+        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline19)
     }
-    var inline869 Result__string__string = inline868()
-    t821 = inline869
-    var t822 string
-    switch t821._tag {
+    var inline21 Result__string__string = inline20()
+    t0 = inline21
+    var t1 string
+    switch t0._tag {
     case 0:
-        var inline858 string = t821._v0_0
-        var inline860 string = "ok " + inline858
-        t822 = inline860
+        var inline13 string = t0._v0_0
+        var inline14 string = "ok " + inline13
+        t1 = inline14
     case 1:
-        var inline861 string = t821._v1_0
-        var inline863 string = "err " + inline861
-        t822 = inline863
+        var inline15 string = t0._v1_0
+        var inline16 string = "err " + inline15
+        t1 = inline16
     default:
         panic("non-exhaustive match")
     }
-    var inline855 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t822)
-    _goml_runtime_core_string_println(inline855)
-    var t823 Result__string__string
-    var inline849 string = "outer"
-    var inline850 bool = false
-    var inline851 closure_env_run_0 = closure_env_run_0{
-        ok_0: inline850,
-        prefix_1: inline849,
+    var inline11 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
+    _goml_runtime_core_string_println(inline11)
+    var t2 Result__string__string
+    var inline6 string = "outer"
+    var inline7 bool = false
+    var inline8 closure_env_run_0 = closure_env_run_0{
+        ok_0: inline7,
+        prefix_1: inline6,
     }
-    var inline852 func() Result__string__string = func() Result__string__string {
-        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline851)
+    var inline9 func() Result__string__string = func() Result__string__string {
+        return _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline8)
     }
-    var inline853 Result__string__string = inline852()
-    t823 = inline853
-    var t824 string
-    switch t823._tag {
+    var inline10 Result__string__string = inline9()
+    t2 = inline10
+    var t3 string
+    switch t2._tag {
     case 0:
-        var inline842 string = t823._v0_0
-        var inline844 string = "ok " + inline842
-        t824 = inline844
+        var inline2 string = t2._v0_0
+        var inline3 string = "ok " + inline2
+        t3 = inline3
     case 1:
-        var inline845 string = t823._v1_0
-        var inline847 string = "err " + inline845
-        t824 = inline847
+        var inline4 string = t2._v1_0
+        var inline5 string = "err " + inline4
+        t3 = inline5
     default:
         panic("non-exhaustive match")
     }
-    var inline839 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t824)
-    _goml_runtime_core_string_println(inline839)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t3)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
-func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env803 closure_env_run_0) Result__string__string {
-    var ok__2 bool = env803.ok_0
-    var prefix__1 string = env803.prefix_1
-    var mtmp796 Result__string__string
-    if ok__2 {
-        var inline872 Result__string__string = Result__string__string{
+func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env0 closure_env_run_0) Result__string__string {
+    var ok__0 bool = env0.ok_0
+    var prefix__0 string = env0.prefix_1
+    var mtmp0 Result__string__string
+    if ok__0 {
+        var inline0 Result__string__string = Result__string__string{
             _tag: 0,
             _v0_0: "body",
         }
-        mtmp796 = inline872
+        mtmp0 = inline0
     } else {
-        var inline873 Result__string__string = Result__string__string{
+        var inline1 Result__string__string = Result__string__string{
             _tag: 1,
             _v1_0: "parse failed",
         }
-        mtmp796 = inline873
+        mtmp0 = inline1
     }
-    var jp833 string
-    switch mtmp796._tag {
+    var jp0 string
+    switch mtmp0._tag {
     case 0:
-        var x797 string = mtmp796._v0_0
-        jp833 = x797
-        var t834 string = prefix__1 + ":"
-        var t835 string = t834 + jp833
-        var t836 Result__string__string = Result__string__string{
+        var x0 string = mtmp0._v0_0
+        jp0 = x0
+        var t0 string = prefix__0 + ":"
+        var t1 string = t0 + jp0
+        var t2 Result__string__string = Result__string__string{
             _tag: 0,
-            _v0_0: t835,
+            _v0_0: t1,
         }
-        return t836
+        return t2
     case 1:
-        var x798 string = mtmp796._v1_0
-        var t837 Result__string__string = Result__string__string{
+        var x1 string = mtmp0._v1_0
+        var t3 Result__string__string = Result__string__string{
             _tag: 1,
-            _v1_0: x798,
+            _v1_0: x1,
         }
-        return t837
+        return t3
     default:
         panic("non-exhaustive match")
     }

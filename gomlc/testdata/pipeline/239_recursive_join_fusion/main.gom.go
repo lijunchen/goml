@@ -63,30 +63,30 @@ type Option__isize struct {
 }
 
 func find(wanted__0 int) Option__isize {
-    var current__1 *ref_int_x
-    var inline848 int = 0
-    var inline849 *ref_int_x = ref__Ref_3int(inline848)
-    current__1 = inline849
+    var current__0 *ref_int_x
+    var inline2 int = 0
+    var inline3 *ref_int_x = ref__Ref_3int(inline2)
+    current__0 = inline3
     for {
-        var value__2 int
-        var inline846 int = ref_get__Ref_3int(current__1)
-        value__2 = inline846
-        var t811 bool = value__2 >= 5
-        if t811 {
+        var value__0 int
+        var inline1 int = ref_get__Ref_3int(current__0)
+        value__0 = inline1
+        var t0 bool = value__0 >= 5
+        if t0 {
             return Option__isize{
                 _tag: 0,
             }
         } else {
-            var t813 bool = value__2 == wanted__0
-            if t813 {
-                var t814 Option__isize = Option__isize{
+            var t1 bool = value__0 == wanted__0
+            if t1 {
+                var t2 Option__isize = Option__isize{
                     _tag: 1,
-                    _v1_0: value__2,
+                    _v1_0: value__0,
                 }
-                return t814
+                return t2
             } else {
-                var t815 int = value__2 + 1
-                ref_set__Ref_3int(current__1, t815)
+                var t3 int = value__0 + 1
+                ref_set__Ref_3int(current__0, t3)
                 continue
             }
         }
@@ -94,38 +94,38 @@ func find(wanted__0 int) Option__isize {
 }
 
 func main0() struct{} {
-    var t821 bool
-    var inline871 int = 3
-    var inline872 Option__isize = find(inline871)
-    switch inline872._tag {
+    var t0 bool
+    var inline6 int = 3
+    var inline7 Option__isize = find(inline6)
+    switch inline7._tag {
     case 0:
-        t821 = false
+        t0 = false
     case 1:
-        t821 = true
+        t0 = true
     default:
         panic("non-exhaustive match")
     }
-    var inline868 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t821)
-    _goml_runtime_core_string_println(inline868)
-    var t822 bool
-    var inline865 int = 8
-    var inline866 Option__isize = find(inline865)
-    switch inline866._tag {
+    var inline4 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t0)
+    _goml_runtime_core_string_println(inline4)
+    var t1 bool
+    var inline2 int = 8
+    var inline3 Option__isize = find(inline2)
+    switch inline3._tag {
     case 0:
-        t822 = false
+        t1 = false
     case 1:
-        t822 = true
+        t1 = true
     default:
         panic("non-exhaustive match")
     }
-    var inline862 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t822)
-    _goml_runtime_core_string_println(inline862)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t1)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__401 bool) string {
-    var t836 string = _goml_runtime_core_bool_to_string(self__401)
-    return t836
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
+    var t0 string = _goml_runtime_core_bool_to_string(self__0)
+    return t0
 }
 
 func main() {

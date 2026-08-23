@@ -36,34 +36,34 @@ func _goml_m_inherent_i_Shape_i_Shape_i_name(self__0 Shape) string {
     return "Shape"
 }
 
-func _goml_m_inherent_i_Shape_i_Shape_i_rename(self__1 Shape, suffix__2 string) string {
-    var t802 string
-    t802 = "Shape"
-    var t803 string = t802 + suffix__2
-    return t803
+func _goml_m_inherent_i_Shape_i_Shape_i_rename(self__0 Shape, suffix__0 string) string {
+    var t0 string
+    t0 = "Shape"
+    var t1 string = t0 + suffix__0
+    return t1
 }
 
-func _goml_m_inherent_i_Shape_i_Shape_i_join(self__3 Shape, left__4 string, right__5 string) string {
-    var t806 string
-    t806 = "Shape"
-    var t807 string = left__4 + t806
-    var t808 string = t807 + right__5
-    return t808
+func _goml_m_inherent_i_Shape_i_Shape_i_join(self__0 Shape, left__0 string, right__0 string) string {
+    var t0 string
+    t0 = "Shape"
+    var t1 string = left__0 + t0
+    var t2 string = t1 + right__0
+    return t2
 }
 
 func main0() struct{} {
-    var shape__10 Shape = Shape{}
-    var inline831 string = _goml_m_inherent_i_Shape_i_Shape_i_name(shape__10)
-    var inline832 string = _goml_m_inherent_i_Shape_i_Shape_i_rename(shape__10, "!")
-    var inline833 string = _goml_m_inherent_i_Shape_i_Shape_i_join(shape__10, inline831, inline832)
-    println__T_string(inline833)
+    var shape__0 Shape = Shape{}
+    var inline0 string = _goml_m_inherent_i_Shape_i_Shape_i_name(shape__0)
+    var inline1 string = _goml_m_inherent_i_Shape_i_Shape_i_rename(shape__0, "!")
+    var inline2 string = _goml_m_inherent_i_Shape_i_Shape_i_join(shape__0, inline0, inline1)
+    println__T_string(inline2)
     return struct{}{}
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t812 string
-    t812 = value__1
-    _goml_runtime_core_string_println(t812)
+func println__T_string(value__0 string) struct{} {
+    var t0 string
+    t0 = value__0
+    _goml_runtime_core_string_println(t0)
     return struct{}{}
 }
 

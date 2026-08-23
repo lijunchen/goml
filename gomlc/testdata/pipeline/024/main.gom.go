@@ -84,184 +84,184 @@ const (
     Blue Color = 2
 )
 
-func line_to_string(l__4 Line) string {
-    var x800 Point = l__4.from
-    var x801 Point = l__4.to
-    var x802 Color = l__4.color
-    var t821 string
-    var inline914 int32 = x800.x
-    var inline915 int32 = x800.y
-    var inline918 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline914)
-    var inline919 string = "Point { x: " + inline918
-    var inline920 string = inline919 + ", y: "
-    var inline921 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline915)
-    var inline922 string = inline920 + inline921
-    var inline923 string = inline922 + " }"
-    t821 = inline923
-    var t822 string = "Line { from: " + t821
-    var t823 string = t822 + ", to: "
-    var t824 string
-    var inline902 int32 = x801.x
-    var inline903 int32 = x801.y
-    var inline906 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline902)
-    var inline907 string = "Point { x: " + inline906
-    var inline908 string = inline907 + ", y: "
-    var inline909 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline903)
-    var inline910 string = inline908 + inline909
-    var inline911 string = inline910 + " }"
-    t824 = inline911
-    var t825 string = t823 + t824
-    var t826 string = t825 + ", color: "
-    var t827 string
-    switch x802 {
+func line_to_string(l__0 Line) string {
+    var x0 Point = l__0.from
+    var x1 Point = l__0.to
+    var x2 Color = l__0.color
+    var t0 string
+    var inline8 int32 = x0.x
+    var inline9 int32 = x0.y
+    var inline10 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline8)
+    var inline11 string = "Point { x: " + inline10
+    var inline12 string = inline11 + ", y: "
+    var inline13 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline9)
+    var inline14 string = inline12 + inline13
+    var inline15 string = inline14 + " }"
+    t0 = inline15
+    var t1 string = "Line { from: " + t0
+    var t2 string = t1 + ", to: "
+    var t3 string
+    var inline0 int32 = x1.x
+    var inline1 int32 = x1.y
+    var inline2 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline0)
+    var inline3 string = "Point { x: " + inline2
+    var inline4 string = inline3 + ", y: "
+    var inline5 string = _goml_m_inherent_i_i32_i_i32_i_to__string(inline1)
+    var inline6 string = inline4 + inline5
+    var inline7 string = inline6 + " }"
+    t3 = inline7
+    var t4 string = t2 + t3
+    var t5 string = t4 + ", color: "
+    var t6 string
+    switch x2 {
     case Red:
-        t827 = "Red"
+        t6 = "Red"
     case Green:
-        t827 = "Green"
+        t6 = "Green"
     case Blue:
-        t827 = "Blue"
+        t6 = "Blue"
     default:
         panic("non-exhaustive match")
     }
-    var t828 string = t826 + t827
-    var t829 string = t828 + " }"
-    return t829
+    var t7 string = t5 + t6
+    var t8 string = t7 + " }"
+    return t8
 }
 
 func main0() struct{} {
-    var p0__10 Point = Point{
+    var p0__0 Point = Point{
         x: 0,
         y: 0,
     }
-    var t841 string
-    var inline931 int32 = 0
-    var inline932 int32 = 0
-    switch inline931 {
+    var t0 string
+    var inline4 int32 = 0
+    var inline5 int32 = 0
+    switch inline4 {
     case 0:
-        switch inline932 {
+        switch inline5 {
         case 0:
-            t841 = "origin"
+            t0 = "origin"
         case 1:
-            t841 = "up"
+            t0 = "up"
         default:
-            var inline934 bool = 0 < inline932
-            switch inline934 {
+            var inline6 bool = 0 < inline5
+            switch inline6 {
             case true:
-                t841 = "above"
+                t0 = "above"
             case false:
-                t841 = "below"
+                t0 = "below"
             default:
                 panic("non-exhaustive match")
             }
         }
     case 1:
-        switch inline932 {
+        switch inline5 {
         case 0:
-            t841 = "right"
+            t0 = "right"
         default:
-            t841 = "unknown"
+            t0 = "unknown"
         }
     default:
-        t841 = "unknown"
+        t0 = "unknown"
     }
-    var inline928 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t841)
-    _goml_runtime_core_string_println(inline928)
-    var p1__11 Point = Point{
+    var inline2 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t0)
+    _goml_runtime_core_string_println(inline2)
+    var p1__0 Point = Point{
         x: 10,
         y: 10,
     }
-    var line__12 Line = Line{
-        from: p0__10,
-        to: p1__11,
+    var line__0 Line = Line{
+        from: p0__0,
+        to: p1__0,
         color: Red,
     }
-    var t842 string = line_to_string(line__12)
-    var inline925 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t842)
-    _goml_runtime_core_string_println(inline925)
+    var t1 string = line_to_string(line__0)
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
+    _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_i32_i_i32_i_to__string(self__286 int32) string {
-    var inline936 int64 = int64(int32(self__286))
-    var inline937 string = signed_decimal_string(inline936)
-    return inline937
+func _goml_m_inherent_i_i32_i_i32_i_to__string(self__0 int32) string {
+    var inline0 int64 = int64(int32(self__0))
+    var inline1 string = signed_decimal_string(inline0)
+    return inline1
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__402 string) string {
-    return self__402
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string {
+    return self__0
 }
 
-func signed_decimal_string(value__214 int64) string {
-    var t860 bool = value__214 < 0
-    if t860 {
-        var t861 uint64 = uint64(int64(value__214))
-        var t862 uint64 = 0 - t861
-        var t863 string = decimal_string(t862)
-        var t864 string = "-" + t863
-        return t864
+func signed_decimal_string(value__0 int64) string {
+    var t0 bool = value__0 < 0
+    if t0 {
+        var t1 uint64 = uint64(int64(value__0))
+        var t2 uint64 = 0 - t1
+        var t3 string = decimal_string(t2)
+        var t4 string = "-" + t3
+        return t4
     } else {
-        var t865 uint64 = uint64(int64(value__214))
-        var t866 string = decimal_string(t865)
-        return t866
+        var t5 uint64 = uint64(int64(value__0))
+        var t6 string = decimal_string(t5)
+        return t6
     }
 }
 
-func decimal_string(value__208 uint64) string {
-    var t889 bool = value__208 == 0
-    if t889 {
+func decimal_string(value__0 uint64) string {
+    var t0 bool = value__0 == 0
+    if t0 {
         return "0"
     } else {
-        var reversed__209 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
-        var remaining__210 uint64 = value__208
-        Loop_loop882:
+        var reversed__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(20)
+        var remaining__0 uint64 = value__0
+        Loop_loop0:
         for {
-            var t883 bool = remaining__210 > 0
-            if t883 {
-                var t884_rhs uint64 = 10
-                var t884 uint64 = remaining__210 % t884_rhs
-                var t885 uint8 = uint8(uint64(t884))
-                var t886 uint8 = t885 + 48
-                vec_push__Vec_5uint8(reversed__209, t886)
-                var compound_old353 uint64 = remaining__210
-                var compound_value354 uint64 = 10
-                var t887 uint64 = compound_old353 / compound_value354
-                remaining__210 = t887
+            var t10 bool = remaining__0 > 0
+            if t10 {
+                var t11_rhs uint64 = 10
+                var t11 uint64 = remaining__0 % t11_rhs
+                var t12 uint8 = uint8(uint64(t11))
+                var t13 uint8 = t12 + 48
+                vec_push__Vec_5uint8(reversed__0, t13)
+                var compound_old1 uint64 = remaining__0
+                var compound_value1 uint64 = 10
+                var t14 uint64 = compound_old1 / compound_value1
+                remaining__0 = t14
                 continue
             } else {
-                break Loop_loop882
+                break Loop_loop0
             }
         }
-        var t871 int
-        var inline956 int = vec_len__Vec_5uint8(reversed__209)
-        t871 = inline956
-        var bytes__211 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t871)
-        var offset__212 int = 0
-        Loop_loop873:
+        var t1 int
+        var inline3 int = vec_len__Vec_5uint8(reversed__0)
+        t1 = inline3
+        var bytes__0 *_goml_vec_uint8 = vec_with_capacity__Vec_5uint8(t1)
+        var offset__0 int = 0
+        Loop_loop1:
         for {
-            var t874 int
-            var inline954 int = vec_len__Vec_5uint8(reversed__209)
-            t874 = inline954
-            var t875 bool = offset__212 < t874
-            if t875 {
-                var t876 int
-                var inline952 int = vec_len__Vec_5uint8(reversed__209)
-                t876 = inline952
-                var t877 int = t876 - offset__212
-                var t878 int = t877 - 1
-                var t879 uint8 = vec_get__Vec_5uint8(reversed__209, t878)
-                vec_push__Vec_5uint8(bytes__211, t879)
-                var compound_old358 int = offset__212
-                var compound_value359 int = 1
-                var t880 int = compound_old358 + compound_value359
-                offset__212 = t880
+            var t2 int
+            var inline2 int = vec_len__Vec_5uint8(reversed__0)
+            t2 = inline2
+            var t3 bool = offset__0 < t2
+            if t3 {
+                var t4 int
+                var inline1 int = vec_len__Vec_5uint8(reversed__0)
+                t4 = inline1
+                var t5 int = t4 - offset__0
+                var t6 int = t5 - 1
+                var t7 uint8 = vec_get__Vec_5uint8(reversed__0, t6)
+                vec_push__Vec_5uint8(bytes__0, t7)
+                var compound_old0 int = offset__0
+                var compound_value0 int = 1
+                var t8 int = compound_old0 + compound_value0
+                offset__0 = t8
                 continue
             } else {
-                break Loop_loop873
+                break Loop_loop1
             }
         }
-        var mtmp362 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__211)
-        var x364 string = mtmp362._1
-        return x364
+        var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
+        var x0 string = mtmp0._1
+        return x0
     }
 }
 
