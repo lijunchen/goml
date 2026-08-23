@@ -3689,11 +3689,14 @@ fn invalid_loop_outcomes() -> LoopOutcomes {
     LoopOutcomes { has_continue: false, exits: Vec::new(), valid: false }
 }
 
-fn append_loop_outcomes(target: LoopOutcomes, value: LoopOutcomes) -> unit {
-    target.has_continue = target.has_continue || value.has_continue;
-    target.valid = target.valid && value.valid;
+fn merge_loop_outcomes(target: LoopOutcomes, value: LoopOutcomes) -> LoopOutcomes {
     for exit in value.exits {
         target.exits.push(exit)
+    }
+    LoopOutcomes {
+        has_continue: target.has_continue || value.has_continue,
+        exits: target.exits,
+        valid: target.valid && value.valid,
     }
 }
 
@@ -3744,16 +3747,22 @@ fn term_loop_outcomes(
             }
         },
         If { cond: _, then_, else_, ret_ty: _ } => {
-            let result = new_loop_outcomes();
-            append_loop_outcomes(result, block_loop_outcomes(then_, loop_name, joins, visited));
-            append_loop_outcomes(result, block_loop_outcomes(else_, loop_name, joins, visited));
+            let mut result = new_loop_outcomes();
+            result = merge_loop_outcomes(
+                result,
+                block_loop_outcomes(then_, loop_name, joins, visited),
+            );
+            result = merge_loop_outcomes(
+                result,
+                block_loop_outcomes(else_, loop_name, joins, visited),
+            );
             result
         },
         Match { scrutinee: _, arms, default, ret_ty: _ } => {
-            let result = new_loop_outcomes();
+            let mut result = new_loop_outcomes();
             let mut branches = 0;
             for arm in arms {
-                append_loop_outcomes(
+                result = merge_loop_outcomes(
                     result,
                     block_loop_outcomes(arm.body, loop_name, joins, visited),
                 );
@@ -3761,7 +3770,7 @@ fn term_loop_outcomes(
             }
             match default {
                 Some(body) => {
-                    append_loop_outcomes(
+                    result = merge_loop_outcomes(
                         result,
                         block_loop_outcomes(body, loop_name, joins, visited),
                     );
@@ -3775,10 +3784,10 @@ fn term_loop_outcomes(
             result
         },
         Select { arms, default, .. } => {
-            let result = new_loop_outcomes();
+            let mut result = new_loop_outcomes();
             let mut branches = 0;
             for arm in arms {
-                append_loop_outcomes(
+                result = merge_loop_outcomes(
                     result,
                     block_loop_outcomes(
                         match arm {
@@ -3793,7 +3802,7 @@ fn term_loop_outcomes(
             }
             match default {
                 Some(body) => {
-                    append_loop_outcomes(
+                    result = merge_loop_outcomes(
                         result,
                         block_loop_outcomes(body, loop_name, joins, visited),
                     );
