@@ -1574,7 +1574,10 @@ fn evaluate_constants(
             },
         )
     }
-    let finalized = file.constants;
+    let finalized: Vec[Constant] = Vec::with_capacity(file.constants.len() + pending.len());
+    for value in file.constants {
+        finalized.push(value)
+    }
     let mut remaining = candidates.len();
     while remaining > 0 {
         let mut progress = false;
@@ -1584,21 +1587,32 @@ fn evaluate_constants(
                 match ctfe::evaluate_site(module, dependencies, index, ctfe::default_limits()) {
                     Ok(value) => {
                         module.constants.push(ctir::CtConstant { name: candidate.name, value });
-                        if candidate.pending {
-                            match constant_expr_from_value(file, value, candidate.ty) {
-                                Ok(value) => finalized.push(
+                        match constant_expr_from_value(file, value, candidate.ty) {
+                            Ok(value) => if candidate.pending {
+                                finalized.push(
                                     Constant { name: candidate.name, ty: candidate.ty, value },
+                                )
+                            } else {
+                                for constant_index in 0..finalized.len() {
+                                    if finalized[constant_index].name == candidate.name {
+                                        finalized[constant_index] = Constant {
+                                            name: candidate.name,
+                                            ty: candidate.ty,
+                                            value,
+                                        };
+                                        break
+                                    } else {}
+                                }
+                            },
+                            Err(message) => diagnostics.push(
+                                comptime_diagnostic(
+                                    message,
+                                    candidate.source_path,
+                                    candidate.start,
+                                    candidate.end,
                                 ),
-                                Err(message) => diagnostics.push(
-                                    comptime_diagnostic(
-                                        message,
-                                        candidate.source_path,
-                                        candidate.start,
-                                        candidate.end,
-                                    ),
-                                ),
-                            }
-                        } else {};
+                            ),
+                        };
                         states[index] = 1;
                         remaining = remaining - 1;
                         progress = true;
