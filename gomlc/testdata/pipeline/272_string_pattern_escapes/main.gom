@@ -1,0 +1,16 @@
+fn classify(value: string) -> isize {
+    match value {
+        "\u0041\u03BB" => 1,
+        "\n\r\t\b\f\/" => 2,
+        "\"\\" => 3,
+        r"\n" => 4,
+        _ => 0,
+    }
+}
+
+fn main() -> unit {
+    println(classify("Aλ").to_string());
+    println(classify("\n\r\t\b\f/").to_string());
+    println(classify("\"\\").to_string());
+    println(classify("\\n").to_string())
+}
