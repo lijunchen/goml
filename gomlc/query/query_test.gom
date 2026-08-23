@@ -197,6 +197,22 @@ fn parses_module_paths_with_inline_comments() -> unit {
 }
 
 #[test]
+fn parses_only_exact_module_path_keys() -> unit {
+    testing::assert(
+        manifest_module_path("[module]\npathology = \"wrong::path\"\n").is_none(),
+    );
+    testing::assert(
+        manifest_module_path("[module]\npath_suffix = \"wrong::suffix\"\n").is_none(),
+    );
+    match manifest_module_path(
+        "[module]\npathology = \"wrong::path\"\npath_suffix = \"wrong::suffix\"\npath = \"alice::tools\" # canonical path\n",
+    ) {
+        Some(value) => testing::assert_eq(value, "alice::tools"),
+        None => testing::fail("expected exact module path"),
+    }
+}
+
+#[test]
 fn analyzes_package_files_with_unsaved_overrides() -> unit {
     let root = "../gomlc/testdata/module/project033_cross_file_pattern_constructor";
     let main_path = root + "/main.gom";
