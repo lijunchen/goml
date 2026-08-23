@@ -3176,6 +3176,7 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
 fn check_file_with_package(
     value: hir::File,
     package_files: Vec[hir::File],
+    package_environments: Vec[PackageEnvironment],
     dependencies: Vec[DependencyEnvironment],
     diagnostics: Vec[Diagnostic],
     include_builtin_types: bool,
@@ -3213,8 +3214,8 @@ fn check_file_with_package(
     let local_struct_count = ctx.structs.len();
     let local_trait_count = ctx.traits.len();
     let local_impl_count = ctx.impls.len();
-    for package_file in package_files {
-        append_package_environment(ctx, package_file, allow_externs)
+    for package_environment in package_environments {
+        append_package_environment(ctx, package_environment)
     }
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
@@ -3556,6 +3557,7 @@ fn check_file_with_dependency_environments(
     let checked = check_file_with_package(
         value,
         Vec::from_array([]),
+        Vec::from_array([]),
         environments,
         diagnostics,
         include_builtin_types,
@@ -3841,17 +3843,29 @@ fn check_package_files_for_link_with_environments_options(
             None => (),
         }
     }
+    let package_environments: Vec[PackageEnvironment] = Vec::from_array([]);
+    match builtin_contract() {
+        Ok(builtin) => for value in values {
+            package_environments.push(package_environment(value, allow_externs, builtin))
+        },
+        Err(_) => (),
+    };
     let mut valid = true;
     for index in 0..values.len() {
         let package_files: Vec[hir::File] = Vec::from_array([]);
+        let other_environments: Vec[PackageEnvironment] = Vec::from_array([]);
         for other in 0..values.len() {
             if other != index {
-                package_files.push(values[other])
+                package_files.push(values[other]);
+                if other < package_environments.len() {
+                    other_environments.push(package_environments[other])
+                } else {}
             } else {}
         }
         let checked = check_file_with_package(
             values[index],
             package_files,
+            other_environments,
             dependencies,
             Vec::from_array([]),
             include_builtin_types && index == 0,
