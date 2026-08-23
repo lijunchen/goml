@@ -1162,6 +1162,27 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
 }
 
 #[test]
+fn rejects_out_of_range_integer_patterns() -> unit {
+    let scalar = checked_diagnostics(
+        "fn unsigned(value: u8) -> isize { match value { 999 => 1, -1 => 2, _ => 3 } } fn signed(value: i8) -> isize { match value { 128 => 1, _ => 0 } }",
+    );
+    testing::assert(has_diagnostic(scalar, "Integer literal 999 does not fit in u8"));
+    testing::assert(has_diagnostic(scalar, "Integer literal -1 does not fit in u8"));
+    testing::assert(has_diagnostic(scalar, "Integer literal 128 does not fit in i8"));
+    let ranges = checked_diagnostics(
+        "fn lower(value: u8) -> isize { match value { -2..=10 => 1, _ => 0 } } fn upper(value: u8) -> isize { match value { 10..=998 => 1, _ => 0 } }",
+    );
+    testing::assert(has_diagnostic(ranges, "Integer literal -2 does not fit in u8"));
+    testing::assert(has_diagnostic(ranges, "Integer literal 998 does not fit in u8"));
+    testing::assert_eq(
+        checked_diagnostics(
+            "fn unsigned(value: u8) -> bool { match value { 255 => true, _ => false } } fn signed(value: i8) -> bool { match value { -128 => true, _ => false } }",
+        ).len(),
+        0,
+    )
+}
+
+#[test]
 fn rejects_generic_and_parameterized_main_functions() -> unit {
     let result = check(
         hir::lower(ast::lower(parser::parse("fn main[T](value: T) -> unit { () }")), "main.gom"),
