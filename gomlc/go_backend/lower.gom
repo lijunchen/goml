@@ -2,7 +2,6 @@ package go_backend;
 
 use module::anf;
 use module::ast;
-use module::numeric;
 use module::resources;
 use module::repr;
 use module::tast;
@@ -375,14 +374,31 @@ fn callable_name(env: LowerEnv, value: repr::Callable, ty: repr::Type) -> string
     }
 }
 
+fn compact_go_float_literal(value: string) -> string {
+    if value.byte_len() <= 64 || value.contains(".") || value.contains("e") || value.contains("E") {
+        return value
+    } else {};
+    let start = if value.byte_get(0) == b'-' {
+        1
+    } else {
+        0
+    };
+    let mut end = value.byte_len();
+    while end > start && value.byte_get(end - 1) == b'0' {
+        end = end - 1;
+    }
+    if end == start || end == value.byte_len() {
+        value
+    } else {
+        value.byte_slice(0, end) + "e" + (value.byte_len() - end).to_string()
+    }
+}
+
 fn go_float_literal(value: string, ty: repr::Type) -> string {
     match repr::resolve_type(ty) {
-        Float32 => match numeric::parse_float32(value) {
-            Some(parsed) => parsed.to_string(),
-            None => value,
-        },
+        Float32 => value,
         Float64 => match num::parse_float64(value) {
-            Ok(parsed) => parsed.to_string(),
+            Ok(parsed) => compact_go_float_literal(parsed.to_string()),
             Err(_) => value,
         },
         _ => value,
