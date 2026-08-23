@@ -3,6 +3,21 @@ package pipeline;
 use std::testing;
 
 #[test]
+fn changed_go_source_invalidates_cached_executable() -> unit {
+    let old_source = "package main\n\nimport \"fmt\"\n\nfunc main() {\nLoop:\n    select {\n    default:\n        fmt.Println(\"old\")\n        break Loop\n    }\n}\n";
+    let new_source = "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"new\")\n}\n";
+    testing::assert(
+        execute_go_and_read_stdout(old_source, "old\n", "cache_invalidation") == "old\n",
+    );
+    testing::assert(
+        execute_go_and_read_stdout(new_source, "new\n", "cache_invalidation") == "new\n",
+    );
+    testing::assert(
+        execute_go_and_read_stdout(new_source, "new\n", "cache_invalidation") == "new\n",
+    )
+}
+
+#[test]
 fn pipeline_shard_0() -> unit {
     test_pipeline_shard(0, 16)
 }
