@@ -281,7 +281,13 @@ fn checks_let_else_and_value_break_restrictions() -> unit {
         has_diagnostic(diagnostics, "`let else` branch must exit the surrounding control flow"),
     );
     testing::assert(has_diagnostic(diagnostics, "`break` with a value is only allowed in `loop`"));
-    testing::assert(has_diagnostic(diagnostics, "`let else` requires a refutable pattern"))
+    testing::assert(has_diagnostic(diagnostics, "`let else` requires a refutable pattern"));
+    testing::assert_eq(
+        checked_diagnostics(
+            "fn exhaustive_exit(value: bool, flag: bool) -> unit { let true = value else { match flag { true => return, false => return } }; }",
+        ).len(),
+        0,
+    )
 }
 
 #[test]
@@ -1296,6 +1302,34 @@ fn checks_dynamic_guarded_arm_usefulness() -> unit {
 }
 
 #[test]
+fn validates_or_pattern_binding_consistency() -> unit {
+    let types = checked_diagnostics(
+        "enum Value { Number(i32), Text(string) } fn inspect(value: Value) -> unit { match value { Value::Number(item) | Value::Text(item) => () } }",
+    );
+    testing::assert(
+        has_diagnostic(
+            types,
+            "Or-pattern binding `item` has inconsistent types: expected i32, found string",
+        ),
+    );
+    let mutability = checked_diagnostics(
+        "enum Value { Left(i32), Right(i32) } fn inspect(value: Value) -> i32 { match value { Value::Left(mut item) | Value::Right(item) => item } }",
+    );
+    testing::assert(
+        has_diagnostic(
+            mutability,
+            "Or-pattern binding `item` has inconsistent mutability",
+        ),
+    );
+    testing::assert_eq(
+        checked_diagnostics(
+            "enum Value { Left(i32), Right(i32) } fn inspect(value: Value) -> i32 { match value { Value::Left(item) | Value::Right(item) => item } }",
+        ).len(),
+        0,
+    )
+}
+
+#[test]
 fn validates_fixed_array_pattern_lengths() -> unit {
     let too_short = checked_diagnostics(
         "fn choose(value: [i32; 2]) -> i32 { match value { [first] => first, _ => 0 } }",
@@ -1378,6 +1412,10 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
     testing::assert_eq(
         range_gap.diagnostics.get(0).message,
         "non-exhaustive match: missing pattern 127",
+    );
+    testing::assert_eq(
+        checked_diagnostics("fn diverge() -> i32 { match loop {} {} }").len(),
+        0,
     );
     let uninhabited = check(
         hir::lower(
