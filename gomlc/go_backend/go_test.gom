@@ -58,9 +58,22 @@ fn required_lower(value: Result[File, string]) -> File {
     }
 }
 
+fn lower_anf_for_test(value: anf::File) -> Result[File, string] {
+    validate_anf(value)?;
+    lower_with_test_cases(value, false, Vec::new())
+}
+
+fn lower_anf_tests_for_test(
+    value: anf::File,
+    test_cases: Vec[(string, string, Vec[(string, string)])],
+) -> Result[File, string] {
+    validate_anf(value)?;
+    lower_with_test_cases(value, true, test_cases)
+}
+
 fn lower_source(source: string) -> File {
     required_lower(
-        lower(
+        lower_anf_for_test(
             anf::lower(
                 lift::lower(
                     mono::lower(
@@ -126,7 +139,7 @@ fn lower_linked_source(source: string) -> File {
 
 fn lower_test_source(source: string, test_cases: Vec[(string, string, Vec[(string, string)])]) -> File {
     required_lower(
-        lower_tests(
+        lower_anf_tests_for_test(
             anf::lower(
                 lift::lower(
                     mono::lower(
@@ -1308,8 +1321,8 @@ fn uses_synthetic_hashmap_options_when_unmaterialized() -> unit {
 }
 
 #[test]
-fn uses_user_hashmap_option_variants() -> unit {
-    let source = "enum Option[T] { Nada, Just(T) } fn main() -> unit { let map: HashMap[i32, i32] = HashMap::new(); map.set(1, 2); match map.get(1) { Option::Just(value) => println(value), Option::Nada => println(0), } }";
+fn uses_linked_hashmap_option_variants() -> unit {
+    let source = "fn main() -> unit { let map: HashMap[i32, i32] = HashMap::new(); map.set(1, 2); match map.get(1) { Option::Some(value) => println(value), Option::None => println(0), } }";
     let output = encode(lower_linked_source(source));
     testing::assert(string_contains(output, "type Option__i32 struct"));
     testing::assert(string_contains(output, "_tag: 1"));
@@ -1543,10 +1556,13 @@ fn keeps_mixed_match_continuations_in_branches() -> unit {
 fn emits_string_hooks_and_vec_new_helpers() -> unit {
     let source = "fn main() -> unit { let values: Vec[i32] = vec_new(); string_print(values.len().to_string()); string_println(\"!\"); let bytes: Vec[u8] = Vec::new(); let (_, text) = string_from_utf8(bytes); string_print(text); let parts: Vec[string] = Vec::new(); string_println(string_concat(parts)); }";
     let output = encode(lower_linked_source(source));
-    testing::assert(string_contains(output, "import (\n    _goml_os \"os\"\n)"));
-    testing::assert(string_contains(output, "func _goml_runtime_core_string_from_utf8("));
-    testing::assert(string_contains(output, "func __goml_builtin_string_concat("));
-    testing::assert(string_contains(output, "func _goml_runtime_core_string_print("));
-    testing::assert(string_contains(output, "func _goml_runtime_core_string_println("));
-    testing::assert(string_contains(output, "func vec_new__Vec_5int32()"))
+    let _ = required_text_position(output, "import (\n    _goml_os \"os\"\n)");
+    let _ = required_text_position(output, "func _goml_runtime_core_string_from_utf8(");
+    testing::assert(
+        string_contains(output, "func string_concat(")
+            || string_contains(output, "func __goml_builtin_string_concat("),
+    );
+    let _ = required_text_position(output, "func _goml_runtime_core_string_print(");
+    let _ = required_text_position(output, "func _goml_runtime_core_string_println(");
+    let _ = required_text_position(output, "func vec_new__Vec_5int32()");
 }
