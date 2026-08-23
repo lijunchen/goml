@@ -329,7 +329,8 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
             }
             for method in environment.methods {
                 let receiver = tast::diagnostic_type_text(tast::resolve_type(method.for_type));
-                if completion_owner_matches(value, receiver, canonical) {
+                if completion_owner_matches(value, receiver, canonical)
+                    && visible_environment_method(value, method, false) {
                     push_completion(
                         result,
                         CompletionItem {
@@ -564,6 +565,68 @@ fn completion_owner_matches(value: Analysis, actual: string, expected: string) -
     }
 }
 
+fn completion_symbol_visible(value: Analysis, symbol: Symbol) -> bool {
+    symbol.package_name == value.package_name || symbol.public
+}
+
+fn visible_method_symbol(
+    value: Analysis,
+    owner: string,
+    name: string,
+    require_receiver: bool,
+) -> bool {
+    for symbol in build_symbol_index(value).symbols {
+        if match symbol.kind {
+            Method => true,
+            _ => false,
+        }
+            && symbol.name == name
+            && completion_owner_matches(value, qualified_owner(symbol.qualified_name), owner)
+            && completion_symbol_visible(value, symbol)
+            && (!require_receiver || symbol.has_receiver) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn visible_environment_method(
+    value: Analysis,
+    method: tast::MethodInfo,
+    require_receiver: bool,
+) -> bool {
+    visible_method_symbol(
+        value,
+        method_owner(method),
+        short_type_name(method.function.name),
+        require_receiver,
+    )
+}
+
+fn visible_trait_method(
+    value: Analysis,
+    owner: string,
+    method: tast::TraitMethodInfo,
+    require_receiver: bool,
+) -> bool {
+    (!require_receiver || method.has_receiver)
+        && visible_method_symbol(value, owner, method.name, require_receiver)
+}
+
+fn current_struct_owner(value: Analysis, owner: string) -> bool {
+    for symbol in build_symbol_index(value).symbols {
+        if match symbol.kind {
+            Struct => true,
+            _ => false,
+        }
+            && symbol.package_name == value.package_name
+            && completion_owner_matches(value, symbol.qualified_name, owner) {
+            return true
+        } else {}
+    }
+    false
+}
+
 fn significant_token_before(value: Analysis, offset: isize) -> Option[SyntaxToken] {
     let mut index = token_index_before(value.syntax, offset);
     while index >= 0 {
@@ -782,7 +845,7 @@ fn complete_named_methods(
                 qualified_owner(symbol.qualified_name),
                 receiver_name,
             )
-            && (symbol.package_name == value.package_name || symbol.public) {
+            && completion_symbol_visible(value, symbol) && symbol.has_receiver {
             push_completion(
                 result,
                 CompletionItem {
@@ -798,17 +861,22 @@ fn complete_named_methods(
         for definition in environment.traits {
             if completion_owner_matches(value, definition.name, receiver_name) {
                 for method in definition.methods {
-                    push_completion(
-                        result,
-                        CompletionItem {
-                            label: method.name,
-                            detail: tast::diagnostic_type_text(
-                                tast::Type::Func { params: method.params, ret_ty: method.ret_ty },
-                            ),
-                            kind: CompletionKind::Method,
-                        },
-                        prefix,
-                    )
+                    if visible_trait_method(value, definition.name, method, true) {
+                        push_completion(
+                            result,
+                            CompletionItem {
+                                label: method.name,
+                                detail: tast::diagnostic_type_text(
+                                    tast::Type::Func {
+                                        params: method.params,
+                                        ret_ty: method.ret_ty,
+                                    },
+                                ),
+                                kind: CompletionKind::Method,
+                            },
+                            prefix,
+                        )
+                    } else {}
                 }
             } else {}
         }
@@ -829,21 +897,25 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                 for info in environment.structs {
                     if completion_owner_matches(value, info.name, receiver_name) {
                         for field in info.fields {
-                            push_completion(
-                                result,
-                                CompletionItem {
-                                    label: field.0,
-                                    detail: tast::diagnostic_type_text(field.1),
-                                    kind: CompletionKind::Field,
-                                },
-                                prefix,
-                            )
+                            if current_struct_owner(value, info.name)
+                                || info.public_fields.contains(field.0) {
+                                push_completion(
+                                    result,
+                                    CompletionItem {
+                                        label: field.0,
+                                        detail: tast::diagnostic_type_text(field.1),
+                                        kind: CompletionKind::Field,
+                                    },
+                                    prefix,
+                                )
+                            } else {}
                         }
                     } else {}
                 }
                 for method in environment.methods {
                     let method_receiver = type_owner_name(method.for_type);
-                    if completion_owner_matches(value, method_receiver, receiver_name) {
+                    if completion_owner_matches(value, method_receiver, receiver_name)
+                        && visible_environment_method(value, method, true) {
                         push_completion(
                             result,
                             CompletionItem {
@@ -864,20 +936,22 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                     Dyn { trait_name, .. } => for definition in environment.traits {
                         if completion_owner_matches(value, definition.name, trait_name) {
                             for method in definition.methods {
-                                push_completion(
-                                    result,
-                                    CompletionItem {
-                                        label: method.name,
-                                        detail: tast::diagnostic_type_text(
-                                            tast::Type::Func {
-                                                params: method.params,
-                                                ret_ty: method.ret_ty,
-                                            },
-                                        ),
-                                        kind: CompletionKind::Method,
-                                    },
-                                    prefix,
-                                )
+                                if visible_trait_method(value, definition.name, method, true) {
+                                    push_completion(
+                                        result,
+                                        CompletionItem {
+                                            label: method.name,
+                                            detail: tast::diagnostic_type_text(
+                                                tast::Type::Func {
+                                                    params: method.params,
+                                                    ret_ty: method.ret_ty,
+                                                },
+                                            ),
+                                            kind: CompletionKind::Method,
+                                        },
+                                        prefix,
+                                    )
+                                } else {}
                             }
                         } else {}
                     },
