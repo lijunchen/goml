@@ -5406,6 +5406,45 @@ fn valid_range_pattern_endpoint(value: Primitive) -> bool {
     }
 }
 
+fn integer_range_pattern_endpoint(value: Primitive) -> Option[string] {
+    match value {
+        Int { value } | Int8 { value } | Int16 { value } | Int32 { value } | Int64 { value } | Uint {
+            value,
+        } | Uint8 { value } | Uint16 { value } | Uint32 { value } | Uint64 { value } => Option::Some(
+            value,
+        ),
+        _ => Option::None,
+    }
+}
+
+fn decimal_range_pattern_order_valid(left: string, right: string, inclusive: bool) -> bool {
+    let ordering = coverage_number_compare(coverage_number(left), coverage_number(right));
+    if inclusive {
+        ordering.is_le()
+    } else {
+        ordering.is_lt()
+    }
+}
+
+fn range_pattern_order_valid(start: Primitive, end: Primitive, inclusive: bool) -> bool {
+    match (start, end) {
+        (Char { value: left }, Char { value: right }) => decimal_range_pattern_order_valid(
+            left.to_u32().to_string(),
+            right.to_u32().to_string(),
+            inclusive,
+        ),
+        _ => match (
+            integer_range_pattern_endpoint(start),
+            integer_range_pattern_endpoint(end),
+        ) {
+            (Some(left), Some(right)) => {
+                decimal_range_pattern_order_valid(left, right, inclusive)
+            },
+            _ => true,
+        },
+    }
+}
+
 fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
     match value {
         Float { value: raw } => match prune(expected) {
@@ -5512,36 +5551,16 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 let typed_end = check_pattern(ctx, end, expected);
                 let start_value = primitive_from_pattern(typed_start);
                 let end_value = primitive_from_pattern(typed_end);
-                if constant_endpoint || !valid_range_pattern_endpoint(start_value)
-                    || !valid_range_pattern_endpoint(end_value) {
+                let valid_endpoints = !constant_endpoint
+                    && valid_range_pattern_endpoint(start_value)
+                    && valid_range_pattern_endpoint(end_value);
+                if !valid_endpoints {
                     push_diagnostic(
                         ctx,
                         "Range pattern endpoints must be integer or character literals",
                     )
                 } else {};
-                let equal = match (start_value, end_value) {
-                    (Int { value: left }, Int { value: right }) | (
-                        Int8 { value: left },
-                        Int8 { value: right },
-                    ) | (Int16 { value: left }, Int16 { value: right }) | (
-                        Int32 { value: left },
-                        Int32 { value: right },
-                    ) | (Int64 { value: left }, Int64 { value: right }) | (
-                        Uint { value: left },
-                        Uint { value: right },
-                    ) | (Uint8 { value: left }, Uint8 { value: right }) | (
-                        Uint16 { value: left },
-                        Uint16 { value: right },
-                    ) | (Uint32 { value: left }, Uint32 { value: right }) | (
-                        Uint64 { value: left },
-                        Uint64 { value: right },
-                    ) => {
-                        left == right
-                    },
-                    (Char { value: left }, Char { value: right }) => left == right,
-                    _ => false,
-                };
-                if !inclusive && equal {
+                if valid_endpoints && !range_pattern_order_valid(start_value, end_value, inclusive) {
                     push_diagnostic(
                         ctx,
                         "Range pattern lower bound must be less than its upper bound",
