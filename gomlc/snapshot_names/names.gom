@@ -3,6 +3,7 @@ package snapshot_names;
 pub struct Names {
     replacements: HashMap[string, string],
     counters: HashMap[string, isize],
+    reserved: HashMap[string, unit],
 }
 
 struct NameShape {
@@ -11,7 +12,11 @@ struct NameShape {
 }
 
 pub fn names() -> Names {
-    Names { replacements: HashMap::new(), counters: HashMap::new() }
+    Names { replacements: HashMap::new(), counters: HashMap::new(), reserved: HashMap::new() }
+}
+
+pub fn reserve(names: Names, value: string) -> unit {
+    names.reserved[value] = ();
 }
 
 fn is_digit(value: byte) -> bool {
@@ -57,12 +62,16 @@ pub fn canonical(names: Names, value: string) -> string {
         None => match name_shape(value) {
             Some(shape) => {
                 let key = shape.separator + shape.prefix;
-                let index = match names.counters[key] {
+                let mut index = match names.counters[key] {
                     Some(index) => index,
                     None => 0,
                 };
+                let mut replacement = shape.prefix + shape.separator + index.to_string();
+                while names.reserved.contains(replacement) {
+                    index = index + 1;
+                    replacement = shape.prefix + shape.separator + index.to_string();
+                }
                 names.counters[key] = index + 1;
-                let replacement = shape.prefix + shape.separator + index.to_string();
                 names.replacements[value] = replacement;
                 replacement
             },

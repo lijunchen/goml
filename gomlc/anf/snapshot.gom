@@ -77,7 +77,7 @@ fn snapshot_names_new(value: Function, canonicalize_all_locals: bool, reserved: 
     collect_block_locals(declared_locals, value.body);
     let locals = snapshot_names::names();
     for name in reserved {
-        let _ = snapshot_names::canonical(locals, name);
+        snapshot_names::reserve(locals, name)
     }
     SnapshotNames {
         locals,
