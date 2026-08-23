@@ -56,7 +56,7 @@ fn rejects_deeply_nested_expressions_without_overflowing() -> unit {
 
 #[test]
 fn lowers_items_types_and_float_values() -> unit {
-    let source = "package sample; pub enum Choice[T] { None, Some(T) } struct Pair { left: i32, right: f64 } fn value() -> f64 { 3.140 }";
+    let source = "package sample; pub enum Choice[T] { None, Some(T) } struct Pair { left: i32, right: f64 } fn value() -> f64 { 3.1_40 }";
     let file = lowered_file(source);
     testing::assert_eq(file.package_name, "sample");
     testing::assert(file.package_explicit);
@@ -71,7 +71,7 @@ fn lowers_items_types_and_float_values() -> unit {
     };
     match file.items.get(2) {
         Function(value) => match value.body.tail {
-            Some(Float { value: number, span: _ }) => testing::assert(number == 3.14),
+            Some(Float { value: number, span: _ }) => testing::assert_eq(number, "3.140"),
             _ => testing::fail("expected float tail"),
         },
         _ => testing::fail("expected function"),

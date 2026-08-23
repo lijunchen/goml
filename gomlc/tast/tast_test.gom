@@ -2999,6 +2999,15 @@ fn rounds_float32_literals() -> unit {
     testing::assert_eq(normalized_float32_literal("1e20"), "100000000000000000000");
     testing::assert_eq(normalized_float32_literal("1e-20"), "0.00000000000000000001");
     testing::assert_eq(normalized_float32_literal("-0.0"), "-0");
+    testing::assert_eq(
+        normalized_float32_literal("1.0000000596046447753906249999999999999999"),
+        "1",
+    );
+    testing::assert_eq(normalized_float32_literal("1.000000059604644775390625"), "1");
+    testing::assert_eq(
+        normalized_float32_literal("1.0000000596046447753906250000000000000001"),
+        "1.0000001",
+    );
     let file = checked_file("fn inferred() -> f32 { 3.14 } fn explicit() -> f32 { 3.14 }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -3041,6 +3050,68 @@ fn rounds_float32_literals() -> unit {
         },
         _ => testing::fail("expected generic inferred function"),
     }
+}
+
+#[test]
+fn rejects_overflowing_float_literals() -> unit {
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics("fn value() -> f32 { 1e39 }"),
+            "Float literal 1e39 cannot be represented as f32",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics("fn value() -> f64 { 1e309 }"),
+            "Float literal 1e309 cannot be represented as f64",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics("fn main() -> unit { let _ = 1e309; }"),
+            "Float literal 1e309 cannot be represented as f64",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "fn identity[T](value: T) -> T { value } fn value() -> f32 { identity(1e39) }",
+            ),
+            "Float literal 1e39 cannot be represented as f32",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "fn classify(value: f32) -> bool { match value { 1e39 => true, _ => false } }",
+            ),
+            "Float literal 1e39 cannot be represented as f32",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "fn classify(value: f64) -> bool { match value { 1e309 => true, _ => false } }",
+            ),
+            "Float literal 1e309 cannot be represented as f64",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics("fn value() -> i64 { 1e309 }"),
+            "Float literal 1e309 cannot be represented as i64",
+        ),
+    );
+    testing::assert_eq(
+        checked_diagnostics("fn tiny32() -> f32 { 1e-999999 } fn tiny64() -> f64 { 1e-999999 }").len(),
+        0,
+    );
+    testing::assert_eq(
+        checked_diagnostics(
+            "fn maximum32() -> f32 { 3.4028235e38 } fn maximum64() -> f64 { 1.7976931348623157e308 }",
+        ).len(),
+        0,
+    )
 }
 
 #[test]
