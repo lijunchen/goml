@@ -5395,6 +5395,17 @@ fn constant_pattern_endpoint(ctx: Checker, value: hir::Pat) -> bool {
     }
 }
 
+fn valid_range_pattern_endpoint(value: Primitive) -> bool {
+    match value {
+        Int { value: _ } | Int8 { value: _ } | Int16 { value: _ } | Int32 { value: _ } | Int64 {
+            value: _,
+        } | Uint { value: _ } | Uint8 { value: _ } | Uint16 { value: _ } | Uint32 { value: _ } | Uint64 {
+            value: _,
+        } | Char { value: _ } => true,
+        _ => false,
+    }
+}
+
 fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
     match value {
         Float { value: raw } => match prune(expected) {
@@ -5499,14 +5510,15 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                     || constant_pattern_endpoint(ctx, end);
                 let typed_start = check_pattern(ctx, start, expected);
                 let typed_end = check_pattern(ctx, end, expected);
-                if constant_endpoint {
+                let start_value = primitive_from_pattern(typed_start);
+                let end_value = primitive_from_pattern(typed_end);
+                if constant_endpoint || !valid_range_pattern_endpoint(start_value)
+                    || !valid_range_pattern_endpoint(end_value) {
                     push_diagnostic(
                         ctx,
                         "Range pattern endpoints must be integer or character literals",
                     )
                 } else {};
-                let start_value = primitive_from_pattern(typed_start);
-                let end_value = primitive_from_pattern(typed_end);
                 let equal = match (start_value, end_value) {
                     (Int { value: left }, Int { value: right }) | (
                         Int8 { value: left },
