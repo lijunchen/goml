@@ -18,6 +18,7 @@ pub struct FunctionNames {
 struct LowerEnv {
     builtin: tast::BuiltinContract,
     joins: Vec[anf::JoinBind],
+    constant_names: HashMap[string, unit],
     collection_array_consumers: HashMap[string, anf::Value],
     emitted_loop_labels: Vec[string],
     variants: VariantInfos,
@@ -518,6 +519,14 @@ fn scalar_constant_type(value: repr::Type) -> bool {
     }
 }
 
+fn build_constant_names(values: Vec[repr::Constant]) -> HashMap[string, unit] {
+    let result: HashMap[string, unit] = HashMap::new();
+    for value in values {
+        result[value.name] = ();
+    }
+    result
+}
+
 fn emit_constants(items: Vec[Item], values: Vec[repr::Constant], variants: VariantInfos) -> unit {
     let specs: Vec[ConstSpec] = Vec::new();
     for value in values {
@@ -624,15 +633,24 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
     }
 }
 
+fn imm_is_go_constant(env: LowerEnv, value: anf::Imm) -> bool {
+    match value {
+        Prim { .. } => true,
+        Var { name, ty: _ } => env.constant_names.contains(name),
+        Callable { .. } | Tag { .. } => false,
+    }
+}
+
 fn compile_runtime_imm(env: LowerEnv, value: anf::Imm, name: string) -> CompiledValue {
     let expr = compile_imm(env, value);
-    match value {
-        Prim { value: _, ty } => {
-            let stmts: Vec[Stmt] = Vec::new();
-            stmts.push(Stmt::Var { name, ty: lower_type(ty), value: Option::Some(expr) });
-            CompiledValue { stmts, expr: Expr::Var { name } }
-        },
-        _ => CompiledValue { stmts: Vec::new(), expr },
+    if imm_is_go_constant(env, value) {
+        let stmts: Vec[Stmt] = Vec::new();
+        stmts.push(
+            Stmt::Var { name, ty: lower_type(anf::imm_type(value)), value: Option::Some(expr) },
+        );
+        CompiledValue { stmts, expr: Expr::Var { name } }
+    } else {
+        CompiledValue { stmts: Vec::new(), expr }
     }
 }
 
@@ -1905,10 +1923,22 @@ fn compile_binary(value: ast::BinaryOp) -> BinaryOp {
     }
 }
 
-fn materializes_binary_operands(value: ast::BinaryOp) -> bool {
-    match value {
-        Add | Sub | Mul | Div | Rem | BitAnd | BitOr | BitXor | Shl | Shr => true,
+fn fixed_width_numeric_type(value: repr::Type) -> bool {
+    match repr::resolve_type(value) {
+        Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 => true,
         _ => false,
+    }
+}
+
+fn materializes_binary_operands(env: LowerEnv, op: ast::BinaryOp, lhs: anf::Imm, rhs: anf::Imm) -> bool {
+    if !imm_is_go_constant(env, lhs) || !imm_is_go_constant(env, rhs)
+        || !fixed_width_numeric_type(anf::imm_type(lhs)) {
+        false
+    } else {
+        match op {
+            Add | Sub | Mul | Div | Rem | BitAnd | BitOr | BitXor | Shl | Shr => true,
+            And | Or | Less | Greater | LessEq | GreaterEq | Eq | NotEq => false,
+        }
     }
 }
 
@@ -2116,12 +2146,13 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
             }
         },
         Binary { op, lhs, rhs, ty: _ } => {
-            let compiled_lhs = if materializes_binary_operands(op) {
+            let materializes = materializes_binary_operands(env, op, lhs, rhs);
+            let compiled_lhs = if materializes {
                 compile_runtime_imm(env, lhs, go_local_ident(bind_name) + "_lhs")
             } else {
                 CompiledValue { stmts: Vec::new(), expr: compile_imm(env, lhs) }
             };
-            let compiled_rhs = if materializes_binary_operands(op) {
+            let compiled_rhs = if materializes {
                 compile_runtime_imm(env, rhs, go_local_ident(bind_name) + "_rhs")
             } else {
                 CompiledValue { stmts: Vec::new(), expr: compile_imm(env, rhs) }
@@ -5063,6 +5094,7 @@ fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: 
 fn compile_function(
     builtin: tast::BuiltinContract,
     value: anf::Function,
+    constant_names: HashMap[string, unit],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -5104,6 +5136,7 @@ fn compile_function(
     let env = LowerEnv {
         builtin,
         joins,
+        constant_names,
         collection_array_consumers,
         emitted_loop_labels: Vec::new(),
         variants,
@@ -5143,6 +5176,7 @@ fn compile_function(
 fn compile_functions(
     builtin: tast::BuiltinContract,
     values: Vec[anf::Function],
+    constant_names: HashMap[string, unit],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -5164,6 +5198,7 @@ fn compile_functions(
                 compile_function(
                     builtin,
                     item.1,
+                    constant_names,
                     variants,
                     structs,
                     instances,
@@ -5188,6 +5223,7 @@ fn compile_functions(
                 compile_function(
                     builtin,
                     values[index],
+                    constant_names,
                     variants,
                     structs,
                     instances,
@@ -5271,6 +5307,7 @@ fn lower_with_test_cases(
     let structs = value.structs;
     let type_instances = value.type_instances;
     let constants = value.constants;
+    let constant_names = build_constant_names(constants);
     let statics = value.statics;
     let function_names = build_function_names(value.functions, structs, enums, type_instances);
     let pointer_params = build_pointer_param_infos(value.functions, structs);
@@ -5349,6 +5386,7 @@ fn lower_with_test_cases(
     for function in compile_functions(
         builtin,
         value.functions,
+        constant_names,
         variants,
         structs,
         type_instances,
