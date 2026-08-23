@@ -1789,49 +1789,68 @@ fn temp_root() -> string {
 }
 
 fn temp_go_path(source_path: string, source: string) -> string {
-    let directory = path::join(temp_root(), "gomlc-selfhost");
-    match fs::create_dir_all(directory) {
+    let root = path::join(temp_root(), "gomlc-selfhost");
+    match fs::create_dir_all(root) {
         Ok(()) => (),
         Err(error) => fail(error),
     };
-    let name = Hash::hash(source_path + "\n" + source).to_string() + ".go";
-    path::join(directory, name)
+    let prefix = Hash::hash(source_path + "\n" + source).to_string();
+    let mut suffix = 0;
+    loop {
+        let directory = path::join(root, prefix + "-" + suffix.to_string());
+        match fs::create_dir(directory) {
+            Ok(()) => break path::join(directory, "main.go"),
+            Err(error) => if error.kind() == io::ErrorKind::AlreadyExists {
+                suffix = suffix + 1;
+            } else {
+                fail(error.to_string())
+            },
+        };
+    }
 }
 
 fn command_succeeded(output: process::Output) -> bool {
     process::ExitStatus::success(process::Output::status(output))
 }
 
-fn cleanup_temp_file(go_file: string) -> unit {
-    let _ = process::Command::new("rm").arg("-f").arg(go_file).output();
+fn cleanup_temp_directory(go_file: string) -> unit {
+    match path::parent(go_file) {
+        Some(directory) => {
+            let _ = fs::remove_dir_all(directory);
+        },
+        None => (),
+    }
 }
 
-fn execute_with_go_run(directory: string, go_file: string) -> unit {
+fn execute_with_go_run(directory: string, go_file: string) -> Result[process::Output, string] {
     match process::Command::new("go").arg("run").arg(go_file).current_dir(directory).env(
         "TZ",
         "UTC",
     ).env("GOWORK", "off").env("GO111MODULE", "off").output() {
-        Ok(output) => if command_succeeded(output) {
-            write_stdout(process::Output::stdout(output))
-        } else {
-            fail("go run failed: " + trim_ascii(bytes_to_string(process::Output::stderr(output))))
-        },
-        Err(error) => fail("failed to execute go run: " + error),
+        Ok(output) => Result::Ok(output),
+        Err(error) => Result::Err("failed to execute go run: " + error),
     }
 }
 
 fn execute_go_source(source_path: string, source: string) -> unit {
     let go_file = temp_go_path(source_path, source);
-    match fs::write_file(go_file, source) {
-        Ok(()) => (),
-        Err(error) => fail(error),
-    };
     let directory = match path::parent(go_file) {
         Some(value) => value,
         None => temp_root(),
     };
-    execute_with_go_run(directory, go_file);
-    cleanup_temp_file(go_file)
+    let result = match fs::write_file(go_file, source) {
+        Ok(()) => execute_with_go_run(directory, go_file),
+        Err(error) => Result::Err(error),
+    };
+    cleanup_temp_directory(go_file);
+    match result {
+        Ok(output) => if command_succeeded(output) {
+            write_stdout(process::Output::stdout(output))
+        } else {
+            fail("go run failed: " + trim_ascii(bytes_to_string(process::Output::stderr(output))))
+        },
+        Err(error) => fail(error),
+    }
 }
 
 fn run_single(args: RunArgs) -> unit {
