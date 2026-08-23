@@ -77,8 +77,7 @@ fn manifest_module_path(source: string) -> Option[string] {
             while equals < line.byte_len() && line.byte_get(equals) != b'=' {
                 equals = equals + 1;
             }
-            if equals < line.byte_len()
-                && trim_ascii(line.byte_slice(0, equals)) == "path" {
+            if equals < line.byte_len() && trim_ascii(line.byte_slice(0, equals)) == "path" {
                 let value = trim_ascii(line.byte_slice(equals + 1, line.byte_len()));
                 if value.byte_len() >= 2 && value.byte_get(0) == b'"'
                     && value.byte_get(value.byte_len() - 1) == b'"' {
