@@ -5433,10 +5433,7 @@ fn range_pattern_order_valid(start: Primitive, end: Primitive, inclusive: bool) 
             right.to_u32().to_string(),
             inclusive,
         ),
-        _ => match (
-            integer_range_pattern_endpoint(start),
-            integer_range_pattern_endpoint(end),
-        ) {
+        _ => match (integer_range_pattern_endpoint(start), integer_range_pattern_endpoint(end)) {
             (Some(left), Some(right)) => {
                 decimal_range_pattern_order_valid(left, right, inclusive)
             },
