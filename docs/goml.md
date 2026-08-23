@@ -91,6 +91,8 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 
 Numbers have no type suffix.Integer literals support binary `0b`/`0B`, octal `0o`/`0O`, decimal, and hexadecimal `0x`/`0X` forms.The `_` delimiter can be used between two digits; floating point numbers support `e`/`E` exponent and optional exponent sign.When using a decimal point, there must be digits on both sides of the decimal point.Negative numbers are composed of unary `-` and positive numeric literals.
 
+Floating-point literals are rounded directly from their source text to the context-selected `f32` or `f64` width using round-to-nearest, ties-to-even. Overflowing literals are rejected; underflow may round to zero.
+
 Unsuffixed numbers can get the width from the context:
 
 ```goml
