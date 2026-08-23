@@ -3212,6 +3212,20 @@ fn widen_negative(value/0: i8) -> u64 {
   (value/0 as u64)
 }
 
+fn guarded_match() -> isize {
+  let value/0 = 0 in
+  {
+    if {
+      let _wild0 = value/0 = 1 in
+      false
+    } {
+        99
+    } else {
+        value/0
+    }
+  }
+}
+
 fn main() -> unit {
   let values/0 = [6, 10, 4] in
   let pair/0 = Pair { left: 7, right: 8 } in
@@ -3242,5 +3256,8 @@ fn main() -> unit {
   let _wild8 = println((shadow(3) == shadowed/0)) in
   let widened/0 = 18446744073709551615 in
   let _wild9 = println((widened/0 == widen_negative(-1))) in
+  let folded_guard/0 = 1 in
+  let _wild10 = println(guarded_match()) in
+  let _wild11 = println(folded_guard/0) in
   println(factorial(4))
 }

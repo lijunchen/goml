@@ -76,86 +76,104 @@ fn widen_negative(value/0: i8) -> u64 {
   t0
 }
 
+fn guarded_match() -> isize {
+  let value/0 = 0 in
+  let _wild0 = value/0 = 1 in
+  value/0
+}
+
 fn main() -> unit {
   let values/0 = [6, 10, 4] in
-  join inline_cont0(_wild0: unit) -> unit {
-    let t0 = @intrinsic(array.get)(values/0, 0) in
-    join inline_cont1(_wild1: unit) -> unit {
-      let t1 = @intrinsic(array.get)(values/0, 1) in
-      join inline_cont2(_wild2: unit) -> unit {
-        let t2 = @intrinsic(array.get)(values/0, 2) in
-        join inline_cont3(_wild3: unit) -> unit {
-          let t3 = 7 in
-          let t4 = 8 in
-          let t5 = (t3 + t4) in
-          join inline_cont4(_wild4: unit) -> unit {
-            join k0() -> unit {
-              let t6 = factorial(5) in
-              let t7 = (t6 == ANSWER) in
-              join inline_cont5(_wild5: unit) -> unit {
-                let shadowed/0 = 12 in
-                join inline_cont6(_wild6: unit) -> unit {
-                  join inline_cont7(t8: isize) -> unit {
-                    let t9 = (t8 == shadowed/0) in
-                    join inline_cont8(_wild7: unit) -> unit {
-                      let widened/0 = 18446744073709551615 in
-                      join inline_cont9(t10: u64) -> unit {
-                        let t11 = (widened/0 == t10) in
-                        join inline_cont10(_wild8: unit) -> unit {
-                          let t12 = factorial(4) in
-                          let inline0 = trait_impl#ToString#isize#to_string(t12) in
-                          let inline1 = @runtime(core.string_println)(inline0) in
-                          ()
+  let _wild0 = println__T_isize(ANSWER) in
+  let t0 = @intrinsic(array.get)(values/0, 0) in
+  join inline_cont0(_wild1: unit) -> unit {
+    let t1 = @intrinsic(array.get)(values/0, 1) in
+    join inline_cont1(_wild2: unit) -> unit {
+      let t2 = @intrinsic(array.get)(values/0, 2) in
+      join inline_cont2(_wild3: unit) -> unit {
+        let t3 = 7 in
+        let t4 = 8 in
+        let t5 = (t3 + t4) in
+        join inline_cont3(_wild4: unit) -> unit {
+          join k0() -> unit {
+            let t6 = factorial(5) in
+            let t7 = (t6 == ANSWER) in
+            join inline_cont4(_wild5: unit) -> unit {
+              let shadowed/0 = 12 in
+              join inline_cont5(_wild6: unit) -> unit {
+                join inline_cont6(t8: isize) -> unit {
+                  let t9 = (t8 == shadowed/0) in
+                  join inline_cont7(_wild7: unit) -> unit {
+                    let widened/0 = 18446744073709551615 in
+                    join inline_cont8(t10: u64) -> unit {
+                      let t11 = (widened/0 == t10) in
+                      join inline_cont9(_wild8: unit) -> unit {
+                        let folded_guard/0 = 1 in
+                        join inline_cont10(t12: isize) -> unit {
+                          join inline_cont11(_wild9: unit) -> unit {
+                            join inline_cont12(_wild10: unit) -> unit {
+                              let t13 = factorial(4) in
+                              let inline0 = trait_impl#ToString#isize#to_string(t13) in
+                              let inline1 = @runtime(core.string_println)(inline0) in
+                              ()
+                            } in
+                            let inline2 = trait_impl#ToString#isize#to_string(folded_guard/0) in
+                            let inline3 = @runtime(core.string_println)(inline2) in
+                            jump inline_cont12(())
+                          } in
+                          let inline4 = trait_impl#ToString#isize#to_string(t12) in
+                          let inline5 = @runtime(core.string_println)(inline4) in
+                          jump inline_cont11(())
                         } in
-                        let inline2 = trait_impl#ToString#bool#to_string(t11) in
-                        let inline3 = @runtime(core.string_println)(inline2) in
-                        jump inline_cont10(())
+                        let inline6 = 0 in
+                        let inline7 = inline6 = 1 in
+                        jump inline_cont10(inline6)
                       } in
-                      let inline4 = -1 in
-                      let inline5 = (inline4 as u64) in
-                      jump inline_cont9(inline5)
+                      let inline8 = trait_impl#ToString#bool#to_string(t11) in
+                      let inline9 = @runtime(core.string_println)(inline8) in
+                      jump inline_cont9(())
                     } in
-                    let inline6 = trait_impl#ToString#bool#to_string(t9) in
-                    let inline7 = @runtime(core.string_println)(inline6) in
-                    jump inline_cont8(())
+                    let inline10 = -1 in
+                    let inline11 = (inline10 as u64) in
+                    jump inline_cont8(inline11)
                   } in
-                  let inline8 = 3 in
-                  let inline9 = (inline8 + 1) in
-                  let inline10 = (inline9 * 2) in
-                  let inline11 = (inline9 + inline10) in
-                  jump inline_cont7(inline11)
+                  let inline12 = trait_impl#ToString#bool#to_string(t9) in
+                  let inline13 = @runtime(core.string_println)(inline12) in
+                  jump inline_cont7(())
                 } in
-                let inline12 = trait_impl#ToString#isize#to_string(shadowed/0) in
-                let inline13 = @runtime(core.string_println)(inline12) in
-                jump inline_cont6(())
+                let inline14 = 3 in
+                let inline15 = (inline14 + 1) in
+                let inline16 = (inline15 * 2) in
+                let inline17 = (inline15 + inline16) in
+                jump inline_cont6(inline17)
               } in
-              let inline14 = trait_impl#ToString#bool#to_string(t7) in
-              let inline15 = @runtime(core.string_println)(inline14) in
+              let inline18 = trait_impl#ToString#isize#to_string(shadowed/0) in
+              let inline19 = @runtime(core.string_println)(inline18) in
               jump inline_cont5(())
             } in
-            let x0 = 9 in
-            let inline16 = trait_impl#ToString#isize#to_string(x0) in
-            let inline17 = @runtime(core.string_println)(inline16) in
-            jump k0()
+            let inline20 = trait_impl#ToString#bool#to_string(t7) in
+            let inline21 = @runtime(core.string_println)(inline20) in
+            jump inline_cont4(())
           } in
-          let inline18 = trait_impl#ToString#isize#to_string(t5) in
-          let inline19 = @runtime(core.string_println)(inline18) in
-          jump inline_cont4(())
+          let x0 = 9 in
+          let inline22 = trait_impl#ToString#isize#to_string(x0) in
+          let inline23 = @runtime(core.string_println)(inline22) in
+          jump k0()
         } in
-        let inline20 = trait_impl#ToString#isize#to_string(t2) in
-        let inline21 = @runtime(core.string_println)(inline20) in
+        let inline24 = trait_impl#ToString#isize#to_string(t5) in
+        let inline25 = @runtime(core.string_println)(inline24) in
         jump inline_cont3(())
       } in
-      let inline22 = trait_impl#ToString#isize#to_string(t1) in
-      let inline23 = @runtime(core.string_println)(inline22) in
+      let inline26 = trait_impl#ToString#isize#to_string(t2) in
+      let inline27 = @runtime(core.string_println)(inline26) in
       jump inline_cont2(())
     } in
-    let inline24 = trait_impl#ToString#isize#to_string(t0) in
-    let inline25 = @runtime(core.string_println)(inline24) in
+    let inline28 = trait_impl#ToString#isize#to_string(t1) in
+    let inline29 = @runtime(core.string_println)(inline28) in
     jump inline_cont1(())
   } in
-  let inline26 = trait_impl#ToString#isize#to_string(ANSWER) in
-  let inline27 = @runtime(core.string_println)(inline26) in
+  let inline30 = trait_impl#ToString#isize#to_string(t0) in
+  let inline31 = @runtime(core.string_println)(inline30) in
   jump inline_cont0(())
 }
 
