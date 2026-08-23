@@ -5789,12 +5789,14 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 Var { name: _, is_mut: _ } | Wild => true,
                 _ => false,
             };
+            let pattern_diagnostic_count = ctx.diagnostics.len();
             let pattern = check_pattern(ctx, pat, pattern_ty);
+            let valid_pattern = ctx.diagnostics.len() == pattern_diagnostic_count;
             let irrefutable = simple_pattern
                 || pattern_is_irrefutable(coverage_context(ctx), pattern);
             match else_branch {
                 Some(source_else) => {
-                    if irrefutable {
+                    if valid_pattern && irrefutable {
                         push_diagnostic_at(
                             ctx,
                             "`let else` requires a refutable pattern",
@@ -5827,7 +5829,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                     }
                 },
                 None => {
-                    if irrefutable {} else {
+                    if !valid_pattern || irrefutable {} else {
                         push_diagnostic_at(
                             ctx,
                             "Refutable pattern is not allowed in let binding; use match instead",
