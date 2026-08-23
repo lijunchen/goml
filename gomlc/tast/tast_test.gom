@@ -327,7 +327,7 @@ fn dependency_hir(source: string, package_name: string) -> hir::File {
 #[test]
 fn environment_collection_preserves_hir_trait_scope() -> unit {
     let file = dependency_hir(
-        "package values; trait Local { fn value(self: Self) -> int32; }",
+        "package values; trait Local { fn value(self: Self) -> i32; }",
         "example::values",
     );
     testing::assert_eq(file.use_traits.len(), 0);
