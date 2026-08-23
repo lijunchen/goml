@@ -1,0 +1,72 @@
+fn default_break_outer_continue() -> isize {
+    let rounds = Ref::new(0);
+    let channel: Channel[isize] = Channel::new(0);
+    'outer: loop {
+        if rounds.get() == 0 {
+            rounds.set(1);
+            loop {
+                select {
+                    recv(channel) as _ => continue,
+                    default => break,
+                }
+            };
+            continue 'outer;
+        } else {
+            break 'outer 11;
+        }
+    }
+}
+
+fn default_break_outer_break() -> isize {
+    let channel: Channel[isize] = Channel::new(0);
+    'outer: loop {
+        loop {
+            select {
+                recv(channel) as _ => continue,
+                default => break,
+            }
+        };
+        break 'outer 12;
+    }
+}
+
+fn arm_break_outer_continue() -> isize {
+    let rounds = Ref::new(0);
+    let channel: Channel[isize] = Channel::new(1);
+    channel.send(1);
+    'outer: loop {
+        if rounds.get() == 0 {
+            rounds.set(1);
+            loop {
+                select {
+                    recv(channel) as _ => break,
+                    default => continue,
+                }
+            };
+            continue 'outer;
+        } else {
+            break 'outer 13;
+        }
+    }
+}
+
+fn arm_break_outer_break() -> isize {
+    let channel: Channel[isize] = Channel::new(1);
+    channel.send(1);
+    'outer: loop {
+        loop {
+            select {
+                recv(channel) as _ => break,
+                default => continue,
+            }
+        };
+        break 'outer 14;
+    }
+}
+
+fn main() -> unit {
+    println(default_break_outer_continue());
+    println(default_break_outer_break());
+    println(arm_break_outer_continue());
+    println(arm_break_outer_break())
+}
