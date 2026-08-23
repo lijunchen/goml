@@ -3689,6 +3689,10 @@ fn invalid_loop_outcomes() -> LoopOutcomes {
     LoopOutcomes { has_continue: false, exits: Vec::new(), valid: false }
 }
 
+fn neutral_loop_outcomes() -> LoopOutcomes {
+    LoopOutcomes { has_continue: false, exits: Vec::new(), valid: true }
+}
+
 fn merge_loop_outcomes(target: LoopOutcomes, value: LoopOutcomes) -> LoopOutcomes {
     for exit in value.exits {
         target.exits.push(exit)
@@ -3704,16 +3708,18 @@ fn block_loop_outcomes(
     value: anf::Block,
     loop_name: string,
     parent: Vec[anf::JoinBind],
+    internal_joins: Vec[anf::JoinBind],
     visited: Vec[string],
 ) -> LoopOutcomes {
     let joins = scoped_joins(parent, value);
-    term_loop_outcomes(value.term, loop_name, joins, visited)
+    term_loop_outcomes(value.term, loop_name, joins, internal_joins, visited)
 }
 
 fn term_loop_outcomes(
     value: anf::Term,
     loop_name: string,
     joins: Vec[anf::JoinBind],
+    internal_joins: Vec[anf::JoinBind],
     visited: Vec[string],
 ) -> LoopOutcomes {
     match value {
@@ -3724,11 +3730,22 @@ fn term_loop_outcomes(
                 invalid_loop_outcomes()
             }
         } else if visited.contains(target) {
-            invalid_loop_outcomes()
+            neutral_loop_outcomes()
         } else {
             match find_join(joins, target) {
                 Some(join) => match join.role {
-                    anf::JoinRole::LoopExit => {
+                    anf::JoinRole::LoopExit => if find_join(internal_joins, target).is_some() {
+                        visited.push(target);
+                        let result = block_loop_outcomes(
+                            join.body,
+                            loop_name,
+                            joins,
+                            internal_joins,
+                            visited,
+                        );
+                        let _ = visited.remove(visited.len() - 1);
+                        result
+                    } else {
                         LoopOutcomes {
                             has_continue: false,
                             exits: Vec::from_array([target]),
@@ -3737,11 +3754,17 @@ fn term_loop_outcomes(
                     },
                     anf::JoinRole::Continuation => {
                         visited.push(target);
-                        let result = block_loop_outcomes(join.body, loop_name, joins, visited);
+                        let result = block_loop_outcomes(
+                            join.body,
+                            loop_name,
+                            joins,
+                            internal_joins,
+                            visited,
+                        );
                         let _ = visited.remove(visited.len() - 1);
                         result
                     },
-                    anf::JoinRole::Return => invalid_loop_outcomes(),
+                    anf::JoinRole::Return => neutral_loop_outcomes(),
                 },
                 None => invalid_loop_outcomes(),
             }
@@ -3750,11 +3773,11 @@ fn term_loop_outcomes(
             let mut result = new_loop_outcomes();
             result = merge_loop_outcomes(
                 result,
-                block_loop_outcomes(then_, loop_name, joins, visited),
+                block_loop_outcomes(then_, loop_name, joins, internal_joins, visited),
             );
             result = merge_loop_outcomes(
                 result,
-                block_loop_outcomes(else_, loop_name, joins, visited),
+                block_loop_outcomes(else_, loop_name, joins, internal_joins, visited),
             );
             result
         },
@@ -3764,7 +3787,7 @@ fn term_loop_outcomes(
             for arm in arms {
                 result = merge_loop_outcomes(
                     result,
-                    block_loop_outcomes(arm.body, loop_name, joins, visited),
+                    block_loop_outcomes(arm.body, loop_name, joins, internal_joins, visited),
                 );
                 branches = branches + 1;
             }
@@ -3772,7 +3795,7 @@ fn term_loop_outcomes(
                 Some(body) => {
                     result = merge_loop_outcomes(
                         result,
-                        block_loop_outcomes(body, loop_name, joins, visited),
+                        block_loop_outcomes(body, loop_name, joins, internal_joins, visited),
                     );
                     branches = branches + 1;
                 },
@@ -3795,6 +3818,7 @@ fn term_loop_outcomes(
                         },
                         loop_name,
                         joins,
+                        internal_joins,
                         visited,
                     ),
                 );
@@ -3804,7 +3828,7 @@ fn term_loop_outcomes(
                 Some(body) => {
                     result = merge_loop_outcomes(
                         result,
-                        block_loop_outcomes(body, loop_name, joins, visited),
+                        block_loop_outcomes(body, loop_name, joins, internal_joins, visited),
                     );
                     branches = branches + 1;
                 },
@@ -3815,14 +3839,16 @@ fn term_loop_outcomes(
             } else {};
             result
         },
-        Return(_) | Unreachable { ty: _ } => invalid_loop_outcomes(),
+        Return(_) | Unreachable { ty: _ } => neutral_loop_outcomes(),
     }
 }
 
 fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
     string,
 ] {
-    let outcomes = block_loop_outcomes(value, loop_name, parent, Vec::new());
+    let internal_joins: Vec[anf::JoinBind] = Vec::new();
+    collect_joins_block(internal_joins, value);
+    let outcomes = block_loop_outcomes(value, loop_name, parent, internal_joins, Vec::new());
     if !outcomes.valid || !outcomes.has_continue || outcomes.exits.is_empty() {
         return Option::None
     } else {};
