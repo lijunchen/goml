@@ -1907,7 +1907,7 @@ fn compile_binary(value: ast::BinaryOp) -> BinaryOp {
 
 fn materializes_binary_operands(value: ast::BinaryOp) -> bool {
     match value {
-        Rem | BitAnd | BitOr | BitXor | Shl | Shr => true,
+        Add | Sub | Mul | Div | Rem | BitAnd | BitOr | BitXor | Shl | Shr => true,
         _ => false,
     }
 }
@@ -2096,7 +2096,11 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
         },
         Unary { op, expr: operand, ty: _ } => {
             let compiled = match op {
-                BitNot => compile_runtime_imm(env, operand, go_local_ident(bind_name) + "_operand"),
+                Neg | BitNot => compile_runtime_imm(
+                    env,
+                    operand,
+                    go_local_ident(bind_name) + "_operand",
+                ),
                 _ => CompiledValue { stmts: Vec::new(), expr: compile_imm(env, operand) },
             };
             append_stmts(stmts, compiled.stmts);
