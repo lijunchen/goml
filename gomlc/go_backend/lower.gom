@@ -4163,6 +4163,17 @@ fn stmt_contains_break_label(value: Stmt, label: string) -> bool {
                 None => false,
             }
         },
+        Select { cases, default } => {
+            for case in cases {
+                if block_contains_break_label(case.body, label) {
+                    return true
+                } else {}
+            }
+            match default {
+                Some(body) => block_contains_break_label(body, label),
+                None => false,
+            }
+        },
         _ => false,
     }
 }
