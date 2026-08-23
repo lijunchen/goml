@@ -3390,6 +3390,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
     let pattern_spans: Vec[ast::Span] = Vec::new();
     let invalid_pattern_arms: Vec[bool] = Vec::new();
     let pattern_errors: Vec[bool] = Vec::new();
+    let guard_errors: Vec[bool] = Vec::new();
     for arm in arms {
         pattern_spans.push(arm.pat.span);
         let or_binding_mismatch = hir_or_pattern_binding_mismatch(arm.pat)
@@ -3402,10 +3403,12 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
             || or_binding_mismatch
             || tast_or_pattern_binding_mismatch(pat);
         invalid_pattern_arms.push(invalidates_coverage);
+        let guard_diagnostic_count = ctx.diagnostics.len();
         let guard = match arm.guard {
             Some(value) => Option::Some(check_expr(ctx, value, Option::Some(Type::Bool))),
             None => Option::None,
         };
+        guard_errors.push(ctx.diagnostics.len() > guard_diagnostic_count);
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
         typed_arms.push(Arm { pat, guard, body })
     }
@@ -3413,7 +3416,9 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
         && is_numeric_type(expr_type(scrutinee)) {
         let _ = resolve_type(expr_type(scrutinee));
     } else {};
-    let match_ty = if !bool_values_contain(pattern_errors, true)
+    let invalid_coverage = bool_values_contain(pattern_errors, true)
+        || bool_values_contain(guard_errors, true);
+    let match_ty = if !invalid_coverage
         && match_arms_all_never(typed_arms)
         && match_is_exhaustive(coverage_context(ctx), expr_type(scrutinee), typed_arms) {
         Type::Never
@@ -3429,7 +3434,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
                 span: ctx.current_span.get(),
                 pattern_spans,
                 invalid_pattern_arms,
-                invalid_patterns: bool_values_contain(pattern_errors, true),
+                invalid_patterns: invalid_coverage,
             },
         ),
         ty: match_ty,
