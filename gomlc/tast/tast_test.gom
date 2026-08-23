@@ -3327,23 +3327,16 @@ fn checks_exact_float_literals_in_integer_patterns() -> unit {
     testing::assert_eq(invalid.len(), 6);
     testing::assert(has_diagnostic(invalid, "Float literal 1.5 cannot be represented as i64"));
     testing::assert(
-        has_diagnostic(
-            invalid,
-            "Float literal 1.0000000000000001 cannot be represented as i64",
-        ),
+        has_diagnostic(invalid, "Float literal 1.0000000000000001 cannot be represented as i64"),
     );
-    testing::assert(
-        has_diagnostic(invalid, "Float literal 1e-999999 cannot be represented as i64"),
-    );
+    testing::assert(has_diagnostic(invalid, "Float literal 1e-999999 cannot be represented as i64"));
     testing::assert(
         has_diagnostic(invalid, "Integer literal 9223372036854775808 does not fit in i64"),
     );
     testing::assert(
         has_diagnostic(invalid, "Integer literal 18446744073709551616 does not fit in u64"),
     );
-    testing::assert(
-        has_diagnostic(invalid, "Float literal 1e999999 cannot be represented as i64"),
-    )
+    testing::assert(has_diagnostic(invalid, "Float literal 1e999999 cannot be represented as i64"))
 }
 
 #[test]
