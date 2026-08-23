@@ -1647,7 +1647,10 @@ fn match_useful_arms(ctx: CoverageContext, arms: Vec[Arm]) -> Vec[bool] {
     let result: Vec[bool] = Vec::new();
     for arm in arms {
         let patterns = coverage_patterns(arm.pat);
-        result.push(coverage_guard(arm.guard) && coverage_patterns_useful(ctx, matrix, patterns));
+        result.push(
+            coverage_guard_may_match(arm.guard)
+                && coverage_patterns_useful(ctx, matrix, patterns),
+        );
         if coverage_guard(arm.guard) {
             for pattern in patterns {
                 matrix.push(Vec::from_array([pattern]))
