@@ -3301,6 +3301,52 @@ fn rejects_overflowing_float_literals() -> unit {
 }
 
 #[test]
+fn checks_exact_float_literals_in_integer_patterns() -> unit {
+    let valid = checked_diagnostics(
+        "fn exact() -> i64 { 9007199254740993.0 } fn signed_max() -> i64 { 9223372036854775807.0 } fn unsigned_max() -> u64 { 18446744073709551615.0 } fn signed(value: i64) -> bool { match value { -9223372036854775808.0 => true, _ => false } } fn unsigned(value: u64) -> bool { match value { 18446744073709551615.0 => true, _ => false } }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let file = checked_file(
+        "fn classify(value: i64) -> bool { match value { 9007199254740993.0 => true, _ => false } }",
+    );
+    match file.items.get(0) {
+        Function(value) => match value.body.tail {
+            Some(Match { expr: _, arms, .. }) => match arms.get(0).pat {
+                Prim { value: Int { value }, ty: Int64 } => {
+                    testing::assert_eq(value, "9007199254740993")
+                },
+                _ => testing::fail("expected exact integer pattern"),
+            },
+            _ => testing::fail("expected match expression"),
+        },
+        _ => testing::fail("expected classify function"),
+    };
+    let invalid = checked_diagnostics(
+        "fn fractional(value: i64) -> bool { match value { 1.5 => true, _ => false } } fn precise(value: i64) -> bool { match value { 1.0000000000000001 => true, _ => false } } fn tiny(value: i64) -> bool { match value { 1e-999999 => true, _ => false } } fn signed_over(value: i64) -> bool { match value { 9223372036854775808.0 => true, _ => false } } fn unsigned_over(value: u64) -> bool { match value { 18446744073709551616.0 => true, _ => false } } fn huge(value: i64) -> bool { match value { 1e999999 => true, _ => false } }",
+    );
+    testing::assert_eq(invalid.len(), 6);
+    testing::assert(has_diagnostic(invalid, "Float literal 1.5 cannot be represented as i64"));
+    testing::assert(
+        has_diagnostic(
+            invalid,
+            "Float literal 1.0000000000000001 cannot be represented as i64",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(invalid, "Float literal 1e-999999 cannot be represented as i64"),
+    );
+    testing::assert(
+        has_diagnostic(invalid, "Integer literal 9223372036854775808 does not fit in i64"),
+    );
+    testing::assert(
+        has_diagnostic(invalid, "Integer literal 18446744073709551616 does not fit in u64"),
+    );
+    testing::assert(
+        has_diagnostic(invalid, "Float literal 1e999999 cannot be represented as i64"),
+    )
+}
+
+#[test]
 fn indents_array_control_flow_expressions() -> unit {
     let file = checked_file("fn choose(flag: bool) -> [i32; 1] { [if flag { 1 } else { 2 }] }");
     let expected = "fn choose(flag/0: bool) -> [i32; 1] {\n" + "    [\n"

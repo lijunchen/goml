@@ -46,6 +46,37 @@ fn rejects_invalid_normalized_integers() -> unit {
     }
 }
 
+fn assert_float_integer(value: string, expected: string) -> unit {
+    match normalize_float_integer(value, 20) {
+        Some(actual) => testing::assert_eq(actual, expected),
+        None => testing::fail("expected exact integer float"),
+    }
+}
+
+fn assert_non_integer_float(value: string) -> unit {
+    match normalize_float_integer(value, 20) {
+        Some(_) => testing::fail("expected non-integer float"),
+        None => (),
+    }
+}
+
+#[test]
+fn normalizes_exact_float_integers_without_rounding() -> unit {
+    assert_float_integer("1.0", "1");
+    assert_float_integer("1.23e2", "123");
+    assert_float_integer("1200e-2", "12");
+    assert_float_integer("-42.000", "-42");
+    assert_float_integer("0e-999999", "0");
+    assert_float_integer("9007199254740993.0", "9007199254740993");
+    assert_float_integer("9223372036854775807.0", "9223372036854775807");
+    assert_float_integer("18446744073709551615.0", "18446744073709551615");
+    assert_non_integer_float("1.5");
+    assert_non_integer_float("1201e-2");
+    assert_non_integer_float("1.0000000000000001");
+    assert_non_integer_float("1e-999999");
+    assert_non_integer_float("1e999999")
+}
+
 #[test]
 fn parses_valid_float32() -> unit {
     match parse_float32("3.5") {
