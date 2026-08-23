@@ -287,6 +287,16 @@ fn analyzes_and_navigates_module_root_imports() -> unit {
             has_completion(completions(analyze(main_path, scope_source), offset + 3), "println"),
         ),
         None => testing::fail("expected scope completion prefix"),
+    };
+    let package_scope_source = "package main;\nuse module::service; fn main() -> unit { ser }";
+    match last_substring(package_scope_source, "ser") {
+        Some(offset) => testing::assert(
+            has_completion(
+                completions(analyze(main_path, package_scope_source), offset + 3),
+                "service",
+            ),
+        ),
+        None => testing::fail("expected package scope completion prefix"),
     }
 }
 
