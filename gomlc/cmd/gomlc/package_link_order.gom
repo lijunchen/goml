@@ -10,7 +10,7 @@ struct PackageOrderNode {
 }
 
 fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for value in values {
         for dependency in value.import_aliases {
             if result.contains(dependency.package_name) {} else {
@@ -40,8 +40,8 @@ fn package_node_is_ready(value: PackageOrderNode, remaining: Vec[PackageOrderNod
 }
 
 fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[isize], string] {
-    let remaining: Vec[PackageOrderNode] = Vec::from_array([]);
-    let names: Vec[string] = Vec::from_array([]);
+    let remaining: Vec[PackageOrderNode] = Vec::new();
+    let names: Vec[string] = Vec::new();
     for value in values {
         if names.contains(value.name) {
             return Result::Err("duplicate core provided for package " + value.name)
@@ -50,7 +50,7 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[isize], stri
             remaining.push(value)
         }
     }
-    let result: Vec[isize] = Vec::from_array([]);
+    let result: Vec[isize] = Vec::new();
     while !remaining.is_empty() {
         let mut candidate = -1;
         for index in 0..remaining.len() {
@@ -73,7 +73,7 @@ fn order_artifact_compilations(values: Vec[ArtifactCompilation]) -> Result[
     Vec[ArtifactCompilation],
     string,
 ] {
-    let nodes: Vec[PackageOrderNode] = Vec::from_array([]);
+    let nodes: Vec[PackageOrderNode] = Vec::new();
     for index in 0..values.len() {
         let value = values[index];
         nodes.push(
@@ -86,7 +86,7 @@ fn order_artifact_compilations(values: Vec[ArtifactCompilation]) -> Result[
     }
     match order_package_nodes(nodes) {
         Ok(order) => {
-            let result: Vec[ArtifactCompilation] = Vec::from_array([]);
+            let result: Vec[ArtifactCompilation] = Vec::new();
             for index in order {
                 result.push(values[index])
             }

@@ -43,7 +43,7 @@ fn derive_attribute_at(value: Analysis, offset: isize) -> bool {
 }
 
 fn comptime_derive_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
-    let result: Vec[SyntaxToken] = Vec::from_array([]);
+    let result: Vec[SyntaxToken] = Vec::new();
     let mut found_derive = false;
     let mut index = token_index_at_or_after(value.syntax, node.start);
     while index < value.syntax.tokens.len() && value.syntax.tokens[index].start < node.end {
@@ -90,7 +90,7 @@ fn comptime_derive_paths(value: Analysis, canonical: string) -> Vec[string] {
 }
 
 fn comptime_derive_targets(value: Analysis, canonical: string) -> Vec[ComptimeDeriveTarget] {
-    let result: Vec[ComptimeDeriveTarget] = Vec::from_array([]);
+    let result: Vec[ComptimeDeriveTarget] = Vec::new();
     for path in comptime_derive_paths(value, canonical) {
         for module in value.comptime_modules {
             for entry in module.derive_entries {
@@ -110,7 +110,7 @@ fn comptime_derive_targets(value: Analysis, canonical: string) -> Vec[ComptimeDe
 
 fn comptime_derive_targets_at(value: Analysis, offset: isize) -> Vec[ComptimeDeriveTarget] {
     if !derive_attribute_at(value, offset) {
-        return Vec::from_array([])
+        return Vec::new()
     } else {};
     match node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
         Some(node) => {
@@ -120,10 +120,10 @@ fn comptime_derive_targets_at(value: Analysis, offset: isize) -> Vec[ComptimeDer
                     value,
                     canonical_path_at(value, node, identifiers, index),
                 ),
-                None => Vec::from_array([]),
+                None => Vec::new(),
             }
         },
-        None => Vec::from_array([]),
+        None => Vec::new(),
     }
 }
 
@@ -155,7 +155,7 @@ fn comptime_derive_definition(value: Analysis, target: ComptimeDeriveTarget) -> 
 }
 
 fn comptime_derive_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
-    let result: Vec[DefinitionResult] = Vec::from_array([]);
+    let result: Vec[DefinitionResult] = Vec::new();
     for target in comptime_derive_targets_at(value, offset) {
         match comptime_derive_definition(value, target) {
             Some(definition) => push_definition(result, definition),

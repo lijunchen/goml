@@ -106,7 +106,7 @@ fn parse_simple_statement(parser: Parser) -> ast::Node {
 }
 
 fn parse_statement_list(parser: Parser, stop_at_case: bool) -> Vec[ast::Node] {
-    let statements: Vec[ast::Node] = Vec::from_array([]);
+    let statements: Vec[ast::Node] = Vec::new();
     while !at(parser, token::Kind::Rbrace) && !eof(parser)
         && !(stop_at_case && (at(parser, token::Kind::Case) || at(parser, token::Kind::Default))) {
         let before = significant_index(parser, 0);
@@ -175,7 +175,7 @@ fn skip_block_statement(parser: Parser) -> ast::Node {
     if right < 0 {
         report(parser, current(parser).start, "expected '}', found 'EOF'")
     } else {};
-    block_node(left.start, Vec::from_array([]), right)
+    block_node(left.start, Vec::new(), right)
 }
 
 fn unparenthesized_call_expression(value: ast::Node) -> ast::Node {
@@ -238,7 +238,7 @@ fn parse_return_statement(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Return);
     let results = if at(parser, token::Kind::Semicolon) || at(parser, token::Kind::Rbrace)
         || eof(parser) {
-        Vec::from_array([])
+        Vec::new()
     } else {
         parse_expression_list(parser)
     };
@@ -373,7 +373,7 @@ fn parse_case_clause(parser: Parser) -> ast::Node {
     let expressions = if token::equal(keyword.kind, token::Kind::Case) {
         parse_expression_list(parser)
     } else {
-        Vec::from_array([])
+        Vec::new()
     };
     let colon = expect(parser, token::Kind::Colon);
     let body = parse_statement_list(parser, true);
@@ -453,7 +453,7 @@ fn parse_switch_statement(parser: Parser) -> ast::Node {
     } else {};
     parser.expr_level.set(saved_level);
     let left = expect(parser, token::Kind::Lbrace);
-    let clauses: Vec[ast::Node] = Vec::from_array([]);
+    let clauses: Vec[ast::Node] = Vec::new();
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         if at(parser, token::Kind::Case) || at(parser, token::Kind::Default) {
             clauses.push(parse_case_clause(parser))
@@ -541,7 +541,7 @@ fn parse_comm_clause(parser: Parser) -> ast::Node {
 fn parse_select_statement(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Select);
     let left = expect(parser, token::Kind::Lbrace);
-    let clauses: Vec[ast::Node] = Vec::from_array([]);
+    let clauses: Vec[ast::Node] = Vec::new();
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         if at(parser, token::Kind::Case) || at(parser, token::Kind::Default) {
             clauses.push(parse_comm_clause(parser))

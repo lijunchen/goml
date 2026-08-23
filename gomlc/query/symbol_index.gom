@@ -349,7 +349,7 @@ pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
     match value.symbol_index.get() {
         Some(index) => index,
         None => {
-            let symbols: Vec[Symbol] = Vec::from_array([]);
+            let symbols: Vec[Symbol] = Vec::new();
             for source in value.sources {
                 if source.path == value.source_path {
                     index_source_syntax(source, value.syntax, symbols);
@@ -366,7 +366,7 @@ pub fn build_symbol_index(value: Analysis) -> SymbolIndex {
 }
 
 pub fn build_symbol_index_from_sources(sources: Vec[SourceFile]) -> SymbolIndex {
-    let symbols: Vec[Symbol] = Vec::from_array([]);
+    let symbols: Vec[Symbol] = Vec::new();
     for source in sources {
         index_source(source, symbols)
     }
@@ -384,7 +384,7 @@ pub fn find_symbol(index: SymbolIndex, qualified_name: string) -> Option[Symbol]
             return Option::Some(symbol)
         } else {}
     }
-    let suffixes: Vec[Symbol] = Vec::from_array([]);
+    let suffixes: Vec[Symbol] = Vec::new();
     for symbol in index.symbols {
         if symbol_name_ends_with(qualified_name, symbol.qualified_name)
             || symbol_name_ends_with(symbol.qualified_name, qualified_name) {

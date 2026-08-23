@@ -264,7 +264,7 @@ fn clone_inline_term(
 ) -> Term {
     match value {
         Return(value) => {
-            let args: Vec[Imm] = Vec::from_array([]);
+            let args: Vec[Imm] = Vec::new();
             args.push(clone_inline_imm(value, names));
             Term::Jump { target: continuation, args, ret_ty }
         },
@@ -694,7 +694,7 @@ fn inline_block_consumes(value: Block, name: string) -> bool {
 }
 
 fn inline_function_index(values: Vec[Function]) -> HashMap[string, Function] {
-    let result: HashMap[string, Function] = HashMap::from_array([]);
+    let result: HashMap[string, Function] = HashMap::new();
     for function in values {
         result[function.name] = function;
     }
@@ -767,7 +767,7 @@ fn prepend_inline_bind(value: Bind, rest: Block) -> Block {
 
 fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, counter: Ref[isize]) -> Block {
     let continuation = fresh_inline(counter, "inline_cont");
-    let params: Vec[(string, repr::Type)] = Vec::from_array([]);
+    let params: Vec[(string, repr::Type)] = Vec::new();
     params.push((value.name, value.ty));
     let continuation_join = JoinBind {
         name: continuation,
@@ -776,7 +776,7 @@ fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, co
         ret_ty: block_type(rest),
         body: rest,
     };
-    let names: Vec[InlineName] = Vec::from_array([]);
+    let names: Vec[InlineName] = Vec::new();
     let parameter_binds: Vec[Bind] = Vec::with_capacity(callee.params.len());
     for index in 0..callee.params.len() {
         let param = callee.params[index];
@@ -795,7 +795,7 @@ fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, co
             _ => names.push(InlineName { name: param.0, value: args[index] }),
         }
     }
-    let joins: Vec[InlineJoin] = Vec::from_array([]);
+    let joins: Vec[InlineJoin] = Vec::new();
     collect_inline_block_names(callee.body, names, joins, counter);
     let cloned = clone_inline_block(
         callee.body,
@@ -896,7 +896,7 @@ fn inline_binds(
     counter: Ref[isize],
 ) -> Block {
     if index >= values.len() {
-        Block { binds: Vec::from_array([]), term }
+        Block { binds: Vec::new(), term }
     } else {
         let bind = values[index];
         let rest = inline_binds(values, index + 1, term, functions, caller, budget, counter);

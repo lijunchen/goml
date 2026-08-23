@@ -43,7 +43,7 @@ fn delimiter_uses_edge_space(value: LocatedToken) -> bool {
 }
 
 fn direct_prefix_doc(node: LocatedNode, open: LocatedToken) -> Doc {
-    let values: Vec[Doc] = Vec::from_array([]);
+    let values: Vec[Doc] = Vec::new();
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
@@ -69,7 +69,7 @@ fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
         return format_generic(value, node)
     } else {};
     let item_nodes = direct_nodes(node);
-    let items: Vec[Doc] = Vec::from_array([]);
+    let items: Vec[Doc] = Vec::new();
     for item in item_nodes {
         items.push(format_item_content(value, item).doc)
     }
@@ -176,7 +176,7 @@ fn format_where_clause_with_body(value: Builder, node: LocatedNode, body_follows
     if predicates.is_empty() {
         return format_generic(value, node)
     } else {};
-    let docs: Vec[Doc] = Vec::from_array([]);
+    let docs: Vec[Doc] = Vec::new();
     for predicate in predicates {
         docs.push(format_node(value, predicate).doc)
     }

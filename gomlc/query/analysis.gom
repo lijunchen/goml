@@ -66,18 +66,18 @@ fn query_diagnostic(source_path: string, stage: string, message: string, span: O
         source_path,
         span,
         primary_label: Option::None,
-        secondary_labels: Vec::from_array([]),
+        secondary_labels: Vec::new(),
         sort_order: 0,
     }
 }
 
 fn failed_check(source_path: string, stage: string, message: string) -> tast::CheckResult {
-    let diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
+    let diagnostics: Vec[tast::Diagnostic] = Vec::new();
     diagnostics.push(query_diagnostic(source_path, stage, message, Option::None));
     tast::CheckResult {
         tast: Option::None,
         comptime: ctir::empty_module(source_path),
-        pending_constants: Vec::from_array([]),
+        pending_constants: Vec::new(),
         diagnostics,
         typeck_results: tast::empty_typeck_results(),
     }
@@ -89,8 +89,8 @@ fn lower_package(
     derive_modules: Vec[ctir::CtModule],
     derive_reexports: Vec[(string, string)],
 ) -> LoweredPackage {
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
-    let expanded_sources: Vec[(string, string)] = Vec::from_array([]);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    let expanded_sources: Vec[(string, string)] = Vec::new();
     for file in value.files {
         let expanded = hir::expand_derives_with_environment(
             ast::resolve_module_paths(ast::lower(parser::parse(file.source)), value.module_path),
@@ -104,8 +104,8 @@ fn lower_package(
         inputs.push((expanded, file.path))
     }
     let lowered = hir::lower_expanded_package_files(inputs, value.package_name);
-    let files: Vec[hir::File] = Vec::from_array([]);
-    let diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
+    let files: Vec[hir::File] = Vec::new();
+    let diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for value in lowered {
         for diagnostic in value.diagnostics {
             diagnostics.push(
@@ -152,7 +152,7 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
     string,
 ] {
     let environments = tast::dependency_environments(files)?;
-    let attached_modules: Vec[string] = Vec::from_array([]);
+    let attached_modules: Vec[string] = Vec::new();
     for index in 0..environments.len() {
         let module = Ref::new(Option::None);
         let package_name = files[index].package_name;
@@ -177,7 +177,7 @@ fn environments_with_builtin_and_comptime(
     files: Vec[hir::File],
     modules: Vec[ctir::CtModule],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
-    let result: Vec[tast::DependencyEnvironment] = Vec::from_array([]);
+    let result: Vec[tast::DependencyEnvironment] = Vec::new();
     match builtin {
         Some(environment) => result.push(environment),
         None => (),
@@ -320,7 +320,7 @@ fn collect_dependency(
                             diagnostics.push(
                                 query_diagnostic(source_path, "builtin", error, Option::None),
                             );
-                            Vec::from_array([])
+                            Vec::new()
                         },
                     };
                     let checked = tast::check_package_files_for_link_with_environments(
@@ -363,12 +363,12 @@ fn append_navigation_sources(
 }
 
 fn check_project(value: Project, overrides: Vec[SourceOverride], context: AnalysisContext) -> ProjectCheck {
-    let all_sources: Vec[SourceFile] = Vec::from_array([]);
+    let all_sources: Vec[SourceFile] = Vec::new();
     for file in value.files {
         all_sources.push(file)
     }
-    let dependencies: Vec[hir::File] = Vec::from_array([]);
-    let diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
+    let dependencies: Vec[hir::File] = Vec::new();
+    let diagnostics: Vec[tast::Diagnostic] = Vec::new();
     let builtin_environment = match context.builtin_files {
         Ok(files) => match tast::builtin_dependency_environment(files) {
             Ok(value) => Option::Some(value),
@@ -399,10 +399,10 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
             Option::None
         },
     };
-    let derive_reexports: Vec[(string, string)] = Vec::from_array([]);
-    let discovery = lower_package(value, builtin_derive, Vec::from_array([]), derive_reexports);
-    let visited: Vec[string] = Vec::from_array([]);
-    let derive_modules: Vec[ctir::CtModule] = Vec::from_array([]);
+    let derive_reexports: Vec[(string, string)] = Vec::new();
+    let discovery = lower_package(value, builtin_derive, Vec::new(), derive_reexports);
+    let visited: Vec[string] = Vec::new();
+    let derive_modules: Vec[ctir::CtModule] = Vec::new();
     visited.push(discovery.name);
     visited.push("builtin");
     visited.push("prelude");
@@ -429,7 +429,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     for diagnostic in entry.diagnostics {
         diagnostics.push(diagnostic)
     }
-    let environment_files: Vec[hir::File] = Vec::from_array([]);
+    let environment_files: Vec[hir::File] = Vec::new();
     for file in entry.files {
         environment_files.push(file)
     }
@@ -444,7 +444,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
         Ok(values) => values,
         Err(error) => {
             diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
-            Vec::from_array([])
+            Vec::new()
         },
     };
     let dependency_environments = match environments_with_builtin_and_comptime(
@@ -455,7 +455,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
         Ok(values) => values,
         Err(error) => {
             diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
-            Vec::from_array([])
+            Vec::new()
         },
     };
     let checked = if !entry.files.is_empty() {
@@ -464,8 +464,8 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
         tast::CheckResult {
             tast: Option::None,
             comptime: ctir::empty_module(entry.name),
-            pending_constants: Vec::from_array([]),
-            diagnostics: Vec::from_array([]),
+            pending_constants: Vec::new(),
+            diagnostics: Vec::new(),
             typeck_results: tast::empty_typeck_results(),
         }
     };
@@ -474,7 +474,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     }
     append_navigation_sources(all_sources, context.builtin_sources, checked);
     append_navigation_sources(all_sources, context.prelude_sources, checked);
-    let comptime_modules: Vec[ctir::CtModule] = Vec::from_array([]);
+    let comptime_modules: Vec[ctir::CtModule] = Vec::new();
     match builtin_derive {
         Some(module) => comptime_modules.push(module),
         None => (),
@@ -509,7 +509,7 @@ fn single_file_analysis(
         },
         None => "main",
     };
-    let files: Vec[SourceFile] = Vec::from_array([]);
+    let files: Vec[SourceFile] = Vec::new();
     files.push(SourceFile { path: source_path, source, package_name });
     let directory = source_directory(source_path);
     let result = check_project(
@@ -584,13 +584,13 @@ pub fn analyze_with_context(
             module_path: "",
             overrides,
             sources: Vec::from_array([SourceFile { path: source_path, source, package_name: "" }]),
-            environments: Vec::from_array([]),
+            environments: Vec::new(),
             parse: parsed,
             syntax,
             expanded_source: source,
             checked: failed_check(source_path, "project", error),
             context,
-            comptime_modules: Vec::from_array([]),
+            comptime_modules: Vec::new(),
             lowered,
             symbol_index: Ref::new(Option::None),
         },
@@ -602,7 +602,7 @@ pub fn analyze_with_overrides(source_path: string, source: string, overrides: Ve
 }
 
 pub fn analyze(source_path: string, source: string) -> Analysis {
-    analyze_with_overrides(source_path, source, Vec::from_array([]))
+    analyze_with_overrides(source_path, source, Vec::new())
 }
 
 pub fn diagnostics(value: Analysis) -> Vec[tast::Diagnostic] {

@@ -2310,7 +2310,7 @@ let values = Vec::from_array([1, 2, 3]);
 let first = values.get(0);
 ```
 
-`Vec::from_array([values...])` creates a vector from a fixed array. Array items are evaluated once from left to right. The vector receives new outer backing storage, so replacing an array element later does not change the vector, while referenced elements remain shared because the copy is shallow. An empty array needs either an expected result type, as in `let values: Vec[i32] = Vec::from_array([]);`, or explicit owner arguments, as in `Vec::[i32]::from_array([])`. The associated function is an ordinary first-class value, for example `let make: ([i32; 3]) -> Vec[i32] = Vec::from_array;`.
+`Vec::from_array([values...])` creates a vector from a fixed array. Array items are evaluated once from left to right. The vector receives new outer backing storage, so replacing an array element later does not change the vector, while referenced elements remain shared because the copy is shallow. Use `Vec::new()` for an empty vector. Direct nonempty array calls coallocate the vector header and backing array. Passing an array variable retains the same shallow-copy semantics. The associated function is an ordinary first-class value, for example `let make: ([i32; 3]) -> Vec[i32] = Vec::from_array;`.
 
 GoML 0.1.27 formatted the former `Vec::[...]` spelling to `Vec::from_array([...])`; 0.1.28 removed the former syntax.
 
@@ -2389,7 +2389,7 @@ let counts = HashMap::from_array([("a", 1), ("b", 2)]);
 let value: Option[i32] = counts.get("a");
 ```
 
-`HashMap::from_array([(key, value), ...])` first evaluates the complete entries array from left to right, then inserts its pairs in array order. Later duplicate keys overwrite earlier entries. An empty array needs either an expected result type, as in `let counts: HashMap[string, i32] = HashMap::from_array([]);`, or explicit owner arguments, as in `HashMap::[string, i32]::from_array([])`. The associated function is an ordinary first-class value when its array length is fixed by a function type.
+`HashMap::from_array([(key, value), ...])` creates a map from an entries array. It first evaluates the complete array from left to right, then inserts its pairs in array order. Later duplicate keys overwrite earlier entries. Use `HashMap::new()` for an empty map. Direct array-literal calls preallocate their build storage from the entry count. The associated function is an ordinary first-class value when its array length is fixed by a function type.
 
 GoML 0.1.27 formatted the former map-literal spelling to `HashMap::from_array([(key, value), ...])`; 0.1.28 removed the former syntax.
 

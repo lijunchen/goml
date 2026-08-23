@@ -1208,7 +1208,7 @@ fn report_type_cycle(state: CheckState, object: go_types::ObjectId) -> unit {
     if start < 0 {
         return
     } else {};
-    let cycle: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let cycle: Vec[go_types::ObjectId] = Vec::new();
     for index in start..state.active_type_objects.len() {
         cycle.push(state.active_type_objects[index])
     }
@@ -1348,7 +1348,7 @@ fn record_type_value_cycle(state: CheckState, object: go_types::ObjectId) -> uni
     if start < 0 {
         return
     } else {};
-    let objects: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let objects: Vec[go_types::ObjectId] = Vec::new();
     for index in start..state.active_type_objects.len() {
         objects.push(state.active_type_objects[index])
     }
@@ -1388,7 +1388,7 @@ fn record_active_type_dependency_cycle(
     if start < 0 {
         return
     } else {};
-    let objects: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let objects: Vec[go_types::ObjectId] = Vec::new();
     for index in start..state.active_type_objects.len() {
         objects.push(state.active_type_objects[index])
     }
@@ -1468,7 +1468,7 @@ fn record_call_result_type_cycle(
     if start < 0 {
         return false
     } else {};
-    let objects: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let objects: Vec[go_types::ObjectId] = Vec::new();
     for index in start..state.active_type_objects.len() {
         objects.push(state.active_type_objects[index])
     }
@@ -1744,7 +1744,7 @@ fn unresolved_legacy_alias(state: CheckState, object: go_types::ObjectId) -> boo
 }
 
 fn copied_object_ids(values: Vec[go_types::ObjectId]) -> Vec[go_types::ObjectId] {
-    let result: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let result: Vec[go_types::ObjectId] = Vec::new();
     for value in values {
         result.push(value)
     }
@@ -1873,11 +1873,11 @@ fn report_named_type_cycle(state: CheckState, values: Vec[go_types::ObjectId], p
             } else {}
         }
     } else {};
-    let cycle: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let cycle: Vec[go_types::ObjectId] = Vec::new();
     for index in 0..values.len() {
         cycle.push(values[(first + index) % values.len()])
     }
-    let cycle_nodes: Vec[Option[syntax::NodeId]] = Vec::from_array([]);
+    let cycle_nodes: Vec[Option[syntax::NodeId]] = Vec::new();
     let root_rhs = if preserve_start {
         match pending_type_index(state, instantiation_root) {
             Some(index) => Option::Some(state.pending_types[index].rhs),
@@ -2003,7 +2003,7 @@ fn validate_named_type_inner(
         }) => {
             for index in 0..nest.len() {
                 if go_types::identical(state.world, nest[index], resolved) {
-                    let cycle: Vec[go_types::ObjectId] = Vec::from_array([]);
+                    let cycle: Vec[go_types::ObjectId] = Vec::new();
                     for path_index in index..path.len() {
                         cycle.push(path[path_index])
                     }
@@ -2109,7 +2109,7 @@ fn direct_named_dependency(state: CheckState, object: go_types::ObjectId) -> Opt
 fn check_direct_named_type_cycles(state: CheckState) -> unit {
     for pending in state.pending_types {
         if pending.alias || invalid_type_object_seen(state, pending.object) {} else {
-            let path: Vec[go_types::ObjectId] = Vec::from_array([]);
+            let path: Vec[go_types::ObjectId] = Vec::new();
             let mut current = pending.object;
             let mut done = false;
             while !done {
@@ -2120,7 +2120,7 @@ fn check_direct_named_type_cycles(state: CheckState) -> unit {
                     } else {}
                 }
                 if cycle_start >= 0 {
-                    let cycle: Vec[go_types::ObjectId] = Vec::from_array([]);
+                    let cycle: Vec[go_types::ObjectId] = Vec::new();
                     for index in cycle_start..path.len() {
                         cycle.push(path[index])
                     }
@@ -2143,14 +2143,14 @@ fn check_direct_named_type_cycles(state: CheckState) -> unit {
                                 None => {},
                             }
                         } else {};
-                        let affected: Vec[syntax::NodeId] = Vec::from_array([]);
+                        let affected: Vec[syntax::NodeId] = Vec::new();
                         for fact in state.info.types {
                             if fact.type_expr
                                 && type_syntax_contains_named_object(
                                     state,
                                     fact.type_id,
                                     cycle[0],
-                                    Vec::from_array([]),
+                                    Vec::new(),
                                 )
                                 && match syntax::get_node(state.syntax.arena, fact.node) {
                                     Some(syntax::SyntaxNode {
@@ -2378,7 +2378,7 @@ fn type_object_used_as_receiver(state: CheckState, object: go_types::ObjectId) -
 
 fn report_deferred_declaration_cycles(state: CheckState) -> unit {
     check_direct_named_type_cycles(state);
-    let cycles: Vec[TypeValueCycle] = Vec::from_array([]);
+    let cycles: Vec[TypeValueCycle] = Vec::new();
     for object in state.deferred_direct_type_cycles {
         cycles.push(TypeValueCycle { objects: Vec::from_array([object]) })
     }
@@ -2459,7 +2459,7 @@ fn report_deferred_declaration_cycles(state: CheckState) -> unit {
                             },
                         }) => {
                             set_interface_method_receivers(state, underlying, underlying);
-                            let affected: Vec[syntax::NodeId] = Vec::from_array([]);
+                            let affected: Vec[syntax::NodeId] = Vec::new();
                             for fact in state.info.types {
                                 if fact.type_expr && fact.type_id.value == value.type_id.value {
                                     affected.push(fact.node)
@@ -2633,7 +2633,7 @@ fn omit_expression_array_cycle_composite_facts(state: CheckState) -> unit {
 fn check_deferred_type_validations(state: CheckState) -> unit {
     for type_id in state.deferred_type_validations {
         check_deferred_map_keys(state, type_id);
-        let _ = validate_named_type_inner(state, type_id, Vec::from_array([]), Vec::from_array([]));
+        let _ = validate_named_type_inner(state, type_id, Vec::new(), Vec::new());
         match go_types::type_data(state.world, go_types::unalias(state.world, type_id)) {
             go_types::TypeData {
                 id: _,
@@ -2726,7 +2726,7 @@ fn report_deferred_interface_method_diagnostics(state: CheckState, object: go_ty
 }
 
 fn take_diagnostics_from(state: CheckState, start: isize) -> Vec[CheckDiagnostic] {
-    let result: Vec[CheckDiagnostic] = Vec::from_array([]);
+    let result: Vec[CheckDiagnostic] = Vec::new();
     for index in start..state.diagnostics.len() {
         result.push(state.diagnostics[index])
     }
@@ -3249,7 +3249,7 @@ fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
                 methods,
             },
         }) => methods,
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     };
     let type_scope = match pending.type_params_node {
         Some(_) => {
@@ -3293,14 +3293,14 @@ fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
             object: pending.object,
             rhs: state.world.invalid,
             type_params: provisional_type_params,
-            type_args: Vec::from_array([]),
+            type_args: Vec::new(),
         }
     } else {
         go_types::TypeKind::Named {
             object: pending.object,
             underlying: state.world.invalid,
             type_params: provisional_type_params,
-            type_args: Vec::from_array([]),
+            type_args: Vec::new(),
             methods: existing_methods,
         }
     };
@@ -3314,14 +3314,14 @@ fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
                 object: pending.object,
                 rhs: state.world.invalid,
                 type_params,
-                type_args: Vec::from_array([]),
+                type_args: Vec::new(),
             }
         } else {
             go_types::TypeKind::Named {
                 object: pending.object,
                 underlying: state.world.invalid,
                 type_params,
-                type_args: Vec::from_array([]),
+                type_args: Vec::new(),
                 methods: existing_methods,
             }
         },
@@ -3385,14 +3385,14 @@ fn evaluate_type_object(state: CheckState, object: go_types::ObjectId) -> bool {
                 object: pending.object,
                 rhs,
                 type_params,
-                type_args: Vec::from_array([]),
+                type_args: Vec::new(),
             }
         } else {
             go_types::TypeKind::Named {
                 object: pending.object,
                 underlying: completed_rhs,
                 type_params,
-                type_args: Vec::from_array([]),
+                type_args: Vec::new(),
                 methods: existing_methods,
             }
         };
@@ -3429,16 +3429,13 @@ fn evaluate_function_object(state: CheckState, object: go_types::ObjectId) -> bo
     } else {};
     state.pending_functions[index].status = 1;
     let pending = state.pending_functions[index];
-    let empty = go_types::add_type(
-        state.world,
-        go_types::TypeKind::Tuple { variables: Vec::from_array([]) },
-    );
+    let empty = go_types::add_type(state.world, go_types::TypeKind::Tuple { variables: Vec::new() });
     let provisional = go_types::add_type(
         state.world,
         go_types::TypeKind::Signature {
             receiver: Option::None,
-            receiver_type_params: Vec::from_array([]),
-            type_params: Vec::from_array([]),
+            receiver_type_params: Vec::new(),
+            type_params: Vec::new(),
             params: empty,
             results: empty,
             variadic: false,
@@ -4703,16 +4700,16 @@ fn predeclare_type_spec(
                             go_types::TypeKind::Alias {
                                 object,
                                 rhs: state.world.invalid,
-                                type_params: Vec::from_array([]),
-                                type_args: Vec::from_array([]),
+                                type_params: Vec::new(),
+                                type_args: Vec::new(),
                             }
                         } else {
                             go_types::TypeKind::Named {
                                 object,
                                 underlying: state.world.invalid,
-                                type_params: Vec::from_array([]),
-                                type_args: Vec::from_array([]),
-                                methods: Vec::from_array([]),
+                                type_params: Vec::new(),
+                                type_args: Vec::new(),
+                                methods: Vec::new(),
                             }
                         },
                     );
@@ -4759,7 +4756,7 @@ fn predeclare_declaration(
                 go_types::ObjectKind::Var
             };
             let mut inherited_type: Option[syntax::NodeId] = Option::None;
-            let mut inherited_values: Vec[syntax::NodeId] = Vec::from_array([]);
+            let mut inherited_values: Vec[syntax::NodeId] = Vec::new();
             let mut inherited_spec: Option[syntax::NodeId] = Option::None;
             for index in 0..specs.len() {
                 match syntax::get_node(state.syntax.arena, specs[index]) {
@@ -5315,7 +5312,7 @@ fn publish_active_initializer_root_type(
 }
 
 fn pending_initializer_objects(state: CheckState, pending: PendingValue) -> Vec[go_types::ObjectId] {
-    let result: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let result: Vec[go_types::ObjectId] = Vec::new();
     if pending.value_nodes.len() != 1 {
         result.push(pending.object);
         return result
@@ -5432,10 +5429,10 @@ fn initializer_dependency_count(
 }
 
 fn initializer_dependency_indices(state: CheckState, facts: Vec[InitializerFact]) -> Vec[Vec[isize]] {
-    let object_facts: HashMap[isize, isize] = HashMap::from_array([]);
-    let dependencies: Vec[Vec[isize]] = Vec::from_array([]);
+    let object_facts: HashMap[isize, isize] = HashMap::new();
+    let dependencies: Vec[Vec[isize]] = Vec::new();
     for index in 0..facts.len() {
-        dependencies.push(Vec::from_array([]));
+        dependencies.push(Vec::new());
         for object in facts[index].left {
             object_facts[object.value] = index;
         }
@@ -5460,13 +5457,13 @@ fn initializer_dependency_indices(state: CheckState, facts: Vec[InitializerFact]
 }
 
 fn initializer_cycle_dependencies(state: CheckState, facts: Vec[InitializerFact]) -> Vec[bool] {
-    let cycle_objects: HashMap[isize, bool] = HashMap::from_array([]);
+    let cycle_objects: HashMap[isize, bool] = HashMap::new();
     for cycle in state.value_cycles {
         for object in cycle.objects {
             cycle_objects[object.value] = true;
         }
     }
-    let result: Vec[bool] = Vec::from_array([]);
+    let result: Vec[bool] = Vec::new();
     for fact in facts {
         let mut present = false;
         if fact.left.len() > 1 {
@@ -5495,8 +5492,8 @@ fn initializer_order_node(state: CheckState, fact: InitializerFact) -> syntax::N
 }
 
 fn sort_initializers(state: CheckState) -> unit {
-    let facts: Vec[InitializerFact] = Vec::from_array([]);
-    let visible: Vec[bool] = Vec::from_array([]);
+    let facts: Vec[InitializerFact] = Vec::new();
+    let visible: Vec[bool] = Vec::new();
     for fact in state.info.init_order {
         facts.push(fact);
         visible.push(true);
@@ -5510,7 +5507,7 @@ fn sort_initializers(state: CheckState) -> unit {
                 } else {}
             }
             if !present {
-                let left: Vec[go_types::ObjectId] = Vec::from_array([]);
+                let left: Vec[go_types::ObjectId] = Vec::new();
                 for candidate in state.pending_values {
                     if !candidate.constant_declaration && candidate.value_nodes.is_empty()
                         && candidate.declaration_node.value == pending.declaration_node.value {
@@ -5522,7 +5519,7 @@ fn sort_initializers(state: CheckState) -> unit {
             } else {}
         } else {}
     }
-    let emitted: Vec[bool] = Vec::from_array([]);
+    let emitted: Vec[bool] = Vec::new();
     for _ in facts {
         emitted.push(false);
     }
@@ -5545,7 +5542,7 @@ fn sort_initializers(state: CheckState) -> unit {
             order_starts.push(-1)
         }
     }
-    let sorted: Vec[InitializerFact] = Vec::from_array([]);
+    let sorted: Vec[InitializerFact] = Vec::new();
     let mut completed = 0;
     while completed < facts.len() {
         let mut selected = -1;
@@ -5628,7 +5625,7 @@ fn evaluate_function_dependency(state: CheckState, object: go_types::ObjectId) -
     if state.initialization_depth <= 0 || !state.function_dependencies_enabled {
         return
     } else {};
-    let dependencies: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let dependencies: Vec[go_types::ObjectId] = Vec::new();
     for dependency in state.function_initialization_dependencies {
         if dependency.0.value == object.value {
             dependencies.push(dependency.1)
@@ -5687,7 +5684,7 @@ fn record_function_dependency_cycle(state: CheckState, object: go_types::ObjectI
     if start < 0 {
         return false
     } else {};
-    let cycle: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let cycle: Vec[go_types::ObjectId] = Vec::new();
     for index in start..state.active_initialization_objects.len() {
         cycle.push(state.active_initialization_objects[index])
     }
@@ -5698,7 +5695,7 @@ fn record_function_dependency_cycle(state: CheckState, object: go_types::ObjectI
         } else {}
     }
     if value_start >= 0 {
-        let normalized: Vec[go_types::ObjectId] = Vec::from_array([]);
+        let normalized: Vec[go_types::ObjectId] = Vec::new();
         for index in 0..cycle.len() {
             normalized.push(cycle[(value_start + index) % cycle.len()])
         }
@@ -5717,7 +5714,7 @@ fn record_value_cycle(state: CheckState, object: go_types::ObjectId) -> unit {
     if start < 0 {
         return
     } else {};
-    let cycle: Vec[go_types::ObjectId] = Vec::from_array([]);
+    let cycle: Vec[go_types::ObjectId] = Vec::new();
     for index in start..state.active_initialization_objects.len() {
         cycle.push(state.active_initialization_objects[index])
     }
@@ -5906,7 +5903,7 @@ fn evaluate_pending_value(state: CheckState, index: isize) -> unit {
         let operand_nodes = if direct_value {
             Vec::from_array([pending.value_nodes[pending.value_index]])
         } else if pending.value_nodes.len() > pending.value_count && pending.value_nodes.len() != 1 {
-            let result: Vec[syntax::NodeId] = Vec::from_array([]);
+            let result: Vec[syntax::NodeId] = Vec::new();
             for index in 0..pending.value_count {
                 result.push(pending.value_nodes[index])
             }
@@ -5926,18 +5923,18 @@ fn evaluate_pending_value(state: CheckState, index: isize) -> unit {
             !pending.constant_declaration,
             match explicit_type {
                 Some(type_id) => if pending.value_nodes.len() == 1 && pending.value_count > 1 {
-                    Vec::from_array([])
+                    Vec::new()
                 } else {
-                    let result: Vec[go_types::TypeId] = Vec::from_array([]);
+                    let result: Vec[go_types::TypeId] = Vec::new();
                     for _ in operand_nodes {
                         result.push(type_id)
                     }
                     result
                 },
-                None => Vec::from_array([]),
+                None => Vec::new(),
             },
             {
-                let result: Vec[string] = Vec::from_array([]);
+                let result: Vec[string] = Vec::new();
                 let description = match go_types::get_object(state.world, pending.object) {
                     Some(object) => object.name,
                     None => "_",
@@ -5956,7 +5953,7 @@ fn evaluate_pending_value(state: CheckState, index: isize) -> unit {
             && (pending.value_index == 0 || state.active_initialization_objects.len() > 1) {
             let source = pending.value_nodes[0];
             if pending.value_count == 1 {
-                let types: Vec[string] = Vec::from_array([]);
+                let types: Vec[string] = Vec::new();
                 for operand in operands {
                     types.push(diagnostic_type_string(state, operand.type_id))
                 }
@@ -6642,7 +6639,7 @@ fn defer_function_body(
             iota_value,
             body_checked: false,
             emitted: false,
-            diagnostics: Vec::from_array([]),
+            diagnostics: Vec::new(),
         },
     );
     push_deferred_function_body(state, index)
@@ -6665,7 +6662,7 @@ fn check_deferred_function_body_early(
     if !state.function_dependencies_enabled {
         return
     }
-    let pending_statuses: Vec[isize] = Vec::from_array([]);
+    let pending_statuses: Vec[isize] = Vec::new();
     for pending in state.pending_values {
         pending_statuses.push(pending.status)
     }
@@ -6677,7 +6674,7 @@ fn check_deferred_function_body_early(
             state.pending_values[index].status = 0;
         } else {}
     }
-    let captured: Vec[CheckDiagnostic] = Vec::from_array([]);
+    let captured: Vec[CheckDiagnostic] = Vec::new();
     for index in diagnostics_start..state.diagnostics.len() {
         captured.push(state.diagnostics[index])
     }
@@ -6803,10 +6800,10 @@ fn first_package_name(value: syntax::PackageSyntax) -> string {
 
 pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: go_types::World) -> CheckResult {
     go_types::set_alias_enabled(world, config.enable_alias);
-    let diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
-    let syntax_sources: Vec[syntax::SourceFile] = Vec::from_array([]);
-    let source_lengths: Vec[(string, isize)] = Vec::from_array([]);
-    let source_texts: Vec[(string, string)] = Vec::from_array([]);
+    let diagnostics: Vec[CheckDiagnostic] = Vec::new();
+    let syntax_sources: Vec[syntax::SourceFile] = Vec::new();
+    let source_lengths: Vec[(string, isize)] = Vec::new();
+    let source_texts: Vec[(string, string)] = Vec::new();
     for file in input.files {
         source_lengths.push((file.name, file.source.len()));
         match file.source.to_string() {
@@ -6856,7 +6853,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     let package_name = first_package_name(syntax_package);
     let package_id = go_types::add_package(world, input.path, package_name, world.universe, false);
     let package_scope = world.packages[package_id.value].scope;
-    let file_scopes: Vec[go_types::ScopeId] = Vec::from_array([]);
+    let file_scopes: Vec[go_types::ScopeId] = Vec::new();
     for file in syntax_package.files {
         let root = syntax::get_node(syntax_package.arena, file.root);
         let start = 0;
@@ -6881,9 +6878,9 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         )
     }
     let function_dependencies_enabled = !config.ignore_func_bodies;
-    let function_scope_ends: HashMap[isize, isize] = HashMap::from_array([]);
-    let loop_labels: HashMap[isize, string] = HashMap::from_array([]);
-    let effect_expression_nodes: Vec[syntax::NodeId] = Vec::from_array([]);
+    let function_scope_ends: HashMap[isize, isize] = HashMap::new();
+    let loop_labels: HashMap[isize, string] = HashMap::new();
+    let effect_expression_nodes: Vec[syntax::NodeId] = Vec::new();
     for candidate_value in syntax_package.arena.nodes {
         let Some(candidate) = candidate_value else {
             continue
@@ -6960,59 +6957,59 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         function_scope_ends,
         loop_labels,
         effect_expression_nodes,
-        scope_fact_indices: HashMap::from_array([]),
-        scope_fact_previous_indices: Vec::from_array([]),
-        selection_indices: HashMap::from_array([]),
+        scope_fact_indices: HashMap::new(),
+        scope_fact_previous_indices: Vec::new(),
+        selection_indices: HashMap::new(),
         type_fact_indices: fact_index_slots(syntax_package.arena.nodes.len()),
         type_fact_source_indices: empty_type_fact_source_index(syntax_package.arena.nodes.len()),
-        type_visit_marks: Vec::from_array([]),
+        type_visit_marks: Vec::new(),
         type_visit_generation: Ref::new(0),
-        type_invalid_cache: Vec::from_array([]),
-        omitted_type_fact_nodes: HashMap::from_array([]),
-        preserved_type_fact_nodes: HashMap::from_array([]),
-        retained_invalid_type_fact_nodes: HashMap::from_array([]),
-        failed_inference_nodes: HashMap::from_array([]),
+        type_invalid_cache: Vec::new(),
+        omitted_type_fact_nodes: HashMap::new(),
+        preserved_type_fact_nodes: HashMap::new(),
+        retained_invalid_type_fact_nodes: HashMap::new(),
+        failed_inference_nodes: HashMap::new(),
         ignore_function_type_params: false,
         use_fact_indices: fact_index_slots(syntax_package.arena.nodes.len()),
-        omitted_use_fact_nodes: HashMap::from_array([]),
-        invalid_builtin_parameter_nodes: HashMap::from_array([]),
-        used_objects: HashMap::from_array([]),
-        constants: Vec::from_array([]),
-        declarations: Vec::from_array([]),
-        pending_values: Vec::from_array([]),
-        pending_value_indices: HashMap::from_array([]),
-        active_value_objects: Vec::from_array([]),
-        active_initialization_objects: Vec::from_array([]),
-        initialization_dependencies: Vec::from_array([]),
-        function_initialization_dependencies: Vec::from_array([]),
-        value_cycles: Vec::from_array([]),
-        pending_types: Vec::from_array([]),
-        pending_type_indices: HashMap::from_array([]),
-        active_type_objects: Vec::from_array([]),
-        deferred_type_validations: Vec::from_array([]),
-        invalid_type_objects: Vec::from_array([]),
-        deferred_direct_type_cycles: Vec::from_array([]),
-        deferred_type_value_cycles: Vec::from_array([]),
-        deferred_alias_type_cycles: Vec::from_array([]),
-        deferred_receiver_cycle_diagnostics: Vec::from_array([]),
-        deferred_interface_method_diagnostics: Vec::from_array([]),
-        deferred_interface_overlap_diagnostics: Vec::from_array([]),
-        deferred_interface_version_diagnostics: Vec::from_array([]),
-        deferred_union_diagnostics: Vec::from_array([]),
-        deferred_local_type_validations: Vec::from_array([]),
-        deferred_local_type_validation_nodes: Vec::from_array([]),
+        omitted_use_fact_nodes: HashMap::new(),
+        invalid_builtin_parameter_nodes: HashMap::new(),
+        used_objects: HashMap::new(),
+        constants: Vec::new(),
+        declarations: Vec::new(),
+        pending_values: Vec::new(),
+        pending_value_indices: HashMap::new(),
+        active_value_objects: Vec::new(),
+        active_initialization_objects: Vec::new(),
+        initialization_dependencies: Vec::new(),
+        function_initialization_dependencies: Vec::new(),
+        value_cycles: Vec::new(),
+        pending_types: Vec::new(),
+        pending_type_indices: HashMap::new(),
+        active_type_objects: Vec::new(),
+        deferred_type_validations: Vec::new(),
+        invalid_type_objects: Vec::new(),
+        deferred_direct_type_cycles: Vec::new(),
+        deferred_type_value_cycles: Vec::new(),
+        deferred_alias_type_cycles: Vec::new(),
+        deferred_receiver_cycle_diagnostics: Vec::new(),
+        deferred_interface_method_diagnostics: Vec::new(),
+        deferred_interface_overlap_diagnostics: Vec::new(),
+        deferred_interface_version_diagnostics: Vec::new(),
+        deferred_union_diagnostics: Vec::new(),
+        deferred_local_type_validations: Vec::new(),
+        deferred_local_type_validation_nodes: Vec::new(),
         local_type_declaration_depth: 0,
         local_type_alias_depth: 0,
-        active_local_type_objects: Vec::from_array([]),
-        deferred_local_alias_cycles: Vec::from_array([]),
-        deferred_local_alias_body_objects: Vec::from_array([]),
-        deferred_local_alias_bodies: Vec::from_array([]),
-        pending_functions: Vec::from_array([]),
-        pending_function_indices: HashMap::from_array([]),
-        pending_methods: Vec::from_array([]),
-        receiver_validation_nodes: Vec::from_array([]),
-        active_function_objects: Vec::from_array([]),
-        reported_recursive_calls: HashMap::from_array([]),
+        active_local_type_objects: Vec::new(),
+        deferred_local_alias_cycles: Vec::new(),
+        deferred_local_alias_body_objects: Vec::new(),
+        deferred_local_alias_bodies: Vec::new(),
+        pending_functions: Vec::new(),
+        pending_function_indices: HashMap::new(),
+        pending_methods: Vec::new(),
+        receiver_validation_nodes: Vec::new(),
+        active_function_objects: Vec::new(),
+        reported_recursive_calls: HashMap::new(),
         type_cycle_depth: 0,
         type_fact_recovery_depth: 0,
         array_length_depth: 0,
@@ -7027,35 +7024,35 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         target_inference_description: Ref::new(""),
         target_inference_call: Ref::new(""),
         constraint_type_depth: 0,
-        imports: Vec::from_array([]),
-        dot_import_indices: HashMap::from_array([]),
-        labels: Vec::from_array([]),
-        label_starts: Vec::from_array([]),
-        active_labels: Vec::from_array([]),
-        active_label_starts: Vec::from_array([]),
+        imports: Vec::new(),
+        dot_import_indices: HashMap::new(),
+        labels: Vec::new(),
+        label_starts: Vec::new(),
+        active_labels: Vec::new(),
+        active_label_starts: Vec::new(),
         loop_depth: 0,
         breakable_depth: 0,
         fallthrough_allowed: false,
         fallthrough_context: 0,
-        locals: Vec::from_array([]),
-        function_ids: Vec::from_array([]),
-        active_instantiations: Vec::from_array([]),
+        locals: Vec::new(),
+        function_ids: Vec::new(),
+        active_instantiations: Vec::new(),
         next_function_id: 0,
         initialization_depth: 0,
         function_dependencies_enabled,
-        checked_function_bodies: HashMap::from_array([]),
+        checked_function_bodies: HashMap::new(),
         defer_constraint_checks: false,
-        deferred_instances: Vec::from_array([]),
+        deferred_instances: Vec::new(),
         checked_deferred_instances: 0,
-        deferred_type_info_expressions: Vec::from_array([]),
-        deferred_constraint_type_uses: Vec::from_array([]),
-        deferred_function_bodies: Vec::from_array([]),
-        deferred_function_body_indices: HashMap::from_array([]),
-        deferred_function_body_queue: Vec::from_array([]),
-        deferred_function_type_diagnostics: Vec::from_array([]),
-        partial_instances: Vec::from_array([]),
-        void_nodes: Vec::from_array([]),
-        void_node_indices: HashMap::from_array([]),
+        deferred_type_info_expressions: Vec::new(),
+        deferred_constraint_type_uses: Vec::new(),
+        deferred_function_bodies: Vec::new(),
+        deferred_function_body_indices: HashMap::new(),
+        deferred_function_body_queue: Vec::new(),
+        deferred_function_type_diagnostics: Vec::new(),
+        partial_instances: Vec::new(),
+        void_nodes: Vec::new(),
+        void_node_indices: HashMap::new(),
         current_iota: -1,
         diagnostic_override: Option::None,
         diagnostics,
@@ -7092,8 +7089,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         }
         complete_method_declarations(state);
         let method_diagnostics = take_diagnostics_from(state, method_diagnostic_start);
-        let early_type_dependency_diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
-        let remaining_method_diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
+        let early_type_dependency_diagnostics: Vec[CheckDiagnostic] = Vec::new();
+        let remaining_method_diagnostics: Vec[CheckDiagnostic] = Vec::new();
         for value in method_diagnostics {
             if diagnostic_in_type_declaration(state, value) {
                 early_type_dependency_diagnostics.push(value)
@@ -7122,7 +7119,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             type_diagnostics.push(value)
         }
         sort_diagnostics_by_position(state, type_diagnostics);
-        let deferred_type_constraint_diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
+        let deferred_type_constraint_diagnostics: Vec[CheckDiagnostic] = Vec::new();
         for value in type_diagnostics {
             if value.soft && value.message.contains("outside a type constraint") {
                 deferred_type_constraint_diagnostics.push(value)
@@ -7135,7 +7132,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             check_file_type_declarations(state, index, true)
         }
         let alias_diagnostics = take_diagnostics_from(state, alias_diagnostic_start);
-        let remaining_alias_diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
+        let remaining_alias_diagnostics: Vec[CheckDiagnostic] = Vec::new();
         for value in alias_diagnostics {
             if direct_alias_cycle_diagnostic(state, value) {
                 state.diagnostics.push(value)
@@ -7168,7 +7165,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             declaration_diagnostics.push(value)
         }
         sort_diagnostics_by_position(state, declaration_diagnostics);
-        let deferred_constraint_use_diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
+        let deferred_constraint_use_diagnostics: Vec[CheckDiagnostic] = Vec::new();
         for value in deferred_type_constraint_diagnostics {
             deferred_constraint_use_diagnostics.push(value)
         }
@@ -7193,8 +7190,8 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
             state.diagnostics.push(value)
         }
         let late_diagnostics = take_diagnostics_from(state, late_soft_diagnostic_start);
-        let late_soft_diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
-        let final_overlap_diagnostics: Vec[CheckDiagnostic] = Vec::from_array([]);
+        let late_soft_diagnostics: Vec[CheckDiagnostic] = Vec::new();
+        let final_overlap_diagnostics: Vec[CheckDiagnostic] = Vec::new();
         reorder_duplicate_method_diagnostics(state, late_diagnostics);
         for value in late_diagnostics {
             if deferred_interface_overlap_diagnostic(state, value) {

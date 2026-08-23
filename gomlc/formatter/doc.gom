@@ -57,7 +57,7 @@ fn verbatim(value: string) -> Doc {
 }
 
 fn concat(values: Vec[Doc]) -> Doc {
-    let flattened: Vec[Doc] = Vec::from_array([]);
+    let flattened: Vec[Doc] = Vec::new();
     for value in values {
         match value {
             Nil => (),
@@ -119,7 +119,7 @@ fn break_parent() -> Doc {
 }
 
 fn join(separator: Doc, values: Vec[Doc]) -> Doc {
-    let result: Vec[Doc] = Vec::from_array([]);
+    let result: Vec[Doc] = Vec::new();
     for index in 0..values.len() {
         if index > 0 {
             result.push(separator)

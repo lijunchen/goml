@@ -87,12 +87,12 @@ fn builtin_struct_instance(
                 }
             },
         };
-        let fields: Vec[(string, Type)] = Vec::from_array([]);
-        fields.push(("next_fn", Type::Func { params: Vec::from_array([]), ret_ty: result_ty }));
+        let fields: Vec[(string, Type)] = Vec::new();
+        fields.push(("next_fn", Type::Func { params: Vec::new(), ret_ty: result_ty }));
         Option::Some(StructDef { name: go_user_type_name(value.name), fields })
     } else if backend_names_match(value.base_name, builtin.static_cell.name)
         && value.args.len() == 1 {
-        let fields: Vec[(string, Type)] = Vec::from_array([]);
+        let fields: Vec[(string, Type)] = Vec::new();
         fields.push(("mutex", Type::Named { name: "_goml_sync.Mutex" }));
         fields.push(("cond", Type::Pointer { elem: Type::Named { name: "_goml_sync.Cond" } }));
         fields.push(("state", Type::Int));
@@ -101,7 +101,7 @@ fn builtin_struct_instance(
         fields.push(("name", Type::String));
         Option::Some(StructDef { name: go_user_type_name(value.name), fields })
     } else if backend_names_match(value.base_name, builtin.frozen_vec.name) && value.args.len() == 1 {
-        let fields: Vec[(string, Type)] = Vec::from_array([]);
+        let fields: Vec[(string, Type)] = Vec::new();
         fields.push(("values", lower_type(repr::Type::VecType { elem: value.args[0] })));
         Option::Some(StructDef { name: go_user_type_name(value.name), fields })
     } else {
@@ -259,7 +259,7 @@ fn compact_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef]
 }
 
 fn compact_variant_fields(values: Vec[Vec[repr::Type]], structs: Vec[repr::StructDef]) -> bool {
-    let fields: Vec[repr::Type] = Vec::from_array([]);
+    let fields: Vec[repr::Type] = Vec::new();
     for variant in values {
         for field in variant {
             fields.push(field)
@@ -324,7 +324,7 @@ fn builtin_compact_type_list_size(
 }
 
 fn compact_builtin_variant_fields(values: Vec[Vec[repr::Type]], structs: Vec[repr::StructDef]) -> bool {
-    let fields: Vec[repr::Type] = Vec::from_array([]);
+    let fields: Vec[repr::Type] = Vec::new();
     for variant in values {
         for field in variant {
             fields.push(field)
@@ -351,14 +351,14 @@ pub fn compact_variant_field_name(tag: isize, index: isize) -> string {
 }
 
 fn new_variant_infos() -> VariantInfos {
-    VariantInfos { by_owner: HashMap::from_array([]) }
+    VariantInfos { by_owner: HashMap::new() }
 }
 
 fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> unit {
     match variants.by_owner[value.owner_name] {
         Some(owner_variants) => owner_variants.push(value),
         None => {
-            let owner_variants: Vec[VariantInfo] = Vec::from_array([]);
+            let owner_variants: Vec[VariantInfo] = Vec::new();
             owner_variants.push(value);
             variants.by_owner[value.owner_name] = owner_variants;
         },
@@ -367,7 +367,7 @@ fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> unit {
 
 fn enum_field_types(value: repr::EnumVariantFields) -> Vec[repr::Type] {
     match value {
-        Unit => Vec::from_array([]),
+        Unit => Vec::new(),
         Tuple(values) => values,
         Struct(values) => {
             let result: Vec[repr::Type] = Vec::with_capacity(values.len());
@@ -386,7 +386,7 @@ fn tag_only_const_specs(
     enums: Vec[repr::EnumDef],
     function_names: FunctionNames,
 ) -> Vec[ConstSpec] {
-    let specs: Vec[ConstSpec] = Vec::from_array([]);
+    let specs: Vec[ConstSpec] = Vec::new();
     let owner_go_name = go_user_type_name(definition.name);
     for index in 0..definition.variants.len() {
         let variant = definition.variants[index];
@@ -451,7 +451,7 @@ fn emit_enum_definition(
     } else if compact_variant_fields(fields_by_variant, structs)
         || (builtin_sum_enum(builtin, definition, instances)
             && compact_builtin_variant_fields(fields_by_variant, structs)) {
-        let fields: Vec[(string, Type)] = Vec::from_array([]);
+        let fields: Vec[(string, Type)] = Vec::new();
         fields.push(("_tag", Type::Int32));
         for index in 0..definition.variants.len() {
             let field_types = fields_by_variant[index];
@@ -486,10 +486,8 @@ fn emit_enum_definition(
         }
     } else {
         let marker = enum_marker_name(owner_go_name);
-        let methods: Vec[InterfaceMethod] = Vec::from_array([]);
-        methods.push(
-            InterfaceMethod { name: marker, params: Vec::from_array([]), ret_ty: Option::None },
-        );
+        let methods: Vec[InterfaceMethod] = Vec::new();
+        methods.push(InterfaceMethod { name: marker, params: Vec::new(), ret_ty: Option::None });
         items.push(Item::Interface(InterfaceDef { name: owner_go_name, methods }));
         for index in 0..definition.variants.len() {
             let variant = definition.variants[index];
@@ -510,9 +508,9 @@ fn emit_enum_definition(
                     Method {
                         receiver: ("_", Type::Named { name: variant_name }),
                         name: marker,
-                        params: Vec::from_array([]),
+                        params: Vec::new(),
                         ret_ty: Option::None,
-                        body: Block { stmts: Vec::from_array([]) },
+                        body: Block { stmts: Vec::new() },
                     },
                 ),
             );
@@ -540,7 +538,7 @@ pub fn emit_user_type_items(
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
 ) -> unit {
-    let emitted: Vec[string] = Vec::from_array([]);
+    let emitted: Vec[string] = Vec::new();
     for definition in structs {
         let instance = instance_by_name(instances, definition.name);
         let custom = match instance {

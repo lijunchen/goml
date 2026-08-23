@@ -93,13 +93,13 @@ fn add_error_type(world: World, string_type: TypeId) -> unit {
         TypeKind::Named {
             object,
             underlying: world.invalid,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     let _ = set_object_type(world, object, named);
-    let empty = add_type(world, TypeKind::Tuple { variables: Vec::from_array([]) });
+    let empty = add_type(world, TypeKind::Tuple { variables: Vec::new() });
     let results = add_type(
         world,
         TypeKind::Tuple {
@@ -112,8 +112,8 @@ fn add_error_type(world: World, string_type: TypeId) -> unit {
         world,
         TypeKind::Signature {
             receiver: Option::Some(Variable { name: "", owner: Option::None, type_id: named }),
-            receiver_type_params: Vec::from_array([]),
-            type_params: Vec::from_array([]),
+            receiver_type_params: Vec::new(),
+            type_params: Vec::new(),
             params: empty,
             results,
             variadic: false,
@@ -133,7 +133,7 @@ fn add_error_type(world: World, string_type: TypeId) -> unit {
         world,
         TypeKind::Interface {
             methods: Vec::from_array([method]),
-            embeddeds: Vec::from_array([]),
+            embeddeds: Vec::new(),
             comparable: false,
             implicit: false,
         },
@@ -144,9 +144,9 @@ fn add_error_type(world: World, string_type: TypeId) -> unit {
         TypeKind::Named {
             object,
             underlying: interface_type,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     let _ = insert(world, world.universe, "error", object);
@@ -166,8 +166,8 @@ fn add_comparable_type(world: World) -> unit {
     let interface_type = add_type(
         world,
         TypeKind::Interface {
-            methods: Vec::from_array([]),
-            embeddeds: Vec::from_array([]),
+            methods: Vec::new(),
+            embeddeds: Vec::new(),
             comparable: true,
             implicit: false,
         },
@@ -177,9 +177,9 @@ fn add_comparable_type(world: World) -> unit {
         TypeKind::Named {
             object,
             underlying: interface_type,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
-            methods: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
+            methods: Vec::new(),
         },
     );
     let _ = set_object_type(world, object, named);
@@ -190,8 +190,8 @@ fn add_any_type(world: World) -> unit {
     let interface_type = add_type(
         world,
         TypeKind::Interface {
-            methods: Vec::from_array([]),
-            embeddeds: Vec::from_array([]),
+            methods: Vec::new(),
+            embeddeds: Vec::new(),
             comparable: false,
             implicit: false,
         },
@@ -211,8 +211,8 @@ fn add_any_type(world: World) -> unit {
         TypeKind::Alias {
             object,
             rhs: interface_type,
-            type_params: Vec::from_array([]),
-            type_args: Vec::from_array([]),
+            type_params: Vec::new(),
+            type_args: Vec::new(),
         },
     );
     let _ = set_object_type(world, object, alias);

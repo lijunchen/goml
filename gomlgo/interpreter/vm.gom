@@ -446,12 +446,12 @@ fn take_frame_slots(
                 scalar: empty_scalar_values(scalar_count),
                 places: empty_slots(place_count),
                 bool_places: empty_slots(place_count),
-                place_roots: prepared_place_roots(Vec::from_array([]), place_count),
+                place_roots: prepared_place_roots(Vec::new(), place_count),
                 locals: Vec::with_capacity(local_count),
-                owned_cells: Vec::from_array([]),
-                block_arguments: Vec::from_array([]),
+                owned_cells: Vec::new(),
+                block_arguments: Vec::new(),
                 block: Ref::new(bytecode::block_id(-1)),
-                deferred: Vec::from_array([]),
+                deferred: Vec::new(),
             }
         },
     }
@@ -1799,7 +1799,7 @@ fn sequential_loop_candidate(
 
 fn sequential_program(program: bytecode::BytecodeProgram) -> SequentialProgram {
     let functions: Vec[Vec[Vec[SequentialOperation]]] = Vec::with_capacity(program.functions.len());
-    let loops: Vec[SequentialLoopOperation] = Vec::from_array([]);
+    let loops: Vec[SequentialLoopOperation] = Vec::new();
     let mut constant_index = 0;
     for function in program.functions {
         let blocks: Vec[Vec[SequentialOperation]] = Vec::with_capacity(function.blocks.len());
@@ -1920,7 +1920,7 @@ fn sequential_terminators(program: bytecode::BytecodeProgram) -> Vec[Vec[Sequent
 }
 
 fn predecoded_constants(program: bytecode::BytecodeProgram) -> Vec[Option[Value]] {
-    let values: Vec[Option[Value]] = Vec::from_array([]);
+    let values: Vec[Option[Value]] = Vec::new();
     for function in program.functions {
         for block in function.blocks {
             for instruction in block.instructions {
@@ -2043,7 +2043,7 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
         locals[local] = FastExpression::Operand(
             FastOperand {
                 argument: index,
-                fields: Vec::from_array([]),
+                fields: Vec::new(),
                 type_id: function.locals[local].type_id,
             },
         );
@@ -2340,7 +2340,7 @@ fn scalar_register_layouts(program: bytecode::BytecodeProgram) -> Vec[Vec[Scalar
     let result: Vec[Vec[ScalarLayout]] = Vec::with_capacity(program.functions.len());
     for function in program.functions {
         if !function_has_back_edge(function) {
-            result.push(Vec::from_array([]));
+            result.push(Vec::new());
             continue
         } else {};
         let layouts: Vec[ScalarLayout] = Vec::with_capacity(function.register_types.len());
@@ -2356,7 +2356,7 @@ fn scalar_local_layouts(program: bytecode::BytecodeProgram) -> Vec[Vec[ScalarLay
     let result: Vec[Vec[ScalarLayout]] = Vec::with_capacity(program.functions.len());
     for function in program.functions {
         if !function_has_back_edge(function) {
-            result.push(Vec::from_array([]));
+            result.push(Vec::new());
             continue
         } else {};
         let layouts: Vec[ScalarLayout] = Vec::with_capacity(function.locals.len());
@@ -2384,7 +2384,7 @@ fn pending_instruction_exit(state: VmState, code: isize) -> isize {
 }
 
 fn runtime_error(kind: string, message: string, location: Option[bytecode::SourceLocation]) -> RuntimeError {
-    RuntimeError { kind, message, location, stack: Vec::from_array([]) }
+    RuntimeError { kind, message, location, stack: Vec::new() }
 }
 
 fn validate_function(state: VmState, id: bytecode::FunctionId) -> Result[unit, string] {
@@ -3366,7 +3366,7 @@ fn string_to_slice(state: VmState, value: bytes::Bytes, type_id: go_types::TypeI
         _ => return Result::Err("string conversion target is not a slice"),
     };
     let element_kind = basic_kind(state.program.world, element);
-    let elements: Vec[Value] = Vec::from_array([]);
+    let elements: Vec[Value] = Vec::new();
     if element_kind == Option::Some(go_types::BasicKind::Uint8) {
         for byte in value.to_vec() {
             elements.push(integer_for_type(state, element, byte.to_isize())?)
@@ -3636,8 +3636,8 @@ fn new_map(state: VmState, type_id: go_types::TypeId, capacity: isize) -> Result
         MapValue {
             key_type: types.0,
             value_type: types.1,
-            entries: Vec::from_array([]),
-            buckets: HashMap::from_array([]),
+            entries: Vec::new(),
+            buckets: HashMap::new(),
         },
     );
     Result::Ok(Value::Local(LocalValue::Map(id)))
@@ -3858,7 +3858,7 @@ fn new_map_iterator(
     key_type: go_types::TypeId,
     value_type: go_types::TypeId,
 ) -> Result[isize, string] {
-    let entries: Vec[isize] = Vec::from_array([]);
+    let entries: Vec[isize] = Vec::new();
     if id >= 0 {
         let map = checked_map(state, id)?;
         for index in 0..map.entries.len() {
@@ -3943,11 +3943,11 @@ fn execute_builtin(
     match kind {
         bytecode::BuiltinKind::Print => {
             append_output(state, arguments, false)?;
-            Result::Ok(Vec::from_array([]))
+            Result::Ok(Vec::new())
         },
         bytecode::BuiltinKind::Println => {
             append_output(state, arguments, true)?;
-            Result::Ok(Vec::from_array([]))
+            Result::Ok(Vec::new())
         },
         bytecode::BuiltinKind::Len => if arguments.len() == 1 && results.len() == 1 {
             Result::Ok(
@@ -4118,7 +4118,7 @@ fn execute_builtin(
             match arguments[0] {
                 Value::Local(LocalValue::Map(id)) => {
                     map_delete(state, id, arguments[1])?;
-                    Result::Ok(Vec::from_array([]))
+                    Result::Ok(Vec::new())
                 },
                 _ => Result::Err("delete target is not a map"),
             }
@@ -4129,11 +4129,11 @@ fn execute_builtin(
             match arguments[0] {
                 Value::Local(LocalValue::Map(id)) => {
                     clear_map(state, id)?;
-                    Result::Ok(Vec::from_array([]))
+                    Result::Ok(Vec::new())
                 },
                 Value::Local(LocalValue::Slice(value)) => {
                     clear_slice(state, value)?;
-                    Result::Ok(Vec::from_array([]))
+                    Result::Ok(Vec::new())
                 },
                 _ => Result::Err("clear target is not a map or slice"),
             }
@@ -5151,10 +5151,10 @@ fn callback_signature_shape(world: go_types::World, signature: go_types::TypeId)
         },
         _ => return Result::Err("native callback value has no function signature"),
     };
-    let parameter_types: Vec[go_types::TypeId] = Vec::from_array([]);
-    let parameter_keys: Vec[string] = Vec::from_array([]);
-    let result_types: Vec[go_types::TypeId] = Vec::from_array([]);
-    let result_keys: Vec[string] = Vec::from_array([]);
+    let parameter_types: Vec[go_types::TypeId] = Vec::new();
+    let parameter_keys: Vec[string] = Vec::new();
+    let result_types: Vec[go_types::TypeId] = Vec::new();
+    let result_keys: Vec[string] = Vec::new();
     match go_types::get_type(world, go_types::unalias(world, params)) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
             for variable in variables {
@@ -5517,7 +5517,7 @@ fn static_native_prepared(state: VmState, id: bytecode::NativeCallId) -> Result[
             variadic: call.variadic,
             reflect_value_of: call.import_path == "reflect" && call.symbol == "ValueOf",
             runtime_stack: call.import_path == "runtime" && call.symbol == "Stack",
-            argument_slices: Vec::from_array([]),
+            argument_slices: Vec::new(),
         },
     )
 }
@@ -5540,7 +5540,7 @@ fn dynamic_native_prepared(
             variadic,
             reflect_value_of: false,
             runtime_stack: false,
-            argument_slices: Vec::from_array([]),
+            argument_slices: Vec::new(),
         },
     )
 }
@@ -6095,18 +6095,11 @@ fn invoke_prepared(
         },
         PreparedTarget::Builtin(bytecode::BuiltinKind::Recover) => {
             let _ = recover_state;
-            Result::Ok(InvocationOutcome::Returned(Vec::from_array([])))
+            Result::Ok(InvocationOutcome::Returned(Vec::new()))
         },
         PreparedTarget::Builtin(kind) => {
-            let _ = execute_builtin(
-                state,
-                caller,
-                kind,
-                call.arguments,
-                Vec::from_array([]),
-                call.variadic,
-            )?;
-            Result::Ok(InvocationOutcome::Returned(Vec::from_array([])))
+            let _ = execute_builtin(state, caller, kind, call.arguments, Vec::new(), call.variadic)?;
+            Result::Ok(InvocationOutcome::Returned(Vec::new()))
         },
         PreparedTarget::Native(id) => invoke_native(state, id, call.arguments),
     }
@@ -6656,7 +6649,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                         Option::Some(
                             FunctionValue {
                                 target: FunctionTarget::Bytecode(function),
-                                captures: Vec::from_array([]),
+                                captures: Vec::new(),
                                 receiver: Option::Some(Ref::new(copy_value(receiver))),
                             },
                         ),
@@ -6676,7 +6669,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                                 receiver_type,
                                 index,
                             },
-                            captures: Vec::from_array([]),
+                            captures: Vec::new(),
                             receiver: Option::None,
                         },
                     ),
@@ -6715,7 +6708,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                             Option::Some(
                                 FunctionValue {
                                     target: FunctionTarget::InterfaceMethod(method),
-                                    captures: Vec::from_array([]),
+                                    captures: Vec::new(),
                                     receiver,
                                 },
                             ),
@@ -9245,19 +9238,19 @@ fn failed_frame_call(message: string) -> FrameCallResult {
         frame: Frame {
             function: bytecode::function_id(-1),
             package_id: go_types::package_id(-1),
-            blocks: Vec::from_array([]),
+            blocks: Vec::new(),
             name: "",
-            registers: Vec::from_array([]),
-            scalar: Vec::from_array([]),
-            places: Vec::from_array([]),
-            bool_places: Vec::from_array([]),
-            place_roots: Vec::from_array([]),
-            locals: Vec::from_array([]),
-            owned_cells: Vec::from_array([]),
-            block_arguments: Vec::from_array([]),
+            registers: Vec::new(),
+            scalar: Vec::new(),
+            places: Vec::new(),
+            bool_places: Vec::new(),
+            place_roots: Vec::new(),
+            locals: Vec::new(),
+            owned_cells: Vec::new(),
+            block_arguments: Vec::new(),
             block: Ref::new(bytecode::block_id(-1)),
             frame_cell_checkpoint: -1,
-            deferred: Vec::from_array([]),
+            deferred: Vec::new(),
             recover_state: Option::None,
         },
         error: message,
@@ -9951,10 +9944,10 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
         program,
         config,
         memory,
-        globals: Vec::from_array([]),
-        maps: Vec::from_array([]),
-        map_iterators: Vec::from_array([]),
-        channels: Vec::from_array([]),
+        globals: Vec::new(),
+        maps: Vec::new(),
+        map_iterators: Vec::new(),
+        channels: Vec::new(),
         stdout: bytes::Bytes::new(),
         stderr: bytes::Bytes::new(),
         steps: Ref::new(0.to_i64()),
@@ -9969,16 +9962,16 @@ fn initialize_state(program: bytecode::BytecodeProgram, config: VmConfig) -> Res
             },
         ),
         native_completions,
-        native_callbacks: Vec::from_array([]),
+        native_callbacks: Vec::new(),
         instruction_panic: Ref::new(Option::None),
         instruction_exit: Ref::new(0),
         zero_values: empty_slots(program.world.types.len()),
         native_type_indices: native_type_cache(program.world.types.len()),
-        constant_values: HashMap::from_array([]),
-        frame_slots: Vec::from_array([]),
+        constant_values: HashMap::new(),
+        frame_slots: Vec::new(),
         false_value: Value::Local(LocalValue::Bool(false)),
         true_value: Value::Local(LocalValue::Bool(true)),
-        empty_captures: Vec::from_array([]),
+        empty_captures: Vec::new(),
         size_values: empty_slots(64),
         sequential_operations: sequential.operations,
         sequential_loops: sequential.loops,
@@ -10008,7 +10001,7 @@ fn execute_program(state: VmState) -> Result[InvocationOutcome, string] {
                         match execute_function(
                             state,
                             function,
-                            Vec::from_array([]),
+                            Vec::new(),
                             state.empty_captures,
                             Option::None,
                             Option::None,
@@ -10030,7 +10023,7 @@ fn execute_program(state: VmState) -> Result[InvocationOutcome, string] {
     execute_function(
         state,
         state.program.main,
-        Vec::from_array([]),
+        Vec::new(),
         state.empty_captures,
         Option::None,
         Option::None,

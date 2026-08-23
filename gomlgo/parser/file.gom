@@ -71,7 +71,7 @@ fn parse_value_spec(parser: Parser, declaration_kind: token::Kind) -> ast::Node 
     let values = if eat(parser, token::Kind::Assign).is_some() {
         parse_expression_list(parser)
     } else {
-        Vec::from_array([])
+        Vec::new()
     };
     let missing_type = token::equal(declaration_kind, token::Kind::Var) && type_value.is_none()
         && values.is_empty();
@@ -159,7 +159,7 @@ fn parse_spec(parser: Parser, kind: token::Kind) -> ast::Node {
 
 fn parse_general_declaration(parser: Parser) -> ast::Node {
     let keyword = advance(parser);
-    let specs: Vec[ast::Node] = Vec::from_array([]);
+    let specs: Vec[ast::Node] = Vec::new();
     let mut left = -1;
     let mut right = -1;
     if let Some(opening) = eat(parser, token::Kind::Lparen) {
@@ -294,7 +294,7 @@ fn parse_file_node(parser: Parser) -> ast::Node {
     let package_keyword = expect(parser, token::Kind::Package);
     let name = parse_ident(parser);
     consume_semicolon(parser);
-    let declarations: Vec[ast::Node] = Vec::from_array([]);
+    let declarations: Vec[ast::Node] = Vec::new();
     let mut non_import_seen = false;
     let mut late_import_reported = false;
     while !eof(parser) {

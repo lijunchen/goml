@@ -85,7 +85,7 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             match lower_expr(ctx, values[0]) {
                 Some(scrutinee) => match first_child(node, cst::NodeKind::MATCH_ARM_LIST) {
                     Some(list) => {
-                        let arms: Vec[Arm] = Vec::from_array([]);
+                        let arms: Vec[Arm] = Vec::new();
                         for arm in children_of_kind(list, cst::NodeKind::MATCH_ARM) {
                             match lower_match_arm(ctx, arm) {
                                 Some(value) => arms.push(value),
@@ -154,7 +154,7 @@ fn lower_select_recv_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] 
         };
         let body = match match_list {
             Some(list) => {
-                let arms: Vec[Arm] = Vec::from_array([]);
+                let arms: Vec[Arm] = Vec::new();
                 for arm in children_of_kind(list, cst::NodeKind::MATCH_ARM) {
                     match lower_match_arm(ctx, arm) {
                         Some(value) => arms.push(value),
@@ -166,8 +166,8 @@ fn lower_select_recv_arm(ctx: LowerCtx, node: LocatedNode) -> Option[SelectArm] 
                     Expr::Match {
                         expr: Expr::Path {
                             path: path_from_single_ident(binding),
-                            owner_type_args: Vec::from_array([]),
-                            member_type_args: Vec::from_array([]),
+                            owner_type_args: Vec::new(),
+                            member_type_args: Vec::new(),
                             span: temporary_span,
                         },
                         arms,
@@ -239,7 +239,7 @@ fn lower_select_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
     } else {
         match first_child(node, cst::NodeKind::SELECT_ARM_LIST) {
             Some(list) => {
-                let arms: Vec[SelectArm] = Vec::from_array([]);
+                let arms: Vec[SelectArm] = Vec::new();
                 for arm in direct_nodes(list) {
                     let lowered = match node_kind(arm) {
                         SELECT_RECV_ARM => lower_select_recv_arm(ctx, arm),
@@ -303,7 +303,7 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                                     match else_branch {
                                         Some(else_value) => match let_pat {
                                             Some(pat) => {
-                                                let arms: Vec[Arm] = Vec::from_array([]);
+                                                let arms: Vec[Arm] = Vec::new();
                                                 arms.push(
                                                     Arm {
                                                         pat,
@@ -387,7 +387,7 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                             ) {
                                 Some(body) => match let_pat {
                                     Some(pat) => {
-                                        let arms: Vec[Arm] = Vec::from_array([]);
+                                        let arms: Vec[Arm] = Vec::new();
                                         arms.push(Arm { pat, guard: Option::None, body });
                                         arms.push(
                                             Arm {

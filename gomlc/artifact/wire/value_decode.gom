@@ -49,7 +49,7 @@ pub fn artifact_json_required_field(values: Vec[(string, ArtifactValue)], name: 
     ArtifactValue,
     string,
 ] {
-    let matches: Vec[ArtifactValue] = Vec::from_array([]);
+    let matches: Vec[ArtifactValue] = Vec::new();
     for value in values {
         if value.0 == name {
             matches.push(value.1)
@@ -66,7 +66,7 @@ pub fn artifact_json_optional_field(values: Vec[(string, ArtifactValue)], name: 
     Option[ArtifactValue],
     string,
 ] {
-    let matches: Vec[ArtifactValue] = Vec::from_array([]);
+    let matches: Vec[ArtifactValue] = Vec::new();
     for value in values {
         if value.0 == name {
             matches.push(value.1)
@@ -136,7 +136,7 @@ pub fn artifact_decode_string_array(value: ArtifactValue, expected: string) -> R
     string,
 ] {
     let values = artifact_json_array(value, expected)?;
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for value in values {
         result.push(artifact_json_string_value(value, expected)?)
     }

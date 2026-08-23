@@ -143,8 +143,8 @@ fn world_core_unit(
         exports,
         core_ir: value,
         deps: interface.deps,
-        sources: Vec::from_array([]),
-        tests: Vec::from_array([]),
+        sources: Vec::new(),
+        tests: Vec::new(),
     }
 }
 
@@ -220,12 +220,12 @@ fn world_required_package(values: Vec[ToolchainPackage], package_name: string) -
 }
 
 fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainPackage], string] {
-    let names: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
     for value in values {
         names.push(value.interface_unit.package_name)
     }
     let names = wire::sort_artifact_names(names);
-    let result: Vec[ToolchainPackage] = Vec::from_array([]);
+    let result: Vec[ToolchainPackage] = Vec::new();
     let mut previous: Option[string] = Option::None;
     for name in names {
         match previous {
@@ -456,7 +456,7 @@ fn world_from_packages(metadata: WorldMetadata, packages: Vec[ToolchainPackage])
     ) {
         return Result::Err("world artifact prelude builtin dependency does not match")
     } else {};
-    let standard: Vec[ToolchainPackage] = Vec::from_array([]);
+    let standard: Vec[ToolchainPackage] = Vec::new();
     for package_value in packages {
         if package_value.interface_unit.package_name != "builtin"
             && package_value.interface_unit.package_name != "prelude" {
@@ -588,14 +588,14 @@ fn decode_package_world_v2(
     if container.sections.len() != 1 + metadata.package_count * 2 {
         return Result::Err("world artifact package section count does not match")
     } else {};
-    let packages: Vec[ToolchainPackage] = Vec::from_array([]);
-    let names: Vec[string] = Vec::from_array([]);
+    let packages: Vec[ToolchainPackage] = Vec::new();
+    let names: Vec[string] = Vec::new();
     for index in 0..metadata.package_count {
         let package_value = world_decode_package_any(container, (2 + index * 2).to_u16())?;
         names.push(package_value.interface_unit.package_name);
         packages.push(package_value)
     }
-    let sorted_names: Vec[string] = Vec::from_array([]);
+    let sorted_names: Vec[string] = Vec::new();
     for name in names {
         sorted_names.push(name)
     }

@@ -87,7 +87,7 @@ fn inherent_method_name(builtin: tast::BuiltinContract, owner: tast::Type, name:
 
 fn nominal_parts(value: tast::Type) -> Option[(string, Vec[tast::Type])] {
     match tast::resolve_type(value) {
-        Con { name } => Option::Some((name, Vec::from_array([]))),
+        Con { name } => Option::Some((name, Vec::new())),
         App { ty: Con { name }, args } => Option::Some((name, args)),
         _ => Option::None,
     }
@@ -139,7 +139,7 @@ fn trait_impl_method_name(reference: tast::TraitRef, for_ty: tast::Type, name: s
 }
 
 fn lower_exprs(ctx: Lowerer, values: Vec[tast::Expr]) -> Vec[LowerExpr] {
-    let result: Vec[LowerExpr] = Vec::from_array([]);
+    let result: Vec[LowerExpr] = Vec::new();
     for value in values {
         result.push(lower_expr(ctx, value))
     }
@@ -147,7 +147,7 @@ fn lower_exprs(ctx: Lowerer, values: Vec[tast::Expr]) -> Vec[LowerExpr] {
 }
 
 fn arguments_after_first(values: Vec[LowerExpr]) -> Vec[LowerExpr] {
-    let result: Vec[LowerExpr] = Vec::from_array([]);
+    let result: Vec[LowerExpr] = Vec::new();
     for index in 1..values.len() {
         result.push(values[index])
     }
@@ -159,11 +159,11 @@ fn bool_expr(value: bool) -> LowerExpr {
 }
 
 fn trait_bool_call(trait_name: string, method_name: string, left: LowerExpr, right: LowerExpr) -> LowerExpr {
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(right);
     let for_ty = lower_expr_type(left);
     LowerExpr::TraitCall {
-        trait_ref: tast::TraitRef { name: trait_name, args: Vec::from_array([]) },
+        trait_ref: tast::TraitRef { name: trait_name, args: Vec::new() },
         method_name,
         instance_name: Option::None,
         for_ty,
@@ -224,7 +224,7 @@ fn eq_conjunction(values: Vec[LowerExpr]) -> LowerExpr {
 fn structural_eq(trait_name: string, left: LowerExpr, right: LowerExpr, ty: tast::Type) -> LowerExpr {
     match tast::resolve_type(ty) {
         Tuple { items: types } => {
-            let values: Vec[LowerExpr] = Vec::from_array([]);
+            let values: Vec[LowerExpr] = Vec::new();
             for index in 0..types.len() {
                 let item_ty = types[index];
                 values.push(
@@ -239,20 +239,20 @@ fn structural_eq(trait_name: string, left: LowerExpr, right: LowerExpr, ty: tast
             eq_conjunction(values)
         },
         Array { len: length, elem: element } => {
-            let values: Vec[LowerExpr] = Vec::from_array([]);
+            let values: Vec[LowerExpr] = Vec::new();
             for index in 0..length {
                 let index_expr = LowerExpr::Prim {
                     value: tast::Primitive::Int { value: index.to_string() },
                     ty: tast::Type::Int,
                 };
-                let parameter_types: Vec[tast::Type] = Vec::from_array([]);
+                let parameter_types: Vec[tast::Type] = Vec::new();
                 parameter_types.push(ty);
                 parameter_types.push(tast::Type::Int);
                 let function_ty = tast::Type::Func { params: parameter_types, ret_ty: element };
-                let left_args: Vec[LowerExpr] = Vec::from_array([]);
+                let left_args: Vec[LowerExpr] = Vec::new();
                 left_args.push(left);
                 left_args.push(index_expr);
-                let right_args: Vec[LowerExpr] = Vec::from_array([]);
+                let right_args: Vec[LowerExpr] = Vec::new();
                 right_args.push(right);
                 right_args.push(index_expr);
                 values.push(
@@ -298,7 +298,7 @@ fn lower_eq_expr(
         Tuple { items: _ } | Array { len: _, elem: _ } => {
             let left_name = gensym(ctx, "_eq_lhs");
             let right_name = gensym(ctx, "_eq_rhs");
-            let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+            let stmts: Vec[LowerLetStmt] = Vec::new();
             stmts.push(LowerLetStmt { name: left_name, value: left_value, ty: operand_ty });
             stmts.push(LowerLetStmt { name: right_name, value: right_value, ty: operand_ty });
             LowerExpr::Block {
@@ -444,7 +444,7 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[LowerExpr] {
     match value {
         Prim { value: primitive, ty } => Option::Some(LowerExpr::Prim { value: primitive, ty }),
         Constr { constructor, args, ty } => {
-            let result: Vec[LowerExpr] = Vec::from_array([]);
+            let result: Vec[LowerExpr] = Vec::new();
             for arg in args {
                 match lower_pattern_expr(arg) {
                     Some(expr) => result.push(expr),
@@ -454,7 +454,7 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[LowerExpr] {
             Option::Some(LowerExpr::Constr { constructor, args: result, ty })
         },
         Tuple { items, ty } => {
-            let result: Vec[LowerExpr] = Vec::from_array([]);
+            let result: Vec[LowerExpr] = Vec::new();
             for item in items {
                 match lower_pattern_expr(item) {
                     Some(expr) => result.push(expr),
@@ -468,9 +468,9 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[LowerExpr] {
 }
 
 fn missing_expr(ty: tast::Type) -> LowerExpr {
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(tast::Type::String);
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(
         LowerExpr::Prim { value: tast::Primitive::String { value: "" }, ty: tast::Type::String },
     );
@@ -493,7 +493,7 @@ fn bind_match_pattern(
 ) -> LowerExpr {
     match pattern {
         Var { name, is_mut: _, ty: pat_ty } => {
-            let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+            let stmts: Vec[LowerLetStmt] = Vec::new();
             stmts.push(
                 LowerLetStmt {
                     name,
@@ -514,7 +514,7 @@ fn lower_generic_match(
     arms: Vec[tast::Arm],
     ty: tast::Type,
 ) -> LowerExpr {
-    let result: Vec[LowerArm] = Vec::from_array([]);
+    let result: Vec[LowerArm] = Vec::new();
     let mut default: Option[LowerExpr] = Option::None;
     for arm in arms {
         match arm.pat {
@@ -563,7 +563,7 @@ fn bool_arm(arms: Vec[tast::Arm], expected: bool) -> Option[tast::Arm] {
 }
 
 fn lower_bool_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty: tast::Type) -> LowerExpr {
-    let result: Vec[LowerArm] = Vec::from_array([]);
+    let result: Vec[LowerArm] = Vec::new();
     for expected in Vec::from_array([true, false]) {
         let body = match bool_arm(arms, expected) {
             Some(arm) => bind_match_pattern(
@@ -592,7 +592,7 @@ fn lower_unit_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty:
     } else {
         missing_expr(ty)
     };
-    let result: Vec[LowerArm] = Vec::from_array([]);
+    let result: Vec[LowerArm] = Vec::new();
     result.push(
         LowerArm {
             lhs: LowerExpr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
@@ -614,7 +614,7 @@ fn enum_rows_for_variant(
     source_name: string,
     source_ty: tast::Type,
 ) -> Option[Vec[PatternRow]] {
-    let rows: Vec[PatternRow] = Vec::from_array([]);
+    let rows: Vec[PatternRow] = Vec::new();
     for arm in arms {
         match arm.guard {
             Some(_) => return Option::None,
@@ -622,7 +622,7 @@ fn enum_rows_for_variant(
                 Constr { constructor, args: patterns, ty: _ } => if constructor.name
                     == constructor_name {
                     if patterns.len() == variables.len() {
-                        let columns: Vec[PatternColumn] = Vec::from_array([]);
+                        let columns: Vec[PatternColumn] = Vec::new();
                         for index in 0..patterns.len() {
                             let variable = variables[index];
                             columns.push(
@@ -633,24 +633,18 @@ fn enum_rows_for_variant(
                                 },
                             )
                         }
-                        rows.push(
-                            PatternRow { columns, bindings: Vec::from_array([]), body: arm.body },
-                        )
+                        rows.push(PatternRow { columns, bindings: Vec::new(), body: arm.body })
                     } else {
                         return Option::None
                     }
                 } else {},
                 Wild { ty: _ } => rows.push(
-                    PatternRow {
-                        columns: Vec::from_array([]),
-                        bindings: Vec::from_array([]),
-                        body: arm.body,
-                    },
+                    PatternRow { columns: Vec::new(), bindings: Vec::new(), body: arm.body },
                 ),
                 Var { name, is_mut: _, ty } => {
-                    let bindings: Vec[PatternBinding] = Vec::from_array([]);
+                    let bindings: Vec[PatternBinding] = Vec::new();
                     bindings.push(PatternBinding { name, source: source_name, ty });
-                    rows.push(PatternRow { columns: Vec::from_array([]), bindings, body: arm.body })
+                    rows.push(PatternRow { columns: Vec::new(), bindings, body: arm.body })
                 },
                 _ => return Option::None,
             },
@@ -671,11 +665,11 @@ fn enum_match_cases(
     source_name: string,
     source_ty: tast::Type,
 ) -> Option[Vec[EnumCase]] {
-    let cases: Vec[EnumCase] = Vec::from_array([]);
+    let cases: Vec[EnumCase] = Vec::new();
     for variant_index in 0..definition.variants.len() {
         let variant = definition.variants[variant_index];
         let constructor_name = definition.name + "::" + variant.name;
-        let variables: Vec[(string, tast::Type)] = Vec::from_array([]);
+        let variables: Vec[(string, tast::Type)] = Vec::new();
         for field in tast::enum_variant_field_types(variant.fields) {
             variables.push(
                 (gensym(ctx, "x"), tast::substitute_params(field, definition.generics, type_args)),
@@ -686,7 +680,7 @@ fn enum_match_cases(
                 EnumCase {
                     constructor: tast::Constructor {
                         name: constructor_name,
-                        fields: Vec::from_array([]),
+                        fields: Vec::new(),
                         is_struct: false,
                         tag: Option::Some(variant_index),
                     },
@@ -707,10 +701,10 @@ fn lower_enum_cases(
     cases: Vec[EnumCase],
     ty: tast::Type,
 ) -> LowerExpr {
-    let result: Vec[LowerArm] = Vec::from_array([]);
+    let result: Vec[LowerArm] = Vec::new();
     for case in cases {
-        let args: Vec[LowerExpr] = Vec::from_array([]);
-        let extractions: Vec[LowerLetStmt] = Vec::from_array([]);
+        let args: Vec[LowerExpr] = Vec::new();
+        let extractions: Vec[LowerLetStmt] = Vec::new();
         for index in 0..case.variables.len() {
             let variable = case.variables[index];
             args.push(LowerExpr::Var { name: variable.0, ty: variable.1 });
@@ -802,7 +796,7 @@ fn lower_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast:
     } else if arms.is_empty() {
         let source_value = lower_expr(ctx, source);
         let source_name = gensym(ctx, "_wild");
-        let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+        let stmts: Vec[LowerLetStmt] = Vec::new();
         stmts.push(LowerLetStmt { name: source_name, value: source_value, ty: source_ty });
         LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(missing_expr(ty)) }, ty }
     } else {
@@ -814,7 +808,7 @@ fn lower_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast:
                 let source_name = gensym(ctx, "mtmp");
                 let source_value = lower_expr(ctx, other);
                 let body = lower_match_on_variable(ctx, source_name, source_ty, arms, ty);
-                let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+                let stmts: Vec[LowerLetStmt] = Vec::new();
                 stmts.push(LowerLetStmt { name: source_name, value: source_value, ty: source_ty });
                 LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(body) }, ty }
             },
@@ -838,10 +832,10 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
         },
         _ => tast::Callable::Intrinsic("compiler.missing"),
     };
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(base_ty);
     params.push(index_ty);
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(lower_expr(ctx, base));
     args.push(lower_expr(ctx, index));
     LowerExpr::Call {
@@ -855,7 +849,7 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
     let owner = inherent_base(ctx.builtin, tast::expr_type(value));
     match find_struct(ctx, owner) {
         Some(definition) => {
-            let fields: Vec[string] = Vec::from_array([]);
+            let fields: Vec[string] = Vec::new();
             let mut field_index = 0;
             for index in 0..definition.fields.len() {
                 let field = definition.fields[index];
@@ -877,7 +871,7 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
             }
         },
         None => {
-            let fields: Vec[string] = Vec::from_array([]);
+            let fields: Vec[string] = Vec::new();
             fields.push(name);
             LowerExpr::ConstrGet {
                 expr: lower_expr(ctx, value),
@@ -904,7 +898,7 @@ fn direct_for_body(
     let item_ty = tast::pat_type(pattern);
     let item_name = gensym(ctx, "for_item");
     let advance_name = gensym(ctx, "_wild");
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(LowerLetStmt { name: item_name, value: item_value, ty: item_ty });
     stmts.push(
         LowerLetStmt {
@@ -979,7 +973,7 @@ fn direct_range_for(ctx: Lowerer, pattern: tast::Pat, args: Vec[tast::Expr], bod
     } else {
         let index_name = gensym(ctx, "for_index");
         let limit_name = gensym(ctx, "for_limit");
-        let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+        let stmts: Vec[LowerLetStmt] = Vec::new();
         stmts.push(
             LowerLetStmt { name: index_name, value: lower_expr(ctx, args[0]), ty: tast::Type::Int },
         );
@@ -1011,7 +1005,7 @@ fn direct_inclusive_range_body(
     let item_ty = tast::pat_type(pattern);
     let item_name = gensym(ctx, "for_item");
     let advance_name = gensym(ctx, "_wild");
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(
         LowerLetStmt {
             name: item_name,
@@ -1082,7 +1076,7 @@ fn direct_inclusive_range_for(
         let index_name = gensym(ctx, "for_index");
         let limit_name = gensym(ctx, "for_limit");
         let done_name = gensym(ctx, "for_done");
-        let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+        let stmts: Vec[LowerLetStmt] = Vec::new();
         stmts.push(
             LowerLetStmt { name: index_name, value: lower_expr(ctx, args[0]), ty: tast::Type::Int },
         );
@@ -1143,11 +1137,11 @@ fn direct_container_for(
     let source_name = gensym(ctx, "for_source");
     let limit_name = gensym(ctx, "for_limit");
     let index_name = gensym(ctx, "for_index");
-    let len_params: Vec[tast::Type] = Vec::from_array([]);
+    let len_params: Vec[tast::Type] = Vec::new();
     len_params.push(container_ty);
-    let len_args: Vec[LowerExpr] = Vec::from_array([]);
+    let len_args: Vec[LowerExpr] = Vec::new();
     len_args.push(LowerExpr::Var { name: source_name, ty: container_ty });
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(
         LowerLetStmt { name: source_name, value: lower_expr(ctx, iterator), ty: container_ty },
     );
@@ -1159,10 +1153,10 @@ fn direct_container_for(
         },
     );
     stmts.push(LowerLetStmt { name: index_name, value: ordered_int(0), ty: tast::Type::Int });
-    let get_params: Vec[tast::Type] = Vec::from_array([]);
+    let get_params: Vec[tast::Type] = Vec::new();
     get_params.push(container_ty);
     get_params.push(tast::Type::Int);
-    let get_args: Vec[LowerExpr] = Vec::from_array([]);
+    let get_args: Vec[LowerExpr] = Vec::new();
     get_args.push(LowerExpr::Var { name: source_name, ty: container_ty });
     get_args.push(LowerExpr::Var { name: index_name, ty: tast::Type::Int });
     direct_for_loop(
@@ -1188,16 +1182,16 @@ fn direct_array_for(
     let source_name = gensym(ctx, "for_source");
     let limit_name = gensym(ctx, "for_limit");
     let index_name = gensym(ctx, "for_index");
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(
         LowerLetStmt { name: source_name, value: lower_expr(ctx, iterator), ty: container_ty },
     );
     stmts.push(LowerLetStmt { name: limit_name, value: ordered_int(length), ty: tast::Type::Int });
     stmts.push(LowerLetStmt { name: index_name, value: ordered_int(0), ty: tast::Type::Int });
-    let get_params: Vec[tast::Type] = Vec::from_array([]);
+    let get_params: Vec[tast::Type] = Vec::new();
     get_params.push(container_ty);
     get_params.push(tast::Type::Int);
-    let get_args: Vec[LowerExpr] = Vec::from_array([]);
+    let get_args: Vec[LowerExpr] = Vec::new();
     get_args.push(LowerExpr::Var { name: source_name, ty: container_ty });
     get_args.push(LowerExpr::Var { name: index_name, ty: tast::Type::Int });
     direct_for_loop(
@@ -1273,7 +1267,7 @@ fn lower_iterator_for(
     body: tast::Expr,
 ) -> LowerExpr {
     let item_ty = tast::pat_type(pattern);
-    let option_args: Vec[tast::Type] = Vec::from_array([]);
+    let option_args: Vec[tast::Type] = Vec::new();
     option_args.push(item_ty);
     let option_name = ctx.builtin.option.name;
     let some_name = ctx.builtin.option.some.name;
@@ -1281,7 +1275,7 @@ fn lower_iterator_for(
     let option_ty = tast::Type::App { ty: tast::Type::Con { name: option_name }, args: option_args };
     let iterator_name = gensym(ctx, "for_iter");
     let next_name = gensym(ctx, "for_next");
-    let no_args: Vec[LowerExpr] = Vec::from_array([]);
+    let no_args: Vec[LowerExpr] = Vec::new();
     let iterator_receiver = lower_expr(ctx, iterator);
     let iterator_for_ty = lower_expr_type(iterator_receiver);
     let iterator_value = LowerExpr::TraitCall {
@@ -1293,7 +1287,7 @@ fn lower_iterator_for(
         args: no_args,
         ty: iterator_ty,
     };
-    let next_args: Vec[LowerExpr] = Vec::from_array([]);
+    let next_args: Vec[LowerExpr] = Vec::new();
     let next_value = LowerExpr::TraitCall {
         trait_ref: iterator_trait,
         method_name: ctx.builtin.iterator.next,
@@ -1303,15 +1297,15 @@ fn lower_iterator_for(
         args: next_args,
         ty: option_ty,
     };
-    let some_patterns: Vec[tast::Pat] = Vec::from_array([]);
+    let some_patterns: Vec[tast::Pat] = Vec::new();
     some_patterns.push(pattern);
-    let arms: Vec[tast::Arm] = Vec::from_array([]);
+    let arms: Vec[tast::Arm] = Vec::new();
     arms.push(
         tast::Arm {
             pat: tast::Pat::Constr {
                 constructor: tast::Constructor {
                     name: option_name + "::" + some_name,
-                    fields: Vec::from_array([]),
+                    fields: Vec::new(),
                     is_struct: false,
                     tag: Option::Some(ctx.builtin.option.some.tag),
                 },
@@ -1327,18 +1321,18 @@ fn lower_iterator_for(
             pat: tast::Pat::Constr {
                 constructor: tast::Constructor {
                     name: option_name + "::" + none_name,
-                    fields: Vec::from_array([]),
+                    fields: Vec::new(),
                     is_struct: false,
                     tag: Option::Some(ctx.builtin.option.none.tag),
                 },
-                args: Vec::from_array([]),
+                args: Vec::new(),
                 ty: option_ty,
             },
             guard: Option::None,
             body: tast::Expr::Break { target: 0, value: Option::None, ty: tast::Type::Unit },
         },
     );
-    let loop_stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let loop_stmts: Vec[LowerLetStmt] = Vec::new();
     loop_stmts.push(LowerLetStmt { name: next_name, value: next_value, ty: option_ty });
     let loop_body = LowerExpr::Block {
         block: LowerBlock {
@@ -1349,7 +1343,7 @@ fn lower_iterator_for(
         },
         ty: tast::Type::Unit,
     };
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(LowerLetStmt { name: iterator_name, value: iterator_value, ty: iterator_ty });
     LowerExpr::Block {
         block: LowerBlock {
@@ -1409,11 +1403,11 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
         Tuple { items, ty } => LowerExpr::Tuple { items: lower_exprs(ctx, items), ty },
         Array { items, ty } => LowerExpr::Array { items: lower_exprs(ctx, items), ty },
         Closure { params, body, ty } => {
-            let saved_cleanups: Vec[tast::Expr] = Vec::from_array([]);
+            let saved_cleanups: Vec[tast::Expr] = Vec::new();
             for value in ctx.cleanups {
                 saved_cleanups.push(value)
             }
-            let saved_loop_depths: Vec[isize] = Vec::from_array([]);
+            let saved_loop_depths: Vec[isize] = Vec::new();
             for value in ctx.loop_cleanup_depths {
                 saved_loop_depths.push(value)
             }
@@ -1541,7 +1535,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
             let base_ty = tast::expr_type(base);
             let base_value = lower_expr(ctx, base);
             let index_value = lower_expr(ctx, index);
-            let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+            let stmts: Vec[LowerLetStmt] = Vec::new();
             stmts.push(LowerLetStmt { name: gensym(ctx, "_wild"), value: base_value, ty: base_ty });
             LowerExpr::Block {
                 block: LowerBlock { stmts, tail: Option::Some(exit_expr_as(ctx, index_value, ty)) },
@@ -1580,7 +1574,7 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> LowerExpr {
 }
 
 fn lower_cleanup_stmts(ctx: Lowerer, start: isize) -> Vec[LowerLetStmt] {
-    let result: Vec[LowerLetStmt] = Vec::from_array([]);
+    let result: Vec[LowerLetStmt] = Vec::new();
     let mut index = ctx.cleanups.len();
     while index > start {
         index = index - 1;
@@ -1612,7 +1606,7 @@ fn lower_break(ctx: Lowerer, target: isize, value: Option[tast::Expr], ty: tast:
             Some(source) => {
                 let value_ty = tast::expr_type(source);
                 let name = gensym(ctx, "defer_break");
-                let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+                let stmts: Vec[LowerLetStmt] = Vec::new();
                 stmts.push(LowerLetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
                 for stmt in lower_cleanup_stmts(ctx, start) {
                     stmts.push(stmt)
@@ -1675,7 +1669,7 @@ fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Lowe
             Some(source) => {
                 let value_ty = tast::expr_type(source);
                 let name = gensym(ctx, "defer_return");
-                let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+                let stmts: Vec[LowerLetStmt] = Vec::new();
                 stmts.push(LowerLetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
                 for stmt in lower_cleanup_stmts(ctx, 0) {
                     stmts.push(stmt)
@@ -1705,7 +1699,7 @@ fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Lowe
 }
 
 fn prepend_stmt(value: LowerLetStmt, rest: LowerBlock) -> LowerBlock {
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(value);
     for stmt in rest.stmts {
         stmts.push(stmt)
@@ -1721,7 +1715,7 @@ fn remaining_tast_block(
     ty: tast::Type,
     cleanup_start: isize,
 ) -> tast::Expr {
-    let remaining: Vec[tast::Stmt] = Vec::from_array([]);
+    let remaining: Vec[tast::Stmt] = Vec::new();
     for current in index..stmts.len() {
         remaining.push(stmts[current])
     }
@@ -1732,7 +1726,7 @@ fn remaining_tast_block(
         Some(value) => {
             let value_ty = tast::expr_type(value);
             let name = gensym(ctx, "defer_tast_result");
-            let stmts: Vec[tast::Stmt] = Vec::from_array([]);
+            let stmts: Vec[tast::Stmt] = Vec::new();
             stmts.push(
                 tast::Stmt::Let {
                     is_mut: false,
@@ -1789,13 +1783,13 @@ fn lower_pattern_continuation(
             ty,
         )
     } else {
-        let columns: Vec[PatternColumn] = Vec::from_array([]);
+        let columns: Vec[PatternColumn] = Vec::new();
         columns.push(PatternColumn { source: source_name, source_ty, pattern });
-        let rows: Vec[PatternRow] = Vec::from_array([]);
-        rows.push(PatternRow { columns, bindings: Vec::from_array([]), body });
+        let rows: Vec[PatternRow] = Vec::new();
+        rows.push(PatternRow { columns, bindings: Vec::new(), body });
         match failure {
             Some(value) => {
-                let fallback_columns: Vec[PatternColumn] = Vec::from_array([]);
+                let fallback_columns: Vec[PatternColumn] = Vec::new();
                 fallback_columns.push(
                     PatternColumn {
                         source: source_name,
@@ -1804,11 +1798,7 @@ fn lower_pattern_continuation(
                     },
                 );
                 rows.push(
-                    PatternRow {
-                        columns: fallback_columns,
-                        bindings: Vec::from_array([]),
-                        body: value,
-                    },
+                    PatternRow { columns: fallback_columns, bindings: Vec::new(), body: value },
                 )
             },
             None => (),
@@ -1828,7 +1818,7 @@ fn lower_block_from(
     if index >= stmts.len() {
         if ctx.cleanups.len() == cleanup_start {
             LowerBlock {
-                stmts: Vec::from_array([]),
+                stmts: Vec::new(),
                 tail: match tail {
                     Some(value) => Option::Some(lower_expr(ctx, value)),
                     None => Option::None,
@@ -1837,14 +1827,11 @@ fn lower_block_from(
         } else {
             match tail {
                 Some(value) => if tast_expr_exits(value) {
-                    LowerBlock {
-                        stmts: Vec::from_array([]),
-                        tail: Option::Some(lower_expr(ctx, value)),
-                    }
+                    LowerBlock { stmts: Vec::new(), tail: Option::Some(lower_expr(ctx, value)) }
                 } else {
                     let value_ty = tast::expr_type(value);
                     let name = gensym(ctx, "defer_result");
-                    let result: Vec[LowerLetStmt] = Vec::from_array([]);
+                    let result: Vec[LowerLetStmt] = Vec::new();
                     result.push(LowerLetStmt { name, value: lower_expr(ctx, value), ty: value_ty });
                     for stmt in lower_cleanup_stmts(ctx, cleanup_start) {
                         result.push(stmt)
@@ -1878,7 +1865,7 @@ fn lower_block_from(
                 match plan_flat_pattern(ctx, name, pattern) {
                     Some(plan) => {
                         let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
-                        let result: Vec[LowerLetStmt] = Vec::from_array([]);
+                        let result: Vec[LowerLetStmt] = Vec::new();
                         result.push(LowerLetStmt { name, value: core_value, ty: value_ty });
                         LowerBlock {
                             stmts: result,
@@ -1905,7 +1892,7 @@ fn lower_block_from(
                             Option::None,
                             ty,
                         );
-                        let result: Vec[LowerLetStmt] = Vec::from_array([]);
+                        let result: Vec[LowerLetStmt] = Vec::new();
                         result.push(LowerLetStmt { name, value: core_value, ty: value_ty });
                         LowerBlock { stmts: result, tail: Option::Some(matched) }
                     },
@@ -1925,7 +1912,7 @@ fn lower_block_from(
                     Option::Some(else_branch),
                     ty,
                 );
-                let result: Vec[LowerLetStmt] = Vec::from_array([]);
+                let result: Vec[LowerLetStmt] = Vec::new();
                 result.push(LowerLetStmt { name, value: core_value, ty: value_ty });
                 LowerBlock { stmts: result, tail: Option::Some(matched) }
             },
@@ -1973,7 +1960,7 @@ fn lower_function(
         generics: if retain_generics {
             value.generics
         } else {
-            Vec::from_array([])
+            Vec::new()
         },
         predicates: value.predicates,
         trait_impl,
@@ -2003,10 +1990,10 @@ fn lower_marker_trait_witness(block: tast::ImplBlock, reference: tast::TraitRef)
                 predicate_count: block.predicates.len(),
             },
         ),
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: tast::Type::Unit,
         body: LowerBlock {
-            stmts: Vec::from_array([]),
+            stmts: Vec::new(),
             tail: Option::Some(
                 LowerExpr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
             ),
@@ -2024,14 +2011,14 @@ fn lower_file_with_types(
 ) -> LowerFile {
     let enums = value.enums;
     let structs = value.structs;
-    let all_enums: Vec[tast::EnumDef] = Vec::from_array([]);
+    let all_enums: Vec[tast::EnumDef] = Vec::new();
     for definition in dependency_enums {
         all_enums.push(definition)
     }
     for definition in enums {
         all_enums.push(definition)
     }
-    let all_structs: Vec[tast::StructDef] = Vec::from_array([]);
+    let all_structs: Vec[tast::StructDef] = Vec::new();
     for definition in dependency_structs {
         all_structs.push(definition)
     }
@@ -2044,11 +2031,11 @@ fn lower_file_with_types(
         enums: all_enums,
         structs: all_structs,
         optimize_builtin_iterators,
-        cleanups: Vec::from_array([]),
-        loop_cleanup_depths: Vec::from_array([]),
+        cleanups: Vec::new(),
+        loop_cleanup_depths: Vec::new(),
         cleanup_lowering_depth: Ref::new(0),
     };
-    let functions: Vec[LowerFunction] = Vec::from_array([]);
+    let functions: Vec[LowerFunction] = Vec::new();
     for item in value.items {
         match item {
             Function(function) => match function.comptime {
@@ -2116,24 +2103,24 @@ fn lower_file_with_types(
         functions,
         enums,
         structs,
-        type_instances: Vec::from_array([]),
+        type_instances: Vec::new(),
         constants: value.constants,
         statics: value.statics,
     }
 }
 
 fn lower_file(builtin: tast::BuiltinContract, value: tast::File, counter: Ref[isize]) -> LowerFile {
-    lower_file_with_types(builtin, value, counter, Vec::from_array([]), Vec::from_array([]), false)
+    lower_file_with_types(builtin, value, counter, Vec::new(), Vec::new(), false)
 }
 
 fn empty_lower_file() -> LowerFile {
     LowerFile {
-        functions: Vec::from_array([]),
-        enums: Vec::from_array([]),
-        structs: Vec::from_array([]),
-        type_instances: Vec::from_array([]),
-        constants: Vec::from_array([]),
-        statics: Vec::from_array([]),
+        functions: Vec::new(),
+        enums: Vec::new(),
+        structs: Vec::new(),
+        type_instances: Vec::new(),
+        constants: Vec::new(),
+        statics: Vec::new(),
     }
 }
 

@@ -39,7 +39,7 @@ fn comptime_diagnostic(message: string, source_path: string, start: isize, end: 
         source_path,
         span: Option::Some(ast::span(start, end)),
         primary_label: Option::None,
-        secondary_labels: Vec::from_array([]),
+        secondary_labels: Vec::new(),
         sort_order: 0,
     }
 }
@@ -216,14 +216,14 @@ fn substitute_ct_type(value: Type, names: Vec[string], args: Vec[Type]) -> Type 
             Type::Param { name }
         },
         Tuple { items } => {
-            let result: Vec[Type] = Vec::from_array([]);
+            let result: Vec[Type] = Vec::new();
             for item in items {
                 result.push(substitute_ct_type(item, names, args))
             }
             Type::Tuple { items: result }
         },
         App { ty, args: values } => {
-            let result: Vec[Type] = Vec::from_array([]);
+            let result: Vec[Type] = Vec::new();
             for value in values {
                 result.push(substitute_ct_type(value, names, args))
             }
@@ -271,7 +271,7 @@ fn find_ct_enum(file: File, name: string) -> Option[EnumDef] {
 fn nominal_type_arguments(value: Type) -> Vec[Type] {
     match resolve_type(value) {
         Type::App { ty: _, args } => args,
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     }
 }
 
@@ -281,7 +281,7 @@ fn nominal_ct_type(ctx: CtLowerContext, name: string, args: Vec[Type]) -> Result
 ] {
     match find_ct_struct(ctx.file, name) {
         Some(definition) => {
-            let fields: Vec[ctir::CtType] = Vec::from_array([]);
+            let fields: Vec[ctir::CtType] = Vec::new();
             for field in definition.fields {
                 fields.push(
                     lower_ct_type(ctx, substitute_ct_type(field.1, definition.generics, args))?,
@@ -291,9 +291,9 @@ fn nominal_ct_type(ctx: CtLowerContext, name: string, args: Vec[Type]) -> Result
         },
         None => match find_ct_enum(ctx.file, name) {
             Some(definition) => {
-                let variants: Vec[Vec[ctir::CtType]] = Vec::from_array([]);
+                let variants: Vec[Vec[ctir::CtType]] = Vec::new();
                 for variant in definition.variants {
-                    let fields: Vec[ctir::CtType] = Vec::from_array([]);
+                    let fields: Vec[ctir::CtType] = Vec::new();
                     match variant.fields {
                         EnumVariantFields::Unit => (),
                         EnumVariantFields::Tuple(values) => for value in values {
@@ -344,7 +344,7 @@ fn lower_ct_type(ctx: CtLowerContext, value: Type) -> Result[ctir::CtType, strin
         String => Result::Ok(ctir::CtType::String),
         Char => Result::Ok(ctir::CtType::Char),
         Tuple { items } => {
-            let result: Vec[ctir::CtType] = Vec::from_array([]);
+            let result: Vec[ctir::CtType] = Vec::new();
             for item in items {
                 result.push(lower_ct_type(ctx, item)?)
             }
@@ -356,7 +356,7 @@ fn lower_ct_type(ctx: CtLowerContext, value: Type) -> Result[ctir::CtType, strin
         Con { name } => if derive::is_meta_type(name) {
             Result::Ok(ctir::CtType::Meta(name))
         } else {
-            nominal_ct_type(ctx, name, Vec::from_array([]))
+            nominal_ct_type(ctx, name, Vec::new())
         },
         App { ty, args } => match resolve_type(ty) {
             Con { name } => nominal_ct_type(ctx, name, args),
@@ -525,7 +525,7 @@ fn lower_ct_pattern_at(ctx: CtLowerContext, value: Pat, pattern_base: isize) -> 
             Result::Ok(ctir::CtPattern::Constant { package_name, name })
         },
         Constr { constructor, args, ty } => {
-            let fields: Vec[ctir::CtPattern] = Vec::from_array([]);
+            let fields: Vec[ctir::CtPattern] = Vec::new();
             for arg in args {
                 fields.push(lower_ct_pattern_at(ctx, arg, pattern_base)?)
             }
@@ -538,7 +538,7 @@ fn lower_ct_pattern_at(ctx: CtLowerContext, value: Pat, pattern_base: isize) -> 
                 },
                 None => match lower_ct_type(ctx, ty)? {
                     ctir::CtType::Struct { name, fields: _ } => {
-                        let result: Vec[(isize, ctir::CtPattern)] = Vec::from_array([]);
+                        let result: Vec[(isize, ctir::CtPattern)] = Vec::new();
                         for index in 0..fields.len() {
                             result.push((index, fields[index]))
                         }
@@ -549,15 +549,15 @@ fn lower_ct_pattern_at(ctx: CtLowerContext, value: Pat, pattern_base: isize) -> 
             }
         },
         Tuple { items, ty: _ } => {
-            let result: Vec[ctir::CtPattern] = Vec::from_array([]);
+            let result: Vec[ctir::CtPattern] = Vec::new();
             for item in items {
                 result.push(lower_ct_pattern_at(ctx, item, pattern_base)?)
             }
             Result::Ok(ctir::CtPattern::Tuple(result))
         },
         Array { prefix, rest, suffix, ty: _ } => {
-            let lowered_prefix: Vec[ctir::CtPattern] = Vec::from_array([]);
-            let lowered_suffix: Vec[ctir::CtPattern] = Vec::from_array([]);
+            let lowered_prefix: Vec[ctir::CtPattern] = Vec::new();
+            let lowered_suffix: Vec[ctir::CtPattern] = Vec::new();
             for item in prefix {
                 lowered_prefix.push(lower_ct_pattern_at(ctx, item, pattern_base)?)
             }
@@ -587,7 +587,7 @@ fn lower_ct_pattern_at(ctx: CtLowerContext, value: Pat, pattern_base: isize) -> 
             },
         ),
         Or { pats, ty: _ } => {
-            let result: Vec[ctir::CtPattern] = Vec::from_array([]);
+            let result: Vec[ctir::CtPattern] = Vec::new();
             for pat in pats {
                 result.push(lower_ct_pattern_at(ctx, pat, pattern_base)?)
             }
@@ -714,7 +714,7 @@ fn lowered_expr_type(ctx: CtLowerContext, kind: ctir::CtExprKind, fallback: ctir
             None => fallback,
         },
         ctir::CtExprKind::Tuple(values) => {
-            let types: Vec[ctir::CtType] = Vec::from_array([]);
+            let types: Vec[ctir::CtType] = Vec::new();
             for value in values {
                 types.push(value.ty)
             }
@@ -765,7 +765,7 @@ fn constant_package(ctx: CtLowerContext, name: string) -> Option[string] {
 }
 
 fn comptime_constant_names(file: File, pending: Vec[PendingConstant]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for value in file.constants {
         result.push(value.name)
     }
@@ -776,7 +776,7 @@ fn comptime_constant_names(file: File, pending: Vec[PendingConstant]) -> Vec[str
 }
 
 fn lower_ct_exprs(ctx: CtLowerContext, values: Vec[Expr]) -> Result[Vec[ctir::CtExpr], string] {
-    let result: Vec[ctir::CtExpr] = Vec::from_array([]);
+    let result: Vec[ctir::CtExpr] = Vec::new();
     for value in values {
         result.push(lower_ct_expr(ctx, value)?)
     }
@@ -896,7 +896,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
         Comptime { .. } => return Result::Err("nested comptime expressions are not supported"),
         Match { expr, arms, ty: _, .. } => {
             let source = lower_ct_expr(ctx, expr)?;
-            let result: Vec[ctir::CtArm] = Vec::from_array([]);
+            let result: Vec[ctir::CtArm] = Vec::new();
             for arm in arms {
                 result.push(
                     ctir::CtArm {
@@ -1118,7 +1118,7 @@ fn lower_ct_stmt(ctx: CtLowerContext, value: Stmt) -> Result[ctir::CtStmt, strin
 }
 
 fn lower_ct_block(ctx: CtLowerContext, value: Block) -> Result[ctir::CtBlock, string] {
-    let statements: Vec[ctir::CtStmt] = Vec::from_array([]);
+    let statements: Vec[ctir::CtStmt] = Vec::new();
     for statement in value.stmts {
         statements.push(lower_ct_stmt(ctx, statement)?)
     }
@@ -1130,7 +1130,7 @@ fn lower_ct_block(ctx: CtLowerContext, value: Block) -> Result[ctir::CtBlock, st
 }
 
 fn capable_functions(file: File) -> Vec[Function] {
-    let result: Vec[Function] = Vec::from_array([]);
+    let result: Vec[Function] = Vec::new();
     for item in file.items {
         match item {
             Item::Function(value) => match value.comptime {
@@ -1205,10 +1205,10 @@ fn build_comptime_module(
     for index in 0..functions.len() {
         let function = functions[index];
         let origin = add_origin(module, function.source_path, function.start, function.end);
-        let locals: Vec[(string, isize)] = Vec::from_array([]);
-        let local_types: Vec[ctir::CtType] = Vec::from_array([]);
-        let parameter_slots: Vec[isize] = Vec::from_array([]);
-        let parameter_source_types: Vec[Type] = Vec::from_array([]);
+        let locals: Vec[(string, isize)] = Vec::new();
+        let local_types: Vec[ctir::CtType] = Vec::new();
+        let parameter_slots: Vec[isize] = Vec::new();
+        let parameter_source_types: Vec[Type] = Vec::new();
         let next_slot = Ref::new(0);
         for parameter in function.params {
             let slot = next_slot.get();
@@ -1227,7 +1227,7 @@ fn build_comptime_module(
             locals,
             local_types,
             next_slot,
-            loop_targets: Vec::from_array([]),
+            loop_targets: Vec::new(),
             next_loop: Ref::new(0),
             origin,
             source_path: function.source_path,
@@ -1238,7 +1238,7 @@ fn build_comptime_module(
                 _ => false,
             },
         };
-        let parameter_types: Vec[ctir::CtType] = Vec::from_array([]);
+        let parameter_types: Vec[ctir::CtType] = Vec::new();
         let parameter_error = Ref::new(Option::None);
         for parameter_type in parameter_source_types {
             match lower_ct_type(ctx, parameter_type) {
@@ -1412,11 +1412,11 @@ fn constant_expr_from_value(file: File, value: ctir::CtValue, ty: Type) -> Resul
 fn pattern_constant_primitive(value: ctir::CtValue, ty: Type) -> Option[Primitive] {
     match constant_expr_from_value(
         File {
-            items: Vec::from_array([]),
-            enums: Vec::from_array([]),
-            structs: Vec::from_array([]),
-            constants: Vec::from_array([]),
-            statics: Vec::from_array([]),
+            items: Vec::new(),
+            enums: Vec::new(),
+            structs: Vec::new(),
+            constants: Vec::new(),
+            statics: Vec::new(),
         },
         value,
         ty,
@@ -1442,18 +1442,10 @@ fn evaluate_pattern_constants(
     dependencies: Vec[ctir::CtModule],
 ) -> Vec[(string, Primitive)] {
     let module = ctir::empty_module(package_name);
-    let names = comptime_constant_names(file, Vec::from_array([]));
-    let diagnostics: Vec[Diagnostic] = Vec::from_array([]);
-    let _ = evaluate_constants(
-        builtin,
-        file,
-        Vec::from_array([]),
-        module,
-        dependencies,
-        names,
-        diagnostics,
-    );
-    let result: Vec[(string, Primitive)] = Vec::from_array([]);
+    let names = comptime_constant_names(file, Vec::new());
+    let diagnostics: Vec[Diagnostic] = Vec::new();
+    let _ = evaluate_constants(builtin, file, Vec::new(), module, dependencies, names, diagnostics);
+    let result: Vec[(string, Primitive)] = Vec::new();
     for constant in file.constants {
         match module_constant_primitive(module, constant.name, constant.ty) {
             Some(value) => result.push((constant.name, value)),
@@ -1472,7 +1464,7 @@ fn constant_candidates(
     constant_names: Vec[string],
     diagnostics: Vec[Diagnostic],
 ) -> Vec[CtConstantCandidate] {
-    let result: Vec[CtConstantCandidate] = Vec::from_array([]);
+    let result: Vec[CtConstantCandidate] = Vec::new();
     for value in file.constants {
         let origin = add_origin(module, "<" + module.package_name + ">", 0, 0);
         let ctx = CtLowerContext {
@@ -1482,14 +1474,14 @@ fn constant_candidates(
             module,
             dependencies,
             constant_names,
-            locals: Vec::from_array([]),
-            local_types: Vec::from_array([]),
+            locals: Vec::new(),
+            local_types: Vec::new(),
             next_slot: Ref::new(0),
-            loop_targets: Vec::from_array([]),
+            loop_targets: Vec::new(),
             next_loop: Ref::new(0),
             origin,
             source_path: "<" + module.package_name + ">",
-            origin_spans: Vec::from_array([]),
+            origin_spans: Vec::new(),
             origin_cursor: Ref::new(0),
             derive: false,
         };
@@ -1518,10 +1510,10 @@ fn constant_candidates(
             module,
             dependencies,
             constant_names,
-            locals: Vec::from_array([]),
-            local_types: Vec::from_array([]),
+            locals: Vec::new(),
+            local_types: Vec::new(),
             next_slot: Ref::new(0),
-            loop_targets: Vec::from_array([]),
+            loop_targets: Vec::new(),
             next_loop: Ref::new(0),
             origin,
             source_path: value.source_path,
@@ -1568,7 +1560,7 @@ fn evaluate_constants(
         constant_names,
         diagnostics,
     );
-    let states: Vec[isize] = Vec::from_array([]);
+    let states: Vec[isize] = Vec::new();
     for index in 0..candidates.len() {
         states.push(0);
         module.sites.push(
@@ -1576,7 +1568,7 @@ fn evaluate_constants(
                 id: index,
                 kind: ctir::CtSiteKind::Constant { name: candidates[index].name },
                 local_count: 0,
-                local_types: Vec::from_array([]),
+                local_types: Vec::new(),
                 expression: candidates[index].expression,
                 origin: candidates[index].origin,
             },
@@ -1708,7 +1700,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
         },
         ctir::CtValue::Tuple(values) => match resolve_type(ty) {
             Type::Tuple { items: types } => {
-                let result: Vec[Expr] = Vec::from_array([]);
+                let result: Vec[Expr] = Vec::new();
                 for index in 0..values.len() {
                     result.push(reify_ct_value(file, values[index], types[index])?)
                 }
@@ -1718,7 +1710,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
         },
         ctir::CtValue::Array(values) => match resolve_type(ty) {
             Type::Array { len: _, elem } => {
-                let result: Vec[Expr] = Vec::from_array([]);
+                let result: Vec[Expr] = Vec::new();
                 for value in values {
                     result.push(reify_ct_value(file, value, elem)?)
                 }
@@ -1734,7 +1726,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
                 return Result::Err("comptime cannot reify a struct with hidden fields")
             } else {};
             let type_args = nominal_type_arguments(ty);
-            let args: Vec[Expr] = Vec::from_array([]);
+            let args: Vec[Expr] = Vec::new();
             for index in 0..fields.len() {
                 args.push(
                     reify_ct_value(
@@ -1748,7 +1740,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
                     )?,
                 )
             }
-            let names: Vec[string] = Vec::from_array([]);
+            let names: Vec[string] = Vec::new();
             for field in definition.fields {
                 names.push(field.0)
             }
@@ -1774,8 +1766,8 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
             } else {};
             let selected = definition.variants[variant];
             let type_args = nominal_type_arguments(ty);
-            let field_types: Vec[Type] = Vec::from_array([]);
-            let field_names: Vec[string] = Vec::from_array([]);
+            let field_types: Vec[Type] = Vec::new();
+            let field_names: Vec[string] = Vec::new();
             let is_struct = match selected.fields {
                 EnumVariantFields::Unit => false,
                 EnumVariantFields::Tuple(values) => {
@@ -1794,7 +1786,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
                     true
                 },
             };
-            let args: Vec[Expr] = Vec::from_array([]);
+            let args: Vec[Expr] = Vec::new();
             for index in 0..fields.len() {
                 args.push(reify_ct_value(file, fields[index], field_types[index])?)
             }
@@ -1826,7 +1818,7 @@ fn rewrite_comptime_exprs(
     next_site: Ref[isize],
     values: Vec[Expr],
 ) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::from_array([]);
+    let result: Vec[Expr] = Vec::new();
     for value in values {
         result.push(
             rewrite_comptime_expr(
@@ -1979,7 +1971,7 @@ fn rewrite_comptime_block(
     next_site: Ref[isize],
     value: Block,
 ) -> Block {
-    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let stmts: Vec[Stmt] = Vec::new();
     for statement in value.stmts {
         stmts.push(
             match statement {
@@ -2103,11 +2095,11 @@ fn rewrite_comptime_expr(
                 file,
                 module,
                 dependencies,
-                constant_names: comptime_constant_names(file, Vec::from_array([])),
-                locals: Vec::from_array([]),
-                local_types: Vec::from_array([]),
+                constant_names: comptime_constant_names(file, Vec::new()),
+                locals: Vec::new(),
+                local_types: Vec::new(),
                 next_slot: Ref::new(0),
-                loop_targets: Vec::from_array([]),
+                loop_targets: Vec::new(),
                 next_loop: Ref::new(0),
                 origin,
                 source_path,
@@ -2222,7 +2214,7 @@ fn rewrite_comptime_expr(
             ty,
         },
         Match { expr, arms, coverage, ty } => {
-            let result: Vec[Arm] = Vec::from_array([]);
+            let result: Vec[Arm] = Vec::new();
             for arm in arms {
                 result.push(
                     Arm {
@@ -2648,15 +2640,15 @@ pub fn finalize_comptime(
     dependency_enums: Vec[EnumDef],
     dependency_structs: Vec[StructDef],
 ) -> ComptimeFinalizeResult {
-    let diagnostics: Vec[Diagnostic] = Vec::from_array([]);
-    let metadata_enums: Vec[EnumDef] = Vec::from_array([]);
+    let diagnostics: Vec[Diagnostic] = Vec::new();
+    let metadata_enums: Vec[EnumDef] = Vec::new();
     for value in file.enums {
         metadata_enums.push(value)
     }
     for value in dependency_enums {
         metadata_enums.push(value)
     }
-    let metadata_structs: Vec[StructDef] = Vec::from_array([]);
+    let metadata_structs: Vec[StructDef] = Vec::new();
     for value in file.structs {
         metadata_structs.push(value)
     }
@@ -2688,7 +2680,7 @@ pub fn finalize_comptime(
         constant_names,
         diagnostics,
     );
-    let items: Vec[Item] = Vec::from_array([]);
+    let items: Vec[Item] = Vec::new();
     let next_site = Ref::new(0);
     for item in file.items {
         items.push(
@@ -2719,7 +2711,7 @@ pub fn finalize_comptime(
                     },
                 ),
                 Item::ImplBlock(value) => {
-                    let methods: Vec[Function] = Vec::from_array([]);
+                    let methods: Vec[Function] = Vec::new();
                     for method in value.methods {
                         methods.push(
                             Function {

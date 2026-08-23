@@ -41,8 +41,8 @@ fn visit_package(
 }
 
 fn package_order(value: GoListResult) -> Result[Vec[string], string] {
-    let result: Vec[string] = Vec::from_array([]);
-    visit_package(value.packages, HashMap::from_array([]), result, value.root_path)?;
+    let result: Vec[string] = Vec::new();
+    visit_package(value.packages, HashMap::new(), result, value.root_path)?;
     Result::Ok(result)
 }
 
@@ -105,7 +105,7 @@ fn package_dependencies(world: go_types::World, package_value: GoListPackage) ->
     Vec[go_types::PackageId],
     string,
 ] {
-    let result: Vec[go_types::PackageId] = Vec::from_array([]);
+    let result: Vec[go_types::PackageId] = Vec::new();
     for dependency in package_value.imports {
         if dependency != "C" {
             match world_package(world, dependency) {
@@ -177,7 +177,7 @@ fn selected_package_dependencies(
     native_order: Option[Vec[string]],
 ) -> Result[Vec[go_types::PackageId], string] {
     if native_order.is_some() && native_api_text(package_value.import_path).is_some() {
-        let result: Vec[go_types::PackageId] = Vec::from_array([]);
+        let result: Vec[go_types::PackageId] = Vec::new();
         for dependency in native_api_dependencies(package_value.import_path) {
             match world_package(world, dependency) {
                 Some(package_id) => result.push(package_id),
@@ -203,9 +203,9 @@ fn load_checked_packages_with_order(
         None => return Result::Err("unsupported GOARCH " + config.goarch),
     };
     let mut world = go_types::new_world();
-    let packages: Vec[ExecutionPackage] = Vec::from_array([]);
-    let initialization_order: Vec[go_types::PackageId] = Vec::from_array([]);
-    let diagnostics: Vec[ExecutionDiagnostic] = Vec::from_array([]);
+    let packages: Vec[ExecutionPackage] = Vec::new();
+    let initialization_order: Vec[go_types::PackageId] = Vec::new();
+    let diagnostics: Vec[ExecutionDiagnostic] = Vec::new();
     for package_path in order {
         let package_value = match listed_package(listed.packages, package_path) {
             Some(value) => value,
@@ -387,7 +387,7 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
         }
     } else {};
     let listed = list_go_files(config, toolchain, directory, names)?;
-    let diagnostics: Vec[ExecutionDiagnostic] = Vec::from_array([]);
+    let diagnostics: Vec[ExecutionDiagnostic] = Vec::new();
     for package_value in listed.packages {
         if package_value.import_path != listed.root_path && !package_value.standard {
             diagnostics.push(

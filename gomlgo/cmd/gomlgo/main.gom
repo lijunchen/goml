@@ -131,7 +131,7 @@ fn check_files(files: Vec[string], package_path: string) -> unit {
             }
         } else {}
     } else {};
-    let sources: Vec[checker::SourceFile] = Vec::from_array([]);
+    let sources: Vec[checker::SourceFile] = Vec::new();
     for file in files {
         sources.push(checker::SourceFile { name: file, source: read_source(file) })
     }
@@ -339,7 +339,7 @@ fn native_image(
                 goamd64: env::var("GOAMD64").unwrap_or("v1"),
                 goexperiment: env::var("GOEXPERIMENT").unwrap_or(""),
                 cgo: false,
-                tags: Vec::from_array([]),
+                tags: Vec::new(),
                 source_hash: source_hash(files)?,
                 import_manifest_hash: imported_paths_hash(program),
             },
@@ -420,7 +420,7 @@ fn execute_loaded(
 }
 
 fn run_files(arguments: Vec[string]) -> unit {
-    let files: Vec[string] = Vec::from_array([]);
+    let files: Vec[string] = Vec::new();
     let vm_config = interpreter::default_config();
     let mut index = 2;
     while index < arguments.len() && arguments[index] != "--" {
@@ -497,7 +497,7 @@ fn main() -> unit {
     } else {
         match arguments[1] {
             CHECK_COMMAND => if arguments.len() >= 3 {
-                let files: Vec[string] = Vec::from_array([]);
+                let files: Vec[string] = Vec::new();
                 for index in 2..arguments.len() {
                     files.push(arguments[index])
                 }

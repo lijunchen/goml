@@ -161,11 +161,11 @@ pub fn get_node(value: Node, name: string) -> Option[Node] {
 pub fn get_nodes(value: Node, name: string) -> Vec[Node] {
     let field = get_field(value, name);
     if !field.present {
-        return Vec::from_array([])
+        return Vec::new()
     } else {};
     match field.value {
         Value::Nodes(nodes) => nodes,
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     }
 }
 

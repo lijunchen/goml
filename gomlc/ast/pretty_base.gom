@@ -40,9 +40,9 @@ fn pretty_type_doc(value: TypeExpr) -> doc::Doc {
         Tuple { items: values } => doc::delimited("(", ",", ")", pretty_type_docs(values)),
         Con { path } => pretty_path_doc(path),
         Dyn { bounds } => {
-            let values: Vec[doc::Doc] = Vec::from_array([]);
+            let values: Vec[doc::Doc] = Vec::new();
             for bound in bounds {
-                let args: Vec[doc::Doc] = Vec::from_array([]);
+                let args: Vec[doc::Doc] = Vec::new();
                 for arg in bound.args {
                     args.push(pretty_type_doc(arg))
                 }

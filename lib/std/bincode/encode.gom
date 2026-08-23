@@ -254,9 +254,9 @@ struct BincodeSerializer {
 
 fn bincode_serializer(config: Config) -> BincodeSerializer {
     BincodeSerializer {
-        output: Vec::from_array([]),
+        output: Vec::new(),
         config,
-        frames: Vec::from_array([]),
+        frames: Vec::new(),
         root_written: Ref::new(false),
     }
 }
@@ -763,7 +763,7 @@ impl serde::Serializer for BincodeSerializer {
 }
 
 pub fn encode_value(value: serde::Value, config: Config) -> Result[Vec[byte], string] {
-    let output: Vec[byte] = Vec::from_array([]);
+    let output: Vec[byte] = Vec::new();
     push_value(output, value, config)?;
     Result::Ok(output)
 }

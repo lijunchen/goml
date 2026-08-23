@@ -111,15 +111,15 @@ fn empty_type(kind: string, text: string) -> Vec[(string, json::Value)] {
             ("elem", json::Value::Null),
             ("key", json::Value::Null),
             ("receiver", json::Value::Null),
-            ("fields", array_value(Vec::from_array([]))),
-            ("parameters", array_value(Vec::from_array([]))),
-            ("results", array_value(Vec::from_array([]))),
-            ("methods", array_value(Vec::from_array([]))),
-            ("embeddeds", array_value(Vec::from_array([]))),
-            ("terms", array_value(Vec::from_array([]))),
-            ("type_parameters", array_value(Vec::from_array([]))),
-            ("receiver_parameters", array_value(Vec::from_array([]))),
-            ("type_arguments", array_value(Vec::from_array([]))),
+            ("fields", array_value(Vec::new())),
+            ("parameters", array_value(Vec::new())),
+            ("results", array_value(Vec::new())),
+            ("methods", array_value(Vec::new())),
+            ("embeddeds", array_value(Vec::new())),
+            ("terms", array_value(Vec::new())),
+            ("type_parameters", array_value(Vec::new())),
+            ("receiver_parameters", array_value(Vec::new())),
+            ("type_arguments", array_value(Vec::new())),
         ],
     )
 }
@@ -203,7 +203,7 @@ fn normalize_type_parameters(
     parameters: Vec[go_types::TypeParameter],
     active: Vec[isize],
 ) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for parameter in parameters {
         match go_types::get_object(value.world, parameter.object) {
             Some(object) => result.push(
@@ -376,7 +376,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
             },
             go_types::TypeKind::Struct { fields: struct_fields } => {
                 set_field(fields, "kind", string_value("Struct"));
-                let normalized: Vec[json::Value] = Vec::from_array([]);
+                let normalized: Vec[json::Value] = Vec::new();
                 for field in struct_fields {
                     normalized.push(
                         object_value(
@@ -408,7 +408,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
             },
             go_types::TypeKind::Tuple { variables } => {
                 set_field(fields, "kind", string_value("Tuple"));
-                let normalized: Vec[json::Value] = Vec::from_array([]);
+                let normalized: Vec[json::Value] = Vec::new();
                 for variable in variables {
                     normalized.push(normalize_variable(value, variable, next))
                 }
@@ -431,14 +431,14 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     ),
                     None => {},
                 };
-                let parameters: Vec[json::Value] = Vec::from_array([]);
+                let parameters: Vec[json::Value] = Vec::new();
                 match go_types::get_type(value.world, params) {
                     Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => for variable in variables {
                         parameters.push(normalize_variable(value, variable, next))
                     },
                     _ => {},
                 };
-                let result_values: Vec[json::Value] = Vec::from_array([]);
+                let result_values: Vec[json::Value] = Vec::new();
                 match go_types::get_type(value.world, results) {
                     Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => for variable in variables {
                         result_values.push(normalize_variable(value, variable, next))
@@ -468,7 +468,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     bool_value(go_types::type_set_comparable(value.world, id)),
                 );
                 set_field(fields, "implicit", bool_value(implicit));
-                let method_values: Vec[json::Value] = Vec::from_array([]);
+                let method_values: Vec[json::Value] = Vec::new();
                 for method in methods {
                     match go_types::get_object(value.world, method) {
                         Some(object) => method_values.push(
@@ -489,7 +489,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                         None => {},
                     }
                 }
-                let embedded_values: Vec[json::Value] = Vec::from_array([]);
+                let embedded_values: Vec[json::Value] = Vec::new();
                 for embedded in embeddeds {
                     embedded_values.push(normalize_type_inner(value, embedded, next))
                 }
@@ -532,7 +532,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     "type_parameters",
                     array_value(normalize_type_parameters(value, type_params, next)),
                 );
-                let arguments: Vec[json::Value] = Vec::from_array([]);
+                let arguments: Vec[json::Value] = Vec::new();
                 for argument in type_args {
                     arguments.push(normalize_type_inner(value, argument, next))
                 }
@@ -564,7 +564,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                     "type_parameters",
                     array_value(normalize_type_parameters(value, type_params, next)),
                 );
-                let arguments: Vec[json::Value] = Vec::from_array([]);
+                let arguments: Vec[json::Value] = Vec::new();
                 for argument in type_args {
                     arguments.push(normalize_type_inner(value, argument, next))
                 }
@@ -582,7 +582,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
             },
             go_types::TypeKind::Union { terms } => {
                 set_field(fields, "kind", string_value("Union"));
-                let normalized: Vec[json::Value] = Vec::from_array([]);
+                let normalized: Vec[json::Value] = Vec::new();
                 for term in terms {
                     normalized.push(
                         object_value(
@@ -604,7 +604,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
 }
 
 fn normalize_type(value: checker::CheckResult, id: go_types::TypeId) -> json::Value {
-    normalize_type_inner(value, id, Vec::from_array([]))
+    normalize_type_inner(value, id, Vec::new())
 }
 
 fn normalize_object(value: checker::CheckResult, id: go_types::ObjectId) -> json::Value {
@@ -667,7 +667,7 @@ fn compare_json_node(left: json::Value, right: json::Value) -> isize {
 fn normalize_scope_objects(value: checker::CheckResult, scope_id: go_types::ScopeId) -> Vec[
     json::Value,
 ] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     if scope_id.value >= 0 && scope_id.value < value.world.scopes.len() {
         for entry in value.world.scopes[scope_id.value].entries {
             result.push(normalize_object(value, entry.object))
@@ -684,7 +684,7 @@ fn node_key(value: checker::CheckResult, node: syntax::NodeId) -> string {
 fn normalize_object_facts(value: checker::CheckResult, facts: Vec[checker::ObjectFact]) -> Vec[
     json::Value,
 ] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for fact in facts {
         result.push(
             object_value(
@@ -744,7 +744,7 @@ fn selection_kind(value: checker::CheckResult, fact: checker::SelectionFact) -> 
 }
 
 fn normalize_type_facts(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for fact in value.info.types {
         let fact_node = checker::type_fact_key(fact).unwrap_or(node_key(value, fact.node));
         result.push(
@@ -778,9 +778,9 @@ fn normalize_type_facts(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_selections(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for fact in value.info.selections {
-        let indices: Vec[json::Value] = Vec::from_array([]);
+        let indices: Vec[json::Value] = Vec::new();
         for index in fact.index {
             indices.push(number_value(index))
         }
@@ -805,7 +805,7 @@ fn normalize_selections(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_scopes(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for fact in value.info.scopes {
         if fact.scope.value >= 0 && fact.scope.value < value.world.scopes.len() {
             let scope = value.world.scopes[fact.scope.value];
@@ -864,9 +864,9 @@ fn normalize_scopes(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_instances(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for fact in value.info.instances {
-        let arguments: Vec[json::Value] = Vec::from_array([]);
+        let arguments: Vec[json::Value] = Vec::new();
         for argument in fact.type_args {
             arguments.push(normalize_type(value, argument))
         }
@@ -887,9 +887,9 @@ fn normalize_instances(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_init_order(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for fact in value.info.init_order {
-        let left: Vec[json::Value] = Vec::from_array([]);
+        let left: Vec[json::Value] = Vec::new();
         for object in fact.left {
             left.push(normalize_object(value, object))
         }
@@ -905,7 +905,7 @@ fn normalize_init_order(value: checker::CheckResult) -> Vec[json::Value] {
 }
 
 fn normalize_file_versions(value: checker::CheckResult) -> Vec[json::Value] {
-    let result: Vec[json::Value] = Vec::from_array([]);
+    let result: Vec[json::Value] = Vec::new();
     for fact in value.info.file_versions {
         result.push(
             object_value(

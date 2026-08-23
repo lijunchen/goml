@@ -1675,8 +1675,8 @@ fn new_state(
         value_nodes: Ref::new(0),
         temporary_bytes: Ref::new(0),
         limits,
-        stack: Vec::from_array([]),
-        memo: Vec::from_array([]),
+        stack: Vec::new(),
+        memo: Vec::new(),
         derive_state,
     }
 }
@@ -1704,7 +1704,7 @@ fn invalid_ctir_error(module: ctir::CtModule, message: string) -> CtError {
         message: "invalid CTIR: " + message,
         package_name: module.package_name,
         origin: 0,
-        stack: Vec::from_array([]),
+        stack: Vec::new(),
     }
 }
 

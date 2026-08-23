@@ -19,7 +19,7 @@ fn generic_parameters(state: CheckState, value: go_types::TypeId) -> Vec[go_type
         } => if type_args.is_empty() {
             type_params
         } else {
-            Vec::from_array([])
+            Vec::new()
         },
         go_types::TypeData {
             id: _,
@@ -27,7 +27,7 @@ fn generic_parameters(state: CheckState, value: go_types::TypeId) -> Vec[go_type
         } => if type_args.is_empty() {
             type_params
         } else {
-            Vec::from_array([])
+            Vec::new()
         },
         go_types::TypeData {
             id: _,
@@ -40,7 +40,7 @@ fn generic_parameters(state: CheckState, value: go_types::TypeId) -> Vec[go_type
                 variadic: _,
             },
         } => type_params,
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     }
 }
 
@@ -114,7 +114,7 @@ fn constraint_accepts(state: CheckState, argument: go_types::TypeId, constraint:
     } else if go_types::type_set_is_invalid(state.world, constraint) {
         !go_types::type_set_is_empty(state.world, constraint)
     } else {
-        constraint_accepts_inner(state, argument, constraint, Vec::from_array([]))
+        constraint_accepts_inner(state, argument, constraint, Vec::new())
     }
 }
 
@@ -165,7 +165,7 @@ fn constraint_has_comparable(
 }
 
 fn constraint_diagnostic_string(state: CheckState, constraint: go_types::TypeId) -> string {
-    if constraint_has_comparable(state, constraint, Vec::from_array([]))
+    if constraint_has_comparable(state, constraint, Vec::new())
         && go_types::interface_methods(state.world, constraint).is_empty()
         && go_types::type_set_terms(state.world, constraint).is_empty() {
         "comparable"
@@ -177,7 +177,7 @@ fn constraint_diagnostic_string(state: CheckState, constraint: go_types::TypeId)
 fn hard_inferred_constraint_failure(state: CheckState, constraint: go_types::TypeId) -> bool {
     go_types::type_set_terms(state.world, constraint).len() == 1
         || !go_types::interface_methods(state.world, constraint).is_empty()
-        || constraint_has_comparable(state, constraint, Vec::from_array([]))
+        || constraint_has_comparable(state, constraint, Vec::new())
 }
 
 fn constraint_depends_on_other_parameter(
@@ -188,7 +188,7 @@ fn constraint_depends_on_other_parameter(
 ) -> bool {
     for parameter in parameters {
         if parameter.object.value != current.value
-            && type_contains_parameter(state, constraint, parameter.object, Vec::from_array([])) {
+            && type_contains_parameter(state, constraint, parameter.object, Vec::new()) {
             return true
         } else {}
     }
@@ -356,7 +356,7 @@ fn requires_relaxed_comparable(
     argument: go_types::TypeId,
     constraint: go_types::TypeId,
 ) -> bool {
-    constraint_has_comparable(state, constraint, Vec::from_array([]))
+    constraint_has_comparable(state, constraint, Vec::new())
         && allows_relaxed_comparable(state, constraint)
         && go_types::comparable(state.world, argument)
         && !go_types::type_set_strictly_comparable(state.world, argument)
@@ -663,7 +663,7 @@ fn verify_type_arguments(
                         arguments[index],
                         constraint,
                     );
-                    let terms: Vec[string] = Vec::from_array([]);
+                    let terms: Vec[string] = Vec::new();
                     if detail == "" && !go_types::is_type_parameter(state.world, arguments[index]) {
                         for term in go_types::type_set_terms(state.world, constraint) {
                             terms.push(union_term_string(state, term))
@@ -690,7 +690,7 @@ fn verify_type_arguments(
                                 state,
                                 constraint,
                                 arguments[index],
-                                Vec::from_array([]),
+                                Vec::new(),
                             ) {
                                 " (" + diagnostic_type_string(state, constraint) + " mentions "
                                     + diagnostic_type_string(state, arguments[index])
@@ -890,7 +890,7 @@ fn resolve_instantiated_type(
     let invalid_origin = origin.value == state.world.invalid.value;
     let nongeneric_origin = !invalid_origin && generic_parameters(state, origin).is_empty();
     if nongeneric_origin {
-        let recovered = instantiate_checked(state, node, origin, Vec::from_array([]));
+        let recovered = instantiate_checked(state, node, origin, Vec::new());
         if recovered.value != state.world.invalid.value {
             record_type_expression(state, node, recovered);
             return recovered
@@ -903,7 +903,7 @@ fn resolve_instantiated_type(
         record_type_expression(state, node, state.world.invalid);
         return state.world.invalid
     } else {};
-    let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let arguments: Vec[go_types::TypeId] = Vec::new();
     for argument in argument_nodes {
         state.type_cycle_depth += 1;
         let resolved = match syntax::get_node(state.syntax.arena, argument) {
@@ -1093,8 +1093,8 @@ fn resolve_union_type(
     left: syntax::NodeId,
     right: syntax::NodeId,
 ) -> go_types::TypeId {
-    let left_terms: Vec[go_types::UnionTerm] = Vec::from_array([]);
-    let right_terms: Vec[go_types::UnionTerm] = Vec::from_array([]);
+    let left_terms: Vec[go_types::UnionTerm] = Vec::new();
+    let right_terms: Vec[go_types::UnionTerm] = Vec::new();
     state.type_cycle_depth += 1;
     state.type_fact_recovery_depth += 1;
     flatten_union_terms(state, resolve_type(state, scope, left), left_terms);
@@ -1126,7 +1126,7 @@ fn resolve_union_type(
             } else {}
         }
     }
-    let terms: Vec[go_types::UnionTerm] = Vec::from_array([]);
+    let terms: Vec[go_types::UnionTerm] = Vec::new();
     for term in left_terms {
         terms.push(term)
     }
@@ -1150,7 +1150,7 @@ fn resolve_union_type(
             return state.world.invalid
         } else {}
     } else {};
-    let result_terms: Vec[go_types::UnionTerm] = Vec::from_array([]);
+    let result_terms: Vec[go_types::UnionTerm] = Vec::new();
     for term in terms {
         result_terms.push(
             if union_term_is_type_parameter(state, term) {
@@ -1466,13 +1466,13 @@ fn inference_mismatch(
         },
         _ => {},
     };
-    let inferred_parameters: Vec[go_types::TypeParameter] = Vec::from_array([]);
-    let inferred_arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let inferred_parameters: Vec[go_types::TypeParameter] = Vec::new();
+    let inferred_arguments: Vec[go_types::TypeId] = Vec::new();
     let mut complete = true;
-    let uninferred_names: Vec[string] = Vec::from_array([]);
+    let uninferred_names: Vec[string] = Vec::new();
     for binding in bindings {
         if binding.type_id.is_none()
-            && type_contains_parameter(state, pair.formal, binding.object, Vec::from_array([])) {
+            && type_contains_parameter(state, pair.formal, binding.object, Vec::new()) {
             match go_types::get_object(state.world, binding.object) {
                 Some(parameter) => uninferred_names.push(parameter.name),
                 None => {},
@@ -1512,7 +1512,7 @@ fn inference_mismatch(
         return true
     } else {};
     for binding in bindings {
-        if type_contains_parameter(state, pair.formal, binding.object, Vec::from_array([])) {
+        if type_contains_parameter(state, pair.formal, binding.object, Vec::new()) {
             match (binding.type_id, go_types::get_object(state.world, binding.object)) {
                 (Some(argument), Some(object)) => match go_types::get_type(
                     state.world,
@@ -1564,7 +1564,7 @@ fn inference_mismatch(
         return true
     } else {};
     for binding in bindings {
-        if type_contains_parameter(state, pair.formal, binding.object, Vec::from_array([])) {
+        if type_contains_parameter(state, pair.formal, binding.object, Vec::new()) {
             match go_types::get_object(state.world, binding.object) {
                 Some(parameter) => diagnostic(
                     state,
@@ -1763,7 +1763,7 @@ fn default_inferred_type(state: CheckState, value: go_types::TypeId) -> go_types
                 },
             ),
             Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
-                let result: Vec[go_types::Variable] = Vec::from_array([]);
+                let result: Vec[go_types::Variable] = Vec::new();
                 for variable in variables {
                     result.push(
                         go_types::Variable {
@@ -1776,7 +1776,7 @@ fn default_inferred_type(state: CheckState, value: go_types::TypeId) -> go_types
                 go_types::add_type(state.world, go_types::TypeKind::Tuple { variables: result })
             },
             Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
-                let result: Vec[go_types::StructField] = Vec::from_array([]);
+                let result: Vec[go_types::StructField] = Vec::new();
                 for field in fields {
                     result.push(
                         go_types::StructField {
@@ -1857,7 +1857,7 @@ fn infer_from_types(
     actual: go_types::TypeId,
     bindings: Vec[InferenceBinding],
 ) -> bool {
-    infer_from_types_inner(state, formal, actual, bindings, Vec::from_array([]), false)
+    infer_from_types_inner(state, formal, actual, bindings, Vec::new(), false)
 }
 
 fn infer_from_types_mode(
@@ -1867,7 +1867,7 @@ fn infer_from_types_mode(
     bindings: Vec[InferenceBinding],
     exact_components: bool,
 ) -> bool {
-    infer_from_types_inner(state, formal, actual, bindings, Vec::from_array([]), exact_components)
+    infer_from_types_inner(state, formal, actual, bindings, Vec::new(), exact_components)
 }
 
 fn infer_from_argument_types(
@@ -2147,7 +2147,7 @@ fn infer_from_types_inner(
 }
 
 fn copy_inference_bindings(values: Vec[InferenceBinding]) -> Vec[InferenceBinding] {
-    let result: Vec[InferenceBinding] = Vec::from_array([]);
+    let result: Vec[InferenceBinding] = Vec::new();
     for value in values {
         result.push(InferenceBinding { object: value.object, type_id: value.type_id })
     }
@@ -2170,7 +2170,7 @@ fn infer_from_constraint(
     actual: go_types::TypeId,
     bindings: Vec[InferenceBinding],
 ) -> bool {
-    infer_from_constraint_inner(state, constraint, actual, bindings, Vec::from_array([]))
+    infer_from_constraint_inner(state, constraint, actual, bindings, Vec::new())
 }
 
 fn infer_from_constraint_inner(
@@ -2184,7 +2184,7 @@ fn infer_from_constraint_inner(
     if inference_type_pair_seen(visited, resolved, actual) {
         return true
     } else {};
-    let next: Vec[InferenceTypePair] = Vec::from_array([]);
+    let next: Vec[InferenceTypePair] = Vec::new();
     for value in visited {
         next.push(InferenceTypePair { formal: value.formal, actual: value.actual })
     }
@@ -2364,7 +2364,7 @@ fn infer_from_parameter_constraints(
         }
         for index in 0..parameters.len() {
             if bindings[index].type_id.is_none() {
-                let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+                let arguments: Vec[go_types::TypeId] = Vec::new();
                 for binding_index in 0..bindings.len() {
                     let fallback = match go_types::get_object(
                         state.world,
@@ -2381,7 +2381,7 @@ fn infer_from_parameter_constraints(
                     parameters,
                     arguments,
                 );
-                match exact_constraint_type_inner(state, constraint, Vec::from_array([])) {
+                match exact_constraint_type_inner(state, constraint, Vec::new()) {
                     Some(candidate) => {
                         let mut contains_unbound = false;
                         for binding in bindings {
@@ -2390,7 +2390,7 @@ fn infer_from_parameter_constraints(
                                     state,
                                     candidate,
                                     binding.object,
-                                    Vec::from_array([]),
+                                    Vec::new(),
                                 ) {
                                 contains_unbound = true;
                             } else {}
@@ -2486,9 +2486,9 @@ fn inferred_generic_argument_type(state: CheckState, signature: go_types::TypeId
     if parameters.is_empty() {
         return signature
     } else {};
-    let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let arguments: Vec[go_types::TypeId] = Vec::new();
     for parameter in parameters {
-        match exact_constraint_type_inner(state, parameter.constraint, Vec::from_array([])) {
+        match exact_constraint_type_inner(state, parameter.constraint, Vec::new()) {
             Some(value) => arguments.push(value),
             None => return signature,
         }
@@ -2501,8 +2501,8 @@ fn substitute_inference_bindings(
     value: go_types::TypeId,
     bindings: Vec[InferenceBinding],
 ) -> go_types::TypeId {
-    let parameters: Vec[go_types::TypeParameter] = Vec::from_array([]);
-    let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let parameters: Vec[go_types::TypeParameter] = Vec::new();
+    let arguments: Vec[go_types::TypeId] = Vec::new();
     for binding in bindings {
         match go_types::get_object(state.world, binding.object) {
             Some(object) => match go_types::get_type(
@@ -2538,7 +2538,7 @@ fn infer_from_generic_argument_targets(
     for pair in pairs {
         let parameters = generic_parameters(state, pair.actual);
         if parameters.is_empty() {} else {
-            let inner_bindings: Vec[InferenceBinding] = Vec::from_array([]);
+            let inner_bindings: Vec[InferenceBinding] = Vec::new();
             for parameter in parameters {
                 inner_bindings.push(
                     InferenceBinding { object: parameter.object, type_id: Option::None },
@@ -2601,7 +2601,7 @@ fn infer_signature(
     };
     let variadic = parameter_tuple.1;
     let parameter_tuple = parameter_tuple.0;
-    let bindings: Vec[InferenceBinding] = Vec::from_array([]);
+    let bindings: Vec[InferenceBinding] = Vec::new();
     for parameter in parameters {
         let mut inferred = Option::None;
         for partial in state.partial_instances {
@@ -2619,7 +2619,7 @@ fn infer_signature(
         bindings.push(InferenceBinding { object: parameter.object, type_id: inferred })
     }
     let argument_diagnostic_start = state.diagnostics.len();
-    let pairs: Vec[InferencePair] = Vec::from_array([]);
+    let pairs: Vec[InferencePair] = Vec::new();
     let mut invalid_argument = false;
     for index in 0..argument_nodes.len() {
         if parameter_tuple.is_empty() {
@@ -2734,7 +2734,7 @@ fn infer_signature(
         }
     }
     infer_from_parameter_constraints(state, parameters, bindings);
-    let constraint_arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let constraint_arguments: Vec[go_types::TypeId] = Vec::new();
     for binding in bindings {
         let fallback = match go_types::get_object(state.world, binding.object) {
             Some(object) => object.type_id,
@@ -2756,7 +2756,7 @@ fn infer_signature(
                         state,
                         parameters[index].constraint,
                         parameters[index].object,
-                        Vec::from_array([]),
+                        Vec::new(),
                     ) {
                         parameters[index].constraint
                     } else {
@@ -2768,7 +2768,7 @@ fn infer_signature(
                         argument,
                         diagnostic_constraint,
                     );
-                    let terms: Vec[string] = Vec::from_array([]);
+                    let terms: Vec[string] = Vec::new();
                     if detail == "" && !go_types::is_type_parameter(state.world, argument) {
                         for term in go_types::type_set_terms(state.world, constraint) {
                             terms.push(union_term_string(state, term))
@@ -2833,7 +2833,7 @@ fn infer_signature(
                                     state,
                                     constraint,
                                     argument,
-                                    Vec::from_array([]),
+                                    Vec::new(),
                                 ) {
                                     " (" + diagnostic_type_string(state, constraint) + " mentions "
                                         + diagnostic_type_string(state, argument)
@@ -2864,7 +2864,7 @@ fn infer_signature(
             None => {},
         }
     }
-    let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let arguments: Vec[go_types::TypeId] = Vec::new();
     for binding in bindings {
         match binding.type_id {
             Some(value) => arguments.push(default_inferred_type(state, value)),
@@ -2891,7 +2891,7 @@ fn infer_signature(
 }
 
 fn copied_type_ids(values: Vec[go_types::TypeId]) -> Vec[go_types::TypeId] {
-    let result: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result: Vec[go_types::TypeId] = Vec::new();
     for value in values {
         result.push(value)
     }
@@ -3145,7 +3145,7 @@ fn reject_active_instantiation_cycle(
                             state,
                             active.parameters[index].constraint,
                             parameter.object,
-                            Vec::from_array([]),
+                            Vec::new(),
                         ) {
                             constraint_dependency = true;
                         } else {}
@@ -3170,7 +3170,7 @@ fn reject_active_instantiation_cycle(
                                 active.origin,
                                 active.parameters[index].object,
                                 false,
-                                Vec::from_array([]),
+                                Vec::new(),
                             ),
                         _ => !go_types::interface_methods(
                             state.world,
@@ -3181,7 +3181,7 @@ fn reject_active_instantiation_cycle(
                                 arguments[index],
                                 active.parameters[index].object,
                                 false,
-                                Vec::from_array([]),
+                                Vec::new(),
                             ),
                     };
                     if relevant
@@ -3190,7 +3190,7 @@ fn reject_active_instantiation_cycle(
                             state,
                             arguments[index],
                             active.parameters[index].object,
-                            Vec::from_array([]),
+                            Vec::new(),
                         ) {
                         let diagnostic_parameter = if index < active.diagnostic_parameters.len() {
                             active.diagnostic_parameters[index].object
@@ -3264,7 +3264,7 @@ fn finish_signature_inference_unchecked(
     inferred: Vec[go_types::TypeId],
 ) -> go_types::TypeId {
     let mut origin = signature;
-    let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let arguments: Vec[go_types::TypeId] = Vec::new();
     for partial in state.partial_instances {
         if partial.type_id.value == signature.value {
             origin = partial.origin;
@@ -3305,7 +3305,7 @@ fn partial_signature(state: CheckState, origin: go_types::TypeId, arguments: Vec
                 variadic,
             },
         }) => {
-            let remaining: Vec[go_types::TypeParameter] = Vec::from_array([]);
+            let remaining: Vec[go_types::TypeParameter] = Vec::new();
             for index in arguments.len()..parameters.len() {
                 remaining.push(
                     go_types::TypeParameter {
@@ -3344,7 +3344,7 @@ fn inference_bindings_from_explicit(
     explicit: Vec[go_types::TypeId],
 ) -> Vec[InferenceBinding] {
     let parameters = generic_parameters(state, origin);
-    let bindings: Vec[InferenceBinding] = Vec::from_array([]);
+    let bindings: Vec[InferenceBinding] = Vec::new();
     for index in 0..parameters.len() {
         bindings.push(
             InferenceBinding {
@@ -3367,7 +3367,7 @@ fn partial_explicit_constraint_failure(
     explicit: Vec[go_types::TypeId],
 ) -> isize {
     let parameters = generic_parameters(state, origin);
-    let bindings: Vec[InferenceBinding] = Vec::from_array([]);
+    let bindings: Vec[InferenceBinding] = Vec::new();
     for index in 0..parameters.len() {
         bindings.push(
             InferenceBinding {
@@ -3390,7 +3390,7 @@ fn partial_explicit_constraint_failure(
 }
 
 fn complete_inference_arguments(bindings: Vec[InferenceBinding]) -> Option[Vec[go_types::TypeId]] {
-    let result: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result: Vec[go_types::TypeId] = Vec::new();
     for binding in bindings {
         match binding.type_id {
             Some(value) => result.push(value),
@@ -3442,7 +3442,7 @@ fn inference_signature_pattern(state: CheckState, signature: go_types::TypeId) -
                 go_types::TypeKind::Signature {
                     receiver,
                     receiver_type_params,
-                    type_params: Vec::from_array([]),
+                    type_params: Vec::new(),
                     params,
                     results,
                     variadic,
@@ -3498,7 +3498,7 @@ fn target_inference_mismatch_message(
 fn partial_inference_arguments(state: CheckState, bindings: Vec[InferenceBinding]) -> Vec[
     go_types::TypeId,
 ] {
-    let result: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result: Vec[go_types::TypeId] = Vec::new();
     for binding in bindings {
         result.push(binding.type_id.unwrap_or(state.world.invalid))
     }
@@ -3524,7 +3524,7 @@ fn infer_signature_from_target(
     if parameters.is_empty() {
         return signature
     } else {};
-    let bindings: Vec[InferenceBinding] = Vec::from_array([]);
+    let bindings: Vec[InferenceBinding] = Vec::new();
     for parameter in parameters {
         bindings.push(InferenceBinding { object: parameter.object, type_id: Option::None })
     }
@@ -3689,7 +3689,7 @@ fn recover_failed_call_from_target(
         },
         _ => return false,
     };
-    let bindings: Vec[InferenceBinding] = Vec::from_array([]);
+    let bindings: Vec[InferenceBinding] = Vec::new();
     for parameter in parameters {
         bindings.push(InferenceBinding { object: parameter.object, type_id: Option::None })
     }
@@ -3887,7 +3887,7 @@ fn check_explicit_instance(
             false,
         )
     } else {};
-    let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+    let arguments: Vec[go_types::TypeId] = Vec::new();
     let mut invalid_argument = false;
     let mut recover_invalid_function_instance = false;
     for argument in argument_nodes {

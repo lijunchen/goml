@@ -6,7 +6,7 @@ fn resolve_module_path(value: Path, module_path: string) -> Path {
     if value.segments.len() < 2 || value.segments[0].ident != "module" {
         return value
     } else {};
-    let segments: Vec[PathSegment] = Vec::from_array([]);
+    let segments: Vec[PathSegment] = Vec::new();
     for name in text::split(module_path, "::") {
         segments.push(PathSegment { ident: name, span: value.segments[0].span })
     }
@@ -28,7 +28,7 @@ fn resolve_module_use(value: UseDecl, module_path: string) -> UseDecl {
 pub fn resolve_module_paths(value: LowerResult, module_path: string) -> LowerResult {
     let ast = match value.ast {
         Some(file) => {
-            let uses: Vec[UseDecl] = Vec::from_array([]);
+            let uses: Vec[UseDecl] = Vec::new();
             for use_decl in file.uses {
                 uses.push(resolve_module_use(use_decl, module_path))
             }

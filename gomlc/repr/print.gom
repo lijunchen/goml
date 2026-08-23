@@ -144,7 +144,7 @@ pub fn type_doc(value: Type) -> pretty::Doc {
         Tuple { items } => pretty::delimited("(", ",", ")", type_docs(items)),
         Named { name } | ClosureEnvironment { name } => pretty::text(name),
         Dyn { trait_name, args, associated_types, additional_bounds } => {
-            let values: Vec[pretty::Doc] = Vec::from_array([]);
+            let values: Vec[pretty::Doc] = Vec::new();
             values.push(dyn_bound_doc(trait_name, args, associated_types));
             for bound in additional_bounds {
                 values.push(dyn_bound_doc(bound.trait_name, bound.args, bound.associated_types))

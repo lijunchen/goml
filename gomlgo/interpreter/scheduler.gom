@@ -108,7 +108,7 @@ enum ReceiveAttempt {
 }
 
 fn scheduled_entries(state: VmState) -> Vec[bytecode::FunctionId] {
-    let entries: Vec[bytecode::FunctionId] = Vec::from_array([]);
+    let entries: Vec[bytecode::FunctionId] = Vec::new();
     for package_id in state.program.initialization_order {
         for package_value in state.program.packages {
             if package_value.package_id.value == package_id.value {
@@ -126,7 +126,7 @@ fn scheduled_entries(state: VmState) -> Vec[bytecode::FunctionId] {
 fn new_scheduler(state: VmState) -> Scheduler {
     Scheduler {
         state,
-        goroutines: Vec::from_array([]),
+        goroutines: Vec::new(),
         entries: scheduled_entries(state),
         next_entry: Ref::new(0),
         cursor: Ref::new(0),
@@ -180,10 +180,10 @@ fn start_next_entry(scheduler: Scheduler, goroutine: ScheduledGoroutine) -> Resu
                 scheduler.state,
                 ScheduledInvocation {
                     function: scheduler.entries[index],
-                    arguments: Vec::from_array([]),
-                    captures: Vec::from_array([]),
+                    arguments: Vec::new(),
+                    captures: Vec::new(),
                 },
-                Vec::from_array([]),
+                Vec::new(),
                 Option::None,
                 false,
             )?,
@@ -195,7 +195,7 @@ fn start_next_entry(scheduler: Scheduler, goroutine: ScheduledGoroutine) -> Resu
 
 fn start_scheduler(scheduler: Scheduler) -> Result[unit, string] {
     let startup = ScheduledGoroutine {
-        frames: Vec::from_array([]),
+        frames: Vec::new(),
         pending: Ref::new(Option::None),
         native: Ref::new(Option::None),
         native_channel: Ref::new(Option::None),
@@ -265,18 +265,14 @@ fn scheduled_interface_invocation(
     for index in first_argument..arguments.len() {
         values.push(arguments[index])
     }
-    Result::Ok(ScheduledInvocation { function, arguments: values, captures: Vec::from_array([]) })
+    Result::Ok(ScheduledInvocation { function, arguments: values, captures: Vec::new() })
 }
 
 fn scheduled_call(state: VmState, call: PreparedCall) -> Result[Option[ScheduledInvocation], string] {
     match call.target {
         PreparedTarget::Static(function) => Result::Ok(
             Option::Some(
-                ScheduledInvocation {
-                    function,
-                    arguments: call.arguments,
-                    captures: Vec::from_array([]),
-                },
+                ScheduledInvocation { function, arguments: call.arguments, captures: Vec::new() },
             ),
         ),
         PreparedTarget::Method { function, receiver } => Result::Ok(
@@ -284,7 +280,7 @@ fn scheduled_call(state: VmState, call: PreparedCall) -> Result[Option[Scheduled
                 ScheduledInvocation {
                     function,
                     arguments: append_invocation_arguments(receiver, call.arguments),
-                    captures: Vec::from_array([]),
+                    captures: Vec::new(),
                 },
             ),
         ),
@@ -368,7 +364,7 @@ fn scheduled_call(state: VmState, call: PreparedCall) -> Result[Option[Scheduled
 }
 
 fn invalid_scheduled_instruction(message: string) -> ScheduledInstruction {
-    ScheduledInstruction { instructions: Vec::from_array([]), index: -1, present: false, message }
+    ScheduledInstruction { instructions: Vec::new(), index: -1, present: false, message }
 }
 
 fn scheduled_instruction(scheduled: ScheduledFrame) -> ScheduledInstruction {
@@ -459,7 +455,7 @@ fn instruction_channel_matches(
             kind: bytecode::InstructionKind::Select { chosen: _, cases },
             location: _,
         }) => {
-            let matches: Vec[isize] = Vec::from_array([]);
+            let matches: Vec[isize] = Vec::new();
             for index in 0..cases.len() {
                 let matched = match cases[index].operation {
                     bytecode::SelectOperation::Send { channel, value: _ } => !receive
@@ -905,20 +901,14 @@ fn start_native_callback(
     )?;
     check_goroutine_limit(scheduler)?;
     let goroutine = ScheduledGoroutine {
-        frames: Vec::from_array([]),
+        frames: Vec::new(),
         pending: Ref::new(Option::None),
         native: Ref::new(Option::None),
         native_channel: Ref::new(Option::None),
         state: Ref::new(0),
         startup: false,
     };
-    let frame = scheduled_frame(
-        scheduler.state,
-        invocation,
-        Vec::from_array([]),
-        Option::None,
-        false,
-    )?;
+    let frame = scheduled_frame(scheduler.state, invocation, Vec::new(), Option::None, false)?;
     frame.callback.set(
         Option::Some(
             ScheduledCallback {
@@ -1309,7 +1299,7 @@ fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: isize) -> Resu
                     scheduled_frame(
                         scheduler.state,
                         invocation,
-                        Vec::from_array([]),
+                        Vec::new(),
                         scheduled.panic.get(),
                         true,
                     )?,
@@ -1324,7 +1314,7 @@ fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: isize) -> Resu
                             goroutine_index,
                             call,
                             Option::Some(scheduled),
-                            Vec::from_array([]),
+                            Vec::new(),
                             true,
                         )?;
                         scheduled.waiting.set(true);
@@ -1426,7 +1416,7 @@ fn add_scheduled_goroutine(scheduler: Scheduler, goroutine: ScheduledGoroutine) 
 fn spawn_scheduled(scheduler: Scheduler, invocation: ScheduledInvocation) -> Result[unit, string] {
     check_goroutine_limit(scheduler)?;
     let goroutine = ScheduledGoroutine {
-        frames: Vec::from_array([]),
+        frames: Vec::new(),
         pending: Ref::new(Option::None),
         native: Ref::new(Option::None),
         native_channel: Ref::new(Option::None),
@@ -1434,7 +1424,7 @@ fn spawn_scheduled(scheduler: Scheduler, invocation: ScheduledInvocation) -> Res
         startup: false,
     };
     goroutine.frames.push(
-        scheduled_frame(scheduler.state, invocation, Vec::from_array([]), Option::None, false)?,
+        scheduled_frame(scheduler.state, invocation, Vec::new(), Option::None, false)?,
     );
     add_scheduled_goroutine(scheduler, goroutine);
     Result::Ok(())
@@ -1448,7 +1438,7 @@ fn spawn_scheduled_call(scheduler: Scheduler, caller: Frame, call: PreparedCall)
     add_scheduled_goroutine(
         scheduler,
         ScheduledGoroutine {
-            frames: Vec::from_array([]),
+            frames: Vec::new(),
             pending: Ref::new(Option::Some(ScheduledPendingCall { caller, call })),
             native: Ref::new(Option::None),
             native_channel: Ref::new(Option::None),
@@ -1470,8 +1460,8 @@ fn execute_scheduled_select(
     if !count_scheduled_step(scheduler, scheduled, instruction.location) {
         return Result::Err("instruction limit exceeded")
     } else {};
-    let native_channels: Vec[dyn HostValueMarker] = Vec::from_array([]);
-    let native_indices: Vec[isize] = Vec::from_array([]);
+    let native_channels: Vec[dyn HostValueMarker] = Vec::new();
+    let native_indices: Vec[isize] = Vec::new();
     let mut default_index = -1;
     for index in 0..cases.len() {
         match cases[index].operation {
@@ -1501,7 +1491,7 @@ fn execute_scheduled_select(
             },
         }
     }
-    let ready: Vec[isize] = Vec::from_array([]);
+    let ready: Vec[isize] = Vec::new();
     for index in 0..cases.len() {
         match cases[index].operation {
             bytecode::SelectOperation::Receive { channel, value: _, ok: _ } => match register(
@@ -1909,7 +1899,7 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: isize) -> Resul
                         goroutine_index,
                         pending.call,
                         Option::None,
-                        Vec::from_array([]),
+                        Vec::new(),
                         false,
                     )?;
                     return Result::Ok(Option::None)

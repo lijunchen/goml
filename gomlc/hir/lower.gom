@@ -55,7 +55,7 @@ struct LexicalScope {
 }
 
 fn path_segments(path: ast::Path) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for segment in path.segments {
         result.push(segment.ident)
     }
@@ -63,13 +63,13 @@ fn path_segments(path: ast::Path) -> Vec[string] {
 }
 
 fn single_path(name: string) -> ast::Path {
-    let segments: Vec[ast::PathSegment] = Vec::from_array([]);
+    let segments: Vec[ast::PathSegment] = Vec::new();
     segments.push(ast::PathSegment { ident: name, span: ast::span(0, 0) });
     ast::Path { segments }
 }
 
 fn copy_strings(values: Vec[string]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for value in values {
         result.push(value)
     }
@@ -85,7 +85,7 @@ fn append_strings(first: Vec[string], second: Vec[string]) -> Vec[string] {
 }
 
 fn copy_bindings(values: Vec[(string, LocalId)]) -> Vec[(string, LocalId)] {
-    let result: Vec[(string, LocalId)] = Vec::from_array([]);
+    let result: Vec[(string, LocalId)] = Vec::new();
     for value in values {
         result.push(value)
     }
@@ -173,7 +173,7 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
 }
 
 fn prospective_use_aliases(file: ast::File) -> Vec[AliasEntry] {
-    let result: Vec[AliasEntry] = Vec::from_array([]);
+    let result: Vec[AliasEntry] = Vec::new();
     for use_decl in file.uses {
         if use_decl.items.is_empty() {
             let target = path_segments(use_decl.path);
@@ -200,11 +200,11 @@ fn expand_any_use_alias(aliases: Vec[AliasEntry], prospective: Vec[AliasEntry], 
 }
 
 fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
-    let aliases: Vec[AliasEntry] = Vec::from_array([]);
+    let aliases: Vec[AliasEntry] = Vec::new();
     let prospective = prospective_use_aliases(file);
-    let traits: Vec[string] = Vec::from_array([]);
-    let public_reexports: Vec[(string, string)] = Vec::from_array([]);
-    let diagnostics: Vec[string] = Vec::from_array([]);
+    let traits: Vec[string] = Vec::new();
+    let public_reexports: Vec[(string, string)] = Vec::new();
+    let diagnostics: Vec[string] = Vec::new();
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
         if !use_decl.items.is_empty() {
@@ -318,7 +318,7 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
 }
 
 fn import_aliases_from_file(file: ast::File, aliases: Vec[AliasEntry]) -> Vec[ImportAlias] {
-    let result: Vec[ImportAlias] = Vec::from_array([]);
+    let result: Vec[ImportAlias] = Vec::new();
     for use_decl in file.uses {
         if !use_decl.items.is_empty() {
             let target = path_segments(use_decl.path);
@@ -340,7 +340,7 @@ fn import_aliases_from_file(file: ast::File, aliases: Vec[AliasEntry]) -> Vec[Im
 }
 
 fn imports_from_aliases(aliases: Vec[AliasEntry]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for entry in aliases {
         if entry.item {
             result.push(join_segments(entry.target))
@@ -356,7 +356,7 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     } else {
         for alias in ctx.aliases {
             if alias.alias == values[0] && (alias.item || values.len() > 1) {
-                let result: Vec[string] = Vec::from_array([]);
+                let result: Vec[string] = Vec::new();
                 for segment in alias.target {
                     result.push(segment)
                 }
@@ -373,7 +373,7 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
 fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = expand_segments(ctx, path);
     if ctx.qualify_imports && !values.is_empty() && ctx.nominal_types.contains(values[0]) {
-        let result: Vec[string] = Vec::from_array([]);
+        let result: Vec[string] = Vec::new();
         result.push(full_name(ctx.package_name, values[0]));
         for index in 1..values.len() {
             result.push(values[index])
@@ -395,7 +395,7 @@ fn static_member(
     member_type_args: Vec[TypeExpr],
     member_type_arg_spans: Vec[Option[ast::Span]],
 ) -> ExprKind {
-    let owner_parts: Vec[string] = Vec::from_array([]);
+    let owner_parts: Vec[string] = Vec::new();
     if parts.len() > 1 {
         for index in 0..parts.len() - 1 {
             owner_parts.push(parts[index])
@@ -523,7 +523,7 @@ fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
     let parts = expand_segments(ctx, path);
     if parts.len() == 1 {
-        let matches: Vec[(DefId, isize)] = Vec::from_array([]);
+        let matches: Vec[(DefId, isize)] = Vec::new();
         for info in ctx.enums {
             match enum_variant(info, parts[0]) {
                 Some(index) => matches.push((info.def_id, index)),
@@ -541,7 +541,7 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
         let enum_name = if parts.len() == 2 {
             parts[0]
         } else {
-            let names: Vec[string] = Vec::from_array([]);
+            let names: Vec[string] = Vec::new();
             for index in 1..parts.len() - 1 {
                 names.push(parts[index])
             }
@@ -625,7 +625,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         String => TypeExpr::String,
         Char => TypeExpr::Char,
         Tuple { items: values } => {
-            let result: Vec[TypeExpr] = Vec::from_array([]);
+            let result: Vec[TypeExpr] = Vec::new();
             for item in values {
                 result.push(lower_type(ctx, item, type_params))
             }
@@ -646,13 +646,13 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
             }
         },
         Dyn { bounds } => {
-            let result: Vec[DynTraitBound] = Vec::from_array([]);
+            let result: Vec[DynTraitBound] = Vec::new();
             for bound in bounds {
-                let args: Vec[TypeExpr] = Vec::from_array([]);
+                let args: Vec[TypeExpr] = Vec::new();
                 for arg in bound.args {
                     args.push(lower_type(ctx, arg, type_params))
                 }
-                let associated_types: Vec[(string, TypeExpr)] = Vec::from_array([]);
+                let associated_types: Vec[(string, TypeExpr)] = Vec::new();
                 for binding in bound.associated_types {
                     associated_types.push((binding.0, lower_type(ctx, binding.1, type_params)))
                 }
@@ -667,7 +667,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
             TypeExpr::Dyn { bounds: result }
         },
         App { ty: base, args } => {
-            let result: Vec[TypeExpr] = Vec::from_array([]);
+            let result: Vec[TypeExpr] = Vec::new();
             for arg in args {
                 result.push(lower_type(ctx, arg, type_params))
             }
@@ -677,7 +677,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
             TypeExpr::Array { len: length, elem: lower_type(ctx, element, type_params) }
         },
         Func { params, ret_ty } => {
-            let result: Vec[TypeExpr] = Vec::from_array([]);
+            let result: Vec[TypeExpr] = Vec::new();
             for param in params {
                 result.push(lower_type(ctx, param, type_params))
             }
@@ -687,8 +687,8 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
 }
 
 fn lower_plain_trait_ref(ctx: LowerCtx, value: ast::TraitRef, type_params: Vec[string]) -> TraitRef {
-    let args: Vec[TypeExpr] = Vec::from_array([]);
-    let arg_spans: Vec[Option[ast::Span]] = Vec::from_array([]);
+    let args: Vec[TypeExpr] = Vec::new();
+    let arg_spans: Vec[Option[ast::Span]] = Vec::new();
     for arg in value.args {
         arg_spans.push(ast_type_head_span(arg));
         args.push(lower_type(ctx, arg, type_params))
@@ -703,8 +703,8 @@ fn lower_impl_trait_ref(ctx: LowerCtx, value: ast::TraitRef, type_params: Vec[st
     } else {
         join_segments(parts)
     };
-    let args: Vec[TypeExpr] = Vec::from_array([]);
-    let arg_spans: Vec[Option[ast::Span]] = Vec::from_array([]);
+    let args: Vec[TypeExpr] = Vec::new();
+    let arg_spans: Vec[Option[ast::Span]] = Vec::new();
     for arg in value.args {
         arg_spans.push(ast_type_head_span(arg));
         args.push(lower_type(ctx, arg, type_params))
@@ -740,9 +740,9 @@ fn lower_bounds(
     type_params: Vec[string],
     resolve_trait: bool,
 ) -> Vec[(string, Vec[TraitRef])] {
-    let result: Vec[(string, Vec[TraitRef])] = Vec::from_array([]);
+    let result: Vec[(string, Vec[TraitRef])] = Vec::new();
     for value in values {
-        let bounds: Vec[TraitRef] = Vec::from_array([]);
+        let bounds: Vec[TraitRef] = Vec::new();
         for bound in value.1 {
             bounds.push(
                 if resolve_trait {
@@ -758,7 +758,7 @@ fn lower_bounds(
 }
 
 fn sort_pattern_names(values: Vec[string]) -> Vec[string] {
-    let sorted: Vec[string] = Vec::from_array([]);
+    let sorted: Vec[string] = Vec::new();
     for value in values {
         sorted.push(value)
     }
@@ -782,8 +782,8 @@ fn join_pattern_names(values: Vec[string]) -> string {
 fn pattern_binding_mismatch(expected: Vec[(string, LocalId)], actual: Vec[(string, LocalId)]) -> Option[
     string,
 ] {
-    let missing: Vec[string] = Vec::from_array([]);
-    let extra: Vec[string] = Vec::from_array([]);
+    let missing: Vec[string] = Vec::new();
+    let extra: Vec[string] = Vec::new();
     for value in expected {
         match find_binding(actual, value.0) {
             Some(_) => (),
@@ -857,7 +857,7 @@ fn lower_pattern_inner(
             None => match constructor_ref(ctx, single_path(name)) {
                 Some(Resolved { enum_def, variant_index }) => PatKind::Constr {
                     head: PatternHead::Resolved { enum_def, variant_index, span },
-                    args: Vec::from_array([]),
+                    args: Vec::new(),
                 },
                 None => PatKind::Var { name: bind_pattern_name(ctx, env, state, name), is_mut },
                 Some(Unresolved(_)) => {
@@ -879,7 +879,7 @@ fn lower_pattern_inner(
         } {
             Some(reference) => PatKind::Constant { reference },
             None => {
-                let result: Vec[Pat] = Vec::from_array([]);
+                let result: Vec[Pat] = Vec::new();
                 for arg in args {
                     result.push(lower_pattern_inner(ctx, arg, env, state))
                 }
@@ -887,21 +887,21 @@ fn lower_pattern_inner(
             },
         },
         Struct { name: path, fields, has_rest, span: _ } => {
-            let result: Vec[(string, Pat)] = Vec::from_array([]);
+            let result: Vec[(string, Pat)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_pattern_inner(ctx, field.1, env, state)))
             }
             PatKind::Struct { head: pattern_head(ctx, path), fields: result, has_rest }
         },
         Tuple { items: values, span: _ } => {
-            let result: Vec[Pat] = Vec::from_array([]);
+            let result: Vec[Pat] = Vec::new();
             for item in values {
                 result.push(lower_pattern_inner(ctx, item, env, state))
             }
             PatKind::Tuple { items: result }
         },
         Array { prefix, rest, suffix, span: _ } => {
-            let lowered_prefix: Vec[Pat] = Vec::from_array([]);
+            let lowered_prefix: Vec[Pat] = Vec::new();
             for item in prefix {
                 lowered_prefix.push(lower_pattern_inner(ctx, item, env, state))
             }
@@ -916,7 +916,7 @@ fn lower_pattern_inner(
                 ),
                 None => Option::None,
             };
-            let lowered_suffix: Vec[Pat] = Vec::from_array([]);
+            let lowered_suffix: Vec[Pat] = Vec::new();
             for item in suffix {
                 lowered_suffix.push(lower_pattern_inner(ctx, item, env, state))
             }
@@ -927,14 +927,14 @@ fn lower_pattern_inner(
             pat: lower_pattern_inner(ctx, pat, env, state),
         },
         Or { pats: values, span: _ } => {
-            let result: Vec[Pat] = Vec::from_array([]);
+            let result: Vec[Pat] = Vec::new();
             if values.is_empty() {
                 PatKind::Or { pats: result }
             } else {
                 let base_env = copy_bindings(env);
                 let base_seen = copy_bindings(state.seen);
                 result.push(lower_pattern_inner(ctx, values[0], env, state));
-                let expected: Vec[(string, LocalId)] = Vec::from_array([]);
+                let expected: Vec[(string, LocalId)] = Vec::new();
                 for index in base_seen.len()..state.seen.len() {
                     expected.push(state.seen[index])
                 }
@@ -946,7 +946,7 @@ fn lower_pattern_inner(
                         constants: state.constants,
                     };
                     result.push(lower_pattern_inner(ctx, values[index], branch_env, branch_state));
-                    let actual: Vec[(string, LocalId)] = Vec::from_array([]);
+                    let actual: Vec[(string, LocalId)] = Vec::new();
                     for binding_index in base_seen.len()..branch_state.seen.len() {
                         actual.push(branch_state.seen[binding_index])
                     }
@@ -976,7 +976,7 @@ fn lower_pattern(ctx: LowerCtx, value: ast::Pat, env: Vec[(string, LocalId)], co
         ctx,
         value,
         env,
-        PatternState { seen: Vec::from_array([]), preferred: Vec::from_array([]), constants },
+        PatternState { seen: Vec::new(), preferred: Vec::new(), constants },
     )
 }
 
@@ -986,7 +986,7 @@ fn lower_block(
     env: Vec[(string, LocalId)],
     type_params: Vec[string],
 ) -> Block {
-    let stmts: Vec[Stmt] = Vec::from_array([]);
+    let stmts: Vec[Stmt] = Vec::new();
     for stmt in value.stmts {
         match stmt {
             Defer { expr, span: _ } => stmts.push(
@@ -1049,7 +1049,7 @@ fn lexical_scope_method(value: LexicalScope, method: string, span: ast::Span) ->
         ExprKind::Field {
             expr: lexical_scope_ref(value, span),
             field_name: method,
-            method_type_args: Vec::from_array([]),
+            method_type_args: Vec::new(),
         },
         span,
     )
@@ -1064,10 +1064,10 @@ fn task_function(name: string, span: ast::Span) -> Expr {
         ExprKind::StaticMember {
             owner: "std::task",
             member: name,
-            owner_type_args: Vec::from_array([]),
-            owner_type_arg_spans: Vec::from_array([]),
-            member_type_args: Vec::from_array([]),
-            member_type_arg_spans: Vec::from_array([]),
+            owner_type_args: Vec::new(),
+            owner_type_arg_spans: Vec::new(),
+            member_type_args: Vec::new(),
+            member_type_arg_spans: Vec::new(),
         },
         span,
     )
@@ -1090,14 +1090,14 @@ fn lower_expr_value(
     match value {
         Path { path, owner_type_args, member_type_args, span: _ } => {
             if !owner_type_args.is_empty() || !member_type_args.is_empty() {
-                let owner_args: Vec[TypeExpr] = Vec::from_array([]);
-                let owner_arg_spans: Vec[Option[ast::Span]] = Vec::from_array([]);
+                let owner_args: Vec[TypeExpr] = Vec::new();
+                let owner_arg_spans: Vec[Option[ast::Span]] = Vec::new();
                 for arg in owner_type_args {
                     owner_arg_spans.push(ast_type_head_span(arg));
                     owner_args.push(lower_type(ctx, arg, type_params))
                 }
-                let member_args: Vec[TypeExpr] = Vec::from_array([]);
-                let member_arg_spans: Vec[Option[ast::Span]] = Vec::from_array([]);
+                let member_args: Vec[TypeExpr] = Vec::new();
+                let member_arg_spans: Vec[Option[ast::Span]] = Vec::new();
                 for arg in member_type_args {
                     member_arg_spans.push(ast_type_head_span(arg));
                     member_args.push(lower_type(ctx, arg, type_params))
@@ -1139,10 +1139,10 @@ fn lower_expr_value(
                                 Some(def_id) => ExprKind::NameRef { name_ref: NameRef::Def(def_id) },
                                 None => static_member(
                                     parts,
-                                    Vec::from_array([]),
-                                    Vec::from_array([]),
-                                    Vec::from_array([]),
-                                    Vec::from_array([]),
+                                    Vec::new(),
+                                    Vec::new(),
+                                    Vec::new(),
+                                    Vec::new(),
                                 ),
                             }
                         }
@@ -1156,7 +1156,7 @@ fn lower_expr_value(
         Float { value, span: _ } => ExprKind::Float { value },
         String { value, span: _ } => ExprKind::String { value },
         InterpolatedString { parts, span: _ } => {
-            let result: Vec[InterpolatedStringPart] = Vec::from_array([]);
+            let result: Vec[InterpolatedStringPart] = Vec::new();
             for part in parts {
                 match part {
                     Text(value) => {
@@ -1179,14 +1179,14 @@ fn lower_expr_value(
             None => ExprKind::ConstructorValue { constructor: unresolved_constructor(ctx, path) },
         },
         Constr { constructor: path, args, span: _ } => {
-            let result: Vec[Expr] = Vec::from_array([]);
+            let result: Vec[Expr] = Vec::new();
             for arg in args {
                 result.push(lower_expr(ctx, arg, env, type_params))
             }
             ExprKind::Constr { constructor: unresolved_constructor(ctx, path), args: result }
         },
         StructLiteral { name: path, fields, base, span: _ } => {
-            let result: Vec[(string, Expr)] = Vec::from_array([]);
+            let result: Vec[(string, Expr)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_expr(ctx, field.1, env, type_params)))
             }
@@ -1200,14 +1200,14 @@ fn lower_expr_value(
             }
         },
         Tuple { items: values, span: _ } => {
-            let result: Vec[Expr] = Vec::from_array([]);
+            let result: Vec[Expr] = Vec::new();
             for item in values {
                 result.push(lower_expr(ctx, item, env, type_params))
             }
             ExprKind::Tuple { items: result }
         },
         Array { items: values, span: _ } => {
-            let result: Vec[Expr] = Vec::from_array([]);
+            let result: Vec[Expr] = Vec::new();
             for item in values {
                 result.push(lower_expr(ctx, item, env, type_params))
             }
@@ -1215,7 +1215,7 @@ fn lower_expr_value(
         },
         Closure { params, body, span: _ } => {
             let closure_env = copy_bindings(env);
-            let lowered_params: Vec[ClosureParam] = Vec::from_array([]);
+            let lowered_params: Vec[ClosureParam] = Vec::new();
             for param in params {
                 let local = fresh_local(ctx, param.name);
                 closure_env.push((param.name, local));
@@ -1238,7 +1238,7 @@ fn lower_expr_value(
         },
         Match { expr, arms, span: _ } => {
             let lowered_expr = lower_expr(ctx, expr, env, type_params);
-            let lowered_arms: Vec[Arm] = Vec::from_array([]);
+            let lowered_arms: Vec[Arm] = Vec::new();
             for arm in arms {
                 let arm_env = copy_bindings(env);
                 let pat = lower_pattern(ctx, arm.pat, arm_env, true);
@@ -1367,10 +1367,10 @@ fn lower_expr_value(
                 },
                 span,
             );
-            let args: Vec[Expr] = Vec::from_array([]);
+            let args: Vec[Expr] = Vec::new();
             let function_name = match parent {
                 Some(parent_scope) => {
-                    args.push(lexical_scope_call(parent_scope, "token", Vec::from_array([]), span));
+                    args.push(lexical_scope_call(parent_scope, "token", Vec::new(), span));
                     "scope_with"
                 },
                 None => "scope",
@@ -1410,7 +1410,7 @@ fn lower_expr_value(
             match func {
                 Path { path, .. } => match constructor_ref(ctx, path) {
                     Some(constructor) => {
-                        let result: Vec[Expr] = Vec::from_array([]);
+                        let result: Vec[Expr] = Vec::new();
                         for arg in args {
                             result.push(lower_expr(ctx, arg, env, type_params))
                         }
@@ -1418,7 +1418,7 @@ fn lower_expr_value(
                     },
                     None => {
                         let lowered_func = lower_expr(ctx, func, env, type_params);
-                        let result: Vec[Expr] = Vec::from_array([]);
+                        let result: Vec[Expr] = Vec::new();
                         for arg in args {
                             result.push(lower_expr(ctx, arg, env, type_params))
                         }
@@ -1427,7 +1427,7 @@ fn lower_expr_value(
                 },
                 _ => {
                     let lowered_func = lower_expr(ctx, func, env, type_params);
-                    let result: Vec[Expr] = Vec::from_array([]);
+                    let result: Vec[Expr] = Vec::new();
                     for arg in args {
                         result.push(lower_expr(ctx, arg, env, type_params))
                     }
@@ -1460,7 +1460,7 @@ fn lower_expr_value(
             ExprKind::Proj { tuple: lower_expr(ctx, expr, env, type_params), index }
         },
         Field { expr, field_name: field, method_type_args, span: _ } => {
-            let args: Vec[TypeExpr] = Vec::from_array([]);
+            let args: Vec[TypeExpr] = Vec::new();
             for arg in method_type_args {
                 args.push(lower_type(ctx, arg, type_params))
             }
@@ -1507,8 +1507,8 @@ fn lower_function(
     inherited_type_params: Vec[string],
 ) -> Function {
     let has_receiver = !value.params.is_empty() && value.params[0].0 == "self";
-    let env: Vec[(string, LocalId)] = Vec::from_array([]);
-    let params: Vec[(LocalId, TypeExpr)] = Vec::from_array([]);
+    let env: Vec[(string, LocalId)] = Vec::new();
+    let params: Vec[(LocalId, TypeExpr)] = Vec::new();
     let type_params = copy_strings(value.generics);
     for inherited in inherited_type_params {
         type_params.push(inherited)
@@ -1524,7 +1524,7 @@ fn lower_function(
         };
         params.push((local, lower_type(ctx, param.1, type_params)))
     }
-    let predicates: Vec[Predicate] = Vec::from_array([]);
+    let predicates: Vec[Predicate] = Vec::new();
     for predicate in value.predicates {
         predicates.push(lower_predicate(ctx, predicate, type_params, true))
     }
@@ -1550,11 +1550,11 @@ fn lower_function(
 
 fn lower_extern(ctx: LowerCtx, value: ast::ExternFunction, def_id: DefId) -> ExternFunction {
     let type_params = copy_strings(value.generics);
-    let params: Vec[(string, TypeExpr)] = Vec::from_array([]);
+    let params: Vec[(string, TypeExpr)] = Vec::new();
     for param in value.params {
         params.push((param.0, lower_type(ctx, param.1, type_params)))
     }
-    let predicates: Vec[Predicate] = Vec::from_array([]);
+    let predicates: Vec[Predicate] = Vec::new();
     for predicate in value.predicates {
         predicates.push(lower_predicate(ctx, predicate, type_params, false))
     }
@@ -1575,19 +1575,19 @@ fn lower_extern(ctx: LowerCtx, value: ast::ExternFunction, def_id: DefId) -> Ext
 
 fn lower_enum(ctx: LowerCtx, value: ast::EnumDef, def_id: DefId) -> EnumDef {
     let type_params = copy_strings(value.generics);
-    let variants: Vec[EnumVariant] = Vec::from_array([]);
+    let variants: Vec[EnumVariant] = Vec::new();
     for variant in value.variants {
         let fields = match variant.fields {
             Unit => EnumVariantFields::Unit,
             Tuple(types) => {
-                let lowered: Vec[TypeExpr] = Vec::from_array([]);
+                let lowered: Vec[TypeExpr] = Vec::new();
                 for ty in types {
                     lowered.push(lower_type(ctx, ty, type_params))
                 }
                 EnumVariantFields::Tuple(lowered)
             },
             Struct(fields) => {
-                let lowered: Vec[(string, TypeExpr)] = Vec::from_array([]);
+                let lowered: Vec[(string, TypeExpr)] = Vec::new();
                 for field in fields {
                     lowered.push((field.0, lower_type(ctx, field.1, type_params)))
                 }
@@ -1609,7 +1609,7 @@ fn lower_enum(ctx: LowerCtx, value: ast::EnumDef, def_id: DefId) -> EnumDef {
 
 fn lower_struct(ctx: LowerCtx, value: ast::StructDef, def_id: DefId) -> StructDef {
     let type_params = copy_strings(value.generics);
-    let fields: Vec[(string, TypeExpr)] = Vec::from_array([]);
+    let fields: Vec[(string, TypeExpr)] = Vec::new();
     for field in value.fields {
         fields.push((field.0, lower_type(ctx, field.1, type_params)))
     }
@@ -1642,38 +1642,38 @@ fn lower_constant(ctx: LowerCtx, value: ast::Constant, def_id: DefId) -> Constan
         attrs: value.attrs,
         visibility: value.visibility,
         name: full_name(ctx.package_name, value.name),
-        ty: lower_type(ctx, value.ty, Vec::from_array([])),
+        ty: lower_type(ctx, value.ty, Vec::new()),
         ty_span: value.ty_span,
-        value: lower_expr(ctx, value.value, Vec::from_array([]), Vec::from_array([])),
+        value: lower_expr(ctx, value.value, Vec::new(), Vec::new()),
     }
 }
 
 fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
     let type_params = copy_strings(value.generics);
-    let predicates: Vec[Predicate] = Vec::from_array([]);
+    let predicates: Vec[Predicate] = Vec::new();
     for predicate in value.predicates {
         predicates.push(lower_predicate(ctx, predicate, type_params, false))
     }
-    let supertraits: Vec[TraitRef] = Vec::from_array([]);
+    let supertraits: Vec[TraitRef] = Vec::new();
     for trait_ref in value.supertraits {
         supertraits.push(lower_plain_trait_ref(ctx, trait_ref, type_params))
     }
-    let associated_types: Vec[AssociatedType] = Vec::from_array([]);
+    let associated_types: Vec[AssociatedType] = Vec::new();
     for associated in value.associated_types {
-        let bounds: Vec[TraitRef] = Vec::from_array([]);
+        let bounds: Vec[TraitRef] = Vec::new();
         for bound in associated.bounds {
             bounds.push(lower_plain_trait_ref(ctx, bound, type_params))
         }
         associated_types.push(AssociatedType { name: associated.name, bounds })
     }
-    let method_sigs: Vec[TraitMethodSignature] = Vec::from_array([]);
+    let method_sigs: Vec[TraitMethodSignature] = Vec::new();
     for method in value.method_sigs {
         let method_type_params = append_strings(type_params, method.generics);
-        let params: Vec[TypeExpr] = Vec::from_array([]);
+        let params: Vec[TypeExpr] = Vec::new();
         for param in method.params {
             params.push(lower_type(ctx, param.1, method_type_params))
         }
-        let method_predicates: Vec[Predicate] = Vec::from_array([]);
+        let method_predicates: Vec[Predicate] = Vec::new();
         for predicate in method.predicates {
             method_predicates.push(lower_predicate(ctx, predicate, method_type_params, false))
         }
@@ -1714,15 +1714,15 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
 
 fn lower_impl(ctx: LowerCtx, value: ast::ImplBlock, def_id: DefId) -> ImplBlock {
     let type_params = copy_strings(value.generics);
-    let methods: Vec[Function] = Vec::from_array([]);
+    let methods: Vec[Function] = Vec::new();
     for method in value.methods {
         methods.push(lower_function(ctx, method, fresh_method(ctx), method.name, type_params))
     }
-    let predicates: Vec[Predicate] = Vec::from_array([]);
+    let predicates: Vec[Predicate] = Vec::new();
     for predicate in value.predicates {
         predicates.push(lower_predicate(ctx, predicate, type_params, true))
     }
-    let associated_types: Vec[(string, TypeExpr)] = Vec::from_array([]);
+    let associated_types: Vec[(string, TypeExpr)] = Vec::new();
     for associated in value.associated_types {
         associated_types.push((associated.0, lower_type(ctx, associated.1, type_params)))
     }
@@ -1761,11 +1761,11 @@ fn item_name(package_name: string, value: ast::Item) -> Option[string] {
 
 fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_imports: bool) -> LowerCtx {
     let id = package_id(canonical_package_name);
-    let definitions: Vec[(string, DefId)] = Vec::from_array([]);
-    let constants: Vec[(string, DefId)] = Vec::from_array([]);
-    let enums: Vec[EnumInfo] = Vec::from_array([]);
-    let nominal_types: Vec[string] = Vec::from_array([]);
-    let traits: Vec[string] = Vec::from_array([]);
+    let definitions: Vec[(string, DefId)] = Vec::new();
+    let constants: Vec[(string, DefId)] = Vec::new();
+    let enums: Vec[EnumInfo] = Vec::new();
+    let nominal_types: Vec[string] = Vec::new();
+    let traits: Vec[string] = Vec::new();
     let mut index = 0;
     for file in files {
         for item in file.items {
@@ -1783,7 +1783,7 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
                 },
                 EnumDef(value) => {
                     nominal_types.push(value.name);
-                    let variants: Vec[string] = Vec::from_array([]);
+                    let variants: Vec[string] = Vec::new();
                     for variant in value.variants {
                         variants.push(variant.name)
                     }
@@ -1805,14 +1805,14 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
         enums,
         nominal_types,
         traits,
-        aliases: Vec::from_array([]),
+        aliases: Vec::new(),
         qualify_imports,
         local_counter: Ref::new(0),
         method_counter: Ref::new(index),
         expr_counter: Ref::new(1),
-        diagnostics: Vec::from_array([]),
+        diagnostics: Vec::new(),
         current_pattern_span: Ref::new(Option::None),
-        lexical_scopes: Vec::from_array([]),
+        lexical_scopes: Vec::new(),
         closure_depth: Ref::new(0),
     }
 }
@@ -1846,7 +1846,7 @@ fn file_context(base: LowerCtx, resolved: ResolvedUses, diagnostics: Vec[Diagnos
         expr_counter: base.expr_counter,
         diagnostics,
         current_pattern_span: base.current_pattern_span,
-        lexical_scopes: Vec::from_array([]),
+        lexical_scopes: Vec::new(),
         closure_depth: Ref::new(0),
     }
 }
@@ -1862,7 +1862,7 @@ fn lower_file_with_context(
 ) -> File {
     let resolved = resolved_uses_from_file(file);
     let ctx = file_context(base, resolved, diagnostics);
-    let items: Vec[Item] = Vec::from_array([]);
+    let items: Vec[Item] = Vec::new();
     let mut index = item_offset;
     for item in file.items {
         let def_id = DefId { pkg: ctx.package_id, index };
@@ -1884,7 +1884,7 @@ fn lower_file_with_context(
                         value,
                         def_id,
                         full_name(ctx.package_name, value.name),
-                        Vec::from_array([]),
+                        Vec::new(),
                     ),
                 ),
             ),
@@ -1905,14 +1905,9 @@ fn lower_file_with_context(
                             attrs: value.attrs,
                             visibility: value.visibility,
                             name: full_name(ctx.package_name, value.name),
-                            ty: lower_type(ctx, value.ty, Vec::from_array([])),
+                            ty: lower_type(ctx, value.ty, Vec::new()),
                             ty_span: value.ty_span,
-                            value: lower_expr(
-                                ctx,
-                                value.value,
-                                Vec::from_array([]),
-                                Vec::from_array([]),
-                            ),
+                            value: lower_expr(ctx, value.value, Vec::new(), Vec::new()),
                         },
                     ),
                 )
@@ -1933,12 +1928,12 @@ fn lower_file_with_context(
         use_traits: if qualify_imports {
             resolved.traits
         } else {
-            Vec::from_array([])
+            Vec::new()
         },
         public_reexports: if qualify_imports {
             resolved.public_reexports
         } else {
-            Vec::from_array([])
+            Vec::new()
         },
         items,
         invalid_self_type_spans: file.invalid_self_type_spans,
@@ -1952,7 +1947,7 @@ fn lower_file(
     qualify_imports: bool,
     diagnostics: Vec[Diagnostic],
 ) -> File {
-    let files: Vec[ast::File] = Vec::from_array([]);
+    let files: Vec[ast::File] = Vec::new();
     files.push(file);
     lower_file_with_context(
         file,
@@ -1966,7 +1961,7 @@ fn lower_file(
 }
 
 fn ast_diagnostics(values: Vec[cst::Diagnostic]) -> Vec[Diagnostic] {
-    let result: Vec[Diagnostic] = Vec::from_array([]);
+    let result: Vec[Diagnostic] = Vec::new();
     for value in values {
         result.push(
             Diagnostic {
@@ -2030,7 +2025,7 @@ pub fn lower_expanded_package_files(
     values: Vec[(ast::LowerResult, string)],
     canonical_package_name: string,
 ) -> Vec[LowerResult] {
-    let files: Vec[ast::File] = Vec::from_array([]);
+    let files: Vec[ast::File] = Vec::new();
     for value in values {
         match value.0.ast {
             Some(file) => files.push(file),
@@ -2039,7 +2034,7 @@ pub fn lower_expanded_package_files(
     }
     let base = make_context(files, canonical_package_name, true);
     let mut item_offset = 0;
-    let lowered: Vec[LowerResult] = Vec::from_array([]);
+    let lowered: Vec[LowerResult] = Vec::new();
     for value in values {
         match value.0.ast {
             Some(file) => {
@@ -2080,7 +2075,7 @@ pub fn lower_expanded_package_files(
 pub fn lower_package_files(values: Vec[(ast::LowerResult, string)], canonical_package_name: string) -> Vec[
     LowerResult,
 ] {
-    let expanded: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
+    let expanded: Vec[(ast::LowerResult, string)] = Vec::new();
     for value in values {
         expanded.push((expand_derives(value.0), value.1))
     }

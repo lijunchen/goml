@@ -161,7 +161,7 @@ fn update_builtin_signature(state: CheckState, node: syntax::NodeId, signature: 
 }
 
 fn builtin_signature_tuple(state: CheckState, values: Vec[go_types::TypeId]) -> go_types::TypeId {
-    let variables: Vec[go_types::Variable] = Vec::from_array([]);
+    let variables: Vec[go_types::Variable] = Vec::new();
     for value in values {
         variables.push(go_types::Variable { name: "", owner: Option::None, type_id: value })
     }
@@ -173,8 +173,8 @@ fn builtin_empty_interface(state: CheckState) -> go_types::TypeId {
         return go_types::add_type(
             state.world,
             go_types::TypeKind::Interface {
-                methods: Vec::from_array([]),
-                embeddeds: Vec::from_array([]),
+                methods: Vec::new(),
+                embeddeds: Vec::new(),
                 comparable: false,
                 implicit: false,
             },
@@ -200,14 +200,14 @@ fn record_builtin_signature(
     result: Operand,
     ellipsis: isize,
 ) -> unit {
-    let parameter_types: Vec[go_types::TypeId] = Vec::from_array([]);
+    let parameter_types: Vec[go_types::TypeId] = Vec::new();
     let expanded = if arguments.len() == 1 {
         match recorded_type_fact(state, arguments[0]) {
             Some(fact) => tuple_variables(state, fact.type_id),
-            None => Vec::from_array([]),
+            None => Vec::new(),
         }
     } else {
-        Vec::from_array([])
+        Vec::new()
     };
     if result.type_id.value != state.world.invalid.value && expanded.len() > 1 {
         if reference.name == APPEND_BUILTIN {
@@ -369,7 +369,7 @@ fn record_builtin_signature(
             }
         }
     };
-    let result_types: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result_types: Vec[go_types::TypeId] = Vec::new();
     if result.type_id.value != state.world.invalid.value {
         result_types.push(result.type_id)
     } else {};
@@ -377,8 +377,8 @@ fn record_builtin_signature(
         state.world,
         go_types::TypeKind::Signature {
             receiver: Option::None,
-            receiver_type_params: Vec::from_array([]),
-            type_params: Vec::from_array([]),
+            receiver_type_params: Vec::new(),
+            type_params: Vec::new(),
             params: builtin_signature_tuple(state, parameter_types),
             results: builtin_signature_tuple(state, result_types),
             variadic: reference.name == APPEND_BUILTIN,
@@ -1114,7 +1114,7 @@ fn check_make_builtin(
         );
         return invalid_operand(state)
     } else {};
-    let indices: Vec[Operand] = Vec::from_array([]);
+    let indices: Vec[Operand] = Vec::new();
     let mut valid = true;
     for index in 1..arguments.len() {
         let operand = check_expression(state, scope, arguments[index]);
@@ -1693,7 +1693,7 @@ fn check_append_builtin(
         }
         return invalid_operand(state)
     } else {};
-    let expanded_values: Vec[Operand] = Vec::from_array([]);
+    let expanded_values: Vec[Operand] = Vec::new();
     let mut valid_result = true;
     if arguments.len() == 1 && ellipsis < 0 {
         let values = tuple_variables(state, slice.type_id);
@@ -2659,8 +2659,7 @@ fn invalid_recursive_generic_instance_in_type(
                     concrete = false;
                 } else {}
             }
-            if concrete
-                && invalid_named_type_cycle(state, underlying, resolved, Vec::from_array([])) {
+            if concrete && invalid_named_type_cycle(state, underlying, resolved, Vec::new()) {
                 Option::Some(object)
             } else {
                 invalid_recursive_generic_instance_in_type(state, underlying, visited)
@@ -2691,7 +2690,7 @@ fn invalid_recursive_generic_instance_in_type(
 fn invalid_recursive_generic_instance(state: CheckState, value: go_types::TypeId) -> Option[
     go_types::ObjectId,
 ] {
-    invalid_recursive_generic_instance_in_type(state, value, Vec::from_array([]))
+    invalid_recursive_generic_instance_in_type(state, value, Vec::new())
 }
 
 fn check_size_align_initializer_function_body(
@@ -2919,7 +2918,7 @@ fn check_unsafe_size_align(
         },
         None => {},
     };
-    let variable_size = type_has_variable_size(state, argument.type_id, Vec::from_array([]));
+    let variable_size = type_has_variable_size(state, argument.type_id, Vec::new());
     let value = if alignment {
         go_types::alignof(state.world, argument.type_id, state.config.sizes)
     } else {
@@ -3119,11 +3118,7 @@ fn check_unsafe_offsetof(
                                 unsafe_constant_operand(state, value)
                             },
                             None => {
-                                if !type_has_variable_size(
-                                    state,
-                                    receiver.type_id,
-                                    Vec::from_array([]),
-                                )
+                                if !type_has_variable_size(state, receiver.type_id, Vec::new())
                                     && go_types::sizeof(
                                         state.world,
                                         receiver.type_id,

@@ -80,7 +80,7 @@ fn known_dispatch(value: Imm, known: Vec[CommuteBinding]) -> CommuteKnown {
         Var { name, ty: _ } => find_commute_binding(known, name),
         Tag { .. } | Prim { .. } => CommuteKnown::Dispatch {
             selector: value,
-            fields: Vec::from_array([]),
+            fields: Vec::new(),
             constructor: Option::None,
         },
         Callable { .. } => CommuteKnown::Unknown,
@@ -88,7 +88,7 @@ fn known_dispatch(value: Imm, known: Vec[CommuteBinding]) -> CommuteKnown {
 }
 
 fn invalidate_commute_dependents(known: Vec[CommuteBinding], name: string) -> unit {
-    let invalidated: Vec[string] = Vec::from_array([]);
+    let invalidated: Vec[string] = Vec::new();
     for binding in known {
         match binding.value {
             Dispatch { selector: _, fields, constructor: _ } => if imms_use_name(fields, name) {
@@ -545,7 +545,7 @@ fn commute_arm_params(
     keep_scrutinee: bool,
     fields: Vec[CommuteField],
 ) -> Vec[(string, repr::Type)] {
-    let result: Vec[(string, repr::Type)] = Vec::from_array([]);
+    let result: Vec[(string, repr::Type)] = Vec::new();
     for index in 0..params.len() {
         if index != scrutinee_index || keep_scrutinee {
             result.push(params[index])
@@ -619,7 +619,7 @@ fn remove_commute_alias_term(value: Term) -> Term {
 
 fn remove_commute_alias_binds(values: Vec[Bind], index: isize, term: Term) -> Block {
     if index >= values.len() {
-        Block { binds: Vec::from_array([]), term }
+        Block { binds: Vec::new(), term }
     } else {
         let bind = values[index];
         let rest = remove_commute_alias_binds(values, index + 1, term);
@@ -668,7 +668,7 @@ fn remove_commute_aliases(value: Block) -> Block {
 }
 
 fn live_commute_fields(values: Vec[CommuteField], body: Block) -> Vec[CommuteField] {
-    let result: Vec[CommuteField] = Vec::from_array([]);
+    let result: Vec[CommuteField] = Vec::new();
     for value in values {
         if block_uses_name(body, value.name) {
             result.push(value)
@@ -684,7 +684,7 @@ fn build_commute_arm(
     scrutinee_index: isize,
     counter: Ref[isize],
 ) -> CommuteArm {
-    let fields: Vec[CommuteField] = Vec::from_array([]);
+    let fields: Vec[CommuteField] = Vec::new();
     if assigned_names(value.body).contains(scrutinee) {} else {
         collect_commute_block_fields(fields, value.body, scrutinee, counter)
     };
@@ -708,7 +708,7 @@ fn build_commute_default(
     scrutinee_index: isize,
     counter: Ref[isize],
 ) -> CommuteDefault {
-    let fields: Vec[CommuteField] = Vec::from_array([]);
+    let fields: Vec[CommuteField] = Vec::new();
     if assigned_names(value).contains(scrutinee) {} else {
         collect_commute_block_fields(fields, value, scrutinee, counter)
     };
@@ -741,7 +741,7 @@ fn commute_call_args(
     dispatch_fields: Vec[Imm],
     constructor: Option[repr::Constructor],
 ) -> Option[Vec[Imm]] {
-    let result: Vec[Imm] = Vec::from_array([]);
+    let result: Vec[Imm] = Vec::new();
     for index in 0..args.len() {
         if index != scrutinee_index || keep_scrutinee {
             result.push(args[index])
@@ -1050,7 +1050,7 @@ fn prepend_commute_joins(
     ret_ty: repr::Type,
     rest: Block,
 ) -> Block {
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     for arm in arms {
         binds.push(
             Bind::Join(
@@ -1121,7 +1121,7 @@ fn try_commute_join(value: JoinBind, rest: Block, known: Vec[CommuteBinding], co
                 ),
                 None => Option::None,
             };
-            let assigned: Vec[string] = Vec::from_array([]);
+            let assigned: Vec[string] = Vec::new();
             collect_commute_assigned_block(assigned, rest);
             let stable_known = copy_commute_bindings(known);
             stabilize_commute_bindings(stable_known, assigned);
@@ -1215,7 +1215,7 @@ fn commute_binds(
 fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[isize]) -> Block {
     match value {
         If { cond, then_, else_, ret_ty } => Block {
-            binds: Vec::from_array([]),
+            binds: Vec::new(),
             term: Term::If {
                 cond,
                 then_: commute_block_with(then_, copy_commute_bindings(known), counter),
@@ -1234,7 +1234,7 @@ fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[isize]) ->
                 )
             }
             Block {
-                binds: Vec::from_array([]),
+                binds: Vec::new(),
                 term: Term::Match {
                     scrutinee,
                     arms: lowered,
@@ -1276,7 +1276,7 @@ fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[isize]) ->
                 )
             }
             Block {
-                binds: Vec::from_array([]),
+                binds: Vec::new(),
                 term: Term::Select {
                     mode,
                     arms: lowered,
@@ -1290,12 +1290,12 @@ fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[isize]) ->
                 },
             }
         },
-        Return(value) => Block { binds: Vec::from_array([]), term: Term::Return(value) },
+        Return(value) => Block { binds: Vec::new(), term: Term::Return(value) },
         Jump { target, args, ret_ty } => Block {
-            binds: Vec::from_array([]),
+            binds: Vec::new(),
             term: Term::Jump { target, args, ret_ty },
         },
-        Unreachable { ty } => Block { binds: Vec::from_array([]), term: Term::Unreachable { ty } },
+        Unreachable { ty } => Block { binds: Vec::new(), term: Term::Unreachable { ty } },
     }
 }
 
@@ -1313,7 +1313,7 @@ fn commute_function(value: Function, counter: Ref[isize]) -> Function {
         ret_ty: value.ret_ty,
         body: commute_block_with(
             value.body,
-            shadow_commute_params(Vec::from_array([]), value.params),
+            shadow_commute_params(Vec::new(), value.params),
             counter,
         ),
     }

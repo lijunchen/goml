@@ -280,7 +280,7 @@ pub fn read_dir_structured(path: string) -> Result[Vec[DirEntry], Error] {
     if !ok {
         Result::Err(structured_error("read directory", path, kind, has_raw, raw, message))
     } else {
-        let entries: Vec[DirEntry] = Vec::from_array([]);
+        let entries: Vec[DirEntry] = Vec::new();
         for name in names {
             let entry_path = host::path_join(path, name);
             match symlink_metadata(entry_path) {

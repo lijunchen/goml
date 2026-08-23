@@ -19,7 +19,7 @@ struct SearchNode {
 }
 
 fn append_index(values: Vec[isize], value: isize) -> Vec[isize] {
-    let result: Vec[isize] = Vec::from_array([]);
+    let result: Vec[isize] = Vec::new();
     for existing in values {
         result.push(existing)
     }
@@ -122,8 +122,8 @@ fn interface_method_order_key(world: World, value: ObjectId) -> string {
 }
 
 pub fn interface_methods(world: World, value: TypeId) -> Vec[ObjectId] {
-    let result: Vec[ObjectId] = Vec::from_array([]);
-    interface_methods_inner(world, value, Vec::from_array([]), result);
+    let result: Vec[ObjectId] = Vec::new();
+    interface_methods_inner(world, value, Vec::new(), result);
     for index in 1..result.len() {
         let mut current = index;
         while current > 0
@@ -339,12 +339,12 @@ pub fn lookup_field_or_method_detailed(world: World, value: TypeId, addressable:
         return FieldOrMethodLookup::Missing
     } else {};
     let mut current: Vec[SearchNode] = Vec::from_array(
-        [SearchNode { type_id: value, index: Vec::from_array([]), indirect: false }],
+        [SearchNode { type_id: value, index: Vec::new(), indirect: false }],
     );
-    let visited: Vec[TypeId] = Vec::from_array([]);
+    let visited: Vec[TypeId] = Vec::new();
     while !current.is_empty() {
-        let matches: Vec[Selection] = Vec::from_array([]);
-        let next: Vec[SearchNode] = Vec::from_array([]);
+        let matches: Vec[Selection] = Vec::new();
+        let next: Vec[SearchNode] = Vec::new();
         for node in current {
             let key = dereference(world, node.type_id).0;
             if !type_seen(visited, key) {
@@ -432,9 +432,9 @@ fn collect_method_names_inner(
 }
 
 pub fn method_set(world: World, value: TypeId) -> Vec[Selection] {
-    let names: Vec[ObjectId] = Vec::from_array([]);
-    collect_method_names_inner(world, value, Vec::from_array([]), names);
-    let result: Vec[Selection] = Vec::from_array([]);
+    let names: Vec[ObjectId] = Vec::new();
+    collect_method_names_inner(world, value, Vec::new(), names);
+    let result: Vec[Selection] = Vec::new();
     for name_object in names {
         if valid_object_id(world, name_object) {
             let object = world.objects[name_object.value];
@@ -501,7 +501,7 @@ fn interface_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId])
 }
 
 fn interface_comparable(world: World, value: TypeId) -> bool {
-    interface_comparable_inner(world, value, Vec::from_array([]))
+    interface_comparable_inner(world, value, Vec::new())
 }
 
 pub fn interface_requires_comparable(world: World, value: TypeId) -> bool {
@@ -538,7 +538,7 @@ fn constraint_interface_inner(world: World, value: TypeId, visited: Vec[TypeId])
 }
 
 pub fn is_constraint_interface(world: World, value: TypeId) -> bool {
-    is_interface(world, value) && constraint_interface_inner(world, value, Vec::from_array([]))
+    is_interface(world, value) && constraint_interface_inner(world, value, Vec::new())
 }
 
 pub fn implements(world: World, value: TypeId, interface_type: TypeId) -> bool {

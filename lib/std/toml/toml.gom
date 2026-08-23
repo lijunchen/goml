@@ -173,7 +173,7 @@ fn top_level_separator(value: string, expected: byte) -> Option[isize] {
 }
 
 fn split_top_level(value: string, separator: byte) -> Result[Vec[string], string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     let mut remaining = value;
     loop {
         match top_level_separator(remaining, separator) {
@@ -258,7 +258,7 @@ fn parse_integer(value: string) -> Result[i64, string] {
 
 fn parse_inline_table(value: string) -> Result[Value, string] {
     let body = text::trim(value.byte_slice(1, value.byte_len() - 1));
-    let fields: Vec[(string, Value)] = Vec::from_array([]);
+    let fields: Vec[(string, Value)] = Vec::new();
     if body == "" {
         return Result::Ok(Value::Table(fields))
     } else {};
@@ -282,7 +282,7 @@ fn parse_inline_table(value: string) -> Result[Value, string] {
 
 fn parse_array(value: string) -> Result[Value, string] {
     let body = text::trim(value.byte_slice(1, value.byte_len() - 1));
-    let values: Vec[Value] = Vec::from_array([]);
+    let values: Vec[Value] = Vec::new();
     if body == "" {
         return Result::Ok(Value::Array(values))
     } else {};
@@ -371,8 +371,8 @@ fn string_in(values: Vec[string], expected: string) -> bool {
 }
 
 fn table_from_entries(entries: Vec[FlatEntry], prefix: Vec[string]) -> Result[Value, string] {
-    let fields: Vec[(string, Value)] = Vec::from_array([]);
-    let children: Vec[string] = Vec::from_array([]);
+    let fields: Vec[(string, Value)] = Vec::new();
+    let children: Vec[string] = Vec::new();
     for entry in entries {
         if path_prefix(entry.path, prefix) && entry.path.len() > prefix.len() {
             let name = entry.path[prefix.len()];
@@ -396,8 +396,8 @@ fn table_from_entries(entries: Vec[FlatEntry], prefix: Vec[string]) -> Result[Va
 }
 
 pub fn parse(input: string) -> Result[Value, string] {
-    let entries: Vec[FlatEntry] = Vec::from_array([]);
-    let mut section: Vec[string] = Vec::from_array([]);
+    let entries: Vec[FlatEntry] = Vec::new();
+    let mut section: Vec[string] = Vec::new();
     let lines = text::lines(input);
     for index in 0..lines.len() {
         let line_number = index + 1;
@@ -432,7 +432,7 @@ pub fn parse(input: string) -> Result[Value, string] {
             }
         }
     }
-    table_from_entries(entries, Vec::from_array([]))
+    table_from_entries(entries, Vec::new())
 }
 
 fn bare_key(value: string) -> bool {
@@ -558,7 +558,7 @@ pub fn encode(value: Value) -> Result[string, string] {
     match value {
         Value::Table(fields) => {
             let builder = text::StringBuilder::new();
-            write_table(builder, Vec::from_array([]), fields)?;
+            write_table(builder, Vec::new(), fields)?;
             Result::Ok(builder.finish())
         },
         _ => Result::Err("TOML document root must be a table"),

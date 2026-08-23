@@ -112,7 +112,7 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
             Call { func, args, span: expr_span } => {
                 let mut result = Expr::Call { func, args, span: expr_span };
                 for arg in trailing_args {
-                    result = Expr::Call { func: result, args: Vec::from_array([]), span: expr_span };
+                    result = Expr::Call { func: result, args: Vec::new(), span: expr_span };
                     match result {
                         Call { func: next_func, args: next_args, span: next_span } => {
                             next_args.push(arg);
@@ -192,7 +192,7 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
 }
 
 fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
-    let args: Vec[Expr] = Vec::from_array([]);
+    let args: Vec[Expr] = Vec::new();
     match first_child(node, cst::NodeKind::ARG_LIST) {
         Some(list) => for arg in children_of_kind(list, cst::NodeKind::ARG) {
             let values = expr_children(arg);
@@ -286,7 +286,7 @@ fn lower_prefix_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         push_error(ctx, node_span(node), "Prefix expression missing operand");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values[0], Vec::from_array([])) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(inner) => {
                 let op = if has_token(node, lexer::TokenKind::Minus) {
                     Option::Some(UnaryOp::Neg)
@@ -321,7 +321,7 @@ fn lower_cast_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
     if values.is_empty() || types.is_empty() {
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values[0], Vec::from_array([])) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(value) => match lower_ty(ctx, types[0]) {
                 Some(ty) => apply_trailing_args(
                     ctx,
@@ -345,7 +345,7 @@ fn lower_index_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         push_error(ctx, node_span(node), "Index expression missing index");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values[0], Vec::from_array([])) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(base) => match lower_expr(ctx, values[1]) {
                 Some(index) => apply_trailing_args(
                     ctx,
@@ -366,7 +366,7 @@ fn lower_try_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
         push_error(ctx, node_span(node), "Try expression missing operand");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values[0], Vec::from_array([])) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(value) => apply_trailing_args(
                 ctx,
                 Expr::Try { expr: value, span: node_span(node) },
@@ -416,7 +416,7 @@ fn lower_binary_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         push_error(ctx, node_span(node), "Binary expression missing rhs");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values[0], Vec::from_array([])) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(lhs) => match binary_operator_token(node) {
                 Some(operator) => if lexer::token_kind_equal(
                     operator.token.kind,

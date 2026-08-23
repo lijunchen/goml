@@ -8,7 +8,7 @@ struct DceNames {
 }
 
 fn new_dce_names() -> DceNames {
-    DceNames { values: Vec::from_array([]), present: HashMap::from_array([]) }
+    DceNames { values: Vec::new(), present: HashMap::new() }
 }
 
 fn dce_names_contains(values: DceNames, name: string) -> bool {
@@ -456,10 +456,10 @@ fn dce_trait_method_key(trait_name: string, method_name: string) -> string {
 }
 
 fn dce_functions_context(value: File) -> DceFunctions {
-    let functions: HashMap[string, Function] = HashMap::from_array([]);
-    let inherent_methods: HashMap[string, Vec[string]] = HashMap::from_array([]);
-    let trait_functions: HashMap[string, Vec[string]] = HashMap::from_array([]);
-    let trait_methods: HashMap[string, Vec[string]] = HashMap::from_array([]);
+    let functions: HashMap[string, Function] = HashMap::new();
+    let inherent_methods: HashMap[string, Vec[string]] = HashMap::new();
+    let trait_functions: HashMap[string, Vec[string]] = HashMap::new();
+    let trait_methods: HashMap[string, Vec[string]] = HashMap::new();
     let trait_names = new_dce_names();
     for function in value.functions {
         functions[function.name] = function;
@@ -798,7 +798,7 @@ pub fn eliminate_unreachable_functions(value: File) -> File {
             None => (),
         }
     }
-    let functions: Vec[Function] = Vec::from_array([]);
+    let functions: Vec[Function] = Vec::new();
     for function in value.functions {
         if dce_names_contains(ctx.reachable, function.name) {
             functions.push(function)

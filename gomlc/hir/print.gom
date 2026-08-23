@@ -36,9 +36,9 @@ fn type_doc(value: TypeExpr) -> pretty::Doc {
             pretty::append(type_doc(base), pretty::text("::" + associated))
         },
         Dyn { bounds } => {
-            let values: Vec[pretty::Doc] = Vec::from_array([]);
+            let values: Vec[pretty::Doc] = Vec::new();
             for bound in bounds {
-                let args: Vec[pretty::Doc] = Vec::from_array([]);
+                let args: Vec[pretty::Doc] = Vec::new();
                 for arg in bound.args {
                     args.push(type_doc(arg))
                 }

@@ -169,7 +169,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_open(builder, "Expr.Constr");
             encode_span(builder, value_span);
             encode_path(builder, path);
-            encode_exprs(builder, Vec::from_array([]))
+            encode_exprs(builder, Vec::new())
         },
         Constr { constructor: path, args, span: value_span } => {
             encode_open(builder, "Expr.Constr");

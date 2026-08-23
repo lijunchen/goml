@@ -173,8 +173,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "ascii",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/ascii/ascii.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_BINCODE_PACKAGE,
@@ -191,24 +191,24 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "bytes",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/bytes/bytes.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_CHANNEL_PACKAGE,
                 "channel",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/channel/channel.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_CMP_PACKAGE,
                 "cmp",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/cmp/cmp.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_COLLECTIONS_PACKAGE,
@@ -235,16 +235,16 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "error",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/error/error.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_CRYPTO_PACKAGE,
                 "crypto",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/crypto/crypto.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_CRYPTO_HASH_PACKAGE,
@@ -283,16 +283,16 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "host",
                 STD_INTERNAL_PACKAGE,
                 Vec::from_array(["std/internal/host/host.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_INTERNAL_TASK_PACKAGE,
                 "task",
                 STD_INTERNAL_PACKAGE,
                 Vec::from_array(["std/internal/task/task.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_IO_PACKAGE,
@@ -307,8 +307,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "iter",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/iter/iter.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_JSON_PACKAGE,
@@ -373,8 +373,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "rand",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/rand/rand.gom"]),
-                Vec::from_array([]),
-                Vec::from_array([]),
+                Vec::new(),
+                Vec::new(),
             ),
             standard_package(
                 STD_SERDE_PACKAGE,
@@ -463,7 +463,7 @@ pub fn standard_package_spec(package_name: string) -> Option[StandardPackageSpec
 }
 
 pub fn standard_package_children(package_name: string) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for spec in standard_package_specs() {
         if package_name == STD_ROOT_PACKAGE && spec.name == STD_IO_PACKAGE {
             result.push("internal")
@@ -493,7 +493,7 @@ fn add_standard_package_closure(result: Vec[string], package_name: string) -> un
 }
 
 pub fn standard_package_closure(package_names: Vec[string]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for package_name in package_names {
         add_standard_package_closure(result, package_name)
     }
@@ -518,7 +518,7 @@ fn add_standard_link_closure(result: Vec[string], package_name: string) -> unit 
 }
 
 pub fn standard_package_link_closure(package_names: Vec[string]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for package_name in package_names {
         add_standard_link_closure(result, package_name)
     }
@@ -545,7 +545,7 @@ fn read_sources_from_dir(lib_dir: string, category: string, relative_paths: Vec[
     Vec[Source],
     string,
 ] {
-    let result: Vec[Source] = Vec::from_array([]);
+    let result: Vec[Source] = Vec::new();
     for relative_path in relative_paths {
         let source_path = path::join(lib_dir, relative_path);
         match fs::read_file(source_path) {

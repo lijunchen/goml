@@ -170,7 +170,7 @@ fn scanner_new(source: Vec[byte]) -> Scanner {
         read_offset: Ref::new(0),
         insert_semi: Ref::new(false),
         pending_newline: Ref::new(-1),
-        diagnostics: Vec::from_array([]),
+        diagnostics: Vec::new(),
     };
     next(scanner);
     if scanner.current.get() == BOM {
@@ -303,7 +303,7 @@ pub fn scan_bytes(source: bytes::Bytes) -> ScanResult {
 
 pub fn leading_comments(source: bytes::Bytes) -> Vec[string] {
     let scanner = scanner_new(source.to_vec());
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     let mut finished = false;
     while !finished {
         let value = scan_one(scanner);
@@ -335,7 +335,7 @@ pub fn package_name_bytes(source: bytes::Bytes) -> string {
 
 pub fn import_literals(source: bytes::Bytes) -> Vec[string] {
     let scanner = scanner_new(source.to_vec());
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     let mut package_seen = false;
     let mut active = false;
     let mut grouped = false;

@@ -240,7 +240,7 @@ pub fn join_all[T](tasks: Vec[Task[T]]) -> Vec[T] {
 
 pub fn join_all_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[Vec[T], Vec[E]] {
     let values: Vec[T] = Vec::with_capacity(tasks.len());
-    let errors: Vec[E] = Vec::from_array([]);
+    let errors: Vec[E] = Vec::new();
     for task in tasks {
         match task.join() {
             Ok(value) => values.push(value),
@@ -259,7 +259,7 @@ pub fn join_all_indexed_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[
     Vec[IndexedError[E]],
 ] {
     let values: Vec[T] = Vec::with_capacity(tasks.len());
-    let errors: Vec[IndexedError[E]] = Vec::from_array([]);
+    let errors: Vec[IndexedError[E]] = Vec::new();
     for index in 0..tasks.len() {
         match tasks[index].join() {
             Ok(value) => values.push(value),
@@ -348,7 +348,7 @@ pub fn for_each_concurrent[T, E](
             }
             work.close();
             results.close();
-            let errors: Vec[IndexedError[E]] = Vec::from_array([]);
+            let errors: Vec[IndexedError[E]] = Vec::new();
             for index in 0..total {
                 match ordered[index] {
                     Some(error) => errors.push(IndexedError { index, error }),

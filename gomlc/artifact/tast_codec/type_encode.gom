@@ -56,7 +56,7 @@ fn artifact_json_dyn_bound(
     wire::artifact_json_name(writer, "additional_bounds");
     wire::artifact_json_begin_array(writer);
     for bound in additional_bounds {
-        artifact_json_dyn_bound(writer, context, bound, Vec::from_array([]))
+        artifact_json_dyn_bound(writer, context, bound, Vec::new())
     }
     wire::artifact_json_end_array(writer);
     wire::artifact_json_end_object(writer)

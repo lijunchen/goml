@@ -85,7 +85,7 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
     let Some(values) = json::as_array(root) else {
         return Result::Err("test manifest must be an array")
     };
-    let result: Vec[Test] = Vec::from_array([]);
+    let result: Vec[Test] = Vec::new();
     for value in values {
         let id = required_string(value, "id")?;
         let display_name = required_string(value, "display_name")?;
@@ -371,14 +371,14 @@ fn report_json(values: Vec[Execution], seed: isize) -> isize {
 }
 
 pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[unit, string] {
-    let loaded: Vec[Test] = Vec::from_array([]);
+    let loaded: Vec[Test] = Vec::new();
     for group in groups {
         let values = load_tests(group)?;
         for value in values {
             loaded.push(value)
         }
     }
-    let selected_tests: Vec[Test] = Vec::from_array([]);
+    let selected_tests: Vec[Test] = Vec::new();
     for test in sorted_tests(loaded) {
         if selected(test, options) {
             selected_tests.push(test)
@@ -410,7 +410,7 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
                     |cancel: task::CancelToken| worker(cancel, module_dir, options, work, results),
                 );
             }
-            let executions: Vec[Execution] = Vec::from_array([]);
+            let executions: Vec[Execution] = Vec::new();
             let total = selected_tests.len();
             let mut dispatched = 0;
             let mut completed = 0;

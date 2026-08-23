@@ -205,7 +205,7 @@ fn section_name(line: string) -> Option[string] {
 
 fn upsert_dependency(manifest_path: string, name: string, version: string) -> Result[unit, string] {
     let source = fs::read_file(manifest_path)?;
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     let mut in_dependencies = false;
     let mut inserted = false;
     let mut dependency_section_exists = false;
@@ -252,8 +252,8 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
 
 fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, string] {
     let source = fs::read_file(manifest_path)?;
-    let result: Vec[string] = Vec::from_array([]);
-    let buffer: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
+    let buffer: Vec[string] = Vec::new();
     let mut in_dependencies = false;
     let kept = Ref::new(0);
     let flush = |result: Vec[string], buffer: Vec[string], kept: Ref[isize]| {

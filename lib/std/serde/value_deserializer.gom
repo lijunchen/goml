@@ -35,7 +35,7 @@ pub struct ValueDeserializer {
 }
 
 pub fn value_deserializer(value: Value) -> ValueDeserializer {
-    ValueDeserializer { current: Ref::new(Option::Some(value)), frames: Vec::from_array([]) }
+    ValueDeserializer { current: Ref::new(Option::Some(value)), frames: Vec::new() }
 }
 
 pub fn finish_value_deserializer(deserializer: ValueDeserializer) -> Result[unit, string] {

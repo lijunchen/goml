@@ -69,7 +69,7 @@ pub fn default_config() -> LoadConfig {
         external_tests: false,
         root_path: "",
         root_directory: "",
-        root_sources: Vec::from_array([]),
+        root_sources: Vec::new(),
     }
 }
 
@@ -118,7 +118,7 @@ fn filename_selected(name: string, config: LoadConfig) -> bool {
 
 fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool {
     let mut go_build: Option[string] = Option::None;
-    let legacy: Vec[string] = Vec::from_array([]);
+    let legacy: Vec[string] = Vec::new();
     for value in scanner::leading_comments(source) {
         if value.starts_with("//go:build") {
             let start = "//go:build".byte_len();
@@ -231,7 +231,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
     )?;
     let names = fs::read_dir(directory)?;
     collections::sort(names);
-    let selected: Vec[checker::SourceFile] = Vec::from_array([]);
+    let selected: Vec[checker::SourceFile] = Vec::new();
     for name in names {
         if filename_selected(name, config) {
             let file = path::join(directory, name);
@@ -244,7 +244,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
             }
         } else {}
     }
-    let result: Vec[checker::SourceFile] = Vec::from_array([]);
+    let result: Vec[checker::SourceFile] = Vec::new();
     if config.include_tests {
         let mut package_name = "";
         for source in selected {
@@ -273,7 +273,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
 }
 
 fn source_imports(source: checker::SourceFile) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for literal in scanner::import_literals(source.source) {
         match constant::parse_string_literal(literal) {
             Ok(constant::ConstValue::String(value)) => if valid_import_dependency(value) {
@@ -356,9 +356,9 @@ fn discover_api_imports(
     config.ignore_func_bodies = true;
     config.exported_api_only = true;
     config.disable_unused_import_check = true;
-    config.available_imports = Vec::from_array([]);
-    config.ignored_imports = Vec::from_array([]);
-    config.import_errors = Vec::from_array([]);
+    config.available_imports = Vec::new();
+    config.ignored_imports = Vec::new();
+    config.import_errors = Vec::new();
     for dependency in imports {
         if dependency != "unsafe"
             && !(dependency == "C" && state.config.checker_config.fake_import_c) {
@@ -378,7 +378,7 @@ fn discover_api_imports(
             files: sources,
         },
     );
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for dependency in imports {
         if discovered_import_used(checked, dependency) {
             result.push(dependency)
@@ -441,7 +441,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
     } else {};
     state.loading.push(import_path);
     let sources = selected_sources_cached(state, import_path)?;
-    let imports: Vec[string] = Vec::from_array([]);
+    let imports: Vec[string] = Vec::new();
     for source in sources {
         for dependency in source_imports(source) {
             if dependency != "unsafe"
@@ -486,7 +486,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         checker_config.ignore_func_bodies = true;
         checker_config.exported_api_only = true;
         checker_config.disable_unused_import_check = true;
-        checker_config.ignored_imports = Vec::from_array([]);
+        checker_config.ignored_imports = Vec::new();
         for dependency in imports {
             if !string_in(selected_imports, dependency) {
                 checker_config.ignored_imports.push(dependency)
@@ -537,12 +537,12 @@ pub fn new_load_session(config: LoadConfig) -> LoadSession {
         state: LoadState {
             config,
             world: go_types::new_world(),
-            loading: Vec::from_array([]),
-            loaded: Vec::from_array([]),
-            failures: Vec::from_array([]),
+            loading: Vec::new(),
+            loaded: Vec::new(),
+            failures: Vec::new(),
             retain_info: false,
-            infos: Vec::from_array([]),
-            source_cache: HashMap::from_array([]),
+            infos: Vec::new(),
+            source_cache: HashMap::new(),
         },
     }
 }
@@ -552,12 +552,12 @@ pub fn new_info_load_session(config: LoadConfig) -> LoadSession {
         state: LoadState {
             config,
             world: go_types::new_world(),
-            loading: Vec::from_array([]),
-            loaded: Vec::from_array([]),
-            failures: Vec::from_array([]),
+            loading: Vec::new(),
+            loaded: Vec::new(),
+            failures: Vec::new(),
             retain_info: true,
-            infos: Vec::from_array([]),
-            source_cache: HashMap::from_array([]),
+            infos: Vec::new(),
+            source_cache: HashMap::new(),
         },
     }
 }
@@ -618,12 +618,12 @@ pub fn check_import_path(config: LoadConfig, import_path: string) -> Result[
     let state = LoadState {
         config,
         world: go_types::new_world(),
-        loading: Vec::from_array([]),
-        loaded: Vec::from_array([]),
-        failures: Vec::from_array([]),
+        loading: Vec::new(),
+        loaded: Vec::new(),
+        failures: Vec::new(),
         retain_info: false,
-        infos: Vec::from_array([]),
-        source_cache: HashMap::from_array([]),
+        infos: Vec::new(),
+        source_cache: HashMap::new(),
     };
     load_package(state, import_path, false)
 }
@@ -661,12 +661,12 @@ pub fn check_sources_with_diagnostics(
     let state = LoadState {
         config,
         world: go_types::new_world(),
-        loading: Vec::from_array([]),
-        loaded: Vec::from_array([]),
-        failures: Vec::from_array([]),
+        loading: Vec::new(),
+        loaded: Vec::new(),
+        failures: Vec::new(),
         retain_info: false,
-        infos: Vec::from_array([]),
-        source_cache: HashMap::from_array([]),
+        infos: Vec::new(),
+        source_cache: HashMap::new(),
     };
     load_package(state, import_path, true)
 }

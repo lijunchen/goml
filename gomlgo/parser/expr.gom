@@ -147,7 +147,7 @@ fn parse_index_slice_or_instance(parser: Parser, expression: ast::Node) -> ast::
     let left = expect(parser, token::Kind::Lbrack);
     let saved_level = parser.expr_level.get();
     parser.expr_level.set(saved_level + 1);
-    let values: Vec[ast::Node] = Vec::from_array([]);
+    let values: Vec[ast::Node] = Vec::new();
     let mut low: Option[ast::Node] = Option::None;
     let mut high: Option[ast::Node] = Option::None;
     let mut maximum: Option[ast::Node] = Option::None;
@@ -251,7 +251,7 @@ fn parse_call(parser: Parser, function: ast::Node) -> ast::Node {
     let left = expect(parser, token::Kind::Lparen);
     let saved_level = parser.expr_level.get();
     parser.expr_level.set(saved_level + 1);
-    let arguments: Vec[ast::Node] = Vec::from_array([]);
+    let arguments: Vec[ast::Node] = Vec::new();
     let mut ellipsis = -1;
     while !at(parser, token::Kind::Rparen) && !eof(parser) {
         let before = significant_index(parser, 0);
@@ -326,7 +326,7 @@ fn parse_composite_literal(parser: Parser, type_value: Option[ast::Node]) -> ast
     let left = expect(parser, token::Kind::Lbrace);
     let saved_level = parser.expr_level.get();
     parser.expr_level.set(saved_level + 1);
-    let elements: Vec[ast::Node] = Vec::from_array([]);
+    let elements: Vec[ast::Node] = Vec::new();
     let mut incomplete = false;
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         let before = significant_index(parser, 0);

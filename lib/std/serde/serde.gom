@@ -131,7 +131,7 @@ pub fn positional_field(fields: Vec[(string, Value)], index: isize) -> Result[Va
 pub fn variant_parts(value: Value) -> Result[(string, isize, Vec[(string, Value)]), string] {
     match value {
         Value::Variant { index: _, name, kind, fields } => Result::Ok((name, kind, fields)),
-        Value::String(name) => Result::Ok((name, 0, Vec::from_array([]))),
+        Value::String(name) => Result::Ok((name, 0, Vec::new())),
         Value::Struct(fields) => if fields.len() == 1 {
             let entry = fields[0];
             match entry.1 {

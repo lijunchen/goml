@@ -199,7 +199,7 @@ fn unify_type(template: core::Type, actual: core::Type, bindings: Vec[TypeBindin
 }
 
 fn substitute_types(values: Vec[core::Type], bindings: Vec[TypeBinding]) -> Vec[core::Type] {
-    let result: Vec[core::Type] = Vec::from_array([]);
+    let result: Vec[core::Type] = Vec::new();
     for value in values {
         result.push(substitute_type(value, bindings))
     }
@@ -209,7 +209,7 @@ fn substitute_types(values: Vec[core::Type], bindings: Vec[TypeBinding]) -> Vec[
 fn substitute_named_types(values: Vec[(string, core::Type)], bindings: Vec[TypeBinding]) -> Vec[
     (string, core::Type),
 ] {
-    let result: Vec[(string, core::Type)] = Vec::from_array([]);
+    let result: Vec[(string, core::Type)] = Vec::new();
     for value in values {
         result.push((value.0, substitute_type(value.1, bindings)))
     }
@@ -253,13 +253,13 @@ fn substitute_type(value: core::Type, bindings: Vec[TypeBinding]) -> core::Type 
         },
         Con { name } => core::Type::Con { name },
         Dyn { trait_name, args, associated_types, additional_bounds } => {
-            let substituted_associated: Vec[(string, core::Type)] = Vec::from_array([]);
+            let substituted_associated: Vec[(string, core::Type)] = Vec::new();
             for binding in associated_types {
                 substituted_associated.push((binding.0, substitute_type(binding.1, bindings)))
             }
-            let substituted_additional: Vec[core::DynTraitBound] = Vec::from_array([]);
+            let substituted_additional: Vec[core::DynTraitBound] = Vec::new();
             for bound in additional_bounds {
-                let bound_associated: Vec[(string, core::Type)] = Vec::from_array([]);
+                let bound_associated: Vec[(string, core::Type)] = Vec::new();
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, substitute_type(binding.1, bindings)))
                 }
@@ -325,7 +325,7 @@ fn substitute_type(value: core::Type, bindings: Vec[TypeBinding]) -> core::Type 
 }
 
 fn function_type(value: core::Function) -> core::Type {
-    let params: Vec[core::Type] = Vec::from_array([]);
+    let params: Vec[core::Type] = Vec::new();
     for param in value.params {
         params.push(param.1)
     }
@@ -366,7 +366,7 @@ fn canonical_inherent_owner_type(builtin: tast::BuiltinContract, value: core::Ty
         },
         App { ty, args } => {
             let base = canonical_inherent_owner_type(builtin, ty);
-            let values: Vec[core::Type] = Vec::from_array([]);
+            let values: Vec[core::Type] = Vec::new();
             for arg in args {
                 values.push(canonical_inherent_owner_type(builtin, arg))
             }
@@ -410,7 +410,7 @@ fn add_indexed_function(index: FunctionIndex, key: string, function: core::Funct
     match index[key] {
         Some(functions) => functions.push(function),
         None => {
-            let functions: Vec[core::Function] = Vec::from_array([]);
+            let functions: Vec[core::Function] = Vec::new();
             functions.push(function);
             index[key] = functions;
         },
@@ -420,7 +420,7 @@ fn add_indexed_function(index: FunctionIndex, key: string, function: core::Funct
 fn indexed_functions(index: FunctionIndex, key: string) -> Vec[core::Function] {
     match index[key] {
         Some(functions) => functions,
-        None => Vec::from_array([]),
+        None => Vec::new(),
     }
 }
 
@@ -490,7 +490,7 @@ fn structural_array_item(value: core::Expr, owner: core::Type, elem: core::Type,
 }
 
 fn structural_items(value: core::Expr, ty: core::Type) -> Vec[(core::Expr, core::Type)] {
-    let result: Vec[(core::Expr, core::Type)] = Vec::from_array([]);
+    let result: Vec[(core::Expr, core::Type)] = Vec::new();
     match core::resolve_type(ty) {
         Tuple { items } => for index in 0..items.len() {
             result.push((core::Expr::Proj { tuple: value, index, ty: items[index] }, items[index]))
@@ -525,11 +525,11 @@ fn core_bool_conjunction(values: Vec[core::Expr]) -> core::Expr {
 fn structural_partial_eq_body(builtin: tast::BuiltinContract, ty: core::Type) -> core::Expr {
     let left = structural_items(core_var("self", ty), ty);
     let right = structural_items(core_var("other", ty), ty);
-    let comparisons: Vec[core::Expr] = Vec::from_array([]);
+    let comparisons: Vec[core::Expr] = Vec::new();
     for index in 0..left.len() {
         comparisons.push(
             core_trait_call(
-                core::TraitRef { name: builtin.partial_eq.name, args: Vec::from_array([]) },
+                core::TraitRef { name: builtin.partial_eq.name, args: Vec::new() },
                 builtin.partial_eq.method,
                 left[index].1,
                 Option::Some(left[index].0),
@@ -542,7 +542,7 @@ fn structural_partial_eq_body(builtin: tast::BuiltinContract, ty: core::Type) ->
 }
 
 fn structural_hash_body(builtin: tast::BuiltinContract, ty: core::Type) -> core::Expr {
-    let stmts: Vec[core::LetStmt] = Vec::from_array([]);
+    let stmts: Vec[core::LetStmt] = Vec::new();
     let mut previous = "_structural_hash_0";
     stmts.push(
         core::LetStmt {
@@ -554,11 +554,11 @@ fn structural_hash_body(builtin: tast::BuiltinContract, ty: core::Type) -> core:
     let mut index = 0;
     for item in structural_items(core_var("self", ty), ty) {
         let hash = core_trait_call(
-            core::TraitRef { name: builtin.hash.name, args: Vec::from_array([]) },
+            core::TraitRef { name: builtin.hash.name, args: Vec::new() },
             builtin.hash.method,
             item.1,
             Option::Some(item.0),
-            Vec::from_array([]),
+            Vec::new(),
             core::Type::Uint64,
         );
         let next = "_structural_hash_" + (index + 1).to_string();
@@ -591,15 +591,15 @@ fn structural_hash_body(builtin: tast::BuiltinContract, ty: core::Type) -> core:
 fn structural_default_body(builtin: tast::BuiltinContract, ty: core::Type) -> core::Expr {
     match core::resolve_type(ty) {
         Tuple { items } => {
-            let values: Vec[core::Expr] = Vec::from_array([]);
+            let values: Vec[core::Expr] = Vec::new();
             for item in items {
                 values.push(
                     core_trait_call(
-                        core::TraitRef { name: builtin.default.name, args: Vec::from_array([]) },
+                        core::TraitRef { name: builtin.default.name, args: Vec::new() },
                         builtin.default.method,
                         item,
                         Option::None,
-                        Vec::from_array([]),
+                        Vec::new(),
                         item,
                     ),
                 )
@@ -607,15 +607,15 @@ fn structural_default_body(builtin: tast::BuiltinContract, ty: core::Type) -> co
             core::Expr::Tuple { items: values, ty }
         },
         Array { len, elem } => {
-            let values: Vec[core::Expr] = Vec::from_array([]);
+            let values: Vec[core::Expr] = Vec::new();
             for _ in 0..len {
                 values.push(
                     core_trait_call(
-                        core::TraitRef { name: builtin.default.name, args: Vec::from_array([]) },
+                        core::TraitRef { name: builtin.default.name, args: Vec::new() },
                         builtin.default.method,
                         elem,
                         Option::None,
-                        Vec::from_array([]),
+                        Vec::new(),
                         elem,
                     ),
                 )
@@ -638,11 +638,11 @@ fn ordering_constructor(ordering_ty: core::Type, name: string, tag: isize) -> co
     core::Expr::Constr {
         constructor: core::Constructor {
             name: nominal_type_name(ordering_ty) + "::" + name,
-            fields: Vec::from_array([]),
+            fields: Vec::new(),
             is_struct: false,
             tag: Option::Some(tag),
         },
-        args: Vec::from_array([]),
+        args: Vec::new(),
         ty: ordering_ty,
     }
 }
@@ -651,7 +651,7 @@ fn option_constructor(option_ty: core::Type, name: string, tag: isize, args: Vec
     core::Expr::Constr {
         constructor: core::Constructor {
             name: nominal_type_name(option_ty) + "::" + name,
-            fields: Vec::from_array([]),
+            fields: Vec::new(),
             is_struct: false,
             tag: Option::Some(tag),
         },
@@ -669,7 +669,7 @@ fn option_item_type(value: core::Type) -> core::Type {
 
 fn ordering_is_equal(builtin: tast::BuiltinContract, value: core::Expr, ordering_ty: core::Type) -> core::Expr {
     core_trait_call(
-        core::TraitRef { name: builtin.partial_eq.name, args: Vec::from_array([]) },
+        core::TraitRef { name: builtin.partial_eq.name, args: Vec::new() },
         builtin.partial_eq.method,
         ordering_ty,
         Option::Some(value),
@@ -701,7 +701,7 @@ fn structural_partial_ord_bool_body(
     while index > 0 {
         index = index - 1;
         let equals = core_trait_call(
-            core::TraitRef { name: builtin.partial_eq.name, args: Vec::from_array([]) },
+            core::TraitRef { name: builtin.partial_eq.name, args: Vec::new() },
             builtin.partial_eq.method,
             left[index].1,
             Option::Some(left[index].0),
@@ -800,13 +800,13 @@ fn structural_partial_ord_body(
     );
     let some = core::Constructor {
         name: nominal_type_name(option_ty) + "::" + builtin.option.some.name,
-        fields: Vec::from_array([]),
+        fields: Vec::new(),
         is_struct: false,
         tag: Option::Some(builtin.option.some.tag),
     };
     let none = core::Constructor {
         name: nominal_type_name(option_ty) + "::" + builtin.option.none.name,
-        fields: Vec::from_array([]),
+        fields: Vec::new(),
         is_struct: false,
         tag: Option::Some(builtin.option.none.tag),
     };
@@ -862,7 +862,7 @@ fn structural_partial_ord_body(
                                 core::Arm {
                                     lhs: core::Expr::Constr {
                                         constructor: none,
-                                        args: Vec::from_array([]),
+                                        args: Vec::new(),
                                         ty: option_ty,
                                     },
                                     body: core_var(comparison_name, option_ty),
@@ -924,7 +924,7 @@ fn synthetic_structural_trait_function(
             return Option::None
         };
         let params = if method_name == builtin.default.method {
-            Vec::from_array([])
+            Vec::new()
         } else if method_name == builtin.hash.method {
             Vec::from_array([("self", for_ty)])
         } else {
@@ -935,20 +935,20 @@ fn synthetic_structural_trait_function(
                 name: core_trait_impl_name(reference, for_ty, method_name),
                 origin: core::FunctionOrigin::TraitImplementation { method_name },
                 root: false,
-                generics: Vec::from_array([]),
-                predicates: Vec::from_array([]),
+                generics: Vec::new(),
+                predicates: Vec::new(),
                 trait_impl: Option::Some(
                     core::TraitImpl {
                         trait_ref: reference,
                         for_ty,
-                        associated_types: Vec::from_array([]),
+                        associated_types: Vec::new(),
                         generic_count: 0,
                         predicate_count: 0,
                     },
                 ),
                 params,
                 ret_ty,
-                body: core::Block { stmts: Vec::from_array([]), tail: Option::Some(body) },
+                body: core::Block { stmts: Vec::new(), tail: Option::Some(body) },
             },
         )
     }
@@ -987,17 +987,13 @@ fn find_inherent_function(
     for function in indexed_functions(ctx.inherent_method_index, method_name) {
         match function.origin {
             core::FunctionOrigin::Inherent { owner: template, method_name: _ } => {
-                let bindings: Vec[TypeBinding] = Vec::from_array([]);
+                let bindings: Vec[TypeBinding] = Vec::new();
                 let owner_matches = unify_type(
                     canonical_inherent_owner_type(ctx.builtin, template),
                     canonical_inherent_owner_type(ctx.builtin, owner),
                     bindings,
                 );
-                let callable_matches = unify_type(
-                    function_type(function),
-                    callable_ty,
-                    Vec::from_array([]),
-                );
+                let callable_matches = unify_type(function_type(function), callable_ty, Vec::new());
                 if owner_matches || callable_matches {
                     return Option::Some(function)
                 } else {}
@@ -1343,7 +1339,7 @@ fn recursive_specialization_from(
 }
 
 fn copy_bindings(values: Vec[TypeBinding]) -> Vec[TypeBinding] {
-    let result: Vec[TypeBinding] = Vec::from_array([]);
+    let result: Vec[TypeBinding] = Vec::new();
     for value in values {
         result.push(value)
     }
@@ -1378,13 +1374,13 @@ fn matching_trait_selections(
     reference: core::TraitRef,
     bindings: Vec[TypeBinding],
 ) -> Vec[TraitSelection] {
-    let selections: Vec[TraitSelection] = Vec::from_array([]);
-    let keys: Vec[string] = Vec::from_array([]);
+    let selections: Vec[TraitSelection] = Vec::new();
+    let keys: Vec[string] = Vec::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
             Some(metadata) => if metadata.trait_ref.name == reference.name
                 && metadata.trait_ref.args.len() == reference.args.len() {
-                let impl_bindings: Vec[TypeBinding] = Vec::from_array([]);
+                let impl_bindings: Vec[TypeBinding] = Vec::new();
                 if unify_type(metadata.for_ty, for_ty, impl_bindings) {
                     let candidate = substitute_trait_ref(metadata.trait_ref, impl_bindings);
                     let candidate_matches = if types_are_concrete(reference.args) {
@@ -1426,7 +1422,7 @@ fn matching_trait_selections(
 }
 
 fn active_types_with(values: Vec[string], value: string) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for item in values {
         result.push(item)
     }
@@ -1437,7 +1433,7 @@ fn active_types_with(values: Vec[string], value: string) -> Vec[string] {
 fn normalize_types(ctx: SpecializeCtx, values: Vec[core::Type], active: Vec[string]) -> Vec[
     core::Type,
 ] {
-    let result: Vec[core::Type] = Vec::from_array([]);
+    let result: Vec[core::Type] = Vec::new();
     for value in values {
         result.push(normalize_type(ctx, value, active))
     }
@@ -1467,14 +1463,14 @@ fn matching_projection_types(
     name: string,
     reference: core::TraitRef,
 ) -> Vec[core::Type] {
-    let result: Vec[core::Type] = Vec::from_array([]);
-    let keys: Vec[string] = Vec::from_array([]);
+    let result: Vec[core::Type] = Vec::new();
+    let keys: Vec[string] = Vec::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
             Some(metadata) => {
                 if metadata.trait_ref.name == reference.name
                     && metadata.trait_ref.args.len() == reference.args.len() {
-                    let bindings: Vec[TypeBinding] = Vec::from_array([]);
+                    let bindings: Vec[TypeBinding] = Vec::new();
                     if unify_type(metadata.for_ty, base, bindings)
                         && unify_types(metadata.trait_ref.args, reference.args, bindings)
                         && complete_bindings_up_to(
@@ -1566,13 +1562,13 @@ fn normalize_type(ctx: SpecializeCtx, value: core::Type, active: Vec[string]) ->
         },
         Con { name } => core::Type::Con { name },
         Dyn { trait_name, args, associated_types, additional_bounds } => {
-            let normalized_associated: Vec[(string, core::Type)] = Vec::from_array([]);
+            let normalized_associated: Vec[(string, core::Type)] = Vec::new();
             for binding in associated_types {
                 normalized_associated.push((binding.0, normalize_type(ctx, binding.1, active)))
             }
-            let normalized_additional: Vec[core::DynTraitBound] = Vec::from_array([]);
+            let normalized_additional: Vec[core::DynTraitBound] = Vec::new();
             for bound in additional_bounds {
-                let bound_associated: Vec[(string, core::Type)] = Vec::from_array([]);
+                let bound_associated: Vec[(string, core::Type)] = Vec::new();
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, normalize_type(ctx, binding.1, active)))
                 }
@@ -1664,14 +1660,14 @@ fn type_contains_associated_projection(value: core::Type) -> bool {
 fn specialize_type(ctx: SpecializeCtx, value: core::Type, bindings: Vec[TypeBinding]) -> core::Type {
     let specialized = substitute_type(value, bindings);
     if type_contains_associated_projection(specialized) {
-        normalize_type(ctx, specialized, Vec::from_array([]))
+        normalize_type(ctx, specialized, Vec::new())
     } else {
         specialized
     }
 }
 
 fn specialize_trait_ref(ctx: SpecializeCtx, value: core::TraitRef, bindings: Vec[TypeBinding]) -> core::TraitRef {
-    normalize_trait_ref(ctx, substitute_trait_ref(value, bindings), Vec::from_array([]))
+    normalize_trait_ref(ctx, substitute_trait_ref(value, bindings), Vec::new())
 }
 
 fn specialize_named_types(
@@ -1679,7 +1675,7 @@ fn specialize_named_types(
     values: Vec[(string, core::Type)],
     bindings: Vec[TypeBinding],
 ) -> Vec[(string, core::Type)] {
-    let result: Vec[(string, core::Type)] = Vec::from_array([]);
+    let result: Vec[(string, core::Type)] = Vec::new();
     for value in values {
         result.push((value.0, specialize_type(ctx, value.1, bindings)))
     }
@@ -1935,7 +1931,7 @@ fn specialize_function_callable(
 ) -> core::Expr {
     if function_is_generic(function) {
         if type_is_concrete(ty) {
-            let call_bindings: Vec[TypeBinding] = Vec::from_array([]);
+            let call_bindings: Vec[TypeBinding] = Vec::new();
             if unify_type(function_type(function), ty, call_bindings)
                 && (allow_projection_bindings || !has_projection_binding(call_bindings))
                 && complete_bindings(ctx, function, call_bindings) {
@@ -1946,8 +1942,7 @@ fn specialize_function_callable(
                     ty,
                 }
             } else {
-                if allow_projection_bindings
-                    && unify_type(function_type(function), ty, Vec::from_array([])) {
+                if allow_projection_bindings && unify_type(function_type(function), ty, Vec::new()) {
                     ctx.error.set(
                         Option::Some(incomplete_function_message(ctx, function, call_bindings)),
                     )
@@ -1959,9 +1954,7 @@ fn specialize_function_callable(
         }
     } else {
         core::Expr::Callable {
-            callable: core::Callable::Function(
-                ensure_instance(ctx, function.name, Vec::from_array([])),
-            ),
+            callable: core::Callable::Function(ensure_instance(ctx, function.name, Vec::new())),
             ty,
         }
     }
@@ -1972,7 +1965,7 @@ fn specialize_closure_params(
     values: Vec[core::ClosureParam],
     bindings: Vec[TypeBinding],
 ) -> Vec[core::ClosureParam] {
-    let result: Vec[core::ClosureParam] = Vec::from_array([]);
+    let result: Vec[core::ClosureParam] = Vec::new();
     for value in values {
         result.push(
             core::ClosureParam { name: value.name, ty: specialize_type(ctx, value.ty, bindings) },
@@ -1984,7 +1977,7 @@ fn specialize_closure_params(
 fn specialize_exprs(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[core::Expr]) -> Vec[
     core::Expr,
 ] {
-    let result: Vec[core::Expr] = Vec::from_array([]);
+    let result: Vec[core::Expr] = Vec::new();
     for value in values {
         result.push(specialize_expr(ctx, bindings, value))
     }
@@ -2005,7 +1998,7 @@ fn specialize_optional_expr(
 fn specialize_arms(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[core::Arm]) -> Vec[
     core::Arm,
 ] {
-    let result: Vec[core::Arm] = Vec::from_array([]);
+    let result: Vec[core::Arm] = Vec::new();
     for value in values {
         result.push(
             core::Arm {
@@ -2046,7 +2039,7 @@ fn specialize_select_arms(
 }
 
 fn specialize_block(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::Block) -> core::Block {
-    let stmts: Vec[core::LetStmt] = Vec::from_array([]);
+    let stmts: Vec[core::LetStmt] = Vec::new();
     for stmt in value.stmts {
         stmts.push(
             core::LetStmt {
@@ -2060,7 +2053,7 @@ fn specialize_block(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core:
 }
 
 fn trait_call_types(receiver: core::Expr, args: Vec[core::Expr]) -> Vec[core::Type] {
-    let result: Vec[core::Type] = Vec::from_array([]);
+    let result: Vec[core::Type] = Vec::new();
     result.push(core::expr_type(receiver));
     for arg in args {
         result.push(core::expr_type(arg))
@@ -2075,14 +2068,14 @@ fn trait_method_bindings(
     actual_types: Vec[core::Type],
     ret_ty: core::Type,
 ) -> Option[Vec[TypeBinding]] {
-    let bindings: Vec[TypeBinding] = Vec::from_array([]);
+    let bindings: Vec[TypeBinding] = Vec::new();
     let metadata = function.trait_impl?;
     if metadata.trait_ref.args.len() != reference.args.len()
         || !unify_type(metadata.for_ty, for_ty, bindings)
         || !unify_types(metadata.trait_ref.args, reference.args, bindings) {
         return Option::None
     } else {};
-    let param_types: Vec[core::Type] = Vec::from_array([]);
+    let param_types: Vec[core::Type] = Vec::new();
     for param in function.params {
         param_types.push(param.1)
     }
@@ -2142,7 +2135,7 @@ fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: core::
     for function in indexed_functions(ctx.trait_function_index, trait_name) {
         match function.trait_impl {
             Some(metadata) => {
-                let bindings: Vec[TypeBinding] = Vec::from_array([]);
+                let bindings: Vec[TypeBinding] = Vec::new();
                 if unify_type(metadata.for_ty, for_ty, bindings)
                     && complete_bindings(ctx, function, bindings) {
                     ensure_instance(ctx, function.name, bindings);
@@ -2162,14 +2155,13 @@ fn specialize_found_var_with_projection_bindings(
 ) -> core::Expr {
     if function_is_generic(function) {
         if type_is_concrete(ty) {
-            let call_bindings: Vec[TypeBinding] = Vec::from_array([]);
+            let call_bindings: Vec[TypeBinding] = Vec::new();
             if unify_type(function_type(function), ty, call_bindings)
                 && (allow_projection_bindings || !has_projection_binding(call_bindings))
                 && complete_bindings(ctx, function, call_bindings) {
                 core::Expr::Var { name: ensure_instance(ctx, function.name, call_bindings), ty }
             } else {
-                if allow_projection_bindings
-                    && unify_type(function_type(function), ty, Vec::from_array([])) {
+                if allow_projection_bindings && unify_type(function_type(function), ty, Vec::new()) {
                     ctx.error.set(
                         Option::Some(incomplete_function_message(ctx, function, call_bindings)),
                     )
@@ -2180,7 +2172,7 @@ fn specialize_found_var_with_projection_bindings(
             core::Expr::Var { name, ty }
         }
     } else {
-        core::Expr::Var { name: ensure_instance(ctx, function.name, Vec::from_array([])), ty }
+        core::Expr::Var { name: ensure_instance(ctx, function.name, Vec::new()), ty }
     }
 }
 
@@ -2216,7 +2208,7 @@ fn specialize_call(
                 specialize_call_var(ctx, function, name, func_ty)
             } else {
                 core::Expr::Var {
-                    name: ensure_instance(ctx, function.name, Vec::from_array([])),
+                    name: ensure_instance(ctx, function.name, Vec::new()),
                     ty: func_ty,
                 }
             },
@@ -2230,7 +2222,7 @@ fn specialize_call(
                 specialize_call_var(ctx, function, function.name, func_ty)
             } else {
                 core::Expr::Var {
-                    name: ensure_instance(ctx, function.name, Vec::from_array([])),
+                    name: ensure_instance(ctx, function.name, Vec::new()),
                     ty: func_ty,
                 }
             },
@@ -2406,7 +2398,7 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
             let receiver = specialize_optional_expr(ctx, bindings, receiver);
             let args = specialize_exprs(ctx, bindings, args);
             let ty = specialize_type(ctx, ty, bindings);
-            let actual_types: Vec[core::Type] = Vec::from_array([]);
+            let actual_types: Vec[core::Type] = Vec::new();
             match receiver {
                 Some(value) => actual_types.push(core::expr_type(value)),
                 None => (),
@@ -2449,7 +2441,7 @@ fn ensure_runtime_trait_impl(
 ) -> unit {
     let _ = ensure_trait_method_instance(
         ctx,
-        core::TraitRef { name: trait_name, args: Vec::from_array([]) },
+        core::TraitRef { name: trait_name, args: Vec::new() },
         method_name,
         params[0],
         params,
@@ -2647,7 +2639,7 @@ fn ensure_runtime_trait_impls(ctx: SpecializeCtx, functions: Vec[core::Function]
 }
 
 fn specialize_function(ctx: SpecializeCtx, instance: Instance, value: core::Function) -> core::Function {
-    let params: Vec[(string, core::Type)] = Vec::from_array([]);
+    let params: Vec[(string, core::Type)] = Vec::new();
     for param in value.params {
         params.push((param.0, specialize_type(ctx, param.1, instance.bindings)))
     }
@@ -2666,8 +2658,8 @@ fn specialize_function(ctx: SpecializeCtx, instance: Instance, value: core::Func
             },
         },
         root: true,
-        generics: Vec::from_array([]),
-        predicates: Vec::from_array([]),
+        generics: Vec::new(),
+        predicates: Vec::new(),
         trait_impl: match value.trait_impl {
             Some(metadata) => Option::Some(
                 core::TraitImpl {
@@ -2703,12 +2695,12 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     let type_instances = value.type_instances;
     let constants = value.constants;
     let input_statics = value.statics;
-    let function_index: HashMap[string, core::Function] = HashMap::from_array([]);
-    let inherent_method_index: FunctionIndex = HashMap::from_array([]);
-    let trait_function_index: FunctionIndex = HashMap::from_array([]);
-    let trait_method_index: FunctionIndex = HashMap::from_array([]);
-    let trait_method_names: HashMap[string, string] = HashMap::from_array([]);
-    let used_names: HashMap[string, unit] = HashMap::from_array([]);
+    let function_index: HashMap[string, core::Function] = HashMap::new();
+    let inherent_method_index: FunctionIndex = HashMap::new();
+    let trait_function_index: FunctionIndex = HashMap::new();
+    let trait_method_index: FunctionIndex = HashMap::new();
+    let trait_method_names: HashMap[string, string] = HashMap::new();
+    let used_names: HashMap[string, unit] = HashMap::new();
     for function in value.functions {
         function_index[function.name] = function;
         used_names[function.name] = ();
@@ -2742,9 +2734,9 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
         trait_function_index,
         trait_method_index,
         trait_method_names,
-        instances: Vec::from_array([]),
-        instance_index: HashMap::from_array([]),
-        work: Vec::from_array([]),
+        instances: Vec::new(),
+        instance_index: HashMap::new(),
+        work: Vec::new(),
         used_names,
         active: Ref::new(Option::None),
         error,
@@ -2752,18 +2744,15 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     let statics: Vec[core::Static] = Vec::with_capacity(input_statics.len());
     for value in input_statics {
         statics.push(
-            core::Static {
-                name: value.name,
-                ty: specialize_type(ctx, value.ty, Vec::from_array([])),
-            },
+            core::Static { name: value.name, ty: specialize_type(ctx, value.ty, Vec::new()) },
         )
     }
     for function in ctx.functions {
         if function.root && !function_is_generic(function) {
-            ensure_instance(ctx, function.name, Vec::from_array([]));
+            ensure_instance(ctx, function.name, Vec::new());
         } else {}
     }
-    let output: Vec[core::Function] = Vec::from_array([]);
+    let output: Vec[core::Function] = Vec::new();
     let mut index = 0;
     loop {
         while index < ctx.work.len() {

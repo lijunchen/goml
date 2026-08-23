@@ -12,7 +12,7 @@ fn normalized(limbs: Vec[u32]) -> Natural {
 }
 
 pub fn natural_zero() -> Natural {
-    Natural { limbs: Vec::from_array([]) }
+    Natural { limbs: Vec::new() }
 }
 
 pub fn natural_one() -> Natural {
@@ -443,7 +443,7 @@ pub fn natural_to_string(value: Natural) -> string {
     if natural_is_zero(value) {
         return "0"
     } else {};
-    let parts: Vec[u32] = Vec::from_array([]);
+    let parts: Vec[u32] = Vec::new();
     let mut current = natural_copy(value);
     while !natural_is_zero(current) {
         match natural_div_rem_small(current, 1000000000.to_u32()) {

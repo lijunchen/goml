@@ -267,7 +267,7 @@ fn licm_extract_block(
     params: HashMap[string, unit],
     assigned: Vec[HashMap[string, unit]],
 ) -> LicmBlockResult {
-    let hoisted: Vec[LetBind] = Vec::from_array([]);
+    let hoisted: Vec[LetBind] = Vec::new();
     let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
     for bind in value.binds {
         match bind {
@@ -301,14 +301,14 @@ fn licm_extract_block(
 }
 
 fn licm_join(value: JoinBind, assigned: Vec[HashMap[string, unit]]) -> LicmJoinResult {
-    let local: HashMap[string, unit] = HashMap::from_array([]);
+    let local: HashMap[string, unit] = HashMap::new();
     licm_collect_local_names(value.body, local);
-    let params: HashMap[string, unit] = HashMap::from_array([]);
+    let params: HashMap[string, unit] = HashMap::new();
     for param in value.params {
         params[param.0] = ();
     }
     licm_collect_param_names(value.body, params);
-    let invariant: HashMap[string, unit] = HashMap::from_array([]);
+    let invariant: HashMap[string, unit] = HashMap::new();
     let result = licm_extract_block(value.body, local, invariant, params, assigned);
     LicmJoinResult {
         hoisted: result.hoisted,
@@ -327,7 +327,7 @@ fn licm_joinrec(values: Vec[JoinBind]) -> (Vec[LetBind], Vec[JoinBind]) {
     for value in values {
         assigned.push(assigned_names(value.body))
     }
-    let hoisted: Vec[LetBind] = Vec::from_array([]);
+    let hoisted: Vec[LetBind] = Vec::new();
     let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
     for value in values {
         let result = licm_join(value, assigned);

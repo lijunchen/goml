@@ -112,7 +112,7 @@ fn child_list(context: LowerContext, value: ast::Node, name: string, path: strin
     let field = ast::get_field(value, name);
     if !field.present {
         report(context, value, "missing node list field " + name);
-        return Vec::from_array([])
+        return Vec::new()
     } else {};
     match field.value {
         ast::Value::Nodes(children) => {
@@ -132,10 +132,10 @@ fn child_list(context: LowerContext, value: ast::Node, name: string, path: strin
             }
             result
         },
-        ast::Value::Null => Vec::from_array([]),
+        ast::Value::Null => Vec::new(),
         _ => {
             report(context, value, "expected node list field " + name);
-            Vec::from_array([])
+            Vec::new()
         },
     }
 }
@@ -490,9 +490,9 @@ fn lower_package_inner(sources: Vec[SourceFile], retain_paths: bool) -> PackageS
         node_count += ast_node_count(source.root);
     }
     let nodes: Vec[Option[SyntaxNode]] = Vec::with_capacity(node_count);
-    let diagnostics: Vec[LowerDiagnostic] = Vec::from_array([]);
+    let diagnostics: Vec[LowerDiagnostic] = Vec::new();
     let files: Vec[SyntaxFile] = Vec::with_capacity(sources.len());
-    let names: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
     for index in 0..sources.len() {
         let source = sources[index];
         if contains_name(names, source.name) {
@@ -511,7 +511,7 @@ fn lower_package_inner(sources: Vec[SourceFile], retain_paths: bool) -> PackageS
             file_id: file_id(index),
             file_name: source.name,
             nodes,
-            imports: Vec::from_array([]),
+            imports: Vec::new(),
             diagnostics,
         };
         let root = lower_node(

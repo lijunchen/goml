@@ -6,7 +6,7 @@ struct NameSet {
 }
 
 fn new_name_set() -> NameSet {
-    NameSet { values: Vec::from_array([]), present: HashMap::from_array([]) }
+    NameSet { values: Vec::new(), present: HashMap::new() }
 }
 
 fn name_present(values: NameSet, expected: string) -> bool {
@@ -287,11 +287,11 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
     for value in values {
         collect_item_names(names, value)
     }
-    let result: Vec[Item] = Vec::from_array([]);
+    let result: Vec[Item] = Vec::new();
     for value in values {
         match value {
             ImportGroup(imports) => {
-                let retained: Vec[(string, string)] = Vec::from_array([]);
+                let retained: Vec[(string, string)] = Vec::new();
                 for entry in imports {
                     if import_is_used(names, entry.0) {
                         retained.push(entry)
@@ -362,7 +362,7 @@ pub fn prune_functions(value: File) -> File {
             break
         } else {}
     }
-    let items: Vec[Item] = Vec::from_array([]);
+    let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
             Function(function) => {
@@ -372,7 +372,7 @@ pub fn prune_functions(value: File) -> File {
             },
             ConstGroup(group) => {
                 let was_empty = group.specs.is_empty();
-                let specs: Vec[ConstSpec] = Vec::from_array([]);
+                let specs: Vec[ConstSpec] = Vec::new();
                 for spec in group.specs {
                     if name_present(reachable, spec.name) {
                         specs.push(spec)

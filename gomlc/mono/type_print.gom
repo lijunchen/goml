@@ -169,7 +169,7 @@ fn type_doc_with_contract(builtin: tast::BuiltinContract, value: Type) -> pretty
         Tuple { items } => pretty::delimited("(", ",", ")", type_docs(builtin, items)),
         Named { name } => pretty::text(name),
         Dyn { trait_name, args, associated_types, additional_bounds } => {
-            let values: Vec[pretty::Doc] = Vec::from_array([]);
+            let values: Vec[pretty::Doc] = Vec::new();
             values.push(dyn_bound_doc(builtin, trait_name, args, associated_types));
             for bound in additional_bounds {
                 values.push(

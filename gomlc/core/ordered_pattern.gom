@@ -58,7 +58,7 @@ fn ordered_if(cond: LowerExpr, then_branch: LowerExpr, else_branch: LowerExpr, t
 }
 
 fn bind_ordered_value(name: string, value: LowerExpr, body: LowerExpr, ty: tast::Type) -> LowerExpr {
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(LowerLetStmt { name, ty: lower_expr_type(value), value });
     LowerExpr::Block { block: LowerBlock { stmts, tail: Option::Some(body) }, ty }
 }
@@ -67,16 +67,16 @@ fn ordered_len(value: LowerExpr, container_ty: tast::Type) -> Option[LowerExpr] 
     match tast::resolve_type(container_ty) {
         Array { len: length, elem: _ } => Option::Some(ordered_int(length)),
         VecType { elem: _ } => {
-            let params: Vec[tast::Type] = Vec::from_array([]);
+            let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
-            let args: Vec[LowerExpr] = Vec::from_array([]);
+            let args: Vec[LowerExpr] = Vec::new();
             args.push(value);
             Option::Some(place_intrinsic_call("vec.len", params, tast::Type::Int, args))
         },
         Slice { elem: _ } => {
-            let params: Vec[tast::Type] = Vec::from_array([]);
+            let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
-            let args: Vec[LowerExpr] = Vec::from_array([]);
+            let args: Vec[LowerExpr] = Vec::new();
             args.push(value);
             Option::Some(place_intrinsic_call("slice.len", params, tast::Type::Int, args))
         },
@@ -106,7 +106,7 @@ fn ordered_rest_value(
 ) -> LowerExpr {
     match tast::resolve_type(container_ty) {
         Array { len: _, elem: _ } => {
-            let items: Vec[LowerExpr] = Vec::from_array([]);
+            let items: Vec[LowerExpr] = Vec::new();
             let end = match fixed_len {
                 Some(length) => length - suffix_len,
                 None => prefix_len,
@@ -127,11 +127,11 @@ fn ordered_rest_value(
                     tast::Type::Int,
                 )
             };
-            let params: Vec[tast::Type] = Vec::from_array([]);
+            let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
             params.push(tast::Type::Int);
             params.push(tast::Type::Int);
-            let args: Vec[LowerExpr] = Vec::from_array([]);
+            let args: Vec[LowerExpr] = Vec::new();
             args.push(value);
             args.push(ordered_int(prefix_len));
             args.push(end);
@@ -148,11 +148,11 @@ fn ordered_rest_value(
                     tast::Type::Int,
                 )
             };
-            let params: Vec[tast::Type] = Vec::from_array([]);
+            let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
             params.push(tast::Type::Int);
             params.push(tast::Type::Int);
-            let args: Vec[LowerExpr] = Vec::from_array([]);
+            let args: Vec[LowerExpr] = Vec::new();
             args.push(value);
             args.push(ordered_int(prefix_len));
             args.push(end);
@@ -375,13 +375,13 @@ fn lower_ordered_pattern(
             if constructor.is_struct {
                 next
             } else {
-                let lhs_args: Vec[LowerExpr] = Vec::from_array([]);
+                let lhs_args: Vec[LowerExpr] = Vec::new();
                 for arg in args {
                     lhs_args.push(
                         LowerExpr::Var { name: gensym(ctx, "p"), ty: tast::pat_type(arg) },
                     )
                 }
-                let arms: Vec[LowerArm] = Vec::from_array([]);
+                let arms: Vec[LowerArm] = Vec::new();
                 arms.push(
                     LowerArm {
                         lhs: LowerExpr::Constr { constructor, args: lhs_args, ty: pattern_ty },

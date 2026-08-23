@@ -28,7 +28,7 @@ pub fn default_config() -> ExecutionConfig {
         goos: "linux",
         goarch: "amd64",
         cgo: false,
-        tags: Vec::from_array([]),
+        tags: Vec::new(),
         interpret_dependencies: true,
     }
 }
@@ -78,7 +78,7 @@ fn optional_json_bool(value: json::Value, name: string) -> bool {
 
 fn optional_json_strings(value: json::Value, name: string) -> Result[Vec[string], string] {
     let Some(field) = json::field(value, name) else {
-        return Result::Ok(Vec::from_array([]))
+        return Result::Ok(Vec::new())
     };
     let Some(items) = json::as_array(field) else {
         return Result::Err("go tool JSON field " + name + " must be an array")
@@ -94,7 +94,7 @@ fn optional_json_strings(value: json::Value, name: string) -> Result[Vec[string]
 }
 
 fn parse_json_stream(input: string) -> Result[Vec[json::Value], string] {
-    let values: Vec[json::Value] = Vec::from_array([]);
+    let values: Vec[json::Value] = Vec::new();
     let mut index = 0;
     while index < input.byte_len() {
         while index < input.byte_len()
@@ -225,7 +225,7 @@ fn decode_list_package(value: json::Value) -> Result[GoListPackage, string] {
 }
 
 fn listed_root_path(packages: Vec[GoListPackage]) -> Result[string, string] {
-    let roots: Vec[string] = Vec::from_array([]);
+    let roots: Vec[string] = Vec::new();
     for package_value in packages {
         if !package_value.dependency_only {
             roots.push(package_value.import_path)

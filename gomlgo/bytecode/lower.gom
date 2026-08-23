@@ -234,7 +234,7 @@ fn option_slots[T](count: isize) -> Vec[Option[T]] {
 fn int_vector_slots(count: isize) -> Vec[Vec[isize]] {
     let result: Vec[Vec[isize]] = Vec::with_capacity(count);
     for _ in 0..count {
-        result.push(Vec::from_array([]))
+        result.push(Vec::new())
     }
     result
 }
@@ -277,7 +277,7 @@ fn package_node(package_value: execution::ExecutionPackage, node: syntax::NodeId
 fn signature_type_parameters(world: go_types::World, signature: go_types::TypeId) -> Vec[
     go_types::TypeParameter,
 ] {
-    let result: Vec[go_types::TypeParameter] = Vec::from_array([]);
+    let result: Vec[go_types::TypeParameter] = Vec::new();
     match go_types::type_data(world, go_types::unalias(world, signature)) {
         go_types::TypeData {
             id: _,
@@ -309,7 +309,7 @@ fn collect_function_sources(
     literal_functions: HashMap[string, isize],
     diagnostics: Vec[LowerDiagnostic],
 ) -> Vec[FunctionSource] {
-    let sources: Vec[FunctionSource] = Vec::from_array([]);
+    let sources: Vec[FunctionSource] = Vec::new();
     for package_index in 0..program.packages.len() {
         let package_value = program.packages[package_index];
         if package_value.mode == execution::ExecutionMode::Interpreted {
@@ -378,7 +378,7 @@ fn collect_function_sources(
                                                             program.world,
                                                             signature,
                                                         ),
-                                                        type_arguments: Vec::from_array([]),
+                                                        type_arguments: Vec::new(),
                                                         signature,
                                                         literal: false,
                                                     },
@@ -476,7 +476,7 @@ fn collect_function_sources(
                                             program.world,
                                             fact.type_id,
                                         ),
-                                        type_arguments: Vec::from_array([]),
+                                        type_arguments: Vec::new(),
                                         signature: fact.type_id,
                                         literal: true,
                                     },
@@ -533,7 +533,7 @@ fn inherit_literal_type_parameters(
         }
     }
     collections::sort_by(ranges, compare_function_source_range);
-    let active: Vec[FunctionSourceRange] = Vec::from_array([]);
+    let active: Vec[FunctionSourceRange] = Vec::new();
     let mut current_package = -1;
     let mut current_file = -1;
     for value in ranges {
@@ -622,7 +622,7 @@ fn analyze_function_capture_objects(
     }
     let package_uses: Vec[Vec[CaptureUse]] = Vec::with_capacity(program.packages.len());
     for package_value in program.packages {
-        let uses: Vec[CaptureUse] = Vec::from_array([]);
+        let uses: Vec[CaptureUse] = Vec::new();
         match package_value.syntax {
             Some(package_syntax) => for fact in package_value.index.uses {
                 match fact.object {
@@ -652,7 +652,7 @@ fn analyze_function_capture_objects(
     }
     let result: Vec[FunctionCaptures] = Vec::with_capacity(sources.len());
     for source in sources {
-        let captures: Vec[go_types::ObjectId] = Vec::from_array([]);
+        let captures: Vec[go_types::ObjectId] = Vec::new();
         if source.literal {
             let package_value = program.packages[source.package_index];
             let package_syntax = package_value.syntax.ok_or(
@@ -662,7 +662,7 @@ fn analyze_function_capture_objects(
                 "function literal body is missing",
             )?;
             let function_scope = execution::require_scope(package_value.index, source.type_node)?.scope;
-            let selected: HashMap[isize, bool] = HashMap::from_array([]);
+            let selected: HashMap[isize, bool] = HashMap::new();
             let uses = package_uses[source.package_index];
             let mut usage_index = first_capture_use_at_or_after(uses, body.file, body.span.start);
             while usage_index < uses.len() {
@@ -695,7 +695,7 @@ fn analyze_function_capture_objects(
 fn collect_globals(program: execution::ExecutionProgram, object_globals: Vec[Option[GlobalId]]) -> Vec[
     Global,
 ] {
-    let globals: Vec[Global] = Vec::from_array([]);
+    let globals: Vec[Global] = Vec::new();
     for package_value in program.packages {
         if package_value.mode == execution::ExecutionMode::Interpreted
             && package_value.package_id.value >= 0
@@ -751,8 +751,8 @@ fn runtime_type(builder: FunctionBuilder, type_id: go_types::TypeId) -> go_types
             builder.world,
             go_types::TypeKind::Signature {
                 receiver: Option::None,
-                receiver_type_params: Vec::from_array([]),
-                type_params: Vec::from_array([]),
+                receiver_type_params: Vec::new(),
+                type_params: Vec::new(),
                 params,
                 results,
                 variadic,
@@ -867,8 +867,8 @@ fn new_block(builder: FunctionBuilder) -> BlockId {
     builder.blocks.push(
         OpenBlock {
             id: result,
-            parameters: Vec::from_array([]),
-            instructions: Vec::from_array([]),
+            parameters: Vec::new(),
+            instructions: Vec::new(),
             terminator: Option::None,
         },
     );
@@ -1146,7 +1146,7 @@ fn expression_result_types(builder: FunctionBuilder, node: syntax::NodeId) -> Re
     string,
 ] {
     let fact = node_fact(builder, node)?;
-    let result: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result: Vec[go_types::TypeId] = Vec::new();
     if fact.void {
         return Result::Ok(result)
     } else {};
@@ -1315,7 +1315,7 @@ fn lower_short_circuit(
             TerminatorKind::Branch {
                 condition: left,
                 then_target: right_block,
-                then_arguments: Vec::from_array([]),
+                then_arguments: Vec::new(),
                 else_target: join_block,
                 else_arguments: Vec::from_array([left]),
             }
@@ -1325,7 +1325,7 @@ fn lower_short_circuit(
                 then_target: join_block,
                 then_arguments: Vec::from_array([left]),
                 else_target: right_block,
-                else_arguments: Vec::from_array([]),
+                else_arguments: Vec::new(),
             }
         },
     )?;
@@ -1369,7 +1369,7 @@ fn copied_type_arguments(values: Vec[go_types::TypeId]) -> Vec[go_types::TypeId]
 }
 
 fn instantiated_arguments(builder: FunctionBuilder, node: syntax::NodeId) -> Vec[go_types::TypeId] {
-    let result: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result: Vec[go_types::TypeId] = Vec::new();
     match execution::require_instance(builder.index, node) {
         Ok(instance) => for argument in instance.type_args {
             result.push(substitute_type(builder, argument))
@@ -1423,7 +1423,7 @@ fn receiver_type_arguments(builder: FunctionBuilder, type_id: go_types::TypeId) 
                 methods: _,
             } | go_types::TypeKind::Alias { object: _, rhs: _, type_params: _, type_args },
         }) => type_args,
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     }
 }
 
@@ -1474,8 +1474,8 @@ fn concrete_signature(
             world,
             go_types::TypeKind::Signature {
                 receiver,
-                receiver_type_params: Vec::from_array([]),
-                type_params: Vec::from_array([]),
+                receiver_type_params: Vec::new(),
+                type_params: Vec::new(),
                 params,
                 results,
                 variadic,
@@ -1555,7 +1555,7 @@ fn instantiate_function(
         && source.template < builder.template_capture_objects.len() {
         builder.template_capture_objects[source.template]
     } else {
-        FunctionCaptures { objects: Vec::from_array([]) }
+        FunctionCaptures { objects: Vec::new() }
     };
     builder.function_capture_objects.push(captures);
     builder.pending_functions.push(
@@ -1588,7 +1588,7 @@ fn function_for_node(builder: FunctionBuilder, node: syntax::NodeId, object: go_
     let source = builder.function_templates[template];
     let arguments = instantiated_arguments(builder, node);
     if source.type_parameters.is_empty() {
-        instantiate_function(builder, object, Vec::from_array([]))
+        instantiate_function(builder, object, Vec::new())
     } else if arguments.len() == source.type_parameters.len() {
         instantiate_function(builder, object, arguments)
     } else {
@@ -1642,11 +1642,11 @@ fn native_call_for_node(builder: FunctionBuilder, node: syntax::NodeId, object: 
     let owner = value.owner.ok_or("native function has no package owner")?;
     let package_value = builder.world.packages[owner.value];
     let mut signature = substitute_type(builder, value.type_id);
-    let type_argument_keys: Vec[string] = Vec::from_array([]);
+    let type_argument_keys: Vec[string] = Vec::new();
     let instance_node = canonical_instance_node(builder, node).unwrap_or(node);
     match execution::require_instance(builder.index, instance_node) {
         Ok(instance) => {
-            let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+            let arguments: Vec[go_types::TypeId] = Vec::new();
             for argument in instance.type_args {
                 let concrete = substitute_type(builder, argument);
                 arguments.push(concrete);
@@ -1664,7 +1664,7 @@ fn native_call_for_node(builder: FunctionBuilder, node: syntax::NodeId, object: 
                         variadic: _,
                     },
                 }) => {
-                    let parameters: Vec[go_types::TypeParameter] = Vec::from_array([]);
+                    let parameters: Vec[go_types::TypeParameter] = Vec::new();
                     for parameter in receiver_type_params {
                         parameters.push(parameter)
                     }
@@ -1782,7 +1782,7 @@ fn native_method_call_for_node(builder: FunctionBuilder, object: go_types::Objec
             symbol: value.name,
             receiver_name: receiver.name,
             receiver_pointer: receiver.pointer,
-            type_argument_keys: Vec::from_array([]),
+            type_argument_keys: Vec::new(),
             signature: value.type_id,
             parameter_types: shape.parameter_types,
             result_types: shape.result_types,
@@ -2233,7 +2233,7 @@ fn callable_parameters(builder: FunctionBuilder, node: syntax::NodeId) -> Result
                 variadic,
             },
         } => {
-            let result: Vec[go_types::TypeId] = Vec::from_array([]);
+            let result: Vec[go_types::TypeId] = Vec::new();
             match go_types::type_data(builder.world, params) {
                 go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => for variable in variables {
                     result.push(substitute_type(builder, variable.type_id))
@@ -2254,7 +2254,7 @@ fn lower_call_arguments(
     ellipsis: isize,
     target: CallTarget,
 ) -> Result[Vec[RegisterId], string] {
-    let raw_arguments: Vec[RegisterId] = Vec::from_array([]);
+    let raw_arguments: Vec[RegisterId] = Vec::new();
     for argument in arguments {
         let values = lower_expression(builder, argument)?;
         for value in values {
@@ -2262,12 +2262,12 @@ fn lower_call_arguments(
         }
     }
     let callable = match target {
-        CallTarget::Builtin(_) => (Vec::from_array([]), false),
+        CallTarget::Builtin(_) => (Vec::new(), false),
         _ => callable_parameters(builder, function_node)?,
     };
     let parameter_types = callable.0;
     let variadic_call = callable.1;
-    let argument_values: Vec[RegisterId] = Vec::from_array([]);
+    let argument_values: Vec[RegisterId] = Vec::new();
     if variadic_call && ellipsis < 0 {
         let fixed = parameter_types.len() - 1;
         for index in 0..fixed {
@@ -2352,7 +2352,7 @@ fn lower_call(
         ellipsis,
         target,
     )?;
-    let results: Vec[RegisterId] = Vec::from_array([]);
+    let results: Vec[RegisterId] = Vec::new();
     for type_id in expression_result_types(builder, node)? {
         results.push(new_register(builder, type_id))
     }
@@ -2440,7 +2440,7 @@ fn lower_composite_literal(
         },
         _ => {},
     };
-    let values: Vec[AggregateElement] = Vec::from_array([]);
+    let values: Vec[AggregateElement] = Vec::new();
     let mut length = elements.len();
     for position in 0..elements.len() {
         let element = elements[position];
@@ -2962,7 +2962,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                 "function literal has no bytecode template",
             )?;
             let object = builder.function_templates[template].object;
-            let arguments: Vec[go_types::TypeId] = Vec::from_array([]);
+            let arguments: Vec[go_types::TypeId] = Vec::new();
             for argument in builder.type_arguments {
                 arguments.push(argument)
             }
@@ -3020,7 +3020,7 @@ fn lower_expression_list(builder: FunctionBuilder, nodes: Vec[syntax::NodeId]) -
     Vec[RegisterId],
     string,
 ] {
-    let result: Vec[RegisterId] = Vec::from_array([]);
+    let result: Vec[RegisterId] = Vec::new();
     for node in nodes {
         for value in lower_expression(builder, node)? {
             result.push(value)
@@ -3033,7 +3033,7 @@ fn lower_place_list(builder: FunctionBuilder, nodes: Vec[syntax::NodeId]) -> Res
     Vec[Option[PlaceId]],
     string,
 ] {
-    let result: Vec[Option[PlaceId]] = Vec::from_array([]);
+    let result: Vec[Option[PlaceId]] = Vec::new();
     for node in nodes {
         result.push(lower_place(builder, node)?)
     }
@@ -3087,7 +3087,7 @@ fn lower_assignment_targets(builder: FunctionBuilder, nodes: Vec[syntax::NodeId]
     Vec[AssignmentTarget],
     string,
 ] {
-    let result: Vec[AssignmentTarget] = Vec::from_array([]);
+    let result: Vec[AssignmentTarget] = Vec::new();
     for node in nodes {
         result.push(lower_assignment_target(builder, node)?)
     }
@@ -3246,7 +3246,7 @@ fn lower_value_spec(
     }
     let places = lower_place_list(builder, names)?;
     let initializers = if values.is_empty() {
-        let result: Vec[RegisterId] = Vec::from_array([]);
+        let result: Vec[RegisterId] = Vec::new();
         for name in names {
             let object = definition_object(builder, name)?.ok_or(
                 "variable declaration has no object",
@@ -3309,7 +3309,7 @@ fn lower_return(builder: FunctionBuilder, node: syntax::NodeId, expressions: Vec
     string,
 ] {
     let values = if expressions.is_empty() {
-        let result: Vec[RegisterId] = Vec::from_array([]);
+        let result: Vec[RegisterId] = Vec::new();
         for local in builder.results {
             let place = local_place(builder, node, local)?;
             result.push(emit_load(builder, node, place, builder.locals[local.value].type_id)?)
@@ -3357,19 +3357,15 @@ fn lower_if(
         TerminatorKind::Branch {
             condition,
             then_target: then_block,
-            then_arguments: Vec::from_array([]),
+            then_arguments: Vec::new(),
             else_target: else_block,
-            else_arguments: Vec::from_array([]),
+            else_arguments: Vec::new(),
         },
     )?;
     switch_to(builder, then_block);
     lower_statement(builder, body)?;
     if !current_terminated(builder) {
-        terminate(
-            builder,
-            node,
-            TerminatorKind::Jump { target: join_block, arguments: Vec::from_array([]) },
-        )?
+        terminate(builder, node, TerminatorKind::Jump { target: join_block, arguments: Vec::new() })?
     } else {};
     switch_to(builder, else_block);
     match else_branch {
@@ -3377,11 +3373,7 @@ fn lower_if(
         None => {},
     };
     if !current_terminated(builder) {
-        terminate(
-            builder,
-            node,
-            TerminatorKind::Jump { target: join_block, arguments: Vec::from_array([]) },
-        )?
+        terminate(builder, node, TerminatorKind::Jump { target: join_block, arguments: Vec::new() })?
     } else {};
     switch_to(builder, join_block);
     Result::Ok(())
@@ -3391,7 +3383,7 @@ fn for_definition_locals(builder: FunctionBuilder, initialization: Option[syntax
     Vec[LocalId],
     string,
 ] {
-    let result: Vec[LocalId] = Vec::from_array([]);
+    let result: Vec[LocalId] = Vec::new();
     match initialization {
         Some(node) => match node_kind(builder, node) {
             syntax::SyntaxKind::AssignStmt { left, token_pos: _, token, right: _ } if token == ":=" => for target in left {
@@ -3432,7 +3424,7 @@ fn lower_for(
     terminate(
         builder,
         node,
-        TerminatorKind::Jump { target: condition_block, arguments: Vec::from_array([]) },
+        TerminatorKind::Jump { target: condition_block, arguments: Vec::new() },
     )?;
     switch_to(builder, condition_block);
     match condition {
@@ -3444,16 +3436,16 @@ fn lower_for(
                 TerminatorKind::Branch {
                     condition,
                     then_target: body_block,
-                    then_arguments: Vec::from_array([]),
+                    then_arguments: Vec::new(),
                     else_target: exit_block,
-                    else_arguments: Vec::from_array([]),
+                    else_arguments: Vec::new(),
                 },
             )?
         },
         None => terminate(
             builder,
             node,
-            TerminatorKind::Jump { target: body_block, arguments: Vec::from_array([]) },
+            TerminatorKind::Jump { target: body_block, arguments: Vec::new() },
         )?,
     };
     builder.break_targets.push(exit_block);
@@ -3468,11 +3460,7 @@ fn lower_for(
     switch_to(builder, body_block);
     lower_statement(builder, body)?;
     if !current_terminated(builder) {
-        terminate(
-            builder,
-            node,
-            TerminatorKind::Jump { target: post_block, arguments: Vec::from_array([]) },
-        )?
+        terminate(builder, node, TerminatorKind::Jump { target: post_block, arguments: Vec::new() })?
     } else {};
     switch_to(builder, post_block);
     for local in iteration_locals {
@@ -3486,7 +3474,7 @@ fn lower_for(
         terminate(
             builder,
             node,
-            TerminatorKind::Jump { target: condition_block, arguments: Vec::from_array([]) },
+            TerminatorKind::Jump { target: condition_block, arguments: Vec::new() },
         )?
     } else {};
     let _ = builder.break_targets.pop();
@@ -3593,7 +3581,7 @@ fn lower_map_range(
     terminate(
         builder,
         node,
-        TerminatorKind::Jump { target: condition_block, arguments: Vec::from_array([]) },
+        TerminatorKind::Jump { target: condition_block, arguments: Vec::new() },
     )?;
     switch_to(builder, condition_block);
     let iteration_key = new_register(builder, key_type);
@@ -3613,9 +3601,9 @@ fn lower_map_range(
         TerminatorKind::Branch {
             condition: ok,
             then_target: body_block,
-            then_arguments: Vec::from_array([]),
+            then_arguments: Vec::new(),
             else_target: exit_block,
-            else_arguments: Vec::from_array([]),
+            else_arguments: Vec::new(),
         },
     )?;
     builder.break_targets.push(exit_block);
@@ -3632,7 +3620,7 @@ fn lower_map_range(
         terminate(
             builder,
             node,
-            TerminatorKind::Jump { target: condition_block, arguments: Vec::from_array([]) },
+            TerminatorKind::Jump { target: condition_block, arguments: Vec::new() },
         )?
     } else {};
     let _ = builder.break_targets.pop();
@@ -3660,11 +3648,7 @@ fn lower_channel_range(
     let receive_block = new_block(builder);
     let body_block = new_block(builder);
     let exit_block = new_block(builder);
-    terminate(
-        builder,
-        node,
-        TerminatorKind::Jump { target: receive_block, arguments: Vec::from_array([]) },
-    )?;
+    terminate(builder, node, TerminatorKind::Jump { target: receive_block, arguments: Vec::new() })?;
     switch_to(builder, receive_block);
     let received = new_register(builder, element_type);
     let ok = new_register(builder, bool_type);
@@ -3679,9 +3663,9 @@ fn lower_channel_range(
         TerminatorKind::Branch {
             condition: ok,
             then_target: body_block,
-            then_arguments: Vec::from_array([]),
+            then_arguments: Vec::new(),
             else_target: exit_block,
-            else_arguments: Vec::from_array([]),
+            else_arguments: Vec::new(),
         },
     )?;
     builder.break_targets.push(exit_block);
@@ -3696,7 +3680,7 @@ fn lower_channel_range(
         terminate(
             builder,
             node,
-            TerminatorKind::Jump { target: receive_block, arguments: Vec::from_array([]) },
+            TerminatorKind::Jump { target: receive_block, arguments: Vec::new() },
         )?
     } else {};
     let _ = builder.break_targets.pop();
@@ -3994,9 +3978,9 @@ fn lower_indexed_range(
         TerminatorKind::Branch {
             condition,
             then_target: body_block,
-            then_arguments: Vec::from_array([]),
+            then_arguments: Vec::new(),
             else_target: exit_block,
-            else_arguments: Vec::from_array([]),
+            else_arguments: Vec::new(),
         },
     )?;
     builder.break_targets.push(exit_block);
@@ -4011,11 +3995,7 @@ fn lower_indexed_range(
     store_range_value(builder, node, value_place, iteration.value)?;
     lower_statement(builder, body)?;
     if !current_terminated(builder) {
-        terminate(
-            builder,
-            node,
-            TerminatorKind::Jump { target: post_block, arguments: Vec::from_array([]) },
-        )?
+        terminate(builder, node, TerminatorKind::Jump { target: post_block, arguments: Vec::new() })?
     } else {};
     switch_to(builder, post_block);
     let step = lower_range_step(builder, node, iteration.width, bound.index_type)?;
@@ -4094,7 +4074,7 @@ fn switch_clauses(builder: FunctionBuilder, body: syntax::NodeId) -> Result[
         syntax::SyntaxKind::BlockStmt { lbrace: _, list, rbrace: _ } => list,
         _ => return Result::Err("switch body is not a block"),
     };
-    let result: Vec[SwitchClause] = Vec::from_array([]);
+    let result: Vec[SwitchClause] = Vec::new();
     for statement in statements {
         match node_kind(builder, statement) {
             syntax::SyntaxKind::CaseClause { case_pos: _, list, colon: _, body } => result.push(
@@ -4168,19 +4148,15 @@ fn lower_switch(
                 TerminatorKind::Branch {
                     condition,
                     then_target: clause.target,
-                    then_arguments: Vec::from_array([]),
+                    then_arguments: Vec::new(),
                     else_target: next,
-                    else_arguments: Vec::from_array([]),
+                    else_arguments: Vec::new(),
                 },
             )?;
             switch_to(builder, next)
         }
     }
-    terminate(
-        builder,
-        node,
-        TerminatorKind::Jump { target: default_target, arguments: Vec::from_array([]) },
-    )?;
+    terminate(builder, node, TerminatorKind::Jump { target: default_target, arguments: Vec::new() })?;
     builder.break_targets.push(exit);
     match label {
         Some(name) => {
@@ -4204,7 +4180,7 @@ fn lower_switch(
             terminate(
                 builder,
                 clause.node,
-                TerminatorKind::Jump { target: exit, arguments: Vec::from_array([]) },
+                TerminatorKind::Jump { target: exit, arguments: Vec::new() },
             )?
         } else {}
     }
@@ -4279,7 +4255,7 @@ fn type_switch_clauses(
         syntax::SyntaxKind::BlockStmt { lbrace: _, list, rbrace: _ } => list,
         _ => return Result::Err("type switch body is not a block"),
     };
-    let result: Vec[TypeSwitchClause] = Vec::from_array([]);
+    let result: Vec[TypeSwitchClause] = Vec::new();
     for statement in statements {
         match node_kind(builder, statement) {
             syntax::SyntaxKind::CaseClause { case_pos: _, list, colon: _, body } => {
@@ -4317,7 +4293,7 @@ fn type_switch_case_type(builder: FunctionBuilder, node: syntax::NodeId) -> Resu
 fn type_switch_arguments(binding: Option[TypeSwitchBinding], value: RegisterId) -> Vec[RegisterId] {
     match binding {
         Some(_) => Vec::from_array([value]),
-        None => Vec::from_array([]),
+        None => Vec::new(),
     }
 }
 
@@ -4398,7 +4374,7 @@ fn lower_type_switch(
                         then_target: clause.entry,
                         then_arguments: type_switch_arguments(clause.binding, matched.1),
                         else_target: next,
-                        else_arguments: Vec::from_array([]),
+                        else_arguments: Vec::new(),
                     },
                 )?;
                 switch_to(builder, next)
@@ -4417,7 +4393,7 @@ fn lower_type_switch(
         None => terminate(
             builder,
             node,
-            TerminatorKind::Jump { target: exit, arguments: Vec::from_array([]) },
+            TerminatorKind::Jump { target: exit, arguments: Vec::new() },
         )?,
     };
     builder.break_targets.push(exit);
@@ -4441,7 +4417,7 @@ fn lower_type_switch(
                 terminate(
                     builder,
                     clause.node,
-                    TerminatorKind::Jump { target: clause.target, arguments: Vec::from_array([]) },
+                    TerminatorKind::Jump { target: clause.target, arguments: Vec::new() },
                 )?
             },
             None => {},
@@ -4452,7 +4428,7 @@ fn lower_type_switch(
             terminate(
                 builder,
                 clause.node,
-                TerminatorKind::Jump { target: exit, arguments: Vec::from_array([]) },
+                TerminatorKind::Jump { target: exit, arguments: Vec::new() },
             )?
         } else {}
     }
@@ -4507,7 +4483,7 @@ fn select_clauses(builder: FunctionBuilder, body: syntax::NodeId) -> Result[
         syntax::SyntaxKind::BlockStmt { lbrace: _, list, rbrace: _ } => list,
         _ => return Result::Err("select body is not a block"),
     };
-    let clauses: Vec[SelectClause] = Vec::from_array([]);
+    let clauses: Vec[SelectClause] = Vec::new();
     for statement in statements {
         match node_kind(builder, statement) {
             syntax::SyntaxKind::CommClause { case_pos: _, communication, colon: _, body } => clauses.push(
@@ -4552,12 +4528,7 @@ fn lower_select_operation(builder: FunctionBuilder, clause: SelectClause) -> Res
             let value = new_register(builder, element_type);
             clause.receive.set(
                 Option::Some(
-                    SelectReceiveBinding {
-                        left: Vec::from_array([]),
-                        token: "",
-                        value,
-                        ok: Option::None,
-                    },
+                    SelectReceiveBinding { left: Vec::new(), token: "", value, ok: Option::None },
                 ),
             );
             Result::Ok(SelectOperation::Receive { channel, value, ok: Option::None })
@@ -4614,13 +4585,13 @@ fn lower_select(
     label: Option[string],
 ) -> Result[unit, string] {
     let clauses = select_clauses(builder, body)?;
-    let cases: Vec[SelectCase] = Vec::from_array([]);
+    let cases: Vec[SelectCase] = Vec::new();
     for clause in clauses {
         cases.push(
             SelectCase {
                 operation: lower_select_operation(builder, clause)?,
                 target: clause.target,
-                arguments: Vec::from_array([]),
+                arguments: Vec::new(),
             },
         )
     }
@@ -4644,7 +4615,7 @@ fn lower_select(
             terminate(
                 builder,
                 clause.node,
-                TerminatorKind::Jump { target: exit, arguments: Vec::from_array([]) },
+                TerminatorKind::Jump { target: exit, arguments: Vec::new() },
             )?
         } else {}
     }
@@ -4702,7 +4673,7 @@ fn lower_branch(
     } else {
         return Result::Err("unsupported branch " + token)
     };
-    terminate(builder, node, TerminatorKind::Jump { target, arguments: Vec::from_array([]) })
+    terminate(builder, node, TerminatorKind::Jump { target, arguments: Vec::new() })
 }
 
 fn lower_call_statement(
@@ -4829,11 +4800,7 @@ fn lower_statement(builder: FunctionBuilder, node: syntax::NodeId) -> Result[uni
             let name = identifier(builder, label)?;
             let target = builder.labels[name].ok_or("label " + name + " was not collected")?;
             if !current_terminated(builder) {
-                terminate(
-                    builder,
-                    node,
-                    TerminatorKind::Jump { target, arguments: Vec::from_array([]) },
-                )?
+                terminate(builder, node, TerminatorKind::Jump { target, arguments: Vec::new() })?
             } else {};
             switch_to(builder, target);
             match node_kind(builder, statement) {
@@ -5013,7 +4980,7 @@ fn field_objects(builder: FunctionBuilder, field_list: syntax::NodeId) -> Result
         syntax::SyntaxKind::FieldList { opening: _, list, closing: _ } => list,
         _ => return Result::Err("function parameter list is not a field list"),
     };
-    let result: Vec[Option[go_types::ObjectId]] = Vec::from_array([]);
+    let result: Vec[Option[go_types::ObjectId]] = Vec::new();
     for field in fields {
         match node_kind(builder, field) {
             syntax::SyntaxKind::Field { names, type_node: _, tag: _ } => if names.is_empty() {
@@ -5121,7 +5088,7 @@ fn initialize_signature_locals(
     let result_objects = match results_node {
         Some(value) => field_objects(builder, value)?,
         None => {
-            let values: Vec[Option[go_types::ObjectId]] = Vec::from_array([]);
+            let values: Vec[Option[go_types::ObjectId]] = Vec::new();
             values
         },
     };
@@ -5140,12 +5107,12 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
 ] {
     if !current_terminated(builder) {
         if builder.results.is_empty() {
-            terminate(builder, source, TerminatorKind::Return { values: Vec::from_array([]) })?
+            terminate(builder, source, TerminatorKind::Return { values: Vec::new() })?
         } else {
             terminate(builder, source, TerminatorKind::Unreachable)?
         }
     } else {};
-    let result: Vec[BasicBlock] = Vec::from_array([]);
+    let result: Vec[BasicBlock] = Vec::new();
     let value = match syntax::get_node(builder.syntax.arena, source) {
         Some(value) => value,
         None => return Result::Err("invalid syntax node " + source.value.to_string()),
@@ -5193,12 +5160,12 @@ fn lower_function(
         return Result::Err("function object is outside the world")
     } else {};
     let object = program.world.objects[source.object.value];
-    let blocks: Vec[OpenBlock] = Vec::from_array([]);
+    let blocks: Vec[OpenBlock] = Vec::new();
     blocks.push(
         OpenBlock {
             id: block_id(0),
-            parameters: Vec::from_array([]),
-            instructions: Vec::from_array([]),
+            parameters: Vec::new(),
+            instructions: Vec::new(),
             terminator: Option::None,
         },
     );
@@ -5225,21 +5192,21 @@ fn lower_function(
         function_capture_objects,
         type_parameters: source.type_parameters,
         type_arguments: source.type_arguments,
-        register_types: Vec::from_array([]),
+        register_types: Vec::new(),
         place_count: Ref::new(0),
-        locals: Vec::from_array([]),
-        object_locals: HashMap::from_array([]),
-        captures: Vec::from_array([]),
-        parameters: Vec::from_array([]),
-        results: Vec::from_array([]),
+        locals: Vec::new(),
+        object_locals: HashMap::new(),
+        captures: Vec::new(),
+        parameters: Vec::new(),
+        results: Vec::new(),
         blocks,
         current: Ref::new(block_id(0)),
-        break_targets: Vec::from_array([]),
-        continue_targets: Vec::from_array([]),
-        fallthrough_targets: Vec::from_array([]),
-        break_labels: HashMap::from_array([]),
-        continue_labels: HashMap::from_array([]),
-        labels: HashMap::from_array([]),
+        break_targets: Vec::new(),
+        continue_targets: Vec::new(),
+        fallthrough_targets: Vec::new(),
+        break_labels: HashMap::new(),
+        continue_labels: HashMap::new(),
+        labels: HashMap::new(),
     };
     for capture in function_capture_objects[source.function.value].objects {
         builder.captures.push(object_local(builder, capture)?)
@@ -5291,12 +5258,12 @@ fn lower_package_initializer(
         return Result::Err("initializer object is outside the world")
     } else {};
     let object = program.world.objects[source.object.value];
-    let blocks: Vec[OpenBlock] = Vec::from_array([]);
+    let blocks: Vec[OpenBlock] = Vec::new();
     blocks.push(
         OpenBlock {
             id: block_id(0),
-            parameters: Vec::from_array([]),
-            instructions: Vec::from_array([]),
+            parameters: Vec::new(),
+            instructions: Vec::new(),
             terminator: Option::None,
         },
     );
@@ -5321,23 +5288,23 @@ fn lower_package_initializer(
         literal_functions,
         template_capture_objects,
         function_capture_objects,
-        type_parameters: Vec::from_array([]),
-        type_arguments: Vec::from_array([]),
-        register_types: Vec::from_array([]),
+        type_parameters: Vec::new(),
+        type_arguments: Vec::new(),
+        register_types: Vec::new(),
         place_count: Ref::new(0),
-        locals: Vec::from_array([]),
-        object_locals: HashMap::from_array([]),
-        captures: Vec::from_array([]),
-        parameters: Vec::from_array([]),
-        results: Vec::from_array([]),
+        locals: Vec::new(),
+        object_locals: HashMap::new(),
+        captures: Vec::new(),
+        parameters: Vec::new(),
+        results: Vec::new(),
         blocks,
         current: Ref::new(block_id(0)),
-        break_targets: Vec::from_array([]),
-        continue_targets: Vec::from_array([]),
-        fallthrough_targets: Vec::from_array([]),
-        break_labels: HashMap::from_array([]),
-        continue_labels: HashMap::from_array([]),
-        labels: HashMap::from_array([]),
+        break_targets: Vec::new(),
+        continue_targets: Vec::new(),
+        fallthrough_targets: Vec::new(),
+        break_labels: HashMap::new(),
+        continue_labels: HashMap::new(),
+        labels: HashMap::new(),
     };
     for fact in package_value.index.initialization_order {
         let values = lower_expression(builder, fact.right)?;
@@ -5370,14 +5337,14 @@ fn lower_package_initializer(
             builder,
             source.declaration,
             InstructionKind::Call {
-                results: Vec::from_array([]),
+                results: Vec::new(),
                 target: CallTarget::Static(function),
-                arguments: Vec::from_array([]),
+                arguments: Vec::new(),
                 variadic: false,
             },
         )?
     }
-    terminate(builder, source.declaration, TerminatorKind::Return { values: Vec::from_array([]) })?;
+    terminate(builder, source.declaration, TerminatorKind::Return { values: Vec::new() })?;
     Result::Ok(
         BytecodeFunction {
             id: initializer,
@@ -5403,11 +5370,11 @@ fn package_bytecode(
     globals: Vec[Global],
     initializer: Option[FunctionId],
 ) -> Vec[BytecodePackage] {
-    let result: Vec[BytecodePackage] = Vec::from_array([]);
+    let result: Vec[BytecodePackage] = Vec::new();
     for package_value in program.packages {
         if package_value.mode == execution::ExecutionMode::Interpreted {
-            let functions: Vec[FunctionId] = Vec::from_array([]);
-            let package_globals: Vec[GlobalId] = Vec::from_array([]);
+            let functions: Vec[FunctionId] = Vec::new();
+            let package_globals: Vec[GlobalId] = Vec::new();
             for function in bytecode_functions {
                 if function.package_id.value == package_value.package_id.value {
                     functions.push(function.id)
@@ -5437,7 +5404,7 @@ fn package_bytecode(
 }
 
 fn bytecode_source_files(program: execution::ExecutionProgram) -> Vec[BytecodeSourceFile] {
-    let result: Vec[BytecodeSourceFile] = Vec::from_array([]);
+    let result: Vec[BytecodeSourceFile] = Vec::new();
     for package_value in program.packages {
         match package_value.syntax {
             Some(package_syntax) => for file in package_syntax.files {
@@ -5496,11 +5463,7 @@ fn seed_function_instances(
             object_functions[template.object.value] = Option::Some(function);
             let instance_index = instances.len();
             instances.push(
-                FunctionInstance {
-                    object: template.object,
-                    type_arguments: Vec::from_array([]),
-                    function,
-                },
+                FunctionInstance { object: template.object, type_arguments: Vec::new(), function },
             );
             instance_indices[template.template].push(instance_index);
             instance_captures.push(captures[template.template]);
@@ -5516,12 +5479,12 @@ fn seed_function_instances(
                     object: template.object,
                     function,
                     type_parameters: template.type_parameters,
-                    type_arguments: Vec::from_array([]),
+                    type_arguments: Vec::new(),
                     signature: concrete_signature(
                         program.world,
                         template.signature,
-                        Vec::from_array([]),
-                        Vec::from_array([]),
+                        Vec::new(),
+                        Vec::new(),
                     ),
                     literal: template.literal,
                 },
@@ -5594,7 +5557,7 @@ fn lower_pending_functions(
 }
 
 fn lower_with_verification(program: execution::ExecutionProgram, validate: bool) -> LowerResult {
-    let diagnostics: Vec[LowerDiagnostic] = Vec::from_array([]);
+    let diagnostics: Vec[LowerDiagnostic] = Vec::new();
     let native_link = link_native_calls(program);
     for diagnostic in native_link.diagnostics {
         diagnostics.push(diagnostic)
@@ -5604,7 +5567,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
     } else {};
     let object_functions: Vec[Option[FunctionId]] = option_slots(program.world.objects.len());
     let object_globals: Vec[Option[GlobalId]] = option_slots(program.world.objects.len());
-    let literal_functions: HashMap[string, isize] = HashMap::from_array([]);
+    let literal_functions: HashMap[string, isize] = HashMap::new();
     let templates = collect_function_sources(
         program,
         object_functions,
@@ -5612,7 +5575,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
         literal_functions,
         diagnostics,
     );
-    let template_indices: HashMap[isize, isize] = HashMap::from_array([]);
+    let template_indices: HashMap[isize, isize] = HashMap::new();
     for index in 0..templates.len() {
         template_indices[templates[index].object.value] = index;
     }
@@ -5638,15 +5601,15 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
             );
             let values: Vec[FunctionCaptures] = Vec::with_capacity(templates.len());
             for _ in templates {
-                values.push(FunctionCaptures { objects: Vec::from_array([]) })
+                values.push(FunctionCaptures { objects: Vec::new() })
             }
             values
         },
     };
-    let instances: Vec[FunctionInstance] = Vec::from_array([]);
+    let instances: Vec[FunctionInstance] = Vec::new();
     let instance_indices = int_vector_slots(templates.len());
-    let pending: Vec[FunctionSource] = Vec::from_array([]);
-    let instance_captures: Vec[FunctionCaptures] = Vec::from_array([]);
+    let pending: Vec[FunctionSource] = Vec::new();
+    let instance_captures: Vec[FunctionCaptures] = Vec::new();
     let next_function = Ref::new(0);
     seed_function_instances(
         program,
@@ -5659,7 +5622,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
         instance_captures,
         next_function,
     );
-    let functions: Vec[BytecodeFunction] = Vec::from_array([]);
+    let functions: Vec[BytecodeFunction] = Vec::new();
     let lowered = Ref::new(0);
     lower_pending_functions(
         program,
@@ -5685,7 +5648,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
         match object_functions[program.main_function.value] {
             Some(_) => {
                 let mut main_source: Option[FunctionSource] = Option::None;
-                let init_functions: Vec[FunctionId] = Vec::from_array([]);
+                let init_functions: Vec[FunctionId] = Vec::new();
                 for source in pending {
                     if source.object.value == program.main_function.value {
                         main_source = Option::Some(source);

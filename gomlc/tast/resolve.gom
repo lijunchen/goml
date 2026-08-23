@@ -62,7 +62,7 @@ fn add_impl_index(values: HashMap[string, Vec[isize]], value: ImplInfo, index: i
 }
 
 fn impl_name_index(values: Vec[ImplInfo]) -> HashMap[string, Vec[isize]] {
-    let result: HashMap[string, Vec[isize]] = HashMap::from_array([]);
+    let result: HashMap[string, Vec[isize]] = HashMap::new();
     for index in 0..values.len() {
         add_impl_index(result, values[index], index)
     }
@@ -93,7 +93,7 @@ fn add_name_index(
 }
 
 fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, isize] {
-    let result: HashMap[string, isize] = HashMap::from_array([]);
+    let result: HashMap[string, isize] = HashMap::new();
     for index in 0..values.len() {
         let name = if short {
             short_name(values[index].name)
@@ -121,7 +121,7 @@ fn index_struct_name(ctx: Checker, value: StructInfo, index: isize) -> unit {
 }
 
 fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, isize] {
-    let result: HashMap[string, isize] = HashMap::from_array([]);
+    let result: HashMap[string, isize] = HashMap::new();
     for index in 0..values.len() {
         let name = if short {
             short_name(values[index].name)
@@ -243,8 +243,8 @@ fn find_variant(value: EnumInfo, index: isize) -> Option[EnumVariantInfo] {
 }
 
 fn instantiate_enum(ctx: Checker, value: EnumInfo) -> (Type, Vec[TypeSubst]) {
-    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::from_array([]));
-    let args: Vec[Type] = Vec::from_array([]);
+    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
+    let args: Vec[Type] = Vec::new();
     for generic in value.generics {
         match find_substitution(substitutions, generic) {
             Some(ty) => args.push(ty),
@@ -260,7 +260,7 @@ fn resolve_user_constructor(ctx: Checker, value: EnumInfo, variant_index: isize)
     match find_variant(value, variant_index) {
         Some(variant) => {
             let (ty, substitutions) = instantiate_enum(ctx, value);
-            let fields: Vec[Type] = Vec::from_array([]);
+            let fields: Vec[Type] = Vec::new();
             for field in enum_variant_field_types(variant.fields) {
                 fields.push(substitute_type(field, substitutions))
             }
@@ -268,7 +268,7 @@ fn resolve_user_constructor(ctx: Checker, value: EnumInfo, variant_index: isize)
                 ResolvedConstructor {
                     constructor: Constructor {
                         name: f"{value.name}::{variant.name}",
-                        fields: Vec::from_array([]),
+                        fields: Vec::new(),
                         is_struct: false,
                         tag: Option::Some(variant_index),
                     },
@@ -420,16 +420,16 @@ fn resolve_pattern_constructor(ctx: Checker, head: hir::PatternHead, expected: T
 }
 
 fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
-    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::from_array([]));
-    let args: Vec[Type] = Vec::from_array([]);
+    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
+    let args: Vec[Type] = Vec::new();
     for generic in value.generics {
         match find_substitution(substitutions, generic) {
             Some(ty) => args.push(ty),
             None => (),
         }
     }
-    let fields: Vec[(string, Type)] = Vec::from_array([]);
-    let names: Vec[string] = Vec::from_array([]);
+    let fields: Vec[(string, Type)] = Vec::new();
+    let names: Vec[string] = Vec::new();
     for field in value.fields {
         fields.push((field.0, substitute_type(field.1, substitutions)));
         names.push(field.0)
@@ -481,8 +481,8 @@ fn instantiate_named_variant(
     named: Vec[(string, Type)],
 ) -> ResolvedStruct {
     let (ty, substitutions) = instantiate_enum(ctx, value);
-    let fields: Vec[(string, Type)] = Vec::from_array([]);
-    let names: Vec[string] = Vec::from_array([]);
+    let fields: Vec[(string, Type)] = Vec::new();
+    let names: Vec[string] = Vec::new();
     for field in named {
         fields.push((field.0, substitute_type(field.1, substitutions)));
         names.push(field.0)
@@ -543,7 +543,7 @@ fn resolve_named_field_constructor(ctx: Checker, name: string) -> NamedFieldCons
         Some(value) => return NamedFieldConstructorResolution::Found(value),
         None => (),
     };
-    let candidates: Vec[(EnumInfo, isize)] = Vec::from_array([]);
+    let candidates: Vec[(EnumInfo, isize)] = Vec::new();
     for value in ctx.enums {
         for index in 0..value.variants.len() {
             if value.variants[index].name == name {
@@ -609,13 +609,13 @@ fn nominal_arguments(value: Type) -> Vec[Type] {
             one_type(elem)
         },
         HashMap { key, value: item } => two_types(key, item),
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     }
 }
 
 fn substitutions_for_nominal(params: Vec[string], value: Type) -> Vec[TypeSubst] {
     let args = nominal_arguments(value);
-    let result: Vec[TypeSubst] = Vec::from_array([]);
+    let result: Vec[TypeSubst] = Vec::new();
     for index in 0..params.len() {
         if index < args.len() {
             result.push(TypeSubst { name: params[index], ty: args[index] })
@@ -825,8 +825,8 @@ fn instantiate_method_candidate(
 ) -> MethodCandidate {
     let substitutions = method_substitutions(ctx, value, owner_explicit, method_explicit);
     let predicates = substitute_predicates(value.function.predicates, substitutions);
-    let owner_declared: Vec[TypePredicate] = Vec::from_array([]);
-    let method_declared: Vec[TypePredicate] = Vec::from_array([]);
+    let owner_declared: Vec[TypePredicate] = Vec::new();
+    let method_declared: Vec[TypePredicate] = Vec::new();
     for index in 0..predicates.len() {
         if index < value.owner_predicate_count {
             owner_declared.push(predicates[index])
@@ -839,7 +839,7 @@ fn instantiate_method_candidate(
     apply_predicate_equalities(owner_predicates);
     apply_predicate_equalities(method_predicates);
     let owner = substitute_type(value.for_type, substitutions);
-    let params: Vec[Type] = Vec::from_array([]);
+    let params: Vec[Type] = Vec::new();
     for param in value.function.params {
         params.push(substitute_type(param, substitutions))
     }
@@ -1249,12 +1249,12 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
             let _ = predicates_satisfied_at(
                 ctx,
                 Vec::from_array([requirement.predicate]),
-                Vec::from_array([]),
+                Vec::new(),
             );
         }
     }
-    let messages: Vec[string] = Vec::from_array([]);
-    let spans: Vec[Option[ast::Span]] = Vec::from_array([]);
+    let messages: Vec[string] = Vec::new();
+    let spans: Vec[Option[ast::Span]] = Vec::new();
     for requirement in ctx.required_predicates {
         match requirement.predicate {
             Trait { for_ty, trait_ref: _ } => {
@@ -1265,11 +1265,7 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
             Equality { lhs: _, rhs: _ } => (),
         };
         if predicate_contains_error(requirement.predicate)
-            || predicates_satisfied_at(
-                ctx,
-                Vec::from_array([requirement.predicate]),
-                Vec::from_array([]),
-            ) {} else {
+            || predicates_satisfied_at(ctx, Vec::from_array([requirement.predicate]), Vec::new()) {} else {
             let message = predicate_requirement_message(
                 ctx,
                 requirement.predicate,
@@ -1322,10 +1318,7 @@ fn builtin_trait_bound_satisfied(
         let bound_ty = prune(normalize_type(ctx, bound_ty));
         match bound_ty {
             Dyn { trait_name: name, .. } => {
-                for application in trait_ref_closure(
-                    ctx,
-                    TraitRef { name, args: Vec::from_array([]) },
-                ) {
+                for application in trait_ref_closure(ctx, TraitRef { name, args: Vec::new() }) {
                     if names_match(application.name, trait_name) {
                         return true
                     } else {}
@@ -1364,7 +1357,7 @@ fn trait_goal_key(bound_ty: Type, reference: TraitRef) -> string {
 }
 
 fn extend_trait_goals(goals: Vec[string], goal: string) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for value in goals {
         result.push(value)
     }
@@ -1489,7 +1482,7 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
                         let substitutions = instantiate_substitutions(
                             ctx.counter,
                             impl_info.generics,
-                            Vec::from_array([]),
+                            Vec::new(),
                         );
                         let owner = substitute_type(impl_info.for_type, substitutions);
                         let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
@@ -1538,7 +1531,7 @@ fn compatible_impl_count(
                 let substitutions = instantiate_substitutions(
                     ctx.counter,
                     impl_info.generics,
-                    Vec::from_array([]),
+                    Vec::new(),
                 );
                 let owner = substitute_type(impl_info.for_type, substitutions);
                 let application = normalize_trait_ref(
@@ -1557,7 +1550,7 @@ fn compatible_impl_count(
 }
 
 fn instantiated_impl_parts(ctx: Checker, value: ImplInfo) -> (Type, TraitRef, Vec[TypePredicate]) {
-    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::from_array([]));
+    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
     (
         substitute_type(value.for_type, substitutions),
         substitute_trait_ref(value.trait_ref, substitutions),
@@ -1575,11 +1568,7 @@ fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
             false
         } else {
             let predicates = append_predicates(left.2, right.2);
-            predicates_satisfied_at(
-                ctx,
-                expand_implied_predicates(ctx, predicates),
-                Vec::from_array([]),
-            )
+            predicates_satisfied_at(ctx, expand_implied_predicates(ctx, predicates), Vec::new())
         }
     }
 }
@@ -1645,7 +1634,7 @@ fn validate_impl_overlaps(ctx: Checker, local_impl_count: isize) -> unit {
 }
 
 fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> bool {
-    predicates_satisfied_at(ctx, predicates, Vec::from_array([]))
+    predicates_satisfied_at(ctx, predicates, Vec::new())
 }
 
 fn method_trait_in_scope(ctx: Checker, value: MethodInfo) -> bool {
@@ -1687,12 +1676,7 @@ fn deferred_method_candidate(
     for value in ctx.methods {
         if value.function.name == name && method_trait_in_scope(ctx, value)
             && value.trait_ref.is_some() {
-            let candidate = instantiate_method_candidate(
-                ctx,
-                value,
-                Vec::from_array([]),
-                method_explicit,
-            );
+            let candidate = instantiate_method_candidate(ctx, value, Vec::new(), method_explicit);
             if method_matches_call(ctx, candidate.callable, receiver, args, expected) {
                 matches += 1;
                 if matches == 1 {
@@ -1709,7 +1693,7 @@ fn deferred_method_candidate(
                     ResolvedCallable {
                         callable: Callable::Function(f"__goml_deferred_method:{name}"),
                         ty: Type::Func { params, ret_ty },
-                        predicates: Vec::from_array([]),
+                        predicates: Vec::new(),
                     },
                 )
             },
@@ -1739,8 +1723,8 @@ fn resolve_user_method_for_call(
     expected: Option[Type],
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
-    let inherent: Vec[ResolvedCallable] = Vec::from_array([]);
-    let trait_methods: Vec[ResolvedCallable] = Vec::from_array([]);
+    let inherent: Vec[ResolvedCallable] = Vec::new();
+    let trait_methods: Vec[ResolvedCallable] = Vec::new();
     let inherent_expected = if method_shape_is_ambiguous(ctx, receiver, name) {
         expected
     } else {
@@ -1749,12 +1733,7 @@ fn resolve_user_method_for_call(
     for value in ctx.methods {
         if value.function.name == name && receiver_matches(ctx.builtin, value.for_type, receiver)
             && method_trait_in_scope(ctx, value) {
-            let candidate = instantiate_method_candidate(
-                ctx,
-                value,
-                Vec::from_array([]),
-                method_explicit,
-            );
+            let candidate = instantiate_method_candidate(ctx, value, Vec::new(), method_explicit);
             let matches = match value.trait_ref {
                 Some(_) => {
                     method_matches_call(ctx, candidate.callable, receiver, args, expected)
@@ -1825,7 +1804,7 @@ fn trait_callable(
             has_receiver,
         },
         ty: callable_type(params, ret_ty),
-        predicates: Vec::from_array([]),
+        predicates: Vec::new(),
     }
 }
 
@@ -1852,7 +1831,7 @@ fn resolve_dyn_method(
     name: string,
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
-    let applications = trait_ref_closure(ctx, TraitRef { name: owner, args: Vec::from_array([]) });
+    let applications = trait_ref_closure(ctx, TraitRef { name: owner, args: Vec::new() });
     if applications.is_empty() {
         Option::None
     } else {
@@ -1865,8 +1844,8 @@ fn resolve_dyn_method(
         ) {
             Some(value) => Option::Some(dyn_method_callable(owner, name, value)),
             None => {
-                let resolved: Vec[ResolvedCallable] = Vec::from_array([]);
-                let candidates: Vec[string] = Vec::from_array([]);
+                let resolved: Vec[ResolvedCallable] = Vec::new();
+                let candidates: Vec[string] = Vec::new();
                 for index in 1..applications.len() {
                     match resolve_trait_reference_method(
                         ctx,
@@ -1897,7 +1876,7 @@ fn resolve_dyn_method(
                                     params: Vec::from_array([receiver]),
                                     ret_ty: Type::Error,
                                 },
-                                predicates: Vec::from_array([]),
+                                predicates: Vec::new(),
                             },
                         )
                     } else {
@@ -1969,7 +1948,7 @@ fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
                     ctx,
                     TypePredicate::Trait {
                         for_ty: key,
-                        trait_ref: TraitRef { name, args: Vec::from_array([]) },
+                        trait_ref: TraitRef { name, args: Vec::new() },
                     },
                     "type predicate not satisfied",
                 )
@@ -2042,7 +2021,7 @@ fn push_predicate(values: Vec[TypePredicate], value: TypePredicate) -> unit {
 }
 
 fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
-    let result: Vec[TraitRef] = Vec::from_array([]);
+    let result: Vec[TraitRef] = Vec::new();
     result.push(reference);
     let mut index = 0;
     while index < result.len() {
@@ -2076,7 +2055,7 @@ fn trait_substitutions(ctx: Checker, info: TraitInfo, reference: TraitRef, self_
     TypeSubst,
 ] {
     let params = append_names(info.generics, Vec::from_array(["Self"]));
-    let explicit: Vec[Type] = Vec::from_array([]);
+    let explicit: Vec[Type] = Vec::new();
     for arg in reference.args {
         explicit.push(arg)
     }
@@ -2096,12 +2075,12 @@ struct ProjectionCandidate {
 fn projection_candidates_from_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> Vec[
     ProjectionCandidate,
 ] {
-    let result: Vec[ProjectionCandidate] = Vec::from_array([]);
+    let result: Vec[ProjectionCandidate] = Vec::new();
     for predicate in predicates {
         match predicate {
             Trait { for_ty, trait_ref } => match find_trait(ctx, trait_ref.name) {
                 Some(info) => {
-                    let associated_names: Vec[string] = Vec::from_array([]);
+                    let associated_names: Vec[string] = Vec::new();
                     for associated in info.associated_types {
                         associated_names.push(associated.name)
                     }
@@ -2121,7 +2100,7 @@ fn resolve_projection_trait_ref(
     candidates: Vec[ProjectionCandidate],
     report: bool,
 ) -> TraitRef {
-    let args: Vec[Type] = Vec::from_array([]);
+    let args: Vec[Type] = Vec::new();
     for arg in value.args {
         args.push(resolve_projection_type(ctx, arg, candidates, report))
     }
@@ -2134,7 +2113,7 @@ fn resolve_projection_types(
     candidates: Vec[ProjectionCandidate],
     report: bool,
 ) -> Vec[Type] {
-    let result: Vec[Type] = Vec::from_array([]);
+    let result: Vec[Type] = Vec::new();
     for value in values {
         result.push(resolve_projection_type(ctx, value, candidates, report))
     }
@@ -2155,7 +2134,7 @@ fn resolve_projection_type(
                     resolve_projection_trait_ref(ctx, value, candidates, report),
                 ),
                 None => {
-                    let matches: Vec[TraitRef] = Vec::from_array([]);
+                    let matches: Vec[TraitRef] = Vec::new();
                     for candidate in candidates {
                         if types_equal(candidate.for_ty, for_ty)
                             && candidate.associated_names.contains(name) {
@@ -2174,7 +2153,7 @@ fn resolve_projection_type(
                                 push_diagnostic_at(ctx, message, Option::None);
                                 push_diagnostic(ctx, message)
                             } else {
-                                let candidates: Vec[string] = Vec::from_array([]);
+                                let candidates: Vec[string] = Vec::new();
                                 for candidate in matches {
                                     candidates.push(short_name(candidate.name))
                                 }
@@ -2231,7 +2210,7 @@ fn resolve_projection_predicates(
     candidates: Vec[ProjectionCandidate],
     report: bool,
 ) -> Vec[TypePredicate] {
-    let result: Vec[TypePredicate] = Vec::from_array([]);
+    let result: Vec[TypePredicate] = Vec::new();
     for predicate in predicates {
         result.push(
             match predicate {
@@ -2609,7 +2588,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(stri
 
 fn validate_signature_type(ctx: Checker, value: Type) -> unit {
     match prune(value) {
-        Con { name } => validate_nominal_application(ctx, name, Vec::from_array([])),
+        Con { name } => validate_nominal_application(ctx, name, Vec::new()),
         App { ty: base, args } => match prune(base) {
             Con { name } => validate_nominal_application(ctx, name, args),
             _ => {
@@ -2708,7 +2687,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
                 } else {};
                 Type::Error
             } else {
-                let next: Vec[string] = Vec::from_array([]);
+                let next: Vec[string] = Vec::new();
                 for item in stack {
                     next.push(item)
                 }
@@ -2718,7 +2697,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
             None => Type::Con { name: canonical_imported_name(ctx, name) },
         },
         App { ty: base, args } => {
-            let expanded_args: Vec[Type] = Vec::from_array([]);
+            let expanded_args: Vec[Type] = Vec::new();
             for arg in args {
                 expanded_args.push(expand_type_alias_inner(ctx, arg, stack, report))
             }
@@ -2738,13 +2717,13 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
                         } else {};
                         Type::Error
                     } else {
-                        let substitutions: Vec[TypeSubst] = Vec::from_array([]);
+                        let substitutions: Vec[TypeSubst] = Vec::new();
                         for index in 0..alias.generics.len() {
                             substitutions.push(
                                 TypeSubst { name: alias.generics[index], ty: expanded_args[index] },
                             )
                         }
-                        let next: Vec[string] = Vec::from_array([]);
+                        let next: Vec[string] = Vec::new();
                         for item in stack {
                             next.push(item)
                         }
@@ -2768,7 +2747,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
             }
         },
         Tuple { items: values } => {
-            let result: Vec[Type] = Vec::from_array([]);
+            let result: Vec[Type] = Vec::new();
             for item in values {
                 result.push(expand_type_alias_inner(ctx, item, stack, report))
             }
@@ -2807,7 +2786,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
             value: expand_type_alias_inner(ctx, value, stack, report),
         },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::from_array([]);
+            let result: Vec[Type] = Vec::new();
             for param in params {
                 result.push(expand_type_alias_inner(ctx, param, stack, report))
             }
@@ -2823,7 +2802,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
 fn expand_type_alias_types(ctx: Checker, values: Vec[Type], stack: Vec[string], report: bool) -> Vec[
     Type,
 ] {
-    let result: Vec[Type] = Vec::from_array([]);
+    let result: Vec[Type] = Vec::new();
     for value in values {
         result.push(expand_type_alias_inner(ctx, value, stack, report))
     }
@@ -2831,20 +2810,20 @@ fn expand_type_alias_types(ctx: Checker, values: Vec[Type], stack: Vec[string], 
 }
 
 fn expand_type_aliases(ctx: Checker, value: Type, report: bool) -> Type {
-    expand_type_alias_inner(ctx, value, Vec::from_array([]), report)
+    expand_type_alias_inner(ctx, value, Vec::new(), report)
 }
 
 fn expand_type_alias_trait_ref(ctx: Checker, value: TraitRef, report: bool) -> TraitRef {
     TraitRef {
         name: value.name,
-        args: expand_type_alias_types(ctx, value.args, Vec::from_array([]), report),
+        args: expand_type_alias_types(ctx, value.args, Vec::new(), report),
     }
 }
 
 fn expand_type_alias_predicates(ctx: Checker, values: Vec[TypePredicate], report: bool) -> Vec[
     TypePredicate,
 ] {
-    let result: Vec[TypePredicate] = Vec::from_array([]);
+    let result: Vec[TypePredicate] = Vec::new();
     for value in values {
         result.push(
             match value {
@@ -2904,7 +2883,7 @@ fn resolve_trait_reference_method(
                         trait_substitutions(ctx, info, reference, self_ty),
                         instantiate_substitutions(ctx.counter, method.generics, method_explicit),
                     );
-                    let params: Vec[Type] = Vec::from_array([]);
+                    let params: Vec[Type] = Vec::new();
                     for param in method.params {
                         params.push(substitute_type(param, substitutions))
                     }
@@ -2943,7 +2922,7 @@ fn resolve_trait_reference_method(
 }
 
 fn expand_implied_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> Vec[TypePredicate] {
-    let result: Vec[TypePredicate] = Vec::from_array([]);
+    let result: Vec[TypePredicate] = Vec::new();
     for predicate in predicates {
         push_predicate(result, predicate)
     }
@@ -2999,7 +2978,7 @@ fn expand_implied_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> Ve
 fn resolve_predicate_method(ctx: Checker, receiver: Type, name: string, method_explicit: Vec[Type]) -> Option[
     ResolvedCallable,
 ] {
-    let resolved: Vec[ResolvedCallable] = Vec::from_array([]);
+    let resolved: Vec[ResolvedCallable] = Vec::new();
     let candidates = text::StringBuilder::new();
     for predicate in ctx.predicates {
         match predicate {
@@ -3040,7 +3019,7 @@ fn resolve_predicate_method(ctx: Checker, receiver: Type, name: string, method_e
                 ResolvedCallable {
                     callable: Callable::Function("<error>"),
                     ty: Type::Error,
-                    predicates: Vec::from_array([]),
+                    predicates: Vec::new(),
                 },
             )
         } else {
@@ -3061,13 +3040,7 @@ fn resolve_trait_static(
     let equality_method = ctx.builtin.partial_eq.method;
     if owner == eq_trait && name == equality_method
         && !trait_infos_contain_exact_name(ctx.traits, eq_trait) {
-        validate_explicit_method_type_arguments(
-            ctx,
-            name,
-            "method",
-            Vec::from_array([]),
-            method_explicit,
-        );
+        validate_explicit_method_type_arguments(ctx, name, "method", Vec::new(), method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         push_diagnostic(ctx, "Trait Eq has no associated method eq; use PartialEq::eq");
         Option::Some(
@@ -3099,12 +3072,12 @@ fn resolve_trait_static(
                         ResolvedCallable {
                             callable: Callable::Function("<error>"),
                             ty: fresh_unresolved_inference(ctx),
-                            predicates: Vec::from_array([]),
+                            predicates: Vec::new(),
                         },
                     )
                 } else {};
                 let substitutions = instantiate_substitutions(ctx.counter, info.generics, explicit);
-                let args: Vec[Type] = Vec::from_array([]);
+                let args: Vec[Type] = Vec::new();
                 for generic in info.generics {
                     match find_substitution(substitutions, generic) {
                         Some(ty) => args.push(ty),
@@ -3121,7 +3094,7 @@ fn resolve_trait_static(
                 ) {
                     Some(value) => Option::Some(value),
                     None => {
-                        let resolved: Vec[ResolvedCallable] = Vec::from_array([]);
+                        let resolved: Vec[ResolvedCallable] = Vec::new();
                         for candidate in trait_ref_closure(ctx, reference) {
                             if trait_ref_equal(candidate, reference) {} else {
                                 match resolve_trait_reference_method(
@@ -3153,7 +3126,7 @@ fn resolve_trait_static(
 }
 
 fn explicit_types(ctx: Checker, values: Vec[hir::TypeExpr]) -> Vec[Type] {
-    let result: Vec[Type] = Vec::from_array([]);
+    let result: Vec[Type] = Vec::new();
     for value in values {
         result.push(type_from_hir(ctx.builtin, value, ctx.type_params, ctx.self_ty))
     }

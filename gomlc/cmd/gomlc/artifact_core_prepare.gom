@@ -41,7 +41,7 @@ fn artifact_core_method_name(value: core::Function) -> Option[string] {
 fn artifact_core_predicates(inherited: Vec[tast::TypePredicate], own: Vec[tast::TypePredicate]) -> Vec[
     core::TypePredicate,
 ] {
-    let result: Vec[core::TypePredicate] = Vec::from_array([]);
+    let result: Vec[core::TypePredicate] = Vec::new();
     for predicate in inherited {
         result.push(core::lower_predicate(predicate))
     }
@@ -269,7 +269,7 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[core::StructDe
 fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> Vec[
     core::StructDef,
 ] {
-    let result: Vec[core::StructDef] = Vec::from_array([]);
+    let result: Vec[core::StructDef] = Vec::new();
     for definition in world.builtins.structs {
         result.push(definition)
     }
@@ -307,7 +307,7 @@ fn artifact_prepare_core_units(world: PackageWorld, values: Vec[artifact::Artifa
 }
 
 fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[core::StructDef] {
-    let result: Vec[core::StructDef] = Vec::from_array([]);
+    let result: Vec[core::StructDef] = Vec::new();
     for definition in world.builtins.structs {
         result.push(definition)
     }

@@ -10,7 +10,7 @@ fn copy_union_term(value: UnionTerm) -> UnionTerm {
 }
 
 fn copy_type_terms(value: TypeTerms) -> TypeTerms {
-    let terms: Vec[UnionTerm] = Vec::from_array([]);
+    let terms: Vec[UnionTerm] = Vec::new();
     for term in value.terms {
         terms.push(copy_union_term(term))
     }
@@ -33,11 +33,11 @@ pub fn mark_invalid_type_set(world: World, value: TypeId) -> unit {
 }
 
 pub fn type_set_is_invalid(world: World, value: TypeId) -> bool {
-    type_set_contains_invalid(world, value, Vec::from_array([]))
+    type_set_contains_invalid(world, value, Vec::new())
 }
 
 fn copied_type_ids(values: Vec[TypeId]) -> Vec[TypeId] {
-    let result: Vec[TypeId] = Vec::from_array([]);
+    let result: Vec[TypeId] = Vec::new();
     for value in values {
         result.push(value)
     }
@@ -89,7 +89,7 @@ fn intersect_type_terms(world: World, left: TypeTerms, right: TypeTerms) -> Type
     } else if right.all {
         copy_type_terms(left)
     } else {
-        let terms: Vec[UnionTerm] = Vec::from_array([]);
+        let terms: Vec[UnionTerm] = Vec::new();
         for left_term in left.terms {
             for right_term in right.terms {
                 match term_intersection(world, left_term, right_term) {
@@ -104,9 +104,9 @@ fn intersect_type_terms(world: World, left: TypeTerms, right: TypeTerms) -> Type
 
 fn union_type_terms(world: World, left: TypeTerms, right: TypeTerms) -> TypeTerms {
     if left.all || right.all {
-        TypeTerms { all: true, terms: Vec::from_array([]) }
+        TypeTerms { all: true, terms: Vec::new() }
     } else {
-        let terms: Vec[UnionTerm] = Vec::from_array([]);
+        let terms: Vec[UnionTerm] = Vec::new();
         for term in left.terms {
             push_unique_term(world, terms, term)
         }
@@ -131,9 +131,9 @@ fn invalid_tilde_type_set(world: World, value: TypeId) -> bool {
 fn constraint_type_terms(world: World, value: TypeId, visited: Vec[TypeId]) -> TypeTerms {
     let resolved = unalias(world, value);
     if type_in_list(visited, resolved) {
-        return TypeTerms { all: true, terms: Vec::from_array([]) }
+        return TypeTerms { all: true, terms: Vec::new() }
     } else if invalid_tilde_type_set(world, resolved) {
-        return TypeTerms { all: false, terms: Vec::from_array([]) }
+        return TypeTerms { all: false, terms: Vec::new() }
     } else {};
     visited.push(resolved);
     match get_type(world, resolved) {
@@ -163,7 +163,7 @@ fn constraint_type_terms(world: World, value: TypeId, visited: Vec[TypeId]) -> T
             id: _,
             kind: TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ },
         }) => {
-            let mut result = TypeTerms { all: true, terms: Vec::from_array([]) };
+            let mut result = TypeTerms { all: true, terms: Vec::new() };
             for embedded in embeddeds {
                 result = intersect_type_terms(
                     world,
@@ -172,7 +172,7 @@ fn constraint_type_terms(world: World, value: TypeId, visited: Vec[TypeId]) -> T
                 );
             }
             if comparable && !result.all {
-                let filtered: Vec[UnionTerm] = Vec::from_array([]);
+                let filtered: Vec[UnionTerm] = Vec::new();
                 for term in result.terms {
                     let candidate = if term.tilde {
                         term.type_id
@@ -188,7 +188,7 @@ fn constraint_type_terms(world: World, value: TypeId, visited: Vec[TypeId]) -> T
             result
         },
         Some(TypeData { id: _, kind: TypeKind::Union { terms } }) => {
-            let mut result = TypeTerms { all: false, terms: Vec::from_array([]) };
+            let mut result = TypeTerms { all: false, terms: Vec::new() };
             for term in terms {
                 let item = if !term.tilde && is_interface(world, term.type_id) {
                     constraint_type_terms(world, term.type_id, copied_type_ids(visited))
@@ -207,11 +207,11 @@ fn constraint_type_terms(world: World, value: TypeId, visited: Vec[TypeId]) -> T
 }
 
 pub fn type_set_terms(world: World, value: TypeId) -> Vec[UnionTerm] {
-    copy_type_terms(constraint_type_terms(world, value, Vec::from_array([]))).terms
+    copy_type_terms(constraint_type_terms(world, value, Vec::new())).terms
 }
 
 pub fn type_set_is_empty(world: World, value: TypeId) -> bool {
-    let result = constraint_type_terms(world, value, Vec::from_array([]));
+    let result = constraint_type_terms(world, value, Vec::new());
     !result.all && result.terms.is_empty()
 }
 
@@ -256,7 +256,7 @@ fn comparable_type_inner(world: World, value: TypeId, visited: Vec[TypeId]) -> b
 }
 
 fn comparable_type(world: World, value: TypeId) -> bool {
-    comparable_type_inner(world, value, Vec::from_array([]))
+    comparable_type_inner(world, value, Vec::new())
 }
 
 fn constraint_reaches_types(world: World, value: TypeId, targets: Vec[TypeId], visited: Vec[TypeId]) -> bool {
@@ -312,7 +312,7 @@ fn union_terms_comparable(world: World, terms: Vec[UnionTerm], visited: Vec[Type
     for term in terms {
         if is_interface(world, term.type_id) {
             if !type_set_is_invalid(world, term.type_id)
-                && !constraint_reaches_types(world, term.type_id, visited, Vec::from_array([])) {
+                && !constraint_reaches_types(world, term.type_id, visited, Vec::new()) {
                 return false
             } else {}
         } else {
@@ -529,11 +529,11 @@ fn has_direct_union_type_set(world: World, value: TypeId) -> bool {
 fn type_set_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId]) -> bool {
     if type_set_is_empty(world, value) {
         return false
-    } else if type_set_contains_invalid(world, value, Vec::from_array([])) {
+    } else if type_set_contains_invalid(world, value, Vec::new()) {
         return has_direct_union_type_set(world, value)
             && structural_type_set_comparable_inner(world, value, visited)
     } else {};
-    let terms = constraint_type_terms(world, value, Vec::from_array([]));
+    let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all {
         interface_requires_comparable(world, value)
             || (has_direct_union_type_set(world, value)
@@ -553,7 +553,7 @@ fn type_set_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId]) 
 }
 
 pub fn type_set_comparable(world: World, value: TypeId) -> bool {
-    type_set_comparable_inner(world, value, Vec::from_array([]))
+    type_set_comparable_inner(world, value, Vec::new())
 }
 
 fn strictly_comparable_type_inner(world: World, value: TypeId, visited: Vec[TypeId]) -> bool {
@@ -598,14 +598,14 @@ fn strictly_comparable_type_inner(world: World, value: TypeId, visited: Vec[Type
 }
 
 fn strictly_comparable_type(world: World, value: TypeId) -> bool {
-    strictly_comparable_type_inner(world, value, Vec::from_array([]))
+    strictly_comparable_type_inner(world, value, Vec::new())
 }
 
 fn type_set_strictly_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId]) -> bool {
-    if type_set_contains_invalid(world, value, Vec::from_array([])) {
+    if type_set_contains_invalid(world, value, Vec::new()) {
         return false
     } else {};
-    let terms = constraint_type_terms(world, value, Vec::from_array([]));
+    let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all {
         interface_requires_comparable(world, value)
     } else if terms.terms.is_empty() {
@@ -621,7 +621,7 @@ fn type_set_strictly_comparable_inner(world: World, value: TypeId, visited: Vec[
 }
 
 pub fn type_set_strictly_comparable(world: World, value: TypeId) -> bool {
-    type_set_strictly_comparable_inner(world, value, Vec::from_array([]))
+    type_set_strictly_comparable_inner(world, value, Vec::new())
 }
 
 fn concrete_basic_kind(world: World, value: TypeId) -> Option[BasicKind] {
@@ -665,7 +665,7 @@ fn addable_basic_kind(value: BasicKind) -> bool {
 }
 
 fn type_set_basic_property(world: World, value: TypeId, property: isize) -> bool {
-    let terms = constraint_type_terms(world, value, Vec::from_array([]));
+    let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all || terms.terms.is_empty() {
         return false
     } else {};
@@ -707,8 +707,8 @@ pub fn type_set_supports_add(world: World, value: TypeId) -> bool {
 }
 
 pub fn type_set_specific_types(world: World, value: TypeId) -> Vec[TypeId] {
-    let result: Vec[TypeId] = Vec::from_array([]);
-    let terms = constraint_type_terms(world, value, Vec::from_array([]));
+    let result: Vec[TypeId] = Vec::new();
+    let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all {
         return result
     } else {};
@@ -727,8 +727,8 @@ fn term_contains(world: World, target: UnionTerm, source: UnionTerm) -> bool {
 }
 
 pub fn type_set_subset(world: World, source: TypeId, target: TypeId) -> bool {
-    let source_terms = constraint_type_terms(world, source, Vec::from_array([]));
-    let target_terms = constraint_type_terms(world, target, Vec::from_array([]));
+    let source_terms = constraint_type_terms(world, source, Vec::new());
+    let target_terms = constraint_type_terms(world, target, Vec::new());
     if target_terms.all {
         return true
     } else if source_terms.all {
@@ -775,7 +775,7 @@ fn common_channel_type(world: World, left: TypeId, right: TypeId) -> Option[Type
 pub fn core_type(world: World, value: TypeId) -> Option[TypeId] {
     match type_data(world, unalias(world, value)) {
         TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } } => {
-            let terms = constraint_type_terms(world, constraint, Vec::from_array([]));
+            let terms = constraint_type_terms(world, constraint, Vec::new());
             if terms.all || terms.terms.is_empty() {
                 return Option::None
             } else {};

@@ -48,27 +48,27 @@ fn type_is_unit_or_never(value: repr::Type) -> bool {
 }
 
 fn no_imms() -> Vec[Imm] {
-    Vec::from_array([])
+    Vec::new()
 }
 
 fn one_imm(value: Imm) -> Vec[Imm] {
-    let result: Vec[Imm] = Vec::from_array([]);
+    let result: Vec[Imm] = Vec::new();
     result.push(value);
     result
 }
 
 fn no_binds() -> Vec[Bind] {
-    Vec::from_array([])
+    Vec::new()
 }
 
 fn one_bind(value: Bind) -> Vec[Bind] {
-    let result: Vec[Bind] = Vec::from_array([]);
+    let result: Vec[Bind] = Vec::new();
     result.push(value);
     result
 }
 
 fn prepend_bind(value: Bind, block: Block) -> Block {
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(value);
     for bind in block.binds {
         binds.push(bind)

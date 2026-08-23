@@ -104,7 +104,7 @@ fn package_name_for_directory(module_dir: string, module_path: string, directory
         return Result::Ok(module_path)
     } else {};
     let relative = relative_path(module_dir, directory);
-    let segments: Vec[string] = Vec::from_array([]);
+    let segments: Vec[string] = Vec::new();
     let current = text::StringBuilder::new();
     for character in relative.chars() {
         if character == '/' || character == '\\' {
@@ -151,7 +151,7 @@ fn directory_for_package(module_dir: string, module_path: string, package_name: 
 
 fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], string] {
     let names = fs::read_dir(directory)?;
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for name in names {
         let source_path = path::join(directory, name);
         if fs::is_file(source_path)
@@ -244,7 +244,7 @@ fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string
         },
         None => return Result::Err("package-info omitted files"),
     };
-    let result: Vec[PackageInfoFile] = Vec::from_array([]);
+    let result: Vec[PackageInfoFile] = Vec::new();
     for value in values {
         let source_path = match json::field(value, "path") {
             Some(value) => match json::as_string(value) {
@@ -274,7 +274,7 @@ fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string
             },
             None => return Result::Err("package-info omitted uses"),
         };
-        let parsed_uses: Vec[PackageInfoUse] = Vec::from_array([]);
+        let parsed_uses: Vec[PackageInfoUse] = Vec::new();
         for use_value in uses {
             let use_path = match json::field(use_value, "path") {
                 Some(value) => match json::as_string(value) {
@@ -300,7 +300,7 @@ fn select_package_info(module_dir: string, all_info: Vec[PackageInfoFile], files
     Vec[PackageInfoFile],
     string,
 ] {
-    let result: Vec[PackageInfoFile] = Vec::from_array([]);
+    let result: Vec[PackageInfoFile] = Vec::new();
     for file in files {
         let relative = relative_path(module_dir, file);
         let before = result.len();
@@ -362,7 +362,7 @@ fn source_for_package_directory(sources: Vec[ModuleSource], directory: string) -
 }
 
 fn dependency_names(dependencies: Vec[manifest::Dependency]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for dependency in dependencies {
         result.push(dependency.name)
     }
@@ -373,7 +373,7 @@ fn module_sources(module_dir: string, module_manifest: manifest::Manifest) -> Re
     Vec[ModuleSource],
     string,
 ] {
-    let result: Vec[ModuleSource] = Vec::from_array([]);
+    let result: Vec[ModuleSource] = Vec::new();
     result.push(
         ModuleSource {
             name: module_manifest.module_path,
@@ -463,7 +463,7 @@ fn package_from_info(
     info: Vec[PackageInfoFile],
 ) -> Result[Package, string] {
     let mut declared_name = "";
-    let imports: Vec[string] = Vec::from_array([]);
+    let imports: Vec[string] = Vec::new();
     for file in info {
         if !file.package_explicit {
             return Result::Err(file.path + " must declare package <name>;")
@@ -514,7 +514,7 @@ fn extend_package_with_info(
     if test_package.declared_name != package_value.declared_name {
         return Result::Err("package declaration mismatch in " + package_value.directory)
     } else {};
-    let imports: Vec[string] = Vec::from_array([]);
+    let imports: Vec[string] = Vec::new();
     for value in package_value.imports {
         imports.push(value)
     }
@@ -589,17 +589,17 @@ fn visit_package(
 }
 
 fn topological_order(packages: Vec[Package], entry: string) -> Result[Vec[string], string] {
-    let output: Vec[string] = Vec::from_array([]);
-    match visit_package(packages, HashMap::from_array([]), output, entry) {
+    let output: Vec[string] = Vec::new();
+    match visit_package(packages, HashMap::new(), output, entry) {
         Ok(()) => Result::Ok(output),
         Err(message) => Result::Err(message),
     }
 }
 
 fn topological_order_all(packages: Vec[Package]) -> Result[Vec[string], string] {
-    let output: Vec[string] = Vec::from_array([]);
-    let states: HashMap[string, isize] = HashMap::from_array([]);
-    let names: Vec[string] = Vec::from_array([]);
+    let output: Vec[string] = Vec::new();
+    let states: HashMap[string, isize] = HashMap::new();
+    let names: Vec[string] = Vec::new();
     for package_value in packages {
         names.push(package_value.name)
     }
@@ -619,9 +619,9 @@ fn collect_package_directories(
         return Result::Ok(())
     } else {};
     let names = fs::read_dir(directory)?;
-    let source_files: Vec[string] = Vec::from_array([]);
-    let test_directories: Vec[string] = Vec::from_array([]);
-    let children: Vec[string] = Vec::from_array([]);
+    let source_files: Vec[string] = Vec::new();
+    let test_directories: Vec[string] = Vec::new();
+    let children: Vec[string] = Vec::new();
     for name in names {
         let value = path::join(directory, name);
         if fs::is_file(value)
@@ -667,15 +667,15 @@ fn discover_module_graph(
     artifact_root: string,
     sources: Vec[ModuleSource],
 ) -> Result[Graph, string] {
-    let directories: Vec[string] = Vec::from_array([]);
+    let directories: Vec[string] = Vec::new();
     for source in sources {
         collect_package_directories(source.directory, source.directory, artifact_root, directories)?
     }
     if directories.is_empty() {
         return Result::Err("module has no package directories")
     } else {};
-    let package_files: Vec[(string, Vec[string])] = Vec::from_array([]);
-    let all_files: Vec[string] = Vec::from_array([]);
+    let package_files: Vec[(string, Vec[string])] = Vec::new();
+    let all_files: Vec[string] = Vec::new();
     for directory in directories {
         let files = source_files(directory, false)?;
         if files.is_empty() {
@@ -687,7 +687,7 @@ fn discover_module_graph(
         package_files.push((directory, files))
     }
     let all_info = compiler_package_info(compiler, module_dir, all_files)?;
-    let packages: Vec[Package] = Vec::from_array([]);
+    let packages: Vec[Package] = Vec::new();
     for item in package_files {
         let directory = item.0;
         let files = item.1;
@@ -734,10 +734,10 @@ fn toolchain_module_source(lib_dir: string, module_name: string) -> Result[Modul
 
 fn toolchain_implicit_imports(module_name: string) -> Vec[string] {
     match module_name {
-        "builtin" => Vec::from_array([]),
+        "builtin" => Vec::new(),
         "prelude" => Vec::from_array(["builtin"]),
         "std" => Vec::from_array(["builtin", "prelude"]),
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     }
 }
 
@@ -753,9 +753,9 @@ pub fn discover_toolchain_graph(compiler: string, lib_dir: string, artifact_root
         ],
     );
     let graph = discover_module_graph(compiler, lib_dir, "std", artifact_root, sources)?;
-    let packages: Vec[Package] = Vec::from_array([]);
+    let packages: Vec[Package] = Vec::new();
     for package_value in graph.packages {
-        let imports: Vec[string] = Vec::from_array([]);
+        let imports: Vec[string] = Vec::new();
         for value in package_value.imports {
             imports.push(value)
         }
@@ -796,10 +796,10 @@ fn discover_graph(
     sources: Vec[ModuleSource],
 ) -> Result[Graph, string] {
     let entry_package = package_name_for_directory(module_dir, module_path, entry_dir)?;
-    let packages: Vec[Package] = Vec::from_array([]);
-    let pending: Vec[string] = Vec::from_array([]);
+    let packages: Vec[Package] = Vec::new();
+    let pending: Vec[string] = Vec::new();
     let mut cursor = 0;
-    let seen: HashMap[string, bool] = HashMap::from_array([]);
+    let seen: HashMap[string, bool] = HashMap::new();
     pending.push(entry_package);
     while cursor < pending.len() {
         let package_name = pending[cursor];
@@ -999,7 +999,7 @@ pub fn load_target_context(
 }
 
 fn graph_with_entry(base: Graph, extra: Graph, entry: string) -> Result[Graph, string] {
-    let packages: Vec[Package] = Vec::from_array([]);
+    let packages: Vec[Package] = Vec::new();
     for package_value in base.packages {
         packages.push(package_value)
     }
@@ -1028,8 +1028,8 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
     Graph,
     string,
 ] {
-    let packages: Vec[Package] = Vec::from_array([]);
-    let seen: HashMap[string, bool] = HashMap::from_array([]);
+    let packages: Vec[Package] = Vec::new();
+    let seen: HashMap[string, bool] = HashMap::new();
     for current in context.graph.packages {
         if current.name == package_value.name {
             packages.push(test_package)
@@ -1038,7 +1038,7 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
         };
         seen[current.name] = true;
     }
-    let pending: Vec[string] = Vec::from_array([]);
+    let pending: Vec[string] = Vec::new();
     let mut cursor = 0;
     for dependency in test_package.imports {
         if !seen.contains(dependency) {
@@ -1080,8 +1080,8 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
 }
 
 pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
-    let result: Vec[Graph] = Vec::from_array([]);
-    let names: Vec[string] = Vec::from_array([]);
+    let result: Vec[Graph] = Vec::new();
+    let names: Vec[string] = Vec::new();
     for package_value in context.graph.packages {
         if package_value.module_name == context.graph.module_path {
             let files = source_files(package_value.directory, true)?;
@@ -1090,14 +1090,14 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
             } else {}
         } else {}
     }
-    let package_files: Vec[(Package, Vec[string], Vec[string])] = Vec::from_array([]);
-    let all_files: Vec[string] = Vec::from_array([]);
+    let package_files: Vec[(Package, Vec[string], Vec[string])] = Vec::new();
+    let all_files: Vec[string] = Vec::new();
     for package_name in util::sorted(names) {
         let Some(package_value) = find_package(context.graph.packages, package_name) else {
             return Result::Err("missing package " + package_name)
         };
         let files = source_files(package_value.directory, true)?;
-        let test_files: Vec[string] = Vec::from_array([]);
+        let test_files: Vec[string] = Vec::new();
         for file in files {
             if !package_value.files.contains(file) {
                 test_files.push(file);
@@ -1129,8 +1129,8 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
 }
 
 pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], string] {
-    let result: Vec[ExternalTest] = Vec::from_array([]);
-    let names: Vec[string] = Vec::from_array([]);
+    let result: Vec[ExternalTest] = Vec::new();
+    let names: Vec[string] = Vec::new();
     for package_value in context.graph.packages {
         if package_value.module_name == context.graph.module_path {
             names.push(package_value.name)

@@ -69,7 +69,7 @@ fn function_symbol_span(symbols: SymbolIndex, source_path: string, name: string)
 }
 
 pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
-    let result: Vec[TestItem] = Vec::from_array([]);
+    let result: Vec[TestItem] = Vec::new();
     match test_path_kind(source_path) {
         Some(kind) => {
             let lowered = ast::lower(parser::parse(source));
@@ -80,7 +80,7 @@ pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
                         source,
                         package_name: file.package_name,
                     };
-                    let analysis_sources: Vec[SourceFile] = Vec::from_array([]);
+                    let analysis_sources: Vec[SourceFile] = Vec::new();
                     analysis_sources.push(source_file);
                     let symbols = build_symbol_index_from_sources(analysis_sources);
                     for item in file.items {

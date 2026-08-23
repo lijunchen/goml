@@ -323,7 +323,7 @@ fn interpreted_package(program: BytecodeProgram, package_id: go_types::PackageId
 }
 
 fn native_aggregate_specs(program: BytecodeProgram) -> Vec[native_api::NativeAggregateSpec] {
-    let result: Vec[native_api::NativeAggregateSpec] = Vec::from_array([]);
+    let result: Vec[native_api::NativeAggregateSpec] = Vec::new();
     for type_value in program.world.types {
         match type_value.kind {
             go_types::TypeKind::Named { object, underlying, type_params, type_args, methods: _ } => if type_params.is_empty()
@@ -755,9 +755,9 @@ fn collect_native_type(
 }
 
 fn collect_native_types(program: execution::ExecutionProgram) -> Vec[NativeType] {
-    let values: Vec[NativeType] = Vec::from_array([]);
+    let values: Vec[NativeType] = Vec::new();
     let paths = direct_native_packages(program);
-    let seen: HashMap[isize, bool] = HashMap::from_array([]);
+    let seen: HashMap[isize, bool] = HashMap::new();
     for package_value in program.packages {
         if package_value.mode == execution::ExecutionMode::Interpreted {
             for fact in package_value.info.types {
@@ -815,7 +815,7 @@ fn collect_native_types(program: execution::ExecutionProgram) -> Vec[NativeType]
             left.type_id.value - right.type_id.value
         },
     );
-    let result: Vec[NativeType] = Vec::from_array([]);
+    let result: Vec[NativeType] = Vec::new();
     for value in values {
         if result.is_empty() || result[result.len() - 1].key != value.key {
             result.push(value)
@@ -861,7 +861,7 @@ fn native_diagnostic(
 }
 
 fn direct_native_packages(program: execution::ExecutionProgram) -> Vec[string] {
-    let paths: Vec[string] = Vec::from_array([]);
+    let paths: Vec[string] = Vec::new();
     for package_value in program.packages {
         if package_value.mode == execution::ExecutionMode::Interpreted {
             for dependency in package_value.dependencies {
@@ -886,8 +886,8 @@ fn direct_native_packages(program: execution::ExecutionProgram) -> Vec[string] {
 }
 
 fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
-    let candidates: Vec[NativeCandidate] = Vec::from_array([]);
-    let diagnostics: Vec[LowerDiagnostic] = Vec::from_array([]);
+    let candidates: Vec[NativeCandidate] = Vec::new();
+    let diagnostics: Vec[LowerDiagnostic] = Vec::new();
     let selected: Vec[bool] = Vec::with_capacity(program.world.objects.len());
     for _ in program.world.objects {
         selected.push(false)
@@ -1126,7 +1126,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
 
 pub fn native_manifest(program: BytecodeProgram) -> Result[native_api::Manifest, string] {
     let calls: Vec[native_api::NativeCallSpec] = Vec::with_capacity(program.native_calls.len());
-    let proxies: Vec[native_api::NativeProxySpec] = Vec::from_array([]);
+    let proxies: Vec[native_api::NativeProxySpec] = Vec::new();
     for call in program.native_calls {
         if call.id.value < 0 {
             return Result::Err("native call ID is negative")

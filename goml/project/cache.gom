@@ -19,7 +19,7 @@ struct DigestCache {
 }
 
 fn digest_cache() -> DigestCache {
-    DigestCache { values: HashMap::from_array([]) }
+    DigestCache { values: HashMap::new() }
 }
 
 fn sha256_text(value: string) -> string {
@@ -76,13 +76,13 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             CacheSpec {
                 kind: "prepare-world",
                 args: command_args(value).1,
-                inputs: Vec::from_array([]),
+                inputs: Vec::new(),
                 outputs: Vec::from_array([output]),
                 anchor: output,
             },
         ),
         Compile { subcommand, input_files, interface_files, output, world, .. } => {
-            let inputs: Vec[string] = Vec::from_array([]);
+            let inputs: Vec[string] = Vec::new();
             for input in input_files {
                 inputs.push(input)
             }
@@ -111,7 +111,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             )
         },
         ToolchainCompile { input_files, interface_files, output, counter_output, .. } => {
-            let inputs: Vec[string] = Vec::from_array([]);
+            let inputs: Vec[string] = Vec::new();
             for value in input_files {
                 inputs.push(value)
             }
@@ -155,7 +155,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             )
         },
         Link { input_cores, output, world, .. } => {
-            let inputs: Vec[string] = Vec::from_array([]);
+            let inputs: Vec[string] = Vec::new();
             for input in input_cores {
                 inputs.push(input)
             }
@@ -174,7 +174,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             )
         },
         TestLink { input_cores, output, manifest, world, .. } => {
-            let inputs: Vec[string] = Vec::from_array([]);
+            let inputs: Vec[string] = Vec::new();
             for input in input_cores {
                 inputs.push(input)
             }
@@ -240,7 +240,7 @@ fn output_digests(cache: DigestCache, module_dir: string, outputs: Vec[string]) 
     Option[Vec[string]],
     string,
 ] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for output in outputs {
         if fs::is_file(absolute_from_module(module_dir, output)) {
             match cached_file_digest(cache, module_dir, output) {

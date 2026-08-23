@@ -115,7 +115,7 @@ fn omittable_block_node(value: LocatedNode) -> bool {
 }
 
 fn meaningful_block_nodes(value: LocatedNode) -> Vec[LocatedNode] {
-    let result: Vec[LocatedNode] = Vec::from_array([]);
+    let result: Vec[LocatedNode] = Vec::new();
     for child in direct_nodes(value) {
         if !omittable_block_node(child) {
             result.push(child)
@@ -314,7 +314,7 @@ fn format_inline_variant_field_list(value: Builder, node: LocatedNode) -> BuiltD
     if fields.is_empty() || node_has_comment(node) {
         return format_generic(value, node)
     } else {};
-    let docs: Vec[Doc] = Vec::from_array([]);
+    let docs: Vec[Doc] = Vec::new();
     for field in fields {
         docs.push(format_node(value, field).doc)
     }
@@ -374,7 +374,7 @@ fn variant_requires_vertical_fields(value: Builder, node: LocatedNode) -> bool {
     } else if field_count != 1 || node_has_comment(fields) {
         true
     } else {
-        flat_width(format_variant(value, node, false).doc, HashMap::from_array([]), 95) > 95
+        flat_width(format_variant(value, node, false).doc, HashMap::new(), 95) > 95
     }
 }
 

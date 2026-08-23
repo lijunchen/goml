@@ -244,7 +244,7 @@ fn required_named_lang_item(item: string, kind: BuiltinLangItemKind) -> Result[
     string,
 ] {
     let value = required_lang_item(item)?;
-    validate_lang_properties(value, Vec::from_array([]))?;
+    validate_lang_properties(value, Vec::new())?;
     if value.kind == kind {
         Result::Ok(NamedLangItem { name: value.name })
     } else {

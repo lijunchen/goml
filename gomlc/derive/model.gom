@@ -59,7 +59,7 @@ fn spec(name: string, params: Vec[string], ret: string) -> DeriveIntrinsicSpec {
 }
 
 fn no_types() -> Vec[string] {
-    Vec::from_array([])
+    Vec::new()
 }
 
 fn one_type(first: string) -> Vec[string] {
@@ -596,22 +596,22 @@ pub fn new_state(request: DeriveRequest, int_width: isize) -> DeriveState {
         request,
         int_width,
         definition_package: Ref::new(request.handler_package),
-        types: Vec::from_array([]),
-        type_lists: Vec::from_array([]),
-        attributes: Vec::from_array([]),
-        exprs: Vec::from_array([]),
-        expr_lists: Vec::from_array([]),
-        expr_fields: Vec::from_array([]),
-        patterns: Vec::from_array([]),
-        pattern_lists: Vec::from_array([]),
-        pattern_fields: Vec::from_array([]),
-        arms: Vec::from_array([]),
-        arm_lists: Vec::from_array([]),
-        blocks: Vec::from_array([]),
-        param_lists: Vec::from_array([]),
-        generic_lists: Vec::from_array([]),
-        methods: Vec::from_array([]),
-        outputs: Vec::from_array([]),
+        types: Vec::new(),
+        type_lists: Vec::new(),
+        attributes: Vec::new(),
+        exprs: Vec::new(),
+        expr_lists: Vec::new(),
+        expr_fields: Vec::new(),
+        patterns: Vec::new(),
+        pattern_lists: Vec::new(),
+        pattern_fields: Vec::new(),
+        arms: Vec::new(),
+        arm_lists: Vec::new(),
+        blocks: Vec::new(),
+        param_lists: Vec::new(),
+        generic_lists: Vec::new(),
+        methods: Vec::new(),
+        outputs: Vec::new(),
         fresh: Ref::new(0),
         operations: Ref::new(0),
     }
@@ -622,7 +622,7 @@ fn span(state: DeriveState) -> ast::Span {
 }
 
 fn path(value: string, value_span: ast::Span) -> ast::Path {
-    let segments: Vec[ast::PathSegment] = Vec::from_array([]);
+    let segments: Vec[ast::PathSegment] = Vec::new();
     for value in text::split(value, "::") {
         if value == "" {} else {
             segments.push(ast::PathSegment { ident: value, span: value_span })
@@ -701,7 +701,7 @@ fn item_attributes(value: DeriveItem) -> Vec[ast::Attribute] {
 
 fn target_type(value: DeriveItem, value_span: ast::Span) -> ast::TypeExpr {
     let base = ast::TypeExpr::Con { path: path(item_name(value), value_span) };
-    let args: Vec[ast::TypeExpr] = Vec::from_array([]);
+    let args: Vec[ast::TypeExpr] = Vec::new();
     for generic in item_generics(value) {
         args.push(ast::TypeExpr::Con { path: path(generic, value_span) })
     }
@@ -1444,7 +1444,7 @@ fn type_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         Result::Ok(push_type(state, named_type(string_argument(args, 0)?, span(state))))
     } else if name == "meta_type_list_new" {
         let id = state.type_lists.len();
-        let values: Vec[ast::TypeExpr] = Vec::from_array([]);
+        let values: Vec[ast::TypeExpr] = Vec::new();
         state.type_lists.push(values);
         Result::Ok(meta(META_TYPE_LIST_NAME, id))
     } else if name == "meta_type_list_push" {
@@ -1605,8 +1605,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 state,
                 ast::Expr::Path {
                     path: path(string_argument(args, 0)?, value_span),
-                    owner_type_args: Vec::from_array([]),
-                    member_type_args: Vec::from_array([]),
+                    owner_type_args: Vec::new(),
+                    member_type_args: Vec::new(),
                     span: value_span,
                 },
             ),
@@ -1654,10 +1654,10 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                     func: ast::Expr::Field {
                         expr: ast::Expr::Int { value: "0", span: value_span },
                         field_name,
-                        method_type_args: Vec::from_array([]),
+                        method_type_args: Vec::new(),
                         span: value_span,
                     },
-                    args: Vec::from_array([]),
+                    args: Vec::new(),
                     span: value_span,
                 },
                 Option::None => ast::Expr::Int { value: "0", span: value_span },
@@ -1692,7 +1692,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ast::Expr::Field {
                     expr: expr_value(state, args, 0)?,
                     field_name: string_argument(args, 1)?,
-                    method_type_args: Vec::from_array([]),
+                    method_type_args: Vec::new(),
                     span: value_span,
                 },
             ),
@@ -1754,8 +1754,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ast::Expr::Call {
                     func: ast::Expr::Path {
                         path: path(function_name, value_span),
-                        owner_type_args: Vec::from_array([]),
-                        member_type_args: Vec::from_array([]),
+                        owner_type_args: Vec::new(),
+                        member_type_args: Vec::new(),
                         span: value_span,
                     },
                     args: state.expr_lists[list],
@@ -1790,8 +1790,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ast::Expr::Call {
                     func: ast::Expr::Path {
                         path: path(function_name, value_span),
-                        owner_type_args: Vec::from_array([]),
-                        member_type_args: Vec::from_array([]),
+                        owner_type_args: Vec::new(),
+                        member_type_args: Vec::new(),
                         span: value_span,
                     },
                     args: state.expr_lists[list],
@@ -1896,7 +1896,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         )
     } else if name == "meta_expr_field_list_new" {
         let id = state.expr_fields.len();
-        let values: Vec[(string, ast::Expr)] = Vec::from_array([]);
+        let values: Vec[(string, ast::Expr)] = Vec::new();
         state.expr_fields.push(values);
         Result::Ok(meta(META_EXPR_FIELD_LIST_NAME, id))
     } else if name == "meta_expr_field_list_push" {
@@ -1960,7 +1960,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                     func: ast::Expr::Field {
                         expr: expr_value(state, args, 0)?,
                         field_name: string_argument(args, 1)?,
-                        method_type_args: Vec::from_array([]),
+                        method_type_args: Vec::new(),
                         span: value_span,
                     },
                     args: state.expr_lists[id],
@@ -1984,7 +1984,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         )
     } else if name == "meta_expr_list_new" {
         let id = state.expr_lists.len();
-        let values: Vec[ast::Expr] = Vec::from_array([]);
+        let values: Vec[ast::Expr] = Vec::new();
         state.expr_lists.push(values);
         Result::Ok(meta(META_EXPR_LIST_NAME, id))
     } else if name == "meta_expr_list_push" {
@@ -2065,7 +2065,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
                 ast::Pat::Array {
                     prefix: state.pattern_lists[id],
                     rest: Option::None,
-                    suffix: Vec::from_array([]),
+                    suffix: Vec::new(),
                     span: value_span,
                 },
             ),
@@ -2103,7 +2103,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
         )
     } else if name == "meta_pattern_field_list_new" {
         let id = state.pattern_fields.len();
-        let values: Vec[(string, ast::Pat)] = Vec::from_array([]);
+        let values: Vec[(string, ast::Pat)] = Vec::new();
         state.pattern_fields.push(values);
         Result::Ok(meta(META_PATTERN_FIELD_LIST_NAME, id))
     } else if name == "meta_pattern_field_list_push" {
@@ -2175,7 +2175,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
         )
     } else if name == "meta_pattern_list_new" {
         let id = state.pattern_lists.len();
-        let values: Vec[ast::Pat] = Vec::from_array([]);
+        let values: Vec[ast::Pat] = Vec::new();
         state.pattern_lists.push(values);
         Result::Ok(meta(META_PATTERN_LIST_NAME, id))
     } else if name == "meta_pattern_list_push" || name == "meta_pattern_list_prepend" {
@@ -2213,7 +2213,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
         Result::Ok(meta(META_ARM_NAME, id))
     } else if name == "meta_arm_list_new" {
         let id = state.arm_lists.len();
-        let values: Vec[ast::Arm] = Vec::from_array([]);
+        let values: Vec[ast::Arm] = Vec::new();
         state.arm_lists.push(values);
         Result::Ok(meta(META_ARM_LIST_NAME, id))
     } else if name == "meta_arm_list_push" {
@@ -2241,9 +2241,7 @@ fn block_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -
     let value_span = span(state);
     if name == "meta_block_new" {
         let id = state.blocks.len();
-        state.blocks.push(
-            ast::Block { stmts: Vec::from_array([]), tail: Option::None, span: value_span },
-        );
+        state.blocks.push(ast::Block { stmts: Vec::new(), tail: Option::None, span: value_span });
         Result::Ok(meta(META_BLOCK_NAME, id))
     } else if name == "meta_block_let" || name == "meta_block_let_mut" {
         let id = checked_index(
@@ -2355,7 +2353,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
     let value_span = span(state);
     if name == "meta_param_list_new" {
         let id = state.param_lists.len();
-        let values: Vec[(string, ast::TypeExpr)] = Vec::from_array([]);
+        let values: Vec[(string, ast::TypeExpr)] = Vec::new();
         state.param_lists.push(values);
         Result::Ok(meta(META_PARAM_LIST_NAME, id))
     } else if name == "meta_param_list_push" {
@@ -2368,7 +2366,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
         Result::Ok(unit_value())
     } else if name == "meta_generic_list_new" {
         let id = state.generic_lists.len();
-        let values: Vec[(string, Vec[ast::TraitRef])] = Vec::from_array([]);
+        let values: Vec[(string, Vec[ast::TraitRef])] = Vec::new();
         state.generic_lists.push(values);
         Result::Ok(meta(META_GENERIC_LIST_NAME, id))
     } else if name == "meta_generic_list_push" {
@@ -2377,7 +2375,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
             state.generic_lists.len(),
             "meta generic list",
         )?;
-        state.generic_lists[id].push((string_argument(args, 1)?, Vec::from_array([])));
+        state.generic_lists[id].push((string_argument(args, 1)?, Vec::new()));
         Result::Ok(unit_value())
     } else if name == "meta_generic_list_add_bound" {
         let id = checked_index(
@@ -2393,7 +2391,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
                 entry.1.push(
                     ast::TraitRef {
                         path: path(definition_name(state, string_argument(args, 3)?), value_span),
-                        args: Vec::from_array([]),
+                        args: Vec::new(),
                     },
                 );
                 state.generic_lists[id].set(index, entry);
@@ -2416,8 +2414,8 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
             state.param_lists.len(),
             "meta parameter list",
         )?;
-        let generics: Vec[string] = Vec::from_array([]);
-        let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::from_array([]);
+        let generics: Vec[string] = Vec::new();
+        let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::new();
         if name == "meta_method_generic" {
             let generic_list = checked_index(
                 handle_argument(args, 1, META_GENERIC_LIST_NAME)?,
@@ -2429,25 +2427,25 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
                 generic_bounds.push(generic)
             }
         } else {};
-        let param_type_spans: Vec[ast::Span] = Vec::from_array([]);
+        let param_type_spans: Vec[ast::Span] = Vec::new();
         for _ in state.param_lists[params] {
             param_type_spans.push(value_span)
         }
         let id = state.methods.len();
         state.methods.push(
             ast::Function {
-                attrs: Vec::from_array([]),
+                attrs: Vec::new(),
                 visibility: ast::Visibility::Private,
                 name: string_argument(args, 0)?,
                 generics,
                 generic_bounds,
-                predicates: Vec::from_array([]),
+                predicates: Vec::new(),
                 params: state.param_lists[params],
                 param_type_spans,
                 ret_ty: Option::Some(type_value(state, args, 2 + generic_offset)?),
                 ret_ty_span: Option::Some(value_span),
                 body: ast::Block {
-                    stmts: Vec::from_array([]),
+                    stmts: Vec::new(),
                     tail: Option::Some(expr_value(state, args, 3 + generic_offset)?),
                     span: value_span,
                 },
@@ -2463,17 +2461,17 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
         let id = state.outputs.len();
         state.outputs.push(
             ast::ImplBlock {
-                attrs: Vec::from_array([]),
+                attrs: Vec::new(),
                 generics: item_generics(state.request.item),
-                generic_bounds: Vec::from_array([]),
-                predicates: Vec::from_array([]),
-                associated_types: Vec::from_array([]),
+                generic_bounds: Vec::new(),
+                predicates: Vec::new(),
+                associated_types: Vec::new(),
                 trait_ref: Option::Some(
-                    ast::TraitRef { path: path(trait_name, value_span), args: Vec::from_array([]) },
+                    ast::TraitRef { path: path(trait_name, value_span), args: Vec::new() },
                 ),
                 for_type: target_type(state.request.item, value_span),
                 for_type_span: value_span,
-                methods: Vec::from_array([]),
+                methods: Vec::new(),
             },
         );
         Result::Ok(meta(DERIVE_OUTPUT_NAME, id))
@@ -2492,10 +2490,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
         state.outputs[id].predicates.push(
             ast::Predicate::Trait {
                 ty: type_value(state, args, 1)?,
-                trait_ref: ast::TraitRef {
-                    path: path(trait_name, value_span),
-                    args: Vec::from_array([]),
-                },
+                trait_ref: ast::TraitRef { path: path(trait_name, value_span), args: Vec::new() },
             },
         );
         Result::Ok(unit_value())

@@ -24,8 +24,8 @@ fn renderer(line_width: isize) -> Renderer {
         indent_level: Ref::new(0),
         line_width,
         line_start: Ref::new(true),
-        broken_groups: HashMap::from_array([]),
-        suffixes: Vec::from_array([]),
+        broken_groups: HashMap::new(),
+        suffixes: Vec::new(),
     }
 }
 
@@ -162,7 +162,7 @@ fn flush_suffixes(value: Renderer) -> unit {
     while !value.suffixes.is_empty() {
         match value.suffixes.pop() {
             Some(suffix) => {
-                let pending: Vec[Doc] = Vec::from_array([]);
+                let pending: Vec[Doc] = Vec::new();
                 while !value.suffixes.is_empty() {
                     match value.suffixes.pop() {
                         Some(item) => pending.push(item),

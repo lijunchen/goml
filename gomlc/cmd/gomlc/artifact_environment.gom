@@ -20,7 +20,7 @@ fn artifact_function_type_parts(value: tast::Type) -> Result[ArtifactFunctionTyp
 }
 
 fn artifact_dependency_trait_ref(value: tast::TraitRef) -> tast::TraitRef {
-    let args: Vec[tast::Type] = Vec::from_array([]);
+    let args: Vec[tast::Type] = Vec::new();
     for arg in value.args {
         args.push(artifact_dependency_trait_type(arg))
     }
@@ -42,7 +42,7 @@ fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {
             tast::Type::Con { name }
         },
         Tuple { items: values } => {
-            let result: Vec[tast::Type] = Vec::from_array([]);
+            let result: Vec[tast::Type] = Vec::new();
             for value in values {
                 result.push(artifact_dependency_trait_type(value))
             }
@@ -54,7 +54,7 @@ fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {
             trait_ref: artifact_dependency_optional_trait_ref(trait_ref),
         },
         App { ty: base, args } => {
-            let result: Vec[tast::Type] = Vec::from_array([]);
+            let result: Vec[tast::Type] = Vec::new();
             for arg in args {
                 result.push(artifact_dependency_trait_type(arg))
             }
@@ -82,7 +82,7 @@ fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {
             value: artifact_dependency_trait_type(value),
         },
         Func { params, ret_ty } => {
-            let result: Vec[tast::Type] = Vec::from_array([]);
+            let result: Vec[tast::Type] = Vec::new();
             for param in params {
                 result.push(artifact_dependency_trait_type(param))
             }
@@ -108,7 +108,7 @@ fn artifact_dependency_trait_predicate(value: tast::TypePredicate) -> tast::Type
 fn artifact_dependency_trait_predicates(values: Vec[tast::TypePredicate]) -> Vec[
     tast::TypePredicate,
 ] {
-    let result: Vec[tast::TypePredicate] = Vec::from_array([]);
+    let result: Vec[tast::TypePredicate] = Vec::new();
     for value in values {
         result.push(artifact_dependency_trait_predicate(value))
     }
@@ -122,14 +122,14 @@ fn artifact_dependency_function_scheme(
     callable: tast::Callable,
 ) -> Result[tast::FunctionScheme, string] {
     let function_type = artifact_function_type_parts(value.ty)?;
-    let predicates: Vec[tast::TypePredicate] = Vec::from_array([]);
+    let predicates: Vec[tast::TypePredicate] = Vec::new();
     for predicate in inherited {
         predicates.push(predicate)
     }
     for predicate in value.constraints {
         predicates.push(predicate)
     }
-    let generics: Vec[string] = Vec::from_array([]);
+    let generics: Vec[string] = Vec::new();
     for type_param in inherited_type_params {
         generics.push(type_param)
     }
@@ -151,15 +151,15 @@ fn artifact_dependency_function_scheme(
 }
 
 fn artifact_dependency_trait(value: artifact::ArtifactTraitDef) -> Result[tast::TraitInfo, string] {
-    let associated_types: Vec[tast::AssociatedTypeInfo] = Vec::from_array([]);
+    let associated_types: Vec[tast::AssociatedTypeInfo] = Vec::new();
     for associated in value.associated_types {
-        let bounds: Vec[tast::TraitRef] = Vec::from_array([]);
+        let bounds: Vec[tast::TraitRef] = Vec::new();
         for bound in associated.bounds {
             bounds.push(artifact_dependency_trait_ref(bound))
         }
         associated_types.push(tast::AssociatedTypeInfo { name: associated.name, bounds })
     }
-    let methods: Vec[tast::TraitMethodInfo] = Vec::from_array([]);
+    let methods: Vec[tast::TraitMethodInfo] = Vec::new();
     for method in value.methods {
         let function_type = artifact_function_type_parts(artifact_dependency_trait_type(method.ty))?;
         methods.push(
@@ -185,7 +185,7 @@ fn artifact_dependency_trait(value: artifact::ArtifactTraitDef) -> Result[tast::
             },
         )
     }
-    let supertraits: Vec[tast::TraitRef] = Vec::from_array([]);
+    let supertraits: Vec[tast::TraitRef] = Vec::new();
     for supertrait in value.supertraits {
         supertraits.push(artifact_dependency_trait_ref(supertrait))
     }
@@ -202,7 +202,7 @@ fn artifact_dependency_trait(value: artifact::ArtifactTraitDef) -> Result[tast::
 }
 
 fn artifact_dependency_enum(value: tast::EnumDef) -> tast::EnumInfo {
-    let variants: Vec[tast::EnumVariantInfo] = Vec::from_array([]);
+    let variants: Vec[tast::EnumVariantInfo] = Vec::new();
     for variant in value.variants {
         variants.push(tast::EnumVariantInfo { name: variant.name, fields: variant.fields })
     }
@@ -232,7 +232,7 @@ fn artifact_dependency_inherent_for_type(
     match value.key {
         Exact(value) => value,
         Constr(name) => {
-            let generics: Vec[tast::Type] = Vec::from_array([]);
+            let generics: Vec[tast::Type] = Vec::new();
             for generic in value.definition.params {
                 generics.push(tast::Type::Param { name: generic })
             }
@@ -246,31 +246,26 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
     string,
 ] {
     let builtin = tast::builtin_contract()?;
-    let enums: Vec[tast::EnumInfo] = Vec::from_array([]);
+    let enums: Vec[tast::EnumInfo] = Vec::new();
     for definition in value.enums {
         enums.push(artifact_dependency_enum(definition))
     }
-    let structs: Vec[tast::StructInfo] = Vec::from_array([]);
+    let structs: Vec[tast::StructInfo] = Vec::new();
     for definition in value.structs {
         structs.push(artifact_dependency_struct(definition))
     }
-    let traits: Vec[tast::TraitInfo] = Vec::from_array([]);
+    let traits: Vec[tast::TraitInfo] = Vec::new();
     for definition in value.traits {
         traits.push(artifact_dependency_trait(definition)?)
     }
-    let functions: Vec[tast::FunctionScheme] = Vec::from_array([]);
+    let functions: Vec[tast::FunctionScheme] = Vec::new();
     for function in value.functions {
         let callable = function.body;
         functions.push(
-            artifact_dependency_function_scheme(
-                function,
-                Vec::from_array([]),
-                Vec::from_array([]),
-                callable,
-            )?,
+            artifact_dependency_function_scheme(function, Vec::new(), Vec::new(), callable)?,
         )
     }
-    let constants: Vec[tast::ConstantScheme] = Vec::from_array([]);
+    let constants: Vec[tast::ConstantScheme] = Vec::new();
     for value in value.constants {
         constants.push(
             tast::ConstantScheme {
@@ -281,8 +276,8 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
             },
         )
     }
-    let methods: Vec[tast::MethodInfo] = Vec::from_array([]);
-    let impls: Vec[tast::ImplInfo] = Vec::from_array([]);
+    let methods: Vec[tast::MethodInfo] = Vec::new();
+    let impls: Vec[tast::ImplInfo] = Vec::new();
     for implementation in value.trait_impls {
         if implementation.definition.valid {
             impls.push(

@@ -40,8 +40,8 @@ struct Parser {
 fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_function_bodies: bool) -> Parser {
     let source_len = source.len();
     let scanned = scanner::scan_bytes(source);
-    let comment_infos: Vec[CommentInfo] = Vec::from_array([]);
-    let comment_nodes: Vec[ast::Node] = Vec::from_array([]);
+    let comment_infos: Vec[CommentInfo] = Vec::new();
+    let comment_nodes: Vec[ast::Node] = Vec::new();
     let (go_version, comment_limit) = token_metadata(scanned.tokens);
     if retain_comments && comment_limit > 0 {
         let comments = analyze_comments(source, scanned.tokens);
@@ -62,7 +62,7 @@ fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_functi
         depth_limit_hit: Ref::new(false),
         diagnostic_limit_hit: Ref::new(false),
         diagnostics: scanned.diagnostics,
-        imports: Vec::from_array([]),
+        imports: Vec::new(),
         comment_infos,
         comment_nodes,
         comment_limit,

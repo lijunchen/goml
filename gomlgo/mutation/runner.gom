@@ -107,7 +107,7 @@ fn first_string_token(source: bytes::Bytes) -> Option[token::Token] {
 }
 
 fn mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
-    let result: Vec[bytes::Bytes] = Vec::from_array([]);
+    let result: Vec[bytes::Bytes] = Vec::new();
     if source.len() > 0 {
         let half = copy_bytes(source);
         half.truncate(source.len() / 2);
@@ -147,7 +147,7 @@ fn mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
 }
 
 fn actual_json(value: parser::ParseResult) -> string {
-    let diagnostics: Vec[json::Value] = Vec::from_array([]);
+    let diagnostics: Vec[json::Value] = Vec::new();
     for item in value.diagnostics {
         diagnostics.push(
             json::Value::Object(
@@ -180,7 +180,7 @@ fn actual_json(value: parser::ParseResult) -> string {
 }
 
 fn oracle_json(value: differential::OracleResponse) -> string {
-    let diagnostics: Vec[json::Value] = Vec::from_array([]);
+    let diagnostics: Vec[json::Value] = Vec::new();
     for item in value.diagnostics {
         diagnostics.push(
             json::Value::Object(
@@ -246,7 +246,7 @@ fn save_failure(
 }
 
 pub fn run(root: string, output: string, seed_limit: isize) -> Result[Summary, string] {
-    let files: Vec[string] = Vec::from_array([]);
+    let files: Vec[string] = Vec::new();
     if fs::is_file(root) {
         files.push(root)
     } else {

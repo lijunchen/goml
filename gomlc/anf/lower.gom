@@ -29,7 +29,7 @@ fn lower_function(state: State, value: lift::Function) -> Function {
     let takes_arg = !type_is_unit(value.ret_ty);
     let ret_join = if takes_arg {
         let ret_value = fresh(state, "retv");
-        let params: Vec[(string, repr::Type)] = Vec::from_array([]);
+        let params: Vec[(string, repr::Type)] = Vec::new();
         params.push((ret_value, value.ret_ty));
         JoinBind {
             name: ret_id,
@@ -45,7 +45,7 @@ fn lower_function(state: State, value: lift::Function) -> Function {
         JoinBind {
             name: ret_id,
             role: JoinRole::Return,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: value.ret_ty,
             body: Block { binds: no_binds(), term: Term::Return(unit_imm()) },
         }
@@ -62,7 +62,7 @@ fn lower_function(state: State, value: lift::Function) -> Function {
         },
     );
     state.return_ctx.set(previous);
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(ret_join));
     for bind in lowered.binds {
         binds.push(bind)
@@ -85,12 +85,8 @@ pub fn lower_with_counter(value: lift::File, counter: Ref[isize]) -> File {
     let constants = value.constants;
     let statics = value.statics;
     let closure_defs = value.closure_defs;
-    let state = State {
-        counter,
-        loop_ctxs: Vec::from_array([]),
-        return_ctx: Ref::new(Option::None),
-    };
-    let functions: Vec[Function] = Vec::from_array([]);
+    let state = State { counter, loop_ctxs: Vec::new(), return_ctx: Ref::new(Option::None) };
+    let functions: Vec[Function] = Vec::new();
     for function in value.functions {
         functions.push(lower_function(state, function))
     }

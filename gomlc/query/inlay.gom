@@ -50,7 +50,7 @@ fn span_overlaps_range(span: ast::Span, start: isize, end: isize) -> bool {
 }
 
 pub fn inlay_hints_in_range(value: Analysis, start: isize, end: isize) -> Vec[InlayHint] {
-    let hints: Vec[InlayHint] = Vec::from_array([]);
+    let hints: Vec[InlayHint] = Vec::new();
     for fact in value.checked.typeck_results.locals {
         let within_range = match fact.span {
             Some(span) => span_overlaps_range(span, start, end),

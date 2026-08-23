@@ -19,9 +19,9 @@ fn artifact_core_decode_context(value: artifact::ArtifactPackageExports) -> Arti
         enum_names: value.enum_type_names,
         struct_names: value.struct_type_names,
     };
-    let struct_fields: Vec[(string, Vec[string])] = Vec::from_array([]);
+    let struct_fields: Vec[(string, Vec[string])] = Vec::new();
     for definition in value.structs {
-        let fields: Vec[string] = Vec::from_array([]);
+        let fields: Vec[string] = Vec::new();
         for field in definition.fields {
             fields.push(field.0)
         }
@@ -31,7 +31,7 @@ fn artifact_core_decode_context(value: artifact::ArtifactPackageExports) -> Arti
 }
 
 fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: string) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for value in context.struct_fields {
         if value.0 == name {
             for field in value.1 {
@@ -165,7 +165,7 @@ fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::
         Result::Ok(
             tast::Constructor {
                 name: type_name + "::" + variant,
-                fields: Vec::from_array([]),
+                fields: Vec::new(),
                 is_struct: false,
                 tag: Option::Some(index),
             },

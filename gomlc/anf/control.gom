@@ -14,12 +14,12 @@ fn reify_k_with_name(
     if type_is_unit(value_ty) {
         let body = k(unit_imm());
         let ret_ty = block_type(body);
-        (JoinBind { name, role, params: Vec::from_array([]), ret_ty, body }, ret_ty)
+        (JoinBind { name, role, params: Vec::new(), ret_ty, body }, ret_ty)
     } else {
         let param = fresh(state, "jp");
         let body = k(Imm::Var { name: param, ty: value_ty });
         let ret_ty = block_type(body);
-        let params: Vec[(string, repr::Type)] = Vec::from_array([]);
+        let params: Vec[(string, repr::Type)] = Vec::new();
         params.push((param, value_ty));
         (JoinBind { name, role, params, ret_ty, body }, ret_ty)
     }
@@ -38,7 +38,7 @@ fn reify_k_for_expr(state: State, value: lift::Expr, k: (Imm) -> Block) -> (Join
             JoinBind {
                 name,
                 role: JoinRole::Continuation,
-                params: Vec::from_array([]),
+                params: Vec::new(),
                 ret_ty,
                 body: Block { binds: no_binds(), term: Term::Unreachable { ty: ret_ty } },
             },
@@ -147,7 +147,7 @@ fn lower_arms(
     join_ret_ty: repr::Type,
     join_takes_arg: bool,
 ) -> Vec[Arm] {
-    let result: Vec[Arm] = Vec::from_array([]);
+    let result: Vec[Arm] = Vec::new();
     for value in values {
         result.push(
             Arm {
@@ -341,7 +341,7 @@ fn lower_while(state: State, cond: lift::Expr, body: lift::Expr, k: (Imm) -> Blo
     let exit = JoinBind {
         name: exit_id,
         role: JoinRole::LoopExit,
-        params: Vec::from_array([]),
+        params: Vec::new(),
         ret_ty: exit_ret_ty,
         body: exit_body,
     };
@@ -372,17 +372,17 @@ fn lower_while(state: State, cond: lift::Expr, body: lift::Expr, k: (Imm) -> Blo
         },
     );
     let _ = state.loop_ctxs.pop();
-    let recursive: Vec[JoinBind] = Vec::from_array([]);
+    let recursive: Vec[JoinBind] = Vec::new();
     recursive.push(
         JoinBind {
             name: loop_id,
             role: JoinRole::Continuation,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: exit_ret_ty,
             body: loop_body,
         },
     );
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(exit));
     binds.push(Bind::JoinRec(recursive));
     Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }
@@ -407,17 +407,17 @@ fn lower_loop(state: State, body: lift::Expr, ty: repr::Type, k: (Imm) -> Block)
         },
     );
     let _ = state.loop_ctxs.pop();
-    let recursive: Vec[JoinBind] = Vec::from_array([]);
+    let recursive: Vec[JoinBind] = Vec::new();
     recursive.push(
         JoinBind {
             name: loop_id,
             role: JoinRole::Continuation,
-            params: Vec::from_array([]),
+            params: Vec::new(),
             ret_ty: exit_ret_ty,
             body: loop_body,
         },
     );
-    let binds: Vec[Bind] = Vec::from_array([]);
+    let binds: Vec[Bind] = Vec::new();
     binds.push(Bind::Join(exit));
     binds.push(Bind::JoinRec(recursive));
     Block { binds, term: Term::Jump { target: loop_id, args: no_imms(), ret_ty: exit_ret_ty } }

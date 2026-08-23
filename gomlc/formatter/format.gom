@@ -125,7 +125,7 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
     let tokens = lexer::lex(source);
     let output = text::StringBuilder::new();
     let in_where: Ref[bool] = Ref::new(false);
-    let omissions: Vec[FormatOmission] = Vec::from_array([]);
+    let omissions: Vec[FormatOmission] = Vec::new();
     collect_format_omissions(root, omissions);
     for index in 0..tokens.len() {
         let token = tokens[index];

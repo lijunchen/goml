@@ -96,11 +96,11 @@ fn mark_reachable(graph: Graph, package_name: string, seen: HashMap[string, bool
 }
 
 fn reachable_packages(graph: Graph, entries: Vec[string]) -> Result[Vec[string], string] {
-    let seen: HashMap[string, bool] = HashMap::from_array([]);
+    let seen: HashMap[string, bool] = HashMap::new();
     for entry in entries {
         mark_reachable(graph, entry, seen)?
     }
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for package_name in graph.order {
         if seen.contains(package_name) {
             result.push(package_name)
@@ -113,9 +113,9 @@ fn dependency_interfaces(graph: Graph, package_name: string, output_root: string
     Vec[string],
     string,
 ] {
-    let names: Vec[string] = Vec::from_array([]);
-    collect_dependencies(graph, package_name, HashMap::from_array([]), names)?;
-    let result: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
+    collect_dependencies(graph, package_name, HashMap::new(), names)?;
+    let result: Vec[string] = Vec::new();
     for name in util::sorted_unique(names) {
         result.push(extension(package_artifact_base(output_root, graph, name), "interface"))
     }
@@ -129,7 +129,7 @@ fn compile_commands(
     dependency_command: string,
     packages: Vec[string],
 ) -> Result[Vec[Command], string] {
-    let result: Vec[Command] = Vec::from_array([]);
+    let result: Vec[Command] = Vec::new();
     for package_name in packages {
         let command = if package_name == context.graph.entry_package {
             entry_command
@@ -191,12 +191,12 @@ fn compile_package_command(
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
-    let inputs: Vec[string] = Vec::from_array([]);
+    let inputs: Vec[string] = Vec::new();
     for file in package_value.files {
         inputs.push(module_relative(module_dir, file))
     }
     let interfaces = dependency_interfaces(graph, package_name, interface_root)?;
-    let relative_interfaces: Vec[string] = Vec::from_array([]);
+    let relative_interfaces: Vec[string] = Vec::new();
     for value in interfaces {
         relative_interfaces.push(module_relative(module_dir, value))
     }
@@ -272,7 +272,7 @@ fn compile_test_package_command(
 }
 
 fn core_outputs(context: Context, output_root: string, packages: Vec[string]) -> Vec[string] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     for package_name in packages {
         result.push(
             module_relative(
@@ -337,14 +337,14 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
         Plan {
             commands: commands_with_world(context, commands),
             executable: Option::None,
-            test_groups: Vec::from_array([]),
+            test_groups: Vec::new(),
         },
     )
 }
 
 pub fn build_plan(context: Context) -> Result[Plan, string] {
     let output_root = path::join(context.artifact_root, BUILD_SUBCOMMAND);
-    let entries: Vec[string] = Vec::from_array([]);
+    let entries: Vec[string] = Vec::new();
     for package_name in context.graph.order {
         let Some(package_value) = package_by_name(context.graph, package_name) else {
             return Result::Err(f"missing package {package_name}")
@@ -388,7 +388,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         Plan {
             commands: commands_with_world(context, commands),
             executable: Option::None,
-            test_groups: Vec::from_array([]),
+            test_groups: Vec::new(),
         },
     )
 }
@@ -401,23 +401,23 @@ pub fn load_toolchain_context(prefix: string, compiler: string) -> Result[Contex
 }
 
 pub fn toolchain_world_plan(context: Context, output: string) -> Result[Plan, string] {
-    let commands: Vec[Command] = Vec::from_array([]);
-    let package_outputs: Vec[string] = Vec::from_array([]);
-    let source_files: Vec[string] = Vec::from_array([]);
+    let commands: Vec[Command] = Vec::new();
+    let package_outputs: Vec[string] = Vec::new();
+    let source_files: Vec[string] = Vec::new();
     let counter_output = path::join(context.artifact_root, "builtin-counter");
     for package_name in context.graph.order {
         let Some(package_value) = package_by_name(context.graph, package_name) else {
             return Result::Err("missing toolchain package " + package_name)
         };
         let output = package_artifact_base(context.artifact_root, context.graph, package_name);
-        let inputs: Vec[string] = Vec::from_array([]);
+        let inputs: Vec[string] = Vec::new();
         for value in package_value.files {
             let value = module_relative(context.graph.module_dir, value);
             inputs.push(value);
             source_files.push(value)
         }
         let interfaces = dependency_interfaces(context.graph, package_name, context.artifact_root)?;
-        let relative_interfaces: Vec[string] = Vec::from_array([]);
+        let relative_interfaces: Vec[string] = Vec::new();
         for value in interfaces {
             relative_interfaces.push(module_relative(context.graph.module_dir, value))
         }
@@ -447,7 +447,7 @@ pub fn toolchain_world_plan(context: Context, output: string) -> Result[Plan, st
             output: module_relative(context.graph.module_dir, output),
         },
     );
-    Result::Ok(Plan { commands, executable: Option::None, test_groups: Vec::from_array([]) })
+    Result::Ok(Plan { commands, executable: Option::None, test_groups: Vec::new() })
 }
 
 fn target_build_plan(context: Context, build_executable: bool) -> Result[Plan, string] {
@@ -487,7 +487,7 @@ fn target_build_plan(context: Context, build_executable: bool) -> Result[Plan, s
             } else {
                 Option::None
             },
-            test_groups: Vec::from_array([]),
+            test_groups: Vec::new(),
         },
     )
 }
@@ -546,12 +546,12 @@ fn append_test_group(
     commands: Vec[Command],
     groups: Vec[TestGroup],
 ) -> unit {
-    let test_packages: HashMap[string, bool] = HashMap::from_array([]);
+    let test_packages: HashMap[string, bool] = HashMap::new();
     for graph in graphs {
         test_packages[graph.entry_package] = true;
     }
-    let input_cores: Vec[string] = Vec::from_array([]);
-    let added: HashMap[string, bool] = HashMap::from_array([]);
+    let input_cores: Vec[string] = Vec::new();
+    let added: HashMap[string, bool] = HashMap::new();
     for package_name in context.graph.order {
         let root = if test_packages.contains(package_name) {
             output_root
@@ -614,18 +614,18 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
         BUILD_SUBCOMMAND,
         context.graph.order,
     )?;
-    let compiled_dependencies: HashMap[string, bool] = HashMap::from_array([]);
+    let compiled_dependencies: HashMap[string, bool] = HashMap::new();
     for package_name in context.graph.order {
         compiled_dependencies[package_name] = true;
     }
-    let groups: Vec[TestGroup] = Vec::from_array([]);
+    let groups: Vec[TestGroup] = Vec::new();
     let internal: Vec[Graph] = match kind {
         INTERNAL_TEST_KIND | ALL_TEST_KIND => internal_test_graphs(context)?,
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     };
     let internal_root = path::join(path::join(context.artifact_root, "test"), INTERNAL_TEST_KIND);
-    let internal_graphs: Vec[Graph] = Vec::from_array([]);
-    let internal_packages: Vec[string] = Vec::from_array([]);
+    let internal_graphs: Vec[Graph] = Vec::new();
+    let internal_packages: Vec[string] = Vec::new();
     for graph in internal {
         let package_name = graph.entry_package;
         match append_test_package(
@@ -657,11 +657,11 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     } else {};
     let external: Vec[ExternalTest] = match kind {
         EXTERNAL_TEST_KIND | ALL_TEST_KIND => external_test_graphs(context)?,
-        _ => Vec::from_array([]),
+        _ => Vec::new(),
     };
     let external_root = path::join(path::join(context.artifact_root, "test"), EXTERNAL_TEST_KIND);
-    let external_graphs: Vec[Graph] = Vec::from_array([]);
-    let external_packages: Vec[string] = Vec::from_array([]);
+    let external_graphs: Vec[Graph] = Vec::new();
+    let external_packages: Vec[string] = Vec::new();
     for test in external {
         let package_name = test.graph.entry_package;
         match append_test_package(
@@ -726,7 +726,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             output,
             world,
         } => {
-            let args: Vec[string] = Vec::from_array([]);
+            let args: Vec[string] = Vec::new();
             args.push(subcommand);
             args.push("--package");
             args.push(package_name);
@@ -808,7 +808,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             (GOMLC_PROGRAM, args)
         },
         Link { input_cores, entry_package, output, world } => {
-            let args: Vec[string] = Vec::from_array([]);
+            let args: Vec[string] = Vec::new();
             args.push("link");
             args.push("--input");
             for input in input_cores {
@@ -828,7 +828,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             (GOMLC_PROGRAM, args)
         },
         TestLink { input_cores, packages, output, manifest, world } => {
-            let args: Vec[string] = Vec::from_array([]);
+            let args: Vec[string] = Vec::new();
             args.push("test-link");
             args.push("--input");
             for input in input_cores {
@@ -1013,7 +1013,7 @@ fn abandon_prepared_command(context: Context, cache: Option[PreparedCache]) -> u
 }
 
 fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
-    let producers: HashMap[string, Vec[isize]] = HashMap::from_array([]);
+    let producers: HashMap[string, Vec[isize]] = HashMap::new();
     for index in 0..commands.len() {
         match cache_spec(commands[index]) {
             Some(spec) => for output in spec.outputs {
@@ -1025,10 +1025,10 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
             None => (),
         }
     }
-    let result: Vec[BuildNode] = Vec::from_array([]);
+    let result: Vec[BuildNode] = Vec::new();
     for index in 0..commands.len() {
         let command = commands[index];
-        let dependencies: Vec[isize] = Vec::from_array([]);
+        let dependencies: Vec[isize] = Vec::new();
         match cache_spec(command) {
             Some(spec) => {
                 for input in spec.inputs {
@@ -1215,12 +1215,12 @@ fn execute_plan_concurrently(
     jobs: isize,
     completed: Ref[isize],
 ) -> Result[unit, string] {
-    let initial: Vec[isize] = Vec::from_array([]);
+    let initial: Vec[isize] = Vec::new();
     for node in graph.nodes {
         initial.push(node.index)
     }
     let mut pending = initial;
-    let completed_nodes: Vec[isize] = Vec::from_array([]);
+    let completed_nodes: Vec[isize] = Vec::new();
     let mut running = 0;
     let worker_count = if jobs < total {
         jobs

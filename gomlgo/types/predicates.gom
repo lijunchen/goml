@@ -455,7 +455,7 @@ fn identical_terms(
 }
 
 pub fn identical(world: World, left: TypeId, right: TypeId) -> bool {
-    identical_inner_mode(world, left, right, Vec::from_array([]), true)
+    identical_inner_mode(world, left, right, Vec::new(), true)
 }
 
 pub fn is_integer(world: World, value: TypeId) -> bool {
@@ -668,13 +668,13 @@ fn identical_structs_ignoring_tags(world: World, left: TypeId, right: TypeId) ->
         world,
         underlying(world, left),
         underlying(world, right),
-        Vec::from_array([]),
+        Vec::new(),
         false,
     )
 }
 
 fn copied_type_pairs(values: Vec[TypePair]) -> Vec[TypePair] {
-    let result: Vec[TypePair] = Vec::from_array([]);
+    let result: Vec[TypePair] = Vec::new();
     for value in values {
         result.push(TypePair { left: value.left, right: value.right })
     }
@@ -800,7 +800,7 @@ fn convertible_concrete(world: World, source: TypeId, target: TypeId, visited: V
                     world,
                     underlying(world, source_element),
                     underlying(world, target_element),
-                    Vec::from_array([]),
+                    Vec::new(),
                     false,
                 ),
             _ => false,
@@ -851,7 +851,7 @@ fn convertible_inner(world: World, source: TypeId, target: TypeId, visited: Vec[
 }
 
 pub fn convertible_types(world: World, source: TypeId, target: TypeId) -> bool {
-    convertible_inner(world, source, target, Vec::from_array([]))
+    convertible_inner(world, source, target, Vec::new())
 }
 
 pub fn conversion_minimum_minor(world: World, source: TypeId, target: TypeId) -> isize {

@@ -56,24 +56,24 @@ pub fn empty_type_info_index(package_id: go_types::PackageId) -> TypeInfoIndex {
         package_id,
         node_count: 0,
         file_count: 0,
-        types: Vec::from_array([]),
-        type_indices: Vec::from_array([]),
-        keyed_types: HashMap::from_array([]),
-        definitions: Vec::from_array([]),
-        definition_indices: Vec::from_array([]),
-        uses: Vec::from_array([]),
-        use_indices: Vec::from_array([]),
-        implicits: Vec::from_array([]),
-        implicit_indices: Vec::from_array([]),
-        selections: Vec::from_array([]),
-        selection_indices: Vec::from_array([]),
-        instances: Vec::from_array([]),
-        instance_indices: Vec::from_array([]),
-        scopes: Vec::from_array([]),
-        scope_indices: Vec::from_array([]),
-        file_versions: Vec::from_array([]),
-        file_version_indices: Vec::from_array([]),
-        initialization_order: Vec::from_array([]),
+        types: Vec::new(),
+        type_indices: Vec::new(),
+        keyed_types: HashMap::new(),
+        definitions: Vec::new(),
+        definition_indices: Vec::new(),
+        uses: Vec::new(),
+        use_indices: Vec::new(),
+        implicits: Vec::new(),
+        implicit_indices: Vec::new(),
+        selections: Vec::new(),
+        selection_indices: Vec::new(),
+        instances: Vec::new(),
+        instance_indices: Vec::new(),
+        scopes: Vec::new(),
+        scope_indices: Vec::new(),
+        file_versions: Vec::new(),
+        file_version_indices: Vec::new(),
+        initialization_order: Vec::new(),
     }
 }
 
@@ -91,7 +91,7 @@ pub fn build_type_info_index(
         file_count,
         types: info.types,
         type_indices: empty_indices(node_count),
-        keyed_types: HashMap::from_array([]),
+        keyed_types: HashMap::new(),
         definitions: info.defs,
         definition_indices: empty_indices(node_count),
         uses: info.uses,
@@ -108,7 +108,7 @@ pub fn build_type_info_index(
         file_version_indices: empty_indices(file_count),
         initialization_order: info.init_order,
     };
-    let diagnostics: Vec[ExecutionDiagnostic] = Vec::from_array([]);
+    let diagnostics: Vec[ExecutionDiagnostic] = Vec::new();
     for fact_index in 0..index.types.len() {
         let fact = index.types[fact_index];
         let fact_key = checker::type_fact_key(fact);

@@ -235,7 +235,7 @@ fn lower_type_with_contract(builtin: tast::BuiltinContract, value: repr::Type) -
             Type::Chan { elem: lower_type_with_contract(builtin, elem), direction }
         },
         Func { params, ret_ty } => {
-            let lowered: Vec[Type] = Vec::from_array([]);
+            let lowered: Vec[Type] = Vec::new();
             for value in params {
                 lowered.push(lower_type_with_contract(builtin, value))
             }

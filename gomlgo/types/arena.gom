@@ -8,16 +8,16 @@ pub fn empty_world() -> World {
     World {
         types: Vec::from_array([TypeData { id: invalid, kind: TypeKind::Invalid }]),
         type_revision: Ref::new(1),
-        named_instances: HashMap::from_array([]),
+        named_instances: HashMap::new(),
         named_type_objects: Vec::from_array([-1]),
-        objects: Vec::from_array([]),
-        scopes: Vec::from_array([]),
-        packages: Vec::from_array([]),
-        basics: Vec::from_array([]),
+        objects: Vec::new(),
+        scopes: Vec::new(),
+        packages: Vec::new(),
+        basics: Vec::new(),
         universe: scope_id(-1),
         unsafe_package: package_id(-1),
         invalid,
-        invalid_type_sets: Vec::from_array([]),
+        invalid_type_sets: Vec::new(),
     }
 }
 
@@ -170,9 +170,9 @@ pub fn add_scope(
             file,
             start,
             end,
-            entries: Vec::from_array([]),
-            entry_objects: HashMap::from_array([]),
-            children: Vec::from_array([]),
+            entries: Vec::new(),
+            entry_objects: HashMap::new(),
+            children: Vec::new(),
         },
     );
     match parent {

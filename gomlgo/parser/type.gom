@@ -93,7 +93,7 @@ fn type_parameter_list_start(parser: Parser) -> bool {
 
 fn parse_type_instance(parser: Parser, expression: ast::Node) -> ast::Node {
     let left = expect(parser, token::Kind::Lbrack);
-    let arguments: Vec[ast::Node] = Vec::from_array([]);
+    let arguments: Vec[ast::Node] = Vec::new();
     while !at(parser, token::Kind::Rbrack) && !eof(parser) {
         arguments.push(parse_type(parser));
         if eat(parser, token::Kind::Comma).is_none() {
@@ -276,7 +276,7 @@ fn parse_parameter_field(parser: Parser, allow_ellipsis: bool) -> ast::Node {
                 ],
             ),
         );
-        return field_node(Vec::from_array([]), Option::Some(type_value), Option::None)
+        return field_node(Vec::new(), Option::Some(type_value), Option::None)
     } else {};
     if named_parameter_group_start(parser, allow_ellipsis) {
         let names: Vec[ast::Node] = Vec::from_array([parse_ident(parser)]);
@@ -327,7 +327,7 @@ fn parse_parameter_field(parser: Parser, allow_ellipsis: bool) -> ast::Node {
         };
         field_node(Vec::from_array([first]), Option::Some(type_value), Option::None)
     } else {
-        field_node(Vec::from_array([]), Option::Some(first), Option::None)
+        field_node(Vec::new(), Option::Some(first), Option::None)
     }
 }
 
@@ -338,7 +338,7 @@ fn parse_field_list(
     ellipsis_allowed: bool,
 ) -> ast::Node {
     let opening = expect(parser, opening_kind);
-    let fields: Vec[ast::Node] = Vec::from_array([]);
+    let fields: Vec[ast::Node] = Vec::new();
     while !at(parser, closing_kind) && !eof(parser) {
         let before = significant_index(parser, 0);
         fields.push(parse_parameter_field(parser, true));
@@ -350,7 +350,7 @@ fn parse_field_list(
         } else {};
         let _ = ensure_progress(parser, before, "field list");
     }
-    let recovered_fields: Vec[ast::Node] = Vec::from_array([]);
+    let recovered_fields: Vec[ast::Node] = Vec::new();
     let mut ellipsis_reported = false;
     for index in 0..fields.len() {
         let field = fields[index];
@@ -446,7 +446,7 @@ fn parse_field_list(
 fn parse_type_parameters(parser: Parser) -> Option[ast::Node] {
     if at(parser, token::Kind::Lbrack) {
         let opening = expect(parser, token::Kind::Lbrack);
-        let fields: Vec[ast::Node] = Vec::from_array([]);
+        let fields: Vec[ast::Node] = Vec::new();
         while !at(parser, token::Kind::Rbrack) && !eof(parser) {
             let before = significant_index(parser, 0);
             let names: Vec[ast::Node] = Vec::from_array([parse_ident(parser)]);
@@ -496,9 +496,7 @@ fn parse_func_type_after_keyword(parser: Parser, function_position: isize) -> as
         Option::Some(
             field_list_node(
                 -1,
-                Vec::from_array(
-                    [field_node(Vec::from_array([]), Option::Some(result_type), Option::None)],
-                ),
+                Vec::from_array([field_node(Vec::new(), Option::Some(result_type), Option::None)]),
                 -1,
             ),
         )
@@ -534,7 +532,7 @@ fn parse_func_type(parser: Parser) -> ast::Node {
 }
 
 fn parse_struct_field(parser: Parser) -> ast::Node {
-    let names: Vec[ast::Node] = Vec::from_array([]);
+    let names: Vec[ast::Node] = Vec::new();
     let mut type_value: Option[ast::Node] = Option::None;
     if at(parser, token::Kind::Mul) {
         type_value = Option::Some(parse_pointer_type(parser));
@@ -566,7 +564,7 @@ fn parse_struct_field(parser: Parser) -> ast::Node {
 fn parse_struct_type(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Struct);
     let left = expect(parser, token::Kind::Lbrace);
-    let fields: Vec[ast::Node] = Vec::from_array([]);
+    let fields: Vec[ast::Node] = Vec::new();
     let mut incomplete = false;
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         let before = significant_index(parser, 0);
@@ -677,7 +675,7 @@ fn interface_method_type_parameters(parser: Parser) -> bool {
 fn parse_interface_type(parser: Parser) -> ast::Node {
     let keyword = expect(parser, token::Kind::Interface);
     let left = expect(parser, token::Kind::Lbrace);
-    let methods: Vec[ast::Node] = Vec::from_array([]);
+    let methods: Vec[ast::Node] = Vec::new();
     let mut incomplete = false;
     while !at(parser, token::Kind::Rbrace) && !eof(parser) {
         let before = significant_index(parser, 0);
@@ -696,11 +694,7 @@ fn parse_interface_type(parser: Parser) -> ast::Node {
             methods.push(field_node(Vec::from_array([name]), Option::Some(signature), Option::None))
         } else if at(parser, token::Kind::Tilde) || type_first(peek(parser)) {
             methods.push(
-                field_node(
-                    Vec::from_array([]),
-                    Option::Some(parse_interface_term(parser)),
-                    Option::None,
-                ),
+                field_node(Vec::new(), Option::Some(parse_interface_term(parser)), Option::None),
             )
         } else {
             report(parser, current(parser).start, "expected interface method or type term");

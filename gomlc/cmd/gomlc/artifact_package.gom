@@ -76,7 +76,7 @@ fn artifact_read_interface_units(paths: Vec[string]) -> Result[
         Ok(values) => values,
         Err(errors) => return Result::Err(errors[0]),
     };
-    let names: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
     for interface in result {
         if names.contains(interface.package_name) {
             return Result::Err(
@@ -154,7 +154,7 @@ fn artifact_resolve_interface_units(
     direct_dependencies: Vec[string],
     provided: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[artifact::ArtifactInterfaceUnit], string] {
-    let pending: Vec[ArtifactDependencyRequest] = Vec::from_array([]);
+    let pending: Vec[ArtifactDependencyRequest] = Vec::new();
     for package_name in direct_dependencies {
         pending.push(
             ArtifactDependencyRequest {
@@ -164,8 +164,8 @@ fn artifact_resolve_interface_units(
             },
         )
     }
-    let resolved_names: Vec[string] = Vec::from_array([]);
-    let resolved: Vec[artifact::ArtifactInterfaceUnit] = Vec::from_array([]);
+    let resolved_names: Vec[string] = Vec::new();
+    let resolved: Vec[artifact::ArtifactInterfaceUnit] = Vec::new();
     while !pending.is_empty() {
         let request = pending.remove(pending.len() - 1);
         if request.package_name == "builtin" {
@@ -263,7 +263,7 @@ fn artifact_standard_needs_from_units(
 
 fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Result[unit, string] {
     for module in comptime_modules {
-        let dependencies: Vec[ctir::CtModule] = Vec::from_array([]);
+        let dependencies: Vec[ctir::CtModule] = Vec::new();
         for candidate in comptime_modules {
             if candidate.package_name != module.package_name {
                 dependencies.push(candidate)
@@ -286,7 +286,7 @@ fn artifact_dependency_environments(
     needs: StandardNeeds,
     units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
-    let comptime_modules: Vec[ctir::CtModule] = Vec::from_array([]);
+    let comptime_modules: Vec[ctir::CtModule] = Vec::new();
     for package_value in selected_standard_packages_for_needs(standard, needs) {
         match package_value.interface_unit.comptime {
             Some(value) => comptime_modules.push(value.module),
@@ -300,9 +300,9 @@ fn artifact_dependency_environments(
         }
     }
     artifact_verify_comptime_modules(comptime_modules)?;
-    let result: Vec[tast::DependencyEnvironment] = Vec::from_array([]);
+    let result: Vec[tast::DependencyEnvironment] = Vec::new();
     let value = artifact_dependency_environment_from_exports(builtin)?;
-    let functions: Vec[tast::FunctionScheme] = Vec::from_array([]);
+    let functions: Vec[tast::FunctionScheme] = Vec::new();
     let prelude_names = resources::prelude_builtin_export_names();
     for function in value.functions {
         if prelude_names.contains(function.name) {
@@ -310,15 +310,15 @@ fn artifact_dependency_environments(
         } else {}
     }
     tast::append_builtin_collection_methods(value.methods)?;
-    let impls: Vec[tast::ImplInfo] = Vec::from_array([]);
+    let impls: Vec[tast::ImplInfo] = Vec::new();
     result.push(
         tast::dependency_environment(
-            Vec::from_array([]),
+            Vec::new(),
             value.enums,
             value.structs,
             value.type_aliases,
             value.constants,
-            Vec::from_array([]),
+            Vec::new(),
             functions,
             value.methods,
             impls,
@@ -351,16 +351,16 @@ fn artifact_dependency_environments(
 }
 
 fn artifact_dependency_core_types(units: Vec[artifact::ArtifactInterfaceUnit]) -> Vec[core::File] {
-    let result: Vec[core::File] = Vec::from_array([]);
+    let result: Vec[core::File] = Vec::new();
     for interface in units {
         result.push(
             core::File {
-                functions: Vec::from_array([]),
+                functions: Vec::new(),
                 enums: core::lower_enum_defs(interface.exports.enums),
                 structs: core::lower_struct_defs(interface.exports.structs),
-                type_instances: Vec::from_array([]),
-                constants: Vec::from_array([]),
-                statics: Vec::from_array([]),
+                type_instances: Vec::new(),
+                constants: Vec::new(),
+                statics: Vec::new(),
             },
         )
     }
@@ -372,7 +372,7 @@ fn artifact_direct_dependency_hashes(
     names: Vec[string],
     units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[(string, string)], string] {
-    let result: Vec[(string, string)] = Vec::from_array([]);
+    let result: Vec[(string, string)] = Vec::new();
     result.push(("builtin", artifact_builtin_interface_hash(world)));
     result.push(("prelude", artifact_prelude_interface_hash(world)));
     let names = wire::sort_artifact_names(names);
@@ -394,7 +394,7 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
     string,
     string,
 ] {
-    let names: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
     for index in 0..values.len() {
         let value = values[index];
         match value.ast {
@@ -453,7 +453,7 @@ fn artifact_entrypoint_diagnostics(
     declared_name: string,
     exports: artifact::ArtifactPackageExports,
 ) -> Vec[string] {
-    let diagnostics: Vec[string] = Vec::from_array([]);
+    let diagnostics: Vec[string] = Vec::new();
     if declared_name != "main" {
         return diagnostics
     } else {};
@@ -479,7 +479,7 @@ fn artifact_entrypoint_diagnostics(
 fn artifact_dependency_type_names(builtins: core::File, dependencies: Vec[core::File], enums: bool) -> Vec[
     string,
 ] {
-    let result: Vec[string] = Vec::from_array([]);
+    let result: Vec[string] = Vec::new();
     if enums {
         for definition in dependency_enums(builtins, dependencies) {
             result.push(definition.name)
@@ -568,7 +568,7 @@ fn standard_internal_import_diagnostics(
     paths: Vec[string],
     package_name: string,
 ) -> Vec[tast::Diagnostic] {
-    let diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
+    let diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for index in 0..values.len() {
         match values[index].ast {
             Some(file) => for use_decl in file.uses {
@@ -582,7 +582,7 @@ fn standard_internal_import_diagnostics(
                             source_path: paths[index],
                             span: Option::None,
                             primary_label: Option::None,
-                            secondary_labels: Vec::from_array([]),
+                            secondary_labels: Vec::new(),
                             sort_order: 0,
                         },
                     )
@@ -595,7 +595,7 @@ fn standard_internal_import_diagnostics(
                             source_path: paths[index],
                             span: Option::None,
                             primary_label: Option::None,
-                            secondary_labels: Vec::from_array([]),
+                            secondary_labels: Vec::new(),
                             sort_order: 0,
                         },
                     )
@@ -611,7 +611,7 @@ fn without_disallowed_standard_internal_imports(value: ast::LowerResult, package
     ast::LowerResult {
         ast: match value.ast {
             Some(file) => {
-                let uses: Vec[ast::UseDecl] = Vec::from_array([]);
+                let uses: Vec[ast::UseDecl] = Vec::new();
                 for use_decl in file.uses {
                     if disallowed_standard_internal_import(
                         package_name,
@@ -646,8 +646,8 @@ fn compile_artifact_package(
     if disallowed_toolchain_import(command.package_name) {
         return Result::Err("package " + command.package_name + " is internal to the toolchain")
     } else {};
-    let parsed: Vec[cst::ParseResult] = Vec::from_array([]);
-    let parser_diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
+    let parsed: Vec[cst::ParseResult] = Vec::new();
+    let parser_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for source_path in command.inputs {
         let value = parser::parse(read_source(source_path));
         for diagnostic in ast_diagnostics(value.diagnostics, "parser", source_path) {
@@ -660,7 +660,7 @@ fn compile_artifact_package(
     for index in 0..ast_values.len() {
         ast_values.set(index, ast::resolve_module_paths(ast_values[index], command.module_name))
     }
-    let lower_diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
+    let lower_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for index in 0..ast_values.len() {
         for diagnostic in ast_diagnostics(
             ast_values[index].diagnostics,
@@ -685,8 +685,8 @@ fn compile_artifact_package(
     for ast_value in ast_values {
         source_needs = merge_standard_needs(source_needs, source_standard_needs(ast_value));
     }
-    let derive_modules: Vec[ctir::CtModule] = Vec::from_array([]);
-    let derive_reexports: Vec[(string, string)] = Vec::from_array([]);
+    let derive_modules: Vec[ctir::CtModule] = Vec::new();
+    let derive_reexports: Vec[(string, string)] = Vec::new();
     for package_value in selected_standard_packages_for_needs(world.standard, source_needs) {
         match package_value.interface_unit.comptime {
             Some(value) => derive_modules.push(value.module),
@@ -715,8 +715,8 @@ fn compile_artifact_package(
         None => (),
     };
     artifact_verify_comptime_modules(verified_derive_modules)?;
-    let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::from_array([]);
-    let derive_diagnostics: Vec[tast::Diagnostic] = Vec::from_array([]);
+    let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    let derive_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for index in 0..ast_values.len() {
         let ast_value = ast_values[index];
         let expanded = hir::expand_derives_with_environment(
@@ -733,7 +733,7 @@ fn compile_artifact_package(
         hir_inputs.push((expanded, command.inputs[index]))
     }
     fail_on_typer_diagnostics(derive_diagnostics, "", "");
-    let hir_files: Vec[hir::File] = Vec::from_array([]);
+    let hir_files: Vec[hir::File] = Vec::new();
     for lowered in hir::lower_expanded_package_files(hir_inputs, command.package_name) {
         hir_files.push(checked_hir_file(lowered, command.package_name))
     }
@@ -814,7 +814,7 @@ fn compile_artifact_package(
                     source_path: "",
                     span: Option::None,
                     primary_label: Option::None,
-                    secondary_labels: Vec::from_array([]),
+                    secondary_labels: Vec::new(),
                     sort_order: 0,
                 },
             )
@@ -868,7 +868,7 @@ fn compile_artifact_package(
                 tests: if emit_tests {
                     test_validation.tests
                 } else {
-                    Vec::from_array([])
+                    Vec::new()
                 },
             },
         },
@@ -902,7 +902,7 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::Artifact
         Ok(values) => values,
         Err(errors) => return Result::Err(errors[0]),
     };
-    let names: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
     for core_unit in result {
         if names.contains(core_unit.package_name) {
             return Result::Err("duplicate core provided for package " + core_unit.package_name)
@@ -935,11 +935,11 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     Vec[artifact::ArtifactCoreUnit],
     string,
 ] {
-    let pending: Vec[string] = Vec::from_array([]);
+    let pending: Vec[string] = Vec::new();
     for root in roots {
         pending.push(root)
     }
-    let names: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
     while !pending.is_empty() {
         let package_name = pending.remove(pending.len() - 1);
         if names.contains(package_name) {} else {
@@ -954,7 +954,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
             }
         }
     }
-    let result: Vec[artifact::ArtifactCoreUnit] = Vec::from_array([]);
+    let result: Vec[artifact::ArtifactCoreUnit] = Vec::new();
     for value in values {
         if names.contains(value.package_name) {
             result.push(value)
@@ -1023,7 +1023,7 @@ fn artifact_core_standard_needs(values: Vec[artifact::ArtifactCoreUnit]) -> Stan
 }
 
 fn artifact_core_compilation(value: artifact::ArtifactCoreUnit) -> ArtifactCompilation {
-    let dependency_names: Vec[string] = Vec::from_array([]);
+    let dependency_names: Vec[string] = Vec::new();
     for dependency in value.deps {
         if artifact_link_dependency_name(dependency.0) {
             dependency_names.push(dependency.0)
@@ -1040,7 +1040,7 @@ fn artifact_core_compilations(values: Vec[artifact::ArtifactCoreUnit]) -> Result
     Vec[ArtifactCompilation],
     string,
 ] {
-    let result: Vec[ArtifactCompilation] = Vec::from_array([]);
+    let result: Vec[ArtifactCompilation] = Vec::new();
     for value in values {
         result.push(artifact_core_compilation(value))
     }

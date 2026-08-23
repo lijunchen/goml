@@ -755,7 +755,7 @@ fn check_channel_receive(
 fn function_local_types(function: BytecodeFunction, locals: Vec[LocalId], start: isize) -> Vec[
     go_types::TypeId,
 ] {
-    let result: Vec[go_types::TypeId] = Vec::from_array([]);
+    let result: Vec[go_types::TypeId] = Vec::new();
     for index in start..locals.len() {
         let local = locals[index];
         if local_valid(function, local) {
@@ -981,7 +981,7 @@ fn check_call_shape(
                     local_types[0],
                     "method receiver type does not match target signature",
                 );
-                let remaining: Vec[go_types::TypeId] = Vec::from_array([]);
+                let remaining: Vec[go_types::TypeId] = Vec::new();
                 for index in 1..local_types.len() {
                     remaining.push(local_types[index])
                 }
@@ -1073,7 +1073,7 @@ fn check_call_shape(
                     value.parameter_types[0],
                     "native method receiver type does not match target signature",
                 );
-                let remaining: Vec[go_types::TypeId] = Vec::from_array([]);
+                let remaining: Vec[go_types::TypeId] = Vec::new();
                 for index in 1..value.parameter_types.len() {
                     remaining.push(value.parameter_types[index])
                 }
@@ -2087,7 +2087,7 @@ fn check_signature(
 ) -> unit {
     match verified_signature_shape(program, function.signature) {
         Some(shape) => {
-            let parameters: Vec[go_types::TypeId] = Vec::from_array([]);
+            let parameters: Vec[go_types::TypeId] = Vec::new();
             match shape.receiver {
                 Some(receiver) => parameters.push(receiver),
                 None => {},
@@ -2427,7 +2427,7 @@ fn check_function(
 }
 
 pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
-    let diagnostics: Vec[VerifyDiagnostic] = Vec::from_array([]);
+    let diagnostics: Vec[VerifyDiagnostic] = Vec::new();
     let type_parameter_cache = int_slots(program.world.types.len(), -1);
     let type_parameter_marks = int_slots(program.world.types.len(), 0);
     let next_type_parameter_generation = Ref::new(0);

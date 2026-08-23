@@ -16,7 +16,7 @@ fn bridge_function(call: NativeCallSpec) -> bool {
 }
 
 fn function_package_paths(value: Manifest) -> Vec[string] {
-    let paths: Vec[string] = Vec::from_array([]);
+    let paths: Vec[string] = Vec::new();
     for call in value.calls {
         match call.binding {
             NativeBindingKind::Function => if !bridge_function(call) {
@@ -66,7 +66,7 @@ fn package_paths_contain(paths: Vec[string], expected: string) -> bool {
 fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_path: string) -> Vec[
     RegistryImport,
 ] {
-    let imports: Vec[RegistryImport] = Vec::from_array([]);
+    let imports: Vec[RegistryImport] = Vec::new();
     imports.push(RegistryImport { import_path: bridge_import_path, alias: "_gomlgo_nativebridge" });
     if !value.proxies.is_empty() {
         imports.push(RegistryImport { import_path: "reflect", alias: "_gomlgo_reflect" })
@@ -79,7 +79,7 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
             },
         )
     }
-    let blank_paths: Vec[string] = Vec::from_array([]);
+    let blank_paths: Vec[string] = Vec::new();
     for import_path in value.initialization_packages {
         if !package_paths_contain(function_paths, import_path) {
             blank_paths.push(import_path)

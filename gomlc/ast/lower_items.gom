@@ -196,7 +196,7 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
         Some(name_token) => {
             let name = name_token.token.text;
             let (generics, _) = lower_generics(ctx, node);
-            let variants: Vec[EnumVariant] = Vec::from_array([]);
+            let variants: Vec[EnumVariant] = Vec::new();
             match first_child(node, cst::NodeKind::VARIANT_LIST) {
                 Some(list) => for variant in children_of_kind(list, cst::NodeKind::VARIANT) {
                     match first_token(variant, lexer::TokenKind::Ident) {
@@ -211,11 +211,11 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                         + " must start with an uppercase letter",
                                 )
                             } else {};
-                            let field_type_spans: Vec[Span] = Vec::from_array([]);
-                            let field_attrs: Vec[Vec[Attribute]] = Vec::from_array([]);
+                            let field_type_spans: Vec[Span] = Vec::new();
+                            let field_attrs: Vec[Vec[Attribute]] = Vec::new();
                             let fields = match first_child(variant, cst::NodeKind::TYPE_LIST) {
                                 Some(type_list) => {
-                                    let lowered: Vec[TypeExpr] = Vec::from_array([]);
+                                    let lowered: Vec[TypeExpr] = Vec::new();
                                     for field in children_of_kind(
                                         type_list,
                                         cst::NodeKind::ENUM_TUPLE_FIELD,
@@ -237,7 +237,7 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                 },
                                 None => match first_child(variant, cst::NodeKind::STRUCT_FIELD_LIST) {
                                     Some(field_list) => {
-                                        let named: Vec[(string, TypeExpr)] = Vec::from_array([]);
+                                        let named: Vec[(string, TypeExpr)] = Vec::new();
                                         for field in children_of_kind(
                                             field_list,
                                             cst::NodeKind::STRUCT_FIELD,
@@ -328,10 +328,10 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
     match first_token(node, lexer::TokenKind::Ident) {
         Some(name_token) => {
             let (generics, _) = lower_generics(ctx, node);
-            let fields: Vec[(string, TypeExpr)] = Vec::from_array([]);
-            let field_type_spans: Vec[Span] = Vec::from_array([]);
-            let field_attrs: Vec[Vec[Attribute]] = Vec::from_array([]);
-            let public_fields: Vec[string] = Vec::from_array([]);
+            let fields: Vec[(string, TypeExpr)] = Vec::new();
+            let field_type_spans: Vec[Span] = Vec::new();
+            let field_attrs: Vec[Vec[Attribute]] = Vec::new();
+            let public_fields: Vec[string] = Vec::new();
             let newtype = first_child(node, cst::NodeKind::NEWTYPE_FIELD).is_some();
             match first_child(node, cst::NodeKind::NEWTYPE_FIELD) {
                 Some(field) => {
@@ -413,7 +413,7 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                         node_span(node),
                         "TraitMethod " + name_token.token.text + " has no params",
                     );
-                    Vec::from_array([])
+                    Vec::new()
                 },
             };
             if !params.is_empty() {
@@ -492,10 +492,10 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
             let (generics, generic_bounds) = lower_generics(ctx, node);
             let supertraits = match first_child(node, cst::NodeKind::TRAIT_SET) {
                 Some(set) => lower_trait_set(ctx, set),
-                None => Vec::from_array([]),
+                None => Vec::new(),
             };
-            let associated_types: Vec[AssociatedType] = Vec::from_array([]);
-            let method_sigs: Vec[TraitMethodSignature] = Vec::from_array([]);
+            let associated_types: Vec[AssociatedType] = Vec::new();
+            let method_sigs: Vec[TraitMethodSignature] = Vec::new();
             match first_child(node, cst::NodeKind::TRAIT_METHOD_SIG_LIST) {
                 Some(list) => {
                     for associated in children_of_kind(list, cst::NodeKind::TRAIT_ASSOCIATED_TYPE) {
@@ -503,7 +503,7 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
                             Some(associated_name) => {
                                 let bounds = match first_child(associated, cst::NodeKind::TRAIT_SET) {
                                     Some(set) => lower_trait_set(ctx, set),
-                                    None => Vec::from_array([]),
+                                    None => Vec::new(),
                                 };
                                 associated_types.push(
                                     AssociatedType { name: associated_name.token.text, bounds },
@@ -593,7 +593,7 @@ fn lower_param(ctx: LowerCtx, node: LocatedNode, index: isize, shorthand_self_ty
 fn lower_params(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[TypeExpr]) -> Vec[
     (string, TypeExpr),
 ] {
-    let result: Vec[(string, TypeExpr)] = Vec::from_array([]);
+    let result: Vec[(string, TypeExpr)] = Vec::new();
     match first_child(node, cst::NodeKind::PARAM_LIST) {
         Some(list) => {
             let mut index = 0;
@@ -611,7 +611,7 @@ fn lower_params(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[Type
 }
 
 fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
-    let result: Vec[Span] = Vec::from_array([]);
+    let result: Vec[Span] = Vec::new();
     match first_child(node, cst::NodeKind::PARAM_LIST) {
         Some(list) => for param in children_of_kind(list, cst::NodeKind::PARAM) {
             let types = type_children(param);
@@ -706,7 +706,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
         record_disallowed_self_type(ctx, types[target_index]);
         match lower_ty(ctx, types[target_index]) {
             Some(for_type) => {
-                let associated_types: Vec[(string, TypeExpr)] = Vec::from_array([]);
+                let associated_types: Vec[(string, TypeExpr)] = Vec::new();
                 for associated in children_of_kind(node, cst::NodeKind::IMPL_ASSOCIATED_TYPE) {
                     let name = first_token(associated, lexer::TokenKind::Ident);
                     let associated_ty = type_children(associated);
@@ -720,7 +720,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                         None => (),
                     }
                 }
-                let methods: Vec[Function] = Vec::from_array([]);
+                let methods: Vec[Function] = Vec::new();
                 for method in children_of_kind(node, cst::NodeKind::FN) {
                     match lower_function(ctx, method, Option::Some(for_type)) {
                         Some(value) => {

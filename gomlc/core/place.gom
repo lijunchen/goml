@@ -139,7 +139,7 @@ fn decompose_place_from(value: tast::Expr, steps: Vec[PlaceStep]) -> Option[Plac
 }
 
 fn decompose_place(value: tast::Expr) -> Option[(PlaceRoot, Vec[PlaceStep])] {
-    let steps: Vec[PlaceStep] = Vec::from_array([]);
+    let steps: Vec[PlaceStep] = Vec::new();
     match decompose_place_from(value, steps) {
         Some(root) => Option::Some((root, steps)),
         None => Option::None,
@@ -156,18 +156,18 @@ fn place_intrinsic_call(
 }
 
 fn place_ref_get(value: LowerExpr, ref_ty: tast::Type, inner_ty: tast::Type) -> LowerExpr {
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(ref_ty);
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(value);
     place_intrinsic_call("ref.get", params, inner_ty, args)
 }
 
 fn place_ref_set(value: LowerExpr, updated: LowerExpr, ref_ty: tast::Type) -> LowerExpr {
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(ref_ty);
     params.push(lower_expr_type(updated));
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(value);
     args.push(updated);
     place_intrinsic_call("ref.set", params, tast::Type::Unit, args)
@@ -186,10 +186,10 @@ fn place_index_read(
         HashMap { key: _, value: _ } => "hashmap.get",
         _ => "compiler.missing",
     };
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(container_ty);
     params.push(lower_expr_type(index));
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(container);
     args.push(index);
     place_intrinsic_call(name, params, item_ty, args)
@@ -197,11 +197,11 @@ fn place_index_read(
 
 fn place_array_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> LowerExpr {
     let container_ty = lower_expr_type(container);
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(container_ty);
     params.push(tast::Type::Int);
     params.push(lower_expr_type(value));
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(container);
     args.push(index);
     args.push(value);
@@ -209,11 +209,11 @@ fn place_array_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> 
 }
 
 fn place_vec_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> LowerExpr {
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(lower_expr_type(container));
     params.push(tast::Type::Int);
     params.push(lower_expr_type(value));
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(container);
     args.push(index);
     args.push(value);
@@ -221,11 +221,11 @@ fn place_vec_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> Lo
 }
 
 fn place_hashmap_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> LowerExpr {
-    let params: Vec[tast::Type] = Vec::from_array([]);
+    let params: Vec[tast::Type] = Vec::new();
     params.push(lower_expr_type(container));
     params.push(lower_expr_type(index));
     params.push(lower_expr_type(value));
-    let args: Vec[LowerExpr] = Vec::from_array([]);
+    let args: Vec[LowerExpr] = Vec::new();
     args.push(container);
     args.push(index);
     args.push(value);
@@ -238,8 +238,8 @@ fn struct_place_details(ctx: Lowerer, parent_ty: tast::Type) -> Option[
     match nominal_parts(parent_ty) {
         Some((name, args)) => match find_struct(ctx, name) {
             Some(definition) => {
-                let fields: Vec[(string, tast::Type)] = Vec::from_array([]);
-                let field_names: Vec[string] = Vec::from_array([]);
+                let fields: Vec[(string, tast::Type)] = Vec::new();
+                let field_names: Vec[string] = Vec::new();
                 for field in definition.fields {
                     field_names.push(field.0);
                     fields.push(
@@ -288,7 +288,7 @@ fn place_field_get(
 fn rebuild_tuple(parent: LowerExpr, parent_ty: tast::Type, index: isize, value: LowerExpr) -> LowerExpr {
     match tast::resolve_type(parent_ty) {
         Tuple { items: types } => {
-            let items: Vec[LowerExpr] = Vec::from_array([]);
+            let items: Vec[LowerExpr] = Vec::new();
             for item_index in 0..types.len() {
                 if item_index == index {
                     items.push(value)
@@ -313,7 +313,7 @@ fn rebuild_struct(
 ) -> LowerExpr {
     match struct_place_details(ctx, parent_ty) {
         Some((constructor, fields)) => {
-            let args: Vec[LowerExpr] = Vec::from_array([]);
+            let args: Vec[LowerExpr] = Vec::new();
             for index in 0..fields.len() {
                 let field = fields[index];
                 if field.0 == field_name {
@@ -343,7 +343,7 @@ fn lower_index_assignment(
 ) -> LowerExpr {
     match decompose_place(target) {
         Some((root, steps)) => if !steps.is_empty() {
-            let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+            let stmts: Vec[LowerLetStmt] = Vec::new();
             let mut compiled_root: CompiledPlaceRoot = CompiledPlaceRoot::Value;
             let mut current_name = "";
             let mut current_ty = tast::Type::Error;
@@ -390,7 +390,7 @@ fn lower_index_assignment(
                     current_ty = ty;
                 },
             };
-            let evaluated: Vec[EvaluatedPlaceStep] = Vec::from_array([]);
+            let evaluated: Vec[EvaluatedPlaceStep] = Vec::new();
             for step in steps {
                 match step {
                     Proj { parent_ty, index, item_ty } => {
@@ -591,7 +591,7 @@ fn lower_local_compound_assignment(
     let old_name = gensym(ctx, "compound_old");
     let value_name = gensym(ctx, "compound_value");
     let value_ty = tast::expr_type(value);
-    let stmts: Vec[LowerLetStmt] = Vec::from_array([]);
+    let stmts: Vec[LowerLetStmt] = Vec::new();
     stmts.push(
         LowerLetStmt {
             name: old_name,

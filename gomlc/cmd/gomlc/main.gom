@@ -79,7 +79,7 @@ fn dump_argument(value: string) -> bool {
 }
 
 fn inline_dump_argument(value: string) -> Option[(string, string)] {
-    let names: Vec[string] = Vec::from_array([]);
+    let names: Vec[string] = Vec::new();
     names.push(DUMP_AST_OPTION);
     names.push(DUMP_EXPANDED_AST_OPTION);
     names.push(DUMP_HIR_OPTION);
@@ -116,8 +116,8 @@ fn selected_run_usage(used_dumps: Vec[string]) -> string {
 
 fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     let mut file: Option[string] = Option::None;
-    let seen: HashMap[string, unit] = HashMap::from_array([]);
-    let used_dumps: Vec[string] = Vec::from_array([]);
+    let seen: HashMap[string, unit] = HashMap::new();
+    let used_dumps: Vec[string] = Vec::new();
     let mut positional = false;
     let mut index = 2;
     while index < args.len() {
@@ -203,7 +203,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             },
         ),
         None => {
-            let missing: Vec[string] = Vec::from_array([]);
+            let missing: Vec[string] = Vec::new();
             missing.push("<FILE>");
             Result::Err(
                 missing_required_arguments_error_with_usage(missing, selected_run_usage(used_dumps)),

@@ -148,7 +148,7 @@ fn type_doc_with_contract(builtin: BuiltinContract, value: Type) -> pretty::Doc 
             for bound in additional_bounds {
                 bounds.push(bound)
             }
-            let values: Vec[pretty::Doc] = Vec::from_array([]);
+            let values: Vec[pretty::Doc] = Vec::new();
             for bound in bounds {
                 let arguments = type_docs(builtin, bound.args);
                 for binding in bound.associated_types {
@@ -432,7 +432,7 @@ fn diagnostic_type(value: Type) -> Type {
             Link(inner) => diagnostic_type(inner),
         },
         Tuple { items: values } => {
-            let result: Vec[Type] = Vec::from_array([]);
+            let result: Vec[Type] = Vec::new();
             for value in values {
                 result.push(diagnostic_type(value))
             }
@@ -446,7 +446,7 @@ fn diagnostic_type(value: Type) -> Type {
             Type::Projection { for_ty: diagnostic_type(base), name, trait_ref: qualifier }
         },
         App { ty: base, args } => {
-            let result: Vec[Type] = Vec::from_array([]);
+            let result: Vec[Type] = Vec::new();
             for value in args {
                 result.push(diagnostic_type(value))
             }
@@ -461,7 +461,7 @@ fn diagnostic_type(value: Type) -> Type {
         },
         Channel { elem, direction } => Type::Channel { elem: diagnostic_type(elem), direction },
         Func { params, ret_ty } => {
-            let result: Vec[Type] = Vec::from_array([]);
+            let result: Vec[Type] = Vec::new();
             for value in params {
                 result.push(diagnostic_type(value))
             }
@@ -472,7 +472,7 @@ fn diagnostic_type(value: Type) -> Type {
 }
 
 fn diagnostic_trait_ref(value: TraitRef) -> TraitRef {
-    let args: Vec[Type] = Vec::from_array([]);
+    let args: Vec[Type] = Vec::new();
     for value in value.args {
         args.push(diagnostic_type(value))
     }

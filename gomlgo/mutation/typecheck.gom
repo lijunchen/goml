@@ -22,7 +22,7 @@ fn replace_range(value: bytes::Bytes, start: isize, end: isize, replacement: str
 }
 
 fn semantic_mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
-    let result: Vec[bytes::Bytes] = Vec::from_array([]);
+    let result: Vec[bytes::Bytes] = Vec::new();
     let tokens = scanner::scan_bytes(source).tokens;
     let mut changed_operator = false;
     let mut changed_definition = false;
@@ -88,7 +88,7 @@ fn semantic_mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
 }
 
 fn checker_response_json(value: checker::CheckResult) -> string {
-    let diagnostics: Vec[json::Value] = Vec::from_array([]);
+    let diagnostics: Vec[json::Value] = Vec::new();
     for item in value.diagnostics {
         diagnostics.push(
             json::Value::Object(
@@ -118,7 +118,7 @@ fn checker_response_json(value: checker::CheckResult) -> string {
 }
 
 fn oracle_response_json(value: typecheck_diff::CheckResponse) -> string {
-    let diagnostics: Vec[json::Value] = Vec::from_array([]);
+    let diagnostics: Vec[json::Value] = Vec::new();
     for item in value.diagnostics {
         diagnostics.push(
             json::Value::Object(
@@ -172,7 +172,7 @@ pub fn run_typecheck(root: string, output: string, seed_limit: isize) -> Result[
     TypecheckSummary,
     string,
 ] {
-    let files: Vec[string] = Vec::from_array([]);
+    let files: Vec[string] = Vec::new();
     if fs::is_file(root) {
         files.push(root)
     } else {
