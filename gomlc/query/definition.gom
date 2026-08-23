@@ -265,7 +265,20 @@ fn member_access_dot(value: Analysis, offset: isize) -> Option[isize] {
     }
 }
 
-fn member_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
+fn member_method_target_matches(symbol: Symbol, target: Option[tast::ReferenceTarget]) -> bool {
+    match target {
+        Some(Callable(InherentMethod { .. },)) => match symbol.method_origin {
+            Inherent => true,
+            _ => false,
+        },
+        Some(Callable(TraitMethod { .. },)) | Some(Callable(DynTraitMethod { .. },)) => false,
+        _ => true,
+    }
+}
+
+fn member_definitions(value: Analysis, offset: isize, target: Option[tast::ReferenceTarget]) -> Vec[
+    DefinitionResult,
+] {
     let exact: Vec[DefinitionResult] = Vec::new();
     let fallback: Vec[DefinitionResult] = Vec::new();
     match token_at(value.syntax, offset) {
@@ -278,6 +291,10 @@ fn member_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult] {
                             && match symbol.kind {
                                 Field | Method => true,
                                 _ => false,
+                            }
+                            && match symbol.kind {
+                                Method => member_method_target_matches(symbol, target),
+                                _ => true,
                             }
                             && (symbol.package_name == value.package_name || symbol.public) {
                             let definition = DefinitionResult {
@@ -572,7 +589,14 @@ pub fn goto_definitions(value: Analysis, offset: isize) -> Vec[DefinitionResult]
             width = fact_width;
         } else {}
     }
-    for definition in member_definitions(value, offset) {
+    for definition in member_definitions(
+        value,
+        offset,
+        match reference {
+            Some(fact) => Option::Some(fact.target),
+            None => Option::None,
+        },
+    ) {
         push_definition(result, definition)
     }
     if result.is_empty() {
