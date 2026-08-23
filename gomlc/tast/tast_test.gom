@@ -1311,6 +1311,22 @@ fn suppresses_match_coverage_after_pattern_errors() -> unit {
 }
 
 #[test]
+fn suppresses_secondary_diagnostics_after_pattern_and_guard_errors() -> unit {
+    let let_else = checked_diagnostics(
+        "enum Choice { A } fn inspect(value: Choice) -> unit { let Missing = value else { return; }; }",
+    );
+    testing::assert_eq(let_else.len(), 1);
+    testing::assert_eq(let_else[0].message, "Enum Choice has no variant Missing");
+    let let_binding = checked_diagnostics("fn inspect() -> unit { let true = 1; }");
+    testing::assert_eq(let_binding.len(), 1);
+    let guard = checked_diagnostics(
+        "fn choose(value: bool) -> i32 { match value { _ if 1 => 0 } }",
+    );
+    testing::assert_eq(guard.len(), 1);
+    testing::assert_eq(guard[0].message, "Numeric literal cannot be used as bool")
+}
+
+#[test]
 fn validates_or_pattern_binding_consistency() -> unit {
     let types = checked_diagnostics(
         "enum Value { Number(i32), Text(string) } fn inspect(value: Value) -> unit { match value { Value::Number(item) | Value::Text(item) => () } }",
