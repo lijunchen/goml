@@ -5407,6 +5407,10 @@ fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
 
 fn checked_pattern_primitive(ctx: Checker, value: Primitive, expected: Type) -> Primitive {
     match value {
+        Int { value: raw } => {
+            validate_integer_literal(ctx, raw, expected);
+            Primitive::Int { value: raw }
+        },
         Float { value: raw } => match prune(expected) {
             Float32 | Float64 => {
                 Primitive::Float { value: checked_float_literal(ctx, raw, expected) }
