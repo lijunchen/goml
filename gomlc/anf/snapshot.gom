@@ -6,17 +6,92 @@ use module::snapshot_names;
 struct SnapshotNames {
     locals: snapshot_names::Names,
     joins: snapshot_names::Names,
+    declared_locals: HashMap[string, unit],
 }
 
-fn snapshot_names_new() -> SnapshotNames {
-    SnapshotNames { locals: snapshot_names::names(), joins: snapshot_names::names() }
+fn collect_local(values: HashMap[string, unit], name: string) -> unit {
+    values[name] = ();
+}
+
+fn collect_term_locals(values: HashMap[string, unit], value: Term) -> unit {
+    match value {
+        If { cond: _, then_, else_, ret_ty: _ } => {
+            collect_block_locals(values, then_);
+            collect_block_locals(values, else_)
+        },
+        Match { scrutinee: _, arms, default, ret_ty: _ } => {
+            for arm in arms {
+                collect_block_locals(values, arm.body)
+            }
+            match default {
+                Some(body) => collect_block_locals(values, body),
+                None => (),
+            }
+        },
+        Select { arms, default, .. } => {
+            for arm in arms {
+                match arm {
+                    Receive { binding, body, .. } => {
+                        collect_local(values, binding);
+                        collect_block_locals(values, body)
+                    },
+                    Send { body, .. } => collect_block_locals(values, body),
+                }
+            }
+            match default {
+                Some(body) => collect_block_locals(values, body),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn collect_block_locals(values: HashMap[string, unit], value: Block) -> unit {
+    for binding in value.binds {
+        match binding {
+            Let(value) => collect_local(values, value.name),
+            Join(value) => {
+                for param in value.params {
+                    collect_local(values, param.0)
+                }
+                collect_block_locals(values, value.body)
+            },
+            JoinRec(joins) => for value in joins {
+                for param in value.params {
+                    collect_local(values, param.0)
+                }
+                collect_block_locals(values, value.body)
+            },
+        }
+    }
+    collect_term_locals(values, value.term)
+}
+
+fn snapshot_names_new(value: Function) -> SnapshotNames {
+    let declared_locals: HashMap[string, unit] = HashMap::new();
+    for param in value.params {
+        collect_local(declared_locals, param.0)
+    }
+    collect_block_locals(declared_locals, value.body);
+    SnapshotNames {
+        locals: snapshot_names::names(),
+        joins: snapshot_names::names(),
+        declared_locals,
+    }
+}
+
+fn snapshot_local(names: SnapshotNames, value: string) -> string {
+    if names.declared_locals.contains(value) {
+        snapshot_names::canonical(names.locals, value)
+    } else {
+        value
+    }
 }
 
 fn snapshot_imm(names: SnapshotNames, value: Imm) -> Imm {
     match value {
-        Var { name, ty } => {
-            Imm::Var { name: snapshot_names::canonical(names.locals, name), ty }
-        },
+        Var { name, ty } => Imm::Var { name: snapshot_local(names, name), ty },
         Callable { callable, ty } => Imm::Callable { callable, ty },
         Prim { value, ty } => Imm::Prim { value, ty },
         Tag { index, ty } => Imm::Tag { index, ty },
@@ -61,7 +136,7 @@ fn snapshot_value(names: SnapshotNames, value: Value) -> Value {
             ty,
         },
         Assign { name, value, target_ty, ty } => Value::Assign {
-            name: snapshot_names::canonical(names.locals, name),
+            name: snapshot_local(names, name),
             value: snapshot_imm(names, value),
             target_ty,
             ty,
@@ -99,7 +174,7 @@ fn snapshot_value(names: SnapshotNames, value: Value) -> Value {
 fn snapshot_join(names: SnapshotNames, value: JoinBind) -> JoinBind {
     let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
     for param in value.params {
-        params.push((snapshot_names::canonical(names.locals, param.0), param.1))
+        params.push((snapshot_local(names, param.0), param.1))
     }
     JoinBind {
         name: snapshot_names::canonical(names.joins, value.name),
@@ -130,7 +205,7 @@ fn snapshot_block(names: SnapshotNames, value: Block) -> Block {
     for binding in value.binds {
         match binding {
             Let(value) => {
-                let name = snapshot_names::canonical(names.locals, value.name);
+                let name = snapshot_local(names, value.name);
                 binds.push(
                     Bind::Let(
                         LetBind { name, value: snapshot_value(names, value.value), ty: value.ty },
@@ -159,7 +234,7 @@ fn snapshot_select_arm(names: SnapshotNames, value: SelectArm) -> SelectArm {
         Receive { channel, guard, binding, binding_ty, body } => SelectArm::Receive {
             channel: snapshot_imm(names, channel),
             guard: snapshot_optional_imm(names, guard),
-            binding: snapshot_names::canonical(names.locals, binding),
+            binding: snapshot_local(names, binding),
             binding_ty,
             body: snapshot_block(names, body),
         },
@@ -221,10 +296,10 @@ fn snapshot_term(names: SnapshotNames, value: Term) -> Term {
 }
 
 fn snapshot_function(value: Function) -> Function {
-    let names = snapshot_names_new();
+    let names = snapshot_names_new(value);
     let params: Vec[(string, repr::Type)] = Vec::with_capacity(value.params.len());
     for param in value.params {
-        params.push((snapshot_names::canonical(names.locals, param.0), param.1))
+        params.push((snapshot_local(names, param.0), param.1))
     }
     Function {
         name: value.name,
@@ -237,7 +312,7 @@ fn snapshot_function(value: Function) -> Function {
     }
 }
 
-fn snapshot_file(value: File) -> File {
+pub fn canonicalize_names(value: File) -> File {
     let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
     for function in value.functions {
         functions.push(snapshot_function(function))
@@ -254,5 +329,5 @@ fn snapshot_file(value: File) -> File {
 }
 
 pub fn encode_snapshot(value: File) -> string {
-    encode(snapshot_file(value))
+    encode(canonicalize_names(value))
 }

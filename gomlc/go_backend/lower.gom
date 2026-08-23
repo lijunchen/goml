@@ -5476,7 +5476,7 @@ fn validate_anf(value: anf::File) -> Result[unit, string] {
 
 pub fn lower(value: anf::File) -> Result[File, string] {
     validate_anf(value)?;
-    lower_with_test_cases(value, false, Vec::new())
+    lower_with_test_cases(anf::canonicalize_names(value), false, Vec::new())
 }
 
 pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string, Vec[(string, string)])]) -> Result[
@@ -5484,5 +5484,5 @@ pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string, Vec[(strin
     string,
 ] {
     validate_anf(value)?;
-    lower_with_test_cases(value, true, test_cases)
+    lower_with_test_cases(anf::canonicalize_names(value), true, test_cases)
 }
