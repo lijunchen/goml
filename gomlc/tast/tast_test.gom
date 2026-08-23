@@ -3409,20 +3409,15 @@ fn resolves_dyn_dot_methods_and_reports_unavailable_methods() -> unit {
 }
 
 #[test]
-fn rejects_dyn_patterns_and_marks_recovery_arms_unreachable() -> unit {
+fn rejects_dyn_patterns_without_coverage_cascades() -> unit {
     let diagnostics = checked_diagnostics(
         "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let concrete: i32 = 1; let value: dyn Label = concrete as dyn Label; let _ = match value { 1 => 2, _ => 3 }; }",
     );
-    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(diagnostics.len(), 1);
     testing::assert_eq(diagnostics.get(0).message, "Pattern matching on dyn Label is not supported");
     match diagnostics.get(0).severity {
         Error => (),
         Warning => testing::fail("expected dyn pattern error"),
-    };
-    testing::assert_eq(diagnostics.get(1).message, "Unreachable match arm");
-    match diagnostics.get(1).severity {
-        Warning => (),
-        Error => testing::fail("expected unreachable arm warning"),
     }
 }
 
