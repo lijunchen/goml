@@ -183,11 +183,13 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
                 "toml",
                 "time",
                 "utf8",
+                "utf16",
                 "unicode",
             ],
         ),
     );
     assert_strings(standard_package_children("std::internal"), Vec::from_array(["host", "task"]));
+    assert_strings(standard_package_children("std::bytes"), Vec::from_array(["endian"]));
     assert_strings(standard_package_children("std::crypto"), Vec::from_array(["hash", "rand"]));
     match standard_sources("std::serde") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 6),
