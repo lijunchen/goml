@@ -2524,7 +2524,7 @@ Current public entrances include:
 
 - `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
 - `bincode::standard`, `legacy`, configuration builders, serde `Serialize` and `Deserialize` re-exports, `encode_to_vec`, and `decode_from_slice`
-- `bytes::Bytes`/`ByteBuffer`, `Builder`, `Reader`, `Writer`, `Endian`, checked integer and floating-point reads and writes, and zero-copy byte views
+- `bytes::Bytes`, `Builder`, `Reader`, `Writer`, `Endian`, checked integer and floating-point reads and writes, and zero-copy byte views
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations. `Ordering` is a builtin type re-exported by `cmp`.
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`; `HashSet::to_vec` returns a snapshot of its keys
 - `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, and their comparator variants. The sorting, search, selection, and deduplication methods on `Vec[T]` are the canonical forms.
