@@ -13,6 +13,7 @@ use module::parser;
 use module::resources;
 use module::tast;
 use std::fs;
+use std::path;
 use std::task;
 
 struct ArtifactDependencyRequest {
@@ -45,14 +46,21 @@ fn artifact_read_interface_unit(path_value: string) -> Result[
     artifact::ArtifactInterfaceUnit,
     string,
 ] {
-    let source = match fs::read_bytes(path_value) {
-        Ok(value) => value,
-        Err(error) => return Result::Err("failed to read interface " + path_value + ": " + error),
-    };
-    match decode_artifact_interface_bytes(source) {
-        Ok(value) => Result::Ok(value),
-        Err(error) => Result::Err("failed to parse interface " + path_value + ": " + error),
-    }
+    output_snapshot(
+        path::with_extension(path_value, ""),
+        || {
+            let source = match fs::read_bytes(path_value) {
+                Ok(value) => value,
+                Err(error) => return Result::Err(
+                    "failed to read interface " + path_value + ": " + error,
+                ),
+            };
+            match decode_artifact_interface_bytes(source) {
+                Ok(value) => Result::Ok(value),
+                Err(error) => Result::Err("failed to parse interface " + path_value + ": " + error),
+            }
+        },
+    )
 }
 
 fn artifact_read_interface_units(paths: Vec[string]) -> Result[
@@ -876,14 +884,19 @@ fn compile_artifact_package(
 }
 
 fn artifact_read_core_unit(path_value: string) -> Result[artifact::ArtifactCoreUnit, string] {
-    let source = match fs::read_bytes(path_value) {
-        Ok(value) => value,
-        Err(error) => return Result::Err("failed to read core " + path_value + ": " + error),
-    };
-    match decode_artifact_core_bytes(source) {
-        Ok(value) => Result::Ok(value),
-        Err(error) => Result::Err("failed to parse core " + path_value + ": " + error),
-    }
+    output_snapshot(
+        path::with_extension(path_value, ""),
+        || {
+            let source = match fs::read_bytes(path_value) {
+                Ok(value) => value,
+                Err(error) => return Result::Err("failed to read core " + path_value + ": " + error),
+            };
+            match decode_artifact_core_bytes(source) {
+                Ok(value) => Result::Ok(value),
+                Err(error) => Result::Err("failed to parse core " + path_value + ": " + error),
+            }
+        },
+    )
 }
 
 fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::ArtifactCoreUnit], string] {

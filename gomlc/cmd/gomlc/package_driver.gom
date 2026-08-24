@@ -914,28 +914,21 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             }
         },
     };
-    match ensure_parent(interface_output_path(command.output)) {
-        Ok(()) => match write_artifact_interface(
-            interface_output_path(command.output),
-            artifact.interface_unit,
-        ) {
-            Ok(()) => (),
-            Err(error) => fail(error),
+    match output_transaction(
+        command.output,
+        || {
+            ensure_parent(interface_output_path(command.output))?;
+            write_artifact_interface(interface_output_path(command.output), artifact.interface_unit)?;
+            if build {
+                ensure_parent(core_output_path(command.output))?;
+                write_artifact_core(core_output_path(command.output), artifact.core_unit)?
+            } else {};
+            Result::Ok(())
         },
+    ) {
+        Ok(()) => (),
         Err(error) => fail(error),
-    };
-    if build {
-        match ensure_parent(core_output_path(command.output)) {
-            Ok(()) => match write_artifact_core(
-                core_output_path(command.output),
-                artifact.core_unit,
-            ) {
-                Ok(()) => (),
-                Err(error) => fail(error),
-            },
-            Err(error) => fail(error),
-        }
-    } else {}
+    }
 }
 
 fn run_link_command(args: Vec[string]) -> unit {
@@ -1025,7 +1018,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     let anf_value = lower_anf_stage(lift_value, world.counter);
     let go_source = go_backend::encode(lower_go_or_fail(go_backend::lower(anf_value)));
     match ensure_parent(command.output) {
-        Ok(()) => match fs::write_file(command.output, go_source) {
+        Ok(()) => match atomic_write_text(command.output, go_source) {
             Ok(()) => (),
             Err(error) => fail(error),
         },
@@ -1122,18 +1115,16 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let go_source = go_backend::encode(
         lower_go_or_fail(go_backend::lower_tests(anf_value, test_link_cases(tests))),
     );
-    match ensure_parent(command.output) {
-        Ok(()) => match fs::write_file(command.output, go_source) {
-            Ok(()) => (),
-            Err(error) => fail(error),
+    match output_transaction(
+        command.output,
+        || {
+            ensure_parent(command.output)?;
+            ensure_parent(command.manifest)?;
+            atomic_write_text(command.output, go_source)?;
+            atomic_write_text(command.manifest, encode_test_manifest(tests))
         },
-        Err(error) => fail(error),
-    };
-    match ensure_parent(command.manifest) {
-        Ok(()) => match fs::write_file(command.manifest, encode_test_manifest(tests)) {
-            Ok(()) => (),
-            Err(error) => fail(error),
-        },
+    ) {
+        Ok(()) => (),
         Err(error) => fail(error),
     }
 }

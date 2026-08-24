@@ -389,24 +389,40 @@ fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots:
     )
 }
 
-fn write_toolchain_package(command: PackageCommandArgs, compilation: PackageCompilation) -> Result[
-    unit,
-    string,
-] {
-    ensure_parent(interface_output_path(command.output))?;
-    write_artifact_interface(interface_output_path(command.output), compilation.interface_unit)?;
-    ensure_parent(core_output_path(command.output))?;
-    write_artifact_core(
-        core_output_path(command.output),
-        artifact::ArtifactCoreUnit {
-            package_name: command.package_name,
-            declared_name: compilation.interface_unit.package_interface.name,
-            interface_hash: compilation.interface_unit.interface_hash,
-            exports: compilation.exports,
-            core_ir: compilation.core_value,
-            deps: compilation.interface_unit.deps,
-            sources: command.inputs,
-            tests: Vec::new(),
+fn write_toolchain_package(
+    command: PackageCommandArgs,
+    compilation: PackageCompilation,
+    counter_output: Option[(string, string)],
+) -> Result[unit, string] {
+    output_snapshot(
+        command.output,
+        || {
+            match counter_output {
+                Some((path, value)) => {
+                    ensure_parent(path)?;
+                    atomic_write_text(path, value)?
+                },
+                None => (),
+            };
+            ensure_parent(interface_output_path(command.output))?;
+            write_artifact_interface(
+                interface_output_path(command.output),
+                compilation.interface_unit,
+            )?;
+            ensure_parent(core_output_path(command.output))?;
+            write_artifact_core(
+                core_output_path(command.output),
+                artifact::ArtifactCoreUnit {
+                    package_name: command.package_name,
+                    declared_name: compilation.interface_unit.package_interface.name,
+                    interface_hash: compilation.interface_unit.interface_hash,
+                    exports: compilation.exports,
+                    core_ir: compilation.core_value,
+                    deps: compilation.interface_unit.deps,
+                    sources: command.inputs,
+                    tests: Vec::new(),
+                },
+            )
         },
     )
 }
@@ -423,13 +439,11 @@ fn run_toolchain_build(args: Vec[string]) -> unit {
         match compile_builtin_contract_request(request.command) {
             Ok((compilation, counter)) => {
                 match request.counter_output {
-                    Some(path) => match ensure_parent(path) {
-                        Ok(()) => match fs::write_file(path, counter.to_string()) {
-                            Ok(()) => write_toolchain_package(request.command, compilation),
-                            Err(error) => Result::Err(error),
-                        },
-                        Err(error) => Result::Err(error),
-                    },
+                    Some(path) => write_toolchain_package(
+                        request.command,
+                        compilation,
+                        Option::Some((path, counter.to_string())),
+                    ),
                     None => Result::Err("builtin contract counter output is missing"),
                 }
             },
@@ -437,7 +451,7 @@ fn run_toolchain_build(args: Vec[string]) -> unit {
         }
     } else {
         match compile_toolchain_project_request(request.command, request.without_roots) {
-            Ok(compilation) => write_toolchain_package(request.command, compilation),
+            Ok(compilation) => write_toolchain_package(request.command, compilation, Option::None),
             Err(error) => Result::Err(error),
         }
     };
@@ -529,21 +543,28 @@ fn parse_toolchain_counter(value: string) -> Result[isize, string] {
 }
 
 fn read_toolchain_package(base: string) -> Result[ToolchainPackage, string] {
-    let interface = decode_artifact_interface_bytes(fs::read_bytes(interface_output_path(base))?)?;
-    let core = decode_artifact_core_bytes(fs::read_bytes(core_output_path(base))?)?;
-    if interface.package_name != core.package_name
-        || interface.interface_hash != core.interface_hash
-        || !world_dependencies_equal(interface.deps, core.deps) {
-        Result::Err("toolchain package identity does not match for " + base)
-    } else {
-        Result::Ok(
-            ToolchainPackage {
-                core_value: core.core_ir,
-                interface_unit: interface,
-                environment_exports: core.exports,
-            },
-        )
-    }
+    output_transaction(
+        base,
+        || {
+            let interface = decode_artifact_interface_bytes(
+                fs::read_bytes(interface_output_path(base))?,
+            )?;
+            let core = decode_artifact_core_bytes(fs::read_bytes(core_output_path(base))?)?;
+            if interface.package_name != core.package_name
+                || interface.interface_hash != core.interface_hash
+                || !world_dependencies_equal(interface.deps, core.deps) {
+                Result::Err("toolchain package identity does not match for " + base)
+            } else {
+                Result::Ok(
+                    ToolchainPackage {
+                        core_value: core.core_ir,
+                        interface_unit: interface,
+                        environment_exports: core.exports,
+                    },
+                )
+            }
+        },
+    )
 }
 
 fn run_pack_toolchain_world(args: Vec[string]) -> unit {

@@ -5,6 +5,152 @@ use module::artifact::interface_codec as interface_codec;
 use module::artifact;
 use std::bytes;
 use std::fs;
+use std::io;
+use std::time;
+
+struct OutputLock {
+    path: string,
+}
+
+fn output_lock_path(anchor: string) -> string {
+    anchor + ".goml-output-lock"
+}
+
+fn output_epoch_path(anchor: string) -> string {
+    anchor + ".goml-output-epoch"
+}
+
+fn output_lock_is_stale(path_value: string) -> bool {
+    match fs::metadata(path_value) {
+        Ok(metadata) => {
+            let age = time::SystemTime::now().unix_nanoseconds()
+                - metadata.modified_unix_nanoseconds();
+            age > 86400000000000
+        },
+        Err(_) => false,
+    }
+}
+
+fn acquire_output_lock(anchor: string) -> Result[OutputLock, string] {
+    let lock_path = output_lock_path(anchor);
+    ensure_parent(lock_path)?;
+    let started = time::Instant::now();
+    loop {
+        match fs::create_dir(lock_path) {
+            Ok(()) => return Result::Ok(OutputLock { path: lock_path }),
+            Err(error) => if error.kind() == io::ErrorKind::AlreadyExists {
+                if output_lock_is_stale(lock_path) {
+                    fs::remove_dir_all(lock_path)?
+                } else if started.elapsed().as_seconds() >= 30 {
+                    return Result::Err("timed out waiting for output lock " + lock_path)
+                } else {
+                    time::sleep(time::Duration::from_milliseconds(1))
+                }
+            } else {
+                return Result::Err(error.to_string())
+            },
+        }
+    }
+}
+
+fn release_output_lock(lock: OutputLock) -> Result[unit, string] {
+    fs::remove_dir_all(lock.path)
+}
+
+fn output_transaction[T](anchor: string, action: () -> Result[T, string]) -> Result[T, string] {
+    let lock = acquire_output_lock(anchor)?;
+    let epoch_path = output_epoch_path(anchor);
+    let epoch = time::SystemTime::now().unix_nanoseconds().to_string();
+    match atomic_write_text(epoch_path, "writing:" + epoch) {
+        Ok(()) => (),
+        Err(error) => {
+            let _ = release_output_lock(lock);
+            return Result::Err(error)
+        },
+    };
+    let result = action();
+    match result {
+        Ok(value) => match atomic_write_text(epoch_path, "complete:" + epoch) {
+            Ok(()) => match release_output_lock(lock) {
+                Ok(()) => Result::Ok(value),
+                Err(error) => Result::Err(error),
+            },
+            Err(error) => {
+                let _ = release_output_lock(lock);
+                Result::Err(error)
+            },
+        },
+        Err(error) => {
+            let _ = release_output_lock(lock);
+            Result::Err(error)
+        },
+    }
+}
+
+fn read_output_epoch(anchor: string) -> Result[Option[string], string] {
+    let epoch_path = output_epoch_path(anchor);
+    if fs::exists(epoch_path) {
+        match fs::read_file(epoch_path) {
+            Ok(value) => Result::Ok(Option::Some(value)),
+            Err(error) => Result::Err(error),
+        }
+    } else {
+        Result::Ok(Option::None)
+    }
+}
+
+fn completed_output_epoch(value: Option[string]) -> bool {
+    match value {
+        Some(value) => value.starts_with("complete:"),
+        None => true,
+    }
+}
+
+fn output_epochs_equal(left: Option[string], right: Option[string]) -> bool {
+    match (left, right) {
+        (Some(left), Some(right)) => left == right,
+        (None, None) => true,
+        _ => false,
+    }
+}
+
+fn output_snapshot[T](anchor: string, action: () -> Result[T, string]) -> Result[T, string] {
+    let started = time::Instant::now();
+    loop {
+        let before = read_output_epoch(anchor)?;
+        if fs::exists(output_lock_path(anchor)) {
+            if started.elapsed().as_seconds() >= 30 {
+                return Result::Err("timed out waiting for output lock " + output_lock_path(anchor))
+            } else {
+                time::sleep(time::Duration::from_milliseconds(1));
+                continue
+            }
+        } else if !completed_output_epoch(before) {
+            return Result::Err("incomplete output transaction for " + anchor)
+        } else {};
+        let result = action();
+        let after = read_output_epoch(anchor)?;
+        if !fs::exists(output_lock_path(anchor)) && output_epochs_equal(before, after) {
+            return result
+        } else if started.elapsed().as_seconds() >= 30 {
+            return Result::Err("output changed repeatedly while reading " + anchor)
+        } else {}
+    }
+}
+
+fn atomic_write_text(path_value: string, value: string) -> Result[unit, string] {
+    match fs::atomic_write(path_value, value) {
+        Ok(()) => Result::Ok(()),
+        Err(error) => Result::Err(error.to_string()),
+    }
+}
+
+fn atomic_write_data(path_value: string, value: bytes::Bytes) -> Result[unit, string] {
+    match fs::atomic_write_bytes(path_value, value) {
+        Ok(()) => Result::Ok(()),
+        Err(error) => Result::Err(error.to_string()),
+    }
+}
 
 fn decode_artifact_interface_bytes(data: bytes::Bytes) -> Result[
     artifact::ArtifactInterfaceUnit,
@@ -22,7 +168,7 @@ fn write_artifact_interface(path_value: string, value: artifact::ArtifactInterfa
     string,
 ] {
     match interface_codec::encode_binary(value) {
-        Ok(data) => fs::write_bytes(path_value, data),
+        Ok(data) => atomic_write_data(path_value, data),
         Err(error) => Result::Err(error),
     }
 }
@@ -32,7 +178,7 @@ fn write_artifact_core(path_value: string, value: artifact::ArtifactCoreUnit) ->
     string,
 ] {
     match core_codec::encode_binary(value) {
-        Ok(data) => fs::write_bytes(path_value, data),
+        Ok(data) => atomic_write_data(path_value, data),
         Err(error) => Result::Err(error),
     }
 }

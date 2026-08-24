@@ -643,7 +643,7 @@ fn read_package_world(path: string) -> Result[PackageWorld, string] {
 fn write_package_world(path: string, value: PackageWorld) -> Result[unit, string] {
     let data = encode_package_world(value)?;
     match ensure_parent(path) {
-        Ok(()) => fs::write_bytes(path, data),
+        Ok(()) => atomic_write_data(path, data),
         Err(error) => Result::Err(error),
     }
 }

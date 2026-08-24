@@ -7,6 +7,7 @@ use std::path;
 use std::process;
 use std::task;
 use std::text;
+use std::time;
 
 struct BuildNode {
     index: isize,
@@ -16,6 +17,66 @@ struct BuildNode {
 
 struct BuildGraph {
     nodes: Vec[BuildNode],
+}
+
+struct BuildLock {
+    path: string,
+}
+
+fn build_lock_path(context: Context) -> string {
+    path::join(context.artifact_root, ".goml-build-lock")
+}
+
+fn build_lock_is_stale(path_value: string) -> bool {
+    match fs::metadata(path_value) {
+        Ok(metadata) => {
+            let age = time::SystemTime::now().unix_nanoseconds()
+                - metadata.modified_unix_nanoseconds();
+            age > 86400000000000
+        },
+        Err(_) => false,
+    }
+}
+
+fn acquire_build_lock(context: Context) -> Result[BuildLock, string] {
+    fs::create_dir_all(context.artifact_root)?;
+    let lock_path = build_lock_path(context);
+    let started = time::Instant::now();
+    loop {
+        match fs::create_dir(lock_path) {
+            Ok(()) => return Result::Ok(BuildLock { path: lock_path }),
+            Err(error) => if error.kind() == io::ErrorKind::AlreadyExists {
+                if build_lock_is_stale(lock_path) {
+                    fs::remove_dir_all(lock_path)?
+                } else if started.elapsed().as_seconds() >= 30 {
+                    return Result::Err("timed out waiting for build lock " + lock_path)
+                } else {
+                    time::sleep(time::Duration::from_milliseconds(1))
+                }
+            } else {
+                return Result::Err(error.to_string())
+            },
+        }
+    }
+}
+
+fn release_build_lock(lock: BuildLock) -> Result[unit, string] {
+    fs::remove_dir_all(lock.path)
+}
+
+pub fn with_build_lock[T](context: Context, action: () -> Result[T, string]) -> Result[T, string] {
+    let lock = acquire_build_lock(context)?;
+    let result = action();
+    match result {
+        Ok(value) => match release_build_lock(lock) {
+            Ok(()) => Result::Ok(value),
+            Err(error) => Result::Err(error),
+        },
+        Err(error) => {
+            let _ = release_build_lock(lock);
+            Result::Err(error)
+        },
+    }
 }
 
 fn package_artifact_base(root: string, graph: Graph, package_name: string) -> string {
