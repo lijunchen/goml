@@ -1,0 +1,371 @@
+fn grandparent_continue() -> isize {
+  join inline_cont0(rounds/0: Ref[isize]) -> isize {
+    join exit0(jp0: isize) -> isize {
+      jp0
+    } in
+    joinrec {
+      join loop_expr0() -> isize {
+        join inline_cont1(t0: isize) -> isize {
+          let t1 = (t0 + 1) in
+          join inline_cont2(_wild0: unit) -> isize {
+            join inline_cont3(t2: isize) -> isize {
+              let t3 = (t2 == 2) in
+              if t3 {
+                let inline0 = @intrinsic(ref.get)(rounds/0) in
+                jump exit0(inline0)
+              } else {
+                joinrec {
+                  join loop_expr1() -> isize {
+                    joinrec {
+                      join loop_expr2() -> isize {
+                        join inline_cont4(t4: isize) -> isize {
+                          let t5 = (t4 == 1) in
+                          if t5 {
+                            jump loop_expr0()
+                          } else {
+                            jump loop_expr2()
+                          }
+                        } in
+                        let inline1 = @intrinsic(ref.get)(rounds/0) in
+                        jump inline_cont4(inline1)
+                      } in
+                    } in
+                    jump loop_expr2()
+                  } in
+                } in
+                jump loop_expr1()
+              }
+            } in
+            let inline2 = @intrinsic(ref.get)(rounds/0) in
+            jump inline_cont3(inline2)
+          } in
+          let inline3 = @intrinsic(ref.set)(rounds/0, t1) in
+          jump inline_cont2(())
+        } in
+        let inline4 = @intrinsic(ref.get)(rounds/0) in
+        jump inline_cont1(inline4)
+      } in
+    } in
+    jump loop_expr0()
+  } in
+  let inline5 = 0 in
+  let inline6 = @intrinsic(ref.new)(inline5) in
+  jump inline_cont0(inline6)
+}
+
+fn mixed_self_local_and_ancestor() -> isize {
+  join inline_cont0(rounds/0: Ref[isize]) -> isize {
+    join inline_cont1(steps/0: Ref[isize]) -> isize {
+      join exit0(jp0: isize) -> isize {
+        jp0
+      } in
+      joinrec {
+        join loop_expr0() -> isize {
+          join inline_cont2(t0: isize) -> isize {
+            let t1 = (t0 + 1) in
+            join inline_cont3(_wild0: unit) -> isize {
+              join inline_cont4(_wild1: unit) -> isize {
+                join exit1() -> isize {
+                  join inline_cont5(t2: isize) -> isize {
+                    let t3 = (t2 * 10) in
+                    join inline_cont6(t4: isize) -> isize {
+                      let t5 = (t3 + t4) in
+                      jump exit0(t5)
+                    } in
+                    let inline0 = @intrinsic(ref.get)(steps/0) in
+                    jump inline_cont6(inline0)
+                  } in
+                  let inline1 = @intrinsic(ref.get)(rounds/0) in
+                  jump inline_cont5(inline1)
+                } in
+                joinrec {
+                  join loop_expr1() -> isize {
+                    join inline_cont7(t6: isize) -> isize {
+                      let t7 = (t6 + 1) in
+                      join inline_cont8(_wild2: unit) -> isize {
+                        join inline_cont9(t8: isize) -> isize {
+                          let t9 = (t8 == 1) in
+                          join k0(jp1: bool) -> isize {
+                            if jp1 {
+                              jump loop_expr1()
+                            } else {
+                              join inline_cont10(t10: isize) -> isize {
+                                let t11 = (t10 == 1) in
+                                if t11 {
+                                  jump loop_expr0()
+                                } else {
+                                  jump exit1()
+                                }
+                              } in
+                              let inline2 = @intrinsic(ref.get)(rounds/0) in
+                              jump inline_cont10(inline2)
+                            }
+                          } in
+                          if t9 {
+                            join inline_cont11(t12: isize) -> isize {
+                              let t13 = (t12 == 1) in
+                              jump k0(t13)
+                            } in
+                            let inline3 = @intrinsic(ref.get)(steps/0) in
+                            jump inline_cont11(inline3)
+                          } else {
+                            jump k0(false)
+                          }
+                        } in
+                        let inline4 = @intrinsic(ref.get)(rounds/0) in
+                        jump inline_cont9(inline4)
+                      } in
+                      let inline5 = @intrinsic(ref.set)(steps/0, t7) in
+                      jump inline_cont8(())
+                    } in
+                    let inline6 = @intrinsic(ref.get)(steps/0) in
+                    jump inline_cont7(inline6)
+                  } in
+                } in
+                jump loop_expr1()
+              } in
+              let inline7 = 0 in
+              let inline8 = @intrinsic(ref.set)(steps/0, inline7) in
+              jump inline_cont4(())
+            } in
+            let inline9 = @intrinsic(ref.set)(rounds/0, t1) in
+            jump inline_cont3(())
+          } in
+          let inline10 = @intrinsic(ref.get)(rounds/0) in
+          jump inline_cont2(inline10)
+        } in
+      } in
+      jump loop_expr0()
+    } in
+    let inline11 = 0 in
+    let inline12 = @intrinsic(ref.new)(inline11) in
+    jump inline_cont1(inline12)
+  } in
+  let inline13 = 0 in
+  let inline14 = @intrinsic(ref.new)(inline13) in
+  jump inline_cont0(inline14)
+}
+
+fn grandparent_while_continue() -> isize {
+  join inline_cont0(rounds/0: Ref[isize]) -> isize {
+    join exit0() -> isize {
+      let inline0 = @intrinsic(ref.get)(rounds/0) in
+      inline0
+    } in
+    joinrec {
+      join loop0() -> isize {
+        join inline_cont1(t0: isize) -> isize {
+          let t1 = (t0 < 3) in
+          if t1 {
+            join inline_cont2(t2: isize) -> isize {
+              let t3 = (t2 + 1) in
+              join inline_cont3(_wild0: unit) -> isize {
+                joinrec {
+                  join loop_expr0() -> isize {
+                    joinrec {
+                      join loop_expr1() -> isize {
+                        jump loop0()
+                      } in
+                    } in
+                    jump loop_expr1()
+                  } in
+                } in
+                jump loop_expr0()
+              } in
+              let inline1 = @intrinsic(ref.set)(rounds/0, t3) in
+              jump inline_cont3(())
+            } in
+            let inline2 = @intrinsic(ref.get)(rounds/0) in
+            jump inline_cont2(inline2)
+          } else {
+            jump exit0()
+          }
+        } in
+        let inline3 = @intrinsic(ref.get)(rounds/0) in
+        jump inline_cont1(inline3)
+      } in
+    } in
+    jump loop0()
+  } in
+  let inline4 = 0 in
+  let inline5 = @intrinsic(ref.new)(inline4) in
+  jump inline_cont0(inline5)
+}
+
+fn main() -> unit {
+  let t0 = grandparent_continue() in
+  join inline_cont0(_wild0: unit) -> unit {
+    let t1 = mixed_self_local_and_ancestor() in
+    join inline_cont1(_wild1: unit) -> unit {
+      let t2 = grandparent_while_continue() in
+      let inline0 = trait_impl#ToString#isize#to_string(t2) in
+      let inline1 = @runtime(core.string_println)(inline0) in
+      ()
+    } in
+    let inline2 = trait_impl#ToString#isize#to_string(t1) in
+    let inline3 = @runtime(core.string_println)(inline2) in
+    jump inline_cont1(())
+  } in
+  let inline4 = trait_impl#ToString#isize#to_string(t0) in
+  let inline5 = @runtime(core.string_println)(inline4) in
+  jump inline_cont0(())
+}
+
+fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
+}
+
+fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
+}
+
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
+  ()
+}
+
+fn println__T_isize(value/0: isize) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
+    ()
+  } in
+  let inline0 = __goml_builtin_int_to_string(value/0) in
+  jump inline_cont0(inline0)
+}
+
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
+}
+
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
+  } else {
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
+  }
+}
+
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
+  } else {
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
+  }
+}
+
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
+        } in
+        joinrec {
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
+                  } in
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
+                } in
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
+              } else {
+                jump exit1()
+              }
+            } in
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
+          } in
+        } in
+        jump loop1()
+      } in
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
+    } in
+    joinrec {
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
+          } in
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
+        } else {
+          jump exit0()
+        }
+      } in
+    } in
+    jump loop0()
+  } in
+  if t0 {
+    "0"
+  } else {
+    jump k0()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
+}
+
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
+}
+
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  let t0 = @runtime(core.int_hash)(self/0) in
+  t0
+}

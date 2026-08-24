@@ -1,0 +1,90 @@
+fn grandparent_continue() -> isize {
+    let rounds/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    loop {
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+          (rounds/0 : Ref[isize]),
+          (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) + 1
+        );
+        if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) == 2 {
+            {
+                break (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize]))
+            }
+        } else {
+            {
+                loop {
+                    loop {
+                        if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) == 1 {
+                            {
+                                continue@2
+                            }
+                        } else {
+                            {
+                                continue
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn mixed_self_local_and_ancestor() -> isize {
+    let rounds/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    let steps/2: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    loop {
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+          (rounds/1 : Ref[isize]),
+          (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) + 1
+        );
+        (Ref[isize]::set : (Ref[isize], isize) -> unit)((steps/2 : Ref[isize]), 0);
+        loop {
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (steps/2 : Ref[isize]),
+              (Ref[isize]::get : (Ref[isize]) -> isize)((steps/2 : Ref[isize])) + 1
+            );
+            if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) == 1 &&
+              (Ref[isize]::get : (Ref[isize]) -> isize)((steps/2 : Ref[isize])) == 1 {
+                {
+                    continue
+                }
+            } else {
+                if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) == 1 {
+                    {
+                        continue@1
+                    }
+                } else {
+                    {
+                        break
+                    }
+                }
+            }
+        };
+        break (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) * 10 +
+          (Ref[isize]::get : (Ref[isize]) -> isize)((steps/2 : Ref[isize]))
+    }
+}
+
+fn grandparent_while_continue() -> isize {
+    let rounds/3: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
+    while (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/3 : Ref[isize])) < 3 {
+        {
+            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (rounds/3 : Ref[isize]),
+              (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/3 : Ref[isize])) + 1
+            );
+            loop {
+                loop {
+                    continue@2
+                }
+            }
+        }
+    };
+    (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/3 : Ref[isize]))
+}
+
+fn main() -> unit {
+    (println : (isize) -> unit)((grandparent_continue : () -> isize)());
+    (println : (isize) -> unit)((mixed_self_local_and_ancestor : () -> isize)());
+    (println : (isize) -> unit)((grandparent_while_continue : () -> isize)())
+}

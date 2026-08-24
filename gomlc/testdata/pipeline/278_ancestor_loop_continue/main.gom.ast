@@ -1,0 +1,78 @@
+package main;
+fn grandparent_continue() -> isize {
+    let rounds = Ref::new(0);
+    'outer: loop {
+        rounds.set(rounds.get() + 1);
+        if rounds.get() == 2 {
+            {
+                break 'outer rounds.get()
+            }
+        } else {
+            {
+                loop {
+                    loop {
+                        if rounds.get() == 1 {
+                            {
+                                continue 'outer
+                            }
+                        } else {
+                            {
+                                continue
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn mixed_self_local_and_ancestor() -> isize {
+    let rounds = Ref::new(0);
+    let steps = Ref::new(0);
+    'outer: loop {
+        rounds.set(rounds.get() + 1);
+        steps.set(0);
+        loop {
+            steps.set(steps.get() + 1);
+            if rounds.get() == 1 && steps.get() == 1 {
+                {
+                    continue
+                }
+            } else {
+                if rounds.get() == 1 {
+                    {
+                        continue 'outer
+                    }
+                } else {
+                    {
+                        break
+                    }
+                }
+            }
+        };
+        break 'outer rounds.get() * 10 + steps.get()
+    }
+}
+
+fn grandparent_while_continue() -> isize {
+    let rounds = Ref::new(0);
+    'outer: while rounds.get() < 3 {
+        {
+            rounds.set(rounds.get() + 1);
+            loop {
+                loop {
+                    continue 'outer
+                }
+            }
+        }
+    };
+    rounds.get()
+}
+
+fn main() -> unit {
+    println(grandparent_continue());
+    println(mixed_self_local_and_ancestor());
+    println(grandparent_while_continue())
+}
+

@@ -84,7 +84,7 @@ type ParsedFloat struct {
 
 type Ordering int32
 
-func unique_outer_continue() int {
+func grandparent_continue() int {
     var rounds__0 *ref_int_x
     var inline5 int = 0
     var inline6 *ref_int_x = ref__Ref_3int(inline5)
@@ -122,39 +122,107 @@ func unique_outer_continue() int {
     return jp0
 }
 
-func mixed_outer_continue_and_local_exit() int {
+func mixed_self_local_and_ancestor() int {
     var rounds__0 *ref_int_x
-    var inline3 int = 0
-    var inline4 *ref_int_x = ref__Ref_3int(inline3)
-    rounds__0 = inline4
+    var inline13 int = 0
+    var inline14 *ref_int_x = ref__Ref_3int(inline13)
+    rounds__0 = inline14
+    var steps__0 *ref_int_x
+    var inline11 int = 0
+    var inline12 *ref_int_x = ref__Ref_3int(inline11)
+    steps__0 = inline12
     var jp0 int
     Loop_loop_expr0:
     for {
         var t0 int
-        var inline2 int = ref_get__Ref_3int(rounds__0)
-        t0 = inline2
+        var inline10 int = ref_get__Ref_3int(rounds__0)
+        t0 = inline10
         var t1 int = t0 + 1
         ref_set__Ref_3int(rounds__0, t1)
-        var t2 int
-        var inline0 int = ref_get__Ref_3int(rounds__0)
-        t2 = inline0
-        var t3 bool = t2 == 1
-        if t3 {
-            continue
-        } else {
-            jp0 = 12
-            break Loop_loop_expr0
+        var inline7 int = 0
+        ref_set__Ref_3int(steps__0, inline7)
+        for {
+            var t6 int
+            var inline6 int = ref_get__Ref_3int(steps__0)
+            t6 = inline6
+            var t7 int = t6 + 1
+            ref_set__Ref_3int(steps__0, t7)
+            var t8 int
+            var inline4 int = ref_get__Ref_3int(rounds__0)
+            t8 = inline4
+            var t9 bool = t8 == 1
+            var jp1 bool
+            if t9 {
+                var t12 int
+                var inline3 int = ref_get__Ref_3int(steps__0)
+                t12 = inline3
+                var t13 bool = t12 == 1
+                jp1 = t13
+            } else {
+                jp1 = false
+            }
+            if jp1 {
+                continue
+            } else {
+                var t10 int
+                var inline2 int = ref_get__Ref_3int(rounds__0)
+                t10 = inline2
+                var t11 bool = t10 == 1
+                if t11 {
+                    continue Loop_loop_expr0
+                } else {
+                    var t2 int
+                    var inline1 int = ref_get__Ref_3int(rounds__0)
+                    t2 = inline1
+                    var t3 int = t2 * 10
+                    var t4 int
+                    var inline0 int = ref_get__Ref_3int(steps__0)
+                    t4 = inline0
+                    var t5 int = t3 + t4
+                    jp0 = t5
+                    return jp0
+                }
+            }
         }
     }
     return jp0
 }
 
+func grandparent_while_continue() int {
+    var rounds__0 *ref_int_x
+    var inline4 int = 0
+    var inline5 *ref_int_x = ref__Ref_3int(inline4)
+    rounds__0 = inline5
+    Loop_loop0:
+    for {
+        var t0 int
+        var inline3 int = ref_get__Ref_3int(rounds__0)
+        t0 = inline3
+        var t1 bool = t0 < 3
+        if t1 {
+            var t2 int
+            var inline2 int = ref_get__Ref_3int(rounds__0)
+            t2 = inline2
+            var t3 int = t2 + 1
+            ref_set__Ref_3int(rounds__0, t3)
+            continue
+        } else {
+            break Loop_loop0
+        }
+    }
+    var inline0 int = ref_get__Ref_3int(rounds__0)
+    return inline0
+}
+
 func main0() struct{} {
-    var t0 int = unique_outer_continue()
-    var inline2 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t0)
+    var t0 int = grandparent_continue()
+    var inline4 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t0)
+    _goml_runtime_core_string_println(inline4)
+    var t1 int = mixed_self_local_and_ancestor()
+    var inline2 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t1)
     _goml_runtime_core_string_println(inline2)
-    var t1 int = mixed_outer_continue_and_local_exit()
-    var inline0 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t1)
+    var t2 int = grandparent_while_continue()
+    var inline0 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t2)
     _goml_runtime_core_string_println(inline0)
     return struct{}{}
 }
