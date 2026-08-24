@@ -3,6 +3,7 @@ package main;
 use module::artifact::core_codec as core_codec;
 use module::artifact::interface_codec as interface_codec;
 use module::artifact;
+use module::hash;
 use std::bytes;
 use std::fs;
 use std::io;
@@ -60,7 +61,18 @@ fn release_output_lock(lock: OutputLock) -> Result[unit, string] {
 fn output_transaction[T](anchor: string, action: () -> Result[T, string]) -> Result[T, string] {
     let lock = acquire_output_lock(anchor)?;
     let epoch_path = output_epoch_path(anchor);
-    let epoch = time::SystemTime::now().unix_nanoseconds().to_string();
+    let previous = match read_output_epoch(anchor) {
+        Ok(Some(value)) => value,
+        Ok(None) => "",
+        Err(error) => {
+            let _ = release_output_lock(lock);
+            return Result::Err(error)
+        },
+    };
+    let epoch = hash::sha256_hex(
+        previous + "\u0000" + time::SystemTime::now().unix_nanoseconds().to_string() + "\u0000"
+            + anchor,
+    );
     match atomic_write_text(epoch_path, "writing:" + epoch) {
         Ok(()) => (),
         Err(error) => {
