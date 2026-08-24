@@ -79,6 +79,77 @@ fn isolates_temporary_go_paths_for_identical_sources() -> unit {
     testing::assert(!fs::is_dir(second_directory))
 }
 
+#[test]
+fn publishes_stable_output_transaction_snapshots() -> unit {
+    let temporary = temp_go_path("output-transaction.gom", "stable");
+    let Some(directory) = path::parent(temporary) else {
+        testing::fail("expected output transaction directory");
+        return
+    };
+    let anchor = path::join(directory, "package");
+    let interface_path = path::join(directory, "package.interface");
+    let core_path = path::join(directory, "package.core");
+    match output_transaction(
+        anchor,
+        || {
+            atomic_write_text(interface_path, "interface")?;
+            atomic_write_text(core_path, "core")
+        },
+    ) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    testing::assert(!fs::exists(output_lock_path(anchor)));
+    match fs::read_file(output_epoch_path(anchor)) {
+        Ok(value) => testing::assert(value.starts_with("complete:")),
+        Err(error) => testing::fail(error),
+    };
+    match output_snapshot(
+        anchor,
+        || Result::Ok(fs::read_file(interface_path)? + ":" + fs::read_file(core_path)?),
+    ) {
+        Ok(value) => testing::assert_eq(value, "interface:core"),
+        Err(error) => testing::fail(error),
+    };
+    cleanup_temp_directory(temporary)
+}
+
+#[test]
+fn rejects_and_repairs_incomplete_output_transactions() -> unit {
+    let temporary = temp_go_path("incomplete-output.gom", "incomplete");
+    let Some(directory) = path::parent(temporary) else {
+        testing::fail("expected incomplete output directory");
+        return
+    };
+    let anchor = path::join(directory, "package");
+    let output = path::join(directory, "package.interface");
+    let failed: Result[unit, string] = output_transaction(
+        anchor,
+        || {
+            atomic_write_text(output, "partial")?;
+            Result::Err("publication stopped")
+        },
+    );
+    match failed {
+        Ok(()) => testing::fail("incomplete transaction succeeded"),
+        Err(error) => testing::assert_eq(error, "publication stopped"),
+    };
+    testing::assert(!fs::exists(output_lock_path(anchor)));
+    match output_snapshot(anchor, || fs::read_file(output)) {
+        Ok(_) => testing::fail("incomplete transaction was readable"),
+        Err(error) => testing::assert(error.contains("incomplete output transaction")),
+    };
+    match output_transaction(anchor, || atomic_write_text(output, "complete")) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    match output_snapshot(anchor, || fs::read_file(output)) {
+        Ok(value) => testing::assert_eq(value, "complete"),
+        Err(error) => testing::fail(error),
+    };
+    cleanup_temp_directory(temporary)
+}
+
 fn args_with(values: Vec[string]) -> Vec[string] {
     let args = Vec::new();
     args.push("gomlc");

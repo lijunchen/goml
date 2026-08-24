@@ -6,6 +6,7 @@ use std::path;
 use std::process;
 use std::task;
 use std::testing;
+use std::time;
 
 fn strings_contain(values: Vec[string], expected: string) -> bool {
     for value in values {
@@ -38,6 +39,64 @@ fn displays_commands_with_unicode_and_quoted_arguments() -> unit {
         display_command(Command::GoBuild { input: "源 code/main.go", output: "输出's app" }),
         "go build -o '输出'\\''s app' '源 code/main.go'",
     )
+}
+
+#[test]
+fn serializes_builds_for_one_artifact_root() -> unit {
+    let root = test_support::workspace("build_lock_serialization");
+    let context = cancellation_test_context(root, "compiler");
+    let state = path::join(root, "state");
+    let first_started: Channel[unit] = Channel::new(1);
+    let result: Result[Vec[unit], Vec[string]] = task::scope(
+        |scope: task::Scope| {
+            let tasks: Vec[task::Task[Result[unit, string]]] = Vec::new();
+            tasks.push(
+                scope.spawn(
+                    |_: task::CancelToken| with_build_lock(
+                        context,
+                        || {
+                            fs::write_file(state, "first")?;
+                            first_started.send(());
+                            time::sleep(time::Duration::from_milliseconds(50));
+                            if fs::read_file(state)? != "first" {
+                                return Result::Err("second build entered the active lock")
+                            } else {};
+                            fs::write_file(state, "first-complete")
+                        },
+                    ),
+                ),
+            );
+            tasks.push(
+                scope.spawn(
+                    |_: task::CancelToken| {
+                        match first_started.recv() {
+                            Some(()) => (),
+                            None => return Result::Err("first build did not start"),
+                        };
+                        with_build_lock(
+                            context,
+                            || {
+                                if fs::read_file(state)? != "first-complete" {
+                                    return Result::Err("second build observed an incomplete output")
+                                } else {};
+                                fs::write_file(state, "second")
+                            },
+                        )
+                    },
+                ),
+            );
+            task::join_all_results(tasks)
+        },
+    );
+    match result {
+        Ok(values) => testing::assert_eq(values.len(), 2),
+        Err(errors) => testing::fail(errors[0]),
+    };
+    match fs::read_file(state) {
+        Ok(value) => testing::assert_eq(value, "second"),
+        Err(error) => testing::fail(error),
+    };
+    testing::assert(!fs::exists(build_lock_path(context)))
 }
 
 #[test]
