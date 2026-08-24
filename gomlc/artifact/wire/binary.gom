@@ -1,22 +1,23 @@
 package wire;
 
 use std::bytes;
+use std::bytes::endian;
 
 pub struct ArtifactBinaryWriter {
-    data: bytes::Bytes,
+    data: endian::Builder,
 }
 
 pub struct ArtifactBinaryReader {
-    data: bytes::Bytes,
+    data: Slice[byte],
     offset: Ref[isize],
 }
 
 pub fn new_artifact_binary_writer() -> ArtifactBinaryWriter {
-    ArtifactBinaryWriter { data: bytes::Bytes::new() }
+    ArtifactBinaryWriter { data: endian::Builder::new() }
 }
 
 pub fn new_artifact_binary_reader(data: bytes::Bytes) -> ArtifactBinaryReader {
-    ArtifactBinaryReader { data, offset: Ref::new(0) }
+    ArtifactBinaryReader { data: data.as_slice(), offset: Ref::new(0) }
 }
 
 fn artifact_binary_writer_len(writer: ArtifactBinaryWriter) -> isize {
@@ -24,29 +25,23 @@ fn artifact_binary_writer_len(writer: ArtifactBinaryWriter) -> isize {
 }
 
 pub fn artifact_binary_writer_finish(writer: ArtifactBinaryWriter) -> bytes::Bytes {
-    writer.data
+    writer.data.finish()
 }
 
 fn artifact_binary_write_u8(writer: ArtifactBinaryWriter, value: u8) -> unit {
-    writer.data.push(value)
+    writer.data.write_u8(value)
 }
 
 fn artifact_binary_write_u16(writer: ArtifactBinaryWriter, value: u16) -> unit {
-    writer.data.push((value & 255).to_u8());
-    writer.data.push(((value >> 8) & 255).to_u8())
+    writer.data.write_u16(value, endian::Endian::Little)
 }
 
 fn artifact_binary_write_u32(writer: ArtifactBinaryWriter, value: u32) -> unit {
-    writer.data.push((value & 255).to_u8());
-    writer.data.push(((value >> 8) & 255).to_u8());
-    writer.data.push(((value >> 16) & 255).to_u8());
-    writer.data.push(((value >> 24) & 255).to_u8())
+    writer.data.write_u32(value, endian::Endian::Little)
 }
 
 pub fn artifact_binary_write_u64(writer: ArtifactBinaryWriter, value: u64) -> unit {
-    for index in 0..8 {
-        writer.data.push(((value >> (index * 8)) & 255).to_u8())
-    }
+    writer.data.write_u64(value, endian::Endian::Little)
 }
 
 fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: u64) -> unit {
@@ -75,15 +70,11 @@ fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> unit
 
 fn artifact_binary_write_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> unit {
     artifact_binary_write_uleb128(writer, value.len().to_u64());
-    for index in 0..value.len() {
-        writer.data.push(value.get(index))
-    }
+    writer.data.extend(value.as_slice())
 }
 
 fn artifact_binary_write_raw_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> unit {
-    for index in 0..value.len() {
-        writer.data.push(value.get(index))
-    }
+    writer.data.extend(value.as_slice())
 }
 
 pub fn artifact_binary_write_string(writer: ArtifactBinaryWriter, value: string) -> unit {
@@ -94,14 +85,10 @@ fn artifact_binary_patch_u32(writer: ArtifactBinaryWriter, offset: isize, value:
     unit,
     string,
 ] {
-    if offset < 0 || offset + 4 > writer.data.len() {
-        Result::Err("binary patch offset out of bounds")
-    } else {
-        writer.data.set(offset, (value & 255).to_u8());
-        writer.data.set(offset + 1, ((value >> 8) & 255).to_u8());
-        writer.data.set(offset + 2, ((value >> 16) & 255).to_u8());
-        writer.data.set(offset + 3, ((value >> 24) & 255).to_u8());
-        Result::Ok(())
+    let output = writer.data.to_vec().as_mut_slice();
+    match endian::write_u32(output, offset, value, endian::Endian::Little) {
+        Ok(()) => Result::Ok(()),
+        Err(_) => Result::Err("binary patch offset out of bounds"),
     }
 }
 
@@ -109,13 +96,10 @@ fn artifact_binary_patch_u64(writer: ArtifactBinaryWriter, offset: isize, value:
     unit,
     string,
 ] {
-    if offset < 0 || offset + 8 > writer.data.len() {
-        Result::Err("binary patch offset out of bounds")
-    } else {
-        for index in 0..8 {
-            writer.data.set(offset + index, ((value >> (index * 8)) & 255).to_u8())
-        }
-        Result::Ok(())
+    let output = writer.data.to_vec().as_mut_slice();
+    match endian::write_u64(output, offset, value, endian::Endian::Little) {
+        Ok(()) => Result::Ok(()),
+        Err(_) => Result::Err("binary patch offset out of bounds"),
     }
 }
 
@@ -136,52 +120,46 @@ fn artifact_binary_reader_error(reader: ArtifactBinaryReader, message: string) -
 }
 
 pub fn artifact_binary_read_u8(reader: ArtifactBinaryReader) -> Result[u8, string] {
-    if artifact_binary_reader_remaining(reader) < 1 {
-        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
-    } else {
-        let offset = reader.offset.get();
-        reader.offset.set(offset + 1);
-        Result::Ok(reader.data.get(offset))
+    let offset = reader.offset.get();
+    match endian::read_u8(reader.data, offset) {
+        Ok(value) => {
+            reader.offset.set(offset + 1);
+            Result::Ok(value)
+        },
+        Err(_) => Result::Err(artifact_binary_reader_error(reader, "unexpected end of input")),
     }
 }
 
 fn artifact_binary_read_u16(reader: ArtifactBinaryReader) -> Result[u16, string] {
-    if artifact_binary_reader_remaining(reader) < 2 {
-        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
-    } else {
-        let offset = reader.offset.get();
-        reader.offset.set(offset + 2);
-        Result::Ok(
-            (reader.data.get(offset).to_u16()) | ((reader.data.get(offset + 1).to_u16()) << 8),
-        )
+    let offset = reader.offset.get();
+    match endian::read_u16(reader.data, offset, endian::Endian::Little) {
+        Ok(value) => {
+            reader.offset.set(offset + 2);
+            Result::Ok(value)
+        },
+        Err(_) => Result::Err(artifact_binary_reader_error(reader, "unexpected end of input")),
     }
 }
 
 pub fn artifact_binary_read_u32(reader: ArtifactBinaryReader) -> Result[u32, string] {
-    if artifact_binary_reader_remaining(reader) < 4 {
-        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
-    } else {
-        let offset = reader.offset.get();
-        reader.offset.set(offset + 4);
-        Result::Ok(
-            (reader.data.get(offset).to_u32()) | ((reader.data.get(offset + 1).to_u32()) << 8)
-                | ((reader.data.get(offset + 2).to_u32()) << 16)
-                | ((reader.data.get(offset + 3).to_u32()) << 24),
-        )
+    let offset = reader.offset.get();
+    match endian::read_u32(reader.data, offset, endian::Endian::Little) {
+        Ok(value) => {
+            reader.offset.set(offset + 4);
+            Result::Ok(value)
+        },
+        Err(_) => Result::Err(artifact_binary_reader_error(reader, "unexpected end of input")),
     }
 }
 
 pub fn artifact_binary_read_u64(reader: ArtifactBinaryReader) -> Result[u64, string] {
-    if artifact_binary_reader_remaining(reader) < 8 {
-        Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
-    } else {
-        let offset = reader.offset.get();
-        reader.offset.set(offset + 8);
-        let mut value = 0.to_u64();
-        for index in 0..8 {
-            value = value | ((reader.data.get(offset + index).to_u64()) << (index * 8));
-        }
-        Result::Ok(value)
+    let offset = reader.offset.get();
+    match endian::read_u64(reader.data, offset, endian::Endian::Little) {
+        Ok(value) => {
+            reader.offset.set(offset + 8);
+            Result::Ok(value)
+        },
+        Err(_) => Result::Err(artifact_binary_reader_error(reader, "unexpected end of input")),
     }
 }
 

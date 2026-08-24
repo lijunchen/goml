@@ -53,12 +53,7 @@ fn names_match(left: string, right: string) -> bool {
 
 fn add_impl_index(values: HashMap[string, Vec[isize]], value: ImplInfo, index: isize) -> unit {
     let name = short_name(value.trait_ref.name);
-    match values[name] {
-        Some(indices) => indices.push(index),
-        None => {
-            values[name] = Vec::from_array([index]);
-        },
-    }
+    values.entry(name).or_insert_with(|| Vec::new()).push(index)
 }
 
 fn impl_name_index(values: Vec[ImplInfo]) -> HashMap[string, Vec[isize]] {

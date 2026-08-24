@@ -1078,10 +1078,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     for index in 0..commands.len() {
         match cache_spec(commands[index]) {
             Some(spec) => for output in spec.outputs {
-                match producers[output] {
-                    Some(values) => values.push(index),
-                    None => producers.set(output, Vec::from_array([index])),
-                }
+                producers.entry(output).or_insert_with(|| Vec::new()).push(index)
             },
             None => (),
         }

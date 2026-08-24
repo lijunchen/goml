@@ -355,14 +355,7 @@ fn new_variant_infos() -> VariantInfos {
 }
 
 fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> unit {
-    match variants.by_owner[value.owner_name] {
-        Some(owner_variants) => owner_variants.push(value),
-        None => {
-            let owner_variants: Vec[VariantInfo] = Vec::new();
-            owner_variants.push(value);
-            variants.by_owner[value.owner_name] = owner_variants;
-        },
-    }
+    variants.by_owner.entry(value.owner_name).or_insert_with(|| Vec::new()).push(value)
 }
 
 fn enum_field_types(value: repr::EnumVariantFields) -> Vec[repr::Type] {

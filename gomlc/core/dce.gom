@@ -443,12 +443,7 @@ struct DceFunctions {
 }
 
 fn dce_function_names_add(values: HashMap[string, Vec[string]], key: string, name: string) -> unit {
-    match values[key] {
-        Some(names) => names.push(name),
-        None => {
-            values[key] = Vec::from_array([name]);
-        },
-    }
+    values.entry(key).or_insert_with(|| Vec::new()).push(name)
 }
 
 fn dce_trait_method_key(trait_name: string, method_name: string) -> string {

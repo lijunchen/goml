@@ -13,9 +13,9 @@ fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
 }
 
 fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[string], value: string) -> unit {
-    if seen.contains(value) {} else {
-        seen[value] = ();
-        values.push(value)
+    match seen.insert(value, ()) {
+        Some(_) => (),
+        None => values.push(value),
     }
 }
 
