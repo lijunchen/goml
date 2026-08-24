@@ -196,7 +196,9 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
                 None => (),
             }
         },
-        Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
+        Break | BreakLabel { label: _ } | Continue | ContinueLabel { label: _ } | Panic {
+            message: _,
+        } | Unreachable => (),
     }
 }
 

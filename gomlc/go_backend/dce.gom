@@ -200,7 +200,9 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
                 None => (),
             }
         },
-        Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
+        Break | BreakLabel { label: _ } | Continue | ContinueLabel { label: _ } | Panic {
+            message: _,
+        } | Unreachable => (),
     }
 }
 
@@ -317,7 +319,9 @@ fn free_vars_in_block(value: Block) -> DceNames {
                     None => (),
                 }
             },
-            Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
+            Break | BreakLabel { label: _ } | Continue | ContinueLabel { label: _ } | Panic {
+                message: _,
+            } | Unreachable => (),
         }
     }
     for name in declared.values {
@@ -607,6 +611,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
             Break => output.push(Stmt::Break),
             BreakLabel { label } => output.push(Stmt::BreakLabel { label }),
             Continue => output.push(Stmt::Continue),
+            ContinueLabel { label } => output.push(Stmt::ContinueLabel { label }),
             Switch { expr, cases, default } => {
                 let lowered_cases: Vec[SwitchCase] = Vec::with_capacity(cases.len());
                 for case in cases {

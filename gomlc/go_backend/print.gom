@@ -569,6 +569,7 @@ fn stmt_doc(value: Stmt) -> pretty::Doc {
         Break => pretty::text("break"),
         BreakLabel { label } => pretty::text("break " + label),
         Continue => pretty::text("continue"),
+        ContinueLabel { label } => pretty::text("continue " + label),
         Switch { expr, cases, default } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(
                 cases.len()

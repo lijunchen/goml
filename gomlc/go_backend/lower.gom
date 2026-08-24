@@ -23,6 +23,7 @@ struct LowerEnv {
     local_names: HashMap[string, unit],
     collection_array_consumers: HashMap[string, anf::Value],
     emitted_loop_labels: Vec[string],
+    active_loop_labels: Vec[(string, string)],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -3389,6 +3390,16 @@ fn fresh_loop_label(env: LowerEnv, value: string) -> string {
     fresh_loop_label_with_suffix(env.emitted_loop_labels, loop_label(value), 1)
 }
 
+fn active_loop_label(env: LowerEnv, target: string) -> Option[string] {
+    for offset in 0..env.active_loop_labels.len() {
+        let value = env.active_loop_labels[env.active_loop_labels.len() - 1 - offset];
+        if value.0 == target {
+            return Option::Some(value.1)
+        } else {}
+    }
+    Option::None
+}
+
 fn scoped_joins(parent: Vec[anf::JoinBind], value: anf::Block) -> Vec[anf::JoinBind] {
     let result: Vec[anf::JoinBind] = Vec::new();
     for join in parent {
@@ -4000,36 +4011,6 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
     Option::Some(target)
 }
 
-fn nested_loop_outer_exit_target(
-    value: anf::Block,
-    loop_name: string,
-    outer_loop_name: string,
-    parent: Vec[anf::JoinBind],
-) -> Option[string] {
-    if outer_loop_name == "" {
-        return Option::None
-    } else {};
-    let internal_joins: Vec[anf::JoinBind] = Vec::new();
-    collect_joins_block(internal_joins, value);
-    let outcomes = block_loop_outcomes(
-        value,
-        loop_name,
-        outer_loop_name,
-        parent,
-        internal_joins,
-        Vec::new(),
-    );
-    if !outcomes.valid || !outcomes.has_continue || outcomes.exits.is_empty() {
-        return Option::None
-    } else {};
-    for target in outcomes.exits {
-        if target != outer_loop_name {
-            return Option::None
-        } else {}
-    }
-    Option::Some(outer_loop_name)
-}
-
 fn find_loop_exit(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
     string,
 ] {
@@ -4183,6 +4164,10 @@ fn compile_loop_term_leaf(
         Jump { target, args, ret_ty: _ } => {
             if target == loop_name {
                 result.push(Stmt::Continue)
+            } else if active_loop_label(env, target).is_some() && args.is_empty() {
+                result.push(
+                    Stmt::ContinueLabel { label: active_loop_label(env, target).unwrap_or("") },
+                )
             } else if target == exit_name {
                 match find_join(env.joins, target) {
                     Some(join) => append_stmts(result, compile_jump_args(env, join, args)),
@@ -4534,6 +4519,19 @@ fn compile_loop_block(
     Block { stmts }
 }
 
+fn compile_active_loop_block(
+    env: LowerEnv,
+    value: anf::Block,
+    loop_name: string,
+    exit_name: string,
+    label: string,
+) -> Block {
+    env.active_loop_labels.push((loop_name, label));
+    let result = compile_loop_block(env, value, loop_name, exit_name, label);
+    let _ = env.active_loop_labels.remove(env.active_loop_labels.len() - 1);
+    result
+}
+
 fn compile_joinrec_in_loop(
     env: LowerEnv,
     values: Vec[anf::JoinBind],
@@ -4545,44 +4543,32 @@ fn compile_joinrec_in_loop(
     let loop_names: Vec[string] = Vec::new();
     let single = values.len() == 1;
     for value in values {
-        let exit_target = if single {
-            match nested_loop_outer_exit_target(value.body, value.name, outer_loop_name, env.joins) {
-                Some(target) => Option::Some(target),
-                None => find_loop_exit(value.body, value.name, env.joins),
-            }
-        } else {
-            find_loop_exit(value.body, value.name, env.joins)
-        };
-        match exit_target {
+        match find_loop_exit(value.body, value.name, env.joins) {
             Some(exit_name) => {
                 let label = fresh_loop_label(env, value.name);
-                let body = compile_loop_block(env, value.body, value.name, exit_name, label);
+                let body = compile_active_loop_block(env, value.body, value.name, exit_name, label);
                 stmts.push(loop_stmt(label, body));
-                if exit_name == outer_loop_name {
-                    stmts.push(Stmt::Continue)
-                } else {
-                    match find_join(env.joins, exit_name) {
-                        Some(exit) => {
-                            append_stmts(
-                                stmts,
-                                compile_loop_block(
-                                    env,
-                                    exit.body,
-                                    outer_loop_name,
-                                    outer_exit_name,
-                                    outer_label,
-                                ).stmts,
-                            )
-                        },
-                        None => (),
-                    }
+                match find_join(env.joins, exit_name) {
+                    Some(exit) => {
+                        append_stmts(
+                            stmts,
+                            compile_loop_block(
+                                env,
+                                exit.body,
+                                outer_loop_name,
+                                outer_exit_name,
+                                outer_label,
+                            ).stmts,
+                        )
+                    },
+                    None => (),
                 };
                 loop_names.push(value.name)
             },
             None => if single
                 && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) {
                 let label = fresh_loop_label(env, value.name);
-                let body = compile_loop_block(env, value.body, value.name, "", label);
+                let body = compile_active_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
             } else if single
@@ -4604,58 +4590,58 @@ fn compile_joinrec_in_loop(
     JoinRecResult { stmts, loop_names }
 }
 
-fn block_contains_break_label(value: Block, label: string) -> bool {
+fn block_contains_loop_label(value: Block, label: string) -> bool {
     for stmt in value.stmts {
-        if stmt_contains_break_label(stmt, label) {
+        if stmt_contains_loop_label(stmt, label) {
             return true
         } else {}
     }
     false
 }
 
-fn stmt_contains_break_label(value: Stmt, label: string) -> bool {
+fn stmt_contains_loop_label(value: Stmt, label: string) -> bool {
     match value {
-        BreakLabel { label: actual } => actual == label,
+        BreakLabel { label: actual } | ContinueLabel { label: actual } => actual == label,
         If { cond: _, then_, else_ } => {
-            block_contains_break_label(then_, label)
+            block_contains_loop_label(then_, label)
                 || match else_ {
-                    Some(body) => block_contains_break_label(body, label),
+                    Some(body) => block_contains_loop_label(body, label),
                     None => false,
                 }
         },
         Loop { body } | LabeledLoop { label: _, body } => {
-            block_contains_break_label(body, label)
+            block_contains_loop_label(body, label)
         },
         Switch { expr: _, cases, default } => {
             for case in cases {
-                if block_contains_break_label(case.body, label) {
+                if block_contains_loop_label(case.body, label) {
                     return true
                 } else {}
             }
             match default {
-                Some(body) => block_contains_break_label(body, label),
+                Some(body) => block_contains_loop_label(body, label),
                 None => false,
             }
         },
         TypeSwitch { binding: _, expr: _, cases, default } => {
             for case in cases {
-                if block_contains_break_label(case.body, label) {
+                if block_contains_loop_label(case.body, label) {
                     return true
                 } else {}
             }
             match default {
-                Some(body) => block_contains_break_label(body, label),
+                Some(body) => block_contains_loop_label(body, label),
                 None => false,
             }
         },
         Select { cases, default } => {
             for case in cases {
-                if block_contains_break_label(case.body, label) {
+                if block_contains_loop_label(case.body, label) {
                     return true
                 } else {}
             }
             match default {
-                Some(body) => block_contains_break_label(body, label),
+                Some(body) => block_contains_loop_label(body, label),
                 None => false,
             }
         },
@@ -4664,7 +4650,7 @@ fn stmt_contains_break_label(value: Stmt, label: string) -> bool {
 }
 
 fn loop_stmt(label: string, body: Block) -> Stmt {
-    if block_contains_break_label(body, label) {
+    if block_contains_loop_label(body, label) {
         Stmt::LabeledLoop { label, body }
     } else {
         Stmt::Loop { body }
@@ -4679,7 +4665,7 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
         match find_loop_exit(value.body, value.name, env.joins) {
             Some(exit_name) => {
                 let label = fresh_loop_label(env, value.name);
-                let body = compile_loop_block(env, value.body, value.name, exit_name, label);
+                let body = compile_active_loop_block(env, value.body, value.name, exit_name, label);
                 stmts.push(loop_stmt(label, body));
                 match find_join(env.joins, exit_name) {
                     Some(exit) => {
@@ -4692,7 +4678,7 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
             None => if single
                 && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) {
                 let label = fresh_loop_label(env, value.name);
-                let body = compile_loop_block(env, value.body, value.name, "", label);
+                let body = compile_active_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
             } else if single
@@ -5642,6 +5628,7 @@ fn compile_function(
         local_names,
         collection_array_consumers,
         emitted_loop_labels: Vec::new(),
+        active_loop_labels: Vec::new(),
         variants,
         structs,
         instances,
