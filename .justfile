@@ -103,8 +103,8 @@ _bootstrap-stage3:
     cp goml/_bootstrap/stage3/bin/cmd/goml/goml stage3/bin/goml
     bash tools/lib/finalize-toolchain.sh stage3 stage3/bin/goml stage3/bin/gomlc
     bash bootstrap/build-stage.sh stage3-fixed stage3/bin/goml stage3/bin/gomlc artifacts
-    diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage3/build/pkg gomlc/_bootstrap/stage3-fixed/build/pkg
-    diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage3/build/pkg goml/_bootstrap/stage3-fixed/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' --exclude='*.goml-output-epoch' gomlc/_bootstrap/stage3/build/pkg gomlc/_bootstrap/stage3-fixed/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' --exclude='*.goml-output-epoch' goml/_bootstrap/stage3/build/pkg goml/_bootstrap/stage3-fixed/build/pkg
 
 bootstrap:
     rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3 gomlc/_bootstrap/stage3-fixed
