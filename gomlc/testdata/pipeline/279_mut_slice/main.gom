@@ -1,0 +1,18 @@
+fn main() -> unit {
+    let values = Vec::from_array([1, 2, 3, 4, 5]);
+    let view = values.slice_mut(1, 5);
+    view[0] = 20;
+    println(view.set_checked(9, 30));
+    println(view.set_checked(1, 30));
+    println(view.copy_within(0, 3, 1));
+    println(view.copy_from(0, Vec::from_array([7, 8]).as_slice()));
+    match view.sub_checked(1, 3) {
+        Some(part) => part.fill(6),
+        None => (),
+    };
+    for value in values {
+        println(value)
+    }
+    println(values.slice_checked(-1, 2).is_none());
+    println(view.as_slice().get_checked(10).is_none())
+}

@@ -1,0 +1,34 @@
+package main;
+
+use std::bytes;
+use std::utf8;
+use std::utf16;
+
+fn main() -> unit {
+    let raw_values: Vec[byte] = Vec::from_array([0, 0, 0, 0, 0, 0, 0, 0]);
+    let raw = bytes::Bytes::from_vec(raw_values);
+    let writer = bytes::Writer::new(raw.as_mut_slice());
+    println(writer.write_u16(0x1234, bytes::Endian::Big).is_ok());
+    println(writer.write_u32(0x78563412, bytes::Endian::Little).is_ok());
+    println(bytes::read_u16(raw.as_slice(), 0, bytes::Endian::Big).unwrap_or(0));
+    println(bytes::read_u32(raw.as_slice(), 2, bytes::Endian::Little).unwrap_or(0));
+    println(bytes::read_u64(raw.as_slice(), 2, bytes::Endian::Big).is_err());
+    let reader = bytes::Reader::new(raw.as_slice());
+    println(reader.read_u16(bytes::Endian::Big).unwrap_or(0));
+    println(reader.remaining());
+    let builder = bytes::Builder::new();
+    builder.write_u16(0x1234, bytes::Endian::Little);
+    builder.write_u32(0x78563412, bytes::Endian::Big);
+    println(builder.finish().len());
+    let utf8_values: Vec[byte] = Vec::from_array([0, 0, 0, 0, 0, 0, 0, 0]);
+    let utf8_output = bytes::Bytes::from_vec(utf8_values);
+    println(utf8::encode_into("hé", utf8_output.as_mut_slice(), 1).unwrap_or(0));
+    println(utf8::decode_slice(utf8_output.slice(1, 4)).unwrap_or("invalid"));
+    let utf16_bytes: Vec[byte] = utf16::encode_bytes("A😀", bytes::Endian::Big);
+    println(utf16_bytes.len());
+    println(
+        utf16::decode_bytes(utf16_bytes.as_slice(), bytes::Endian::Big).unwrap_or("invalid"),
+    );
+    let invalid_utf16: Vec[u16] = Vec::from_array([0xD800]);
+    println(utf16::decode(invalid_utf16.as_slice()).is_err())
+}

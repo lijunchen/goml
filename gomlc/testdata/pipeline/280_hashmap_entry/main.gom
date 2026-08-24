@@ -1,0 +1,60 @@
+struct Key {
+    value: isize,
+    hashes: Ref[isize],
+}
+
+impl PartialEq for Key {
+    fn eq(self: Key, other: Key) -> bool {
+        self.value == other.value
+    }
+}
+
+impl Eq for Key {}
+
+impl Hash for Key {
+    fn hash(self: Key) -> u64 {
+        self.hashes.set(self.hashes.get() + 1);
+        7
+    }
+}
+
+fn key(value: isize, hashes: Ref[isize]) -> Key {
+    Key { value, hashes }
+}
+
+fn main() -> unit {
+    let hashes = Ref::new(0);
+    let created = Ref::new(0);
+    let map: HashMap[Key, isize] = HashMap::new();
+    println(
+        map.entry(key(1, hashes)).or_insert_with(
+            || {
+                created.set(created.get() + 1);
+                10
+            },
+        ),
+    );
+    println(hashes.get());
+    hashes.set(0);
+    println(
+        map.entry(key(1, hashes)).or_insert_with(
+            || {
+                created.set(created.get() + 1);
+                99
+            },
+        ),
+    );
+    println(hashes.get());
+    println(created.get());
+    hashes.set(0);
+    println(map.entry(key(1, hashes)).update(|value| value + 5).unwrap_or(-1));
+    println(hashes.get());
+    hashes.set(0);
+    println(map.entry(key(1, hashes)).remove_entry().unwrap_or((key(0, hashes), -1)).1);
+    println(hashes.get());
+    println(map.len());
+    let native: HashMap[string, isize] = HashMap::new();
+    println(native.insert("answer", 41).is_none());
+    println(native.entry("answer").and_modify(|value| value + 1).get().unwrap_or(0));
+    println(native.remove_value("answer").unwrap_or(0))
+}
