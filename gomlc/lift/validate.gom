@@ -24,10 +24,9 @@ fn validate_type(ctx: ValidateContext, value: repr::Type, context: string) -> Re
             }
             Result::Ok(())
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => validate_type(ctx, elem, context),
+        } | Channel { elem, direction: _ } => validate_type(ctx, elem, context),
         HashMap { key, value } => {
             validate_type(ctx, key, context)?;
             validate_type(ctx, value, context)

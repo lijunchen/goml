@@ -126,8 +126,13 @@ pub fn validate(bytes: Slice[byte]) -> Result[unit, Utf8Error] {
 }
 
 pub fn decode(bytes: Vec[byte]) -> Result[string, Utf8Error] {
-    validate(bytes.slice(0, bytes.len()))?;
-    let (valid, value) = string_from_utf8(bytes);
+    decode_slice(bytes.as_slice())
+}
+
+pub fn decode_slice(bytes: Slice[byte]) -> Result[string, Utf8Error] {
+    validate(bytes)?;
+    let values = bytes.to_vec();
+    let (valid, value) = string_from_utf8(values);
     if valid {
         Result::Ok(value)
     } else {
@@ -137,6 +142,29 @@ pub fn decode(bytes: Vec[byte]) -> Result[string, Utf8Error] {
 
 pub fn encode(value: string) -> Vec[byte] {
     value.to_bytes()
+}
+
+pub fn encode_into(value: string, output: MutSlice[byte], offset: isize) -> Result[
+    isize,
+    bytes::BoundsError,
+] {
+    let encoded = value.to_bytes();
+    if output.copy_from(offset, encoded.as_slice()) {
+        Result::Ok(encoded.len())
+    } else {
+        Result::Err(bytes::BoundsError::new(offset, encoded.len(), output.len()))
+    }
+}
+
+pub fn encode_to(value: string, output: bytes::Builder) -> unit {
+    output.extend(value.to_bytes().as_slice())
+}
+
+pub fn encode_char_into(value: char, output: MutSlice[byte], offset: isize) -> Result[
+    isize,
+    bytes::BoundsError,
+] {
+    encode_into(value.to_string(), output, offset)
 }
 
 pub fn encoded_len(value: char) -> isize {

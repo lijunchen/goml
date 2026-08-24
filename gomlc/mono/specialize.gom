@@ -168,9 +168,12 @@ fn unify_type(template: core::Type, actual: core::Type, bindings: Vec[TypeBindin
             template_length == actual_length && unify_type(template_elem, actual_elem, bindings)
         },
         (Slice { elem: template }, Slice { elem: actual }) | (
-            VecType { elem: template },
-            VecType { elem: actual },
-        ) | (RefType { elem: template }, RefType { elem: actual }) => {
+            MutSlice { elem: template },
+            MutSlice { elem: actual },
+        ) | (VecType { elem: template }, VecType { elem: actual }) | (
+            RefType { elem: template },
+            RefType { elem: actual },
+        ) => {
             unify_type(template, actual, bindings)
         },
         (
@@ -299,6 +302,9 @@ fn substitute_type(value: core::Type, bindings: Vec[TypeBinding]) -> core::Type 
         Slice { elem } => {
             core::Type::Slice { elem: substitute_type(elem, bindings) }
         },
+        MutSlice { elem } => {
+            core::Type::MutSlice { elem: substitute_type(elem, bindings) }
+        },
         VecType { elem } => {
             core::Type::VecType { elem: substitute_type(elem, bindings) }
         },
@@ -376,6 +382,9 @@ fn canonical_inherent_owner_type(builtin: tast::BuiltinContract, value: core::Ty
                 },
                 Con { name } if mono_names_match(name, builtin.slice.name) && values.len() == 1 => {
                     core::Type::Slice { elem: values[0] }
+                },
+                Con { name } if mono_names_match(name, builtin.mut_slice.name) && values.len() == 1 => core::Type::MutSlice {
+                    elem: values[0],
                 },
                 Con { name } if mono_names_match(name, builtin.ref_type.name) && values.len() == 1 => {
                     core::Type::RefType { elem: values[0] }
@@ -1196,10 +1205,9 @@ fn mono_type_contains_proper_subterm(value: core::Type, expected: core::Type) ->
             }
             false
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => {
+        } | Channel { elem, direction: _ } => {
             mono_types_equal(elem, expected) || mono_type_contains_proper_subterm(elem, expected)
         },
         HashMap { key, value } => {
@@ -1229,13 +1237,16 @@ fn mono_type_outer_constructor_matches(left: core::Type, right: core::Type) -> b
         (Tuple { items: _ }, Tuple { items: _ }) | (
             Array { len: _, elem: _ },
             Array { len: _, elem: _ },
-        ) | (Slice { elem: _ }, Slice { elem: _ }) | (VecType { elem: _ }, VecType { elem: _ }) | (
-            RefType { elem: _ },
-            RefType { elem: _ },
-        ) | (Channel { elem: _, direction: _ }, Channel { elem: _, direction: _ }) | (
-            HashMap { key: _, value: _ },
-            HashMap { key: _, value: _ },
-        ) | (Func { params: _, ret_ty: _ }, Func { params: _, ret_ty: _ }) => true,
+        ) | (Slice { elem: _ }, Slice { elem: _ }) | (MutSlice { elem: _ }, MutSlice { elem: _ }) | (
+            VecType { elem: _ },
+            VecType { elem: _ },
+        ) | (RefType { elem: _ }, RefType { elem: _ }) | (
+            Channel { elem: _, direction: _ },
+            Channel { elem: _, direction: _ },
+        ) | (HashMap { key: _, value: _ }, HashMap { key: _, value: _ }) | (
+            Func { params: _, ret_ty: _ },
+            Func { params: _, ret_ty: _ },
+        ) => true,
         (App { ty: left, args: _ }, App { ty: right, args: _ }) => {
             mono_types_equal(left, right)
         },
@@ -1602,6 +1613,9 @@ fn normalize_type(ctx: SpecializeCtx, value: core::Type, active: Vec[string]) ->
         Slice { elem } => {
             core::Type::Slice { elem: normalize_type(ctx, elem, active) }
         },
+        MutSlice { elem } => {
+            core::Type::MutSlice { elem: normalize_type(ctx, elem, active) }
+        },
         VecType { elem } => {
             core::Type::VecType { elem: normalize_type(ctx, elem, active) }
         },
@@ -1640,10 +1654,9 @@ fn type_contains_associated_projection(value: core::Type) -> bool {
         App { ty: base, args } => {
             type_contains_associated_projection(base) || types_contain_associated_projection(args)
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => type_contains_associated_projection(elem),
+        } | Channel { elem, direction: _ } => type_contains_associated_projection(elem),
         HashMap { key, value } => {
             type_contains_associated_projection(key) || type_contains_associated_projection(value)
         },
@@ -2488,10 +2501,10 @@ fn ensure_runtime_trait_impls_for_type(ctx: SpecializeCtx, value: core::Type) ->
             ensure_runtime_trait_impls_for_type(ctx, base);
             ensure_runtime_trait_impls_for_types(ctx, args)
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | Channel { elem, direction: _ } => ensure_runtime_trait_impls_for_type(
-            ctx,
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | Channel {
             elem,
-        ),
+            direction: _,
+        } => ensure_runtime_trait_impls_for_type(ctx, elem),
         RefType { elem } => {
             ensure_eq_hash_impls(ctx, elem);
             ensure_runtime_trait_impls_for_type(ctx, elem)

@@ -115,6 +115,9 @@ fn artifact_trait_definition_type(value: tast::Type, owner: string, trait_names:
         Slice { elem: element } => tast::Type::Slice {
             elem: artifact_trait_definition_type(element, owner, trait_names),
         },
+        MutSlice { elem: element } => tast::Type::MutSlice {
+            elem: artifact_trait_definition_type(element, owner, trait_names),
+        },
         VecType { elem: element } => tast::Type::VecType {
             elem: artifact_trait_definition_type(element, owner, trait_names),
         },
@@ -319,6 +322,7 @@ fn artifact_inherent_constructor(builtin: tast::BuiltinContract, value: tast::Ty
         Con { name } => name,
         App { ty: base, args: _ } => artifact_inherent_constructor(builtin, base),
         Slice { elem: _ } => builtin.slice.name,
+        MutSlice { elem: _ } => builtin.mut_slice.name,
         VecType { elem: _ } => builtin.vec.name,
         RefType { elem: _ } => builtin.ref_type.name,
         Channel { elem: _, direction } => match direction {
@@ -422,9 +426,9 @@ fn artifact_type_has_public_names(
                 true
             }
         },
-        Array { len: _, elem: element } | Slice { elem: element } | VecType { elem: element } | RefType {
+        Array { len: _, elem: element } | Slice { elem: element } | MutSlice { elem: element } | VecType {
             elem: element,
-        } | Channel { elem: element, direction: _ } => artifact_type_has_public_names(
+        } | RefType { elem: element } | Channel { elem: element, direction: _ } => artifact_type_has_public_names(
             element,
             package_name,
             public_names,

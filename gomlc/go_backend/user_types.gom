@@ -228,7 +228,7 @@ fn compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: is
                 },
                 None => -1,
             },
-            Dyn { .. } | Slice { elem: _ } | Func { .. } => -1,
+            Dyn { .. } | Slice { elem: _ } | MutSlice { elem: _ } | Func { .. } => -1,
             Array { len, elem } => {
                 let item_size = compact_type_size(elem, structs, depth + 1);
                 if item_size < 0 || item_size * len > 24 {
@@ -288,7 +288,7 @@ fn builtin_compact_type_size(value: repr::Type, structs: Vec[repr::StructDef], d
                 },
                 None => 16,
             },
-            Dyn { .. } | Slice { elem: _ } => 24,
+            Dyn { .. } | Slice { elem: _ } | MutSlice { elem: _ } => 24,
             Func { .. } => 8,
             Array { len, elem } => {
                 let item_size = builtin_compact_type_size(elem, structs, depth + 1);

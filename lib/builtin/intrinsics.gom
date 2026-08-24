@@ -108,6 +108,27 @@ pub extern fn slice_len[T](values: Slice[T]) -> isize;
 #[intrinsic("slice.sub")]
 pub extern fn slice_sub[T](values: Slice[T], start: isize, end: isize) -> Slice[T];
 
+#[intrinsic("mut_slice.new")]
+pub extern fn mut_slice[T](values: Vec[T], start: isize, end: isize) -> MutSlice[T];
+
+#[intrinsic("mut_slice.get")]
+pub extern fn mut_slice_get[T](values: MutSlice[T], index: isize) -> T;
+
+#[intrinsic("mut_slice.set")]
+pub extern fn mut_slice_set[T](values: MutSlice[T], index: isize, value: T) -> unit;
+
+#[intrinsic("mut_slice.len")]
+pub extern fn mut_slice_len[T](values: MutSlice[T]) -> isize;
+
+#[intrinsic("mut_slice.sub")]
+pub extern fn mut_slice_sub[T](values: MutSlice[T], start: isize, end: isize) -> MutSlice[T];
+
+#[intrinsic("mut_slice.as_slice")]
+pub extern fn mut_slice_as_slice[T](values: MutSlice[T]) -> Slice[T];
+
+#[intrinsic("mut_slice.copy_from")]
+pub extern fn mut_slice_copy_from[T](values: MutSlice[T], start: isize, source: Slice[T]) -> bool;
+
 #[intrinsic("hashmap.new")]
 pub extern fn hashmap_new[K: Hash + Eq, V]() -> HashMap[K, V];
 
@@ -116,6 +137,24 @@ pub extern fn hashmap_get[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> Opt
 
 #[intrinsic("hashmap.set")]
 pub extern fn hashmap_set[K: Hash + Eq, V](values: HashMap[K, V], key: K, value: V) -> unit;
+
+#[intrinsic("hashmap.insert")]
+pub extern fn hashmap_insert[K: Hash + Eq, V](values: HashMap[K, V], key: K, value: V) -> Option[V];
+
+#[intrinsic("hashmap.get_or_insert_with")]
+pub extern fn hashmap_get_or_insert_with[K: Hash + Eq, V](
+    values: HashMap[K, V],
+    key: K,
+    create: () -> V,
+) -> V;
+
+#[intrinsic("hashmap.update")]
+pub extern fn hashmap_update[K: Hash + Eq, V](values: HashMap[K, V], key: K, update: (V) -> V) -> Option[
+    V,
+];
+
+#[intrinsic("hashmap.remove_value")]
+pub extern fn hashmap_remove_value[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> Option[V];
 
 #[intrinsic("hashmap.remove")]
 pub extern fn hashmap_remove[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> unit;

@@ -68,6 +68,7 @@ fn detach_type(value: mono::Type, environments: Vec[string]) -> repr::Type {
             repr::Type::Array { len, elem: detach_type(elem, environments) }
         },
         Slice { elem } => repr::Type::Slice { elem: detach_type(elem, environments) },
+        MutSlice { elem } => repr::Type::MutSlice { elem: detach_type(elem, environments) },
         VecType { elem } => repr::Type::VecType { elem: detach_type(elem, environments) },
         RefType { elem } => repr::Type::RefType { elem: detach_type(elem, environments) },
         HashMap { key, value } => repr::Type::HashMap {

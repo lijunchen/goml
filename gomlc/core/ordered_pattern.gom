@@ -80,6 +80,13 @@ fn ordered_len(value: LowerExpr, container_ty: tast::Type) -> Option[LowerExpr] 
             args.push(value);
             Option::Some(place_intrinsic_call("slice.len", params, tast::Type::Int, args))
         },
+        MutSlice { elem: _ } => {
+            let params: Vec[tast::Type] = Vec::new();
+            params.push(container_ty);
+            let args: Vec[LowerExpr] = Vec::new();
+            args.push(value);
+            Option::Some(place_intrinsic_call("mut_slice.len", params, tast::Type::Int, args))
+        },
         _ => Option::None,
     }
 }
@@ -87,7 +94,7 @@ fn ordered_len(value: LowerExpr, container_ty: tast::Type) -> Option[LowerExpr] 
 fn ordered_container_parts(container_ty: tast::Type) -> Option[(tast::Type, Option[isize])] {
     match tast::resolve_type(container_ty) {
         Array { len: length, elem } => Option::Some((elem, Option::Some(length))),
-        VecType { elem } | Slice { elem } => {
+        VecType { elem } | Slice { elem } | MutSlice { elem } => {
             Option::Some((elem, Option::None))
         },
         _ => Option::None,
@@ -154,6 +161,33 @@ fn ordered_rest_value(
             params.push(tast::Type::Int);
             let args: Vec[LowerExpr] = Vec::new();
             args.push(value);
+            args.push(ordered_int(prefix_len));
+            args.push(end);
+            place_intrinsic_call("slice.sub", params, rest_ty, args)
+        },
+        MutSlice { elem: _ } => {
+            let end = if suffix_len == 0 {
+                len_expr
+            } else {
+                ordered_binary(
+                    ast::BinaryOp::Sub,
+                    len_expr,
+                    ordered_int(suffix_len),
+                    tast::Type::Int,
+                )
+            };
+            let read_ty = tast::Type::Slice { elem: elem_ty };
+            let read_params: Vec[tast::Type] = Vec::new();
+            read_params.push(container_ty);
+            let read_args: Vec[LowerExpr] = Vec::new();
+            read_args.push(value);
+            let read = place_intrinsic_call("mut_slice.as_slice", read_params, read_ty, read_args);
+            let params: Vec[tast::Type] = Vec::new();
+            params.push(read_ty);
+            params.push(tast::Type::Int);
+            params.push(tast::Type::Int);
+            let args: Vec[LowerExpr] = Vec::new();
+            args.push(read);
             args.push(ordered_int(prefix_len));
             args.push(end);
             place_intrinsic_call("slice.sub", params, rest_ty, args)

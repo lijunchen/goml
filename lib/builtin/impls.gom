@@ -1069,6 +1069,14 @@ impl[T] Vec[T] {
         vec_get(self, index)
     }
 
+    fn get_checked(self: Self, index: isize) -> Option[T] {
+        if index < 0 || index >= self.len() {
+            Option::None
+        } else {
+            Option::Some(self[index])
+        }
+    }
+
     fn set(self: Self, index: isize, elem: T) -> unit {
         vec_set(self, index, elem)
     }
@@ -1183,6 +1191,34 @@ impl[T] Vec[T] {
 
     fn slice(self: Self, start: isize, end: isize) -> Slice[T] {
         slice(self, start, end)
+    }
+
+    fn slice_checked(self: Self, start: isize, end: isize) -> Option[Slice[T]] {
+        if start < 0 || end < start || end > self.len() {
+            Option::None
+        } else {
+            Option::Some(slice(self, start, end))
+        }
+    }
+
+    fn as_slice(self: Self) -> Slice[T] {
+        slice(self, 0, self.len())
+    }
+
+    fn slice_mut(self: Self, start: isize, end: isize) -> MutSlice[T] {
+        mut_slice(self, start, end)
+    }
+
+    fn slice_mut_checked(self: Self, start: isize, end: isize) -> Option[MutSlice[T]] {
+        if start < 0 || end < start || end > self.len() {
+            Option::None
+        } else {
+            Option::Some(mut_slice(self, start, end))
+        }
+    }
+
+    fn as_mut_slice(self: Self) -> MutSlice[T] {
+        mut_slice(self, 0, self.len())
     }
 
     fn iter(self: Self) -> FnIterator[T] {
@@ -1466,12 +1502,28 @@ impl[T] Slice[T] {
         slice_get(self, index)
     }
 
+    fn get_checked(self: Self, index: isize) -> Option[T] {
+        if index < 0 || index >= self.len() {
+            Option::None
+        } else {
+            Option::Some(self[index])
+        }
+    }
+
     fn len(self: Self) -> isize {
         slice_len(self)
     }
 
     fn sub(self: Self, start: isize, end: isize) -> Self {
         slice_sub(self, start, end)
+    }
+
+    fn sub_checked(self: Self, start: isize, end: isize) -> Option[Self] {
+        if start < 0 || end < start || end > self.len() {
+            Option::None
+        } else {
+            Option::Some(self.sub(start, end))
+        }
     }
 
     fn to_vec(self: Self) -> Vec[T] {
@@ -1502,12 +1554,98 @@ impl[T] Slice[T] {
     }
 }
 
+#[lang("mut_slice")]
+impl[T] MutSlice[T] {
+    fn get(self: Self, index: isize) -> T {
+        mut_slice_get(self, index)
+    }
+
+    fn get_checked(self: Self, index: isize) -> Option[T] {
+        if index < 0 || index >= self.len() {
+            Option::None
+        } else {
+            Option::Some(self[index])
+        }
+    }
+
+    fn set(self: Self, index: isize, value: T) -> unit {
+        mut_slice_set(self, index, value)
+    }
+
+    fn set_checked(self: Self, index: isize, value: T) -> bool {
+        if index < 0 || index >= self.len() {
+            false
+        } else {
+            self[index] = value;
+            true
+        }
+    }
+
+    fn len(self: Self) -> isize {
+        mut_slice_len(self)
+    }
+
+    fn sub(self: Self, start: isize, end: isize) -> Self {
+        mut_slice_sub(self, start, end)
+    }
+
+    fn sub_checked(self: Self, start: isize, end: isize) -> Option[Self] {
+        if start < 0 || end < start || end > self.len() {
+            Option::None
+        } else {
+            Option::Some(self.sub(start, end))
+        }
+    }
+
+    fn as_slice(self: Self) -> Slice[T] {
+        mut_slice_as_slice(self)
+    }
+
+    fn copy_from(self: Self, start: isize, source: Slice[T]) -> bool {
+        mut_slice_copy_from(self, start, source)
+    }
+
+    fn copy_within(self: Self, source_start: isize, source_end: isize, dest_start: isize) -> bool {
+        if source_start < 0 || source_end < source_start || source_end > self.len() {
+            false
+        } else {
+            self.copy_from(dest_start, self.as_slice().sub(source_start, source_end))
+        }
+    }
+
+    fn fill(self: Self, value: T) -> unit {
+        let mut index = 0;
+        while index < self.len() {
+            self[index] = value;
+            index += 1;
+        }
+    }
+
+    fn to_vec(self: Self) -> Vec[T] {
+        self.as_slice().to_vec()
+    }
+
+    fn iter(self: Self) -> FnIterator[T] {
+        self.as_slice().iter()
+    }
+}
+
 impl[T] IntoIterator for Slice[T] {
     type Item = T;
 
     type IntoIter = FnIterator[T];
 
     fn into_iter(self: Slice[T]) -> FnIterator[T] {
+        self.iter()
+    }
+}
+
+impl[T] IntoIterator for MutSlice[T] {
+    type Item = T;
+
+    type IntoIter = FnIterator[T];
+
+    fn into_iter(self: MutSlice[T]) -> FnIterator[T] {
         self.iter()
     }
 }
@@ -1526,6 +1664,26 @@ impl[K: Hash + Eq, V] HashMap[K, V] {
         hashmap_set(self, key, value)
     }
 
+    fn insert(self: Self, key: K, value: V) -> Option[V] {
+        hashmap_insert(self, key, value)
+    }
+
+    fn get_or_insert_with(self: Self, key: K, create: () -> V) -> V {
+        hashmap_get_or_insert_with(self, key, create)
+    }
+
+    fn update(self: Self, key: K, update: (V) -> V) -> Option[V] {
+        hashmap_update(self, key, update)
+    }
+
+    fn remove_value(self: Self, key: K) -> Option[V] {
+        hashmap_remove_value(self, key)
+    }
+
+    fn entry(self: Self, key: K) -> HashMapEntry[K, V] {
+        HashMapEntry { values: self, key }
+    }
+
     fn remove(self: Self, key: K) -> unit {
         hashmap_remove(self, key)
     }
@@ -1540,6 +1698,48 @@ impl[K: Hash + Eq, V] HashMap[K, V] {
 
     fn entries(self: Self) -> Vec[(K, V)] {
         hashmap_entries(self)
+    }
+}
+
+impl[K: Hash + Eq, V] HashMapEntry[K, V] {
+    fn key(self: Self) -> K {
+        self.key
+    }
+
+    fn get(self: Self) -> Option[V] {
+        self.values.get(self.key)
+    }
+
+    fn or_insert(self: Self, value: V) -> V {
+        self.or_insert_with(|| value)
+    }
+
+    fn or_insert_with(self: Self, create: () -> V) -> V {
+        self.values.get_or_insert_with(self.key, create)
+    }
+
+    fn insert(self: Self, value: V) -> Option[V] {
+        self.values.insert(self.key, value)
+    }
+
+    fn and_modify(self: Self, update: (V) -> V) -> Self {
+        let _ = self.values.update(self.key, update);
+        self
+    }
+
+    fn update(self: Self, update: (V) -> V) -> Option[V] {
+        self.values.update(self.key, update)
+    }
+
+    fn remove(self: Self) -> Option[V] {
+        self.values.remove_value(self.key)
+    }
+
+    fn remove_entry(self: Self) -> Option[(K, V)] {
+        match self.remove() {
+            Some(value) => Option::Some((self.key, value)),
+            None => Option::None,
+        }
     }
 }
 

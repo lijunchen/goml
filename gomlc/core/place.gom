@@ -183,6 +183,7 @@ fn place_index_read(
         Array { len: _, elem: _ } => "array.get",
         VecType { elem: _ } => "vec.get",
         Slice { elem: _ } => "slice.get",
+        MutSlice { elem: _ } => "mut_slice.get",
         HashMap { key: _, value: _ } => "hashmap.get",
         _ => "compiler.missing",
     };
@@ -218,6 +219,18 @@ fn place_vec_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> Lo
     args.push(index);
     args.push(value);
     place_intrinsic_call("vec.set", params, tast::Type::Unit, args)
+}
+
+fn place_mut_slice_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> LowerExpr {
+    let params: Vec[tast::Type] = Vec::new();
+    params.push(lower_expr_type(container));
+    params.push(tast::Type::Int);
+    params.push(lower_expr_type(value));
+    let args: Vec[LowerExpr] = Vec::new();
+    args.push(container);
+    args.push(index);
+    args.push(value);
+    place_intrinsic_call("mut_slice.set", params, tast::Type::Unit, args)
 }
 
 fn place_hashmap_set(container: LowerExpr, index: LowerExpr, value: LowerExpr) -> LowerExpr {
@@ -528,6 +541,16 @@ fn lower_index_assignment(
                             VecType { elem: _ } => {
                                 final_action = Option::Some(
                                     place_vec_set(
+                                        LowerExpr::Var { name: parent_name, ty: parent_ty },
+                                        LowerExpr::Var { name: index_name, ty: index_ty },
+                                        updated,
+                                    ),
+                                );
+                                stopped = true;
+                            },
+                            MutSlice { elem: _ } => {
+                                final_action = Option::Some(
+                                    place_mut_slice_set(
                                         LowerExpr::Var { name: parent_name, ty: parent_ty },
                                         LowerExpr::Var { name: index_name, ty: index_ty },
                                         updated,

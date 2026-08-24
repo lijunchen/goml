@@ -105,10 +105,9 @@ fn collect_used_types(values: Vec[string], ty: mono::Type) -> unit {
                 collect_used_types(values, item)
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => collect_used_types(values, elem),
+        } | Channel { elem, direction: _ } => collect_used_types(values, elem),
         HashMap { key, value } => {
             collect_used_types(values, key);
             collect_used_types(values, value)

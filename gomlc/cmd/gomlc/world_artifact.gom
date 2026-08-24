@@ -275,6 +275,7 @@ fn world_v1_package_section_id(package_name: string) -> Option[u16] {
         resources::STD_CRYPTO_HASH_PACKAGE => Option::Some(66.to_u16()),
         resources::STD_CRYPTO_RAND_PACKAGE => Option::Some(68.to_u16()),
         resources::STD_CHANNEL_PACKAGE => Option::Some(70.to_u16()),
+        resources::STD_UTF16_PACKAGE => Option::Some(72.to_u16()),
         _ => Option::None,
     }
 }
@@ -534,6 +535,7 @@ fn decode_package_world_v1(
     let crypto_hash = world_decode_package(container, 66, resources::STD_CRYPTO_HASH_PACKAGE)?;
     let crypto_rand = world_decode_package(container, 68, resources::STD_CRYPTO_RAND_PACKAGE)?;
     let channel = world_decode_package(container, 70, resources::STD_CHANNEL_PACKAGE)?;
+    let utf16 = world_decode_package(container, 72, resources::STD_UTF16_PACKAGE)?;
     world_from_packages(
         metadata,
         Vec::from_array(
@@ -568,6 +570,7 @@ fn decode_package_world_v1(
                 toml,
                 time_value,
                 utf8,
+                utf16,
                 unicode,
                 math,
                 rand,

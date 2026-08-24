@@ -1,0 +1,383 @@
+package bytes;
+
+pub enum Endian {
+    Little,
+    Big,
+}
+
+pub struct BoundsError {
+    offset_value: isize,
+    needed_value: isize,
+    length_value: isize,
+}
+
+impl BoundsError {
+    pub fn new(offset: isize, needed: isize, length: isize) -> BoundsError {
+        BoundsError { offset_value: offset, needed_value: needed, length_value: length }
+    }
+
+    pub fn offset(self: BoundsError) -> isize {
+        self.offset_value
+    }
+
+    pub fn needed(self: BoundsError) -> isize {
+        self.needed_value
+    }
+
+    pub fn length(self: BoundsError) -> isize {
+        self.length_value
+    }
+}
+
+impl ToString for BoundsError {
+    fn to_string(self: BoundsError) -> string {
+        "byte range at offset " + self.offset_value.to_string() + " needs "
+            + self.needed_value.to_string()
+            + " bytes in buffer of length "
+            + self.length_value.to_string()
+    }
+}
+
+impl Debug for BoundsError {
+    fn debug(self: BoundsError) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for BoundsError {
+    fn eq(self: BoundsError, other: BoundsError) -> bool {
+        self.offset_value == other.offset_value && self.needed_value == other.needed_value
+            && self.length_value == other.length_value
+    }
+}
+
+fn check_range(length: isize, offset: isize, width: isize) -> Result[unit, BoundsError] {
+    if offset < 0 || width < 0 || offset > length || width > length - offset {
+        Result::Err(BoundsError::new(offset, width, length))
+    } else {
+        Result::Ok(())
+    }
+}
+
+fn little(endian: Endian) -> bool {
+    match endian {
+        Endian::Little => true,
+        Endian::Big => false,
+    }
+}
+
+fn read_unsigned(input: Slice[byte], offset: isize, width: isize, endian: Endian) -> Result[
+    u64,
+    BoundsError,
+] {
+    check_range(input.len(), offset, width)?;
+    let mut value: u64 = 0;
+    let mut index = 0;
+    while index < width {
+        let position = if little(endian) {
+            index
+        } else {
+            width - index - 1
+        };
+        value = value | (input[offset + index].to_u64() << (position * 8));
+        index += 1;
+    }
+    Result::Ok(value)
+}
+
+fn write_unsigned(output: MutSlice[byte], offset: isize, value: u64, width: isize, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    check_range(output.len(), offset, width)?;
+    let mut index = 0;
+    while index < width {
+        let position = if little(endian) {
+            index
+        } else {
+            width - index - 1
+        };
+        output[offset + index] = (value >> (position * 8)).to_u8();
+        index += 1;
+    }
+    Result::Ok(())
+}
+
+pub fn read_u8(input: Slice[byte], offset: isize) -> Result[u8, BoundsError] {
+    Result::Ok(read_unsigned(input, offset, 1, Endian::Little)?.to_u8())
+}
+
+pub fn read_u16(input: Slice[byte], offset: isize, endian: Endian) -> Result[u16, BoundsError] {
+    Result::Ok(read_unsigned(input, offset, 2, endian)?.to_u16())
+}
+
+pub fn read_u32(input: Slice[byte], offset: isize, endian: Endian) -> Result[u32, BoundsError] {
+    Result::Ok(read_unsigned(input, offset, 4, endian)?.to_u32())
+}
+
+pub fn read_u64(input: Slice[byte], offset: isize, endian: Endian) -> Result[u64, BoundsError] {
+    read_unsigned(input, offset, 8, endian)
+}
+
+pub fn read_i8(input: Slice[byte], offset: isize) -> Result[i8, BoundsError] {
+    Result::Ok(read_u8(input, offset)?.to_i8())
+}
+
+pub fn read_i16(input: Slice[byte], offset: isize, endian: Endian) -> Result[i16, BoundsError] {
+    Result::Ok(read_u16(input, offset, endian)?.to_i16())
+}
+
+pub fn read_i32(input: Slice[byte], offset: isize, endian: Endian) -> Result[i32, BoundsError] {
+    Result::Ok(read_u32(input, offset, endian)?.to_i32())
+}
+
+pub fn read_i64(input: Slice[byte], offset: isize, endian: Endian) -> Result[i64, BoundsError] {
+    Result::Ok(read_u64(input, offset, endian)?.to_i64())
+}
+
+pub fn read_f32(input: Slice[byte], offset: isize, endian: Endian) -> Result[f32, BoundsError] {
+    Result::Ok(float32_from_bits(read_u32(input, offset, endian)?))
+}
+
+pub fn read_f64(input: Slice[byte], offset: isize, endian: Endian) -> Result[f64, BoundsError] {
+    Result::Ok(float64_from_bits(read_u64(input, offset, endian)?))
+}
+
+pub fn write_u8(output: MutSlice[byte], offset: isize, value: u8) -> Result[unit, BoundsError] {
+    write_unsigned(output, offset, value.to_u64(), 1, Endian::Little)
+}
+
+pub fn write_u16(output: MutSlice[byte], offset: isize, value: u16, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_unsigned(output, offset, value.to_u64(), 2, endian)
+}
+
+pub fn write_u32(output: MutSlice[byte], offset: isize, value: u32, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_unsigned(output, offset, value.to_u64(), 4, endian)
+}
+
+pub fn write_u64(output: MutSlice[byte], offset: isize, value: u64, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_unsigned(output, offset, value, 8, endian)
+}
+
+pub fn write_i8(output: MutSlice[byte], offset: isize, value: i8) -> Result[unit, BoundsError] {
+    write_u8(output, offset, value.to_u8())
+}
+
+pub fn write_i16(output: MutSlice[byte], offset: isize, value: i16, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_u16(output, offset, value.to_u16(), endian)
+}
+
+pub fn write_i32(output: MutSlice[byte], offset: isize, value: i32, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_u32(output, offset, value.to_u32(), endian)
+}
+
+pub fn write_i64(output: MutSlice[byte], offset: isize, value: i64, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_u64(output, offset, value.to_u64(), endian)
+}
+
+pub fn write_f32(output: MutSlice[byte], offset: isize, value: f32, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_u32(output, offset, value.to_bits(), endian)
+}
+
+pub fn write_f64(output: MutSlice[byte], offset: isize, value: f64, endian: Endian) -> Result[
+    unit,
+    BoundsError,
+] {
+    write_u64(output, offset, value.to_bits(), endian)
+}
+
+pub struct Reader {
+    input: Slice[byte],
+    offset: Ref[isize],
+}
+
+impl Reader {
+    pub fn new(input: Slice[byte]) -> Reader {
+        Reader { input, offset: Ref::new(0) }
+    }
+
+    pub fn position(self: Reader) -> isize {
+        self.offset.get()
+    }
+
+    pub fn remaining(self: Reader) -> isize {
+        self.input.len() - self.offset.get()
+    }
+
+    pub fn read_exact(self: Reader, length: isize) -> Result[Slice[byte], BoundsError] {
+        let offset = self.offset.get();
+        check_range(self.input.len(), offset, length)?;
+        self.offset.set(offset + length);
+        Result::Ok(self.input.sub(offset, offset + length))
+    }
+
+    pub fn read_u8(self: Reader) -> Result[u8, BoundsError] {
+        let value = read_u8(self.input, self.offset.get())?;
+        self.offset.set(self.offset.get() + 1);
+        Result::Ok(value)
+    }
+
+    pub fn read_u16(self: Reader, endian: Endian) -> Result[u16, BoundsError] {
+        let value = read_u16(self.input, self.offset.get(), endian)?;
+        self.offset.set(self.offset.get() + 2);
+        Result::Ok(value)
+    }
+
+    pub fn read_u32(self: Reader, endian: Endian) -> Result[u32, BoundsError] {
+        let value = read_u32(self.input, self.offset.get(), endian)?;
+        self.offset.set(self.offset.get() + 4);
+        Result::Ok(value)
+    }
+
+    pub fn read_u64(self: Reader, endian: Endian) -> Result[u64, BoundsError] {
+        let value = read_u64(self.input, self.offset.get(), endian)?;
+        self.offset.set(self.offset.get() + 8);
+        Result::Ok(value)
+    }
+}
+
+pub struct Writer {
+    output: MutSlice[byte],
+    offset: Ref[isize],
+}
+
+impl Writer {
+    pub fn new(output: MutSlice[byte]) -> Writer {
+        Writer { output, offset: Ref::new(0) }
+    }
+
+    pub fn position(self: Writer) -> isize {
+        self.offset.get()
+    }
+
+    pub fn remaining(self: Writer) -> isize {
+        self.output.len() - self.offset.get()
+    }
+
+    pub fn write_slice(self: Writer, value: Slice[byte]) -> Result[unit, BoundsError] {
+        let offset = self.offset.get();
+        check_range(self.output.len(), offset, value.len())?;
+        let _ = self.output.copy_from(offset, value);
+        self.offset.set(offset + value.len());
+        Result::Ok(())
+    }
+
+    pub fn write_u8(self: Writer, value: u8) -> Result[unit, BoundsError] {
+        write_u8(self.output, self.offset.get(), value)?;
+        self.offset.set(self.offset.get() + 1);
+        Result::Ok(())
+    }
+
+    pub fn write_u16(self: Writer, value: u16, endian: Endian) -> Result[unit, BoundsError] {
+        write_u16(self.output, self.offset.get(), value, endian)?;
+        self.offset.set(self.offset.get() + 2);
+        Result::Ok(())
+    }
+
+    pub fn write_u32(self: Writer, value: u32, endian: Endian) -> Result[unit, BoundsError] {
+        write_u32(self.output, self.offset.get(), value, endian)?;
+        self.offset.set(self.offset.get() + 4);
+        Result::Ok(())
+    }
+
+    pub fn write_u64(self: Writer, value: u64, endian: Endian) -> Result[unit, BoundsError] {
+        write_u64(self.output, self.offset.get(), value, endian)?;
+        self.offset.set(self.offset.get() + 8);
+        Result::Ok(())
+    }
+}
+
+pub struct Builder {
+    values: Vec[byte],
+}
+
+impl Builder {
+    pub fn new() -> Builder {
+        Builder { values: Vec::new() }
+    }
+
+    pub fn with_capacity(capacity: isize) -> Builder {
+        Builder { values: Vec::with_capacity(capacity) }
+    }
+
+    pub fn len(self: Builder) -> isize {
+        self.values.len()
+    }
+
+    pub fn is_empty(self: Builder) -> bool {
+        self.values.is_empty()
+    }
+
+    pub fn push(self: Builder, value: byte) -> unit {
+        self.values.push(value)
+    }
+
+    pub fn extend(self: Builder, value: Slice[byte]) -> unit {
+        self.values.reserve(value.len());
+        for byte in value {
+            self.values.push(byte)
+        }
+    }
+
+    pub fn write_u8(self: Builder, value: u8) -> unit {
+        self.values.push(value)
+    }
+
+    pub fn write_u16(self: Builder, value: u16, endian: Endian) -> unit {
+        self.write_u64_width(value.to_u64(), 2, endian)
+    }
+
+    pub fn write_u32(self: Builder, value: u32, endian: Endian) -> unit {
+        self.write_u64_width(value.to_u64(), 4, endian)
+    }
+
+    pub fn write_u64(self: Builder, value: u64, endian: Endian) -> unit {
+        self.write_u64_width(value, 8, endian)
+    }
+
+    fn write_u64_width(self: Builder, value: u64, width: isize, endian: Endian) -> unit {
+        let mut index = 0;
+        while index < width {
+            let position = if little(endian) {
+                index
+            } else {
+                width - index - 1
+            };
+            self.values.push((value >> (position * 8)).to_u8());
+            index += 1;
+        }
+    }
+
+    pub fn clear(self: Builder) -> unit {
+        self.values.clear()
+    }
+
+    pub fn finish(self: Builder) -> Bytes {
+        Bytes::from_vec(self.values)
+    }
+
+    pub fn to_vec(self: Builder) -> Vec[byte] {
+        self.values
+    }
+}

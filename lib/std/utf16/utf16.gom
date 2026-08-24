@@ -1,0 +1,131 @@
+package utf16;
+
+use module::bytes;
+use module::text;
+
+pub enum Utf16ErrorKind {
+    UnpairedSurrogate,
+    OddByteLength,
+}
+
+pub struct Utf16Error {
+    index_value: isize,
+    kind_value: Utf16ErrorKind,
+}
+
+impl Utf16Error {
+    pub fn new(index: isize, kind: Utf16ErrorKind) -> Utf16Error {
+        Utf16Error { index_value: index, kind_value: kind }
+    }
+
+    pub fn index(self: Utf16Error) -> isize {
+        self.index_value
+    }
+
+    pub fn kind(self: Utf16Error) -> Utf16ErrorKind {
+        self.kind_value
+    }
+}
+
+impl ToString for Utf16Error {
+    fn to_string(self: Utf16Error) -> string {
+        match self.kind_value {
+            Utf16ErrorKind::UnpairedSurrogate => {
+                "unpaired UTF-16 surrogate at code unit " + self.index_value.to_string()
+            },
+            Utf16ErrorKind::OddByteLength => {
+                "odd UTF-16 byte length at byte " + self.index_value.to_string()
+            },
+        }
+    }
+}
+
+impl Debug for Utf16Error {
+    fn debug(self: Utf16Error) -> string {
+        self.to_string()
+    }
+}
+
+fn surrogate(value: u32) -> bool {
+    value >= 0xD800 && value <= 0xDFFF
+}
+
+fn high_surrogate(value: u32) -> bool {
+    value >= 0xD800 && value <= 0xDBFF
+}
+
+fn low_surrogate(value: u32) -> bool {
+    value >= 0xDC00 && value <= 0xDFFF
+}
+
+pub fn decode(input: Slice[u16]) -> Result[string, Utf16Error] {
+    let output = text::StringBuilder::new();
+    let mut index = 0;
+    while index < input.len() {
+        let first = input[index].to_u32();
+        let value = if high_surrogate(first) {
+            if index + 1 >= input.len() {
+                return Result::Err(Utf16Error::new(index, Utf16ErrorKind::UnpairedSurrogate))
+            } else {};
+            let second = input[index + 1].to_u32();
+            if !low_surrogate(second) {
+                return Result::Err(Utf16Error::new(index, Utf16ErrorKind::UnpairedSurrogate))
+            } else {};
+            index += 1;
+            0x10000 + ((first - 0xD800) << 10) + (second - 0xDC00)
+        } else if surrogate(first) {
+            return Result::Err(Utf16Error::new(index, Utf16ErrorKind::UnpairedSurrogate))
+        } else {
+            first
+        };
+        match char_from_u32(value) {
+            Some(character) => output.write_char(character),
+            None => {
+                return Result::Err(Utf16Error::new(index, Utf16ErrorKind::UnpairedSurrogate))
+            },
+        };
+        index += 1;
+    }
+    Result::Ok(output.finish())
+}
+
+pub fn decode_bytes(input: Slice[byte], endian: bytes::Endian) -> Result[string, Utf16Error] {
+    if input.len() % 2 != 0 {
+        return Result::Err(Utf16Error::new(input.len() - 1, Utf16ErrorKind::OddByteLength))
+    } else {};
+    let values: Vec[u16] = Vec::with_capacity(input.len() / 2);
+    let mut offset = 0;
+    while offset < input.len() {
+        match bytes::read_u16(input, offset, endian) {
+            Ok(value) => values.push(value),
+            Err(_) => {
+                return Result::Err(Utf16Error::new(offset, Utf16ErrorKind::OddByteLength))
+            },
+        };
+        offset += 2;
+    }
+    decode(values.as_slice())
+}
+
+pub fn encode(value: string) -> Vec[u16] {
+    let output: Vec[u16] = Vec::with_capacity(value.len());
+    for character in value.chars() {
+        let scalar = character.to_u32();
+        if scalar <= 0xFFFF {
+            output.push(scalar.to_u16())
+        } else {
+            let adjusted = scalar - 0x10000;
+            output.push((0xD800 + (adjusted >> 10)).to_u16());
+            output.push((0xDC00 + (adjusted & 0x3FF)).to_u16())
+        }
+    }
+    output
+}
+
+pub fn encode_bytes(value: string, endian: bytes::Endian) -> Vec[byte] {
+    let output = bytes::Builder::with_capacity(value.len() * 2);
+    for code_unit in encode(value) {
+        output.write_u16(code_unit, endian)
+    }
+    output.to_vec()
+}

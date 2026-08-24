@@ -666,7 +666,7 @@ fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
                 element,
                 ty,
             ),
-            VecType { elem: element } | Slice { elem: element } => coverage_sequence_patterns(
+            VecType { elem: element } | Slice { elem: element } | MutSlice { elem: element } => coverage_sequence_patterns(
                 prefix,
                 rest,
                 suffix,
@@ -947,7 +947,9 @@ fn coverage_default(matrix: Vec[Vec[CoveragePat]]) -> Vec[Vec[CoveragePat]] {
 
 fn coverage_sequence_element(ty: Type) -> Option[Type] {
     match prune(ty) {
-        VecType { elem: element } | Slice { elem: element } => Option::Some(element),
+        VecType { elem: element } | Slice { elem: element } | MutSlice { elem: element } => {
+            Option::Some(element)
+        },
         _ => Option::None,
     }
 }

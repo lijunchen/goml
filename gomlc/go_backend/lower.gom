@@ -957,6 +957,14 @@ fn intrinsic_source_name(key: string) -> string {
         "hashmap_get"
     } else if key == "hashmap.set" {
         "hashmap_set"
+    } else if key == "hashmap.insert" {
+        "hashmap_insert"
+    } else if key == "hashmap.get_or_insert_with" {
+        "hashmap_get_or_insert_with"
+    } else if key == "hashmap.update" {
+        "hashmap_update"
+    } else if key == "hashmap.remove_value" {
+        "hashmap_remove_value"
     } else if key == "hashmap.remove" {
         "hashmap_remove"
     } else if key == "hashmap.len" {
@@ -1031,6 +1039,10 @@ fn intrinsic_helper_call_name(key: string, function_ty: repr::Type, args: Vec[an
         || key == "hashmap.new"
         || key == "hashmap.get"
         || key == "hashmap.set"
+        || key == "hashmap.insert"
+        || key == "hashmap.get_or_insert_with"
+        || key == "hashmap.update"
+        || key == "hashmap.remove_value"
         || key == "hashmap.remove"
         || key == "hashmap.len"
         || key == "hashmap.contains"
@@ -1056,18 +1068,88 @@ fn compile_slice_callable(key: string, function_ty: repr::Type) -> Expr {
                 params.push((name, lower_type(param_types[index])));
                 vars.push(Expr::Var { name })
             }
-            let value = if key == "slice.new" {
+            if key == "mut_slice.set" {
+                let stmts: Vec[Stmt] = Vec::new();
+                stmts.push(Stmt::IndexAssign { base: vars[0], index: vars[1], value: vars[2] });
+                stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
+                return Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
+            } else {};
+            if key == "mut_slice.copy_from" {
+                let source_len_args: Vec[Expr] = Vec::new();
+                source_len_args.push(vars[2]);
+                let source_len = Expr::Call {
+                    func: Expr::Var { name: "len" },
+                    args: source_len_args,
+                };
+                let target_len_args: Vec[Expr] = Vec::new();
+                target_len_args.push(vars[0]);
+                let target_len = Expr::Call {
+                    func: Expr::Var { name: "len" },
+                    args: target_len_args,
+                };
+                let invalid = Expr::Binary {
+                    op: BinaryOp::Or,
+                    lhs: Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs: vars[1],
+                        rhs: Expr::Int { value: "0" },
+                    },
+                    rhs: Expr::Binary {
+                        op: BinaryOp::Greater,
+                        lhs: source_len,
+                        rhs: Expr::Binary { op: BinaryOp::Sub, lhs: target_len, rhs: vars[1] },
+                    },
+                };
+                let invalid_stmts: Vec[Stmt] = Vec::new();
+                invalid_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
+                let stmts: Vec[Stmt] = Vec::new();
+                stmts.push(
+                    Stmt::If {
+                        cond: invalid,
+                        then_: Block { stmts: invalid_stmts },
+                        else_: Option::None,
+                    },
+                );
+                let copied_len_args: Vec[Expr] = Vec::new();
+                copied_len_args.push(vars[2]);
+                let copy_args: Vec[Expr] = Vec::new();
+                copy_args.push(
+                    Expr::Slice {
+                        base: vars[0],
+                        start: vars[1],
+                        end: Expr::Binary {
+                            op: BinaryOp::Add,
+                            lhs: vars[1],
+                            rhs: Expr::Call {
+                                func: Expr::Var { name: "len" },
+                                args: copied_len_args,
+                            },
+                        },
+                    },
+                );
+                copy_args.push(vars[2]);
+                stmts.push(
+                    Stmt::Expr {
+                        expr: Expr::Call { func: Expr::Var { name: "copy" }, args: copy_args },
+                    },
+                );
+                stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: true }) });
+                return Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
+            } else {};
+            let value = if key == "slice.new" || key == "mut_slice.new" {
                 Expr::Slice {
                     base: Expr::Field { expr: vars[0], field_name: "items" },
                     start: vars[1],
                     end: vars[2],
                 }
-            } else if key == "slice.get" {
+            } else if key == "slice.get" || key == "mut_slice.get" {
                 Expr::Index { base: vars[0], index: vars[1] }
-            } else if key == "slice.len" {
+            } else if key == "slice.len" || key == "mut_slice.len" {
                 let args: Vec[Expr] = Vec::new();
                 args.push(vars[0]);
                 Expr::Call { func: Expr::Var { name: "len" }, args }
+            } else if key == "mut_slice.as_slice" {
+                vars[0]
             } else {
                 Expr::Slice { base: vars[0], start: vars[1], end: vars[2] }
             };
@@ -1990,7 +2072,14 @@ fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) 
 fn compile_intrinsic_callable(key: string, function_ty: repr::Type) -> Expr {
     if key == "vec.from_array" || key == "hashmap.from_array" {
         compile_collection_from_array_callable(key, function_ty)
-    } else if key == "slice.new" || key == "slice.get" || key == "slice.len" || key == "slice.sub" {
+    } else if key == "slice.new" || key == "slice.get" || key == "slice.len" || key == "slice.sub"
+        || key == "mut_slice.new"
+        || key == "mut_slice.get"
+        || key == "mut_slice.set"
+        || key == "mut_slice.len"
+        || key == "mut_slice.sub"
+        || key == "mut_slice.as_slice"
+        || key == "mut_slice.copy_from" {
         compile_slice_callable(key, function_ty)
     } else if key == "channel.dynamic_try_select_priority" {
         compile_dynamic_priority_select_callable(function_ty)
@@ -2045,20 +2134,22 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
     };
     match func {
         Callable { callable: Intrinsic(key), ty: _ } => {
-            if key == "slice.new" {
+            if key == "slice.new" || key == "mut_slice.new" {
                 Expr::Slice {
                     base: Expr::Field { expr: compiled[0], field_name: "items" },
                     start: compiled[1],
                     end: compiled[2],
                 }
-            } else if key == "slice.get" {
+            } else if key == "slice.get" || key == "mut_slice.get" {
                 Expr::Index { base: compiled[0], index: compiled[1] }
-            } else if key == "slice.len" {
+            } else if key == "slice.len" || key == "mut_slice.len" {
                 let len_args: Vec[Expr] = Vec::new();
                 len_args.push(compiled[0]);
                 Expr::Call { func: Expr::Var { name: "len" }, args: len_args }
-            } else if key == "slice.sub" {
+            } else if key == "slice.sub" || key == "mut_slice.sub" {
                 Expr::Slice { base: compiled[0], start: compiled[1], end: compiled[2] }
+            } else if key == "mut_slice.as_slice" {
+                compiled[0]
             } else {
                 Expr::Call { func: compile_callable(env, func, args), args: compiled }
             }
@@ -4774,7 +4865,7 @@ fn collect_type(result: CollectedTypes, value: repr::Type) -> unit {
             add_collected_type(result, value);
             collect_type(result, elem);
         },
-        Slice { elem } => collect_type(result, elem),
+        Slice { elem } | MutSlice { elem } => collect_type(result, elem),
         VecType { elem } => {
             add_collected_type(result, value);
             collect_type(result, elem);
@@ -5326,7 +5417,7 @@ fn go_type_size(value: repr::Type, structs: Vec[repr::StructDef], depth: isize) 
                     item
                 }
             },
-            Slice { elem: _ } => known_go_size(24, 8),
+            Slice { elem: _ } | MutSlice { elem: _ } => known_go_size(24, 8),
             VecType { elem: _ } | RefType { elem: _ } | HashMap { .. } | Channel {
                 elem: _,
                 direction: _,

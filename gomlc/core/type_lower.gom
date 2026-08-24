@@ -79,6 +79,7 @@ pub fn lower_type(value: tast::Type) -> Type {
         App { ty, args } => Type::App { ty: lower_type(ty), args: lower_types(args) },
         Array { len, elem } => Type::Array { len, elem: lower_type(elem) },
         Slice { elem } => Type::Slice { elem: lower_type(elem) },
+        MutSlice { elem } => Type::MutSlice { elem: lower_type(elem) },
         VecType { elem } => Type::VecType { elem: lower_type(elem) },
         RefType { elem } => Type::RefType { elem: lower_type(elem) },
         HashMap { key, value } => {
@@ -524,6 +525,7 @@ pub fn type_to_tast(value: Type) -> tast::Type {
         App { ty, args } => tast::Type::App { ty: type_to_tast(ty), args: tast_types(args) },
         Array { len, elem } => tast::Type::Array { len, elem: type_to_tast(elem) },
         Slice { elem } => tast::Type::Slice { elem: type_to_tast(elem) },
+        MutSlice { elem } => tast::Type::MutSlice { elem: type_to_tast(elem) },
         VecType { elem } => tast::Type::VecType { elem: type_to_tast(elem) },
         RefType { elem } => tast::Type::RefType { elem: type_to_tast(elem) },
         HashMap { key, value } => {

@@ -41,6 +41,7 @@ struct StandardNeeds {
     toml: bool,
     time: bool,
     utf8: bool,
+    utf16: bool,
     unicode: bool,
     math: bool,
     rand: bool,
@@ -95,6 +96,7 @@ fn no_standard_needs() -> StandardNeeds {
         toml: false,
         time: false,
         utf8: false,
+        utf16: false,
         unicode: false,
         math: false,
         rand: false,
@@ -131,6 +133,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         toml: closure.contains(resources::STD_TOML_PACKAGE),
         time: closure.contains(resources::STD_TIME_PACKAGE),
         utf8: closure.contains(resources::STD_UTF8_PACKAGE),
+        utf16: closure.contains(resources::STD_UTF16_PACKAGE),
         unicode: closure.contains(resources::STD_UNICODE_PACKAGE),
         math: closure.contains(resources::STD_MATH_PACKAGE),
         rand: closure.contains(resources::STD_RAND_PACKAGE),
@@ -176,6 +179,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         toml: left.toml || right.toml,
         time: left.time || right.time,
         utf8: left.utf8 || right.utf8,
+        utf16: left.utf16 || right.utf16,
         unicode: left.unicode || right.unicode,
         math: left.math || right.math,
         rand: left.rand || right.rand,
@@ -687,6 +691,9 @@ fn selected_standard_package_names(needs: StandardNeeds) -> Vec[string] {
     } else {};
     if needs.utf8 {
         result.push(resources::STD_UTF8_PACKAGE)
+    } else {};
+    if needs.utf16 {
+        result.push(resources::STD_UTF16_PACKAGE)
     } else {};
     if needs.unicode {
         result.push(resources::STD_UNICODE_PACKAGE)

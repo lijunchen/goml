@@ -69,6 +69,7 @@ fn inherent_base(builtin: tast::BuiltinContract, value: tast::Type) -> string {
         Con { name } => name,
         App { ty: base, args: _ } => inherent_base(builtin, base),
         Slice { elem: _ } => builtin.slice.name,
+        MutSlice { elem: _ } => builtin.mut_slice.name,
         VecType { elem: _ } => builtin.vec.name,
         RefType { elem: _ } => builtin.ref_type.name,
         HashMap { key: _, value: _ } => builtin.hashmap.name,
@@ -823,6 +824,7 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
         Array { len: _, elem: _ } => tast::Callable::Intrinsic("array.get"),
         VecType { elem: _ } => tast::Callable::Intrinsic("vec.get"),
         Slice { elem: _ } => tast::Callable::Intrinsic("slice.get"),
+        MutSlice { elem: _ } => tast::Callable::Intrinsic("mut_slice.get"),
         HashMap { key: _, value: _ } => tast::Callable::Intrinsic("hashmap.get"),
         String => match resources::runtime_abi_by_hook(
             resources::RuntimeHook::Core(resources::CoreRuntimeHook::StringGet),
@@ -1248,6 +1250,17 @@ fn lower_direct_for(ctx: Lowerer, pattern: tast::Pat, iterator: tast::Expr, body
                         container_ty,
                         "slice.len",
                         "slice.get",
+                        body,
+                    ),
+                ),
+                MutSlice { elem: _ } => Option::Some(
+                    direct_container_for(
+                        ctx,
+                        pattern,
+                        other,
+                        container_ty,
+                        "mut_slice.len",
+                        "mut_slice.get",
                         body,
                     ),
                 ),

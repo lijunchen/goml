@@ -69,6 +69,10 @@ pub fn encode_type(value: repr::Type) -> string {
             let encoded = encode_type(elem);
             "Slice_" + encoded.byte_len().to_string() + encoded
         },
+        MutSlice { elem } => {
+            let encoded = encode_type(elem);
+            "MutSlice_" + encoded.byte_len().to_string() + encoded
+        },
         VecType { elem } => {
             let encoded = encode_type(elem);
             "Vec_" + encoded.byte_len().to_string() + encoded
@@ -143,6 +147,7 @@ pub fn type_name(value: repr::Type) -> string {
             go_generated_ident("Array" + length.to_string() + "_" + type_name_part(elem))
         },
         Slice { elem } => go_generated_ident("Slice_" + type_name_part(elem)),
+        MutSlice { elem } => go_generated_ident("MutSlice_" + type_name_part(elem)),
         VecType { elem } => go_generated_ident("Vec_" + type_name_part(elem)),
         RefType { elem } => go_generated_ident("Ptr_" + type_name_part(elem)),
         HashMap { key, value } => {
@@ -208,6 +213,7 @@ fn lower_type_with_contract(builtin: tast::BuiltinContract, value: repr::Type) -
             Type::Array { len: length, elem: lower_type_with_contract(builtin, elem) }
         },
         Slice { elem } => Type::Slice { elem: lower_type_with_contract(builtin, elem) },
+        MutSlice { elem } => Type::Slice { elem: lower_type_with_contract(builtin, elem) },
         VecType { elem } => {
             Type::Pointer {
                 elem: Type::Named {

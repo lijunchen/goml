@@ -970,10 +970,9 @@ fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
                 collect_injective_type_params(arg, result)
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => collect_injective_type_params(elem, result),
+        } | Channel { elem, direction: _ } => collect_injective_type_params(elem, result),
         HashMap { key, value } => {
             collect_injective_type_params(key, result);
             collect_injective_type_params(value, result)
@@ -1010,10 +1009,9 @@ fn type_contains_projection(value: Type) -> bool {
             }
             false
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => type_contains_projection(elem),
+        } | Channel { elem, direction: _ } => type_contains_projection(elem),
         HashMap { key, value } => {
             type_contains_projection(key) || type_contains_projection(value)
         },
@@ -1525,10 +1523,9 @@ fn associated_type_reaches(
             }
             false
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => {
+        } | Channel { elem, direction: _ } => {
             associated_type_reaches(values, elem, target_trait, target, active)
         },
         HashMap { key, value } => {
@@ -1618,6 +1615,7 @@ fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
         },
         Array { len, elem } => Type::Array { len, elem: resolve_impl_alias_type(ctx, elem) },
         Slice { elem } => Type::Slice { elem: resolve_impl_alias_type(ctx, elem) },
+        MutSlice { elem } => Type::MutSlice { elem: resolve_impl_alias_type(ctx, elem) },
         VecType { elem } => Type::VecType { elem: resolve_impl_alias_type(ctx, elem) },
         RefType { elem } => Type::RefType { elem: resolve_impl_alias_type(ctx, elem) },
         HashMap { key, value } => Type::HashMap {

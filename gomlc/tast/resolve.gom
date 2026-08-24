@@ -605,7 +605,10 @@ fn resolve_pattern_named_field_constructor(ctx: Checker, head: hir::PatternHead,
 fn nominal_arguments(value: Type) -> Vec[Type] {
     match prune(value) {
         App { ty: _, args } => args,
-        VecType { elem } | Slice { elem } | RefType { elem } | Channel { elem, direction: _ } => {
+        VecType { elem } | Slice { elem } | MutSlice { elem } | RefType { elem } | Channel {
+            elem,
+            direction: _,
+        } => {
             one_type(elem)
         },
         HashMap { key, value: item } => two_types(key, item),
@@ -738,9 +741,12 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
                 && call_types_compatible(left_elem, right_elem)
         },
         (Slice { elem: left }, Slice { elem: right }) | (
-            VecType { elem: left },
-            VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) => {
+            MutSlice { elem: left },
+            MutSlice { elem: right },
+        ) | (VecType { elem: left }, VecType { elem: right }) | (
+            RefType { elem: left },
+            RefType { elem: right },
+        ) => {
             call_types_compatible(left, right)
         },
         (
@@ -1034,10 +1040,9 @@ fn contains_unbound_any_variable(value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => contains_unbound_any_variable(elem),
+        } | Channel { elem, direction: _ } => contains_unbound_any_variable(elem),
         HashMap { key, value } => {
             contains_unbound_any_variable(key) || contains_unbound_any_variable(value)
         },
@@ -1108,10 +1113,9 @@ fn type_contains_error(value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => type_contains_error(elem),
+        } | Channel { elem, direction: _ } => type_contains_error(elem),
         HashMap { key, value } => {
             type_contains_error(key) || type_contains_error(value)
         },
@@ -1180,10 +1184,9 @@ fn mark_unresolved_inference_type(ctx: Checker, value: Type) -> unit {
                 mark_unresolved_inference_type(ctx, arg)
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => {
+        } | Channel { elem, direction: _ } => {
             mark_unresolved_inference_type(ctx, elem)
         },
         HashMap { key, value } => {
@@ -2182,6 +2185,9 @@ fn resolve_projection_type(
         Slice { elem } => Type::Slice {
             elem: resolve_projection_type(ctx, elem, candidates, report),
         },
+        MutSlice { elem } => Type::MutSlice {
+            elem: resolve_projection_type(ctx, elem, candidates, report),
+        },
         VecType { elem } => Type::VecType {
             elem: resolve_projection_type(ctx, elem, candidates, report),
         },
@@ -2402,10 +2408,9 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => type_contains_parameter(elem, expected),
+        } | Channel { elem, direction: _ } => type_contains_parameter(elem, expected),
         HashMap { key, value } => {
             type_contains_parameter(key, expected) || type_contains_parameter(value, expected)
         },
@@ -2467,10 +2472,9 @@ fn type_contains_unbound_dyn_self(value: Type, associated_types: Vec[(string, Ty
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => type_contains_unbound_dyn_self(elem, associated_types),
+        } | Channel { elem, direction: _ } => type_contains_unbound_dyn_self(elem, associated_types),
         HashMap { key, value } => {
             type_contains_unbound_dyn_self(key, associated_types)
                 || type_contains_unbound_dyn_self(value, associated_types)
@@ -2632,9 +2636,12 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
         Tuple { items: values } => for value in values {
             validate_signature_type(ctx, value)
         },
-        Array { len: _, elem: element } | Slice { elem: element } | VecType { elem: element } | RefType {
+        Array { len: _, elem: element } | Slice { elem: element } | MutSlice { elem: element } | VecType {
             elem: element,
-        } | Channel { elem: element, direction: _ } => validate_signature_type(ctx, element),
+        } | RefType { elem: element } | Channel { elem: element, direction: _ } => validate_signature_type(
+            ctx,
+            element,
+        ),
         HashMap { key, value } => {
             validate_signature_type(ctx, key);
             validate_signature_type(ctx, value)
@@ -2771,6 +2778,9 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },
         Slice { elem } => Type::Slice { elem: expand_type_alias_inner(ctx, elem, stack, report) },
+        MutSlice { elem } => {
+            Type::MutSlice { elem: expand_type_alias_inner(ctx, elem, stack, report) }
+        },
         VecType { elem } => Type::VecType {
             elem: expand_type_alias_inner(ctx, elem, stack, report),
         },

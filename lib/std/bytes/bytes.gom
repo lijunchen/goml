@@ -1,5 +1,7 @@
 package bytes;
 
+pub type ByteBuffer = Bytes;
+
 pub struct Bytes {
     pub values: Vec[byte],
 }
@@ -37,8 +39,16 @@ impl Bytes {
         self.values[index]
     }
 
+    pub fn get_checked(self: Bytes, index: isize) -> Option[byte] {
+        self.values.get_checked(index)
+    }
+
     pub fn set(self: Bytes, index: isize, value: byte) -> unit {
         self.values[index] = value;
+    }
+
+    pub fn set_checked(self: Bytes, index: isize, value: byte) -> bool {
+        self.values.as_mut_slice().set_checked(index, value)
     }
 
     pub fn push(self: Bytes, value: byte) -> unit {
@@ -65,6 +75,33 @@ impl Bytes {
         self.values.slice(start, end)
     }
 
+    pub fn slice_checked(self: Bytes, start: isize, end: isize) -> Option[Slice[byte]] {
+        self.values.slice_checked(start, end)
+    }
+
+    pub fn as_slice(self: Bytes) -> Slice[byte] {
+        self.values.as_slice()
+    }
+
+    pub fn slice_mut(self: Bytes, start: isize, end: isize) -> MutSlice[byte] {
+        self.values.slice_mut(start, end)
+    }
+
+    pub fn slice_mut_checked(self: Bytes, start: isize, end: isize) -> Option[MutSlice[byte]] {
+        self.values.slice_mut_checked(start, end)
+    }
+
+    pub fn as_mut_slice(self: Bytes) -> MutSlice[byte] {
+        self.values.as_mut_slice()
+    }
+
+    pub fn extend_from_slice(self: Bytes, source: Slice[byte]) -> unit {
+        self.values.reserve(source.len());
+        for value in source {
+            self.values.push(value)
+        }
+    }
+
     pub fn to_vec(self: Bytes) -> Vec[byte] {
         self.values
     }
@@ -76,5 +113,9 @@ impl Bytes {
         } else {
             Result::Err("invalid UTF-8")
         }
+    }
+
+    pub fn builder() -> Builder {
+        Builder::new()
     }
 }

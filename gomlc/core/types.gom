@@ -48,6 +48,9 @@ pub enum Type {
     Slice {
         elem: Type,
     },
+    MutSlice {
+        elem: Type,
+    },
     VecType {
         elem: Type,
     },
@@ -185,9 +188,12 @@ pub fn types_equal(left: Type, right: Type) -> bool {
             left_len == right_len && types_equal(left, right)
         },
         (Slice { elem: left }, Slice { elem: right }) | (
-            VecType { elem: left },
-            VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) => types_equal(left, right),
+            MutSlice { elem: left },
+            MutSlice { elem: right },
+        ) | (VecType { elem: left }, VecType { elem: right }) | (
+            RefType { elem: left },
+            RefType { elem: right },
+        ) => types_equal(left, right),
         (
             Channel { elem: left, direction: left_direction },
             Channel { elem: right, direction: right_direction },
@@ -274,10 +280,9 @@ pub fn type_contains_error(value: Type) -> bool {
                 false
             }
         },
-        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { elem, .. } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => type_contains_error(elem),
+        } | Channel { elem, direction: _ } => type_contains_error(elem),
         HashMap { key, value } => type_contains_error(key) || type_contains_error(value),
         Func { params, ret_ty } => {
             for param in params {
@@ -339,10 +344,9 @@ pub fn type_is_concrete(value: Type) -> bool {
             }
         },
         App { ty, args } => type_is_concrete(ty) && concrete_types(args),
-        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { elem, .. } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => type_is_concrete(elem),
+        } | Channel { elem, direction: _ } => type_is_concrete(elem),
         HashMap { key, value } => type_is_concrete(key) && type_is_concrete(value),
         Func { params, ret_ty } => concrete_types(params) && type_is_concrete(ret_ty),
     }
@@ -428,6 +432,7 @@ pub fn substitute_type(value: Type, bindings: Vec[(string, Type)]) -> Type {
         },
         Array { len, elem } => Type::Array { len, elem: substitute_type(elem, bindings) },
         Slice { elem } => Type::Slice { elem: substitute_type(elem, bindings) },
+        MutSlice { elem } => Type::MutSlice { elem: substitute_type(elem, bindings) },
         VecType { elem } => Type::VecType { elem: substitute_type(elem, bindings) },
         RefType { elem } => Type::RefType { elem: substitute_type(elem, bindings) },
         HashMap { key, value } => Type::HashMap {
@@ -495,10 +500,9 @@ fn collect_type_parameters(values: Vec[string], value: Type) -> unit {
                 collect_type_parameters(values, arg)
             }
         },
-        Array { elem, .. } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { elem, .. } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => collect_type_parameters(values, elem),
+        } | Channel { elem, direction: _ } => collect_type_parameters(values, elem),
         HashMap { key, value } => {
             collect_type_parameters(values, key);
             collect_type_parameters(values, value)

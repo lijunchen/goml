@@ -67,6 +67,9 @@ fn artifact_dependency_trait_type(value: tast::Type) -> tast::Type {
         Slice { elem: element } => tast::Type::Slice {
             elem: artifact_dependency_trait_type(element),
         },
+        MutSlice { elem: element } => tast::Type::MutSlice {
+            elem: artifact_dependency_trait_type(element),
+        },
         VecType { elem: element } => tast::Type::VecType {
             elem: artifact_dependency_trait_type(element),
         },

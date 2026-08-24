@@ -1906,6 +1906,8 @@ fn hashmap_native_lookup_item(key: repr::Type, value: repr::Type) -> Item {
     let missing_values: Vec[Expr] = Vec::new();
     missing_values.push(Expr::Var { name: "zero" });
     missing_values.push(Expr::Bool { value: false });
+    missing_values.push(Expr::Int { value: "-1" });
+    missing_values.push(Expr::Int { value: "0" });
     missing_stmts.push(Stmt::ReturnMulti { exprs: missing_values });
     stmts.push(
         Stmt::If {
@@ -1922,6 +1924,8 @@ fn hashmap_native_lookup_item(key: repr::Type, value: repr::Type) -> Item {
     let not_found_values: Vec[Expr] = Vec::new();
     not_found_values.push(Expr::Var { name: "zero" });
     not_found_values.push(Expr::Bool { value: false });
+    not_found_values.push(Expr::Int { value: "-1" });
+    not_found_values.push(Expr::Int { value: "0" });
     not_found_stmts.push(Stmt::ReturnMulti { exprs: not_found_values });
     stmts.push(
         Stmt::If {
@@ -1946,6 +1950,8 @@ fn hashmap_native_lookup_item(key: repr::Type, value: repr::Type) -> Item {
     let found_values: Vec[Expr] = Vec::new();
     found_values.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" });
     found_values.push(Expr::Bool { value: true });
+    found_values.push(Expr::Var { name: "index" });
+    found_values.push(Expr::Int { value: "0" });
     found_stmts.push(Stmt::ReturnMulti { exprs: found_values });
     stmts.push(
         Stmt::If {
@@ -1958,10 +1964,14 @@ fn hashmap_native_lookup_item(key: repr::Type, value: repr::Type) -> Item {
     let inactive_values: Vec[Expr] = Vec::new();
     inactive_values.push(Expr::Var { name: "zero" });
     inactive_values.push(Expr::Bool { value: false });
+    inactive_values.push(Expr::Var { name: "index" });
+    inactive_values.push(Expr::Int { value: "0" });
     stmts.push(Stmt::ReturnMulti { exprs: inactive_values });
     let returns: Vec[Type] = Vec::new();
     returns.push(lowered_value);
     returns.push(Type::Bool);
+    returns.push(Type::Int);
+    returns.push(Type::Uint64);
     Item::Function(
         Function {
             name: runtime_helper_name("hashmap_lookup", map_ty),
@@ -2373,6 +2383,8 @@ fn hashmap_lookup_item(builtin: tast::BuiltinContract, key: repr::Type, value: r
     let nil_values: Vec[Expr] = Vec::new();
     nil_values.push(Expr::Var { name: "zero" });
     nil_values.push(Expr::Bool { value: false });
+    nil_values.push(Expr::Int { value: "-1" });
+    nil_values.push(Expr::Int { value: "0" });
     nil_stmts.push(Stmt::ReturnMulti { exprs: nil_values });
     stmts.push(
         Stmt::If {
@@ -2402,6 +2414,13 @@ fn hashmap_lookup_item(builtin: tast::BuiltinContract, key: repr::Type, value: r
     );
     stmts.push(
         Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "reuse_index",
+            ty: Type::Int,
+            value: Option::Some(Expr::Int { value: "-1" }),
+        },
     );
     let loop_stmts: Vec[Stmt] = Vec::new();
     let len_args: Vec[Expr] = Vec::new();
@@ -2438,6 +2457,8 @@ fn hashmap_lookup_item(builtin: tast::BuiltinContract, key: repr::Type, value: r
     let found_values: Vec[Expr] = Vec::new();
     found_values.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" });
     found_values.push(Expr::Bool { value: true });
+    found_values.push(Expr::Var { name: "i" });
+    found_values.push(Expr::Var { name: "h" });
     found_stmts.push(Stmt::ReturnMulti { exprs: found_values });
     loop_stmts.push(
         Stmt::If {
@@ -2459,6 +2480,27 @@ fn hashmap_lookup_item(builtin: tast::BuiltinContract, key: repr::Type, value: r
             else_: Option::None,
         },
     );
+    let reuse_stmts = Vec::from_array(
+        [Stmt::Assign { name: "reuse_index", value: Expr::Var { name: "i" } }],
+    );
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::And,
+                lhs: Expr::Unary {
+                    op: UnaryOp::Not,
+                    expr: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
+                },
+                rhs: Expr::Binary {
+                    op: BinaryOp::Less,
+                    lhs: Expr::Var { name: "reuse_index" },
+                    rhs: Expr::Int { value: "0" },
+                },
+            },
+            then_: Block { stmts: reuse_stmts },
+            else_: Option::None,
+        },
+    );
     loop_stmts.push(
         Stmt::Assign {
             name: "i",
@@ -2474,10 +2516,14 @@ fn hashmap_lookup_item(builtin: tast::BuiltinContract, key: repr::Type, value: r
     let missing_values: Vec[Expr] = Vec::new();
     missing_values.push(Expr::Var { name: "zero" });
     missing_values.push(Expr::Bool { value: false });
+    missing_values.push(Expr::Var { name: "reuse_index" });
+    missing_values.push(Expr::Var { name: "h" });
     stmts.push(Stmt::ReturnMulti { exprs: missing_values });
     let returns: Vec[Type] = Vec::new();
     returns.push(lowered_value);
     returns.push(Type::Bool);
+    returns.push(Type::Int);
+    returns.push(Type::Uint64);
     Item::Function(
         Function {
             name: runtime_helper_name("hashmap_lookup", map_ty),
@@ -2508,6 +2554,8 @@ fn hashmap_get_item(
     let names: Vec[string] = Vec::new();
     names.push("value");
     names.push("ok");
+    names.push("_");
+    names.push("_");
     let lookup_args: Vec[Expr] = Vec::new();
     lookup_args.push(Expr::Var { name: "m" });
     lookup_args.push(Expr::Var { name: "key" });
@@ -2577,6 +2625,491 @@ fn hashmap_increment_len() -> Stmt {
             rhs: Expr::Int { value: "1" },
         },
     }
+}
+
+fn hashmap_option_some_expr(
+    option_ty: Type,
+    some_ty: Type,
+    compact: bool,
+    some_tag: isize,
+    value: Expr,
+) -> Expr {
+    let fields: Vec[(string, Expr)] = Vec::new();
+    if compact {
+        fields.push(("_tag", Expr::Int { value: some_tag.to_string() }));
+        fields.push((compact_variant_field_name(some_tag, 0), value))
+    } else {
+        fields.push(("_0", value))
+    };
+    Expr::StructLiteral {
+        ty: if compact {
+            option_ty
+        } else {
+            some_ty
+        },
+        fields,
+    }
+}
+
+fn hashmap_option_none_expr(option_ty: Type, none_ty: Type, compact: bool, none_tag: isize) -> Expr {
+    let fields: Vec[(string, Expr)] = Vec::new();
+    if compact {
+        fields.push(("_tag", Expr::Int { value: none_tag.to_string() }))
+    } else {};
+    Expr::StructLiteral {
+        ty: if compact {
+            option_ty
+        } else {
+            none_ty
+        },
+        fields,
+    }
+}
+
+fn hashmap_fused_lookup_stmts(map_ty: repr::Type, value: repr::Type) -> Vec[Stmt] {
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var { name: "previous", ty: lower_type(value), value: Option::None });
+    stmts.push(Stmt::Var { name: "found", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "index", ty: Type::Int, value: Option::None });
+    stmts.push(Stmt::Var { name: "hash", ty: Type::Uint64, value: Option::None });
+    let names = Vec::from_array(["previous", "found", "index", "hash"]);
+    let args = Vec::from_array([Expr::Var { name: "m" }, Expr::Var { name: "key" }]);
+    stmts.push(
+        Stmt::MultiAssign {
+            names,
+            value: Expr::Call {
+                func: Expr::Var { name: runtime_helper_name("hashmap_lookup", map_ty) },
+                args,
+            },
+        },
+    );
+    stmts.push(Stmt::Assign { name: "_", value: Expr::Var { name: "index" } });
+    stmts.push(Stmt::Assign { name: "_", value: Expr::Var { name: "hash" } });
+    stmts
+}
+
+fn hashmap_runtime_entry_target(native_key: bool) -> Expr {
+    if native_key {
+        Expr::Index {
+            base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+            index: Expr::Var { name: "index" },
+        }
+    } else {
+        Expr::Index {
+            base: Expr::Index {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "buckets" },
+                index: Expr::Var { name: "hash" },
+            },
+            index: Expr::Var { name: "index" },
+        }
+    }
+}
+
+fn hashmap_insert_missing_stmts(key: repr::Type, value: repr::Type, native_key: bool) -> Vec[Stmt] {
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    let stmts: Vec[Stmt] = Vec::new();
+    if native_key {
+        let reuse_stmts: Vec[Stmt] = Vec::new();
+        reuse_stmts.push(
+            Stmt::IndexAssign {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                index: Expr::Var { name: "index" },
+                value: hashmap_entry_expr(entry_ty),
+            },
+        );
+        let append_stmts: Vec[Stmt] = Vec::new();
+        let len_args: Vec[Expr] = Vec::new();
+        len_args.push(Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" });
+        append_stmts.push(
+            Stmt::Assign {
+                name: "index",
+                value: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+            },
+        );
+        append_stmts.push(
+            Stmt::IndexAssign {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "indices" },
+                index: Expr::Var { name: "key" },
+                value: Expr::Var { name: "index" },
+            },
+        );
+        let append_args = Vec::from_array(
+            [
+                Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" },
+                hashmap_entry_expr(entry_ty),
+            ],
+        );
+        append_stmts.push(
+            Stmt::FieldAssign {
+                target: Expr::Var { name: "m" },
+                field_name: "entries",
+                value: Expr::Call { func: Expr::Var { name: "append" }, args: append_args },
+            },
+        );
+        stmts.push(
+            Stmt::If {
+                cond: Expr::Binary {
+                    op: BinaryOp::GreaterEq,
+                    lhs: Expr::Var { name: "index" },
+                    rhs: Expr::Int { value: "0" },
+                },
+                then_: Block { stmts: reuse_stmts },
+                else_: Option::Some(Block { stmts: append_stmts }),
+            },
+        )
+    } else {
+        let bucket_ty = Type::Slice { elem: entry_ty };
+        stmts.push(
+            Stmt::Var {
+                name: "bucket",
+                ty: bucket_ty,
+                value: Option::Some(
+                    Expr::Index {
+                        base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "buckets" },
+                        index: Expr::Var { name: "hash" },
+                    },
+                ),
+            },
+        );
+        let len_args = Vec::from_array([Expr::Var { name: "bucket" }]);
+        let empty_stmts: Vec[Stmt] = Vec::new();
+        let append_hash_args = Vec::from_array(
+            [
+                Expr::Field { expr: Expr::Var { name: "m" }, field_name: "hashes" },
+                Expr::Var { name: "hash" },
+            ],
+        );
+        empty_stmts.push(
+            Stmt::FieldAssign {
+                target: Expr::Var { name: "m" },
+                field_name: "hashes",
+                value: Expr::Call { func: Expr::Var { name: "append" }, args: append_hash_args },
+            },
+        );
+        let append_stmts: Vec[Stmt] = Vec::new();
+        append_stmts.push(
+            Stmt::If {
+                cond: Expr::Binary {
+                    op: BinaryOp::Eq,
+                    lhs: Expr::Call { func: Expr::Var { name: "len" }, args: len_args },
+                    rhs: Expr::Int { value: "0" },
+                },
+                then_: Block { stmts: empty_stmts },
+                else_: Option::None,
+            },
+        );
+        let append_args = Vec::from_array(
+            [Expr::Var { name: "bucket" }, hashmap_entry_expr(entry_ty)],
+        );
+        append_stmts.push(
+            Stmt::Assign {
+                name: "bucket",
+                value: Expr::Call { func: Expr::Var { name: "append" }, args: append_args },
+            },
+        );
+        let reuse_stmts = Vec::from_array(
+            [
+                Stmt::IndexAssign {
+                    base: Expr::Var { name: "bucket" },
+                    index: Expr::Var { name: "index" },
+                    value: hashmap_entry_expr(entry_ty),
+                },
+            ],
+        );
+        stmts.push(
+            Stmt::If {
+                cond: Expr::Binary {
+                    op: BinaryOp::GreaterEq,
+                    lhs: Expr::Var { name: "index" },
+                    rhs: Expr::Int { value: "0" },
+                },
+                then_: Block { stmts: reuse_stmts },
+                else_: Option::Some(Block { stmts: append_stmts }),
+            },
+        );
+        stmts.push(
+            Stmt::IndexAssign {
+                base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "buckets" },
+                index: Expr::Var { name: "hash" },
+                value: Expr::Var { name: "bucket" },
+            },
+        )
+    };
+    stmts.push(hashmap_increment_len());
+    stmts
+}
+
+fn hashmap_insert_item(
+    key: repr::Type,
+    value: repr::Type,
+    option_ty: Type,
+    some_ty: Type,
+    none_ty: Type,
+    compact: bool,
+    some_tag: isize,
+    none_tag: isize,
+) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let params = Vec::from_array(
+        [("m", lower_type(map_ty)), ("key", lower_type(key)), ("value", lower_type(value))],
+    );
+    let stmts = hashmap_fused_lookup_stmts(map_ty, value);
+    let found_stmts: Vec[Stmt] = Vec::new();
+    found_stmts.push(
+        Stmt::FieldAssign {
+            target: hashmap_runtime_entry_target(hashmap_native_key(key)),
+            field_name: "value",
+            value: Expr::Var { name: "value" },
+        },
+    );
+    found_stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                hashmap_option_some_expr(
+                    option_ty,
+                    some_ty,
+                    compact,
+                    some_tag,
+                    Expr::Var { name: "previous" },
+                ),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Var { name: "found" },
+            then_: Block { stmts: found_stmts },
+            else_: Option::None,
+        },
+    );
+    let nil_stmts = Vec::from_array(
+        [
+            Stmt::Return {
+                expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
+            },
+        ],
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_insert_missing_stmts(key, value, hashmap_native_key(key)) {
+        stmts.push(stmt)
+    }
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_insert", map_ty),
+            params,
+            ret_ty: Option::Some(option_ty),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_get_or_insert_with_item(key: repr::Type, value: repr::Type) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let create_ty = Type::Func { params: Vec::new(), ret_ty: lower_type(value) };
+    let params = Vec::from_array(
+        [("m", lower_type(map_ty)), ("key", lower_type(key)), ("create", create_ty)],
+    );
+    let stmts = hashmap_fused_lookup_stmts(map_ty, value);
+    let found_stmts = Vec::from_array(
+        [Stmt::Return { expr: Option::Some(Expr::Var { name: "previous" }) }],
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Var { name: "found" },
+            then_: Block { stmts: found_stmts },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "value",
+            ty: lower_type(value),
+            value: Option::Some(Expr::Call { func: Expr::Var { name: "create" }, args: Vec::new() }),
+        },
+    );
+    let nil_stmts = Vec::from_array(
+        [Stmt::Return { expr: Option::Some(Expr::Var { name: "value" }) }],
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "m" }, rhs: Expr::Nil },
+            then_: Block { stmts: nil_stmts },
+            else_: Option::None,
+        },
+    );
+    for stmt in hashmap_insert_missing_stmts(key, value, hashmap_native_key(key)) {
+        stmts.push(stmt)
+    }
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "value" }) });
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_get_or_insert_with", map_ty),
+            params,
+            ret_ty: Option::Some(lower_type(value)),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_update_item(
+    key: repr::Type,
+    value: repr::Type,
+    option_ty: Type,
+    some_ty: Type,
+    none_ty: Type,
+    compact: bool,
+    some_tag: isize,
+    none_tag: isize,
+) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let update_ty = Type::Func {
+        params: Vec::from_array([lower_type(value)]),
+        ret_ty: lower_type(value),
+    };
+    let params = Vec::from_array(
+        [("m", lower_type(map_ty)), ("key", lower_type(key)), ("update", update_ty)],
+    );
+    let stmts = hashmap_fused_lookup_stmts(map_ty, value);
+    let missing_stmts = Vec::from_array(
+        [
+            Stmt::Return {
+                expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
+            },
+        ],
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    let update_args = Vec::from_array([Expr::Var { name: "previous" }]);
+    stmts.push(
+        Stmt::Var {
+            name: "value",
+            ty: lower_type(value),
+            value: Option::Some(
+                Expr::Call { func: Expr::Var { name: "update" }, args: update_args },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::FieldAssign {
+            target: hashmap_runtime_entry_target(hashmap_native_key(key)),
+            field_name: "value",
+            value: Expr::Var { name: "value" },
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                hashmap_option_some_expr(
+                    option_ty,
+                    some_ty,
+                    compact,
+                    some_tag,
+                    Expr::Var { name: "value" },
+                ),
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_update", map_ty),
+            params,
+            ret_ty: Option::Some(option_ty),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn hashmap_remove_value_item(
+    key: repr::Type,
+    value: repr::Type,
+    option_ty: Type,
+    some_ty: Type,
+    none_ty: Type,
+    compact: bool,
+    some_tag: isize,
+    none_tag: isize,
+) -> Item {
+    let map_ty = repr::Type::HashMap { key, value };
+    let params = Vec::from_array([("m", lower_type(map_ty)), ("key", lower_type(key))]);
+    let stmts = hashmap_fused_lookup_stmts(map_ty, value);
+    let missing_stmts = Vec::from_array(
+        [
+            Stmt::Return {
+                expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
+            },
+        ],
+    );
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: Expr::Var { name: "found" } },
+            then_: Block { stmts: missing_stmts },
+            else_: Option::None,
+        },
+    );
+    let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
+    stmts.push(Stmt::Var { name: "zero", ty: entry_ty, value: Option::None });
+    stmts.push(
+        Stmt::IndexAssign {
+            base: if hashmap_native_key(key) {
+                Expr::Field { expr: Expr::Var { name: "m" }, field_name: "entries" }
+            } else {
+                Expr::Index {
+                    base: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "buckets" },
+                    index: Expr::Var { name: "hash" },
+                }
+            },
+            index: Expr::Var { name: "index" },
+            value: Expr::Var { name: "zero" },
+        },
+    );
+    stmts.push(
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "m" },
+            field_name: "len",
+            value: Expr::Binary {
+                op: BinaryOp::Sub,
+                lhs: Expr::Field { expr: Expr::Var { name: "m" }, field_name: "len" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                hashmap_option_some_expr(
+                    option_ty,
+                    some_ty,
+                    compact,
+                    some_tag,
+                    Expr::Var { name: "previous" },
+                ),
+            ),
+        },
+    );
+    Item::Function(
+        Function {
+            name: runtime_helper_name("hashmap_remove_value", map_ty),
+            params,
+            ret_ty: Option::Some(option_ty),
+            body: Block { stmts },
+        },
+    )
 }
 
 fn hashmap_set_item(builtin: tast::BuiltinContract, key: repr::Type, value: repr::Type) -> Item {
@@ -3252,6 +3785,25 @@ fn hashmap_items(
     );
     result.push(
         hashmap_get_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
+    );
+    result.push(
+        hashmap_insert_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
+    );
+    result.push(hashmap_get_or_insert_with_item(key, value));
+    result.push(
+        hashmap_update_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
+    );
+    result.push(
+        hashmap_remove_value_item(
+            key,
+            value,
+            option.0,
+            option.1,
+            option.2,
+            option.4,
+            option.5,
+            option.6,
+        ),
     );
     if native_key {
         result.push(hashmap_native_set_item(key, value));

@@ -68,6 +68,8 @@ pub const STD_TIME_PACKAGE: string = "std::time";
 
 pub const STD_UTF8_PACKAGE: string = "std::utf8";
 
+pub const STD_UTF16_PACKAGE: string = "std::utf16";
+
 pub const STD_UNICODE_PACKAGE: string = "std::unicode";
 
 pub struct Source {
@@ -136,6 +138,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                         STD_TOML_PACKAGE,
                         STD_TIME_PACKAGE,
                         STD_UTF8_PACKAGE,
+                        STD_UTF16_PACKAGE,
                         STD_UNICODE_PACKAGE,
                     ],
                 ),
@@ -165,6 +168,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                         STD_TOML_PACKAGE,
                         STD_TIME_PACKAGE,
                         STD_UTF8_PACKAGE,
+                        STD_UTF16_PACKAGE,
                     ],
                 ),
             ),
@@ -190,7 +194,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 STD_BYTES_PACKAGE,
                 "bytes",
                 STD_ROOT_PACKAGE,
-                Vec::from_array(["std/bytes/bytes.gom"]),
+                Vec::from_array(["std/bytes/bytes.gom", "std/bytes/endian.gom"]),
                 Vec::new(),
                 Vec::new(),
             ),
@@ -442,6 +446,14 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 Vec::from_array([STD_BYTES_PACKAGE, STD_IO_PACKAGE]),
             ),
             standard_package(
+                STD_UTF16_PACKAGE,
+                "utf16",
+                STD_ROOT_PACKAGE,
+                Vec::from_array(["std/utf16/utf16.gom"]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
+            ),
+            standard_package(
                 STD_UNICODE_PACKAGE,
                 "unicode",
                 STD_ROOT_PACKAGE,
@@ -601,9 +613,11 @@ pub fn prelude_builtin_export_names() -> Vec[string] {
             "Vec",
             "FrozenVec",
             "Slice",
+            "MutSlice",
             "Ref",
             "OnceCell",
             "HashMap",
+            "HashMapEntry",
             "Channel",
             "FnIterator",
             "Iterator",
@@ -677,9 +691,20 @@ pub fn prelude_builtin_export_names() -> Vec[string] {
             "slice_get",
             "slice_len",
             "slice_sub",
+            "mut_slice",
+            "mut_slice_get",
+            "mut_slice_set",
+            "mut_slice_len",
+            "mut_slice_sub",
+            "mut_slice_as_slice",
+            "mut_slice_copy_from",
             "hashmap_new",
             "hashmap_get",
             "hashmap_set",
+            "hashmap_insert",
+            "hashmap_get_or_insert_with",
+            "hashmap_update",
+            "hashmap_remove_value",
             "hashmap_remove",
             "hashmap_len",
             "hashmap_contains",

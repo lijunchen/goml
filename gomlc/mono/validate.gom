@@ -44,6 +44,7 @@ fn validate_type(ctx: ValidateContext, value: Type, context: string) -> Result[u
             }
         },
         Slice { elem } => validate_type(ctx, elem, context + " slice element"),
+        MutSlice { elem } => validate_type(ctx, elem, context + " mutable slice element"),
         VecType { elem } => validate_type(ctx, elem, context + " vector element"),
         RefType { elem } => validate_type(ctx, elem, context + " reference element"),
         HashMap { key, value } => {

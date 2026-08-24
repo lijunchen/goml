@@ -480,6 +480,7 @@ fn type_owner_name(value: tast::Type) -> string {
         VecType { elem: _ } => "Vec",
         RefType { elem: _ } => "Ref",
         Slice { elem: _ } => "Slice",
+        MutSlice { elem: _ } => "MutSlice",
         HashMap { key: _, value: _ } => "HashMap",
         Channel { elem: _, direction } => match direction {
             ast::ChannelDirection::Both => "Channel",

@@ -160,6 +160,10 @@ pub fn type_doc(value: Type) -> pretty::Doc {
             pretty::text("Slice"),
             pretty::delimited("[", ",", "]", Vec::from_array([type_doc(elem)])),
         ),
+        MutSlice { elem } => pretty::append(
+            pretty::text("MutSlice"),
+            pretty::delimited("[", ",", "]", Vec::from_array([type_doc(elem)])),
+        ),
         VecType { elem } => pretty::append(
             pretty::text("Vec"),
             pretty::delimited("[", ",", "]", Vec::from_array([type_doc(elem)])),
@@ -381,6 +385,7 @@ fn inherent_type_base(value: Type) -> string {
         Char => "char",
         Named { name } | ClosureEnvironment { name } => name,
         Slice { elem: _ } => "Slice",
+        MutSlice { elem: _ } => "MutSlice",
         VecType { elem: _ } => "Vec",
         RefType { elem: _ } => "Ref",
         HashMap { key: _, value: _ } => "HashMap",

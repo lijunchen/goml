@@ -171,10 +171,9 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => occurs(variable, elem),
+        } | Channel { elem, direction: _ } => occurs(variable, elem),
         HashMap { key, value: item } => occurs(variable, key) || occurs(variable, item),
         Func { params, ret_ty } => {
             if occurs(variable, ret_ty) {
@@ -360,9 +359,12 @@ fn unify(left: Type, right: Type) -> bool {
                 && unify(first_elem, second_elem)
         },
         (Slice { elem: first }, Slice { elem: second }) | (
-            VecType { elem: first },
-            VecType { elem: second },
-        ) | (RefType { elem: first }, RefType { elem: second }) => unify(first, second),
+            MutSlice { elem: first },
+            MutSlice { elem: second },
+        ) | (VecType { elem: first }, VecType { elem: second }) | (
+            RefType { elem: first },
+            RefType { elem: second },
+        ) => unify(first, second),
         (
             Channel { elem: first, direction: first_direction },
             Channel { elem: second, direction: second_direction },
@@ -534,12 +536,12 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
             }
         },
         (Slice { elem: first }, Slice { elem: second }) | (
-            VecType { elem: first },
-            VecType { elem: second },
-        ) | (RefType { elem: first }, RefType { elem: second }) | (
-            Channel { elem: first, direction: _ },
-            Channel { elem: second, direction: _ },
-        ) => {
+            MutSlice { elem: first },
+            MutSlice { elem: second },
+        ) | (VecType { elem: first }, VecType { elem: second }) | (
+            RefType { elem: first },
+            RefType { elem: second },
+        ) | (Channel { elem: first, direction: _ }, Channel { elem: second, direction: _ }) => {
             first_unification_error(first, second)
         },
         (
@@ -655,9 +657,12 @@ pub fn types_equal(left: Type, right: Type) -> bool {
             first_len == second_len && types_equal(first_elem, second_elem)
         },
         (Slice { elem: first }, Slice { elem: second }) | (
-            VecType { elem: first },
-            VecType { elem: second },
-        ) | (RefType { elem: first }, RefType { elem: second }) => types_equal(first, second),
+            MutSlice { elem: first },
+            MutSlice { elem: second },
+        ) | (VecType { elem: first }, VecType { elem: second }) | (
+            RefType { elem: first },
+            RefType { elem: second },
+        ) => types_equal(first, second),
         (
             Channel { elem: first, direction: first_direction },
             Channel { elem: second, direction: second_direction },
@@ -734,10 +739,9 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => contains_parameter(elem, name, substitutions),
+        } | Channel { elem, direction: _ } => contains_parameter(elem, name, substitutions),
         HashMap { key, value: item } => {
             contains_parameter(key, name, substitutions)
                 || contains_parameter(item, name, substitutions)
@@ -829,9 +833,12 @@ fn unify_parameter_aliases(left: Type, right: Type, substitutions: Vec[TypeSubst
             left_len == right_len && unify_parameter_aliases(left, right, substitutions)
         },
         (Slice { elem: left }, Slice { elem: right }) | (
-            VecType { elem: left },
-            VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) => {
+            MutSlice { elem: left },
+            MutSlice { elem: right },
+        ) | (VecType { elem: left }, VecType { elem: right }) | (
+            RefType { elem: left },
+            RefType { elem: right },
+        ) => {
             unify_parameter_aliases(left, right, substitutions)
         },
         (
@@ -1261,6 +1268,7 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
         },
         Array { len: length, elem } => Type::Array { len: length, elem: normalize_type(ctx, elem) },
         Slice { elem } => Type::Slice { elem: normalize_type(ctx, elem) },
+        MutSlice { elem } => Type::MutSlice { elem: normalize_type(ctx, elem) },
         VecType { elem } => Type::VecType { elem: normalize_type(ctx, elem) },
         RefType { elem } => Type::RefType { elem: normalize_type(ctx, elem) },
         Channel { elem, direction } => Type::Channel { elem: normalize_type(ctx, elem), direction },
@@ -1354,6 +1362,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             Type::Array { len: length, elem: substitute_type(elem, substitutions) }
         },
         Slice { elem } => Type::Slice { elem: substitute_type(elem, substitutions) },
+        MutSlice { elem } => Type::MutSlice { elem: substitute_type(elem, substitutions) },
         VecType { elem } => Type::VecType { elem: substitute_type(elem, substitutions) },
         RefType { elem } => Type::RefType { elem: substitute_type(elem, substitutions) },
         Channel { elem, direction } => Type::Channel {
@@ -1441,6 +1450,7 @@ pub fn resolve_type(value: Type) -> Type {
         },
         Array { len: length, elem } => Type::Array { len: length, elem: resolve_type(elem) },
         Slice { elem } => Type::Slice { elem: resolve_type(elem) },
+        MutSlice { elem } => Type::MutSlice { elem: resolve_type(elem) },
         VecType { elem } => Type::VecType { elem: resolve_type(elem) },
         RefType { elem } => Type::RefType { elem: resolve_type(elem) },
         HashMap { key, value: item } => Type::HashMap {
@@ -1502,6 +1512,7 @@ fn default_numeric_type(value: Type) -> Type {
         },
         Array { len, elem } => Type::Array { len, elem: default_numeric_type(elem) },
         Slice { elem } => Type::Slice { elem: default_numeric_type(elem) },
+        MutSlice { elem } => Type::MutSlice { elem: default_numeric_type(elem) },
         VecType { elem } => Type::VecType { elem: default_numeric_type(elem) },
         RefType { elem } => Type::RefType { elem: default_numeric_type(elem) },
         HashMap { key, value } => Type::HashMap {
@@ -1525,6 +1536,7 @@ fn type_constructor_name(builtin: BuiltinContract, value: Type) -> Option[string
         Con { name } => Option::Some(name),
         App { ty: base, args: _ } => type_constructor_name(builtin, base),
         Slice { elem: _ } => Option::Some(builtin.slice.name),
+        MutSlice { elem: _ } => Option::Some(builtin.mut_slice.name),
         VecType { elem: _ } => Option::Some(builtin.vec.name),
         RefType { elem: _ } => Option::Some(builtin.ref_type.name),
         HashMap { key: _, value: _ } => Option::Some(builtin.hashmap.name),
@@ -1561,6 +1573,8 @@ pub fn nominal_type(builtin: BuiltinContract, name: string, args: Vec[Type]) -> 
         Type::VecType { elem: args[0] }
     } else if names_match(name, builtin.slice.name) && args.len() == 1 {
         Type::Slice { elem: args[0] }
+    } else if names_match(name, builtin.mut_slice.name) && args.len() == 1 {
+        Type::MutSlice { elem: args[0] }
     } else if names_match(name, builtin.ref_type.name) && args.len() == 1 {
         Type::RefType { elem: args[0] }
     } else if names_match(name, builtin.hashmap.name) && args.len() == 2 {

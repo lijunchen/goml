@@ -700,10 +700,9 @@ fn contains_unbound_type_variable(value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => contains_unbound_type_variable(elem),
+        } | Channel { elem, direction: _ } => contains_unbound_type_variable(elem),
         HashMap { key, value: item } => {
             contains_unbound_type_variable(key) || contains_unbound_type_variable(item)
         },
@@ -765,10 +764,9 @@ fn contains_unbound_any_type_variable(value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => contains_unbound_any_type_variable(elem),
+        } | Channel { elem, direction: _ } => contains_unbound_any_type_variable(elem),
         HashMap { key, value } => {
             contains_unbound_any_type_variable(key) || contains_unbound_any_type_variable(value)
         },
@@ -842,10 +840,9 @@ fn contains_unresolved_inference(ctx: Checker, value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => contains_unresolved_inference(ctx, elem),
+        } | Channel { elem, direction: _ } => contains_unresolved_inference(ctx, elem),
         HashMap { key, value } => {
             contains_unresolved_inference(ctx, key) || contains_unresolved_inference(ctx, value)
         },
@@ -922,10 +919,9 @@ fn has_unresolved_projection(value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => has_unresolved_projection(elem),
+        } | Channel { elem, direction: _ } => has_unresolved_projection(elem),
         HashMap { key, value: item } => {
             has_unresolved_projection(key) || has_unresolved_projection(item)
         },
@@ -2036,6 +2032,7 @@ fn arity_diagnostic_type(value: Type) -> Type {
             Type::Array { len: length, elem: arity_diagnostic_type(elem) }
         },
         Slice { elem } => Type::Slice { elem: arity_diagnostic_type(elem) },
+        MutSlice { elem } => Type::MutSlice { elem: arity_diagnostic_type(elem) },
         VecType { elem } => Type::VecType { elem: arity_diagnostic_type(elem) },
         RefType { elem } => Type::RefType { elem: arity_diagnostic_type(elem) },
         HashMap { key, value } => Type::HashMap {
@@ -4165,7 +4162,7 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
         Expr::Index { base, index: check_expr(ctx, index_source, Option::None), ty: Type::Unit }
     } else {
         let parts = match prune(expr_type(base)) {
-            Array { len: _, elem } | VecType { elem } | Slice { elem } => {
+            Array { len: _, elem } | VecType { elem } | Slice { elem } | MutSlice { elem } => {
                 (Type::Int, elem)
             },
             HashMap { key, value } => (
@@ -4229,6 +4226,7 @@ fn check_assign_target(ctx: Checker, target: hir::Expr, compound: bool) -> (Expr
                     );
                     (Type::Int, Type::Unit, elem)
                 },
+                MutSlice { elem } => (Type::Int, Type::Unit, elem),
                 HashMap { key, value } => (key, Type::Unit, value),
                 _ => {
                     push_diagnostic(ctx, "indexable assignment target required");
@@ -5463,7 +5461,7 @@ fn array_pattern_types(ctx: Checker, expected: Type, fixed_count: isize) -> (Typ
                 elem,
             },
         ),
-        VecType { elem } | Slice { elem } => (elem, Type::Slice { elem }),
+        VecType { elem } | Slice { elem } | MutSlice { elem } => (elem, Type::Slice { elem }),
         _ => {
             let elem = fresh_type(ctx.counter, VarKind::Any);
             expect_type(ctx, expected, Type::Array { len: fixed_count, elem });

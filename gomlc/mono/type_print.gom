@@ -196,6 +196,15 @@ fn type_doc_with_contract(builtin: tast::BuiltinContract, value: Type) -> pretty
                 Vec::from_array([type_doc_with_contract(builtin, elem)]),
             ),
         ),
+        MutSlice { elem } => pretty::append(
+            pretty::text(builtin.mut_slice.name),
+            pretty::delimited(
+                "[",
+                ",",
+                "]",
+                Vec::from_array([type_doc_with_contract(builtin, elem)]),
+            ),
+        ),
         VecType { elem } => pretty::append(
             pretty::text(builtin.vec.name),
             pretty::delimited(
@@ -435,6 +444,7 @@ fn inherent_type_base(builtin: tast::BuiltinContract, value: Type) -> string {
         Char => "char",
         Named { name } => name,
         Slice { elem: _ } => builtin.slice.name,
+        MutSlice { elem: _ } => builtin.mut_slice.name,
         VecType { elem: _ } => builtin.vec.name,
         RefType { elem: _ } => builtin.ref_type.name,
         HashMap { key: _, value: _ } => builtin.hashmap.name,

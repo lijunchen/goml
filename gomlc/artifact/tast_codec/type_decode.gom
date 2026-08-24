@@ -245,6 +245,12 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
                         Err(error) => Result::Err(error),
                     }
                 },
+                TYPE_MUT_SLICE_TAG => {
+                    match artifact_decode_element_type(context, payload, "mutable slice type") {
+                        Ok(value) => Result::Ok(tast::Type::MutSlice { elem: value }),
+                        Err(error) => Result::Err(error),
+                    }
+                },
                 TYPE_VEC_TAG => {
                     match artifact_decode_element_type(context, payload, "vector type") {
                         Ok(value) => Result::Ok(tast::Type::VecType { elem: value }),

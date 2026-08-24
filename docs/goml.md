@@ -136,7 +136,7 @@ let path = br"C:\tmp\file";
 let quoted = br#"say "hello""#;
 ```
 
-The standard library type `std::bytes::Bytes` remains a separate buffer abstraction. Use `bytes::Bytes::from_vec(value)` when an API requires it.
+The standard library type `std::bytes::Bytes` remains a separate buffer abstraction. It provides read-only and mutable zero-copy views, checked endian access, and matching growable and fixed-buffer writers. Use `bytes::Bytes::from_vec(value)` when an API requires it.
 
 Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is.At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`:
 
@@ -214,7 +214,7 @@ Interface and Core artifacts use the deterministic GAF binary container. GAF
 payloads are encoded directly from compiler data without an intermediate JSON
 value tree.
 
-`for` loops over builtin `range`, `Vec`, and `Slice` values lower directly to indexed loops without allocating iterator closures.
+`for` loops over builtin `range`, `Vec`, `Slice`, and `MutSlice` values lower directly to indexed loops without allocating iterator closures.
 
 The executable file of the module root entry package is `bin/<module name>`; the nested entry package retains the directory within the module and appends the entry name. For example, the output of `alice::app::cmd::server` is `bin/cmd/server/server`. Production test dependencies are built once under `test/base`; internal and external tests each share one Go entry, manifest, and runner at the corresponding test-kind root. The runner file has the `.exe` suffix on Windows. External dependencies use the same `deps/<owner>/<module>/<version>/pkg/...` structure in the root directory of each stage.
 
@@ -419,7 +419,7 @@ This form is the newtype pattern. Construct it with `UserId(value)`, access its 
 
 ### Type syntax not currently available
 
-GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` to express read-only continuous views.
+GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` or `MutSlice[T]` to express read-only or mutable contiguous views.
 
 `A + B` is only usable as a trait bound or supertrait list. The parser reserves `dyn A + B`, but the type checker deliberately rejects multiple dyn bounds in the current object model.
 
@@ -842,7 +842,7 @@ let counts: HashMap[string, i32] = HashMap::new();
 counts["answer"] = 42;
 ```
 
-`Slice[T]` is a read-only view and cannot be assigned by index.
+`Slice[T]` is a read-only view and cannot be assigned by index. `MutSlice[T]` is a mutable bounded view and supports indexed assignment without copying its `Vec[T]` backing storage.
 
 ## Expressions and operators
 
@@ -1160,7 +1160,7 @@ for (key, value) in pairs {
 };
 ```
 
-Fixed arrays use a native indexed loop. `Vec[T]`, `Slice[T]` and all `Iterator` values have corresponding `IntoIterator` implementations.
+Fixed arrays use a native indexed loop. `Vec[T]`, `Slice[T]`, `MutSlice[T]` and all `Iterator` values have corresponding `IntoIterator` implementations.
 
 ### `break`, `continue` and `return`
 
@@ -1264,7 +1264,7 @@ Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
 | Enum unit variant | `Color::Red` or contextual `Red` |
 | Enum tuple variant | `Option::Some(value)` or contextual `Some(value)` |
 | Enum struct-like variant | `Message::Named { value }` or contextual `Named { value }` |
-| Array, Vec or Slice | `[first, second]`、`[first, .., last]` |
+| Array, Vec, Slice or MutSlice | `[first, second]`、`[first, .., last]` |
 | rest binding | `[first, middle @ .., last]` |
 | Alias | `whole @ Option::Some(value)` |
 | or-pattern | `Color::Red \| Color::Blue` |
@@ -1324,9 +1324,9 @@ let Point { x, .. } = point;
 
 The number of constructor parameters of the enumeration pattern must be consistent with the definition.An unqualified variant is resolved from the expected enum type rather than from global uniqueness.For example, `Shared` in a pattern for `First` means `First::Shared` even when `Second::Shared` also exists.If `First` has no `Shared` variant, the compiler reports that error instead of selecting `Second::Shared`.Type aliases and imported enum types participate after normalization.Nested variant payloads supply the expected type for nested patterns.
 
-### Fixed arrays, Vec and Slice
+### Fixed arrays, Vec, Slice and MutSlice
 
-Fixed arrays `[T; N]`, `Vec[T]` and `Slice[T]` share square bracket mode.Without `..`, the pattern requires the exact length; with `..`, the prefix and suffix only specify the minimum length:
+Fixed arrays `[T; N]`, `Vec[T]`, `Slice[T]` and `MutSlice[T]` share square bracket mode.Without `..`, the pattern requires the exact length; with `..`, the prefix and suffix only specify the minimum length:
 
 ```goml
 match values {
@@ -1345,7 +1345,7 @@ let [first, middle @ .., last] = values;
 
 For fixed arrays, the number of elements must be exactly equal to `N` when rest is omitted; when rest is included, the total number of elements of explicit prefixes and suffixes cannot exceed `N`.In the above example, the type of `middle` is `[i32; 2]`.
 
-For `Vec[T]` and `Slice[T]`, the binding type of `name @ ..` is read-only `Slice[T]`.For example `[head, tail @ ..]` requires at least one element, `tail` will not be copied into a new Vec.Since dynamic sequences may not be long enough, such patterns are usually placed inside a `match`, `if let` or `while let`.
+For `Vec[T]`, `Slice[T]` and `MutSlice[T]`, the binding type of `name @ ..` is read-only `Slice[T]`.For example `[head, tail @ ..]` requires at least one element, `tail` will not be copied into a new Vec.Since dynamic sequences may not be long enough, such patterns are usually placed inside a `match`, `if let` or `while let`.
 
 ### Alias ​​and or-pattern
 
@@ -1382,7 +1382,7 @@ Both endpoints must be integer or character literals of the same concrete type.S
 
 ### Exhaustiveness and unreachable branches
 
-The compiler checks whether `match` is exhausted by the actual type of the pattern, and gives examples of missing patterns if it is not.The analysis covers bool, enumerations, tuples, structures, fixed arrays, Vec/Slice, integer and character ranges, aliases and or-patterns, and will also warn about branches that are never matched.
+The compiler checks whether `match` is exhausted by the actual type of the pattern, and gives examples of missing patterns if it is not.The analysis covers bool, enumerations, tuples, structures, fixed arrays, Vec/Slice/MutSlice, integer and character ranges, aliases and or-patterns, and will also warn about branches that are never matched.
 
 An empty `match` is only valid for types that have no constructible value:
 
@@ -2028,6 +2028,7 @@ The initial ABI supports values whose generated Go representations are already d
 | `byte` | `byte` / `uint8` |
 | `[T; N]` | `[N]T` |
 | `Slice[T]` | `[]T` |
+| `MutSlice[T]` | `[]T` |
 | `Channel[T]` | `chan T` |
 | `Sender[T]` | `chan<- T` |
 | `Receiver[T]` | `<-chan T` |
@@ -2371,7 +2372,7 @@ Sorting and selection methods take an integer comparator returning negative/zero
 
 `FrozenVec[T]` is a dynamically sized read-only vector. It exposes `get`, `len`, `is_empty`, `contains`, `iter`, and `to_vec`, but no mutation methods. `to_vec()` returns a new shallow-copied mutable backing store. For nested containers, freezing is shallow: use `FrozenVec[FrozenVec[T]]` when both levels must be read-only.
 
-### `Slice[T]`
+### `Slice[T]` and `MutSlice[T]`
 
 `Slice[T]` is a bounded read-only view on the `Vec[T]` storage:
 
@@ -2380,7 +2381,18 @@ let view: Slice[i32] = values.slice(1, 3);
 let item = view.get(0);
 ```
 
-Commonly used methods: `get`, `len`, `contains`, `sub`, `to_vec`, `iter`.`contains(value)` requires the element type to implement `PartialEq`. `to_vec()` creates a shallow copy in a new `Vec[T]`; `view[index]` can be written, but `view[index] = value;` cannot be written.
+Commonly used read-only methods are `get`, `get_checked`, `len`, `contains`, `sub`, `sub_checked`, `to_vec`, and `iter`.`contains(value)` requires the element type to implement `PartialEq`. `to_vec()` creates a shallow copy in a new `Vec[T]`; `view[index]` can be read, but `view[index] = value;` is rejected.
+
+`MutSlice[T]` is a bounded mutable zero-copy view. `Vec::slice_mut(start, end)` and `Vec::as_mut_slice()` create it; `as_slice()` converts it to a read-only view without copying:
+
+```goml
+let values = Vec::from_array([1, 2, 3, 4]);
+let output = values.slice_mut(1, 4);
+output[0] = 20;
+let written = output.copy_from(1, Vec::from_array([7, 8]).as_slice());
+```
+
+`get_checked`, `set_checked`, `sub_checked`, `Vec::slice_checked`, and `Vec::slice_mut_checked` report invalid ranges without indexing. `copy_from(offset, source)` validates the complete destination range before writing and uses overlap-safe copy semantics; `copy_within` is the corresponding same-view operation. `fill`, `to_vec`, and iteration are also available. `Slice` and `MutSlice` keep their current backing array alive. A later `Vec` growth may move the vector to a new backing array, so an older view continues to refer to the storage captured when the view was created.
 
 ### `HashMap[K, V]`
 
@@ -2395,7 +2407,16 @@ let value: Option[i32] = counts.get("a");
 
 GoML 0.1.27 formatted the former map-literal spelling to `HashMap::from_array([(key, value), ...])`; 0.1.28 removed the former syntax.
 
-Commonly used methods: `new`, `from_array`, `get`, `set`, `remove`, `len`, `contains`, and `entries`. `entries()` returns a snapshot `Vec[(K, V)]`.
+Commonly used methods: `new`, `from_array`, `get`, `set`, `insert`, `get_or_insert_with`, `update`, `remove`, `remove_value`, `entry`, `len`, `contains`, and `entries`. `insert` returns the previous value, `update` applies a `(V) -> V` closure only when the key exists, and `remove_value` returns the removed value. `entries()` returns a snapshot `Vec[(K, V)]`.
+
+`entry(key)` returns a `HashMapEntry[K, V]` with `get`, `or_insert`, `or_insert_with`, `insert`, `and_modify`, `update`, `remove`, and `remove_entry`. The fused entry operations hash and search the key once; the creation closure passed to `or_insert_with` runs only for a missing key:
+
+```goml
+let counts: HashMap[string, isize] = HashMap::new();
+let count = counts.entry("jobs").or_insert_with(|| 0);
+let _ = counts.entry("jobs").update(|value| value + 1);
+let removed = counts.entry("jobs").remove_entry();
+```
 
 Index reading returns `Option[V]`, and index assignment writes `V`:
 
@@ -2465,7 +2486,7 @@ let total = iter::fold(values, 0, |sum: isize, value: isize| sum + value);
 - adapters: `map`, `filter`, `filter_map`, `take`, `take_while`, `skip`, `skip_while`, `enumerate`, `zip`, `chain`, `inspect`, and `map_while`
 - consumers: `fold`, `collect`, `find`, `find_map`, `any`, `all`, `count`, `position`, `nth`, `last`, `for_each`, and `reduce`
 
-Iterators are single pass. Fixed arrays use native indexed `for` lowering. `Vec[T]` and `Slice[T]` can be directly used in `for`, and a value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
+Iterators are single pass. Fixed arrays use native indexed `for` lowering. `Vec[T]`, `Slice[T]` and `MutSlice[T]` can be directly used in `for`, and a value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
 
 ## Standard library package
 
@@ -2495,6 +2516,7 @@ use std::text;
 use std::toml;
 use std::time;
 use std::utf8;
+use std::utf16;
 use std::unicode;
 ```
 
@@ -2502,7 +2524,7 @@ Current public entrances include:
 
 - `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
 - `bincode::standard`, `legacy`, configuration builders, serde `Serialize` and `Deserialize` re-exports, `encode_to_vec`, and `decode_from_slice`
-- `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[u8]`
+- `bytes::Bytes`/`ByteBuffer`, `Builder`, `Reader`, `Writer`, `Endian`, checked integer and floating-point reads and writes, and zero-copy byte views
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations. `Ordering` is a builtin type re-exported by `cmp`.
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`; `HashSet::to_vec` returns a snapshot of its keys
 - `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, and their comparator variants. The sorting, search, selection, and deduplication methods on `Vec[T]` are the canonical forms.
@@ -2524,7 +2546,8 @@ Current public entrances include:
 - `text::StringBuilder`; the byte-offset search, character iteration and slicing, trimming, splitting, replacement, joining, repetition, and explicit ASCII operations are string methods
 - `toml::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, and `from_string`
 - `time::Duration`, `Instant`, `SystemTime`, `sleep`, and `sleep_with`
-- `utf8::validate`, `decode`, `encode`, `encoded_len`, and `Utf8Error`
+- `utf8::validate`, `decode`, `decode_slice`, `encode`, `encode_into`, `encode_to`, `encoded_len`, and `Utf8Error`
+- `utf16::decode`, `decode_bytes`, `encode`, `encode_bytes`, and `Utf16Error`
 - `unicode::VERSION`, scalar properties, and Unicode case conversion using Unicode 15.0.0 tables
 
 ### Structured error foundation
@@ -2561,6 +2584,18 @@ The existing `io`, `fs`, `path`, `env`, `process`, and `num` string-error APIs r
 `std::utf8` validates byte slices and converts complete byte vectors to strings without admitting invalid UTF-8. `Utf8Error::valid_up_to` is the length of the valid prefix. `error_length` is the length of the invalid sequence when known and is `None` for an incomplete sequence at the end of the input. `encode` returns the UTF-8 bytes of a string, and `encoded_len` returns the byte length of one Unicode scalar value.
 
 Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Error`. The original `Bytes::to_string` string-error method remains available for bootstrap and source compatibility.
+
+`decode_slice` accepts a read-only byte view. `encode_into` writes into a `MutSlice[byte]` at a checked offset and reports `bytes::BoundsError` without a partial write; `encode_to` appends to `bytes::Builder`.
+
+### Byte buffers and endian access
+
+`std::bytes` uses `Slice[byte]` and `MutSlice[byte]` for borrowed views. `Bytes::as_slice` and `as_mut_slice` are zero-copy, while `slice_checked` and `slice_mut_checked` validate a subrange. `Builder` grows as bytes are appended and returns `Bytes`; `Reader` advances over a read-only view; `Writer` advances over a fixed mutable view and returns `BoundsError` rather than partially writing past the end.
+
+The top-level `read_u16/u32/u64`, `read_i16/i32/i64`, `read_f32/f64` and matching `write_*` functions take an explicit `Endian::Little` or `Endian::Big`. One-byte operations omit endianness. Every operation validates the complete range before reading or writing.
+
+### UTF-16 conversion
+
+`std::utf16` converts between strings and `Slice[u16]`, or between strings and endian-tagged byte slices. Decoding rejects lone surrogates and odd byte lengths with an indexed `Utf16Error`; encoding emits surrogate pairs for non-BMP scalar values.
 
 `text::find`, `text::rfind`, and `text::find_bytes` return byte offsets; the string methods `find`, `rfind`, and `find_bytes` are the canonical forms. `text::char_indices` yields byte offsets paired with Unicode scalar values, `text::char_count` counts scalar values, and `text::slice_chars` uses scalar-value indexes and returns `None` for an invalid range.
 

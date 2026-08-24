@@ -587,10 +587,10 @@ fn dce_collect_type(ctx: DceFunctions, value: Type) -> unit {
             dce_collect_type(ctx, ty);
             dce_collect_types(ctx, args)
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | Channel { elem, direction: _ } => dce_collect_type(
-            ctx,
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | Channel {
             elem,
-        ),
+            direction: _,
+        } => dce_collect_type(ctx, elem),
         RefType { elem } => {
             dce_retain_runtime_trait_functions(ctx);
             dce_collect_type(ctx, elem)

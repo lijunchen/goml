@@ -215,6 +215,9 @@ fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: core::Type, path: V
         Slice { elem } => core::Type::Slice {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
+        MutSlice { elem } => core::Type::MutSlice {
+            elem: expand_specialized_type_aliases_from(ctx, elem, path),
+        },
         VecType { elem } => core::Type::VecType {
             elem: expand_specialized_type_aliases_from(ctx, elem, path),
         },
@@ -437,6 +440,7 @@ fn collapse_type(ctx: TypeCtx, value: core::Type) -> Type {
         },
         Array { len: length, elem } => Type::Array { len: length, elem: collapse_type(ctx, elem) },
         Slice { elem } => Type::Slice { elem: collapse_type(ctx, elem) },
+        MutSlice { elem } => Type::MutSlice { elem: collapse_type(ctx, elem) },
         VecType { elem } => Type::VecType { elem: collapse_type(ctx, elem) },
         RefType { elem } => Type::RefType { elem: collapse_type(ctx, elem) },
         Channel { elem, direction } => Type::Channel { elem: collapse_type(ctx, elem), direction },
@@ -618,6 +622,7 @@ fn mono_type_to_core(value: Type) -> core::Type {
         },
         Array { len, elem } => core::Type::Array { len, elem: mono_type_to_core(elem) },
         Slice { elem } => core::Type::Slice { elem: mono_type_to_core(elem) },
+        MutSlice { elem } => core::Type::MutSlice { elem: mono_type_to_core(elem) },
         VecType { elem } => core::Type::VecType { elem: mono_type_to_core(elem) },
         RefType { elem } => core::Type::RefType { elem: mono_type_to_core(elem) },
         HashMap { key, value } => core::Type::HashMap {
@@ -974,10 +979,9 @@ fn collect_type_names(ctx: TypeCtx, value: core::Type) -> unit {
                 collect_type_names(ctx, arg)
             }
         },
-        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+        Array { len: _, elem } | Slice { elem } | MutSlice { elem } | VecType { elem } | RefType {
             elem,
-            direction: _,
-        } => collect_type_names(ctx, elem),
+        } | Channel { elem, direction: _ } => collect_type_names(ctx, elem),
         HashMap { key, value } => {
             collect_type_names(ctx, key);
             collect_type_names(ctx, value)

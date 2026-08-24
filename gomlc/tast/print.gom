@@ -207,6 +207,15 @@ fn type_doc_with_contract(builtin: BuiltinContract, value: Type) -> pretty::Doc 
                 Vec::from_array([type_doc_with_contract(builtin, elem)]),
             ),
         ),
+        MutSlice { elem } => pretty::append(
+            pretty::text(builtin.mut_slice.name),
+            pretty::delimited(
+                "[",
+                ",",
+                "]",
+                Vec::from_array([type_doc_with_contract(builtin, elem)]),
+            ),
+        ),
         VecType { elem } => pretty::append(
             pretty::text(builtin.vec.name),
             pretty::delimited(
@@ -372,6 +381,10 @@ fn write_type_value(builtin: BuiltinContract, builder: text::StringBuilder, valu
             builder.write_string(builtin.slice.name);
             write_type_values(builtin, builder, Vec::from_array([elem]), "[", "]")
         },
+        MutSlice { elem } => {
+            builder.write_string(builtin.mut_slice.name);
+            write_type_values(builtin, builder, Vec::from_array([elem]), "[", "]")
+        },
         VecType { elem } => {
             builder.write_string(builtin.vec.name);
             write_type_values(builtin, builder, Vec::from_array([elem]), "[", "]")
@@ -454,6 +467,7 @@ fn diagnostic_type(value: Type) -> Type {
         },
         Array { len: length, elem } => Type::Array { len: length, elem: diagnostic_type(elem) },
         Slice { elem } => Type::Slice { elem: diagnostic_type(elem) },
+        MutSlice { elem } => Type::MutSlice { elem: diagnostic_type(elem) },
         VecType { elem } => Type::VecType { elem: diagnostic_type(elem) },
         RefType { elem } => Type::RefType { elem: diagnostic_type(elem) },
         HashMap { key, value } => {

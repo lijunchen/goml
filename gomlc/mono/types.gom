@@ -39,6 +39,9 @@ pub enum Type {
     Slice {
         elem: Type,
     },
+    MutSlice {
+        elem: Type,
+    },
     VecType {
         elem: Type,
     },
@@ -148,9 +151,12 @@ pub fn types_equal(left: Type, right: Type) -> bool {
             left_len == right_len && types_equal(left, right)
         },
         (Slice { elem: left }, Slice { elem: right }) | (
-            VecType { elem: left },
-            VecType { elem: right },
-        ) | (RefType { elem: left }, RefType { elem: right }) => types_equal(left, right),
+            MutSlice { elem: left },
+            MutSlice { elem: right },
+        ) | (VecType { elem: left }, VecType { elem: right }) | (
+            RefType { elem: left },
+            RefType { elem: right },
+        ) => types_equal(left, right),
         (
             Channel { elem: left, direction: left_direction },
             Channel { elem: right, direction: right_direction },
