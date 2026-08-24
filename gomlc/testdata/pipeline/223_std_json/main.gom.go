@@ -469,6 +469,16 @@ type ParsedFloat struct {
     significant_digits int
 }
 
+type _goml_m_std_p_bytes_p_BoundsError struct {
+    offset_value int
+    needed_value int
+    length_value int
+}
+
+type _goml_m_std_p_bytes_p_Builder struct {
+    values *_goml_vec_uint8
+}
+
 type _goml_m_std_p_bytes_p_Bytes struct {
     values *_goml_vec_uint8
 }
@@ -1021,6 +1031,16 @@ func (_ _goml_m_std_p_json_p_JsonSerializeFrame_Variant) is_goml_m_std_p_json_p_
 type Option__u8 struct {
     _tag int32
     _v1_0 uint8
+}
+
+type _goml_m_Option____Slice_l_u8_r_ struct {
+    _tag int32
+    _v1_0 []uint8
+}
+
+type _goml_m_Option____MutSlice_l_u8_r_ struct {
+    _tag int32
+    _v1_0 []uint8
 }
 
 type Result__string__string struct {
@@ -4131,6 +4151,12 @@ func main0() struct{} {
     }
 }
 
+func _goml_m_inherent_i_isize_i_isize_i_to__string(self__0 int) string {
+    var inline0 int64 = int64(int(self__0))
+    var inline1 string = signed_decimal_string(inline0)
+    return inline1
+}
+
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__u8() *_goml_vec_uint8 {
     var t0 *_goml_vec_uint8 = vec_new__Vec_5uint8()
     return t0
@@ -4181,12 +4207,6 @@ func _goml_m_inherent_i_string_i_string_i_byte__len(self__0 string) int {
 func _goml_m_inherent_i_string_i_string_i_byte__get(self__0 string, index__0 int) uint8 {
     var t0 uint8 = _goml_runtime_core_string_byte_get(self__0, index__0)
     return t0
-}
-
-func _goml_m_inherent_i_isize_i_isize_i_to__string(self__0 int) string {
-    var inline0 int64 = int64(int(self__0))
-    var inline1 string = signed_decimal_string(inline0)
-    return inline1
 }
 
 func _goml_m_inherent_i_string_i_string_i_get(self__0 string, index__0 int) rune {
@@ -4283,6 +4303,22 @@ func println__T_string(value__0 string) struct{} {
     t0 = value__0
     _goml_runtime_core_string_println(t0)
     return struct{}{}
+}
+
+func __goml_builtin_int_to_string(value__0 int) string {
+    var t0 int64 = int64(int(value__0))
+    var inline0 bool = t0 < 0
+    if inline0 {
+        var inline1 uint64 = uint64(int64(t0))
+        var inline2 uint64 = 0 - inline1
+        var inline3 string = decimal_string(inline2)
+        var inline4 string = "-" + inline3
+        return inline4
+    } else {
+        var inline5 uint64 = uint64(int64(t0))
+        var inline6 string = decimal_string(inline5)
+        return inline6
+    }
 }
 
 func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3int {
@@ -4566,22 +4602,6 @@ func string_decode_utf8_at(value__0 string, index__0 int) Tuple3_4bool_4char_3in
     }
 }
 
-func __goml_builtin_int_to_string(value__0 int) string {
-    var t0 int64 = int64(int(value__0))
-    var inline0 bool = t0 < 0
-    if inline0 {
-        var inline1 uint64 = uint64(int64(t0))
-        var inline2 uint64 = 0 - inline1
-        var inline3 string = decimal_string(inline2)
-        var inline4 string = "-" + inline3
-        return inline4
-    } else {
-        var inline5 uint64 = uint64(int64(t0))
-        var inline6 string = decimal_string(inline5)
-        return inline6
-    }
-}
-
 func char_to_string(value__0 rune) string {
     var t0 uint32 = uint32(rune(value__0))
     var t1 bool
@@ -4674,6 +4694,21 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
     return t0
 }
 
+func signed_decimal_string(value__0 int64) string {
+    var t0 bool = value__0 < 0
+    if t0 {
+        var t1 uint64 = uint64(int64(value__0))
+        var t2 uint64 = 0 - t1
+        var t3 string = decimal_string(t2)
+        var t4 string = "-" + t3
+        return t4
+    } else {
+        var t5 uint64 = uint64(int64(value__0))
+        var t6 string = decimal_string(t5)
+        return t6
+    }
+}
+
 func utf8_invalid_decode() Tuple3_4bool_4char_3int {
     var t0 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
         _0: false,
@@ -4713,21 +4748,6 @@ func utf8_invalid_continuation(value__0 uint32) bool {
     } else {
         var t1 bool = value__0 > 191
         return t1
-    }
-}
-
-func signed_decimal_string(value__0 int64) string {
-    var t0 bool = value__0 < 0
-    if t0 {
-        var t1 uint64 = uint64(int64(value__0))
-        var t2 uint64 = 0 - t1
-        var t3 string = decimal_string(t2)
-        var t4 string = "-" + t3
-        return t4
-    } else {
-        var t5 uint64 = uint64(int64(value__0))
-        var t6 string = decimal_string(t5)
-        return t6
     }
 }
 

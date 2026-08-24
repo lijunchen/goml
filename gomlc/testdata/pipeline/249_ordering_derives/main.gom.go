@@ -82,32 +82,36 @@ func hashmap_new__HashMap_8Vec_3int_6string() *hashmap_Vec_3int_string_x {
     }
 }
 
-func hashmap_lookup__HashMap_8Vec_3int_6string(m *hashmap_Vec_3int_string_x, key *_goml_vec_int) (string, bool) {
+func hashmap_lookup__HashMap_8Vec_3int_6string(m *hashmap_Vec_3int_string_x, key *_goml_vec_int) (string, bool, int, uint64) {
     if m == nil {
         var zero string
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i_Vec_l_isize_r__i_hash(key)
     var bucket []hashmap_Vec_3int_string_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_Vec_3int_string_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i_Vec_l_isize_r__i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero string
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_8Vec_3int_6string(m *hashmap_Vec_3int_string_x, key *_goml_vec_int) Option__string {
     var value string
     var ok bool
-    value, ok = hashmap_lookup__HashMap_8Vec_3int_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_8Vec_3int_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,
@@ -183,32 +187,36 @@ func hashmap_new__HashMap_19Tuple2_3int_6string_6string() *hashmap_Tuple2_3int_6
     }
 }
 
-func hashmap_lookup__HashMap_19Tuple2_3int_6string_6string(m *hashmap_Tuple2_3int_6string_string_x, key Tuple2_3int_6string) (string, bool) {
+func hashmap_lookup__HashMap_19Tuple2_3int_6string_6string(m *hashmap_Tuple2_3int_6string_string_x, key Tuple2_3int_6string) (string, bool, int, uint64) {
     if m == nil {
         var zero string
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i__o_isize_c_string_q__i_hash(key)
     var bucket []hashmap_Tuple2_3int_6string_string_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_Tuple2_3int_6string_string_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i__o_isize_c_string_q__i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero string
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_19Tuple2_3int_6string_6string(m *hashmap_Tuple2_3int_6string_string_x, key Tuple2_3int_6string) Option__string {
     var value string
     var ok bool
-    value, ok = hashmap_lookup__HashMap_19Tuple2_3int_6string_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_19Tuple2_3int_6string_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,
@@ -284,32 +292,36 @@ func hashmap_new__HashMap_12Array_2_3int_6string() *hashmap_Array_2_3int_string_
     }
 }
 
-func hashmap_lookup__HashMap_12Array_2_3int_6string(m *hashmap_Array_2_3int_string_x, key [2]int) (string, bool) {
+func hashmap_lookup__HashMap_12Array_2_3int_6string(m *hashmap_Array_2_3int_string_x, key [2]int) (string, bool, int, uint64) {
     if m == nil {
         var zero string
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i__l_isize_x3b_2_r__i_hash(key)
     var bucket []hashmap_Array_2_3int_string_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_Array_2_3int_string_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i__l_isize_x3b_2_r__i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero string
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_12Array_2_3int_6string(m *hashmap_Array_2_3int_string_x, key [2]int) Option__string {
     var value string
     var ok bool
-    value, ok = hashmap_lookup__HashMap_12Array_2_3int_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_12Array_2_3int_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,

@@ -3107,6 +3107,14 @@ fn inherent#Slice#Slice[T]#len[T](self/0: Slice[T]) -> isize {
   @intrinsic(slice.len)(self/0)
 }
 
+fn inherent#MutSlice#MutSlice[T]#get[T](self/0: MutSlice[T], index/0: isize) -> T {
+  @intrinsic(mut_slice.get)(self/0, index/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#len[T](self/0: MutSlice[T]) -> isize {
+  @intrinsic(mut_slice.len)(self/0)
+}
+
 fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
@@ -3117,6 +3125,10 @@ fn inherent#HashMap#HashMap[K,V]#get[K, V](self/0: HashMap[K, V], key/0: K) -> O
 
 fn inherent#HashMap#HashMap[K,V]#len[K, V](self/0: HashMap[K, V]) -> isize {
   @intrinsic(hashmap.len)(self/0)
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#get[K, V](self/0: HashMapEntry[K, V]) -> Option[V] {
+  inherent#HashMap#HashMap[K,V]#get(HashMapEntry.values(self/0), HashMapEntry.key(self/0))
 }
 
 fn inherent#Ref#Ref[T]#new[T](value/0: T) -> Ref[T] {

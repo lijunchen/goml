@@ -102,32 +102,36 @@ func hashmap_len__HashMap_9Ref_4Node_6string(m *hashmap_Ref_4Node_string_x) int 
     return m.len
 }
 
-func hashmap_lookup__HashMap_9Ref_4Node_6string(m *hashmap_Ref_4Node_string_x, key *ref_Node_x) (string, bool) {
+func hashmap_lookup__HashMap_9Ref_4Node_6string(m *hashmap_Ref_4Node_string_x, key *ref_Node_x) (string, bool, int, uint64) {
     if m == nil {
         var zero string
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(key)
     var bucket []hashmap_Ref_4Node_string_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_Ref_4Node_string_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i_Ref_l_Node_r__i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero string
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_9Ref_4Node_6string(m *hashmap_Ref_4Node_string_x, key *ref_Node_x) Option__string {
     var value string
     var ok bool
-    value, ok = hashmap_lookup__HashMap_9Ref_4Node_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_9Ref_4Node_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,

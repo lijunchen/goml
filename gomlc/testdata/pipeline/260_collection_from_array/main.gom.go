@@ -166,32 +166,36 @@ type hashmap_LoggedKey_int_x struct {
     len int
 }
 
-func hashmap_lookup__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key LoggedKey) (int, bool) {
+func hashmap_lookup__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key LoggedKey) (int, bool, int, uint64) {
     if m == nil {
         var zero int
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i_LoggedKey_i_hash(key)
     var bucket []hashmap_LoggedKey_int_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_LoggedKey_int_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i_LoggedKey_i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero int
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_9LoggedKey_3int(m *hashmap_LoggedKey_int_x, key LoggedKey) Option__isize {
     var value int
     var ok bool
-    value, ok = hashmap_lookup__HashMap_9LoggedKey_3int(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_9LoggedKey_3int(m, key)
     if ok {
         return Option__isize{
             _tag: 1,
@@ -326,30 +330,30 @@ func hashmap_new__HashMap_3int_3int() *hashmap_int_int_x {
     }
 }
 
-func hashmap_lookup__HashMap_3int_3int(m *hashmap_int_int_x, key int) (int, bool) {
+func hashmap_lookup__HashMap_3int_3int(m *hashmap_int_int_x, key int) (int, bool, int, uint64) {
     if m == nil {
         var zero int
-        return zero, false
+        return zero, false, -1, 0
     }
     var index int
     var found bool
     index, found = m.indices[key]
     if !found {
         var zero int
-        return zero, false
+        return zero, false, -1, 0
     }
     var entry hashmap_int_int_x_entry = m.entries[index]
     if entry.active {
-        return entry.value, true
+        return entry.value, true, index, 0
     }
     var zero int
-    return zero, false
+    return zero, false, index, 0
 }
 
 func hashmap_get__HashMap_3int_3int(m *hashmap_int_int_x, key int) Option__isize {
     var value int
     var ok bool
-    value, ok = hashmap_lookup__HashMap_3int_3int(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_3int_3int(m, key)
     if ok {
         return Option__isize{
             _tag: 1,
@@ -413,32 +417,36 @@ func hashmap_new__HashMap_10DerivedKey_3int() *hashmap_DerivedKey_int_x {
     }
 }
 
-func hashmap_lookup__HashMap_10DerivedKey_3int(m *hashmap_DerivedKey_int_x, key DerivedKey) (int, bool) {
+func hashmap_lookup__HashMap_10DerivedKey_3int(m *hashmap_DerivedKey_int_x, key DerivedKey) (int, bool, int, uint64) {
     if m == nil {
         var zero int
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i_DerivedKey_i_hash(key)
     var bucket []hashmap_DerivedKey_int_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_DerivedKey_int_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i_DerivedKey_i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero int
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_10DerivedKey_3int(m *hashmap_DerivedKey_int_x, key DerivedKey) Option__isize {
     var value int
     var ok bool
-    value, ok = hashmap_lookup__HashMap_10DerivedKey_3int(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_10DerivedKey_3int(m, key)
     if ok {
         return Option__isize{
             _tag: 1,
@@ -506,30 +514,30 @@ type hashmap_string_Vec_3int_x struct {
     len int
 }
 
-func hashmap_lookup__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string) (*_goml_vec_int, bool) {
+func hashmap_lookup__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string) (*_goml_vec_int, bool, int, uint64) {
     if m == nil {
         var zero *_goml_vec_int
-        return zero, false
+        return zero, false, -1, 0
     }
     var index int
     var found bool
     index, found = m.indices[key]
     if !found {
         var zero *_goml_vec_int
-        return zero, false
+        return zero, false, -1, 0
     }
     var entry hashmap_string_Vec_3int_x_entry = m.entries[index]
     if entry.active {
-        return entry.value, true
+        return entry.value, true, index, 0
     }
     var zero *_goml_vec_int
-    return zero, false
+    return zero, false, index, 0
 }
 
 func hashmap_get__HashMap_6string_8Vec_3int(m *hashmap_string_Vec_3int_x, key string) _goml_m_Option____Vec_l_isize_r_ {
     var value *_goml_vec_int
     var ok bool
-    value, ok = hashmap_lookup__HashMap_6string_8Vec_3int(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_6string_8Vec_3int(m, key)
     if ok {
         return _goml_m_Option____Vec_l_isize_r_{
             _tag: 1,

@@ -112,30 +112,30 @@ func hashmap_len__HashMap_6string_3int(m *hashmap_string_int_x) int {
     return m.len
 }
 
-func hashmap_lookup__HashMap_6string_3int(m *hashmap_string_int_x, key string) (int, bool) {
+func hashmap_lookup__HashMap_6string_3int(m *hashmap_string_int_x, key string) (int, bool, int, uint64) {
     if m == nil {
         var zero int
-        return zero, false
+        return zero, false, -1, 0
     }
     var index int
     var found bool
     index, found = m.indices[key]
     if !found {
         var zero int
-        return zero, false
+        return zero, false, -1, 0
     }
     var entry hashmap_string_int_x_entry = m.entries[index]
     if entry.active {
-        return entry.value, true
+        return entry.value, true, index, 0
     }
     var zero int
-    return zero, false
+    return zero, false, index, 0
 }
 
 func hashmap_get__HashMap_6string_3int(m *hashmap_string_int_x, key string) Option__isize {
     var value int
     var ok bool
-    value, ok = hashmap_lookup__HashMap_6string_3int(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_6string_3int(m, key)
     if ok {
         return Option__isize{
             _tag: 1,

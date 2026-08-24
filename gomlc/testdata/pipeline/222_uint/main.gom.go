@@ -71,30 +71,30 @@ func hashmap_new__HashMap_4uint_6string() *hashmap_uint_string_x {
     }
 }
 
-func hashmap_lookup__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) (string, bool) {
+func hashmap_lookup__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) (string, bool, int, uint64) {
     if m == nil {
         var zero string
-        return zero, false
+        return zero, false, -1, 0
     }
     var index int
     var found bool
     index, found = m.indices[key]
     if !found {
         var zero string
-        return zero, false
+        return zero, false, -1, 0
     }
     var entry hashmap_uint_string_x_entry = m.entries[index]
     if entry.active {
-        return entry.value, true
+        return entry.value, true, index, 0
     }
     var zero string
-    return zero, false
+    return zero, false, index, 0
 }
 
 func hashmap_get__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) Option__string {
     var value string
     var ok bool
-    value, ok = hashmap_lookup__HashMap_4uint_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_4uint_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,

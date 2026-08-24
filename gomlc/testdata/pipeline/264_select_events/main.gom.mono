@@ -581,6 +581,132 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
   @runtime(std.crypto.rand.bytes)(length/0)
 }
 
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#new(
+  offset/0: isize,
+  needed/0: isize,
+  length/0: isize
+) -> std::bytes::BoundsError {
+  std::bytes::BoundsError { offset_value: offset/0, needed_value: needed/0, length_value: length/0 }
+}
+
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#offset(
+  self/0: std::bytes::BoundsError
+) -> isize {
+  std::bytes::BoundsError.offset_value(self/0)
+}
+
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#needed(
+  self/0: std::bytes::BoundsError
+) -> isize {
+  std::bytes::BoundsError.needed_value(self/0)
+}
+
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#length(
+  self/0: std::bytes::BoundsError
+) -> isize {
+  std::bytes::BoundsError.length_value(self/0)
+}
+
+fn trait_impl#ToString#std::bytes::BoundsError#to_string(
+  self/0: std::bytes::BoundsError
+) -> string {
+  ((((("byte range at offset " +
+    inherent#isize#isize#to_string(std::bytes::BoundsError.offset_value(self/0))) +
+    " needs ") +
+    inherent#isize#isize#to_string(std::bytes::BoundsError.needed_value(self/0))) +
+    " bytes in buffer of length ") +
+    inherent#isize#isize#to_string(std::bytes::BoundsError.length_value(self/0)))
+}
+
+fn trait_impl#Debug#std::bytes::BoundsError#debug(self/0: std::bytes::BoundsError) -> string {
+  trait_impl#ToString#std::bytes::BoundsError#to_string(self/0)
+}
+
+fn trait_impl#PartialEq#std::bytes::BoundsError#eq(
+  self/0: std::bytes::BoundsError,
+  other/0: std::bytes::BoundsError
+) -> bool {
+  if if (std::bytes::BoundsError.offset_value(self/0) ==
+    std::bytes::BoundsError.offset_value(other/0)) {
+      (std::bytes::BoundsError.needed_value(self/0) ==
+        std::bytes::BoundsError.needed_value(other/0))
+  } else {
+      false
+  } {
+      (std::bytes::BoundsError.length_value(self/0) ==
+        std::bytes::BoundsError.length_value(other/0))
+  } else {
+      false
+  }
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#new() -> std::bytes::Builder {
+  std::bytes::Builder { values: inherent#Vec#Vec[T]#new__T_u0() }
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#with_capacity(
+  capacity/0: isize
+) -> std::bytes::Builder {
+  std::bytes::Builder { values: inherent#Vec#Vec[T]#with_capacity__T_u0(capacity/0) }
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#len(self/0: std::bytes::Builder) -> isize {
+  inherent#Vec#Vec[T]#len__T_u0(std::bytes::Builder.values(self/0))
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#is_empty(self/0: std::bytes::Builder) -> bool {
+  inherent#Vec#Vec[T]#is_empty__T_u0(std::bytes::Builder.values(self/0))
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#push(
+  self/0: std::bytes::Builder,
+  value/0: u8
+) -> unit {
+  inherent#Vec#Vec[T]#push__T_u0(std::bytes::Builder.values(self/0), value/0)
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
+  self/0: std::bytes::Builder,
+  value/0: Slice[u8]
+) -> unit {
+  let _wild0 =
+    inherent#Vec#Vec[T]#reserve__T_u0(
+      std::bytes::Builder.values(self/0),
+      inherent#Slice#Slice[T]#len__T_u0(value/0)
+    ) in
+  {
+    let for_source0 = value/0 in
+    let for_limit0 = @intrinsic(slice.len)(for_source0) in
+    let for_index0 = 0 in
+    while (for_index0 < for_limit0) {
+        {
+          let for_item0 = @intrinsic(slice.get)(for_source0, for_index0) in
+          let _wild1 = for_index0 = (for_index0 + 1) in
+          {
+            let byte/0 = for_item0 in
+            {
+              inherent#Vec#Vec[T]#push__T_u0(std::bytes::Builder.values(self/0), byte/0)
+            }
+          }
+        }
+    }
+  }
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> unit {
+  inherent#Vec#Vec[T]#clear__T_u0(std::bytes::Builder.values(self/0))
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#finish(
+  self/0: std::bytes::Builder
+) -> std::bytes::Bytes {
+  inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(std::bytes::Builder.values(self/0))
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#to_vec(self/0: std::bytes::Builder) -> Vec[u8] {
+  std::bytes::Builder.values(self/0)
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   std::bytes::Bytes { values: inherent#Vec#Vec[T]#new__T_u0() }
 }
@@ -618,6 +744,13 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
   @intrinsic(vec.get)(std::bytes::Bytes.values(self/0), index/0)
 }
 
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get_checked(
+  self/0: std::bytes::Bytes,
+  index/0: isize
+) -> Option__u8 {
+  inherent#Vec#Vec[T]#get_checked__T_u0(std::bytes::Bytes.values(self/0), index/0)
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/0: std::bytes::Bytes,
   index/0: isize,
@@ -632,6 +765,18 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
       let value0 = value/0 in
       @intrinsic(vec.set)(place0, index0, value0)
     } in
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set_checked(
+  self/0: std::bytes::Bytes,
+  index/0: isize,
+  value/0: u8
+) -> bool {
+  inherent#MutSlice#MutSlice[T]#set_checked__T_u0(
+    inherent#Vec#Vec[T]#as_mut_slice__T_u0(std::bytes::Bytes.values(self/0)),
+    index/0,
+    value/0
+  )
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
@@ -671,6 +816,68 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
   inherent#Vec#Vec[T]#slice__T_u0(std::bytes::Bytes.values(self/0), start/0, end/0)
 }
 
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice_checked(
+  self/0: std::bytes::Bytes,
+  start/0: isize,
+  end/0: isize
+) -> Option__Slice[u8] {
+  inherent#Vec#Vec[T]#slice_checked__T_u0(std::bytes::Bytes.values(self/0), start/0, end/0)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_slice(self/0: std::bytes::Bytes) -> Slice[u8] {
+  inherent#Vec#Vec[T]#as_slice__T_u0(std::bytes::Bytes.values(self/0))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice_mut(
+  self/0: std::bytes::Bytes,
+  start/0: isize,
+  end/0: isize
+) -> MutSlice[u8] {
+  inherent#Vec#Vec[T]#slice_mut__T_u0(std::bytes::Bytes.values(self/0), start/0, end/0)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice_mut_checked(
+  self/0: std::bytes::Bytes,
+  start/0: isize,
+  end/0: isize
+) -> Option__MutSlice[u8] {
+  inherent#Vec#Vec[T]#slice_mut_checked__T_u0(std::bytes::Bytes.values(self/0), start/0, end/0)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_mut_slice(self/0: std::bytes::Bytes) -> MutSlice[
+  u8
+] {
+  inherent#Vec#Vec[T]#as_mut_slice__T_u0(std::bytes::Bytes.values(self/0))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#extend_from_slice(
+  self/0: std::bytes::Bytes,
+  source/0: Slice[u8]
+) -> unit {
+  let _wild0 =
+    inherent#Vec#Vec[T]#reserve__T_u0(
+      std::bytes::Bytes.values(self/0),
+      inherent#Slice#Slice[T]#len__T_u0(source/0)
+    ) in
+  {
+    let for_source0 = source/0 in
+    let for_limit0 = @intrinsic(slice.len)(for_source0) in
+    let for_index0 = 0 in
+    while (for_index0 < for_limit0) {
+        {
+          let for_item0 = @intrinsic(slice.get)(for_source0, for_index0) in
+          let _wild1 = for_index0 = (for_index0 + 1) in
+          {
+            let value/0 = for_item0 in
+            {
+              inherent#Vec#Vec[T]#push__T_u0(std::bytes::Bytes.values(self/0), value/0)
+            }
+          }
+        }
+    }
+  }
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/0: std::bytes::Bytes) -> Vec[u8] {
   std::bytes::Bytes.values(self/0)
 }
@@ -700,6 +907,10 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
       }
     }
   }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#builder() -> std::bytes::Builder {
+  inherent#std::bytes::Builder#std::bytes::Builder#new()
 }
 
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
@@ -2093,6 +2304,10 @@ fn inherent#Channel#Channel[T]#send__T_unit(self/0: Channel[unit], value/0: unit
   @intrinsic(channel.send)(self/0, value/0)
 }
 
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
+}
+
 fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
   @intrinsic(vec.new)()
 }
@@ -2101,16 +2316,8 @@ fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#string#string#to_bytes(self/0: string) -> Vec[u8] {
-  @runtime(core.string_to_bytes)(self/0)
-}
-
 fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
   @intrinsic(vec.len)(self/0)
-}
-
-fn inherent#Vec#Vec[T]#capacity__T_u8(self/0: Vec[u8]) -> isize {
-  @intrinsic(vec.capacity)(self/0)
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_u8(self/0: Vec[u8]) -> bool {
@@ -2119,6 +2326,74 @@ fn inherent#Vec#Vec[T]#is_empty__T_u8(self/0: Vec[u8]) -> bool {
 
 fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
   @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Slice#Slice[T]#len__T_u8(self/0: Slice[u8]) -> isize {
+  @intrinsic(slice.len)(self/0)
+}
+
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
+  @intrinsic(vec.reserve)(self/0, additional/0)
+}
+
+fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_u0(self/0, 0)
+}
+
+fn inherent#string#string#to_bytes(self/0: string) -> Vec[u8] {
+  @runtime(core.string_to_bytes)(self/0)
+}
+
+fn inherent#Vec#Vec[T]#capacity__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.capacity)(self/0)
+}
+
+fn inherent#Vec#Vec[T]#get_checked__T_u8(self/0: Vec[u8], index/0: isize) -> Option__u8 {
+  if if (index/0 < 0) {
+      true
+  } else {
+      (index/0 >= inherent#Vec#Vec[T]#len__T_u0(self/0))
+  } {
+      {
+        Option__u8::None
+      }
+  } else {
+      {
+        Option__u8::Some(@intrinsic(vec.get)(self/0, index/0))
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#as_mut_slice__T_u8(self/0: Vec[u8]) -> MutSlice[u8] {
+  @intrinsic(mut_slice.new)(self/0, 0, inherent#Vec#Vec[T]#len__T_u0(self/0))
+}
+
+fn inherent#MutSlice#MutSlice[T]#set_checked__T_u8(
+  self/0: MutSlice[u8],
+  index/0: isize,
+  value/0: u8
+) -> bool {
+  if if (index/0 < 0) {
+      true
+  } else {
+      (index/0 >= inherent#MutSlice#MutSlice[T]#len__T_u0(self/0))
+  } {
+      {
+        false
+      }
+  } else {
+      {
+        let _wild0 =
+          {
+            let place_root0 = self/0 in
+            let index0 = index/0 in
+            let place0 = @intrinsic(mut_slice.get)(place_root0, index0) in
+            let value0 = value/0 in
+            @intrinsic(mut_slice.set)(place_root0, index0, value0)
+          } in
+        true
+      }
+  }
 }
 
 fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
@@ -2136,20 +2411,70 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
-  @intrinsic(vec.reserve)(self/0, additional/0)
-}
-
 fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> unit {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_u0(self/0, 0)
-}
-
 fn inherent#Vec#Vec[T]#slice__T_u8(self/0: Vec[u8], start/0: isize, end/0: isize) -> Slice[u8] {
   @intrinsic(slice.new)(self/0, start/0, end/0)
+}
+
+fn inherent#Vec#Vec[T]#slice_checked__T_u8(
+  self/0: Vec[u8],
+  start/0: isize,
+  end/0: isize
+) -> Option__Slice[u8] {
+  if if if (start/0 < 0) {
+      true
+  } else {
+      (end/0 < start/0)
+  } {
+      true
+  } else {
+      (end/0 > inherent#Vec#Vec[T]#len__T_u0(self/0))
+  } {
+      {
+        Option__Slice[u8]::None
+      }
+  } else {
+      {
+        Option__Slice[u8]::Some(@intrinsic(slice.new)(self/0, start/0, end/0))
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#as_slice__T_u8(self/0: Vec[u8]) -> Slice[u8] {
+  @intrinsic(slice.new)(self/0, 0, inherent#Vec#Vec[T]#len__T_u0(self/0))
+}
+
+fn inherent#Vec#Vec[T]#slice_mut__T_u8(self/0: Vec[u8], start/0: isize, end/0: isize) -> MutSlice[
+  u8
+] {
+  @intrinsic(mut_slice.new)(self/0, start/0, end/0)
+}
+
+fn inherent#Vec#Vec[T]#slice_mut_checked__T_u8(
+  self/0: Vec[u8],
+  start/0: isize,
+  end/0: isize
+) -> Option__MutSlice[u8] {
+  if if if (start/0 < 0) {
+      true
+  } else {
+      (end/0 < start/0)
+  } {
+      true
+  } else {
+      (end/0 > inherent#Vec#Vec[T]#len__T_u0(self/0))
+  } {
+      {
+        Option__MutSlice[u8]::None
+      }
+  } else {
+      {
+        Option__MutSlice[u8]::Some(@intrinsic(mut_slice.new)(self/0, start/0, end/0))
+      }
+  }
 }
 
 fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
@@ -2377,6 +2702,14 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
       }
     }
   }
+}
+
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
+}
+
+fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
+  @intrinsic(mut_slice.len)(self/0)
 }
 
 fn inherent#string#string#byte_len(self/0: string) -> isize {
@@ -2649,6 +2982,18 @@ fn inherent#Ref#Ref[T]#get__T_Option[isize](self/0: Ref[Option__isize]) -> Optio
   @intrinsic(ref.get)(self/0)
 }
 
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/0 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/0 as u64))
+      }
+  }
+}
+
 fn utf8_invalid_decode() -> (bool, char, isize) {
   (false, '\0', 0)
 }
@@ -2685,57 +3030,8 @@ fn utf8_invalid_continuation(value/0: u32) -> bool {
   }
 }
 
-fn __goml_builtin_int_to_string(value/0: isize) -> string {
-  signed_decimal_string((value/0 as i64))
-}
-
 fn inherent#Ref#Ref[T]#get__T_Option[unit](self/0: Ref[Option__unit]) -> Option__unit {
   @intrinsic(ref.get)(self/0)
-}
-
-fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
-  if utf8_valid_scalar(value/0) {
-      {
-        let mtmp0 = @runtime(core.char_from_uint32)(value/0) in
-        {
-          let x0 = mtmp0.1 in
-          {
-            let character/0 = x0 in
-            {
-              Option__char::Some(character/0)
-            }
-          }
-        }
-      }
-  } else {
-      {
-        Option__char::None
-      }
-  }
-}
-
-fn signed_decimal_string(value/0: i64) -> string {
-  if (value/0 < 0) {
-      {
-        ("-" + decimal_string((0 - (value/0 as u64))))
-      }
-  } else {
-      {
-        decimal_string((value/0 as u64))
-      }
-  }
-}
-
-fn utf8_valid_scalar(value/0: u32) -> bool {
-  if (value/0 <= 1114111) {
-      (!if (value/0 >= 55296) {
-          (value/0 <= 57343)
-      } else {
-          false
-      })
-  } else {
-      false
-  }
 }
 
 fn decimal_string(value/0: u64) -> string {
@@ -2794,6 +3090,39 @@ fn decimal_string(value/0: u64) -> string {
         result/0
       }
     }
+  }
+}
+
+fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
+  if utf8_valid_scalar(value/0) {
+      {
+        let mtmp0 = @runtime(core.char_from_uint32)(value/0) in
+        {
+          let x0 = mtmp0.1 in
+          {
+            let character/0 = x0 in
+            {
+              Option__char::Some(character/0)
+            }
+          }
+        }
+      }
+  } else {
+      {
+        Option__char::None
+      }
+  }
+}
+
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  if (value/0 <= 1114111) {
+      (!if (value/0 >= 55296) {
+          (value/0 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
   }
 }
 

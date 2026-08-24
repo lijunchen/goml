@@ -3102,6 +3102,10 @@ fn inherent#Vec#Vec[T]#clear[T](self/0: Vec[T]) -> unit {
   inherent#Vec#Vec[T]#truncate(self/0, 0)
 }
 
+fn inherent#Vec#Vec[T]#as_slice[T](self/0: Vec[T]) -> Slice[T] {
+  @intrinsic(slice.new)(self/0, 0, inherent#Vec#Vec[T]#len(self/0))
+}
+
 fn inherent#FrozenVec#FrozenVec[T]#len[T](self/0: FrozenVec[T]) -> isize {
   inherent#Vec#Vec[T]#len(FrozenVec.values(self/0))
 }
@@ -3148,6 +3152,26 @@ fn inherent#Slice#Slice[T]#to_vec[T](self/0: Slice[T]) -> Vec[T] {
   result/0
 }
 
+fn inherent#MutSlice#MutSlice[T]#get[T](self/0: MutSlice[T], index/0: isize) -> T {
+  @intrinsic(mut_slice.get)(self/0, index/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#set[T](self/0: MutSlice[T], index/0: isize, value/0: T) -> unit {
+  @intrinsic(mut_slice.set)(self/0, index/0, value/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#len[T](self/0: MutSlice[T]) -> isize {
+  @intrinsic(mut_slice.len)(self/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#as_slice[T](self/0: MutSlice[T]) -> Slice[T] {
+  @intrinsic(mut_slice.as_slice)(self/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#to_vec[T](self/0: MutSlice[T]) -> Vec[T] {
+  inherent#Slice#Slice[T]#to_vec(inherent#MutSlice#MutSlice[T]#as_slice(self/0))
+}
+
 fn inherent#HashMap#HashMap[K,V]#get[K, V](self/0: HashMap[K, V], key/0: K) -> Option[V] {
   @intrinsic(hashmap.get)(self/0, key/0)
 }
@@ -3158,6 +3182,10 @@ fn inherent#HashMap#HashMap[K,V]#set[K, V](self/0: HashMap[K, V], key/0: K, valu
 
 fn inherent#HashMap#HashMap[K,V]#len[K, V](self/0: HashMap[K, V]) -> isize {
   @intrinsic(hashmap.len)(self/0)
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#get[K, V](self/0: HashMapEntry[K, V]) -> Option[V] {
+  inherent#HashMap#HashMap[K,V]#get(HashMapEntry.values(self/0), HashMapEntry.key(self/0))
 }
 
 fn inherent#Ref#Ref[T]#get[T](self/0: Ref[T]) -> T {

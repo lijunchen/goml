@@ -1,3 +1,203 @@
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#new(
+  offset/0: isize,
+  needed/0: isize,
+  length/0: isize
+) -> std::bytes::BoundsError {
+  let t0 =
+    std::bytes::BoundsError {
+      offset_value: offset/0,
+      needed_value: needed/0,
+      length_value: length/0
+    } in
+  t0
+}
+
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#offset(
+  self/0: std::bytes::BoundsError
+) -> isize {
+  let t0 = std::bytes::BoundsError.offset_value(self/0) in
+  t0
+}
+
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#needed(
+  self/0: std::bytes::BoundsError
+) -> isize {
+  let t0 = std::bytes::BoundsError.needed_value(self/0) in
+  t0
+}
+
+fn inherent#std::bytes::BoundsError#std::bytes::BoundsError#length(
+  self/0: std::bytes::BoundsError
+) -> isize {
+  let t0 = std::bytes::BoundsError.length_value(self/0) in
+  t0
+}
+
+fn trait_impl#ToString#std::bytes::BoundsError#to_string(
+  self/0: std::bytes::BoundsError
+) -> string {
+  let t0 = std::bytes::BoundsError.offset_value(self/0) in
+  join inline_cont0(t1: string) -> string {
+    let t2 = ("byte range at offset " + t1) in
+    let t3 = (t2 + " needs ") in
+    let t4 = std::bytes::BoundsError.needed_value(self/0) in
+    join inline_cont1(t5: string) -> string {
+      let t6 = (t3 + t5) in
+      let t7 = (t6 + " bytes in buffer of length ") in
+      let t8 = std::bytes::BoundsError.length_value(self/0) in
+      join inline_cont2(t9: string) -> string {
+        let t10 = (t7 + t9) in
+        t10
+      } in
+      let inline0 = __goml_builtin_int_to_string(t8) in
+      jump inline_cont2(inline0)
+    } in
+    let inline1 = __goml_builtin_int_to_string(t4) in
+    jump inline_cont1(inline1)
+  } in
+  let inline2 = __goml_builtin_int_to_string(t0) in
+  jump inline_cont0(inline2)
+}
+
+fn trait_impl#Debug#std::bytes::BoundsError#debug(self/0: std::bytes::BoundsError) -> string {
+  let inline0 = std::bytes::BoundsError.offset_value(self/0) in
+  let inline1 = inherent#isize#isize#to_string(inline0) in
+  let inline2 = ("byte range at offset " + inline1) in
+  let inline3 = (inline2 + " needs ") in
+  let inline4 = std::bytes::BoundsError.needed_value(self/0) in
+  let inline5 = inherent#isize#isize#to_string(inline4) in
+  let inline6 = (inline3 + inline5) in
+  let inline7 = (inline6 + " bytes in buffer of length ") in
+  let inline8 = std::bytes::BoundsError.length_value(self/0) in
+  let inline9 = inherent#isize#isize#to_string(inline8) in
+  let inline10 = (inline7 + inline9) in
+  inline10
+}
+
+fn trait_impl#PartialEq#std::bytes::BoundsError#eq(
+  self/0: std::bytes::BoundsError,
+  other/0: std::bytes::BoundsError
+) -> bool {
+  let t0 = std::bytes::BoundsError.offset_value(self/0) in
+  let t1 = std::bytes::BoundsError.offset_value(other/0) in
+  let t2 = (t0 == t1) in
+  join k0(jp0: bool) -> bool {
+    if jp0 {
+      let t3 = std::bytes::BoundsError.length_value(self/0) in
+      let t4 = std::bytes::BoundsError.length_value(other/0) in
+      let t5 = (t3 == t4) in
+      t5
+    } else {
+      false
+    }
+  } in
+  if t2 {
+    let t6 = std::bytes::BoundsError.needed_value(self/0) in
+    let t7 = std::bytes::BoundsError.needed_value(other/0) in
+    let t8 = (t6 == t7) in
+    jump k0(t8)
+  } else {
+    jump k0(false)
+  }
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#new() -> std::bytes::Builder {
+  join inline_cont0(t0: Vec[u8]) -> std::bytes::Builder {
+    let t1 = std::bytes::Builder { values: t0 } in
+    t1
+  } in
+  let inline0 = @intrinsic(vec.new)() in
+  jump inline_cont0(inline0)
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#with_capacity(
+  capacity/0: isize
+) -> std::bytes::Builder {
+  join inline_cont0(t0: Vec[u8]) -> std::bytes::Builder {
+    let t1 = std::bytes::Builder { values: t0 } in
+    t1
+  } in
+  let inline0 = @intrinsic(vec.with_capacity)(capacity/0) in
+  jump inline_cont0(inline0)
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#len(self/0: std::bytes::Builder) -> isize {
+  let t0 = std::bytes::Builder.values(self/0) in
+  let inline0 = @intrinsic(vec.len)(t0) in
+  inline0
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#is_empty(self/0: std::bytes::Builder) -> bool {
+  let t0 = std::bytes::Builder.values(self/0) in
+  let inline0 = @intrinsic(vec.len)(t0) in
+  let inline1 = (inline0 == 0) in
+  inline1
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#push(
+  self/0: std::bytes::Builder,
+  value/0: u8
+) -> unit {
+  let t0 = std::bytes::Builder.values(self/0) in
+  let inline0 = @intrinsic(vec.push)(t0, value/0) in
+  ()
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
+  self/0: std::bytes::Builder,
+  value/0: Slice[u8]
+) -> unit {
+  let t0 = std::bytes::Builder.values(self/0) in
+  join inline_cont0(t1: isize) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      let for_limit0 = @intrinsic(slice.len)(value/0) in
+      let for_index0 = 0 in
+      join exit0() -> unit {
+        ()
+      } in
+      joinrec {
+        join loop0() -> unit {
+          let t2 = (for_index0 < for_limit0) in
+          if t2 {
+            let for_item0 = @intrinsic(slice.get)(value/0, for_index0) in
+            let t3 = (for_index0 + 1) in
+            let _wild1 = for_index0 = t3 in
+            let t4 = std::bytes::Builder.values(self/0) in
+            let inline0 = @intrinsic(vec.push)(t4, for_item0) in
+            jump loop0()
+          } else {
+            jump exit0()
+          }
+        } in
+      } in
+      jump loop0()
+    } in
+    let inline1 = @intrinsic(vec.reserve)(t0, t1) in
+    jump inline_cont1(())
+  } in
+  let inline2 = @intrinsic(slice.len)(value/0) in
+  jump inline_cont0(inline2)
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> unit {
+  let t0 = std::bytes::Builder.values(self/0) in
+  let inline0 = inherent#Vec#Vec[T]#truncate__T_u0(t0, 0) in
+  ()
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#finish(
+  self/0: std::bytes::Builder
+) -> std::bytes::Bytes {
+  let t0 = std::bytes::Builder.values(self/0) in
+  let inline0 = std::bytes::Bytes { values: t0 } in
+  inline0
+}
+
+fn inherent#std::bytes::Builder#std::bytes::Builder#to_vec(self/0: std::bytes::Builder) -> Vec[u8] {
+  let t0 = std::bytes::Builder.values(self/0) in
+  t0
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   join inline_cont0(t0: Vec[u8]) -> std::bytes::Bytes {
     let t1 = std::bytes::Bytes { values: t0 } in
@@ -60,6 +260,30 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
   t1
 }
 
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get_checked(
+  self/0: std::bytes::Bytes,
+  index/0: isize
+) -> Option__u8 {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  let inline0 = (index/0 < 0) in
+  join inline_join0(inline1: bool) -> Option__u8 {
+    if inline1 {
+      Tag_0
+    } else {
+      let inline2 = @intrinsic(vec.get)(t0, index/0) in
+      let inline3 = Option__u8::Some(inline2) in
+      inline3
+    }
+  } in
+  if inline0 {
+    jump inline_join0(true)
+  } else {
+    let inline4 = inherent#Vec#Vec[T]#len__T_u0(t0) in
+    let inline5 = (index/0 >= inline4) in
+    jump inline_join0(inline5)
+  }
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/0: std::bytes::Bytes,
   index/0: isize,
@@ -69,6 +293,36 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   let place1 = @intrinsic(vec.get)(place0, index/0) in
   let t0 = @intrinsic(vec.set)(place0, index/0, value/0) in
   ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set_checked(
+  self/0: std::bytes::Bytes,
+  index/0: isize,
+  value/0: u8
+) -> bool {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  join inline_cont0(t1: MutSlice[u8]) -> bool {
+    let inline0 = (index/0 < 0) in
+    join inline_join0(inline1: bool) -> bool {
+      if inline1 {
+        false
+      } else {
+        let inline2 = @intrinsic(mut_slice.get)(t1, index/0) in
+        let inline3 = @intrinsic(mut_slice.set)(t1, index/0, value/0) in
+        true
+      }
+    } in
+    if inline0 {
+      jump inline_join0(true)
+    } else {
+      let inline4 = inherent#MutSlice#MutSlice[T]#len__T_u0(t1) in
+      let inline5 = (index/0 >= inline4) in
+      jump inline_join0(inline5)
+    }
+  } in
+  let inline6 = inherent#Vec#Vec[T]#len__T_u0(t0) in
+  let inline7 = @intrinsic(mut_slice.new)(t0, 0, inline6) in
+  jump inline_cont0(inline7)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
@@ -130,6 +384,88 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
   inline0
 }
 
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice_checked(
+  self/0: std::bytes::Bytes,
+  start/0: isize,
+  end/0: isize
+) -> Option__Slice[u8] {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  let t1 = inherent#Vec#Vec[T]#slice_checked__T_u0(t0, start/0, end/0) in
+  t1
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_slice(self/0: std::bytes::Bytes) -> Slice[u8] {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  let inline0 = inherent#Vec#Vec[T]#len__T_u0(t0) in
+  let inline1 = @intrinsic(slice.new)(t0, 0, inline0) in
+  inline1
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice_mut(
+  self/0: std::bytes::Bytes,
+  start/0: isize,
+  end/0: isize
+) -> MutSlice[u8] {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  let inline0 = @intrinsic(mut_slice.new)(t0, start/0, end/0) in
+  inline0
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice_mut_checked(
+  self/0: std::bytes::Bytes,
+  start/0: isize,
+  end/0: isize
+) -> Option__MutSlice[u8] {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  let t1 = inherent#Vec#Vec[T]#slice_mut_checked__T_u0(t0, start/0, end/0) in
+  t1
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_mut_slice(self/0: std::bytes::Bytes) -> MutSlice[
+  u8
+] {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  let inline0 = inherent#Vec#Vec[T]#len__T_u0(t0) in
+  let inline1 = @intrinsic(mut_slice.new)(t0, 0, inline0) in
+  inline1
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#extend_from_slice(
+  self/0: std::bytes::Bytes,
+  source/0: Slice[u8]
+) -> unit {
+  let t0 = std::bytes::Bytes.values(self/0) in
+  join inline_cont0(t1: isize) -> unit {
+    join inline_cont1(_wild0: unit) -> unit {
+      let for_limit0 = @intrinsic(slice.len)(source/0) in
+      let for_index0 = 0 in
+      join exit0() -> unit {
+        ()
+      } in
+      joinrec {
+        join loop0() -> unit {
+          let t2 = (for_index0 < for_limit0) in
+          if t2 {
+            let for_item0 = @intrinsic(slice.get)(source/0, for_index0) in
+            let t3 = (for_index0 + 1) in
+            let _wild1 = for_index0 = t3 in
+            let t4 = std::bytes::Bytes.values(self/0) in
+            let inline0 = @intrinsic(vec.push)(t4, for_item0) in
+            jump loop0()
+          } else {
+            jump exit0()
+          }
+        } in
+      } in
+      jump loop0()
+    } in
+    let inline1 = @intrinsic(vec.reserve)(t0, t1) in
+    jump inline_cont1(())
+  } in
+  let inline2 = @intrinsic(slice.len)(source/0) in
+  jump inline_cont0(inline2)
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/0: std::bytes::Bytes) -> Vec[u8] {
   let t0 = std::bytes::Bytes.values(self/0) in
   t0
@@ -149,6 +485,12 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
     let t2 = Result__string__string::Err("invalid UTF-8") in
     t2
   }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#builder() -> std::bytes::Builder {
+  let inline0 = inherent#Vec#Vec[T]#new__T_u0() in
+  let inline1 = std::bytes::Builder { values: inline0 } in
+  inline1
 }
 
 fn std::internal::host::args() -> Vec[string] {
@@ -2668,6 +3010,12 @@ fn main() -> unit {
   jump inline_cont0(())
 }
 
+fn inherent#isize#isize#to_string(self/0: isize) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
+}
+
 fn inherent#Vec#Vec[T]#new__T_u8() -> Vec[u8] {
   let t0 = @intrinsic(vec.new)() in
   t0
@@ -2678,18 +3026,8 @@ fn inherent#Vec#Vec[T]#with_capacity__T_u8(capacity/0: isize) -> Vec[u8] {
   t0
 }
 
-fn inherent#string#string#to_bytes(self/0: string) -> Vec[u8] {
-  let t0 = @runtime(core.string_to_bytes)(self/0) in
-  t0
-}
-
 fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
   let t0 = @intrinsic(vec.len)(self/0) in
-  t0
-}
-
-fn inherent#Vec#Vec[T]#capacity__T_u8(self/0: Vec[u8]) -> isize {
-  let t0 = @intrinsic(vec.capacity)(self/0) in
   t0
 }
 
@@ -2702,6 +3040,91 @@ fn inherent#Vec#Vec[T]#is_empty__T_u8(self/0: Vec[u8]) -> bool {
 fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
+}
+
+fn inherent#Slice#Slice[T]#len__T_u8(self/0: Slice[u8]) -> isize {
+  let t0 = @intrinsic(slice.len)(self/0) in
+  t0
+}
+
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
+  let t0 = @intrinsic(vec.reserve)(self/0, additional/0) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
+  let inline0 = 0 in
+  let inline1 = @intrinsic(vec.truncate)(self/0, inline0) in
+  ()
+}
+
+fn inherent#string#string#to_bytes(self/0: string) -> Vec[u8] {
+  let t0 = @runtime(core.string_to_bytes)(self/0) in
+  t0
+}
+
+fn inherent#Vec#Vec[T]#capacity__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.capacity)(self/0) in
+  t0
+}
+
+fn inherent#Vec#Vec[T]#get_checked__T_u8(self/0: Vec[u8], index/0: isize) -> Option__u8 {
+  let t0 = (index/0 < 0) in
+  join k0(jp0: bool) -> Option__u8 {
+    if jp0 {
+      Tag_0
+    } else {
+      let t1 = @intrinsic(vec.get)(self/0, index/0) in
+      let t2 = Option__u8::Some(t1) in
+      t2
+    }
+  } in
+  if t0 {
+    jump k0(true)
+  } else {
+    join inline_cont0(t3: isize) -> Option__u8 {
+      let t4 = (index/0 >= t3) in
+      jump k0(t4)
+    } in
+    let inline0 = @intrinsic(vec.len)(self/0) in
+    jump inline_cont0(inline0)
+  }
+}
+
+fn inherent#Vec#Vec[T]#as_mut_slice__T_u8(self/0: Vec[u8]) -> MutSlice[u8] {
+  join inline_cont0(t0: isize) -> MutSlice[u8] {
+    let t1 = @intrinsic(mut_slice.new)(self/0, 0, t0) in
+    t1
+  } in
+  let inline0 = @intrinsic(vec.len)(self/0) in
+  jump inline_cont0(inline0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#set_checked__T_u8(
+  self/0: MutSlice[u8],
+  index/0: isize,
+  value/0: u8
+) -> bool {
+  let t0 = (index/0 < 0) in
+  join k0(jp0: bool) -> bool {
+    if jp0 {
+      false
+    } else {
+      let place0 = @intrinsic(mut_slice.get)(self/0, index/0) in
+      let t1 = @intrinsic(mut_slice.set)(self/0, index/0, value/0) in
+      true
+    }
+  } in
+  if t0 {
+    jump k0(true)
+  } else {
+    join inline_cont0(t2: isize) -> bool {
+      let t3 = (index/0 >= t2) in
+      jump k0(t3)
+    } in
+    let inline0 = @intrinsic(mut_slice.len)(self/0) in
+    jump inline_cont0(inline0)
+  }
 }
 
 fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
@@ -2725,25 +3148,100 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
   jump inline_cont0(inline1)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
-  let t0 = @intrinsic(vec.reserve)(self/0, additional/0) in
-  ()
-}
-
 fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> unit {
   let t0 = @intrinsic(vec.truncate)(self/0, len/0) in
-  ()
-}
-
-fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
-  let inline0 = 0 in
-  let inline1 = @intrinsic(vec.truncate)(self/0, inline0) in
   ()
 }
 
 fn inherent#Vec#Vec[T]#slice__T_u8(self/0: Vec[u8], start/0: isize, end/0: isize) -> Slice[u8] {
   let t0 = @intrinsic(slice.new)(self/0, start/0, end/0) in
   t0
+}
+
+fn inherent#Vec#Vec[T]#slice_checked__T_u8(
+  self/0: Vec[u8],
+  start/0: isize,
+  end/0: isize
+) -> Option__Slice[u8] {
+  let t0 = (start/0 < 0) in
+  join k0(jp0: bool) -> Option__Slice[u8] {
+    join k1(jp1: bool) -> Option__Slice[u8] {
+      if jp1 {
+        Tag_0
+      } else {
+        let t1 = @intrinsic(slice.new)(self/0, start/0, end/0) in
+        let t2 = Option__Slice[u8]::Some(t1) in
+        t2
+      }
+    } in
+    if jp0 {
+      jump k1(true)
+    } else {
+      join inline_cont0(t3: isize) -> Option__Slice[u8] {
+        let t4 = (end/0 > t3) in
+        jump k1(t4)
+      } in
+      let inline0 = @intrinsic(vec.len)(self/0) in
+      jump inline_cont0(inline0)
+    }
+  } in
+  if t0 {
+    jump k0(true)
+  } else {
+    let t5 = (end/0 < start/0) in
+    jump k0(t5)
+  }
+}
+
+fn inherent#Vec#Vec[T]#as_slice__T_u8(self/0: Vec[u8]) -> Slice[u8] {
+  join inline_cont0(t0: isize) -> Slice[u8] {
+    let t1 = @intrinsic(slice.new)(self/0, 0, t0) in
+    t1
+  } in
+  let inline0 = @intrinsic(vec.len)(self/0) in
+  jump inline_cont0(inline0)
+}
+
+fn inherent#Vec#Vec[T]#slice_mut__T_u8(self/0: Vec[u8], start/0: isize, end/0: isize) -> MutSlice[
+  u8
+] {
+  let t0 = @intrinsic(mut_slice.new)(self/0, start/0, end/0) in
+  t0
+}
+
+fn inherent#Vec#Vec[T]#slice_mut_checked__T_u8(
+  self/0: Vec[u8],
+  start/0: isize,
+  end/0: isize
+) -> Option__MutSlice[u8] {
+  let t0 = (start/0 < 0) in
+  join k0(jp0: bool) -> Option__MutSlice[u8] {
+    join k1(jp1: bool) -> Option__MutSlice[u8] {
+      if jp1 {
+        Tag_0
+      } else {
+        let t1 = @intrinsic(mut_slice.new)(self/0, start/0, end/0) in
+        let t2 = Option__MutSlice[u8]::Some(t1) in
+        t2
+      }
+    } in
+    if jp0 {
+      jump k1(true)
+    } else {
+      join inline_cont0(t3: isize) -> Option__MutSlice[u8] {
+        let t4 = (end/0 > t3) in
+        jump k1(t4)
+      } in
+      let inline0 = @intrinsic(vec.len)(self/0) in
+      jump inline_cont0(inline0)
+    }
+  } in
+  if t0 {
+    jump k0(true)
+  } else {
+    let t5 = (end/0 < start/0) in
+    jump k0(t5)
+  }
 }
 
 fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
@@ -2893,6 +3391,27 @@ fn std::io::eprintln__T_string(value/0: string) -> unit {
     ()
   } in
   jump inline_cont0(value/0)
+}
+
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
+  } else {
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
+  }
+}
+
+fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
+  let t0 = @intrinsic(mut_slice.len)(self/0) in
+  t0
 }
 
 fn inherent#string#string#byte_len(self/0: string) -> isize {
@@ -3217,6 +3736,21 @@ fn string_is_char_boundary(value/0: string, index/0: isize) -> bool {
   }
 }
 
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
+  } else {
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
+  }
+}
+
 fn utf8_invalid_decode() -> (bool, char, isize) {
   let t0 = (false, '\0', 0) in
   t0
@@ -3253,6 +3787,84 @@ fn utf8_invalid_continuation(value/0: u32) -> bool {
   } else {
     let t1 = (value/0 > 191) in
     t1
+  }
+}
+
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
+        } in
+        joinrec {
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
+                  } in
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
+                } in
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
+              } else {
+                jump exit1()
+              }
+            } in
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
+          } in
+        } in
+        jump loop1()
+      } in
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
+    } in
+    joinrec {
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
+          } in
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
+        } else {
+          jump exit0()
+        }
+      } in
+    } in
+    jump loop0()
+  } in
+  if t0 {
+    "0"
+  } else {
+    jump k0()
   }
 }
 

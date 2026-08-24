@@ -1,0 +1,411 @@
+fn main() -> unit {
+  let values/0 = @intrinsic(vec.from_array)([1, 2, 3, 4, 5]) in
+  let view/0 = inherent#Vec#Vec[T]#slice_mut__T_isize(values/0, 1, 5) in
+  let _wild0 =
+    {
+      let place_root0 = view/0 in
+      let index0 = 0 in
+      let place0 = @intrinsic(mut_slice.get)(place_root0, index0) in
+      let value0 = 20 in
+      @intrinsic(mut_slice.set)(place_root0, index0, value0)
+    } in
+  let _wild1 = println__T_bool(inherent#MutSlice#MutSlice[T]#set_checked__T_isize(view/0, 9, 30)) in
+  let _wild2 = println__T_bool(inherent#MutSlice#MutSlice[T]#set_checked__T_isize(view/0, 1, 30)) in
+  let _wild3 =
+    println__T_bool(inherent#MutSlice#MutSlice[T]#copy_within__T_isize(view/0, 0, 3, 1)) in
+  let _wild4 =
+    println__T_bool(
+      inherent#MutSlice#MutSlice[T]#copy_from__T_isize(
+        view/0,
+        0,
+        inherent#Vec#Vec[T]#as_slice__T_isize(@intrinsic(vec.from_array)([7, 8]))
+      )
+    ) in
+  let _wild5 =
+    {
+      let mtmp0 = inherent#MutSlice#MutSlice[T]#sub_checked__T_isize(view/0, 1, 3) in
+      match mtmp0 {
+        Option__MutSlice[isize]::None => {
+          ()
+        },
+        Option__MutSlice[isize]::Some(x0) => {
+          {
+            let x0 = Option__MutSlice[isize]::Some._0(mtmp0) in
+            {
+              let part/0 = x0 in
+              inherent#MutSlice#MutSlice[T]#fill__T_isize(part/0, 6)
+            }
+          }
+        },
+      }
+    } in
+  let _wild6 =
+    {
+      let for_source0 = values/0 in
+      let for_limit0 = @intrinsic(vec.len)(for_source0) in
+      let for_index0 = 0 in
+      while (for_index0 < for_limit0) {
+          {
+            let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+            let _wild7 = for_index0 = (for_index0 + 1) in
+            {
+              let value/0 = for_item0 in
+              {
+                println__T_isize(value/0)
+              }
+            }
+          }
+      }
+    } in
+  let _wild8 =
+    println__T_bool(
+      inherent#Option#Option[T]#is_none__T_Slice[isize](
+        inherent#Vec#Vec[T]#slice_checked__T_isize(values/0, -1, 2)
+      )
+    ) in
+  println__T_bool(
+    inherent#Option#Option[T]#is_none__T_isize(
+      inherent#Slice#Slice[T]#get_checked__T_isize(
+        inherent#MutSlice#MutSlice[T]#as_slice__T_isize(view/0),
+        10
+      )
+    )
+  )
+}
+
+fn inherent#Vec#Vec[T]#slice_mut__T_isize(
+  self/0: Vec[isize],
+  start/0: isize,
+  end/0: isize
+) -> MutSlice[isize] {
+  @intrinsic(mut_slice.new)(self/0, start/0, end/0)
+}
+
+fn println__T_bool(value/0: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
+}
+
+fn inherent#MutSlice#MutSlice[T]#set_checked__T_isize(
+  self/0: MutSlice[isize],
+  index/0: isize,
+  value/0: isize
+) -> bool {
+  if if (index/0 < 0) {
+      true
+  } else {
+      (index/0 >= inherent#MutSlice#MutSlice[T]#len__T_isize(self/0))
+  } {
+      {
+        false
+      }
+  } else {
+      {
+        let _wild0 =
+          {
+            let place_root0 = self/0 in
+            let index0 = index/0 in
+            let place0 = @intrinsic(mut_slice.get)(place_root0, index0) in
+            let value0 = value/0 in
+            @intrinsic(mut_slice.set)(place_root0, index0, value0)
+          } in
+        true
+      }
+  }
+}
+
+fn inherent#MutSlice#MutSlice[T]#copy_within__T_isize(
+  self/0: MutSlice[isize],
+  source_start/0: isize,
+  source_end/0: isize,
+  dest_start/0: isize
+) -> bool {
+  if if if (source_start/0 < 0) {
+      true
+  } else {
+      (source_end/0 < source_start/0)
+  } {
+      true
+  } else {
+      (source_end/0 > inherent#MutSlice#MutSlice[T]#len__T_isize(self/0))
+  } {
+      {
+        false
+      }
+  } else {
+      {
+        inherent#MutSlice#MutSlice[T]#copy_from__T_isize(
+          self/0,
+          dest_start/0,
+          inherent#Slice#Slice[T]#sub__T_isize(
+            inherent#MutSlice#MutSlice[T]#as_slice__T_isize(self/0),
+            source_start/0,
+            source_end/0
+          )
+        )
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#as_slice__T_isize(self/0: Vec[isize]) -> Slice[isize] {
+  @intrinsic(slice.new)(self/0, 0, inherent#Vec#Vec[T]#len__T_isize(self/0))
+}
+
+fn inherent#MutSlice#MutSlice[T]#copy_from__T_isize(
+  self/0: MutSlice[isize],
+  start/0: isize,
+  source/0: Slice[isize]
+) -> bool {
+  @intrinsic(mut_slice.copy_from)(self/0, start/0, source/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#sub_checked__T_isize(
+  self/0: MutSlice[isize],
+  start/0: isize,
+  end/0: isize
+) -> Option__MutSlice[isize] {
+  if if if (start/0 < 0) {
+      true
+  } else {
+      (end/0 < start/0)
+  } {
+      true
+  } else {
+      (end/0 > inherent#MutSlice#MutSlice[T]#len__T_isize(self/0))
+  } {
+      {
+        Option__MutSlice[isize]::None
+      }
+  } else {
+      {
+        Option__MutSlice[isize]::Some(
+          inherent#MutSlice#MutSlice[T]#sub__T_isize(self/0, start/0, end/0)
+        )
+      }
+  }
+}
+
+fn inherent#MutSlice#MutSlice[T]#fill__T_isize(self/0: MutSlice[isize], value/0: isize) -> unit {
+  let index/0 = 0 in
+  while (index/0 < inherent#MutSlice#MutSlice[T]#len__T_isize(self/0)) {
+      {
+        let _wild0 =
+          {
+            let place_root0 = self/0 in
+            let index0 = index/0 in
+            let place0 = @intrinsic(mut_slice.get)(place_root0, index0) in
+            let value0 = value/0 in
+            @intrinsic(mut_slice.set)(place_root0, index0, value0)
+          } in
+        let _wild1 =
+          {
+            let compound_old0 = index/0 in
+            let compound_value0 = 1 in
+            index/0 = (compound_old0 + compound_value0)
+          } in
+      }
+  }
+}
+
+fn println__T_isize(value/0: isize) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
+}
+
+fn inherent#Vec#Vec[T]#slice_checked__T_isize(
+  self/0: Vec[isize],
+  start/0: isize,
+  end/0: isize
+) -> Option__Slice[isize] {
+  if if if (start/0 < 0) {
+      true
+  } else {
+      (end/0 < start/0)
+  } {
+      true
+  } else {
+      (end/0 > inherent#Vec#Vec[T]#len__T_isize(self/0))
+  } {
+      {
+        Option__Slice[isize]::None
+      }
+  } else {
+      {
+        Option__Slice[isize]::Some(@intrinsic(slice.new)(self/0, start/0, end/0))
+      }
+  }
+}
+
+fn inherent#Option#Option[T]#is_none__T_Slice[isize](self/0: Option__Slice[isize]) -> bool {
+  (!inherent#Option#Option[T]#is_some__T_Slice[isize](self/0))
+}
+
+fn inherent#MutSlice#MutSlice[T]#as_slice__T_isize(self/0: MutSlice[isize]) -> Slice[isize] {
+  @intrinsic(mut_slice.as_slice)(self/0)
+}
+
+fn inherent#Slice#Slice[T]#get_checked__T_isize(
+  self/0: Slice[isize],
+  index/0: isize
+) -> Option__isize {
+  if if (index/0 < 0) {
+      true
+  } else {
+      (index/0 >= inherent#Slice#Slice[T]#len__T_isize(self/0))
+  } {
+      {
+        Option__isize::None
+      }
+  } else {
+      {
+        Option__isize::Some(@intrinsic(slice.get)(self/0, index/0))
+      }
+  }
+}
+
+fn inherent#Option#Option[T]#is_none__T_isize(self/0: Option__isize) -> bool {
+  (!inherent#Option#Option[T]#is_some__T_isize(self/0))
+}
+
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  @runtime(core.bool_to_string)(self/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#len__T_isize(self/0: MutSlice[isize]) -> isize {
+  @intrinsic(mut_slice.len)(self/0)
+}
+
+fn inherent#Slice#Slice[T]#sub__T_isize(
+  self/0: Slice[isize],
+  start/0: isize,
+  end/0: isize
+) -> Slice[isize] {
+  @intrinsic(slice.sub)(self/0, start/0, end/0)
+}
+
+fn inherent#Vec#Vec[T]#len__T_isize(self/0: Vec[isize]) -> isize {
+  @intrinsic(vec.len)(self/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#sub__T_isize(
+  self/0: MutSlice[isize],
+  start/0: isize,
+  end/0: isize
+) -> MutSlice[isize] {
+  @intrinsic(mut_slice.sub)(self/0, start/0, end/0)
+}
+
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  __goml_builtin_int_to_string(self/0)
+}
+
+fn inherent#Option#Option[T]#is_some__T_Slice[isize](self/0: Option__Slice[isize]) -> bool {
+  match self/0 {
+    Option__Slice[isize]::None => {
+      false
+    },
+    Option__Slice[isize]::Some(x0) => {
+      {
+        true
+      }
+    },
+  }
+}
+
+fn inherent#Slice#Slice[T]#len__T_isize(self/0: Slice[isize]) -> isize {
+  @intrinsic(slice.len)(self/0)
+}
+
+fn inherent#Option#Option[T]#is_some__T_isize(self/0: Option__isize) -> bool {
+  match self/0 {
+    Option__isize::None => {
+      false
+    },
+    Option__isize::Some(x0) => {
+      {
+        true
+      }
+    },
+  }
+}
+
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  signed_decimal_string((value/0 as i64))
+}
+
+fn signed_decimal_string(value/0: i64) -> string {
+  if (value/0 < 0) {
+      {
+        ("-" + decimal_string((0 - (value/0 as u64))))
+      }
+  } else {
+      {
+        decimal_string((value/0 as u64))
+      }
+  }
+}
+
+fn decimal_string(value/0: u64) -> string {
+  let _wild0 =
+    if (value/0 == 0) {
+        {
+          return "0"
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+  let remaining/0 = value/0 in
+  let _wild1 =
+    while (remaining/0 > 0) {
+        {
+          let _wild2 =
+            inherent#Vec#Vec[T]#push__T_u0(reversed/0, (((remaining/0 % 10) as u8) + 48)) in
+          let _wild3 =
+            {
+              let compound_old0 = remaining/0 in
+              let compound_value0 = 10 in
+              remaining/0 = (compound_old0 / compound_value0)
+            } in
+        }
+    } in
+  let bytes/0 = @intrinsic(vec.with_capacity)(inherent#Vec#Vec[T]#len__T_u0(reversed/0)) in
+  let offset/0 = 0 in
+  let _wild4 =
+    while (offset/0 < inherent#Vec#Vec[T]#len__T_u0(reversed/0)) {
+        {
+          let _wild5 =
+            inherent#Vec#Vec[T]#push__T_u0(
+              bytes/0,
+              @intrinsic(vec.get)(
+                reversed/0,
+                ((inherent#Vec#Vec[T]#len__T_u0(reversed/0) - offset/0) - 1)
+              )
+            ) in
+          let _wild6 =
+            {
+              let compound_old1 = offset/0 in
+              let compound_value1 = 1 in
+              offset/0 = (compound_old1 + compound_value1)
+            } in
+        }
+    } in
+  let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+  {
+    let x0 = mtmp0.1 in
+    {
+      let result/0 = x0 in
+      {
+        result/0
+      }
+    }
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  @intrinsic(vec.len)(self/0)
+}

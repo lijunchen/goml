@@ -121,32 +121,36 @@ func hashmap_len__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x)
     return m.len
 }
 
-func hashmap_lookup__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x, key CollisionKey) (int32, bool) {
+func hashmap_lookup__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x, key CollisionKey) (int32, bool, int, uint64) {
     if m == nil {
         var zero int32
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i_CollisionKey_i_hash(key)
     var bucket []hashmap_CollisionKey_int32_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_CollisionKey_int32_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i_CollisionKey_i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero int32
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_12CollisionKey_5int32(m *hashmap_CollisionKey_int32_x, key CollisionKey) Option__i32 {
     var value int32
     var ok bool
-    value, ok = hashmap_lookup__HashMap_12CollisionKey_5int32(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_12CollisionKey_5int32(m, key)
     if ok {
         return Option__i32{
             _tag: 1,
@@ -245,32 +249,36 @@ func hashmap_new__HashMap_18Ref_12CollisionKey_6string() *hashmap_Ref_12Collisio
     }
 }
 
-func hashmap_lookup__HashMap_18Ref_12CollisionKey_6string(m *hashmap_Ref_12CollisionKey_string_x, key *ref_CollisionKey_x) (string, bool) {
+func hashmap_lookup__HashMap_18Ref_12CollisionKey_6string(m *hashmap_Ref_12CollisionKey_string_x, key *ref_CollisionKey_x) (string, bool, int, uint64) {
     if m == nil {
         var zero string
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_CollisionKey_r__i_hash(key)
     var bucket []hashmap_Ref_12CollisionKey_string_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_Ref_12CollisionKey_string_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i_Ref_l_CollisionKey_r__i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero string
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_18Ref_12CollisionKey_6string(m *hashmap_Ref_12CollisionKey_string_x, key *ref_CollisionKey_x) Option__string {
     var value string
     var ok bool
-    value, ok = hashmap_lookup__HashMap_18Ref_12CollisionKey_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_18Ref_12CollisionKey_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,

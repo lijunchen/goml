@@ -1,0 +1,604 @@
+fn trait_impl#PartialEq#Key#eq(self/0: Key, other/0: Key) -> bool {
+  let t0 = Key.value(self/0) in
+  let t1 = Key.value(other/0) in
+  let t2 = (t0 == t1) in
+  t2
+}
+
+fn trait_impl#Hash#Key#hash(self/0: Key) -> u64 {
+  let t0 = Key.hashes(self/0) in
+  let t1 = Key.hashes(self/0) in
+  join inline_cont0(t2: isize) -> u64 {
+    let t3 = (t2 + 1) in
+    let inline0 = @intrinsic(ref.set)(t0, t3) in
+    7
+  } in
+  let inline1 = @intrinsic(ref.get)(t1) in
+  jump inline_cont0(inline1)
+}
+
+fn key(value/0: isize, hashes/0: Ref[isize]) -> Key {
+  let t0 = Key { value: value/0, hashes: hashes/0 } in
+  t0
+}
+
+fn main() -> unit {
+  let hashes/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  let created/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
+  let map/0 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_isize() in
+  let t0 = key(1, hashes/0) in
+  let t1 = inherent#HashMap#HashMap[K,V]#entry__K_Key__V_isize(map/0, t0) in
+  let t2 = closure_env_main_0 { created_0: created/0 } in
+  let t3 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t2) in
+  let t4 = inherent#HashMapEntry#HashMapEntry[K,V]#or_insert_with__K_Key__V_isize(t1, t3) in
+  let _wild0 = println__T_isize(t4) in
+  let t5 = inherent#Ref#Ref[T]#get__T_isize(hashes/0) in
+  let _wild1 = println__T_isize(t5) in
+  let _wild2 = inherent#Ref#Ref[T]#set__T_isize(hashes/0, 0) in
+  let t6 = key(1, hashes/0) in
+  let t7 = inherent#HashMap#HashMap[K,V]#entry__K_Key__V_isize(map/0, t6) in
+  let t8 = closure_env_main_1 { created_0: created/0 } in
+  let t9 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t8) in
+  let t10 = inherent#HashMapEntry#HashMapEntry[K,V]#or_insert_with__K_Key__V_isize(t7, t9) in
+  let _wild3 = println__T_isize(t10) in
+  let t11 = inherent#Ref#Ref[T]#get__T_isize(hashes/0) in
+  let _wild4 = println__T_isize(t11) in
+  let t12 = inherent#Ref#Ref[T]#get__T_isize(created/0) in
+  let _wild5 = println__T_isize(t12) in
+  let _wild6 = inherent#Ref#Ref[T]#set__T_isize(hashes/0, 0) in
+  let t13 = key(1, hashes/0) in
+  let t14 = inherent#HashMap#HashMap[K,V]#entry__K_Key__V_isize(map/0, t13) in
+  let t15 = closure_env_main_2 {} in
+  let t16 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t15) in
+  let t17 = inherent#HashMapEntry#HashMapEntry[K,V]#update__K_Key__V_isize(t14, t16) in
+  let t18 = inherent#Option#Option[T]#unwrap_or__T_isize(t17, -1) in
+  let _wild7 = println__T_isize(t18) in
+  let t19 = inherent#Ref#Ref[T]#get__T_isize(hashes/0) in
+  let _wild8 = println__T_isize(t19) in
+  let _wild9 = inherent#Ref#Ref[T]#set__T_isize(hashes/0, 0) in
+  let t20 = key(1, hashes/0) in
+  let t21 = inherent#HashMap#HashMap[K,V]#entry__K_Key__V_isize(map/0, t20) in
+  let t22 = inherent#HashMapEntry#HashMapEntry[K,V]#remove_entry__K_Key__V_isize(t21) in
+  let t23 = key(0, hashes/0) in
+  let t24 = (t23, -1) in
+  let t25 = inherent#Option#Option[T]#unwrap_or__T_(Key,isize)(t22, t24) in
+  let t26 = t25.1 in
+  let _wild10 = println__T_isize(t26) in
+  join inline_cont0(t27: isize) -> unit {
+    join inline_cont1(_wild11: unit) -> unit {
+      join inline_cont2(t28: isize) -> unit {
+        join inline_cont3(_wild12: unit) -> unit {
+          join inline_cont4(native/0: HashMap[string, isize]) -> unit {
+            join inline_cont5(t29: Option__isize) -> unit {
+              join inline_cont6(t30: bool) -> unit {
+                join inline_cont7(_wild13: unit) -> unit {
+                  join inline_cont8(t31: HashMapEntry__string__isize) -> unit {
+                    let t32 = closure_env_main_3 {} in
+                    let t33 =
+                      pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t32) in
+                    join inline_cont9(t34: HashMapEntry__string__isize) -> unit {
+                      join inline_cont10(t35: Option__isize) -> unit {
+                        join inline_cont11(t36: isize) -> unit {
+                          join inline_cont12(_wild14: unit) -> unit {
+                            join inline_cont13(t37: Option__isize) -> unit {
+                              join inline_cont14(t38: isize) -> unit {
+                                let inline0 = trait_impl#ToString#isize#to_string(t38) in
+                                let inline1 = @runtime(core.string_println)(inline0) in
+                                ()
+                              } in
+                              let inline2 = 0 in
+                              match t37 {
+                                Tag_0 => {
+                                  jump inline_cont14(inline2)
+                                },
+                                Tag_1 => {
+                                  let inline3 = Option__isize::Some._0(t37) in
+                                  jump inline_cont14(inline3)
+                                },
+                              }
+                            } in
+                            let inline4 = "answer" in
+                            let inline5 = @intrinsic(hashmap.remove_value)(native/0, inline4) in
+                            jump inline_cont13(inline5)
+                          } in
+                          let inline6 = trait_impl#ToString#isize#to_string(t36) in
+                          let inline7 = @runtime(core.string_println)(inline6) in
+                          jump inline_cont12(())
+                        } in
+                        let inline8 = 0 in
+                        match t35 {
+                          Tag_0 => {
+                            jump inline_cont11(inline8)
+                          },
+                          Tag_1 => {
+                            let inline9 = Option__isize::Some._0(t35) in
+                            jump inline_cont11(inline9)
+                          },
+                        }
+                      } in
+                      let inline10 = HashMapEntry__string__isize.values(t34) in
+                      let inline11 = HashMapEntry__string__isize.key(t34) in
+                      let inline12 =
+                        inherent#HashMap#HashMap[K,V]#get__K_string__V_isize(inline10, inline11) in
+                      jump inline_cont10(inline12)
+                    } in
+                    let inline13 = HashMapEntry__string__isize.values(t31) in
+                    let inline14 = HashMapEntry__string__isize.key(t31) in
+                    let inline15 =
+                      inherent#HashMap#HashMap[K,V]#update__K_string__V_isize(
+                        inline13,
+                        inline14,
+                        t33
+                      ) in
+                    jump inline_cont9(t31)
+                  } in
+                  let inline16 = "answer" in
+                  let inline17 = HashMapEntry__string__isize { values: native/0, key: inline16 } in
+                  jump inline_cont8(inline17)
+                } in
+                let inline18 = trait_impl#ToString#bool#to_string(t30) in
+                let inline19 = @runtime(core.string_println)(inline18) in
+                jump inline_cont7(())
+              } in
+              let inline20 = inherent#Option#Option[T]#is_some__T_isize(t29) in
+              let inline21 = (!inline20) in
+              jump inline_cont6(inline21)
+            } in
+            let inline22 = "answer" in
+            let inline23 = 41 in
+            let inline24 = @intrinsic(hashmap.insert)(native/0, inline22, inline23) in
+            jump inline_cont5(inline24)
+          } in
+          let inline25 = @intrinsic(hashmap.new)() in
+          jump inline_cont4(inline25)
+        } in
+        let inline26 = trait_impl#ToString#isize#to_string(t28) in
+        let inline27 = @runtime(core.string_println)(inline26) in
+        jump inline_cont3(())
+      } in
+      let inline28 = @intrinsic(hashmap.len)(map/0) in
+      jump inline_cont2(inline28)
+    } in
+    let inline29 = trait_impl#ToString#isize#to_string(t27) in
+    let inline30 = @runtime(core.string_println)(inline29) in
+    jump inline_cont1(())
+  } in
+  let inline31 = @intrinsic(ref.get)(hashes/0) in
+  jump inline_cont0(inline31)
+}
+
+fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
+  let t0 = @intrinsic(ref.get)(self/0) in
+  t0
+}
+
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+  let t0 = @intrinsic(ref.set)(self/0, value/0) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
+  let t0 = @intrinsic(ref.new)(value/0) in
+  t0
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_isize() -> HashMap[Key, isize] {
+  let t0 = @intrinsic(hashmap.new)() in
+  t0
+}
+
+fn println__T_isize(value/0: isize) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
+    ()
+  } in
+  let inline0 = __goml_builtin_int_to_string(value/0) in
+  jump inline_cont0(inline0)
+}
+
+fn inherent#HashMap#HashMap[K,V]#entry__K_Key__V_isize(
+  self/0: HashMap[Key, isize],
+  key/0: Key
+) -> HashMapEntry__Key__isize {
+  let t0 = HashMapEntry__Key__isize { values: self/0, key: key/0 } in
+  t0
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#or_insert_with__K_Key__V_isize(
+  self/0: HashMapEntry__Key__isize,
+  create/0: () -> isize
+) -> isize {
+  let t0 = HashMapEntry__Key__isize.values(self/0) in
+  let t1 = HashMapEntry__Key__isize.key(self/0) in
+  let inline0 = @intrinsic(hashmap.get_or_insert_with)(t0, t1, create/0) in
+  inline0
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#update__K_Key__V_isize(
+  self/0: HashMapEntry__Key__isize,
+  update/0: (isize) -> isize
+) -> Option__isize {
+  let t0 = HashMapEntry__Key__isize.values(self/0) in
+  let t1 = HashMapEntry__Key__isize.key(self/0) in
+  let inline0 = @intrinsic(hashmap.update)(t0, t1, update/0) in
+  inline0
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/0: isize) -> isize {
+  match self/0 {
+    Tag_0 => {
+      fallback/0
+    },
+    Tag_1 => {
+      let x0 = Option__isize::Some._0(self/0) in
+      x0
+    },
+  }
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#remove_entry__K_Key__V_isize(
+  self/0: HashMapEntry__Key__isize
+) -> Option__(Key,isize) {
+  join inline_cont0(mtmp0: Option__isize) -> Option__(Key,isize) {
+    match mtmp0 {
+      Tag_0 => {
+        Tag_0
+      },
+      Tag_1 => {
+        let x0 = Option__isize::Some._0(mtmp0) in
+        let t0 = HashMapEntry__Key__isize.key(self/0) in
+        let t1 = (t0, x0) in
+        let t2 = Option__(Key,isize)::Some(t1) in
+        t2
+      },
+    }
+  } in
+  let inline0 = HashMapEntry__Key__isize.values(self/0) in
+  let inline1 = HashMapEntry__Key__isize.key(self/0) in
+  let inline2 = inherent#HashMap#HashMap[K,V]#remove_value__K_Key__V_isize(inline0, inline1) in
+  jump inline_cont0(inline2)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_(Key,isize)(
+  self/0: Option__(Key,isize),
+  fallback/0: (Key, isize)
+) -> (Key, isize) {
+  match self/0 {
+    Tag_0 => {
+      fallback/0
+    },
+    Tag_1 => {
+      let x0 = Option__(Key,isize)::Some._0(self/0) in
+      x0
+    },
+  }
+}
+
+fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_isize(self/0: HashMap[Key, isize]) -> isize {
+  let t0 = @intrinsic(hashmap.len)(self/0) in
+  t0
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_isize() -> HashMap[string, isize] {
+  let t0 = @intrinsic(hashmap.new)() in
+  t0
+}
+
+fn println__T_bool(value/0: bool) -> unit {
+  join inline_cont0(t0: string) -> unit {
+    let t1 = @runtime(core.string_println)(t0) in
+    ()
+  } in
+  let inline0 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont0(inline0)
+}
+
+fn inherent#HashMap#HashMap[K,V]#insert__K_string__V_isize(
+  self/0: HashMap[string, isize],
+  key/0: string,
+  value/0: isize
+) -> Option__isize {
+  let t0 = @intrinsic(hashmap.insert)(self/0, key/0, value/0) in
+  t0
+}
+
+fn inherent#Option#Option[T]#is_none__T_isize(self/0: Option__isize) -> bool {
+  join inline_cont0(t0: bool) -> bool {
+    let t1 = (!t0) in
+    t1
+  } in
+  match self/0 {
+    Tag_0 => {
+      jump inline_cont0(false)
+    },
+    Tag_1 => {
+      jump inline_cont0(true)
+    },
+  }
+}
+
+fn inherent#HashMap#HashMap[K,V]#entry__K_string__V_isize(
+  self/0: HashMap[string, isize],
+  key/0: string
+) -> HashMapEntry__string__isize {
+  let t0 = HashMapEntry__string__isize { values: self/0, key: key/0 } in
+  t0
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#and_modify__K_string__V_isize(
+  self/0: HashMapEntry__string__isize,
+  update/0: (isize) -> isize
+) -> HashMapEntry__string__isize {
+  let t0 = HashMapEntry__string__isize.values(self/0) in
+  let t1 = HashMapEntry__string__isize.key(self/0) in
+  let inline0 = @intrinsic(hashmap.update)(t0, t1, update/0) in
+  self/0
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#get__K_string__V_isize(
+  self/0: HashMapEntry__string__isize
+) -> Option__isize {
+  let t0 = HashMapEntry__string__isize.values(self/0) in
+  let t1 = HashMapEntry__string__isize.key(self/0) in
+  let inline0 = @intrinsic(hashmap.get)(t0, t1) in
+  inline0
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove_value__K_string__V_isize(
+  self/0: HashMap[string, isize],
+  key/0: string
+) -> Option__isize {
+  let t0 = @intrinsic(hashmap.remove_value)(self/0, key/0) in
+  t0
+}
+
+fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
+  let inline0 = (self/0 as i64) in
+  let inline1 = signed_decimal_string(inline0) in
+  inline1
+}
+
+fn inherent#HashMap#HashMap[K,V]#get_or_insert_with__K_Key__V_isize(
+  self/0: HashMap[Key, isize],
+  key/0: Key,
+  create/0: () -> isize
+) -> isize {
+  let t0 = @intrinsic(hashmap.get_or_insert_with)(self/0, key/0, create/0) in
+  t0
+}
+
+fn inherent#HashMap#HashMap[K,V]#update__K_Key__V_isize(
+  self/0: HashMap[Key, isize],
+  key/0: Key,
+  update/0: (isize) -> isize
+) -> Option__isize {
+  let t0 = @intrinsic(hashmap.update)(self/0, key/0, update/0) in
+  t0
+}
+
+fn inherent#HashMapEntry#HashMapEntry[K,V]#remove__K_Key__V_isize(
+  self/0: HashMapEntry__Key__isize
+) -> Option__isize {
+  let t0 = HashMapEntry__Key__isize.values(self/0) in
+  let t1 = HashMapEntry__Key__isize.key(self/0) in
+  let inline0 = @intrinsic(hashmap.remove_value)(t0, t1) in
+  inline0
+}
+
+fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
+  let t0 = @runtime(core.bool_to_string)(self/0) in
+  t0
+}
+
+fn inherent#Option#Option[T]#is_some__T_isize(self/0: Option__isize) -> bool {
+  match self/0 {
+    Tag_0 => {
+      false
+    },
+    Tag_1 => {
+      true
+    },
+  }
+}
+
+fn inherent#HashMap#HashMap[K,V]#update__K_string__V_isize(
+  self/0: HashMap[string, isize],
+  key/0: string,
+  update/0: (isize) -> isize
+) -> Option__isize {
+  let t0 = @intrinsic(hashmap.update)(self/0, key/0, update/0) in
+  t0
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_string__V_isize(
+  self/0: HashMap[string, isize],
+  key/0: string
+) -> Option__isize {
+  let t0 = @intrinsic(hashmap.get)(self/0, key/0) in
+  t0
+}
+
+fn __goml_builtin_int_to_string(value/0: isize) -> string {
+  let t0 = (value/0 as i64) in
+  let inline0 = (t0 < 0) in
+  if inline0 {
+    let inline1 = (t0 as u64) in
+    let inline2 = (0 - inline1) in
+    let inline3 = decimal_string(inline2) in
+    let inline4 = ("-" + inline3) in
+    inline4
+  } else {
+    let inline5 = (t0 as u64) in
+    let inline6 = decimal_string(inline5) in
+    inline6
+  }
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove_value__K_Key__V_isize(
+  self/0: HashMap[Key, isize],
+  key/0: Key
+) -> Option__isize {
+  let t0 = @intrinsic(hashmap.remove_value)(self/0, key/0) in
+  t0
+}
+
+fn signed_decimal_string(value/0: i64) -> string {
+  let t0 = (value/0 < 0) in
+  if t0 {
+    let t1 = (value/0 as u64) in
+    let t2 = (0 - t1) in
+    let t3 = decimal_string(t2) in
+    let t4 = ("-" + t3) in
+    t4
+  } else {
+    let t5 = (value/0 as u64) in
+    let t6 = decimal_string(t5) in
+    t6
+  }
+}
+
+fn decimal_string(value/0: u64) -> string {
+  let t0 = (value/0 == 0) in
+  join k0() -> string {
+    let reversed/0 = @intrinsic(vec.with_capacity)(20) in
+    let remaining/0 = value/0 in
+    join exit0() -> string {
+      join inline_cont0(t1: isize) -> string {
+        let bytes/0 = @intrinsic(vec.with_capacity)(t1) in
+        let offset/0 = 0 in
+        join exit1() -> string {
+          let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
+          let x0 = mtmp0.1 in
+          x0
+        } in
+        joinrec {
+          join loop1() -> string {
+            join inline_cont1(t2: isize) -> string {
+              let t3 = (offset/0 < t2) in
+              if t3 {
+                join inline_cont2(t4: isize) -> string {
+                  let t5 = (t4 - offset/0) in
+                  let t6 = (t5 - 1) in
+                  let t7 = @intrinsic(vec.get)(reversed/0, t6) in
+                  join inline_cont3(_wild0: unit) -> string {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 1 in
+                    let t8 = (compound_old0 + compound_value0) in
+                    let t9 = offset/0 = t8 in
+                    jump loop1()
+                  } in
+                  let inline0 = @intrinsic(vec.push)(bytes/0, t7) in
+                  jump inline_cont3(())
+                } in
+                let inline1 = @intrinsic(vec.len)(reversed/0) in
+                jump inline_cont2(inline1)
+              } else {
+                jump exit1()
+              }
+            } in
+            let inline2 = @intrinsic(vec.len)(reversed/0) in
+            jump inline_cont1(inline2)
+          } in
+        } in
+        jump loop1()
+      } in
+      let inline3 = @intrinsic(vec.len)(reversed/0) in
+      jump inline_cont0(inline3)
+    } in
+    joinrec {
+      join loop0() -> string {
+        let t10 = (remaining/0 > 0) in
+        if t10 {
+          let t11 = (remaining/0 % 10) in
+          let t12 = (t11 as u8) in
+          let t13 = (t12 + 48) in
+          join inline_cont4(_wild1: unit) -> string {
+            let compound_old1 = remaining/0 in
+            let compound_value1 = 10 in
+            let t14 = (compound_old1 / compound_value1) in
+            let t15 = remaining/0 = t14 in
+            jump loop0()
+          } in
+          let inline4 = @intrinsic(vec.push)(reversed/0, t13) in
+          jump inline_cont4(())
+        } else {
+          jump exit0()
+        }
+      } in
+    } in
+    jump loop0()
+  } in
+  if t0 {
+    "0"
+  } else {
+    jump k0()
+  }
+}
+
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+  let t0 = @intrinsic(vec.push)(self/0, elem/0) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#len__T_u8(self/0: Vec[u8]) -> isize {
+  let t0 = @intrinsic(vec.len)(self/0) in
+  t0
+}
+
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
+}
+
+fn trait_impl#Hash#isize#hash(self/0: isize) -> u64 {
+  let t0 = @runtime(core.int_hash)(self/0) in
+  t0
+}
+
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
+  let t0 = (self/0 == other/0) in
+  t0
+}
+
+fn trait_impl#Hash#string#hash(self/0: string) -> u64 {
+  let t0 = @runtime(core.string_hash)(self/0) in
+  t0
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env0: closure_env_main_0) -> isize {
+  let created/0 = closure_env_main_0.created_0(env0) in
+  join inline_cont0(t0: isize) -> isize {
+    let t1 = (t0 + 1) in
+    let inline0 = @intrinsic(ref.set)(created/0, t1) in
+    10
+  } in
+  let inline1 = @intrinsic(ref.get)(created/0) in
+  jump inline_cont0(inline1)
+}
+
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env0: closure_env_main_1) -> isize {
+  let created/0 = closure_env_main_1.created_0(env0) in
+  join inline_cont0(t0: isize) -> isize {
+    let t1 = (t0 + 1) in
+    let inline0 = @intrinsic(ref.set)(created/0, t1) in
+    99
+  } in
+  let inline1 = @intrinsic(ref.get)(created/0) in
+  jump inline_cont0(inline1)
+}
+
+fn inherent#closure_env_main_2#closure_env_main_2#apply(
+  env0: closure_env_main_2,
+  value/0: isize
+) -> isize {
+  let t0 = (value/0 + 5) in
+  t0
+}
+
+fn inherent#closure_env_main_3#closure_env_main_3#apply(
+  env0: closure_env_main_3,
+  value/0: isize
+) -> isize {
+  let t0 = (value/0 + 1) in
+  t0
+}

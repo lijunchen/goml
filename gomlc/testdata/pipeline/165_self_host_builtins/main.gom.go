@@ -255,6 +255,16 @@ type ParsedFloat struct {
     significant_digits int
 }
 
+type _goml_m_std_p_bytes_p_BoundsError struct {
+    offset_value int
+    needed_value int
+    length_value int
+}
+
+type _goml_m_std_p_bytes_p_Builder struct {
+    values *_goml_vec_uint8
+}
+
 type _goml_m_std_p_bytes_p_Bytes struct {
     values *_goml_vec_uint8
 }
@@ -301,6 +311,16 @@ type _goml_m_std_p_fs_p_FileType int32
 type Option__u8 struct {
     _tag int32
     _v1_0 uint8
+}
+
+type _goml_m_Option____Slice_l_u8_r_ struct {
+    _tag int32
+    _v1_0 []uint8
+}
+
+type _goml_m_Option____MutSlice_l_u8_r_ struct {
+    _tag int32
+    _v1_0 []uint8
 }
 
 type Result__string__string struct {

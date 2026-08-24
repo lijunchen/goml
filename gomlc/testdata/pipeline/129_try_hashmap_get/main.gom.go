@@ -63,30 +63,30 @@ func hashmap_new__HashMap_6string_5int32() *hashmap_string_int32_x {
     }
 }
 
-func hashmap_lookup__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) (int32, bool) {
+func hashmap_lookup__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) (int32, bool, int, uint64) {
     if m == nil {
         var zero int32
-        return zero, false
+        return zero, false, -1, 0
     }
     var index int
     var found bool
     index, found = m.indices[key]
     if !found {
         var zero int32
-        return zero, false
+        return zero, false, -1, 0
     }
     var entry hashmap_string_int32_x_entry = m.entries[index]
     if entry.active {
-        return entry.value, true
+        return entry.value, true, index, 0
     }
     var zero int32
-    return zero, false
+    return zero, false, index, 0
 }
 
 func hashmap_get__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) Option__i32 {
     var value int32
     var ok bool
-    value, ok = hashmap_lookup__HashMap_6string_5int32(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_6string_5int32(m, key)
     if ok {
         return Option__i32{
             _tag: 1,

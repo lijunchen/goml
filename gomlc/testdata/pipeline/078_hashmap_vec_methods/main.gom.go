@@ -105,32 +105,36 @@ func hashmap_len__HashMap_3Key_5int32(m *hashmap_Key_int32_x) int {
     return m.len
 }
 
-func hashmap_lookup__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (int32, bool) {
+func hashmap_lookup__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (int32, bool, int, uint64) {
     if m == nil {
         var zero int32
-        return zero, false
+        return zero, false, -1, 0
     }
     var h uint64 = _goml_m_trait__impl_i_Hash_i_Key_i_hash(key)
     var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int = 0
+    var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
         var entry hashmap_Key_int32_x_entry = bucket[i]
         if entry.active && _goml_m_trait__impl_i_PartialEq_i_Key_i_eq(entry.key, key) {
-            return entry.value, true
+            return entry.value, true, i, h
+        }
+        if !entry.active && reuse_index < 0 {
+            reuse_index = i
         }
         i = i + 1
     }
     var zero int32
-    return zero, false
+    return zero, false, reuse_index, h
 }
 
 func hashmap_get__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) Option__i32 {
     var value int32
     var ok bool
-    value, ok = hashmap_lookup__HashMap_3Key_5int32(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_3Key_5int32(m, key)
     if ok {
         return Option__i32{
             _tag: 1,
