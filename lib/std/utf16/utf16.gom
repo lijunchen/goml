@@ -1,6 +1,7 @@
 package utf16;
 
 use module::bytes;
+use module::bytes::endian;
 use module::text;
 
 pub enum Utf16ErrorKind {
@@ -89,14 +90,14 @@ pub fn decode(input: Slice[u16]) -> Result[string, Utf16Error] {
     Result::Ok(output.finish())
 }
 
-pub fn decode_bytes(input: Slice[byte], endian: bytes::Endian) -> Result[string, Utf16Error] {
+pub fn decode_bytes(input: Slice[byte], byte_order: endian::Endian) -> Result[string, Utf16Error] {
     if input.len() % 2 != 0 {
         return Result::Err(Utf16Error::new(input.len() - 1, Utf16ErrorKind::OddByteLength))
     } else {};
     let values: Vec[u16] = Vec::with_capacity(input.len() / 2);
     let mut offset = 0;
     while offset < input.len() {
-        match bytes::read_u16(input, offset, endian) {
+        match endian::read_u16(input, offset, byte_order) {
             Ok(value) => values.push(value),
             Err(_) => {
                 return Result::Err(Utf16Error::new(offset, Utf16ErrorKind::OddByteLength))
@@ -122,10 +123,10 @@ pub fn encode(value: string) -> Vec[u16] {
     output
 }
 
-pub fn encode_bytes(value: string, endian: bytes::Endian) -> Vec[byte] {
-    let output = bytes::Builder::with_capacity(value.len() * 2);
+pub fn encode_bytes(value: string, byte_order: endian::Endian) -> Vec[byte] {
+    let output = endian::Builder::with_capacity(value.len() * 2);
     for code_unit in encode(value) {
-        output.write_u16(code_unit, endian)
+        output.write_u16(code_unit, byte_order)
     }
     output.to_vec()
 }

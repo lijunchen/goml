@@ -136,7 +136,7 @@ let path = br"C:\tmp\file";
 let quoted = br#"say "hello""#;
 ```
 
-The standard library type `std::bytes::Bytes` remains a separate buffer abstraction. It provides read-only and mutable zero-copy views, checked endian access, and matching growable and fixed-buffer writers. Use `bytes::Bytes::from_vec(value)` when an API requires it.
+The standard library type `std::bytes::Bytes` remains a separate buffer abstraction. It provides read-only and mutable zero-copy views plus a growable byte builder. `std::bytes::endian` provides checked endian access and matching growable and fixed-buffer readers and writers. Use `bytes::Bytes::from_vec(value)` when an API requires it.
 
 Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is.At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`:
 
@@ -2496,6 +2496,7 @@ The standard library is distinct from both the hidden builtin contract and the a
 use std::ascii;
 use std::bincode;
 use std::bytes;
+use std::bytes::endian;
 use std::cmp;
 use std::collections;
 use std::crypto;
@@ -2524,7 +2525,7 @@ Current public entrances include:
 
 - `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
 - `bincode::standard`, `legacy`, configuration builders, serde `Serialize` and `Deserialize` re-exports, `encode_to_vec`, and `decode_from_slice`
-- `bytes::Bytes`, `Builder`, `Reader`, `Writer`, `Endian`, checked integer and floating-point reads and writes, and zero-copy byte views
+- `bytes::Bytes`, `bytes::Builder`, checked and zero-copy byte views, plus `bytes::endian::{Builder, Reader, Writer, Endian}` and checked integer and floating-point reads and writes
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations. `Ordering` is a builtin type re-exported by `cmp`.
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`; `HashSet::to_vec` returns a snapshot of its keys
 - `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, and their comparator variants. The sorting, search, selection, and deduplication methods on `Vec[T]` are the canonical forms.
@@ -2585,13 +2586,13 @@ The existing `io`, `fs`, `path`, `env`, `process`, and `num` string-error APIs r
 
 Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Error`. The original `Bytes::to_string` string-error method remains available for bootstrap and source compatibility.
 
-`decode_slice` accepts a read-only byte view. `encode_into` writes into a `MutSlice[byte]` at a checked offset and reports `bytes::BoundsError` without a partial write; `encode_to` appends to `bytes::Builder`.
+`decode_slice` accepts a read-only byte view. `encode_into` writes into a `MutSlice[byte]` at a checked offset and reports `bytes::BoundsError` without a partial write; `encode_to` appends to the lightweight `bytes::Builder`.
 
 ### Byte buffers and endian access
 
-`std::bytes` uses `Slice[byte]` and `MutSlice[byte]` for borrowed views. `Bytes::as_slice` and `as_mut_slice` are zero-copy, while `slice_checked` and `slice_mut_checked` validate a subrange. `Builder` grows as bytes are appended and returns `Bytes`; `Reader` advances over a read-only view; `Writer` advances over a fixed mutable view and returns `BoundsError` rather than partially writing past the end.
+`std::bytes` uses `Slice[byte]` and `MutSlice[byte]` for borrowed views. `Bytes::as_slice` and `as_mut_slice` are zero-copy, while `slice_checked` and `slice_mut_checked` validate a subrange. `bytes::Builder` is a lightweight byte accumulator and returns `Bytes`.
 
-The top-level `read_u16/u32/u64`, `read_i16/i32/i64`, `read_f32/f64` and matching `write_*` functions take an explicit `Endian::Little` or `Endian::Big`. One-byte operations omit endianness. Every operation validates the complete range before reading or writing.
+`std::bytes::endian` is an opt-in package for binary formats. Its `Builder` grows while writing typed values; `Reader` advances over a read-only view; `Writer` advances over a fixed mutable view and returns `endian::BoundsError` rather than partially writing past the end. The top-level `read_u16/u32/u64`, `read_i16/i32/i64`, `read_f32/f64` and matching `write_*` functions take an explicit `Endian::Little` or `Endian::Big`. One-byte operations omit endianness. Every operation validates the complete range before reading or writing.
 
 ### UTF-16 conversion
 

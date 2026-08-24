@@ -14,6 +14,8 @@ pub const STD_BINCODE_PACKAGE: string = "std::bincode";
 
 pub const STD_BYTES_PACKAGE: string = "std::bytes";
 
+pub const STD_BYTES_ENDIAN_PACKAGE: string = "std::bytes::endian";
+
 pub const STD_CHANNEL_PACKAGE: string = "std::channel";
 
 pub const STD_CMP_PACKAGE: string = "std::cmp";
@@ -117,6 +119,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                         STD_ASCII_PACKAGE,
                         STD_BINCODE_PACKAGE,
                         STD_BYTES_PACKAGE,
+                        STD_BYTES_ENDIAN_PACKAGE,
                         STD_CHANNEL_PACKAGE,
                         STD_CMP_PACKAGE,
                         STD_COLLECTIONS_PACKAGE,
@@ -193,9 +196,17 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 STD_BYTES_PACKAGE,
                 "bytes",
                 STD_ROOT_PACKAGE,
-                Vec::from_array(["std/bytes/bytes.gom", "std/bytes/endian.gom"]),
+                Vec::from_array(["std/bytes/bytes.gom"]),
                 Vec::new(),
                 Vec::new(),
+            ),
+            standard_package(
+                STD_BYTES_ENDIAN_PACKAGE,
+                "endian",
+                STD_BYTES_PACKAGE,
+                Vec::from_array(["std/bytes/endian/endian.gom"]),
+                Vec::from_array([STD_BYTES_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE]),
             ),
             standard_package(
                 STD_CHANNEL_PACKAGE,
@@ -449,8 +460,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "utf16",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/utf16/utf16.gom"]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
+                Vec::from_array([STD_BYTES_ENDIAN_PACKAGE, STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
+                Vec::from_array([STD_BYTES_ENDIAN_PACKAGE, STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
             ),
             standard_package(
                 STD_UNICODE_PACKAGE,

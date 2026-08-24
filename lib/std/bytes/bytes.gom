@@ -1,5 +1,96 @@
 package bytes;
 
+pub struct BoundsError {
+    offset_value: isize,
+    needed_value: isize,
+    length_value: isize,
+}
+
+impl BoundsError {
+    pub fn new(offset: isize, needed: isize, length: isize) -> BoundsError {
+        BoundsError { offset_value: offset, needed_value: needed, length_value: length }
+    }
+
+    pub fn offset(self: BoundsError) -> isize {
+        self.offset_value
+    }
+
+    pub fn needed(self: BoundsError) -> isize {
+        self.needed_value
+    }
+
+    pub fn length(self: BoundsError) -> isize {
+        self.length_value
+    }
+}
+
+impl ToString for BoundsError {
+    fn to_string(self: BoundsError) -> string {
+        "byte range at offset " + self.offset_value.to_string() + " needs "
+            + self.needed_value.to_string()
+            + " bytes in buffer of length "
+            + self.length_value.to_string()
+    }
+}
+
+impl Debug for BoundsError {
+    fn debug(self: BoundsError) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for BoundsError {
+    fn eq(self: BoundsError, other: BoundsError) -> bool {
+        self.offset_value == other.offset_value && self.needed_value == other.needed_value
+            && self.length_value == other.length_value
+    }
+}
+
+pub struct Builder {
+    values: Vec[byte],
+}
+
+impl Builder {
+    pub fn new() -> Builder {
+        Builder { values: Vec::new() }
+    }
+
+    pub fn with_capacity(capacity: isize) -> Builder {
+        Builder { values: Vec::with_capacity(capacity) }
+    }
+
+    pub fn len(self: Builder) -> isize {
+        self.values.len()
+    }
+
+    pub fn is_empty(self: Builder) -> bool {
+        self.values.is_empty()
+    }
+
+    pub fn push(self: Builder, value: byte) -> unit {
+        self.values.push(value)
+    }
+
+    pub fn extend(self: Builder, value: Slice[byte]) -> unit {
+        self.values.reserve(value.len());
+        for byte in value {
+            self.values.push(byte)
+        }
+    }
+
+    pub fn clear(self: Builder) -> unit {
+        self.values.clear()
+    }
+
+    pub fn finish(self: Builder) -> Bytes {
+        Bytes::from_vec(self.values)
+    }
+
+    pub fn to_vec(self: Builder) -> Vec[byte] {
+        self.values
+    }
+}
+
 pub struct Bytes {
     pub values: Vec[byte],
 }

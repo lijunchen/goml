@@ -21,6 +21,7 @@ struct StandardNeeds {
     ascii: bool,
     bincode: bool,
     bytes: bool,
+    bytes_endian: bool,
     cmp: bool,
     collections: bool,
     error: bool,
@@ -76,6 +77,7 @@ fn no_standard_needs() -> StandardNeeds {
         ascii: false,
         bincode: false,
         bytes: false,
+        bytes_endian: false,
         cmp: false,
         collections: false,
         error: false,
@@ -113,6 +115,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         ascii: closure.contains(resources::STD_ASCII_PACKAGE),
         bincode: closure.contains(resources::STD_BINCODE_PACKAGE),
         bytes: closure.contains(resources::STD_BYTES_PACKAGE),
+        bytes_endian: closure.contains(resources::STD_BYTES_ENDIAN_PACKAGE),
         cmp: closure.contains(resources::STD_CMP_PACKAGE),
         collections: closure.contains(resources::STD_COLLECTIONS_PACKAGE),
         error: closure.contains(resources::STD_ERROR_PACKAGE),
@@ -159,6 +162,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         ascii: left.ascii || right.ascii,
         bincode: left.bincode || right.bincode,
         bytes: left.bytes || right.bytes,
+        bytes_endian: left.bytes_endian || right.bytes_endian,
         cmp: left.cmp || right.cmp,
         collections: left.collections || right.collections,
         error: left.error || right.error,
@@ -631,6 +635,9 @@ fn selected_standard_package_names(needs: StandardNeeds) -> Vec[string] {
     } else {};
     if needs.bytes {
         result.push(resources::STD_BYTES_PACKAGE)
+    } else {};
+    if needs.bytes_endian {
+        result.push(resources::STD_BYTES_ENDIAN_PACKAGE)
     } else {};
     if needs.cmp {
         result.push(resources::STD_CMP_PACKAGE)

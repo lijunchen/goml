@@ -1,4 +1,6 @@
-package bytes;
+package endian;
+
+use std::bytes as byte_buffer;
 
 pub enum Endian {
     Little,
@@ -373,8 +375,8 @@ impl Builder {
         self.values.clear()
     }
 
-    pub fn finish(self: Builder) -> Bytes {
-        Bytes::from_vec(self.values)
+    pub fn finish(self: Builder) -> byte_buffer::Bytes {
+        byte_buffer::Bytes::from_vec(self.values)
     }
 
     pub fn to_vec(self: Builder) -> Vec[byte] {
