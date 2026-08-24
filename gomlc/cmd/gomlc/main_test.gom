@@ -100,15 +100,32 @@ fn publishes_stable_output_transaction_snapshots() -> unit {
         Err(error) => testing::fail(error),
     };
     testing::assert(!fs::exists(output_lock_path(anchor)));
-    match fs::read_file(output_epoch_path(anchor)) {
-        Ok(value) => testing::assert(value.starts_with("complete:")),
-        Err(error) => testing::fail(error),
+    let first_epoch = match fs::read_file(output_epoch_path(anchor)) {
+        Ok(value) => {
+            testing::assert(value.starts_with("complete:"));
+            value
+        },
+        Err(error) => {
+            testing::fail(error);
+            ""
+        },
     };
     match output_snapshot(
         anchor,
         || Result::Ok(fs::read_file(interface_path)? + ":" + fs::read_file(core_path)?),
     ) {
         Ok(value) => testing::assert_eq(value, "interface:core"),
+        Err(error) => testing::fail(error),
+    };
+    match output_transaction(anchor, || atomic_write_text(interface_path, "updated")) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    match fs::read_file(output_epoch_path(anchor)) {
+        Ok(value) => {
+            testing::assert(value.starts_with("complete:"));
+            testing::assert(value != first_epoch)
+        },
         Err(error) => testing::fail(error),
     };
     cleanup_temp_directory(temporary)
