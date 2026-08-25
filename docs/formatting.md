@@ -35,7 +35,7 @@ fn choose(value: bool) -> string {
 
 Empty blocks are written as `{}`. `else` remains on the line of the preceding closing brace.
 
-An exact `()` at the end of a block and a standalone `();` are omitted when they contain no comments. Empty statements written as extra semicolons are also removed. These normalizations preserve the block's `unit` result and do not remove comments.
+An exact `()` at the end of a block and a standalone `();` are omitted when they contain no comments. Empty statements written as extra semicolons are also removed. These normalizations preserve the block's `()` result and do not remove comments.
 
 Semicolons after `while` and `for` expressions are removed. A semicolon after `loop` is removed when another block expression follows, but retained on a final `loop` because it may discard a value. Semicolons after `if` and `match` are retained. A control-flow semicolon is also retained when the next token could continue the preceding expression, such as `(`, `[`, `.`, `?`, `as`, a range operator, or a binary operator.
 
