@@ -4737,7 +4737,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 if valid {} else {
                     push_diagnostic_at(
                         ctx,
-                        "`go` expects a value of type () -> unit, found "
+                        "`go` expects a value of type () -> (), found "
                             + diagnostic_type_text(actual),
                         Option::Some(span),
                     )
