@@ -335,7 +335,7 @@ fn formats_comptime_contextually_without_reserving_the_name() -> unit {
 fn removes_redundant_unit_expressions_and_semicolons() -> unit {
     expect_format(
         "fn empty()->unit{;;;()}fn control(flag:bool,values:Vec[isize])->unit{while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->unit{if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[isize])->(Vec[isize],Vec[isize]){for value in values{let _=value;};(values,values)}",
-        "fn empty() -> unit {}\n\nfn control(flag: bool, values: Vec[isize]) -> unit {\n    while flag {}\n    for value in values {\n        let _ = value;\n    }\n    loop {\n        break;\n    }\n    if flag {} else {};\n    match flag {\n        true => (),\n        false => (),\n    };\n}\n\nfn retain(flag: bool) -> unit {\n    if flag {\n        1\n    } else {\n        2\n    };\n    match flag {\n        true => 1,\n        false => 2,\n    };\n    loop {\n        break 1\n    };\n}\n\nfn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {\n    for value in values {\n        let _ = value;\n    };\n    (values, values)\n}\n",
+        "fn empty() -> () {}\n\nfn control(flag: bool, values: Vec[isize]) -> () {\n    while flag {}\n    for value in values {\n        let _ = value;\n    }\n    loop {\n        break;\n    }\n    if flag {} else {};\n    match flag {\n        true => (),\n        false => (),\n    };\n}\n\nfn retain(flag: bool) -> () {\n    if flag {\n        1\n    } else {\n        2\n    };\n    match flag {\n        true => 1,\n        false => 2,\n    };\n    loop {\n        break 1\n    };\n}\n\nfn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {\n    for value in values {\n        let _ = value;\n    };\n    (values, values)\n}\n",
     )
 }
 
@@ -343,7 +343,7 @@ fn removes_redundant_unit_expressions_and_semicolons() -> unit {
 fn preserves_semicolons_after_labeled_while_and_for_statements() -> unit {
     expect_format(
         "fn main(values:Vec[isize])->unit{'retry:while false{continue 'retry;};println(1);'items:for value in values{let _=value;break 'items;};println(2)}",
-        "fn main(values: Vec[isize]) -> unit {\n    'retry: while false {\n        continue 'retry;\n    };\n    println(1);\n    'items: for value in values {\n        let _ = value;\n        break 'items;\n    };\n    println(2)\n}\n",
+        "fn main(values: Vec[isize]) -> () {\n    'retry: while false {\n        continue 'retry;\n    };\n    println(1);\n    'items: for value in values {\n        let _ = value;\n        break 'items;\n    };\n    println(2)\n}\n",
     )
 }
 
