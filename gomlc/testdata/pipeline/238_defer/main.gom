@@ -13,7 +13,7 @@ fn maybe(value: Option[isize]) -> Option[isize] {
     Option::Some(number)
 }
 
-fn loop_cleanup() -> unit {
+fn loop_cleanup() -> () {
     let index = Ref::new(0);
     while index.get() < 3 {
         let current = index.get();
@@ -27,7 +27,7 @@ fn loop_cleanup() -> unit {
     }
 }
 
-fn observed_at_exit() -> unit {
+fn observed_at_exit() -> () {
     let value = Ref::new("before");
     defer println("observed:" + value.get());
     value.set("after")
@@ -42,7 +42,7 @@ fn pattern_cleanup(value: Option[isize]) -> isize {
     left + right
 }
 
-fn closure_cleanup() -> unit {
+fn closure_cleanup() -> () {
     defer println("closure:outer");
     let run = || {
         defer println("closure:inner");
@@ -52,7 +52,7 @@ fn closure_cleanup() -> unit {
     println("closure:after")
 }
 
-fn main() -> unit {
+fn main() -> () {
     defer println("main:first");
     defer println("main:second");
     {

@@ -7,7 +7,7 @@ fn parse_natural(value: string) -> Natural {
 }
 
 #[test]
-fn parses_and_formats_values_larger_than_uint64() -> unit {
+fn parses_and_formats_values_larger_than_uint64() -> () {
     let value = parse_natural("1267650600228229401496703205379");
     testing::assert_eq(natural_to_string(value), "1267650600228229401496703205379");
     testing::assert_eq(natural_bit_len(value), 101);
@@ -17,7 +17,7 @@ fn parses_and_formats_values_larger_than_uint64() -> unit {
 }
 
 #[test]
-fn arithmetic_preserves_all_limbs() -> unit {
+fn arithmetic_preserves_all_limbs() -> () {
     let left = parse_natural("18446744073709551617");
     let right = parse_natural("4294967297");
     testing::assert_eq(natural_to_string(natural_add(left, right)), "18446744078004518914");
@@ -29,7 +29,7 @@ fn arithmetic_preserves_all_limbs() -> unit {
 }
 
 #[test]
-fn division_round_trips_large_values() -> unit {
+fn division_round_trips_large_values() -> () {
     let numerator = parse_natural("79228162532711081671548469252");
     let denominator = parse_natural("4294967297");
     let divided = testing::expect_ok(
@@ -45,7 +45,7 @@ fn division_round_trips_large_values() -> unit {
 }
 
 #[test]
-fn shifts_across_limb_boundaries() -> unit {
+fn shifts_across_limb_boundaries() -> () {
     let shifted = natural_shift_left(natural_one(), 100);
     testing::assert_eq(natural_to_string(shifted), "1267650600228229401496703205376");
     testing::assert_eq(natural_to_string(natural_shift_right(shifted, 68)), "4294967296");
@@ -54,7 +54,7 @@ fn shifts_across_limb_boundaries() -> unit {
 }
 
 #[test]
-fn parses_binary_octal_and_hexadecimal_digits() -> unit {
+fn parses_binary_octal_and_hexadecimal_digits() -> () {
     testing::assert_eq(
         natural_to_string(
             testing::expect_ok(

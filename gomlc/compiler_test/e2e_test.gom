@@ -3,7 +3,7 @@ package compiler_test;
 use std::testing;
 
 #[test]
-fn changed_go_source_invalidates_cached_executable() -> unit {
+fn changed_go_source_invalidates_cached_executable() -> () {
     let old_source = "package main\n\nimport \"fmt\"\n\nfunc main() {\nLoop:\n    select {\n    default:\n        fmt.Println(\"old\")\n        break Loop\n    }\n}\n";
     let new_source = "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"new\")\n}\n";
     testing::assert(execute_go(old_source, "old\n", "cache_invalidation", 0, 0) == "old\n");
@@ -12,96 +12,96 @@ fn changed_go_source_invalidates_cached_executable() -> unit {
 }
 
 #[test]
-fn e2e_fixture_counts_are_stable() -> unit {
+fn e2e_fixture_counts_are_stable() -> () {
     assert_e2e_counts()
 }
 
 #[test]
-fn e2e_good_shard_0() -> unit {
+fn e2e_good_shard_0() -> () {
     assert_e2e_suite("good", 0, 16)
 }
 
 #[test]
-fn e2e_good_shard_1() -> unit {
+fn e2e_good_shard_1() -> () {
     assert_e2e_suite("good", 1, 16)
 }
 
 #[test]
-fn e2e_good_shard_2() -> unit {
+fn e2e_good_shard_2() -> () {
     assert_e2e_suite("good", 2, 16)
 }
 
 #[test]
-fn e2e_good_shard_3() -> unit {
+fn e2e_good_shard_3() -> () {
     assert_e2e_suite("good", 3, 16)
 }
 
 #[test]
-fn e2e_good_shard_4() -> unit {
+fn e2e_good_shard_4() -> () {
     assert_e2e_suite("good", 4, 16)
 }
 
 #[test]
-fn e2e_good_shard_5() -> unit {
+fn e2e_good_shard_5() -> () {
     assert_e2e_suite("good", 5, 16)
 }
 
 #[test]
-fn e2e_good_shard_6() -> unit {
+fn e2e_good_shard_6() -> () {
     assert_e2e_suite("good", 6, 16)
 }
 
 #[test]
-fn e2e_good_shard_7() -> unit {
+fn e2e_good_shard_7() -> () {
     assert_e2e_suite("good", 7, 16)
 }
 
 #[test]
-fn e2e_good_shard_8() -> unit {
+fn e2e_good_shard_8() -> () {
     assert_e2e_suite("good", 8, 16)
 }
 
 #[test]
-fn e2e_good_shard_9() -> unit {
+fn e2e_good_shard_9() -> () {
     assert_e2e_suite("good", 9, 16)
 }
 
 #[test]
-fn e2e_good_shard_10() -> unit {
+fn e2e_good_shard_10() -> () {
     assert_e2e_suite("good", 10, 16)
 }
 
 #[test]
-fn e2e_good_shard_11() -> unit {
+fn e2e_good_shard_11() -> () {
     assert_e2e_suite("good", 11, 16)
 }
 
 #[test]
-fn e2e_good_shard_12() -> unit {
+fn e2e_good_shard_12() -> () {
     assert_e2e_suite("good", 12, 16)
 }
 
 #[test]
-fn e2e_good_shard_13() -> unit {
+fn e2e_good_shard_13() -> () {
     assert_e2e_suite("good", 13, 16)
 }
 
 #[test]
-fn e2e_good_shard_14() -> unit {
+fn e2e_good_shard_14() -> () {
     assert_e2e_suite("good", 14, 16)
 }
 
 #[test]
-fn e2e_good_shard_15() -> unit {
+fn e2e_good_shard_15() -> () {
     assert_e2e_suite("good", 15, 16)
 }
 
 #[test]
-fn e2e_bad_shard_0() -> unit {
+fn e2e_bad_shard_0() -> () {
     assert_e2e_suite("bad", 0, 2)
 }
 
 #[test]
-fn e2e_bad_shard_1() -> unit {
+fn e2e_bad_shard_1() -> () {
     assert_e2e_suite("bad", 1, 2)
 }

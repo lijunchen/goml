@@ -120,12 +120,12 @@ fn contains_message(diagnostics: Vec[VerifyDiagnostic], message: string) -> bool
 }
 
 #[test]
-fn verifies_a_minimal_typed_function() -> unit {
+fn verifies_a_minimal_typed_function() -> () {
     testing::assert_eq(verify(minimal_program()).len(), 0)
 }
 
 #[test]
-fn reports_invalid_control_flow_without_indexing_the_target() -> unit {
+fn reports_invalid_control_flow_without_indexing_the_target() -> () {
     let program = minimal_program();
     program.functions[0].blocks[0].terminator.kind = TerminatorKind::Jump {
         target: block_id(50),
@@ -136,7 +136,7 @@ fn reports_invalid_control_flow_without_indexing_the_target() -> unit {
 }
 
 #[test]
-fn reports_instruction_type_and_location_errors() -> unit {
+fn reports_instruction_type_and_location_errors() -> () {
     let program = minimal_program();
     let bool_type = testing::expect_some(
         go_types::basic_type(program.world, "bool"),
@@ -165,7 +165,7 @@ fn reports_instruction_type_and_location_errors() -> unit {
 }
 
 #[test]
-fn reports_malformed_allocate_assertion_map_and_dynamic_call() -> unit {
+fn reports_malformed_allocate_assertion_map_and_dynamic_call() -> () {
     let program = minimal_program();
     let bool_type = testing::expect_some(
         go_types::basic_type(program.world, "bool"),
@@ -262,7 +262,7 @@ fn reports_malformed_allocate_assertion_map_and_dynamic_call() -> unit {
 }
 
 #[test]
-fn reports_malformed_channel_and_select_instructions() -> unit {
+fn reports_malformed_channel_and_select_instructions() -> () {
     let program = minimal_program();
     let bool_type = testing::expect_some(
         go_types::basic_type(program.world, "bool"),
@@ -341,7 +341,7 @@ fn reports_malformed_channel_and_select_instructions() -> unit {
 }
 
 #[test]
-fn reports_invalid_global_and_duplicate_initialization_metadata() -> unit {
+fn reports_invalid_global_and_duplicate_initialization_metadata() -> () {
     let program = minimal_program();
     let function = program.functions[0];
     program.globals.push(
@@ -362,7 +362,7 @@ fn reports_invalid_global_and_duplicate_initialization_metadata() -> unit {
 }
 
 #[test]
-fn rejects_runtime_types_with_unsubstituted_type_parameters() -> unit {
+fn rejects_runtime_types_with_unsubstituted_type_parameters() -> () {
     let program = minimal_program();
     let function = program.functions[0];
     let parameter = go_types::add_type(
@@ -379,7 +379,7 @@ fn rejects_runtime_types_with_unsubstituted_type_parameters() -> unit {
 }
 
 #[test]
-fn detects_type_parameters_after_recursive_type_edges() -> unit {
+fn detects_type_parameters_after_recursive_type_edges() -> () {
     let program = minimal_program();
     let function = program.functions[0];
     let recursive = go_types::add_type(program.world, go_types::TypeKind::Invalid);
@@ -423,7 +423,7 @@ fn detects_type_parameters_after_recursive_type_edges() -> unit {
 }
 
 #[test]
-fn lowers_typed_functions_assignments_and_control_flow() -> unit {
+fn lowers_typed_functions_assignments_and_control_flow() -> () {
     let file = path::join(execution_fixture("control"), "main.go");
     let loaded = testing::expect_ok(
         execution::load_files(execution::default_config(), Vec::from_array([file])),
@@ -473,7 +473,7 @@ fn lowered_file(file: string) -> LowerResult {
 }
 
 #[test]
-fn lowers_type_switches_with_typed_case_bindings() -> unit {
+fn lowers_type_switches_with_typed_case_bindings() -> () {
     let result = lowered_fixture("type_switch");
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
@@ -488,7 +488,7 @@ fn lowers_type_switches_with_typed_case_bindings() -> unit {
 }
 
 #[test]
-fn lowers_generic_functions_and_receiver_methods_on_demand() -> unit {
+fn lowers_generic_functions_and_receiver_methods_on_demand() -> () {
     let result = lowered_fixture("generics");
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
@@ -500,7 +500,7 @@ fn lowers_generic_functions_and_receiver_methods_on_demand() -> unit {
 }
 
 #[test]
-fn omits_unsupported_compiler_generated_aggregate_shells() -> unit {
+fn omits_unsupported_compiler_generated_aggregate_shells() -> () {
     let result = lowered_fixture("generated_iterator_shell");
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
@@ -512,7 +512,7 @@ fn omits_unsupported_compiler_generated_aggregate_shells() -> unit {
 }
 
 #[test]
-fn lowers_gomlc_lexical_task_scope_product_with_native_methods() -> unit {
+fn lowers_gomlc_lexical_task_scope_product_with_native_methods() -> () {
     let root = env::current_dir().unwrap_or(".");
     let repository = path::parent(root).unwrap_or(root);
     let file = path::join(repository, "gomlc/testdata/pipeline/242_lexical_task_scope/main.gom.go");
@@ -578,7 +578,7 @@ fn native_call_instruction_count(program: BytecodeProgram) -> isize {
 
 #[test]
 #[ignore("loads four Go 1.26 standard-library packages")]
-fn links_used_standard_library_functions_to_a_deterministic_manifest() -> unit {
+fn links_used_standard_library_functions_to_a_deterministic_manifest() -> () {
     let result = lowered_fixture("native_calls");
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
@@ -625,7 +625,7 @@ fn links_used_standard_library_functions_to_a_deterministic_manifest() -> unit {
 
 #[test]
 #[ignore("loads the Go 1.26 slices package")]
-fn links_and_deduplicates_concrete_standard_library_generic_instances() -> unit {
+fn links_and_deduplicates_concrete_standard_library_generic_instances() -> () {
     let result = lowered_fixture("native_generics");
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
@@ -654,7 +654,7 @@ fn links_and_deduplicates_concrete_standard_library_generic_instances() -> unit 
 }
 
 #[test]
-fn supports_native_opaque_pointer_results() -> unit {
+fn supports_native_opaque_pointer_results() -> () {
     let result = lowered_fixture("native_unsupported");
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
@@ -674,7 +674,7 @@ fn supports_native_opaque_pointer_results() -> unit {
 }
 
 #[test]
-fn registers_referenced_native_globals() -> unit {
+fn registers_referenced_native_globals() -> () {
     let result = lowered_fixture("native_globals");
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);

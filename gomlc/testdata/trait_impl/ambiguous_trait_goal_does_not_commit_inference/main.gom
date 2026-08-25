@@ -1,20 +1,20 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 impl Mark for i32 {
-    fn mark(self: i32) -> unit { () }
+    fn mark(self: i32) -> () { () }
 }
 
 impl Mark for string {
-    fn mark(self: string) -> unit { () }
+    fn mark(self: string) -> () { () }
 }
 
-fn require_mark[T: Mark](value: T) -> unit {
+fn require_mark[T: Mark](value: T) -> () {
     ()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let consume = |value| require_mark(value);
     ()
 }

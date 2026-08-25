@@ -1,15 +1,15 @@
 trait Ready {
-    fn ready(self: Self) -> unit;
+    fn ready(self: Self) -> ();
 }
 
 trait Service[T] where T: Ready {
-    fn serve(self: Self, arg1: T) -> unit;
+    fn serve(self: Self, arg1: T) -> ();
 }
 
-fn require_ready[T: Ready](value: T) -> unit { () }
+fn require_ready[T: Ready](value: T) -> () { () }
 
-fn consume[T, S: Service[T]](value: T) -> unit {
+fn consume[T, S: Service[T]](value: T) -> () {
     require_ready(value)
 }
 
-fn main() -> unit { () }
+fn main() -> () { () }

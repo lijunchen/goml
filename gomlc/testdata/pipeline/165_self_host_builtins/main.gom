@@ -1,7 +1,7 @@
 use std::fs;
 use std::io;
 
-fn show_unit(result: Result[unit, string]) -> string {
+fn show_unit(result: Result[(), string]) -> string {
     match result {
         Result::Ok(_) => "ok",
         Result::Err(err) => "err " + err,
@@ -15,7 +15,7 @@ fn show_string(result: Result[string, string]) -> string {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     io::println(string_byte_slice("a你好z", 1, 7));
     io::eprint("");
     io::eprintln("");

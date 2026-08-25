@@ -59,7 +59,7 @@ fn unwrap_float64(value: Result[f64, string]) -> f64 {
     }
 }
 
-fn assert_text() -> unit {
+fn assert_text() -> () {
     testing::assert_eq(text::trim(" \tvalue\r\n"), "value");
     testing::assert_eq(text::trim_start("  left"), "left");
     testing::assert_eq(text::trim_end("right  "), "right");
@@ -97,7 +97,7 @@ fn assert_text() -> unit {
     testing::assert(!text::eq_ignore_ascii_case("short", "longer"))
 }
 
-fn assert_ascii() -> unit {
+fn assert_ascii() -> () {
     testing::assert(ascii::is_ascii(127));
     testing::assert(!ascii::is_ascii(128));
     testing::assert(ascii::is_alphabetic(b'A'));
@@ -132,7 +132,7 @@ fn assert_ascii() -> unit {
     testing::assert_eq(ascii::escape_default(255), "\\xff")
 }
 
-fn assert_num() -> unit {
+fn assert_num() -> () {
     testing::assert_eq(unwrap_int(num::parse_int("-42")), -42);
     testing::assert_eq(unwrap_int(num::parse_int_radix("ff", 16)), 255);
     testing::assert_eq(unwrap_int(num::parse_int_radix("0xff", 0)), 255);
@@ -151,7 +151,7 @@ fn assert_num() -> unit {
     testing::assert_eq(unwrap_float64(num::parse_float64("1e-400")), 0.0)
 }
 
-fn assert_option_result() -> unit {
+fn assert_option_result() -> () {
     let some: Option[isize] = Option::Some(3);
     let none: Option[isize] = Option::None;
     testing::assert(some.is_some());
@@ -180,7 +180,7 @@ fn assert_option_result() -> unit {
     testing::assert_eq(ok.and_then(|value: isize| Result::Ok(value * 3)).unwrap_or(0), 15)
 }
 
-fn assert_iterators() -> unit {
+fn assert_iterators() -> () {
     let values = Vec::from_array([10, 20, 30, 40]);
     let empty_values: FnIterator[isize] = iter::empty();
     testing::assert(Iterator::next(empty_values).is_none());
@@ -294,7 +294,7 @@ fn assert_iterators() -> unit {
     testing::assert_eq(while_mapped.get(1), 2)
 }
 
-fn assert_collections() -> unit {
+fn assert_collections() -> () {
     let values = Vec::from_array([4, 1, 3, 2, 2]);
     collections::stable_sort_by(values, compare_int);
     testing::assert_eq(values.get(0), 1);
@@ -313,7 +313,7 @@ fn assert_collections() -> unit {
     testing::assert_eq(values.get(3), 4)
 }
 
-fn assert_comparison() -> unit {
+fn assert_comparison() -> () {
     testing::assert(cmp::compare(1, 2).is_lt());
     testing::assert(cmp::compare("same", "same").is_eq());
     testing::assert(cmp::compare(true, false).is_gt());
@@ -342,7 +342,7 @@ fn assert_comparison() -> unit {
     testing::assert_eq(values[4], 1)
 }
 
-fn assert_time() -> unit {
+fn assert_time() -> () {
     let one_millisecond = time::Duration::from_milliseconds(1);
     testing::assert_eq(one_millisecond.as_microseconds(), 1000);
     testing::assert_eq(one_millisecond.add(one_millisecond).as_milliseconds(), 2);
@@ -356,7 +356,7 @@ fn assert_time() -> unit {
     testing::assert(time::SystemTime::now().unix_seconds() > 0)
 }
 
-fn main() -> unit {
+fn main() -> () {
     assert_text();
     assert_ascii();
     assert_num();

@@ -10,7 +10,7 @@ fn corpus_skip_directory(name: string) -> bool {
         || name.starts_with(".")
 }
 
-fn collect_corpus(directory: string, result: Vec[string]) -> unit {
+fn collect_corpus(directory: string, result: Vec[string]) -> () {
     let names = match fs::read_dir(directory) {
         Ok(value) => value,
         Err(error) => {
@@ -33,14 +33,14 @@ fn collect_corpus(directory: string, result: Vec[string]) -> unit {
 }
 
 #[test]
-fn formats_repository_corpus_without_semantic_changes() -> unit {
+fn formats_repository_corpus_without_semantic_changes() -> () {
     let root = repository_root();
     let files: Vec[string] = Vec::new();
     collect_corpus(path::join(root, "gomlc"), files);
     collect_corpus(path::join(root, "goml"), files);
     collect_corpus(path::join(root, "lib"), files);
     testing::assert(files.len() >= 100);
-    let completed: Result[unit, Vec[task::IndexedError[string]]] = task::for_each_concurrent(
+    let completed: Result[(), Vec[task::IndexedError[string]]] = task::for_each_concurrent(
         8,
         files,
         |_: task::CancelToken, file: string| {

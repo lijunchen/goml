@@ -1,14 +1,14 @@
 trait C {
-    fn call(self: Self) -> unit;
+    fn call(self: Self) -> ();
 }
 
-impl C for () -> unit {
-    fn call(self: () -> unit) -> unit {
+impl C for () -> () {
+    fn call(self: () -> ()) -> () {
         self()
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let c: dyn C = (|| ()) as dyn C;
     go c;
     ()

@@ -18,7 +18,7 @@ fn unwrap_string(value: Result[string, string]) -> string {
     }
 }
 
-fn unwrap_unit(value: Result[unit, string]) -> unit {
+fn unwrap_unit(value: Result[(), string]) -> () {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => testing::fail(error),
@@ -80,35 +80,35 @@ fn binary_data() -> bytes::Bytes {
     bytes::Bytes::from_vec(values)
 }
 
-fn assert_parent(path_value: string, expected: string) -> unit {
+fn assert_parent(path_value: string, expected: string) -> () {
     match path::parent(path_value) {
         Option::Some(value) => testing::assert_eq(value, expected),
         Option::None => testing::fail("missing parent"),
     }
 }
 
-fn assert_file_name(path_value: string, expected: string) -> unit {
+fn assert_file_name(path_value: string, expected: string) -> () {
     match path::file_name(path_value) {
         Option::Some(value) => testing::assert_eq(value, expected),
         Option::None => testing::fail("missing file name"),
     }
 }
 
-fn assert_extension(path_value: string, expected: string) -> unit {
+fn assert_extension(path_value: string, expected: string) -> () {
     match path::extension(path_value) {
         Option::Some(value) => testing::assert_eq(value, expected),
         Option::None => testing::fail("missing extension"),
     }
 }
 
-fn assert_file_stem(path_value: string, expected: string) -> unit {
+fn assert_file_stem(path_value: string, expected: string) -> () {
     match path::file_stem(path_value) {
         Option::Some(value) => testing::assert_eq(value, expected),
         Option::None => testing::fail("missing file stem"),
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let cwd = unwrap_string(env::current_dir());
     let executable = unwrap_string(env::current_exe());
     testing::assert(path::is_absolute(cwd));

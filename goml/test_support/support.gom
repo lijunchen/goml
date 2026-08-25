@@ -69,14 +69,14 @@ pub fn workspace(name: string) -> string {
     }
 }
 
-pub fn create_dir(value: string) -> unit {
+pub fn create_dir(value: string) -> () {
     match fs::create_dir_all(value) {
         Ok(()) => (),
         Err(message) => testing::fail(message),
     }
 }
 
-pub fn write_file(file: string, content: string) -> unit {
+pub fn write_file(file: string, content: string) -> () {
     match path::parent(file) {
         Some(parent) => create_dir(parent),
         None => (),
@@ -115,23 +115,23 @@ pub fn stderr(output: process::Output) -> string {
     bytes_text(process::Output::stderr(output))
 }
 
-pub fn assert_success(output: process::Output) -> unit {
+pub fn assert_success(output: process::Output) -> () {
     if process::ExitStatus::success(process::Output::status(output)) {} else {
         testing::fail("command failed\nstdout:\n" + stdout(output) + "\nstderr:\n" + stderr(output))
     }
 }
 
-pub fn assert_failure(output: process::Output) -> unit {
+pub fn assert_failure(output: process::Output) -> () {
     testing::assert(!process::ExitStatus::success(process::Output::status(output)))
 }
 
-pub fn assert_contains(value: string, expected: string) -> unit {
+pub fn assert_contains(value: string, expected: string) -> () {
     if value.contains(expected) {} else {
         testing::fail("expected text to contain:\n" + expected + "\nactual:\n" + value)
     }
 }
 
-pub fn assert_not_contains(value: string, unexpected: string) -> unit {
+pub fn assert_not_contains(value: string, unexpected: string) -> () {
     if value.contains(unexpected) {
         testing::fail("expected text not to contain:\n" + unexpected + "\nactual:\n" + value)
     } else {}
@@ -175,10 +175,10 @@ pub fn project_command(command: string, target: string, extra: Vec[string], dire
     run(args, command_directory)
 }
 
-pub fn write_basic_project(root: string, module_path: string) -> unit {
+pub fn write_basic_project(root: string, module_path: string) -> () {
     write_file(path::join(root, "goml.toml"), "[module]\npath = \"" + module_path + "\"\n");
     write_file(
         path::join(root, "main.gom"),
-        "package main;\n\nfn main() -> unit {\n    println(\"hello\")\n}\n",
+        "package main;\n\nfn main() -> () {\n    println(\"hello\")\n}\n",
     )
 }

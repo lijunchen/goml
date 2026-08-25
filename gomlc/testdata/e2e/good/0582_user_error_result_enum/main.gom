@@ -6,7 +6,7 @@ fn fail() -> Result[i32, UserError] {
     Result::Err(UserError { value: 7 })
 }
 
-fn main() -> unit {
+fn main() -> () {
     match fail() {
         Result::Ok(value) => println(value),
         Result::Err(err) => println(err.value),

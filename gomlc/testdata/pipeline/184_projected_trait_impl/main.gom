@@ -31,7 +31,7 @@ fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item {
     identity(value)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let direct: i32 = (Value { value: 41 }).pick();
     println(direct);
     println(copy(Value { value: 42 }));

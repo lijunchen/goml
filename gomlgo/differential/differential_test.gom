@@ -23,7 +23,7 @@ fn expect_response(result: Result[OracleResponse, string]) -> OracleResponse {
 }
 
 #[test]
-fn decodes_oracle_protocol() -> unit {
+fn decodes_oracle_protocol() -> () {
     let response = expect_response(
         decode_response(
             "{\"mode\":\"scan\",\"ok\":true,\"go_version\":\"go1.26.5\",\"goroot\":\"/usr/lib/go-1.26\",\"tokens\":[{\"kind\":\"IDENT\",\"literal\":\"π\",\"start\":0,\"end\":2,\"synthetic\":false}],\"ast\":{},\"diagnostics\":[]}",
@@ -40,7 +40,7 @@ fn decodes_oracle_protocol() -> unit {
 }
 
 #[test]
-fn invokes_pinned_oracle() -> unit {
+fn invokes_pinned_oracle() -> () {
     let response = expect_response(run_oracle("scan", bytes::Bytes::from_string("package main\n")));
     testing::assert(response.ok);
     testing::assert_eq(response.go_version, "go1.26.5");
@@ -57,7 +57,7 @@ fn invokes_pinned_oracle() -> unit {
 }
 
 #[test]
-fn invalid_input_returns_partial_ast_and_diagnostics() -> unit {
+fn invalid_input_returns_partial_ast_and_diagnostics() -> () {
     let response = expect_response(
         run_oracle("parse-file", bytes::Bytes::from_string("package main\nfunc main( {\n")),
     );

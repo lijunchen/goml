@@ -2,7 +2,7 @@ package resources;
 
 use std::testing;
 
-fn assert_strings(actual: Vec[string], expected: Vec[string]) -> unit {
+fn assert_strings(actual: Vec[string], expected: Vec[string]) -> () {
     testing::assert_eq(actual.len(), expected.len());
     for index in 0..actual.len() {
         testing::assert_eq(actual[index], expected[index])
@@ -30,7 +30,7 @@ fn required_runtime_abi(value: Option[RuntimeAbiSpec]) -> RuntimeAbiSpec {
 }
 
 #[test]
-fn loads_builtin_and_prelude_layers_independently() -> unit {
+fn loads_builtin_and_prelude_layers_independently() -> () {
     match builtin_layer_sources() {
         Ok(values) => {
             testing::assert_eq(values.len(), 8);
@@ -55,7 +55,7 @@ fn loads_builtin_and_prelude_layers_independently() -> unit {
 }
 
 #[test]
-fn exposes_explicit_prelude_builtin_surface() -> unit {
+fn exposes_explicit_prelude_builtin_surface() -> () {
     let names = prelude_builtin_export_names();
     testing::assert(names.contains("Option"));
     testing::assert(names.contains("Iterator"));
@@ -65,7 +65,7 @@ fn exposes_explicit_prelude_builtin_surface() -> unit {
 }
 
 #[test]
-fn keeps_runtime_bridges_in_the_builtin_layer() -> unit {
+fn keeps_runtime_bridges_in_the_builtin_layer() -> () {
     let found_standard_runtime = Ref::new(false);
     for source in match builtin_layer_sources() {
         Ok(values) => values,
@@ -100,7 +100,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> unit {
 }
 
 #[test]
-fn loads_multifile_standard_package() -> unit {
+fn loads_multifile_standard_package() -> () {
     match standard_sources("std::collections") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 9),
         Ok(None) => testing::fail("expected standard package"),
@@ -119,7 +119,7 @@ fn loads_multifile_standard_package() -> unit {
 }
 
 #[test]
-fn ignores_unknown_standard_package() -> unit {
+fn ignores_unknown_standard_package() -> () {
     match standard_sources("example::unknown") {
         Ok(value) => testing::assert(value.is_none()),
         Err(error) => testing::fail(error),
@@ -127,7 +127,7 @@ fn ignores_unknown_standard_package() -> unit {
 }
 
 #[test]
-fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog() -> unit {
+fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog() -> () {
     let fs = match standard_package_spec("std::fs") {
         Some(value) => value,
         None => {
@@ -241,7 +241,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
 }
 
 #[test]
-fn callable_abi_catalog_round_trips_keys_and_ids() -> unit {
+fn callable_abi_catalog_round_trips_keys_and_ids() -> () {
     for spec in intrinsic_abi_specs() {
         testing::assert_eq(
             required_abi(intrinsic_abi_by_key(spec.key)).artifact_id,

@@ -22,13 +22,13 @@ impl Display for Point {
     }
 }
 
-fn render(value: dyn Display) -> unit {
+fn render(value: dyn Display) -> () {
     println(value.show("value="));
     println(value.name());
     println(Display::show(value, "again="));
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value: dyn Display = Point { value: 7 } as dyn Display;
     render(value);
 }

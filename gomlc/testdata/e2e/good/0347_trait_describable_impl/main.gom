@@ -19,7 +19,7 @@ impl Sizable for Item {
     fn size(self: Item) -> i32 { self.weight }
 }
 
-fn print_info[T: Describable + Sizable](item: T) -> unit {
+fn print_info[T: Describable + Sizable](item: T) -> () {
     println(Describable::describe(item) + " (size: " + Sizable::size(item).to_string() + ")");
 }
 

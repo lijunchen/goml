@@ -1,24 +1,24 @@
 trait Ready {
-    fn ready(self: Self) -> unit;
+    fn ready(self: Self) -> ();
 }
 
 trait Selected {
-    fn selected(self: Self) -> unit;
+    fn selected(self: Self) -> ();
 }
 
 struct Wrap[T] { value: T }
 
 impl Ready for Vec[i32] {
-    fn ready(self: Vec[i32]) -> unit { () }
+    fn ready(self: Vec[i32]) -> () { () }
 }
 
 impl[T] Selected for Wrap[T] where Vec[T]: Ready {
-    fn selected(self: Wrap[T]) -> unit { () }
+    fn selected(self: Wrap[T]) -> () { () }
 }
 
-fn require[T: Selected](value: T) -> unit { () }
+fn require[T: Selected](value: T) -> () { () }
 
-fn main() -> unit {
+fn main() -> () {
     let value: i32 = 7;
     require(Wrap { value })
 }

@@ -17,7 +17,7 @@ fn write_fmt_project(root: string) -> () {
         path::join(root, "goml.toml"),
         "[module]\npath = \"fmt_test\"\n\n[build]\ntarget-dir = \"build/output\"\n",
     );
-    test_support::write_file(path::join(root, "main.gom"), "package main;\nfn main( )->unit{()}\n");
+    test_support::write_file(path::join(root, "main.gom"), "package main;\nfn main( )->(){()}\n");
 }
 
 #[test]
@@ -27,7 +27,7 @@ fn fmt_formats_module_from_nested_directory() -> () {
     let source = path::join(path::join(root, "src"), "lib.gom");
     test_support::write_file(source, "package lib;\npub fn value( )->isize{1}\n");
     let test_source = path::join(root, "main_test.gom");
-    test_support::write_file(test_source, "package main;\nfn helper( )->unit{()}\n");
+    test_support::write_file(test_source, "package main;\nfn helper( )->(){()}\n");
     let ignored = Vec::from_array(
         [
             path::join(path::join(root, "build/output"), "invalid.gom"),
@@ -47,7 +47,7 @@ fn fmt_formats_module_from_nested_directory() -> () {
     let external_test_source = path::join(path::join(root, "tests"), "main.gom");
     test_support::write_file(
         external_test_source,
-        "package tests;\nfn external_helper( )->unit{()}\n",
+        "package tests;\nfn external_helper( )->(){()}\n",
     );
     let output = test_support::run(Vec::from_array(["fmt"]), path::join(root, "src"));
     test_support::assert_success(output);

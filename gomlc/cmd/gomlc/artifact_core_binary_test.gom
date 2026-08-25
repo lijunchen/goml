@@ -54,7 +54,7 @@ fn binary_core_fixture() -> artifact::ArtifactCoreUnit {
 }
 
 #[test]
-fn binary_core_artifact_is_deterministic_and_independent() -> unit {
+fn binary_core_artifact_is_deterministic_and_independent() -> () {
     let first = match core_codec::encode_binary(binary_core_fixture()) {
         Ok(value) => value,
         Err(error) => {

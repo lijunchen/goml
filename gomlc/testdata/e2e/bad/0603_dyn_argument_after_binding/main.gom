@@ -1,9 +1,9 @@
 trait Consumer[T] {
     type Error;
 
-    fn consume(self: Self, value: T) -> Result[unit, Self::Error];
+    fn consume(self: Self, value: T) -> Result[(), Self::Error];
 }
 
-fn consume(value: dyn Consumer[Error = string, isize]) -> unit {}
+fn consume(value: dyn Consumer[Error = string, isize]) -> () {}
 
-fn main() -> unit {}
+fn main() -> () {}

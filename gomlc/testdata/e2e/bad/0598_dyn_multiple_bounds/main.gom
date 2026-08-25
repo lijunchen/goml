@@ -3,11 +3,11 @@ trait Read {
 }
 
 trait Close {
-    fn close(self: Self) -> unit;
+    fn close(self: Self) -> ();
 }
 
 fn consume(value: dyn Read + Close) -> isize {
     value.read()
 }
 
-fn main() -> unit {}
+fn main() -> () {}

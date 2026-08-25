@@ -48,7 +48,7 @@ fn read_directory(directory: string) -> Vec[string] {
     }
 }
 
-pub fn collect_main_sources(directory: string, result: Vec[string]) -> unit {
+pub fn collect_main_sources(directory: string, result: Vec[string]) -> () {
     for name in read_directory(directory) {
         let entry = path::join(directory, name);
         if fs::is_dir(entry) {
@@ -92,7 +92,7 @@ fn bytes_text(value: bytes::Bytes) -> string {
     }
 }
 
-fn assert_bytes(actual: bytes::Bytes, expected: Vec[u8]) -> unit {
+fn assert_bytes(actual: bytes::Bytes, expected: Vec[u8]) -> () {
     let values = actual.to_vec();
     testing::assert(values.len() == expected.len());
     for index in 0..expected.len() {
@@ -100,14 +100,14 @@ fn assert_bytes(actual: bytes::Bytes, expected: Vec[u8]) -> unit {
     }
 }
 
-fn create_directory(directory: string) -> unit {
+fn create_directory(directory: string) -> () {
     match fs::create_dir_all(directory) {
         Ok(()) => (),
         Err(message) => testing::fail("failed to create directory " + directory + ": " + message),
     }
 }
 
-fn copy_directory(source: string, target: string) -> unit {
+fn copy_directory(source: string, target: string) -> () {
     create_directory(target);
     for name in read_directory(source) {
         let source_entry = path::join(source, name);
@@ -226,7 +226,7 @@ fn update_expected() -> bool {
     env::var("UPDATE_EXPECT").is_some()
 }
 
-fn assert_text(actual: string, expected_path: string, source: string) -> unit {
+fn assert_text(actual: string, expected_path: string, source: string) -> () {
     if update_expected() {
         match fs::write_file(expected_path, actual) {
             Ok(()) => (),
@@ -242,7 +242,7 @@ fn assert_text(actual: string, expected_path: string, source: string) -> unit {
     }
 }
 
-pub fn assert_e2e_suite(kind: string, shard: isize, shard_count: isize) -> unit {
+pub fn assert_e2e_suite(kind: string, shard: isize, shard_count: isize) -> () {
     let directory = path::join(path::join(compiler_tests_root(), "e2e"), kind);
     let sources = Vec::new();
     collect_main_sources(directory, sources);
@@ -286,7 +286,7 @@ pub fn assert_e2e_suite(kind: string, shard: isize, shard_count: isize) -> unit 
     }
 }
 
-pub fn assert_e2e_counts() -> unit {
+pub fn assert_e2e_counts() -> () {
     let good = Vec::new();
     let bad = Vec::new();
     let root = path::join(compiler_tests_root(), "e2e");
@@ -296,7 +296,7 @@ pub fn assert_e2e_counts() -> unit {
     testing::assert_eq(bad.len(), 80)
 }
 
-pub fn assert_diagnostic_suite(name: string, expected_count: isize) -> unit {
+pub fn assert_diagnostic_suite(name: string, expected_count: isize) -> () {
     let sources = collect_diagnostic_sources(path::join(compiler_tests_root(), name));
     testing::assert_eq(sources.len(), expected_count);
     let compiler = compiler_driver::source_compiler_without_standard();
@@ -334,7 +334,7 @@ fn diagnostic_kind(value: string) -> string {
     }
 }
 
-fn collect_diagnostic_kinds(name: string, result: collections::HashSet[string]) -> unit {
+fn collect_diagnostic_kinds(name: string, result: collections::HashSet[string]) -> () {
     for source in collect_diagnostic_sources(path::join(compiler_tests_root(), name)) {
         let snapshot = source + ".diag";
         if fs::is_file(snapshot) {
@@ -347,7 +347,7 @@ fn collect_diagnostic_kinds(name: string, result: collections::HashSet[string]) 
     }
 }
 
-pub fn assert_distinct_type_diagnostic_count(minimum: isize) -> unit {
+pub fn assert_distinct_type_diagnostic_count(minimum: isize) -> () {
     let kinds: collections::HashSet[string] = collections::HashSet::new();
     collect_diagnostic_kinds("typer", kinds);
     collect_diagnostic_kinds("trait_impl", kinds);
@@ -380,7 +380,7 @@ fn bootstrap_gomlc_binary() -> string {
     }
 }
 
-fn assert_command_success(output: process::Output, label: string) -> unit {
+fn assert_command_success(output: process::Output, label: string) -> () {
     if process::ExitStatus::success(process::Output::status(output)) {} else {
         testing::fail(
             label + " failed\nstdout:\n" + bytes_text(process::Output::stdout(output))
@@ -420,11 +420,11 @@ fn module_projects() -> Vec[string] {
     result
 }
 
-pub fn assert_module_count() -> unit {
+pub fn assert_module_count() -> () {
     testing::assert_eq(module_projects().len(), 67)
 }
 
-pub fn assert_module_shard(shard: isize, shard_count: isize) -> unit {
+pub fn assert_module_shard(shard: isize, shard_count: isize) -> () {
     let index = Ref::new(0);
     for source_project in module_projects() {
         let current = index.get();
@@ -473,7 +473,7 @@ fn module_diagnostic_projects() -> Vec[string] {
     result
 }
 
-fn assert_module_diagnostic(source_project: string) -> unit {
+fn assert_module_diagnostic(source_project: string) -> () {
     let name = match path::file_name(source_project) {
         Some(value) => value,
         None => "module-diagnostic",
@@ -511,7 +511,7 @@ fn assert_module_diagnostic(source_project: string) -> unit {
     }
 }
 
-pub fn assert_module_diagnostics() -> unit {
+pub fn assert_module_diagnostics() -> () {
     let projects = module_diagnostic_projects();
     testing::assert_eq(projects.len(), 40);
     for source_project in projects {
@@ -519,7 +519,7 @@ pub fn assert_module_diagnostics() -> unit {
     }
 }
 
-pub fn assert_standard_binary_stdio() -> unit {
+pub fn assert_standard_binary_stdio() -> () {
     let project = path::join(repository_root(), "gomlc/_artifact/test-work/compiler/stdio");
     create_directory(project);
     match fs::write_file(path::join(project, "goml.toml"), "[module]\npath = \"stdio_test\"\n") {
@@ -528,7 +528,7 @@ pub fn assert_standard_binary_stdio() -> unit {
     };
     match fs::write_file(
         path::join(project, "main.gom"),
-        "package main;\n\nuse std::bytes;\nuse std::env;\nuse std::io;\nuse std::process;\n\nfn main() -> unit {\n    match env::var(\"GOML_EMPTY\") {\n        Option::Some(value) => if value != \"\" { process::exit(1) } else { () },\n        Option::None => process::exit(1),\n    };\n    match env::var(\"GOML_MISSING_ENVIRONMENT_VALUE\") {\n        Option::Some(_) => process::exit(1),\n        Option::None => (),\n    };\n    match io::read_stdin() {\n        Result::Ok(data) => {\n            match io::write_stdout(data) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            };\n            match io::write_stderr(bytes::Bytes::from_string(\"binary stderr\")) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            }\n        },\n        Result::Err(_) => process::exit(1),\n    }\n}\n",
+        "package main;\n\nuse std::bytes;\nuse std::env;\nuse std::io;\nuse std::process;\n\nfn main() -> () {\n    match env::var(\"GOML_EMPTY\") {\n        Option::Some(value) => if value != \"\" { process::exit(1) } else { () },\n        Option::None => process::exit(1),\n    };\n    match env::var(\"GOML_MISSING_ENVIRONMENT_VALUE\") {\n        Option::Some(_) => process::exit(1),\n        Option::None => (),\n    };\n    match io::read_stdin() {\n        Result::Ok(data) => {\n            match io::write_stdout(data) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            };\n            match io::write_stderr(bytes::Bytes::from_string(\"binary stderr\")) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            }\n        },\n        Result::Err(_) => process::exit(1),\n    }\n}\n",
     ) {
         Ok(()) => (),
         Err(message) => testing::fail(message),
@@ -560,7 +560,7 @@ pub fn assert_standard_binary_stdio() -> unit {
     testing::assert_eq(bytes_text(process::Output::stderr(executed)), "binary stderr")
 }
 
-fn collect_crasher_sources(directory: string, extension: string, result: Vec[string]) -> unit {
+fn collect_crasher_sources(directory: string, extension: string, result: Vec[string]) -> () {
     for name in read_directory(directory) {
         let entry = path::join(directory, name);
         if fs::is_dir(entry) {
@@ -577,12 +577,12 @@ fn crasher_sources(extension: string) -> Vec[string] {
     result
 }
 
-pub fn assert_crasher_counts() -> unit {
+pub fn assert_crasher_counts() -> () {
     testing::assert_eq(crasher_sources(".diag").len(), 45);
     testing::assert_eq(crasher_sources(".out").len(), 57)
 }
 
-pub fn assert_crasher_diagnostic_shard(shard: isize, shard_count: isize) -> unit {
+pub fn assert_crasher_diagnostic_shard(shard: isize, shard_count: isize) -> () {
     let compiler = compiler_driver::source_compiler_without_standard();
     let index = Ref::new(0);
     for source_path in crasher_sources(".diag") {
@@ -602,7 +602,7 @@ pub fn assert_crasher_diagnostic_shard(shard: isize, shard_count: isize) -> unit
     }
 }
 
-pub fn assert_crasher_runtime_shard(shard: isize, shard_count: isize) -> unit {
+pub fn assert_crasher_runtime_shard(shard: isize, shard_count: isize) -> () {
     let compiler = compiler_driver::source_compiler_without_standard();
     let index = Ref::new(0);
     for source_path in crasher_sources(".out") {
@@ -637,7 +637,7 @@ pub fn assert_crasher_runtime_shard(shard: isize, shard_count: isize) -> unit {
     }
 }
 
-pub fn assert_package_crasher() -> unit {
+pub fn assert_package_crasher() -> () {
     let project = path::join(compiler_tests_root(), "crashers/local_std_host_extern_shadow");
     let target = path::join(
         repository_root(),

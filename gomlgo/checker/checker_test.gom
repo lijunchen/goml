@@ -19,7 +19,7 @@ fn check_source(source: string) -> CheckResult {
 }
 
 #[test]
-fn fake_import_c_is_implicitly_used() -> unit {
+fn fake_import_c_is_implicitly_used() -> () {
     let config = default_config();
     config.fake_import_c = true;
     let result = check(
@@ -47,7 +47,7 @@ fn expect_oracle(value: Result[typecheck_diff::CheckResponse, string]) -> typech
 }
 
 #[test]
-fn checks_explicit_package_variable_and_matches_oracle_facts() -> unit {
+fn checks_explicit_package_variable_and_matches_oracle_facts() -> () {
     let source = "package p\nvar X int\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -100,7 +100,7 @@ fn checks_explicit_package_variable_and_matches_oracle_facts() -> unit {
 }
 
 #[test]
-fn extracts_exported_api_without_checking_initializers_or_bodies() -> unit {
+fn extracts_exported_api_without_checking_initializers_or_bodies() -> () {
     let config = default_config();
     config.ignore_func_bodies = true;
     config.exported_api_only = true;
@@ -176,7 +176,7 @@ fn oracle_object_exact(response: typecheck_diff::CheckResponse, name: string) ->
 }
 
 #[test]
-fn checks_multiple_files_in_one_package() -> unit {
+fn checks_multiple_files_in_one_package() -> () {
     let result = check(
         default_config(),
         PackageInput {
@@ -197,7 +197,7 @@ fn checks_multiple_files_in_one_package() -> unit {
 }
 
 #[test]
-fn accepts_multiple_init_functions_outside_package_scope() -> unit {
+fn accepts_multiple_init_functions_outside_package_scope() -> () {
     let source = "package p\nvar Count int\nfunc init() { Count++ }\nfunc init() { Count++ }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -215,7 +215,7 @@ fn accepts_multiple_init_functions_outside_package_scope() -> unit {
 }
 
 #[test]
-fn rejects_type_parameters_and_arguments_on_main() -> unit {
+fn rejects_type_parameters_and_arguments_on_main() -> () {
     let source = "package main\nfunc main[T any](value T) int { return 0 }\n";
     let result = check(
         default_config(),
@@ -235,7 +235,7 @@ fn rejects_type_parameters_and_arguments_on_main() -> unit {
 }
 
 #[test]
-fn formats_grouped_and_separate_type_parameter_constraints() -> unit {
+fn formats_grouped_and_separate_type_parameter_constraints() -> () {
     let source = "package p\ntype Left interface { ~int }\ntype Right interface { ~int }\nfunc Grouped[A, B any]() {}\nfunc Separate[A any, B any]() {}\nfunc Distinct[A Left, B Right]() {}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -263,7 +263,7 @@ fn formats_grouped_and_separate_type_parameter_constraints() -> unit {
 }
 
 #[test]
-fn checks_constant_expressions_and_initialized_variables() -> unit {
+fn checks_constant_expressions_and_initialized_variables() -> () {
     let source = "package p\nconst A = (1 << 100) + 3\nconst B = A + 2\nconst C float32 = 0.1\nvar X = 7\nvar Y int8 = 127\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -295,7 +295,7 @@ fn checks_constant_expressions_and_initialized_variables() -> unit {
 }
 
 #[test]
-fn masks_bitwise_complement_for_typed_unsigned_constants() -> unit {
+fn masks_bitwise_complement_for_typed_unsigned_constants() -> () {
     let source = "package p\nconst Byte = ^uint8(0)\nconst Word = ^uintptr(0)\nconst PointerSize = 4 << (Word >> 63)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -321,7 +321,7 @@ fn masks_bitwise_complement_for_typed_unsigned_constants() -> unit {
 }
 
 #[test]
-fn preserves_nonconstant_shift_operands_through_conversions() -> unit {
+fn preserves_nonconstant_shift_operands_through_conversions() -> () {
     let source = "package p\nfunc High(value uint16) byte { return byte(value >> 8) }\nfunc Dynamic(value uint64, amount uint) uint64 { return value << amount }\nfunc Mask(value uint32, left int, right int) uint32 { return value & ((1 << (right - left + 1)) - 1) }\nfunc Untyped(left uint, right uint) int { return (1 << left) + (2 << right) }\nfunc Compound(value uint64, amount uint) uint64 { value <<= amount; value &^= 1; return value }\nfunc Declared(amount uint) uint { var mask uint = (1 << amount) - 1; return mask }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -337,7 +337,7 @@ fn preserves_nonconstant_shift_operands_through_conversions() -> unit {
 }
 
 #[test]
-fn replaces_provisional_typed_constant_values() -> unit {
+fn replaces_provisional_typed_constant_values() -> () {
     let source = "package p\ntype ctrl uint8\nconst (\n    empty ctrl = 0b10000000\n    bits = uint64(empty)\n)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -359,7 +359,7 @@ fn replaces_provisional_typed_constant_values() -> unit {
 }
 
 #[test]
-fn checks_elided_nested_composite_literal_types() -> unit {
+fn checks_elided_nested_composite_literal_types() -> () {
     let source = "package p\ntype Point struct { X int; Y int }\nvar Values = []Point{{X: 1, Y: 2}}\nvar Pointers = []*Point{{3, 4}}\nvar Nested = map[string][]Point{\"p\": {{5, 6}}}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -375,7 +375,7 @@ fn checks_elided_nested_composite_literal_types() -> unit {
 }
 
 #[test]
-fn reports_constant_overflow_and_unrepresentable_initializers() -> unit {
+fn reports_constant_overflow_and_unrepresentable_initializers() -> () {
     let shifted = check_source("package p\nconst X = 1 << 512\n");
     testing::assert(shifted.diagnostics.len() > 0);
     testing::assert(shifted.diagnostics[0].message.contains("overflow"));
@@ -387,7 +387,7 @@ fn reports_constant_overflow_and_unrepresentable_initializers() -> unit {
 }
 
 #[test]
-fn resolves_forward_declaration_dependencies_across_files() -> unit {
+fn resolves_forward_declaration_dependencies_across_files() -> () {
     let result = check(
         default_config(),
         PackageInput {
@@ -415,7 +415,7 @@ fn resolves_forward_declaration_dependencies_across_files() -> unit {
 }
 
 #[test]
-fn reports_initialization_cycles_recoverably() -> unit {
+fn reports_initialization_cycles_recoverably() -> () {
     let result = check_source("package p\nconst A = B\nconst B = A\n");
     testing::assert(result.diagnostics.len() > 0);
     testing::assert(result.diagnostics[0].message.contains("initialization cycle"));
@@ -423,7 +423,7 @@ fn reports_initialization_cycles_recoverably() -> unit {
 }
 
 #[test]
-fn omits_invalid_operands_from_partial_type_info() -> unit {
+fn omits_invalid_operands_from_partial_type_info() -> () {
     let result = check_source("package p\nfunc f0() {}\nfunc f() { close(f0()) }\n");
     testing::assert_eq(result.diagnostics.is_empty(), false);
     let mut invalid_facts = 0;
@@ -436,7 +436,7 @@ fn omits_invalid_operands_from_partial_type_info() -> unit {
 }
 
 #[test]
-fn reports_initialization_cycles_through_static_function_and_method_bodies() -> unit {
+fn reports_initialization_cycles_through_static_function_and_method_bodies() -> () {
     let source = "package p\ntype Direct struct{}\nfunc (Direct) Value() int { return DirectY }\nvar DirectX = Direct{}\nvar DirectY = DirectX.Value()\nfunc Function() int { return FunctionY }\nvar FunctionY = Function()\ntype Dynamic struct{}\nfunc (Dynamic) Value() int { return DynamicY }\nvar DynamicX interface { Value() int } = Dynamic{}\nvar DynamicY = DynamicX.Value()\n";
     let result = check_source(source);
     let mut cycles = 0;
@@ -458,7 +458,7 @@ fn reports_initialization_cycles_through_static_function_and_method_bodies() -> 
 }
 
 #[test]
-fn checks_named_alias_and_recursive_slice_types() -> unit {
+fn checks_named_alias_and_recursive_slice_types() -> () {
     let source = "package p\ntype Count int\ntype Alias = Count\ntype List []List\nvar C Count\nvar A Alias\nvar L List\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -516,7 +516,7 @@ fn checks_named_alias_and_recursive_slice_types() -> unit {
 }
 
 #[test]
-fn rejects_direct_named_and_array_type_cycles() -> unit {
+fn rejects_direct_named_and_array_type_cycles() -> () {
     let direct = check_source("package p\ntype A B\ntype B A\n");
     testing::assert(direct.diagnostics.len() > 0);
     testing::assert(direct.diagnostics[0].message.contains("recursive type"));
@@ -526,7 +526,7 @@ fn rejects_direct_named_and_array_type_cycles() -> unit {
 }
 
 #[test]
-fn rejects_recursive_types_exposed_by_unsafe_sizeof() -> unit {
+fn rejects_recursive_types_exposed_by_unsafe_sizeof() -> () {
     let source = "package p\nimport \"unsafe\"\ntype U interface { V }\ntype V interface { Method() [unsafe.Sizeof(value)]int }\nvar value U\n";
     let result = check_source(source);
     testing::assert(!result.diagnostics.is_empty());
@@ -543,7 +543,7 @@ fn rejects_recursive_types_exposed_by_unsafe_sizeof() -> unit {
 }
 
 #[test]
-fn checks_struct_interface_and_function_declarations_when_bodies_are_ignored() -> unit {
+fn checks_struct_interface_and_function_declarations_when_bodies_are_ignored() -> () {
     let source = "package p\ntype Node struct { Value int; Next *Node `json:\"next\"` }\ntype Reader interface { Read([]byte) (int, error) }\ntype Callback func(x int, values ...string) (result bool)\nfunc F(x int, y string) (bool, error) { return true, nil }\n";
     let config = default_config();
     config.ignore_func_bodies = true;
@@ -590,14 +590,14 @@ fn checks_struct_interface_and_function_declarations_when_bodies_are_ignored() -
 }
 
 #[test]
-fn rejects_direct_recursive_struct_fields() -> unit {
+fn rejects_direct_recursive_struct_fields() -> () {
     let result = check_source("package p\ntype Bad struct { value Bad }\n");
     testing::assert(result.diagnostics.len() > 0);
     testing::assert(result.diagnostics[0].message.contains("recursive type"))
 }
 
 #[test]
-fn resolves_unsafe_import_alias_and_qualified_type() -> unit {
+fn resolves_unsafe_import_alias_and_qualified_type() -> () {
     let source = "package p\nimport u \"unsafe\"\nvar X u.Pointer\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -624,7 +624,7 @@ fn resolves_unsafe_import_alias_and_qualified_type() -> unit {
 }
 
 #[test]
-fn reports_unused_imports_and_accepts_blank_imports() -> unit {
+fn reports_unused_imports_and_accepts_blank_imports() -> () {
     let unused = check_source("package p\nimport \"unsafe\"\nvar X int\n");
     testing::assert_eq(unused.diagnostics.len(), 1);
     testing::assert(unused.diagnostics[0].message.contains("not used"));
@@ -634,7 +634,7 @@ fn reports_unused_imports_and_accepts_blank_imports() -> unit {
 }
 
 #[test]
-fn imports_configured_package_identities() -> unit {
+fn imports_configured_package_identities() -> () {
     let config = default_config();
     config.available_imports.push(AvailableImport { path: "example/q", name: "q" });
     config.disable_unused_import_check = true;
@@ -661,7 +661,7 @@ fn imports_configured_package_identities() -> unit {
 }
 
 #[test]
-fn checks_imported_packages_in_a_shared_type_world() -> unit {
+fn checks_imported_packages_in_a_shared_type_world() -> () {
     let world = go_types::new_world();
     let dependency = check_package_in_world(
         default_config(),
@@ -707,7 +707,7 @@ fn checks_imported_packages_in_a_shared_type_world() -> unit {
 }
 
 #[test]
-fn evaluates_iota_and_inherited_const_expressions() -> unit {
+fn evaluates_iota_and_inherited_const_expressions() -> () {
     let source = "package p\nconst (\nA = iota\nB\nC = 1 << iota\nD\nE int8 = iota\nF\n)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -739,7 +739,7 @@ fn evaluates_iota_and_inherited_const_expressions() -> unit {
 }
 
 #[test]
-fn preserves_iota_facts_during_initializer_dependency_analysis() -> unit {
+fn preserves_iota_facts_during_initializer_dependency_analysis() -> () {
     let source = "package p\ntype State uint8\nvar Selected = selectState()\nfunc selectState() State { return Second }\nconst (\nUnknown State = iota\nFirst\nSecond\n)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -755,7 +755,7 @@ fn preserves_iota_facts_during_initializer_dependency_analysis() -> unit {
 }
 
 #[test]
-fn deduplicates_type_facts_by_source_span() -> unit {
+fn deduplicates_type_facts_by_source_span() -> () {
     let source = "package p\ntype Item struct { Value int }\nvar Values = []Item{{Value: 1}, {Value: 2}, {Value: 3}}\nconst ( First = iota; Second; Third )\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -774,7 +774,7 @@ fn deduplicates_type_facts_by_source_span() -> unit {
 }
 
 #[test]
-fn attaches_value_and_pointer_receiver_methods_to_named_types() -> unit {
+fn attaches_value_and_pointer_receiver_methods_to_named_types() -> () {
     let source = "package p\ntype Box struct { Value int }\nfunc (b Box) Get() int { return b.Value }\nfunc (b *Box) Set(value int) { b.Value = value }\n";
     let config = default_config();
     config.ignore_func_bodies = true;
@@ -823,7 +823,7 @@ fn attaches_value_and_pointer_receiver_methods_to_named_types() -> unit {
 }
 
 #[test]
-fn checks_constant_conversions_and_function_calls() -> unit {
+fn checks_constant_conversions_and_function_calls() -> () {
     let source = "package p\ntype Small int8\nconst A = Small(127)\nconst B = string(65)\nvar X = int16(5)\nfunc Add(left int, right int) int { return left + right }\nvar Z = Add(1, 2)\n";
     let config = default_config();
     config.ignore_func_bodies = true;
@@ -857,7 +857,7 @@ fn checks_constant_conversions_and_function_calls() -> unit {
 }
 
 #[test]
-fn rejects_wrong_argument_count_without_panicking() -> unit {
+fn rejects_wrong_argument_count_without_panicking() -> () {
     let source = "package p\nfunc Zero() {}\nfunc Use() { Zero(1) }\n";
     let result = check_source(source);
     testing::assert(!result.diagnostics.is_empty());
@@ -874,7 +874,7 @@ fn rejects_wrong_argument_count_without_panicking() -> unit {
 }
 
 #[test]
-fn resolves_function_signatures_before_declaration_order() -> unit {
+fn resolves_function_signatures_before_declaration_order() -> () {
     let config = default_config();
     config.ignore_func_bodies = true;
     let result = check(
@@ -912,7 +912,7 @@ fn resolves_function_signatures_before_declaration_order() -> unit {
 }
 
 #[test]
-fn checks_interface_assignment_with_embedded_and_pointer_method_sets() -> unit {
+fn checks_interface_assignment_with_embedded_and_pointer_method_sets() -> () {
     let source = "package p\ntype Reader interface { Read() int }\ntype Closer interface { Close() }\ntype ReadCloser interface { Reader; Closer }\ntype Value struct{}\nvar R Reader = Make()\nvar RC ReadCloser = Pointer()\nfunc Make() Value { return Value{} }\nfunc Pointer() *Value { return nil }\nfunc (Value) Read() int { return 0 }\nfunc (*Value) Close() {}\n";
     let config = default_config();
     config.ignore_func_bodies = true;
@@ -939,7 +939,7 @@ fn checks_interface_assignment_with_embedded_and_pointer_method_sets() -> unit {
 }
 
 #[test]
-fn checks_function_body_locals_assignments_returns_and_branches() -> unit {
+fn checks_function_body_locals_assignments_returns_and_branches() -> () {
     let source = "package p\nfunc Compute(x int) int {\n    y := x + 1\n    if y > 10 {\n        y = y - 1\n    } else {\n        y++\n    }\n    var z int = y\n    return z\n}\nfunc IncrementFloat(value float64) float64 { value++; return value }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -956,7 +956,7 @@ fn checks_function_body_locals_assignments_returns_and_branches() -> unit {
 }
 
 #[test]
-fn checks_short_redeclarations_in_function_and_rechecked_literal_scopes() -> unit {
+fn checks_short_redeclarations_in_function_and_rechecked_literal_scopes() -> () {
     let source = "package p\nfunc Named() (ok bool) { selected, ok := true, false; _ = selected; return }\nfunc Apply[T any](call func() (T, error)) {}\nfunc Use() { Apply(func() (int, error) { value, err := 1, error(nil); return value, err }) }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -972,7 +972,7 @@ fn checks_short_redeclarations_in_function_and_rechecked_literal_scopes() -> uni
 }
 
 #[test]
-fn checks_local_alias_named_and_recursive_pointer_types() -> unit {
+fn checks_local_alias_named_and_recursive_pointer_types() -> () {
     let source = "package p\nfunc Use() int {\n    type Count = int\n    type Node struct { next *Node; value Count }\n    node := Node{value: 3}\n    return node.value\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -988,7 +988,7 @@ fn checks_local_alias_named_and_recursive_pointer_types() -> unit {
 }
 
 #[test]
-fn evaluates_local_const_iota_and_inherited_expressions() -> unit {
+fn evaluates_local_const_iota_and_inherited_expressions() -> () {
     let source = "package p\nfunc Use() int {\n    const (\n        A = iota\n        B\n        C int = iota * 2\n        D\n    )\n    return A + B + C + D\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1018,7 +1018,7 @@ fn evaluates_local_const_iota_and_inherited_expressions() -> unit {
 }
 
 #[test]
-fn checks_labels_branches_and_switch_fallthrough() -> unit {
+fn checks_labels_branches_and_switch_fallthrough() -> () {
     let source = "package p\nfunc Use(limit int) int {\n    value := 0\nLoop:\n    for value < limit {\n        value++\n        if value < limit { continue Loop }\n        break Loop\n    }\n    switch value {\n    case 0:\n        value = 1\n        fallthrough\n    default:\n        value++\n    }\n    if value > 100 { goto Done }\nDone:\n    return value\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1041,7 +1041,7 @@ fn checks_labels_branches_and_switch_fallthrough() -> unit {
 }
 
 #[test]
-fn rejects_invalid_branch_contexts_and_unused_labels() -> unit {
+fn rejects_invalid_branch_contexts_and_unused_labels() -> () {
     let source = "package p\nfunc Bad() {\nUnused:\n    {}\n    break\n    continue\n    fallthrough\n    goto Missing\nSwitch:\n    switch { default: continue Switch }\n}\n";
     let result = check_source(source);
     testing::assert(result.diagnostics.len() >= 6);
@@ -1057,7 +1057,7 @@ fn rejects_invalid_branch_contexts_and_unused_labels() -> unit {
 }
 
 #[test]
-fn reports_unused_locals_independently_in_nested_functions() -> unit {
+fn reports_unused_locals_independently_in_nested_functions() -> () {
     let source = "package p\nfunc Bad() {\n    outer := 1\n    var other string\n    _ = func() { inner := 2 }\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 3);
@@ -1086,7 +1086,7 @@ fn reports_unused_locals_independently_in_nested_functions() -> unit {
 }
 
 #[test]
-fn rejects_invalid_local_type_cycles() -> unit {
+fn rejects_invalid_local_type_cycles() -> () {
     let source = "package p\nfunc Use() {\n    type Direct Direct\n    type Alias = *Alias\n}\n";
     let result = check_source(source);
     testing::assert(result.diagnostics.len() >= 2);
@@ -1102,7 +1102,7 @@ fn rejects_invalid_local_type_cycles() -> unit {
 }
 
 #[test]
-fn reports_function_body_assignment_and_return_errors() -> unit {
+fn reports_function_body_assignment_and_return_errors() -> () {
     let result = check_source(
         "package p\nfunc Bad(x int) string {\n    x = \"wrong\"\n    return x\n}\n",
     );
@@ -1112,7 +1112,7 @@ fn reports_function_body_assignment_and_return_errors() -> unit {
 }
 
 #[test]
-fn accepts_terminating_panic_calls_without_returns() -> unit {
+fn accepts_terminating_panic_calls_without_returns() -> () {
     let source = "package p\nfunc Exit(flag bool) int { if flag { return 1 }; panic(\"unreachable\") }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1128,7 +1128,7 @@ fn accepts_terminating_panic_calls_without_returns() -> unit {
 }
 
 #[test]
-fn checks_composite_index_slice_assertion_and_function_literal_expressions() -> unit {
+fn checks_composite_index_slice_assertion_and_function_literal_expressions() -> () {
     let source = "package p\ntype Pair struct { A int; B string }\nconst Digits = \"0123456789\"\nfunc Containers(m map[string]int, input any) int {\n    pair := Pair{A: 1, B: \"value\"}\n    array := [...]int{1, 2, 3}\n    view := array[1:]\n    m[\"value\"] = pair.A + view[0]\n    apply := func(value int) int { return value + 1 }\n    return apply(m[\"value\"]) + input.(int)\n}\nfunc Assert[E error](input error) (E, bool) { value, ok := input.(E); return value, ok }\nfunc SliceConstant(index int) string { return Digits[index:index+1] }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1144,7 +1144,7 @@ fn checks_composite_index_slice_assertion_and_function_literal_expressions() -> 
 }
 
 #[test]
-fn checks_container_memory_and_side_effect_builtins() -> unit {
+fn checks_container_memory_and_side_effect_builtins() -> () {
     let source = "package p\nfunc Builtins(values []int, items map[string]int, channel chan int) (*int, int) {\n    values = append(values, 1, 2)\n    copied := make([]int, len(values))\n    count := copy(copied, values)\n    delete(items, \"missing\")\n    clear(items)\n    close(channel)\n    pointer := new(count)\n    println(count)\n    return pointer, cap(copied)\n}\nfunc AppendText(buffer []byte, text string) []byte {\n    buffer = append(buffer, \"prefix\"...)\n    return append(buffer, text...)\n}\nfunc AppendGeneric[Bytes []byte | string](buffer []byte, values Bytes) []byte { return append(buffer, values...) }\nfunc AppendSlice[S ~[]E, E any](slice S, values S) S { return append(slice, values...) }\nfunc CopyText(buffer []byte) int { return copy(buffer, \"text\") }\nfunc DeleteAny(items map[any]int, pointer *int) { delete(items, pointer) }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1184,7 +1184,7 @@ fn checks_container_memory_and_side_effect_builtins() -> unit {
 }
 
 #[test]
-fn permits_slicing_pointer_to_array_values() -> unit {
+fn permits_slicing_pointer_to_array_values() -> () {
     let source = "package p\nfunc Slice(pointer *[4]int) []int { return pointer[:] }\nfunc Array() [4]int { return [4]int{} }\nfunc Invalid() []int { return Array()[:] }\n";
     let result = check_source(source);
     let mut unaddressable = false;
@@ -1209,7 +1209,7 @@ fn permits_slicing_pointer_to_array_values() -> unit {
 }
 
 #[test]
-fn checks_complex_real_and_imag_builtins() -> unit {
+fn checks_complex_real_and_imag_builtins() -> () {
     let source = "package p\nconst Value = complex(1.5, 2)\nconst Real = real(Value)\nconst Imaginary = imag(Value)\nvar Small = complex(float32(1), float32(2))\nvar Component = real(Small)\nfunc Runtime(value float64) complex128 { return complex(value, 0) }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1239,7 +1239,7 @@ fn checks_complex_real_and_imag_builtins() -> unit {
 }
 
 #[test]
-fn folds_constant_min_and_max_builtins() -> unit {
+fn folds_constant_min_and_max_builtins() -> () {
     let source = "package p\nconst Smallest = min(9, -3, 4)\nconst Largest = max(\"a\", \"z\", \"m\")\nconst Rounded = max(float32(1), 1.25)\nvar Input int\nvar Dynamic = min(Input, Smallest)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1262,7 +1262,7 @@ fn folds_constant_min_and_max_builtins() -> unit {
 }
 
 #[test]
-fn checks_nil_comparisons_and_type_info_operand_modes() -> unit {
+fn checks_nil_comparisons_and_type_info_operand_modes() -> () {
     let source = "package p\nfunc Sink() {}\nfunc Nil(pointer *int, slice []int, mapping map[string]int, channel chan int, function func(), value any) bool { Sink(); println(pointer); return pointer == nil && nil != slice && mapping == nil && channel != nil && function == nil && value != nil }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1290,7 +1290,7 @@ fn checks_nil_comparisons_and_type_info_operand_modes() -> unit {
 }
 
 #[test]
-fn defaults_untyped_print_arguments() -> unit {
+fn defaults_untyped_print_arguments() -> () {
     let source = "package p\nfunc Print() { println(\"text\", 1, 'r') }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1308,7 +1308,7 @@ fn defaults_untyped_print_arguments() -> unit {
 }
 
 #[test]
-fn checks_interface_and_concrete_comparisons() -> unit {
+fn checks_interface_and_concrete_comparisons() -> () {
     let source = "package p\ntype Error int\nfunc (value Error) Error() string { return \"error\" }\nfunc Equal(err error, value Error) bool { return err == value && value != err && err.Error() == value.Error() }\nfunc EqualConstant(value any) bool { return value == -1000000000 }\nfunc ConvertComparison(left int, right int) bool { return bool(left == right) }\nfunc Match(err error, value Error) bool { switch err { case value: return true }; return false }\nfunc MatchNil(pointer *int) bool { switch pointer { case nil: return true }; return false }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1324,7 +1324,7 @@ fn checks_interface_and_concrete_comparisons() -> unit {
 }
 
 #[test]
-fn preserves_constant_kinds_during_contextual_typing_and_string_conversion() -> unit {
+fn preserves_constant_kinds_during_contextual_typing_and_string_conversion() -> () {
     let source = "package p\nconst RuneError = 65533\nvar ErrorRune = []byte(string(RuneError))\nfunc Nanoseconds(ts int64) int64 { const ticks = 1e7; return (1e9 / ticks) * (ts % ticks) }\nconst Rounded = float32(16777217)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1359,7 +1359,7 @@ fn preserves_constant_kinds_during_contextual_typing_and_string_conversion() -> 
 }
 
 #[test]
-fn preserves_explicit_integer_complex_constant_values() -> unit {
+fn preserves_explicit_integer_complex_constant_values() -> () {
     let source = "package p\nfunc Use() { const Value int = complex(1, 0); const _ int = complex(1, 0); _ = Value }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1376,7 +1376,7 @@ fn preserves_explicit_integer_complex_constant_values() -> unit {
 }
 
 #[test]
-fn promotes_untyped_binary_operands_to_the_common_numeric_type() -> unit {
+fn promotes_untyped_binary_operands_to_the_common_numeric_type() -> () {
     let source = "package p\nconst Rune = 'a' - 26\nconst Float = 1 + 2.5\nconst Shifted = 1.0 / (1 << 28)\nconst NamedInt = 1\nconst Nested = 1.0 + (NamedInt + NamedInt)\nfunc RoundedBinary() float64 { return float64(1 << 47) / 1e9 }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1406,7 +1406,7 @@ fn promotes_untyped_binary_operands_to_the_common_numeric_type() -> unit {
 }
 
 #[test]
-fn records_recover_result_as_the_empty_interface() -> unit {
+fn records_recover_result_as_the_empty_interface() -> () {
     let source = "package p\nfunc Recover() any { return recover() }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1422,7 +1422,7 @@ fn records_recover_result_as_the_empty_interface() -> unit {
 }
 
 #[test]
-fn records_inferred_ellipsis_array_type_expressions() -> unit {
+fn records_inferred_ellipsis_array_type_expressions() -> () {
     let source = "package p\nvar Values = [...]int{1, 2, 3}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1438,7 +1438,7 @@ fn records_inferred_ellipsis_array_type_expressions() -> unit {
 }
 
 #[test]
-fn contextualizes_append_elements_to_named_types() -> unit {
+fn contextualizes_append_elements_to_named_types() -> () {
     let source = "package p\ntype token uint32\nconst marker = 256\nvar Tokens = append([]token{}, marker)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1455,7 +1455,7 @@ fn contextualizes_append_elements_to_named_types() -> unit {
 }
 
 #[test]
-fn preserves_typed_constant_sequence_indices() -> unit {
+fn preserves_typed_constant_sequence_indices() -> () {
     let source = "package p\ntype Index int\nconst First Index = 1\nvar Values = []int{First: 10}\nvar Slice = make([]int, First)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1476,7 +1476,7 @@ fn preserves_typed_constant_sequence_indices() -> unit {
 }
 
 #[test]
-fn checks_unsafe_builtins_and_gc_layout_constants() -> unit {
+fn checks_unsafe_builtins_and_gc_layout_constants() -> () {
     let source = "package p\nimport \"unsafe\"\ntype Layout struct { Flag byte; Count int64; Empty struct{} }\ntype StringPointer *byte\nvar Value Layout\nconst Size = unsafe.Sizeof(Value)\nconst Alignment = unsafe.Alignof(Value)\nconst Offset = unsafe.Offsetof(Value.Count)\nvar Bytes = []byte{1, 2}\nvar BytePointer = unsafe.SliceData(Bytes)\nvar Text = unsafe.String(BytePointer, len(Bytes))\nvar TextPointer = unsafe.StringData(Text)\nvar Raw unsafe.Pointer\nvar IsNil = Raw == nil\nvar Next = unsafe.Add(Raw, 1)\nvar View = unsafe.Slice(BytePointer, 2)\nfunc ByteAt(pointer unsafe.Pointer) *uint8 { return &(*[8]uint8)(pointer)[0] }\nfunc NamedString(pointer StringPointer, length uint64) string { return unsafe.String(pointer, length) }\nfunc GenericSize[T any](value T) uintptr { return unsafe.Sizeof(value) }\nfunc Recursive[T any](_ [unsafe.Sizeof(Recursive[int])]T) {}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1515,7 +1515,7 @@ fn checks_unsafe_builtins_and_gc_layout_constants() -> unit {
 }
 
 #[test]
-fn checks_nonconstant_slice_unsafe_and_type_set_conversions() -> unit {
+fn checks_nonconstant_slice_unsafe_and_type_set_conversions() -> () {
     let source = "package p\nimport \"unsafe\"\ntype Small interface { ~int8 | ~int16 }\ntype Source interface { ~int | ~string }\ntype Text interface { ~string }\nfunc Constant[P Small]() P { return P(1) }\nfunc Runtime[P Small](value int) P { return P(value) }\nfunc Cross[S Source, T Text](value S) T { return T(value) }\nfunc ToAny[P any](value P) any { return any(value) }\nvar Dynamic = any(1)\nvar Bytes = []byte(\"go\")\nvar TextValue = string([]rune{'g', 'o'})\nvar Array = [2]byte(Bytes)\nvar ArrayPointer = (*[2]byte)(Bytes)\nfunc Pointers(pointer *int, word uintptr) (unsafe.Pointer, *int, uintptr) {\n    raw := unsafe.Pointer(pointer)\n    return raw, (*int)(raw), uintptr(raw)\n}\n";
     let result = check_source(source);
     if !result.diagnostics.is_empty() {
@@ -1559,7 +1559,7 @@ fn checks_nonconstant_slice_unsafe_and_type_set_conversions() -> unit {
 }
 
 #[test]
-fn gates_slice_array_conversions_by_go_version() -> unit {
+fn gates_slice_array_conversions_by_go_version() -> () {
     let array_source = "package p\nfunc Convert(values []int) [2]int { return [2]int(values) }\n";
     let array_config = default_config();
     array_config.go_version = "go1.19";
@@ -1602,7 +1602,7 @@ fn gates_slice_array_conversions_by_go_version() -> unit {
 }
 
 #[test]
-fn gates_go126_new_expression_by_effective_file_version() -> unit {
+fn gates_go126_new_expression_by_effective_file_version() -> () {
     let source = "package p\nvar Pointer = new(1)\n";
     let current = check_source(source);
     testing::assert_eq(current.diagnostics.len(), 0);
@@ -1621,7 +1621,7 @@ fn gates_go126_new_expression_by_effective_file_version() -> unit {
 }
 
 #[test]
-fn checks_range_channel_send_receive_go_and_defer_statements() -> unit {
+fn checks_range_channel_send_receive_go_and_defer_statements() -> () {
     let source = "package p\nfunc Flow(values []int, channel chan int) int {\n    total := 0\n    for index, value := range values {\n        total += index + value\n    }\n    for index := range 3 {\n        total += index\n    }\n    channel <- total\n    received := <-channel\n    go println(received)\n    defer close(channel)\n    defer copy(values, values)\n    return received\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1637,7 +1637,7 @@ fn checks_range_channel_send_receive_go_and_defer_statements() -> unit {
 }
 
 #[test]
-fn gates_integer_range_by_effective_file_version() -> unit {
+fn gates_integer_range_by_effective_file_version() -> () {
     let source = "//go:build go1.21\npackage p\nfunc Count() { for range 10 {} }\n";
     let result = check_source(source);
     testing::assert(!result.diagnostics.is_empty());
@@ -1654,7 +1654,7 @@ fn gates_integer_range_by_effective_file_version() -> unit {
 }
 
 #[test]
-fn accepts_terminating_select_without_default() -> unit {
+fn accepts_terminating_select_without_default() -> () {
     let source = "package p\nfunc Choose(channel chan bool) bool {\n    select {\n    case value := <-channel:\n        return value\n    case channel <- false:\n        return false\n    }\n}\nfunc Close(channel chan<- bool) { close(channel) }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1670,7 +1670,7 @@ fn accepts_terminating_select_without_default() -> unit {
 }
 
 #[test]
-fn checks_range_over_function_yield_signatures() -> unit {
+fn checks_range_over_function_yield_signatures() -> () {
     let source = "package p\nfunc Iterate(yield func(int, string) bool) {\n    if !yield(1, \"one\") { return }\n    yield(2, \"two\")\n}\nfunc Empty(yield func() bool) { yield() }\nfunc Use() int {\n    total := 0\n    for number, text := range Iterate {\n        total += number + len(text)\n    }\n    for range Empty { total++ }\n    return total\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1686,7 +1686,7 @@ fn checks_range_over_function_yield_signatures() -> unit {
 }
 
 #[test]
-fn checks_expression_type_switch_and_select_scopes() -> unit {
+fn checks_expression_type_switch_and_select_scopes() -> () {
     let source = "package p\nfunc Choose(input any, number int, channel chan int) int {\n    switch number {\n    case 0:\n        number = 1\n    case 1, 2:\n        number = 2\n    default:\n        number = 3\n    }\n    switch value := input.(type) {\n    case int:\n        number += value\n    case string:\n        number += len(value)\n    case nil:\n        number = 0\n    default:\n        number = -1\n    }\n    select {\n    case channel <- number:\n    case received := <-channel:\n        number = received\n    default:\n    }\n    return number\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1718,7 +1718,7 @@ fn checks_expression_type_switch_and_select_scopes() -> unit {
 }
 
 #[test]
-fn checks_generic_named_type_instantiation_substitution_and_union_constraints() -> unit {
+fn checks_generic_named_type_instantiation_substitution_and_union_constraints() -> () {
     let source = "package p\ntype Pair[A, B any] struct { First A; Second B }\ntype Numbers[T ~int | ~int64] []T\nvar PairValue = Pair[int, string]{First: 1, Second: \"value\"}\nvar Values = Numbers[int]{1, 2, 3}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1743,7 +1743,7 @@ fn checks_generic_named_type_instantiation_substitution_and_union_constraints() 
 }
 
 #[test]
-fn checks_generic_function_explicit_arguments_and_basic_inference() -> unit {
+fn checks_generic_function_explicit_arguments_and_basic_inference() -> () {
     let source = "package p\ntype Seq[E any] func(func(E) bool)\ntype Reader interface { Read() int }\ntype Integer interface { ~int | ~int64 }\nfunc Identity[T any](value T) T { return value }\nfunc First[A, B any](left A, right B) A { return left }\nfunc Append[Slice ~[]E, E any](slice Slice, sequence Seq[E]) Slice { return slice }\nfunc Collect[E any](sequence Seq[E]) []E { return Append([]E(nil), sequence) }\nfunc Accept[E any](left []E, right []E) {}\nfunc Forward[Slice ~[]E, E any](slice Slice) { Accept(slice, []E(nil)) }\nfunc ForwardReader[T Reader](value T) Reader { return value }\nfunc Nonpositive[T Integer](value T) bool { return value <= 0 }\nfunc Pair() (string, error) { return \"value\", nil }\nfunc Capture[T any](value T, err error) T { return value }\nfunc Sink(values ...any) {}\nfunc Shift(index uint) { Sink(1 << index) }\nvar A = Identity(42)\nvar B = Identity[string](\"value\")\nvar C = First(7, \"ignored\")\nvar D = Capture(Pair())\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1776,7 +1776,7 @@ fn checks_generic_function_explicit_arguments_and_basic_inference() -> unit {
 }
 
 #[test]
-fn rejects_generic_type_arguments_outside_union_constraint() -> unit {
+fn rejects_generic_type_arguments_outside_union_constraint() -> () {
     let result = check_source(
         "package p\ntype Numbers[T ~int | ~int64] []T\nvar Invalid Numbers[string]\n",
     );
@@ -1785,7 +1785,7 @@ fn rejects_generic_type_arguments_outside_union_constraint() -> unit {
 }
 
 #[test]
-fn checks_generic_receiver_methods_and_instantiated_method_selection() -> unit {
+fn checks_generic_receiver_methods_and_instantiated_method_selection() -> () {
     let source = "package p\ntype Box[T any] struct { Value T }\ntype Wrapper[T any] struct { Box[T] }\nfunc (box Box[T]) Get() T { return box.Value }\nfunc (box *Box[T]) Set(value T) { box.Value = value }\nvar Number = Box[int]{Value: 4}.Get()\nvar Wrapped = Wrapper[int]{Box: Box[int]{Value: 5}}.Get()\nfunc Use() int {\n    box := Box[int]{Value: 1}\n    box.Set(9)\n    return box.Get()\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1810,7 +1810,7 @@ fn checks_generic_receiver_methods_and_instantiated_method_selection() -> unit {
 }
 
 #[test]
-fn checks_value_and_pointer_method_expressions() -> unit {
+fn checks_value_and_pointer_method_expressions() -> () {
     let source = "package p\ntype Counter int\nfunc (value Counter) Add(other int) int { return int(value) + other }\nfunc (value *Counter) Set(other int) { *value = Counter(other) }\nfunc (value *Counter) Reset() { *value = 0 }\nvar Add = Counter.Add\nvar Set = (*Counter).Set\nvar Reset = (*Counter).Reset\nfunc Use() int {\n    value := Counter(1)\n    Set(&value, 4)\n    Reset(&value)\n    return Add(value, 2)\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1838,7 +1838,7 @@ fn checks_value_and_pointer_method_expressions() -> unit {
 }
 
 #[test]
-fn rejects_methods_on_generic_alias_receivers() -> unit {
+fn rejects_methods_on_generic_alias_receivers() -> () {
     let source = "package p\ntype Generic[P any] struct{}\ntype Alias[P any] = Generic[P]\nfunc (Alias[P]) Method() {}\n";
     let result = check_source(source);
     testing::assert(!result.diagnostics.is_empty());
@@ -1855,7 +1855,7 @@ fn rejects_methods_on_generic_alias_receivers() -> unit {
 }
 
 #[test]
-fn accepts_go126_generic_self_references_in_constraints() -> unit {
+fn accepts_go126_generic_self_references_in_constraints() -> () {
     let source = "package p\ntype Recursive[P Recursive[P]] struct{}\ntype T[U interface{ M() T[U] }] int\ntype X int\nfunc (X) M() T[X] { return 0 }\nvar Value T[X]\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1875,7 +1875,7 @@ fn accepts_go126_generic_self_references_in_constraints() -> unit {
 }
 
 #[test]
-fn checks_type_set_operations_intersections_and_comparability() -> unit {
+fn checks_type_set_operations_intersections_and_comparability() -> () {
     let source = "package p\ntype MyInt int\ntype MyString string\ntype E0 interface { ~int | ~bool | ~string }\ntype E1 interface { ~int | ~float64 | ~string }\nfunc AddOne[T interface { MyInt }](value T) T { return value + 1 }\nfunc Double[T interface { MyInt | MyString }](value T) T { return value + value }\nfunc Shared[T interface { E0; E1 }](value T) T { return value }\nfunc Equal[T interface { ~int | ~string }](left T, right T) bool { return left == right }\nfunc EqualAny[T comparable](left T, right T) bool { return left == right }\nfunc Nonzero[T interface { ~float32 | ~float64 }](value T) bool { return value != 0 }\nvar A = AddOne(MyInt(2))\nvar B = Double(MyString(\"go\"))\nvar C = Shared(3)\nvar D = Shared(\"text\")\nvar E = Equal(1, 2)\nvar F = EqualAny(1, 2)\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1899,7 +1899,7 @@ fn checks_type_set_operations_intersections_and_comparability() -> unit {
 }
 
 #[test]
-fn checks_core_types_for_generic_containers_and_channels() -> unit {
+fn checks_core_types_for_generic_containers_and_channels() -> () {
     let source = "package p\nfunc First[S ~[]E, E any](values S) E { return values[0] }\nfunc Tail[S ~[]E, E any](values S) S { return values[1:] }\nfunc NilSlice[S ~[]E, E any]() S { return nil }\nfunc Count[S ~[]E, E any](values S) int { return len(values) }\nfunc Length[T string | []byte](value T) int { return len(value) }\nfunc ByteAt[T string | []byte](value T, index int) byte { return value[index] }\nfunc Prefix[T string | []byte](value T, end int) string { return string(value[:end]) }\nfunc ForwardLength[T string | []byte](value T) int { return Length(value) }\nfunc Capacity[T ~[3]int | ~[3]byte](value T) int { return cap(value) }\nfunc DynamicCapacity[T ~chan int | ~[]int](value T) int { return cap(value) }\nfunc Last[S ~[]E, E any](values S) E { var result E; for _, value := range values { result = value }; return result }\nfunc Lookup[M ~map[K]V, K comparable, V any](values M, key K) (V, bool) { value, ok := values[key]; return value, ok }\nfunc Send[C ~chan E, E any](channel C, value E) { channel <- value }\nfunc Receive[C ~chan E, E any](channel C) E { return <-channel }\nfunc Mixed[A, B, C any](A, B, C) {}\nfunc UseChannel(channel chan int) int { Send(channel, 1); return Receive(channel) }\nfunc UsePartial() { Mixed[int, string](0, \"\", false); Mixed[int](0, \"\", false); _ = First[[]int] }\nvar Values = []int{1, 2, 3}\nvar Mapping = map[string]int{\"one\": 1}\nvar A = First(Values)\nvar B = Tail(Values)\nvar C = Count(Values)\nvar D = Last(Values)\nvar E, OK = Lookup(Mapping, \"one\")\nvar Partial = First[[]int](Values)\nvar PartialValue, PartialOK = Lookup[map[string]int](Mapping, \"one\")\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1923,7 +1923,7 @@ fn checks_core_types_for_generic_containers_and_channels() -> unit {
 }
 
 #[test]
-fn infers_generic_functions_from_assignment_return_and_argument_contexts() -> unit {
+fn infers_generic_functions_from_assignment_return_and_argument_contexts() -> () {
     let source = "package p\nfunc F1[P any](P) {}\nfunc F2[P any]() P { var value P; return value }\nfunc F3[P, Q any](P) Q { var value Q; return value }\nfunc F5[P any](P) []P { return nil }\nvar V1 func(int) = F1\nvar V2 func() int = F2\nvar V3 func(int) string = F3\nvar V4 func(string) []string = F5\nfunc Returned() func(int) { return F1 }\nfunc Apply(function func(int), value int) { function(value) }\nfunc Use() { Apply(F1, 1); var local func(string) []string = F5; _ = local(\"x\") }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -1951,7 +1951,7 @@ fn infers_generic_functions_from_assignment_return_and_argument_contexts() -> un
 }
 
 #[test]
-fn rejects_invalid_and_overlapping_union_terms() -> unit {
+fn rejects_invalid_and_overlapping_union_terms() -> () {
     let source = "package p\ntype Named int\ntype Methods interface { M() }\ntype Comparable interface { comparable }\ntype Bad1 interface { int | int }\ntype Bad2 interface { ~int | int }\ntype Bad3 interface { ~Named }\ntype Bad4 interface { int | Methods }\ntype Bad5 interface { int | Comparable }\nfunc Bad6[P any, Q interface { P }]() {}\n";
     let result = check_source(source);
     testing::assert(result.diagnostics.len() >= 6);
@@ -1967,7 +1967,7 @@ fn rejects_invalid_and_overlapping_union_terms() -> unit {
 }
 
 #[test]
-fn checks_multi_value_calls_and_comma_ok_assignments() -> unit {
+fn checks_multi_value_calls_and_comma_ok_assignments() -> () {
     let source = "package p\nfunc Pair() (int, string) { return 1, \"one\" }\nfunc Consume(number int, text string) {}\nfunc Use(values map[string]int, channel chan int, input any) {\n    number, text := Pair()\n    Consume(number, text)\n    Consume(Pair())\n    mapped, mapOk := values[\"one\"]\n    received, receiveOk := <-channel\n    asserted, assertOk := input.(int)\n    var other, otherOk = values[\"two\"]\n    _, _, _, _, _, _, _, _ = mapped, mapOk, received, receiveOk, asserted, assertOk, other, otherOk\n}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -2000,7 +2000,7 @@ fn checks_multi_value_calls_and_comma_ok_assignments() -> unit {
 }
 
 #[test]
-fn checks_package_multi_value_initializers() -> unit {
+fn checks_package_multi_value_initializers() -> () {
     let source = "package p\nfunc Pair() (int, string) { return 1, \"one\" }\nvar Number, Text = Pair()\nvar Values = map[string]int{\"one\": 1}\nvar Mapped, Present = Values[\"one\"]\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -2036,7 +2036,7 @@ fn checks_package_multi_value_initializers() -> unit {
 }
 
 #[test]
-fn orders_initializers_by_dependencies_and_source_position() -> unit {
+fn orders_initializers_by_dependencies_and_source_position() -> () {
     let source = "package p\nvar A = value()\nvar B = 1\nvar C = 2\nfunc value() int { return C }\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -2065,7 +2065,7 @@ fn orders_initializers_by_dependencies_and_source_position() -> unit {
 }
 
 #[test]
-fn checks_pointer_slice_map_and_channel_type_expressions() -> unit {
+fn checks_pointer_slice_map_and_channel_type_expressions() -> () {
     let result = check_source(
         "package p\nvar A *int\nvar B []string\nvar C map[string]int\nvar D chan int\n",
     );
@@ -2081,7 +2081,7 @@ fn checks_pointer_slice_map_and_channel_type_expressions() -> unit {
 }
 
 #[test]
-fn checks_goto_block_and_variable_declaration_restrictions() -> unit {
+fn checks_goto_block_and_variable_declaration_restrictions() -> () {
     let valid_source = "package p\nfunc Valid(flag bool) {\n    if flag { goto Done }\n    { goto Done }\n    if value := 1; value > 0 {}\n    switch value := 1; value {}\n    for value := 0; value < 1; value++ {}\nDone:\n}\n";
     let valid = check_source(valid_source);
     testing::assert_eq(valid.diagnostics.len(), 0);
@@ -2121,7 +2121,7 @@ fn checks_goto_block_and_variable_declaration_restrictions() -> unit {
 }
 
 #[test]
-fn reports_package_name_mismatch_and_duplicate_declaration() -> unit {
+fn reports_package_name_mismatch_and_duplicate_declaration() -> () {
     let result = check(
         default_config(),
         PackageInput {
@@ -2142,7 +2142,7 @@ fn reports_package_name_mismatch_and_duplicate_declaration() -> unit {
 }
 
 #[test]
-fn rejects_blank_package_names() -> unit {
+fn rejects_blank_package_names() -> () {
     let source = "package _\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 1);
@@ -2160,7 +2160,7 @@ fn rejects_blank_package_names() -> unit {
 }
 
 #[test]
-fn permits_repeated_blank_declarations_without_scope_bindings() -> unit {
+fn permits_repeated_blank_declarations_without_scope_bindings() -> () {
     let source = "package p\ntype _ = int\ntype _[P any] = int\nvar _ = 1\nvar _ = 2\nfunc _() {}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -2188,7 +2188,7 @@ fn permits_repeated_blank_declarations_without_scope_bindings() -> unit {
 }
 
 #[test]
-fn permits_repeated_blank_struct_fields() -> unit {
+fn permits_repeated_blank_struct_fields() -> () {
     let source = "package p\ntype P struct {\n    _ int\n    _ string\n}\nfunc Blank(_ int, _ string) {}\n";
     let result = check_source(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -2204,7 +2204,7 @@ fn permits_repeated_blank_struct_fields() -> unit {
 }
 
 #[test]
-fn preserves_parser_diagnostics_and_partial_semantic_facts() -> unit {
+fn preserves_parser_diagnostics_and_partial_semantic_facts() -> () {
     let result = check_source("package p\nvar X int\nvar Y\n");
     testing::assert(result.diagnostics.len() > 0);
     let pkg = result.world.packages[result.package_id.value];
@@ -2213,7 +2213,7 @@ fn preserves_parser_diagnostics_and_partial_semantic_facts() -> unit {
 }
 
 #[test]
-fn type_fact_source_index_handles_collisions_and_duplicates() -> unit {
+fn type_fact_source_index_handles_collisions_and_duplicates() -> () {
     let index = empty_type_fact_source_index(8);
     let first = TypeFactSourceKey { file: 0, start: 0, end: 1 };
     let first_slot = first.hash() & index.mask;

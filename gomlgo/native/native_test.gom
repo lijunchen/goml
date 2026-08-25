@@ -91,7 +91,7 @@ fn generated_file(files: Vec[GeneratedFile], name: string) -> Option[GeneratedFi
 }
 
 #[test]
-fn generates_deterministic_exact_registry_source() -> unit {
+fn generates_deterministic_exact_registry_source() -> () {
     testing::assert_eq(
         testing::expect_ok(
             generate_registry_source(example_manifest()),
@@ -113,7 +113,7 @@ fn generates_deterministic_exact_registry_source() -> unit {
 }
 
 #[test]
-fn imports_a_package_once_for_function_and_exit_bindings() -> unit {
+fn imports_a_package_once_for_function_and_exit_bindings() -> () {
     let source = testing::expect_ok(
         generate_registry_source(
             new_manifest(
@@ -141,7 +141,7 @@ fn imports_a_package_once_for_function_and_exit_bindings() -> unit {
 }
 
 #[test]
-fn routes_program_executable_through_the_bridge() -> unit {
+fn routes_program_executable_through_the_bridge() -> () {
     let source = testing::expect_ok(
         generate_registry_source(
             new_manifest(
@@ -167,7 +167,7 @@ fn routes_program_executable_through_the_bridge() -> unit {
 }
 
 #[test]
-fn generates_native_method_and_type_bindings() -> unit {
+fn generates_native_method_and_type_bindings() -> () {
     let manifest = new_manifest(
         Vec::new(),
         Vec::from_array(
@@ -200,7 +200,7 @@ fn generates_native_method_and_type_bindings() -> unit {
 }
 
 #[test]
-fn generates_concrete_generic_function_bindings() -> unit {
+fn generates_concrete_generic_function_bindings() -> () {
     let source = testing::expect_ok(
         generate_registry_source(
             new_manifest(
@@ -226,7 +226,7 @@ fn generates_concrete_generic_function_bindings() -> unit {
 }
 
 #[test]
-fn generates_interface_proxies_and_aggregate_shells() -> unit {
+fn generates_interface_proxies_and_aggregate_shells() -> () {
     let manifest = new_manifest(
         Vec::new(),
         Vec::from_array(
@@ -287,7 +287,7 @@ fn generates_interface_proxies_and_aggregate_shells() -> unit {
 }
 
 #[test]
-fn generates_void_interface_proxy_methods_without_unused_results() -> unit {
+fn generates_void_interface_proxy_methods_without_unused_results() -> () {
     let manifest = new_manifest(Vec::new(), Vec::new());
     manifest.proxies.push(
         NativeProxySpec {
@@ -315,7 +315,7 @@ fn generates_void_interface_proxy_methods_without_unused_results() -> unit {
 }
 
 #[test]
-fn rejects_aggregate_fields_without_concrete_go_types() -> unit {
+fn rejects_aggregate_fields_without_concrete_go_types() -> () {
     let manifest = new_manifest(Vec::new(), Vec::new());
     manifest.aggregates.push(
         NativeAggregateSpec {
@@ -330,7 +330,7 @@ fn rejects_aggregate_fields_without_concrete_go_types() -> unit {
 }
 
 #[test]
-fn hashes_only_the_canonical_manifest() -> unit {
+fn hashes_only_the_canonical_manifest() -> () {
     let reordered = new_manifest(
         Vec::from_array(["time/tzdata", "time/tzdata"]),
         Vec::from_array([example_calls()[1], example_calls()[2], example_calls()[0]]),
@@ -363,7 +363,7 @@ fn hashes_only_the_canonical_manifest() -> unit {
 }
 
 #[test]
-fn rejects_invalid_and_duplicate_bindings() -> unit {
+fn rejects_invalid_and_duplicate_bindings() -> () {
     let duplicate = new_manifest(Vec::new(), Vec::from_array([exit_call(2), exit_call(2)]));
     testing::assert(canonical_manifest(duplicate).is_err());
     let invalid_symbol = new_manifest(
@@ -406,7 +406,7 @@ fn rejects_invalid_and_duplicate_bindings() -> unit {
 }
 
 #[test]
-fn cache_key_covers_toolchain_source_imports_manifest_and_abi() -> unit {
+fn cache_key_covers_toolchain_source_imports_manifest_and_abi() -> () {
     let base = testing::expect_ok(
         cache_key(cache_input(Vec::from_array(["osusergo", "netgo"])), example_manifest()),
         "cache key failed",
@@ -476,7 +476,7 @@ fn cache_key_covers_toolchain_source_imports_manifest_and_abi() -> unit {
 }
 
 #[test]
-fn creates_a_reproducible_go_build_plan() -> unit {
+fn creates_a_reproducible_go_build_plan() -> () {
     let plan = testing::expect_ok(
         build_plan(
             BuildRequest {
@@ -591,7 +591,7 @@ fn creates_a_reproducible_go_build_plan() -> unit {
 }
 
 #[test]
-fn rejects_cgo_and_unsafe_image_paths() -> unit {
+fn rejects_cgo_and_unsafe_image_paths() -> () {
     let cgo = cache_input(Vec::new());
     cgo.cgo = true;
     testing::assert(
@@ -654,7 +654,7 @@ fn rejects_cgo_and_unsafe_image_paths() -> unit {
 }
 
 #[test]
-fn generated_registry_builds_with_go126() -> unit {
+fn generated_registry_builds_with_go126() -> () {
     let root = env::current_dir().unwrap_or(".");
     let actual_bridge = testing::expect_ok(
         fs::read_file(path::join(root, "nativebridge/bridge.go")),

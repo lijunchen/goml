@@ -12,7 +12,7 @@ fn required_type(world: World, name: string) -> TypeId {
 }
 
 #[test]
-fn universe_matches_go_126_predeclared_objects() -> unit {
+fn universe_matches_go_126_predeclared_objects() -> () {
     let world = new_world();
     testing::assert_eq(world.scopes[world.universe.value].entries.len(), 44);
     for name in Vec::from_array(
@@ -67,7 +67,7 @@ fn universe_matches_go_126_predeclared_objects() -> unit {
 }
 
 #[test]
-fn universe_materializes_alias_named_and_basic_types() -> unit {
+fn universe_materializes_alias_named_and_basic_types() -> () {
     let world = new_world();
     testing::assert_eq(format_type(world, required_type(world, "byte")), "byte");
     testing::assert_eq(format_type(world, required_type(world, "rune")), "rune");
@@ -97,7 +97,7 @@ fn universe_materializes_alias_named_and_basic_types() -> unit {
 }
 
 #[test]
-fn scopes_support_shadowing_and_position_sensitive_lookup() -> unit {
+fn scopes_support_shadowing_and_position_sensitive_lookup() -> () {
     let world = new_world();
     let pkg = add_package(world, "example/p", "p", world.universe, false);
     let package_scope = world.packages[pkg.value].scope;
@@ -157,7 +157,7 @@ fn scopes_support_shadowing_and_position_sensitive_lookup() -> unit {
 }
 
 #[test]
-fn scope_depths_follow_parent_changes() -> unit {
+fn scope_depths_follow_parent_changes() -> () {
     let world = new_world();
     let outer = add_scope(
         world,
@@ -181,7 +181,7 @@ fn scope_depths_follow_parent_changes() -> unit {
 }
 
 #[test]
-fn recursive_named_types_use_ids_and_format_stably() -> unit {
+fn recursive_named_types_use_ids_and_format_stably() -> () {
     let world = new_world();
     let pkg = add_package(world, "example/p", "p", world.universe, false);
     let object = add_object(
@@ -243,7 +243,7 @@ fn recursive_named_types_use_ids_and_format_stably() -> unit {
 }
 
 #[test]
-fn type_revision_tracks_graph_mutations() -> unit {
+fn type_revision_tracks_graph_mutations() -> () {
     let world = empty_world();
     let initial = type_revision(world);
     let placeholder = add_type(world, TypeKind::Pointer { element: world.invalid });
@@ -274,7 +274,7 @@ fn type_revision_tracks_graph_mutations() -> unit {
 }
 
 #[test]
-fn exported_names_and_gc_sizes_match_target_rules() -> unit {
+fn exported_names_and_gc_sizes_match_target_rules() -> () {
     testing::assert(is_exported("Exported"));
     testing::assert(is_exported("Éclair"));
     testing::assert(!is_exported("private"));
@@ -288,7 +288,7 @@ fn exported_names_and_gc_sizes_match_target_rules() -> unit {
 }
 
 #[test]
-fn gc_sizes_compute_composite_alignment_offsets_and_trailing_padding() -> unit {
+fn gc_sizes_compute_composite_alignment_offsets_and_trailing_padding() -> () {
     let world = new_world();
     let sizes = testing::expect_some(gc_sizes("amd64"), "missing amd64 sizes");
     let int8_type = testing::expect_some(basic_type(world, "int8"), "missing int8");
@@ -354,7 +354,7 @@ fn named_test_type(world: World, pkg: PackageId, name: string, rhs: TypeId) -> T
 }
 
 #[test]
-fn type_identity_distinguishes_named_types_and_unaliases() -> unit {
+fn type_identity_distinguishes_named_types_and_unaliases() -> () {
     let world = new_world();
     let pkg = add_package(world, "example/p", "p", world.universe, true);
     let int_type = required_type(world, "int");
@@ -387,7 +387,7 @@ fn type_identity_distinguishes_named_types_and_unaliases() -> unit {
 }
 
 #[test]
-fn type_resolution_rejects_alias_and_named_cycles() -> unit {
+fn type_resolution_rejects_alias_and_named_cycles() -> () {
     let world = new_world();
     let first_alias = add_type(
         world,
@@ -457,7 +457,7 @@ fn type_resolution_rejects_alias_and_named_cycles() -> unit {
 }
 
 #[test]
-fn structural_identity_handles_recursive_composite_types() -> unit {
+fn structural_identity_handles_recursive_composite_types() -> () {
     let world = new_world();
     let int_type = required_type(world, "int");
     let left = add_type(world, TypeKind::Slice { element: int_type });
@@ -471,7 +471,7 @@ fn structural_identity_handles_recursive_composite_types() -> unit {
 }
 
 #[test]
-fn comparability_follows_go_composite_rules() -> unit {
+fn comparability_follows_go_composite_rules() -> () {
     let world = new_world();
     let int_type = required_type(world, "int");
     let string_type = required_type(world, "string");
@@ -521,7 +521,7 @@ fn comparability_follows_go_composite_rules() -> unit {
 }
 
 #[test]
-fn assignability_handles_underlying_and_channel_rules() -> unit {
+fn assignability_handles_underlying_and_channel_rules() -> () {
     let world = new_world();
     let pkg = add_package(world, "example/p", "p", world.universe, true);
     let int_type = required_type(world, "int");
@@ -605,7 +605,7 @@ fn test_method(
     )
 }
 
-fn set_named_methods(world: World, value: TypeId, methods: Vec[ObjectId]) -> unit {
+fn set_named_methods(world: World, value: TypeId, methods: Vec[ObjectId]) -> () {
     match world.types[value.value].kind {
         TypeKind::Named { object, underlying, type_params, type_args, methods: _ } => {
             let _ = set_type(
@@ -652,7 +652,7 @@ fn test_interface_method(world: World, package_id: PackageId, name: string, resu
 }
 
 #[test]
-fn method_sets_distinguish_value_pointer_and_promoted_methods() -> unit {
+fn method_sets_distinguish_value_pointer_and_promoted_methods() -> () {
     let world = new_world();
     let package_id = add_package(world, "example/p", "p", world.universe, false);
     let int_type = required_type(world, "int");
@@ -705,7 +705,7 @@ fn method_sets_distinguish_value_pointer_and_promoted_methods() -> unit {
 }
 
 #[test]
-fn interface_implementation_uses_completed_embedded_method_sets() -> unit {
+fn interface_implementation_uses_completed_embedded_method_sets() -> () {
     let world = new_world();
     let package_id = add_package(world, "example/p", "p", world.universe, false);
     let int_type = required_type(world, "int");

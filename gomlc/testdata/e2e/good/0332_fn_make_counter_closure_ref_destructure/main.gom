@@ -1,4 +1,4 @@
-fn make_counter() -> (() -> i32, () -> unit) {
+fn make_counter() -> (() -> i32, () -> ()) {
     let count = Ref::new(0);
     let get = || count.get();
     let inc = || count.set(count.get() + 1);

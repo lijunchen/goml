@@ -24,7 +24,7 @@ fn expect_constant(value: Result[ConstantResponse, string]) -> ConstantResponse 
 }
 
 #[test]
-fn request_encoding_is_stable() -> unit {
+fn request_encoding_is_stable() -> () {
     let encoded = encode_check_request(
         request(
             "example/p",
@@ -48,7 +48,7 @@ fn request_encoding_is_stable() -> unit {
 }
 
 #[test]
-fn acceptance_request_skips_info() -> unit {
+fn acceptance_request_skips_info() -> () {
     let encoded = encode_check_request(acceptance_request("example/p", Vec::new()));
     let parsed = json::parse(encoded).unwrap_or(json::Value::Null);
     testing::assert(
@@ -61,7 +61,7 @@ fn acceptance_request_skips_info() -> unit {
 }
 
 #[test]
-fn invokes_type_check_oracle() -> unit {
+fn invokes_type_check_oracle() -> () {
     let response = expect_check(
         run_check(
             request(
@@ -92,7 +92,7 @@ fn invokes_type_check_oracle() -> unit {
 }
 
 #[test]
-fn invokes_constant_oracle() -> unit {
+fn invokes_constant_oracle() -> () {
     let response = expect_constant(
         run_constant(ConstantRequest { expression: "(1 << 100) + 3", go_version: "go1.26" }),
     );

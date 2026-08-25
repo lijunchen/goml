@@ -25,7 +25,7 @@ fn decode_choice(value: serde::Value) -> Result[Choice, string] {
     serde::from_value(value)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let item = Item { name: "one", value: 13.to_i32() };
     let decoded = match serde::to_value(item) {
         Ok(value) => match decode_item(value) {

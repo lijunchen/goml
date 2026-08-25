@@ -196,7 +196,7 @@ fn expect_string_intrinsic(name: string, args: Vec[ctir::CtValue]) -> ctir::CtVa
 }
 
 #[test]
-fn evaluates_compile_time_string_intrinsics() -> unit {
+fn evaluates_compile_time_string_intrinsics() -> () {
     match expect_string_intrinsic(
         "comptime.string.len",
         Vec::from_array([ctir::CtValue::String("éa")]),
@@ -242,7 +242,7 @@ fn evaluates_compile_time_string_intrinsics() -> unit {
 }
 
 #[test]
-fn rejects_invalid_compile_time_string_boundaries() -> unit {
+fn rejects_invalid_compile_time_string_boundaries() -> () {
     match call_value_intrinsic(
         ctir::CtTarget { int_width: 64 },
         "comptime.string.get",
@@ -269,7 +269,7 @@ fn rejects_invalid_compile_time_string_boundaries() -> unit {
 }
 
 #[test]
-fn evaluates_recursive_direct_calls() -> unit {
+fn evaluates_recursive_direct_calls() -> () {
     let module = factorial_module();
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
@@ -367,7 +367,7 @@ fn loop_site_module() -> ctir::CtModule {
 }
 
 #[test]
-fn evaluates_local_state_and_loops() -> unit {
+fn evaluates_local_state_and_loops() -> () {
     let module = loop_site_module();
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
@@ -377,7 +377,7 @@ fn evaluates_local_state_and_loops() -> unit {
 }
 
 #[test]
-fn rejects_loop_control_after_loop_scope() -> unit {
+fn rejects_loop_control_after_loop_scope() -> () {
     let sibling_break = ctir::CtExpr {
         kind: ctir::CtExprKind::Break { target: 7, value: Option::None },
         ty: ctir::CtType::Never,
@@ -399,7 +399,7 @@ fn rejects_loop_control_after_loop_scope() -> unit {
 }
 
 #[test]
-fn inclusive_range_stops_at_maximum_integer() -> unit {
+fn inclusive_range_stops_at_maximum_integer() -> () {
     let maximum = narrow_int_expr(true, 64, 9223372036854775807);
     let expression = ctir::CtExpr {
         kind: ctir::CtExprKind::ForRange {
@@ -419,13 +419,13 @@ fn inclusive_range_stops_at_maximum_integer() -> unit {
     };
     match evaluate_expression(expression, Vec::new(), default_limits()) {
         Ok(ctir::CtValue::Unit) => (),
-        Ok(_) => testing::fail("expected unit range result"),
+        Ok(_) => testing::fail("expected () range result"),
         Err(error) => testing::fail(error.message),
     }
 }
 
 #[test]
-fn evaluates_structured_match_values() -> unit {
+fn evaluates_structured_match_values() -> () {
     let option_type = ctir::CtType::Enum {
         name: "test::OptionInt",
         variants: Vec::from_array([Vec::from_array([int_type()]), Vec::new()]),
@@ -485,7 +485,7 @@ fn evaluates_structured_match_values() -> unit {
 }
 
 #[test]
-fn reports_compile_errors_and_resource_limits() -> unit {
+fn reports_compile_errors_and_resource_limits() -> () {
     let message = ctir::CtExpr {
         kind: ctir::CtExprKind::Value(ctir::CtValue::String("stop")),
         ty: ctir::CtType::String,
@@ -531,7 +531,7 @@ fn reports_compile_errors_and_resource_limits() -> unit {
 }
 
 #[test]
-fn enforces_depth_value_and_result_limits() -> unit {
+fn enforces_depth_value_and_result_limits() -> () {
     let depth_limits = EvalLimits {
         fuel: 1000,
         call_depth: 2,
@@ -585,7 +585,7 @@ fn enforces_depth_value_and_result_limits() -> unit {
 }
 
 #[test]
-fn applies_fixed_width_integer_semantics() -> unit {
+fn applies_fixed_width_integer_semantics() -> () {
     let int8_type = narrow_int_type(true, 8);
     let wrapping_add = binary_expr(
         ctir::CtBinaryOp::Add,
@@ -646,7 +646,7 @@ fn applies_fixed_width_integer_semantics() -> unit {
 }
 
 #[test]
-fn rejects_invalid_ctir_before_execution() -> unit {
+fn rejects_invalid_ctir_before_execution() -> () {
     let module = ctir::empty_module("test::invalid");
     module.sites.push(
         ctir::CtSite {
@@ -702,7 +702,7 @@ fn rejects_invalid_ctir_before_execution() -> unit {
 }
 
 #[test]
-fn evaluates_short_circuit_and_left_to_right_order() -> unit {
+fn evaluates_short_circuit_and_left_to_right_order() -> () {
     let short_circuit = binary_expr(
         ctir::CtBinaryOp::And,
         bool_expr(false),
@@ -728,7 +728,7 @@ fn evaluates_short_circuit_and_left_to_right_order() -> unit {
 }
 
 #[test]
-fn evaluates_return_break_and_continue() -> unit {
+fn evaluates_return_break_and_continue() -> () {
     let increment = binary_expr(
         ctir::CtBinaryOp::Add,
         local_expr(0, int_type()),
@@ -839,7 +839,7 @@ fn evaluates_return_break_and_continue() -> unit {
 }
 
 #[test]
-fn applies_integer_casts_and_reports_numeric_failures() -> unit {
+fn applies_integer_casts_and_reports_numeric_failures() -> () {
     let widened = ctir::CtExpr {
         kind: ctir::CtExprKind::Cast {
             value: narrow_int_expr(true, 8, 255),
@@ -910,7 +910,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> unit {
 }
 
 #[test]
-fn enforces_temporary_memory_and_target_limits() -> unit {
+fn enforces_temporary_memory_and_target_limits() -> () {
     let value = ctir::CtExpr {
         kind: ctir::CtExprKind::Value(ctir::CtValue::String("12345")),
         ty: ctir::CtType::String,
@@ -944,7 +944,7 @@ fn enforces_temporary_memory_and_target_limits() -> unit {
 }
 
 #[test]
-fn rejects_invalid_derive_ctir_artifacts() -> unit {
+fn rejects_invalid_derive_ctir_artifacts() -> () {
     let invalid_signature = ctir::empty_module("test::derive_signature");
     invalid_signature.functions.push(
         ctir::CtFunction {

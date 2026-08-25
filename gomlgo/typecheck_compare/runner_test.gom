@@ -5,7 +5,7 @@ use std::path;
 use std::testing;
 
 #[test]
-fn compares_local_typecheck_fixtures() -> unit {
+fn compares_local_typecheck_fixtures() -> () {
     if env::var("GOMLGO_ORACLE").is_some() {
         let root = path::join(env::current_dir().unwrap_or("."), "testdata/typecheck");
         let result = testing::expect_ok(compare_tree(root), "typecheck comparison failed");

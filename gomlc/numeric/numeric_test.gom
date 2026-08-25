@@ -3,7 +3,7 @@ package numeric;
 use std::testing;
 
 #[test]
-fn normalizes_integer_bases_without_machine_width_limits() -> unit {
+fn normalizes_integer_bases_without_machine_width_limits() -> () {
     match normalize_integer("0b1111_0000") {
         Some(value) => testing::assert_eq(value, "240"),
         None => testing::fail("expected binary integer"),
@@ -23,7 +23,7 @@ fn normalizes_integer_bases_without_machine_width_limits() -> unit {
 }
 
 #[test]
-fn rejects_invalid_normalized_integers() -> unit {
+fn rejects_invalid_normalized_integers() -> () {
     match normalize_integer("0x") {
         None => (),
         Some(_) => testing::fail("expected missing hexadecimal digits"),
@@ -46,14 +46,14 @@ fn rejects_invalid_normalized_integers() -> unit {
     }
 }
 
-fn assert_float_integer(value: string, expected: string) -> unit {
+fn assert_float_integer(value: string, expected: string) -> () {
     match normalize_float_integer(value, 20) {
         Some(actual) => testing::assert_eq(actual, expected),
         None => testing::fail("expected exact integer float"),
     }
 }
 
-fn assert_non_integer_float(value: string) -> unit {
+fn assert_non_integer_float(value: string) -> () {
     match normalize_float_integer(value, 20) {
         Some(_) => testing::fail("expected non-integer float"),
         None => (),
@@ -61,7 +61,7 @@ fn assert_non_integer_float(value: string) -> unit {
 }
 
 #[test]
-fn normalizes_exact_float_integers_without_rounding() -> unit {
+fn normalizes_exact_float_integers_without_rounding() -> () {
     assert_float_integer("1.0", "1");
     assert_float_integer("1.23e2", "123");
     assert_float_integer("1200e-2", "12");
@@ -78,7 +78,7 @@ fn normalizes_exact_float_integers_without_rounding() -> unit {
 }
 
 #[test]
-fn parses_valid_float32() -> unit {
+fn parses_valid_float32() -> () {
     match parse_float32("3.5") {
         Some(value) => testing::assert(value == 3.5),
         None => testing::fail("expected f32"),

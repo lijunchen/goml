@@ -1,32 +1,32 @@
 trait First {
-    fn first(self: Self) -> unit;
+    fn first(self: Self) -> ();
 }
 
 trait Second {
-    fn second(self: Self) -> unit;
+    fn second(self: Self) -> ();
 }
 
 impl First for i32 {
-    fn first(self: i32) -> unit { () }
+    fn first(self: i32) -> () { () }
 }
 
 impl First for string {
-    fn first(self: string) -> unit { () }
+    fn first(self: string) -> () { () }
 }
 
 impl Second for string {
-    fn second(self: string) -> unit { () }
+    fn second(self: string) -> () { () }
 }
 
-fn require_first[T: First](value: T) -> unit {
+fn require_first[T: First](value: T) -> () {
     ()
 }
 
-fn require_second[T: Second](value: T) -> unit {
+fn require_second[T: Second](value: T) -> () {
     ()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let consume = |value| {
         require_first(value);
         require_second(value)

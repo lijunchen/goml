@@ -1,5 +1,5 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 trait Source {
@@ -7,9 +7,9 @@ trait Source {
     fn get(self: Self) -> Self::Item;
 }
 
-fn require_mark[T: Mark](value: T) -> unit { () }
+fn require_mark[T: Mark](value: T) -> () { () }
 
-fn consume[A: Source, B: Source](left: A, right: B) -> unit
+fn consume[A: Source, B: Source](left: A, right: B) -> ()
 where
     A::Item = B::Item,
     B::Item: Mark,
@@ -18,4 +18,4 @@ where
     require_mark(Source::get(left))
 }
 
-fn main() -> unit { () }
+fn main() -> () { () }

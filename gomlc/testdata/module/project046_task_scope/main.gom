@@ -16,7 +16,7 @@ fn third_error(_token: task::CancelToken) -> Result[isize, string] {
     Result::Err("third")
 }
 
-fn main() -> unit {
+fn main() -> () {
     let completed = Ref::new(false);
     task::scope(
         |scope: task::Scope| {
@@ -40,7 +40,7 @@ fn main() -> unit {
     println(joined.1);
     println(joined.2);
     let cancelled = Ref::new(false);
-    let result: Result[unit, string] = task::try_scope(
+    let result: Result[(), string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn(
                 |token: task::CancelToken| {
@@ -96,7 +96,7 @@ fn main() -> unit {
     };
     let recv_cancelled = Ref::new(false);
     let recv_channel: Channel[isize] = Channel::new(0);
-    let _: Result[unit, string] = task::try_scope(
+    let _: Result[(), string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn(
                 |token: task::CancelToken| {
@@ -112,7 +112,7 @@ fn main() -> unit {
     println(recv_cancelled.get());
     let send_cancelled = Ref::new(false);
     let send_channel: Channel[isize] = Channel::new(0);
-    let _: Result[unit, string] = task::try_scope(
+    let _: Result[(), string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn(
                 |token: task::CancelToken| {
@@ -126,9 +126,9 @@ fn main() -> unit {
         },
     );
     println(send_cancelled.get());
-    let sleep_started: Channel[unit] = Channel::new(1);
+    let sleep_started: Channel[()] = Channel::new(1);
     let sleep_cancelled = Ref::new(false);
-    let _: Result[unit, string] = task::try_scope(
+    let _: Result[(), string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn(
                 |token: task::CancelToken| {
@@ -144,9 +144,9 @@ fn main() -> unit {
         },
     );
     println(sleep_cancelled.get());
-    let process_started: Channel[unit] = Channel::new(1);
+    let process_started: Channel[()] = Channel::new(1);
     let process_cancelled = Ref::new(false);
-    let _: Result[unit, string] = task::try_scope(
+    let _: Result[(), string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn(
                 |token: task::CancelToken| {

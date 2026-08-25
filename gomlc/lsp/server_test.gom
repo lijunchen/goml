@@ -58,7 +58,7 @@ fn response_has_snippet(value: json::Value, expected: string) -> bool {
 }
 
 #[test]
-fn identifies_status_operations() -> unit {
+fn identifies_status_operations() -> () {
     let hover = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"textDocument/hover\",\"params\":{}}";
     match status_operation(hover) {
         Some(operation) => testing::assert_eq(operation, "Hover"),
@@ -90,7 +90,7 @@ fn identifies_status_operations() -> unit {
 }
 
 #[test]
-fn initializes_and_answers_hover_requests() -> unit {
+fn initializes_and_answers_hover_requests() -> () {
     let server = new_server();
     match handle_payload(
         server,
@@ -153,9 +153,9 @@ fn initializes_and_answers_hover_requests() -> unit {
 }
 
 #[test]
-fn returns_expanded_derive_source() -> unit {
+fn returns_expanded_derive_source() -> () {
     let server = new_server();
-    let source = "#[derive(PartialEq, Eq)] struct Key { value: isize } fn main() -> unit { () }";
+    let source = "#[derive(PartialEq, Eq)] struct Key { value: isize } fn main() -> () { () }";
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/expanded.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
         + source
         + "\"}}}";
@@ -180,7 +180,7 @@ fn returns_expanded_derive_source() -> unit {
 }
 
 #[test]
-fn applies_full_document_changes_and_stops_on_exit() -> unit {
+fn applies_full_document_changes_and_stops_on_exit() -> () {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> i32 { 1 }\"}}}";
     match handle_payload(server, open) {
@@ -203,9 +203,9 @@ fn applies_full_document_changes_and_stops_on_exit() -> unit {
 }
 
 #[test]
-fn completes_from_cached_analysis_after_document_changes() -> unit {
+fn completes_from_cached_analysis_after_document_changes() -> () {
     let server = new_server();
-    let source = "struct Point { x: i32 } fn consume(value: i32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.x); () }";
+    let source = "struct Point { x: i32 } fn consume(value: i32) -> () { () } fn main() -> () { let point = Point { x: 1 }; consume(point.x); () }";
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
         + source
         + "\"}}}";
@@ -213,7 +213,7 @@ fn completes_from_cached_analysis_after_document_changes() -> unit {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
         Err(error) => testing::fail(error),
     };
-    let changed = "struct Point { x: i32 } fn consume(value: i32) -> unit { () } fn main() -> unit { let point = Point { x: 1 }; consume(point.); () }";
+    let changed = "struct Point { x: i32 } fn consume(value: i32) -> () { () } fn main() -> () { let point = Point { x: 1 }; consume(point.); () }";
     let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\""
         + changed
         + "\"}]}}";
@@ -240,14 +240,14 @@ fn completes_from_cached_analysis_after_document_changes() -> unit {
 }
 
 #[test]
-fn refreshes_completion_analysis_after_dependency_changes() -> unit {
+fn refreshes_completion_analysis_after_dependency_changes() -> () {
     let server = new_server();
     let root = "../gomlc/testdata/module/project001";
     let main_path = path::join(root, "main.gom");
     let lib_path = path::join(root, "lib/lib.gom");
     let main_uri = path_to_uri(main_path);
     let lib_uri = path_to_uri(lib_path);
-    let main_source = "package main; use project001::lib; fn main() -> unit { lib:: }";
+    let main_source = "package main; use project001::lib; fn main() -> () { lib:: }";
     let old_lib_source = "package lib; pub fn old_value() -> isize { 1 }";
     let new_lib_source = "package lib; pub fn new_value() -> isize { 2 }";
     let main_document = Document {
@@ -294,9 +294,9 @@ fn refreshes_completion_analysis_after_dependency_changes() -> unit {
 }
 
 #[test]
-fn completes_select_with_snippets() -> unit {
+fn completes_select_with_snippets() -> () {
     let server = new_server();
-    let source = "fn main() -> unit { sel }";
+    let source = "fn main() -> () { sel }";
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/select-completion.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
         + source
         + "\"}}}";
@@ -315,7 +315,7 @@ fn completes_select_with_snippets() -> unit {
 }
 
 #[test]
-fn keeps_cached_analysis_when_an_open_document_is_saved() -> unit {
+fn keeps_cached_analysis_when_an_open_document_is_saved() -> () {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-save.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> isize { 1 }\"}}}";
     match handle_payload(server, open) {
@@ -334,9 +334,9 @@ fn keeps_cached_analysis_when_an_open_document_is_saved() -> unit {
 }
 
 #[test]
-fn returns_run_test_code_lenses() -> unit {
+fn returns_run_test_code_lenses() -> () {
     let server = new_server();
-    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/value_test.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"package value;\\n#[test]\\nfn works() -> unit { () }\\n\"}}}";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/value_test.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"package value;\\n#[test]\\nfn works() -> () { () }\\n\"}}}";
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error),
@@ -371,7 +371,7 @@ fn returns_run_test_code_lenses() -> unit {
 }
 
 #[test]
-fn converts_diagnostic_fixes_to_code_actions() -> unit {
+fn converts_diagnostic_fixes_to_code_actions() -> () {
     let server = new_server();
     let request = "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"textDocument/codeAction\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/main.gom\"},\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"context\":{\"diagnostics\":[{\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"message\":\"replace\",\"data\":{\"fixes\":[{\"uri\":\"file:///tmp/main.gom\",\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"replacement\":\"x\",\"title\":\"Replace value\",\"preferred\":true}]}}]}}}";
     match handle_payload(server, request) {
@@ -398,7 +398,7 @@ fn converts_diagnostic_fixes_to_code_actions() -> unit {
 }
 
 #[test]
-fn returns_null_when_no_code_actions_apply() -> unit {
+fn returns_null_when_no_code_actions_apply() -> () {
     let server = new_server();
     let request = "{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"textDocument/codeAction\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/main.gom\"},\"range\":{\"start\":{\"line\":0,\"character\":0},\"end\":{\"line\":0,\"character\":1}},\"context\":{\"diagnostics\":[]}}}";
     match handle_payload(server, request) {
@@ -412,7 +412,7 @@ fn returns_null_when_no_code_actions_apply() -> unit {
 }
 
 #[test]
-fn reports_json_rpc_parse_and_invalid_request_errors() -> unit {
+fn reports_json_rpc_parse_and_invalid_request_errors() -> () {
     let server = new_server();
     match handle_payload(server, "{") {
         Ok(messages) => {
@@ -446,9 +446,9 @@ fn reports_json_rpc_parse_and_invalid_request_errors() -> unit {
 }
 
 #[test]
-fn filters_inlay_hints_to_the_requested_range() -> unit {
+fn filters_inlay_hints_to_the_requested_range() -> () {
     let server = new_server();
-    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/inlay.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> unit {\\n    let first = 1;\\n    let second = 2;\\n    ()\\n}\"}}}";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/inlay.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> () {\\n    let first = 1;\\n    let second = 2;\\n    ()\\n}\"}}}";
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error),
@@ -478,7 +478,7 @@ fn filters_inlay_hints_to_the_requested_range() -> unit {
 }
 
 #[test]
-fn rejects_requests_after_shutdown() -> unit {
+fn rejects_requests_after_shutdown() -> () {
     let server = new_server();
     let shutdown = "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"shutdown\"}";
     match handle_payload(server, shutdown) {
@@ -502,7 +502,7 @@ fn rejects_requests_after_shutdown() -> unit {
 }
 
 #[test]
-fn includes_diagnostics_in_hover() -> unit {
+fn includes_diagnostics_in_hover() -> () {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/hover-error.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> i32 { missing }\"}}}";
     match handle_payload(server, open) {
@@ -529,9 +529,9 @@ fn includes_diagnostics_in_hover() -> unit {
 }
 
 #[test]
-fn publishes_recovered_parser_diagnostics_at_utf16_positions() -> unit {
+fn publishes_recovered_parser_diagnostics_at_utf16_positions() -> () {
     let server = new_server();
-    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/recovery.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> unit {\\r\\n    let text = \\\"中\\\"\\r\\n    println(text);\\r\\n}\\r\\n\"}}}";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/recovery.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> () {\\r\\n    let text = \\\"中\\\"\\r\\n    println(text);\\r\\n}\\r\\n\"}}}";
     match handle_payload(server, open) {
         Ok(messages) => {
             testing::assert_eq(messages.len(), 1);

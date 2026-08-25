@@ -3,7 +3,7 @@ package line_index;
 use std::testing;
 
 #[test]
-fn indexes_ascii_blocks_newlines_and_wide_characters() -> unit {
+fn indexes_ascii_blocks_newlines_and_wide_characters() -> () {
     let source = "abcdefghijklmnop\nabcdefg\r\nqrst😀uv\rwx";
     let index = new(source);
     testing::assert_eq(index.line_starts.len(), 4);
@@ -31,7 +31,7 @@ fn indexes_ascii_blocks_newlines_and_wide_characters() -> unit {
 }
 
 #[test]
-fn converts_utf8_utf16_and_utf32_columns() -> unit {
+fn converts_utf8_utf16_and_utf32_columns() -> () {
     let source = "a😀中";
     let index = new(source);
     let utf8 = offset_to_line_col(index, source.byte_len(), Encoding::Utf8);

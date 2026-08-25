@@ -10,7 +10,7 @@ fn open_handle(ok: bool) -> Result[Handle, string] {
     }
 }
 
-fn close_handle(handle: Handle, ok: bool) -> Result[unit, string] {
+fn close_handle(handle: Handle, ok: bool) -> Result[(), string] {
     if ok {
         Result::Ok(())
     } else {
@@ -32,7 +32,7 @@ fn show(res: Result[string, string]) -> string {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(show(use_handle(true, true)));
     println(show(use_handle(false, true)));
     println(show(use_handle(true, false)));

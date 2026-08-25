@@ -454,7 +454,7 @@ fn apply_lambda(lambda: Lambda, args: Vec[Value]) -> Value {
     eval(lambda.body, env.get(), lambda.global)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let global: Ref[Vec[Binding]] = Ref::new(Vec::new());
     let program = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))";
     let exprs: Vec[SExpr] = parse_program(lex(program));

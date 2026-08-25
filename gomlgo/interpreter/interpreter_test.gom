@@ -98,7 +98,7 @@ fn test_function(local_count: isize, place_count: isize, instructions: Vec[bytec
 }
 
 #[test]
-fn identifies_only_locals_with_escaping_storage() -> unit {
+fn identifies_only_locals_with_escaping_storage() -> () {
     let function = test_function(
         3,
         3,
@@ -146,7 +146,7 @@ fn identifies_only_locals_with_escaping_storage() -> unit {
 }
 
 #[test]
-fn reuses_released_frame_cells() -> unit {
+fn reuses_released_frame_cells() -> () {
     let memory = new_memory();
     let first = allocate_reusable_cell(memory, Value::Local(LocalValue::Bool(false)));
     release_reusable_cell(memory, first);
@@ -162,7 +162,7 @@ fn reuses_released_frame_cells() -> unit {
 }
 
 #[test]
-fn excludes_native_call_waiters_from_channel_matching() -> unit {
+fn excludes_native_call_waiters_from_channel_matching() -> () {
     let goroutine = blocked_scheduler_goroutine();
     testing::assert(scheduled_channel_waiter(goroutine));
     goroutine.native.set(
@@ -191,7 +191,7 @@ fn excludes_native_call_waiters_from_channel_matching() -> unit {
 }
 
 #[test]
-fn executes_functions_assignments_loops_and_switches() -> unit {
+fn executes_functions_assignments_loops_and_switches() -> () {
     let result = run(load_bytecode("control"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -201,7 +201,7 @@ fn executes_functions_assignments_loops_and_switches() -> unit {
 }
 
 #[test]
-fn executes_aggregate_pointer_and_slice_operations() -> unit {
+fn executes_aggregate_pointer_and_slice_operations() -> () {
     let result = run(load_bytecode("aggregate_slice"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
@@ -213,7 +213,7 @@ fn executes_aggregate_pointer_and_slice_operations() -> unit {
 }
 
 #[test]
-fn executes_compiler_generated_vector_shape() -> unit {
+fn executes_compiler_generated_vector_shape() -> () {
     let result = run(load_bytecode("generated_vec"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string().unwrap_or("generated vector execution failed"))
@@ -225,7 +225,7 @@ fn executes_compiler_generated_vector_shape() -> unit {
 }
 
 #[test]
-fn executes_slices_grow_for_interpreted_structs() -> unit {
+fn executes_slices_grow_for_interpreted_structs() -> () {
     let program = load_bytecode("slices_grow");
     testing::assert(program.native_calls.is_empty());
     let result = run(program, default_config());
@@ -235,7 +235,7 @@ fn executes_slices_grow_for_interpreted_structs() -> unit {
 }
 
 #[test]
-fn writes_native_slice_mutations_back_with_interpreted_goroutine_identity() -> unit {
+fn writes_native_slice_mutations_back_with_interpreted_goroutine_identity() -> () {
     let program = load_bytecode("runtime_stack");
     testing::assert(
         native::install_catalog(
@@ -249,7 +249,7 @@ fn writes_native_slice_mutations_back_with_interpreted_goroutine_identity() -> u
 }
 
 #[test]
-fn passes_native_backed_pointers_through_native_interfaces() -> unit {
+fn passes_native_backed_pointers_through_native_interfaces() -> () {
     let program = load_bytecode("native_locker");
     let manifest = testing::expect_ok(bytecode::native_manifest(program), "native manifest failed");
     match native::install_catalog_error(manifest) {
@@ -265,7 +265,7 @@ fn passes_native_backed_pointers_through_native_interfaces() -> unit {
 }
 
 #[test]
-fn compares_host_backed_errors_with_nil() -> unit {
+fn compares_host_backed_errors_with_nil() -> () {
     let program = load_bytecode("native_error_nil");
     testing::assert(
         native::install_catalog(
@@ -279,7 +279,7 @@ fn compares_host_backed_errors_with_nil() -> unit {
 }
 
 #[test]
-fn calls_host_interface_methods_with_named_scalar_results() -> unit {
+fn calls_host_interface_methods_with_named_scalar_results() -> () {
     let program = load_bytecode("native_filemode");
     testing::assert(
         native::install_catalog(
@@ -295,7 +295,7 @@ fn calls_host_interface_methods_with_named_scalar_results() -> unit {
 }
 
 #[test]
-fn wakes_mixed_native_selects_from_local_channels() -> unit {
+fn wakes_mixed_native_selects_from_local_channels() -> () {
     let program = load_bytecode("mixed_native_select");
     testing::assert(
         native::install_catalog(
@@ -311,7 +311,7 @@ fn wakes_mixed_native_selects_from_local_channels() -> unit {
 }
 
 #[test]
-fn initializes_native_composite_literals_with_callbacks() -> unit {
+fn initializes_native_composite_literals_with_callbacks() -> () {
     let program = load_bytecode("native_cmd_literal");
     testing::assert(
         native::install_catalog(
@@ -327,7 +327,7 @@ fn initializes_native_composite_literals_with_callbacks() -> unit {
 }
 
 #[test]
-fn converts_strings_and_byte_slices() -> unit {
+fn converts_strings_and_byte_slices() -> () {
     let result = run(load_bytecode("string_byte_conversion"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string().unwrap_or("string conversion execution failed"))
@@ -342,7 +342,7 @@ fn converts_strings_and_byte_slices() -> unit {
 }
 
 #[test]
-fn preserves_switch_evaluation_and_branch_control_flow() -> unit {
+fn preserves_switch_evaluation_and_branch_control_flow() -> () {
     let result = run(load_bytecode("control_flow"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -351,7 +351,7 @@ fn preserves_switch_evaluation_and_branch_control_flow() -> unit {
 }
 
 #[test]
-fn executes_basic_values_multi_return_and_numeric_edges() -> unit {
+fn executes_basic_values_multi_return_and_numeric_edges() -> () {
     let result = run(load_bytecode("basic_values"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
@@ -363,7 +363,7 @@ fn executes_basic_values_multi_return_and_numeric_edges() -> unit {
 }
 
 #[test]
-fn executes_integer_array_slice_pointer_and_string_ranges() -> unit {
+fn executes_integer_array_slice_pointer_and_string_ranges() -> () {
     let result = run(load_bytecode("range_values"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
@@ -375,7 +375,7 @@ fn executes_integer_array_slice_pointer_and_string_ranges() -> unit {
 }
 
 #[test]
-fn executes_package_globals_and_init_functions() -> unit {
+fn executes_package_globals_and_init_functions() -> () {
     let result = run(load_bytecode("globals_init"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -384,7 +384,7 @@ fn executes_package_globals_and_init_functions() -> unit {
 }
 
 #[test]
-fn executes_maps_and_clear() -> unit {
+fn executes_maps_and_clear() -> () {
     let result = run(load_bytecode("maps"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -396,7 +396,7 @@ fn executes_maps_and_clear() -> unit {
 }
 
 #[test]
-fn executes_methods_interfaces_and_type_assertions() -> unit {
+fn executes_methods_interfaces_and_type_assertions() -> () {
     let result = run(load_bytecode("methods_interfaces"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -408,7 +408,7 @@ fn executes_methods_interfaces_and_type_assertions() -> unit {
 }
 
 #[test]
-fn executes_closures_function_values_and_loop_captures() -> unit {
+fn executes_closures_function_values_and_loop_captures() -> () {
     let result = run(load_bytecode("closures"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -420,7 +420,7 @@ fn executes_closures_function_values_and_loop_captures() -> unit {
 }
 
 #[test]
-fn executes_generic_function_and_method_instances() -> unit {
+fn executes_generic_function_and_method_instances() -> () {
     let result = run(load_bytecode("generics"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -429,7 +429,7 @@ fn executes_generic_function_and_method_instances() -> unit {
 }
 
 #[test]
-fn executes_type_switches_in_source_order() -> unit {
+fn executes_type_switches_in_source_order() -> () {
     let result = run(load_bytecode("type_switch"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -441,7 +441,7 @@ fn executes_type_switches_in_source_order() -> unit {
 }
 
 #[test]
-fn schedules_goroutines_and_channels_cooperatively() -> unit {
+fn schedules_goroutines_and_channels_cooperatively() -> () {
     let result = run(load_bytecode("channels"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string().unwrap_or("channel execution failed"))
@@ -455,7 +455,7 @@ fn schedules_goroutines_and_channels_cooperatively() -> unit {
 }
 
 #[test]
-fn executes_channel_select_and_labeled_breaks() -> unit {
+fn executes_channel_select_and_labeled_breaks() -> () {
     let result = run(load_bytecode("select"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string().unwrap_or("select execution failed"))
@@ -468,7 +468,7 @@ fn executes_channel_select_and_labeled_breaks() -> unit {
 }
 
 #[test]
-fn selects_ready_cases_from_the_configured_seed() -> unit {
+fn selects_ready_cases_from_the_configured_seed() -> () {
     let first_config = default_config();
     first_config.select_seed = 1.to_u64();
     let first = run(load_bytecode("select_seed"), first_config);
@@ -487,7 +487,7 @@ fn selects_ready_cases_from_the_configured_seed() -> unit {
 }
 
 #[test]
-fn reports_scheduler_deadlocks() -> unit {
+fn reports_scheduler_deadlocks() -> () {
     let result = run(load_bytecode("deadlock"), default_config());
     testing::assert_eq(result.exit_code, 1);
     testing::assert(result.error.is_some());
@@ -499,7 +499,7 @@ fn reports_scheduler_deadlocks() -> unit {
 }
 
 #[test]
-fn unwinds_channel_runtime_faults_through_recover() -> unit {
+fn unwinds_channel_runtime_faults_through_recover() -> () {
     let result = run(load_bytecode("channel_panic_recover"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
@@ -510,7 +510,7 @@ fn unwinds_channel_runtime_faults_through_recover() -> unit {
 }
 
 #[test]
-fn schedules_deferred_channel_operations_and_recover() -> unit {
+fn schedules_deferred_channel_operations_and_recover() -> () {
     let result = run(load_bytecode("defer_channels"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stderr.to_string().unwrap_or(""), "defer 8\nrecover true\n");
@@ -518,7 +518,7 @@ fn schedules_deferred_channel_operations_and_recover() -> unit {
 }
 
 #[test]
-fn executes_defer_panic_and_recover() -> unit {
+fn executes_defer_panic_and_recover() -> () {
     let result = run(load_bytecode("defer_panic_recover"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string().unwrap_or("defer execution failed"))
@@ -532,7 +532,7 @@ fn executes_defer_panic_and_recover() -> unit {
 }
 
 #[test]
-fn unwinds_runtime_faults_through_defer_and_recover() -> unit {
+fn unwinds_runtime_faults_through_defer_and_recover() -> () {
     let result = run(load_bytecode("runtime_fault_recover"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
@@ -543,7 +543,7 @@ fn unwinds_runtime_faults_through_defer_and_recover() -> unit {
     testing::assert(result.error.is_none())
 }
 
-fn assert_runtime_error(name: string, message: string) -> unit {
+fn assert_runtime_error(name: string, message: string) -> () {
     let result = run(load_bytecode(name), default_config());
     testing::assert_eq(result.exit_code, 1);
     let error = testing::expect_some(result.error, "runtime error is missing for " + name);
@@ -555,14 +555,14 @@ fn assert_runtime_error(name: string, message: string) -> unit {
 }
 
 #[test]
-fn reports_sequential_runtime_errors() -> unit {
+fn reports_sequential_runtime_errors() -> () {
     assert_runtime_error("runtime_divide_zero", "integer divide by zero");
     assert_runtime_error("runtime_index", "index out of range");
     assert_runtime_error("runtime_nil_pointer", "nil pointer dereference");
     assert_runtime_error("runtime_make_slice", "makeslice: len out of range")
 }
 
-fn assert_matches_go(name: string) -> unit {
+fn assert_matches_go(name: string) -> () {
     let config = execution::default_config();
     let native = testing::expect_ok(
         process::Command::new(config.go_binary).arg("run").arg("main.go").current_dir(fixture(name)).env(
@@ -594,7 +594,7 @@ fn assert_matches_go(name: string) -> unit {
 }
 
 #[test]
-fn matches_go126_for_m1_single_file_corpus() -> unit {
+fn matches_go126_for_m1_single_file_corpus() -> () {
     assert_matches_go("control");
     assert_matches_go("control_flow");
     assert_matches_go("aggregate_slice");
@@ -611,12 +611,12 @@ fn matches_go126_for_m1_single_file_corpus() -> unit {
 }
 
 #[test]
-fn matches_go126_for_mixed_numeric_switch_comparisons() -> unit {
+fn matches_go126_for_mixed_numeric_switch_comparisons() -> () {
     assert_matches_go("float_match")
 }
 
 #[test]
-fn matches_go126_for_cooperative_scheduler() -> unit {
+fn matches_go126_for_cooperative_scheduler() -> () {
     assert_matches_go("channels");
     assert_matches_go("select");
     assert_matches_go("channel_panic_recover");
@@ -624,12 +624,12 @@ fn matches_go126_for_cooperative_scheduler() -> unit {
 }
 
 #[test]
-fn matches_go126_for_generic_instances() -> unit {
+fn matches_go126_for_generic_instances() -> () {
     assert_matches_go("generics")
 }
 
 #[test]
-fn stops_execution_when_instruction_fuel_is_exhausted() -> unit {
+fn stops_execution_when_instruction_fuel_is_exhausted() -> () {
     let config = default_config();
     config.max_steps = 3.to_i64();
     let result = run(load_bytecode("control"), config);
@@ -639,7 +639,7 @@ fn stops_execution_when_instruction_fuel_is_exhausted() -> unit {
 }
 
 #[test]
-fn copies_aggregate_values_and_preserves_pointer_identity() -> unit {
+fn copies_aggregate_values_and_preserves_pointer_identity() -> () {
     let world = go_types::new_world();
     let int_type = testing::expect_some(go_types::basic_type(world, "int"), "missing int type");
     let array_type = go_types::add_type(
@@ -677,7 +677,7 @@ fn copies_aggregate_values_and_preserves_pointer_identity() -> unit {
 }
 
 #[test]
-fn preserves_precise_float64_constant_bits() -> unit {
+fn preserves_precise_float64_constant_bits() -> () {
     let world = go_types::new_world();
     let float_type = testing::expect_some(
         go_types::basic_type(world, "float64"),
@@ -697,7 +697,7 @@ fn preserves_precise_float64_constant_bits() -> unit {
 }
 
 #[test]
-fn passes_host_backed_interfaces_directly_to_native_calls() -> unit {
+fn passes_host_backed_interfaces_directly_to_native_calls() -> () {
     let program = load_bytecode("control");
     let world = program.world;
     let package_id = go_types::add_package(world, "example/host", "host", world.universe, false);

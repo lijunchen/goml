@@ -3,7 +3,7 @@ package snapshot_names;
 use std::testing;
 
 #[test]
-fn canonicalizes_ids_by_prefix() -> unit {
+fn canonicalizes_ids_by_prefix() -> () {
     let values = names();
     testing::assert_eq(canonical(values, "self/401"), "self/0");
     testing::assert_eq(canonical(values, "self/812"), "self/1");
@@ -14,7 +14,7 @@ fn canonicalizes_ids_by_prefix() -> unit {
 }
 
 #[test]
-fn skips_exact_reserved_names() -> unit {
+fn skips_exact_reserved_names() -> () {
     let values = names();
     reserve(values, "t1");
     reserve(values, "t3");

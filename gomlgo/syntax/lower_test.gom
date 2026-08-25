@@ -86,7 +86,7 @@ fn contains(values: Vec[string], expected: string) -> bool {
 }
 
 #[test]
-fn lowers_every_parser_ast_kind_without_terminating() -> unit {
+fn lowers_every_parser_ast_kind_without_terminating() -> () {
     let kinds = all_ast_kinds();
     testing::assert_eq(kinds.len(), 55);
     for kind in kinds {
@@ -101,7 +101,7 @@ fn lowers_every_parser_ast_kind_without_terminating() -> unit {
 }
 
 #[test]
-fn lowers_valid_file_to_typed_nodes_and_canonical_paths() -> unit {
+fn lowers_valid_file_to_typed_nodes_and_canonical_paths() -> () {
     let result = lower_file(
         "a.go",
         parse_root(
@@ -133,7 +133,7 @@ fn lowers_valid_file_to_typed_nodes_and_canonical_paths() -> unit {
 }
 
 #[test]
-fn node_ids_and_keys_are_unique_across_files() -> unit {
+fn node_ids_and_keys_are_unique_across_files() -> () {
     let result = lower_package(
         Vec::from_array(
             [
@@ -155,7 +155,7 @@ fn node_ids_and_keys_are_unique_across_files() -> unit {
 }
 
 #[test]
-fn malformed_generic_ast_produces_recoverable_diagnostics() -> unit {
+fn malformed_generic_ast_produces_recoverable_diagnostics() -> () {
     let result = lower_file("bad.go", ast::node(ast::Kind::Ident, 4, 7, Vec::new()));
     testing::assert_eq(result.files.len(), 1);
     testing::assert(result.diagnostics.len() >= 2);

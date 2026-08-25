@@ -1,4 +1,4 @@
-fn make_counter() -> (() -> i32, () -> unit) {
+fn make_counter() -> (() -> i32, () -> ()) {
     let cell = Ref::new(0);
     let next = || {
         let next = cell.get() + 1;

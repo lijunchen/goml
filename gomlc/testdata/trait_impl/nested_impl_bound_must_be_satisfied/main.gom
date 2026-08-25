@@ -1,5 +1,5 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 struct Wrap[T] {
@@ -7,15 +7,15 @@ struct Wrap[T] {
 }
 
 impl[T: Mark] Mark for Wrap[T] {
-    fn mark(self: Wrap[T]) -> unit { () }
+    fn mark(self: Wrap[T]) -> () { () }
 }
 
-fn require_mark[T: Mark](value: T) -> unit {
+fn require_mark[T: Mark](value: T) -> () {
     ()
 }
 
-fn use_wrap(value: Wrap[i32]) -> unit {
+fn use_wrap(value: Wrap[i32]) -> () {
     require_mark(value)
 }
 
-fn main() -> unit { () }
+fn main() -> () { () }

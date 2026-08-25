@@ -10,7 +10,7 @@ fn label_suffix() -> string {
 }
 
 #[comptime_derive]
-fn add_generic_predicates(input: DeriveInput, output: DeriveOutput) -> unit {
+fn add_generic_predicates(input: DeriveInput, output: DeriveOutput) -> () {
     let mut index = 0;
     while index < derive_generic_count(input) {
         let ty = meta_type_call_site(derive_generic_name(input, index));

@@ -56,7 +56,7 @@ fn bytes_equal(actual: Vec[byte], expected: Vec[byte]) -> bool {
     }
 }
 
-fn print_wire_result(encoded: Vec[byte], config: bincode::Config) -> unit {
+fn print_wire_result(encoded: Vec[byte], config: bincode::Config) -> () {
     let decoded: Result[(Wire, isize), string] = bincode::decode_from_slice(
         encoded.slice(0, encoded.len()),
         config,
@@ -86,7 +86,7 @@ fn packet() -> Packet {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let standard = match bincode::encode_to_vec(wire(), bincode::standard()) {
         Ok(value) => value,
         Err(error) => {

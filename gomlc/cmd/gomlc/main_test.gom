@@ -51,14 +51,14 @@ fn main_string_contains(value: string, expected: string) -> bool {
 }
 
 #[test]
-fn stage_lowering_preserves_hidden_fresh_names() -> unit {
-    let source = "enum E { A(i32), B(i32), C(i32) } fn main() -> unit { let value = E::B(1); match value { E::B(item) => (), _ => () } }";
+fn stage_lowering_preserves_hidden_fresh_names() -> () {
+    let source = "enum E { A(i32), B(i32), C(i32) } fn main() -> () { let value = E::B(1); match value { E::B(item) => (), _ => () } }";
     let stage = lower_core_stage("main.gom", source);
     testing::assert_eq(stage.counter.get(), 3)
 }
 
 #[test]
-fn isolates_temporary_go_paths_for_identical_sources() -> unit {
+fn isolates_temporary_go_paths_for_identical_sources() -> () {
     let first = temp_go_path("main.gom", "package main");
     let second = temp_go_path("main.gom", "package main");
     let Some(first_directory) = path::parent(first) else {
@@ -80,7 +80,7 @@ fn isolates_temporary_go_paths_for_identical_sources() -> unit {
 }
 
 #[test]
-fn publishes_stable_output_transaction_snapshots() -> unit {
+fn publishes_stable_output_transaction_snapshots() -> () {
     let temporary = temp_go_path("output-transaction.gom", "stable");
     let Some(directory) = path::parent(temporary) else {
         testing::fail("expected output transaction directory");
@@ -132,7 +132,7 @@ fn publishes_stable_output_transaction_snapshots() -> unit {
 }
 
 #[test]
-fn rejects_and_repairs_incomplete_output_transactions() -> unit {
+fn rejects_and_repairs_incomplete_output_transactions() -> () {
     let temporary = temp_go_path("incomplete-output.gom", "incomplete");
     let Some(directory) = path::parent(temporary) else {
         testing::fail("expected incomplete output directory");
@@ -140,7 +140,7 @@ fn rejects_and_repairs_incomplete_output_transactions() -> unit {
     };
     let anchor = path::join(directory, "package");
     let output = path::join(directory, "package.interface");
-    let failed: Result[unit, string] = output_transaction(
+    let failed: Result[(), string] = output_transaction(
         anchor,
         || {
             atomic_write_text(output, "partial")?;
@@ -207,7 +207,7 @@ fn parse_ok(values: Vec[string]) -> RunArgs {
     }
 }
 
-fn assert_parse_error(values: Vec[string], expected: string) -> unit {
+fn assert_parse_error(values: Vec[string], expected: string) -> () {
     match parse_run_args(args_with(values)) {
         Ok(_) => testing::fail("expected argument error"),
         Err(error) => testing::assert_eq(error, expected),
@@ -225,20 +225,20 @@ fn core_function_index(value: core::File, expected: string) -> isize {
 }
 
 #[test]
-fn detects_single_file_entrypoint() -> unit {
+fn detects_single_file_entrypoint() -> () {
     let present = tast::check_for_link(
-        hir::lower(ast::lower(parser::parse("fn main() -> unit {}")), "main.gom"),
+        hir::lower(ast::lower(parser::parse("fn main() -> () {}")), "main.gom"),
     );
     let missing = tast::check_for_link(
-        hir::lower(ast::lower(parser::parse("fn helper() -> unit {}")), "main.gom"),
+        hir::lower(ast::lower(parser::parse("fn helper() -> () {}")), "main.gom"),
     );
     testing::assert(has_single_file_entrypoint(present));
     testing::assert(!has_single_file_entrypoint(missing))
 }
 
 #[test]
-fn links_imported_standard_package_closure() -> unit {
-    let source = "use std::fs; use std::io; fn main() -> unit { let _ = fs::write_file(\"out.txt\", \"ok\"); io::println(\"done\") }";
+fn links_imported_standard_package_closure() -> () {
+    let source = "use std::fs; use std::io; fn main() -> () { let _ = fs::write_file(\"out.txt\", \"ok\"); io::println(\"done\") }";
     let compilation = compile_source("main.gom", source);
     let bytes = core_function_index(
         compilation.core_value,
@@ -257,8 +257,8 @@ fn links_imported_standard_package_closure() -> unit {
 }
 
 #[test]
-fn tracks_host_api_package_link_needs() -> unit {
-    let source = "package main; use std::path; use std::process; use std::testing; fn main() -> unit {}";
+fn tracks_host_api_package_link_needs() -> () {
+    let source = "package main; use std::path; use std::process; use std::testing; fn main() -> () {}";
     let needs = source_standard_needs(ast::lower(parser::parse(source)));
     testing::assert(needs.bytes);
     testing::assert(needs.path);
@@ -281,8 +281,8 @@ fn tracks_host_api_package_link_needs() -> unit {
 }
 
 #[test]
-fn tracks_json_package_link_needs() -> unit {
-    let source = "package main; use std::json; fn main() -> unit { let _ = json::parse(\"null\"); () }";
+fn tracks_json_package_link_needs() -> () {
+    let source = "package main; use std::json; fn main() -> () { let _ = json::parse(\"null\"); () }";
     let needs = source_standard_needs(ast::lower(parser::parse(source)));
     testing::assert(needs.ascii);
     testing::assert(needs.bytes);
@@ -292,9 +292,9 @@ fn tracks_json_package_link_needs() -> unit {
 }
 
 #[test]
-fn tracks_standard_root_package_needs() -> unit {
+fn tracks_standard_root_package_needs() -> () {
     let needs = source_standard_needs(
-        ast::lower(parser::parse("package main; use std; fn main() -> unit {}")),
+        ast::lower(parser::parse("package main; use std; fn main() -> () {}")),
     );
     testing::assert(needs.root);
     testing::assert(needs.ascii);
@@ -315,10 +315,10 @@ fn tracks_standard_root_package_needs() -> unit {
 }
 
 #[test]
-fn tracks_ascii_and_iter_package_needs() -> unit {
+fn tracks_ascii_and_iter_package_needs() -> () {
     let needs = source_standard_needs(
         ast::lower(
-            parser::parse("package main; use std::ascii; use std::iter; fn main() -> unit {}"),
+            parser::parse("package main; use std::ascii; use std::iter; fn main() -> () {}"),
         ),
     );
     testing::assert(needs.ascii);
@@ -330,21 +330,21 @@ fn tracks_ascii_and_iter_package_needs() -> unit {
 }
 
 #[test]
-fn tracks_cmp_and_collections_package_needs() -> unit {
+fn tracks_cmp_and_collections_package_needs() -> () {
     let direct = source_standard_needs(
-        ast::lower(parser::parse("package main; use std::cmp; fn main() -> unit {}")),
+        ast::lower(parser::parse("package main; use std::cmp; fn main() -> () {}")),
     );
     testing::assert(direct.cmp);
     testing::assert(!direct.collections);
     let collections = source_standard_needs(
-        ast::lower(parser::parse("package main; use std::collections; fn main() -> unit {}")),
+        ast::lower(parser::parse("package main; use std::collections; fn main() -> () {}")),
     );
     testing::assert(collections.cmp);
     testing::assert(collections.collections)
 }
 
 #[test]
-fn parses_run_single_dump_flags() -> unit {
+fn parses_run_single_dump_flags() -> () {
     let values = Vec::new();
     values.push("--dump-go");
     values.push("main.gom");
@@ -372,7 +372,7 @@ fn parses_run_single_dump_flags() -> unit {
 }
 
 #[test]
-fn parses_run_single_without_dumps() -> unit {
+fn parses_run_single_without_dumps() -> () {
     let values = Vec::new();
     values.push("main.gom");
     let args = parse_ok(values);
@@ -390,10 +390,10 @@ fn parses_run_single_without_dumps() -> unit {
 }
 
 #[test]
-fn preserves_source_and_expanded_ast_views() -> unit {
+fn preserves_source_and_expanded_ast_views() -> () {
     let compilation = compile_source(
         "main.gom",
-        "#[derive(PartialEq, Eq)] struct Key { value: isize } fn main() -> unit { () }",
+        "#[derive(PartialEq, Eq)] struct Key { value: isize } fn main() -> () { () }",
     );
     let source = ast::pretty(compilation.source_ast_value);
     let expanded = ast::pretty(compilation.ast_value);
@@ -403,7 +403,7 @@ fn preserves_source_and_expanded_ast_views() -> unit {
 }
 
 #[test]
-fn parses_version_formats() -> unit {
+fn parses_version_formats() -> () {
     match parse_version_args(version_args_with(Vec::new())) {
         Ok(Text) => (),
         _ => testing::fail("expected default text version format"),
@@ -424,8 +424,8 @@ fn parses_version_formats() -> unit {
 }
 
 #[test]
-fn parses_package_information_without_lowering_file_bodies() -> unit {
-    let source = "// header\npackage sample;\nuse alpha::beta;\nuse gamma::delta as other;\nuse theta::api::{Thing, make as create,};\nfn main() -> unit { let _ = \"use hidden::path;\"; }";
+fn parses_package_information_without_lowering_file_bodies() -> () {
+    let source = "// header\npackage sample;\nuse alpha::beta;\nuse gamma::delta as other;\nuse theta::api::{Thing, make as create,};\nfn main() -> () { let _ = \"use hidden::path;\"; }";
     match parse_package_info_file("main.gom", source) {
         Ok(value) => {
             testing::assert_eq(value.package_name, "sample");
@@ -460,8 +460,8 @@ fn parses_package_information_without_lowering_file_bodies() -> unit {
 }
 
 #[test]
-fn package_information_scanner_stops_at_the_first_body_token() -> unit {
-    let source = "// header\npackage main;\nuse alpha::beta as value;\nfn main() -> unit {}";
+fn package_information_scanner_stops_at_the_first_body_token() -> () {
+    let source = "// header\npackage main;\nuse alpha::beta as value;\nfn main() -> () {}";
     let scanner = new_package_info_scanner(source);
     package_info_skip_trivia(scanner);
     testing::assert(package_info_consume_keyword(scanner, "package"));
@@ -487,7 +487,7 @@ fn package_information_scanner_stops_at_the_first_body_token() -> unit {
 }
 
 #[test]
-fn package_information_scanner_respects_keyword_boundaries() -> unit {
+fn package_information_scanner_respects_keyword_boundaries() -> () {
     let scanner = new_package_info_scanner("package_name");
     testing::assert_eq(package_info_consume_keyword(scanner, "package"), false);
     let use_scanner = new_package_info_scanner("useful");
@@ -495,7 +495,7 @@ fn package_information_scanner_respects_keyword_boundaries() -> unit {
 }
 
 #[test]
-fn reports_driver_protocol_version() -> unit {
+fn reports_driver_protocol_version() -> () {
     testing::assert_eq(
         version_output_with(VersionFormat::Text, Option::None, Option::None),
         "gomlc " + version::current(),
@@ -516,7 +516,7 @@ fn reports_driver_protocol_version() -> unit {
 }
 
 #[test]
-fn suggests_similar_subcommands() -> unit {
+fn suggests_similar_subcommands() -> () {
     testing::assert_eq(
         unknown_subcommand_error("chec"),
         "error: unrecognized subcommand 'chec'\n\n  tip: a similar subcommand exists: 'check'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
@@ -532,7 +532,7 @@ fn suggests_similar_subcommands() -> unit {
 }
 
 #[test]
-fn parses_package_command_arguments() -> unit {
+fn parses_package_command_arguments() -> () {
     let values = Vec::new();
     values.push("--package");
     values.push("alice::app");
@@ -568,7 +568,7 @@ fn parses_package_command_arguments() -> unit {
 }
 
 #[test]
-fn parses_toolchain_package_capabilities() -> unit {
+fn parses_toolchain_package_capabilities() -> () {
     match parse_toolchain_build_args(
         Vec::from_array(
             [
@@ -616,7 +616,7 @@ fn parses_toolchain_package_capabilities() -> unit {
 }
 
 #[test]
-fn parses_link_command_arguments() -> unit {
+fn parses_link_command_arguments() -> () {
     let values = Vec::new();
     values.push("--input");
     values.push("lib.core");
@@ -638,7 +638,7 @@ fn parses_link_command_arguments() -> unit {
 }
 
 #[test]
-fn parses_test_link_command_arguments() -> unit {
+fn parses_test_link_command_arguments() -> () {
     let values = Vec::new();
     values.push("--input");
     values.push("lib.core");
@@ -666,8 +666,8 @@ fn parses_test_link_command_arguments() -> unit {
 }
 
 #[test]
-fn collects_and_encodes_test_descriptors() -> unit {
-    let source = "package sample; #[test] fn zebra() -> unit {} #[test] #[ignore(\"later: \\\"quoted\\\"\")] fn alpha() -> unit {}";
+fn collects_and_encodes_test_descriptors() -> () {
+    let source = "package sample; #[test] fn zebra() -> () {} #[test] #[ignore(\"later: \\\"quoted\\\"\")] fn alpha() -> () {}";
     let files = Vec::new();
     files.push(ast::lower(parser::parse(source)));
     let paths = Vec::new();
@@ -714,8 +714,8 @@ fn collects_and_encodes_test_descriptors() -> unit {
 }
 
 #[test]
-fn collects_parameterized_test_descriptors() -> unit {
-    let source = "package sample; #[test_case(\"left\", true)] #[test_case(\"right\", false)] fn pair(value: string, expected: bool) -> unit {}";
+fn collects_parameterized_test_descriptors() -> () {
+    let source = "package sample; #[test_case(\"left\", true)] #[test_case(\"right\", false)] fn pair(value: string, expected: bool) -> () {}";
     let files = Vec::new();
     files.push(ast::lower(parser::parse(source)));
     let paths = Vec::new();
@@ -765,7 +765,7 @@ fn collects_parameterized_test_descriptors() -> unit {
 }
 
 #[test]
-fn parameterized_test_ids_ignore_source_location() -> unit {
+fn parameterized_test_ids_ignore_source_location() -> () {
     let arguments = Vec::from_array([("string", "same"), ("bool", "true")]);
     let first = TestCandidate {
         name: "case",
@@ -794,11 +794,11 @@ fn parameterized_test_ids_ignore_source_location() -> unit {
 }
 
 #[test]
-fn validates_ignore_arguments_for_parameterized_tests() -> unit {
+fn validates_ignore_arguments_for_parameterized_tests() -> () {
     let files = Vec::new();
     files.push(
         ast::lower(
-            parser::parse("#[test_case(true)] #[ignore(false)] fn invalid(value: bool) -> unit {}"),
+            parser::parse("#[test_case(true)] #[ignore(false)] fn invalid(value: bool) -> () {}"),
         ),
     );
     let paths = Vec::from_array(["invalid_test.gom"]);
@@ -812,7 +812,7 @@ fn validates_ignore_arguments_for_parameterized_tests() -> unit {
 }
 
 #[test]
-fn collects_all_invalid_test_signature_diagnostics() -> unit {
+fn collects_all_invalid_test_signature_diagnostics() -> () {
     let files = Vec::new();
     files.push(ast::lower(parser::parse("#[test] fn invalid[T](value: T) -> bool { true }")));
     let paths = Vec::new();
@@ -846,7 +846,7 @@ fn collects_all_invalid_test_signature_diagnostics() -> unit {
     );
     testing::assert_eq(
         validated.diagnostics.get(2).message,
-        "test function `invalid` must return unit, found bool",
+        "test function `invalid` must return (), found bool",
     );
     for diagnostic in validated.diagnostics {
         testing::assert_eq(diagnostic.stage, "typer");
@@ -862,8 +862,8 @@ fn collects_all_invalid_test_signature_diagnostics() -> unit {
 }
 
 #[test]
-fn collects_all_invalid_test_attribute_diagnostics() -> unit {
-    let source = "#[ignore] fn ignored_without_test() -> unit {} #[test()] fn test_with_arguments() -> unit {} #[test] #[test] fn duplicate_test() -> unit {} #[test] #[ignore(1)] fn invalid_ignore_reason() -> unit {} #[test] struct Value {} #[ignore] enum Choice { A }";
+fn collects_all_invalid_test_attribute_diagnostics() -> () {
+    let source = "#[ignore] fn ignored_without_test() -> () {} #[test()] fn test_with_arguments() -> () {} #[test] #[test] fn duplicate_test() -> () {} #[test] #[ignore(1)] fn invalid_ignore_reason() -> () {} #[test] struct Value {} #[ignore] enum Choice { A }";
     let files = Vec::new();
     files.push(ast::lower(parser::parse(source)));
     let paths = Vec::new();
@@ -891,10 +891,10 @@ fn collects_all_invalid_test_attribute_diagnostics() -> unit {
 }
 
 #[test]
-fn labels_duplicate_test_ids_across_files() -> unit {
+fn labels_duplicate_test_ids_across_files() -> () {
     let parsed = Vec::new();
-    parsed.push(parser::parse("package tests; #[test] fn duplicate() -> unit { () }"));
-    parsed.push(parser::parse("package tests;\n#[test]\nfn duplicate() -> unit { () }"));
+    parsed.push(parser::parse("package tests; #[test] fn duplicate() -> () { () }"));
+    parsed.push(parser::parse("package tests;\n#[test]\nfn duplicate() -> () { () }"));
     let files = ast::lower_package(parsed);
     let paths = Vec::new();
     paths.push("first.gom");
@@ -929,7 +929,7 @@ fn labels_duplicate_test_ids_across_files() -> unit {
 }
 
 #[test]
-fn adds_canonical_entry_wrapper() -> unit {
+fn adds_canonical_entry_wrapper() -> () {
     let functions = Vec::new();
     functions.push(
         core::Function {
@@ -974,7 +974,7 @@ fn adds_canonical_entry_wrapper() -> unit {
 }
 
 #[test]
-fn rejects_invalid_run_single_arguments() -> unit {
+fn rejects_invalid_run_single_arguments() -> () {
     assert_parse_error(
         Vec::new(),
         "error: the following required arguments were not provided:\n  <FILE>\n\nUsage: gomlc run-single <FILE>\n\nFor more information, try '--help'.",
@@ -995,7 +995,7 @@ fn rejects_invalid_run_single_arguments() -> unit {
 }
 
 #[test]
-fn matches_cli_help_and_empty_value_semantics() -> unit {
+fn matches_cli_help_and_empty_value_semantics() -> () {
     let dump = Vec::new();
     dump.push("--dump-go");
     assert_parse_error(
@@ -1066,14 +1066,14 @@ fn matches_cli_help_and_empty_value_semantics() -> unit {
 }
 
 #[test]
-fn rejects_project_imports_in_single_file_mode() -> unit {
-    let source = "use std::io; use packages_basic::Lib; fn main() -> unit {}";
+fn rejects_project_imports_in_single_file_mode() -> () {
+    let source = "use std::io; use packages_basic::Lib; fn main() -> () {}";
     match single_file_project_import(ast::lower(parser::parse(source))) {
         Some(value) => testing::assert_eq(value, "packages_basic::Lib"),
         None => testing::fail("expected project import"),
     };
     match single_file_project_import(
-        ast::lower(parser::parse("use std::fs; use std::io; fn main() -> unit {}")),
+        ast::lower(parser::parse("use std::fs; use std::io; fn main() -> () {}")),
     ) {
         Some(_) => testing::fail("expected standard imports to be accepted"),
         None => (),
@@ -1081,7 +1081,7 @@ fn rejects_project_imports_in_single_file_mode() -> unit {
 }
 
 #[test]
-fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
+fn rejects_private_types_exposed_by_public_trait_impls() -> () {
     let source = "package api; pub trait Source { type Item; fn get(self: Self) -> Self::Item; } pub struct Public {} struct Hidden {} impl Source for Public { type Item = Hidden; fn get(self: Public) -> Hidden { Hidden {} } }";
     let ast_values = Vec::new();
     ast_values.push(ast::lower(parser::parse(source)));
@@ -1118,7 +1118,7 @@ fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
 }
 
 #[test]
-fn filters_private_types_traits_and_trait_impls() -> unit {
+fn filters_private_types_traits_and_trait_impls() -> () {
     let source = "package api; enum HiddenEnum { A } struct HiddenStruct {} trait HiddenTrait { fn hidden(self: Self) -> i32; } pub struct Item {} impl HiddenTrait for Item { fn hidden(self: Item) -> i32 { 1 } } pub fn item() -> Item { Item {} }";
     let ast_values = Vec::new();
     ast_values.push(ast::lower(parser::parse(source)));
@@ -1186,7 +1186,7 @@ fn filters_private_types_traits_and_trait_impls() -> unit {
 }
 
 #[test]
-fn orders_link_inputs_by_dependencies_and_name() -> unit {
+fn orders_link_inputs_by_dependencies_and_name() -> () {
     let nodes = Vec::new();
     nodes.push(PackageOrderNode { name: "z", dependencies: Vec::new(), position: 0 });
     nodes.push(PackageOrderNode { name: "c", dependencies: Vec::from_array(["a"]), position: 1 });
@@ -1220,7 +1220,7 @@ fn sample_artifact_json(pretty: bool) -> string {
 }
 
 #[test]
-fn writes_compact_artifact_json() -> unit {
+fn writes_compact_artifact_json() -> () {
     testing::assert_eq(
         sample_artifact_json(false),
         "{\"text\":\"quote \\\" slash \\\\ line\\n tab\\t zero\\u0000 é\",\"values\":[12,true,null]}",
@@ -1228,7 +1228,7 @@ fn writes_compact_artifact_json() -> unit {
 }
 
 #[test]
-fn writes_pretty_artifact_json() -> unit {
+fn writes_pretty_artifact_json() -> () {
     testing::assert_eq(
         sample_artifact_json(true),
         "{\n  \"text\": \"quote \\\" slash \\\\ line\\n tab\\t zero\\u0000 é\",\n  \"values\": [\n    12,\n    true,\n    null\n  ]\n}",
@@ -1236,7 +1236,7 @@ fn writes_pretty_artifact_json() -> unit {
 }
 
 #[test]
-fn writes_artifact_type_shapes() -> unit {
+fn writes_artifact_type_shapes() -> () {
     let context = tast_codec::artifact_type_context(
         Vec::from_array(["Option"]),
         Vec::from_array(["Box"]),
@@ -1273,7 +1273,7 @@ fn writes_artifact_type_shapes() -> unit {
 }
 
 #[test]
-fn writes_core_file_shape() -> unit {
+fn writes_core_file_shape() -> () {
     let value = core::File {
         functions: Vec::from_array(
             [
@@ -1317,7 +1317,7 @@ fn writes_core_file_shape() -> unit {
 }
 
 #[test]
-fn writes_callable_body_shapes() -> unit {
+fn writes_callable_body_shapes() -> () {
     let writer = wire::new_artifact_json_writer(false);
     wire::artifact_json_begin_array(writer);
     let intrinsic = tast_codec::artifact_callable(tast::Callable::Intrinsic("ref.new"));
@@ -1342,7 +1342,7 @@ fn writes_callable_body_shapes() -> unit {
 }
 
 #[test]
-fn writes_interface_unit_shape_and_hash() -> unit {
+fn writes_interface_unit_shape_and_hash() -> () {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
@@ -1391,7 +1391,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
 }
 
 #[test]
-fn extracts_interface_unit_from_checked_package() -> unit {
+fn extracts_interface_unit_from_checked_package() -> () {
     let source = "package value; fn private_value() -> i32 { 41 } pub fn value() -> i32 { private_value() + 1 }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
@@ -1463,7 +1463,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
 }
 
 #[test]
-fn extracts_trait_interface_from_checked_package() -> unit {
+fn extracts_trait_interface_from_checked_package() -> () {
     let source = "package api; pub trait Parent[T] { fn parent(self: Self) -> T; } pub trait Child[T: ToString]: Parent[T] { fn child(self: Self) -> string; } pub struct Box[T] { value: T, } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } } impl[T: ToString] Child[T] for Box[T] { fn child(self: Box[T]) -> string { \"child\" } } pub fn boxed[T](value: T) -> Box[T] { Box { value } }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
@@ -1596,7 +1596,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
 }
 
 #[test]
-fn writes_core_unit_from_checked_package() -> unit {
+fn writes_core_unit_from_checked_package() -> () {
     let source = "package value; fn private_value() -> i32 { 41 } pub fn value() -> i32 { private_value() + 1 }";
     let lowered_ast = ast::lower(parser::parse(source));
     let ast_values = Vec::new();
@@ -1700,8 +1700,8 @@ fn writes_core_unit_from_checked_package() -> unit {
 }
 
 #[test]
-fn requires_explicit_package_declarations_for_artifacts() -> unit {
-    let values = Vec::from_array([ast::lower(parser::parse("fn main() -> unit {}"))]);
+fn requires_explicit_package_declarations_for_artifacts() -> () {
+    let values = Vec::from_array([ast::lower(parser::parse("fn main() -> () {}"))]);
     match artifact_declared_package_name(values, Vec::from_array(["/tmp/main.gom"])) {
         Err(error) => testing::assert_eq(error, "/tmp/main.gom must declare `package <name>;`"),
         Ok(_) => testing::fail("expected package declaration error"),
@@ -1709,7 +1709,7 @@ fn requires_explicit_package_declarations_for_artifacts() -> unit {
 }
 
 #[test]
-fn validates_artifact_main_entrypoints() -> unit {
+fn validates_artifact_main_entrypoints() -> () {
     let exports = interface_codec::empty_exports();
     match artifact_validate_entrypoint("example::app", "main", exports) {
         Err(error) => testing::assert_eq(error, "main function is required"),
@@ -1754,7 +1754,7 @@ fn validates_artifact_main_entrypoints() -> unit {
 }
 
 #[test]
-fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
+fn collects_all_artifact_main_entrypoint_diagnostics() -> () {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
@@ -1776,7 +1776,7 @@ fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
 }
 
 #[test]
-fn restores_core_metadata_from_artifact_exports() -> unit {
+fn restores_core_metadata_from_artifact_exports() -> () {
     let exports = interface_codec::empty_exports();
     let function_constraint = tast::TypePredicate::Equality {
         lhs: tast::Type::Param { name: "T" },
@@ -1891,7 +1891,7 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
 }
 
 #[test]
-fn parses_artifact_json_values() -> unit {
+fn parses_artifact_json_values() -> () {
     let parsed = match json::parse(
         " { \"text\": \"quote\\\" slash\\\\ zero\\u0000 face\\uD83D\\uDE00 é\", \"nums\": [-12, 1.5e+2], \"ok\": true, \"none\": null } ",
     ) {
@@ -1944,7 +1944,7 @@ fn parses_artifact_json_values() -> unit {
 }
 
 #[test]
-fn decodes_artifact_type_shapes() -> unit {
+fn decodes_artifact_type_shapes() -> () {
     let type_json = "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}";
     let context = tast_codec::new_artifact_decode_context();
     let type_value = tast::Type::Func {
@@ -2041,7 +2041,7 @@ fn toolchain_dependency_test_interface(package_name: string, deps: Vec[(string, 
 }
 
 #[test]
-fn diagnoses_builtin_and_prelude_interface_mismatches_separately() -> unit {
+fn diagnoses_builtin_and_prelude_interface_mismatches_separately() -> () {
     let world = test_package_world();
     let builtin_mismatch = toolchain_dependency_test_interface(
         "demo::dependency",
@@ -2076,9 +2076,9 @@ fn diagnoses_builtin_and_prelude_interface_mismatches_separately() -> unit {
 }
 
 #[test]
-fn rejects_explicit_builtin_and_prelude_imports() -> unit {
+fn rejects_explicit_builtin_and_prelude_imports() -> () {
     let values = Vec::from_array(
-        [ast::lower(parser::parse("package main; use builtin; use prelude; fn main() -> unit {}"))],
+        [ast::lower(parser::parse("package main; use builtin; use prelude; fn main() -> () {}"))],
     );
     let diagnostics = standard_internal_import_diagnostics(
         values,
@@ -2285,7 +2285,7 @@ fn world_with_test_package_dependency(
     test_world_encode_sections(container.kind, sections)
 }
 
-fn assert_world_decode_error(value: bytes::Bytes, expected: string) -> unit {
+fn assert_world_decode_error(value: bytes::Bytes, expected: string) -> () {
     match decode_package_world(value) {
         Ok(_) => testing::fail("expected compiler world decode error"),
         Err(error) => testing::assert(main_string_contains(error, expected)),
@@ -2316,7 +2316,7 @@ fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> u
 }
 
 #[test]
-fn prelude_source_reexports_match_the_compatibility_surface() -> unit {
+fn prelude_source_reexports_match_the_compatibility_surface() -> () {
     let prelude = compile_prelude_package(
         lower_builtin_core(Ref::new(0)),
         builtin_artifact_interface_unit(),
@@ -2337,7 +2337,7 @@ fn prelude_source_reexports_match_the_compatibility_surface() -> unit {
 }
 
 #[test]
-fn standard_interface_hashes_are_stable() -> unit {
+fn standard_interface_hashes_are_stable() -> () {
     let world = package_world();
     let builtin = artifact_builtin_interface_hash(world);
     let prelude = artifact_prelude_interface_hash(world);
@@ -2374,7 +2374,7 @@ fn standard_interface_hashes_are_stable() -> unit {
 }
 
 #[test]
-fn compiler_world_artifact_round_trips() -> unit {
+fn compiler_world_artifact_round_trips() -> () {
     let world = test_package_world();
     world.source_digest = "source-digest";
     let first = match encode_package_world(world) {
@@ -2442,7 +2442,7 @@ fn compiler_world_artifact_round_trips() -> unit {
 }
 
 #[test]
-fn compiler_world_artifact_validates_metadata_identity() -> unit {
+fn compiler_world_artifact_validates_metadata_identity() -> () {
     let world = test_package_world();
     let encoded = match encode_package_world(world) {
         Ok(value) => value,
@@ -2500,7 +2500,7 @@ fn compiler_world_artifact_validates_metadata_identity() -> unit {
 }
 
 #[test]
-fn compiler_world_artifact_reads_v1() -> unit {
+fn compiler_world_artifact_reads_v1() -> () {
     let world = test_package_world();
     let encoded = match encode_package_world_v1(world) {
         Ok(value) => value,
@@ -2527,7 +2527,7 @@ fn compiler_world_artifact_reads_v1() -> unit {
 }
 
 #[test]
-fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> unit {
+fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> () {
     let world = test_package_world();
     let duplicate = world_all_packages(world);
     duplicate.push(duplicate[0]);
@@ -2560,7 +2560,7 @@ fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> unit {
 }
 
 #[test]
-fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> unit {
+fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> () {
     let world = test_package_world();
     let encoded = match encode_package_world(world) {
         Ok(value) => value,
@@ -2594,7 +2594,7 @@ fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> unit {
 }
 
 #[test]
-fn renders_all_parser_diagnostics_with_spans() -> unit {
+fn renders_all_parser_diagnostics_with_spans() -> () {
     let source = "fn main() {\n    let x 42;\n}\n";
     let diagnostics = ast::lower(parser::parse(source)).diagnostics;
     testing::assert_eq(
@@ -2608,13 +2608,13 @@ fn renders_all_parser_diagnostics_with_spans() -> unit {
 }
 
 #[test]
-fn renders_unicode_diagnostic_text() -> unit {
+fn renders_unicode_diagnostic_text() -> () {
     testing::assert_eq(diagnostic_visual_width("你\tx"), 5);
     testing::assert_eq(expand_diagnostic_tabs("你\tx"), "你   x")
 }
 
 #[test]
-fn computes_crlf_diagnostic_positions_without_column_drift() -> unit {
+fn computes_crlf_diagnostic_positions_without_column_drift() -> () {
     let source = "fn main() {\r\n\t中\r\n}";
     let start = source_position(source, 14);
     testing::assert_eq(start.line, 1);
@@ -2627,7 +2627,7 @@ fn computes_crlf_diagnostic_positions_without_column_drift() -> unit {
 }
 
 #[test]
-fn renders_source_path_for_spanless_diagnostics() -> unit {
+fn renders_source_path_for_spanless_diagnostics() -> () {
     let diagnostics = Vec::new();
     diagnostics.push(
         tast::Diagnostic {
@@ -2648,7 +2648,7 @@ fn renders_source_path_for_spanless_diagnostics() -> unit {
 }
 
 #[test]
-fn preserves_generic_trait_methods_in_artifacts() -> unit {
+fn preserves_generic_trait_methods_in_artifacts() -> () {
     let expected = "deserialize";
     let world = test_package_world();
     let toml = required_artifact_standard_package(world.standard, resources::STD_TOML_PACKAGE);

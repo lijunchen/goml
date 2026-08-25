@@ -14,7 +14,7 @@ fn amd64_sizes() -> go_types::TargetSizes {
 }
 
 #[test]
-fn integer_representability_observes_signedness_and_word_size() -> unit {
+fn integer_representability_observes_signedness_and_word_size() -> () {
     let sizes = amd64_sizes();
     testing::assert(
         constant_representable(integer_constant("127"), go_types::BasicKind::Int8, sizes),
@@ -45,7 +45,7 @@ fn integer_representability_observes_signedness_and_word_size() -> unit {
 }
 
 #[test]
-fn float_rounding_matches_go_constant_values() -> unit {
+fn float_rounding_matches_go_constant_values() -> () {
     let sizes = amd64_sizes();
     let one_tenth = testing::expect_ok(parse_float_literal("0.1"), "float parse failed");
     let float32_value = match round_constant(one_tenth, go_types::BasicKind::Float32, sizes) {
@@ -67,7 +67,7 @@ fn float_rounding_matches_go_constant_values() -> unit {
 }
 
 #[test]
-fn float_representability_uses_ieee_overflow_boundary() -> unit {
+fn float_representability_uses_ieee_overflow_boundary() -> () {
     let sizes = amd64_sizes();
     let below = testing::expect_ok(parse_float_literal("0x1.fffffe8p127"), "float parse failed");
     let boundary = testing::expect_ok(parse_float_literal("0x1.ffffffp127"), "float parse failed");
@@ -76,7 +76,7 @@ fn float_representability_uses_ieee_overflow_boundary() -> unit {
 }
 
 #[test]
-fn large_float_rounding_handles_overflow_and_underflow() -> unit {
+fn large_float_rounding_handles_overflow_and_underflow() -> () {
     let sizes = amd64_sizes();
     let tiny = testing::expect_ok(parse_float_literal("1e-5000"), "float parse failed");
     let huge = testing::expect_ok(parse_float_literal("1e5000"), "float parse failed");
@@ -108,7 +108,7 @@ fn large_float_rounding_handles_overflow_and_underflow() -> unit {
 }
 
 #[test]
-fn default_types_follow_go_untyped_rules() -> unit {
+fn default_types_follow_go_untyped_rules() -> () {
     match default_type(go_types::BasicKind::UntypedRune) {
         Some(value) => testing::assert(value == go_types::BasicKind::Int32),
         None => testing::fail("missing rune default"),

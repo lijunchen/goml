@@ -1,7 +1,7 @@
 trait Pair {
     type First;
     type Second;
-    fn touch(self: Self) -> unit;
+    fn touch(self: Self) -> ();
 }
 
 struct Value {}
@@ -9,5 +9,5 @@ struct Value {}
 impl Pair for Value {
     type First = Self::Second;
     type Second = Self::First;
-    fn touch(self: Value) -> unit { () }
+    fn touch(self: Value) -> () { () }
 }

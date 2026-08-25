@@ -19,7 +19,7 @@ fn read(source: dyn Source[Item = isize]) -> isize {
     source.get()
 }
 
-fn labeled_cleanup() -> unit {
+fn labeled_cleanup() -> () {
     'outer: loop {
         defer println("outer cleanup");
         loop {
@@ -29,7 +29,7 @@ fn labeled_cleanup() -> unit {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(read((NumberSource { value: 11 }) as dyn Source[Item = isize]));
     let (mut index, value) = (1, 2);
     index += value;

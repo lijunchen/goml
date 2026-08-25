@@ -1,17 +1,17 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 struct Box[T] {
     value: T,
 }
 
-fn require_mark[T: Mark](value: T) -> unit {
+fn require_mark[T: Mark](value: T) -> () {
     ()
 }
 
-fn use_box[T](value: Box[T]) -> unit {
+fn use_box[T](value: Box[T]) -> () {
     require_mark(value)
 }
 
-fn main() -> unit { () }
+fn main() -> () { () }

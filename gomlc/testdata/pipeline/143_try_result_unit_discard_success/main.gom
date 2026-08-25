@@ -1,4 +1,4 @@
-fn step(ok: bool) -> Result[unit, string] {
+fn step(ok: bool) -> Result[(), string] {
     if ok {
         Result::Ok(())
     } else {
@@ -6,19 +6,19 @@ fn step(ok: bool) -> Result[unit, string] {
     }
 }
 
-fn run(ok: bool) -> Result[unit, string] {
+fn run(ok: bool) -> Result[(), string] {
     let _ = step(ok)?;
     Result::Ok(())
 }
 
-fn show(res: Result[unit, string]) -> string {
+fn show(res: Result[(), string]) -> string {
     match res {
-        Result::Ok(()) => "ok unit",
+        Result::Ok(()) => "ok ()",
         Result::Err(err) => "err " + err,
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(show(run(true)));
     println(show(run(false)));
 }

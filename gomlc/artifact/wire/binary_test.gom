@@ -7,21 +7,21 @@ fn artifact_binary_test_bytes(values: Vec[u8]) -> bytes::Bytes {
     bytes::Bytes::from_vec(values)
 }
 
-fn artifact_binary_expect_ok[T: PartialEq + Debug](value: Result[T, string], expected: T) -> unit {
+fn artifact_binary_expect_ok[T: PartialEq + Debug](value: Result[T, string], expected: T) -> () {
     match value {
         Ok(actual) => testing::assert_eq(actual, expected),
         Err(error) => testing::fail(error),
     }
 }
 
-fn artifact_binary_expect_unit(value: Result[unit, string]) -> unit {
+fn artifact_binary_expect_unit(value: Result[(), string]) -> () {
     match value {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     }
 }
 
-fn artifact_binary_expect_err[T](value: Result[T, string]) -> unit {
+fn artifact_binary_expect_err[T](value: Result[T, string]) -> () {
     match value {
         Ok(_) => testing::fail("expected binary artifact error"),
         Err(_) => (),
@@ -29,7 +29,7 @@ fn artifact_binary_expect_err[T](value: Result[T, string]) -> unit {
 }
 
 #[test]
-fn binary_artifact_round_trips_fixed_width_values() -> unit {
+fn binary_artifact_round_trips_fixed_width_values() -> () {
     let writer = new_artifact_binary_writer();
     artifact_binary_write_u8(writer, 255);
     artifact_binary_write_u16(writer, 65535);
@@ -50,7 +50,7 @@ fn binary_artifact_round_trips_fixed_width_values() -> unit {
 }
 
 #[test]
-fn binary_artifact_round_trips_varints() -> unit {
+fn binary_artifact_round_trips_varints() -> () {
     let unsigned: Vec[u64] = Vec::new();
     unsigned.push(0);
     unsigned.push(1);
@@ -86,7 +86,7 @@ fn binary_artifact_round_trips_varints() -> unit {
 }
 
 #[test]
-fn binary_artifact_patches_offsets() -> unit {
+fn binary_artifact_patches_offsets() -> () {
     let writer = new_artifact_binary_writer();
     artifact_binary_write_u32(writer, 0);
     artifact_binary_write_u64(writer, 0);
@@ -98,7 +98,7 @@ fn binary_artifact_patches_offsets() -> unit {
 }
 
 #[test]
-fn binary_artifact_rejects_invalid_input() -> unit {
+fn binary_artifact_rejects_invalid_input() -> () {
     let truncated = new_artifact_binary_reader(
         artifact_binary_test_bytes(Vec::from_array([1, 2, 3])),
     );

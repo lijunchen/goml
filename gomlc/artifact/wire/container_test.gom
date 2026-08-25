@@ -29,7 +29,7 @@ fn artifact_container_expect_decode_ok(value: Result[ArtifactBinaryContainer, st
 }
 
 #[test]
-fn binary_artifact_container_is_deterministic() -> unit {
+fn binary_artifact_container_is_deterministic() -> () {
     let first = Vec::new();
     first.push(artifact_container_test_section(3, "three"));
     first.push(artifact_container_test_section(1, "one"));
@@ -53,7 +53,7 @@ fn binary_artifact_container_is_deterministic() -> unit {
 }
 
 #[test]
-fn binary_artifact_container_rejects_corruption() -> unit {
+fn binary_artifact_container_rejects_corruption() -> () {
     let sections = Vec::new();
     sections.push(artifact_container_test_section(1, "payload"));
     let encoded = artifact_container_expect_ok(encode_artifact_binary_container(1, sections));
@@ -66,7 +66,7 @@ fn binary_artifact_container_rejects_corruption() -> unit {
 }
 
 #[test]
-fn binary_artifact_hashes_arbitrary_bytes() -> unit {
+fn binary_artifact_hashes_arbitrary_bytes() -> () {
     let value = bytes::Bytes::from_vec(Vec::from_array([0, 255, 128]));
     testing::assert_eq(
         hash::sha256_bytes_hex(value),

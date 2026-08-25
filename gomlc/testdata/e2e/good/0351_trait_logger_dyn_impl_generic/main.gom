@@ -1,5 +1,5 @@
 trait Logger {
-    fn log(self: Self, arg1: string) -> unit;
+    fn log(self: Self, arg1: string) -> ();
 }
 
 struct ConsoleLogger {}
@@ -9,13 +9,13 @@ struct PrefixLogger {
 }
 
 impl Logger for ConsoleLogger {
-    fn log(self: ConsoleLogger, msg: string) -> unit {
+    fn log(self: ConsoleLogger, msg: string) -> () {
         println(msg);
     }
 }
 
 impl Logger for PrefixLogger {
-    fn log(self: PrefixLogger, msg: string) -> unit {
+    fn log(self: PrefixLogger, msg: string) -> () {
         println(self.prefix + msg);
     }
 }
@@ -25,7 +25,7 @@ struct App {
     name: string,
 }
 
-fn run(app: App) -> unit {
+fn run(app: App) -> () {
     Logger::log(app.logger, "Starting " + app.name);
 }
 

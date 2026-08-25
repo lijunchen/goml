@@ -28,7 +28,7 @@ struct StringIntMap {
 struct InvalidSequence {}
 
 impl Serialize for InvalidSequence {
-    fn serialize[S: Serializer](self: InvalidSequence, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: InvalidSequence, serializer: S) -> Result[(), string] {
         let _ = self;
         serializer.begin_sequence(1)?;
         serializer.end_sequence()
@@ -38,7 +38,7 @@ impl Serialize for InvalidSequence {
 struct IntKeyMap {}
 
 impl Serialize for IntKeyMap {
-    fn serialize[S: Serializer](self: IntKeyMap, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: IntKeyMap, serializer: S) -> Result[(), string] {
         let _ = self;
         serializer.begin_map(1)?;
         serializer.begin_map_key(0)?;
@@ -63,7 +63,7 @@ impl Deserialize for SkippedSequence {
 
 #[derive(Serialize, Deserialize)]
 struct Primitives {
-    nothing: unit,
+    nothing: (),
     flag: bool,
     signed: isize,
     signed8: i8,
@@ -91,7 +91,7 @@ struct ByteBuffer {
 }
 
 impl Serialize for ByteBuffer {
-    fn serialize[S: Serializer](self: ByteBuffer, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: ByteBuffer, serializer: S) -> Result[(), string] {
         serializer.serialize_bytes(self.values.slice(0, self.values.len()))
     }
 }
@@ -107,7 +107,7 @@ struct NumberText {
 }
 
 impl Serialize for NumberText {
-    fn serialize[S: Serializer](self: NumberText, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: NumberText, serializer: S) -> Result[(), string] {
         serializer.serialize_number(self.value)
     }
 }
@@ -140,7 +140,7 @@ fn primitives() -> Primitives {
 }
 
 impl Serialize for StringIntMap {
-    fn serialize[S: Serializer](self: StringIntMap, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: StringIntMap, serializer: S) -> Result[(), string] {
         serializer.begin_map(self.entries.len())?;
         let mut index = 0;
         while index < self.entries.len() {
@@ -212,7 +212,7 @@ fn bytes_equal(left: Vec[byte], right: Vec[byte]) -> bool {
     true
 }
 
-fn main() -> unit {
+fn main() -> () {
     let item = round_trip_item(
         Item {
             name: "numbers",
@@ -552,9 +552,9 @@ fn main() -> unit {
         Ok(_) => println("wrong JSON bool"),
         Err(error) => println(error),
     };
-    let unit_error: Result[unit, string] = json::from_string("false");
+    let unit_error: Result[(), string] = json::from_string("false");
     match unit_error {
-        Ok(_) => println("wrong JSON unit"),
+        Ok(_) => println("wrong JSON ()"),
         Err(error) => println(error),
     };
     let string_error: Result[string, string] = json::from_string("[]");

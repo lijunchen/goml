@@ -40,7 +40,7 @@ fn decode_event(input: string) -> Result[Event, string] {
     json::from_string(input)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let parsed = match json::parse("{\"items\":[1,true,null]}") {
         Ok(value) => value,
         Err(error) => {

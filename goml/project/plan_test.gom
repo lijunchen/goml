@@ -18,7 +18,7 @@ fn strings_contain(values: Vec[string], expected: string) -> bool {
 }
 
 #[test]
-fn hashes_cache_text_with_standard_sha256() -> unit {
+fn hashes_cache_text_with_standard_sha256() -> () {
     testing::assert_eq(
         sha256_text("abc"),
         "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
@@ -26,7 +26,7 @@ fn hashes_cache_text_with_standard_sha256() -> unit {
 }
 
 #[test]
-fn derives_unicode_package_names_from_directories() -> unit {
+fn derives_unicode_package_names_from_directories() -> () {
     match package_name_for_directory("/tmp/项目", "alice::app", "/tmp/项目/工具/解析") {
         Ok(value) => testing::assert_eq(value, "alice::app::工具::解析"),
         Err(error) => testing::fail(error),
@@ -34,7 +34,7 @@ fn derives_unicode_package_names_from_directories() -> unit {
 }
 
 #[test]
-fn displays_commands_with_unicode_and_quoted_arguments() -> unit {
+fn displays_commands_with_unicode_and_quoted_arguments() -> () {
     testing::assert_eq(
         display_command(Command::GoBuild { input: "源 code/main.go", output: "输出's app" }),
         "go build -o '输出'\\''s app' '源 code/main.go'",
@@ -42,14 +42,14 @@ fn displays_commands_with_unicode_and_quoted_arguments() -> unit {
 }
 
 #[test]
-fn serializes_builds_for_one_artifact_root() -> unit {
+fn serializes_builds_for_one_artifact_root() -> () {
     let root = test_support::workspace("build_lock_serialization");
     let context = cancellation_test_context(root, "compiler");
     let state = path::join(root, "state");
-    let first_started: Channel[unit] = Channel::new(1);
-    let result: Result[Vec[unit], Vec[string]] = task::scope(
+    let first_started: Channel[()] = Channel::new(1);
+    let result: Result[Vec[()], Vec[string]] = task::scope(
         |scope: task::Scope| {
-            let tasks: Vec[task::Task[Result[unit, string]]] = Vec::new();
+            let tasks: Vec[task::Task[Result[(), string]]] = Vec::new();
             tasks.push(
                 scope.spawn(
                     |_: task::CancelToken| with_build_lock(
@@ -100,7 +100,7 @@ fn serializes_builds_for_one_artifact_root() -> unit {
 }
 
 #[test]
-fn discovers_toolchain_projects_with_implicit_layers() -> unit {
+fn discovers_toolchain_projects_with_implicit_layers() -> () {
     let repository = test_support::repository_root();
     let artifact_root = test_support::workspace("toolchain_graph");
     let graph = match discover_toolchain_graph(
@@ -193,7 +193,7 @@ fn compiler_world_test_context(world: CompilerWorld) -> Context {
 }
 
 #[test]
-fn installed_compiler_world_is_a_read_only_plan_input() -> unit {
+fn installed_compiler_world_is_a_read_only_plan_input() -> () {
     let world = "/tmp/toolchain/lib/compiler/compiler-world-v2.gaf";
     let plan = match check_plan(
         compiler_world_test_context(CompilerWorld::Installed { path: world }),
@@ -213,7 +213,7 @@ fn installed_compiler_world_is_a_read_only_plan_input() -> unit {
 }
 
 #[test]
-fn legacy_compiler_world_keeps_prepare_world_compatibility() -> unit {
+fn legacy_compiler_world_keeps_prepare_world_compatibility() -> () {
     let plan = match check_plan(compiler_world_test_context(CompilerWorld::LegacyArtifact), false) {
         Ok(value) => value,
         Err(message) => {
@@ -242,7 +242,7 @@ fn installed_world_compiler(root: string) -> string {
 }
 
 #[test]
-fn resolves_executable_relative_installed_world() -> unit {
+fn resolves_executable_relative_installed_world() -> () {
     let root = test_support::workspace("installed_compiler_world");
     let compiler = installed_world_compiler(root);
     let world = path::join(path::join(path::join(root, "lib"), "compiler"), "compiler-world-v2.gaf");
@@ -257,7 +257,7 @@ fn resolves_executable_relative_installed_world() -> unit {
 }
 
 #[test]
-fn rejects_missing_installed_compiler_world() -> unit {
+fn rejects_missing_installed_compiler_world() -> () {
     let root = test_support::workspace("missing_installed_compiler_world");
     let compiler = installed_world_compiler(root);
     match resolve_compiler(Option::Some(compiler)) {
@@ -270,7 +270,7 @@ fn rejects_missing_installed_compiler_world() -> unit {
 }
 
 #[test]
-fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
+fn build_graph_tracks_compile_link_and_go_dependencies() -> () {
     let commands = Vec::from_array(
         [
             compile_command("a", Vec::new(), "out/a"),
@@ -303,7 +303,7 @@ fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
 }
 
 #[test]
-fn build_graph_tracks_compiler_world_dependencies() -> unit {
+fn build_graph_tracks_compiler_world_dependencies() -> () {
     let world = "out/compiler/world-v1.gaf";
     let command = Command::Compile {
         subcommand: "check",
@@ -329,7 +329,7 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
 }
 
 #[test]
-fn build_graph_serializes_duplicate_outputs() -> unit {
+fn build_graph_serializes_duplicate_outputs() -> () {
     let graph = match build_graph(
         Vec::from_array(
             [
@@ -350,7 +350,7 @@ fn build_graph_serializes_duplicate_outputs() -> unit {
 }
 
 #[test]
-fn build_graph_exposes_dependency_cycles() -> unit {
+fn build_graph_exposes_dependency_cycles() -> () {
     let graph = match build_graph(
         Vec::from_array(
             [
@@ -371,7 +371,7 @@ fn build_graph_exposes_dependency_cycles() -> unit {
 }
 
 #[test]
-fn go_module_builds_delegate_freshness_to_go() -> unit {
+fn go_module_builds_delegate_freshness_to_go() -> () {
     let root = test_support::workspace("go_module_cache");
     test_support::write_file(path::join(root, "go.mod"), "module example.com/app\n\ngo 1.25\n");
     let context = cancellation_test_context(root, "gomlc");
@@ -415,7 +415,7 @@ fn cancellation_test_command(name: string) -> Command {
 }
 
 #[test]
-fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> unit {
+fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
     let root = test_support::workspace("plan_cancellation");
     let compiler = path::join(root, "compiler");
     test_support::write_file(
@@ -466,7 +466,7 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> unit {
 }
 
 #[test]
-fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> unit {
+fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> () {
     let root = test_support::workspace("uncommitted_plan_cache");
     let compiler = path::join(root, "compiler");
     test_support::write_file(compiler, "#!/bin/sh\ntouch out/owned.interface\n");
@@ -486,7 +486,7 @@ fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> unit {
     test_support::write_file(fingerprint, "partial");
     let work: Channel[BuildWork] = Channel::new(1);
     let results: Channel[BuildWorkResult] = Channel::new(1);
-    let stopped: Result[unit, string] = task::try_scope(
+    let stopped: Result[(), string] = task::try_scope(
         |scope: task::Scope| {
             let _ = scope.spawn_try(
                 |cancel: task::CancelToken| execute_plan_worker(cancel, context, work, results),

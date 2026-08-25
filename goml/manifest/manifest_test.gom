@@ -17,7 +17,7 @@ fn manifest_error(source: string) -> string {
 }
 
 #[test]
-fn rejects_toolchain_module_paths_and_dependencies() -> unit {
+fn rejects_toolchain_module_paths_and_dependencies() -> () {
     testing::assert_eq(
         manifest_error("[module]\npath = \"builtin::fake\"\n"),
         "module path builtin::fake is reserved for the toolchain",
@@ -29,7 +29,7 @@ fn rejects_toolchain_module_paths_and_dependencies() -> unit {
 }
 
 #[test]
-fn internal_loader_accepts_toolchain_module_paths() -> unit {
+fn internal_loader_accepts_toolchain_module_paths() -> () {
     let root = test_support::workspace("manifest_toolchain_path");
     let path = root + "/goml.toml";
     test_support::write_file(path, "[module]\npath = \"builtin\"\n");
@@ -40,7 +40,7 @@ fn internal_loader_accepts_toolchain_module_paths() -> unit {
 }
 
 #[test]
-fn parses_escaped_unicode_manifest_strings() -> unit {
+fn parses_escaped_unicode_manifest_strings() -> () {
     match parse_string("\"工具\\\\\\\"路径\"") {
         Ok(value) => testing::assert_eq(value, "工具\\\"路径"),
         Err(error) => testing::fail(error),

@@ -2,7 +2,7 @@ package main;
 
 use select_project::worker;
 
-fn main() -> unit {
+fn main() -> () {
     let channel = worker::ready(42);
     let value = select {
         recv(channel) as received => received.unwrap_or(-1),

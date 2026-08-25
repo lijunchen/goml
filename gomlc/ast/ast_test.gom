@@ -33,29 +33,29 @@ fn has_diagnostic(values: Vec[cst::Diagnostic], expected: string) -> bool {
 }
 
 #[test]
-fn rejects_deeply_nested_patterns_without_overflowing() -> unit {
+fn rejects_deeply_nested_patterns_without_overflowing() -> () {
     let pattern = Ref::new("_");
     for _ in range(0, 150) {
         pattern.set("(" + pattern.get() + ", _)")
     }
-    let result = lower(parser::parse("fn main() -> unit { let " + pattern.get() + " = (); }"));
+    let result = lower(parser::parse("fn main() -> () { let " + pattern.get() + " = (); }"));
     testing::assert(has_diagnostic(result.diagnostics, "pattern is too deeply nested"))
 }
 
 #[test]
-fn rejects_deeply_nested_expressions_without_overflowing() -> unit {
+fn rejects_deeply_nested_expressions_without_overflowing() -> () {
     let expression = Ref::new("1");
     for _ in range(0, 600) {
         expression.set("(" + expression.get() + ")")
     }
     let result = lower(
-        parser::parse("fn main() -> unit { let value = " + expression.get() + "; println(value); }"),
+        parser::parse("fn main() -> () { let value = " + expression.get() + "; println(value); }"),
     );
     testing::assert(has_diagnostic(result.diagnostics, "expression is too deeply nested"))
 }
 
 #[test]
-fn lowers_items_types_and_float_values() -> unit {
+fn lowers_items_types_and_float_values() -> () {
     let source = "package sample; pub enum Choice[T] { None, Some(T) } struct Pair { left: i32, right: f64 } fn value() -> f64 { 3.1_40 }";
     let file = lowered_file(source);
     testing::assert_eq(file.package_name, "sample");
@@ -79,7 +79,7 @@ fn lowers_items_types_and_float_values() -> unit {
 }
 
 #[test]
-fn lowers_newtype_structs_as_nominal_single_field_types() -> unit {
+fn lowers_newtype_structs_as_nominal_single_field_types() -> () {
     let file = lowered_file("pub struct Wrapper[T](pub T);");
     match file.items.get(0) {
         StructDef(value) => {
@@ -94,8 +94,8 @@ fn lowers_newtype_structs_as_nominal_single_field_types() -> unit {
 }
 
 #[test]
-fn lowers_attribute_names_and_arguments_structurally() -> unit {
-    let file = lowered_file("#[vendor::intrinsic(\"runtime\")] extern fn probe() -> unit;");
+fn lowers_attribute_names_and_arguments_structurally() -> () {
+    let file = lowered_file("#[vendor::intrinsic(\"runtime\")] extern fn probe() -> ();");
     match file.items.get(0) {
         ExternFunction(value) => {
             let attribute = value.attrs.get(0);
@@ -111,7 +111,7 @@ fn lowers_attribute_names_and_arguments_structurally() -> unit {
 }
 
 #[test]
-fn lowers_named_attribute_arguments_structurally() -> unit {
+fn lowers_named_attribute_arguments_structurally() -> () {
     let file = lowered_file(
         "#[serde(rename = \"entry\", with = codec::value, skip)] struct Entry { value: isize }",
     );
@@ -145,7 +145,7 @@ fn lowers_named_attribute_arguments_structurally() -> unit {
 }
 
 #[test]
-fn lowers_derive_paths_and_nested_item_attributes() -> unit {
+fn lowers_derive_paths_and_nested_item_attributes() -> () {
     let file = lowered_file(
         "#[derive(macros::handler)] struct Box { #[field_tag] value: isize } enum Choice { #[variant_tag] Data(#[payload_tag] isize) }",
     );
@@ -169,7 +169,7 @@ fn lowers_derive_paths_and_nested_item_attributes() -> unit {
 }
 
 #[test]
-fn lowers_unicode_strings_and_constructor_patterns() -> unit {
+fn lowers_unicode_strings_and_constructor_patterns() -> () {
     let source = "enum Choice { Empty, Text(string) } fn read(value: Choice) -> string { let prefix = \"λ\\u0041🙂\"; match value { Choice::Text(text) => prefix + text, Choice::Empty => prefix } }";
     let file = lowered_file(source);
     match file.items.get(1) {
@@ -204,7 +204,7 @@ fn lowers_unicode_strings_and_constructor_patterns() -> unit {
 }
 
 #[test]
-fn lowers_cross_file_constructor_patterns() -> unit {
+fn lowers_cross_file_constructor_patterns() -> () {
     let parsed = Vec::new();
     parsed.push(parser::parse("package main; enum Status { Idle, Busy(i32) }"));
     parsed.push(
@@ -233,7 +233,7 @@ fn lowers_cross_file_constructor_patterns() -> unit {
 }
 
 #[test]
-fn parser_diagnostics_prevent_ast_creation() -> unit {
+fn parser_diagnostics_prevent_ast_creation() -> () {
     let result = lower(parser::parse("fn broken( {"));
     testing::assert(result.diagnostics.len() > 0);
     match result.ast {
@@ -243,8 +243,8 @@ fn parser_diagnostics_prevent_ast_creation() -> unit {
 }
 
 #[test]
-fn reports_invalid_parameter_types() -> unit {
-    let result = lower(parser::parse("fn take(value: [i32; 18446744073709551615]) -> unit { () }"));
+fn reports_invalid_parameter_types() -> () {
+    let result = lower(parser::parse("fn take(value: [i32; 18446744073709551615]) -> () { () }"));
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert_eq(
         result.diagnostics.get(0).message,
@@ -254,7 +254,7 @@ fn reports_invalid_parameter_types() -> unit {
 }
 
 #[test]
-fn reports_trait_impl_method_visibility_on_the_impl() -> unit {
+fn reports_trait_impl_method_visibility_on_the_impl() -> () {
     let source = "trait Render { fn render(self: Self) -> string; } struct Value {} impl Render for Value { pub fn render(self: Value) -> string { \"value\" } }";
     let result = lower(parser::parse(source));
     testing::assert_eq(result.diagnostics.len(), 1);
@@ -263,10 +263,10 @@ fn reports_trait_impl_method_visibility_on_the_impl() -> unit {
 }
 
 #[test]
-fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
+fn preserves_inconsistent_and_duplicate_pattern_bindings() -> () {
     let inconsistent = lower(
         parser::parse(
-            "enum Flag { On, Off } fn main() -> unit { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",
+            "enum Flag { On, Off } fn main() -> () { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",
         ),
     );
     testing::assert_eq(inconsistent.diagnostics.len(), 0);
@@ -274,7 +274,7 @@ fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
         Some(_) => (),
         None => testing::fail("expected inconsistent pattern AST"),
     };
-    let duplicate = lower(parser::parse("fn main() -> unit { let (value, value) = (1, 2); }"));
+    let duplicate = lower(parser::parse("fn main() -> () { let (value, value) = (1, 2); }"));
     testing::assert_eq(duplicate.diagnostics.len(), 0);
     match duplicate.ast {
         Some(_) => (),
@@ -283,7 +283,7 @@ fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
 }
 
 #[test]
-fn pretty_prints_run_single_ast_dump() -> unit {
+fn pretty_prints_run_single_ast_dump() -> () {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
     let expected = "package main;\n" + "fn main() {\n" + "    let _ = ();\n"
         + "    let a = (true, false, (true, false));\n"

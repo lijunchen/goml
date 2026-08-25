@@ -46,7 +46,7 @@ fn project_context(entry_package: string) -> project::Context {
 }
 
 #[test]
-fn parses_fmt_options() -> unit {
+fn parses_fmt_options() -> () {
     match parse_fmt(Vec::from_array(["goml", "fmt", "--check", "--formatter", "/tmp/gomlfmt"])) {
         Ok(options) => {
             testing::assert(options.check);
@@ -67,7 +67,7 @@ fn parses_fmt_options() -> unit {
 }
 
 #[test]
-fn rejects_invalid_fmt_options() -> unit {
+fn rejects_invalid_fmt_options() -> () {
     match parse_fmt(Vec::from_array(["goml", "fmt", "--check", "--check"])) {
         Ok(_) => testing::fail("repeated --check accepted"),
         Err(message) => testing::assert_eq(message, "--check cannot be repeated"),
@@ -79,7 +79,7 @@ fn rejects_invalid_fmt_options() -> unit {
 }
 
 #[test]
-fn utility_text_operations_are_deterministic() -> unit {
+fn utility_text_operations_are_deterministic() -> () {
     testing::assert_eq(text::trim(" \tvalue\r\n"), "value");
     testing::assert("abc".starts_with("ab"));
     testing::assert("abc".ends_with("bc"));
@@ -93,7 +93,7 @@ fn utility_text_operations_are_deterministic() -> unit {
 }
 
 #[test]
-fn json_parser_reads_package_info_shape() -> unit {
+fn json_parser_reads_package_info_shape() -> () {
     let value = match json::parse(
         "{\"files\":[{\"package\":\"main\",\"uses\":[]}],\"protocol_version\":1}",
     ) {
@@ -119,7 +119,7 @@ fn json_parser_reads_package_info_shape() -> unit {
 }
 
 #[test]
-fn manifest_parser_reads_project_manifest() -> unit {
+fn manifest_parser_reads_project_manifest() -> () {
     match manifest::load("goml.toml") {
         Ok(value) => {
             testing::assert_eq(value.module_path, "gomlang::bootstrap_goml");
@@ -130,7 +130,7 @@ fn manifest_parser_reads_project_manifest() -> unit {
 }
 
 #[test]
-fn run_plan_places_executables_under_package_paths() -> unit {
+fn run_plan_places_executables_under_package_paths() -> () {
     let root = match project::run_plan(project_context("alice::demo")) {
         Ok(value) => value,
         Err(message) => {
@@ -162,7 +162,7 @@ fn run_plan_places_executables_under_package_paths() -> unit {
 }
 
 #[test]
-fn shell_escape_quotes_unsafe_arguments() -> unit {
+fn shell_escape_quotes_unsafe_arguments() -> () {
     testing::assert_eq(util::shell_escape("plain/path"), "plain/path");
     testing::assert_eq(util::shell_escape("two words"), "'two words'");
     testing::assert_eq(util::shell_escape("你好's goml"), "'你好'\\''s goml'")

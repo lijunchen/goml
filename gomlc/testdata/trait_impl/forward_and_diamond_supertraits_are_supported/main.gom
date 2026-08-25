@@ -1,13 +1,13 @@
 trait Child: Left + Right {
-    fn child(self: Self) -> unit;
+    fn child(self: Self) -> ();
 }
 
 trait Left: Base {
-    fn left(self: Self) -> unit;
+    fn left(self: Self) -> ();
 }
 
 trait Right: Base {
-    fn right(self: Self) -> unit;
+    fn right(self: Self) -> ();
 }
 
 trait Base {
@@ -18,4 +18,4 @@ fn inherited[T: Child](value: T) -> string {
     value.base()
 }
 
-fn main() -> unit { () }
+fn main() -> () { () }

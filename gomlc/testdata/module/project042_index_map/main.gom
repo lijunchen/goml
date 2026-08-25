@@ -25,7 +25,7 @@ fn key(value: isize) -> CollisionKey {
     CollisionKey { value }
 }
 
-fn assert_basic_operations() -> unit {
+fn assert_basic_operations() -> () {
     let map: collections::IndexMap[string, isize] = collections::IndexMap::with_capacity(-1);
     testing::assert(map.is_empty());
     testing::assert_eq(map.len(), 0);
@@ -71,7 +71,7 @@ fn assert_basic_operations() -> unit {
     testing::assert_eq(map.get("after-clear").unwrap_or(-1), 9)
 }
 
-fn assert_collision_growth_and_compaction() -> unit {
+fn assert_collision_growth_and_compaction() -> () {
     let map: collections::IndexMap[CollisionKey, isize] = collections::IndexMap::with_capacity(1);
     let index = Ref::new(0);
     while index.get() < 256 {
@@ -122,7 +122,7 @@ fn assert_collision_growth_and_compaction() -> unit {
     testing::assert_eq(map.entries().get(120).0.value, 256)
 }
 
-fn main() -> unit {
+fn main() -> () {
     assert_basic_operations();
     assert_collision_growth_and_compaction();
     println("index map ok")

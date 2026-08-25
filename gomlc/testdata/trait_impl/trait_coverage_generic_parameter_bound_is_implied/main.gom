@@ -1,15 +1,15 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 trait Container[T: Mark] {
     fn value(self: Self) -> T;
 }
 
-fn require_mark[T: Mark](value: T) -> unit { () }
+fn require_mark[T: Mark](value: T) -> () { () }
 
-fn consume[T, C: Container[T]](container: C) -> unit {
+fn consume[T, C: Container[T]](container: C) -> () {
     require_mark(Container::[T]::value(container))
 }
 
-fn main() -> unit { () }
+fn main() -> () { () }

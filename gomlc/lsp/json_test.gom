@@ -4,7 +4,7 @@ use std::json;
 use std::testing;
 
 #[test]
-fn parses_and_encodes_json_values() -> unit {
+fn parses_and_encodes_json_values() -> () {
     let input = "{\"name\":\"GoML\\n语言\",\"id\":42,\"ok\":true,\"items\":[null,\"x\"]}";
     match json::parse(input) {
         Ok(value) => {
@@ -33,7 +33,7 @@ fn parses_and_encodes_json_values() -> unit {
 }
 
 #[test]
-fn rejects_invalid_json() -> unit {
+fn rejects_invalid_json() -> () {
     match json::parse("{\"bad\": [1,]}") {
         Ok(_) => testing::fail("expected invalid JSON"),
         Err(_) => (),
@@ -52,7 +52,7 @@ fn rejects_invalid_json() -> unit {
 }
 
 #[test]
-fn converts_utf16_positions_and_file_uris() -> unit {
+fn converts_utf16_positions_and_file_uris() -> () {
     let source = "a😀中\nx";
     let position = offset_to_position(source, 5);
     testing::assert_eq(position.line, 0);
@@ -76,7 +76,7 @@ fn converts_utf16_positions_and_file_uris() -> unit {
 }
 
 #[test]
-fn converts_crlf_and_cr_line_endings_without_column_drift() -> unit {
+fn converts_crlf_and_cr_line_endings_without_column_drift() -> () {
     let source = "α\r\n😀x\ry";
     let emoji_end = offset_to_position(source, 8);
     testing::assert_eq(emoji_end.line, 1);
@@ -95,7 +95,7 @@ fn converts_crlf_and_cr_line_endings_without_column_drift() -> unit {
 }
 
 #[test]
-fn frames_and_parses_json_rpc_metadata() -> unit {
+fn frames_and_parses_json_rpc_metadata() -> () {
     let message = rpc_success(json::Value::Number("7"), json::Value::String("ok"));
     let framed = framed_json(message);
     let body = json::encode(message);

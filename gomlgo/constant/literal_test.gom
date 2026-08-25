@@ -27,7 +27,7 @@ fn oracle_exact(expression: string) -> string {
 }
 
 #[test]
-fn parses_decimal_and_hexadecimal_floats_exactly() -> unit {
+fn parses_decimal_and_hexadecimal_floats_exactly() -> () {
     testing::assert_eq(exact(parse_float_literal("1.25")), "5/4");
     testing::assert_eq(exact(parse_float_literal("12.5e-1")), "5/4");
     testing::assert_eq(exact(parse_float_literal("1e3")), "1000");
@@ -37,21 +37,21 @@ fn parses_decimal_and_hexadecimal_floats_exactly() -> unit {
 }
 
 #[test]
-fn numeric_literals_match_the_go_constant_oracle() -> unit {
+fn numeric_literals_match_the_go_constant_oracle() -> () {
     testing::assert_eq(exact(parse_float_literal("1.25")), oracle_exact("1.25"));
     testing::assert_eq(exact(parse_float_literal("0x1.fp3")), oracle_exact("0x1.fp3"));
     testing::assert_eq(exact(parse_imaginary_literal("1.5i")), oracle_exact("1.5i"))
 }
 
 #[test]
-fn integer_based_imaginary_literals_match_the_go_constant_oracle() -> unit {
+fn integer_based_imaginary_literals_match_the_go_constant_oracle() -> () {
     for value in Vec::from_array(["0b111i", "0o567i", "0xabci"]) {
         testing::assert_eq(exact(parse_imaginary_literal(value)), oracle_exact(value))
     }
 }
 
 #[test]
-fn parses_large_floats_with_go_constant_precision() -> unit {
+fn parses_large_floats_with_go_constant_precision() -> () {
     for value in Vec::from_array(
         ["1e5000", "1e-5000", "1.23456789e5000", "0x1p5000", "1e646456992", "1e-646456992"],
     ) {
@@ -67,7 +67,7 @@ fn parses_large_floats_with_go_constant_precision() -> unit {
 }
 
 #[test]
-fn parses_interpreted_and_raw_strings() -> unit {
+fn parses_interpreted_and_raw_strings() -> () {
     match testing::expect_ok(
         parse_string_literal("\"a\\n\\x42\\u4e16\""),
         "interpreted string failed",
@@ -91,14 +91,14 @@ fn parses_interpreted_and_raw_strings() -> unit {
 }
 
 #[test]
-fn parses_rune_literals_as_integer_constants() -> unit {
+fn parses_rune_literals_as_integer_constants() -> () {
     testing::assert_eq(exact(parse_rune_literal("'世'")), "19990");
     testing::assert_eq(exact(parse_rune_literal("'\\xFF'")), "255");
     testing::assert_eq(exact(parse_rune_literal("'\\U0001F600'")), "128512")
 }
 
 #[test]
-fn rejects_malformed_literal_values_without_panicking() -> unit {
+fn rejects_malformed_literal_values_without_panicking() -> () {
     testing::assert(parse_float_literal("0x1.2").is_err());
     testing::assert(parse_float_literal("1e1000001").is_ok());
     testing::assert(parse_float_literal("1e2147483648").is_err());

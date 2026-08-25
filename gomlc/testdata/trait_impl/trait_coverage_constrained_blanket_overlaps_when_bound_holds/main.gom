@@ -1,5 +1,5 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 trait Label {
@@ -11,7 +11,7 @@ struct Box[T] {
 }
 
 impl Mark for string {
-    fn mark(self: string) -> unit { () }
+    fn mark(self: string) -> () { () }
 }
 
 impl[T: Mark] Label for Box[T] {

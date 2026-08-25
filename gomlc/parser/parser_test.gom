@@ -4,7 +4,7 @@ use module::cst;
 use std::testing;
 use std::text;
 
-fn append_source(node: cst::CstNode, builder: text::StringBuilder) -> unit {
+fn append_source(node: cst::CstNode, builder: text::StringBuilder) -> () {
     for child in cst::node_children(node) {
         match child {
             Node(inner) => append_source(inner, builder),
@@ -72,7 +72,7 @@ fn diagnostic_containing(diagnostics: Vec[cst::Diagnostic], expected: string) ->
 }
 
 #[test]
-fn parses_lossless_precedence_tree() -> unit {
+fn parses_lossless_precedence_tree() -> () {
     let source = "fn main() -> i32 {\n    1 + 2 * 3 // keep\n}\n";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -85,8 +85,8 @@ fn parses_lossless_precedence_tree() -> unit {
 }
 
 #[test]
-fn parses_half_open_and_inclusive_range_expressions() -> unit {
-    let source = "fn main() -> unit { for value in 1..4 { println(value) }; for value in 4..=6 { println(value) }; }";
+fn parses_half_open_and_inclusive_range_expressions() -> () {
+    let source = "fn main() -> () { for value in 1..4 { println(value) }; for value in 4..=6 { println(value) }; }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_RANGE), 2);
@@ -96,7 +96,7 @@ fn parses_half_open_and_inclusive_range_expressions() -> unit {
 }
 
 #[test]
-fn parses_unit_type_with_empty_parentheses() -> unit {
+fn parses_unit_type_with_empty_parentheses() -> () {
     let source = "type Callback = () -> (); fn consume(value: (), callback: Callback) -> () { callback() } fn one_unit_argument(callback: (()) -> ()) -> () { callback(()) }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -105,8 +105,8 @@ fn parses_unit_type_with_empty_parentheses() -> unit {
 }
 
 #[test]
-fn parses_braced_imports_with_item_aliases() -> unit {
-    let source = "package main; use alice::render::{Canvas, Color as Paint, render}; fn main() -> unit {}";
+fn parses_braced_imports_with_item_aliases() -> () {
+    let source = "package main; use alice::render::{Canvas, Color as Paint, render}; fn main() -> () {}";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::USE), 1);
@@ -118,14 +118,14 @@ fn parses_braced_imports_with_item_aliases() -> unit {
 }
 
 #[test]
-fn rejects_unsupported_braced_import_forms() -> unit {
+fn rejects_unsupported_braced_import_forms() -> () {
     testing::assert(parse("use alice::api::{};").diagnostics.len() > 0);
     testing::assert(parse("use alice::api::{*};").diagnostics.len() > 0);
     testing::assert(parse("use alice::api::{thing::{nested}};").diagnostics.len() > 0)
 }
 
 #[test]
-fn reports_recoverable_syntax_errors() -> unit {
+fn reports_recoverable_syntax_errors() -> () {
     let source = "fn main( { let value = ; } trailing";
     let result = parse(source);
     testing::assert(result.diagnostics.len() > 0);
@@ -134,8 +134,8 @@ fn reports_recoverable_syntax_errors() -> unit {
 }
 
 #[test]
-fn recovers_missing_semicolons_without_consuming_following_expressions() -> unit {
-    let source = "fn main() -> unit {\n    let first = 1\n    println(first)\n    let second = 2;\n    ()\n}\nfn after() -> unit {}\n";
+fn recovers_missing_semicolons_without_consuming_following_expressions() -> () {
+    let source = "fn main() -> () {\n    let first = 1\n    println(first)\n    let second = 2;\n    ()\n}\nfn after() -> () {}\n";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::FN), 2);
@@ -152,28 +152,28 @@ fn recovers_missing_semicolons_without_consuming_following_expressions() -> unit
 }
 
 #[test]
-fn recovers_missing_closing_delimiters_at_outer_boundaries() -> unit {
-    let params = parse("fn first(value: i32 -> unit { () }\nfn after() -> unit { () }");
+fn recovers_missing_closing_delimiters_at_outer_boundaries() -> () {
+    let params = parse("fn first(value: i32 -> () { () }\nfn after() -> () { () }");
     testing::assert_eq(params.diagnostics.len(), 1);
     testing::assert_eq(count_nodes(params.root, cst::NodeKind::FN), 2);
     testing::assert(diagnostic_containing(params.diagnostics, "expect \")\"").is_some());
-    let array = parse("fn main() -> unit { let values = [1, 2; println(\"ok\"); let _ = values; }");
+    let array = parse("fn main() -> () { let values = [1, 2; println(\"ok\"); let _ = values; }");
     testing::assert_eq(count_nodes(array.root, cst::NodeKind::STMT_LET), 2);
     testing::assert_eq(count_nodes(array.root, cst::NodeKind::EXPR_CALL), 1);
     testing::assert(diagnostic_containing(array.diagnostics, "expect \"]\"").is_some());
-    let call = parse("fn main() -> unit { println(1; let value = 2; let _ = value; }");
+    let call = parse("fn main() -> () { println(1; let value = 2; let _ = value; }");
     testing::assert_eq(call.diagnostics.len(), 1);
     testing::assert_eq(count_nodes(call.root, cst::NodeKind::EXPR_CALL), 1);
     testing::assert_eq(count_nodes(call.root, cst::NodeKind::STMT_LET), 2);
     testing::assert(diagnostic_containing(call.diagnostics, "expect \")\"").is_some());
-    let block = parse("fn first() -> unit { ()\nfn after() -> unit { () }");
+    let block = parse("fn first() -> () { ()\nfn after() -> () { () }");
     testing::assert_eq(count_nodes(block.root, cst::NodeKind::FN), 2);
     testing::assert(diagnostic_containing(block.diagnostics, "expect \"}\"").is_some())
 }
 
 #[test]
-fn reports_unterminated_literals_and_continues_parsing() -> unit {
-    let source = "fn main() -> unit {\n    let text = \"unterminated\n    let letter = 'x;\n    println(\"ok\");\n}\n";
+fn reports_unterminated_literals_and_continues_parsing() -> () {
+    let source = "fn main() -> () {\n    let text = \"unterminated\n    let letter = 'x;\n    println(\"ok\");\n}\n";
     let result = parse(source);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::STMT_LET), 2);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_CALL), 1);
@@ -196,19 +196,19 @@ fn reports_unterminated_literals_and_continues_parsing() -> unit {
 }
 
 #[test]
-fn recovers_missing_closure_pipe_and_array_type_separator() -> unit {
+fn recovers_missing_closure_pipe_and_array_type_separator() -> () {
     let closure = parse("fn main() -> isize { let add = |value value + 1; add(1) }");
     testing::assert_eq(count_nodes(closure.root, cst::NodeKind::EXPR_CLOSURE), 1);
     testing::assert_eq(count_nodes(closure.root, cst::NodeKind::EXPR_BINARY), 1);
     testing::assert_eq(count_nodes(closure.root, cst::NodeKind::EXPR_CALL), 1);
     testing::assert(diagnostic_containing(closure.diagnostics, "expect \"|\"").is_some());
-    let array = parse("fn consume(value: [isize 3]) -> unit { () }");
+    let array = parse("fn consume(value: [isize 3]) -> () { () }");
     testing::assert_eq(count_nodes(array.root, cst::NodeKind::FN), 1);
     testing::assert(diagnostic_containing(array.diagnostics, "expect \";\"").is_some())
 }
 
 #[test]
-fn places_missing_tokens_at_the_exact_end_of_input() -> unit {
+fn places_missing_tokens_at_the_exact_end_of_input() -> () {
     let source = "fn main(";
     let result = parse(source);
     match diagnostic_containing(result.diagnostics, "expect \")\"") {
@@ -221,7 +221,7 @@ fn places_missing_tokens_at_the_exact_end_of_input() -> unit {
 }
 
 #[test]
-fn parses_control_flow_patterns_and_types() -> unit {
+fn parses_control_flow_patterns_and_types() -> () {
     let source = "fn map[T: Eq](value: T, f: (T) -> T) -> T where T: Hash { match value { item if true => f(item), _ => value } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -233,7 +233,7 @@ fn parses_control_flow_patterns_and_types() -> unit {
 }
 
 #[test]
-fn parses_type_aliases_constants_and_byte_patterns() -> unit {
+fn parses_type_aliases_constants_and_byte_patterns() -> () {
     let source = "pub type Pair[T] = (T, T); pub const MARKER: byte = b'\\x41'; fn classify(value: byte) -> bool { match value { MARKER => true, b'B' => false, _ => false } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -245,7 +245,7 @@ fn parses_type_aliases_constants_and_byte_patterns() -> unit {
 }
 
 #[test]
-fn parses_newtype_structs_and_rejects_multiple_fields() -> unit {
+fn parses_newtype_structs_and_rejects_multiple_fields() -> () {
     let source = "struct UserId(i32); pub struct Name[T](pub T,);";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -258,8 +258,8 @@ fn parses_newtype_structs_and_rejects_multiple_fields() -> unit {
 }
 
 #[test]
-fn parses_practical_expression_syntax() -> unit {
-    let source = "fn main() -> unit { let a = Vec::from_array([1, 2]); let b = HashMap::from_array([(\"x\", 1)]); let c: Vec[isize] = Vec::new(); let d = Vec::[isize]::new(); let p = Point { x: 3, ..base, }; a[0] += 2; let text = f\"value={a.get(0)} {{ok}}\"; }";
+fn parses_practical_expression_syntax() -> () {
+    let source = "fn main() -> () { let a = Vec::from_array([1, 2]); let b = HashMap::from_array([(\"x\", 1)]); let c: Vec[isize] = Vec::new(); let d = Vec::[isize]::new(); let p = Point { x: 3, ..base, }; a[0] += 2; let text = f\"value={a.get(0)} {{ok}}\"; }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_ARRAY_LITERAL), 2);
@@ -274,8 +274,8 @@ fn parses_practical_expression_syntax() -> unit {
 }
 
 #[test]
-fn rejects_removed_collection_literal_syntax_recoverably() -> unit {
-    let source = "fn main() -> unit { let values = Vec::[1, 2]; let entries = HashMap::{ \"x\" => 1 }; }\nfn after() -> unit {}";
+fn rejects_removed_collection_literal_syntax_recoverably() -> () {
+    let source = "fn main() -> () { let values = Vec::[1, 2]; let entries = HashMap::{ \"x\" => 1 }; }\nfn after() -> () {}";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert(
@@ -293,8 +293,8 @@ fn rejects_removed_collection_literal_syntax_recoverably() -> unit {
 }
 
 #[test]
-fn parses_lexical_task_scope_contextual_forms() -> unit {
-    let source = "fn main() -> unit { let task = scope { spawn |cancel| cancel.is_cancelled() }; let scope = 1; let spawn = |value: isize| value; println(spawn(scope)); let _ = task; }";
+fn parses_lexical_task_scope_contextual_forms() -> () {
+    let source = "fn main() -> () { let task = scope { spawn |cancel| cancel.is_cancelled() }; let scope = 1; let spawn = |value: isize| value; println(spawn(scope)); let _ = task; }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_SCOPE), 1);
@@ -305,7 +305,7 @@ fn parses_lexical_task_scope_contextual_forms() -> unit {
 }
 
 #[test]
-fn parses_comptime_contextually_without_reserving_the_identifier() -> unit {
+fn parses_comptime_contextually_without_reserving_the_identifier() -> () {
     let source = "struct Value { comptime: isize } fn comptime() -> isize { 1 } fn main() -> isize { let value = Value { comptime: 2 }; let folded = comptime { comptime() + value.comptime }; let comptime = 0; match comptime { 0 => folded, _ => 0 } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -313,7 +313,7 @@ fn parses_comptime_contextually_without_reserving_the_identifier() -> unit {
 }
 
 #[test]
-fn parses_comptime_as_a_control_flow_operand() -> unit {
+fn parses_comptime_as_a_control_flow_operand() -> () {
     let source = "fn main() -> isize { match comptime { 1 } { 1 => 2, _ => 3 } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -321,7 +321,7 @@ fn parses_comptime_as_a_control_flow_operand() -> unit {
 }
 
 #[test]
-fn parses_raw_strings_let_else_and_value_loops() -> unit {
+fn parses_raw_strings_let_else_and_value_loops() -> () {
     let source = "enum Choice { Value(isize), Empty } fn choose(value: Choice) -> isize { let Value(item) = value else { return -1; }; loop { break item; } } fn raw() -> string { r#\"quoted \"text\"\"# }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -331,8 +331,8 @@ fn parses_raw_strings_let_else_and_value_loops() -> unit {
 }
 
 #[test]
-fn parses_block_expressions_and_byte_strings() -> unit {
-    let source = "fn value() -> isize { return { let base = 40; base + 2 }; } fn main() -> unit { let bytes: Vec[byte] = b\"A\\n\\x42\"; let raw = br#\"raw \\\\ bytes\"#; let nested = consume({ let item = value(); item }); if ({ true }) { let _ = nested; } }";
+fn parses_block_expressions_and_byte_strings() -> () {
+    let source = "fn value() -> isize { return { let base = 40; base + 2 }; } fn main() -> () { let bytes: Vec[byte] = b\"A\\n\\x42\"; let raw = br#\"raw \\\\ bytes\"#; let nested = consume({ let item = value(); item }); if ({ true }) { let _ = nested; } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BLOCK), 3);
@@ -340,8 +340,8 @@ fn parses_block_expressions_and_byte_strings() -> unit {
 }
 
 #[test]
-fn keeps_control_flow_body_braces_out_of_header_expressions() -> unit {
-    let source = "fn main() -> unit { while break { () } if return { () } for _ in return { () } match return { _ => () } }";
+fn keeps_control_flow_body_braces_out_of_header_expressions() -> () {
+    let source = "fn main() -> () { while break { () } if return { () } for _ in return { () } match return { _ => () } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BLOCK), 0);
@@ -352,7 +352,7 @@ fn keeps_control_flow_body_braces_out_of_header_expressions() -> unit {
 }
 
 #[test]
-fn postfix_expressions_bind_tighter_than_prefix_operators() -> unit {
+fn postfix_expressions_bind_tighter_than_prefix_operators() -> () {
     let source = "fn main() -> bool { let values = Vec::from_array([false]); !values[0] }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -360,8 +360,8 @@ fn postfix_expressions_bind_tighter_than_prefix_operators() -> unit {
 }
 
 #[test]
-fn recovers_non_function_extern_declarations() -> unit {
-    let source = "extern bogus;\nfn main() -> unit { () }";
+fn recovers_non_function_extern_declarations() -> () {
+    let source = "extern bogus;\nfn main() -> () { () }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(
@@ -372,7 +372,7 @@ fn recovers_non_function_extern_declarations() -> unit {
 }
 
 #[test]
-fn parses_select_arms_and_keeps_contextual_names_available() -> unit {
+fn parses_select_arms_and_keeps_contextual_names_available() -> () {
     let source = "fn select(value: isize) -> isize { value } fn main(ch: Channel[isize]) -> isize { select { recv(ch) as value => value.unwrap_or(0), send(ch, select(1)) => 2, default => 3, } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -383,15 +383,15 @@ fn parses_select_arms_and_keeps_contextual_names_available() -> unit {
 }
 
 #[test]
-fn accepts_select_as_a_semicolon_free_control_statement() -> unit {
-    let source = "fn main(ch: Channel[isize]) -> unit { select { recv(ch) as _ => (), } let value = 1; let _ = value; }";
+fn accepts_select_as_a_semicolon_free_control_statement() -> () {
+    let source = "fn main(ch: Channel[isize]) -> () { select { recv(ch) as _ => (), } let value = 1; let _ = value; }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_SELECT), 1)
 }
 
 #[test]
-fn parses_select_guards_receive_matches_and_priority() -> unit {
+fn parses_select_guards_receive_matches_and_priority() -> () {
     let source = "fn main(ch: Channel[isize]) -> isize { select priority { recv(ch) when true match { Some(value) => value, None => 0, }, send(ch, 1) when false => 2, default => 3, } }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -401,8 +401,8 @@ fn parses_select_guards_receive_matches_and_priority() -> unit {
 }
 
 #[test]
-fn diagnoses_invalid_select_arm_lists_recoverably() -> unit {
-    let missing_communication = parse("fn main() -> unit { select { default => (), } }");
+fn diagnoses_invalid_select_arm_lists_recoverably() -> () {
+    let missing_communication = parse("fn main() -> () { select { default => (), } }");
     testing::assert(
         diagnostic_containing(
             missing_communication.diagnostics,
@@ -410,12 +410,12 @@ fn diagnoses_invalid_select_arm_lists_recoverably() -> unit {
         ).is_some(),
     );
     let misplaced_default = parse(
-        "fn main(ch: Channel[isize]) -> unit { select { default => (), recv(ch) as _ => (), } }",
+        "fn main(ch: Channel[isize]) -> () { select { default => (), recv(ch) as _ => (), } }",
     );
     testing::assert(
         diagnostic_containing(misplaced_default.diagnostics, "default must be the last select arm").is_some(),
     );
-    let unknown_arm = parse("fn main() -> unit { select { wait(ch) => (), } }");
+    let unknown_arm = parse("fn main() -> () { select { wait(ch) => (), } }");
     testing::assert(
         diagnostic_containing(
             unknown_arm.diagnostics,
@@ -423,7 +423,7 @@ fn diagnoses_invalid_select_arm_lists_recoverably() -> unit {
         ).is_some(),
     );
     let missing_priority_default = parse(
-        "fn main(ch: Channel[isize]) -> unit { select priority { recv(ch) as _ => (), } }",
+        "fn main(ch: Channel[isize]) -> () { select priority { recv(ch) as _ => (), } }",
     );
     testing::assert(
         diagnostic_containing(

@@ -1,5 +1,5 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 trait Extra {
@@ -7,14 +7,14 @@ trait Extra {
 }
 
 impl Mark for i32 {
-    fn mark(self: i32) -> unit { () }
+    fn mark(self: i32) -> () { () }
 }
 
 impl[T: Mark] Extra for T {
     fn extra(self: T) -> i32 { 1 }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let source: i32 = 1;
     let value: i32 = source.extra();
     let _ = value;

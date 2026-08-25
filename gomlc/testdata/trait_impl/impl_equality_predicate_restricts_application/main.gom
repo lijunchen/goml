@@ -1,15 +1,15 @@
 trait Selected {
-    fn selected(self: Self) -> unit;
+    fn selected(self: Self) -> ();
 }
 
 struct Wrap[T] { value: T }
 
 impl[T] Selected for Wrap[T] where T = i32 {
-    fn selected(self: Wrap[T]) -> unit { () }
+    fn selected(self: Wrap[T]) -> () { () }
 }
 
-fn require[T: Selected](value: T) -> unit { () }
+fn require[T: Selected](value: T) -> () { () }
 
-fn main() -> unit {
+fn main() -> () {
     require(Wrap { value: "no" })
 }

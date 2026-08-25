@@ -24,7 +24,7 @@ fn oracle_scan(source: bytes::Bytes) -> differential::OracleResponse {
     }
 }
 
-fn assert_scan_matches_bytes(source: bytes::Bytes) -> unit {
+fn assert_scan_matches_bytes(source: bytes::Bytes) -> () {
     let actual = scan_bytes(source);
     let expected = oracle_scan(source);
     testing::assert_eq(actual.tokens.len(), expected.tokens.len());
@@ -62,44 +62,44 @@ fn assert_scan_matches_bytes(source: bytes::Bytes) -> unit {
     }
 }
 
-fn assert_scan_matches(source: string) -> unit {
+fn assert_scan_matches(source: string) -> () {
     assert_scan_matches_bytes(bytes::Bytes::from_string(source))
 }
 
 #[test]
-fn matches_keywords_and_operators() -> unit {
+fn matches_keywords_and_operators() -> () {
     assert_scan_matches(
         "break default func interface select case defer go map struct chan else goto package switch const fallthrough if range type continue for import return var\n+ - * / % & | ^ << >> &^ += -= *= /= %= &= |= ^= <<= >>= &^= && || <- ++ -- == < > = ! != <= >= := ... ( ) [ ] { } , ; . : ~",
     )
 }
 
 #[test]
-fn matches_identifiers_and_numbers() -> unit {
+fn matches_identifiers_and_numbers() -> () {
     assert_scan_matches(
         "alpha _x 世界 π2 a٢ 0 0123 0b101 0B1_0 0o755 0O7 0xff 0XCA_FE 1.0 .5 1. 1e9 1E-2 0x1.fp2 2i 3.5i 0b102 0x 1__2 1e+",
     )
 }
 
 #[test]
-fn matches_strings_runes_and_comments() -> unit {
+fn matches_strings_runes_and_comments() -> () {
     assert_scan_matches(
         "'a' '世' '\\n' '\\x7f' '\\u4e16' \"hello\\n\" `raw\r\ntext` // line\r\n/* block\r\ntext */ identifier",
     )
 }
 
 #[test]
-fn matches_semicolon_insertion() -> unit {
+fn matches_semicolon_insertion() -> () {
     assert_scan_matches("x\ny\nreturn\nx\nx++\ny\nx /* comment\nwith newline */ y\n")
 }
 
 #[test]
-fn matches_bom_nul_and_invalid_utf8() -> unit {
+fn matches_bom_nul_and_invalid_utf8() -> () {
     let source: Vec[byte] = Vec::from_array([239, 187, 191, b'x', 0, 255, b'\n']);
     assert_scan_matches_bytes(bytes::Bytes::from_vec(source))
 }
 
 #[test]
-fn preserves_explicit_semicolons() -> unit {
+fn preserves_explicit_semicolons() -> () {
     let result = scan("x; y\n");
     testing::assert_eq(result.tokens.len(), 5);
     testing::assert(token::equal(result.tokens[1].kind, token::Kind::Semicolon));
@@ -109,7 +109,7 @@ fn preserves_explicit_semicolons() -> unit {
 }
 
 #[test]
-fn scans_package_header_without_function_body() -> unit {
+fn scans_package_header_without_function_body() -> () {
     let source = bytes::Bytes::from_string(
         "//go:build linux\n// +build linux\npackage sample\nimport \"fmt\"\nimport (\n    alias \"strings\"\n    _ `embed`\n)\nfunc main() { let _ = \"ignored\" }\n",
     );

@@ -35,25 +35,25 @@ fn state_new() -> CheckerState {
     CheckerState { gensym_counter: Ref::new(0), current_level: Ref::new(1) }
 }
 
-fn reset_gensym(st: CheckerState) -> unit {
+fn reset_gensym(st: CheckerState) -> () {
     let _ = st.gensym_counter.set(0);
 }
 
-fn reset_level(st: CheckerState) -> unit {
+fn reset_level(st: CheckerState) -> () {
     let _ = st.current_level.set(1);
 }
 
-fn reset_type_variables(st: CheckerState) -> unit {
+fn reset_type_variables(st: CheckerState) -> () {
     reset_gensym(st);
     reset_level(st)
 }
 
-fn enter_level(st: CheckerState) -> unit {
+fn enter_level(st: CheckerState) -> () {
     let l = st.current_level.get();
     let _ = st.current_level.set(l + 1);
 }
 
-fn leave_level(st: CheckerState) -> unit {
+fn leave_level(st: CheckerState) -> () {
     let l = st.current_level.get();
     let _ = st.current_level.set(l - 1);
 }
@@ -181,7 +181,7 @@ fn subst_lookup(subst: Vec[SubstEntry], name: string) -> Option[Typ] {
     found.get()
 }
 
-fn occurs(st: CheckerState, tvr: Ref[Tv], ty: Typ) -> Result[unit, string] {
+fn occurs(st: CheckerState, tvr: Ref[Tv], ty: Typ) -> Result[(), string] {
     match ty {
         Typ::TVar(tvr2) => {
             if ptr_eq(tvr, tvr2) {
@@ -210,7 +210,7 @@ fn occurs(st: CheckerState, tvr: Ref[Tv], ty: Typ) -> Result[unit, string] {
     }
 }
 
-fn unify(st: CheckerState, t1: Typ, t2: Typ) -> Result[unit, string] {
+fn unify(st: CheckerState, t1: Typ, t2: Typ) -> Result[(), string] {
     match (t1, t2) {
         (Typ::TVar(r1), Typ::TVar(r2)) => {
             if ptr_eq(r1, r2) {
@@ -368,14 +368,14 @@ fn exp_let(name: string, a: Exp, b: Exp) -> Exp {
     Exp::Let(name, a, b)
 }
 
-fn show_result(label: string, res: Result[Typ, string]) -> unit {
+fn show_result(label: string, res: Result[Typ, string]) -> () {
     match res {
         Result::Ok(ty) => println(label + ": " + typ_to_string(ty)),
         Result::Err(e) => println(label + ": " + e),
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let st = state_new();
     let id = exp_lam("x", exp_var("x"));
     let c1 = exp_lam("x", exp_lam("y", exp_app(exp_var("x"), exp_var("y"))));

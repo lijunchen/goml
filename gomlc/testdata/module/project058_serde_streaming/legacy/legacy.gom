@@ -8,7 +8,7 @@ pub struct Legacy {
 }
 
 impl Serialize for Legacy {
-    fn serialize[S: serde::Serializer](self: Legacy, serializer: S) -> Result[unit, string] {
+    fn serialize[S: serde::Serializer](self: Legacy, serializer: S) -> Result[(), string] {
         serializer.begin_struct("Legacy", 1)?;
         serializer.begin_struct_field(0, "value")?;
         Serialize::serialize(self.value, serializer)?;

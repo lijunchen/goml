@@ -7,7 +7,7 @@ fn scoped_convert[T, V: convert::Convert[T]](value: V) -> T {
     value.convert()
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(convert::Convert::[i32]::convert(convert::token()));
     println(convert::Convert::[string]::convert(convert::token()));
     let number: i32 = convert::convert_to::[i32, convert::Token](convert::token());

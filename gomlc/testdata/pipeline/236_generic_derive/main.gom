@@ -38,7 +38,7 @@ enum GenericChoice[T, Marker] {
     Value(Wrapper[T]),
 }
 
-fn main() -> unit {
+fn main() -> () {
     let wrapped = Wrapper { value: NoTraits { value: 1 } };
     let left: Generic[NoTraits, NoTraits] = Generic { first: wrapped, second: wrapped };
     let right: Generic[NoTraits, NoTraits] = Generic { first: wrapped, second: wrapped };

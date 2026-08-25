@@ -160,7 +160,7 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
 }
 
 #[test]
-fn binary_artifact_value_round_trips_value_shapes() -> unit {
+fn binary_artifact_value_round_trips_value_shapes() -> () {
     let value = wire::ArtifactValue::Object(
         Vec::from_array(
             [
@@ -199,7 +199,7 @@ fn binary_artifact_value_round_trips_value_shapes() -> unit {
 }
 
 #[test]
-fn binary_interface_artifact_is_deterministic() -> unit {
+fn binary_interface_artifact_is_deterministic() -> () {
     let first = match interface_codec::encode_binary(binary_interface_fixture()) {
         Ok(value) => value,
         Err(error) => {
@@ -225,7 +225,7 @@ fn binary_interface_artifact_is_deterministic() -> unit {
 }
 
 #[test]
-fn binary_comptime_interface_round_trips() -> unit {
+fn binary_comptime_interface_round_trips() -> () {
     let value = binary_comptime_interface(42, "src/value.gom");
     let encoded = match interface_codec::encode_binary(value) {
         Ok(value) => value,
@@ -244,7 +244,7 @@ fn binary_comptime_interface_round_trips() -> unit {
 }
 
 #[test]
-fn comptime_semantic_hash_ignores_origins_and_tracks_values() -> unit {
+fn comptime_semantic_hash_ignores_origins_and_tracks_values() -> () {
     let first = interface_codec::new_comptime_unit(binary_comptime_module(42, "src/first.gom"));
     let renamed = interface_codec::new_comptime_unit(
         binary_comptime_module(42, "other/renamed.gom"),
@@ -259,7 +259,7 @@ fn comptime_semantic_hash_ignores_origins_and_tracks_values() -> unit {
 }
 
 #[test]
-fn interface_hash_tracks_only_public_comptime_body_closures() -> unit {
+fn interface_hash_tracks_only_public_comptime_body_closures() -> () {
     let first = source_interface(
         "package value; fn runtime_helper() -> isize { 1 } pub fn runtime_value() -> isize { runtime_helper() } #[comptime] fn ct_helper() -> isize { 2 } #[comptime] pub fn ct_value() -> isize { ct_helper() }",
     );
@@ -274,7 +274,7 @@ fn interface_hash_tracks_only_public_comptime_body_closures() -> unit {
 }
 
 #[test]
-fn derive_entries_round_trip_and_affect_interface_hash() -> unit {
+fn derive_entries_round_trip_and_affect_interface_hash() -> () {
     let first = source_interface(
         "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") } #[comptime_derive(Value)] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
     );
@@ -310,28 +310,28 @@ fn derive_entries_round_trip_and_affect_interface_hash() -> unit {
             };
             testing::assert_eq(value.module.functions.len(), 2)
         },
-        None => testing::fail("expected derive comptime unit"),
+        None => testing::fail("expected derive comptime ()"),
     }
 }
 
 #[test]
-fn exported_comptime_origins_are_package_relative() -> unit {
+fn exported_comptime_origins_are_package_relative() -> () {
     let exports = binary_comptime_interface(42, "src/value.gom").exports;
     match artifact_comptime_unit(binary_comptime_module(42, "/checkout/src/value.gom"), exports) {
         Some(value) => {
             testing::assert_eq(value.module.origins[0].source_path, "value.gom")
         },
-        None => testing::fail("expected exported comptime unit"),
+        None => testing::fail("expected exported comptime ()"),
     }
 }
 
 #[test]
-fn comptime_interface_rejects_invalid_semantic_hash() -> unit {
+fn comptime_interface_rejects_invalid_semantic_hash() -> () {
     let value = binary_comptime_interface(42, "src/value.gom");
     let comptime = match value.comptime {
         Some(value) => value,
         None => {
-            testing::fail("expected comptime unit");
+            testing::fail("expected comptime ()");
             interface_codec::new_comptime_unit(binary_comptime_module(42, "src/value.gom"))
         },
     };
@@ -356,12 +356,12 @@ fn comptime_interface_rejects_invalid_semantic_hash() -> unit {
 }
 
 #[test]
-fn comptime_interface_rejects_unknown_ctir_version() -> unit {
+fn comptime_interface_rejects_unknown_ctir_version() -> () {
     let value = binary_comptime_interface(42, "src/value.gom");
     let comptime = match value.comptime {
         Some(value) => value,
         None => {
-            testing::fail("expected comptime unit");
+            testing::fail("expected comptime ()");
             interface_codec::new_comptime_unit(binary_comptime_module(42, "src/value.gom"))
         },
     };
@@ -386,12 +386,12 @@ fn comptime_interface_rejects_unknown_ctir_version() -> unit {
 }
 
 #[test]
-fn dependency_loader_rejects_invalid_comptime_local_types() -> unit {
+fn dependency_loader_rejects_invalid_comptime_local_types() -> () {
     let interface = binary_comptime_interface(42, "src/value.gom");
     let comptime = match interface.comptime {
         Some(value) => value,
         None => {
-            testing::fail("expected comptime unit");
+            testing::fail("expected comptime ()");
             interface_codec::new_comptime_unit(binary_comptime_module(42, "src/value.gom"))
         },
     };
@@ -411,7 +411,7 @@ fn dependency_loader_rejects_invalid_comptime_local_types() -> unit {
 }
 
 #[test]
-fn binary_interface_artifact_streams_standard_type_data() -> unit {
+fn binary_interface_artifact_streams_standard_type_data() -> () {
     let world = test_package_world();
     let value = required_artifact_standard_package(
         world.standard,
@@ -434,7 +434,7 @@ fn binary_interface_artifact_streams_standard_type_data() -> unit {
 }
 
 #[test]
-fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
+fn binary_interface_artifact_rejects_unknown_required_section() -> () {
     let sections = match interface_codec::artifact_binary_interface_sections(
         binary_interface_fixture(),
     ) {

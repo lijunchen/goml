@@ -31,7 +31,7 @@ fn assert_valid_file(source: string) -> ast::Node {
     }
 }
 
-fn assert_acceptance_matches(source: string) -> unit {
+fn assert_acceptance_matches(source: string) -> () {
     let actual = parse_file(source);
     let expected = match differential::run_oracle("parse-file", bytes::Bytes::from_string(source)) {
         Ok(value) => value,
@@ -47,7 +47,7 @@ fn assert_acceptance_matches(source: string) -> unit {
     } else {}
 }
 
-fn assert_expression_matches(source: string) -> unit {
+fn assert_expression_matches(source: string) -> () {
     let actual = parse_expr(source);
     let expected = match differential::run_oracle("parse-expr", bytes::Bytes::from_string(source)) {
         Ok(value) => value,
@@ -70,7 +70,7 @@ fn assert_expression_matches(source: string) -> unit {
 }
 
 #[test]
-fn parses_expression_precedence_and_generics() -> unit {
+fn parses_expression_precedence_and_generics() -> () {
     let result = parse_expr("f[A, B](x + y*2)");
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.root {
@@ -80,7 +80,7 @@ fn parses_expression_precedence_and_generics() -> unit {
 }
 
 #[test]
-fn parses_declarations_types_and_functions() -> unit {
+fn parses_declarations_types_and_functions() -> () {
     let file = assert_valid_file(
         "package sample\nimport \"fmt\"\ntype Pair[A, B any] struct { First A; Second B }\nvar value = Pair[int, string]{First: 1, Second: \"x\"}\nfunc Print[A any](pair Pair[A, string]) { fmt.Println(pair.First); }\n",
     );
@@ -89,7 +89,7 @@ fn parses_declarations_types_and_functions() -> unit {
 }
 
 #[test]
-fn parses_control_flow_statements() -> unit {
+fn parses_control_flow_statements() -> () {
     let file = assert_valid_file(
         "package sample\nfunc run(values []int, ch chan int) int { total := 0; for index, value := range values { if index%2 == 0 { total += value } else { continue } }; switch total { case 0: return 1; default: go println(total); }; select { case ch <- total: defer println(total); default: }; return total }\n",
     );
@@ -97,7 +97,7 @@ fn parses_control_flow_statements() -> unit {
 }
 
 #[test]
-fn skips_function_bodies_for_package_api_parsing() -> unit {
+fn skips_function_bodies_for_package_api_parsing() -> () {
     let result = parse_file_bytes_without_bodies(
         bytes::Bytes::from_string(
             "package sample\nfunc Exported() int { if true { value := func() int { return 1 }; return value() }; return 0 }\nvar Next int\n",
@@ -113,7 +113,7 @@ fn skips_function_bodies_for_package_api_parsing() -> unit {
 }
 
 #[test]
-fn invalid_file_returns_partial_ast() -> unit {
+fn invalid_file_returns_partial_ast() -> () {
     let result = parse_file("package sample\nfunc broken( { if {\n");
     testing::assert(result.diagnostics.len() > 0);
     match result.root {
@@ -123,21 +123,21 @@ fn invalid_file_returns_partial_ast() -> unit {
 }
 
 #[test]
-fn parses_ambiguous_types_and_grouped_parameters() -> unit {
+fn parses_ambiguous_types_and_grouped_parameters() -> () {
     assert_acceptance_matches(
         "package p\nimport \"crypto/sha256\"\ntype Sum [sha256.Size224]byte\ntype Generic[P *struct{}] struct{}\ntype F[T any] func(T, func(T, F[T]) T) T\nfunc use(name, key string, ch <-chan struct{}) {}\n",
     )
 }
 
 #[test]
-fn rejects_mutated_declarations_at_oracle_offset() -> unit {
+fn rejects_mutated_declarations_at_oracle_offset() -> () {
     assert_acceptance_matches("package p\n;func f() {}\n");
     assert_acceptance_matches("package p\nfunc f(t *testing\n.T) {}\n");
     assert_acceptance_matches("package p\ntype Value[] struct{}\n")
 }
 
 #[test]
-fn attaches_comments_and_go_version() -> unit {
+fn attaches_comments_and_go_version() -> () {
     let file = assert_valid_file(
         "//go:build (linux && go1.22) || (windows && go1.20)\n\npackage p\n\n// D\nvar x int // C\n",
     );
@@ -153,7 +153,7 @@ fn attaches_comments_and_go_version() -> unit {
 }
 
 #[test]
-fn parses_without_attaching_comments() -> unit {
+fn parses_without_attaching_comments() -> () {
     let result = parse_file_bytes_without_comments(
         bytes::Bytes::from_string("//go:build go1.22\n\npackage p\n\n// D\nvar x int // C\n"),
     );
@@ -166,7 +166,7 @@ fn parses_without_attaching_comments() -> unit {
 }
 
 #[test]
-fn parse_expr_matches_oracle_ambiguities() -> unit {
+fn parse_expr_matches_oracle_ambiguities() -> () {
     assert_expression_matches("F[A, B](x)[i:j:k]");
     assert_expression_matches("(<-chan struct{})(ready)");
     assert_expression_matches("map[string][]int{\"x\": {1, 2}}")

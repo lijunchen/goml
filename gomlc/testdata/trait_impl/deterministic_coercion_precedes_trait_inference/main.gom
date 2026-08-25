@@ -1,22 +1,22 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 impl Mark for i32 {
-    fn mark(self: i32) -> unit { () }
+    fn mark(self: i32) -> () { () }
 }
 
 fn identity[T](value: T) -> T {
     value
 }
 
-fn require_mark[T: Mark](value: T) -> unit {
+fn require_mark[T: Mark](value: T) -> () {
     ()
 }
 
-fn preserve[T: Mark](value: T) -> unit {
+fn preserve[T: Mark](value: T) -> () {
     let copied = identity(value);
     require_mark(copied)
 }
 
-fn main() -> unit { () }
+fn main() -> () { () }

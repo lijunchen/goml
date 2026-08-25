@@ -23,21 +23,21 @@ impl Hash for CollisionKey {
     }
 }
 
-fn print_opt_string(value: Option[string]) -> unit {
+fn print_opt_string(value: Option[string]) -> () {
     match value {
         Option::Some(text) => println(text),
         Option::None => println("none"),
     }
 }
 
-fn print_opt_int(value: Option[i32]) -> unit {
+fn print_opt_int(value: Option[i32]) -> () {
     match value {
         Option::Some(number) => println(number),
         Option::None => println("none"),
     }
 }
 
-fn float_comparison_contracts() -> unit {
+fn float_comparison_contracts() -> () {
     let zero32: f32 = 0.0;
     let negative_zero32 = -zero32;
     println((zero32 == negative_zero32).to_string());
@@ -50,7 +50,7 @@ fn float_comparison_contracts() -> unit {
     println(cmp::PartialOrd::partial_cmp(nan, nan).is_none().to_string());
 }
 
-fn collision_contracts() -> unit {
+fn collision_contracts() -> () {
     let values: HashMap[CollisionKey, i32] = HashMap::new();
     values.set(CollisionKey { value: 1 }, 10);
     values.set(CollisionKey { value: 2 }, 20);
@@ -78,7 +78,7 @@ fn collision_contracts() -> unit {
     println(values.len());
 }
 
-fn reference_contracts() -> unit {
+fn reference_contracts() -> () {
     let values: HashMap[Ref[CollisionKey], string] = HashMap::new();
     let key = Ref::new(CollisionKey { value: 1 });
     let alias = key;
@@ -93,7 +93,7 @@ fn reference_contracts() -> unit {
     print_opt_string(values.get(key));
 }
 
-fn main() -> unit {
+fn main() -> () {
     float_comparison_contracts();
     collision_contracts();
     reference_contracts();

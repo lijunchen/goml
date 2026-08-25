@@ -2,11 +2,11 @@ trait Render {
     fn render(self: Self) -> string;
 }
 
-fn require_render[T](values: Vec[T]) -> unit where Vec[T]: Render {
+fn require_render[T](values: Vec[T]) -> () where Vec[T]: Render {
     ()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values: Vec[i32] = vec_new();
     require_render(values)
 }

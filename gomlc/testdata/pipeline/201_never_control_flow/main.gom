@@ -7,7 +7,7 @@ fn choose(flag: bool) -> i32 {
     value + 1
 }
 
-fn continue_branch() -> unit {
+fn continue_branch() -> () {
     let count = Ref::new(0);
     while count.get() < 2 {
         count.set(count.get() + 1);
@@ -20,7 +20,7 @@ fn continue_branch() -> unit {
     }
 }
 
-fn break_branch(stop: bool) -> unit {
+fn break_branch(stop: bool) -> () {
     while true {
         let value = if stop {
             break
@@ -32,7 +32,7 @@ fn break_branch(stop: bool) -> unit {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(choose(false));
     println(choose(true));
     continue_branch();

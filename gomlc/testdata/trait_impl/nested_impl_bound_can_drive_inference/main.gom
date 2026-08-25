@@ -1,24 +1,24 @@
 trait Inner {
-    fn inner(self: Self) -> unit;
+    fn inner(self: Self) -> ();
 }
 
 trait Outer {
-    fn outer(self: Self) -> unit;
+    fn outer(self: Self) -> ();
 }
 
 impl Inner for i32 {
-    fn inner(self: i32) -> unit { () }
+    fn inner(self: i32) -> () { () }
 }
 
 impl[T: Inner] Outer for Vec[T] {
-    fn outer(self: Vec[T]) -> unit { () }
+    fn outer(self: Vec[T]) -> () { () }
 }
 
-fn require_outer[T: Outer](value: T) -> unit {
+fn require_outer[T: Outer](value: T) -> () {
     ()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values = vec_new();
     require_outer(values)
 }

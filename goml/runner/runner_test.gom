@@ -3,7 +3,7 @@ package runner;
 use std::testing;
 
 #[test]
-fn encodes_list_json_event() -> unit {
+fn encodes_list_json_event() -> () {
     let test = Test {
         id: "test-id",
         display_name: "suite::test",
@@ -19,7 +19,7 @@ fn encodes_list_json_event() -> unit {
 }
 
 #[test]
-fn encodes_json_control_characters() -> unit {
+fn encodes_json_control_characters() -> () {
     testing::assert_eq(
         result_event_json("ok", "你好\b\f\u0001\n\"goml\"\\", 17),
         "{\"event\":\"ok\",\"name\":\"你好\\b\\f\\u0001\\n\\\"goml\\\"\\\\\",\"seed\":17}",

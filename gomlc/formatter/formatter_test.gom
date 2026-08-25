@@ -66,7 +66,7 @@ fn has_carriage_return(source: string) -> bool {
     false
 }
 
-fn expect_format(source: string, expected: string) -> unit {
+fn expect_format(source: string, expected: string) -> () {
     match format_source(source) {
         Ok(formatted) => {
             testing::assert_eq(formatted, expected);
@@ -97,7 +97,7 @@ fn read_fixture(path_value: string) -> string {
     }
 }
 
-fn assert_format_invariants(source: string, formatted: string) -> unit {
+fn assert_format_invariants(source: string, formatted: string) -> () {
     testing::assert_eq(parser::parse(formatted).diagnostics.len(), 0);
     match format_source(formatted) {
         Ok(again) => testing::assert_eq(again, formatted),
@@ -122,7 +122,7 @@ fn formatter_golden_path(name: string) -> string {
 }
 
 #[test]
-fn formatter_goldens_match() -> unit {
+fn formatter_goldens_match() -> () {
     let root = formatter_fixture_root();
     let names = match fs::read_dir(root) {
         Ok(value) => value,
@@ -157,23 +157,23 @@ fn formatter_goldens_match() -> unit {
 }
 
 #[test]
-fn formats_basic_file() -> unit {
+fn formats_basic_file() -> () {
     expect_format(
-        "package main;\nuse alpha::beta;\nfn main( )->unit{let x=call(1,2,3);x}\n",
+        "package main;\nuse alpha::beta;\nfn main( )->(){let x=call(1,2,3);x}\n",
         "package main;\n\nuse alpha::beta;\n\nfn main() -> () {\n    let x = call(1, 2, 3);\n    x\n}\n",
     )
 }
 
 #[test]
-fn canonicalizes_legacy_unit_types() -> unit {
+fn canonicalizes_legacy_unit_types() -> () {
     expect_format(
-        "type Callback=unit->unit;fn consume(value:unit,callback:Callback)->unit{callback(value)}",
+        "type Callback=(()) ->();fn consume(value:(),callback:Callback)->(){callback(value)}",
         "type Callback = (()) -> ();\n\nfn consume(value: (), callback: Callback) -> () {\n    callback(value)\n}\n",
     )
 }
 
 #[test]
-fn renders_flat_and_broken_groups() -> unit {
+fn renders_flat_and_broken_groups() -> () {
     let docs = doc_builder();
     let document = docs.group(
         concat(
@@ -198,7 +198,7 @@ fn renders_flat_and_broken_groups() -> unit {
 }
 
 #[test]
-fn renders_nested_groups_independently() -> unit {
+fn renders_nested_groups_independently() -> () {
     let docs = doc_builder();
     let inner = docs.group(
         concat(
@@ -225,7 +225,7 @@ fn renders_nested_groups_independently() -> unit {
 }
 
 #[test]
-fn measures_unicode_by_codepoint() -> unit {
+fn measures_unicode_by_codepoint() -> () {
     let docs = doc_builder();
     let fits = docs.group(concat(Vec::from_array([text("你好"), Doc::SoftLine, text("世界")]))).doc;
     testing::assert_eq(render(fits, 5), "你好 世界");
@@ -236,7 +236,7 @@ fn measures_unicode_by_codepoint() -> unit {
 }
 
 #[test]
-fn renders_conditional_commas_suffixes_and_verbatim_text() -> unit {
+fn renders_conditional_commas_suffixes_and_verbatim_text() -> () {
     let docs = doc_builder();
     let id = docs.new_group_id();
     let list = docs.group_with_id(
@@ -262,12 +262,12 @@ fn renders_conditional_commas_suffixes_and_verbatim_text() -> unit {
 }
 
 #[test]
-fn normalizes_line_endings_and_empty_input() -> unit {
+fn normalizes_line_endings_and_empty_input() -> () {
     match format_source("") {
         Ok(formatted) => testing::assert_eq(formatted, ""),
         Err(_) => testing::fail("empty format failed"),
     };
-    match format_source("fn main() -> unit {\r\n    ()\r\n}\r\n\r\n") {
+    match format_source("fn main() -> () {\r\n    ()\r\n}\r\n\r\n") {
         Ok(formatted) => {
             testing::assert(!has_carriage_return(formatted));
             testing::assert(formatted.ends_with("\n"));
@@ -278,8 +278,8 @@ fn normalizes_line_endings_and_empty_input() -> unit {
 }
 
 #[test]
-fn preserves_tokens_literals_comments_and_ast() -> unit {
-    let source = "fn sample() -> unit { // 注释\nlet value = Vec::from_array([0xFF_FF, 1_000]); let ch = '\\u0041'; let byte = b'\\xFF'; let text = f\"值={value.get(0)}\"; () }\n";
+fn preserves_tokens_literals_comments_and_ast() -> () {
+    let source = "fn sample() -> () { // 注释\nlet value = Vec::from_array([0xFF_FF, 1_000]); let ch = '\\u0041'; let byte = b'\\xFF'; let text = f\"值={value.get(0)}\"; () }\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
         Err(_) => {
@@ -291,7 +291,7 @@ fn preserves_tokens_literals_comments_and_ast() -> unit {
 }
 
 #[test]
-fn formats_block_and_byte_string_expressions_losslessly() -> unit {
+fn formats_block_and_byte_string_expressions_losslessly() -> () {
     let source = "fn bytes()->Vec[byte]{let plain=b\"A\\n\\xFF\";let raw=br#\"first\nsecond\"#;{let selected=raw;selected}}\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
@@ -304,8 +304,8 @@ fn formats_block_and_byte_string_expressions_losslessly() -> unit {
 }
 
 #[test]
-fn formats_lexical_task_scope_contextual_forms_losslessly() -> unit {
-    let source = "use std::task;fn main()->unit{let task=scope{spawn|cancel|cancel.is_cancelled()};let scope=1;let spawn=|value:isize|value;println(spawn(scope));let _=task;}\n";
+fn formats_lexical_task_scope_contextual_forms_losslessly() -> () {
+    let source = "use std::task;fn main()->(){let task=scope{spawn|cancel|cancel.is_cancelled()};let scope=1;let spawn=|value:isize|value;println(spawn(scope));let _=task;}\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
         Err(_) => {
@@ -317,7 +317,7 @@ fn formats_lexical_task_scope_contextual_forms_losslessly() -> unit {
 }
 
 #[test]
-fn formats_comptime_contextually_without_reserving_the_name() -> unit {
+fn formats_comptime_contextually_without_reserving_the_name() -> () {
     let source = "#[comptime]fn factorial(value:isize)->isize{if value<2{1}else{value*factorial(value-1)}}fn comptime()->isize{1}fn main()->isize{let value=comptime{factorial(4)};value+comptime()}\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
@@ -332,23 +332,23 @@ fn formats_comptime_contextually_without_reserving_the_name() -> unit {
 }
 
 #[test]
-fn removes_redundant_unit_expressions_and_semicolons() -> unit {
+fn removes_redundant_unit_expressions_and_semicolons() -> () {
     expect_format(
-        "fn empty()->unit{;;;()}fn control(flag:bool,values:Vec[isize])->unit{while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->unit{if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[isize])->(Vec[isize],Vec[isize]){for value in values{let _=value;};(values,values)}",
+        "fn empty()->(){;;;()}fn control(flag:bool,values:Vec[isize])->(){while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->(){if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[isize])->(Vec[isize],Vec[isize]){for value in values{let _=value;};(values,values)}",
         "fn empty() -> () {}\n\nfn control(flag: bool, values: Vec[isize]) -> () {\n    while flag {}\n    for value in values {\n        let _ = value;\n    }\n    loop {\n        break;\n    }\n    if flag {} else {};\n    match flag {\n        true => (),\n        false => (),\n    };\n}\n\nfn retain(flag: bool) -> () {\n    if flag {\n        1\n    } else {\n        2\n    };\n    match flag {\n        true => 1,\n        false => 2,\n    };\n    loop {\n        break 1\n    };\n}\n\nfn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {\n    for value in values {\n        let _ = value;\n    };\n    (values, values)\n}\n",
     )
 }
 
 #[test]
-fn preserves_semicolons_after_labeled_while_and_for_statements() -> unit {
+fn preserves_semicolons_after_labeled_while_and_for_statements() -> () {
     expect_format(
-        "fn main(values:Vec[isize])->unit{'retry:while false{continue 'retry;};println(1);'items:for value in values{let _=value;break 'items;};println(2)}",
+        "fn main(values:Vec[isize])->(){'retry:while false{continue 'retry;};println(1);'items:for value in values{let _=value;break 'items;};println(2)}",
         "fn main(values: Vec[isize]) -> () {\n    'retry: while false {\n        continue 'retry;\n    };\n    println(1);\n    'items: for value in values {\n        let _ = value;\n        break 'items;\n    };\n    println(2)\n}\n",
     )
 }
 
 #[test]
-fn formats_enum_variants_like_rustfmt() -> unit {
+fn formats_enum_variants_like_rustfmt() -> () {
     expect_format(
         "enum Compact[T]{None,One{value:T},Two(T)}enum Expanded[T]{One{value:T},Pair{left:T,right:T},Other{value:T}}enum Wide{First{value:ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth},Second{value:isize}}",
         "enum Compact[T] {\n    None,\n    One { value: T },\n    Two(T),\n}\n\nenum Expanded[T] {\n    One {\n        value: T,\n    },\n    Pair {\n        left: T,\n        right: T,\n    },\n    Other {\n        value: T,\n    },\n}\n\nenum Wide {\n    First {\n        value: ExtremelyLongTypeNameThatMakesTheVariantExceedTheConfiguredOneHundredColumnLineWidth,\n    },\n    Second {\n        value: isize,\n    },\n}\n",
@@ -356,7 +356,7 @@ fn formats_enum_variants_like_rustfmt() -> unit {
 }
 
 #[test]
-fn formats_newtype_structs() -> unit {
+fn formats_newtype_structs() -> () {
     expect_format(
         "pub struct Wrapper [ T ] ( pub T , ) ;\nstruct UserId(i32);",
         "pub struct Wrapper[T](pub T,);\n\nstruct UserId(i32);\n",
@@ -364,7 +364,7 @@ fn formats_newtype_structs() -> unit {
 }
 
 #[test]
-fn formats_static_items() -> unit {
+fn formats_static_items() -> () {
     expect_format(
         "static VALUE:OnceCell[isize]=OnceCell::new();",
         "static VALUE: OnceCell[isize] = OnceCell::new();\n",
@@ -372,7 +372,7 @@ fn formats_static_items() -> unit {
 }
 
 #[test]
-fn rejects_invalid_source() -> unit {
+fn rejects_invalid_source() -> () {
     match format_source("fn main( {") {
         Ok(_) => testing::fail("invalid source formatted"),
         Err(error) => testing::assert(error.diagnostics.len() > 0),
@@ -380,7 +380,7 @@ fn rejects_invalid_source() -> unit {
 }
 
 #[test]
-fn formats_select_arms_vertically() -> unit {
+fn formats_select_arms_vertically() -> () {
     expect_format(
         "fn choose(input:Channel[isize],output:Channel[isize])->isize{select{recv(input)as value=>value.unwrap_or(0),send(output,1)=>2,default=>{let fallback=3;fallback},}}",
         "fn choose(input: Channel[isize], output: Channel[isize]) -> isize {\n    select {\n        recv(input) as value => value.unwrap_or(0),\n        send(output, 1) => 2,\n        default => {\n            let fallback = 3;\n            fallback\n        },\n    }\n}\n",
@@ -388,7 +388,7 @@ fn formats_select_arms_vertically() -> unit {
 }
 
 #[test]
-fn formats_advanced_select_arms() -> unit {
+fn formats_advanced_select_arms() -> () {
     expect_format(
         "fn choose(input:Channel[isize],output:Channel[isize])->isize{select priority{recv(input)when true match{Some(value)=>value,None=>0,},send(output,1)when false=>2,default=>3,}}",
         "fn choose(input: Channel[isize], output: Channel[isize]) -> isize {\n    select priority {\n        recv(input) when true match {\n            Some(value) => value,\n            None => 0,\n        },\n        send(output, 1) when false => 2,\n        default => 3,\n    }\n}\n",

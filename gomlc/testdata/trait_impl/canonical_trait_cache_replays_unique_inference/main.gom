@@ -1,16 +1,16 @@
 trait Mark {
-    fn mark(self: Self) -> unit;
+    fn mark(self: Self) -> ();
 }
 
 impl Mark for Vec[i32] {
-    fn mark(self: Vec[i32]) -> unit { () }
+    fn mark(self: Vec[i32]) -> () { () }
 }
 
-fn require_mark[T: Mark](value: T) -> unit {
+fn require_mark[T: Mark](value: T) -> () {
     ()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let first = vec_new();
     require_mark(first);
     let second = vec_new();

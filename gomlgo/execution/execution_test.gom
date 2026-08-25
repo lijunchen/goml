@@ -41,7 +41,7 @@ fn has_diagnostic(result: ExecutionLoadResult, expected: string) -> bool {
 }
 
 #[test]
-fn parses_concatenated_go_list_json_objects() -> unit {
+fn parses_concatenated_go_list_json_objects() -> () {
     let values = testing::expect_ok(
         parse_json_stream("{\"value\":\"} [ \\\"\"}\n{\"nested\":[{\"ok\":true}]}\n"),
         "JSON stream parsing failed",
@@ -50,7 +50,7 @@ fn parses_concatenated_go_list_json_objects() -> unit {
 }
 
 #[test]
-fn discovers_go126_toolchain_and_package_graph() -> unit {
+fn discovers_go126_toolchain_and_package_graph() -> () {
     let config = default_config();
     let toolchain = testing::expect_ok(
         discover_toolchain(config.go_binary),
@@ -74,7 +74,7 @@ fn discovers_go126_toolchain_and_package_graph() -> unit {
 }
 
 #[test]
-fn loads_a_named_go_source_file() -> unit {
+fn loads_a_named_go_source_file() -> () {
     let file = path::join(
         path::join(env::current_dir().unwrap_or("."), "testdata/execute/pure/control"),
         "main.go",
@@ -88,7 +88,7 @@ fn loads_a_named_go_source_file() -> unit {
 }
 
 #[test]
-fn loads_generated_files_from_native_api_catalog() -> unit {
+fn loads_generated_files_from_native_api_catalog() -> () {
     let file = path::join(fixture("native_api"), "main.gom.go");
     let loaded = testing::expect_ok(
         load_files(default_config(), Vec::from_array([file])),
@@ -103,7 +103,7 @@ fn loads_generated_files_from_native_api_catalog() -> unit {
 }
 
 #[test]
-fn falls_back_when_generated_file_uses_uncatalogued_api() -> unit {
+fn falls_back_when_generated_file_uses_uncatalogued_api() -> () {
     let file = path::join(fixture("native_api_fallback"), "main.gom.go");
     let loaded = testing::expect_ok(
         load_files(default_config(), Vec::from_array([file])),
@@ -119,7 +119,7 @@ fn falls_back_when_generated_file_uses_uncatalogued_api() -> unit {
 }
 
 #[test]
-fn rejects_multiple_entry_source_files() -> unit {
+fn rejects_multiple_entry_source_files() -> () {
     let file = path::join(
         path::join(env::current_dir().unwrap_or("."), "testdata/execute/pure/control"),
         "main.go",
@@ -128,7 +128,7 @@ fn rejects_multiple_entry_source_files() -> unit {
 }
 
 #[test]
-fn rejects_non_standard_imports_in_single_file_mode() -> unit {
+fn rejects_non_standard_imports_in_single_file_mode() -> () {
     let file = path::join(fixture("basic"), "main.go");
     let loaded = testing::expect_ok(
         load_files(default_config(), Vec::from_array([file])),
@@ -139,7 +139,7 @@ fn rejects_non_standard_imports_in_single_file_mode() -> unit {
 }
 
 #[test]
-fn loads_interpreted_packages_and_native_standard_library() -> unit {
+fn loads_interpreted_packages_and_native_standard_library() -> () {
     let loaded = testing::expect_ok(
         load_program(default_config(), fixture("basic")),
         "execution program loading failed",
@@ -178,7 +178,7 @@ fn loads_interpreted_packages_and_native_standard_library() -> unit {
 }
 
 #[test]
-fn checks_function_bodies_in_interpreted_dependencies() -> unit {
+fn checks_function_bodies_in_interpreted_dependencies() -> () {
     let loaded = testing::expect_ok(
         load_program(default_config(), fixture("invalid_dependency")),
         "execution program loading failed",
@@ -188,7 +188,7 @@ fn checks_function_bodies_in_interpreted_dependencies() -> unit {
 }
 
 #[test]
-fn rejects_main_packages_without_main_function() -> unit {
+fn rejects_main_packages_without_main_function() -> () {
     let loaded = testing::expect_ok(
         load_program(default_config(), fixture("missing_main")),
         "execution program loading failed",
@@ -198,7 +198,7 @@ fn rejects_main_packages_without_main_function() -> unit {
 }
 
 #[test]
-fn indexes_type_facts_per_package_and_reports_missing_facts() -> unit {
+fn indexes_type_facts_per_package_and_reports_missing_facts() -> () {
     let loaded = testing::expect_ok(
         load_program(default_config(), fixture("basic")),
         "execution program loading failed",
@@ -226,7 +226,7 @@ fn indexes_type_facts_per_package_and_reports_missing_facts() -> unit {
 }
 
 #[test]
-fn diagnoses_conflicting_and_out_of_range_type_facts() -> unit {
+fn diagnoses_conflicting_and_out_of_range_type_facts() -> () {
     let loaded = testing::expect_ok(
         load_program(default_config(), fixture("basic")),
         "execution program loading failed",

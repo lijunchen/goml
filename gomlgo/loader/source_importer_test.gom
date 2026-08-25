@@ -16,7 +16,7 @@ fn source_named(values: Vec[checker::SourceFile], name: string) -> bool {
 }
 
 #[test]
-fn loads_source_dependencies_with_platform_selection() -> unit {
+fn loads_source_dependencies_with_platform_selection() -> () {
     let config = default_config();
     config.source_roots = Vec::from_array(
         [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
@@ -47,7 +47,7 @@ fn loads_source_dependencies_with_platform_selection() -> unit {
 }
 
 #[test]
-fn evaluates_go_build_boolean_constraints() -> unit {
+fn evaluates_go_build_boolean_constraints() -> () {
     testing::assert(
         evaluate_constraint("linux && amd64 && !cgo && go1.26", "linux", "amd64", false, "go1.26"),
     );
@@ -57,7 +57,7 @@ fn evaluates_go_build_boolean_constraints() -> unit {
 }
 
 #[test]
-fn evaluates_legacy_and_custom_build_constraints() -> unit {
+fn evaluates_legacy_and_custom_build_constraints() -> () {
     testing::assert(
         evaluate_legacy_constraint(
             "linux,amd64 windows",
@@ -103,7 +103,7 @@ fn evaluates_legacy_and_custom_build_constraints() -> unit {
 }
 
 #[test]
-fn selects_target_cgo_and_test_package_variants() -> unit {
+fn selects_target_cgo_and_test_package_variants() -> () {
     let config = default_config();
     config.source_roots = Vec::from_array(
         [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
@@ -150,7 +150,7 @@ fn selects_target_cgo_and_test_package_variants() -> unit {
 }
 
 #[test]
-fn checks_internal_and_external_test_packages_separately() -> unit {
+fn checks_internal_and_external_test_packages_separately() -> () {
     let selection = default_config();
     selection.source_roots = Vec::from_array(
         [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],

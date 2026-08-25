@@ -1,5 +1,5 @@
 trait Child: Parent {
-    fn child(self: Self) -> unit;
+    fn child(self: Self) -> ();
 }
 
 trait Parent {
@@ -20,13 +20,13 @@ impl Parent for Count {
 }
 
 impl Child for Count {
-    fn child(self: Count) -> unit {}
+    fn child(self: Count) -> () {}
 }
 
 fn get_from_child[C: Child](value: C) -> C::Item {
     Parent::get(value)
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(get_from_child(Count { value: 42 }));
 }

@@ -19,7 +19,7 @@ fn decode[T: Decode, S: Source](source: S) -> Result[T, string] {
     Result::Ok(value)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value = model::Value { number: 7 };
     println(value.pick("generic-default"));
     println(value.number());
