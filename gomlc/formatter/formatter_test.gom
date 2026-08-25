@@ -160,7 +160,15 @@ fn formatter_goldens_match() -> unit {
 fn formats_basic_file() -> unit {
     expect_format(
         "package main;\nuse alpha::beta;\nfn main( )->unit{let x=call(1,2,3);x}\n",
-        "package main;\n\nuse alpha::beta;\n\nfn main() -> unit {\n    let x = call(1, 2, 3);\n    x\n}\n",
+        "package main;\n\nuse alpha::beta;\n\nfn main() -> () {\n    let x = call(1, 2, 3);\n    x\n}\n",
+    )
+}
+
+#[test]
+fn canonicalizes_legacy_unit_types() -> unit {
+    expect_format(
+        "type Callback=unit->unit;fn consume(value:unit,callback:Callback)->unit{callback(value)}",
+        "type Callback = (()) -> ();\n\nfn consume(value: (), callback: Callback) -> () {\n    callback(value)\n}\n",
     )
 }
 

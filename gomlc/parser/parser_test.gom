@@ -96,6 +96,15 @@ fn parses_half_open_and_inclusive_range_expressions() -> unit {
 }
 
 #[test]
+fn parses_unit_type_with_empty_parentheses() -> unit {
+    let source = "type Callback = () -> (); fn consume(value: (), callback: Callback) -> () { callback() } fn one_unit_argument(callback: (()) -> ()) -> () { callback(()) }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::TYPE_FUNC), 2);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::TYPE_TUPLE), 8)
+}
+
+#[test]
 fn parses_braced_imports_with_item_aliases() -> unit {
     let source = "package main; use alice::render::{Canvas, Color as Paint, render}; fn main() -> unit {}";
     let result = parse(source);
