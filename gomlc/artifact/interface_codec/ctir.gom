@@ -7,15 +7,15 @@ use module::hash;
 use std::cmp;
 use std::collections;
 
-fn ctir_tag(writer: wire::ArtifactJsonWriter, value: string) -> unit {
+fn ctir_tag(writer: wire::ArtifactJsonWriter, value: string) -> () {
     wire::artifact_json_string(writer, value)
 }
 
-fn ctir_number(writer: wire::ArtifactJsonWriter, value: isize) -> unit {
+fn ctir_number(writer: wire::ArtifactJsonWriter, value: isize) -> () {
     wire::artifact_json_number(writer, value.to_string())
 }
 
-fn ctir_type(writer: wire::ArtifactJsonWriter, value: ctir::CtType) -> unit {
+fn ctir_type(writer: wire::ArtifactJsonWriter, value: ctir::CtType) -> () {
     wire::artifact_json_begin_array(writer);
     match value {
         ctir::CtType::Unit => ctir_tag(writer, "unit"),
@@ -59,7 +59,7 @@ fn ctir_type(writer: wire::ArtifactJsonWriter, value: ctir::CtType) -> unit {
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_types(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtType]) -> unit {
+fn ctir_types(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtType]) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         ctir_type(writer, value)
@@ -67,7 +67,7 @@ fn ctir_types(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtType]) -> un
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_value(writer: wire::ArtifactJsonWriter, value: ctir::CtValue) -> unit {
+fn ctir_value(writer: wire::ArtifactJsonWriter, value: ctir::CtValue) -> () {
     wire::artifact_json_begin_array(writer);
     match value {
         ctir::CtValue::Unit => ctir_tag(writer, "unit"),
@@ -117,7 +117,7 @@ fn ctir_value(writer: wire::ArtifactJsonWriter, value: ctir::CtValue) -> unit {
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_values(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtValue]) -> unit {
+fn ctir_values(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtValue]) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         ctir_value(writer, value)
@@ -125,7 +125,7 @@ fn ctir_values(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtValue]) -> 
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_pattern(writer: wire::ArtifactJsonWriter, value: ctir::CtPattern) -> unit {
+fn ctir_pattern(writer: wire::ArtifactJsonWriter, value: ctir::CtPattern) -> () {
     wire::artifact_json_begin_array(writer);
     match value {
         ctir::CtPattern::Wild => ctir_tag(writer, "wild"),
@@ -192,7 +192,7 @@ fn ctir_pattern(writer: wire::ArtifactJsonWriter, value: ctir::CtPattern) -> uni
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_patterns(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtPattern]) -> unit {
+fn ctir_patterns(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtPattern]) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         ctir_pattern(writer, value)
@@ -200,7 +200,7 @@ fn ctir_patterns(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtPattern])
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_exprs(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtExpr], semantic: bool) -> unit {
+fn ctir_exprs(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtExpr], semantic: bool) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         ctir_expr(writer, value, semantic)
@@ -208,7 +208,7 @@ fn ctir_exprs(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtExpr], seman
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bool) -> unit {
+fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bool) -> () {
     wire::artifact_json_begin_array(writer);
     ctir_type(writer, value.ty);
     ctir_number(
@@ -417,7 +417,7 @@ fn ctir_binary_name(value: ctir::CtBinaryOp) -> string {
     }
 }
 
-fn ctir_stmt(writer: wire::ArtifactJsonWriter, value: ctir::CtStmt, semantic: bool) -> unit {
+fn ctir_stmt(writer: wire::ArtifactJsonWriter, value: ctir::CtStmt, semantic: bool) -> () {
     wire::artifact_json_begin_array(writer);
     match value {
         ctir::CtStmt::Let { pattern, value } => {
@@ -438,7 +438,7 @@ fn ctir_stmt(writer: wire::ArtifactJsonWriter, value: ctir::CtStmt, semantic: bo
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_block(writer: wire::ArtifactJsonWriter, value: ctir::CtBlock, semantic: bool) -> unit {
+fn ctir_block(writer: wire::ArtifactJsonWriter, value: ctir::CtBlock, semantic: bool) -> () {
     wire::artifact_json_begin_array(writer);
     ctir_number(
         writer,
@@ -460,7 +460,7 @@ fn ctir_block(writer: wire::ArtifactJsonWriter, value: ctir::CtBlock, semantic: 
     wire::artifact_json_end_array(writer)
 }
 
-fn ctir_module(writer: wire::ArtifactJsonWriter, value: ctir::CtModule, semantic: bool) -> unit {
+fn ctir_module(writer: wire::ArtifactJsonWriter, value: ctir::CtModule, semantic: bool) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "package");
     wire::artifact_json_string(writer, value.package_name);
@@ -587,7 +587,7 @@ pub fn artifact_json_comptime_unit(
     writer: wire::ArtifactJsonWriter,
     value: artifact::ArtifactComptimeUnit,
     semantic: bool,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "version");
     ctir_number(writer, value.version);
@@ -620,7 +620,7 @@ fn ctir_bool(value: wire::ArtifactValue, expected: string) -> Result[bool, strin
 }
 
 fn ctir_expect_length(values: Vec[wire::ArtifactValue], length: isize, expected: string) -> Result[
-    unit,
+    (),
     string,
 ] {
     if values.len() == length {

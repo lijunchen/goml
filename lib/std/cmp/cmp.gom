@@ -72,14 +72,14 @@ impl Ord for Ordering {
     }
 }
 
-impl Ord for unit {
-    fn cmp(self: unit, other: unit) -> Ordering {
+impl Ord for () {
+    fn cmp(self: (), other: ()) -> Ordering {
         Ordering::Equal
     }
 }
 
-impl PartialOrd for unit {
-    fn partial_cmp(self: unit, other: unit) -> Option[Ordering] {
+impl PartialOrd for () {
+    fn partial_cmp(self: (), other: ()) -> Option[Ordering] {
         Option::Some(Ordering::Equal)
     }
 }

@@ -11,7 +11,7 @@ struct LowerCtx {
     type_depth: Ref[isize],
 }
 
-fn push_error(ctx: LowerCtx, value_span: Span, message: string) -> unit {
+fn push_error(ctx: LowerCtx, value_span: Span, message: string) -> () {
     ctx.diagnostics.push(cst::diagnostic(message, value_span.start, value_span.end))
 }
 

@@ -736,7 +736,7 @@ fn failed_inherited_initializer_operand(state: CheckState, node: syntax::NodeId,
     }
 }
 
-fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> unit {
+fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> () {
     match type_fact_index(state, node) {
         Some(index) => {
             if state.preserved_type_fact_nodes.contains(node.value)
@@ -816,7 +816,7 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
     )
 }
 
-fn preserve_inherited_type_fact(state: CheckState, node: syntax::NodeId) -> unit {
+fn preserve_inherited_type_fact(state: CheckState, node: syntax::NodeId) -> () {
     if state.current_iota < 0 {
         return
     } else {};
@@ -833,7 +833,7 @@ fn update_operand_fact(
     node: syntax::NodeId,
     type_id: go_types::TypeId,
     value: Option[constant::ConstValue],
-) -> unit {
+) -> () {
     match type_fact_index(state, node) {
         Some(index) => {
             let fact = state.info.types[index];
@@ -867,7 +867,7 @@ fn contextualize_untyped_component(
     state: CheckState,
     node: syntax::NodeId,
     target: go_types::TypeId,
-) -> unit {
+) -> () {
     match recorded_type_fact(state, node) {
         Some(fact) => match type_fact_constant(fact) {
             Some(exact) => match constant::constant_from_exact(type_fact_constant_kind(fact), exact) {
@@ -894,7 +894,7 @@ fn contextualize_untyped_expression(
     node: syntax::NodeId,
     target: go_types::TypeId,
     convert_value: bool,
-) -> unit {
+) -> () {
     match recorded_type_fact(state, node) {
         Some(fact) => if go_types::is_untyped(state.world, fact.type_id)
             && (go_types::is_numeric(state.world, fact.type_id)
@@ -1048,7 +1048,7 @@ fn update_contextual_operand_fact(
     node: syntax::NodeId,
     operand: Operand,
     target: go_types::TypeId,
-) -> unit {
+) -> () {
     if target.value == state.world.invalid.value
         || operand.type_id.value == state.world.invalid.value
         || !go_types::is_untyped(state.world, operand.type_id) {
@@ -1145,7 +1145,7 @@ fn update_contextual_operand_fact(
     }
 }
 
-fn retag_untyped_expression(state: CheckState, node: syntax::NodeId, target: go_types::TypeId) -> unit {
+fn retag_untyped_expression(state: CheckState, node: syntax::NodeId, target: go_types::TypeId) -> () {
     match type_fact_index(state, node) {
         Some(index) => if go_types::is_untyped(state.world, state.info.types[index].type_id) {
             state.info.types[index].type_id = target;
@@ -1154,7 +1154,7 @@ fn retag_untyped_expression(state: CheckState, node: syntax::NodeId, target: go_
     }
 }
 
-fn save_constant(state: CheckState, object: go_types::ObjectId, value: constant::ConstValue) -> unit {
+fn save_constant(state: CheckState, object: go_types::ObjectId, value: constant::ConstValue) -> () {
     for index in 0..state.constants.len() {
         if state.constants[index].object.value == object.value {
             state.constants[index].value = constant::constant_copy(value);
@@ -2401,7 +2401,7 @@ fn report_call_arity(
     variadic: bool,
     ellipsis: isize,
     too_few: bool,
-) -> unit {
+) -> () {
     let message = if too_few {
         "not enough arguments in call to "
     } else {
@@ -3574,7 +3574,7 @@ fn promote_untyped_expression_fact(
     state: CheckState,
     node: syntax::NodeId,
     target: go_types::TypeId,
-) -> unit {
+) -> () {
     match recorded_type_fact(state, node) {
         Some(fact) => if go_types::is_untyped(state.world, fact.type_id)
             && go_types::is_numeric(state.world, fact.type_id)
@@ -3601,7 +3601,7 @@ fn update_binary_operand_fact(
     node: syntax::NodeId,
     operand: Operand,
     target: go_types::TypeId,
-) -> unit {
+) -> () {
     if target.value == state.world.invalid.value {
         return
     } else if go_types::is_untyped(state.world, target) {
@@ -3729,7 +3729,7 @@ fn report_unsupported_comparison(
     diagnostic_node: syntax::NodeId,
     op: string,
     value: go_types::TypeId,
-) -> unit {
+) -> () {
     let message = "invalid operation: " + expression_source_text(state, node)
         + if go_types::is_type_parameter(state.world, value) {
             " (type parameter " + diagnostic_type_string(state, value) + " cannot use operator "
@@ -4203,7 +4203,7 @@ fn recorded_selection_index(state: CheckState, node: syntax::NodeId) -> Option[i
     }
 }
 
-fn rebuild_selection_indices(state: CheckState) -> unit {
+fn rebuild_selection_indices(state: CheckState) -> () {
     for entry in state.selection_indices.entries() {
         let _ = state.selection_indices.remove(entry.0);
     }
@@ -4212,7 +4212,7 @@ fn rebuild_selection_indices(state: CheckState) -> unit {
     }
 }
 
-fn record_selection(state: CheckState, fact: SelectionFact) -> unit {
+fn record_selection(state: CheckState, fact: SelectionFact) -> () {
     if recorded_selection_index(state, fact.node).is_some() {
         return
     } else {};
@@ -4220,7 +4220,7 @@ fn record_selection(state: CheckState, fact: SelectionFact) -> unit {
     state.info.selections.push(fact)
 }
 
-fn omit_incomplete_method_receiver_facts(state: CheckState, node: syntax::NodeId) -> unit {
+fn omit_incomplete_method_receiver_facts(state: CheckState, node: syntax::NodeId) -> () {
     state.omitted_type_fact_nodes[node.value] = true;
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {

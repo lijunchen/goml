@@ -132,7 +132,7 @@ fn json_deserializer(input: string) -> JsonDeserializer {
     JsonDeserializer { parser: json_parser(input), frames: Vec::new() }
 }
 
-fn finish_json_deserializer(deserializer: JsonDeserializer) -> Result[unit, string] {
+fn finish_json_deserializer(deserializer: JsonDeserializer) -> Result[(), string] {
     if !deserializer.frames.is_empty() {
         Result::Err("JSON deserialization ended inside a compound value")
     } else {
@@ -145,7 +145,7 @@ fn finish_json_deserializer(deserializer: JsonDeserializer) -> Result[unit, stri
     }
 }
 
-fn consume_json_byte(parser: JsonParser, expected: byte, message: string) -> Result[unit, string] {
+fn consume_json_byte(parser: JsonParser, expected: byte, message: string) -> Result[(), string] {
     skip_json_whitespace(parser);
     if parser.index.get() >= parser.input.byte_len()
         || parser.input.byte_get(parser.index.get()) != expected {
@@ -156,7 +156,7 @@ fn consume_json_byte(parser: JsonParser, expected: byte, message: string) -> Res
     }
 }
 
-fn consume_json_literal(parser: JsonParser, expected: string) -> Result[unit, string] {
+fn consume_json_literal(parser: JsonParser, expected: string) -> Result[(), string] {
     skip_json_whitespace(parser);
     if parser.index.get() + expected.byte_len() <= parser.input.byte_len()
         && parser.input.byte_slice(parser.index.get(), parser.index.get() + expected.byte_len())
@@ -168,7 +168,7 @@ fn consume_json_literal(parser: JsonParser, expected: string) -> Result[unit, st
     }
 }
 
-fn skip_direct_json_array(parser: JsonParser) -> Result[unit, string] {
+fn skip_direct_json_array(parser: JsonParser) -> Result[(), string] {
     consume_json_byte(parser, b'[', "expected array")?;
     skip_json_whitespace(parser);
     if parser.index.get() < parser.input.byte_len()
@@ -193,7 +193,7 @@ fn skip_direct_json_array(parser: JsonParser) -> Result[unit, string] {
     Result::Err(json_error(parser, "unterminated array"))
 }
 
-fn skip_direct_json_object(parser: JsonParser) -> Result[unit, string] {
+fn skip_direct_json_object(parser: JsonParser) -> Result[(), string] {
     consume_json_byte(parser, b'{', "expected object")?;
     skip_json_whitespace(parser);
     if parser.index.get() < parser.input.byte_len()
@@ -220,7 +220,7 @@ fn skip_direct_json_object(parser: JsonParser) -> Result[unit, string] {
     Result::Err(json_error(parser, "unterminated object"))
 }
 
-fn skip_direct_json_value(parser: JsonParser) -> Result[unit, string] {
+fn skip_direct_json_value(parser: JsonParser) -> Result[(), string] {
     skip_json_whitespace(parser);
     if parser.index.get() >= parser.input.byte_len() {
         Result::Err(json_error(parser, "expected JSON value"))
@@ -334,7 +334,7 @@ fn json_frame_index(deserializer: JsonDeserializer) -> Result[isize, string] {
     }
 }
 
-fn pop_json_frame(deserializer: JsonDeserializer) -> unit {
+fn pop_json_frame(deserializer: JsonDeserializer) -> () {
     let _ = deserializer.frames.pop();
 }
 
@@ -452,7 +452,7 @@ impl serde::Deserializer for JsonDeserializer {
         Result::Ok(into_serde_value(parse_json_value(self.parser)?))
     }
 
-    fn deserialize_unit(self: JsonDeserializer) -> Result[unit, string] {
+    fn deserialize_unit(self: JsonDeserializer) -> Result[(), string] {
         skip_json_whitespace(self.parser);
         if self.parser.index.get() < self.parser.input.byte_len()
             && self.parser.input.byte_get(self.parser.index.get()) == b'n' {
@@ -608,7 +608,7 @@ impl serde::Deserializer for JsonDeserializer {
         Result::Ok(present)
     }
 
-    fn end_optional(self: JsonDeserializer) -> Result[unit, string] {
+    fn end_optional(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Optional => {
@@ -647,7 +647,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn end_sequence(self: JsonDeserializer) -> Result[unit, string] {
+    fn end_sequence(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Sequence { first: _, done, index: _ } => if !done.get() {
@@ -661,7 +661,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_tuple(self: JsonDeserializer, length: isize) -> Result[unit, string] {
+    fn begin_tuple(self: JsonDeserializer, length: isize) -> Result[(), string] {
         if length < 0 {
             return Result::Err(json_error(self.parser, "tuple length cannot be negative"))
         } else {};
@@ -670,7 +670,7 @@ impl serde::Deserializer for JsonDeserializer {
         Result::Ok(())
     }
 
-    fn begin_tuple_element(self: JsonDeserializer, index: isize) -> Result[unit, string] {
+    fn begin_tuple_element(self: JsonDeserializer, index: isize) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Tuple { length, index: next } => if index != next.get()
@@ -694,7 +694,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn end_tuple(self: JsonDeserializer) -> Result[unit, string] {
+    fn end_tuple(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Tuple { length, index } => if index.get() != length {
@@ -747,7 +747,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_map_key(self: JsonDeserializer) -> Result[unit, string] {
+    fn begin_map_key(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Map { first: _, done: _, state, key } => if state.get() != 1 {
@@ -762,7 +762,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_map_value(self: JsonDeserializer) -> Result[unit, string] {
+    fn begin_map_value(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Map { first: _, done: _, state, key: _ } => if state.get() != 3 {
@@ -776,7 +776,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn end_map(self: JsonDeserializer) -> Result[unit, string] {
+    fn end_map(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Map { first: _, done, state, key: _ } => if !done.get()
@@ -791,7 +791,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn begin_struct(self: JsonDeserializer, name: string, fields: isize) -> Result[unit, string] {
+    fn begin_struct(self: JsonDeserializer, name: string, fields: isize) -> Result[(), string] {
         if fields < 0 {
             return Result::Err(json_error(self.parser, "struct field count cannot be negative"))
         } else {};
@@ -829,11 +829,11 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn skip_value(self: JsonDeserializer) -> Result[unit, string] {
+    fn skip_value(self: JsonDeserializer) -> Result[(), string] {
         skip_direct_json_value(self.parser)
     }
 
-    fn end_struct(self: JsonDeserializer) -> Result[unit, string] {
+    fn end_struct(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Struct { name: _, first: _, done, field: _ } => if !done.get() {
@@ -895,7 +895,7 @@ impl serde::Deserializer for JsonDeserializer {
     }
 
     fn begin_variant_fields(self: JsonDeserializer, kind: isize, fields: isize) -> Result[
-        unit,
+        (),
         string,
     ] {
         if kind < 0 || kind > 2 || fields < 0 || kind == 0 && fields != 0 {
@@ -1003,7 +1003,7 @@ impl serde::Deserializer for JsonDeserializer {
         }
     }
 
-    fn end_variant(self: JsonDeserializer) -> Result[unit, string] {
+    fn end_variant(self: JsonDeserializer) -> Result[(), string] {
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Variant {

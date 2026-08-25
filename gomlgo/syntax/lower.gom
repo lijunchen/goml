@@ -10,7 +10,7 @@ struct LowerContext {
     diagnostics: Vec[LowerDiagnostic],
 }
 
-fn report(context: LowerContext, value: ast::Node, message: string) -> unit {
+fn report(context: LowerContext, value: ast::Node, message: string) -> () {
     context.diagnostics.push(
         LowerDiagnostic {
             file: context.file_name,

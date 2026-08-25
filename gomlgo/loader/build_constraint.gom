@@ -88,7 +88,7 @@ fn constraint_space(value: byte) -> bool {
     value == b' ' || value == b'\t' || value == b'\r' || value == b'\n'
 }
 
-fn skip_constraint_space(parser: ConstraintParser) -> unit {
+fn skip_constraint_space(parser: ConstraintParser) -> () {
     while parser.index.get() < parser.input.byte_len()
         && constraint_space(parser.input.byte_get(parser.index.get())) {
         parser.index.set(parser.index.get() + 1)

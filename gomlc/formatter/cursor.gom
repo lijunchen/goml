@@ -214,7 +214,7 @@ fn node_has_comment(value: LocatedNode) -> bool {
     false
 }
 
-fn write_node_source(value: LocatedNode, output: text::StringBuilder) -> unit {
+fn write_node_source(value: LocatedNode, output: text::StringBuilder) -> () {
     let cursor = child_cursor(value);
     while cursor.remaining() > 0 {
         match cursor.next() {

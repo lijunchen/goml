@@ -627,7 +627,7 @@ fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] 
     Result::Ok(publish_diagnostics(server, document))
 }
 
-fn did_change(server: Server, params: json::Value) -> Result[unit, string] {
+fn did_change(server: Server, params: json::Value) -> Result[(), string] {
     let uri = text_document_uri(params)?;
     let text_document = text_document(params)?;
     let version = optional_int_field(text_document, "version", 0);
@@ -759,7 +759,7 @@ pub fn handle_payload(server: Server, payload: string) -> Result[Vec[json::Value
     }
 }
 
-pub fn run_server() -> Result[unit, string] {
+pub fn run_server() -> Result[(), string] {
     let server = new_server();
     while server_running(server) {
         let payload = read_rpc_payload()?;

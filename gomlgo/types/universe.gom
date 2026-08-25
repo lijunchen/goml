@@ -48,7 +48,7 @@ fn add_type_name(
     object
 }
 
-fn add_constant(world: World, name: string, kind: string, value: string, value_type: TypeId) -> unit {
+fn add_constant(world: World, name: string, kind: string, value: string, value_type: TypeId) -> () {
     let object = add_object(
         world,
         ObjectKind::Const,
@@ -63,7 +63,7 @@ fn add_constant(world: World, name: string, kind: string, value: string, value_t
     let _ = insert(world, world.universe, name, object);
 }
 
-fn add_builtin(world: World, scope: ScopeId, owner: Option[PackageId], name: string) -> unit {
+fn add_builtin(world: World, scope: ScopeId, owner: Option[PackageId], name: string) -> () {
     let object = add_object(
         world,
         ObjectKind::Builtin,
@@ -77,7 +77,7 @@ fn add_builtin(world: World, scope: ScopeId, owner: Option[PackageId], name: str
     let _ = insert(world, scope, name, object);
 }
 
-fn add_error_type(world: World, string_type: TypeId) -> unit {
+fn add_error_type(world: World, string_type: TypeId) -> () {
     let object = add_object(
         world,
         ObjectKind::TypeName,
@@ -152,7 +152,7 @@ fn add_error_type(world: World, string_type: TypeId) -> unit {
     let _ = insert(world, world.universe, "error", object);
 }
 
-fn add_comparable_type(world: World) -> unit {
+fn add_comparable_type(world: World) -> () {
     let object = add_object(
         world,
         ObjectKind::TypeName,
@@ -186,7 +186,7 @@ fn add_comparable_type(world: World) -> unit {
     let _ = insert(world, world.universe, "comparable", object);
 }
 
-fn add_any_type(world: World) -> unit {
+fn add_any_type(world: World) -> () {
     let interface_type = add_type(
         world,
         TypeKind::Interface {
@@ -219,7 +219,7 @@ fn add_any_type(world: World) -> unit {
     let _ = insert(world, world.universe, "any", object);
 }
 
-pub fn set_alias_enabled(world: World, enabled: bool) -> unit {
+pub fn set_alias_enabled(world: World, enabled: bool) -> () {
     let object = match lookup_local(world, world.universe, "any") {
         Some(value) => value,
         None => return,

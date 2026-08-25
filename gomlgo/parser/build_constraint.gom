@@ -14,7 +14,7 @@ fn build_space(value: byte) -> bool {
     value == b' ' || value == b'\t' || value == b'\r' || value == b'\n'
 }
 
-fn build_skip_space(parser: BuildParser) -> unit {
+fn build_skip_space(parser: BuildParser) -> () {
     while parser.index.get() < parser.input.byte_len()
         && build_space(parser.input.byte_get(parser.index.get())) {
         parser.index.set(parser.index.get() + 1)

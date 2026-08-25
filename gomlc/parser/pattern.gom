@@ -79,7 +79,7 @@ fn range_pattern(parser: Parser) -> Option[MarkerClosed] {
     }
 }
 
-fn parse_pattern_list(parser: Parser) -> unit {
+fn parse_pattern_list(parser: Parser) -> () {
     if !is_pattern_first(parser.peek()) {} else {
         let _ = pattern(parser);
         loop {
@@ -243,7 +243,7 @@ fn rest_pattern(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::PATTERN_REST)
 }
 
-fn struct_pattern_field_list(parser: Parser) -> unit {
+fn struct_pattern_field_list(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     let mut has_rest = false;
@@ -272,7 +272,7 @@ fn struct_pattern_field_list(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::STRUCT_PATTERN_FIELD_LIST);
 }
 
-fn struct_pattern_field(parser: Parser) -> unit {
+fn struct_pattern_field(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect_lower_ident("struct pattern field name");
     if parser.at(lexer::TokenKind::Colon) {

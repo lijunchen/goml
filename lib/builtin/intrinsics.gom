@@ -1,7 +1,7 @@
 package builtin;
 
 #[runtime("core.unit_to_string")]
-pub extern fn unit_to_string(value: unit) -> string;
+pub extern fn unit_to_string(value: ()) -> string;
 
 #[runtime("core.bool_to_string")]
 pub extern fn bool_to_string(value: bool) -> string;
@@ -58,10 +58,10 @@ pub extern fn string_hash(value: string) -> u64;
 pub extern fn char_hash(value: char) -> u64;
 
 #[runtime("core.string_print")]
-pub extern fn string_print(value: string) -> unit;
+pub extern fn string_print(value: string) -> ();
 
 #[runtime("core.string_println")]
-pub extern fn string_println(value: string) -> unit;
+pub extern fn string_println(value: string) -> ();
 
 #[intrinsic("vec.new")]
 pub extern fn vec_new[T]() -> Vec[T];
@@ -70,13 +70,13 @@ pub extern fn vec_new[T]() -> Vec[T];
 pub extern fn vec_with_capacity[T](capacity: isize) -> Vec[T];
 
 #[intrinsic("vec.push")]
-pub extern fn vec_push[T](values: Vec[T], value: T) -> unit;
+pub extern fn vec_push[T](values: Vec[T], value: T) -> ();
 
 #[intrinsic("vec.get")]
 pub extern fn vec_get[T](values: Vec[T], index: isize) -> T;
 
 #[intrinsic("vec.set")]
-pub extern fn vec_set[T](values: Vec[T], index: isize, value: T) -> unit;
+pub extern fn vec_set[T](values: Vec[T], index: isize, value: T) -> ();
 
 #[intrinsic("vec.len")]
 pub extern fn vec_len[T](values: Vec[T]) -> isize;
@@ -85,10 +85,10 @@ pub extern fn vec_len[T](values: Vec[T]) -> isize;
 pub extern fn vec_capacity[T](values: Vec[T]) -> isize;
 
 #[intrinsic("vec.reserve")]
-pub extern fn vec_reserve[T](values: Vec[T], additional: isize) -> unit;
+pub extern fn vec_reserve[T](values: Vec[T], additional: isize) -> ();
 
 #[intrinsic("vec.truncate")]
-pub extern fn vec_truncate[T](values: Vec[T], length: isize) -> unit;
+pub extern fn vec_truncate[T](values: Vec[T], length: isize) -> ();
 
 #[intrinsic("once_cell.new")]
 pub extern fn once_cell_new[T]() -> OnceCell[T];
@@ -115,7 +115,7 @@ pub extern fn mut_slice[T](values: Vec[T], start: isize, end: isize) -> MutSlice
 pub extern fn mut_slice_get[T](values: MutSlice[T], index: isize) -> T;
 
 #[intrinsic("mut_slice.set")]
-pub extern fn mut_slice_set[T](values: MutSlice[T], index: isize, value: T) -> unit;
+pub extern fn mut_slice_set[T](values: MutSlice[T], index: isize, value: T) -> ();
 
 #[intrinsic("mut_slice.len")]
 pub extern fn mut_slice_len[T](values: MutSlice[T]) -> isize;
@@ -136,7 +136,7 @@ pub extern fn hashmap_new[K: Hash + Eq, V]() -> HashMap[K, V];
 pub extern fn hashmap_get[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> Option[V];
 
 #[intrinsic("hashmap.set")]
-pub extern fn hashmap_set[K: Hash + Eq, V](values: HashMap[K, V], key: K, value: V) -> unit;
+pub extern fn hashmap_set[K: Hash + Eq, V](values: HashMap[K, V], key: K, value: V) -> ();
 
 #[intrinsic("hashmap.insert")]
 pub extern fn hashmap_insert[K: Hash + Eq, V](values: HashMap[K, V], key: K, value: V) -> Option[V];
@@ -157,7 +157,7 @@ pub extern fn hashmap_update[K: Hash + Eq, V](values: HashMap[K, V], key: K, upd
 pub extern fn hashmap_remove_value[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> Option[V];
 
 #[intrinsic("hashmap.remove")]
-pub extern fn hashmap_remove[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> unit;
+pub extern fn hashmap_remove[K: Hash + Eq, V](values: HashMap[K, V], key: K) -> ();
 
 #[intrinsic("hashmap.len")]
 pub extern fn hashmap_len[K: Hash + Eq, V](values: HashMap[K, V]) -> isize;
@@ -172,7 +172,7 @@ pub extern fn hashmap_entries[K: Hash + Eq, V](values: HashMap[K, V]) -> Vec[(K,
 pub extern fn channel_new[T](capacity: isize) -> Channel[T];
 
 #[intrinsic("channel.send")]
-pub extern fn channel_send[T](channel: Channel[T], value: T) -> unit;
+pub extern fn channel_send[T](channel: Channel[T], value: T) -> ();
 
 #[intrinsic("channel.recv")]
 pub extern fn channel_recv[T](channel: Channel[T]) -> (T, bool);
@@ -184,7 +184,7 @@ pub extern fn channel_send_cancel[T](channel: Channel[T], value: T, cancel: i64)
 pub extern fn channel_recv_cancel[T](channel: Channel[T], cancel: i64) -> (T, bool, bool);
 
 #[intrinsic("channel.close")]
-pub extern fn channel_close[T](channel: Channel[T]) -> unit;
+pub extern fn channel_close[T](channel: Channel[T]) -> ();
 
 #[intrinsic("channel.sender")]
 pub extern fn channel_sender[T](channel: Channel[T]) -> Sender[T];
@@ -196,13 +196,13 @@ pub extern fn channel_receiver[T](channel: Channel[T]) -> Receiver[T];
 pub extern fn channel_split[T](channel: Channel[T]) -> (Sender[T], Receiver[T]);
 
 #[intrinsic("channel.send")]
-pub extern fn sender_send[T](channel: Sender[T], value: T) -> unit;
+pub extern fn sender_send[T](channel: Sender[T], value: T) -> ();
 
 #[intrinsic("channel.recv")]
 pub extern fn receiver_recv[T](channel: Receiver[T]) -> (T, bool);
 
 #[intrinsic("channel.close")]
-pub extern fn sender_close[T](channel: Sender[T]) -> unit;
+pub extern fn sender_close[T](channel: Sender[T]) -> ();
 
 #[intrinsic("channel.dynamic_select")]
 pub extern fn channel_dynamic_select[T](
@@ -235,7 +235,7 @@ pub extern fn ref[T](value: T) -> Ref[T];
 pub extern fn ref_get[T](reference: Ref[T]) -> T;
 
 #[intrinsic("ref.set")]
-pub extern fn ref_set[T](reference: Ref[T], value: T) -> unit;
+pub extern fn ref_set[T](reference: Ref[T], value: T) -> ();
 
 #[intrinsic("ref.ptr_eq")]
 pub extern fn ptr_eq[T](left: Ref[T], right: Ref[T]) -> bool;

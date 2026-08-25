@@ -147,13 +147,13 @@ fn token_doc(value: LocatedToken) -> Doc {
 }
 
 impl Parts {
-    fn add_pending_newlines(self: Parts, count: isize) -> unit {
+    fn add_pending_newlines(self: Parts, count: isize) -> () {
         if count > self.pending_newlines.get() {
             self.pending_newlines.set(count)
         } else {}
     }
 
-    fn push_line(self: Parts) -> unit {
+    fn push_line(self: Parts) -> () {
         self.values.push(Doc::HardLine);
         if self.first.get().is_none() && self.values.len() == 1 {
             self.starts_with_line.set(true)
@@ -163,13 +163,13 @@ impl Parts {
         self.pending_newlines.set(0)
     }
 
-    fn ensure_lines(self: Parts, count: isize) -> unit {
+    fn ensure_lines(self: Parts, count: isize) -> () {
         while self.trailing_lines.get() < count {
             self.push_line()
         }
     }
 
-    fn push_syntax(self: Parts, value: BuiltDoc) -> unit {
+    fn push_syntax(self: Parts, value: BuiltDoc) -> () {
         match value.doc {
             Nil => (),
             _ => {
@@ -196,12 +196,12 @@ impl Parts {
         }
     }
 
-    fn push_token(self: Parts, value: LocatedToken) -> unit {
+    fn push_token(self: Parts, value: LocatedToken) -> () {
         let first = Option::Some(value.token.kind);
         self.push_syntax(built(token_doc(value), first, first))
     }
 
-    fn push_comment(self: Parts, value: LocatedToken) -> unit {
+    fn push_comment(self: Parts, value: LocatedToken) -> () {
         let trailing = self.trailing_lines.get() == 0 && self.pending_newlines.get() == 0
             && option_token_kind_some(self.last.get());
         if trailing {

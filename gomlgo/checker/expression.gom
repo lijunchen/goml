@@ -155,7 +155,7 @@ fn check_invalid_composite_element(
     state: CheckState,
     scope: go_types::ScopeId,
     node: syntax::NodeId,
-) -> unit {
+) -> () {
     match key_value_nodes(state, node) {
         Some((key, value)) => {
             match identifier(state, key) {
@@ -193,7 +193,7 @@ fn check_composite_literal_elements(
     node: syntax::NodeId,
     type_id: go_types::TypeId,
     elements: Vec[syntax::NodeId],
-) -> unit {
+) -> () {
     let literal_type = type_id;
     if literal_type.value == state.world.invalid.value {
         for element in elements {
@@ -326,7 +326,7 @@ fn check_struct_literal(
     literal_type: go_types::TypeId,
     fields: Vec[go_types::StructField],
     elements: Vec[syntax::NodeId],
-) -> unit {
+) -> () {
     let mut keyed = false;
     let mut unkeyed = false;
     let mut mixed = false;
@@ -562,7 +562,7 @@ fn constant_index(
     }
 }
 
-fn report_index_out_of_bounds(state: CheckState, node: syntax::NodeId, value: isize, length: i64) -> unit {
+fn report_index_out_of_bounds(state: CheckState, node: syntax::NodeId, value: isize, length: i64) -> () {
     diagnostic(
         state,
         node,
@@ -687,7 +687,7 @@ fn check_map_literal(
     key_type: go_types::TypeId,
     value_type: go_types::TypeId,
     elements: Vec[syntax::NodeId],
-) -> unit {
+) -> () {
     let constant_keys: Vec[constant::ConstValue] = Vec::new();
     let constant_key_types: Vec[go_types::TypeId] = Vec::new();
     for element in elements {
@@ -1006,7 +1006,7 @@ fn pointer_to_array_type(state: CheckState, value: go_types::TypeId) -> bool {
     }
 }
 
-fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression: syntax::NodeId) -> unit {
+fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression: syntax::NodeId) -> () {
     state.omitted_type_fact_nodes[expression.value] = true;
     state.omitted_type_fact_nodes[node.value] = true;
     match syntax::get_node(state.syntax.arena, expression) {
@@ -1177,7 +1177,7 @@ fn check_slice_bounds(
     max_node: Option[syntax::NodeId],
     max: Option[isize],
     length: Option[i64],
-) -> unit {
+) -> () {
     let mut out_of_bounds = false;
     match length {
         Some(length) => {

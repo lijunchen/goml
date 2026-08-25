@@ -3,7 +3,7 @@ package snapshot_names;
 pub struct Names {
     replacements: HashMap[string, string],
     counters: HashMap[string, isize],
-    reserved: HashMap[string, unit],
+    reserved: HashMap[string, ()],
 }
 
 struct NameShape {
@@ -15,7 +15,7 @@ pub fn names() -> Names {
     Names { replacements: HashMap::new(), counters: HashMap::new(), reserved: HashMap::new() }
 }
 
-pub fn reserve(names: Names, value: string) -> unit {
+pub fn reserve(names: Names, value: string) -> () {
     names.reserved[value] = ();
 }
 

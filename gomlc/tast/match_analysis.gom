@@ -963,7 +963,7 @@ fn coverage_int_has(values: Vec[isize], expected: isize) -> bool {
     false
 }
 
-fn coverage_int_push_unique(values: Vec[isize], value: isize) -> unit {
+fn coverage_int_push_unique(values: Vec[isize], value: isize) -> () {
     if coverage_int_has(values, value) {} else {
         values.push(value)
     }
@@ -1890,7 +1890,7 @@ fn append_finalized_match_exprs_diagnostics(
     dependencies: Vec[ctir::CtModule],
     values: Vec[Expr],
     diagnostics: Vec[Diagnostic],
-) -> unit {
+) -> () {
     for value in values {
         append_finalized_match_expr_diagnostics(context, module, dependencies, value, diagnostics)
     }
@@ -1902,7 +1902,7 @@ fn append_finalized_match_block_diagnostics(
     dependencies: Vec[ctir::CtModule],
     value: Block,
     diagnostics: Vec[Diagnostic],
-) -> unit {
+) -> () {
     for statement in value.stmts {
         match statement {
             Defer { expr } | Stmt::Expr { expr } => {
@@ -1977,7 +1977,7 @@ fn append_finalized_match_expr_diagnostics(
     dependencies: Vec[ctir::CtModule],
     value: Expr,
     diagnostics: Vec[Diagnostic],
-) -> unit {
+) -> () {
     match value {
         Var { .. } | Callable { .. } | Prim { .. } | Continue { .. } => (),
         Constr { args, .. } | Tuple { items: args, .. } | Array { items: args, .. } => {

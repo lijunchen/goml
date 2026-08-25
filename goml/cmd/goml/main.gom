@@ -76,7 +76,7 @@ struct FmtArgs {
     formatter: Option[string],
 }
 
-fn fail(message: string) -> unit {
+fn fail(message: string) -> () {
     io::eprintln(f"error: {message}");
     process::exit(1)
 }
@@ -232,7 +232,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     let targets: Vec[string] = Vec::new();
     let mut target_dir: Option[string] = Option::None;
     let mut compiler: Option[string] = Option::None;
-    let flags: HashMap[string, unit] = HashMap::new();
+    let flags: HashMap[string, ()] = HashMap::new();
     let program_args: Vec[string] = Vec::new();
     let mut test_filter: Option[string] = Option::None;
     let mut build_jobs = 16;
@@ -435,7 +435,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     }
 }
 
-fn run_project_command(args: CliArgs, context: project::Context) -> Result[unit, string] {
+fn run_project_command(args: CliArgs, context: project::Context) -> Result[(), string] {
     let plan = match args.command {
         CHECK_COMMAND => project::check_plan(context, args.include_tests),
         BUILD_COMMAND => project::build_plan(context),
@@ -486,7 +486,7 @@ fn run_project_command(args: CliArgs, context: project::Context) -> Result[unit,
     }
 }
 
-fn run_command(args: CliArgs) -> Result[unit, string] {
+fn run_command(args: CliArgs) -> Result[(), string] {
     let context_result = if args.command == RUN_COMMAND_NAME
         || args.command == BUILD_ARTIFACTS_COMMAND {
         project::load_target_context(args.target, args.target_dir, args.compiler)
@@ -526,7 +526,7 @@ fn toolchain_finalize_value(args: Vec[string], name: string) -> Result[string, s
     }
 }
 
-fn run_toolchain_finalize(args: Vec[string]) -> Result[unit, string] {
+fn run_toolchain_finalize(args: Vec[string]) -> Result[(), string] {
     let prefix = match fs::canonicalize(toolchain_finalize_value(args, "--prefix")?) {
         Ok(value) => value,
         Err(error) => return Result::Err(error.to_string()),
@@ -570,7 +570,7 @@ fn run_toolchain_finalize(args: Vec[string]) -> Result[unit, string] {
     )
 }
 
-fn main() -> unit {
+fn main() -> () {
     let args = env::args();
     if args.len() == 1 {
         io::eprintln(top_help());

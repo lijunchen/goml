@@ -144,7 +144,7 @@ pub fn read_file_structured(path: string) -> Result[string, Error] {
     }
 }
 
-pub fn write_bytes_structured(path: string, data: bytes::Bytes) -> Result[unit, Error] {
+pub fn write_bytes_structured(path: string, data: bytes::Bytes) -> Result[(), Error] {
     let (ok, kind_code, has_raw_code, raw_code, message) = host::write_bytes_v2(path, data.to_vec());
     if ok {
         Result::Ok(())
@@ -155,12 +155,12 @@ pub fn write_bytes_structured(path: string, data: bytes::Bytes) -> Result[unit, 
     }
 }
 
-pub fn write_file_structured(path: string, content: string) -> Result[unit, Error] {
+pub fn write_file_structured(path: string, content: string) -> Result[(), Error] {
     write_bytes_structured(path, bytes::Bytes::from_string(content))
 }
 
 fn path_operation(operation: isize, name: string, first: string, second: string) -> Result[
-    unit,
+    (),
     Error,
 ] {
     let (ok, kind_code, has_raw_code, raw_code, message) = host::fs_path_operation_v2(
@@ -188,31 +188,31 @@ fn path_operation(operation: isize, name: string, first: string, second: string)
     }
 }
 
-pub fn create_dir(path: string) -> Result[unit, Error] {
+pub fn create_dir(path: string) -> Result[(), Error] {
     path_operation(0, "create directory", path, "")
 }
 
-pub fn rename(from: string, to: string) -> Result[unit, Error] {
+pub fn rename(from: string, to: string) -> Result[(), Error] {
     path_operation(1, "rename", from, to)
 }
 
-pub fn replace(from: string, to: string) -> Result[unit, Error] {
+pub fn replace(from: string, to: string) -> Result[(), Error] {
     path_operation(1, "replace", from, to)
 }
 
-pub fn hard_link(from: string, to: string) -> Result[unit, Error] {
+pub fn hard_link(from: string, to: string) -> Result[(), Error] {
     path_operation(2, "create hard link", from, to)
 }
 
-pub fn symbolic_link(from: string, to: string) -> Result[unit, Error] {
+pub fn symbolic_link(from: string, to: string) -> Result[(), Error] {
     path_operation(3, "create symbolic link", from, to)
 }
 
-pub fn copy(from: string, to: string) -> Result[unit, Error] {
+pub fn copy(from: string, to: string) -> Result[(), Error] {
     path_operation(4, "copy file", from, to)
 }
 
-pub fn atomic_write_bytes(path: string, data: bytes::Bytes) -> Result[unit, Error] {
+pub fn atomic_write_bytes(path: string, data: bytes::Bytes) -> Result[(), Error] {
     let (ok, kind, has_raw, raw, message) = host::fs_atomic_write_v2(path, data.to_vec());
     if ok {
         Result::Ok(())
@@ -221,7 +221,7 @@ pub fn atomic_write_bytes(path: string, data: bytes::Bytes) -> Result[unit, Erro
     }
 }
 
-pub fn atomic_write(path: string, content: string) -> Result[unit, Error] {
+pub fn atomic_write(path: string, content: string) -> Result[(), Error] {
     atomic_write_bytes(path, bytes::Bytes::from_string(content))
 }
 
@@ -305,7 +305,7 @@ pub fn read_file(path: string) -> Result[string, string] {
     }
 }
 
-pub fn write_file(path: string, content: string) -> Result[unit, string] {
+pub fn write_file(path: string, content: string) -> Result[(), string] {
     write_bytes(path, bytes::Bytes::from_string(content))
 }
 
@@ -318,7 +318,7 @@ pub fn read_bytes(path: string) -> Result[bytes::Bytes, string] {
     }
 }
 
-pub fn write_bytes(path: string, data: bytes::Bytes) -> Result[unit, string] {
+pub fn write_bytes(path: string, data: bytes::Bytes) -> Result[(), string] {
     let (ok, err) = host::write_bytes(path, data.to_vec());
     if ok {
         Result::Ok(())
@@ -327,7 +327,7 @@ pub fn write_bytes(path: string, data: bytes::Bytes) -> Result[unit, string] {
     }
 }
 
-pub fn create_dir_all(path: string) -> Result[unit, string] {
+pub fn create_dir_all(path: string) -> Result[(), string] {
     let (ok, err) = host::create_dir_all(path);
     if ok {
         Result::Ok(())
@@ -336,7 +336,7 @@ pub fn create_dir_all(path: string) -> Result[unit, string] {
     }
 }
 
-pub fn remove_file(path: string) -> Result[unit, string] {
+pub fn remove_file(path: string) -> Result[(), string] {
     let (ok, err) = host::remove_file(path);
     if ok {
         Result::Ok(())
@@ -345,7 +345,7 @@ pub fn remove_file(path: string) -> Result[unit, string] {
     }
 }
 
-pub fn remove_dir_all(path: string) -> Result[unit, string] {
+pub fn remove_dir_all(path: string) -> Result[(), string] {
     let (ok, err) = host::remove_dir_all(path);
     if ok {
         Result::Ok(())

@@ -37,7 +37,7 @@ fn hex_digit(value: u8) -> char {
     }
 }
 
-fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
+fn write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(hex_digit(value / 16))
@@ -46,7 +46,7 @@ fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
     builder.write_char('}')
 }
 
-fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
+fn write_quoted_string(builder: text::StringBuilder, value: string) -> () {
     builder.write_char('"');
     let mut index = 0;
     while index < value.byte_len() {
@@ -74,7 +74,7 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
-fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
+fn write_quoted_char(builder: text::StringBuilder, value: char) -> () {
     builder.write_char('\'');
     let code = value.to_u32();
     if value == '\'' {

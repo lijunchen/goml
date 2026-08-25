@@ -189,7 +189,7 @@ fn expect(parser: Parser, kind: token::Kind) -> token::Token {
     }
 }
 
-fn report(parser: Parser, offset: isize, message: string) -> unit {
+fn report(parser: Parser, offset: isize, message: string) -> () {
     if parser.diagnostics.len() < DIAGNOSTIC_LIMIT {
         parser.diagnostics.push(diagnostic::make(message, offset))
     } else if !parser.diagnostic_limit_hit.get() {
@@ -213,7 +213,7 @@ fn enter_nesting(parser: Parser) -> bool {
     }
 }
 
-fn leave_nesting(parser: Parser) -> unit {
+fn leave_nesting(parser: Parser) -> () {
     if parser.nesting.get() > 0 {
         parser.nesting.set(parser.nesting.get() - 1)
     } else {}
@@ -230,7 +230,7 @@ fn ensure_progress(parser: Parser, before: isize, context: string) -> bool {
     }
 }
 
-fn recover_until(parser: Parser, recovery: Vec[token::Kind]) -> unit {
+fn recover_until(parser: Parser, recovery: Vec[token::Kind]) -> () {
     let mut attempts = 0;
     while !eof(parser) && !at_any(parser, recovery) && attempts < CURSOR_FUEL {
         let _ = advance(parser);
@@ -241,7 +241,7 @@ fn recover_until(parser: Parser, recovery: Vec[token::Kind]) -> unit {
     } else {}
 }
 
-fn consume_semicolon(parser: Parser) -> unit {
+fn consume_semicolon(parser: Parser) -> () {
     if eat(parser, token::Kind::Semicolon).is_some() {} else if !at(parser, token::Kind::Rparen)
         && !at(parser, token::Kind::Rbrace) {
         let found = current(parser);

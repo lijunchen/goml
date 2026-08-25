@@ -37,7 +37,7 @@ pub struct ArtifactJsonWriter {
     captured_containers: Vec[ArtifactCapturedContainer],
     captured_values: Vec[ArtifactValue],
     binary_mode: u8,
-    binary_seen: HashMap[string, unit],
+    binary_seen: HashMap[string, ()],
     binary_strings: Vec[string],
     binary_writer: ArtifactBinaryWriter,
     binary_table: ArtifactBinaryStringTable,
@@ -129,7 +129,7 @@ pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> Art
     }
 }
 
-fn artifact_binary_stream_before_value(value: ArtifactJsonWriter) -> unit {
+fn artifact_binary_stream_before_value(value: ArtifactJsonWriter) -> () {
     if value.binary_scopes.is_empty() {} else {
         let scope = value.binary_scopes[value.binary_scopes.len() - 1];
         if scope.object {} else {
@@ -138,14 +138,14 @@ fn artifact_binary_stream_before_value(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-fn artifact_binary_stream_error(value: ArtifactJsonWriter, result: Result[unit, string]) -> unit {
+fn artifact_binary_stream_error(value: ArtifactJsonWriter, result: Result[(), string]) -> () {
     match result {
         Ok(()) => (),
         Err(error) => value.binary_error.set(Option::Some(error)),
     }
 }
 
-fn artifact_binary_stream_begin_container(value: ArtifactJsonWriter, tag: u8, object: bool) -> unit {
+fn artifact_binary_stream_begin_container(value: ArtifactJsonWriter, tag: u8, object: bool) -> () {
     artifact_binary_stream_before_value(value);
     artifact_binary_write_u8(value.binary_writer, tag);
     let offset = artifact_binary_writer_len(value.binary_writer);
@@ -155,7 +155,7 @@ fn artifact_binary_stream_begin_container(value: ArtifactJsonWriter, tag: u8, ob
     )
 }
 
-fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> unit {
+fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> () {
     let scope = value.binary_scopes.remove(value.binary_scopes.len() - 1);
     artifact_binary_stream_error(
         value,
@@ -182,7 +182,7 @@ pub fn artifact_binary_stream_finish(value: ArtifactJsonWriter) -> Result[bytes:
     }
 }
 
-fn artifact_captured_push(writer: ArtifactJsonWriter, value: ArtifactValue) -> unit {
+fn artifact_captured_push(writer: ArtifactJsonWriter, value: ArtifactValue) -> () {
     if writer.captured_containers.is_empty() {
         writer.captured_values.push(value)
     } else {
@@ -211,7 +211,7 @@ pub fn artifact_value_finish(writer: ArtifactJsonWriter) -> Result[ArtifactValue
     }
 }
 
-fn artifact_json_indent(value: ArtifactJsonWriter) -> unit {
+fn artifact_json_indent(value: ArtifactJsonWriter) -> () {
     if value.pretty {
         for _ in 0..value.depth.get() {
             value.builder.write_string("  ")
@@ -219,14 +219,14 @@ fn artifact_json_indent(value: ArtifactJsonWriter) -> unit {
     } else {}
 }
 
-fn artifact_json_line(value: ArtifactJsonWriter) -> unit {
+fn artifact_json_line(value: ArtifactJsonWriter) -> () {
     if value.pretty {
         value.builder.write_char('\n');
         artifact_json_indent(value)
     } else {}
 }
 
-fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
+fn artifact_json_before_value(value: ArtifactJsonWriter) -> () {
     if value.after_name.get() {
         value.after_name.set(false)
     } else if !value.first_values.is_empty() {
@@ -240,13 +240,13 @@ fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
     } else {}
 }
 
-fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: u8) -> unit {
+fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: u8) -> () {
     let digits = "0123456789abcdef";
     value.builder.write_char(digits.get((byte / 16).to_isize()));
     value.builder.write_char(digits.get((byte % 16).to_isize()))
 }
 
-fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> unit {
+fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> () {
     let mut start = 0;
     for index in 0..input.byte_len() {
         let byte = input.byte_get(index);
@@ -283,13 +283,13 @@ fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> 
     } else {}
 }
 
-fn artifact_json_write_quoted(value: ArtifactJsonWriter, input: string) -> unit {
+fn artifact_json_write_quoted(value: ArtifactJsonWriter, input: string) -> () {
     value.builder.write_char('"');
     artifact_json_write_string_body(value, input);
     value.builder.write_char('"')
 }
 
-pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_begin_container(value, 6, true)
     } else if value.capture {
@@ -305,7 +305,7 @@ pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_end_container(value)
     } else if value.capture {
@@ -326,7 +326,7 @@ pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_begin_container(value, 5, false)
     } else if value.capture {
@@ -340,7 +340,7 @@ pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_end_container(value)
     } else if value.capture {
@@ -361,7 +361,7 @@ pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
+pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
     if value.binary_mode == 2 {
         artifact_binary_collect_string(value.binary_seen, value.binary_strings, name)
     } else if value.binary_mode == 3 {
@@ -396,7 +396,7 @@ pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
     }
 }
 
-pub fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> unit {
+pub fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> () {
     if value.binary_mode == 2 {
         artifact_binary_collect_string(value.binary_seen, value.binary_strings, input)
     } else if value.binary_mode == 3 {
@@ -414,7 +414,7 @@ pub fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> unit {
     }
 }
 
-pub fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
+pub fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_before_value(value);
         artifact_binary_write_u8(value.binary_writer, 3);
@@ -427,7 +427,7 @@ pub fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
     }
 }
 
-pub fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
+pub fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_before_value(value);
         artifact_binary_write_u8(
@@ -452,7 +452,7 @@ pub fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
     }
 }
 
-pub fn artifact_json_null(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_null(value: ArtifactJsonWriter) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_before_value(value);
         artifact_binary_write_u8(value.binary_writer, 0)

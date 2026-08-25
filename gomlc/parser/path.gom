@@ -3,7 +3,7 @@ package parser;
 use module::cst;
 use module::lexer;
 
-fn parse_path_always(parser: Parser) -> unit {
+fn parse_path_always(parser: Parser) -> () {
     let marker = parser.open();
     if !parser.at(lexer::TokenKind::Ident) {
         parser.advance_with_error("expected a path segment");

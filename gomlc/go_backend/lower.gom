@@ -10,17 +10,17 @@ use std::num;
 
 pub struct FunctionNames {
     pub by_source: HashMap[string, string],
-    pub reserved: HashMap[string, unit],
+    pub reserved: HashMap[string, ()],
     pub variant_names: HashMap[string, string],
 }
 
 struct LowerEnv {
     builtin: tast::BuiltinContract,
     joins: Vec[anf::JoinBind],
-    constant_names: HashMap[string, unit],
-    static_names: HashMap[string, unit],
-    top_level_names: HashMap[string, unit],
-    local_names: HashMap[string, unit],
+    constant_names: HashMap[string, ()],
+    static_names: HashMap[string, ()],
+    top_level_names: HashMap[string, ()],
+    local_names: HashMap[string, ()],
     collection_array_consumers: HashMap[string, anf::Value],
     emitted_loop_labels: Vec[string],
     active_loop_labels: Vec[(string, string)],
@@ -57,13 +57,13 @@ struct JoinRecResult {
     loop_names: Vec[string],
 }
 
-fn append_stmts(target: Vec[Stmt], values: Vec[Stmt]) -> unit {
+fn append_stmts(target: Vec[Stmt], values: Vec[Stmt]) -> () {
     for value in values {
         target.push(value)
     }
 }
 
-fn append_items(target: Vec[Item], values: Vec[Item]) -> unit {
+fn append_items(target: Vec[Item], values: Vec[Item]) -> () {
     for value in values {
         target.push(value)
     }
@@ -87,7 +87,7 @@ fn new_function_names() -> FunctionNames {
     }
 }
 
-fn add_function_name(values: FunctionNames, source: string, generated: string) -> unit {
+fn add_function_name(values: FunctionNames, source: string, generated: string) -> () {
     values.by_source[source] = generated;
     values.reserved[generated] = ();
 }
@@ -108,8 +108,8 @@ fn function_type_names(
     structs: Vec[repr::StructDef],
     enums: Vec[repr::EnumDef],
     instances: Vec[repr::TypeInstance],
-) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::new();
+) -> HashMap[string, ()] {
+    let result: HashMap[string, ()] = HashMap::new();
     for definition in structs {
         let name = go_user_type_name(definition.name);
         result[name] = ();
@@ -128,7 +128,7 @@ fn function_type_names(
     result
 }
 
-fn resolve_function_name(value: string, type_names: HashMap[string, unit]) -> string {
+fn resolve_function_name(value: string, type_names: HashMap[string, ()]) -> string {
     if value == "main" {
         "main"
     } else {
@@ -148,7 +148,7 @@ fn add_entry_variant_names(
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
-) -> unit {
+) -> () {
     for definition in enums {
         for variant in definition.variants {
             let name = variant_go_name(
@@ -231,8 +231,8 @@ fn build_function_names(
     result
 }
 
-fn build_static_names(values: Vec[repr::Static]) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::new();
+fn build_static_names(values: Vec[repr::Static]) -> HashMap[string, ()] {
+    let result: HashMap[string, ()] = HashMap::new();
     for value in values {
         result[value.name] = ();
     }
@@ -247,8 +247,8 @@ fn build_top_level_names(
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
-) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::new();
+) -> HashMap[string, ()] {
+    let result: HashMap[string, ()] = HashMap::new();
     result["main"] = ();
     for function in functions {
         result[match mapped_function_name(function_names, function.name) {
@@ -284,7 +284,7 @@ fn build_top_level_names(
     result
 }
 
-fn protect_local_ident(top_level_names: HashMap[string, unit], candidate: string) -> string {
+fn protect_local_ident(top_level_names: HashMap[string, ()], candidate: string) -> string {
     if top_level_names.contains(candidate) {
         go_generated_ident("_goml_local_" + candidate)
     } else {
@@ -292,11 +292,11 @@ fn protect_local_ident(top_level_names: HashMap[string, unit], candidate: string
     }
 }
 
-fn local_ident(top_level_names: HashMap[string, unit], value: string) -> string {
+fn local_ident(top_level_names: HashMap[string, ()], value: string) -> string {
     protect_local_ident(top_level_names, go_local_ident(value))
 }
 
-fn local_ident_with_suffix(top_level_names: HashMap[string, unit], value: string, suffix: string) -> string {
+fn local_ident_with_suffix(top_level_names: HashMap[string, ()], value: string, suffix: string) -> string {
     protect_local_ident(top_level_names, go_local_ident(value) + suffix)
 }
 
@@ -308,7 +308,7 @@ fn env_local_ident_with_suffix(env: LowerEnv, value: string, suffix: string) -> 
     local_ident_with_suffix(env.top_level_names, value, suffix)
 }
 
-fn collect_local_term(names: HashMap[string, unit], value: anf::Term) -> unit {
+fn collect_local_term(names: HashMap[string, ()], value: anf::Term) -> () {
     match value {
         If { then_, else_, .. } => {
             collect_local_block(names, then_);
@@ -342,7 +342,7 @@ fn collect_local_term(names: HashMap[string, unit], value: anf::Term) -> unit {
     }
 }
 
-fn collect_local_block(names: HashMap[string, unit], value: anf::Block) -> unit {
+fn collect_local_block(names: HashMap[string, ()], value: anf::Block) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => {
@@ -365,8 +365,8 @@ fn collect_local_block(names: HashMap[string, unit], value: anf::Block) -> unit 
     collect_local_term(names, value.term)
 }
 
-fn function_local_names(value: anf::Function) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::new();
+fn function_local_names(value: anf::Function) -> HashMap[string, ()] {
+    let result: HashMap[string, ()] = HashMap::new();
     for param in value.params {
         result[param.0] = ();
     }
@@ -477,7 +477,7 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
     }
 }
 
-fn emit_go_foreign_import_items(items: Vec[Item], values: Vec[GoForeignSpec]) -> unit {
+fn emit_go_foreign_import_items(items: Vec[Item], values: Vec[GoForeignSpec]) -> () {
     let imports: Vec[(string, string)] = Vec::new();
     for value in values {
         let mut found = false;
@@ -496,7 +496,7 @@ fn emit_go_foreign_import_items(items: Vec[Item], values: Vec[GoForeignSpec]) ->
     } else {}
 }
 
-fn emit_go_foreign_wrapper_items(items: Vec[Item], values: Vec[GoForeignSpec]) -> unit {
+fn emit_go_foreign_wrapper_items(items: Vec[Item], values: Vec[GoForeignSpec]) -> () {
     for value in values {
         items.push(Item::Function(go_foreign_wrapper(value)))
     }
@@ -682,15 +682,15 @@ fn scalar_constant_type(value: repr::Type) -> bool {
     }
 }
 
-fn build_constant_names(values: Vec[repr::Constant]) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::new();
+fn build_constant_names(values: Vec[repr::Constant]) -> HashMap[string, ()] {
+    let result: HashMap[string, ()] = HashMap::new();
     for value in values {
         result[value.name] = ();
     }
     result
 }
 
-fn emit_constants(items: Vec[Item], values: Vec[repr::Constant], variants: VariantInfos) -> unit {
+fn emit_constants(items: Vec[Item], values: Vec[repr::Constant], variants: VariantInfos) -> () {
     let specs: Vec[ConstSpec] = Vec::new();
     for value in values {
         if scalar_constant_type(value.ty) {
@@ -718,7 +718,7 @@ fn emit_constants(items: Vec[Item], values: Vec[repr::Constant], variants: Varia
     }
 }
 
-fn emit_statics(items: Vec[Item], values: Vec[repr::Static]) -> unit {
+fn emit_statics(items: Vec[Item], values: Vec[repr::Static]) -> () {
     for value in values {
         let cell_ty = lower_type(value.ty);
         let body_stmts: Vec[Stmt] = Vec::new();
@@ -2208,7 +2208,7 @@ fn materializes_binary_operands(env: LowerEnv, op: ast::BinaryOp, lhs: anf::Imm,
     }
 }
 
-fn append_struct_field_types(result: Vec[repr::Type], definition: repr::StructDef) -> unit {
+fn append_struct_field_types(result: Vec[repr::Type], definition: repr::StructDef) -> () {
     for field in definition.fields {
         result.push(field.1)
     }
@@ -2649,7 +2649,7 @@ fn collection_array_consumer(value: anf::Bind) -> Option[(string, string)] {
     }
 }
 
-fn collect_collection_arrays_term(result: HashMap[string, anf::Value], value: anf::Term) -> unit {
+fn collect_collection_arrays_term(result: HashMap[string, anf::Value], value: anf::Term) -> () {
     match value {
         If { cond: _, then_, else_, ret_ty: _ } => {
             collect_collection_arrays(result, then_);
@@ -2682,7 +2682,7 @@ fn collect_collection_arrays_term(result: HashMap[string, anf::Value], value: an
     }
 }
 
-fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Block) -> unit {
+fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Block) -> () {
     let mut index = 0;
     while index < value.binds.len() {
         match value.binds[index] {
@@ -2707,7 +2707,7 @@ fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Bl
     collect_collection_arrays_term(result, value.term)
 }
 
-fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
+fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> () {
     match value {
         If { cond: _, then_, else_, ret_ty: _ } => {
             collect_joins_block(result, then_);
@@ -2740,7 +2740,7 @@ fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
     }
 }
 
-fn collect_joins_block(result: Vec[anf::JoinBind], value: anf::Block) -> unit {
+fn collect_joins_block(result: Vec[anf::JoinBind], value: anf::Block) -> () {
     for bind in value.binds {
         match bind {
             Let(_) => (),
@@ -3820,7 +3820,7 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
                 None => (),
             };
             let exits: Vec[string] = Vec::new();
-            let continues: Vec[unit] = Vec::new();
+            let continues: Vec[()] = Vec::new();
             for target in targets {
                 match target {
                     Continue => continues.push(()),
@@ -3857,7 +3857,7 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
                 None => (),
             };
             let exits: Vec[string] = Vec::new();
-            let continues: Vec[unit] = Vec::new();
+            let continues: Vec[()] = Vec::new();
             for target in targets {
                 match target {
                     Continue => continues.push(()),
@@ -4833,7 +4833,7 @@ fn new_collected_types() -> CollectedTypes {
     CollectedTypes { values: Vec::new(), buckets: HashMap::new() }
 }
 
-fn add_collected_type(result: CollectedTypes, value: repr::Type) -> unit {
+fn add_collected_type(result: CollectedTypes, value: repr::Type) -> () {
     let key = encode_type(value);
     match result.buckets[key] {
         Some(values) => {
@@ -4851,7 +4851,7 @@ fn add_collected_type(result: CollectedTypes, value: repr::Type) -> unit {
     result.values.push(value)
 }
 
-fn collect_type(result: CollectedTypes, value: repr::Type) -> unit {
+fn collect_type(result: CollectedTypes, value: repr::Type) -> () {
     match repr::resolve_type(value) {
         Tuple { items: values } => {
             add_collected_type(result, value);
@@ -4890,7 +4890,7 @@ fn collect_type(result: CollectedTypes, value: repr::Type) -> unit {
     }
 }
 
-fn collect_imm_type(result: CollectedTypes, value: anf::Imm) -> unit {
+fn collect_imm_type(result: CollectedTypes, value: anf::Imm) -> () {
     collect_type(result, anf::imm_type(value))
 }
 
@@ -4900,7 +4900,7 @@ fn collect_runtime_imm(
     intrinsics: Vec[string],
     go_foreign: Vec[GoForeignSpec],
     value: anf::Imm,
-) -> unit {
+) -> () {
     match value {
         Callable { callable: Runtime(key), ty: _ } => {
             if !result.contains(key) {
@@ -4941,7 +4941,7 @@ fn collect_runtime_value(
     intrinsics: Vec[string],
     go_foreign: Vec[GoForeignSpec],
     value: anf::Value,
-) -> unit {
+) -> () {
     match value {
         Imm(value) => {
             collect_runtime_imm(result, missing_types, intrinsics, go_foreign, value)
@@ -4995,7 +4995,7 @@ fn collect_runtime_block(
     intrinsics: Vec[string],
     go_foreign: Vec[GoForeignSpec],
     value: anf::Block,
-) -> unit {
+) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => {
@@ -5087,7 +5087,7 @@ fn collect_runtime_block(
     }
 }
 
-fn collect_value_type(result: CollectedTypes, value: anf::Value) -> unit {
+fn collect_value_type(result: CollectedTypes, value: anf::Value) -> () {
     collect_type(result, anf::value_type(value));
     match value {
         Imm(value) => collect_imm_type(result, value),
@@ -5134,7 +5134,7 @@ fn collect_value_type(result: CollectedTypes, value: anf::Value) -> unit {
     }
 }
 
-fn collect_block_types(result: CollectedTypes, value: anf::Block) -> unit {
+fn collect_block_types(result: CollectedTypes, value: anf::Block) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => {
@@ -5223,7 +5223,7 @@ fn collect_type_definition_fields(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
-) -> unit {
+) -> () {
     let _ = instances;
     for definition in structs {
         for field in definition.fields {
@@ -5268,7 +5268,7 @@ fn runtime_struct(value: repr::Type) -> StructDef {
     }
 }
 
-fn add_dyn_coercion(result: Vec[DynCoercion], trait_name: string, for_ty: repr::Type) -> unit {
+fn add_dyn_coercion(result: Vec[DynCoercion], trait_name: string, for_ty: repr::Type) -> () {
     for value in result {
         if value.trait_name == trait_name && encode_type(value.for_ty) == encode_type(for_ty) {
             return
@@ -5277,7 +5277,7 @@ fn add_dyn_coercion(result: Vec[DynCoercion], trait_name: string, for_ty: repr::
     result.push(DynCoercion { trait_name, for_ty })
 }
 
-fn collect_dyn_value(result: Vec[DynCoercion], value: anf::Value) -> unit {
+fn collect_dyn_value(result: Vec[DynCoercion], value: anf::Value) -> () {
     match value {
         ToDyn { trait_name, for_ty, expr: _, ty: _ } => {
             add_dyn_coercion(result, trait_name, for_ty)
@@ -5286,7 +5286,7 @@ fn collect_dyn_value(result: Vec[DynCoercion], value: anf::Value) -> unit {
     }
 }
 
-fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
+fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => collect_dyn_value(result, value.value),
@@ -5479,7 +5479,7 @@ fn inspect_pointer_call(
     parameter: isize,
     valid: Ref[bool],
     calls: Ref[isize],
-) -> unit {
+) -> () {
     match value {
         Imm(value) => if imm_uses_function(value, target) {
             valid.set(false)
@@ -5541,7 +5541,7 @@ fn inspect_pointer_calls(
     parameter: isize,
     valid: Ref[bool],
     calls: Ref[isize],
-) -> unit {
+) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => inspect_pointer_call(value.value, target, parameter, valid, calls),
@@ -5667,9 +5667,9 @@ fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: 
 fn compile_function(
     builtin: tast::BuiltinContract,
     value: anf::Function,
-    constant_names: HashMap[string, unit],
-    static_names: HashMap[string, unit],
-    top_level_names: HashMap[string, unit],
+    constant_names: HashMap[string, ()],
+    static_names: HashMap[string, ()],
+    top_level_names: HashMap[string, ()],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -5757,9 +5757,9 @@ fn compile_function(
 fn compile_functions(
     builtin: tast::BuiltinContract,
     values: Vec[anf::Function],
-    constant_names: HashMap[string, unit],
-    static_names: HashMap[string, unit],
-    top_level_names: HashMap[string, unit],
+    constant_names: HashMap[string, ()],
+    static_names: HashMap[string, ()],
+    top_level_names: HashMap[string, ()],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -5773,7 +5773,7 @@ fn compile_functions(
         work.push((index, values[index]));
         compiled.push(Option::None)
     }
-    let completed: Result[unit, Vec[task::IndexedError[unit]]] = task::for_each_concurrent(
+    let completed: Result[(), Vec[task::IndexedError[()]]] = task::for_each_concurrent(
         8,
         work,
         |_: task::CancelToken, item: (isize, anf::Function)| {
@@ -6030,7 +6030,7 @@ fn lower_with_test_cases(
     Result::Ok(prune_functions(File { items }))
 }
 
-fn validate_anf_term(value: anf::Term) -> Result[unit, string] {
+fn validate_anf_term(value: anf::Term) -> Result[(), string] {
     match value {
         If { cond: _, then_, else_, ret_ty: _ } => {
             validate_anf_block(then_)?;
@@ -6064,7 +6064,7 @@ fn validate_anf_term(value: anf::Term) -> Result[unit, string] {
     }
 }
 
-fn validate_anf_block(value: anf::Block) -> Result[unit, string] {
+fn validate_anf_block(value: anf::Block) -> Result[(), string] {
     for bind in value.binds {
         match bind {
             Let(_) => (),
@@ -6093,7 +6093,7 @@ fn resolve_runtime_hooks(keys: Vec[string]) -> Result[Vec[resources::RuntimeHook
     Result::Ok(hooks)
 }
 
-fn validate_anf(value: anf::File) -> Result[unit, string] {
+fn validate_anf(value: anf::File) -> Result[(), string] {
     anf::verify(value)?;
     let runtime_hooks: Vec[string] = Vec::new();
     let intrinsics: Vec[string] = Vec::new();

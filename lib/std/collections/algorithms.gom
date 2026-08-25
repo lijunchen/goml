@@ -2,27 +2,27 @@ package collections;
 
 use module::cmp;
 
-pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> isize) -> unit {
+pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> isize) -> () {
     values.stable_sort_by(compare)
 }
 
-pub fn sort_by[T](values: Vec[T], compare: (T, T) -> isize) -> unit {
+pub fn sort_by[T](values: Vec[T], compare: (T, T) -> isize) -> () {
     values.sort_by(compare)
 }
 
-pub fn stable_sort_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> unit {
+pub fn stable_sort_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> () {
     values.stable_sort_by_ordering(compare)
 }
 
-pub fn sort_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> unit {
+pub fn sort_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> () {
     values.sort_by_ordering(compare)
 }
 
-pub fn stable_sort[T: cmp::Ord](values: Vec[T]) -> unit {
+pub fn stable_sort[T: cmp::Ord](values: Vec[T]) -> () {
     values.stable_sort_by_ordering(|left: T, right: T| cmp::compare(left, right))
 }
 
-pub fn sort[T: cmp::Ord](values: Vec[T]) -> unit {
+pub fn sort[T: cmp::Ord](values: Vec[T]) -> () {
     values.sort_by_ordering(|left: T, right: T| cmp::compare(left, right))
 }
 
@@ -66,10 +66,10 @@ pub fn max[T: cmp::Ord](values: Vec[T]) -> Option[T] {
     values.max_by_ordering(|left: T, right: T| cmp::compare(left, right))
 }
 
-pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
+pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> () {
     values.dedup_by(equal)
 }
 
-pub fn dedup[T: PartialEq](values: Vec[T]) -> unit {
+pub fn dedup[T: PartialEq](values: Vec[T]) -> () {
     values.dedup()
 }

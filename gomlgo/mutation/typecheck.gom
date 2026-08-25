@@ -154,7 +154,7 @@ fn save_typecheck_failure(
     actual: checker::CheckResult,
     expected: typecheck_diff::CheckResponse,
     message: string,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let directory = path::join(output, input_hash(input));
     let sources = path::join(directory, "sources");
     fs::create_dir_all(sources)?;

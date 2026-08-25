@@ -23,7 +23,7 @@ fn command_output(value: bytes::Bytes) -> string {
     }
 }
 
-fn run_git(arguments: Vec[string]) -> Result[unit, string] {
+fn run_git(arguments: Vec[string]) -> Result[(), string] {
     let command = process::Command::new("git");
     for argument in arguments {
         let _ = command.arg(argument);
@@ -125,7 +125,7 @@ fn registry_argument(args: Vec[string]) -> Result[Option[string], string] {
     Result::Ok(value)
 }
 
-pub fn update_registry(args: Vec[string]) -> Result[unit, string] {
+pub fn update_registry(args: Vec[string]) -> Result[(), string] {
     let local = registry_argument(args)?;
     let source = match local {
         Some(value) => value,
@@ -203,7 +203,7 @@ fn section_name(line: string) -> Option[string] {
     }
 }
 
-fn upsert_dependency(manifest_path: string, name: string, version: string) -> Result[unit, string] {
+fn upsert_dependency(manifest_path: string, name: string, version: string) -> Result[(), string] {
     let source = fs::read_file(manifest_path)?;
     let result: Vec[string] = Vec::new();
     let mut in_dependencies = false;
@@ -250,7 +250,7 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
     fs::write_file(manifest_path, text::join(result, "\n") + "\n")
 }
 
-fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, string] {
+fn remove_dependency_line(manifest_path: string, name: string) -> Result[(), string] {
     let source = fs::read_file(manifest_path)?;
     let result: Vec[string] = Vec::new();
     let buffer: Vec[string] = Vec::new();
@@ -353,7 +353,7 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
     }
 }
 
-pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
+pub fn add_dependency(args: Vec[string]) -> Result[(), string] {
     let parsed = dependency_command_args(args)?;
     let spec = parsed.0;
     let local = parsed.1;
@@ -375,7 +375,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
     Result::Ok(())
 }
 
-pub fn remove_dependency(args: Vec[string]) -> Result[unit, string] {
+pub fn remove_dependency(args: Vec[string]) -> Result[(), string] {
     let parsed = dependency_command_args(args)?;
     let name = text::trim(parsed.0);
     registry::validate_coordinate(name)?;

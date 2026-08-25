@@ -450,7 +450,7 @@ pub fn substitute_type(value: Type, bindings: Vec[(string, Type)]) -> Type {
     }
 }
 
-fn push_type_parameter(values: Vec[string], name: string) -> unit {
+fn push_type_parameter(values: Vec[string], name: string) -> () {
     for value in values {
         if value == name {
             return ()
@@ -459,7 +459,7 @@ fn push_type_parameter(values: Vec[string], name: string) -> unit {
     values.push(name)
 }
 
-fn collect_type_parameters(values: Vec[string], value: Type) -> unit {
+fn collect_type_parameters(values: Vec[string], value: Type) -> () {
     match value {
         Param { name } => push_type_parameter(values, name),
         Tuple { items } => {

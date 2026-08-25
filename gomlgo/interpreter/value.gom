@@ -49,10 +49,10 @@ extern fn new_native_value_invocation_value(function: HostValueRef, variadic: bo
 extern fn native_method_value(receiver: HostValueRef, name: string) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationAppend")]
-extern fn append_native_argument(invocation: HostValueRef, value: HostValueRef) -> unit;
+extern fn append_native_argument(invocation: HostValueRef, value: HostValueRef) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "InvocationRun")]
-extern fn run_native_invocation(invocation: HostValueRef) -> unit;
+extern fn run_native_invocation(invocation: HostValueRef) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "InvocationUseRuntimeStack")]
 extern fn use_native_runtime_stack(invocation: HostValueRef, goroutine: u64) -> bool;
@@ -64,7 +64,7 @@ extern fn start_native_invocation(invocation: HostValueRef) -> bool;
 extern fn native_invocation_ready(invocation: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationWait")]
-extern fn wait_native_invocation(invocation: HostValueRef) -> unit;
+extern fn wait_native_invocation(invocation: HostValueRef) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "NewInvocationQueue")]
 extern fn new_native_invocation_queue_value(capacity: isize) -> HostValueRef;
@@ -79,7 +79,7 @@ extern fn try_native_completion(queue: HostValueRef) -> bool;
 extern fn wait_native_completion(queue: HostValueRef) -> bool;
 
 #[go_ffi("gomlgo/nativebridge", "InvocationQueueClose")]
-extern fn close_native_completion_queue(queue: HostValueRef) -> unit;
+extern fn close_native_completion_queue(queue: HostValueRef) -> ();
 
 fn new_native_invocation(call_id: isize, variadic: bool) -> NativeInvocation {
     NativeInvocation { value: new_native_invocation_value(call_id, variadic) }
@@ -109,7 +109,7 @@ fn await_native_completion(queue: NativeCompletionQueue) -> bool {
     wait_native_completion(queue.value)
 }
 
-fn close_native_completions(queue: NativeCompletionQueue) -> unit {
+fn close_native_completions(queue: NativeCompletionQueue) -> () {
     close_native_completion_queue(queue.value)
 }
 
@@ -157,7 +157,7 @@ extern fn native_callback_token_value(queue: HostValueRef) -> HostValueRef;
 extern fn native_callback_request_value(queue: HostValueRef) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackQueueClose")]
-extern fn close_native_callback_queue_value(queue: HostValueRef) -> unit;
+extern fn close_native_callback_queue_value(queue: HostValueRef) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "ValidValue")]
 extern fn native_host_value_valid(value: HostValueRef) -> bool;
@@ -182,16 +182,16 @@ extern fn write_native_callback_argument_value(
 extern fn new_native_callback_completion_value(request: HostValueRef) -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionAppend")]
-extern fn append_native_callback_result_value(completion: HostValueRef, value: HostValueRef) -> unit;
+extern fn append_native_callback_result_value(completion: HostValueRef, value: HostValueRef) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionPanic")]
-extern fn set_native_callback_panic_value(completion: HostValueRef, value: HostValueRef) -> unit;
+extern fn set_native_callback_panic_value(completion: HostValueRef, value: HostValueRef) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionExit")]
-extern fn set_native_callback_exit_value(completion: HostValueRef, code: isize) -> unit;
+extern fn set_native_callback_exit_value(completion: HostValueRef, code: isize) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionError")]
-extern fn set_native_callback_error_value(completion: HostValueRef, message: string) -> unit;
+extern fn set_native_callback_error_value(completion: HostValueRef, message: string) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "CallbackCompletionFinish")]
 extern fn finish_native_callback_value(completion: HostValueRef) -> bool;
@@ -213,7 +213,7 @@ fn take_native_callback_request(queue: NativeCallbackQueue) -> Option[NativeCall
     }
 }
 
-fn close_native_callback_queue(queue: NativeCallbackQueue) -> unit {
+fn close_native_callback_queue(queue: NativeCallbackQueue) -> () {
     close_native_callback_queue_value(queue.value)
 }
 
@@ -241,19 +241,19 @@ fn new_native_callback_completion(request: NativeCallbackRequest) -> NativeCallb
     NativeCallbackCompletion { value: new_native_callback_completion_value(request.value) }
 }
 
-fn append_native_callback_result(completion: NativeCallbackCompletion, value: NativeHostValue) -> unit {
+fn append_native_callback_result(completion: NativeCallbackCompletion, value: NativeHostValue) -> () {
     append_native_callback_result_value(completion.value, value.value)
 }
 
-fn set_native_callback_panic(completion: NativeCallbackCompletion, value: NativeHostValue) -> unit {
+fn set_native_callback_panic(completion: NativeCallbackCompletion, value: NativeHostValue) -> () {
     set_native_callback_panic_value(completion.value, value.value)
 }
 
-fn set_native_callback_exit(completion: NativeCallbackCompletion, code: isize) -> unit {
+fn set_native_callback_exit(completion: NativeCallbackCompletion, code: isize) -> () {
     set_native_callback_exit_value(completion.value, code)
 }
 
-fn set_native_callback_error(completion: NativeCallbackCompletion, message: string) -> unit {
+fn set_native_callback_error(completion: NativeCallbackCompletion, message: string) -> () {
     set_native_callback_error_value(completion.value, message)
 }
 
@@ -298,7 +298,7 @@ extern fn new_native_pointer_identity(root: isize, projection: string) -> HostVa
 extern fn native_program_args() -> HostValueRef;
 
 #[go_ffi("gomlgo/nativebridge", "SetProgramExecutable")]
-extern fn set_native_program_executable(value: string) -> unit;
+extern fn set_native_program_executable(value: string) -> ();
 
 #[go_ffi("gomlgo/nativebridge", "NativeGlobalValue")]
 extern fn native_global_value(object_id: isize) -> HostValueRef;

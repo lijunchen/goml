@@ -217,7 +217,7 @@ fn package_world() -> PackageWorld {
     PackageWorld { counter, source_digest: "", builtins, builtin_interface, prelude, standard }
 }
 
-fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {
+fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> () {
     for value in values {
         target.push(value)
     }
@@ -352,7 +352,7 @@ fn add_private_local_name(
     package_name: string,
     public_names: Vec[string],
     name: string,
-) -> unit {
+) -> () {
     if !local_item_is_public(package_name, public_names, name) && !result.contains(name) {
         result.push(name)
     } else {}
@@ -363,7 +363,7 @@ fn collect_private_type_names(
     package_name: string,
     public_names: Vec[string],
     value: hir::TypeExpr,
-) -> unit {
+) -> () {
     match value {
         Con { name } => add_private_local_name(result, package_name, public_names, name),
         Dyn { bounds } => for bound in bounds {
@@ -411,7 +411,7 @@ fn collect_private_trait_ref_names(
     package_name: string,
     public_names: Vec[string],
     value: hir::TraitRef,
-) -> unit {
+) -> () {
     add_private_local_name(result, package_name, public_names, value.name);
     for arg in value.args {
         collect_private_type_names(result, package_name, public_names, arg)
@@ -423,7 +423,7 @@ fn collect_private_predicate_names(
     package_name: string,
     public_names: Vec[string],
     value: hir::Predicate,
-) -> unit {
+) -> () {
     match value {
         Trait { ty: for_ty, trait_ref } => {
             collect_private_type_names(result, package_name, public_names, for_ty);
@@ -441,7 +441,7 @@ fn collect_private_bounds_names(
     package_name: string,
     public_names: Vec[string],
     values: Vec[(string, Vec[hir::TraitRef])],
-) -> unit {
+) -> () {
     for value in values {
         for trait_ref in value.1 {
             collect_private_trait_ref_names(result, package_name, public_names, trait_ref)
@@ -512,7 +512,7 @@ fn join_artifact_names(values: Vec[string]) -> string {
 }
 
 fn validate_public_trait_impls(value: hir::File, package_name: string, public_names: Vec[string]) -> Result[
-    unit,
+    (),
     string,
 ] {
     for item in value.items {
@@ -562,7 +562,7 @@ fn validate_public_fields_and_inherent_methods(
     value: hir::File,
     package_name: string,
     public_names: Vec[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     for item in value.items {
         match item {
             StructDef(value) => if public_names.contains(value.name) {
@@ -859,7 +859,7 @@ fn selected_link_standard_core(standard: Vec[ToolchainPackage], needs: StandardN
     result
 }
 
-fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit {
+fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> () {
     let command = match parse_package_command_args(args) {
         Ok(value) => value,
         Err(error) => {
@@ -945,7 +945,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
     }
 }
 
-fn run_link_command(args: Vec[string]) -> unit {
+fn run_link_command(args: Vec[string]) -> () {
     let command = match parse_link_command_args(args) {
         Ok(value) => value,
         Err(error) => {
@@ -1051,7 +1051,7 @@ fn empty_core_file() -> core::File {
     }
 }
 
-fn run_test_link_command(args: Vec[string]) -> unit {
+fn run_test_link_command(args: Vec[string]) -> () {
     let command = match parse_test_link_command_args(args) {
         Ok(value) => value,
         Err(error) => {

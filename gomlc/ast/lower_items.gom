@@ -17,13 +17,13 @@ fn self_type_occurrences(value: LocatedNode) -> isize {
     result
 }
 
-fn record_disallowed_self_type(ctx: LowerCtx, value: LocatedNode) -> unit {
+fn record_disallowed_self_type(ctx: LowerCtx, value: LocatedNode) -> () {
     for _ in 0..self_type_occurrences(value) {
         ctx.invalid_self_type_spans.push(type_head_span(value))
     }
 }
 
-fn record_disallowed_self_types(ctx: LowerCtx, value: LocatedNode) -> unit {
+fn record_disallowed_self_types(ctx: LowerCtx, value: LocatedNode) -> () {
     for child in direct_nodes(value) {
         if cst::node_kind_equal(node_kind(child), cst::NodeKind::BLOCK) {} else if is_type_kind(
             node_kind(child),

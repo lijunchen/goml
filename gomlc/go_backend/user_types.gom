@@ -354,7 +354,7 @@ fn new_variant_infos() -> VariantInfos {
     VariantInfos { by_owner: HashMap::new() }
 }
 
-fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> unit {
+fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> () {
     variants.by_owner.entry(value.owner_name).or_insert_with(|| Vec::new()).push(value)
 }
 
@@ -420,7 +420,7 @@ fn emit_enum_definition(
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
-) -> unit {
+) -> () {
     let fields_by_variant: Vec[Vec[repr::Type]] = Vec::with_capacity(definition.variants.len());
     for variant in definition.variants {
         fields_by_variant.push(enum_field_types(variant.fields))
@@ -530,7 +530,7 @@ pub fn emit_user_type_items(
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
-) -> unit {
+) -> () {
     let emitted: Vec[string] = Vec::new();
     for definition in structs {
         let instance = instance_by_name(instances, definition.name);

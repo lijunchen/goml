@@ -168,7 +168,7 @@ fn token_span(value: LocatedToken) -> Span {
     span(value.start, value.start + value.token.text.byte_len())
 }
 
-fn write_node_text(value: LocatedNode, builder: text::StringBuilder) -> unit {
+fn write_node_text(value: LocatedNode, builder: text::StringBuilder) -> () {
     let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {

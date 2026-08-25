@@ -125,7 +125,7 @@ fn collect_function_test(
     function: ast::Function,
     candidates: Vec[TestCandidate],
     diagnostics: Vec[tast::Diagnostic],
-) -> unit {
+) -> () {
     let test_attrs = named_test_attributes(function.attrs, "test");
     let case_attrs = named_test_attributes(function.attrs, "test_case");
     let ignore_attrs = named_test_attributes(function.attrs, "ignore");
@@ -272,7 +272,7 @@ fn reject_item_test_attributes(
     target: string,
     source_path: string,
     diagnostics: Vec[tast::Diagnostic],
-) -> unit {
+) -> () {
     for value in values {
         if value.name == "test" || value.name == "test_case" {
             diagnostics.push(
@@ -550,7 +550,7 @@ fn validate_package_tests(
                         diagnostics.push(
                             package_test_diagnostic(
                                 TYPER_STAGE,
-                                "test function `" + candidate.name + "` must return unit, found "
+                                "test function `" + candidate.name + "` must return (), found "
                                     + tast::diagnostic_type_text(actual),
                                 candidate.source_path,
                                 span,
@@ -599,13 +599,13 @@ fn validate_package_tests(
     TestValidation { tests: sort_test_descriptors(tests), diagnostics }
 }
 
-fn write_test_json_hex(builder: text::StringBuilder, value: u8) -> unit {
+fn write_test_json_hex(builder: text::StringBuilder, value: u8) -> () {
     let digits = "0123456789abcdef";
     builder.write_char(digits.get((value / 16).to_isize()));
     builder.write_char(digits.get((value % 16).to_isize()))
 }
 
-fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
+fn write_test_json_string(builder: text::StringBuilder, value: string) -> () {
     builder.write_char('"');
     let mut index = 0;
     while index < value.byte_len() {

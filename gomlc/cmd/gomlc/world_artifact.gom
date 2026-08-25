@@ -152,7 +152,7 @@ fn world_add_package_sections(
     sections: Vec[wire::ArtifactBinarySection],
     section_id: u16,
     value: ToolchainPackage,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let interface = interface_codec::encode_binary(value.interface_unit)?;
     let core = core_codec::encode_binary(
         world_core_unit(
@@ -410,7 +410,7 @@ fn world_validate_standard_dependencies(
     value: Vec[ToolchainPackage],
     builtin_hash: string,
     prelude_hash: string,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     for package_value in value {
         if !artifact_interface_has_dependency(package_value.interface_unit, "builtin", builtin_hash) {
             return Result::Err("world artifact standard package builtin dependency does not match")
@@ -425,7 +425,7 @@ fn world_validate_standard_dependencies(
     Result::Ok(())
 }
 
-fn world_validate_standard_packages(value: Vec[ToolchainPackage]) -> Result[unit, string] {
+fn world_validate_standard_packages(value: Vec[ToolchainPackage]) -> Result[(), string] {
     for spec in resources::standard_package_specs() {
         world_required_package(value, spec.name)?;
     }
@@ -646,7 +646,7 @@ fn read_package_world(path: string) -> Result[PackageWorld, string] {
     }
 }
 
-fn write_package_world(path: string, value: PackageWorld) -> Result[unit, string] {
+fn write_package_world(path: string, value: PackageWorld) -> Result[(), string] {
     let data = encode_package_world(value)?;
     match ensure_parent(path) {
         Ok(()) => atomic_write_data(path, data),
@@ -696,7 +696,7 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
     }
 }
 
-fn run_prepare_world(args: Vec[string]) -> unit {
+fn run_prepare_world(args: Vec[string]) -> () {
     match parse_prepare_world_args(args) {
         Ok(output) => match write_package_world(output, package_world()) {
             Ok(()) => (),

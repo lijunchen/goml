@@ -45,7 +45,7 @@ fn json_serializer() -> JsonSerializer {
     }
 }
 
-fn claim_json_value(serializer: JsonSerializer) -> Result[unit, string] {
+fn claim_json_value(serializer: JsonSerializer) -> Result[(), string] {
     if serializer.frames.is_empty() {
         if serializer.root_written.get() {
             Result::Err("JSON serialization produced more than one root value")
@@ -93,7 +93,7 @@ fn claim_json_value(serializer: JsonSerializer) -> Result[unit, string] {
     }
 }
 
-fn claim_json_string(serializer: JsonSerializer) -> Result[unit, string] {
+fn claim_json_string(serializer: JsonSerializer) -> Result[(), string] {
     if serializer.frames.is_empty() {
         claim_json_value(serializer)
     } else {
@@ -121,13 +121,13 @@ fn finish_json_serializer(serializer: JsonSerializer) -> Result[string, string] 
 }
 
 impl serde::Serializer for JsonSerializer {
-    fn serialize_unit(self: JsonSerializer) -> Result[unit, string] {
+    fn serialize_unit(self: JsonSerializer) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string("null");
         Result::Ok(())
     }
 
-    fn serialize_bool(self: JsonSerializer, value: bool) -> Result[unit, string] {
+    fn serialize_bool(self: JsonSerializer, value: bool) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(
             if value {
@@ -139,97 +139,97 @@ impl serde::Serializer for JsonSerializer {
         Result::Ok(())
     }
 
-    fn serialize_int(self: JsonSerializer, value: isize) -> Result[unit, string] {
+    fn serialize_int(self: JsonSerializer, value: isize) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_int8(self: JsonSerializer, value: i8) -> Result[unit, string] {
+    fn serialize_int8(self: JsonSerializer, value: i8) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_int16(self: JsonSerializer, value: i16) -> Result[unit, string] {
+    fn serialize_int16(self: JsonSerializer, value: i16) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_int32(self: JsonSerializer, value: i32) -> Result[unit, string] {
+    fn serialize_int32(self: JsonSerializer, value: i32) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_int64(self: JsonSerializer, value: i64) -> Result[unit, string] {
+    fn serialize_int64(self: JsonSerializer, value: i64) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_uint(self: JsonSerializer, value: usize) -> Result[unit, string] {
+    fn serialize_uint(self: JsonSerializer, value: usize) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_uint8(self: JsonSerializer, value: u8) -> Result[unit, string] {
+    fn serialize_uint8(self: JsonSerializer, value: u8) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_uint16(self: JsonSerializer, value: u16) -> Result[unit, string] {
+    fn serialize_uint16(self: JsonSerializer, value: u16) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_uint32(self: JsonSerializer, value: u32) -> Result[unit, string] {
+    fn serialize_uint32(self: JsonSerializer, value: u32) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_uint64(self: JsonSerializer, value: u64) -> Result[unit, string] {
+    fn serialize_uint64(self: JsonSerializer, value: u64) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_float32(self: JsonSerializer, value: f32) -> Result[unit, string] {
+    fn serialize_float32(self: JsonSerializer, value: f32) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_float64(self: JsonSerializer, value: f64) -> Result[unit, string] {
+    fn serialize_float64(self: JsonSerializer, value: f64) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_number(self: JsonSerializer, value: string) -> Result[unit, string] {
+    fn serialize_number(self: JsonSerializer, value: string) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_string(value);
         Result::Ok(())
     }
 
-    fn serialize_string(self: JsonSerializer, value: string) -> Result[unit, string] {
+    fn serialize_string(self: JsonSerializer, value: string) -> Result[(), string] {
         claim_json_string(self)?;
         write_json_string(self.builder, value);
         Result::Ok(())
     }
 
-    fn serialize_char(self: JsonSerializer, value: char) -> Result[unit, string] {
+    fn serialize_char(self: JsonSerializer, value: char) -> Result[(), string] {
         claim_json_string(self)?;
         write_json_string(self.builder, value.to_string());
         Result::Ok(())
     }
 
-    fn serialize_bytes(self: JsonSerializer, value: Slice[byte]) -> Result[unit, string] {
+    fn serialize_bytes(self: JsonSerializer, value: Slice[byte]) -> Result[(), string] {
         claim_json_value(self)?;
         self.builder.write_char('[');
         let mut index = 0;
@@ -244,7 +244,7 @@ impl serde::Serializer for JsonSerializer {
         Result::Ok(())
     }
 
-    fn begin_optional(self: JsonSerializer, present: bool) -> Result[unit, string] {
+    fn begin_optional(self: JsonSerializer, present: bool) -> Result[(), string] {
         claim_json_value(self)?;
         if !present {
             self.builder.write_string("null")
@@ -253,7 +253,7 @@ impl serde::Serializer for JsonSerializer {
         Result::Ok(())
     }
 
-    fn end_optional(self: JsonSerializer) -> Result[unit, string] {
+    fn end_optional(self: JsonSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_optional without begin_optional")
         } else {};
@@ -268,7 +268,7 @@ impl serde::Serializer for JsonSerializer {
         }
     }
 
-    fn begin_sequence(self: JsonSerializer, length: isize) -> Result[unit, string] {
+    fn begin_sequence(self: JsonSerializer, length: isize) -> Result[(), string] {
         if length < 0 {
             return Result::Err("sequence length cannot be negative")
         } else {};
@@ -280,15 +280,15 @@ impl serde::Serializer for JsonSerializer {
         Result::Ok(())
     }
 
-    fn begin_sequence_element(self: JsonSerializer, index: isize) -> Result[unit, string] {
+    fn begin_sequence_element(self: JsonSerializer, index: isize) -> Result[(), string] {
         begin_json_array_element(self, index)
     }
 
-    fn end_sequence(self: JsonSerializer) -> Result[unit, string] {
+    fn end_sequence(self: JsonSerializer) -> Result[(), string] {
         end_json_array(self)
     }
 
-    fn begin_tuple(self: JsonSerializer, length: isize) -> Result[unit, string] {
+    fn begin_tuple(self: JsonSerializer, length: isize) -> Result[(), string] {
         if length < 0 {
             return Result::Err("tuple length cannot be negative")
         } else {};
@@ -300,15 +300,15 @@ impl serde::Serializer for JsonSerializer {
         Result::Ok(())
     }
 
-    fn begin_tuple_element(self: JsonSerializer, index: isize) -> Result[unit, string] {
+    fn begin_tuple_element(self: JsonSerializer, index: isize) -> Result[(), string] {
         begin_json_array_element(self, index)
     }
 
-    fn end_tuple(self: JsonSerializer) -> Result[unit, string] {
+    fn end_tuple(self: JsonSerializer) -> Result[(), string] {
         end_json_array(self)
     }
 
-    fn begin_map(self: JsonSerializer, length: isize) -> Result[unit, string] {
+    fn begin_map(self: JsonSerializer, length: isize) -> Result[(), string] {
         if length < 0 {
             Result::Err("map length cannot be negative")
         } else {
@@ -321,7 +321,7 @@ impl serde::Serializer for JsonSerializer {
         }
     }
 
-    fn begin_map_key(self: JsonSerializer, index: isize) -> Result[unit, string] {
+    fn begin_map_key(self: JsonSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map key without map")
         } else {};
@@ -342,7 +342,7 @@ impl serde::Serializer for JsonSerializer {
         }
     }
 
-    fn begin_map_value(self: JsonSerializer, index: isize) -> Result[unit, string] {
+    fn begin_map_value(self: JsonSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map value without map")
         } else {};
@@ -360,7 +360,7 @@ impl serde::Serializer for JsonSerializer {
         }
     }
 
-    fn end_map(self: JsonSerializer) -> Result[unit, string] {
+    fn end_map(self: JsonSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_map without begin_map")
         } else {};
@@ -377,7 +377,7 @@ impl serde::Serializer for JsonSerializer {
         }
     }
 
-    fn begin_struct(self: JsonSerializer, name: string, fields: isize) -> Result[unit, string] {
+    fn begin_struct(self: JsonSerializer, name: string, fields: isize) -> Result[(), string] {
         let _ = name;
         if fields < 0 {
             return Result::Err("struct field count cannot be negative")
@@ -394,11 +394,11 @@ impl serde::Serializer for JsonSerializer {
         Result::Ok(())
     }
 
-    fn begin_struct_field(self: JsonSerializer, index: isize, name: string) -> Result[unit, string] {
+    fn begin_struct_field(self: JsonSerializer, index: isize, name: string) -> Result[(), string] {
         begin_json_named_field(self, index, name, false)
     }
 
-    fn end_struct(self: JsonSerializer) -> Result[unit, string] {
+    fn end_struct(self: JsonSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_struct without begin_struct")
         } else {};
@@ -422,7 +422,7 @@ impl serde::Serializer for JsonSerializer {
         name: string,
         kind: isize,
         fields: isize,
-    ) -> Result[unit, string] {
+    ) -> Result[(), string] {
         let _ = enum_name;
         if index < 0 {
             return Result::Err("enum variant index cannot be negative")
@@ -457,7 +457,7 @@ impl serde::Serializer for JsonSerializer {
         Result::Ok(())
     }
 
-    fn begin_variant_field(self: JsonSerializer, index: isize, name: string) -> Result[unit, string] {
+    fn begin_variant_field(self: JsonSerializer, index: isize, name: string) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("variant field without variant")
         } else {};
@@ -483,7 +483,7 @@ impl serde::Serializer for JsonSerializer {
         }
     }
 
-    fn end_variant(self: JsonSerializer) -> Result[unit, string] {
+    fn end_variant(self: JsonSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_variant without begin_variant")
         } else {};
@@ -505,7 +505,7 @@ impl serde::Serializer for JsonSerializer {
     }
 }
 
-fn begin_json_array_element(serializer: JsonSerializer, index: isize) -> Result[unit, string] {
+fn begin_json_array_element(serializer: JsonSerializer, index: isize) -> Result[(), string] {
     if serializer.frames.is_empty() {
         return Result::Err("array element without array")
     } else {};
@@ -526,7 +526,7 @@ fn begin_json_array_element(serializer: JsonSerializer, index: isize) -> Result[
     }
 }
 
-fn end_json_array(serializer: JsonSerializer) -> Result[unit, string] {
+fn end_json_array(serializer: JsonSerializer) -> Result[(), string] {
     if serializer.frames.is_empty() {
         return Result::Err("array end without array")
     } else {};
@@ -544,7 +544,7 @@ fn end_json_array(serializer: JsonSerializer) -> Result[unit, string] {
 }
 
 fn begin_json_named_field(serializer: JsonSerializer, index: isize, name: string, variant: bool) -> Result[
-    unit,
+    (),
     string,
 ] {
     let _ = variant;
@@ -707,7 +707,7 @@ pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {
 }
 
 impl Serialize for Value {
-    fn serialize[S: serde::Serializer](self: Value, serializer: S) -> Result[unit, string] {
+    fn serialize[S: serde::Serializer](self: Value, serializer: S) -> Result[(), string] {
         serde::serialize_value_into(into_serde_value(self), serializer)
     }
 }

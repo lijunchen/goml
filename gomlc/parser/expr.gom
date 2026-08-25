@@ -191,7 +191,7 @@ fn ident_expression(parser: Parser) -> MarkerClosed {
     }
 }
 
-fn type_applied_expression_path(parser: Parser) -> unit {
+fn type_applied_expression_path(parser: Parser) -> () {
     let marker = parser.open();
     parse_path_always(parser);
     parser.expect(lexer::TokenKind::ColonColon);
@@ -301,7 +301,7 @@ fn match_expression(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_MATCH)
 }
 
-fn select_arm_body(parser: Parser) -> unit {
+fn select_arm_body(parser: Parser) -> () {
     parser.expect(lexer::TokenKind::FatArrow);
     if parser.at(lexer::TokenKind::LBrace) {
         block(parser)
@@ -310,7 +310,7 @@ fn select_arm_body(parser: Parser) -> unit {
     }
 }
 
-fn select_arm_guard(parser: Parser) -> unit {
+fn select_arm_guard(parser: Parser) -> () {
     if parser.at_contextual("when") {
         let marker = parser.open();
         parser.expect(lexer::TokenKind::Ident);
@@ -321,7 +321,7 @@ fn select_arm_guard(parser: Parser) -> unit {
     } else {}
 }
 
-fn select_recv_arm(parser: Parser) -> unit {
+fn select_recv_arm(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::Ident);
     parser.expect(lexer::TokenKind::LParen);
@@ -344,7 +344,7 @@ fn select_recv_arm(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::SELECT_RECV_ARM);
 }
 
-fn select_send_arm(parser: Parser) -> unit {
+fn select_send_arm(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::Ident);
     parser.expect(lexer::TokenKind::LParen);
@@ -357,14 +357,14 @@ fn select_send_arm(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::SELECT_SEND_ARM);
 }
 
-fn select_default_arm(parser: Parser) -> unit {
+fn select_default_arm(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::Ident);
     select_arm_body(parser);
     let _ = parser.close(marker, cst::NodeKind::SELECT_DEFAULT_ARM);
 }
 
-fn select_arm_list(parser: Parser, priority: bool) -> unit {
+fn select_arm_list(parser: Parser, priority: bool) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     let mut communication_arms = 0;
@@ -714,7 +714,7 @@ fn closure_expr(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_CLOSURE)
 }
 
-fn closure_param_list(parser: Parser) -> unit {
+fn closure_param_list(parser: Parser) -> () {
     let marker = parser.open();
     if parser.at(lexer::TokenKind::OrOr) {
         parser.expect(lexer::TokenKind::OrOr);
@@ -747,7 +747,7 @@ fn closure_param_list(parser: Parser) -> unit {
     }
 }
 
-fn closure_param(parser: Parser) -> unit {
+fn closure_param(parser: Parser) -> () {
     let marker = parser.open();
     let valid = if parser.at_lower_ident() {
         parser.expect_lower_ident("closure parameter name");
@@ -768,7 +768,7 @@ fn closure_param(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::CLOSURE_PARAM);
 }
 
-fn closure_body(parser: Parser) -> unit {
+fn closure_body(parser: Parser) -> () {
     let marker = parser.open();
     if parser.at(lexer::TokenKind::LBrace) {
         block(parser)
@@ -791,7 +791,7 @@ fn closure_body(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::EXPR_CLOSURE_BODY);
 }
 
-fn match_arm_list(parser: Parser) -> unit {
+fn match_arm_list(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) && !is_list_boundary(parser.peek()) {
@@ -805,7 +805,7 @@ fn match_arm_list(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::MATCH_ARM_LIST);
 }
 
-fn match_arm(parser: Parser) -> unit {
+fn match_arm(parser: Parser) -> () {
     let marker = parser.open();
     let _ = pattern(parser);
     if parser.at(lexer::TokenKind::IfKeyword) {
@@ -823,7 +823,7 @@ fn match_arm(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::MATCH_ARM);
 }
 
-fn struct_literal_field_list(parser: Parser) -> unit {
+fn struct_literal_field_list(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     let previous = parser.set_struct_literals_allowed(true);
@@ -853,7 +853,7 @@ fn struct_literal_field_list(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST);
 }
 
-fn struct_literal_field(parser: Parser) -> unit {
+fn struct_literal_field(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect_lower_ident("struct literal field name");
     if parser.eat(lexer::TokenKind::Colon) {
@@ -1081,7 +1081,7 @@ fn expr_bp(parser: Parser, min_bp: isize) -> Option[MarkerClosed] {
     }
 }
 
-fn arg_list(parser: Parser) -> unit {
+fn arg_list(parser: Parser) -> () {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LParen);
     let previous = parser.set_struct_literals_allowed(true);
@@ -1097,7 +1097,7 @@ fn arg_list(parser: Parser) -> unit {
     let _ = parser.close(marker, cst::NodeKind::ARG_LIST);
 }
 
-fn arg(parser: Parser) -> unit {
+fn arg(parser: Parser) -> () {
     let marker = parser.open();
     if marker_is_none(expr(parser)) {
         parser.advance_with_error("expected an expression")

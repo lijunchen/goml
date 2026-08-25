@@ -861,7 +861,7 @@ fn scan_symbol(source: string, start: isize) -> Option[(TokenKind, isize)] {
     }
 }
 
-fn push_token(tokens: Vec[Token], source: string, kind: TokenKind, start: isize, end: isize) -> unit {
+fn push_token(tokens: Vec[Token], source: string, kind: TokenKind, start: isize, end: isize) -> () {
     tokens.push(
         Token { kind, text: source.byte_slice(start, end), start, end, error: Option::None },
     )
@@ -875,7 +875,7 @@ fn push_error_token(
     message: string,
     error_start: isize,
     error_end: isize,
-) -> unit {
+) -> () {
     tokens.push(
         Token {
             kind: TokenKind::Error,
@@ -887,7 +887,7 @@ fn push_error_token(
     )
 }
 
-fn append_fragment_tokens(tokens: Vec[Token], source: string, start: isize, end: isize) -> unit {
+fn append_fragment_tokens(tokens: Vec[Token], source: string, start: isize, end: isize) -> () {
     for token in lex(source.byte_slice(start, end)) {
         let error = match token.error {
             Some(value) => Option::Some(

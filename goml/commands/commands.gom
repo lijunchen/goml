@@ -6,14 +6,14 @@ use std::fs;
 use std::io;
 use std::path;
 
-fn create_directory(value: string) -> Result[unit, string] {
+fn create_directory(value: string) -> Result[(), string] {
     match fs::create_dir_all(value) {
         Ok(()) => Result::Ok(()),
         Err(message) => Result::Err(message),
     }
 }
 
-fn write_file(value: string, content: string) -> Result[unit, string] {
+fn write_file(value: string, content: string) -> Result[(), string] {
     match fs::write_file(value, content) {
         Ok(()) => Result::Ok(()),
         Err(message) => Result::Err(message),
@@ -42,7 +42,7 @@ pub fn home_directory() -> Result[string, string] {
     Result::Err("failed to determine home directory")
 }
 
-pub fn print_home() -> Result[unit, string] {
+pub fn print_home() -> Result[(), string] {
     let home = home_directory()?;
     ensure_home_layout()?;
     let bin = path::join(home, "bin");
@@ -57,7 +57,7 @@ pub fn print_home() -> Result[unit, string] {
     Result::Ok(())
 }
 
-pub fn ensure_home_layout() -> Result[unit, string] {
+pub fn ensure_home_layout() -> Result[(), string] {
     let home = home_directory()?;
     for directory in Vec::from_array(
         [home, path::join(home, "bin"), path::join(home, "lib"), path::join(home, "cache")],
@@ -86,7 +86,7 @@ fn valid_identifier(value: string) -> bool {
     true
 }
 
-fn validate_project_name(value: string) -> Result[unit, string] {
+fn validate_project_name(value: string) -> Result[(), string] {
     if !valid_identifier(value) {
         Result::Err(
             "invalid project name `" + value + "`: expected identifier [A-Za-z_][A-Za-z0-9_]*",
@@ -98,7 +98,7 @@ fn validate_project_name(value: string) -> Result[unit, string] {
     }
 }
 
-fn ensure_project_directory(value: string) -> Result[unit, string] {
+fn ensure_project_directory(value: string) -> Result[(), string] {
     if fs::is_file(value) {
         return Result::Err("target directory " + value + " already exists and is not empty")
     } else if fs::is_dir(value) {
@@ -113,7 +113,7 @@ fn ensure_project_directory(value: string) -> Result[unit, string] {
     }
 }
 
-pub fn new_project(name: string, base: string) -> Result[unit, string] {
+pub fn new_project(name: string, base: string) -> Result[(), string] {
     validate_project_name(name)?;
     let project = path::join(base, name);
     ensure_project_directory(project)?;
@@ -124,7 +124,7 @@ pub fn new_project(name: string, base: string) -> Result[unit, string] {
     match write_file(
         path::join(project, "main.gom"),
         "package main;\n\nuse " + name
-            + "::lib;\n\nfn main() -> unit {\n    println(lib::message())\n}\n",
+            + "::lib;\n\nfn main() -> () {\n    println(lib::message())\n}\n",
     ) {
         Ok(()) => (),
         Err(message) => return Result::Err(message),
@@ -144,7 +144,7 @@ pub fn new_project(name: string, base: string) -> Result[unit, string] {
     Result::Ok(())
 }
 
-pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
+pub fn parse_new(args: Vec[string]) -> Result[(), string] {
     let mut name: Option[string] = Option::None;
     let mut base = ".";
     let mut index = 2;

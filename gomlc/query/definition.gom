@@ -35,7 +35,7 @@ fn same_definition(left: DefinitionResult, right: DefinitionResult) -> bool {
         && left.span.end == right.span.end
 }
 
-fn push_definition(values: Vec[DefinitionResult], value: DefinitionResult) -> unit {
+fn push_definition(values: Vec[DefinitionResult], value: DefinitionResult) -> () {
     for existing in values {
         if same_definition(existing, value) {
             return

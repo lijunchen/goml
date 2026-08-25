@@ -12,7 +12,7 @@ pub struct Scope {
 
 pub struct Task[T] {
     result: Ref[Option[T]],
-    ready: Channel[unit],
+    ready: Channel[()],
 }
 
 pub struct IndexedError[E] {
@@ -21,7 +21,7 @@ pub struct IndexedError[E] {
 }
 
 pub struct ConcurrencyLimit {
-    slots: Channel[unit],
+    slots: Channel[()],
 }
 
 pub enum WaitResult[T] {
@@ -45,7 +45,7 @@ impl ConcurrencyLimit {
         } else {
             1
         };
-        let slots: Channel[unit] = Channel::new(count);
+        let slots: Channel[()] = Channel::new(count);
         for _ in 0..count {
             slots.send(())
         }
@@ -119,7 +119,7 @@ pub fn active_scope_count() -> isize {
 impl Scope {
     pub fn spawn[T](self: Scope, body: (CancelToken) -> T) -> Task[T] {
         let result: Ref[Option[T]] = Ref::new(Option::None);
-        let ready: Channel[unit] = Channel::new(0);
+        let ready: Channel[()] = Channel::new(0);
         let token = CancelToken { value: internal_task::token(self.handle) };
         internal_task::spawn(
             self.handle,
@@ -133,7 +133,7 @@ impl Scope {
 
     pub fn try_spawn[T](self: Scope, body: (CancelToken) -> T) -> Option[Task[T]] {
         let result: Ref[Option[T]] = Ref::new(Option::None);
-        let ready: Channel[unit] = Channel::new(0);
+        let ready: Channel[()] = Channel::new(0);
         let token = CancelToken { value: internal_task::token(self.handle) };
         if internal_task::try_spawn(
             self.handle,
@@ -160,7 +160,7 @@ impl Scope {
         )
     }
 
-    pub fn cancel(self: Scope) -> unit {
+    pub fn cancel(self: Scope) -> () {
         internal_task::cancel(self.handle)
     }
 
@@ -178,7 +178,7 @@ impl CancelToken {
         internal_task::id(self.value)
     }
 
-    pub fn done(self: CancelToken) -> Receiver[unit] {
+    pub fn done(self: CancelToken) -> Receiver[()] {
         self.value.done()
     }
 }
@@ -196,7 +196,7 @@ pub fn recv_with[T](cancel: CancelToken, channel: Channel[T]) -> WaitResult[Opti
     }
 }
 
-pub fn send_with[T](cancel: CancelToken, channel: Channel[T], value: T) -> WaitResult[unit] {
+pub fn send_with[T](cancel: CancelToken, channel: Channel[T], value: T) -> WaitResult[()] {
     if internal_task::send_with(cancel.value, channel, value) {
         WaitResult::Completed(())
     } else {
@@ -204,7 +204,7 @@ pub fn send_with[T](cancel: CancelToken, channel: Channel[T], value: T) -> WaitR
     }
 }
 
-pub fn sleep_nanoseconds_with(cancel: CancelToken, nanoseconds: i64) -> WaitResult[unit] {
+pub fn sleep_nanoseconds_with(cancel: CancelToken, nanoseconds: i64) -> WaitResult[()] {
     if internal_task::sleep_with(cancel.value, nanoseconds) {
         WaitResult::Completed(())
     } else {
@@ -213,7 +213,7 @@ pub fn sleep_nanoseconds_with(cancel: CancelToken, nanoseconds: i64) -> WaitResu
 }
 
 impl[T] Task[T] {
-    pub fn done(self: Task[T]) -> Receiver[unit] {
+    pub fn done(self: Task[T]) -> Receiver[()] {
         self.ready.receiver()
     }
 
@@ -276,9 +276,9 @@ pub fn join_all_indexed_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[
 fn concurrent_worker[T, E](
     cancel: CancelToken,
     work: Channel[(isize, T)],
-    results: Channel[(isize, Result[unit, E])],
-    body: (CancelToken, T) -> Result[unit, E],
-) -> unit {
+    results: Channel[(isize, Result[(), E])],
+    body: (CancelToken, T) -> Result[(), E],
+) -> () {
     loop {
         match recv_with(cancel, work) {
             WaitResult::Completed(Some(item)) => results.send((item.0, body(cancel, item.1))),
@@ -287,7 +287,7 @@ fn concurrent_worker[T, E](
     }
 }
 
-fn record_concurrent_result[E](ordered: Vec[Option[E]], received: Option[(isize, Result[unit, E])]) -> unit {
+fn record_concurrent_result[E](ordered: Vec[Option[E]], received: Option[(isize, Result[(), E])]) -> () {
     match received {
         Some(item) => match item.1 {
             Ok(()) => (),
@@ -302,8 +302,8 @@ fn record_concurrent_result[E](ordered: Vec[Option[E]], received: Option[(isize,
 pub fn for_each_concurrent[T, E](
     limit: isize,
     values: Vec[T],
-    body: (CancelToken, T) -> Result[unit, E],
-) -> Result[unit, Vec[IndexedError[E]]] {
+    body: (CancelToken, T) -> Result[(), E],
+) -> Result[(), Vec[IndexedError[E]]] {
     if values.is_empty() {
         return Result::Ok(())
     } else {};
@@ -316,7 +316,7 @@ pub fn for_each_concurrent[T, E](
         total
     };
     let work: Channel[(isize, T)] = Channel::new(worker_count);
-    let results: Channel[(isize, Result[unit, E])] = Channel::new(worker_count);
+    let results: Channel[(isize, Result[(), E])] = Channel::new(worker_count);
     scope(
         |scope: Scope| {
             for _ in 0..worker_count {

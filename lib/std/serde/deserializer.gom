@@ -15,7 +15,7 @@ pub trait Deserializer {
         message
     }
     fn deserialize_any(self: Self) -> Result[Value, string];
-    fn deserialize_unit(self: Self) -> Result[unit, string];
+    fn deserialize_unit(self: Self) -> Result[(), string];
     fn deserialize_bool(self: Self) -> Result[bool, string];
     fn deserialize_int(self: Self) -> Result[isize, string];
     fn deserialize_int8(self: Self) -> Result[i8, string];
@@ -34,26 +34,26 @@ pub trait Deserializer {
     fn deserialize_char(self: Self) -> Result[char, string];
     fn deserialize_bytes(self: Self) -> Result[Vec[byte], string];
     fn begin_optional(self: Self) -> Result[bool, string];
-    fn end_optional(self: Self) -> Result[unit, string];
+    fn end_optional(self: Self) -> Result[(), string];
     fn begin_sequence(self: Self) -> Result[Option[isize], string];
     fn next_sequence_element(self: Self) -> Result[bool, string];
-    fn end_sequence(self: Self) -> Result[unit, string];
-    fn begin_tuple(self: Self, length: isize) -> Result[unit, string];
-    fn begin_tuple_element(self: Self, index: isize) -> Result[unit, string];
-    fn end_tuple(self: Self) -> Result[unit, string];
+    fn end_sequence(self: Self) -> Result[(), string];
+    fn begin_tuple(self: Self, length: isize) -> Result[(), string];
+    fn begin_tuple_element(self: Self, index: isize) -> Result[(), string];
+    fn end_tuple(self: Self) -> Result[(), string];
     fn begin_map(self: Self) -> Result[Option[isize], string];
     fn next_map_entry(self: Self) -> Result[bool, string];
-    fn begin_map_key(self: Self) -> Result[unit, string];
-    fn begin_map_value(self: Self) -> Result[unit, string];
-    fn end_map(self: Self) -> Result[unit, string];
-    fn begin_struct(self: Self, name: string, fields: isize) -> Result[unit, string];
+    fn begin_map_key(self: Self) -> Result[(), string];
+    fn begin_map_value(self: Self) -> Result[(), string];
+    fn end_map(self: Self) -> Result[(), string];
+    fn begin_struct(self: Self, name: string, fields: isize) -> Result[(), string];
     fn next_struct_field(self: Self) -> Result[Option[FieldKey], string];
-    fn skip_value(self: Self) -> Result[unit, string];
-    fn end_struct(self: Self) -> Result[unit, string];
+    fn skip_value(self: Self) -> Result[(), string];
+    fn end_struct(self: Self) -> Result[(), string];
     fn begin_variant(self: Self, enum_name: string, variants: isize) -> Result[VariantKey, string];
-    fn begin_variant_fields(self: Self, kind: isize, fields: isize) -> Result[unit, string];
+    fn begin_variant_fields(self: Self, kind: isize, fields: isize) -> Result[(), string];
     fn next_variant_field(self: Self) -> Result[Option[FieldKey], string];
-    fn end_variant(self: Self) -> Result[unit, string];
+    fn end_variant(self: Self) -> Result[(), string];
 }
 
 pub fn field_key_matches(value: Option[FieldKey], index: isize, name: string) -> bool {

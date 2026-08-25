@@ -119,7 +119,7 @@ fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
     Result::Ok(result)
 }
 
-fn write_files(values: Vec[FormattedFile]) -> Result[unit, string] {
+fn write_files(values: Vec[FormattedFile]) -> Result[(), string] {
     for value in values {
         if value.source != value.formatted {
             match fs::write_file(value.path, value.formatted) {
@@ -166,7 +166,7 @@ fn run(options: Options) -> isize {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let args = env::args();
     match parse_options(args) {
         Ok(options) => {

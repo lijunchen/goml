@@ -56,7 +56,7 @@ fn cached_file_digest(cache: DigestCache, module_dir: string, value: string) -> 
     }
 }
 
-fn invalidate_output_digests(cache: DigestCache, module_dir: string, outputs: Vec[string]) -> unit {
+fn invalidate_output_digests(cache: DigestCache, module_dir: string, outputs: Vec[string]) -> () {
     for output in outputs {
         let _ = cache.values.remove(absolute_from_module(module_dir, output));
     }
@@ -280,7 +280,7 @@ fn cache_is_fresh(cache: DigestCache, context: Context, spec: CacheSpec, fingerp
     Result::Ok(true)
 }
 
-fn remove_cache_file(value: string) -> Result[unit, string] {
+fn remove_cache_file(value: string) -> Result[(), string] {
     if fs::exists(value) {
         fs::remove_file(value)
     } else {
@@ -288,7 +288,7 @@ fn remove_cache_file(value: string) -> Result[unit, string] {
     }
 }
 
-fn prepare_cache_execution(context: Context, spec: CacheSpec) -> Result[unit, string] {
+fn prepare_cache_execution(context: Context, spec: CacheSpec) -> Result[(), string] {
     remove_cache_file(cache_path(context.graph.module_dir, spec))?;
     for output in spec.outputs {
         remove_cache_file(absolute_from_module(context.graph.module_dir, output))?
@@ -302,7 +302,7 @@ fn store_cache(
     spec: CacheSpec,
     compiler: string,
     before: string,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let after = match command_fingerprint(digest_cache(), context, compiler, spec) {
         Ok(value) => value,
         Err(message) => {

@@ -36,7 +36,7 @@ fn valid_cached_image(plan: BuildPlan) -> bool {
     completion_matches(plan, metadata, executable_hash)
 }
 
-fn write_plan_files(plan: BuildPlan) -> Result[unit, string] {
+fn write_plan_files(plan: BuildPlan) -> Result[(), string] {
     for value in plan.files {
         let target = path::join(plan.staging_root, value.relative_path);
         let parent = path::parent(target).ok_or("native image target has no parent")?;

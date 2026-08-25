@@ -12,7 +12,7 @@ struct PendingTypeInstance {
 struct TypeCtx {
     instances: Vec[PendingTypeInstance],
     instance_index: HashMap[string, PendingTypeInstance],
-    used_names: HashMap[string, unit],
+    used_names: HashMap[string, ()],
     enums: Vec[core::EnumDef],
     structs: Vec[core::StructDef],
     active_instances: Vec[PendingTypeInstance],
@@ -86,7 +86,7 @@ fn type_name_is_used(ctx: TypeCtx, name: string) -> bool {
     ctx.used_names.contains(name)
 }
 
-fn add_used_type_name(ctx: TypeCtx, name: string) -> unit {
+fn add_used_type_name(ctx: TypeCtx, name: string) -> () {
     if type_name_is_used(ctx, name) {} else {
         ctx.used_names[name] = ();
     }
@@ -291,7 +291,7 @@ fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[core::Type]) -> 
     result
 }
 
-fn discover_type_instance_dependencies(ctx: TypeCtx, instance: PendingTypeInstance) -> unit {
+fn discover_type_instance_dependencies(ctx: TypeCtx, instance: PendingTypeInstance) -> () {
     let bindings = type_instance_bindings(ctx, instance.base_name, instance.args);
     match find_generic_enum(ctx, instance.base_name) {
         Some(value) => for variant in value.variants {
@@ -950,20 +950,20 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> Expr {
     }
 }
 
-fn collect_trait_ref_type_names(ctx: TypeCtx, value: core::TraitRef) -> unit {
+fn collect_trait_ref_type_names(ctx: TypeCtx, value: core::TraitRef) -> () {
     for arg in value.args {
         collect_type_names(ctx, arg)
     }
 }
 
-fn collect_optional_trait_ref_type_names(ctx: TypeCtx, value: Option[core::TraitRef]) -> unit {
+fn collect_optional_trait_ref_type_names(ctx: TypeCtx, value: Option[core::TraitRef]) -> () {
     match value {
         Some(reference) => collect_trait_ref_type_names(ctx, reference),
         None => (),
     }
 }
 
-fn collect_type_names(ctx: TypeCtx, value: core::Type) -> unit {
+fn collect_type_names(ctx: TypeCtx, value: core::Type) -> () {
     match core::resolve_type(value) {
         Tuple { items } => for item in items {
             collect_type_names(ctx, item)
@@ -1012,7 +1012,7 @@ fn constructor_owner(name: string) -> string {
     }
 }
 
-fn collect_callable_type_names(ctx: TypeCtx, value: core::Callable) -> unit {
+fn collect_callable_type_names(ctx: TypeCtx, value: core::Callable) -> () {
     match value {
         TraitMethod { trait_ref: reference, for_ty, .. } => {
             collect_trait_ref_type_names(ctx, reference);
@@ -1023,20 +1023,20 @@ fn collect_callable_type_names(ctx: TypeCtx, value: core::Callable) -> unit {
     }
 }
 
-fn collect_exprs_type_names(ctx: TypeCtx, values: Vec[core::Expr]) -> unit {
+fn collect_exprs_type_names(ctx: TypeCtx, values: Vec[core::Expr]) -> () {
     for value in values {
         collect_expr_type_names(ctx, value)
     }
 }
 
-fn collect_optional_expr_type_names(ctx: TypeCtx, value: Option[core::Expr]) -> unit {
+fn collect_optional_expr_type_names(ctx: TypeCtx, value: Option[core::Expr]) -> () {
     match value {
         Some(expr) => collect_expr_type_names(ctx, expr),
         None => (),
     }
 }
 
-fn collect_block_type_names(ctx: TypeCtx, value: core::Block) -> unit {
+fn collect_block_type_names(ctx: TypeCtx, value: core::Block) -> () {
     for stmt in value.stmts {
         collect_type_names(ctx, stmt.ty);
         collect_expr_type_names(ctx, stmt.value)
@@ -1044,7 +1044,7 @@ fn collect_block_type_names(ctx: TypeCtx, value: core::Block) -> unit {
     collect_optional_expr_type_names(ctx, value.tail)
 }
 
-fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
+fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> () {
     collect_type_names(ctx, core::expr_type(value));
     match value {
         Var { name: _, ty: _ } | Prim { value: _, ty: _ } => (),

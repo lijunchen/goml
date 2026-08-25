@@ -42,7 +42,7 @@ pub fn progress_bar(completed: isize, total: isize) -> string {
     builder.finish()
 }
 
-pub fn display_progress(completed: isize, total: isize, label: string, finished: bool) -> unit {
+pub fn display_progress(completed: isize, total: isize, label: string, finished: bool) -> () {
     let update = f"\r\u001b[2K{progress_bar(completed, total)} {completed}/{total} {label}";
     if finished {
         io::eprintln(update)

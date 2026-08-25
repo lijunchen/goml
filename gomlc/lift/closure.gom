@@ -91,13 +91,13 @@ fn closure_for_type(state: State, ty: mono::Type) -> Option[ClosureInfo] {
     }
 }
 
-fn record_used_type(values: Vec[string], name: string) -> unit {
+fn record_used_type(values: Vec[string], name: string) -> () {
     if values.contains(name) {} else {
         values.push(name)
     }
 }
 
-fn collect_used_types(values: Vec[string], ty: mono::Type) -> unit {
+fn collect_used_types(values: Vec[string], ty: mono::Type) -> () {
     match ty {
         Named { name } => record_used_type(values, name),
         Tuple { items } => {
@@ -122,20 +122,20 @@ fn collect_used_types(values: Vec[string], ty: mono::Type) -> unit {
     }
 }
 
-fn collect_used_exprs(values: Vec[string], exprs: Vec[mono::Expr]) -> unit {
+fn collect_used_exprs(values: Vec[string], exprs: Vec[mono::Expr]) -> () {
     for expr in exprs {
         collect_used_expr(values, expr)
     }
 }
 
-fn collect_used_optional_expr(values: Vec[string], expr: Option[mono::Expr]) -> unit {
+fn collect_used_optional_expr(values: Vec[string], expr: Option[mono::Expr]) -> () {
     match expr {
         Some(expr) => collect_used_expr(values, expr),
         None => (),
     }
 }
 
-fn collect_used_block(values: Vec[string], block: mono::Block) -> unit {
+fn collect_used_block(values: Vec[string], block: mono::Block) -> () {
     for stmt in block.stmts {
         collect_used_types(values, stmt.ty);
         collect_used_expr(values, stmt.value)
@@ -143,7 +143,7 @@ fn collect_used_block(values: Vec[string], block: mono::Block) -> unit {
     collect_used_optional_expr(values, block.tail)
 }
 
-fn collect_used_expr(values: Vec[string], expr: mono::Expr) -> unit {
+fn collect_used_expr(values: Vec[string], expr: mono::Expr) -> () {
     collect_used_types(values, mono::expr_type(expr));
     match expr {
         Constr { constructor: _, args, ty: _ } => collect_used_exprs(values, args),
@@ -368,7 +368,7 @@ fn parse_digits(value: string, start: isize) -> isize {
     result
 }
 
-fn observe_name(maximum: Ref[isize], name: string) -> unit {
+fn observe_name(maximum: Ref[isize], name: string) -> () {
     match trailing_number(name) {
         Some(value) => if value > maximum.get() {
             maximum.set(value)
@@ -377,20 +377,20 @@ fn observe_name(maximum: Ref[isize], name: string) -> unit {
     }
 }
 
-fn observe_exprs(maximum: Ref[isize], values: Vec[mono::Expr]) -> unit {
+fn observe_exprs(maximum: Ref[isize], values: Vec[mono::Expr]) -> () {
     for value in values {
         observe_expr(maximum, value)
     }
 }
 
-fn observe_optional_expr(maximum: Ref[isize], value: Option[mono::Expr]) -> unit {
+fn observe_optional_expr(maximum: Ref[isize], value: Option[mono::Expr]) -> () {
     match value {
         Some(value) => observe_expr(maximum, value),
         None => (),
     }
 }
 
-fn observe_block(maximum: Ref[isize], value: mono::Block) -> unit {
+fn observe_block(maximum: Ref[isize], value: mono::Block) -> () {
     for stmt in value.stmts {
         observe_name(maximum, stmt.name);
         observe_expr(maximum, stmt.value)
@@ -398,7 +398,7 @@ fn observe_block(maximum: Ref[isize], value: mono::Block) -> unit {
     observe_optional_expr(maximum, value.tail)
 }
 
-fn observe_expr(maximum: Ref[isize], value: mono::Expr) -> unit {
+fn observe_expr(maximum: Ref[isize], value: mono::Expr) -> () {
     match value {
         Var { name: _, ty: _ } => (),
         Constr { constructor: _, args, ty: _ } => observe_exprs(maximum, args),
@@ -778,7 +778,7 @@ fn collect_captured_exprs(
     bound: Vec[string],
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
-) -> unit {
+) -> () {
     for value in values {
         collect_captured(value, bound, captured, scope)
     }
@@ -789,7 +789,7 @@ fn collect_captured_optional(
     bound: Vec[string],
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
-) -> unit {
+) -> () {
     match value {
         Some(value) => collect_captured(value, bound, captured, scope),
         None => (),
@@ -801,7 +801,7 @@ fn collect_captured_block(
     bound: Vec[string],
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
-) -> unit {
+) -> () {
     let mut added = 0;
     for stmt in value.stmts {
         collect_captured(stmt.value, bound, captured, scope);
@@ -819,7 +819,7 @@ fn collect_captured(
     bound: Vec[string],
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
-) -> unit {
+) -> () {
     match value {
         Var { name, ty: _ } => if bound.contains(name) {} else {
             match find_scope(scope, name) {

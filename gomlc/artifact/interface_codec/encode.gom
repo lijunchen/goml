@@ -40,7 +40,7 @@ fn artifact_json_type_pairs(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     values: Vec[(string, tast::Type)],
-) -> unit {
+) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         wire::artifact_json_begin_array(writer);
@@ -55,7 +55,7 @@ fn artifact_json_enum_def(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: tast::EnumDef,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "name");
     wire::artifact_json_string(writer, value.name);
@@ -101,7 +101,7 @@ fn artifact_json_struct_def(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: tast::StructDef,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "name");
     wire::artifact_json_string(writer, value.name);
@@ -118,7 +118,7 @@ fn artifact_json_predicates(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     values: Vec[tast::TypePredicate],
-) -> unit {
+) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         tast_codec::artifact_json_type_predicate(writer, context, value)
@@ -130,7 +130,7 @@ fn artifact_json_trait_refs(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     values: Vec[tast::TraitRef],
-) -> unit {
+) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         tast_codec::artifact_json_trait_ref(writer, context, value)
@@ -142,7 +142,7 @@ fn artifact_json_fn_scheme(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: artifact::ArtifactFnScheme,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "comptime");
     wire::artifact_json_bool(
@@ -167,7 +167,7 @@ fn artifact_json_methods(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     values: Vec[artifact::ArtifactFnScheme],
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     for value in values {
         wire::artifact_json_name(writer, value.name);
@@ -180,7 +180,7 @@ fn artifact_json_trait_def(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: artifact::ArtifactTraitDef,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "params");
     tast_codec::artifact_json_string_array(writer, value.params);
@@ -207,7 +207,7 @@ fn artifact_json_impl_def(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: artifact::ArtifactImplDef,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "params");
     tast_codec::artifact_json_string_array(writer, value.params);
@@ -231,7 +231,7 @@ fn artifact_json_trait_impl_key(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: artifact::ArtifactTraitImpl,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "trait_ref");
     tast_codec::artifact_json_trait_ref(writer, context, value.trait_ref);
@@ -244,7 +244,7 @@ fn artifact_json_inherent_impl_key(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: artifact::ArtifactInherentImplKey,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     match value {
         Exact(value) => {
@@ -263,7 +263,7 @@ pub fn write_exports(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: artifact::ArtifactPackageExports,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "reexports");
     artifact_json_string_map(writer, value.reexports);
@@ -347,7 +347,7 @@ pub fn write_exports(
     wire::artifact_json_end_object(writer)
 }
 
-pub fn artifact_json_string_map(writer: wire::ArtifactJsonWriter, values: Vec[(string, string)]) -> unit {
+pub fn artifact_json_string_map(writer: wire::ArtifactJsonWriter, values: Vec[(string, string)]) -> () {
     collections::sort_by_ordering(
         values,
         |left: (string, string), right: (string, string)| cmp::compare(left.0, right.0),
@@ -363,7 +363,7 @@ pub fn artifact_json_string_map(writer: wire::ArtifactJsonWriter, values: Vec[(s
 fn artifact_json_package_interface(
     writer: wire::ArtifactJsonWriter,
     value: artifact::ArtifactPackageInterface,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "package");
     wire::artifact_json_string(writer, value.package_name);
@@ -390,7 +390,7 @@ fn artifact_json_interface_hash_view(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
     value: artifact::ArtifactInterfaceUnit,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     if wire::artifact_json_binary_mode(writer) < 2 {
         wire::artifact_json_name(writer, "format_version");
@@ -458,7 +458,7 @@ pub fn new_unit_with_comptime(
 pub fn artifact_json_interface_unit(
     writer: wire::ArtifactJsonWriter,
     value: artifact::ArtifactInterfaceUnit,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "format_version");
     wire::artifact_json_number(writer, "23");

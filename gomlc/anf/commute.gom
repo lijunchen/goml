@@ -87,7 +87,7 @@ fn known_dispatch(value: Imm, known: Vec[CommuteBinding]) -> CommuteKnown {
     }
 }
 
-fn invalidate_commute_dependents(known: Vec[CommuteBinding], name: string) -> unit {
+fn invalidate_commute_dependents(known: Vec[CommuteBinding], name: string) -> () {
     let invalidated: Vec[string] = Vec::new();
     for binding in known {
         match binding.value {
@@ -102,18 +102,18 @@ fn invalidate_commute_dependents(known: Vec[CommuteBinding], name: string) -> un
     }
 }
 
-fn invalidate_commute_name(known: Vec[CommuteBinding], name: string) -> unit {
+fn invalidate_commute_name(known: Vec[CommuteBinding], name: string) -> () {
     invalidate_commute_dependents(known, name);
     known.push(CommuteBinding { name, value: CommuteKnown::Unknown })
 }
 
-fn stabilize_commute_bindings(known: Vec[CommuteBinding], assigned: Vec[string]) -> unit {
+fn stabilize_commute_bindings(known: Vec[CommuteBinding], assigned: Vec[string]) -> () {
     for name in assigned {
         invalidate_commute_name(known, name)
     }
 }
 
-fn record_commute_binding(known: Vec[CommuteBinding], value: LetBind) -> unit {
+fn record_commute_binding(known: Vec[CommuteBinding], value: LetBind) -> () {
     match value.value {
         Constr { constructor, args, ty } => match constructor.tag {
             Some(index) => known.push(
@@ -139,7 +139,7 @@ fn record_commute_binding(known: Vec[CommuteBinding], value: LetBind) -> unit {
     }
 }
 
-fn collect_commute_assigned_term(result: Vec[string], value: Term) -> unit {
+fn collect_commute_assigned_term(result: Vec[string], value: Term) -> () {
     match value {
         If { then_, else_, .. } => {
             collect_commute_assigned_block(result, then_);
@@ -172,7 +172,7 @@ fn collect_commute_assigned_term(result: Vec[string], value: Term) -> unit {
     }
 }
 
-fn collect_commute_assigned_block(result: Vec[string], value: Block) -> unit {
+fn collect_commute_assigned_block(result: Vec[string], value: Block) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => match value.value {
@@ -330,7 +330,7 @@ fn collect_commute_value_fields(
     value: Value,
     scrutinee: string,
     counter: Ref[isize],
-) -> unit {
+) -> () {
     match value {
         ConstrGet { expr: Var { name, ty: _ }, constructor, field_index, ty } => {
             if name == scrutinee
@@ -354,7 +354,7 @@ fn collect_commute_term_fields(
     value: Term,
     scrutinee: string,
     counter: Ref[isize],
-) -> unit {
+) -> () {
     match value {
         If { then_, else_, .. } => {
             collect_commute_block_fields(result, then_, scrutinee, counter);
@@ -394,7 +394,7 @@ fn collect_commute_block_fields(
     value: Block,
     scrutinee: string,
     counter: Ref[isize],
-) -> unit {
+) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => collect_commute_value_fields(result, value.value, scrutinee, counter),

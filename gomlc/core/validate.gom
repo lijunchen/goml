@@ -1,6 +1,6 @@
 package core;
 
-fn validate_compatible_types(actual: Type, expected: Type, context: string) -> Result[unit, string] {
+fn validate_compatible_types(actual: Type, expected: Type, context: string) -> Result[(), string] {
     let compatible = match (actual, expected) {
         (Error, _) | (_, Error) => true,
         _ => types_equal(actual, expected),
@@ -15,21 +15,21 @@ fn validate_compatible_types(actual: Type, expected: Type, context: string) -> R
     }
 }
 
-fn validate_exprs(values: Vec[Expr], context: string) -> Result[unit, string] {
+fn validate_exprs(values: Vec[Expr], context: string) -> Result[(), string] {
     for value in values {
         validate_expr(value, context)?
     }
     Result::Ok(())
 }
 
-fn validate_optional_expr(value: Option[Expr], context: string) -> Result[unit, string] {
+fn validate_optional_expr(value: Option[Expr], context: string) -> Result[(), string] {
     match value {
         Some(value) => validate_expr(value, context),
         None => Result::Ok(()),
     }
 }
 
-fn validate_block(value: Block, context: string) -> Result[unit, string] {
+fn validate_block(value: Block, context: string) -> Result[(), string] {
     for statement in value.stmts {
         validate_expr(statement.value, context + " let " + statement.name)?;
         validate_compatible_types(
@@ -41,7 +41,7 @@ fn validate_block(value: Block, context: string) -> Result[unit, string] {
     validate_optional_expr(value.tail, context + " tail")
 }
 
-fn validate_expr(value: Expr, context: string) -> Result[unit, string] {
+fn validate_expr(value: Expr, context: string) -> Result[(), string] {
     match value {
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             target: _,
@@ -115,7 +115,7 @@ fn validate_expr(value: Expr, context: string) -> Result[unit, string] {
     }
 }
 
-pub fn validate(value: File) -> Result[unit, string] {
+pub fn validate(value: File) -> Result[(), string] {
     for function in value.functions {
         validate_block(function.body, "function " + function.name)?
     }

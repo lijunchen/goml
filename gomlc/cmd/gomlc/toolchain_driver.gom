@@ -393,7 +393,7 @@ fn write_toolchain_package(
     command: PackageCommandArgs,
     compilation: PackageCompilation,
     counter_output: Option[(string, string)],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     output_snapshot(
         command.output,
         || {
@@ -427,7 +427,7 @@ fn write_toolchain_package(
     )
 }
 
-fn run_toolchain_build(args: Vec[string]) -> unit {
+fn run_toolchain_build(args: Vec[string]) -> () {
     let request = match parse_toolchain_build_args(args) {
         Ok(value) => value,
         Err(error) => {
@@ -567,7 +567,7 @@ fn read_toolchain_package(base: string) -> Result[ToolchainPackage, string] {
     )
 }
 
-fn run_pack_toolchain_world(args: Vec[string]) -> unit {
+fn run_pack_toolchain_world(args: Vec[string]) -> () {
     let request = match parse_toolchain_pack_args(args) {
         Ok(value) => value,
         Err(error) => {

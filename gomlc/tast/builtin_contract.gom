@@ -160,7 +160,7 @@ fn optional_lang_property(value: BuiltinLangItem, property: string) -> Result[
     Result::Ok(Option::None)
 }
 
-fn validate_lang_properties(value: BuiltinLangItem, allowed: Vec[string]) -> Result[unit, string] {
+fn validate_lang_properties(value: BuiltinLangItem, allowed: Vec[string]) -> Result[(), string] {
     for property in value.properties {
         if !allowed.contains(property.0) {
             return Result::Err(

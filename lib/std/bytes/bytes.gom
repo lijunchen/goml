@@ -67,18 +67,18 @@ impl Builder {
         self.values.is_empty()
     }
 
-    pub fn push(self: Builder, value: byte) -> unit {
+    pub fn push(self: Builder, value: byte) -> () {
         self.values.push(value)
     }
 
-    pub fn extend(self: Builder, value: Slice[byte]) -> unit {
+    pub fn extend(self: Builder, value: Slice[byte]) -> () {
         self.values.reserve(value.len());
         for byte in value {
             self.values.push(byte)
         }
     }
 
-    pub fn clear(self: Builder) -> unit {
+    pub fn clear(self: Builder) -> () {
         self.values.clear()
     }
 
@@ -132,7 +132,7 @@ impl Bytes {
         self.values.get_checked(index)
     }
 
-    pub fn set(self: Bytes, index: isize, value: byte) -> unit {
+    pub fn set(self: Bytes, index: isize, value: byte) -> () {
         self.values[index] = value;
     }
 
@@ -140,7 +140,7 @@ impl Bytes {
         self.values.as_mut_slice().set_checked(index, value)
     }
 
-    pub fn push(self: Bytes, value: byte) -> unit {
+    pub fn push(self: Bytes, value: byte) -> () {
         self.values.push(value)
     }
 
@@ -148,15 +148,15 @@ impl Bytes {
         self.values.pop()
     }
 
-    pub fn reserve(self: Bytes, additional: isize) -> unit {
+    pub fn reserve(self: Bytes, additional: isize) -> () {
         self.values.reserve(additional)
     }
 
-    pub fn truncate(self: Bytes, len: isize) -> unit {
+    pub fn truncate(self: Bytes, len: isize) -> () {
         self.values.truncate(len)
     }
 
-    pub fn clear(self: Bytes) -> unit {
+    pub fn clear(self: Bytes) -> () {
         self.values.clear()
     }
 
@@ -184,7 +184,7 @@ impl Bytes {
         self.values.as_mut_slice()
     }
 
-    pub fn extend_from_slice(self: Bytes, source: Slice[byte]) -> unit {
+    pub fn extend_from_slice(self: Bytes, source: Slice[byte]) -> () {
         self.values.reserve(source.len());
         for value in source {
             self.values.push(value)

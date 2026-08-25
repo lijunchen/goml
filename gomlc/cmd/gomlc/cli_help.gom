@@ -447,7 +447,7 @@ fn is_debug_stage(command: string) -> bool {
     }
 }
 
-fn print_cli_help(message: string) -> unit {
+fn print_cli_help(message: string) -> () {
     io::println(message)
 }
 
@@ -577,16 +577,16 @@ fn unknown_subcommand_error(command: string) -> string {
         + "\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'."
 }
 
-fn fail_cli(message: string) -> unit {
+fn fail_cli(message: string) -> () {
     io::eprintln(message);
     process::exit(2)
 }
 
-fn fail_unknown_subcommand(command: string) -> unit {
+fn fail_unknown_subcommand(command: string) -> () {
     fail_cli(unknown_subcommand_error(command))
 }
 
-fn handle_cli_parse_error(command: string, error: string) -> unit {
+fn handle_cli_parse_error(command: string, error: string) -> () {
     if is_cli_help_signal(error) {
         match command_help(command) {
             Some(help) => print_cli_help(help),
@@ -598,7 +598,7 @@ fn handle_cli_parse_error(command: string, error: string) -> unit {
     }
 }
 
-fn run_help_command(args: Vec[string]) -> unit {
+fn run_help_command(args: Vec[string]) -> () {
     if args.len() == 2 {
         print_cli_help(top_level_help())
     } else if args.len() == 3 {

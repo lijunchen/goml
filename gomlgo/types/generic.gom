@@ -652,7 +652,7 @@ fn object_name(world: World, value: ObjectId) -> string {
     }
 }
 
-pub fn ensure_named_instance_methods(world: World, instance: TypeId) -> unit {
+pub fn ensure_named_instance_methods(world: World, instance: TypeId) -> () {
     let instance_data = match type_data(world, instance) {
         TypeData {
             id: _,
@@ -736,7 +736,7 @@ fn incomplete_type_parameters(world: World, values: Vec[TypeParameter]) -> bool 
     false
 }
 
-pub fn refresh_named_instances(world: World, origin: TypeId) -> unit {
+pub fn refresh_named_instances(world: World, origin: TypeId) -> () {
     if origin.value < 0 || origin.value >= world.types.len() {
         return
     } else {};

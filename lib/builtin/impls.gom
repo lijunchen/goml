@@ -378,8 +378,8 @@ fn ascii_eq_ignore_case(left: byte, right: byte) -> bool {
     ascii_to_lowercase(left) == ascii_to_lowercase(right)
 }
 
-impl ToString for unit {
-    fn to_string(self: unit) -> string {
+impl ToString for () {
+    fn to_string(self: ()) -> string {
         unit_to_string(self)
     }
 }
@@ -468,8 +468,8 @@ impl ToString for f64 {
     }
 }
 
-impl Debug for unit {
-    fn debug(self: unit) -> string {
+impl Debug for () {
+    fn debug(self: ()) -> string {
         ToString::to_string(self)
     }
 }
@@ -558,13 +558,13 @@ impl Debug for f64 {
     }
 }
 
-impl PartialEq for unit {
-    fn eq(self: unit, other: unit) -> bool {
+impl PartialEq for () {
+    fn eq(self: (), other: ()) -> bool {
         true
     }
 }
 
-impl Eq for unit {}
+impl Eq for () {}
 
 impl PartialEq for bool {
     fn eq(self: bool, other: bool) -> bool {
@@ -674,8 +674,8 @@ impl PartialEq for f64 {
     }
 }
 
-impl Hash for unit {
-    fn hash(self: unit) -> u64 {
+impl Hash for () {
+    fn hash(self: ()) -> u64 {
         0
     }
 }
@@ -770,8 +770,8 @@ impl[T] Hash for Ref[T] {
     }
 }
 
-impl Default for unit {
-    fn default() -> unit {}
+impl Default for () {
+    fn default() -> () {}
 }
 
 impl Default for bool {
@@ -1036,7 +1036,7 @@ impl[T] Vec[T] {
         vec_with_capacity(capacity)
     }
 
-    fn push(self: Self, elem: T) -> unit {
+    fn push(self: Self, elem: T) -> () {
         vec_push(self, elem)
     }
 
@@ -1077,7 +1077,7 @@ impl[T] Vec[T] {
         }
     }
 
-    fn set(self: Self, index: isize, elem: T) -> unit {
+    fn set(self: Self, index: isize, elem: T) -> () {
         vec_set(self, index, elem)
     }
 
@@ -1093,15 +1093,15 @@ impl[T] Vec[T] {
         vec_len(self) == 0
     }
 
-    fn reserve(self: Self, additional: isize) -> unit {
+    fn reserve(self: Self, additional: isize) -> () {
         vec_reserve(self, additional)
     }
 
-    fn truncate(self: Self, len: isize) -> unit {
+    fn truncate(self: Self, len: isize) -> () {
         vec_truncate(self, len)
     }
 
-    fn clear(self: Self) -> unit {
+    fn clear(self: Self) -> () {
         self.truncate(0)
     }
 
@@ -1125,7 +1125,7 @@ impl[T] Vec[T] {
         }
     }
 
-    fn swap(self: Self, left: isize, right: isize) -> unit {
+    fn swap(self: Self, left: isize, right: isize) -> () {
         let value = self[left];
         self[left] = self[right];
         self[right] = value;
@@ -1141,7 +1141,7 @@ impl[T] Vec[T] {
         value
     }
 
-    fn insert(self: Self, index: isize, value: T) -> unit {
+    fn insert(self: Self, index: isize, value: T) -> () {
         let len = self.len();
         if index == len {
             self.push(value)
@@ -1169,7 +1169,7 @@ impl[T] Vec[T] {
         value
     }
 
-    fn reverse(self: Self) -> unit {
+    fn reverse(self: Self) -> () {
         let mut left = 0;
         let mut right = self.len() - 1;
         while left < right {
@@ -1179,7 +1179,7 @@ impl[T] Vec[T] {
         }
     }
 
-    fn extend(self: Self, other: Vec[T]) -> unit {
+    fn extend(self: Self, other: Vec[T]) -> () {
         let len = other.len();
         self.reserve(len);
         let mut index = 0;
@@ -1247,7 +1247,7 @@ impl[T] Vec[T] {
         Option::None
     }
 
-    fn stable_sort_by(self: Self, compare: (T, T) -> isize) -> unit {
+    fn stable_sort_by(self: Self, compare: (T, T) -> isize) -> () {
         let length = self.len();
         if length < 2 {
             return
@@ -1298,15 +1298,15 @@ impl[T] Vec[T] {
         }
     }
 
-    fn sort_by(self: Self, compare: (T, T) -> isize) -> unit {
+    fn sort_by(self: Self, compare: (T, T) -> isize) -> () {
         self.stable_sort_by(compare)
     }
 
-    fn sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> unit {
+    fn sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> () {
         self.sort_by(|left: T, right: T| compare(left, right).to_isize())
     }
 
-    fn stable_sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> unit {
+    fn stable_sort_by_ordering(self: Self, compare: (T, T) -> Ordering) -> () {
         self.stable_sort_by(|left: T, right: T| compare(left, right).to_isize())
     }
 
@@ -1370,7 +1370,7 @@ impl[T] Vec[T] {
         self.max_by(|left: T, right: T| compare(left, right).to_isize())
     }
 
-    fn dedup_by(self: Self, equal: (T, T) -> bool) -> unit {
+    fn dedup_by(self: Self, equal: (T, T) -> bool) -> () {
         if self.len() < 2 {
             return
         } else {};
@@ -1423,7 +1423,7 @@ impl[T: PartialEq] Vec[T] {
         false
     }
 
-    fn dedup(self: Self) -> unit {
+    fn dedup(self: Self) -> () {
         self.dedup_by(|left: T, right: T| PartialEq::eq(left, right))
     }
 }
@@ -1568,7 +1568,7 @@ impl[T] MutSlice[T] {
         }
     }
 
-    fn set(self: Self, index: isize, value: T) -> unit {
+    fn set(self: Self, index: isize, value: T) -> () {
         mut_slice_set(self, index, value)
     }
 
@@ -1613,7 +1613,7 @@ impl[T] MutSlice[T] {
         }
     }
 
-    fn fill(self: Self, value: T) -> unit {
+    fn fill(self: Self, value: T) -> () {
         let mut index = 0;
         while index < self.len() {
             self[index] = value;
@@ -1660,7 +1660,7 @@ impl[K: Hash + Eq, V] HashMap[K, V] {
         hashmap_get(self, key)
     }
 
-    fn set(self: Self, key: K, value: V) -> unit {
+    fn set(self: Self, key: K, value: V) -> () {
         hashmap_set(self, key, value)
     }
 
@@ -1684,7 +1684,7 @@ impl[K: Hash + Eq, V] HashMap[K, V] {
         HashMapEntry { values: self, key }
     }
 
-    fn remove(self: Self, key: K) -> unit {
+    fn remove(self: Self, key: K) -> () {
         hashmap_remove(self, key)
     }
 
@@ -1753,7 +1753,7 @@ impl[T] Ref[T] {
         ref_get(self)
     }
 
-    fn set(self: Self, value: T) -> unit {
+    fn set(self: Self, value: T) -> () {
         ref_set(self, value)
     }
 }
@@ -1764,7 +1764,7 @@ impl[T] Channel[T] {
         channel_new(capacity)
     }
 
-    fn send(self: Self, value: T) -> unit {
+    fn send(self: Self, value: T) -> () {
         channel_send(self, value)
     }
 
@@ -1777,7 +1777,7 @@ impl[T] Channel[T] {
         }
     }
 
-    fn close(self: Self) -> unit {
+    fn close(self: Self) -> () {
         channel_close(self)
     }
 
@@ -1796,11 +1796,11 @@ impl[T] Channel[T] {
 
 #[lang("sender")]
 impl[T] Sender[T] {
-    fn send(self: Self, value: T) -> unit {
+    fn send(self: Self, value: T) -> () {
         sender_send(self, value)
     }
 
-    fn close(self: Self) -> unit {
+    fn close(self: Self) -> () {
         sender_close(self)
     }
 }

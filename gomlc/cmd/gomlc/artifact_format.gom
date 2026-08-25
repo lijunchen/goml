@@ -54,7 +54,7 @@ fn acquire_output_lock(anchor: string) -> Result[OutputLock, string] {
     }
 }
 
-fn release_output_lock(lock: OutputLock) -> Result[unit, string] {
+fn release_output_lock(lock: OutputLock) -> Result[(), string] {
     fs::remove_dir_all(lock.path)
 }
 
@@ -150,14 +150,14 @@ fn output_snapshot[T](anchor: string, action: () -> Result[T, string]) -> Result
     }
 }
 
-fn atomic_write_text(path_value: string, value: string) -> Result[unit, string] {
+fn atomic_write_text(path_value: string, value: string) -> Result[(), string] {
     match fs::atomic_write(path_value, value) {
         Ok(()) => Result::Ok(()),
         Err(error) => Result::Err(error.to_string()),
     }
 }
 
-fn atomic_write_data(path_value: string, value: bytes::Bytes) -> Result[unit, string] {
+fn atomic_write_data(path_value: string, value: bytes::Bytes) -> Result[(), string] {
     match fs::atomic_write_bytes(path_value, value) {
         Ok(()) => Result::Ok(()),
         Err(error) => Result::Err(error.to_string()),
@@ -176,7 +176,7 @@ fn decode_artifact_core_bytes(data: bytes::Bytes) -> Result[artifact::ArtifactCo
 }
 
 fn write_artifact_interface(path_value: string, value: artifact::ArtifactInterfaceUnit) -> Result[
-    unit,
+    (),
     string,
 ] {
     match interface_codec::encode_binary(value) {
@@ -185,10 +185,7 @@ fn write_artifact_interface(path_value: string, value: artifact::ArtifactInterfa
     }
 }
 
-fn write_artifact_core(path_value: string, value: artifact::ArtifactCoreUnit) -> Result[
-    unit,
-    string,
-] {
+fn write_artifact_core(path_value: string, value: artifact::ArtifactCoreUnit) -> Result[(), string] {
     match core_codec::encode_binary(value) {
         Ok(data) => atomic_write_data(path_value, data),
         Err(error) => Result::Err(error),

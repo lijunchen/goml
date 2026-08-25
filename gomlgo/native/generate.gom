@@ -115,7 +115,7 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
     imports
 }
 
-fn write_imports(builder: text::StringBuilder, imports: Vec[RegistryImport]) -> unit {
+fn write_imports(builder: text::StringBuilder, imports: Vec[RegistryImport]) -> () {
     builder.write_string("import (\n");
     for value in imports {
         builder.write_string("\t");
@@ -127,7 +127,7 @@ fn write_imports(builder: text::StringBuilder, imports: Vec[RegistryImport]) -> 
     builder.write_string(")\n\n")
 }
 
-fn write_binding(builder: text::StringBuilder, call: NativeCallSpec, function_paths: Vec[string]) -> unit {
+fn write_binding(builder: text::StringBuilder, call: NativeCallSpec, function_paths: Vec[string]) -> () {
     builder.write_string("\t\t_gomlgo_nativebridge.");
     match call.binding {
         NativeBindingKind::Function => {
@@ -177,7 +177,7 @@ fn write_type_registrations(
     builder: text::StringBuilder,
     value: Manifest,
     function_paths: Vec[string],
-) -> unit {
+) -> () {
     for type_value in value.types {
         builder.write_string("\tif err := _gomlgo_nativebridge.RegisterNativeType(\"");
         builder.write_string(type_value.key);
@@ -193,7 +193,7 @@ fn write_global_registrations(
     builder: text::StringBuilder,
     value: Manifest,
     function_paths: Vec[string],
-) -> unit {
+) -> () {
     for global in value.globals {
         builder.write_string("\tif err := _gomlgo_nativebridge.RegisterNativeGlobal(");
         builder.write_string(global.object_id.to_string());
@@ -217,7 +217,7 @@ fn write_proxy_method(
     builder: text::StringBuilder,
     proxy_index: isize,
     method: NativeProxyMethodSpec,
-) -> unit {
+) -> () {
     builder.write_string("func (_gomlgo_receiver *_gomlgo_nativeproxy");
     builder.write_string(proxy_index.to_string());
     builder.write_string(") ");
@@ -288,7 +288,7 @@ fn write_proxy_method(
     builder.write_string("}\n\n")
 }
 
-fn write_proxies(builder: text::StringBuilder, value: Manifest) -> unit {
+fn write_proxies(builder: text::StringBuilder, value: Manifest) -> () {
     for index in 0..value.proxies.len() {
         builder.write_string("type _gomlgo_nativeproxy");
         builder.write_string(index.to_string());
@@ -299,7 +299,7 @@ fn write_proxies(builder: text::StringBuilder, value: Manifest) -> unit {
     }
 }
 
-fn write_aggregates(builder: text::StringBuilder, value: Manifest) -> unit {
+fn write_aggregates(builder: text::StringBuilder, value: Manifest) -> () {
     for index in 0..value.aggregates.len() {
         let aggregate = value.aggregates[index];
         builder.write_string("type _gomlgo_nativeaggregate");
@@ -321,7 +321,7 @@ fn write_aggregates(builder: text::StringBuilder, value: Manifest) -> unit {
     }
 }
 
-fn write_aggregate_registrations(builder: text::StringBuilder, value: Manifest) -> unit {
+fn write_aggregate_registrations(builder: text::StringBuilder, value: Manifest) -> () {
     for index in 0..value.aggregates.len() {
         let aggregate = value.aggregates[index];
         builder.write_string("\tif err := _gomlgo_nativebridge.RegisterAggregateType(\"");
@@ -336,7 +336,7 @@ fn write_proxy_registrations(
     builder: text::StringBuilder,
     value: Manifest,
     function_paths: Vec[string],
-) -> unit {
+) -> () {
     for index in 0..value.proxies.len() {
         let proxy = value.proxies[index];
         builder.write_string("\tif err := _gomlgo_nativebridge.RegisterInterfaceProxy((*");
@@ -353,7 +353,7 @@ fn write_proxy_registrations(
     }
 }
 
-fn validate_bridge_import(value: Manifest, bridge_import_path: string) -> Result[unit, string] {
+fn validate_bridge_import(value: Manifest, bridge_import_path: string) -> Result[(), string] {
     for import_path in value.initialization_packages {
         if import_path == bridge_import_path {
             return Result::Err("native manifest cannot initialize the generated bridge package")

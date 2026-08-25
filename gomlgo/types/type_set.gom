@@ -26,7 +26,7 @@ fn type_in_list(values: Vec[TypeId], value: TypeId) -> bool {
     false
 }
 
-pub fn mark_invalid_type_set(world: World, value: TypeId) -> unit {
+pub fn mark_invalid_type_set(world: World, value: TypeId) -> () {
     if !type_in_list(world.invalid_type_sets, value) {
         world.invalid_type_sets.push(value)
     } else {}
@@ -74,7 +74,7 @@ fn term_equivalent(world: World, left: UnionTerm, right: UnionTerm) -> bool {
     left.tilde == right.tilde && identical(world, left.type_id, right.type_id)
 }
 
-fn push_unique_term(world: World, result: Vec[UnionTerm], value: UnionTerm) -> unit {
+fn push_unique_term(world: World, result: Vec[UnionTerm], value: UnionTerm) -> () {
     for existing in result {
         if term_equivalent(world, existing, value) {
             return

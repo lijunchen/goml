@@ -135,7 +135,7 @@ fn type_list_lists_equal(left: Vec[Vec[ctir::CtType]], right: Vec[Vec[ctir::CtTy
     }
 }
 
-fn verify_type(value: ctir::CtType) -> Result[unit, string] {
+fn verify_type(value: ctir::CtType) -> Result[(), string] {
     match value {
         ctir::CtType::Integer { signed: _, width } => if width == 8 || width == 16 || width == 32
             || width == 64 {
@@ -287,7 +287,7 @@ fn origin_valid(ctx: VerifyContext, origin: isize) -> bool {
     origin >= 0 && origin < ctx.module.origins.len()
 }
 
-fn verify_origin(ctx: VerifyContext, origin: isize) -> Result[unit, string] {
+fn verify_origin(ctx: VerifyContext, origin: isize) -> Result[(), string] {
     if origin_valid(ctx, origin) {
         Result::Ok(())
     } else {
@@ -339,7 +339,7 @@ fn loop_context(ctx: VerifyContext, target: isize, result_type: ctir::CtType, ac
 }
 
 fn verify_value_limits(value: ctir::CtValue, nodes: Ref[isize], bytes: Ref[isize]) -> Result[
-    unit,
+    (),
     string,
 ] {
     let mut own_bytes = 1;
@@ -379,7 +379,7 @@ fn verify_value_limits(value: ctir::CtValue, nodes: Ref[isize], bytes: Ref[isize
 }
 
 fn verify_typed_value(ctx: VerifyContext, value: ctir::CtValue, ty: ctir::CtType) -> Result[
-    unit,
+    (),
     string,
 ] {
     verify_value_limits(value, ctx.value_nodes, ctx.value_bytes)?;
@@ -391,7 +391,7 @@ fn verify_typed_value(ctx: VerifyContext, value: ctir::CtValue, ty: ctir::CtType
 }
 
 fn verify_pattern(ctx: VerifyContext, value: ctir::CtPattern, ty: ctir::CtType) -> Result[
-    unit,
+    (),
     string,
 ] {
     match value {
@@ -486,7 +486,7 @@ fn verify_pattern(ctx: VerifyContext, value: ctir::CtPattern, ty: ctir::CtType) 
 }
 
 fn verify_pattern_list(ctx: VerifyContext, patterns: Vec[ctir::CtPattern], types: Vec[ctir::CtType]) -> Result[
-    unit,
+    (),
     string,
 ] {
     if patterns.len() != types.len() {
@@ -600,7 +600,7 @@ fn derive_intrinsic_signature(module: ctir::CtModule, name: string) -> Option[
 }
 
 fn verify_expr_list(ctx: VerifyContext, values: Vec[ctir::CtExpr], types: Vec[ctir::CtType]) -> Result[
-    unit,
+    (),
     string,
 ] {
     if values.len() != types.len() {
@@ -616,7 +616,7 @@ fn verify_expr_list(ctx: VerifyContext, values: Vec[ctir::CtExpr], types: Vec[ct
     }
 }
 
-fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] {
+fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
     verify_origin(ctx, value.origin)?;
     verify_type(value.ty)?;
     match value.kind {
@@ -860,7 +860,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
                 None => if types_equal(ctx.return_type, ctir::CtType::Unit) {
                     Result::Ok(())
                 } else {
-                    Result::Err("CTIR empty return from non-unit function")
+                    Result::Err("CTIR empty return from function with non-() return type")
                 },
             }
         },
@@ -1001,7 +1001,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
     }
 }
 
-fn verify_block(ctx: VerifyContext, value: ctir::CtBlock) -> Result[unit, string] {
+fn verify_block(ctx: VerifyContext, value: ctir::CtBlock) -> Result[(), string] {
     verify_origin(ctx, value.origin)?;
     for statement in value.statements {
         match statement {
@@ -1033,7 +1033,7 @@ fn verify_function(
     value: ctir::CtFunction,
     value_nodes: Ref[isize],
     value_bytes: Ref[isize],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if value.parameter_slots.len() != value.parameter_types.len() {
         return Result::Err("CTIR function parameter signature mismatch")
     } else if value.local_count < value.parameter_slots.len() {
@@ -1074,7 +1074,7 @@ fn verify_function(
 }
 
 fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) -> Result[
-    unit,
+    (),
     string,
 ] {
     let names: Vec[string] = Vec::from_array([module.package_name]);
@@ -1091,7 +1091,7 @@ fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::Ct
 }
 
 pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) -> Result[
-    unit,
+    (),
     string,
 ] {
     if module.package_name == "" {

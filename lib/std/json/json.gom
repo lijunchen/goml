@@ -28,7 +28,7 @@ fn json_whitespace(value: byte) -> bool {
     value == b'\t' || value == b'\n' || value == b'\r' || value == b' '
 }
 
-fn skip_json_whitespace(value: JsonParser) -> unit {
+fn skip_json_whitespace(value: JsonParser) -> () {
     while value.index.get() < value.input.byte_len()
         && json_whitespace(value.input.byte_get(value.index.get())) {
         value.index.set(value.index.get() + 1)
@@ -68,7 +68,7 @@ fn parse_hex_quad(value: JsonParser) -> Result[u32, string] {
 }
 
 fn write_codepoint(value: JsonParser, builder: text::StringBuilder, codepoint: u32) -> Result[
-    unit,
+    (),
     string,
 ] {
     match char_from_u32(codepoint) {
@@ -80,7 +80,7 @@ fn write_codepoint(value: JsonParser, builder: text::StringBuilder, codepoint: u
     }
 }
 
-fn parse_unicode_escape(value: JsonParser, builder: text::StringBuilder) -> Result[unit, string] {
+fn parse_unicode_escape(value: JsonParser, builder: text::StringBuilder) -> Result[(), string] {
     let first = parse_hex_quad(value)?;
     if first >= 55296 && first <= 56319 {
         if value.index.get() + 2 > value.input.byte_len()
@@ -335,7 +335,7 @@ fn json_hex_digit(value: byte) -> char {
     "0123456789abcdef".get(value.to_isize())
 }
 
-fn write_json_string(builder: text::StringBuilder, value: string) -> unit {
+fn write_json_string(builder: text::StringBuilder, value: string) -> () {
     builder.write_char('"');
     let mut start = 0;
     for index in 0..value.byte_len() {
@@ -375,7 +375,7 @@ fn write_json_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
-fn write_json_value(builder: text::StringBuilder, value: Value) -> unit {
+fn write_json_value(builder: text::StringBuilder, value: Value) -> () {
     match value {
         Object(fields) => {
             builder.write_char('{');

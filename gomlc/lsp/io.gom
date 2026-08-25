@@ -53,6 +53,6 @@ pub fn read_rpc_payload() -> Result[string, string] {
     }
 }
 
-pub fn write_rpc_message(value: json::Value) -> Result[unit, string] {
+pub fn write_rpc_message(value: json::Value) -> Result[(), string] {
     io::write_stdout(bytes::Bytes::from_string(framed_json(value)))
 }

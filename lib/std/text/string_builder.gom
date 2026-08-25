@@ -23,7 +23,7 @@ impl StringBuilder {
         self.values.is_empty()
     }
 
-    pub fn write_string(self: StringBuilder, value: string) -> unit {
+    pub fn write_string(self: StringBuilder, value: string) -> () {
         let length = value.byte_len();
         self.values.reserve(length);
         for index in 0..length {
@@ -31,11 +31,11 @@ impl StringBuilder {
         }
     }
 
-    pub fn write_char(self: StringBuilder, value: char) -> unit {
+    pub fn write_char(self: StringBuilder, value: char) -> () {
         self.write_string(value.to_string())
     }
 
-    pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[unit, string] {
+    pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[(), string] {
         match value.to_string() {
             Ok(text) => {
                 self.write_string(text);
@@ -45,12 +45,12 @@ impl StringBuilder {
         }
     }
 
-    pub fn write_line(self: StringBuilder, value: string) -> unit {
+    pub fn write_line(self: StringBuilder, value: string) -> () {
         self.write_string(value);
         self.write_string("\n")
     }
 
-    pub fn clear(self: StringBuilder) -> unit {
+    pub fn clear(self: StringBuilder) -> () {
         self.values.clear()
     }
 

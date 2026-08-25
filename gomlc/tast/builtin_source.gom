@@ -140,7 +140,7 @@ fn append_builtin_lang_item(
     variant_arities: Vec[isize],
     methods: Vec[string],
     associated_types: Vec[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match builtin_lang_item_from_attrs(
         attrs,
         kind,
@@ -467,7 +467,7 @@ fn builtin_source_function_scheme(name: string) -> Option[FunctionScheme] {
     Option::None
 }
 
-fn append_builtin_source_arity(values: Vec[(string, isize)], name: string, arity: isize) -> unit {
+fn append_builtin_source_arity(values: Vec[(string, isize)], name: string, arity: isize) -> () {
     for value in values {
         if value.0 == name {
             return
@@ -476,7 +476,7 @@ fn append_builtin_source_arity(values: Vec[(string, isize)], name: string, arity
     values.push((name, arity))
 }
 
-fn append_builtin_source_type_arity(values: Vec[(string, isize)], value: hir::TypeExpr) -> unit {
+fn append_builtin_source_type_arity(values: Vec[(string, isize)], value: hir::TypeExpr) -> () {
     match value {
         hir::TypeExpr::Con { name } => append_builtin_source_arity(values, name, 0),
         hir::TypeExpr::App { ty: hir::TypeExpr::Con { name }, args } => {
@@ -560,7 +560,7 @@ fn builtin_source_impl_infos() -> FrozenVec[ImplInfo] {
     builtin_source_impls.get_or_init(|| load_builtin_source_impls())
 }
 
-fn append_builtin_source_impls(ctx: Checker) -> unit {
+fn append_builtin_source_impls(ctx: Checker) -> () {
     if ctx.package_name == "builtin" {} else {
         let values = builtin_source_impl_infos();
         let mut index = 0;

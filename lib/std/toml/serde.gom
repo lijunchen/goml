@@ -67,7 +67,7 @@ fn float32_value(value: f32) -> Result[Value, string] {
 
 pub fn from_serde_value(value: serde::Value) -> Result[Value, string] {
     match value {
-        serde::Value::Unit => Result::Err("TOML has no null or unit value"),
+        serde::Value::Unit => Result::Err("TOML has no null or () value"),
         serde::Value::Bool(value) => Result::Ok(Value::Boolean(value)),
         serde::Value::Int(value) => Result::Ok(Value::Integer(value.to_i64())),
         serde::Value::Int8(value) => Result::Ok(Value::Integer(value.to_i64())),
@@ -146,7 +146,7 @@ pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {
 }
 
 impl Serialize for Value {
-    fn serialize[S: serde::Serializer](self: Value, serializer: S) -> Result[unit, string] {
+    fn serialize[S: serde::Serializer](self: Value, serializer: S) -> Result[(), string] {
         serde::serialize_value_into(into_serde_value(self), serializer)
     }
 }

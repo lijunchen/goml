@@ -4,7 +4,7 @@ use module::ast;
 
 struct DceNames {
     values: Vec[string],
-    present: HashMap[string, unit],
+    present: HashMap[string, ()],
 }
 
 fn new_dce_names() -> DceNames {
@@ -15,14 +15,14 @@ fn dce_names_contains(values: DceNames, name: string) -> bool {
     values.present.contains(name)
 }
 
-fn dce_names_add(values: DceNames, name: string) -> unit {
+fn dce_names_add(values: DceNames, name: string) -> () {
     if dce_names_contains(values, name) {} else {
         values.present[name] = ();
         values.values.push(name)
     }
 }
 
-fn dce_names_add_all(target: DceNames, values: DceNames) -> unit {
+fn dce_names_add_all(target: DceNames, values: DceNames) -> () {
     for name in values.values {
         if dce_names_contains(values, name) {
             dce_names_add(target, name)
@@ -30,7 +30,7 @@ fn dce_names_add_all(target: DceNames, values: DceNames) -> unit {
     }
 }
 
-fn dce_names_remove(values: DceNames, name: string) -> unit {
+fn dce_names_remove(values: DceNames, name: string) -> () {
     values.present.remove(name)
 }
 
@@ -169,7 +169,7 @@ fn dce_expr(value: Expr) -> Expr {
     }
 }
 
-fn dce_pattern_names(value: Expr, result: DceNames) -> unit {
+fn dce_pattern_names(value: Expr, result: DceNames) -> () {
     match value {
         Var { name, ty: _ } => dce_names_add(result, name),
         Constr { constructor: _, args, ty: _ } => for value in args {
@@ -188,25 +188,25 @@ fn dce_pattern_names(value: Expr, result: DceNames) -> unit {
     }
 }
 
-fn dce_collect_exprs(result: DceNames, values: Vec[Expr]) -> unit {
+fn dce_collect_exprs(result: DceNames, values: Vec[Expr]) -> () {
     for value in values {
         dce_collect_expr(result, value)
     }
 }
 
-fn dce_collect_optional_expr(result: DceNames, value: Option[Expr]) -> unit {
+fn dce_collect_optional_expr(result: DceNames, value: Option[Expr]) -> () {
     match value {
         Some(value) => dce_collect_expr(result, value),
         None => (),
     }
 }
 
-fn dce_collect_block(result: DceNames, value: Block) -> unit {
+fn dce_collect_block(result: DceNames, value: Block) -> () {
     let free = dce_free_block(value);
     dce_names_add_all(result, free)
 }
 
-fn dce_collect_expr(result: DceNames, value: Expr) -> unit {
+fn dce_collect_expr(result: DceNames, value: Expr) -> () {
     match value {
         Var { name, ty: _ } => dce_names_add(result, name),
         Callable { .. } | Prim { .. } => (),
@@ -442,7 +442,7 @@ struct DceFunctions {
     reachable: DceNames,
 }
 
-fn dce_function_names_add(values: HashMap[string, Vec[string]], key: string, name: string) -> unit {
+fn dce_function_names_add(values: HashMap[string, Vec[string]], key: string, name: string) -> () {
     values.entry(key).or_insert_with(|| Vec::new()).push(name)
 }
 
@@ -487,7 +487,7 @@ fn dce_functions_context(value: File) -> DceFunctions {
     }
 }
 
-fn dce_retain_function(ctx: DceFunctions, name: string) -> unit {
+fn dce_retain_function(ctx: DceFunctions, name: string) -> () {
     if ctx.functions.contains(name) {
         dce_names_add(ctx.reachable, name)
     } else {}
@@ -497,7 +497,7 @@ fn dce_retain_indexed_functions(
     ctx: DceFunctions,
     values: HashMap[string, Vec[string]],
     key: string,
-) -> unit {
+) -> () {
     match values[key] {
         Some(names) => for name in names {
             dce_retain_function(ctx, name)
@@ -506,15 +506,15 @@ fn dce_retain_indexed_functions(
     }
 }
 
-fn dce_retain_inherent_methods(ctx: DceFunctions, method_name: string) -> unit {
+fn dce_retain_inherent_methods(ctx: DceFunctions, method_name: string) -> () {
     dce_retain_indexed_functions(ctx, ctx.inherent_methods, method_name)
 }
 
-fn dce_retain_trait_functions(ctx: DceFunctions, trait_name: string) -> unit {
+fn dce_retain_trait_functions(ctx: DceFunctions, trait_name: string) -> () {
     dce_retain_indexed_functions(ctx, ctx.trait_functions, trait_name)
 }
 
-fn dce_retain_trait_methods(ctx: DceFunctions, trait_name: string, method_name: string) -> unit {
+fn dce_retain_trait_methods(ctx: DceFunctions, trait_name: string, method_name: string) -> () {
     dce_retain_indexed_functions(
         ctx,
         ctx.trait_methods,
@@ -527,7 +527,7 @@ fn dce_runtime_trait_name(value: string) -> bool {
         || value.ends_with("::Hash")
 }
 
-fn dce_retain_runtime_trait_functions(ctx: DceFunctions) -> unit {
+fn dce_retain_runtime_trait_functions(ctx: DceFunctions) -> () {
     for name in ctx.trait_names.values {
         if dce_runtime_trait_name(name) {
             dce_retain_trait_functions(ctx, name)
@@ -535,23 +535,23 @@ fn dce_retain_runtime_trait_functions(ctx: DceFunctions) -> unit {
     }
 }
 
-fn dce_collect_types(ctx: DceFunctions, values: Vec[Type]) -> unit {
+fn dce_collect_types(ctx: DceFunctions, values: Vec[Type]) -> () {
     for value in values {
         dce_collect_type(ctx, value)
     }
 }
 
-fn dce_collect_named_types(ctx: DceFunctions, values: Vec[(string, Type)]) -> unit {
+fn dce_collect_named_types(ctx: DceFunctions, values: Vec[(string, Type)]) -> () {
     for value in values {
         dce_collect_type(ctx, value.1)
     }
 }
 
-fn dce_collect_trait_ref_types(ctx: DceFunctions, value: TraitRef) -> unit {
+fn dce_collect_trait_ref_types(ctx: DceFunctions, value: TraitRef) -> () {
     dce_collect_types(ctx, value.args)
 }
 
-fn dce_collect_dyn_bounds(ctx: DceFunctions, values: Vec[DynTraitBound]) -> unit {
+fn dce_collect_dyn_bounds(ctx: DceFunctions, values: Vec[DynTraitBound]) -> () {
     for value in values {
         dce_retain_trait_functions(ctx, value.trait_name);
         dce_collect_types(ctx, value.args);
@@ -559,7 +559,7 @@ fn dce_collect_dyn_bounds(ctx: DceFunctions, values: Vec[DynTraitBound]) -> unit
     }
 }
 
-fn dce_collect_type(ctx: DceFunctions, value: Type) -> unit {
+fn dce_collect_type(ctx: DceFunctions, value: Type) -> () {
     match value {
         Tuple { items } => dce_collect_types(ctx, items),
         Dyn { trait_name, args, associated_types, additional_bounds } => {
@@ -605,7 +605,7 @@ fn dce_collect_type(ctx: DceFunctions, value: Type) -> unit {
     }
 }
 
-fn dce_collect_callable(ctx: DceFunctions, value: Callable) -> unit {
+fn dce_collect_callable(ctx: DceFunctions, value: Callable) -> () {
     match value {
         Function(name) => dce_retain_function(ctx, name),
         LangItem { item: _, function_name } => dce_retain_function(ctx, function_name),
@@ -625,20 +625,20 @@ fn dce_collect_callable(ctx: DceFunctions, value: Callable) -> unit {
     }
 }
 
-fn dce_collect_function_exprs(ctx: DceFunctions, values: Vec[Expr]) -> unit {
+fn dce_collect_function_exprs(ctx: DceFunctions, values: Vec[Expr]) -> () {
     for value in values {
         dce_collect_function_expr(ctx, value)
     }
 }
 
-fn dce_collect_optional_function_expr(ctx: DceFunctions, value: Option[Expr]) -> unit {
+fn dce_collect_optional_function_expr(ctx: DceFunctions, value: Option[Expr]) -> () {
     match value {
         Some(value) => dce_collect_function_expr(ctx, value),
         None => (),
     }
 }
 
-fn dce_collect_function_block(ctx: DceFunctions, value: Block) -> unit {
+fn dce_collect_function_block(ctx: DceFunctions, value: Block) -> () {
     for stmt in value.stmts {
         dce_collect_type(ctx, stmt.ty);
         dce_collect_function_expr(ctx, stmt.value)
@@ -646,7 +646,7 @@ fn dce_collect_function_block(ctx: DceFunctions, value: Block) -> unit {
     dce_collect_optional_function_expr(ctx, value.tail)
 }
 
-fn dce_collect_function_select_arms(ctx: DceFunctions, values: Vec[SelectArm]) -> unit {
+fn dce_collect_function_select_arms(ctx: DceFunctions, values: Vec[SelectArm]) -> () {
     for value in values {
         match value {
             Receive { channel, guard, binding: _, binding_ty, body } => {
@@ -665,7 +665,7 @@ fn dce_collect_function_select_arms(ctx: DceFunctions, values: Vec[SelectArm]) -
     }
 }
 
-fn dce_collect_function_expr(ctx: DceFunctions, value: Expr) -> unit {
+fn dce_collect_function_expr(ctx: DceFunctions, value: Expr) -> () {
     dce_collect_type(ctx, expr_type(value));
     match value {
         Var { name, ty: _ } => dce_retain_function(ctx, name),
@@ -744,7 +744,7 @@ fn dce_collect_function_expr(ctx: DceFunctions, value: Expr) -> unit {
     }
 }
 
-fn dce_collect_function_predicates(ctx: DceFunctions, values: Vec[TypePredicate]) -> unit {
+fn dce_collect_function_predicates(ctx: DceFunctions, values: Vec[TypePredicate]) -> () {
     for value in values {
         match value {
             Trait { for_ty, trait_ref } => {
@@ -760,7 +760,7 @@ fn dce_collect_function_predicates(ctx: DceFunctions, values: Vec[TypePredicate]
     }
 }
 
-fn dce_collect_function(ctx: DceFunctions, value: Function) -> unit {
+fn dce_collect_function(ctx: DceFunctions, value: Function) -> () {
     for param in value.params {
         dce_collect_type(ctx, param.1)
     }

@@ -652,7 +652,7 @@ fn collect_native_type(
     seen: HashMap[isize, bool],
     values: Vec[NativeType],
     type_id: go_types::TypeId,
-) -> unit {
+) -> () {
     if type_id.value < 0 || type_id.value >= program.world.types.len()
         || seen[type_id.value].is_some() {
         return

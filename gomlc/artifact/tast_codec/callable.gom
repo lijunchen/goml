@@ -80,7 +80,7 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
     }
 }
 
-pub fn artifact_json_callable_body(writer: wire::ArtifactJsonWriter, value: ArtifactCallable) -> unit {
+pub fn artifact_json_callable_body(writer: wire::ArtifactJsonWriter, value: ArtifactCallable) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "kind");
     wire::artifact_json_string(writer, value.kind);

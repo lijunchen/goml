@@ -227,7 +227,7 @@ fn report_field_redeclaration(
     fields: Vec[go_types::StructField],
     node: syntax::NodeId,
     name: string,
-) -> unit {
+) -> () {
     diagnostic(state, node, name + " redeclared", false);
     for field in fields {
         if field.variable.name == name {
@@ -294,7 +294,7 @@ fn collapse_parenthesized_embedded_fact(
     state: CheckState,
     node: syntax::NodeId,
     expression: syntax::NodeId,
-) -> unit {
+) -> () {
     match recorded_type_fact(state, expression) {
         Some(fact) => update_operand_fact(state, node, fact.type_id, Option::None),
         None => {},
@@ -315,7 +315,7 @@ fn collapse_parenthesized_embedded_fact(
     }
 }
 
-fn report_parenthesized_embedded_type(state: CheckState, node: syntax::NodeId) -> unit {
+fn report_parenthesized_embedded_type(state: CheckState, node: syntax::NodeId) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -359,7 +359,7 @@ fn report_parenthesized_embedded_type(state: CheckState, node: syntax::NodeId) -
     }
 }
 
-fn validate_embedded_field_type(state: CheckState, node: syntax::NodeId, type_id: go_types::TypeId) -> unit {
+fn validate_embedded_field_type(state: CheckState, node: syntax::NodeId, type_id: go_types::TypeId) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -549,7 +549,7 @@ fn add_parameter(
     node: syntax::NodeId,
     name: string,
     type_id: go_types::TypeId,
-) -> unit {
+) -> () {
     if name == "" {
         return
     } else {};
@@ -1024,7 +1024,7 @@ fn resolved_interface_constraint(state: CheckState, constraint: go_types::TypeId
     }
 }
 
-fn normalize_named_type_parameter_constraints(state: CheckState, named: go_types::TypeId) -> unit {
+fn normalize_named_type_parameter_constraints(state: CheckState, named: go_types::TypeId) -> () {
     let data = match go_types::get_type(state.world, named) {
         Some(go_types::TypeData {
             id: _,
@@ -1297,7 +1297,7 @@ fn report_interface_overlap(
     node: syntax::NodeId,
     other: syntax::NodeId,
     name: string,
-) -> unit {
+) -> () {
     if state.defer_constraint_checks && !state.active_type_objects.is_empty() {
         state.deferred_interface_overlap_diagnostics.push(
             DeferredInterfaceOverlapDiagnostic {
@@ -1314,7 +1314,7 @@ fn report_interface_overlap(
     }
 }
 
-fn sort_interface_methods(state: CheckState, methods: Vec[go_types::ObjectId]) -> unit {
+fn sort_interface_methods(state: CheckState, methods: Vec[go_types::ObjectId]) -> () {
     for index in 1..methods.len() {
         let mut current = index;
         while current > 0
@@ -1332,7 +1332,7 @@ fn set_interface_method_receivers(
     state: CheckState,
     interface_type: go_types::TypeId,
     receiver_type: go_types::TypeId,
-) -> unit {
+) -> () {
     match go_types::get_type(state.world, go_types::unalias(state.world, interface_type)) {
         Some(go_types::TypeData {
             id: _,

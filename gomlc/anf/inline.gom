@@ -58,7 +58,7 @@ fn renamed_inline_join(values: Vec[InlineJoin], name: string) -> string {
     }
 }
 
-fn add_inline_local(values: Vec[InlineName], name: string, ty: repr::Type, counter: Ref[isize]) -> unit {
+fn add_inline_local(values: Vec[InlineName], name: string, ty: repr::Type, counter: Ref[isize]) -> () {
     if name == "_" {} else {
         values.push(
             InlineName { name, value: Imm::Var { name: fresh_inline(counter, "inline"), ty } },
@@ -71,7 +71,7 @@ fn collect_inline_term_names(
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
     counter: Ref[isize],
-) -> unit {
+) -> () {
     match value {
         If { then_, else_, .. } => {
             collect_inline_block_names(then_, names, joins, counter);
@@ -110,7 +110,7 @@ fn collect_inline_join_names(
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
     counter: Ref[isize],
-) -> unit {
+) -> () {
     for param in value.params {
         add_inline_local(names, param.0, param.1, counter)
     }
@@ -122,7 +122,7 @@ fn collect_inline_block_names(
     names: Vec[InlineName],
     joins: Vec[InlineJoin],
     counter: Ref[isize],
-) -> unit {
+) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => add_inline_local(names, value.name, value.ty, counter),

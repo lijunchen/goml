@@ -40,7 +40,7 @@ pub fn find_module_root(start: string) -> Result[string, string] {
     }
 }
 
-pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
+pub fn clean(target_dir_override: Option[string]) -> Result[(), string] {
     let current = env::current_dir()?;
     let module_dir = find_module_root(current)?;
     let module_manifest = manifest::load(path::join(module_dir, manifest::FILENAME))?;
@@ -570,7 +570,7 @@ fn visit_package(
     states: HashMap[string, isize],
     output: Vec[string],
     name: string,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match states[name] {
         Some(1) => return Result::Err("package dependency cycle at " + name),
         Some(2) => return Result::Ok(()),
@@ -614,7 +614,7 @@ fn collect_package_directories(
     directory: string,
     artifact_root: string,
     result: Vec[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if directory != module_dir && fs::is_file(path::join(directory, manifest::FILENAME)) {
         return Result::Ok(())
     } else {};

@@ -131,7 +131,7 @@ fn duplicate_method_diagnostic(
     base: go_types::TypeId,
     name: string,
     existing: go_types::ObjectId,
-) -> unit {
+) -> () {
     let receiver_name = match go_types::get_type(state.world, base) {
         Some(go_types::TypeData {
             id: _,
@@ -168,7 +168,7 @@ fn duplicate_method_diagnostic(
     )
 }
 
-fn add_named_method(state: CheckState, type_id: go_types::TypeId, method: go_types::ObjectId) -> unit {
+fn add_named_method(state: CheckState, type_id: go_types::TypeId, method: go_types::ObjectId) -> () {
     match go_types::get_object(state.world, method) {
         Some(method) => if method.name == "_" {
             return
@@ -196,7 +196,7 @@ fn set_signature_receiver(
     signature: go_types::TypeId,
     receiver: go_types::Variable,
     receiver_type_params: Vec[go_types::TypeParameter],
-) -> unit {
+) -> () {
     match go_types::get_type(state.world, signature) {
         Some(go_types::TypeData {
             id: _,
@@ -226,7 +226,7 @@ fn set_signature_receiver(
     }
 }
 
-fn discard_method_type_parameters(state: CheckState, signature: go_types::TypeId) -> unit {
+fn discard_method_type_parameters(state: CheckState, signature: go_types::TypeId) -> () {
     match go_types::get_type(state.world, signature) {
         Some(go_types::TypeData {
             id,
@@ -305,7 +305,7 @@ fn receiver_type_parts(state: CheckState, node: syntax::NodeId) -> (
     }
 }
 
-fn record_receiver_type_syntax(state: CheckState, node: syntax::NodeId, type_id: go_types::TypeId) -> unit {
+fn record_receiver_type_syntax(state: CheckState, node: syntax::NodeId, type_id: go_types::TypeId) -> () {
     record_type_expression(state, node, type_id);
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
@@ -908,7 +908,7 @@ fn invalid_receiver_cardinality_after_resolution(state: CheckState, node: syntax
     }
 }
 
-fn defer_receiver_validation(state: CheckState, node: syntax::NodeId) -> unit {
+fn defer_receiver_validation(state: CheckState, node: syntax::NodeId) -> () {
     let base_node = receiver_type_parts(state, node).0;
     for existing in state.receiver_validation_nodes {
         if existing.value == base_node.value {
@@ -981,7 +981,7 @@ fn receiver_may_declare_method(state: CheckState, node: syntax::NodeId) -> bool 
     }
 }
 
-fn check_receiver_validation(state: CheckState, node: syntax::NodeId) -> unit {
+fn check_receiver_validation(state: CheckState, node: syntax::NodeId) -> () {
     let type_id = match recorded_type_fact(state, node) {
         Some(fact) => fact.type_id,
         None => return,
@@ -1071,13 +1071,13 @@ fn check_receiver_validation(state: CheckState, node: syntax::NodeId) -> unit {
     }
 }
 
-fn check_receiver_validations(state: CheckState) -> unit {
+fn check_receiver_validations(state: CheckState) -> () {
     for node in state.receiver_validation_nodes {
         check_receiver_validation(state, node)
     }
 }
 
-fn check_field_method_collisions(state: CheckState) -> unit {
+fn check_field_method_collisions(state: CheckState) -> () {
     for type_id in state.deferred_type_validations {
         let methods = match go_types::type_data(state.world, type_id) {
             go_types::TypeData {
@@ -1139,7 +1139,7 @@ fn check_field_method_collisions(state: CheckState) -> unit {
     }
 }
 
-fn check_missing_method_receiver(state: CheckState, node: syntax::NodeId) -> unit {
+fn check_missing_method_receiver(state: CheckState, node: syntax::NodeId) -> () {
     if field_list_nodes(state, node).is_empty() {
         diagnostic(state, node, "method has no receiver", false)
     } else {}
@@ -1170,7 +1170,7 @@ fn record_implicit_receiver(
     state: CheckState,
     receiver_node: syntax::NodeId,
     receiver_type: go_types::TypeId,
-) -> unit {
+) -> () {
     let fields = field_list_nodes(state, receiver_node);
     if !fields.is_empty() {
         let object = go_types::add_object(
@@ -1193,7 +1193,7 @@ fn predeclare_method_declaration(
     receiver_node: syntax::NodeId,
     name_node: syntax::NodeId,
     type_node: syntax::NodeId,
-) -> unit {
+) -> () {
     match receiver_field(state, receiver_node) {
         Some((receiver_name_node, receiver_type_node)) => match resolve_receiver(
             state,
@@ -1299,7 +1299,7 @@ fn predeclare_method_declaration(
     }
 }
 
-fn complete_method_declarations(state: CheckState) -> unit {
+fn complete_method_declarations(state: CheckState) -> () {
     for pending in state.pending_methods {
         let diagnostic_parameters = generic_parameters(state, pending.resolution.base);
         state.active_instantiations.push(
@@ -1362,7 +1362,7 @@ fn check_method_declaration(
     receiver_node: syntax::NodeId,
     name_node: syntax::NodeId,
     type_node: syntax::NodeId,
-) -> unit {
+) -> () {
     match receiver_field(state, receiver_node) {
         Some((receiver_name_node, receiver_type_node)) => {
             match resolve_receiver(state, file_scope, receiver_node, receiver_type_node) {

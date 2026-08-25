@@ -37,7 +37,7 @@ struct SpecializeCtx {
     instances: Vec[Instance],
     instance_index: HashMap[string, Instance],
     work: Vec[Instance],
-    used_names: HashMap[string, unit],
+    used_names: HashMap[string, ()],
     active: Ref[Option[Instance]],
     error: Ref[Option[string]],
 }
@@ -415,7 +415,7 @@ fn lookup_pair_key(left: string, right: string) -> string {
     f"{left.byte_len()}:{left}{right}"
 }
 
-fn add_indexed_function(index: FunctionIndex, key: string, function: core::Function) -> unit {
+fn add_indexed_function(index: FunctionIndex, key: string, function: core::Function) -> () {
     index.entry(key).or_insert_with(|| Vec::new()).push(function)
 }
 
@@ -962,7 +962,7 @@ fn register_structural_trait_function(
     method_name: string,
     for_ty: core::Type,
     ret_ty: core::Type,
-) -> unit {
+) -> () {
     match synthetic_structural_trait_function(ctx.builtin, reference, method_name, for_ty, ret_ty) {
         Some(function) => if ctx.function_index.contains(function.name) {} else {
             ctx.functions.push(function);
@@ -1694,7 +1694,7 @@ fn complete_function_bindings_up_to(
     bindings: Vec[TypeBinding],
     generic_count: isize,
     predicate_count: isize,
-) -> unit {
+) -> () {
     for _ in 0..generic_count + 1 {
         let previous_len = bindings.len();
         for index in 0..predicate_count {
@@ -2137,7 +2137,7 @@ fn ensure_trait_call_instance(
     ensure_trait_method_instance(ctx, reference, method_name, for_ty, actual_types, ret_ty)
 }
 
-fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: core::Type) -> unit {
+fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: core::Type) -> () {
     for function in indexed_functions(ctx.trait_function_index, trait_name) {
         match function.trait_impl {
             Some(metadata) => {
@@ -2444,7 +2444,7 @@ fn ensure_runtime_trait_impl(
     method_name: string,
     params: Vec[core::Type],
     ret_ty: core::Type,
-) -> unit {
+) -> () {
     let _ = ensure_trait_method_instance(
         ctx,
         core::TraitRef { name: trait_name, args: Vec::new() },
@@ -2455,7 +2455,7 @@ fn ensure_runtime_trait_impl(
     );
 }
 
-fn ensure_eq_hash_impls(ctx: SpecializeCtx, ty: core::Type) -> unit {
+fn ensure_eq_hash_impls(ctx: SpecializeCtx, ty: core::Type) -> () {
     ensure_runtime_trait_impl(
         ctx,
         ctx.builtin.partial_eq.name,
@@ -2472,13 +2472,13 @@ fn ensure_eq_hash_impls(ctx: SpecializeCtx, ty: core::Type) -> unit {
     )
 }
 
-fn ensure_runtime_trait_impls_for_types(ctx: SpecializeCtx, values: Vec[core::Type]) -> unit {
+fn ensure_runtime_trait_impls_for_types(ctx: SpecializeCtx, values: Vec[core::Type]) -> () {
     for value in values {
         ensure_runtime_trait_impls_for_type(ctx, value)
     }
 }
 
-fn ensure_runtime_trait_impls_for_type(ctx: SpecializeCtx, value: core::Type) -> unit {
+fn ensure_runtime_trait_impls_for_type(ctx: SpecializeCtx, value: core::Type) -> () {
     match core::resolve_type(value) {
         Tuple { items } => ensure_runtime_trait_impls_for_types(ctx, items),
         Projection { for_ty: base, name: _, trait_ref: reference } => {
@@ -2515,20 +2515,20 @@ fn ensure_runtime_trait_impls_for_type(ctx: SpecializeCtx, value: core::Type) ->
     }
 }
 
-fn ensure_runtime_trait_impls_for_optional_expr(ctx: SpecializeCtx, value: Option[core::Expr]) -> unit {
+fn ensure_runtime_trait_impls_for_optional_expr(ctx: SpecializeCtx, value: Option[core::Expr]) -> () {
     match value {
         Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
         None => (),
     }
 }
 
-fn ensure_runtime_trait_impls_for_exprs(ctx: SpecializeCtx, values: Vec[core::Expr]) -> unit {
+fn ensure_runtime_trait_impls_for_exprs(ctx: SpecializeCtx, values: Vec[core::Expr]) -> () {
     for value in values {
         ensure_runtime_trait_impls_for_expr(ctx, value)
     }
 }
 
-fn ensure_runtime_trait_impls_for_block(ctx: SpecializeCtx, value: core::Block) -> unit {
+fn ensure_runtime_trait_impls_for_block(ctx: SpecializeCtx, value: core::Block) -> () {
     for stmt in value.stmts {
         ensure_runtime_trait_impls_for_type(ctx, stmt.ty);
         ensure_runtime_trait_impls_for_expr(ctx, stmt.value)
@@ -2536,7 +2536,7 @@ fn ensure_runtime_trait_impls_for_block(ctx: SpecializeCtx, value: core::Block) 
     ensure_runtime_trait_impls_for_optional_expr(ctx, value.tail)
 }
 
-fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) -> unit {
+fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) -> () {
     ensure_runtime_trait_impls_for_type(ctx, core::expr_type(value));
     match value {
         Constr { constructor: _, args, ty: _ } => ensure_runtime_trait_impls_for_exprs(ctx, args),
@@ -2634,7 +2634,7 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
     }
 }
 
-fn ensure_runtime_trait_impls(ctx: SpecializeCtx, functions: Vec[core::Function]) -> unit {
+fn ensure_runtime_trait_impls(ctx: SpecializeCtx, functions: Vec[core::Function]) -> () {
     for function in functions {
         for param in function.params {
             ensure_runtime_trait_impls_for_type(ctx, param.1)
@@ -2706,7 +2706,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     let trait_function_index: FunctionIndex = HashMap::new();
     let trait_method_index: FunctionIndex = HashMap::new();
     let trait_method_names: HashMap[string, string] = HashMap::new();
-    let used_names: HashMap[string, unit] = HashMap::new();
+    let used_names: HashMap[string, ()] = HashMap::new();
     for function in value.functions {
         function_index[function.name] = function;
         used_names[function.name] = ();

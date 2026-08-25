@@ -142,7 +142,7 @@ fn artifact_prepare_core_function_metadata(
     }
 }
 
-fn artifact_fill_constructor_fields(value: core::Constructor, definitions: Vec[core::StructDef]) -> unit {
+fn artifact_fill_constructor_fields(value: core::Constructor, definitions: Vec[core::StructDef]) -> () {
     if value.is_struct && value.fields.is_empty() {
         for definition in definitions {
             if definition.name == value.name {
@@ -154,27 +154,27 @@ fn artifact_fill_constructor_fields(value: core::Constructor, definitions: Vec[c
     } else {}
 }
 
-fn artifact_prepare_core_exprs(values: Vec[core::Expr], definitions: Vec[core::StructDef]) -> unit {
+fn artifact_prepare_core_exprs(values: Vec[core::Expr], definitions: Vec[core::StructDef]) -> () {
     for value in values {
         artifact_prepare_core_expr(value, definitions)
     }
 }
 
-fn artifact_prepare_optional_core_expr(value: Option[core::Expr], definitions: Vec[core::StructDef]) -> unit {
+fn artifact_prepare_optional_core_expr(value: Option[core::Expr], definitions: Vec[core::StructDef]) -> () {
     match value {
         Some(value) => artifact_prepare_core_expr(value, definitions),
         None => (),
     }
 }
 
-fn artifact_prepare_core_block(value: core::Block, definitions: Vec[core::StructDef]) -> unit {
+fn artifact_prepare_core_block(value: core::Block, definitions: Vec[core::StructDef]) -> () {
     for statement in value.stmts {
         artifact_prepare_core_expr(statement.value, definitions)
     }
     artifact_prepare_optional_core_expr(value.tail, definitions)
 }
 
-fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[core::StructDef]) -> unit {
+fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[core::StructDef]) -> () {
     match value {
         Constr { constructor, args, ty: _ } => {
             artifact_fill_constructor_fields(constructor, definitions);
@@ -292,7 +292,7 @@ fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::A
     result
 }
 
-fn artifact_prepare_core_units(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> unit {
+fn artifact_prepare_core_units(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> () {
     let definitions = artifact_link_struct_definitions(world, values);
     for value in values {
         for index in 0..value.core_ir.functions.len() {
@@ -326,7 +326,7 @@ fn artifact_prepare_world_core(
     value: core::File,
     exports: artifact::ArtifactPackageExports,
     definitions: Vec[core::StructDef],
-) -> unit {
+) -> () {
     for index in 0..value.functions.len() {
         let function = artifact_prepare_core_function_metadata(value.functions[index], exports);
         value.functions[index] = function;
@@ -334,7 +334,7 @@ fn artifact_prepare_world_core(
     }
 }
 
-fn artifact_prepare_world(world: PackageWorld) -> unit {
+fn artifact_prepare_world(world: PackageWorld) -> () {
     let definitions = artifact_world_struct_definitions(world);
     artifact_prepare_world_core(world.builtins, world.builtin_interface.exports, definitions);
     artifact_prepare_world_core(

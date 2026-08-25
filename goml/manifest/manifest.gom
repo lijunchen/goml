@@ -93,7 +93,7 @@ fn valid_segment(value: string) -> bool {
     true
 }
 
-fn validate_module_path(value: string, allow_toolchain: bool) -> Result[unit, string] {
+fn validate_module_path(value: string, allow_toolchain: bool) -> Result[(), string] {
     let segments = text::split(value, "::");
     if segments.is_empty() {
         return Result::Err("module.path is empty")
@@ -110,7 +110,7 @@ fn validate_module_path(value: string, allow_toolchain: bool) -> Result[unit, st
     }
 }
 
-fn validate_target_dir(value: string) -> Result[unit, string] {
+fn validate_target_dir(value: string) -> Result[(), string] {
     if value == "" || path::is_absolute(value) {
         Result::Err("build.target-dir must be a non-empty relative path")
     } else {

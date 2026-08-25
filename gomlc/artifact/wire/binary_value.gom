@@ -12,7 +12,7 @@ fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
     ArtifactBinaryStringTable { values: Vec::new(), indexes: HashMap::new() }
 }
 
-fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[string], value: string) -> unit {
+fn artifact_binary_collect_string(seen: HashMap[string, ()], values: Vec[string], value: string) -> () {
     match seen.insert(value, ()) {
         Some(_) => (),
         None => values.push(value),
@@ -20,10 +20,10 @@ fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[strin
 }
 
 fn artifact_binary_collect_value_strings(
-    seen: HashMap[string, unit],
+    seen: HashMap[string, ()],
     values: Vec[string],
     value: ArtifactValue,
-) -> unit {
+) -> () {
     match value {
         Object(fields) => for field in fields {
             artifact_binary_collect_string(seen, values, field.0);
@@ -40,7 +40,7 @@ fn artifact_binary_collect_value_strings(
 }
 
 pub fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
-    let seen: HashMap[string, unit] = HashMap::new();
+    let seen: HashMap[string, ()] = HashMap::new();
     let values: Vec[string] = Vec::new();
     artifact_binary_collect_value_strings(seen, values, value);
     artifact_binary_string_table_from_values(values)
@@ -104,7 +104,7 @@ fn artifact_binary_encode_string_id(
     writer: ArtifactBinaryWriter,
     table: ArtifactBinaryStringTable,
     value: string,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let id = artifact_binary_string_id(table, value);
     if id < 0 {
         Result::Err("binary artifact string is missing from table")
@@ -140,7 +140,7 @@ fn artifact_binary_encode_value_at(
     table: ArtifactBinaryStringTable,
     value: ArtifactValue,
     depth: isize,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if depth > 4096 {
         return Result::Err("binary artifact value nesting exceeds limit")
     } else {};
@@ -235,7 +235,7 @@ fn artifact_binary_decode_value_at(
                 return Result::Err("binary artifact object exceeds limit")
             } else {};
             let fields = Vec::with_capacity(count);
-            let names: Option[HashMap[string, unit]] = if count > 32 {
+            let names: Option[HashMap[string, ()]] = if count > 32 {
                 Option::Some(HashMap::new())
             } else {
                 Option::None

@@ -78,7 +78,7 @@ pub fn method_name_identical(
     left_name == right_name && (is_exported(left_name) || same_package(left_owner, right_owner))
 }
 
-fn interface_methods_inner(world: World, value: TypeId, visited: Vec[TypeId], result: Vec[ObjectId]) -> unit {
+fn interface_methods_inner(world: World, value: TypeId, visited: Vec[TypeId], result: Vec[ObjectId]) -> () {
     let resolved = underlying(world, value);
     if type_seen(visited, resolved) {
         return
@@ -179,7 +179,7 @@ fn add_method_candidate(
     indirect: bool,
     allow_pointer: bool,
     name: string,
-) -> unit {
+) -> () {
     if valid_object_id(world, method) {
         let object = world.objects[method.value];
         if object.name == name && (allow_pointer || !receiver_is_pointer(world, method)) {
@@ -204,7 +204,7 @@ fn search_node(
     name: string,
     matches: Vec[Selection],
     next: Vec[SearchNode],
-) -> unit {
+) -> () {
     let dereferenced = dereference(world, node.type_id);
     let value = dereferenced.0;
     let indirect = node.indirect || dereferenced.1;
@@ -283,7 +283,7 @@ fn search_underlying(
     name: string,
     matches: Vec[Selection],
     next: Vec[SearchNode],
-) -> unit {
+) -> () {
     let _ = addressable;
     match type_data(world, underlying(world, value)).kind {
         TypeKind::Pointer { element } => search_underlying(
@@ -381,7 +381,7 @@ fn collect_method_names_inner(
     value: TypeId,
     visited: Vec[TypeId],
     result: Vec[ObjectId],
-) -> unit {
+) -> () {
     if pointer_indirection_forbidden(world, value) {
         return
     } else {};

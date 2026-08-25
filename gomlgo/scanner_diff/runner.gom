@@ -12,7 +12,7 @@ pub struct Summary {
     pub tokens: isize,
 }
 
-fn collect_go_files(directory: string, files: Vec[string]) -> Result[unit, string] {
+fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string] {
     let names = fs::read_dir(directory)?;
     collections::sort(names);
     for name in names {

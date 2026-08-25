@@ -1,10 +1,10 @@
 package mono;
 
 struct ValidateContext {
-    types: HashMap[string, unit],
+    types: HashMap[string, ()],
 }
 
-fn validate_type(ctx: ValidateContext, value: Type, context: string) -> Result[unit, string] {
+fn validate_type(ctx: ValidateContext, value: Type, context: string) -> Result[(), string] {
     match value {
         Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => Result::Ok(
             (),
@@ -59,7 +59,7 @@ fn validate_type(ctx: ValidateContext, value: Type, context: string) -> Result[u
     }
 }
 
-fn validate_types(ctx: ValidateContext, values: Vec[Type], context: string) -> Result[unit, string] {
+fn validate_types(ctx: ValidateContext, values: Vec[Type], context: string) -> Result[(), string] {
     for value in values {
         validate_type(ctx, value, context)?
     }
@@ -67,7 +67,7 @@ fn validate_types(ctx: ValidateContext, values: Vec[Type], context: string) -> R
 }
 
 fn validate_named_types(ctx: ValidateContext, values: Vec[(string, Type)], context: string) -> Result[
-    unit,
+    (),
     string,
 ] {
     for value in values {
@@ -76,7 +76,7 @@ fn validate_named_types(ctx: ValidateContext, values: Vec[(string, Type)], conte
     Result::Ok(())
 }
 
-fn validate_exprs(ctx: ValidateContext, values: Vec[Expr], context: string) -> Result[unit, string] {
+fn validate_exprs(ctx: ValidateContext, values: Vec[Expr], context: string) -> Result[(), string] {
     for value in values {
         validate_expr(ctx, value, context)?
     }
@@ -84,7 +84,7 @@ fn validate_exprs(ctx: ValidateContext, values: Vec[Expr], context: string) -> R
 }
 
 fn validate_optional_expr(ctx: ValidateContext, value: Option[Expr], context: string) -> Result[
-    unit,
+    (),
     string,
 ] {
     match value {
@@ -93,12 +93,12 @@ fn validate_optional_expr(ctx: ValidateContext, value: Option[Expr], context: st
     }
 }
 
-fn validate_arm(ctx: ValidateContext, value: Arm, context: string) -> Result[unit, string] {
+fn validate_arm(ctx: ValidateContext, value: Arm, context: string) -> Result[(), string] {
     validate_expr(ctx, value.lhs, context + " pattern")?;
     validate_expr(ctx, value.body, context + " body")
 }
 
-fn validate_block(ctx: ValidateContext, value: Block, context: string) -> Result[unit, string] {
+fn validate_block(ctx: ValidateContext, value: Block, context: string) -> Result[(), string] {
     for statement in value.stmts {
         let binding_context = context + " let " + statement.name;
         validate_type(ctx, statement.ty, binding_context)?;
@@ -110,7 +110,7 @@ fn validate_block(ctx: ValidateContext, value: Block, context: string) -> Result
     validate_optional_expr(ctx, value.tail, context + " tail")
 }
 
-fn validate_callable(ctx: ValidateContext, value: Callable, context: string) -> Result[unit, string] {
+fn validate_callable(ctx: ValidateContext, value: Callable, context: string) -> Result[(), string] {
     match value {
         TraitMethod { .. } => Result::Err(context + " contains an unresolved static trait callable"),
         InherentMethod { receiver_ty, method_name: _ } => {
@@ -122,7 +122,7 @@ fn validate_callable(ctx: ValidateContext, value: Callable, context: string) -> 
     }
 }
 
-fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[unit, string] {
+fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[(), string] {
     validate_type(ctx, expr_type(value), context)?;
     match value {
         Var { name: _, ty: _ } | Prim { value: _, ty: _ } | Continue { target: _, ty: _ } => Result::Ok(
@@ -205,7 +205,7 @@ fn validate_expr(ctx: ValidateContext, value: Expr, context: string) -> Result[u
 }
 
 fn validate_origin(ctx: ValidateContext, value: FunctionOrigin, context: string) -> Result[
-    unit,
+    (),
     string,
 ] {
     match value {
@@ -215,7 +215,7 @@ fn validate_origin(ctx: ValidateContext, value: FunctionOrigin, context: string)
 }
 
 fn validate_trait_impl(ctx: ValidateContext, value: Option[TraitImpl], context: string) -> Result[
-    unit,
+    (),
     string,
 ] {
     match value {
@@ -228,7 +228,7 @@ fn validate_trait_impl(ctx: ValidateContext, value: Option[TraitImpl], context: 
     }
 }
 
-fn validate_function(ctx: ValidateContext, value: Function) -> Result[unit, string] {
+fn validate_function(ctx: ValidateContext, value: Function) -> Result[(), string] {
     let context = "function " + value.name;
     validate_origin(ctx, value.origin, context)?;
     validate_trait_impl(ctx, value.trait_impl, context)?;
@@ -237,8 +237,8 @@ fn validate_function(ctx: ValidateContext, value: Function) -> Result[unit, stri
     validate_block(ctx, value.body, context)
 }
 
-pub fn validate(value: File) -> Result[unit, string] {
-    let type_names: HashMap[string, unit] = HashMap::new();
+pub fn validate(value: File) -> Result[(), string] {
+    let type_names: HashMap[string, ()] = HashMap::new();
     for definition in value.enums {
         if type_names.contains(definition.name) {
             return Result::Err("duplicate Mono type definition " + definition.name)
@@ -253,7 +253,7 @@ pub fn validate(value: File) -> Result[unit, string] {
             type_names[definition.name] = ();
         }
     }
-    let instance_names: HashMap[string, unit] = HashMap::new();
+    let instance_names: HashMap[string, ()] = HashMap::new();
     for instance in value.type_instances {
         if instance_names.contains(instance.name) {
             return Result::Err("duplicate Mono type instance " + instance.name)

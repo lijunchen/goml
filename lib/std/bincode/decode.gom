@@ -409,11 +409,11 @@ fn decoder_frame_index(decoder: Decoder) -> Result[isize, string] {
     }
 }
 
-fn pop_decoder_frame(decoder: Decoder) -> unit {
+fn pop_decoder_frame(decoder: Decoder) -> () {
     let _ = decoder.frames.pop();
 }
 
-fn claim_bincode_input(decoder: Decoder) -> Result[unit, string] {
+fn claim_bincode_input(decoder: Decoder) -> Result[(), string] {
     if decoder.frames.is_empty() {
         Result::Ok(())
     } else {
@@ -472,7 +472,7 @@ impl serde::Deserializer for Decoder {
         Result::Err(decoder_error(self, "bincode cannot decode a schema-free value"))
     }
 
-    fn deserialize_unit(self: Decoder) -> Result[unit, string] {
+    fn deserialize_unit(self: Decoder) -> Result[(), string] {
         claim_bincode_input(self)
     }
 
@@ -589,7 +589,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn end_optional(self: Decoder) -> Result[unit, string] {
+    fn end_optional(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Optional { ready } => if ready.get() {
@@ -627,7 +627,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn end_sequence(self: Decoder) -> Result[unit, string] {
+    fn end_sequence(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Sequence { length, index, ready } => if ready.get()
@@ -641,7 +641,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn begin_tuple(self: Decoder, length: isize) -> Result[unit, string] {
+    fn begin_tuple(self: Decoder, length: isize) -> Result[(), string] {
         if length < 0 {
             Result::Err(decoder_error(self, "tuple length cannot be negative"))
         } else {
@@ -653,7 +653,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn begin_tuple_element(self: Decoder, index: isize) -> Result[unit, string] {
+    fn begin_tuple_element(self: Decoder, index: isize) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Tuple { length, index: next, ready } => if ready.get()
@@ -669,7 +669,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn end_tuple(self: Decoder) -> Result[unit, string] {
+    fn end_tuple(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Tuple { length, index, ready } => if ready.get() || index.get() != length {
@@ -714,7 +714,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn begin_map_key(self: Decoder) -> Result[unit, string] {
+    fn begin_map_key(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Map { length: _, index: _, state } => if state.get() != 1 {
@@ -727,7 +727,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn begin_map_value(self: Decoder) -> Result[unit, string] {
+    fn begin_map_value(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Map { length: _, index: _, state } => if state.get() != 3 {
@@ -740,7 +740,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn end_map(self: Decoder) -> Result[unit, string] {
+    fn end_map(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Map { length, index, state } => {
@@ -760,7 +760,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn begin_struct(self: Decoder, name: string, fields: isize) -> Result[unit, string] {
+    fn begin_struct(self: Decoder, name: string, fields: isize) -> Result[(), string] {
         if fields < 0 {
             Result::Err(decoder_error(self, "struct field count cannot be negative"))
         } else {
@@ -789,11 +789,11 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn skip_value(self: Decoder) -> Result[unit, string] {
+    fn skip_value(self: Decoder) -> Result[(), string] {
         Result::Err(decoder_error(self, "bincode cannot skip an untyped value"))
     }
 
-    fn end_struct(self: Decoder) -> Result[unit, string] {
+    fn end_struct(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Struct { name: _, fields, index, ready } => if ready.get()
@@ -833,7 +833,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn begin_variant_fields(self: Decoder, kind: isize, fields: isize) -> Result[unit, string] {
+    fn begin_variant_fields(self: Decoder, kind: isize, fields: isize) -> Result[(), string] {
         if kind < 0 || kind > 2 || fields < 0 || kind == 0 && fields != 0 {
             return Result::Err(decoder_error(self, "invalid variant field state"))
         } else {};
@@ -878,7 +878,7 @@ impl serde::Deserializer for Decoder {
         }
     }
 
-    fn end_variant(self: Decoder) -> Result[unit, string] {
+    fn end_variant(self: Decoder) -> Result[(), string] {
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Variant { enum_name: _, variant: _, fields, index, begun, ready } => if !begun.get()

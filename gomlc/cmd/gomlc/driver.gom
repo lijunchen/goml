@@ -1004,7 +1004,7 @@ fn render_diagnostic_label(
     message: Option[string],
     fallback_path: string,
     fallback_source: string,
-) -> unit {
+) -> () {
     let source = diagnostic_source(source_path, fallback_path, fallback_source);
     builder.write_char('\n');
     builder.write_string(kind);
@@ -1140,7 +1140,7 @@ fn fail_on_typer_diagnostics(
     diagnostics: Vec[tast::Diagnostic],
     fallback_path: string,
     fallback_source: string,
-) -> unit {
+) -> () {
     if typer_diagnostics_have_errors(diagnostics) {
         fail(render_typer_diagnostics(diagnostics, fallback_path, fallback_source))
     } else {}
@@ -1172,7 +1172,7 @@ fn fail_on_ast_diagnostics(
     stage: string,
     source_path: string,
     source: string,
-) -> unit {
+) -> () {
     if !diagnostics.is_empty() {
         fail(
             render_typer_diagnostics(
@@ -1189,7 +1189,7 @@ fn compact_diagnostic_line(
     message: string,
     span: Option[ast::Span],
     source: string,
-) -> unit {
+) -> () {
     match span {
         Some(value) => {
             let position = source_position(source, value.start);
@@ -1418,7 +1418,7 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     diagnostic_output_optional(Option::None, source_path, source)
 }
 
-fn run_test_diagnostics(args: Vec[string]) -> unit {
+fn run_test_diagnostics(args: Vec[string]) -> () {
     if args.len() != 3 {
         fail("usage: gomlc __test-diagnostics <FILE>")
     } else {
@@ -1495,7 +1495,7 @@ fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
     }
 }
 
-fn fail_on_missing_single_file_entrypoint(value: tast::CheckResult) -> unit {
+fn fail_on_missing_single_file_entrypoint(value: tast::CheckResult) -> () {
     if has_single_file_entrypoint(value) {} else {
         fail("error[typer]: main function is required")
     }
@@ -1693,7 +1693,7 @@ fn pipeline_stage_output(stage: string, source_path: string, source: string) -> 
     }
 }
 
-fn print_dump(printed: Ref[bool], label: string, content: string) -> unit {
+fn print_dump(printed: Ref[bool], label: string, content: string) -> () {
     if printed.get() {
         io::println("")
     } else {};
@@ -1712,7 +1712,7 @@ fn encode_comptime_module(value: tast::CheckResult) -> string {
     wire::artifact_json_finish(writer)
 }
 
-fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> unit {
+fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> () {
     let printed = Ref::new(false);
     if args.dump_ast {
         print_dump(printed, "AST", ast::pretty(compilation.source_ast_value))
@@ -1746,7 +1746,7 @@ fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> un
     } else {}
 }
 
-fn write_stdout(data: bytes::Bytes) -> unit {
+fn write_stdout(data: bytes::Bytes) -> () {
     match io::write_stdout(data) {
         Ok(()) => (),
         Err(error) => fail(error),
@@ -1813,7 +1813,7 @@ fn command_succeeded(output: process::Output) -> bool {
     process::ExitStatus::success(process::Output::status(output))
 }
 
-fn cleanup_temp_directory(go_file: string) -> unit {
+fn cleanup_temp_directory(go_file: string) -> () {
     match path::parent(go_file) {
         Some(directory) => {
             let _ = fs::remove_dir_all(directory);
@@ -1832,7 +1832,7 @@ fn execute_with_go_run(directory: string, go_file: string) -> Result[process::Ou
     }
 }
 
-fn execute_go_source(source_path: string, source: string) -> unit {
+fn execute_go_source(source_path: string, source: string) -> () {
     let go_file = temp_go_path(source_path, source);
     let directory = match path::parent(go_file) {
         Some(value) => value,
@@ -1853,7 +1853,7 @@ fn execute_go_source(source_path: string, source: string) -> unit {
     }
 }
 
-fn run_single(args: RunArgs) -> unit {
+fn run_single(args: RunArgs) -> () {
     let source = read_source(args.file);
     let compilation = compile_source(args.file, source);
     let go_source = go_backend::encode(compilation.go_value);

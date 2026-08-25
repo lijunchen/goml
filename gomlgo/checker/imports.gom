@@ -135,7 +135,7 @@ fn insert_dot_import(
     file_scope: go_types::ScopeId,
     package_id: go_types::PackageId,
     node: syntax::NodeId,
-) -> unit {
+) -> () {
     let package_scope = state.world.packages[package_id.value].scope;
     for entry in state.world.scopes[package_scope.value].entries {
         match go_types::get_object(state.world, entry.object) {
@@ -163,7 +163,7 @@ fn bind_import(
     package_id: go_types::PackageId,
     default_name: string,
     ignored: bool,
-) -> unit {
+) -> () {
     let binding_name = match name {
         Some(name) => identifier(state, name).unwrap_or(""),
         None => default_name,
@@ -217,7 +217,7 @@ fn bind_import(
     }
 }
 
-fn process_import_spec(state: CheckState, file_scope: go_types::ScopeId, node: syntax::NodeId) -> unit {
+fn process_import_spec(state: CheckState, file_scope: go_types::ScopeId, node: syntax::NodeId) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -263,7 +263,7 @@ fn process_import_spec(state: CheckState, file_scope: go_types::ScopeId, node: s
     }
 }
 
-fn process_file_imports(state: CheckState, file_index: isize) -> unit {
+fn process_file_imports(state: CheckState, file_index: isize) -> () {
     let file = state.syntax.files[file_index];
     let file_scope = state.file_scopes[file_index];
     match syntax::get_node(state.syntax.arena, file.root) {
@@ -286,7 +286,7 @@ fn process_file_imports(state: CheckState, file_index: isize) -> unit {
     }
 }
 
-fn mark_import_used(state: CheckState, object: go_types::ObjectId) -> unit {
+fn mark_import_used(state: CheckState, object: go_types::ObjectId) -> () {
     for index in 0..state.imports.len() {
         if state.imports[index].object.value == object.value {
             state.imports[index].used = true;
@@ -294,7 +294,7 @@ fn mark_import_used(state: CheckState, object: go_types::ObjectId) -> unit {
     }
 }
 
-fn mark_dot_import_used(state: CheckState, object: go_types::ObjectId) -> unit {
+fn mark_dot_import_used(state: CheckState, object: go_types::ObjectId) -> () {
     let owner = if object.value >= 0 && object.value < state.world.objects.len() {
         state.world.objects[object.value].owner
     } else {
@@ -316,7 +316,7 @@ fn imported_package_description(state: CheckState, package_id: go_types::Package
     "package " + imported_package.name + " (\"" + imported_package.path + "\")"
 }
 
-fn check_package_import_conflicts(state: CheckState) -> unit {
+fn check_package_import_conflicts(state: CheckState) -> () {
     let package_scope = state.world.packages[state.package_id.value].scope;
     for file_scope in state.file_scopes {
         for entry in state.world.scopes[file_scope.value].entries {
@@ -382,7 +382,7 @@ fn check_package_import_conflicts(state: CheckState) -> unit {
     }
 }
 
-fn check_unused_imports(state: CheckState) -> unit {
+fn check_unused_imports(state: CheckState) -> () {
     if state.config.disable_unused_import_check {
         return
     } else {};

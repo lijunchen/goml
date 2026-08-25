@@ -110,13 +110,13 @@ fn is_generated_value(value: string) -> bool {
         || value.starts_with("missing__")
 }
 
-fn write_hex_byte(builder: text::StringBuilder, value: u8) -> unit {
+fn write_hex_byte(builder: text::StringBuilder, value: u8) -> () {
     let digits = "0123456789abcdef";
     builder.write_char(digits.get((value / 16).to_isize()));
     builder.write_char(digits.get((value % 16).to_isize()))
 }
 
-fn write_utf8_hex(builder: text::StringBuilder, value: char) -> unit {
+fn write_utf8_hex(builder: text::StringBuilder, value: char) -> () {
     let code = value.to_u32();
     if code <= 127 {
         write_hex_byte(builder, code.to_u8())
@@ -135,7 +135,7 @@ fn write_utf8_hex(builder: text::StringBuilder, value: char) -> unit {
     }
 }
 
-fn write_encoded_char(builder: text::StringBuilder, value: char) -> unit {
+fn write_encoded_char(builder: text::StringBuilder, value: char) -> () {
     if is_ascii_letter(value) || is_ascii_digit(value) {
         builder.write_char(value)
     } else if value == '_' {

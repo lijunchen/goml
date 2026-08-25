@@ -20,7 +20,7 @@ fn visit_package(
     states: HashMap[string, isize],
     output: Vec[string],
     package_path: string,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match states[package_path] {
         Some(1) => return Result::Err("package dependency cycle at " + package_path),
         Some(2) => return Result::Ok(()),

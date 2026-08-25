@@ -105,7 +105,7 @@ fn builtin_reference(state: CheckState, scope: go_types::ScopeId, node: syntax::
     }
 }
 
-fn record_builtin_fact_nodes(state: CheckState, node: syntax::NodeId) -> unit {
+fn record_builtin_fact_nodes(state: CheckState, node: syntax::NodeId) -> () {
     if type_fact_index(state, node).is_none() {
         index_type_fact(state, node, state.info.types.len());
         state.info.types.push(
@@ -136,12 +136,12 @@ fn record_builtin_fact_nodes(state: CheckState, node: syntax::NodeId) -> unit {
     }
 }
 
-fn record_builtin_reference(state: CheckState, reference: BuiltinReference) -> unit {
+fn record_builtin_reference(state: CheckState, reference: BuiltinReference) -> () {
     record_use(state, reference.node, reference.object);
     record_builtin_fact_nodes(state, reference.fact_node)
 }
 
-fn update_builtin_signature(state: CheckState, node: syntax::NodeId, signature: go_types::TypeId) -> unit {
+fn update_builtin_signature(state: CheckState, node: syntax::NodeId, signature: go_types::TypeId) -> () {
     match type_fact_index(state, node) {
         Some(index) => {
             state.info.types[index].type_id = signature;
@@ -199,7 +199,7 @@ fn record_builtin_signature(
     arguments: Vec[syntax::NodeId],
     result: Operand,
     ellipsis: isize,
-) -> unit {
+) -> () {
     let parameter_types: Vec[go_types::TypeId] = Vec::new();
     let expanded = if arguments.len() == 1 {
         match recorded_type_fact(state, arguments[0]) {
@@ -391,7 +391,7 @@ fn builtin_operand(type_id: go_types::TypeId) -> Operand {
     Operand { type_id, value: Option::None, addressable: false, assignable: false }
 }
 
-fn mark_void_node(state: CheckState, node: syntax::NodeId) -> unit {
+fn mark_void_node(state: CheckState, node: syntax::NodeId) -> () {
     let _ = state.omitted_type_fact_nodes.remove(node.value);
     if state.void_node_indices.contains(node.value) {
         return
@@ -523,7 +523,7 @@ fn underlying_kind(state: CheckState, value: go_types::TypeId) -> Option[go_type
     }
 }
 
-fn integer_builtin_argument(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> unit {
+fn integer_builtin_argument(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> () {
     let operand = check_expression(state, scope, node);
     if !go_types::is_integer(state.world, operand.type_id) {
         diagnostic(state, node, "builtin argument must be integer", false)
@@ -2296,7 +2296,7 @@ fn report_unsupported_type_parameter_builtin(
     node: syntax::NodeId,
     operand: Operand,
     name: string,
-) -> unit {
+) -> () {
     diagnostic(
         state,
         node,
@@ -2698,7 +2698,7 @@ fn check_size_align_initializer_function_body(
     node: syntax::NodeId,
     signature: go_types::TypeId,
     value: i64,
-) -> unit {
+) -> () {
     if state.active_value_objects.is_empty() {
         return
     } else {};
@@ -2940,7 +2940,7 @@ fn check_unsafe_size_align(
     }
 }
 
-fn check_deferred_type_info_expressions(state: CheckState) -> unit {
+fn check_deferred_type_info_expressions(state: CheckState) -> () {
     for pending in state.deferred_type_info_expressions {
         let operand = check_expression(state, pending.scope, pending.node);
         let instance_type = match recorded_type_fact(state, pending.node) {
@@ -2976,7 +2976,7 @@ fn selection_fact(state: CheckState, node: syntax::NodeId) -> Option[SelectionFa
     }
 }
 
-fn record_offsetof_selection(state: CheckState, node: syntax::NodeId, receiver: go_types::TypeId) -> unit {
+fn record_offsetof_selection(state: CheckState, node: syntax::NodeId, receiver: go_types::TypeId) -> () {
     let base = match go_types::get_type(state.world, core_type_id(state, receiver)) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => element,
         _ => receiver,
@@ -3037,7 +3037,7 @@ fn unparenthesized_expression(state: CheckState, node: syntax::NodeId) -> syntax
     }
 }
 
-fn omit_selector_result(state: CheckState, argument: syntax::NodeId, selector: syntax::NodeId) -> unit {
+fn omit_selector_result(state: CheckState, argument: syntax::NodeId, selector: syntax::NodeId) -> () {
     state.omitted_type_fact_nodes[argument.value] = true;
     state.omitted_type_fact_nodes[selector.value] = true;
     match syntax::get_node(state.syntax.arena, selector) {
@@ -3054,7 +3054,7 @@ fn omit_selector_result(state: CheckState, argument: syntax::NodeId, selector: s
     }
 }
 
-fn omit_selector_wrappers(state: CheckState, argument: syntax::NodeId, selector: syntax::NodeId) -> unit {
+fn omit_selector_wrappers(state: CheckState, argument: syntax::NodeId, selector: syntax::NodeId) -> () {
     if argument.value == selector.value {
         return
     } else {};

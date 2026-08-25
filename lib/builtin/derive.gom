@@ -90,7 +90,7 @@ fn derive_enum_type_seen(input: DeriveInput, variant_index: isize, field_index: 
 }
 
 #[comptime_derive]
-fn derive_add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> unit {
+fn derive_add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> () {
     if derive_item_kind(input) == 0 {
         let mut index = 0;
         while index < derive_field_count(input) {
@@ -118,7 +118,7 @@ fn derive_add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: s
 }
 
 #[comptime_derive]
-fn derive_add_all_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> unit {
+fn derive_add_all_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> () {
     if derive_item_kind(input) == 0 {
         let mut index = 0;
         while index < derive_field_count(input) {
@@ -505,7 +505,7 @@ fn derive_default_value(input: DeriveInput) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn derive_add_default_predicates(input: DeriveInput, output: DeriveOutput) -> unit {
+fn derive_add_default_predicates(input: DeriveInput, output: DeriveOutput) -> () {
     if derive_item_kind(input) == 0 {
         let mut index = 0;
         while index < derive_field_count(input) {
@@ -825,7 +825,7 @@ fn derive_enum_ord_body(input: DeriveInput, partial: bool) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn derive_add_call_site_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> unit {
+fn derive_add_call_site_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> () {
     if derive_item_kind(input) == 0 {
         let mut index = 0;
         while index < derive_field_count(input) {

@@ -31,7 +31,7 @@ fn channel_has_value(channel: ChannelValue) -> bool {
     channel_length(channel) > 0
 }
 
-fn channel_buffer_send(channel: ChannelValue, value: Value) -> Result[unit, string] {
+fn channel_buffer_send(channel: ChannelValue, value: Value) -> Result[(), string] {
     if channel.closed.get() {
         Result::Err("send on closed channel")
     } else if !channel_can_buffer_send(channel) {
@@ -50,7 +50,7 @@ fn channel_buffer_receive(channel: ChannelValue) -> Result[Value, string] {
     }
 }
 
-fn channel_close(channel: ChannelValue) -> Result[unit, string] {
+fn channel_close(channel: ChannelValue) -> Result[(), string] {
     if channel.closed.get() {
         Result::Err("close of closed channel")
     } else {

@@ -60,7 +60,7 @@ fn acquire_build_lock(context: Context) -> Result[BuildLock, string] {
     }
 }
 
-fn release_build_lock(lock: BuildLock) -> Result[unit, string] {
+fn release_build_lock(lock: BuildLock) -> Result[(), string] {
     fs::remove_dir_all(lock.path)
 }
 
@@ -125,7 +125,7 @@ fn collect_dependencies(
     package_name: string,
     seen: HashMap[string, bool],
     result: Vec[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
@@ -140,7 +140,7 @@ fn collect_dependencies(
 }
 
 fn mark_reachable(graph: Graph, package_name: string, seen: HashMap[string, bool]) -> Result[
-    unit,
+    (),
     string,
 ] {
     if seen.contains(package_name) {
@@ -568,7 +568,7 @@ fn append_test_package(
     output_root: string,
     compiled_dependencies: HashMap[string, bool],
     commands: Vec[Command],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     for package_name in graph.order {
         if package_name == graph.entry_package || compiled_dependencies.contains(package_name) {} else {
             let compiled = compile_package_command(
@@ -606,7 +606,7 @@ fn append_test_group(
     packages: Vec[string],
     commands: Vec[Command],
     groups: Vec[TestGroup],
-) -> unit {
+) -> () {
     let test_packages: HashMap[string, bool] = HashMap::new();
     for graph in graphs {
         test_packages[graph.entry_package] = true;
@@ -942,7 +942,7 @@ fn progress_label(value: Command) -> string {
     }
 }
 
-fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
+fn ensure_output_parent(value: Command, module_dir: string) -> Result[(), string] {
     let output = match value {
         PrepareWorld { output } | Compile { output, .. } | ToolchainCompile { output, .. } | PackToolchainWorld {
             output,
@@ -961,7 +961,7 @@ fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, stri
 }
 
 fn execute_command(cancel: task::CancelToken, context: Context, value: Command) -> Result[
-    unit,
+    (),
     string,
 ] {
     ensure_output_parent(value, context.graph.module_dir)?;
@@ -1037,7 +1037,7 @@ fn execute_prepared_command(
     context: Context,
     command: Command,
     cache: Option[PreparedCache],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match execute_command(cancel, context, command) {
         Ok(()) => Result::Ok(()),
         Err(message) => {
@@ -1057,14 +1057,14 @@ fn finish_prepared_command(
     context: Context,
     identity: string,
     cache: Option[PreparedCache],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match cache {
         Some(value) => store_cache(digests, context, value.spec, identity, value.fingerprint),
         None => Result::Ok(()),
     }
 }
 
-fn abandon_prepared_command(context: Context, cache: Option[PreparedCache]) -> unit {
+fn abandon_prepared_command(context: Context, cache: Option[PreparedCache]) -> () {
     match cache {
         Some(value) => {
             let _ = prepare_cache_execution(context, value.spec);
@@ -1179,7 +1179,7 @@ struct BuildWork {
 struct BuildWorkResult {
     index: isize,
     cache: Option[PreparedCache],
-    result: Result[unit, string],
+    result: Result[(), string],
     completion: Option[Channel[bool]],
 }
 
@@ -1191,7 +1191,7 @@ fn accept_build_result(
     received: Option[BuildWorkResult],
     completed_nodes: Vec[isize],
     completed: Ref[isize],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let Some(value) = received else {
         scope.cancel();
         return Result::Err("build result channel closed early")
@@ -1228,7 +1228,7 @@ fn execute_plan_worker(
     context: Context,
     work: Channel[BuildWork],
     results: Channel[BuildWorkResult],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     loop {
         match task::recv_with(cancel, work) {
             task::WaitResult::Completed(Some(value)) => {
@@ -1272,7 +1272,7 @@ fn execute_plan_concurrently(
     total: isize,
     jobs: isize,
     completed: Ref[isize],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let initial: Vec[isize] = Vec::new();
     for node in graph.nodes {
         initial.push(node.index)
@@ -1399,10 +1399,7 @@ fn execute_plan_concurrently(
     Result::Ok(())
 }
 
-pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: isize) -> Result[
-    unit,
-    string,
-] {
+pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: isize) -> Result[(), string] {
     if !dry_run && jobs < 1 {
         return Result::Err("build jobs must be greater than zero")
     } else {};
@@ -1446,7 +1443,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: isize) ->
 }
 
 pub fn run_executable(context: Context, executable: string, args: Vec[string], dry_run: bool) -> Result[
-    unit,
+    (),
     string,
 ] {
     let relative = module_relative(context.graph.module_dir, executable);

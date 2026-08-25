@@ -62,7 +62,7 @@ fn input_peek_raw(parser: Parser) -> lexer::TokenKind {
     }
 }
 
-fn input_eat_trivia(parser: Parser) -> unit {
+fn input_eat_trivia(parser: Parser) -> () {
     while parser.cursor.get() < parser.tokens.len()
         && lexer::token_is_trivia(input_peek_raw(parser)) {
         parser.cursor.set(parser.cursor.get() + 1)
@@ -74,7 +74,7 @@ fn input_eof(parser: Parser) -> bool {
     parser.cursor.get() == parser.tokens.len()
 }
 
-fn input_skip(parser: Parser) -> unit {
+fn input_skip(parser: Parser) -> () {
     if !input_eof(parser) {
         parser.cursor.set(parser.cursor.get() + 1)
     } else {}
@@ -196,7 +196,7 @@ fn new_parser(tokens: Vec[lexer::Token], source_len: isize) -> Parser {
 }
 
 impl Parser {
-    pub fn report_stuck(self: Parser) -> unit {
+    pub fn report_stuck(self: Parser) -> () {
         if !self.stuck_reported.get() {
             let (start, end) = current_range(self);
             self.diagnostics.push(
@@ -279,7 +279,7 @@ impl Parser {
         }
     }
 
-    pub fn expect_lower_ident(self: Parser, role: string) -> unit {
+    pub fn expect_lower_ident(self: Parser, role: string) -> () {
         if self.at_lower_ident() {
             self.advance()
         } else if self.at(lexer::TokenKind::Ident) {
@@ -290,7 +290,7 @@ impl Parser {
         }
     }
 
-    pub fn expect_upper_ident(self: Parser, role: string) -> unit {
+    pub fn expect_upper_ident(self: Parser, role: string) -> () {
         if self.at_upper_ident() {
             self.advance()
         } else if self.at(lexer::TokenKind::Ident) {
@@ -310,7 +310,7 @@ impl Parser {
         }
     }
 
-    pub fn expect(self: Parser, kind: lexer::TokenKind) -> unit {
+    pub fn expect(self: Parser, kind: lexer::TokenKind) -> () {
         if self.depth_limit_hit.get() {} else if self.eat(kind) {} else {
             let actual = self.peek();
             let message = "expect \"" + lexer::token_kind_display(kind) + "\", actual \""
@@ -324,7 +324,7 @@ impl Parser {
         }
     }
 
-    pub fn advance(self: Parser) -> unit {
+    pub fn advance(self: Parser) -> () {
         match current_lex_error(self) {
             Some(value) => self.events.push(
                 Event::Error { message: value.message, start: value.start, end: value.end },
@@ -337,22 +337,22 @@ impl Parser {
         self.events.push(Event::Advance)
     }
 
-    pub fn error(self: Parser, message: string) -> unit {
+    pub fn error(self: Parser, message: string) -> () {
         let (start, end) = current_range(self);
         self.events.push(Event::Error { message, start, end })
     }
 
-    pub fn missing(self: Parser, message: string) -> unit {
+    pub fn missing(self: Parser, message: string) -> () {
         let (start, end) = missing_range(self);
         self.events.push(Event::Error { message, start, end })
     }
 
-    pub fn error_after_current(self: Parser, message: string) -> unit {
+    pub fn error_after_current(self: Parser, message: string) -> () {
         let (_, end) = current_range(self);
         self.events.push(Event::Error { message, start: end, end })
     }
 
-    pub fn advance_with_error(self: Parser, message: string) -> unit {
+    pub fn advance_with_error(self: Parser, message: string) -> () {
         if self.depth_limit_hit.get() {} else {
             let marker = self.open();
             match current_lex_error(self) {
@@ -383,7 +383,7 @@ impl Parser {
         self.enter_depth(self.expr_depth, "expression is too deeply nested")
     }
 
-    pub fn leave_expr(self: Parser) -> unit {
+    pub fn leave_expr(self: Parser) -> () {
         self.expr_depth.set(self.expr_depth.get() - 1)
     }
 
@@ -393,7 +393,7 @@ impl Parser {
         previous
     }
 
-    pub fn leave_select_guard(self: Parser, previous: isize) -> unit {
+    pub fn leave_select_guard(self: Parser, previous: isize) -> () {
         self.select_guard_depth.set(previous)
     }
 
@@ -405,7 +405,7 @@ impl Parser {
         self.enter_depth(self.pattern_depth, "pattern is too deeply nested")
     }
 
-    pub fn leave_pattern(self: Parser) -> unit {
+    pub fn leave_pattern(self: Parser) -> () {
         self.pattern_depth.set(self.pattern_depth.get() - 1)
     }
 
@@ -413,7 +413,7 @@ impl Parser {
         self.enter_depth(self.type_depth, "type is too deeply nested")
     }
 
-    pub fn leave_type(self: Parser) -> unit {
+    pub fn leave_type(self: Parser) -> () {
         self.type_depth.set(self.type_depth.get() - 1)
     }
 
@@ -470,7 +470,7 @@ fn element_byte_len(element: cst::CstElement) -> isize {
     }
 }
 
-fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
+fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> () {
     match stack.pop() {
         Some(value) => {
             let mut byte_len = 0;
@@ -488,7 +488,7 @@ fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
     }
 }
 
-fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
+fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> () {
     if !stack.is_empty() {
         stack[stack.len() - 1].children.push(cst::CstElement::Token(token))
     } else {}

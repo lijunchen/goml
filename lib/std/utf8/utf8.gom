@@ -59,15 +59,15 @@ fn continuation(value: byte) -> bool {
     value >= 128 && value <= 191
 }
 
-fn invalid(index: isize) -> Result[unit, Utf8Error] {
+fn invalid(index: isize) -> Result[(), Utf8Error] {
     Result::Err(Utf8Error::new(index, Option::Some(1)))
 }
 
-fn truncated(index: isize) -> Result[unit, Utf8Error] {
+fn truncated(index: isize) -> Result[(), Utf8Error] {
     Result::Err(Utf8Error::new(index, Option::None))
 }
 
-pub fn validate(bytes: Slice[byte]) -> Result[unit, Utf8Error] {
+pub fn validate(bytes: Slice[byte]) -> Result[(), Utf8Error] {
     let mut index = 0;
     while index < bytes.len() {
         let first = bytes.get(index);
@@ -156,7 +156,7 @@ pub fn encode_into(value: string, output: MutSlice[byte], offset: isize) -> Resu
     }
 }
 
-pub fn encode_to(value: string, output: bytes::Builder) -> unit {
+pub fn encode_to(value: string, output: bytes::Builder) -> () {
     output.extend(value.to_bytes().as_slice())
 }
 

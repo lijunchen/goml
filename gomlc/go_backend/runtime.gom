@@ -280,7 +280,7 @@ fn once_cell_get_or_init_item(instance: repr::TypeInstance) -> Item {
     )
 }
 
-pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[repr::Type]) -> unit {
+pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[repr::Type]) -> () {
     if !missing_types.is_empty() {
         items.push(missing_base_item())
     } else {}
@@ -616,13 +616,13 @@ enum RuntimeImport {
     Time,
 }
 
-fn require_runtime_import(imports: Vec[RuntimeImport], value: RuntimeImport) -> unit {
+fn require_runtime_import(imports: Vec[RuntimeImport], value: RuntimeImport) -> () {
     if !imports.contains(value) {
         imports.push(value)
     } else {}
 }
 
-fn collect_core_runtime_imports(imports: Vec[RuntimeImport], hook: resources::CoreRuntimeHook) -> unit {
+fn collect_core_runtime_imports(imports: Vec[RuntimeImport], hook: resources::CoreRuntimeHook) -> () {
     match hook {
         StringPrint | StringPrintln => require_runtime_import(imports, RuntimeImport::Os),
         Float32Hash | Float64Hash => require_runtime_import(imports, RuntimeImport::Math),
@@ -630,7 +630,7 @@ fn collect_core_runtime_imports(imports: Vec[RuntimeImport], hook: resources::Co
     }
 }
 
-fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRuntimeHook) -> unit {
+fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRuntimeHook) -> () {
     match hook {
         Canonicalize => require_runtime_import(imports, RuntimeImport::Filepath),
         Sha256File => {
@@ -654,7 +654,7 @@ fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRu
     }
 }
 
-fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRuntimeHook) -> unit {
+fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRuntimeHook) -> () {
     match hook {
         Print | Println | Eprint => require_runtime_import(imports, RuntimeImport::Os),
         ReadStdin | ReadStdinExact => {
@@ -674,7 +674,7 @@ fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRu
     }
 }
 
-fn collect_path_runtime_imports(imports: Vec[RuntimeImport], hook: resources::PathRuntimeHook) -> unit {
+fn collect_path_runtime_imports(imports: Vec[RuntimeImport], hook: resources::PathRuntimeHook) -> () {
     require_runtime_import(imports, RuntimeImport::Filepath);
     match hook {
         Separator => require_runtime_import(imports, RuntimeImport::Os),
@@ -682,7 +682,7 @@ fn collect_path_runtime_imports(imports: Vec[RuntimeImport], hook: resources::Pa
     }
 }
 
-fn collect_process_runtime_imports(imports: Vec[RuntimeImport], hook: resources::ProcessRuntimeHook) -> unit {
+fn collect_process_runtime_imports(imports: Vec[RuntimeImport], hook: resources::ProcessRuntimeHook) -> () {
     match hook {
         Exit => require_runtime_import(imports, RuntimeImport::Os),
         LookPath => require_runtime_import(imports, RuntimeImport::Exec),
@@ -709,7 +709,7 @@ fn collect_process_runtime_imports(imports: Vec[RuntimeImport], hook: resources:
     }
 }
 
-fn collect_task_runtime_imports(imports: Vec[RuntimeImport], hook: resources::TaskRuntimeHook) -> unit {
+fn collect_task_runtime_imports(imports: Vec[RuntimeImport], hook: resources::TaskRuntimeHook) -> () {
     require_runtime_import(imports, RuntimeImport::Context);
     require_runtime_import(imports, RuntimeImport::Sync);
     match hook {
@@ -721,7 +721,7 @@ fn collect_task_runtime_imports(imports: Vec[RuntimeImport], hook: resources::Ta
 fn collect_standard_runtime_imports(
     imports: Vec[RuntimeImport],
     hook: resources::StandardRuntimeHook,
-) -> unit {
+) -> () {
     match hook {
         Env(Args | CurrentDir | CurrentExe | Var | Vars) => {
             require_runtime_import(imports, RuntimeImport::Os)
@@ -748,7 +748,7 @@ fn collect_standard_runtime_imports(
     }
 }
 
-fn collect_runtime_hook_imports(imports: Vec[RuntimeImport], hook: resources::RuntimeHook) -> unit {
+fn collect_runtime_hook_imports(imports: Vec[RuntimeImport], hook: resources::RuntimeHook) -> () {
     match hook {
         Core(hook) => collect_core_runtime_imports(imports, hook),
         Standard(hook) => collect_standard_runtime_imports(imports, hook),
@@ -783,7 +783,7 @@ fn runtime_hook_needs_task_support(hook: resources::RuntimeHook) -> bool {
     }
 }
 
-fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> unit {
+fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> () {
     if required.is_empty() {
         return
     } else {};
@@ -955,7 +955,7 @@ pub fn emit_runtime_hook_items(
     items: Vec[Item],
     hooks: Vec[resources::RuntimeHook],
     intrinsics: Vec[string],
-) -> unit {
+) -> () {
     let required_imports: Vec[RuntimeImport] = Vec::new();
     for hook in hooks {
         collect_runtime_hook_imports(required_imports, hook)
@@ -3897,7 +3897,7 @@ fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
     }
 }
 
-fn collect_dyn_call_method(result: Vec[DynMethod], trait_name: string, value: anf::Value) -> unit {
+fn collect_dyn_call_method(result: Vec[DynMethod], trait_name: string, value: anf::Value) -> () {
     match value {
         DynCall { trait_name: owner, method_name: encoded, receiver: _, args, ty: ret_ty } => if owner
             == trait_name {
@@ -3914,7 +3914,7 @@ fn collect_dyn_call_method(result: Vec[DynMethod], trait_name: string, value: an
     }
 }
 
-fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: anf::Block) -> unit {
+fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: anf::Block) -> () {
     for bind in block.binds {
         match bind {
             Let(value) => {
@@ -4280,7 +4280,7 @@ pub fn emit_builtin_runtime_items(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
-) -> unit {
+) -> () {
     for instance in instances {
         if backend_names_match(instance.base_name, builtin.static_cell.name)
             && instance.args.len() == 1 {
@@ -4366,7 +4366,7 @@ pub fn emit_dyn_runtime_items(
     instances: Vec[repr::TypeInstance],
     functions: Vec[anf::Function],
     names: DynHelperNames,
-) -> unit {
+) -> () {
     let dyn_traits: Vec[string] = Vec::new();
     for ty in types {
         match repr::resolve_type(ty) {

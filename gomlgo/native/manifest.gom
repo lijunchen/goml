@@ -275,7 +275,7 @@ fn valid_exported_symbol(value: string) -> bool {
     true
 }
 
-fn validate_types(values: Vec[string], location: string) -> Result[unit, string] {
+fn validate_types(values: Vec[string], location: string) -> Result[(), string] {
     for value in values {
         if value == "" {
             return Result::Err(location + " contains an empty Go type")
@@ -297,7 +297,7 @@ fn emitted_type_byte(value: byte) -> bool {
         || value == b'*'
 }
 
-fn validate_emitted_types(values: Vec[string], location: string) -> Result[unit, string] {
+fn validate_emitted_types(values: Vec[string], location: string) -> Result[(), string] {
     validate_types(values, location)?;
     for value in values {
         for index in 0..value.byte_len() {
@@ -309,7 +309,7 @@ fn validate_emitted_types(values: Vec[string], location: string) -> Result[unit,
     Result::Ok(())
 }
 
-fn validate_call(value: NativeCallSpec) -> Result[unit, string] {
+fn validate_call(value: NativeCallSpec) -> Result[(), string] {
     if !valid_import_path(value.import_path) {
         return Result::Err("native call has invalid import path " + value.import_path)
     } else if value.import_path == NATIVE_BRIDGE_IMPORT_PATH {
@@ -356,7 +356,7 @@ fn validate_call(value: NativeCallSpec) -> Result[unit, string] {
     }
 }
 
-fn validate_type(value: NativeTypeSpec) -> Result[unit, string] {
+fn validate_type(value: NativeTypeSpec) -> Result[(), string] {
     if value.key == "" || !valid_import_path(value.import_path)
         || value.import_path == NATIVE_BRIDGE_IMPORT_PATH
         || !valid_exported_symbol(value.name) {
@@ -366,7 +366,7 @@ fn validate_type(value: NativeTypeSpec) -> Result[unit, string] {
     }
 }
 
-fn validate_global(value: NativeGlobalSpec) -> Result[unit, string] {
+fn validate_global(value: NativeGlobalSpec) -> Result[(), string] {
     if value.object_id < 0 || !valid_import_path(value.import_path)
         || value.import_path == NATIVE_BRIDGE_IMPORT_PATH
         || !valid_exported_symbol(value.name) {
@@ -376,7 +376,7 @@ fn validate_global(value: NativeGlobalSpec) -> Result[unit, string] {
     }
 }
 
-fn validate_proxy(value: NativeProxySpec) -> Result[unit, string] {
+fn validate_proxy(value: NativeProxySpec) -> Result[(), string] {
     if !valid_import_path(value.import_path) || !valid_exported_symbol(value.name) {
         return Result::Err("native proxy has invalid interface identity")
     } else if value.methods.is_empty() {
@@ -412,7 +412,7 @@ fn aggregate_field_type_supported(value: string) -> bool {
     }
 }
 
-fn validate_aggregate(value: NativeAggregateSpec) -> Result[unit, string] {
+fn validate_aggregate(value: NativeAggregateSpec) -> Result[(), string] {
     if value.key == "" || !valid_exported_symbol(value.name) || value.fields.is_empty() {
         return Result::Err("native aggregate has invalid identity")
     } else {};
@@ -528,13 +528,13 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
     )
 }
 
-fn append_field(builder: text::StringBuilder, value: string) -> unit {
+fn append_field(builder: text::StringBuilder, value: string) -> () {
     builder.write_string(value.byte_len().to_string());
     builder.write_string(":");
     builder.write_string(value)
 }
 
-fn append_types(builder: text::StringBuilder, values: Vec[string]) -> unit {
+fn append_types(builder: text::StringBuilder, values: Vec[string]) -> () {
     append_field(builder, values.len().to_string());
     for value in values {
         append_field(builder, value)

@@ -75,7 +75,7 @@ pub fn read_stdin_exact_structured(length: isize) -> Result[bytes::Bytes, Error]
     }
 }
 
-fn write_structured(stderr: bool, data: bytes::Bytes) -> Result[unit, Error] {
+fn write_structured(stderr: bool, data: bytes::Bytes) -> Result[(), Error] {
     let result = if stderr {
         host::write_stderr_v2(data.to_vec())
     } else {
@@ -101,27 +101,27 @@ fn write_structured(stderr: bool, data: bytes::Bytes) -> Result[unit, Error] {
     }
 }
 
-pub fn write_stdout_structured(data: bytes::Bytes) -> Result[unit, Error] {
+pub fn write_stdout_structured(data: bytes::Bytes) -> Result[(), Error] {
     write_structured(false, data)
 }
 
-pub fn write_stderr_structured(data: bytes::Bytes) -> Result[unit, Error] {
+pub fn write_stderr_structured(data: bytes::Bytes) -> Result[(), Error] {
     write_structured(true, data)
 }
 
-pub fn print[T: ToString](value: T) -> unit {
+pub fn print[T: ToString](value: T) -> () {
     host::print(ToString::to_string(value))
 }
 
-pub fn println[T: ToString](value: T) -> unit {
+pub fn println[T: ToString](value: T) -> () {
     host::println(ToString::to_string(value))
 }
 
-pub fn eprint[T: ToString](value: T) -> unit {
+pub fn eprint[T: ToString](value: T) -> () {
     host::eprint(ToString::to_string(value))
 }
 
-pub fn eprintln[T: ToString](value: T) -> unit {
+pub fn eprintln[T: ToString](value: T) -> () {
     host::eprint(ToString::to_string(value) + "\n")
 }
 
@@ -134,7 +134,7 @@ pub fn read_stdin() -> Result[bytes::Bytes, string] {
     }
 }
 
-pub fn write_stdout(data: bytes::Bytes) -> Result[unit, string] {
+pub fn write_stdout(data: bytes::Bytes) -> Result[(), string] {
     let (ok, err) = host::write_stdout(data.to_vec());
     if ok {
         Result::Ok(())
@@ -143,7 +143,7 @@ pub fn write_stdout(data: bytes::Bytes) -> Result[unit, string] {
     }
 }
 
-pub fn write_stderr(data: bytes::Bytes) -> Result[unit, string] {
+pub fn write_stderr(data: bytes::Bytes) -> Result[(), string] {
     let (ok, err) = host::write_stderr(data.to_vec());
     if ok {
         Result::Ok(())

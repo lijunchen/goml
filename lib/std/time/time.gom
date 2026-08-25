@@ -9,7 +9,7 @@ pub struct Duration {
 
 pub struct Timer {
     id: i64,
-    ready: Receiver[unit],
+    ready: Receiver[()],
 }
 
 impl Duration {
@@ -284,7 +284,7 @@ impl PartialEq for SystemTime {
 
 impl Eq for SystemTime {}
 
-pub fn sleep(duration: Duration) -> unit {
+pub fn sleep(duration: Duration) -> () {
     host::sleep_nanoseconds(duration.as_nanoseconds())
 }
 
@@ -294,7 +294,7 @@ impl Timer {
         Timer { id, ready }
     }
 
-    pub fn done(self: Timer) -> Receiver[unit] {
+    pub fn done(self: Timer) -> Receiver[()] {
         self.ready
     }
 
@@ -303,10 +303,10 @@ impl Timer {
     }
 }
 
-pub fn after(duration: Duration) -> Receiver[unit] {
+pub fn after(duration: Duration) -> Receiver[()] {
     Timer::new(duration).done()
 }
 
-pub fn sleep_with(cancel: task::CancelToken, duration: Duration) -> task::WaitResult[unit] {
+pub fn sleep_with(cancel: task::CancelToken, duration: Duration) -> task::WaitResult[()] {
     task::sleep_nanoseconds_with(cancel, duration.as_nanoseconds())
 }

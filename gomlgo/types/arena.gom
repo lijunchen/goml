@@ -21,7 +21,7 @@ pub fn empty_world() -> World {
     }
 }
 
-fn advance_type_revision(world: World) -> unit {
+fn advance_type_revision(world: World) -> () {
     world.type_revision.set(world.type_revision.get() + 1)
 }
 
@@ -38,7 +38,7 @@ fn named_type_object(kind: TypeKind) -> isize {
     }
 }
 
-fn register_named_type(world: World, id: TypeId, object: isize) -> unit {
+fn register_named_type(world: World, id: TypeId, object: isize) -> () {
     match world.named_instances[object] {
         Some(instances) => instances.push(id),
         None => {
@@ -108,7 +108,7 @@ fn parent_scope_depth(world: World, parent: Option[ScopeId]) -> isize {
     }
 }
 
-fn update_scope_depth(world: World, scope: ScopeId, depth: isize) -> unit {
+fn update_scope_depth(world: World, scope: ScopeId, depth: isize) -> () {
     if valid_scope(world, scope) {
         world.scopes[scope.value].depth = depth;
         for child in world.scopes[scope.value].children {
@@ -117,7 +117,7 @@ fn update_scope_depth(world: World, scope: ScopeId, depth: isize) -> unit {
     } else {}
 }
 
-fn remove_scope_child(world: World, parent: ScopeId, child: ScopeId) -> unit {
+fn remove_scope_child(world: World, parent: ScopeId, child: ScopeId) -> () {
     if valid_scope(world, parent) {
         let children: Vec[ScopeId] = Vec::with_capacity(world.scopes[parent.value].children.len());
         for candidate in world.scopes[parent.value].children {

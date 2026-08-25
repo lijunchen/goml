@@ -504,7 +504,7 @@ fn collect_function_sources(
 fn inherit_literal_type_parameters(
     program: execution::ExecutionProgram,
     sources: Vec[FunctionSource],
-) -> unit {
+) -> () {
     let ranges: Vec[FunctionSourceRange] = Vec::with_capacity(sources.len());
     for index in 0..sources.len() {
         let source = sources[index];
@@ -889,10 +889,7 @@ fn current_terminated(builder: FunctionBuilder) -> bool {
     block_terminated(builder, builder.current.get())
 }
 
-fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -> Result[
-    unit,
-    string,
-] {
+fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -> Result[(), string] {
     if current_terminated(builder) {
         let description = match syntax::get_node(builder.syntax.arena, node) {
             Some(value) => syntax::syntax_kind_name(value.kind) + " " + value.path,
@@ -913,7 +910,7 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
 }
 
 fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKind) -> Result[
-    unit,
+    (),
     string,
 ] {
     if current_terminated(builder) {
@@ -930,7 +927,7 @@ fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKin
     Result::Ok(())
 }
 
-fn switch_to(builder: FunctionBuilder, block: BlockId) -> unit {
+fn switch_to(builder: FunctionBuilder, block: BlockId) -> () {
     builder.current.set(block)
 }
 
@@ -3100,7 +3097,7 @@ fn store_assignment_values(
     target_nodes: Vec[syntax::NodeId],
     targets: Vec[AssignmentTarget],
     values: Vec[RegisterId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if targets.len() != values.len() {
         return Result::Err(
             "assignment has " + targets.len().to_string() + " targets and "
@@ -3139,7 +3136,7 @@ fn store_values(
     node: syntax::NodeId,
     places: Vec[Option[PlaceId]],
     values: Vec[RegisterId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if places.len() != values.len() {
         return Result::Err(
             "assignment has " + places.len().to_string() + " targets and "
@@ -3160,7 +3157,7 @@ fn store_values(
     Result::Ok(())
 }
 
-fn renew_definition_local(builder: FunctionBuilder, node: syntax::NodeId) -> Result[unit, string] {
+fn renew_definition_local(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), string] {
     match definition_object(builder, node) {
         Ok(Some(object)) => if object.value >= 0 && object.value < builder.object_globals.len()
             && builder.object_globals[object.value].is_none() {
@@ -3179,7 +3176,7 @@ fn lower_assignment(
     left: Vec[syntax::NodeId],
     token: string,
     right: Vec[syntax::NodeId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if token == ":=" {
         for target in left {
             renew_definition_local(builder, target)?
@@ -3240,7 +3237,7 @@ fn lower_value_spec(
     node: syntax::NodeId,
     names: Vec[syntax::NodeId],
     values: Vec[syntax::NodeId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     for name in names {
         renew_definition_local(builder, name)?
     }
@@ -3277,7 +3274,7 @@ fn lower_value_spec(
     store_values(builder, node, places, coerced)
 }
 
-fn lower_declaration(builder: FunctionBuilder, node: syntax::NodeId) -> Result[unit, string] {
+fn lower_declaration(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), string] {
     match node_kind(builder, node) {
         syntax::SyntaxKind::GenDecl { token_pos: _, token, lparen: _, specs, rparen: _ } => {
             if token == "var" {
@@ -3298,14 +3295,14 @@ fn lower_declaration(builder: FunctionBuilder, node: syntax::NodeId) -> Result[u
     }
 }
 
-fn ensure_open_block(builder: FunctionBuilder) -> unit {
+fn ensure_open_block(builder: FunctionBuilder) -> () {
     if current_terminated(builder) {
         switch_to(builder, new_block(builder))
     } else {}
 }
 
 fn lower_return(builder: FunctionBuilder, node: syntax::NodeId, expressions: Vec[syntax::NodeId]) -> Result[
-    unit,
+    (),
     string,
 ] {
     let values = if expressions.is_empty() {
@@ -3342,7 +3339,7 @@ fn lower_if(
     condition: syntax::NodeId,
     body: syntax::NodeId,
     else_branch: Option[syntax::NodeId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match initialization {
         Some(value) => lower_statement(builder, value)?,
         None => {},
@@ -3411,7 +3408,7 @@ fn lower_for(
     post: Option[syntax::NodeId],
     body: syntax::NodeId,
     label: Option[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let iteration_locals = for_definition_locals(builder, initialization)?;
     match initialization {
         Some(value) => lower_statement(builder, value)?,
@@ -3495,7 +3492,7 @@ fn renew_range_definition_locals(
     key: Option[syntax::NodeId],
     value: Option[syntax::NodeId],
     define: bool,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if !define {
         return Result::Ok(())
     } else {};
@@ -3525,7 +3522,7 @@ fn store_range_value(
     node: syntax::NodeId,
     target: Option[PlaceId],
     value: Option[RegisterId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match (target, value) {
         (Some(target), Some(value)) => {
             emit(builder, node, InstructionKind::Store { target, value })
@@ -3539,7 +3536,7 @@ fn install_range_label(
     label: Option[string],
     break_target: BlockId,
     continue_target: BlockId,
-) -> unit {
+) -> () {
     match label {
         Some(name) => {
             builder.break_labels[name] = break_target;
@@ -3549,7 +3546,7 @@ fn install_range_label(
     }
 }
 
-fn remove_range_label(builder: FunctionBuilder, label: Option[string]) -> unit {
+fn remove_range_label(builder: FunctionBuilder, label: Option[string]) -> () {
     match label {
         Some(name) => {
             let _ = builder.break_labels.remove(name);
@@ -3570,7 +3567,7 @@ fn lower_map_range(
     define: bool,
     body: syntax::NodeId,
     label: Option[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let int_type = go_types::basic_type(builder.world, "int").ok_or("world has no int type")?;
     let bool_type = go_types::basic_type(builder.world, "bool").ok_or("world has no bool type")?;
     let iterator = new_register(builder, int_type);
@@ -3640,7 +3637,7 @@ fn lower_channel_range(
     define: bool,
     body: syntax::NodeId,
     label: Option[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if value.is_some() {
         return Result::Err("channel range has more than one iteration variable")
     } else {};
@@ -3947,7 +3944,7 @@ fn lower_indexed_range(
     body: syntax::NodeId,
     label: Option[string],
     source: IndexedRangeSource,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let bound = lower_range_bound(builder, expression, source)?;
     let initial = emit_zero(builder, node, bound.index_type)?;
     let condition_block = new_block(builder);
@@ -4026,7 +4023,7 @@ fn lower_range(
     expression: syntax::NodeId,
     body: syntax::NodeId,
     label: Option[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let define = token == ":=";
     match lower_range_source(builder, expression)? {
         LoweredRangeSource::Map { source, key_type, value_type } => lower_map_range(
@@ -4109,7 +4106,7 @@ fn lower_switch(
     tag: Option[syntax::NodeId],
     body: syntax::NodeId,
     label: Option[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match initialization {
         Some(value) => lower_statement(builder, value)?,
         None => {},
@@ -4304,7 +4301,7 @@ fn lower_type_switch(
     assignment: syntax::NodeId,
     body: syntax::NodeId,
     label: Option[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match initialization {
         Some(value) => lower_statement(builder, value)?,
         None => {},
@@ -4556,7 +4553,7 @@ fn lower_select_operation(builder: FunctionBuilder, clause: SelectClause) -> Res
     }
 }
 
-fn lower_select_binding(builder: FunctionBuilder, clause: SelectClause) -> Result[unit, string] {
+fn lower_select_binding(builder: FunctionBuilder, clause: SelectClause) -> Result[(), string] {
     match clause.receive.get() {
         Some(binding) => if !binding.left.is_empty() {
             if binding.token == ":=" {
@@ -4583,7 +4580,7 @@ fn lower_select(
     node: syntax::NodeId,
     body: syntax::NodeId,
     label: Option[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let clauses = select_clauses(builder, body)?;
     let cases: Vec[SelectCase] = Vec::new();
     for clause in clauses {
@@ -4635,7 +4632,7 @@ fn lower_branch(
     node: syntax::NodeId,
     token: string,
     label: Option[syntax::NodeId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let target = if token == "break" {
         match label {
             Some(value) => {
@@ -4681,7 +4678,7 @@ fn lower_call_statement(
     node: syntax::NodeId,
     call: syntax::NodeId,
     deferred: bool,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match node_kind(builder, call) {
         syntax::SyntaxKind::CallExpr { function, lparen: _, arguments, ellipsis, rparen: _ } => {
             let target = lower_call_target(builder, function)?;
@@ -4701,7 +4698,7 @@ fn lower_call_statement(
 }
 
 fn lower_statement_list(builder: FunctionBuilder, statements: Vec[syntax::NodeId]) -> Result[
-    unit,
+    (),
     string,
 ] {
     for statement in statements {
@@ -4711,7 +4708,7 @@ fn lower_statement_list(builder: FunctionBuilder, statements: Vec[syntax::NodeId
     Result::Ok(())
 }
 
-fn lower_statement(builder: FunctionBuilder, node: syntax::NodeId) -> Result[unit, string] {
+fn lower_statement(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), string] {
     match node_kind(builder, node) {
         syntax::SyntaxKind::BlockStmt { lbrace: _, list, rbrace: _ } => {
             lower_statement_list(builder, list)
@@ -4896,7 +4893,7 @@ fn lower_statement(builder: FunctionBuilder, node: syntax::NodeId) -> Result[uni
     }
 }
 
-fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[unit, string] {
+fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), string] {
     match node_kind(builder, node) {
         syntax::SyntaxKind::LabeledStmt { label, colon: _, statement } => {
             let name = identifier(builder, label)?;
@@ -5012,7 +5009,7 @@ fn append_parameter_local(
     builder: FunctionBuilder,
     object: Option[go_types::ObjectId],
     variable: go_types::Variable,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let local = ensure_local(
         builder,
         object,
@@ -5027,7 +5024,7 @@ fn append_result_local(
     builder: FunctionBuilder,
     object: Option[go_types::ObjectId],
     variable: go_types::Variable,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let local = ensure_local(
         builder,
         object,
@@ -5042,7 +5039,7 @@ fn initialize_signature_locals(
     builder: FunctionBuilder,
     receiver_node: Option[syntax::NodeId],
     type_node: syntax::NodeId,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let (params_node, results_node) = match node_kind(builder, type_node) {
         syntax::SyntaxKind::FuncType { func_pos: _, type_params: _, params, results } => {
             (params, results)
@@ -5455,7 +5452,7 @@ fn seed_function_instances(
     pending: Vec[FunctionSource],
     instance_captures: Vec[FunctionCaptures],
     next_function: Ref[isize],
-) -> unit {
+) -> () {
     for template in templates {
         if template.type_parameters.is_empty() {
             let function = function_id(next_function.get());
@@ -5513,7 +5510,7 @@ fn lower_pending_functions(
     functions: Vec[BytecodeFunction],
     lowered: Ref[isize],
     diagnostics: Vec[LowerDiagnostic],
-) -> unit {
+) -> () {
     while lowered.get() < pending.len() {
         let source = pending[lowered.get()];
         lowered.set(lowered.get() + 1);

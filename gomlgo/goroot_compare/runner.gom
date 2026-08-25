@@ -82,7 +82,7 @@ fn collect_packages(
     directory: string,
     include_cmd: bool,
     packages: Vec[string],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let name = path::file_name(directory).unwrap_or("");
     if excluded_directory(name) || (!include_cmd && directory == path::join(root, "cmd")) {
         return Result::Ok(())

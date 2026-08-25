@@ -38,7 +38,7 @@ fn hex_digit(value: u8) -> char {
     }
 }
 
-fn write_string_literal(builder: text::StringBuilder, value: string) -> unit {
+fn write_string_literal(builder: text::StringBuilder, value: string) -> () {
     builder.write_char('"');
     let mut index = 0;
     while index < value.byte_len() {
@@ -843,7 +843,7 @@ fn item_docs(values: Vec[Item]) -> Vec[pretty::Doc] {
         work.push((index, values[index]));
         docs.push(Option::None)
     }
-    let completed: Result[unit, Vec[task::IndexedError[unit]]] = task::for_each_concurrent(
+    let completed: Result[(), Vec[task::IndexedError[()]]] = task::for_each_concurrent(
         8,
         work,
         |_: task::CancelToken, item: (isize, Item)| {

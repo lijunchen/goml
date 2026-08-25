@@ -269,7 +269,7 @@ fn artifact_standard_needs_from_units(
     needs
 }
 
-fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Result[unit, string] {
+fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Result[(), string] {
     for module in comptime_modules {
         let dependencies: Vec[ctir::CtModule] = Vec::new();
         for candidate in comptime_modules {
@@ -435,7 +435,7 @@ fn artifact_validate_entrypoint(
     package_name: string,
     declared_name: string,
     exports: artifact::ArtifactPackageExports,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let diagnostics = artifact_entrypoint_diagnostics(package_name, declared_name, exports);
     if diagnostics.is_empty() {
         Result::Ok(())
@@ -539,7 +539,7 @@ fn artifact_apply_declared_package_aliases(
     files: Vec[hir::File],
     sources: Vec[ast::LowerResult],
     units: Vec[artifact::ArtifactInterfaceUnit],
-) -> unit {
+) -> () {
     for file_index in 0..files.len() {
         let file = files[file_index];
         for alias_index in 0..file.import_aliases.len() {
@@ -977,7 +977,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
 }
 
 fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> Result[
-    unit,
+    (),
     string,
 ] {
     for value in values {

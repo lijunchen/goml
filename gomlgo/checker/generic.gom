@@ -64,7 +64,7 @@ fn generic_type_name(state: CheckState, value: go_types::TypeId) -> Option[strin
     }
 }
 
-fn record_instance(state: CheckState, fact: InstanceFact) -> unit {
+fn record_instance(state: CheckState, fact: InstanceFact) -> () {
     for existing in state.info.instances {
         if existing.node.value == fact.node.value {
             return
@@ -367,7 +367,7 @@ fn record_instantiated_type(
     node: syntax::NodeId,
     arguments: Vec[go_types::TypeId],
     result: go_types::TypeId,
-) -> unit {
+) -> () {
     record_instance(
         state,
         InstanceFact {
@@ -592,7 +592,7 @@ fn verify_type_arguments(
     node: syntax::NodeId,
     origin: go_types::TypeId,
     arguments: Vec[go_types::TypeId],
-) -> unit {
+) -> () {
     let parameters = generic_parameters(state, origin);
     for index in 0..parameters.len() {
         if index < arguments.len() {
@@ -782,7 +782,7 @@ fn constraint_mentions_type_inner(
     }
 }
 
-fn check_deferred_instances(state: CheckState) -> unit {
+fn check_deferred_instances(state: CheckState) -> () {
     let count = state.deferred_instances.len();
     for index in state.checked_deferred_instances..count {
         let pending = state.deferred_instances[index];
@@ -824,7 +824,7 @@ fn check_deferred_instances(state: CheckState) -> unit {
     state.checked_deferred_instances = count;
 }
 
-fn check_deferred_instance_counts(state: CheckState) -> unit {
+fn check_deferred_instance_counts(state: CheckState) -> () {
     for index in state.checked_deferred_instances..state.deferred_instances.len() {
         let pending = state.deferred_instances[index];
         let mut preceding_constraint = false;
@@ -927,7 +927,7 @@ fn resolve_instantiated_type(
     result
 }
 
-fn flatten_union_terms(state: CheckState, value: go_types::TypeId, result: Vec[go_types::UnionTerm]) -> unit {
+fn flatten_union_terms(state: CheckState, value: go_types::TypeId, result: Vec[go_types::UnionTerm]) -> () {
     match go_types::get_type(state.world, value) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => for term in terms {
             result.push(term)
@@ -2154,7 +2154,7 @@ fn copy_inference_bindings(values: Vec[InferenceBinding]) -> Vec[InferenceBindin
     result
 }
 
-fn apply_inference_bindings(target: Vec[InferenceBinding], source: Vec[InferenceBinding]) -> unit {
+fn apply_inference_bindings(target: Vec[InferenceBinding], source: Vec[InferenceBinding]) -> () {
     for target_index in 0..target.len() {
         for source_value in source {
             if target[target_index].object.value == source_value.object.value {
@@ -2346,7 +2346,7 @@ fn infer_from_parameter_constraints(
     state: CheckState,
     parameters: Vec[go_types::TypeParameter],
     bindings: Vec[InferenceBinding],
-) -> unit {
+) -> () {
     for _ in 0..parameters.len() {
         let before = inferred_binding_count(bindings);
         for index in 0..parameters.len() {
@@ -2534,7 +2534,7 @@ fn infer_from_generic_argument_targets(
     state: CheckState,
     pairs: Vec[InferencePair],
     bindings: Vec[InferenceBinding],
-) -> unit {
+) -> () {
     for pair in pairs {
         let parameters = generic_parameters(state, pair.actual);
         if parameters.is_empty() {} else {

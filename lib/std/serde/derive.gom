@@ -219,7 +219,7 @@ fn type_seen(input: DeriveInput, variant: isize, field: isize, ty: MetaType) -> 
 }
 
 #[comptime_derive]
-fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> unit {
+fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> () {
     if derive_item_kind(input) == 0 {
         let mut field = 0;
         while field < derive_field_count(input) {

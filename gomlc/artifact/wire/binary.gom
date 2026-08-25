@@ -28,23 +28,23 @@ pub fn artifact_binary_writer_finish(writer: ArtifactBinaryWriter) -> bytes::Byt
     writer.data.finish()
 }
 
-fn artifact_binary_write_u8(writer: ArtifactBinaryWriter, value: u8) -> unit {
+fn artifact_binary_write_u8(writer: ArtifactBinaryWriter, value: u8) -> () {
     writer.data.write_u8(value)
 }
 
-fn artifact_binary_write_u16(writer: ArtifactBinaryWriter, value: u16) -> unit {
+fn artifact_binary_write_u16(writer: ArtifactBinaryWriter, value: u16) -> () {
     writer.data.write_u16(value, endian::Endian::Little)
 }
 
-fn artifact_binary_write_u32(writer: ArtifactBinaryWriter, value: u32) -> unit {
+fn artifact_binary_write_u32(writer: ArtifactBinaryWriter, value: u32) -> () {
     writer.data.write_u32(value, endian::Endian::Little)
 }
 
-pub fn artifact_binary_write_u64(writer: ArtifactBinaryWriter, value: u64) -> unit {
+pub fn artifact_binary_write_u64(writer: ArtifactBinaryWriter, value: u64) -> () {
     writer.data.write_u64(value, endian::Endian::Little)
 }
 
-fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: u64) -> unit {
+fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: u64) -> () {
     let mut remaining = value;
     while remaining >= 128 {
         writer.data.push(((remaining & 127).to_u8()) | 128);
@@ -53,11 +53,11 @@ fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: u64) -> un
     writer.data.push(remaining.to_u8())
 }
 
-fn artifact_binary_write_zigzag(writer: ArtifactBinaryWriter, value: i64) -> unit {
+fn artifact_binary_write_zigzag(writer: ArtifactBinaryWriter, value: i64) -> () {
     artifact_binary_write_uleb128(writer, ((value << 1) ^ (value >> 63)).to_u64())
 }
 
-fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> unit {
+fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> () {
     artifact_binary_write_u8(
         writer,
         if value {
@@ -68,21 +68,21 @@ fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> unit
     )
 }
 
-fn artifact_binary_write_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> unit {
+fn artifact_binary_write_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> () {
     artifact_binary_write_uleb128(writer, value.len().to_u64());
     writer.data.extend(value.as_slice())
 }
 
-fn artifact_binary_write_raw_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> unit {
+fn artifact_binary_write_raw_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> () {
     writer.data.extend(value.as_slice())
 }
 
-pub fn artifact_binary_write_string(writer: ArtifactBinaryWriter, value: string) -> unit {
+pub fn artifact_binary_write_string(writer: ArtifactBinaryWriter, value: string) -> () {
     artifact_binary_write_bytes(writer, bytes::Bytes::from_string(value))
 }
 
 fn artifact_binary_patch_u32(writer: ArtifactBinaryWriter, offset: isize, value: u32) -> Result[
-    unit,
+    (),
     string,
 ] {
     let output = writer.data.to_vec().as_mut_slice();
@@ -93,7 +93,7 @@ fn artifact_binary_patch_u32(writer: ArtifactBinaryWriter, offset: isize, value:
 }
 
 fn artifact_binary_patch_u64(writer: ArtifactBinaryWriter, offset: isize, value: u64) -> Result[
-    unit,
+    (),
     string,
 ] {
     let output = writer.data.to_vec().as_mut_slice();
@@ -107,7 +107,7 @@ pub fn artifact_binary_reader_offset(reader: ArtifactBinaryReader) -> isize {
     reader.offset.get()
 }
 
-pub fn artifact_binary_reader_set_offset(reader: ArtifactBinaryReader, value: isize) -> unit {
+pub fn artifact_binary_reader_set_offset(reader: ArtifactBinaryReader, value: isize) -> () {
     reader.offset.set(value)
 }
 
@@ -250,7 +250,7 @@ pub fn artifact_binary_read_string(reader: ArtifactBinaryReader) -> Result[strin
     }
 }
 
-fn artifact_binary_skip(reader: ArtifactBinaryReader, length: isize) -> Result[unit, string] {
+fn artifact_binary_skip(reader: ArtifactBinaryReader, length: isize) -> Result[(), string] {
     if length < 0 || length > artifact_binary_reader_remaining(reader) {
         Result::Err(artifact_binary_reader_error(reader, "skip exceeds input"))
     } else {

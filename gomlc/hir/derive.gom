@@ -25,7 +25,7 @@ fn type_for_name(name: string) -> ast::TypeExpr {
     ast::TypeExpr::Con { path: one_segment_path(name) }
 }
 
-fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::Diagnostic]) -> unit {
+fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::Diagnostic]) -> () {
     for attr in attrs {
         if attr.name == "derive" {
             for arg in attr.args {
@@ -44,7 +44,7 @@ fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::
     }
 }
 
-fn validate_file_derives(value: ast::File, diagnostics: Vec[cst::Diagnostic]) -> unit {
+fn validate_file_derives(value: ast::File, diagnostics: Vec[cst::Diagnostic]) -> () {
     for item in value.items {
         match item {
             StructDef(definition) => validate_derive_attributes(definition.attrs, diagnostics),
@@ -316,7 +316,7 @@ fn append_imported_derives(
     package_name: string,
     export_name: string,
     local_name: string,
-) -> unit {
+) -> () {
     for value in module_imported_derives(environment, package_name, export_name, local_name) {
         result.push(value)
     }

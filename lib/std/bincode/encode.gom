@@ -17,7 +17,7 @@ fn variable_ints(config: Config) -> bool {
     }
 }
 
-fn push_fixed(output: Vec[byte], value: u64, width: isize, config: Config) -> unit {
+fn push_fixed(output: Vec[byte], value: u64, width: isize, config: Config) -> () {
     let mut index = 0;
     while index < width {
         let position = if little_endian(config) {
@@ -30,7 +30,7 @@ fn push_fixed(output: Vec[byte], value: u64, width: isize, config: Config) -> un
     }
 }
 
-fn push_variable(output: Vec[byte], value: u64, config: Config) -> unit {
+fn push_variable(output: Vec[byte], value: u64, config: Config) -> () {
     if value < 251 {
         output.push(value.to_u8())
     } else if value <= 65535 {
@@ -53,7 +53,7 @@ fn normalized_width(width: isize) -> isize {
     }
 }
 
-fn push_unsigned(output: Vec[byte], value: u64, width: isize, config: Config) -> unit {
+fn push_unsigned(output: Vec[byte], value: u64, width: isize, config: Config) -> () {
     let actual_width = normalized_width(width);
     if actual_width == 8 {
         output.push(value.to_u8())
@@ -68,7 +68,7 @@ fn zigzag(value: i64) -> u64 {
     ((value.to_u64()) << 1) ^ ((value >> 63).to_u64())
 }
 
-fn push_signed(output: Vec[byte], value: i64, width: isize, config: Config) -> unit {
+fn push_signed(output: Vec[byte], value: i64, width: isize, config: Config) -> () {
     let actual_width = normalized_width(width);
     if actual_width == 8 {
         output.push(value.to_u8())
@@ -79,7 +79,7 @@ fn push_signed(output: Vec[byte], value: i64, width: isize, config: Config) -> u
     }
 }
 
-fn push_length(output: Vec[byte], value: isize, config: Config) -> Result[unit, string] {
+fn push_length(output: Vec[byte], value: isize, config: Config) -> Result[(), string] {
     if value < 0 {
         Result::Err("negative collection length")
     } else {
@@ -88,7 +88,7 @@ fn push_length(output: Vec[byte], value: isize, config: Config) -> Result[unit, 
     }
 }
 
-fn push_string(output: Vec[byte], value: string, config: Config) -> Result[unit, string] {
+fn push_string(output: Vec[byte], value: string, config: Config) -> Result[(), string] {
     let encoded = bytes::Bytes::from_string(value).to_vec();
     push_length(output, encoded.len(), config)?;
     for value in encoded {
@@ -97,7 +97,7 @@ fn push_string(output: Vec[byte], value: string, config: Config) -> Result[unit,
     Result::Ok(())
 }
 
-fn push_values(output: Vec[byte], values: Vec[serde::Value], config: Config) -> Result[unit, string] {
+fn push_values(output: Vec[byte], values: Vec[serde::Value], config: Config) -> Result[(), string] {
     for value in values {
         push_value(output, value, config)?
     }
@@ -105,7 +105,7 @@ fn push_values(output: Vec[byte], values: Vec[serde::Value], config: Config) -> 
 }
 
 fn push_fields(output: Vec[byte], fields: Vec[(string, serde::Value)], config: Config) -> Result[
-    unit,
+    (),
     string,
 ] {
     for field in fields {
@@ -114,10 +114,7 @@ fn push_fields(output: Vec[byte], fields: Vec[(string, serde::Value)], config: C
     Result::Ok(())
 }
 
-fn push_optional(output: Vec[byte], values: Vec[serde::Value], config: Config) -> Result[
-    unit,
-    string,
-] {
+fn push_optional(output: Vec[byte], values: Vec[serde::Value], config: Config) -> Result[(), string] {
     if values.len() == 0 {
         output.push(0);
         Result::Ok(())
@@ -129,7 +126,7 @@ fn push_optional(output: Vec[byte], values: Vec[serde::Value], config: Config) -
     }
 }
 
-fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[unit, string] {
+fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[(), string] {
     match value {
         serde::Value::Unit => Result::Ok(()),
         serde::Value::Bool(value) => {
@@ -261,7 +258,7 @@ fn bincode_serializer(config: Config) -> BincodeSerializer {
     }
 }
 
-fn claim_bincode_value(serializer: BincodeSerializer) -> Result[unit, string] {
+fn claim_bincode_value(serializer: BincodeSerializer) -> Result[(), string] {
     if serializer.frames.is_empty() {
         if serializer.root_written.get() {
             Result::Err("bincode serialization produced more than one root value")
@@ -316,7 +313,7 @@ fn claim_bincode_value(serializer: BincodeSerializer) -> Result[unit, string] {
     }
 }
 
-fn finish_bincode_serializer(serializer: BincodeSerializer) -> Result[unit, string] {
+fn finish_bincode_serializer(serializer: BincodeSerializer) -> Result[(), string] {
     if !serializer.frames.is_empty() {
         Result::Err("bincode serialization ended inside a compound value")
     } else if !serializer.root_written.get() {
@@ -327,11 +324,11 @@ fn finish_bincode_serializer(serializer: BincodeSerializer) -> Result[unit, stri
 }
 
 impl serde::Serializer for BincodeSerializer {
-    fn serialize_unit(self: BincodeSerializer) -> Result[unit, string] {
+    fn serialize_unit(self: BincodeSerializer) -> Result[(), string] {
         claim_bincode_value(self)
     }
 
-    fn serialize_bool(self: BincodeSerializer, value: bool) -> Result[unit, string] {
+    fn serialize_bool(self: BincodeSerializer, value: bool) -> Result[(), string] {
         claim_bincode_value(self)?;
         self.output.push(
             if value {
@@ -343,96 +340,96 @@ impl serde::Serializer for BincodeSerializer {
         Result::Ok(())
     }
 
-    fn serialize_int(self: BincodeSerializer, value: isize) -> Result[unit, string] {
+    fn serialize_int(self: BincodeSerializer, value: isize) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_signed(self.output, value.to_i64(), 0, self.config);
         Result::Ok(())
     }
 
-    fn serialize_int8(self: BincodeSerializer, value: i8) -> Result[unit, string] {
+    fn serialize_int8(self: BincodeSerializer, value: i8) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_signed(self.output, value.to_i64(), 8, self.config);
         Result::Ok(())
     }
 
-    fn serialize_int16(self: BincodeSerializer, value: i16) -> Result[unit, string] {
+    fn serialize_int16(self: BincodeSerializer, value: i16) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_signed(self.output, value.to_i64(), 16, self.config);
         Result::Ok(())
     }
 
-    fn serialize_int32(self: BincodeSerializer, value: i32) -> Result[unit, string] {
+    fn serialize_int32(self: BincodeSerializer, value: i32) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_signed(self.output, value.to_i64(), 32, self.config);
         Result::Ok(())
     }
 
-    fn serialize_int64(self: BincodeSerializer, value: i64) -> Result[unit, string] {
+    fn serialize_int64(self: BincodeSerializer, value: i64) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_signed(self.output, value, 64, self.config);
         Result::Ok(())
     }
 
-    fn serialize_uint(self: BincodeSerializer, value: usize) -> Result[unit, string] {
+    fn serialize_uint(self: BincodeSerializer, value: usize) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_unsigned(self.output, value.to_u64(), 0, self.config);
         Result::Ok(())
     }
 
-    fn serialize_uint8(self: BincodeSerializer, value: u8) -> Result[unit, string] {
+    fn serialize_uint8(self: BincodeSerializer, value: u8) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_unsigned(self.output, value.to_u64(), 8, self.config);
         Result::Ok(())
     }
 
-    fn serialize_uint16(self: BincodeSerializer, value: u16) -> Result[unit, string] {
+    fn serialize_uint16(self: BincodeSerializer, value: u16) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_unsigned(self.output, value.to_u64(), 16, self.config);
         Result::Ok(())
     }
 
-    fn serialize_uint32(self: BincodeSerializer, value: u32) -> Result[unit, string] {
+    fn serialize_uint32(self: BincodeSerializer, value: u32) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_unsigned(self.output, value.to_u64(), 32, self.config);
         Result::Ok(())
     }
 
-    fn serialize_uint64(self: BincodeSerializer, value: u64) -> Result[unit, string] {
+    fn serialize_uint64(self: BincodeSerializer, value: u64) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_unsigned(self.output, value, 64, self.config);
         Result::Ok(())
     }
 
-    fn serialize_float32(self: BincodeSerializer, value: f32) -> Result[unit, string] {
+    fn serialize_float32(self: BincodeSerializer, value: f32) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_fixed(self.output, value.to_bits().to_u64(), 4, self.config);
         Result::Ok(())
     }
 
-    fn serialize_float64(self: BincodeSerializer, value: f64) -> Result[unit, string] {
+    fn serialize_float64(self: BincodeSerializer, value: f64) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_fixed(self.output, value.to_bits(), 8, self.config);
         Result::Ok(())
     }
 
-    fn serialize_number(self: BincodeSerializer, value: string) -> Result[unit, string] {
+    fn serialize_number(self: BincodeSerializer, value: string) -> Result[(), string] {
         let _ = self;
         let _ = value;
         Result::Err("bincode requires a precise numeric type")
     }
 
-    fn serialize_string(self: BincodeSerializer, value: string) -> Result[unit, string] {
+    fn serialize_string(self: BincodeSerializer, value: string) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_string(self.output, value, self.config)
     }
 
-    fn serialize_char(self: BincodeSerializer, value: char) -> Result[unit, string] {
+    fn serialize_char(self: BincodeSerializer, value: char) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_unsigned(self.output, value.to_u32().to_u64(), 32, self.config);
         Result::Ok(())
     }
 
-    fn serialize_bytes(self: BincodeSerializer, value: Slice[byte]) -> Result[unit, string] {
+    fn serialize_bytes(self: BincodeSerializer, value: Slice[byte]) -> Result[(), string] {
         claim_bincode_value(self)?;
         push_length(self.output, value.len(), self.config)?;
         let mut index = 0;
@@ -443,7 +440,7 @@ impl serde::Serializer for BincodeSerializer {
         Result::Ok(())
     }
 
-    fn begin_optional(self: BincodeSerializer, present: bool) -> Result[unit, string] {
+    fn begin_optional(self: BincodeSerializer, present: bool) -> Result[(), string] {
         claim_bincode_value(self)?;
         self.output.push(
             if present {
@@ -456,7 +453,7 @@ impl serde::Serializer for BincodeSerializer {
         Result::Ok(())
     }
 
-    fn end_optional(self: BincodeSerializer) -> Result[unit, string] {
+    fn end_optional(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_optional without begin_optional")
         } else {};
@@ -471,7 +468,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_sequence(self: BincodeSerializer, length: isize) -> Result[unit, string] {
+    fn begin_sequence(self: BincodeSerializer, length: isize) -> Result[(), string] {
         if length < 0 {
             Result::Err("negative collection length")
         } else {
@@ -488,7 +485,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_sequence_element(self: BincodeSerializer, index: isize) -> Result[unit, string] {
+    fn begin_sequence_element(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("sequence element without sequence")
         } else {};
@@ -507,7 +504,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn end_sequence(self: BincodeSerializer) -> Result[unit, string] {
+    fn end_sequence(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_sequence without begin_sequence")
         } else {};
@@ -523,7 +520,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_tuple(self: BincodeSerializer, length: isize) -> Result[unit, string] {
+    fn begin_tuple(self: BincodeSerializer, length: isize) -> Result[(), string] {
         if length < 0 {
             Result::Err("tuple length cannot be negative")
         } else {
@@ -535,7 +532,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_tuple_element(self: BincodeSerializer, index: isize) -> Result[unit, string] {
+    fn begin_tuple_element(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("tuple element without tuple")
         } else {};
@@ -554,7 +551,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn end_tuple(self: BincodeSerializer) -> Result[unit, string] {
+    fn end_tuple(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_tuple without begin_tuple")
         } else {};
@@ -570,7 +567,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_map(self: BincodeSerializer, length: isize) -> Result[unit, string] {
+    fn begin_map(self: BincodeSerializer, length: isize) -> Result[(), string] {
         if length < 0 {
             Result::Err("negative collection length")
         } else {
@@ -583,7 +580,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_map_key(self: BincodeSerializer, index: isize) -> Result[unit, string] {
+    fn begin_map_key(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map key without map")
         } else {};
@@ -601,7 +598,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_map_value(self: BincodeSerializer, index: isize) -> Result[unit, string] {
+    fn begin_map_value(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map value without map")
         } else {};
@@ -618,7 +615,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn end_map(self: BincodeSerializer) -> Result[unit, string] {
+    fn end_map(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_map without begin_map")
         } else {};
@@ -634,7 +631,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_struct(self: BincodeSerializer, name: string, fields: isize) -> Result[unit, string] {
+    fn begin_struct(self: BincodeSerializer, name: string, fields: isize) -> Result[(), string] {
         let _ = name;
         if fields < 0 {
             Result::Err("struct field count cannot be negative")
@@ -651,10 +648,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn begin_struct_field(self: BincodeSerializer, index: isize, name: string) -> Result[
-        unit,
-        string,
-    ] {
+    fn begin_struct_field(self: BincodeSerializer, index: isize, name: string) -> Result[(), string] {
         let _ = name;
         if self.frames.is_empty() {
             return Result::Err("struct field without struct")
@@ -674,7 +668,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn end_struct(self: BincodeSerializer) -> Result[unit, string] {
+    fn end_struct(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_struct without begin_struct")
         } else {};
@@ -697,7 +691,7 @@ impl serde::Serializer for BincodeSerializer {
         name: string,
         kind: isize,
         fields: isize,
-    ) -> Result[unit, string] {
+    ) -> Result[(), string] {
         let _ = enum_name;
         let _ = name;
         if index < 0 {
@@ -723,7 +717,7 @@ impl serde::Serializer for BincodeSerializer {
     }
 
     fn begin_variant_field(self: BincodeSerializer, index: isize, name: string) -> Result[
-        unit,
+        (),
         string,
     ] {
         let _ = name;
@@ -745,7 +739,7 @@ impl serde::Serializer for BincodeSerializer {
         }
     }
 
-    fn end_variant(self: BincodeSerializer) -> Result[unit, string] {
+    fn end_variant(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_variant without begin_variant")
         } else {};

@@ -52,7 +52,7 @@ fn format_closing_delimiter(kind: lexer::TokenKind) -> bool {
     }
 }
 
-fn push_format_omission(values: Vec[FormatOmission], start: isize, end: isize) -> unit {
+fn push_format_omission(values: Vec[FormatOmission], start: isize, end: isize) -> () {
     values.push(FormatOmission { start, end })
 }
 
@@ -60,7 +60,7 @@ fn collect_statement_omissions(
     node: LocatedNode,
     following: Option[LocatedNode],
     result: Vec[FormatOmission],
-) -> unit {
+) -> () {
     let drop_semicolon = expression_statement_drops_semicolon(node, following);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
@@ -74,7 +74,7 @@ fn collect_statement_omissions(
     }
 }
 
-fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> unit {
+fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> () {
     let block_nodes = meaningful_block_nodes(node);
     let node_index: Ref[isize] = Ref::new(0);
     let cursor = child_cursor(node);
@@ -103,7 +103,7 @@ fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> un
     }
 }
 
-fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> unit {
+fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> () {
     if node_is(node, cst::NodeKind::BLOCK) {
         collect_block_omissions(node, result)
     } else {
@@ -117,7 +117,7 @@ fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> u
     }
 }
 
-fn collect_format_expansions(node: LocatedNode, result: Vec[FormatExpansion]) -> unit {
+fn collect_format_expansions(node: LocatedNode, result: Vec[FormatExpansion]) -> () {
     if node_is(node, cst::NodeKind::TYPE_FUNC) {
         let children = direct_nodes(node);
         if !children.is_empty() && node_is(children[0], cst::NodeKind::TYPE_UNIT) {

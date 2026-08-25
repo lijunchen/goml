@@ -51,7 +51,7 @@ fn names_match(left: string, right: string) -> bool {
         || (!right.contains("::") && short_name(left) == short_name(right))
 }
 
-fn add_impl_index(values: HashMap[string, Vec[isize]], value: ImplInfo, index: isize) -> unit {
+fn add_impl_index(values: HashMap[string, Vec[isize]], value: ImplInfo, index: isize) -> () {
     let name = short_name(value.trait_ref.name);
     values.entry(name).or_insert_with(|| Vec::new()).push(index)
 }
@@ -64,7 +64,7 @@ fn impl_name_index(values: Vec[ImplInfo]) -> HashMap[string, Vec[isize]] {
     result
 }
 
-fn push_impl_info(ctx: Checker, value: ImplInfo) -> unit {
+fn push_impl_info(ctx: Checker, value: ImplInfo) -> () {
     add_impl_index(ctx.impl_indices, value, ctx.impls.len());
     ctx.impls.push(value)
 }
@@ -78,7 +78,7 @@ fn add_name_index(
     short: HashMap[string, isize],
     name: string,
     index: isize,
-) -> unit {
+) -> () {
     exact[name] = index;
     let short_name = short_name(name);
     match short[short_name] {
@@ -107,11 +107,11 @@ fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, isize]
     result
 }
 
-fn index_enum_name(ctx: Checker, value: EnumInfo, index: isize) -> unit {
+fn index_enum_name(ctx: Checker, value: EnumInfo, index: isize) -> () {
     add_name_index(ctx.enum_names, ctx.enum_short_names, value.name, index)
 }
 
-fn index_struct_name(ctx: Checker, value: StructInfo, index: isize) -> unit {
+fn index_struct_name(ctx: Checker, value: StructInfo, index: isize) -> () {
     add_name_index(ctx.struct_names, ctx.struct_short_names, value.name, index)
 }
 
@@ -783,7 +783,7 @@ fn validate_explicit_method_type_arguments(
     label: string,
     params: Vec[string],
     explicit: Vec[Type],
-) -> unit {
+) -> () {
     if !explicit.is_empty() && explicit.len() != params.len() {
         push_diagnostic(
             ctx,
@@ -975,7 +975,7 @@ fn predicates_satisfied_at(ctx: Checker, predicates: Vec[TypePredicate], goals: 
     true
 }
 
-fn require_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> unit {
+fn require_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> () {
     for predicate in predicates {
         ctx.required_predicates.push(
             PredicateRequirement {
@@ -987,7 +987,7 @@ fn require_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> unit {
     }
 }
 
-fn require_predicate(ctx: Checker, predicate: TypePredicate, message: string) -> unit {
+fn require_predicate(ctx: Checker, predicate: TypePredicate, message: string) -> () {
     ctx.required_predicates.push(
         PredicateRequirement { predicate, message, span: ctx.current_span.get() },
     )
@@ -1150,7 +1150,7 @@ fn predicate_contains_error(value: TypePredicate) -> bool {
     }
 }
 
-fn mark_unresolved_inference_type(ctx: Checker, value: Type) -> unit {
+fn mark_unresolved_inference_type(ctx: Checker, value: Type) -> () {
     match prune(value) {
         Var(variable) => match variable.get() {
             Unbound { id: _, kind: Any } => {
@@ -1198,7 +1198,7 @@ fn mark_unresolved_inference_type(ctx: Checker, value: Type) -> unit {
     }
 }
 
-fn mark_unresolved_inference_predicate(ctx: Checker, value: TypePredicate) -> unit {
+fn mark_unresolved_inference_predicate(ctx: Checker, value: TypePredicate) -> () {
     match value {
         Trait { for_ty, trait_ref } => {
             mark_unresolved_inference_type(ctx, for_ty);
@@ -1571,7 +1571,7 @@ fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
     }
 }
 
-fn validate_impl_overlaps(ctx: Checker, local_impl_count: isize) -> unit {
+fn validate_impl_overlaps(ctx: Checker, local_impl_count: isize) -> () {
     for left in 0..local_impl_count {
         match impl_candidate_indices(ctx, ctx.impls[left].trait_ref.name) {
             Some(indices) => for right in indices {
@@ -1938,7 +1938,7 @@ fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
     }
 }
 
-fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
+fn require_hashmap_type(ctx: Checker, value: Type) -> () {
     match prune(normalize_type(ctx, value)) {
         HashMap { key, value: _ } => {
             for name in Vec::from_array([ctx.builtin.eq.name, ctx.builtin.hash.name]) {
@@ -2009,7 +2009,7 @@ fn predicate_equal(left: TypePredicate, right: TypePredicate) -> bool {
     }
 }
 
-fn push_predicate(values: Vec[TypePredicate], value: TypePredicate) -> unit {
+fn push_predicate(values: Vec[TypePredicate], value: TypePredicate) -> () {
     for existing in values {
         if predicate_equal(existing, value) {
             return
@@ -2299,7 +2299,7 @@ fn nominal_application_has_wrong_arity(ctx: Checker, value: Type) -> bool {
     }
 }
 
-fn validate_nominal_application(ctx: Checker, name: string, args: Vec[Type]) -> unit {
+fn validate_nominal_application(ctx: Checker, name: string, args: Vec[Type]) -> () {
     if derive::is_meta_type(name) {
         match ctx.comptime_capability {
             ComptimeCapability::Derive => (),
@@ -2350,7 +2350,7 @@ fn validate_nominal_application(ctx: Checker, name: string, args: Vec[Type]) -> 
     }
 }
 
-fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
+fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> () {
     match find_trait(ctx, reference.name) {
         Some(info) => if info.generics.len() != reference.args.len() {
             push_diagnostic(
@@ -2503,7 +2503,7 @@ fn dyn_parameter_types_contain_from(
     false
 }
 
-fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(string, Type)]) -> unit {
+fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(string, Type)]) -> () {
     for associated in info.associated_types {
         let mut found = false;
         for binding in associated_types {
@@ -2585,7 +2585,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(stri
     }
 }
 
-fn validate_signature_type(ctx: Checker, value: Type) -> unit {
+fn validate_signature_type(ctx: Checker, value: Type) -> () {
     match prune(value) {
         Con { name } => validate_nominal_application(ctx, name, Vec::new()),
         App { ty: base, args } => match prune(base) {

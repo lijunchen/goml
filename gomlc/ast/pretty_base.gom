@@ -248,7 +248,7 @@ fn pretty_hex_digit(value: u8) -> char {
     }
 }
 
-fn pretty_write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
+fn pretty_write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(pretty_hex_digit(value / 16))
@@ -257,7 +257,7 @@ fn pretty_write_control_escape(builder: text::StringBuilder, value: u8) -> unit 
     builder.write_char('}')
 }
 
-fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
+fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> () {
     builder.write_char('"');
     let mut index = 0;
     while index < value.byte_len() {

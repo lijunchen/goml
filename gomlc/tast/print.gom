@@ -37,7 +37,7 @@ fn hex_digit(value: u8) -> char {
     }
 }
 
-fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
+fn write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(hex_digit(value / 16))
@@ -46,7 +46,7 @@ fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
     builder.write_char('}')
 }
 
-fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
+fn write_quoted_string(builder: text::StringBuilder, value: string) -> () {
     builder.write_char('"');
     let mut index = 0;
     while index < value.byte_len() {
@@ -74,7 +74,7 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
-fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
+fn write_quoted_char(builder: text::StringBuilder, value: char) -> () {
     builder.write_char('\'');
     let code = value.to_u32();
     if value == '\'' {
@@ -284,7 +284,7 @@ fn write_type_values(
     values: Vec[Type],
     left: string,
     right: string,
-) -> unit {
+) -> () {
     builder.write_string(left);
     let mut first = true;
     for value in values {
@@ -302,7 +302,7 @@ fn write_dyn_bound_value(
     builtin: BuiltinContract,
     builder: text::StringBuilder,
     value: DynTraitBound,
-) -> unit {
+) -> () {
     builder.write_string(value.trait_name);
     if value.args.is_empty() && value.associated_types.is_empty() {} else {
         builder.write_char('[');
@@ -326,7 +326,7 @@ fn write_dyn_bound_value(
     }
 }
 
-fn write_type_value(builtin: BuiltinContract, builder: text::StringBuilder, value: Type) -> unit {
+fn write_type_value(builtin: BuiltinContract, builder: text::StringBuilder, value: Type) -> () {
     match prune(value) {
         Unit => builder.write_string("()"),
         Never => builder.write_string("never"),
@@ -423,7 +423,7 @@ fn write_type_value(builtin: BuiltinContract, builder: text::StringBuilder, valu
     }
 }
 
-pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {
+pub fn write_type(builder: text::StringBuilder, value: Type) -> () {
     match builtin_contract() {
         Ok(builtin) => write_type_value(builtin, builder, value),
         Err(error) => builder.write_string("<builtin contract error: " + error + ">"),
@@ -497,7 +497,7 @@ pub fn diagnostic_type_text(value: Type) -> string {
     type_text(diagnostic_type(value))
 }
 
-pub fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
+pub fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> () {
     builder.write_string(pretty::compact(trait_ref_doc(value)))
 }
 
@@ -516,7 +516,7 @@ fn trait_ref_text(value: TraitRef) -> string {
     pretty::compact(trait_ref_doc(value))
 }
 
-pub fn write_primitive(builder: text::StringBuilder, value: Primitive) -> unit {
+pub fn write_primitive(builder: text::StringBuilder, value: Primitive) -> () {
     match value {
         Unit => builder.write_string("()"),
         Bool { value } => builder.write_string(
@@ -584,11 +584,11 @@ fn pat_is_or(value: Pat) -> bool {
     }
 }
 
-pub fn write_const_expr(builder: text::StringBuilder, value: ConstExpr) -> unit {
+pub fn write_const_expr(builder: text::StringBuilder, value: ConstExpr) -> () {
     builder.write_string(pretty::compact(const_expr_doc(value)))
 }
 
-pub fn write_constant(builder: text::StringBuilder, value: Constant) -> unit {
+pub fn write_constant(builder: text::StringBuilder, value: Constant) -> () {
     builder.write_string(pretty::compact(constant_doc(value)))
 }
 

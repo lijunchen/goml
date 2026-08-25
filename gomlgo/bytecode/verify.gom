@@ -31,7 +31,7 @@ fn report(
     block: Option[BlockId],
     instruction: isize,
     message: string,
-) -> unit {
+) -> () {
     diagnostics.push(VerifyDiagnostic { function, block, instruction, message })
 }
 
@@ -241,7 +241,7 @@ fn check_register(
     block: BlockId,
     instruction: isize,
     register: RegisterId,
-) -> unit {
+) -> () {
     if !register_valid(function, register) {
         report(
             diagnostics,
@@ -259,7 +259,7 @@ fn check_registers(
     block: BlockId,
     instruction: isize,
     registers: Vec[RegisterId],
-) -> unit {
+) -> () {
     for register in registers {
         check_register(function, diagnostics, block, instruction, register)
     }
@@ -271,7 +271,7 @@ fn check_optional_register(
     block: BlockId,
     instruction: isize,
     register: Option[RegisterId],
-) -> unit {
+) -> () {
     match register {
         Some(value) => check_register(function, diagnostics, block, instruction, value),
         None => {},
@@ -284,7 +284,7 @@ fn check_place(
     block: BlockId,
     instruction: isize,
     place: PlaceId,
-) -> unit {
+) -> () {
     if !place_valid(function, place) {
         report(
             diagnostics,
@@ -302,7 +302,7 @@ fn check_places(
     block: BlockId,
     instruction: isize,
     places: Vec[PlaceId],
-) -> unit {
+) -> () {
     for place in places {
         check_place(function, diagnostics, block, instruction, place)
     }
@@ -314,7 +314,7 @@ fn check_local(
     block: BlockId,
     instruction: isize,
     local: LocalId,
-) -> unit {
+) -> () {
     if !local_valid(function, local) {
         report(
             diagnostics,
@@ -332,7 +332,7 @@ fn check_locals(
     block: BlockId,
     instruction: isize,
     locals: Vec[LocalId],
-) -> unit {
+) -> () {
     for local in locals {
         check_local(function, diagnostics, block, instruction, local)
     }
@@ -433,7 +433,7 @@ fn check_register_type(
     register: RegisterId,
     expected: go_types::TypeId,
     message: string,
-) -> unit {
+) -> () {
     match verified_register_type(function, register) {
         Some(actual) => if !go_types::identical(program.world, actual, expected) {
             report(
@@ -456,7 +456,7 @@ fn check_bool_register(
     instruction: isize,
     register: RegisterId,
     message: string,
-) -> unit {
+) -> () {
     match verified_register_type(function, register) {
         Some(type_id) => if !verified_bool_type(program, type_id) {
             report(
@@ -479,7 +479,7 @@ fn check_integer_register(
     instruction: isize,
     register: RegisterId,
     message: string,
-) -> unit {
+) -> () {
     match verified_register_type(function, register) {
         Some(type_id) => if !go_types::is_integer(program.world, type_id) {
             report(
@@ -502,7 +502,7 @@ fn check_optional_bool_register(
     instruction: isize,
     register: Option[RegisterId],
     message: string,
-) -> unit {
+) -> () {
     match register {
         Some(value) => check_bool_register(
             program,
@@ -550,7 +550,7 @@ fn check_call_target(
     block: BlockId,
     instruction: isize,
     target: CallTarget,
-) -> unit {
+) -> () {
     match target {
         CallTarget::Static(value) => if !function_valid(program, value) {
             report(
@@ -680,7 +680,7 @@ fn check_channel_send(
     instruction: isize,
     channel: RegisterId,
     value: RegisterId,
-) -> unit {
+) -> () {
     match checked_channel_register(program, function, diagnostics, block, instruction, channel) {
         Some((direction, element)) => {
             if direction == 2 {
@@ -716,7 +716,7 @@ fn check_channel_receive(
     channel: RegisterId,
     value: RegisterId,
     ok: Option[RegisterId],
-) -> unit {
+) -> () {
     match checked_channel_register(program, function, diagnostics, block, instruction, channel) {
         Some((direction, element)) => {
             if direction == 1 {
@@ -775,7 +775,7 @@ fn check_call_arguments(
     parameters: Vec[go_types::TypeId],
     variadic: bool,
     target_name: string,
-) -> unit {
+) -> () {
     let fixed = if variadic && !parameters.is_empty() {
         parameters.len() - 1
     } else {
@@ -852,7 +852,7 @@ fn check_call_results(
     results: Vec[RegisterId],
     expected: Vec[go_types::TypeId],
     target_name: string,
-) -> unit {
+) -> () {
     if results.len() != expected.len() {
         report(
             diagnostics,
@@ -919,7 +919,7 @@ fn check_call_shape(
     target: CallTarget,
     arguments: Vec[RegisterId],
     results: Option[Vec[RegisterId]],
-) -> unit {
+) -> () {
     let mut shape: Option[SignatureShape] = Option::None;
     let mut parameters: Option[Vec[go_types::TypeId]] = Option::None;
     let mut expected_results: Option[Vec[go_types::TypeId]] = Option::None;
@@ -1138,7 +1138,7 @@ fn check_location(
     block: BlockId,
     instruction: isize,
     location: CodeLocation,
-) -> unit {
+) -> () {
     if location.file.value < -1 {
         report(
             diagnostics,
@@ -1184,7 +1184,7 @@ fn check_target_type(
     instruction: isize,
     target: RegisterId,
     type_id: go_types::TypeId,
-) -> unit {
+) -> () {
     check_register(function, diagnostics, block, instruction, target);
     if !valid_type(program, type_id) {
         report(
@@ -1213,7 +1213,7 @@ fn check_instruction(
     block: BlockId,
     instruction: isize,
     value: Instruction,
-) -> unit {
+) -> () {
     check_location(program, function, diagnostics, block, instruction, value.location);
     match value.kind {
         InstructionKind::Constant { target, type_id, constant_kind: _, exact: _ } => {
@@ -1940,7 +1940,7 @@ fn check_edge(
     instruction: isize,
     target: BlockId,
     arguments: Vec[RegisterId],
-) -> unit {
+) -> () {
     check_registers(function, diagnostics, block, instruction, arguments);
     if target.value < 0 || target.value >= function.blocks.len() {
         report(
@@ -1987,7 +1987,7 @@ fn check_return(
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
     values: Vec[RegisterId],
-) -> unit {
+) -> () {
     check_registers(function, diagnostics, block, -1, values);
     if values.len() != function.results.len() {
         report(
@@ -2024,7 +2024,7 @@ fn check_terminator(
     diagnostics: Vec[VerifyDiagnostic],
     block: BlockId,
     value: Terminator,
-) -> unit {
+) -> () {
     check_location(program, function, diagnostics, block, -1, value.location);
     match value.kind {
         TerminatorKind::Jump { target, arguments } => {
@@ -2084,7 +2084,7 @@ fn check_signature(
     program: BytecodeProgram,
     function: BytecodeFunction,
     diagnostics: Vec[VerifyDiagnostic],
-) -> unit {
+) -> () {
     match verified_signature_shape(program, function.signature) {
         Some(shape) => {
             let parameters: Vec[go_types::TypeId] = Vec::new();
@@ -2167,7 +2167,7 @@ fn check_function(
     type_parameter_cache: Vec[isize],
     type_parameter_marks: Vec[isize],
     next_type_parameter_generation: Ref[isize],
-) -> unit {
+) -> () {
     if !valid_package(program, function.package_id) {
         report(diagnostics, Option::Some(function.id), Option::None, -1, "invalid function package")
     } else {};

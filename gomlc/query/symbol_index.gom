@@ -312,7 +312,7 @@ fn symbol_method_origin(syntax: SyntaxIndex, node: SyntaxNode, kind: SymbolKind)
     }
 }
 
-fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Symbol]) -> unit {
+fn index_source_syntax(source: SourceFile, syntax: SyntaxIndex, symbols: Vec[Symbol]) -> () {
     for node in syntax.nodes {
         match symbol_kind(syntax, node) {
             Some(kind) => match first_identifier(syntax, node) {
@@ -378,7 +378,7 @@ fn collection_lang_method(attrs: Vec[ast::Attribute], item: string) -> Option[st
     Option::None
 }
 
-fn index_builtin_collection_methods(source: SourceFile, symbols: Vec[Symbol]) -> unit {
+fn index_builtin_collection_methods(source: SourceFile, symbols: Vec[Symbol]) -> () {
     if source.package_name != "builtin" {
         return
     } else {};
@@ -415,7 +415,7 @@ fn index_builtin_collection_methods(source: SourceFile, symbols: Vec[Symbol]) ->
     }
 }
 
-fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> unit {
+fn index_source(source: SourceFile, symbols: Vec[Symbol]) -> () {
     index_source_syntax(source, syntax_index(parser::parse(source.source).root), symbols);
     index_builtin_collection_methods(source, symbols)
 }

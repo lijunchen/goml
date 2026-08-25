@@ -3,23 +3,23 @@ package ast;
 use module::lexer;
 use std::text;
 
-fn encode_open(builder: text::StringBuilder, tag: string) -> unit {
+fn encode_open(builder: text::StringBuilder, tag: string) -> () {
     builder.write_string("O\t");
     builder.write_string(tag);
     builder.write_string("\n")
 }
 
-fn encode_close(builder: text::StringBuilder) -> unit {
+fn encode_close(builder: text::StringBuilder) -> () {
     builder.write_string("C\n")
 }
 
-fn encode_string_value(builder: text::StringBuilder, value: string) -> unit {
+fn encode_string_value(builder: text::StringBuilder, value: string) -> () {
     builder.write_string("S\t");
     builder.write_string(lexer::encode_text_hex(value));
     builder.write_string("\n")
 }
 
-fn encode_bool_value(builder: text::StringBuilder, value: bool) -> unit {
+fn encode_bool_value(builder: text::StringBuilder, value: bool) -> () {
     builder.write_string(
         if value {
             "B\t1\n"
@@ -29,27 +29,27 @@ fn encode_bool_value(builder: text::StringBuilder, value: bool) -> unit {
     )
 }
 
-fn encode_int_value(builder: text::StringBuilder, value: isize) -> unit {
+fn encode_int_value(builder: text::StringBuilder, value: isize) -> () {
     builder.write_string("I\t");
     builder.write_string(value.to_string());
     builder.write_string("\n")
 }
 
-fn encode_list(builder: text::StringBuilder, length: isize) -> unit {
+fn encode_list(builder: text::StringBuilder, length: isize) -> () {
     builder.write_string("L\t");
     builder.write_string(length.to_string());
     builder.write_string("\n")
 }
 
-fn encode_none(builder: text::StringBuilder) -> unit {
+fn encode_none(builder: text::StringBuilder) -> () {
     builder.write_string("N\n")
 }
 
-fn encode_some(builder: text::StringBuilder) -> unit {
+fn encode_some(builder: text::StringBuilder) -> () {
     builder.write_string("Y\n")
 }
 
-fn encode_span(builder: text::StringBuilder, value: Span) -> unit {
+fn encode_span(builder: text::StringBuilder, value: Span) -> () {
     builder.write_string("R\t");
     builder.write_string(value.start.to_string());
     builder.write_string("\t");
@@ -57,7 +57,7 @@ fn encode_span(builder: text::StringBuilder, value: Span) -> unit {
     builder.write_string("\n")
 }
 
-fn encode_path(builder: text::StringBuilder, value: Path) -> unit {
+fn encode_path(builder: text::StringBuilder, value: Path) -> () {
     encode_open(builder, "Path");
     encode_list(builder, value.segments.len());
     for segment in value.segments {
@@ -69,7 +69,7 @@ fn encode_path(builder: text::StringBuilder, value: Path) -> unit {
     encode_close(builder)
 }
 
-fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
+fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> () {
     match value {
         Unit => encode_open(builder, "Type.Unit"),
         Bool => encode_open(builder, "Type.Bool"),
@@ -141,21 +141,21 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
     encode_close(builder)
 }
 
-fn encode_attribute(builder: text::StringBuilder, value: Attribute) -> unit {
+fn encode_attribute(builder: text::StringBuilder, value: Attribute) -> () {
     encode_open(builder, "Attribute");
     encode_span(builder, value.span);
     encode_string_value(builder, value.text);
     encode_close(builder)
 }
 
-fn encode_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> unit {
+fn encode_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> () {
     encode_list(builder, values.len());
     for value in values {
         encode_attribute(builder, value)
     }
 }
 
-fn encode_visibility(builder: text::StringBuilder, value: Visibility) -> unit {
+fn encode_visibility(builder: text::StringBuilder, value: Visibility) -> () {
     encode_string_value(
         builder,
         match value {
@@ -165,7 +165,7 @@ fn encode_visibility(builder: text::StringBuilder, value: Visibility) -> unit {
     )
 }
 
-fn encode_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
+fn encode_trait_ref(builder: text::StringBuilder, value: TraitRef) -> () {
     encode_open(builder, "TraitRef");
     encode_path(builder, value.path);
     encode_list(builder, value.args.len());
@@ -175,21 +175,21 @@ fn encode_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
     encode_close(builder)
 }
 
-fn encode_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef]) -> unit {
+fn encode_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef]) -> () {
     encode_list(builder, values.len());
     for value in values {
         encode_trait_ref(builder, value)
     }
 }
 
-fn encode_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
+fn encode_generics(builder: text::StringBuilder, values: Vec[string]) -> () {
     encode_list(builder, values.len());
     for value in values {
         encode_string_value(builder, value)
     }
 }
 
-fn encode_generic_bounds(builder: text::StringBuilder, values: Vec[(string, Vec[TraitRef])]) -> unit {
+fn encode_generic_bounds(builder: text::StringBuilder, values: Vec[(string, Vec[TraitRef])]) -> () {
     encode_list(builder, values.len());
     for value in values {
         let (name, bounds) = value;
@@ -200,7 +200,7 @@ fn encode_generic_bounds(builder: text::StringBuilder, values: Vec[(string, Vec[
     }
 }
 
-fn encode_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
+fn encode_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> () {
     encode_list(builder, values.len());
     for value in values {
         match value {
@@ -219,7 +219,7 @@ fn encode_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> un
     }
 }
 
-fn encode_params(builder: text::StringBuilder, values: Vec[(string, TypeExpr)]) -> unit {
+fn encode_params(builder: text::StringBuilder, values: Vec[(string, TypeExpr)]) -> () {
     encode_list(builder, values.len());
     for value in values {
         let (name, ty) = value;
@@ -230,7 +230,7 @@ fn encode_params(builder: text::StringBuilder, values: Vec[(string, TypeExpr)]) 
     }
 }
 
-fn encode_optional_type(builder: text::StringBuilder, value: Option[TypeExpr]) -> unit {
+fn encode_optional_type(builder: text::StringBuilder, value: Option[TypeExpr]) -> () {
     match value {
         Some(ty) => {
             encode_some(builder);
@@ -240,7 +240,7 @@ fn encode_optional_type(builder: text::StringBuilder, value: Option[TypeExpr]) -
     }
 }
 
-fn encode_optional_string(builder: text::StringBuilder, value: Option[string]) -> unit {
+fn encode_optional_string(builder: text::StringBuilder, value: Option[string]) -> () {
     match value {
         Some(text) => {
             encode_some(builder);
@@ -250,7 +250,7 @@ fn encode_optional_string(builder: text::StringBuilder, value: Option[string]) -
     }
 }
 
-fn encode_function(builder: text::StringBuilder, value: Function) -> unit {
+fn encode_function(builder: text::StringBuilder, value: Function) -> () {
     encode_open(builder, "Function");
     encode_attributes(builder, value.attrs);
     encode_visibility(builder, value.visibility);
@@ -264,7 +264,7 @@ fn encode_function(builder: text::StringBuilder, value: Function) -> unit {
     encode_close(builder)
 }
 
-fn encode_extern_function(builder: text::StringBuilder, value: ExternFunction) -> unit {
+fn encode_extern_function(builder: text::StringBuilder, value: ExternFunction) -> () {
     encode_open(builder, "ExternFunction");
     encode_attributes(builder, value.attrs);
     encode_visibility(builder, value.visibility);
@@ -277,7 +277,7 @@ fn encode_extern_function(builder: text::StringBuilder, value: ExternFunction) -
     encode_close(builder)
 }
 
-fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
+fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> () {
     encode_open(builder, "Enum");
     encode_attributes(builder, value.attrs);
     encode_visibility(builder, value.visibility);
@@ -328,7 +328,7 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
     encode_close(builder)
 }
 
-fn encode_struct(builder: text::StringBuilder, value: StructDef) -> unit {
+fn encode_struct(builder: text::StringBuilder, value: StructDef) -> () {
     encode_open(
         builder,
         if value.newtype {
@@ -360,7 +360,7 @@ fn encode_struct(builder: text::StringBuilder, value: StructDef) -> unit {
     encode_close(builder)
 }
 
-fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
+fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> () {
     encode_open(builder, "Trait");
     encode_attributes(builder, value.attrs);
     encode_visibility(builder, value.visibility);
@@ -401,7 +401,7 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
     encode_close(builder)
 }
 
-fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> unit {
+fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> () {
     encode_open(builder, "Impl");
     encode_attributes(builder, value.attrs);
     encode_generics(builder, value.generics);
@@ -430,7 +430,7 @@ fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> unit {
     encode_close(builder)
 }
 
-fn encode_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
+fn encode_type_alias(builder: text::StringBuilder, value: TypeAlias) -> () {
     encode_open(builder, "TypeAlias");
     encode_attributes(builder, value.attrs);
     encode_visibility(builder, value.visibility);
@@ -440,7 +440,7 @@ fn encode_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
     encode_close(builder)
 }
 
-fn encode_constant(builder: text::StringBuilder, value: Constant) -> unit {
+fn encode_constant(builder: text::StringBuilder, value: Constant) -> () {
     encode_open(builder, "Constant");
     encode_attributes(builder, value.attrs);
     encode_visibility(builder, value.visibility);
@@ -450,7 +450,7 @@ fn encode_constant(builder: text::StringBuilder, value: Constant) -> unit {
     encode_close(builder)
 }
 
-fn encode_static(builder: text::StringBuilder, value: Static) -> unit {
+fn encode_static(builder: text::StringBuilder, value: Static) -> () {
     encode_open(builder, "Static");
     encode_attributes(builder, value.attrs);
     encode_visibility(builder, value.visibility);
@@ -460,7 +460,7 @@ fn encode_static(builder: text::StringBuilder, value: Static) -> unit {
     encode_close(builder)
 }
 
-fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
+fn encode_item(builder: text::StringBuilder, value: Item) -> () {
     match value {
         EnumDef(item) => encode_enum(builder, item),
         StructDef(item) => encode_struct(builder, item),
@@ -474,7 +474,7 @@ fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
     }
 }
 
-fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
+fn encode_block(builder: text::StringBuilder, value: Block) -> () {
     encode_open(builder, "Block");
     encode_span(builder, value.span);
     encode_list(builder, value.stmts.len());
@@ -491,7 +491,7 @@ fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
     encode_close(builder)
 }
 
-fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
+fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> () {
     match value {
         Defer { expr, span: value_span } => {
             encode_open(builder, "Stmt.Defer");
@@ -535,7 +535,7 @@ fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
     encode_close(builder)
 }
 
-fn encode_file(builder: text::StringBuilder, value: File) -> unit {
+fn encode_file(builder: text::StringBuilder, value: File) -> () {
     encode_open(builder, "File");
     encode_string_value(builder, value.package_name);
     encode_bool_value(builder, value.package_explicit);

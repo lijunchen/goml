@@ -60,7 +60,7 @@ pub struct TypedSchema[T] {
 }
 
 pub trait Serialize {
-    fn serialize[S: Serializer](self: Self, serializer: S) -> Result[unit, string];
+    fn serialize[S: Serializer](self: Self, serializer: S) -> Result[(), string];
 }
 
 pub trait Deserialize {
@@ -165,12 +165,12 @@ fn tuple_values(value: Value, size: isize) -> Result[Vec[Value], string] {
     }
 }
 
-pub fn error(message: string) -> Result[unit, string] {
+pub fn error(message: string) -> Result[(), string] {
     Result::Err(message)
 }
 
 impl Serialize for Value {
-    fn serialize[S: Serializer](self: Value, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: Value, serializer: S) -> Result[(), string] {
         serialize_value_into(self, serializer)
     }
 }
@@ -181,20 +181,20 @@ impl Deserialize for Value {
     }
 }
 
-impl Serialize for unit {
-    fn serialize[S: Serializer](self: unit, serializer: S) -> Result[unit, string] {
+impl Serialize for () {
+    fn serialize[S: Serializer](self: (), serializer: S) -> Result[(), string] {
         serializer.serialize_unit()
     }
 }
 
-impl Deserialize for unit {
-    fn deserialize[D: Deserializer](deserializer: D) -> Result[unit, string] {
+impl Deserialize for () {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[(), string] {
         deserializer.deserialize_unit()
     }
 }
 
 impl Serialize for bool {
-    fn serialize[S: Serializer](self: bool, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: bool, serializer: S) -> Result[(), string] {
         serializer.serialize_bool(self)
     }
 }
@@ -206,7 +206,7 @@ impl Deserialize for bool {
 }
 
 impl Serialize for string {
-    fn serialize[S: Serializer](self: string, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: string, serializer: S) -> Result[(), string] {
         serializer.serialize_string(self)
     }
 }
@@ -218,7 +218,7 @@ impl Deserialize for string {
 }
 
 impl Serialize for char {
-    fn serialize[S: Serializer](self: char, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: char, serializer: S) -> Result[(), string] {
         serializer.serialize_char(self)
     }
 }
@@ -230,7 +230,7 @@ impl Deserialize for char {
 }
 
 impl Serialize for isize {
-    fn serialize[S: Serializer](self: isize, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: isize, serializer: S) -> Result[(), string] {
         serializer.serialize_int(self)
     }
 }
@@ -242,7 +242,7 @@ impl Deserialize for isize {
 }
 
 impl Serialize for i8 {
-    fn serialize[S: Serializer](self: i8, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: i8, serializer: S) -> Result[(), string] {
         serializer.serialize_int8(self)
     }
 }
@@ -254,7 +254,7 @@ impl Deserialize for i8 {
 }
 
 impl Serialize for i16 {
-    fn serialize[S: Serializer](self: i16, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: i16, serializer: S) -> Result[(), string] {
         serializer.serialize_int16(self)
     }
 }
@@ -266,7 +266,7 @@ impl Deserialize for i16 {
 }
 
 impl Serialize for i32 {
-    fn serialize[S: Serializer](self: i32, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: i32, serializer: S) -> Result[(), string] {
         serializer.serialize_int32(self)
     }
 }
@@ -278,7 +278,7 @@ impl Deserialize for i32 {
 }
 
 impl Serialize for i64 {
-    fn serialize[S: Serializer](self: i64, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: i64, serializer: S) -> Result[(), string] {
         serializer.serialize_int64(self)
     }
 }
@@ -290,7 +290,7 @@ impl Deserialize for i64 {
 }
 
 impl Serialize for usize {
-    fn serialize[S: Serializer](self: usize, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: usize, serializer: S) -> Result[(), string] {
         serializer.serialize_uint(self)
     }
 }
@@ -302,7 +302,7 @@ impl Deserialize for usize {
 }
 
 impl Serialize for u8 {
-    fn serialize[S: Serializer](self: u8, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: u8, serializer: S) -> Result[(), string] {
         serializer.serialize_uint8(self)
     }
 }
@@ -314,7 +314,7 @@ impl Deserialize for u8 {
 }
 
 impl Serialize for u16 {
-    fn serialize[S: Serializer](self: u16, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: u16, serializer: S) -> Result[(), string] {
         serializer.serialize_uint16(self)
     }
 }
@@ -326,7 +326,7 @@ impl Deserialize for u16 {
 }
 
 impl Serialize for u32 {
-    fn serialize[S: Serializer](self: u32, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: u32, serializer: S) -> Result[(), string] {
         serializer.serialize_uint32(self)
     }
 }
@@ -338,7 +338,7 @@ impl Deserialize for u32 {
 }
 
 impl Serialize for u64 {
-    fn serialize[S: Serializer](self: u64, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: u64, serializer: S) -> Result[(), string] {
         serializer.serialize_uint64(self)
     }
 }
@@ -350,7 +350,7 @@ impl Deserialize for u64 {
 }
 
 impl Serialize for f32 {
-    fn serialize[S: Serializer](self: f32, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: f32, serializer: S) -> Result[(), string] {
         serializer.serialize_float32(self)
     }
 }
@@ -362,7 +362,7 @@ impl Deserialize for f32 {
 }
 
 impl Serialize for f64 {
-    fn serialize[S: Serializer](self: f64, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: f64, serializer: S) -> Result[(), string] {
         serializer.serialize_float64(self)
     }
 }
@@ -374,7 +374,7 @@ impl Deserialize for f64 {
 }
 
 impl[T: Serialize] Serialize for Vec[T] {
-    fn serialize[S: Serializer](self: Vec[T], serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: Vec[T], serializer: S) -> Result[(), string] {
         serializer.begin_sequence(self.len())?;
         let mut index = 0;
         while index < self.len() {
@@ -400,7 +400,7 @@ impl[T: Deserialize] Deserialize for Vec[T] {
 }
 
 impl[T: Serialize] Serialize for Option[T] {
-    fn serialize[S: Serializer](self: Option[T], serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: Option[T], serializer: S) -> Result[(), string] {
         match self {
             Some(value) => {
                 serializer.begin_optional(true)?;
@@ -429,7 +429,7 @@ impl[T: Deserialize] Deserialize for Option[T] {
 }
 
 impl[A: Serialize, B: Serialize] Serialize for (A, B) {
-    fn serialize[S: Serializer](self: (A, B), serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: (A, B), serializer: S) -> Result[(), string] {
         serializer.begin_tuple(2)?;
         serializer.begin_tuple_element(0)?;
         Serialize::serialize(self.0, serializer)?;
@@ -452,7 +452,7 @@ impl[A: Deserialize, B: Deserialize] Deserialize for (A, B) {
 }
 
 impl[A: Serialize, B: Serialize, C: Serialize] Serialize for (A, B, C) {
-    fn serialize[S: Serializer](self: (A, B, C), serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: (A, B, C), serializer: S) -> Result[(), string] {
         serializer.begin_tuple(3)?;
         serializer.begin_tuple_element(0)?;
         Serialize::serialize(self.0, serializer)?;

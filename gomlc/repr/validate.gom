@@ -1,13 +1,13 @@
 package repr;
 
-fn validate_types(values: Vec[Type], context: string) -> Result[unit, string] {
+fn validate_types(values: Vec[Type], context: string) -> Result[(), string] {
     for value in values {
         validate_type_in(value, context)?
     }
     Result::Ok(())
 }
 
-fn validate_named_types(values: Vec[(string, Type)], context: string) -> Result[unit, string] {
+fn validate_named_types(values: Vec[(string, Type)], context: string) -> Result[(), string] {
     for value in values {
         if value.0.byte_len() == 0 {
             return Result::Err(context + " has an empty binding name")
@@ -17,7 +17,7 @@ fn validate_named_types(values: Vec[(string, Type)], context: string) -> Result[
     Result::Ok(())
 }
 
-fn validate_type_in(value: Type, context: string) -> Result[unit, string] {
+fn validate_type_in(value: Type, context: string) -> Result[(), string] {
     match value {
         Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => Result::Ok(
             (),
@@ -72,11 +72,11 @@ fn validate_type_in(value: Type, context: string) -> Result[unit, string] {
     }
 }
 
-pub fn validate_type(value: Type) -> Result[unit, string] {
+pub fn validate_type(value: Type) -> Result[(), string] {
     validate_type_in(value, "representation type")
 }
 
-pub fn validate_trait_ref(value: TraitRef) -> Result[unit, string] {
+pub fn validate_trait_ref(value: TraitRef) -> Result[(), string] {
     if value.name.byte_len() == 0 {
         Result::Err("representation trait reference has an empty name")
     } else {

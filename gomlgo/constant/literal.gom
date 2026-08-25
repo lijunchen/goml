@@ -220,7 +220,7 @@ pub fn parse_imaginary_literal(value: string) -> Result[ConstValue, string] {
     }
 }
 
-fn append_codepoint(builder: text::StringBuilder, value: u32) -> Result[unit, string] {
+fn append_codepoint(builder: text::StringBuilder, value: u32) -> Result[(), string] {
     if value > 1114111 || (value >= 55296 && value < 57344) {
         Result::Err("escape sequence is invalid Unicode code point")
     } else {

@@ -65,7 +65,7 @@ fn formatter_candidate(explicit: Option[string]) -> string {
     }
 }
 
-fn collect_owned_graph_files(graph: project::Graph, module_path: string, result: Vec[string]) -> unit {
+fn collect_owned_graph_files(graph: project::Graph, module_path: string, result: Vec[string]) -> () {
     for package_value in graph.packages {
         if package_value.module_name == module_path {
             for file in package_value.files {

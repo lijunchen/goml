@@ -53,7 +53,7 @@ fn allocate_reusable_cell(memory: Memory, value: Value) -> CellId {
     }
 }
 
-fn release_reusable_cell(memory: Memory, cell: CellId) -> unit {
+fn release_reusable_cell(memory: Memory, cell: CellId) -> () {
     if cell.value >= 0 && cell.value < memory.length.get() {
         set_cell_value(memory, cell.value, Value::Local(LocalValue::Unit));
         memory.reusable_cells.push(cell.value)
@@ -64,7 +64,7 @@ fn frame_cell_checkpoint(memory: Memory) -> isize {
     memory.frame_cells.len()
 }
 
-fn release_frame_cells(memory: Memory, checkpoint: isize) -> unit {
+fn release_frame_cells(memory: Memory, checkpoint: isize) -> () {
     memory.frame_cells.truncate(checkpoint)
 }
 
@@ -86,7 +86,7 @@ fn cell_value(memory: Memory, index: isize) -> Value {
     }
 }
 
-fn set_cell_value(memory: Memory, index: isize, value: Value) -> unit {
+fn set_cell_value(memory: Memory, index: isize, value: Value) -> () {
     if index >= 0 {
         memory.cells[index / memory_cell_block_size][index % memory_cell_block_size] = value;
     } else {
@@ -117,7 +117,7 @@ fn load_cell(memory: Memory, cell: CellId) -> Result[Value, string] {
     }
 }
 
-fn store_cell(memory: Memory, cell: CellId, value: Value) -> Result[unit, string] {
+fn store_cell(memory: Memory, cell: CellId, value: Value) -> Result[(), string] {
     if !cell_valid(memory, cell.value) {
         Result::Err("invalid cell " + cell.value.to_string())
     } else {
@@ -137,7 +137,7 @@ fn projection_count(value: Option[Vec[Projection]]) -> isize {
     }
 }
 
-fn append_projections(target: Vec[Projection], value: Option[Vec[Projection]]) -> unit {
+fn append_projections(target: Vec[Projection], value: Option[Vec[Projection]]) -> () {
     match value {
         Some(values) => for projection in values {
             target.push(projection)
@@ -352,7 +352,7 @@ fn store_projection(
     }
 }
 
-pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[unit, string] {
+pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[(), string] {
     if !cell_valid(memory, place.root.value) {
         return Result::Err("invalid cell " + place.root.value.to_string())
     } else {};

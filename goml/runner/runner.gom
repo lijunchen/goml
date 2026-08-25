@@ -159,7 +159,7 @@ fn result_event_json(event: string, name: string, seed: isize) -> string {
     )
 }
 
-fn print_list(tests: Vec[Test], options: Options) -> unit {
+fn print_list(tests: Vec[Test], options: Options) -> () {
     for test in tests {
         if options.json {
             io::println(list_event_json(test))
@@ -248,7 +248,7 @@ fn worker(
     options: Options,
     work: Channel[(isize, Test)],
     results: Channel[Execution],
-) -> unit {
+) -> () {
     loop {
         match task::recv_with(cancel, work) {
             task::WaitResult::Completed(Some(item)) => match task::send_with(
@@ -370,7 +370,7 @@ fn report_json(values: Vec[Execution], seed: isize) -> isize {
     failed
 }
 
-pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[unit, string] {
+pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[(), string] {
     let loaded: Vec[Test] = Vec::new();
     for group in groups {
         let values = load_tests(group)?;

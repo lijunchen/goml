@@ -13,7 +13,7 @@ pub fn artifact_type_context(enum_names: Vec[string], struct_names: Vec[string])
     ArtifactTypeContext { enum_names, struct_names }
 }
 
-pub fn artifact_json_string_array(writer: wire::ArtifactJsonWriter, values: Vec[string]) -> unit {
+pub fn artifact_json_string_array(writer: wire::ArtifactJsonWriter, values: Vec[string]) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         wire::artifact_json_string(writer, value)
@@ -25,7 +25,7 @@ pub fn artifact_json_type_array(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     values: Vec[tast::Type],
-) -> unit {
+) -> () {
     wire::artifact_json_begin_array(writer);
     for value in values {
         artifact_json_type(writer, context, value)
@@ -38,7 +38,7 @@ fn artifact_json_dyn_bound(
     context: ArtifactTypeContext,
     value: tast::DynTraitBound,
     additional_bounds: Vec[tast::DynTraitBound],
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "trait_name");
     wire::artifact_json_string(writer, value.trait_name);
@@ -67,7 +67,7 @@ fn artifact_json_named_type(
     kind: string,
     field: string,
     value: string,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, kind);
     wire::artifact_json_begin_object(writer);
@@ -81,7 +81,7 @@ pub fn artifact_json_trait_ref(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: tast::TraitRef,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "name");
     wire::artifact_json_string(writer, value.name);
@@ -94,7 +94,7 @@ fn artifact_json_optional_trait_ref(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: Option[tast::TraitRef],
-) -> unit {
+) -> () {
     match value {
         Some(value) => artifact_json_trait_ref(writer, context, value),
         None => wire::artifact_json_null(writer),
@@ -105,7 +105,7 @@ pub fn artifact_json_type(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     input: tast::Type,
-) -> unit {
+) -> () {
     match tast::resolve_type(input) {
         Unit => wire::artifact_json_string(writer, TYPE_UNIT_TAG),
         Never => wire::artifact_json_string(writer, TYPE_NEVER_TAG),
@@ -276,7 +276,7 @@ pub fn artifact_json_type_predicate(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: tast::TypePredicate,
-) -> unit {
+) -> () {
     wire::artifact_json_begin_object(writer);
     match value {
         Trait { for_ty, trait_ref } => {

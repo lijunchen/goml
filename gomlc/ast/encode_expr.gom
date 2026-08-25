@@ -2,14 +2,14 @@ package ast;
 
 use std::text;
 
-fn encode_exprs(builder: text::StringBuilder, values: Vec[Expr]) -> unit {
+fn encode_exprs(builder: text::StringBuilder, values: Vec[Expr]) -> () {
     encode_list(builder, values.len());
     for value in values {
         encode_expr(builder, value)
     }
 }
 
-fn encode_pats(builder: text::StringBuilder, values: Vec[Pat]) -> unit {
+fn encode_pats(builder: text::StringBuilder, values: Vec[Pat]) -> () {
     encode_list(builder, values.len());
     for value in values {
         encode_pat(builder, value)
@@ -47,7 +47,7 @@ fn binary_name(value: BinaryOp) -> string {
     }
 }
 
-fn encode_arm(builder: text::StringBuilder, value: Arm) -> unit {
+fn encode_arm(builder: text::StringBuilder, value: Arm) -> () {
     encode_open(builder, "Arm");
     encode_pat(builder, value.pat);
     match value.guard {
@@ -61,7 +61,7 @@ fn encode_arm(builder: text::StringBuilder, value: Arm) -> unit {
     encode_close(builder)
 }
 
-fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> unit {
+fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> () {
     match value {
         Receive { channel, guard, binding, body, span: value_span } => {
             encode_open(builder, "SelectArm.Receive");
@@ -100,7 +100,7 @@ fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> unit {
     encode_close(builder)
 }
 
-fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
+fn encode_expr(builder: text::StringBuilder, value: Expr) -> () {
     match value {
         Path { path, owner_type_args, member_type_args, span: value_span } => {
             encode_open(builder, "Expr.Path");
@@ -389,13 +389,13 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
     encode_close(builder)
 }
 
-fn encode_literal_expr(builder: text::StringBuilder, tag: string, value: string, value_span: Span) -> unit {
+fn encode_literal_expr(builder: text::StringBuilder, tag: string, value: string, value_span: Span) -> () {
     encode_open(builder, "Expr." + tag);
     encode_span(builder, value_span);
     encode_string_value(builder, value)
 }
 
-fn encode_pat(builder: text::StringBuilder, value: Pat) -> unit {
+fn encode_pat(builder: text::StringBuilder, value: Pat) -> () {
     match value {
         Var { name, is_mut, span: value_span } => {
             encode_open(builder, "Pat.Var");
@@ -495,7 +495,7 @@ fn encode_pat(builder: text::StringBuilder, value: Pat) -> unit {
     encode_close(builder)
 }
 
-fn encode_literal_pat(builder: text::StringBuilder, tag: string, value: string, value_span: Span) -> unit {
+fn encode_literal_pat(builder: text::StringBuilder, tag: string, value: string, value_span: Span) -> () {
     encode_open(builder, "Pat." + tag);
     encode_span(builder, value_span);
     encode_string_value(builder, value)

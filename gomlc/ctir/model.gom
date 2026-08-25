@@ -334,7 +334,7 @@ fn push_reachable_id(values: Vec[isize], value: isize) -> bool {
     true
 }
 
-fn push_reachable_name(values: Vec[string], value: string) -> unit {
+fn push_reachable_name(values: Vec[string], value: string) -> () {
     for existing in values {
         if existing == value {
             return
@@ -348,7 +348,7 @@ fn collect_reachable_expr(
     value: CtExpr,
     ids: Vec[isize],
     constants: Vec[string],
-) -> unit {
+) -> () {
     match value.kind {
         Value(_) | Local(_) | Continue { .. } => (),
         Constant { package_name: owner, name } => if owner == package_name {
@@ -420,7 +420,7 @@ fn collect_reachable_block(
     value: CtBlock,
     ids: Vec[isize],
     constants: Vec[string],
-) -> unit {
+) -> () {
     for statement in value.statements {
         match statement {
             Let { pattern: _, value } | Assign { slot: _, value } | Expr(value) => {

@@ -2,7 +2,7 @@ package go_backend;
 
 struct NameSet {
     values: Vec[string],
-    present: HashMap[string, unit],
+    present: HashMap[string, ()],
 }
 
 fn new_name_set() -> NameSet {
@@ -13,14 +13,14 @@ fn name_present(values: NameSet, expected: string) -> bool {
     values.present.contains(expected)
 }
 
-fn add_reachable(values: NameSet, value: string) -> unit {
+fn add_reachable(values: NameSet, value: string) -> () {
     if !values.present.contains(value) {
         values.present[value] = ();
         values.values.push(value)
     } else {}
 }
 
-fn collect_type_names(result: NameSet, value: Type) -> unit {
+fn collect_type_names(result: NameSet, value: Type) -> () {
     match value {
         Named { name } => add_reachable(result, name),
         Pointer { elem: inner } | Array { len: _, elem: inner } | Slice { elem: inner } | Chan {
@@ -53,7 +53,7 @@ fn collect_type_names(result: NameSet, value: Type) -> unit {
     }
 }
 
-fn collect_expr_names(result: NameSet, value: Expr) -> unit {
+fn collect_expr_names(result: NameSet, value: Expr) -> () {
     match value {
         Var { name } => add_reachable(result, name),
         Call { func, args } => {
@@ -115,7 +115,7 @@ fn collect_expr_names(result: NameSet, value: Expr) -> unit {
     }
 }
 
-fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
+fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
     match value {
         Expr { expr } | Go { call: expr } | Defer { call: expr } => collect_expr_names(result, expr),
         Var { name: _, ty, value: initial } => {
@@ -202,7 +202,7 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
     }
 }
 
-fn collect_block_names(result: NameSet, value: Block) -> unit {
+fn collect_block_names(result: NameSet, value: Block) -> () {
     for stmt in value.stmts {
         collect_stmt_names(result, stmt)
     }
@@ -227,7 +227,7 @@ fn import_is_used(names: NameSet, alias: string) -> bool {
     false
 }
 
-fn collect_item_names(result: NameSet, value: Item) -> unit {
+fn collect_item_names(result: NameSet, value: Item) -> () {
     match value {
         TypeDef(definition) => collect_type_names(result, definition.ty),
         ConstGroup(group) => {

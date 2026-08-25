@@ -6,15 +6,15 @@ use module::snapshot_names;
 struct SnapshotNames {
     locals: snapshot_names::Names,
     joins: snapshot_names::Names,
-    declared_locals: HashMap[string, unit],
+    declared_locals: HashMap[string, ()],
     canonicalize_all_locals: bool,
 }
 
-fn collect_local(values: HashMap[string, unit], name: string) -> unit {
+fn collect_local(values: HashMap[string, ()], name: string) -> () {
     values[name] = ();
 }
 
-fn collect_term_locals(values: HashMap[string, unit], value: Term) -> unit {
+fn collect_term_locals(values: HashMap[string, ()], value: Term) -> () {
     match value {
         If { cond: _, then_, else_, ret_ty: _ } => {
             collect_block_locals(values, then_);
@@ -48,7 +48,7 @@ fn collect_term_locals(values: HashMap[string, unit], value: Term) -> unit {
     }
 }
 
-fn collect_block_locals(values: HashMap[string, unit], value: Block) -> unit {
+fn collect_block_locals(values: HashMap[string, ()], value: Block) -> () {
     for binding in value.binds {
         match binding {
             Let(value) => collect_local(values, value.name),
@@ -70,7 +70,7 @@ fn collect_block_locals(values: HashMap[string, unit], value: Block) -> unit {
 }
 
 fn snapshot_names_new(value: Function, canonicalize_all_locals: bool, reserved: Vec[string]) -> SnapshotNames {
-    let declared_locals: HashMap[string, unit] = HashMap::new();
+    let declared_locals: HashMap[string, ()] = HashMap::new();
     for param in value.params {
         collect_local(declared_locals, param.0)
     }
@@ -191,7 +191,7 @@ fn snapshot_join(names: SnapshotNames, value: JoinBind) -> JoinBind {
     }
 }
 
-fn observe_block_joins(names: SnapshotNames, value: Block) -> unit {
+fn observe_block_joins(names: SnapshotNames, value: Block) -> () {
     for binding in value.binds {
         match binding {
             Join(value) => {

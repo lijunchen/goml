@@ -289,7 +289,7 @@ fn decimal_byte(value: string) -> u8 {
     result.to_u8()
 }
 
-fn write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
+fn write_byte_literal(builder: text::StringBuilder, value: string) -> () {
     let byte = decimal_byte(value);
     builder.write_string("b'\\x");
     builder.write_char(hex_digit(byte / 16));
@@ -297,7 +297,7 @@ fn write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('\'')
 }
 
-fn write_byte_string(builder: text::StringBuilder, values: Vec[string]) -> unit {
+fn write_byte_string(builder: text::StringBuilder, values: Vec[string]) -> () {
     builder.write_string("b\"");
     for value in values {
         let byte = decimal_byte(value);
@@ -308,7 +308,7 @@ fn write_byte_string(builder: text::StringBuilder, values: Vec[string]) -> unit 
     builder.write_char('"')
 }
 
-fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
+fn write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(hex_digit(value / 16))
@@ -317,7 +317,7 @@ fn write_control_escape(builder: text::StringBuilder, value: u8) -> unit {
     builder.write_char('}')
 }
 
-fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
+fn write_quoted_string(builder: text::StringBuilder, value: string) -> () {
     builder.write_char('"');
     let mut index = 0;
     while index < value.byte_len() {
@@ -345,7 +345,7 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
-fn write_interpolated_text(builder: text::StringBuilder, value: string) -> unit {
+fn write_interpolated_text(builder: text::StringBuilder, value: string) -> () {
     let mut index = 0;
     while index < value.byte_len() {
         let byte = value.byte_get(index);

@@ -11,17 +11,17 @@ pub fn seed() -> isize {
     }
 }
 
-pub fn fail(message: string) -> unit {
+pub fn fail(message: string) -> () {
     host::test_fail(message)
 }
 
-pub fn assert(condition: bool) -> unit {
+pub fn assert(condition: bool) -> () {
     if condition {} else {
         fail("assertion failed")
     }
 }
 
-pub fn assert_eq[T: PartialEq + Debug](actual: T, expected: T) -> unit {
+pub fn assert_eq[T: PartialEq + Debug](actual: T, expected: T) -> () {
     if PartialEq::eq(actual, expected) {} else {
         fail(
             "assertion failed: values are not equal\n  actual: " + Debug::debug(actual)
@@ -31,31 +31,31 @@ pub fn assert_eq[T: PartialEq + Debug](actual: T, expected: T) -> unit {
     }
 }
 
-pub fn assert_ne[T: PartialEq + Debug](actual: T, expected: T) -> unit {
+pub fn assert_ne[T: PartialEq + Debug](actual: T, expected: T) -> () {
     if PartialEq::eq(actual, expected) {
         fail("assertion failed: values are equal\nvalue: " + Debug::debug(actual))
     } else {}
 }
 
-pub fn assert_some[T](value: Option[T]) -> unit {
+pub fn assert_some[T](value: Option[T]) -> () {
     if value.is_some() {} else {
         fail("assertion failed: expected Some, found None")
     }
 }
 
-pub fn assert_none[T](value: Option[T]) -> unit {
+pub fn assert_none[T](value: Option[T]) -> () {
     if value.is_none() {} else {
         fail("assertion failed: expected None, found Some")
     }
 }
 
-pub fn assert_ok[T, E](value: Result[T, E]) -> unit {
+pub fn assert_ok[T, E](value: Result[T, E]) -> () {
     if value.is_ok() {} else {
         fail("assertion failed: expected Ok, found Err")
     }
 }
 
-pub fn assert_err[T, E](value: Result[T, E]) -> unit {
+pub fn assert_err[T, E](value: Result[T, E]) -> () {
     if value.is_err() {} else {
         fail("assertion failed: expected Err, found Ok")
     }

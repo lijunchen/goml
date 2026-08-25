@@ -49,17 +49,17 @@ pub fn server_running(value: Server) -> bool {
     value.running.get()
 }
 
-fn advance_generation(value: Server) -> unit {
+fn advance_generation(value: Server) -> () {
     value.generation.set(value.generation.get() + 1);
     value.line_indexes.clear()
 }
 
-pub fn invalidate_analyses(value: Server) -> unit {
+pub fn invalidate_analyses(value: Server) -> () {
     value.analyses.clear();
     advance_generation(value)
 }
 
-fn invalidate_other_analyses(value: Server, path: string) -> unit {
+fn invalidate_other_analyses(value: Server, path: string) -> () {
     let mut index = value.analyses.len();
     while index > 0 {
         index = index - 1;
@@ -127,7 +127,7 @@ fn source_line_index(value: Server, source_path: string, source: string) -> text
     index
 }
 
-pub fn open_document(value: Server, document: Document) -> unit {
+pub fn open_document(value: Server, document: Document) -> () {
     let path = document.path;
     match document_index(value, document.uri) {
         Some(index) => value.documents.set(index, document),
@@ -136,7 +136,7 @@ pub fn open_document(value: Server, document: Document) -> unit {
     invalidate_other_analyses(value, path)
 }
 
-pub fn change_document(value: Server, uri: string, text: string, version: isize) -> unit {
+pub fn change_document(value: Server, uri: string, text: string, version: isize) -> () {
     match document_index(value, uri) {
         Some(index) => {
             let current = value.documents[index];
@@ -156,7 +156,7 @@ pub fn change_document(value: Server, uri: string, text: string, version: isize)
     }
 }
 
-pub fn close_document(value: Server, uri: string) -> unit {
+pub fn close_document(value: Server, uri: string) -> () {
     match document_index(value, uri) {
         Some(index) => {
             let _ = value.documents.remove(index);

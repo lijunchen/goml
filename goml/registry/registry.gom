@@ -163,7 +163,7 @@ fn valid_identifier(value: string) -> bool {
     true
 }
 
-pub fn validate_coordinate(value: string) -> Result[unit, string] {
+pub fn validate_coordinate(value: string) -> Result[(), string] {
     let parts = text::split(value, "::");
     if parts.len() != 2 || !valid_identifier(parts[0]) || !valid_identifier(parts[1]) {
         Result::Err("invalid module coordinate `" + value + "`: expected owner::module")
@@ -195,7 +195,7 @@ pub fn module_directory(root: string, name: string, version: string) -> Result[s
     }
 }
 
-pub fn validate(root: string) -> Result[unit, string] {
+pub fn validate(root: string) -> Result[(), string] {
     let entries = load_index(root)?;
     for entry in entries {
         validate_coordinate(entry.name)?;

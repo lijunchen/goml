@@ -56,7 +56,7 @@ struct CoreStage {
     counter: Ref[isize],
 }
 
-fn fail(message: string) -> unit {
+fn fail(message: string) -> () {
     io::eprintln(message);
     process::exit(1)
 }
@@ -116,7 +116,7 @@ fn selected_run_usage(used_dumps: Vec[string]) -> string {
 
 fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     let mut file: Option[string] = Option::None;
-    let seen: HashMap[string, unit] = HashMap::new();
+    let seen: HashMap[string, ()] = HashMap::new();
     let used_dumps: Vec[string] = Vec::new();
     let mut positional = false;
     let mut index = 2;
@@ -265,7 +265,7 @@ fn canonical_stage_output(stage: string, source_path: string, source: string) ->
     }
 }
 
-fn run_canonical_stage(args: Vec[string]) -> unit {
+fn run_canonical_stage(args: Vec[string]) -> () {
     if args.len() != 4 {
         fail("usage: gomlc __canonical-stage <STAGE> <FILE>")
     } else {
@@ -274,7 +274,7 @@ fn run_canonical_stage(args: Vec[string]) -> unit {
     }
 }
 
-fn run_stage(args: Vec[string]) -> unit {
+fn run_stage(args: Vec[string]) -> () {
     if args.len() != 3 {
         fail("usage: gomlc <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <FILE>")
     } else {
@@ -288,7 +288,7 @@ fn run_stage(args: Vec[string]) -> unit {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let args = env::args();
     if args.len() == 1 {
         fail_cli(top_level_help())

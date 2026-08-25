@@ -104,7 +104,7 @@ fn missing_constant_error(state: EvalState, module: ctir::CtModule, origin: isiz
     }
 }
 
-fn consume_fuel(state: EvalState, module: ctir::CtModule, origin: isize) -> Result[unit, CtError] {
+fn consume_fuel(state: EvalState, module: ctir::CtModule, origin: isize) -> Result[(), CtError] {
     if state.fuel.get() <= 0 {
         Result::Err(ct_error(state, module, origin, "comptime instruction limit exceeded"))
     } else {
@@ -168,7 +168,7 @@ fn ensure_allocation(
     origin: isize,
     count: isize,
     bytes: isize,
-) -> Result[unit, CtError] {
+) -> Result[(), CtError] {
     if count > state.limits.value_nodes - state.value_nodes.get() {
         Result::Err(ct_error(state, module, origin, "comptime temporary value limit exceeded"))
     } else if bytes > state.limits.temporary_bytes - state.temporary_bytes.get() {
@@ -316,7 +316,7 @@ fn copy_locals(values: Vec[Option[ctir::CtValue]]) -> Vec[Option[ctir::CtValue]]
     result
 }
 
-fn restore_locals(target: Vec[Option[ctir::CtValue]], saved: Vec[Option[ctir::CtValue]]) -> unit {
+fn restore_locals(target: Vec[Option[ctir::CtValue]], saved: Vec[Option[ctir::CtValue]]) -> () {
     for index in 0..saved.len() {
         target.set(index, saved[index])
     }
@@ -326,7 +326,7 @@ fn restore_pattern_local(
     target: Vec[Option[ctir::CtValue]],
     saved: Vec[Option[ctir::CtValue]],
     slot: isize,
-) -> unit {
+) -> () {
     if slot >= 0 && slot < target.len() && slot < saved.len() {
         target.set(slot, saved[slot])
     } else {}
@@ -336,7 +336,7 @@ fn restore_pattern_locals(
     target: Vec[Option[ctir::CtValue]],
     saved: Vec[Option[ctir::CtValue]],
     pattern: ctir::CtPattern,
-) -> unit {
+) -> () {
     match pattern {
         ctir::CtPattern::Bind { slot } => restore_pattern_local(target, saved, slot),
         ctir::CtPattern::Tuple(patterns) | ctir::CtPattern::Or(patterns) => for pattern in patterns {

@@ -38,7 +38,7 @@ pub fn mode_from_string(value: string) -> Option[CompareMode] {
     }
 }
 
-fn collect_go_files(root: string, files: Vec[string]) -> Result[unit, string] {
+fn collect_go_files(root: string, files: Vec[string]) -> Result[(), string] {
     if fs::is_file(root) {
         if path::extension(root) == Option::Some("go") {
             files.push(root)
@@ -122,7 +122,7 @@ fn compare_diagnostics(
     file: string,
     actual: checker::CheckResult,
     expected: typecheck_diff::CheckResponse,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let actual_diagnostics: Vec[checker::CheckDiagnostic] = Vec::new();
     let actual_labels: Vec[checker::CheckDiagnostic] = Vec::new();
     for value in actual.diagnostics {
@@ -199,7 +199,7 @@ fn compare_diagnostics(
 }
 
 fn compare_section(file: string, name: string, actual: Vec[json::Value], expected: Vec[json::Value]) -> Result[
-    unit,
+    (),
     string,
 ] {
     let actual_keys: Vec[string] = Vec::new();
@@ -303,7 +303,7 @@ pub fn compare_info(
     file: string,
     actual: checker::CheckResult,
     expected: typecheck_diff::CheckResponse,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let actual_package = actual.world.packages[actual.package_id.value];
     if actual_package.path != expected.package_info.path
         || actual_package.name != expected.package_info.name

@@ -12,23 +12,23 @@ fn scope_new(parent: i64) -> i64 {
     __goml_std_task_scope_new(parent)
 }
 
-fn scope_spawn(scope: i64, body: () -> unit) -> bool {
+fn scope_spawn(scope: i64, body: () -> ()) -> bool {
     __goml_std_task_scope_spawn(scope, body)
 }
 
-fn scope_run(scope: i64, body: () -> unit) -> unit {
+fn scope_run(scope: i64, body: () -> ()) -> () {
     __goml_std_task_scope_run(scope, body)
 }
 
-fn scope_try_spawn(scope: i64, body: () -> unit) -> bool {
+fn scope_try_spawn(scope: i64, body: () -> ()) -> bool {
     __goml_std_task_scope_try_spawn(scope, body)
 }
 
-fn scope_cancel(scope: i64) -> unit {
+fn scope_cancel(scope: i64) -> () {
     __goml_std_task_scope_cancel(scope)
 }
 
-fn scope_finish(scope: i64) -> unit {
+fn scope_finish(scope: i64) -> () {
     __goml_std_task_scope_finish(scope)
 }
 
@@ -36,7 +36,7 @@ fn scope_cancelled(scope: i64) -> bool {
     __goml_std_task_scope_cancelled(scope)
 }
 
-fn scope_done(scope: i64) -> Receiver[unit] {
+fn scope_done(scope: i64) -> Receiver[()] {
     __goml_std_task_scope_done(scope)
 }
 
@@ -56,24 +56,24 @@ pub fn child_scope(parent: CancelToken) -> ScopeHandle {
     ScopeHandle { id: scope_new(parent.id) }
 }
 
-pub fn spawn(scope: ScopeHandle, body: () -> unit) -> unit {
+pub fn spawn(scope: ScopeHandle, body: () -> ()) -> () {
     let _ = scope_spawn(scope.id, body);
 }
 
-pub fn try_spawn(scope: ScopeHandle, body: () -> unit) -> bool {
+pub fn try_spawn(scope: ScopeHandle, body: () -> ()) -> bool {
     scope_try_spawn(scope.id, body)
 }
 
-pub fn run(scope: ScopeHandle, body: () -> unit) -> unit {
+pub fn run(scope: ScopeHandle, body: () -> ()) -> () {
     scope_run(scope.id, body);
     scope_finish(scope.id)
 }
 
-pub fn cancel(scope: ScopeHandle) -> unit {
+pub fn cancel(scope: ScopeHandle) -> () {
     scope_cancel(scope.id)
 }
 
-pub fn finish(scope: ScopeHandle) -> unit {
+pub fn finish(scope: ScopeHandle) -> () {
     scope_finish(scope.id)
 }
 
@@ -106,7 +106,7 @@ impl CancelToken {
         scope_cancelled(self.id)
     }
 
-    pub fn done(self: CancelToken) -> Receiver[unit] {
+    pub fn done(self: CancelToken) -> Receiver[()] {
         scope_done(self.id)
     }
 }

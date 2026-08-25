@@ -2,7 +2,7 @@ package go_backend;
 
 struct DceNames {
     values: Vec[string],
-    present: HashMap[string, unit],
+    present: HashMap[string, ()],
 }
 
 struct DceResult {
@@ -19,14 +19,14 @@ fn contains_name(values: DceNames, expected: string) -> bool {
     values.present.contains(expected)
 }
 
-fn add_name(values: DceNames, value: string) -> unit {
+fn add_name(values: DceNames, value: string) -> () {
     if !contains_name(values, value) {
         values.present[value] = ();
         values.values.push(value)
     } else {}
 }
 
-fn add_names(target: DceNames, values: DceNames) -> unit {
+fn add_names(target: DceNames, values: DceNames) -> () {
     for value in values.values {
         if contains_name(values, value) {
             add_name(target, value)
@@ -43,11 +43,11 @@ fn copy_names(values: DceNames) -> DceNames {
     result
 }
 
-fn remove_name(values: DceNames, expected: string) -> unit {
+fn remove_name(values: DceNames, expected: string) -> () {
     values.present.remove(expected)
 }
 
-fn add_expr_uses(values: DceNames, value: Expr) -> unit {
+fn add_expr_uses(values: DceNames, value: Expr) -> () {
     match value {
         Var { name } => add_name(values, name),
         Call { func, args } => {
@@ -104,7 +104,7 @@ fn add_expr_uses(values: DceNames, value: Expr) -> unit {
     }
 }
 
-fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
+fn add_stmt_uses(values: DceNames, value: Stmt) -> () {
     match value {
         Expr { expr } | Go { call: expr } | Defer { call: expr } => add_expr_uses(values, expr),
         Var { name: _, ty: _, value: initial } => match initial {
@@ -206,7 +206,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
     }
 }
 
-fn add_block_uses(values: DceNames, value: Block) -> unit {
+fn add_block_uses(values: DceNames, value: Block) -> () {
     for stmt in value.stmts {
         add_stmt_uses(values, stmt)
     }

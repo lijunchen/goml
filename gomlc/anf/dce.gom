@@ -4,7 +4,7 @@ use module::ast;
 
 struct DceNames {
     values: Vec[string],
-    present: HashMap[string, unit],
+    present: HashMap[string, ()],
 }
 
 struct DceLive {
@@ -39,14 +39,14 @@ fn dce_names_contains(values: DceNames, name: string) -> bool {
     values.present.contains(name)
 }
 
-fn dce_names_add(values: DceNames, name: string) -> unit {
+fn dce_names_add(values: DceNames, name: string) -> () {
     if dce_names_contains(values, name) {} else {
         values.present[name] = ();
         values.values.push(name)
     }
 }
 
-fn dce_names_add_all(target: DceNames, values: DceNames) -> unit {
+fn dce_names_add_all(target: DceNames, values: DceNames) -> () {
     for name in values.values {
         if dce_names_contains(values, name) {
             dce_names_add(target, name)
@@ -54,29 +54,29 @@ fn dce_names_add_all(target: DceNames, values: DceNames) -> unit {
     }
 }
 
-fn dce_names_remove(values: DceNames, name: string) -> unit {
+fn dce_names_remove(values: DceNames, name: string) -> () {
     values.present.remove(name)
 }
 
-fn dce_live_add_all(target: DceLive, values: DceLive) -> unit {
+fn dce_live_add_all(target: DceLive, values: DceLive) -> () {
     dce_names_add_all(target.values, values.values);
     dce_names_add_all(target.joins, values.joins)
 }
 
-fn dce_collect_imm(result: DceNames, value: Imm) -> unit {
+fn dce_collect_imm(result: DceNames, value: Imm) -> () {
     match value {
         Var { name, ty: _ } => dce_names_add(result, name),
         Callable { .. } | Prim { .. } | Tag { .. } => (),
     }
 }
 
-fn dce_collect_imms(result: DceNames, values: Vec[Imm]) -> unit {
+fn dce_collect_imms(result: DceNames, values: Vec[Imm]) -> () {
     for value in values {
         dce_collect_imm(result, value)
     }
 }
 
-fn dce_collect_value(result: DceNames, value: Value) -> unit {
+fn dce_collect_value(result: DceNames, value: Value) -> () {
     match value {
         Imm(value) => dce_collect_imm(result, value),
         Constr { constructor: _, args, ty: _ } => dce_collect_imms(result, args),

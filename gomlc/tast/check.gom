@@ -410,7 +410,7 @@ fn integer_literal_fits(value: string, ty: Type) -> bool {
     }
 }
 
-fn validate_integer_literal(ctx: Checker, value: string, ty: Type) -> unit {
+fn validate_integer_literal(ctx: Checker, value: string, ty: Type) -> () {
     if integer_literal_fits(value, ty) {} else {
         push_diagnostic(ctx, "Integer literal " + value + " does not fit in " + type_text(ty))
     }
@@ -465,7 +465,7 @@ fn optional_spans_equal(left: Option[ast::Span], right: Option[ast::Span]) -> bo
     }
 }
 
-fn defer_coercion(ctx: Checker, actual: Type, expected: Type) -> unit {
+fn defer_coercion(ctx: Checker, actual: Type, expected: Type) -> () {
     let span = ctx.current_span.get();
     for constraint in ctx.coercion_constraints {
         if optional_spans_equal(constraint.span, span) && types_equal(constraint.actual, actual)
@@ -476,13 +476,13 @@ fn defer_coercion(ctx: Checker, actual: Type, expected: Type) -> unit {
     ctx.coercion_constraints.push(CoercionConstraint { actual, expected, span })
 }
 
-fn resolve_coercion_constraints(ctx: Checker) -> unit {
+fn resolve_coercion_constraints(ctx: Checker) -> () {
     for constraint in ctx.coercion_constraints {
         expect_type_at(ctx, constraint.actual, constraint.expected, constraint.span)
     }
 }
 
-fn defer_numeric_literal(ctx: Checker, raw: string, ty: Type, float: bool) -> unit {
+fn defer_numeric_literal(ctx: Checker, raw: string, ty: Type, float: bool) -> () {
     ctx.numeric_literal_constraints.push(
         NumericLiteralConstraint {
             raw,
@@ -501,7 +501,7 @@ fn same_type_variable(left: Type, right: Type) -> bool {
     }
 }
 
-fn negate_numeric_literal_constraint(ctx: Checker, ty: Type) -> unit {
+fn negate_numeric_literal_constraint(ctx: Checker, ty: Type) -> () {
     for constraint in ctx.numeric_literal_constraints {
         if same_type_variable(constraint.ty, ty) {
             constraint.negative.set(!(constraint.negative.get()))
@@ -509,7 +509,7 @@ fn negate_numeric_literal_constraint(ctx: Checker, ty: Type) -> unit {
     }
 }
 
-fn resolve_numeric_literal_constraints(ctx: Checker) -> unit {
+fn resolve_numeric_literal_constraints(ctx: Checker) -> () {
     for constraint in ctx.numeric_literal_constraints {
         let previous_span = ctx.current_span.get();
         ctx.current_span.set(constraint.span);
@@ -941,7 +941,7 @@ fn has_unresolved_projection(value: Type) -> bool {
     }
 }
 
-fn constrain_callable_return(ctx: Checker, callable_ty: Type, expected: Option[Type]) -> unit {
+fn constrain_callable_return(ctx: Checker, callable_ty: Type, expected: Option[Type]) -> () {
     match propagated_expected(expected) {
         Some(expected_ty) => match prune(callable_ty) {
             Func { params: _, ret_ty } => {
@@ -1257,7 +1257,7 @@ fn missing_constructor_expr(ctx: Checker, name: string, expected: Option[Type]) 
     }
 }
 
-fn report_error_inference(ctx: Checker, expected: Option[Type]) -> unit {
+fn report_error_inference(ctx: Checker, expected: Option[Type]) -> () {
     match expected {
         Some(_) => (),
         None => push_spanless_inference_diagnostic(ctx),
@@ -2862,7 +2862,7 @@ fn is_numeric_literal_source(value: hir::Expr) -> bool {
     }
 }
 
-fn push_operator_not_defined(ctx: Checker, op: ast::BinaryOp, ty: Type, span: ast::Span) -> unit {
+fn push_operator_not_defined(ctx: Checker, op: ast::BinaryOp, ty: Type, span: ast::Span) -> () {
     push_diagnostic_at(
         ctx,
         "Operator " + binary_symbol(op) + " is not defined for type " + type_text(ty),
@@ -3196,13 +3196,13 @@ fn find_or_pattern_binding(values: Vec[OrPatternBinding], name: string) -> Optio
     Option::None
 }
 
-fn push_or_pattern_binding(values: Vec[OrPatternBinding], name: string, is_mut: bool, ty: Type) -> unit {
+fn push_or_pattern_binding(values: Vec[OrPatternBinding], name: string, is_mut: bool, ty: Type) -> () {
     if find_or_pattern_binding(values, name).is_some() {} else {
         values.push(OrPatternBinding { name, is_mut, ty })
     }
 }
 
-fn collect_or_pattern_bindings(values: Vec[OrPatternBinding], value: Pat) -> unit {
+fn collect_or_pattern_bindings(values: Vec[OrPatternBinding], value: Pat) -> () {
     match value {
         Var { name, is_mut, ty } => push_or_pattern_binding(values, name, is_mut, ty),
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } => for arg in args {
@@ -3252,7 +3252,7 @@ fn or_pattern_binding_hint(name: string) -> string {
     }
 }
 
-fn validate_or_pattern_bindings(ctx: Checker, values: Vec[Pat]) -> unit {
+fn validate_or_pattern_bindings(ctx: Checker, values: Vec[Pat]) -> () {
     if values.is_empty() {
         return
     } else {};
@@ -4038,7 +4038,7 @@ fn contains_silent_field_receiver(ctx: Checker, receiver: Type) -> bool {
     false
 }
 
-fn resolve_field_constraints(ctx: Checker) -> unit {
+fn resolve_field_constraints(ctx: Checker) -> () {
     for constraint in ctx.field_constraints {
         match resolve_field_type(ctx, constraint.receiver, constraint.name) {
             Some(ty) => expect_type(ctx, ty, constraint.field_ty),
@@ -4338,7 +4338,7 @@ fn validate_array_assignment_root(
     local_root: Option[hir::LocalId],
     typed_base: Expr,
     span: ast::Span,
-) -> unit {
+) -> () {
     match local_root {
         Some(local) => if local_is_mutable(ctx, local) {} else {
             push_diagnostic_at(
@@ -4563,7 +4563,7 @@ fn loop_target(ctx: Checker, label: Option[string]) -> Option[isize] {
     }
 }
 
-fn push_loop_result(ctx: Checker, value: LoopResult) -> unit {
+fn push_loop_result(ctx: Checker, value: LoopResult) -> () {
     match value.label {
         Some(label) => for active in ctx.loop_results {
             match active.label {
@@ -4614,7 +4614,7 @@ fn check_break_expr(ctx: Checker, label: Option[string], source: Option[hir::Exp
     }
 }
 
-fn check_loop_control(ctx: Checker, is_break: bool) -> unit {
+fn check_loop_control(ctx: Checker, is_break: bool) -> () {
     if ctx.condition_depth.get() > 0 && ctx.loop_depth.get() <= ctx.condition_loop_depth.get() {
         push_diagnostic(
             ctx,
@@ -5130,7 +5130,7 @@ fn contextual_pattern_enum_name(ctx: Checker, expected: Type) -> Option[string] 
     }
 }
 
-fn push_contextual_pattern_diagnostic(ctx: Checker, name: string, expected: Type, span: ast::Span) -> unit {
+fn push_contextual_pattern_diagnostic(ctx: Checker, name: string, expected: Type, span: ast::Span) -> () {
     let normalized = normalized_pattern_expected(ctx, expected);
     match prune(normalized) {
         Error => (),
@@ -5305,7 +5305,7 @@ fn check_qualified_constant_pattern(ctx: Checker, head: hir::PatternHead, expect
     }
 }
 
-fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
+fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> () {
     match value.kind {
         Var { name: local, is_mut: _ } => if contains_local(ctx.unresolved_locals, local) {} else {
             ctx.unresolved_locals.push(local);
@@ -5999,7 +5999,7 @@ fn hir_expr_contains_defer_control(value: hir::Expr) -> bool {
     }
 }
 
-fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
+fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> () {
     match value.kind {
         Var { name: local, is_mut: _ } => mark_mutable_local(ctx, local),
         Constr { head: _, args: values } | Tuple { items: values } | Or { pats: values } => {

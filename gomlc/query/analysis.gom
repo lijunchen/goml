@@ -120,7 +120,7 @@ fn lower_package(
     LoweredPackage { name: value.package_name, files, expanded_sources, diagnostics }
 }
 
-fn append_derive_reexports(files: Vec[hir::File], result: Vec[(string, string)]) -> unit {
+fn append_derive_reexports(files: Vec[hir::File], result: Vec[(string, string)]) -> () {
     for file in files {
         for value in file.public_reexports {
             result.push(
@@ -260,7 +260,7 @@ fn collect_dependency(
     builtin_derive: Option[ctir::CtModule],
     derive_modules: Vec[ctir::CtModule],
     derive_reexports: Vec[(string, string)],
-) -> unit {
+) -> () {
     if visited.contains(package_name) {} else {
         visited.push(package_name);
         match dependency_sources(module_root, module_path, package_name, overrides) {
@@ -351,7 +351,7 @@ fn append_navigation_sources(
     values: Vec[SourceFile],
     sources: Result[Vec[SourceFile], string],
     checked: tast::CheckResult,
-) -> unit {
+) -> () {
     match sources {
         Ok(sources) => for source in sources {
             values.push(source)

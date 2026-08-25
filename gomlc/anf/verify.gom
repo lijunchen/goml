@@ -11,7 +11,7 @@ struct JoinSignature {
 }
 
 struct VerifyState {
-    join_names: HashMap[string, unit],
+    join_names: HashMap[string, ()],
     closures: HashMap[string, repr::ClosureDef],
     structs: HashMap[string, repr::StructDef],
     enums: HashMap[string, repr::EnumDef],
@@ -38,7 +38,7 @@ fn find_join_signature(values: Vec[JoinSignature], name: string) -> Option[JoinS
     Option::None
 }
 
-fn verify_type(actual: repr::Type, expected: repr::Type, message: string) -> Result[unit, string] {
+fn verify_type(actual: repr::Type, expected: repr::Type, message: string) -> Result[(), string] {
     repr::validate_type(actual)?;
     repr::validate_type(expected)?;
     let actual_resolved = repr::resolve_type(actual);
@@ -57,11 +57,11 @@ fn verify_type(actual: repr::Type, expected: repr::Type, message: string) -> Res
     }
 }
 
-fn verify_imm(value: Imm) -> Result[unit, string] {
+fn verify_imm(value: Imm) -> Result[(), string] {
     repr::validate_type(imm_type(value))
 }
 
-fn verify_imms(values: Vec[Imm]) -> Result[unit, string] {
+fn verify_imms(values: Vec[Imm]) -> Result[(), string] {
     for value in values {
         verify_imm(value)?
     }
@@ -110,7 +110,7 @@ fn verify_constructor(
     constructor: repr::Constructor,
     args: Vec[Imm],
     ty: repr::Type,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let owner = match nominal_type_name(ty) {
         Some(value) => value,
         None => return Result::Err("constructor result has a non-nominal type"),
@@ -170,7 +170,7 @@ fn verify_constructor(
     Result::Ok(())
 }
 
-fn verify_join_name(state: VerifyState, name: string) -> Result[unit, string] {
+fn verify_join_name(state: VerifyState, name: string) -> Result[(), string] {
     if state.join_names.contains(name) {
         Result::Err("duplicate join " + name)
     } else {
@@ -183,7 +183,7 @@ fn join_signature(value: JoinBind) -> JoinSignature {
     JoinSignature { name: value.name, params: value.params, ret_ty: value.ret_ty }
 }
 
-fn verify_join_signature(value: JoinBind) -> Result[unit, string] {
+fn verify_join_signature(value: JoinBind) -> Result[(), string] {
     for param in value.params {
         repr::validate_type(param.1)?
     }
@@ -196,7 +196,7 @@ fn verify_jump(
     ret_ty: repr::Type,
     expected_ty: repr::Type,
     joins: Vec[JoinSignature],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let signature = match find_join_signature(joins, target) {
         Some(value) => value,
         None => return Result::Err("jump to out-of-scope join " + target),
@@ -215,7 +215,7 @@ fn verify_jump(
     verify_type(ret_ty, expected_ty, "jump result type does not match its block")
 }
 
-fn verify_match_arm_type(scrutinee: Imm, arm: Arm) -> Result[unit, string] {
+fn verify_match_arm_type(scrutinee: Imm, arm: Arm) -> Result[(), string] {
     verify_type(
         imm_type(arm.lhs),
         imm_type(scrutinee),
@@ -224,7 +224,7 @@ fn verify_match_arm_type(scrutinee: Imm, arm: Arm) -> Result[unit, string] {
 }
 
 fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: Vec[JoinSignature]) -> Result[
-    unit,
+    (),
     string,
 ] {
     match value {
@@ -318,7 +318,7 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
 }
 
 fn verify_nonrecursive_join(state: VerifyState, value: JoinBind, joins: Vec[JoinSignature]) -> Result[
-    unit,
+    (),
     string,
 ] {
     verify_join_name(state, value.name)?;
@@ -345,7 +345,7 @@ fn verify_recursive_joins(state: VerifyState, values: Vec[JoinBind], joins: Vec[
     Result::Ok(recursive)
 }
 
-fn verify_value(state: VerifyState, value: Value) -> Result[unit, string] {
+fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
     match value {
         Imm(value) => verify_imm(value),
         Constr { constructor, args, ty } => {
@@ -506,7 +506,7 @@ fn verify_block(
     value: Block,
     expected_ty: repr::Type,
     parent_joins: Vec[JoinSignature],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let joins = copy_join_signatures(parent_joins);
     for bind in value.binds {
         match bind {
@@ -569,7 +569,7 @@ fn verify_closure_definition(
     definition: repr::ClosureDef,
     structs: HashMap[string, repr::StructDef],
     functions: HashMap[string, Function],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if structs.contains(definition.environment) {} else {
         return Result::Err("closure apply function has no environment " + definition.environment)
     };
@@ -620,7 +620,7 @@ fn verify_function(
     closures: HashMap[string, repr::ClosureDef],
     structs: HashMap[string, repr::StructDef],
     enums: HashMap[string, repr::EnumDef],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     for param in value.params {
         repr::validate_type(param.1)?
     }
@@ -646,10 +646,10 @@ fn verify_function(
     }
 }
 
-pub fn verify(value: File) -> Result[unit, string] {
+pub fn verify(value: File) -> Result[(), string] {
     let structs: HashMap[string, repr::StructDef] = HashMap::new();
     let enums: HashMap[string, repr::EnumDef] = HashMap::new();
-    let type_names: HashMap[string, unit] = HashMap::new();
+    let type_names: HashMap[string, ()] = HashMap::new();
     for definition in value.structs {
         if type_names.contains(definition.name) {
             return Result::Err("duplicate representation type " + definition.name)
@@ -693,7 +693,7 @@ pub fn verify(value: File) -> Result[unit, string] {
         }
     }
     let closures: HashMap[string, repr::ClosureDef] = HashMap::new();
-    let environments: HashMap[string, unit] = HashMap::new();
+    let environments: HashMap[string, ()] = HashMap::new();
     for definition in value.closure_defs {
         if environments.contains(definition.environment) {
             return Result::Err("duplicate closure environment " + definition.environment)

@@ -122,11 +122,11 @@ fn source_text(source: Vec[byte], start: isize, end: isize) -> string {
     }
 }
 
-fn report(scanner: Scanner, offset: isize, message: string) -> unit {
+fn report(scanner: Scanner, offset: isize, message: string) -> () {
     scanner.diagnostics.push(diagnostic::make(message, offset))
 }
 
-fn next(scanner: Scanner) -> unit {
+fn next(scanner: Scanner) -> () {
     if scanner.read_offset.get() < scanner.source.len() {
         let offset = scanner.read_offset.get();
         scanner.offset.set(offset);
@@ -229,7 +229,7 @@ fn scan_identifier(scanner: Scanner) -> string {
     source_text(scanner.source, start, scanner.offset.get())
 }
 
-fn skip_whitespace(scanner: Scanner) -> unit {
+fn skip_whitespace(scanner: Scanner) -> () {
     while scanner.current.get() == b' '.to_i32() || scanner.current.get() == b'\t'.to_i32()
         || (scanner.current.get() == b'\n'.to_i32() && !scanner.insert_semi.get())
         || scanner.current.get() == b'\r'.to_i32() {

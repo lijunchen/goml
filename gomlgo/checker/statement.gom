@@ -58,7 +58,7 @@ fn track_local_variable(
     object: go_types::ObjectId,
     node: syntax::NodeId,
     scope: go_types::ScopeId,
-) -> unit {
+) -> () {
     if state.function_ids.is_empty() {
         return
     } else {};
@@ -158,7 +158,7 @@ fn check_local_value_spec(
     inherited_type: Option[syntax::NodeId],
     inherited_values: Vec[syntax::NodeId],
     inherited_spec: Option[syntax::NodeId],
-) -> unit {
+) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -379,7 +379,7 @@ fn local_type_cycle(
     }
 }
 
-fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> unit {
+fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -590,7 +590,7 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
     }
 }
 
-fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> unit {
+fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -663,7 +663,7 @@ fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: sy
     }
 }
 
-fn update_comma_ok_operand_fact(state: CheckState, node: syntax::NodeId, tuple: go_types::TypeId) -> unit {
+fn update_comma_ok_operand_fact(state: CheckState, node: syntax::NodeId, tuple: go_types::TypeId) -> () {
     update_operand_fact(state, node, tuple, Option::None);
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
@@ -914,7 +914,7 @@ fn assign_checked(
     source_node: syntax::NodeId,
     source: Operand,
     target: Operand,
-) -> unit {
+) -> () {
     if assignment_blank_identifier(state, node) {
         state.info.defs.push(
             ObjectFact { node: assignment_identifier_node(state, node), object: Option::None },
@@ -984,7 +984,7 @@ fn assign_existing(
     node: syntax::NodeId,
     source_node: syntax::NodeId,
     source: Operand,
-) -> unit {
+) -> () {
     let assignment_object = match assignment_identifier_name(state, node) {
         Some(name) => go_types::lookup(state.world, scope, name),
         None => Option::None,
@@ -1022,7 +1022,7 @@ fn report_assignment_count(
     left_count: isize,
     right_nodes: Vec[syntax::NodeId],
     right_count: isize,
-) -> unit {
+) -> () {
     let position = if right_nodes.is_empty() {
         node
     } else {
@@ -1065,7 +1065,7 @@ fn check_short_declaration(
     node: syntax::NodeId,
     left: Vec[syntax::NodeId],
     right: Vec[Operand],
-) -> unit {
+) -> () {
     if left.len() != right.len() {
         let invalid_values: Vec[Operand] = Vec::new();
         for _ in left {
@@ -1176,7 +1176,7 @@ fn check_assignment(
     left: Vec[syntax::NodeId],
     token: string,
     right_nodes: Vec[syntax::NodeId],
-) -> unit {
+) -> () {
     if !assignment_operator(token) {
         if left.len() != 1 || right_nodes.len() != 1 {
             diagnostic(state, node, "assignment count mismatch", false);
@@ -1340,7 +1340,7 @@ fn report_return_count(
     result_nodes: Vec[syntax::NodeId],
     actual: Vec[Operand],
     expected: Vec[go_types::Variable],
-) -> unit {
+) -> () {
     let too_few = actual.len() < expected.len();
     let position = if result_nodes.is_empty() {
         node
@@ -1373,7 +1373,7 @@ fn check_return(
     node: syntax::NodeId,
     result_nodes: Vec[syntax::NodeId],
     signature: go_types::TypeId,
-) -> unit {
+) -> () {
     let expected = signature_results(state, signature);
     if result_nodes.is_empty() {
         if !expected.is_empty() {
@@ -1518,7 +1518,7 @@ fn check_condition(
     scope: go_types::ScopeId,
     node: syntax::NodeId,
     statement: string,
-) -> unit {
+) -> () {
     let condition = check_expression(state, scope, node);
     if type_contains_invalid(state, condition.type_id)
         && !type_contains_active_type(state, condition.type_id) {} else if !is_boolean_type(
@@ -1555,7 +1555,7 @@ fn label_index(state: CheckState, name: string) -> Option[isize] {
     Option::None
 }
 
-fn declare_label(state: CheckState, node: syntax::NodeId) -> unit {
+fn declare_label(state: CheckState, node: syntax::NodeId) -> () {
     let name = identifier(state, node).unwrap_or("");
     if name == "_" {
         return
@@ -1586,7 +1586,7 @@ fn declare_label(state: CheckState, node: syntax::NodeId) -> unit {
     state.info.defs.push(ObjectFact { node, object: Option::Some(object) })
 }
 
-fn collect_labels(state: CheckState, node: syntax::NodeId) -> unit {
+fn collect_labels(state: CheckState, node: syntax::NodeId) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -1719,7 +1719,7 @@ fn labeled_statement_context(state: CheckState, node: syntax::NodeId) -> ActiveL
     }
 }
 
-fn use_branch_label(state: CheckState, token: string, node: syntax::NodeId, name: string) -> unit {
+fn use_branch_label(state: CheckState, token: string, node: syntax::NodeId, name: string) -> () {
     let binding = match label_index(state, name) {
         Some(index) => index,
         None => {
@@ -2334,7 +2334,7 @@ fn check_range_declaration(
     node: syntax::NodeId,
     left: Vec[syntax::NodeId],
     operands: Vec[Operand],
-) -> unit {
+) -> () {
     let mut named = 0;
     for index in 0..left.len() {
         let name = identifier(state, left[index]).unwrap_or("");
@@ -2432,7 +2432,7 @@ fn assign_integer_range_value(
     expression: syntax::NodeId,
     source: Operand,
     contextualize_source: bool,
-) -> unit {
+) -> () {
     if !contextualize_source {
         return
     } else {};
@@ -2714,7 +2714,7 @@ fn check_send_statement(
     channel: syntax::NodeId,
     arrow: isize,
     value: syntax::NodeId,
-) -> unit {
+) -> () {
     let channel_operand = check_expression(state, scope, channel);
     let sent = check_expression(state, scope, value);
     let type_parameter_failure = channel_type_parameter_failure(
@@ -2797,7 +2797,7 @@ fn check_go_or_defer(
     scope: go_types::ScopeId,
     call: syntax::NodeId,
     statement: string,
-) -> unit {
+) -> () {
     match syntax::get_node(state.syntax.arena, call) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -2915,7 +2915,7 @@ fn record_switch_case_value(
     operand: Operand,
     target: go_types::TypeId,
     seen: Vec[SwitchCaseValue],
-) -> unit {
+) -> () {
     if basic_kind(state, operand.type_id) == go_types::BasicKind::UntypedNil {
         return
     } else {};
@@ -3892,7 +3892,7 @@ fn expression_statement_uses_value(
     }
 }
 
-fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> unit {
+fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> () {
     let function = match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -4280,7 +4280,7 @@ fn local_scope_depth(state: CheckState, scope: go_types::ScopeId) -> isize {
     state.world.scopes[scope.value].depth
 }
 
-fn report_unused_locals(state: CheckState, function_id: isize, start: isize) -> unit {
+fn report_unused_locals(state: CheckState, function_id: isize, start: isize) -> () {
     let mut root_depth = state.world.scopes.len();
     for index in start..state.locals.len() {
         let local = state.locals[index];
@@ -4348,7 +4348,7 @@ fn record_flow_declaration(
     declaration: syntax::NodeId,
     blocks: Vec[syntax::NodeId],
     declarations: Vec[FlowDeclaration],
-) -> unit {
+) -> () {
     match syntax::get_node(state.syntax.arena, declaration) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -4378,7 +4378,7 @@ fn collect_flow_points(
     labels: Vec[FlowLabel],
     gotos: Vec[FlowGoto],
     declarations: Vec[FlowDeclaration],
-) -> unit {
+) -> () {
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -4635,7 +4635,7 @@ fn source_line(state: CheckState, node: syntax::NodeId) -> isize {
     }
 }
 
-fn check_goto_restrictions(state: CheckState, body: syntax::NodeId) -> unit {
+fn check_goto_restrictions(state: CheckState, body: syntax::NodeId) -> () {
     let labels: Vec[FlowLabel] = Vec::new();
     let gotos: Vec[FlowGoto] = Vec::new();
     let declarations: Vec[FlowDeclaration] = Vec::new();
@@ -4706,7 +4706,7 @@ fn check_function_body(
     signature_node: syntax::NodeId,
     signature: go_types::TypeId,
     body: syntax::NodeId,
-) -> unit {
+) -> () {
     if state.checked_function_bodies.contains(body.value) {
         return
     } else {};

@@ -210,7 +210,7 @@ where
     )
 }
 
-pub fn inspect[T, I: Iterator](iterator: I, action: (T) -> unit) -> FnIterator[T] where I::Item = T {
+pub fn inspect[T, I: Iterator](iterator: I, action: (T) -> ()) -> FnIterator[T] where I::Item = T {
     FnIterator::from_fn(
         || {
             match iterator.next() {
@@ -378,7 +378,7 @@ pub fn last[I: Iterator](iterator: I) -> Option[I::Item] {
     result
 }
 
-pub fn for_each[T, I: Iterator](iterator: I, action: (T) -> unit) -> unit where I::Item = T {
+pub fn for_each[T, I: Iterator](iterator: I, action: (T) -> ()) -> () where I::Item = T {
     loop {
         match iterator.next() {
             Some(value) => action(value),

@@ -17,7 +17,7 @@ pub struct Summary {
     pub failures: isize,
 }
 
-fn collect_go_files(directory: string, files: Vec[string]) -> Result[unit, string] {
+fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string] {
     let names = fs::read_dir(directory)?;
     collections::sort(names);
     for name in names {
@@ -236,7 +236,7 @@ fn save_failure(
     actual: parser::ParseResult,
     expected: differential::OracleResponse,
     message: string,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let directory = path::join(output, input_hash(input));
     fs::create_dir_all(directory)?;
     fs::write_bytes(path::join(directory, "input.go"), input)?;

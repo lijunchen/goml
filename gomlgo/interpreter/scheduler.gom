@@ -193,7 +193,7 @@ fn start_next_entry(scheduler: Scheduler, goroutine: ScheduledGoroutine) -> Resu
     }
 }
 
-fn start_scheduler(scheduler: Scheduler) -> Result[unit, string] {
+fn start_scheduler(scheduler: Scheduler) -> Result[(), string] {
     let startup = ScheduledGoroutine {
         frames: Vec::new(),
         pending: Ref::new(Option::None),
@@ -484,7 +484,7 @@ fn cancel_scheduled_native_channel(
     scheduler: Scheduler,
     goroutine_index: isize,
     pending: ScheduledNativeChannel,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if !cancel_native_channel_invocation_value(pending.invocation.value) {
         return Result::Err("native channel invocation could not be canceled")
     } else if !wait_native_channel_invocation_value(pending.invocation.value) {
@@ -536,7 +536,7 @@ fn select_case_enter(
     chosen: bytecode::RegisterId,
     cases: Vec[bytecode::SelectCase],
     case_index: isize,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let selected = cases[case_index];
     let arguments = block_argument_values(scheduled.frame, selected.arguments)?;
     let chosen_type = scheduler.state.program.functions[scheduled.frame.function.value].register_types[chosen.value];
@@ -558,7 +558,7 @@ fn select_case_enter(
 }
 
 fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, value: Value) -> Result[
-    unit,
+    (),
     string,
 ] {
     let goroutine = scheduler.goroutines[waiting.goroutine];
@@ -704,7 +704,7 @@ fn attempt_receive(scheduler: Scheduler, current: isize, channel_id: isize) -> R
     }
 }
 
-fn wake_channel(scheduler: Scheduler, channel: isize) -> Result[unit, string] {
+fn wake_channel(scheduler: Scheduler, channel: isize) -> Result[(), string] {
     for index in 0..scheduler.goroutines.len() {
         let goroutine = scheduler.goroutines[index];
         if scheduled_channel_waiter(goroutine)
@@ -760,12 +760,12 @@ fn select_choice(scheduler: Scheduler, ready: Vec[isize]) -> isize {
     ready[(next % ready.len().to_u64()).to_isize()]
 }
 
-fn block_scheduled(goroutine: ScheduledGoroutine, scheduled: ScheduledFrame) -> unit {
+fn block_scheduled(goroutine: ScheduledGoroutine, scheduled: ScheduledFrame) -> () {
     scheduled.waiting.set(true);
     goroutine.state.set(1)
 }
 
-fn advance_scheduled(scheduled: ScheduledFrame) -> unit {
+fn advance_scheduled(scheduled: ScheduledFrame) -> () {
     scheduled.instruction.set(scheduled.instruction.get() + 1);
     scheduled.waiting.set(false)
 }
@@ -783,7 +783,7 @@ fn count_scheduled_step(
 }
 
 fn complete_native_callback(state: VmState, callback: ScheduledCallback, outcome: InvocationOutcome) -> Result[
-    unit,
+    (),
     string,
 ] {
     for index in 0..callback.arguments.len() {
@@ -847,7 +847,7 @@ fn start_native_callback(
     scheduler: Scheduler,
     binding: NativeCallbackBinding,
     request: NativeCallbackRequest,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let method_name = native_callback_method(request);
     let (signature, target) = match binding.target {
         NativeCallbackTarget::Function { function, signature } => (
@@ -941,7 +941,7 @@ fn poll_native_callbacks(scheduler: Scheduler) -> Result[bool, string] {
     Result::Ok(false)
 }
 
-fn close_native_callbacks(state: VmState) -> unit {
+fn close_native_callbacks(state: VmState) -> () {
     for binding in state.native_callbacks {
         close_native_callback_queue(binding.queue)
     }
@@ -954,7 +954,7 @@ fn start_scheduled_native_call(
     owner: Option[ScheduledFrame],
     results: Vec[bytecode::RegisterId],
     deferred: bool,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let native = match call.target {
         PreparedTarget::Native(id) => static_native_prepared(scheduler.state, id)?,
         PreparedTarget::Dynamic(Value::Host { type_id, value }) => {
@@ -1078,7 +1078,7 @@ fn start_native_channel(
     channels: Vec[dyn HostValueMarker],
     default_case: bool,
     target: ScheduledNativeChannelTarget,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let invocation = new_native_channel_invocation();
     for channel in channels {
         if !append_native_channel_receive_value(invocation.value, channel) {
@@ -1102,7 +1102,7 @@ fn complete_native_channel(
     scheduler: Scheduler,
     goroutine_index: isize,
     pending: ScheduledNativeChannel,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let goroutine = scheduler.goroutines[goroutine_index];
     goroutine.native_channel.set(Option::None);
     let _ = take_native_completion(scheduler.native_completions);
@@ -1168,7 +1168,7 @@ fn complete_native_channel(
     Result::Ok(())
 }
 
-fn poll_scheduled_native_channels(scheduler: Scheduler) -> Result[unit, string] {
+fn poll_scheduled_native_channels(scheduler: Scheduler) -> Result[(), string] {
     for index in 0..scheduler.goroutines.len() {
         match scheduler.goroutines[index].native_channel.get() {
             Some(pending) => if native_channel_invocation_ready_value(pending.invocation.value) {
@@ -1388,7 +1388,7 @@ fn return_scheduled(scheduler: Scheduler, goroutine_index: isize, values: Vec[Va
     begin_scheduled_finish(scheduler, goroutine_index, Option::None)
 }
 
-fn check_goroutine_limit(scheduler: Scheduler) -> Result[unit, string] {
+fn check_goroutine_limit(scheduler: Scheduler) -> Result[(), string] {
     let mut active = 0;
     for goroutine in scheduler.goroutines {
         if goroutine.state.get() != 2 {
@@ -1402,7 +1402,7 @@ fn check_goroutine_limit(scheduler: Scheduler) -> Result[unit, string] {
     }
 }
 
-fn add_scheduled_goroutine(scheduler: Scheduler, goroutine: ScheduledGoroutine) -> unit {
+fn add_scheduled_goroutine(scheduler: Scheduler, goroutine: ScheduledGoroutine) -> () {
     for index in 0..scheduler.goroutines.len() {
         let current = scheduler.goroutines[index];
         if current.state.get() == 2 && !current.startup {
@@ -1413,7 +1413,7 @@ fn add_scheduled_goroutine(scheduler: Scheduler, goroutine: ScheduledGoroutine) 
     scheduler.goroutines.push(goroutine)
 }
 
-fn spawn_scheduled(scheduler: Scheduler, invocation: ScheduledInvocation) -> Result[unit, string] {
+fn spawn_scheduled(scheduler: Scheduler, invocation: ScheduledInvocation) -> Result[(), string] {
     check_goroutine_limit(scheduler)?;
     let goroutine = ScheduledGoroutine {
         frames: Vec::new(),
@@ -1431,7 +1431,7 @@ fn spawn_scheduled(scheduler: Scheduler, invocation: ScheduledInvocation) -> Res
 }
 
 fn spawn_scheduled_call(scheduler: Scheduler, caller: Frame, call: PreparedCall) -> Result[
-    unit,
+    (),
     string,
 ] {
     check_goroutine_limit(scheduler)?;

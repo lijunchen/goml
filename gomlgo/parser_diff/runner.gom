@@ -12,7 +12,7 @@ pub struct Summary {
     pub accepted: isize,
 }
 
-fn collect_go_files(directory: string, files: Vec[string]) -> Result[unit, string] {
+fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string] {
     let names = fs::read_dir(directory)?;
     collections::sort(names);
     for name in names {
@@ -30,7 +30,7 @@ fn compare_diagnostics(
     file: string,
     actual: parser::ParseResult,
     expected: differential::OracleResponse,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if actual.diagnostics.len() != expected.diagnostics.len() {
         Result::Err(
             file + ": diagnostic count mismatch\nexpected=" + expected.diagnostics.len().to_string()

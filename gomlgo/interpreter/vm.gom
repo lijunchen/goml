@@ -399,13 +399,13 @@ fn prepared_place_roots(slots: Vec[isize], count: isize) -> Vec[isize] {
     slots
 }
 
-fn reset_slots[T](slots: Vec[Option[T]]) -> unit {
+fn reset_slots[T](slots: Vec[Option[T]]) -> () {
     for index in 0..slots.len() {
         slots[index] = Option::None;
     }
 }
 
-fn reset_place_roots(slots: Vec[isize]) -> unit {
+fn reset_place_roots(slots: Vec[isize]) -> () {
     for index in 0..slots.len() {
         slots[index] = -1;
     }
@@ -492,7 +492,7 @@ fn allocate_local_cell(
     }
 }
 
-fn replace_local_cell(state: VmState, frame: Frame, local: isize, value: Value) -> unit {
+fn replace_local_cell(state: VmState, frame: Frame, local: isize, value: Value) -> () {
     if state.recyclable_locals[frame.function.value][local] {
         let current = frame.locals[local];
         set_cell_value(state.memory, current.value, copy_value(value))
@@ -501,14 +501,14 @@ fn replace_local_cell(state: VmState, frame: Frame, local: isize, value: Value) 
     }
 }
 
-fn release_owned_cells(memory: Memory, cells: Vec[CellId]) -> unit {
+fn release_owned_cells(memory: Memory, cells: Vec[CellId]) -> () {
     for cell in cells {
         release_reusable_cell(memory, cell)
     }
     cells.clear()
 }
 
-fn release_frame_slots(state: VmState, frame: Frame) -> unit {
+fn release_frame_slots(state: VmState, frame: Frame) -> () {
     if frame.frame_cell_checkpoint >= 0 {
         release_frame_cells(state.memory, frame.frame_cell_checkpoint)
     } else {};
@@ -2387,7 +2387,7 @@ fn runtime_error(kind: string, message: string, location: Option[bytecode::Sourc
     RuntimeError { kind, message, location, stack: Vec::new() }
 }
 
-fn validate_function(state: VmState, id: bytecode::FunctionId) -> Result[unit, string] {
+fn validate_function(state: VmState, id: bytecode::FunctionId) -> Result[(), string] {
     if id.value < 0 || id.value >= state.program.functions.len() {
         Result::Err("invalid function " + id.value.to_string())
     } else {
@@ -2441,7 +2441,7 @@ fn scalar_local_value(frame: Frame, local: isize) -> Result[u64, string] {
     }
 }
 
-fn replace_scalar_local(frame: Frame, local: isize, value: u64) -> Result[unit, string] {
+fn replace_scalar_local(frame: Frame, local: isize, value: u64) -> Result[(), string] {
     if frame.scalar.is_empty() || local < 0 || local >= frame.locals.len() {
         Result::Err("invalid scalar local")
     } else {
@@ -2463,7 +2463,7 @@ fn scalar_place_local(frame: Frame, place: bytecode::PlaceId) -> Option[isize] {
     }
 }
 
-fn replace_scalar_place_local(frame: Frame, place: bytecode::PlaceId, local: isize) -> unit {
+fn replace_scalar_place_local(frame: Frame, place: bytecode::PlaceId, local: isize) -> () {
     if !frame.scalar.is_empty() && place.value >= 0 && place.value < frame.places.len() {
         frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place.value] = if local
             < 0 {
@@ -2567,7 +2567,7 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
     }
 }
 
-fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[unit, string] {
+fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.registers.len() {
         Result::Err("invalid register " + id.value.to_string())
     } else if frame.scalar.is_empty() {
@@ -2618,7 +2618,7 @@ fn set_integer_register(
     bits: u64,
     width: isize,
     signed: bool,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let bits = normalize_integer(bits, width);
     if frame.scalar.is_empty() {
         return set_register(
@@ -2830,7 +2830,7 @@ fn set_small_integer_register(
     bits: u64,
     width: isize,
     signed: bool,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let bits = normalize_integer(bits, width);
     if !frame.scalar.is_empty() && scalar_register_layout(frame, target).is_some() {
         set_integer_register(frame, target, bits, width, signed)
@@ -2854,7 +2854,7 @@ fn execute_integer_binary(
     right_signed: bool,
     false_value: Value,
     true_value: Value,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match op {
         bytecode::BinaryOp::Add => {
             let bits = left_bits + right_bits;
@@ -2973,7 +2973,7 @@ fn execute_integer_binary(
 }
 
 fn load_cell_register(memory: Memory, frame: Frame, cell: CellId, target: bytecode::RegisterId) -> Result[
-    unit,
+    (),
     string,
 ] {
     if !cell_valid(memory, cell.value) {
@@ -3022,7 +3022,7 @@ fn root_frame_place(frame: Frame, id: bytecode::PlaceId) -> Result[Option[CellId
     }
 }
 
-fn set_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId) -> Result[unit, string] {
+fn set_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
@@ -3035,7 +3035,7 @@ fn set_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId) -> Result[
 }
 
 fn set_local_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId, local: isize) -> Result[
-    unit,
+    (),
     string,
 ] {
     set_root_place(frame, id, value)?;
@@ -3045,7 +3045,7 @@ fn set_local_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId, loca
     Result::Ok(())
 }
 
-fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result[unit, string] {
+fn set_place(frame: Frame, id: bytecode::PlaceId, value: RuntimePlace) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
@@ -3062,7 +3062,7 @@ fn set_bool_place(
     backing: Place,
     elements: Vec[bool],
     index: isize,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if id.value < 0 || id.value >= frame.places.len() {
         Result::Err("invalid place " + id.value.to_string())
     } else {
@@ -3118,7 +3118,7 @@ fn fast_steps_available(state: VmState, count: isize) -> bool {
     maximum < 0.to_i64() || state.steps.get() + count.to_i64() <= maximum
 }
 
-fn consume_fast_steps(state: VmState, count: isize) -> unit {
+fn consume_fast_steps(state: VmState, count: isize) -> () {
     state.steps.set(state.steps.get() + count.to_i64())
 }
 
@@ -3162,7 +3162,7 @@ fn execute_fast_static_call(
     function_id: bytecode::FunctionId,
     arguments: Vec[bytecode::RegisterId],
     results: Vec[bytecode::RegisterId],
-) -> Option[Result[unit, string]] {
+) -> Option[Result[(), string]] {
     if function_id.value < 0 || function_id.value >= state.fast_functions.len()
         || function_id.value >= state.program.functions.len()
         || results.len() != 1 {
@@ -3232,13 +3232,13 @@ fn frame_location(frame: Frame, location: bytecode::CodeLocation) -> bytecode::S
     bytecode::expand_location(frame.package_id, frame.function, location)
 }
 
-fn append_bytes(target: bytes::Bytes, value: bytes::Bytes) -> unit {
+fn append_bytes(target: bytes::Bytes, value: bytes::Bytes) -> () {
     for byte in value.to_vec() {
         target.push(byte)
     }
 }
 
-fn append_output(state: VmState, values: Vec[Value], newline: bool) -> Result[unit, string] {
+fn append_output(state: VmState, values: Vec[Value], newline: bool) -> Result[(), string] {
     for index in 0..values.len() {
         if newline && index > 0 {
             state.stderr.push(b' ')
@@ -3767,7 +3767,7 @@ fn map_entry_index(state: VmState, value: MapValue, key: Value, hash: u64) -> Re
     Result::Ok(-1)
 }
 
-fn ensure_map_key_comparable(state: VmState, key: Value) -> Result[unit, string] {
+fn ensure_map_key_comparable(state: VmState, key: Value) -> Result[(), string] {
     let _ = hash_value(state, key)?;
     Result::Ok(())
 }
@@ -3789,7 +3789,7 @@ fn map_lookup(state: VmState, id: isize, key: Value, value_type: go_types::TypeI
     }
 }
 
-fn map_set(state: VmState, id: isize, key: Value, value: Value) -> Result[unit, string] {
+fn map_set(state: VmState, id: isize, key: Value, value: Value) -> Result[(), string] {
     if id < 0 {
         return Result::Err("assignment to entry in nil map")
     } else {};
@@ -3816,7 +3816,7 @@ fn map_set(state: VmState, id: isize, key: Value, value: Value) -> Result[unit, 
     Result::Ok(())
 }
 
-fn map_delete(state: VmState, id: isize, key: Value) -> Result[unit, string] {
+fn map_delete(state: VmState, id: isize, key: Value) -> Result[(), string] {
     let hash = hash_value(state, key)?;
     if id < 0 {
         return Result::Ok(())
@@ -3829,7 +3829,7 @@ fn map_delete(state: VmState, id: isize, key: Value) -> Result[unit, string] {
     Result::Ok(())
 }
 
-fn clear_map(state: VmState, id: isize) -> Result[unit, string] {
+fn clear_map(state: VmState, id: isize) -> Result[(), string] {
     if id < 0 {
         return Result::Ok(())
     } else {};
@@ -3840,7 +3840,7 @@ fn clear_map(state: VmState, id: isize) -> Result[unit, string] {
     Result::Ok(())
 }
 
-fn clear_slice(state: VmState, value: SliceValue) -> Result[unit, string] {
+fn clear_slice(state: VmState, value: SliceValue) -> Result[(), string] {
     if value.length == 0 {
         return Result::Ok(())
     } else {};
@@ -3910,7 +3910,7 @@ fn execute_size_builtin(
     arguments: Vec[bytecode::RegisterId],
     results: Vec[bytecode::RegisterId],
     capacity: bool,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if arguments.len() != 1 || results.len() != 1 {
         return Result::Err(
             if capacity {
@@ -4869,7 +4869,7 @@ fn load_frame_place_register(
     frame: Frame,
     source: bytecode::PlaceId,
     target: bytecode::RegisterId,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     match root_frame_place(frame, source)? {
         Some(root) => load_cell_register(state.memory, frame, root, target),
         None => match frame.bool_places[source.value] {
@@ -4887,7 +4887,7 @@ fn load_frame_place_register(
     }
 }
 
-fn store_runtime_place(state: VmState, target: RuntimePlace, value: Value) -> Result[unit, string] {
+fn store_runtime_place(state: VmState, target: RuntimePlace, value: Value) -> Result[(), string] {
     match target {
         RuntimePlace::Local(target) => store_place(state.memory, target, value),
         RuntimePlace::BoolElement { backing: _, elements, index } => {
@@ -4916,7 +4916,7 @@ fn set_indexed_runtime_place(
     target: bytecode::PlaceId,
     base: bytecode::PlaceId,
     index: isize,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     let base = local_frame_place(frame, base)?;
     match load_place(state.memory, base) {
         Ok(Value::Local(LocalValue::Slice(slice))) => {
@@ -4939,7 +4939,7 @@ fn set_indexed_runtime_place(
 }
 
 fn store_frame_place(state: VmState, frame: Frame, id: bytecode::PlaceId, value: Value) -> Result[
-    unit,
+    (),
     string,
 ] {
     match root_frame_place(frame, id)? {
@@ -5631,7 +5631,7 @@ fn prepare_native_runtime_context(
     native: NativePrepared,
     invocation: NativeInvocation,
     goroutine: isize,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if native.runtime_stack
         && !use_native_runtime_stack(
             invocation.value as dyn HostValueMarker,
@@ -5647,7 +5647,7 @@ fn apply_native_slice_writebacks(
     state: VmState,
     native: NativePrepared,
     invocation: NativeInvocation,
-) -> Result[unit, string] {
+) -> Result[(), string] {
     for index in 0..native.argument_slices.len() {
         match native.argument_slices[index] {
             Some(slice) => match slice.backing {
@@ -6140,7 +6140,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
     isize,
     string,
 ] {
-    let result: Result[unit, string] = match instruction.kind {
+    let result: Result[(), string] = match instruction.kind {
         bytecode::InstructionKind::Constant { target, type_id, constant_kind, exact } => set_register(
             frame,
             target,
@@ -7007,7 +7007,7 @@ fn count_sequential_branch_steps(
     }
 }
 
-fn install_sequential_local_place(frame: Frame, place: isize, local: isize) -> unit {
+fn install_sequential_local_place(frame: Frame, place: isize, local: isize) -> () {
     frame.place_roots[place] = frame.locals[local].value;
     frame.places[place] = Option::None;
     frame.bool_places[place] = Option::None;
@@ -9195,7 +9195,7 @@ fn enter_block(
     frame: Frame,
     target: bytecode::BlockId,
     arguments: Vec[Value],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if target.value < 0 || target.value >= function.blocks.len() {
         return Result::Err("invalid jump target " + target.value.to_string())
     } else {};
@@ -9229,7 +9229,7 @@ fn enter_block_registers(
     frame: Frame,
     target: bytecode::BlockId,
     arguments: Vec[bytecode::RegisterId],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     enter_block(function, frame, target, block_argument_values(frame, arguments)?)
 }
 
@@ -9417,7 +9417,7 @@ fn commit_function_results(
     frame: Frame,
     function: bytecode::BytecodeFunction,
     values: Vec[Value],
-) -> Result[unit, string] {
+) -> Result[(), string] {
     if values.len() != function.results.len() {
         return Result::Err("return value count does not match function results")
     } else {};

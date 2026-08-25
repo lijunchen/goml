@@ -39,7 +39,7 @@ impl[T] Deque[T] {
         self.len.get() == 0
     }
 
-    pub fn ensure_space(self: Deque[T]) -> unit {
+    pub fn ensure_space(self: Deque[T]) -> () {
         if self.len.get() < self.capacity() {} else {
             let old = self.slots.get();
             let old_capacity = old.len();
@@ -65,14 +65,14 @@ impl[T] Deque[T] {
         }
     }
 
-    pub fn push_back(self: Deque[T], value: T) -> unit {
+    pub fn push_back(self: Deque[T], value: T) -> () {
         self.ensure_space();
         let index = (self.head.get() + self.len.get()) % self.capacity();
         self.slots.get()[index] = Option::Some(value);
         self.len.set(self.len.get() + 1)
     }
 
-    pub fn push_front(self: Deque[T], value: T) -> unit {
+    pub fn push_front(self: Deque[T], value: T) -> () {
         self.ensure_space();
         let index = (self.head.get() - 1 + self.capacity()) % self.capacity();
         self.head.set(index);
@@ -136,7 +136,7 @@ impl[T] Deque[T] {
         }
     }
 
-    pub fn clear(self: Deque[T]) -> unit {
+    pub fn clear(self: Deque[T]) -> () {
         while self.len.get() > 0 {
             let _ = self.pop_back();
         }

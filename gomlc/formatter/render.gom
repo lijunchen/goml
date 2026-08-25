@@ -13,7 +13,7 @@ struct Renderer {
     indent_level: Ref[isize],
     line_width: isize,
     line_start: Ref[bool],
-    broken_groups: HashMap[isize, unit],
+    broken_groups: HashMap[isize, ()],
     suffixes: Vec[Doc],
 }
 
@@ -53,7 +53,7 @@ fn limited_add(left: isize, right: isize, limit: isize) -> isize {
     }
 }
 
-fn flat_width(value: Doc, broken_groups: HashMap[isize, unit], limit: isize) -> isize {
+fn flat_width(value: Doc, broken_groups: HashMap[isize, ()], limit: isize) -> isize {
     match value {
         Nil => 0,
         Text(_, width) => if width > limit {
@@ -116,7 +116,7 @@ fn flat_width(value: Doc, broken_groups: HashMap[isize, unit], limit: isize) -> 
     }
 }
 
-fn write_indent(value: Renderer) -> unit {
+fn write_indent(value: Renderer) -> () {
     if value.line_start.get() {
         for _ in 0..value.indent_level.get() {
             value.output.write_string("    ")
@@ -126,7 +126,7 @@ fn write_indent(value: Renderer) -> unit {
     } else {}
 }
 
-fn write_text(value: Renderer, content: string, width: isize) -> unit {
+fn write_text(value: Renderer, content: string, width: isize) -> () {
     if content == "" {} else {
         write_indent(value);
         value.output.write_string(content);
@@ -144,7 +144,7 @@ fn raw_last_line_width(content: string) -> isize {
     codepoint_width(content.byte_slice(start.get(), content.byte_len()))
 }
 
-fn write_verbatim(value: Renderer, content: string) -> unit {
+fn write_verbatim(value: Renderer, content: string) -> () {
     if content == "" {} else {
         write_indent(value);
         value.output.write_string(content);
@@ -158,7 +158,7 @@ fn write_verbatim(value: Renderer, content: string) -> unit {
     }
 }
 
-fn flush_suffixes(value: Renderer) -> unit {
+fn flush_suffixes(value: Renderer) -> () {
     while !value.suffixes.is_empty() {
         match value.suffixes.pop() {
             Some(suffix) => {
@@ -181,14 +181,14 @@ fn flush_suffixes(value: Renderer) -> unit {
     }
 }
 
-fn write_newline(value: Renderer) -> unit {
+fn write_newline(value: Renderer) -> () {
     flush_suffixes(value);
     value.output.write_char('\n');
     value.column.set(0);
     value.line_start.set(true)
 }
 
-fn render_group(value: Renderer, id: isize, content: Doc, mode: RenderMode) -> unit {
+fn render_group(value: Renderer, id: isize, content: Doc, mode: RenderMode) -> () {
     if render_mode_flat(mode) {
         render_doc(value, content, RenderMode::Flat)
     } else {
@@ -211,7 +211,7 @@ fn render_group(value: Renderer, id: isize, content: Doc, mode: RenderMode) -> u
     }
 }
 
-fn render_doc(value: Renderer, doc: Doc, mode: RenderMode) -> unit {
+fn render_doc(value: Renderer, doc: Doc, mode: RenderMode) -> () {
     match doc {
         Nil => (),
         Text(content, width) => write_text(value, content, width),

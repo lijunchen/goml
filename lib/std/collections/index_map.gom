@@ -112,7 +112,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         IndexMapProbe::Vacant(0)
     }
 
-    fn place_entry_index(self: IndexMap[K, V], dense_index: isize) -> unit {
+    fn place_entry_index(self: IndexMap[K, V], dense_index: isize) -> () {
         match self.entries.get()[dense_index] {
             Some(entry) => match self.probe(entry.key, entry.hash) {
                 Found(slot, _) => {
@@ -126,7 +126,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         }
     }
 
-    fn rebuild(self: IndexMap[K, V], requested_entries: isize) -> unit {
+    fn rebuild(self: IndexMap[K, V], requested_entries: isize) -> () {
         let live_entries = self.len.get();
         let desired_entries = if requested_entries > live_entries {
             requested_entries
@@ -153,14 +153,14 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         }
     }
 
-    fn ensure_insert_capacity(self: IndexMap[K, V]) -> unit {
+    fn ensure_insert_capacity(self: IndexMap[K, V]) -> () {
         let occupied = self.len.get() + self.deleted.get();
         if (occupied + 1) * 3 >= self.indices.get().len() * 2 {
             self.rebuild(self.len.get() + 1)
         } else {}
     }
 
-    fn compact_after_remove(self: IndexMap[K, V]) -> unit {
+    fn compact_after_remove(self: IndexMap[K, V]) -> () {
         if self.len.get() == 0 {
             self.clear()
         } else if self.deleted.get() >= 8 && self.deleted.get() > self.len.get() {
@@ -235,7 +235,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         }
     }
 
-    pub fn reserve(self: IndexMap[K, V], additional: isize) -> unit {
+    pub fn reserve(self: IndexMap[K, V], additional: isize) -> () {
         if additional <= 0 {} else {
             let desired_entries = self.len.get() + additional;
             let desired_capacity = index_map_capacity_for_entries(desired_entries);
@@ -247,7 +247,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         }
     }
 
-    pub fn clear(self: IndexMap[K, V]) -> unit {
+    pub fn clear(self: IndexMap[K, V]) -> () {
         let capacity = self.indices.get().len();
         self.indices.set(index_map_empty_indices(capacity));
         self.entries.get().clear();
