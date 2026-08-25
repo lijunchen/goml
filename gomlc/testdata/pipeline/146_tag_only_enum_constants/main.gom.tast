@@ -13,22 +13,22 @@ fn paint_code(paint/1: Paint) -> i32 {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let light/2: Light = Light::Red;
     let paint/3: Paint = Paint::Red;
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (i32::to_string : (i32) -> string)((light_code : (Light) -> i32)((light/2 : Light)))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (i32::to_string : (i32) -> string)((paint_code : (Paint) -> i32)((paint/3 : Paint)))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (i32::to_string : (i32) -> string)((light_code : (Light) -> i32)(Light::Green))
       );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)((paint_code : (Paint) -> i32)(Paint::Blue))
     )
 }

@@ -1,7 +1,7 @@
 package main
 file main.gom
   trait Child: Parent {
-    fn child(Self) -> unit;
+    fn child(Self) -> ();
   }
 
   trait Parent {
@@ -21,13 +21,13 @@ file main.gom
   }
 
   impl Child for Count {
-    fn child(local/1/1: Count) -> unit {}
+    fn child(local/1/1: Count) -> () {}
   }
 
   fn get_from_child[C: Child](local/1/2: C) -> C::Item {
       Parent::get(value/2)
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       println(def/1/5(Count { value: 42 }));
   }

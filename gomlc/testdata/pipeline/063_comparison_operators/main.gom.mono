@@ -1,4 +1,4 @@
-fn test_int_comparisons() -> unit {
+fn test_int_comparisons() -> () {
   let a/0 = 10 in
   let b/0 = 20 in
   let c/0 = 10 in
@@ -59,7 +59,7 @@ fn test_int_comparisons() -> unit {
   }
 }
 
-fn test_float_comparisons() -> unit {
+fn test_float_comparisons() -> () {
   let x/0 = 3.14 in
   let y/0 = 2.71 in
   let z/0 = 3.14 in
@@ -125,7 +125,7 @@ fn test_float_comparisons() -> unit {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let mtmp0 = println__T_string("=== Integer Comparisons ===") in
   {
     let mtmp1 = test_int_comparisons() in
@@ -144,7 +144,7 @@ fn main() -> unit {
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

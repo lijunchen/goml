@@ -2,11 +2,11 @@ fn identity[T](x/0: T) -> T {
     (x/0 : T)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let a/1: u8 = (identity : (u8) -> u8)(42);
-    (println : (string) -> unit)((ToString::to_string : (u8) -> string)((a/1 : u8)));
+    (println : (string) -> ())((ToString::to_string : (u8) -> string)((a/1 : u8)));
     let b/2: f32 = (identity : (f32) -> f32)(3.14);
-    (println : (string) -> unit)((ToString::to_string : (f32) -> string)((b/2 : f32)));
+    (println : (string) -> ())((ToString::to_string : (f32) -> string)((b/2 : f32)));
     let c/3: i64 = (identity : (i64) -> i64)(100);
-    (println : (string) -> unit)((ToString::to_string : (i64) -> string)((c/3 : i64)));
+    (println : (string) -> ())((ToString::to_string : (i64) -> string)((c/3 : i64)));
 }

@@ -75,31 +75,28 @@ fn trait_impl#std::cmp::Ord#Ordering#cmp(self/0: Ordering, other/0: Ordering) ->
   }
 }
 
-fn trait_impl#std::cmp::Ord#unit#cmp(self/0: unit, other/0: unit) -> Ordering {
+fn trait_impl#std::cmp::Ord#()#cmp(self/0: (), other/0: ()) -> Ordering {
   Ordering::Equal
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#partial_cmp(
-  self/0: unit,
-  other/0: unit
-) -> Option__Ordering {
+fn trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0: (), other/0: ()) -> Option__Ordering {
   Option__Ordering::Some(Ordering::Equal)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#lt(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#lt__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#lt(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#le(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#le__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#le(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#gt(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#gt__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#gt(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#ge__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#ge(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_()(default_arg0, default_arg1)
 }
 
 fn trait_impl#std::cmp::Ord#bool#cmp(self/0: bool, other/0: bool) -> Ordering {
@@ -727,7 +724,7 @@ fn trait_impl#std::cmp::PartialOrd#f64#ge(default_arg0: f64, default_arg1: f64) 
   std::cmp::trait_default#PartialOrd#ge__Self_f0(default_arg0, default_arg1)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let values/0 = @intrinsic(vec.from_array)([3, 1, 4, 1, 5, 9, 2, 6]) in
   let _wild0 =
     println__T_string(
@@ -972,8 +969,8 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_Ordering(
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/0: unit) -> bool {
-  let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+fn std::cmp::trait_default#PartialOrd#lt__Self_()(self/0: (), other/0: ()) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
   match mtmp0 {
     Option__Ordering::None => {
       false
@@ -986,8 +983,8 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/0: unit, other/0: unit) -> bool {
-  let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+fn std::cmp::trait_default#PartialOrd#le__Self_()(self/0: (), other/0: ()) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
   match mtmp0 {
     Option__Ordering::None => {
       false
@@ -1000,8 +997,8 @@ fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/0: unit, other/0: unit) -> bool {
-  let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+fn std::cmp::trait_default#PartialOrd#gt__Self_()(self/0: (), other/0: ()) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
   match mtmp0 {
     Option__Ordering::None => {
       false
@@ -1014,8 +1011,8 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/0: unit, other/0: unit) -> bool {
-  let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+fn std::cmp::trait_default#PartialOrd#ge__Self_()(self/0: (), other/0: ()) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
   match mtmp0 {
     Option__Ordering::None => {
       false
@@ -1868,7 +1865,7 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_f64(self/0: f64, other/0: f64) ->
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -1921,7 +1918,7 @@ fn inherent#isize#isize#to_string(self/0: isize) -> string {
 fn inherent#Vec#Vec[T]#sort_by__T_isize(
   self/0: Vec[isize],
   compare/0: (isize, isize) -> isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#stable_sort_by__T_isize(self/0, compare/0)
 }
 
@@ -1978,7 +1975,7 @@ fn inherent#Vec#Vec[T]#join__T_isize(self/0: Vec[isize], separator/0: string) ->
   __goml_builtin_string_concat(result/0)
 }
 
-fn inherent#Vec#Vec[T]#dedup__T_isize(self/0: Vec[isize]) -> unit {
+fn inherent#Vec#Vec[T]#dedup__T_isize(self/0: Vec[isize]) -> () {
   inherent#Vec#Vec[T]#dedup_by__T_isize(
     self/0,
     pack_closure[inherent#closure_env_inherent_Vec_Vec_T_dedup_T_isize_10#closure_env_inherent_Vec_Vec_T_dedup_T_isize_10#apply](
@@ -2094,7 +2091,7 @@ fn std::cmp::compare__T_string(left/0: string, right/0: string) -> Ordering {
 fn inherent#Vec#Vec[T]#sort_by_ordering__T_string(
   self/0: Vec[string],
   compare/0: (string, string) -> Ordering
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#sort_by__T_string(
     self/0,
     pack_closure[inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_string_11#apply](
@@ -2163,7 +2160,7 @@ fn std::cmp::compare__T_isize(left/0: isize, right/0: isize) -> Ordering {
 fn inherent#Vec#Vec[T]#sort_by_ordering__T_(isize,isize)(
   self/0: Vec[(isize, isize)],
   compare/0: ((isize, isize), (isize, isize)) -> Ordering
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#sort_by__T_(isize,isize)(
     self/0,
     pack_closure[inherent#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_isize_isize_12#closure_env_inherent_Vec_Vec_T_sort_by_ordering_T_isize_isize_12#apply](
@@ -2276,7 +2273,7 @@ fn __goml_builtin_int_to_string(value/0: isize) -> string {
 fn inherent#Vec#Vec[T]#stable_sort_by__T_isize(
   self/0: Vec[isize],
   compare/0: (isize, isize) -> isize
-) -> unit {
+) -> () {
   let length/0 = inherent#Vec#Vec[T]#len__T_isize(self/0) in
   let _wild0 =
     if (length/0 < 2) {
@@ -2432,7 +2429,7 @@ fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
   __goml_builtin_int_to_string(self/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> unit {
+fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -2494,7 +2491,7 @@ fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
 fn inherent#Vec#Vec[T]#dedup_by__T_isize(
   self/0: Vec[isize],
   equal/0: (isize, isize) -> bool
-) -> unit {
+) -> () {
   let _wild0 =
     if (inherent#Vec#Vec[T]#len__T_isize(self/0) < 2) {
         return
@@ -2559,14 +2556,14 @@ fn inherent#Ordering#Ordering#to_isize(self/0: Ordering) -> isize {
 fn inherent#Vec#Vec[T]#sort_by__T_string(
   self/0: Vec[string],
   compare/0: (string, string) -> isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#stable_sort_by__T_string(self/0, compare/0)
 }
 
 fn inherent#Vec#Vec[T]#sort_by__T_(isize,isize)(
   self/0: Vec[(isize, isize)],
   compare/0: ((isize, isize), (isize, isize)) -> isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#stable_sort_by__T_(isize,isize)(self/0, compare/0)
 }
 
@@ -2628,7 +2625,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/0: isize) -> Vec[isize] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -2648,18 +2645,18 @@ fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
   @runtime(core.string_byte_get)(self/0, index/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_isize(self/0: Vec[isize], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_isize(self/0: Vec[isize], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
 fn inherent#Vec#Vec[T]#stable_sort_by__T_string(
   self/0: Vec[string],
   compare/0: (string, string) -> isize
-) -> unit {
+) -> () {
   let length/0 = inherent#Vec#Vec[T]#len__T_string(self/0) in
   let _wild0 =
     if (length/0 < 2) {
@@ -2810,7 +2807,7 @@ fn inherent#Vec#Vec[T]#stable_sort_by__T_string(
 fn inherent#Vec#Vec[T]#stable_sort_by__T_(isize,isize)(
   self/0: Vec[(isize, isize)],
   compare/0: ((isize, isize), (isize, isize)) -> isize
-) -> unit {
+) -> () {
   let length/0 = inherent#Vec#Vec[T]#len__T_(isize,isize)(self/0) in
   let _wild0 =
     if (length/0 < 2) {
@@ -3011,7 +3008,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_(isize,isize)(capacity/0: isize) -> Vec[
 fn inherent#Vec#Vec[T]#push__T_(isize,isize)(
   self/0: Vec[(isize, isize)],
   elem/0: (isize, isize)
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

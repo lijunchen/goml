@@ -1,4 +1,4 @@
-fn step(ok/0: bool) -> Result[unit, string] {
+fn step(ok/0: bool) -> Result[(), string] {
     if (ok/0 : bool) {
         {
             Result::Ok(())
@@ -10,27 +10,27 @@ fn step(ok/0: bool) -> Result[unit, string] {
     }
 }
 
-fn run(ok/1: bool) -> Result[unit, string] {
-    let _ : unit =
-      match (step : (bool) -> Result[unit, string])((ok/1 : bool)) {
-          Result::Ok(try_value/12: unit) => (try_value/12 : unit),
+fn run(ok/1: bool) -> Result[(), string] {
+    let _ : () =
+      match (step : (bool) -> Result[(), string])((ok/1 : bool)) {
+          Result::Ok(try_value/12: ()) => (try_value/12 : ()),
           Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
       };
     Result::Ok(())
 }
 
-fn show(res/2: Result[unit, string]) -> string {
-    match (res/2 : Result[unit, string]) {
+fn show(res/2: Result[(), string]) -> string {
+    match (res/2 : Result[(), string]) {
         Result::Ok(()) => "ok unit",
         Result::Err(err/3: string) => "err " + (err/3 : string),
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
-      (show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(true))
+fn main() -> () {
+    (println : (string) -> ())(
+      (show : (Result[(), string]) -> string)((run : (bool) -> Result[(), string])(true))
     );
-    (println : (string) -> unit)(
-      (show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(false))
+    (println : (string) -> ())(
+      (show : (Result[(), string]) -> string)((run : (bool) -> Result[(), string])(false))
     );
 }

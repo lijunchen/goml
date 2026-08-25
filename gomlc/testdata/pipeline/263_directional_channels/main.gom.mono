@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let channel/0 = inherent#Channel#Channel[T]#new__T_isize(2) in
   let mtmp0 = inherent#Channel#Channel[T]#split__T_isize(channel/0) in
   {
@@ -52,11 +52,11 @@ fn inherent#Channel#Channel[T]#split__T_isize(self/0: Channel[isize]) -> (
   @intrinsic(channel.split)(self/0)
 }
 
-fn inherent#Sender#Sender[T]#send__T_isize(self/0: Sender[isize], value/0: isize) -> unit {
+fn inherent#Sender#Sender[T]#send__T_isize(self/0: Sender[isize], value/0: isize) -> () {
   @intrinsic(channel.send)(self/0, value/0)
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
@@ -189,7 +189,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

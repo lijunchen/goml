@@ -26,18 +26,17 @@ fn make_maybe(flag/3: bool) -> Maybe[i32] {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let point/4: Point = Point { x: 1, y: 2 };
     let some_number/5: Maybe[i32] = (make_maybe : (bool) -> Maybe[i32])(true);
     let none_number/6: Maybe[i32] = (make_maybe : (bool) -> Maybe[i32])(false);
-    let _ : unit =
-      (println : (string) -> unit)((Display::show : (Point) -> string)((point/4 : Point)));
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () = (println : (string) -> ())((Display::show : (Point) -> string)((point/4 : Point)));
+    let _ : () =
+      (println : (string) -> ())(
         (Display::show : (Maybe[i32]) -> string)((some_number/5 : Maybe[i32]))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (Display::show : (Maybe[i32]) -> string)((none_number/6 : Maybe[i32]))
       );
 }

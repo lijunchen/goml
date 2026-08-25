@@ -55,7 +55,7 @@ fn float_natural_copy(value/0: FloatNatural) -> FloatNatural {
   result/0
 }
 
-fn float_natural_trim(value/0: FloatNatural) -> unit {
+fn float_natural_trim(value/0: FloatNatural) -> () {
   while if (!inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/0))) {
       (@intrinsic(vec.get)(
         FloatNatural.words(value/0),
@@ -166,7 +166,7 @@ fn float_natural_compare(left/0: FloatNatural, right/0: FloatNatural) -> isize {
   0
 }
 
-fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
+fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
   let _wild0 =
     if (factor/0 == 0) {
         {
@@ -216,7 +216,7 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
   }
 }
 
-fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> unit {
+fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> () {
   let carry/0 = (addition/0 as u64) in
   let index/0 = 0 in
   while (carry/0 != 0) {
@@ -335,7 +335,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
   result/0
 }
 
-fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> unit {
+fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> () {
   let base/0 = 4294967296 in
   let borrow/0 = 0 in
   let index/0 = 0 in
@@ -2539,7 +2539,7 @@ fn inherent#string#string#byte_slice(self/0: string, start/0: isize, end/0: isiz
   string_byte_slice(self/0, start/0, end/0)
 }
 
-fn trait_impl#ToString#unit#to_string(self/0: unit) -> string {
+fn trait_impl#ToString#()#to_string(self/0: ()) -> string {
   @runtime(core.unit_to_string)(self/0)
 }
 
@@ -2599,11 +2599,11 @@ fn trait_impl#ToString#f64#to_string(self/0: f64) -> string {
   __goml_builtin_float64_to_string(self/0)
 }
 
-fn trait_impl#PartialEq#unit#eq(self/0: unit, other/0: unit) -> bool {
+fn trait_impl#PartialEq#()#eq(self/0: (), other/0: ()) -> bool {
   true
 }
 
-fn trait_impl#Eq#unit#__marker() -> unit {
+fn trait_impl#Eq#()#__marker() -> () {
   ()
 }
 
@@ -2611,7 +2611,7 @@ fn trait_impl#PartialEq#bool#eq(self/0: bool, other/0: bool) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#bool#__marker() -> unit {
+fn trait_impl#Eq#bool#__marker() -> () {
   ()
 }
 
@@ -2619,7 +2619,7 @@ fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#string#__marker() -> unit {
+fn trait_impl#Eq#string#__marker() -> () {
   ()
 }
 
@@ -2627,7 +2627,7 @@ fn trait_impl#PartialEq#char#eq(self/0: char, other/0: char) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#char#__marker() -> unit {
+fn trait_impl#Eq#char#__marker() -> () {
   ()
 }
 
@@ -2635,7 +2635,7 @@ fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#isize#__marker() -> unit {
+fn trait_impl#Eq#isize#__marker() -> () {
   ()
 }
 
@@ -2643,7 +2643,7 @@ fn trait_impl#PartialEq#i8#eq(self/0: i8, other/0: i8) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i8#__marker() -> unit {
+fn trait_impl#Eq#i8#__marker() -> () {
   ()
 }
 
@@ -2651,7 +2651,7 @@ fn trait_impl#PartialEq#i16#eq(self/0: i16, other/0: i16) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i16#__marker() -> unit {
+fn trait_impl#Eq#i16#__marker() -> () {
   ()
 }
 
@@ -2659,7 +2659,7 @@ fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i32#__marker() -> unit {
+fn trait_impl#Eq#i32#__marker() -> () {
   ()
 }
 
@@ -2667,7 +2667,7 @@ fn trait_impl#PartialEq#i64#eq(self/0: i64, other/0: i64) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i64#__marker() -> unit {
+fn trait_impl#Eq#i64#__marker() -> () {
   ()
 }
 
@@ -2675,7 +2675,7 @@ fn trait_impl#PartialEq#u8#eq(self/0: u8, other/0: u8) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u8#__marker() -> unit {
+fn trait_impl#Eq#u8#__marker() -> () {
   ()
 }
 
@@ -2683,7 +2683,7 @@ fn trait_impl#PartialEq#u16#eq(self/0: u16, other/0: u16) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u16#__marker() -> unit {
+fn trait_impl#Eq#u16#__marker() -> () {
   ()
 }
 
@@ -2691,7 +2691,7 @@ fn trait_impl#PartialEq#u32#eq(self/0: u32, other/0: u32) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u32#__marker() -> unit {
+fn trait_impl#Eq#u32#__marker() -> () {
   ()
 }
 
@@ -2699,7 +2699,7 @@ fn trait_impl#PartialEq#u64#eq(self/0: u64, other/0: u64) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u64#__marker() -> unit {
+fn trait_impl#Eq#u64#__marker() -> () {
   ()
 }
 
@@ -2711,7 +2711,7 @@ fn trait_impl#PartialEq#f64#eq(self/0: f64, other/0: f64) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Hash#unit#hash(self/0: unit) -> u64 {
+fn trait_impl#Hash#()#hash(self/0: ()) -> u64 {
   0
 }
 
@@ -2775,7 +2775,7 @@ fn trait_impl#PartialEq#Ref[T]#eq[T](self/0: Ref[T], other/0: Ref[T]) -> bool {
   @intrinsic(ref.ptr_eq)(self/0, other/0)
 }
 
-fn trait_impl#Eq#Ref[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Ref[T]#__marker[T]() -> () {
   ()
 }
 
@@ -2818,7 +2818,7 @@ fn trait_impl#PartialEq#Vec[T]#eq[T](self/0: Vec[T], other/0: Vec[T]) -> bool {
   }
 }
 
-fn trait_impl#Eq#Vec[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Vec[T]#__marker[T]() -> () {
   ()
 }
 
@@ -2877,7 +2877,7 @@ fn trait_impl#PartialEq#Slice[T]#eq[T](self/0: Slice[T], other/0: Slice[T]) -> b
   }
 }
 
-fn trait_impl#Eq#Slice[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Slice[T]#__marker[T]() -> () {
   ()
 }
 
@@ -2941,7 +2941,7 @@ fn trait_impl#PartialEq#Option[T]#eq[T](self/0: Option[T], other/0: Option[T]) -
   }
 }
 
-fn trait_impl#Eq#Option[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Option[T]#__marker[T]() -> () {
   ()
 }
 
@@ -3014,7 +3014,7 @@ fn trait_impl#PartialEq#Result[T,E]#eq[T, E](self/0: Result[T, E], other/0: Resu
   }
 }
 
-fn trait_impl#Eq#Result[T,E]#__marker[T, E]() -> unit {
+fn trait_impl#Eq#Result[T,E]#__marker[T, E]() -> () {
   ()
 }
 
@@ -3046,7 +3046,7 @@ fn trait_impl#ToString#Ref[T]#to_string[T](self/0: Ref[T]) -> string {
   (("ref(" + trait_call[ToString::to_string](v/0)) + ")")
 }
 
-fn inherent#Vec#Vec[T]#push[T](self/0: Vec[T], elem/0: T) -> unit {
+fn inherent#Vec#Vec[T]#push[T](self/0: Vec[T], elem/0: T) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -3062,11 +3062,11 @@ fn inherent#Vec#Vec[T]#is_empty[T](self/0: Vec[T]) -> bool {
   (@intrinsic(vec.len)(self/0) == 0)
 }
 
-fn inherent#Vec#Vec[T]#truncate[T](self/0: Vec[T], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate[T](self/0: Vec[T], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
-fn inherent#Vec#Vec[T]#clear[T](self/0: Vec[T]) -> unit {
+fn inherent#Vec#Vec[T]#clear[T](self/0: Vec[T]) -> () {
   inherent#Vec#Vec[T]#truncate(self/0, 0)
 }
 
@@ -3122,7 +3122,7 @@ fn trait_impl#PartialEq#usize#eq(self/0: usize, other/0: usize) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#usize#__marker() -> unit {
+fn trait_impl#Eq#usize#__marker() -> () {
   ()
 }
 
@@ -3159,15 +3159,15 @@ fn trait_impl#PartialEq#Ordering#eq(self/0: Ordering, other/0: Ordering) -> bool
   }
 }
 
-fn trait_impl#Eq#Ordering#__marker() -> unit {
+fn trait_impl#Eq#Ordering#__marker() -> () {
   ()
 }
 
-fn println(value/0: T) -> unit {
+fn println(value/0: T) -> () {
   @runtime(core.string_println)(trait_call[ToString::to_string](value/0))
 }
 
-fn main() -> unit {
+fn main() -> () {
   let a/0 = 1 in
   let a/1 = (a/0 + 2) in
   let a/2 = (a/1 + 3) in

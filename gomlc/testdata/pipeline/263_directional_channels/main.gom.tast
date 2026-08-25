@@ -1,19 +1,19 @@
-fn main() -> unit {
+fn main() -> () {
     let channel/0: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(2);
     let (sender/1: Sender[isize], receiver/2: Receiver[isize]) =
       (Channel[isize]::split : (Channel[isize]) -> (Sender[isize], Receiver[isize]))(
         (channel/0 : Channel[isize])
       );
-    (Sender[isize]::send : (Sender[isize], isize) -> unit)((sender/1 : Sender[isize]), 7);
+    (Sender[isize]::send : (Sender[isize], isize) -> ())((sender/1 : Sender[isize]), 7);
     select priority {
         recv((receiver/2 : Receiver[isize])) as value/3 =>
-          (println : (isize) -> unit)(
+          (println : (isize) -> ())(
             (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
               (value/3 : Option[isize]),
               0
             )
           ),
-        default => (println : (isize) -> unit)(1),
+        default => (println : (isize) -> ())(1),
     };
     let channel/4: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
     let sender/5: Sender[isize] =
@@ -24,7 +24,7 @@ fn main() -> unit {
       );
     select priority {
         send((sender/5 : Sender[isize]), 9) =>
-          (println : (isize) -> unit)(
+          (println : (isize) -> ())(
             (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
               (Receiver[isize]::recv : (Receiver[isize]) -> Option[isize])(
                 (receiver/6 : Receiver[isize])
@@ -32,6 +32,6 @@ fn main() -> unit {
               0
             )
           ),
-        default => (println : (isize) -> unit)(2),
+        default => (println : (isize) -> ())(2),
     }
 }

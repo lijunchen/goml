@@ -1,36 +1,34 @@
-fn main() -> unit {
+fn main() -> () {
     let value/0: string = "a你好z";
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::starts_with : (string, string) -> bool)((value/0 : string), "a你")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::starts_with : (string, string) -> bool)((value/0 : string), "你")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::starts_with : (string, string) -> bool)((value/0 : string), "")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::ends_with : (string, string) -> bool)((value/0 : string), "好z")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::ends_with : (string, string) -> bool)((value/0 : string), "你好")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::ends_with : (string, string) -> bool)((value/0 : string), "")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::contains : (string, string) -> bool)((value/0 : string), "你好")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::contains : (string, string) -> bool)((value/0 : string), "好z")
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::contains : (string, string) -> bool)((value/0 : string), "你z")
     );
-    (println : (bool) -> unit)(
-      (string::contains : (string, string) -> bool)((value/0 : string), "")
-    );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())((string::contains : (string, string) -> bool)((value/0 : string), ""));
+    (println : (bool) -> ())(
       (string::contains : (string, string) -> bool)((value/0 : string), "a你好z!")
     )
 }

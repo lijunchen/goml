@@ -31,7 +31,7 @@ fn describe[T, S: Service[T]](service: S) -> string {
     Service::[T]::get(service).state()
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(describe(Station { worker: Worker { name: "build" } }));
 }
 

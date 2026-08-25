@@ -2,9 +2,9 @@ fn trait_impl#Display#S#show(self/0: S) -> string {
   "ok"
 }
 
-fn main() -> unit {
+fn main() -> () {
   let t0 = S {} in
-  join inline_cont0(mtmp0: dyn Display) -> unit {
+  join inline_cont0(mtmp0: dyn Display) -> () {
     let inline0 = "ok" in
     let inline1 = trait_impl#ToString#string#to_string(inline0) in
     let inline2 = @runtime(core.string_println)(inline1) in
@@ -19,8 +19,8 @@ fn to_dyn__T_S(x/0: S) -> dyn Display {
   t0
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

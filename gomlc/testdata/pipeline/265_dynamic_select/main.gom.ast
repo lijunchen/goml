@@ -1,7 +1,7 @@
 package main;
 use std::channel;
 
-fn print_selection(value: channel::Selection[isize]) -> unit {
+fn print_selection(value: channel::Selection[isize]) -> () {
     match value {
         channel::Selection::Received { index: index, value: value } =>
           {
@@ -12,7 +12,7 @@ fn print_selection(value: channel::Selection[isize]) -> unit {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let first: Channel[isize] = Channel::new(1);
     let second: Channel[isize] = Channel::new(1);
     first.send(10);

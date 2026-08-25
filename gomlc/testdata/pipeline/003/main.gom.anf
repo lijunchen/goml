@@ -1,7 +1,7 @@
-fn main() -> unit {
-  join inline_cont0(mtmp0: unit) -> unit {
-    join inline_cont1(mtmp1: unit) -> unit {
-      join inline_cont2(mtmp2: unit) -> unit {
+fn main() -> () {
+  join inline_cont0(mtmp0: ()) -> () {
+    join inline_cont1(mtmp1: ()) -> () {
+      join inline_cont2(mtmp2: ()) -> () {
         let inline0 = 123 in
         let inline1 = trait_impl#ToString#isize#to_string(inline0) in
         let inline2 = @runtime(core.string_print)(inline1) in
@@ -18,13 +18,13 @@ fn main() -> unit {
     jump inline_cont1(())
   } in
   let inline9 = () in
-  let inline10 = trait_impl#ToString#unit#to_string(inline9) in
+  let inline10 = trait_impl#ToString#()#to_string(inline9) in
   let inline11 = @runtime(core.string_print)(inline10) in
   jump inline_cont0(())
 }
 
-fn print__T_unit(value/0: unit) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn print__T_()(value/0: ()) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_print)(t0) in
     ()
   } in
@@ -32,8 +32,8 @@ fn print__T_unit(value/0: unit) -> unit {
   jump inline_cont0(inline0)
 }
 
-fn print__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn print__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_print)(t0) in
     ()
   } in
@@ -41,8 +41,8 @@ fn print__T_bool(value/0: bool) -> unit {
   jump inline_cont0(inline0)
 }
 
-fn print__T_isize(value/0: isize) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn print__T_isize(value/0: isize) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_print)(t0) in
     ()
   } in
@@ -50,7 +50,7 @@ fn print__T_isize(value/0: isize) -> unit {
   jump inline_cont0(inline0)
 }
 
-fn trait_impl#ToString#unit#to_string(self/0: unit) -> string {
+fn trait_impl#ToString#()#to_string(self/0: ()) -> string {
   let t0 = @runtime(core.unit_to_string)(self/0) in
   t0
 }
@@ -120,7 +120,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -152,7 +152,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -175,7 +175,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }

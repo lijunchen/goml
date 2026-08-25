@@ -8,42 +8,42 @@ const MAX_I8: i8 = 127;
 const NEGATIVE_ONE_I16: i16 = -1;
 const PREFIX: string = "fixed";
 
-fn show_i8(value/0: i8) -> unit {
-    (println : (i8) -> unit)((value/0 : i8))
+fn show_i8(value/0: i8) -> () {
+    (println : (i8) -> ())((value/0 : i8))
 }
 
-fn show_u8(value/1: u8) -> unit {
-    (println : (u8) -> unit)((value/1 : u8))
+fn show_u8(value/1: u8) -> () {
+    (println : (u8) -> ())((value/1 : u8))
 }
 
-fn show_i64(value/2: i64) -> unit {
-    (println : (i64) -> unit)((value/2 : i64))
+fn show_i64(value/2: i64) -> () {
+    (println : (i64) -> ())((value/2 : i64))
 }
 
-fn show_u64(value/3: u64) -> unit {
-    (println : (u64) -> unit)((value/3 : u64))
+fn show_u64(value/3: u64) -> () {
+    (println : (u64) -> ())((value/3 : u64))
 }
 
-fn main() -> unit {
-    (show_i8 : (i8) -> unit)(127 + 1);
-    (show_u8 : (u8) -> unit)(0 - 1);
-    (show_u8 : (u8) -> unit)(128 * 2);
-    (show_i8 : (i8) -> unit)(-128 / -1);
-    (show_i8 : (i8) -> unit)(--128);
-    (show_i64 : (i64) -> unit)(9223372036854775807 + 1);
-    (show_u64 : (u64) -> unit)(18446744073709551615 + 1);
-    (show_i8 : (i8) -> unit)((WRAPPED_I8 : i8));
-    (show_u8 : (u8) -> unit)((WRAPPED_U8 : u8));
-    (show_u8 : (u8) -> unit)((WRAPPED_PRODUCT : u8));
-    (show_i8 : (i8) -> unit)((WRAPPED_DIVISION : i8));
-    (show_i8 : (i8) -> unit)((WRAPPED_NEGATION : i8));
-    (show_i8 : (i8) -> unit)((FORWARD_WRAPPED : i8));
-    (show_i8 : (i8) -> unit)((MAX_I8 : i8) + 1);
-    (show_i8 : (i8) -> unit)((WRAPPED_I8 : i8) / -1);
-    (show_i8 : (i8) -> unit)(-(WRAPPED_I8 : i8));
+fn main() -> () {
+    (show_i8 : (i8) -> ())(127 + 1);
+    (show_u8 : (u8) -> ())(0 - 1);
+    (show_u8 : (u8) -> ())(128 * 2);
+    (show_i8 : (i8) -> ())(-128 / -1);
+    (show_i8 : (i8) -> ())(--128);
+    (show_i64 : (i64) -> ())(9223372036854775807 + 1);
+    (show_u64 : (u64) -> ())(18446744073709551615 + 1);
+    (show_i8 : (i8) -> ())((WRAPPED_I8 : i8));
+    (show_u8 : (u8) -> ())((WRAPPED_U8 : u8));
+    (show_u8 : (u8) -> ())((WRAPPED_PRODUCT : u8));
+    (show_i8 : (i8) -> ())((WRAPPED_DIVISION : i8));
+    (show_i8 : (i8) -> ())((WRAPPED_NEGATION : i8));
+    (show_i8 : (i8) -> ())((FORWARD_WRAPPED : i8));
+    (show_i8 : (i8) -> ())((MAX_I8 : i8) + 1);
+    (show_i8 : (i8) -> ())((WRAPPED_I8 : i8) / -1);
+    (show_i8 : (i8) -> ())(-(WRAPPED_I8 : i8));
     let converted/4: u8 = (i16::to_u8 : (i16) -> u8)((NEGATIVE_ONE_I16 : i16));
-    (show_u8 : (u8) -> unit)((converted/4 : u8));
+    (show_u8 : (u8) -> ())((converted/4 : u8));
     let runtime_value/5: i8 = 127;
-    (show_i8 : (i8) -> unit)((runtime_value/5 : i8) + 1);
-    (println : (string) -> unit)((PREFIX : string) + " width")
+    (show_i8 : (i8) -> ())((runtime_value/5 : i8) + 1);
+    (println : (string) -> ())((PREFIX : string) + " width")
 }

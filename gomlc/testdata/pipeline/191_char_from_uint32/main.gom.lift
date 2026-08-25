@@ -1,4 +1,4 @@
-fn show_scalar(value/0: u32) -> unit {
+fn show_scalar(value/0: u32) -> () {
   let mtmp0 = char_from_u0(value/0) in
   match mtmp0 {
     Option__char::None => {
@@ -12,7 +12,7 @@ fn show_scalar(value/0: u32) -> unit {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = show_scalar(0) in
   let _wild1 = show_scalar(65) in
   let _wild2 = show_scalar(55295) in
@@ -38,11 +38,11 @@ fn char_from_u32(value/0: u32) -> Option__char {
   __goml_builtin_char_from_uint0(value/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_u32(value/0: u32) -> unit {
+fn println__T_u32(value/0: u32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#u32#to_string(value/0))
 }
 
@@ -137,7 +137,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

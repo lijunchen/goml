@@ -14,8 +14,8 @@ fn describe[T, S](service/2: S) -> string where S: Service[T], T: Ready {
     (Ready::state : (T) -> string)((Service[T]::get : (S) -> T)((service/2 : S)))
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (describe : (Station) -> string)(Station { worker: Worker { name: "build" } })
     );
 }

@@ -1,18 +1,15 @@
-fn main() -> unit {
+fn main() -> () {
     let v/0: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((v/0 : Vec[i32]), 10);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((v/0 : Vec[i32]), 20);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((v/0 : Vec[i32]), 30);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((v/0 : Vec[i32]), 10);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((v/0 : Vec[i32]), 20);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((v/0 : Vec[i32]), 30);
     let first/1: i32 = (v/0 : Vec[i32])[0];
     let second/2: i32 = (v/0 : Vec[i32])[1];
     let third/3: i32 = (v/0 : Vec[i32])[2];
     let len/4: isize = (Vec[i32]::len : (Vec[i32]) -> isize)((v/0 : Vec[i32]));
-    let _ : unit =
-      (println : (string) -> unit)((i32::to_string : (i32) -> string)((first/1 : i32)));
-    let _ : unit =
-      (println : (string) -> unit)((i32::to_string : (i32) -> string)((second/2 : i32)));
-    let _ : unit =
-      (println : (string) -> unit)((i32::to_string : (i32) -> string)((third/3 : i32)));
-    let _ : unit =
-      (println : (string) -> unit)((isize::to_string : (isize) -> string)((len/4 : isize)));
+    let _ : () = (println : (string) -> ())((i32::to_string : (i32) -> string)((first/1 : i32)));
+    let _ : () = (println : (string) -> ())((i32::to_string : (i32) -> string)((second/2 : i32)));
+    let _ : () = (println : (string) -> ())((i32::to_string : (i32) -> string)((third/3 : i32)));
+    let _ : () =
+      (println : (string) -> ())((isize::to_string : (isize) -> string)((len/4 : isize)));
 }

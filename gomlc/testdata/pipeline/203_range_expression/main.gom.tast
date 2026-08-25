@@ -3,17 +3,17 @@ fn range(start/0: i32, end/1: i32) -> i32 {
 }
 
 fn endpoint(calls/2: Ref[isize], value/3: isize) -> isize {
-    (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+    (Ref[isize]::set : (Ref[isize], isize) -> ())(
       (calls/2 : Ref[isize]),
       (Ref[isize]::get : (Ref[isize]) -> isize)((calls/2 : Ref[isize])) + 1
     );
     (value/3 : isize)
 }
 
-fn main() -> unit {
+fn main() -> () {
     for value/4: isize in
       (__goml_builtin_range : (isize, isize) -> FnIterator[isize])(1, 4) {
-        (println : (isize) -> unit)((value/4 : isize));
+        (println : (isize) -> ())((value/4 : isize));
     };
     let calls/5: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     for value/6: isize in
@@ -21,11 +21,11 @@ fn main() -> unit {
         (endpoint : (Ref[isize], isize) -> isize)((calls/5 : Ref[isize]), 4),
         (endpoint : (Ref[isize], isize) -> isize)((calls/5 : Ref[isize]), 6)
       ) {
-        (println : (isize) -> unit)((value/6 : isize));
+        (println : (isize) -> ())((value/6 : isize));
     };
     for value/7: isize in
       (__goml_builtin_range_inclusive : (isize, isize) -> FnIterator[isize])(3, 1) {
-        (println : (isize) -> unit)((value/7 : isize));
+        (println : (isize) -> ())((value/7 : isize));
     };
     let maximum/8: isize = 9223372036854775807;
     for value/9: isize in
@@ -33,16 +33,16 @@ fn main() -> unit {
         (maximum/8 : isize),
         (maximum/8 : isize)
       ) {
-        (println : (isize) -> unit)((value/9 : isize));
+        (println : (isize) -> ())((value/9 : isize));
     };
     let iterator/10: FnIterator[isize] =
       (__goml_builtin_range_inclusive : (isize, isize) -> FnIterator[isize])(8, 8);
     match (Iterator::next : (FnIterator[isize]) -> Option[isize])(
       (iterator/10 : FnIterator[isize])
     ) {
-        Option::Some(value/11: isize) => (println : (isize) -> unit)((value/11 : isize)),
-        Option::None => (println : (string) -> unit)("missing"),
+        Option::Some(value/11: isize) => (println : (isize) -> ())((value/11 : isize)),
+        Option::None => (println : (string) -> ())("missing"),
     };
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((calls/5 : Ref[isize])));
-    (println : (i32) -> unit)((range : (i32, i32) -> i32)(10, 20));
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((calls/5 : Ref[isize])));
+    (println : (i32) -> ())((range : (i32, i32) -> i32)(10, 20));
 }

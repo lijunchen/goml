@@ -13,12 +13,12 @@ fn values() -> FrozenVec[isize] {
     )
 }
 
-fn main() -> unit {
+fn main() -> () {
     let frozen/0: FrozenVec[isize] = (values : () -> FrozenVec[isize])();
     let copy/1: Vec[isize] =
       (FrozenVec[isize]::to_vec : (FrozenVec[isize]) -> Vec[isize])((frozen/0 : FrozenVec[isize]));
-    (Vec[isize]::set : (Vec[isize], isize, isize) -> unit)((copy/1 : Vec[isize]), 0, 9);
-    (println : (string) -> unit)(
+    (Vec[isize]::set : (Vec[isize], isize, isize) -> ())((copy/1 : Vec[isize]), 0, 9);
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (FrozenVec[isize]::get : (FrozenVec[isize], isize) -> isize)(
           (frozen/0 : FrozenVec[isize]),
@@ -26,12 +26,12 @@ fn main() -> unit {
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Vec[isize]::get : (Vec[isize], isize) -> isize)((copy/1 : Vec[isize]), 0)
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (FrozenVec[isize]::get : (FrozenVec[isize], isize) -> isize)(
           (values : () -> FrozenVec[isize])(),

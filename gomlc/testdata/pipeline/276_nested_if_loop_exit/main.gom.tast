@@ -3,7 +3,7 @@ fn then_break_outer_continue(flag/0: bool) -> isize {
     loop {
         if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) == 0 {
             {
-                (Ref[isize]::set : (Ref[isize], isize) -> unit)((rounds/1 : Ref[isize]), 1);
+                (Ref[isize]::set : (Ref[isize], isize) -> ())((rounds/1 : Ref[isize]), 1);
                 loop {
                     if (flag/0 : bool) {
                         {
@@ -65,7 +65,7 @@ fn else_break_outer_continue(flag/4: bool) -> isize {
     loop {
         if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/5 : Ref[isize])) == 0 {
             {
-                (Ref[isize]::set : (Ref[isize], isize) -> unit)((rounds/5 : Ref[isize]), 1);
+                (Ref[isize]::set : (Ref[isize], isize) -> ())((rounds/5 : Ref[isize]), 1);
                 loop {
                     if (flag/4 : bool) {
                         {
@@ -122,9 +122,9 @@ fn else_break_outer_break(flag/6: bool) -> isize {
     }
 }
 
-fn main() -> unit {
-    (println : (isize) -> unit)((then_break_outer_continue : (bool) -> isize)(true));
-    (println : (isize) -> unit)((then_break_outer_break : (bool) -> isize)(true));
-    (println : (isize) -> unit)((else_break_outer_continue : (bool) -> isize)(false));
-    (println : (isize) -> unit)((else_break_outer_break : (bool) -> isize)(false))
+fn main() -> () {
+    (println : (isize) -> ())((then_break_outer_continue : (bool) -> isize)(true));
+    (println : (isize) -> ())((then_break_outer_break : (bool) -> isize)(true));
+    (println : (isize) -> ())((else_break_outer_continue : (bool) -> isize)(false));
+    (println : (isize) -> ())((else_break_outer_break : (bool) -> isize)(false))
 }

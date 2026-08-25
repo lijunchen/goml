@@ -2,11 +2,11 @@ fn trait_impl#ToString#S#to_string(self/0: S) -> string {
   (("S(" + inherent#i32#i32#to_string(S.value(self/0))) + ")")
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = println__T_isize(1) in
   let _wild1 = println__T_bool(true) in
   let _wild2 = println__T_string("hi") in
-  let _wild3 = println__T_unit(()) in
+  let _wild3 = println__T_()(()) in
   let _wild4 = println__T_string(trait_impl#ToString#isize#to_string(2)) in
   let _wild5 = println__T_string(inherent#isize#isize#to_string(2)) in
   let s/0 = S { value: 9 } in
@@ -24,20 +24,20 @@ fn inherent#i32#i32#to_string(self/0: i32) -> string {
   __goml_builtin_int32_to_string(self/0)
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_unit(value/0: unit) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#unit#to_string(value/0))
+fn println__T_()(value/0: ()) -> () {
+  @runtime(core.string_println)(trait_impl#ToString#()#to_string(value/0))
 }
 
 fn trait_impl#ToString#isize#to_string(self/0: isize) -> string {
@@ -48,11 +48,11 @@ fn inherent#isize#isize#to_string(self/0: isize) -> string {
   __goml_builtin_int_to_string(self/0)
 }
 
-fn println__T_S(value/0: S) -> unit {
+fn println__T_S(value/0: S) -> () {
   @runtime(core.string_println)(trait_impl#ToString#S#to_string(value/0))
 }
 
-fn println__T_dynToString(value/0: dyn ToString) -> unit {
+fn println__T_dynToString(value/0: dyn ToString) -> () {
   @runtime(core.string_println)(dyn_call[ToString::to_string](value/0))
 }
 
@@ -60,11 +60,11 @@ fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
   @intrinsic(ref.new)(value/0)
 }
 
-fn println__T_Ref[isize](value/0: Ref[isize]) -> unit {
+fn println__T_Ref[isize](value/0: Ref[isize]) -> () {
   @runtime(core.string_println)(trait_impl#ToString#Ref[isize]#to_string(value/0))
 }
 
-fn print__T_string(value/0: string) -> unit {
+fn print__T_string(value/0: string) -> () {
   @runtime(core.string_print)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -80,7 +80,7 @@ fn trait_impl#ToString#string#to_string(self/0: string) -> string {
   self/0
 }
 
-fn trait_impl#ToString#unit#to_string(self/0: unit) -> string {
+fn trait_impl#ToString#()#to_string(self/0: ()) -> string {
   @runtime(core.unit_to_string)(self/0)
 }
 
@@ -148,7 +148,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

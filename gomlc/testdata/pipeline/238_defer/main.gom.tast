@@ -1,14 +1,14 @@
 fn early_return() -> isize {
-    defer (println : (string) -> unit)("return:outer");
+    defer (println : (string) -> ())("return:outer");
     {
-        defer (println : (string) -> unit)("return:inner");
+        defer (println : (string) -> ())("return:inner");
         return 7;
     };
     0
 }
 
 fn maybe(value/0: Option[isize]) -> Option[isize] {
-    defer (println : (string) -> unit)("try:cleanup");
+    defer (println : (string) -> ())("try:cleanup");
     let number/1: isize =
       match (value/0 : Option[isize]) {
           Option::Some(try_value/15: isize) => (try_value/15 : isize),
@@ -17,17 +17,17 @@ fn maybe(value/0: Option[isize]) -> Option[isize] {
     Option::Some((number/1 : isize))
 }
 
-fn loop_cleanup() -> unit {
+fn loop_cleanup() -> () {
     let index/2: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while (Ref[isize]::get : (Ref[isize]) -> isize)((index/2 : Ref[isize])) < 3 {
         {
             let current/3: isize =
               (Ref[isize]::get : (Ref[isize]) -> isize)((index/2 : Ref[isize]));
             defer
-              (println : (string) -> unit)(
+              (println : (string) -> ())(
                 "loop:" + (isize::to_string : (isize) -> string)((current/3 : isize))
               );
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (index/2 : Ref[isize]),
               (current/3 : isize) + 1
             );
@@ -48,17 +48,17 @@ fn loop_cleanup() -> unit {
     }
 }
 
-fn observed_at_exit() -> unit {
+fn observed_at_exit() -> () {
     let value/4: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("before");
     defer
-      (println : (string) -> unit)(
+      (println : (string) -> ())(
         "observed:" + (Ref[string]::get : (Ref[string]) -> string)((value/4 : Ref[string]))
       );
-    (Ref[string]::set : (Ref[string], string) -> unit)((value/4 : Ref[string]), "after")
+    (Ref[string]::set : (Ref[string], string) -> ())((value/4 : Ref[string]), "after")
 }
 
 fn pattern_cleanup(value/5: Option[isize]) -> isize {
-    defer (println : (string) -> unit)("pattern:cleanup");
+    defer (println : (string) -> ())("pattern:cleanup");
     let Option::Some(number/6: isize) =
       (value/5 : Option[isize]) else
       {
@@ -68,40 +68,40 @@ fn pattern_cleanup(value/5: Option[isize]) -> isize {
     (left/7 : isize) + (right/8 : isize)
 }
 
-fn closure_cleanup() -> unit {
-    defer (println : (string) -> unit)("closure:outer");
-    let run/9: () -> unit =
+fn closure_cleanup() -> () {
+    defer (println : (string) -> ())("closure:outer");
+    let run/9: () -> () =
       || =>
         {
-            defer (println : (string) -> unit)("closure:inner");
-            (println : (string) -> unit)("closure:body")
+            defer (println : (string) -> ())("closure:inner");
+            (println : (string) -> ())("closure:body")
         };
-    (run/9 : () -> unit)();
-    (println : (string) -> unit)("closure:after")
+    (run/9 : () -> ())();
+    (println : (string) -> ())("closure:after")
 }
 
-fn main() -> unit {
-    defer (println : (string) -> unit)("main:first");
-    defer (println : (string) -> unit)("main:second");
+fn main() -> () {
+    defer (println : (string) -> ())("main:first");
+    defer (println : (string) -> ())("main:second");
     {
-        defer (println : (string) -> unit)("block");
-        (println : (string) -> unit)("body")
+        defer (println : (string) -> ())("block");
+        (println : (string) -> ())("body")
     };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((early_return : () -> isize)())
     );
     let _ : Option[isize] = (maybe : (Option[isize]) -> Option[isize])(Option::None);
-    (loop_cleanup : () -> unit)();
-    (observed_at_exit : () -> unit)();
-    (println : (string) -> unit)(
+    (loop_cleanup : () -> ())();
+    (observed_at_exit : () -> ())();
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (pattern_cleanup : (Option[isize]) -> isize)(Option::Some(3))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (pattern_cleanup : (Option[isize]) -> isize)(Option::None)
       )
     );
-    (closure_cleanup : () -> unit)()
+    (closure_cleanup : () -> ())()
 }

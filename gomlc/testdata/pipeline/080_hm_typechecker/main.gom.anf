@@ -13,22 +13,22 @@ fn state_new() -> CheckerState {
   jump inline_cont0(inline3)
 }
 
-fn reset_gensym(st/0: CheckerState) -> unit {
+fn reset_gensym(st/0: CheckerState) -> () {
   let t0 = CheckerState.gensym_counter(st/0) in
   let inline0 = 0 in
   let inline1 = @intrinsic(ref.set)(t0, inline0) in
   ()
 }
 
-fn reset_level(st/0: CheckerState) -> unit {
+fn reset_level(st/0: CheckerState) -> () {
   let t0 = CheckerState.current_level(st/0) in
   let inline0 = 1 in
   let inline1 = @intrinsic(ref.set)(t0, inline0) in
   ()
 }
 
-fn reset_type_variables(st/0: CheckerState) -> unit {
-  join inline_cont0(_wild0: unit) -> unit {
+fn reset_type_variables(st/0: CheckerState) -> () {
+  join inline_cont0(_wild0: ()) -> () {
     let inline0 = CheckerState.current_level(st/0) in
     let inline1 = inherent#Ref#Ref[T]#set__T_i0(inline0, 1) in
     ()
@@ -38,9 +38,9 @@ fn reset_type_variables(st/0: CheckerState) -> unit {
   jump inline_cont0(())
 }
 
-fn enter_level(st/0: CheckerState) -> unit {
+fn enter_level(st/0: CheckerState) -> () {
   let t0 = CheckerState.current_level(st/0) in
-  join inline_cont0(l/0: i32) -> unit {
+  join inline_cont0(l/0: i32) -> () {
     let t1 = CheckerState.current_level(st/0) in
     let t2 = (l/0 + 1) in
     let inline0 = @intrinsic(ref.set)(t1, t2) in
@@ -50,9 +50,9 @@ fn enter_level(st/0: CheckerState) -> unit {
   jump inline_cont0(inline1)
 }
 
-fn leave_level(st/0: CheckerState) -> unit {
+fn leave_level(st/0: CheckerState) -> () {
   let t0 = CheckerState.current_level(st/0) in
-  join inline_cont0(l/0: i32) -> unit {
+  join inline_cont0(l/0: i32) -> () {
     let t1 = CheckerState.current_level(st/0) in
     let t2 = (l/0 - 1) in
     let inline0 = @intrinsic(ref.set)(t1, t2) in
@@ -162,7 +162,7 @@ fn gensym(st/0: CheckerState) -> string {
   join inline_cont0(n/0: i32) -> string {
     let t1 = CheckerState.gensym_counter(st/0) in
     let t2 = (n/0 + 1) in
-    join inline_cont1(mtmp0: unit) -> string {
+    join inline_cont1(mtmp0: ()) -> string {
       let t3 = (n/0 < 26) in
       if t3 {
         let t4 = nth_letter(n/0) in
@@ -321,7 +321,7 @@ fn env_lookup(env/0: Vec[EnvEntry], name/0: string) -> Option__Typ {
                       if t6 {
                         let t7 = EnvEntry.ty(entry/0) in
                         let t8 = Option__Typ::Some(t7) in
-                        join inline_cont6(mtmp0: unit) -> Option__Typ {
+                        join inline_cont6(mtmp0: ()) -> Option__Typ {
                           let inline1 = true in
                           let inline2 = @intrinsic(ref.set)(done/0, inline1) in
                           jump loop0()
@@ -398,7 +398,7 @@ fn subst_lookup(subst/0: Vec[SubstEntry], name/0: string) -> Option__Typ {
                       if t6 {
                         let t7 = SubstEntry.ty(entry/0) in
                         let t8 = Option__Typ::Some(t7) in
-                        join inline_cont6(mtmp0: unit) -> Option__Typ {
+                        join inline_cont6(mtmp0: ()) -> Option__Typ {
                           let inline1 = true in
                           let inline2 = @intrinsic(ref.set)(done/0, inline1) in
                           jump loop0()
@@ -452,25 +452,25 @@ fn subst_lookup(subst/0: Vec[SubstEntry], name/0: string) -> Option__Typ {
   jump inline_cont0(inline13)
 }
 
-fn occurs(st/0: CheckerState, tvr/0: Ref[Tv], ty/0: Typ) -> Result__unit__string {
+fn occurs(st/0: CheckerState, tvr/0: Ref[Tv], ty/0: Typ) -> Result__()__string {
   match ty/0 {
     Tag_0 => {
       let x0 = Typ::TVar._0(ty/0) in
       let t0 = @intrinsic(ref.ptr_eq)(tvr/0, x0) in
       if t0 {
-        let t1 = Result__unit__string::Err("occurs check") in
+        let t1 = Result__()__string::Err("occurs check") in
         t1
       } else {
-        join inline_cont0(mtmp0: Tv) -> Result__unit__string {
+        join inline_cont0(mtmp0: Tv) -> Result__()__string {
           match mtmp0 {
             Tag_0 => {
               let x1 = Tv::Unbound._0(mtmp0) in
               let x2 = Tv::Unbound._1(mtmp0) in
-              join inline_cont1(mtmp1: Tv) -> Result__unit__string {
-                join k0(jp0: i32) -> Result__unit__string {
+              join inline_cont1(mtmp1: Tv) -> Result__()__string {
+                join k0(jp0: i32) -> Result__()__string {
                   let t2 = Tv::Unbound(x1, jp0) in
-                  join inline_cont2(mtmp2: unit) -> Result__unit__string {
-                    let t3 = Result__unit__string::Ok(()) in
+                  join inline_cont2(mtmp2: ()) -> Result__()__string {
+                    let t3 = Result__()__string::Ok(()) in
                     t3
                   } in
                   let inline0 = @intrinsic(ref.set)(x0, t2) in
@@ -515,20 +515,20 @@ fn occurs(st/0: CheckerState, tvr/0: Ref[Tv], ty/0: Typ) -> Result__unit__string
           t5
         },
         Tag_1 => {
-          let x7 = Result__unit__string::Err._0(mtmp3) in
-          let t6 = Result__unit__string::Err(x7) in
+          let x7 = Result__()__string::Err._0(mtmp3) in
+          let t6 = Result__()__string::Err(x7) in
           t6
         },
       }
     },
     _ => {
-      let t7 = Result__unit__string::Ok(()) in
+      let t7 = Result__()__string::Ok(()) in
       t7
     },
   }
 }
 
-fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
+fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__()__string {
   match t2/0 {
     Tag_0 => {
       let x0 = Typ::TVar._0(t2/0) in
@@ -537,13 +537,13 @@ fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
           let x1 = Typ::TVar._0(t1/0) in
           let t0 = @intrinsic(ref.ptr_eq)(x1, x0) in
           if t0 {
-            let t1 = Result__unit__string::Ok(()) in
+            let t1 = Result__()__string::Ok(()) in
             t1
           } else {
-            join inline_cont0(mtmp0: Tv) -> Result__unit__string {
+            join inline_cont0(mtmp0: Tv) -> Result__()__string {
               match mtmp0 {
                 Tag_0 => {
-                  join inline_cont1(mtmp1: Tv) -> Result__unit__string {
+                  join inline_cont1(mtmp1: Tv) -> Result__()__string {
                     match mtmp1 {
                       Tag_0 => {
                         let t2 = Typ::TVar(x0) in
@@ -552,16 +552,16 @@ fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
                           Tag_0 => {
                             let t3 = Typ::TVar(x0) in
                             let t4 = Tv::Link(t3) in
-                            join inline_cont2(mtmp3: unit) -> Result__unit__string {
-                              let t5 = Result__unit__string::Ok(()) in
+                            join inline_cont2(mtmp3: ()) -> Result__()__string {
+                              let t5 = Result__()__string::Ok(()) in
                               t5
                             } in
                             let inline0 = @intrinsic(ref.set)(x1, t4) in
                             jump inline_cont2(())
                           },
                           Tag_1 => {
-                            let x2 = Result__unit__string::Err._0(mtmp2) in
-                            let t6 = Result__unit__string::Err(x2) in
+                            let x2 = Result__()__string::Err._0(mtmp2) in
+                            let t6 = Result__()__string::Err(x2) in
                             t6
                           },
                         }
@@ -590,23 +590,23 @@ fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
           }
         },
         _ => {
-          join inline_cont3(mtmp4: Tv) -> Result__unit__string {
+          join inline_cont3(mtmp4: Tv) -> Result__()__string {
             match mtmp4 {
               Tag_0 => {
                 let mtmp5 = occurs(st/0, x0, t1/0) in
                 match mtmp5 {
                   Tag_0 => {
                     let t11 = Tv::Link(t1/0) in
-                    join inline_cont4(mtmp6: unit) -> Result__unit__string {
-                      let t12 = Result__unit__string::Ok(()) in
+                    join inline_cont4(mtmp6: ()) -> Result__()__string {
+                      let t12 = Result__()__string::Ok(()) in
                       t12
                     } in
                     let inline3 = @intrinsic(ref.set)(x0, t11) in
                     jump inline_cont4(())
                   },
                   Tag_1 => {
-                    let x5 = Result__unit__string::Err._0(mtmp5) in
-                    let t13 = Result__unit__string::Err(x5) in
+                    let x5 = Result__()__string::Err._0(mtmp5) in
+                    let t13 = Result__()__string::Err(x5) in
                     t13
                   },
                 }
@@ -629,23 +629,23 @@ fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
       match t1/0 {
         Tag_0 => {
           let x9 = Typ::TVar._0(t1/0) in
-          join inline_cont5(mtmp7: Tv) -> Result__unit__string {
+          join inline_cont5(mtmp7: Tv) -> Result__()__string {
             match mtmp7 {
               Tag_0 => {
                 let mtmp8 = occurs(st/0, x9, t2/0) in
                 match mtmp8 {
                   Tag_0 => {
                     let t15 = Tv::Link(t2/0) in
-                    join inline_cont6(mtmp9: unit) -> Result__unit__string {
-                      let t16 = Result__unit__string::Ok(()) in
+                    join inline_cont6(mtmp9: ()) -> Result__()__string {
+                      let t16 = Result__()__string::Ok(()) in
                       t16
                     } in
                     let inline5 = @intrinsic(ref.set)(x9, t15) in
                     jump inline_cont6(())
                   },
                   Tag_1 => {
-                    let x10 = Result__unit__string::Err._0(mtmp8) in
-                    let t17 = Result__unit__string::Err(x10) in
+                    let x10 = Result__()__string::Err._0(mtmp8) in
+                    let t17 = Result__()__string::Err(x10) in
                     t17
                   },
                 }
@@ -670,14 +670,14 @@ fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
               t19
             },
             Tag_1 => {
-              let x14 = Result__unit__string::Err._0(mtmp10) in
-              let t20 = Result__unit__string::Err(x14) in
+              let x14 = Result__()__string::Err._0(mtmp10) in
+              let t20 = Result__()__string::Err(x14) in
               t20
             },
           }
         },
         _ => {
-          let t21 = Result__unit__string::Err("unify error") in
+          let t21 = Result__()__string::Err("unify error") in
           t21
         },
       }
@@ -686,23 +686,23 @@ fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
       match t1/0 {
         Tag_0 => {
           let x15 = Typ::TVar._0(t1/0) in
-          join inline_cont7(mtmp11: Tv) -> Result__unit__string {
+          join inline_cont7(mtmp11: Tv) -> Result__()__string {
             match mtmp11 {
               Tag_0 => {
                 let mtmp12 = occurs(st/0, x15, t2/0) in
                 match mtmp12 {
                   Tag_0 => {
                     let t22 = Tv::Link(t2/0) in
-                    join inline_cont8(mtmp13: unit) -> Result__unit__string {
-                      let t23 = Result__unit__string::Ok(()) in
+                    join inline_cont8(mtmp13: ()) -> Result__()__string {
+                      let t23 = Result__()__string::Ok(()) in
                       t23
                     } in
                     let inline7 = @intrinsic(ref.set)(x15, t22) in
                     jump inline_cont8(())
                   },
                   Tag_1 => {
-                    let x16 = Result__unit__string::Err._0(mtmp12) in
-                    let t24 = Result__unit__string::Err(x16) in
+                    let x16 = Result__()__string::Err._0(mtmp12) in
+                    let t24 = Result__()__string::Err(x16) in
                     t24
                   },
                 }
@@ -718,7 +718,7 @@ fn unify(st/0: CheckerState, t1/0: Typ, t2/0: Typ) -> Result__unit__string {
           jump inline_cont7(inline8)
         },
         _ => {
-          let t26 = Result__unit__string::Err("unify error") in
+          let t26 = Result__()__string::Err("unify error") in
           t26
         },
       }
@@ -889,7 +889,7 @@ fn typeof(st/0: CheckerState, env/0: Vec[EnvEntry], e/0: Exp) -> Result__Typ__st
                     t3
                   },
                   Tag_1 => {
-                    let x6 = Result__unit__string::Err._0(mtmp3) in
+                    let x6 = Result__()__string::Err._0(mtmp3) in
                     let t4 = Result__Typ__string::Err(x6) in
                     t4
                   },
@@ -950,9 +950,9 @@ fn typeof(st/0: CheckerState, env/0: Vec[EnvEntry], e/0: Exp) -> Result__Typ__st
       let x13 = Exp::Let._0(e/0) in
       let x14 = Exp::Let._1(e/0) in
       let x15 = Exp::Let._2(e/0) in
-      join inline_cont3(_wild0: unit) -> Result__Typ__string {
+      join inline_cont3(_wild0: ()) -> Result__Typ__string {
         let ty_e/0 = typeof(st/0, env/0, x14) in
-        join inline_cont4(_wild1: unit) -> Result__Typ__string {
+        join inline_cont4(_wild1: ()) -> Result__Typ__string {
           match ty_e/0 {
             Tag_0 => {
               let x16 = Result__Typ__string::Ok._0(ty_e/0) in
@@ -1006,7 +1006,7 @@ fn exp_let(name/0: string, a/0: Exp, b/0: Exp) -> Exp {
   t0
 }
 
-fn show_result(label/0: string, res/0: Result__Typ__string) -> unit {
+fn show_result(label/0: string, res/0: Result__Typ__string) -> () {
   match res/0 {
     Tag_0 => {
       let x0 = Result__Typ__string::Ok._0(res/0) in
@@ -1028,7 +1028,7 @@ fn show_result(label/0: string, res/0: Result__Typ__string) -> unit {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let st/0 = state_new() in
   let t0 = exp_var("x") in
   let id/0 = exp_lam("x", t0) in
@@ -1204,24 +1204,24 @@ fn main() -> unit {
   let t134 = exp_var("x") in
   let t135 = exp_var("y") in
   let t136 = exp_var("y") in
-  join inline_cont0(t137: Exp) -> unit {
-    join inline_cont1(t138: Exp) -> unit {
-      join inline_cont2(t139: Exp) -> unit {
+  join inline_cont0(t137: Exp) -> () {
+    join inline_cont1(t138: Exp) -> () {
+      join inline_cont2(t139: Exp) -> () {
         let t140 = typeof(st/0, t133, t139) in
         let _wild35 = show_result("sound_gen_occurs", t140) in
-        join inline_cont3(_wild36: unit) -> unit {
-          join inline_cont4(t141: Vec[EnvEntry]) -> unit {
-            join inline_cont5(t142: Exp) -> unit {
-              join inline_cont6(t143: Exp) -> unit {
-                join inline_cont7(t144: Exp) -> unit {
-                  join inline_cont8(t145: Exp) -> unit {
-                    join inline_cont9(t146: Exp) -> unit {
-                      join inline_cont10(t147: Exp) -> unit {
-                        join inline_cont11(t148: Exp) -> unit {
+        join inline_cont3(_wild36: ()) -> () {
+          join inline_cont4(t141: Vec[EnvEntry]) -> () {
+            join inline_cont5(t142: Exp) -> () {
+              join inline_cont6(t143: Exp) -> () {
+                join inline_cont7(t144: Exp) -> () {
+                  join inline_cont8(t145: Exp) -> () {
+                    join inline_cont9(t146: Exp) -> () {
+                      join inline_cont10(t147: Exp) -> () {
+                        join inline_cont11(t148: Exp) -> () {
                           let t149 = typeof(st/0, t141, t148) in
-                          join inline_cont12(_wild37: unit) -> unit {
-                            join inline_cont13(_wild38: unit) -> unit {
-                              join inline_cont14(_wild39: unit) -> unit {
+                          join inline_cont12(_wild37: ()) -> () {
+                            join inline_cont13(_wild38: ()) -> () {
+                              join inline_cont14(_wild39: ()) -> () {
                                 let inline0 = "" in
                                 let inline1 = trait_impl#ToString#string#to_string(inline0) in
                                 let inline2 = @runtime(core.string_println)(inline1) in
@@ -1307,7 +1307,7 @@ fn inherent#Ref#Ref[T]#new__T_i32(value/0: i32) -> Ref[i32] {
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
@@ -1380,17 +1380,17 @@ fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Option[Typ](self/0: Ref[Option__Typ], value/0: Option__Typ) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Option[Typ](self/0: Ref[Option__Typ], value/0: Option__Typ) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> unit {
+fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
@@ -1405,7 +1405,7 @@ fn inherent#Vec#Vec[T]#len__T_SubstEntry(self/0: Vec[SubstEntry]) -> isize {
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Tv(self/0: Ref[Tv], value/0: Tv) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Tv(self/0: Ref[Tv], value/0: Tv) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
@@ -1427,7 +1427,7 @@ fn inherent#Vec#Vec[T]#pushed__T_SubstEntry(self/0: Vec[SubstEntry], elem/0: Sub
             let t3 = (index/0 < t2) in
             if t3 {
               let t4 = @intrinsic(vec.get)(self/0, index/0) in
-              join inline_cont3(_wild0: unit) -> Vec[SubstEntry] {
+              join inline_cont3(_wild0: ()) -> Vec[SubstEntry] {
                 let compound_old0 = index/0 in
                 let compound_value0 = 1 in
                 let t5 = (compound_old0 + compound_value0) in
@@ -1475,7 +1475,7 @@ fn inherent#Vec#Vec[T]#pushed__T_EnvEntry(self/0: Vec[EnvEntry], elem/0: EnvEntr
             let t3 = (index/0 < t2) in
             if t3 {
               let t4 = @intrinsic(vec.get)(self/0, index/0) in
-              join inline_cont3(_wild0: unit) -> Vec[EnvEntry] {
+              join inline_cont3(_wild0: ()) -> Vec[EnvEntry] {
                 let compound_old0 = index/0 in
                 let compound_value0 = 1 in
                 let t5 = (compound_old0 + compound_value0) in
@@ -1501,8 +1501,8 @@ fn inherent#Vec#Vec[T]#pushed__T_EnvEntry(self/0: Vec[EnvEntry], elem/0: EnvEntr
   jump inline_cont0(inline4)
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -1559,7 +1559,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_SubstEntry(capacity/0: isize) -> Vec[Sub
   t0
 }
 
-fn inherent#Vec#Vec[T]#push__T_SubstEntry(self/0: Vec[SubstEntry], elem/0: SubstEntry) -> unit {
+fn inherent#Vec#Vec[T]#push__T_SubstEntry(self/0: Vec[SubstEntry], elem/0: SubstEntry) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -1569,7 +1569,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_EnvEntry(capacity/0: isize) -> Vec[EnvEn
   t0
 }
 
-fn inherent#Vec#Vec[T]#push__T_EnvEntry(self/0: Vec[EnvEntry], elem/0: EnvEntry) -> unit {
+fn inherent#Vec#Vec[T]#push__T_EnvEntry(self/0: Vec[EnvEntry], elem/0: EnvEntry) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -1635,7 +1635,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -1667,7 +1667,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -1690,7 +1690,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }

@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let int_pairer/0 = make_pairer__T_isize(7) in
   let string_pairer/0 = make_pairer__T_string("ok") in
   let _wild0 = println__T_string(int_pairer/0("a")) in
@@ -18,7 +18,7 @@ fn make_pairer__T_string(x/0: string) -> (string) -> string {
   )
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -85,7 +85,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

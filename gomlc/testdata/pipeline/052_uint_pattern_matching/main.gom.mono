@@ -71,7 +71,7 @@ fn report(label/0: string, value/0: bool) -> string {
   (label/0 + trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn main() -> unit {
+fn main() -> () {
   let counter/0 = Counter { start: 4000000000, end: 900000000 } in
   let alt_counter/0 = Counter { start: 12, end: 600000000 } in
   let message/0 =
@@ -94,7 +94,7 @@ fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
   @runtime(core.bool_to_string)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

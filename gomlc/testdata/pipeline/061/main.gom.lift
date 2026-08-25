@@ -71,7 +71,7 @@ fn trait_impl#ToString#LineList#to_string(self/0: LineList) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let from/0 = inherent#Point#Point#new(10, 20, Color::Red) in
   let to/0 = inherent#Point#Point#new(30, 40, Color::Green) in
   let line/0 = inherent#Line#Line#new(from/0, to/0, Color::Blue) in
@@ -84,7 +84,7 @@ fn trait_impl#ToString#i32#to_string(self/0: i32) -> string {
   __goml_builtin_int32_to_string(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -147,7 +147,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

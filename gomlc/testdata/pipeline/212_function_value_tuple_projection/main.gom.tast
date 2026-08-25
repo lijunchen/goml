@@ -2,10 +2,10 @@ fn pair(first/0: i32, second/1: string) -> (i32, string) {
     ((first/0 : i32), (second/1 : string))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let make/2: (i32, string) -> (i32, string) = (pair : (i32, string) -> (i32, string));
     let value/3: (i32, string) = (make/2 : (i32, string) -> (i32, string))(1, "x");
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)((value/3 : (i32, string)).0) + (value/3 : (i32, string)).1
     )
 }

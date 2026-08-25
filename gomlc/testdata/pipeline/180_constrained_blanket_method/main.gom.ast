@@ -1,6 +1,6 @@
 package main;
 trait Mark {
-  fn mark(self: Self) -> unit;
+  fn mark(self: Self) -> ();
 }
 
 trait Extra {
@@ -8,7 +8,7 @@ trait Extra {
 }
 
 impl Mark for i32 {
-  fn mark(self: i32) -> unit {}
+  fn mark(self: i32) -> () {}
 }
 
 impl[T: Mark] Extra for T {
@@ -21,7 +21,7 @@ fn apply[T: Extra](value: T) -> i32 {
     value.extra()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let first: i32 = 1;
     let second: i32 = 2;
     println(apply(first));

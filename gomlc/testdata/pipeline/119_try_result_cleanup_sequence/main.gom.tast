@@ -10,7 +10,7 @@ fn open_handle(ok/0: bool) -> Result[Handle, string] {
     }
 }
 
-fn close_handle(handle/1: Handle, ok/2: bool) -> Result[unit, string] {
+fn close_handle(handle/1: Handle, ok/2: bool) -> Result[(), string] {
     if (ok/2 : bool) {
         {
             Result::Ok(())
@@ -29,11 +29,11 @@ fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result[string, string] {
           Result::Err(try_residual/24: string) => return Result::Err((try_residual/24 : string)),
       };
     let name/6: string = (handle/5 : Handle).name;
-    match (close_handle : (Handle, bool) -> Result[unit, string])(
+    match (close_handle : (Handle, bool) -> Result[(), string])(
       (handle/5 : Handle),
       (close_ok/4 : bool)
     ) {
-        Result::Ok(try_value/31: unit) => (try_value/31 : unit),
+        Result::Ok(try_value/31: ()) => (try_value/31 : ()),
         Result::Err(try_residual/31: string) => return Result::Err((try_residual/31 : string)),
     };
     Result::Ok("closed " + (name/6 : string))
@@ -46,18 +46,18 @@ fn show(res/7: Result[string, string]) -> string {
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (show : (Result[string, string]) -> string)(
         (use_handle : (bool, bool) -> Result[string, string])(true, true)
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Result[string, string]) -> string)(
         (use_handle : (bool, bool) -> Result[string, string])(false, true)
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Result[string, string]) -> string)(
         (use_handle : (bool, bool) -> Result[string, string])(true, false)
       )

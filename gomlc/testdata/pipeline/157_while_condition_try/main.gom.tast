@@ -32,12 +32,12 @@ fn run_some() -> Option[i32] {
         Option::None => return Option::None,
     } {
         {
-            (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+            (Ref[i32]::set : (Ref[i32], i32) -> ())(
               (total/3 : Ref[i32]),
               (Ref[i32]::get : (Ref[i32]) -> i32)((total/3 : Ref[i32])) +
                 (Ref[i32]::get : (Ref[i32]) -> i32)((i/2 : Ref[i32]))
             );
-            (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+            (Ref[i32]::set : (Ref[i32], i32) -> ())(
               (i/2 : Ref[i32]),
               (Ref[i32]::get : (Ref[i32]) -> i32)((i/2 : Ref[i32])) + 1
             );
@@ -56,12 +56,12 @@ fn run_none() -> Option[i32] {
         Option::None => return Option::None,
     } {
         {
-            (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+            (Ref[i32]::set : (Ref[i32], i32) -> ())(
               (total/5 : Ref[i32]),
               (Ref[i32]::get : (Ref[i32]) -> i32)((total/5 : Ref[i32])) +
                 (Ref[i32]::get : (Ref[i32]) -> i32)((i/4 : Ref[i32]))
             );
-            (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+            (Ref[i32]::set : (Ref[i32], i32) -> ())(
               (i/4 : Ref[i32]),
               (Ref[i32]::get : (Ref[i32]) -> i32)((i/4 : Ref[i32])) + 1
             );
@@ -77,11 +77,7 @@ fn show(x/6: Option[i32]) -> string {
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
-      (show : (Option[i32]) -> string)((run_some : () -> Option[i32])())
-    );
-    (println : (string) -> unit)(
-      (show : (Option[i32]) -> string)((run_none : () -> Option[i32])())
-    );
+fn main() -> () {
+    (println : (string) -> ())((show : (Option[i32]) -> string)((run_some : () -> Option[i32])()));
+    (println : (string) -> ())((show : (Option[i32]) -> string)((run_none : () -> Option[i32])()));
 }

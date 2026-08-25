@@ -1,4 +1,4 @@
-fn test_nested_match(x/0: (bool, bool), y/0: (bool, bool)) -> unit {
+fn test_nested_match(x/0: (bool, bool), y/0: (bool, bool)) -> () {
   let x0 = x/0.0 in
   let x1 = x/0.1 in
   match x1 {
@@ -93,7 +93,7 @@ fn test_nested_match(x/0: (bool, bool), y/0: (bool, bool)) -> unit {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let t0 = (true, false) in
   let t1 = (false, true) in
   let mtmp0 = test_nested_match(t0, t1) in
@@ -109,8 +109,8 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

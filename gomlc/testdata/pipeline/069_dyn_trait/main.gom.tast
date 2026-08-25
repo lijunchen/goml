@@ -20,17 +20,17 @@ impl Display for Flag {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let p/2: Point = Point { x: 1, y: 2 };
     let t/3: Flag = Flag { value: true };
     let dp/4: dyn Display = to_dyn[Display]{Point}((p/2 : Point));
     let dt/5: dyn Display = to_dyn[Display]{Flag}((t/3 : Flag));
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (dyn Display::show : (dyn Display) -> string)((dp/4 : dyn Display))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (dyn Display::show : (dyn Display) -> string)((dt/5 : dyn Display))
       );
 }

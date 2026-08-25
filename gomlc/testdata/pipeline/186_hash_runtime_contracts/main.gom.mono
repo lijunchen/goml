@@ -91,31 +91,28 @@ fn trait_impl#std::cmp::Ord#Ordering#cmp(self/0: Ordering, other/0: Ordering) ->
   }
 }
 
-fn trait_impl#std::cmp::Ord#unit#cmp(self/0: unit, other/0: unit) -> Ordering {
+fn trait_impl#std::cmp::Ord#()#cmp(self/0: (), other/0: ()) -> Ordering {
   Ordering::Equal
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#partial_cmp(
-  self/0: unit,
-  other/0: unit
-) -> Option__Ordering {
+fn trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0: (), other/0: ()) -> Option__Ordering {
   Option__Ordering::Some(Ordering::Equal)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#lt(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#lt__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#lt(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#le(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#le__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#le(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#gt(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#gt__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#gt(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#ge__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#ge(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_()(default_arg0, default_arg1)
 }
 
 fn trait_impl#std::cmp::Ord#bool#cmp(self/0: bool, other/0: bool) -> Ordering {
@@ -992,7 +989,7 @@ fn trait_impl#Hash#CollisionKey#hash(self/0: CollisionKey) -> u64 {
   1
 }
 
-fn print_opt_string(value/0: Option__string) -> unit {
+fn print_opt_string(value/0: Option__string) -> () {
   match value/0 {
     Option__string::None => {
       println__T_string("none")
@@ -1009,7 +1006,7 @@ fn print_opt_string(value/0: Option__string) -> unit {
   }
 }
 
-fn print_opt_int(value/0: Option__i32) -> unit {
+fn print_opt_int(value/0: Option__i32) -> () {
   match value/0 {
     Option__i32::None => {
       println__T_string("none")
@@ -1026,7 +1023,7 @@ fn print_opt_int(value/0: Option__i32) -> unit {
   }
 }
 
-fn float_comparison_contracts() -> unit {
+fn float_comparison_contracts() -> () {
   let zero32/0 = 0 in
   let negative_zero32/0 = (-zero32/0) in
   let _wild0 =
@@ -1056,7 +1053,7 @@ fn float_comparison_contracts() -> unit {
     ) in
 }
 
-fn collision_contracts() -> unit {
+fn collision_contracts() -> () {
   let values/0 = inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_i0() in
   let _wild0 =
     inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_i0(
@@ -1150,7 +1147,7 @@ fn collision_contracts() -> unit {
     println__T_isize(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_i0(values/0)) in
 }
 
-fn reference_contracts() -> unit {
+fn reference_contracts() -> () {
   let values/0 = inherent#HashMap#HashMap[K,V]#new__K_Ref[CollisionKey]__V_string() in
   let key/0 = inherent#Ref#Ref[T]#new__T_CollisionKey(CollisionKey { value: 1 }) in
   let alias/0 = key/0 in
@@ -1179,7 +1176,7 @@ fn reference_contracts() -> unit {
     ) in
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = float_comparison_contracts() in
   let _wild1 = collision_contracts() in
   let _wild2 = reference_contracts() in
@@ -1306,9 +1303,9 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_Ordering(
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#lt__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -1326,9 +1323,9 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#le__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -1346,9 +1343,9 @@ fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#gt__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -1366,9 +1363,9 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#ge__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -2682,11 +2679,11 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_FloatKey(
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_i32(value/0: i32) -> unit {
+fn println__T_i32(value/0: i32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
@@ -2706,14 +2703,14 @@ fn inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_i32(
   self/0: HashMap[CollisionKey, i32],
   key/0: CollisionKey,
   value/0: i32
-) -> unit {
+) -> () {
   @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
 fn inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_i32(
   self/0: HashMap[CollisionKey, i32],
   key/0: CollisionKey
-) -> unit {
+) -> () {
   @intrinsic(hashmap.remove)(self/0, key/0)
 }
 
@@ -2724,7 +2721,7 @@ fn inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_i32(
   @intrinsic(hashmap.get)(self/0, key/0)
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
@@ -2742,7 +2739,7 @@ fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -2761,11 +2758,11 @@ fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(
   self/0: HashMap[Ref[CollisionKey], string],
   key/0: Ref[CollisionKey],
   value/0: string
-) -> unit {
+) -> () {
   @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
@@ -2787,10 +2784,7 @@ fn inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(
   @intrinsic(hashmap.get)(self/0, key/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_CollisionKey(
-  self/0: Ref[CollisionKey],
-  value/0: CollisionKey
-) -> unit {
+fn inherent#Ref#Ref[T]#set__T_CollisionKey(self/0: Ref[CollisionKey], value/0: CollisionKey) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -2898,7 +2892,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

@@ -1,5 +1,5 @@
 fn bump(counter/0: Ref[i32], ok/1: bool) -> Result[i32, string] {
-    (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+    (Ref[i32]::set : (Ref[i32], i32) -> ())(
       (counter/0 : Ref[i32]),
       (Ref[i32]::get : (Ref[i32]) -> i32)((counter/0 : Ref[i32])) + 1
     );
@@ -43,7 +43,7 @@ fn run(ok/8: bool) -> string {
       )
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)((run : (bool) -> string)(true));
-    (println : (string) -> unit)((run : (bool) -> string)(false));
+fn main() -> () {
+    (println : (string) -> ())((run : (bool) -> string)(true));
+    (println : (string) -> ())((run : (bool) -> string)(false));
 }

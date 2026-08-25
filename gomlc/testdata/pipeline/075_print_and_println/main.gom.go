@@ -140,7 +140,7 @@ func main0() struct{} {
     var inline26 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline25)
     _goml_runtime_core_string_println(inline26)
     var inline22 struct{} = struct{}{}
-    var inline23 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline22)
+    var inline23 string = _goml_m_trait__impl_i_ToString_i__o__q__i_to__string(inline22)
     _goml_runtime_core_string_println(inline23)
     var t0 string
     var inline20 int = 2
@@ -211,7 +211,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__0 string) string
     return self__0
 }
 
-func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__0 struct{}) string {
+func _goml_m_trait__impl_i_ToString_i__o__q__i_to__string(self__0 struct{}) string {
     var t0 string = _goml_runtime_core_unit_to_string(self__0)
     return t0
 }

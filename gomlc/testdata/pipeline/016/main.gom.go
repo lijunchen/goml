@@ -95,20 +95,20 @@ type List__isize_Cons struct {
 
 func (_ List__isize_Cons) isList__isize() {}
 
-type List__unit interface {
-    isList__unit()
+type _goml_m_List_____o__q_ interface {
+    is_goml_m_List_____o__q_()
 }
 
-type List__unit_Nil struct {}
+type _goml_m_List_____o__q__Nil struct {}
 
-func (_ List__unit_Nil) isList__unit() {}
+func (_ _goml_m_List_____o__q__Nil) is_goml_m_List_____o__q_() {}
 
-type List__unit_Cons struct {
+type _goml_m_List_____o__q__Cons struct {
     _0 struct{}
-    _1 List__unit
+    _1 _goml_m_List_____o__q_
 }
 
-func (_ List__unit_Cons) isList__unit() {}
+func (_ _goml_m_List_____o__q__Cons) is_goml_m_List_____o__q_() {}
 
 type List__bool interface {
     isList__bool()
@@ -173,22 +173,22 @@ func main0() struct{} {
     var length__2 int32 = int_list_length(x__2)
     var inline6 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__2)
     _goml_runtime_core_string_println(inline6)
-    var x__3 List__unit = List__unit_Cons{
+    var x__3 _goml_m_List_____o__q_ = _goml_m_List_____o__q__Cons{
         _0: struct{}{},
-        _1: List__unit_Nil{},
+        _1: _goml_m_List_____o__q__Nil{},
     }
-    var length__3 int32 = list_length__T_unit(x__3)
+    var length__3 int32 = _goml_m_list__length____T___o__q_(x__3)
     var inline4 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__3)
     _goml_runtime_core_string_println(inline4)
-    var t3 List__unit = List__unit_Cons{
+    var t3 _goml_m_List_____o__q_ = _goml_m_List_____o__q__Cons{
         _0: struct{}{},
-        _1: List__unit_Nil{},
+        _1: _goml_m_List_____o__q__Nil{},
     }
-    var x__4 List__unit = List__unit_Cons{
+    var x__4 _goml_m_List_____o__q_ = _goml_m_List_____o__q__Cons{
         _0: struct{}{},
         _1: t3,
     }
-    var length__4 int32 = list_length__T_unit(x__4)
+    var length__4 int32 = _goml_m_list__length____T___o__q_(x__4)
     var inline2 string = _goml_m_trait__impl_i_ToString_i_i32_i_to__string(length__4)
     _goml_runtime_core_string_println(inline2)
     var t4 List__bool = List__bool_Cons{
@@ -219,13 +219,13 @@ func list_length__T_isize(xs__0 List__isize) int32 {
     }
 }
 
-func list_length__T_unit(xs__0 List__unit) int32 {
+func _goml_m_list__length____T___o__q_(xs__0 _goml_m_List_____o__q_) int32 {
     switch xs__0.(type) {
-    case List__unit_Nil:
+    case _goml_m_List_____o__q__Nil:
         return 0
-    case List__unit_Cons:
-        var x0 List__unit = xs__0.(List__unit_Cons)._1
-        var t0 int32 = list_length__T_unit(x0)
+    case _goml_m_List_____o__q__Cons:
+        var x0 _goml_m_List_____o__q_ = xs__0.(_goml_m_List_____o__q__Cons)._1
+        var t0 int32 = _goml_m_list__length____T___o__q_(x0)
         var t1 int32 = 1 + t0
         return t1
     default:

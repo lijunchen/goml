@@ -11,7 +11,7 @@ fn trait_impl#Display#Point#show_with(self/0: Point, prefix/0: string, suffix/0:
     suffix/0)
 }
 
-fn trait_impl#Display#Point#tick(self/0: Point) -> unit {
+fn trait_impl#Display#Point#tick(self/0: Point) -> () {
   ()
 }
 
@@ -35,7 +35,7 @@ fn trait_impl#Display#Flag#show_with(self/0: Flag, prefix/0: string, suffix/0: s
   }
 }
 
-fn trait_impl#Display#Flag#tick(self/0: Flag) -> unit {
+fn trait_impl#Display#Flag#tick(self/0: Flag) -> () {
   ()
 }
 
@@ -63,7 +63,7 @@ fn trait_impl#Display#Counter#show_with(
     suffix/0)
 }
 
-fn trait_impl#Display#Counter#tick(self/0: Counter) -> unit {
+fn trait_impl#Display#Counter#tick(self/0: Counter) -> () {
   let next/0 = (inherent#Ref#Ref[T]#get__T_i0(Counter.cell(self/0)) + 1) in
   let mtmp0 = inherent#Ref#Ref[T]#set__T_i0(Counter.cell(self/0), next/0) in
   ()
@@ -96,7 +96,7 @@ fn bump_and_show(x/0: dyn Display, delta/0: i32) -> string {
     inherent#i32#i32#to_string(dyn_call[Display::bump](x/0, delta/0)))
 }
 
-fn main() -> unit {
+fn main() -> () {
   let p1/0 = Point { x: 1, y: 2 } in
   let p2/0 = Point { x: 3, y: 4 } in
   let f1/0 = Flag { value: true } in
@@ -148,7 +148,7 @@ fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -160,7 +160,7 @@ fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/0: Vec[dyn Display], elem/0: dyn Display) -> unit {
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/0: Vec[dyn Display], elem/0: dyn Display) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -168,7 +168,7 @@ fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/0: Vec[dyn Display]) -> isize {
   @intrinsic(vec.len)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -239,7 +239,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

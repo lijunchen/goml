@@ -2,13 +2,13 @@ fn make_array() -> [i32; 3] {
   [1, 2, 3]
 }
 
-fn main() -> unit {
+fn main() -> () {
   let arr/0 = make_array() in
   let mtmp0 = print__T_string("array literal") in
   ()
 }
 
-fn print__T_string(value/0: string) -> unit {
+fn print__T_string(value/0: string) -> () {
   @runtime(core.string_print)(trait_impl#ToString#string#to_string(value/0))
 }
 

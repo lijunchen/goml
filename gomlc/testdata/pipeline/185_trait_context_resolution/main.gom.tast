@@ -52,15 +52,13 @@ fn select_item[S](source/11: S) -> S::Item where S: ItemSource {
     (invoke : (S) -> S::Item)((source/11 : S))
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)((Put[i32]::put : (Target, i32) -> string)(Target {}, 3));
-    (println : (string) -> unit)(
-      (Put[string]::put : (Target, string) -> string)(Target {}, "goml")
-    );
+fn main() -> () {
+    (println : (string) -> ())((Put[i32]::put : (Target, i32) -> string)(Target {}, 3));
+    (println : (string) -> ())((Put[string]::put : (Target, string) -> string)(Target {}, "goml"));
     let text/12: string = (Convert[i32]::convert : (Convertible) -> string)(Convertible {});
     let number/13: i32 = (Convert[string]::convert : (Convertible) -> i32)(Convertible {});
-    (println : (string) -> unit)((text/12 : string));
-    (println : (i32) -> unit)((number/13 : i32));
-    (println : (i32) -> unit)((read : (Number) -> i32)(Number { value: 8 }));
-    (println : (i32) -> unit)((select_item : (Selected) -> i32)(Selected { value: 9 }));
+    (println : (string) -> ())((text/12 : string));
+    (println : (i32) -> ())((number/13 : i32));
+    (println : (i32) -> ())((read : (Number) -> i32)(Number { value: 8 }));
+    (println : (i32) -> ())((select_item : (Selected) -> i32)(Selected { value: 9 }));
 }

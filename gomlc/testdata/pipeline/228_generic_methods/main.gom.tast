@@ -8,29 +8,29 @@ impl[T] Box[T] {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let first/4: Box[isize] = Box { value: 42 };
     let text/6: Box[string] =
       (Box[isize]::map : (Box[isize], (isize) -> string) -> Box[string])(
         (first/4 : Box[isize]),
         |value/5: isize| => (isize::to_string : (isize) -> string)((value/5 : isize))
       );
-    (println : (string) -> unit)((text/6 : Box[string]).value);
+    (println : (string) -> ())((text/6 : Box[string]).value);
     let second/7: Box[isize] = Box { value: 7 };
     let explicit/9: Box[string] =
       (Box[isize]::map : (Box[isize], (isize) -> string) -> Box[string])(
         (second/7 : Box[isize]),
         |value/8: isize| => (isize::to_string : (isize) -> string)((value/8 : isize))
       );
-    (println : (string) -> unit)((explicit/9 : Box[string]).value);
+    (println : (string) -> ())((explicit/9 : Box[string]).value);
     let third/10: Box[isize] = Box { value: 9 };
     let static_call/12: Box[string] =
       (Box[isize]::map : (Box[isize], (isize) -> string) -> Box[string])(
         (third/10 : Box[isize]),
         |value/11: isize| => (isize::to_string : (isize) -> string)((value/11 : isize))
       );
-    (println : (string) -> unit)((static_call/12 : Box[string]).value);
+    (println : (string) -> ())((static_call/12 : Box[string]).value);
     let rendered/13: string =
       (Box[string]::render : (Box[string], isize) -> string)(Box { value: "value" }, 5);
-    (println : (string) -> unit)((rendered/13 : string));
+    (println : (string) -> ())((rendered/13 : string));
 }

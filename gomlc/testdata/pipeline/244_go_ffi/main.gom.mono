@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = println__T_string(@go_ffi(strings, ToUpper)("goml")) in
   let mtmp0 = @go_ffi(strings, Cut)("left:right", ":") in
   {
@@ -23,11 +23,11 @@ fn main() -> unit {
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 

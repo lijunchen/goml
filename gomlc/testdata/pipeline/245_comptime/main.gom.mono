@@ -81,7 +81,7 @@ fn guarded_match() -> isize {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let values/0 = [6, 10, 4] in
   let pair/0 = Pair { left: 7, right: 8 } in
   let choice/0 = Choice::Value(9) in
@@ -117,11 +117,11 @@ fn main() -> unit {
   println__T_isize(factorial(4))
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
@@ -208,7 +208,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

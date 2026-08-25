@@ -4,16 +4,15 @@ impl ToString for (isize, isize) {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let x/1: isize = 123;
-    let _ : unit =
-      (println : (string) -> unit)((ToString::to_string : (isize) -> string)((x/1 : isize)));
+    let _ : () =
+      (println : (string) -> ())((ToString::to_string : (isize) -> string)((x/1 : isize)));
     let x/2: bool = true;
-    let _ : unit =
-      (println : (string) -> unit)((ToString::to_string : (bool) -> string)((x/2 : bool)));
+    let _ : () = (println : (string) -> ())((ToString::to_string : (bool) -> string)((x/2 : bool)));
     let x/3: (isize, isize) = (3, 4);
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (ToString::to_string : ((isize, isize)) -> string)((x/3 : (isize, isize)))
       );
 }

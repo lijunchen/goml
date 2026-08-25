@@ -3,16 +3,16 @@ fn make_string_channel() -> Channel[string] {
 }
 
 fn roundtrip[T](channel/0: Channel[T], value/1: T) -> Option[T] {
-    go || => (Channel[T]::send : (Channel[T], T) -> unit)((channel/0 : Channel[T]), (value/1 : T));
+    go || => (Channel[T]::send : (Channel[T], T) -> ())((channel/0 : Channel[T]), (value/1 : T));
     (Channel[T]::recv : (Channel[T]) -> Option[T])((channel/0 : Channel[T]))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let buffered/2: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(2);
-    (Channel[isize]::send : (Channel[isize], isize) -> unit)((buffered/2 : Channel[isize]), 10);
-    (Channel[isize]::send : (Channel[isize], isize) -> unit)((buffered/2 : Channel[isize]), 20);
-    (Channel[isize]::close : (Channel[isize]) -> unit)((buffered/2 : Channel[isize]));
-    (println : (isize) -> unit)(
+    (Channel[isize]::send : (Channel[isize], isize) -> ())((buffered/2 : Channel[isize]), 10);
+    (Channel[isize]::send : (Channel[isize], isize) -> ())((buffered/2 : Channel[isize]), 20);
+    (Channel[isize]::close : (Channel[isize]) -> ())((buffered/2 : Channel[isize]));
+    (println : (isize) -> ())(
       match (Channel[isize]::recv : (Channel[isize]) -> Option[isize])(
         (buffered/2 : Channel[isize])
       ) {
@@ -20,7 +20,7 @@ fn main() -> unit {
           Option::None => -1,
       }
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       match (Channel[isize]::recv : (Channel[isize]) -> Option[isize])(
         (buffered/2 : Channel[isize])
       ) {
@@ -28,7 +28,7 @@ fn main() -> unit {
           Option::None => -1,
       }
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       match (Channel[isize]::recv : (Channel[isize]) -> Option[isize])(
         (buffered/2 : Channel[isize])
       ) {
@@ -37,7 +37,7 @@ fn main() -> unit {
       }
     );
     let unbuffered/5: Channel[string] = (make_string_channel : () -> Channel[string])();
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       match (roundtrip : (Channel[string], string) -> Option[string])(
         (unbuffered/5 : Channel[string]),
         "ready"
@@ -46,5 +46,5 @@ fn main() -> unit {
           Option::None => "closed",
       }
     );
-    (Channel[string]::close : (Channel[string]) -> unit)((unbuffered/5 : Channel[string]));
+    (Channel[string]::close : (Channel[string]) -> ())((unbuffered/5 : Channel[string]));
 }

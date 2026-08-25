@@ -1,17 +1,15 @@
-fn test(t/0: T) -> unit {
+fn test(t/0: T) -> () {
     match (t/0 : T) {
-        T::A => (println : (string) -> unit)((isize::to_string : (isize) -> string)(1)),
-        T::B(false, false) =>
-          (println : (string) -> unit)((isize::to_string : (isize) -> string)(2)),
-        T::B(false, true) =>
-          (println : (string) -> unit)((isize::to_string : (isize) -> string)(3)),
-        _ : T => (println : (string) -> unit)((isize::to_string : (isize) -> string)(4)),
+        T::A => (println : (string) -> ())((isize::to_string : (isize) -> string)(1)),
+        T::B(false, false) => (println : (string) -> ())((isize::to_string : (isize) -> string)(2)),
+        T::B(false, true) => (println : (string) -> ())((isize::to_string : (isize) -> string)(3)),
+        _ : T => (println : (string) -> ())((isize::to_string : (isize) -> string)(4)),
     }
 }
 
-fn main() -> unit {
-    let _ : unit = (test : (T) -> unit)(T::B(true, true));
-    let _ : unit = (test : (T) -> unit)(T::B(false, true));
-    let _ : unit = (test : (T) -> unit)(T::B(false, false));
-    let _ : unit = (test : (T) -> unit)(T::A);
+fn main() -> () {
+    let _ : () = (test : (T) -> ())(T::B(true, true));
+    let _ : () = (test : (T) -> ())(T::B(false, true));
+    let _ : () = (test : (T) -> ())(T::B(false, false));
+    let _ : () = (test : (T) -> ())(T::A);
 }

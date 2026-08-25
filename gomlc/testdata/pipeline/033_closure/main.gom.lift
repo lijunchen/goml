@@ -1,4 +1,4 @@
-fn test() -> unit {
+fn test() -> () {
   let y/0 = 3 in
   let z/0 = 5 in
   let f/0 =
@@ -13,7 +13,7 @@ fn call_int_id(f/0: (i32) -> i32, v/0: i32) -> i32 {
   f/0(v/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let base/0 = 5 in
   let add_base/0 =
     pack_closure[inherent#closure_env_add_base_1#closure_env_add_base_1#apply](
@@ -42,7 +42,7 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -109,7 +109,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -135,7 +135,7 @@ fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
   env0: closure_env_printer_2,
   prefix/0: string,
   value/0: i32
-) -> unit {
+) -> () {
   let message/0 = (prefix/0 + inherent#i32#i32#to_string(value/0)) in
   println__T_string(message/0)
 }
@@ -149,7 +149,7 @@ fn inherent#closure_env_no_capture_3#closure_env_no_capture_3#apply(
 
 fn inherent#closure_env_play_list_and_point_4#closure_env_play_list_and_point_4#apply(
   env0: closure_env_play_list_and_point_4
-) -> unit {
+) -> () {
   let list123/0 = closure_env_play_list_and_point_4.list123_0(env0) in
   let point/0 = closure_env_play_list_and_point_4.point_1(env0) in
   match list123/0 {

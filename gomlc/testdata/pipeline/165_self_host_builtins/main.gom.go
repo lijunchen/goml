@@ -371,21 +371,21 @@ type _goml_m_Result____string____std_p_io_p_Error_Err struct {
 
 func (_ _goml_m_Result____string____std_p_io_p_Error_Err) is_goml_m_Result____string____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error interface {
-    is_goml_m_Result____unit____std_p_io_p_Error()
+type _goml_m_Result_____o__q_____std_p_io_p_Error interface {
+    is_goml_m_Result_____o__q_____std_p_io_p_Error()
 }
 
-type _goml_m_Result____unit____std_p_io_p_Error_Ok struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Ok struct {
     _0 struct{}
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Ok) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Ok) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error_Err struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
     _0 _goml_m_std_p_io_p_Error
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Err) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _tag int32
@@ -393,7 +393,7 @@ type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _v1_0 string
 }
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string
@@ -431,21 +431,21 @@ type _goml_m_Result____string____std_p_fs_p_Error_Err struct {
 
 func (_ _goml_m_Result____string____std_p_fs_p_Error_Err) is_goml_m_Result____string____std_p_fs_p_Error() {}
 
-type _goml_m_Result____unit____std_p_fs_p_Error interface {
-    is_goml_m_Result____unit____std_p_fs_p_Error()
+type _goml_m_Result_____o__q_____std_p_fs_p_Error interface {
+    is_goml_m_Result_____o__q_____std_p_fs_p_Error()
 }
 
-type _goml_m_Result____unit____std_p_fs_p_Error_Ok struct {
+type _goml_m_Result_____o__q_____std_p_fs_p_Error_Ok struct {
     _0 struct{}
 }
 
-func (_ _goml_m_Result____unit____std_p_fs_p_Error_Ok) is_goml_m_Result____unit____std_p_fs_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_fs_p_Error_Ok) is_goml_m_Result_____o__q_____std_p_fs_p_Error() {}
 
-type _goml_m_Result____unit____std_p_fs_p_Error_Err struct {
+type _goml_m_Result_____o__q_____std_p_fs_p_Error_Err struct {
     _0 _goml_m_std_p_fs_p_Error
 }
 
-func (_ _goml_m_Result____unit____std_p_fs_p_Error_Err) is_goml_m_Result____unit____std_p_fs_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_fs_p_Error_Err) is_goml_m_Result_____o__q_____std_p_fs_p_Error() {}
 
 type _goml_m_Result____std_p_fs_p_Metadata____std_p_fs_p_Error interface {
     is_goml_m_Result____std_p_fs_p_Metadata____std_p_fs_p_Error()
@@ -573,7 +573,7 @@ func _goml_m_std_p_fs_p_read__bytes(path__0 string) _goml_m_Result____std_p_byte
     }
 }
 
-func _goml_m_std_p_fs_p_write__bytes(path__0 string, data__0 _goml_m_std_p_bytes_p_Bytes) Result__unit__string {
+func _goml_m_std_p_fs_p_write__bytes(path__0 string, data__0 _goml_m_std_p_bytes_p_Bytes) _goml_m_Result_____o__q_____string {
     var t0 *_goml_vec_uint8
     var inline1 *_goml_vec_uint8 = data__0.values
     t0 = inline1
@@ -583,13 +583,13 @@ func _goml_m_std_p_fs_p_write__bytes(path__0 string, data__0 _goml_m_std_p_bytes
     var x0 bool = mtmp0._0
     var x1 string = mtmp0._1
     if x0 {
-        var t1 Result__unit__string = Result__unit__string{
+        var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
             _v0_0: struct{}{},
         }
         return t1
     } else {
-        var t2 Result__unit__string = Result__unit__string{
+        var t2 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 1,
             _v1_0: x1,
         }
@@ -597,20 +597,20 @@ func _goml_m_std_p_fs_p_write__bytes(path__0 string, data__0 _goml_m_std_p_bytes
     }
 }
 
-func _goml_m_std_p_fs_p_create__dir__all(path__0 string) Result__unit__string {
+func _goml_m_std_p_fs_p_create__dir__all(path__0 string) _goml_m_Result_____o__q_____string {
     var mtmp0 Tuple2_4bool_6string
     var inline0 Tuple2_4bool_6string = _goml_runtime_std_fs_create_dir_all(path__0)
     mtmp0 = inline0
     var x0 bool = mtmp0._0
     var x1 string = mtmp0._1
     if x0 {
-        var t0 Result__unit__string = Result__unit__string{
+        var t0 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
             _v0_0: struct{}{},
         }
         return t0
     } else {
-        var t1 Result__unit__string = Result__unit__string{
+        var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 1,
             _v1_0: x1,
         }
@@ -626,7 +626,7 @@ func main0() struct{} {
     var inline24 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline23)
     var inline25 string = inline24 + "\n"
     _goml_m_std_p_internal_p_host_p_eprint(inline25)
-    var t1 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
+    var t1 _goml_m_Result_____o__q_____string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
     var t2 string
     switch t1._tag {
     case 0:
@@ -640,11 +640,11 @@ func main0() struct{} {
     }
     var inline19 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t2)
     _goml_m_std_p_internal_p_host_p_println(inline19)
-    var t3 Result__unit__string
+    var t3 _goml_m_Result_____o__q_____string
     var inline15 string = "goml-self-host/nested/output.txt"
     var inline16 string = "boot"
     var inline17 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(inline16)
-    var inline18 Result__unit__string = _goml_m_std_p_fs_p_write__bytes(inline15, inline17)
+    var inline18 _goml_m_Result_____o__q_____string = _goml_m_std_p_fs_p_write__bytes(inline15, inline17)
     t3 = inline18
     var t4 string
     switch t3._tag {

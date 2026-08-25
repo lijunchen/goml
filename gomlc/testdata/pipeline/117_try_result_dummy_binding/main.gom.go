@@ -30,7 +30,7 @@ type ParsedFloat struct {
 
 type Ordering int32
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string
@@ -43,15 +43,15 @@ type Result__string__string struct {
 }
 
 func configure_and_format(config_ok__0 bool, read_ok__0 bool) Result__string__string {
-    var mtmp0 Result__unit__string
+    var mtmp0 _goml_m_Result_____o__q_____string
     if config_ok__0 {
-        var inline3 Result__unit__string = Result__unit__string{
+        var inline3 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
             _v0_0: struct{}{},
         }
         mtmp0 = inline3
     } else {
-        var inline4 Result__unit__string = Result__unit__string{
+        var inline4 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 1,
             _v1_0: "config failed",
         }

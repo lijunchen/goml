@@ -3,7 +3,7 @@ file main.gom
   static VALUE: OnceCell[isize] = OnceCell::new();
 
   #[allow(unstructured_go)]
-  fn main() -> unit {
+  fn main() -> () {
       let local/1/0 = Channel::new(2);
       go || results/0.send(def/1/0.get_or_init(|| 41));
       go || results/0.send(def/1/0.get_or_init(|| 42));

@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
     let native/0: isize = 7;
     let small/1: i8 = 8;
     let unsigned/2: u8 = 9;
@@ -8,7 +8,7 @@ fn main() -> unit {
         (uint8_to_string : (u8) -> string)((unsigned/2 : u8)) +
         (string_byte_slice : (string, isize, isize) -> string)("abcd", 1, 3);
     let value/4: Ref[i32] = (@intrinsic(ref.new) : (i32) -> Ref[i32])(1);
-    (@intrinsic(ref.set) : (Ref[i32], i32) -> unit)((value/4 : Ref[i32]), 2);
+    (@intrinsic(ref.set) : (Ref[i32], i32) -> ())((value/4 : Ref[i32]), 2);
     let same/5: bool =
       (@intrinsic(ref.ptr_eq) : (Ref[i32], Ref[i32]) -> bool)(
         (value/4 : Ref[i32]),
@@ -16,12 +16,12 @@ fn main() -> unit {
       );
     let _ : u64 = (@intrinsic(ref.ptr_hash) : (Ref[i32]) -> u64)((value/4 : Ref[i32]));
     let values/6: Vec[i32] = (@intrinsic(vec.new) : () -> Vec[i32])();
-    (@intrinsic(vec.push) : (Vec[i32], i32) -> unit)(
+    (@intrinsic(vec.push) : (Vec[i32], i32) -> ())(
       (values/6 : Vec[i32]),
       (@intrinsic(ref.get) : (Ref[i32]) -> i32)((value/4 : Ref[i32]))
     );
-    (@intrinsic(vec.push) : (Vec[i32], i32) -> unit)((values/6 : Vec[i32]), 3);
-    (@intrinsic(vec.set) : (Vec[i32], isize, i32) -> unit)((values/6 : Vec[i32]), 1, 4);
+    (@intrinsic(vec.push) : (Vec[i32], i32) -> ())((values/6 : Vec[i32]), 3);
+    (@intrinsic(vec.set) : (Vec[i32], isize, i32) -> ())((values/6 : Vec[i32]), 1, 4);
     let values_slice/7: Slice[i32] =
       (@intrinsic(slice.new) : (Vec[i32], isize, isize) -> Slice[i32])(
         (values/6 : Vec[i32]),
@@ -35,13 +35,13 @@ fn main() -> unit {
         (@intrinsic(slice.len) : (Slice[i32]) -> isize)((values_slice/7 : Slice[i32]))
       );
     let channel/9: Channel[i32] = (@intrinsic(channel.new) : (isize) -> Channel[i32])(1);
-    (@intrinsic(channel.send) : (Channel[i32], i32) -> unit)(
+    (@intrinsic(channel.send) : (Channel[i32], i32) -> ())(
       (channel/9 : Channel[i32]),
       (@intrinsic(slice.get) : (Slice[i32], isize) -> i32)((nested/8 : Slice[i32]), 1)
     );
     let received/10: (i32, bool) =
       (@intrinsic(channel.recv) : (Channel[i32]) -> (i32, bool))((channel/9 : Channel[i32]));
-    (@intrinsic(channel.close) : (Channel[i32]) -> unit)((channel/9 : Channel[i32]));
+    (@intrinsic(channel.close) : (Channel[i32]) -> ())((channel/9 : Channel[i32]));
     let total/13: isize =
       (std::iter::fold : (FnIterator[isize], isize, (isize, isize) -> isize) -> isize)(
         (range : (isize, isize) -> FnIterator[isize])(0, 3),
@@ -51,7 +51,7 @@ fn main() -> unit {
               (sum/11 : isize) + (item/12 : isize)
           }
       );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (text/3 : string) + (ToString::to_string : (bool) -> string)((same/5 : bool)) +
         (i32::to_string : (i32) -> string)((received/10 : (i32, bool)).0) +
         (ToString::to_string : (bool) -> string)((received/10 : (i32, bool)).1) +

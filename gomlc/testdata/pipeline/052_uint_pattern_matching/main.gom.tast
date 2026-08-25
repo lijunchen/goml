@@ -42,7 +42,7 @@ fn report(label/5: string, value/6: bool) -> string {
     (label/5 : string) + (ToString::to_string : (bool) -> string)((value/6 : bool))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let counter/7: Counter = Counter { start: 4000000000, end: 900000000 };
     let alt_counter/8: Counter = Counter { start: 12, end: 600000000 };
     let message/9: string =
@@ -62,5 +62,5 @@ fn main() -> unit {
           ",struct_second=",
           (match_struct : (Counter) -> bool)((alt_counter/8 : Counter))
         );
-    let _ : unit = (println : (string) -> unit)((message/9 : string));
+    let _ : () = (println : (string) -> ())((message/9 : string));
 }

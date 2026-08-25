@@ -86,7 +86,7 @@ fn show(opt/0: Option__i32) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = println__T_string(show(nested(true, Mode::Take, true))) in
   let _wild1 = println__T_string(show(nested(true, Mode::Skip, false))) in
   let _wild2 = println__T_string(show(nested(false, Mode::Take, false))) in
@@ -96,7 +96,7 @@ fn inherent#i32#i32#to_string(self/0: i32) -> string {
   __goml_builtin_int32_to_string(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -179,7 +179,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

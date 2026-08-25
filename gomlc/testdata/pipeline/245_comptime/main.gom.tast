@@ -78,27 +78,27 @@ fn guarded_match() -> isize {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values/13: [isize; 3] = [6, 10, 4];
     let pair/14: Pair = Pair { left: 7, right: 8 };
     let choice/15: Choice = Choice::Value(9);
-    (println : (isize) -> unit)((ANSWER : isize));
-    (println : (isize) -> unit)((values/13 : [isize; 3])[0]);
-    (println : (isize) -> unit)((values/13 : [isize; 3])[1]);
-    (println : (isize) -> unit)((values/13 : [isize; 3])[2]);
-    (println : (isize) -> unit)((pair/14 : Pair).left + (pair/14 : Pair).right);
+    (println : (isize) -> ())((ANSWER : isize));
+    (println : (isize) -> ())((values/13 : [isize; 3])[0]);
+    (println : (isize) -> ())((values/13 : [isize; 3])[1]);
+    (println : (isize) -> ())((values/13 : [isize; 3])[2]);
+    (println : (isize) -> ())((pair/14 : Pair).left + (pair/14 : Pair).right);
     match (choice/15 : Choice) {
-        Choice::Value(value/16: isize) => (println : (isize) -> unit)((value/16 : isize)),
-        Choice::Empty => (println : (isize) -> unit)(0),
+        Choice::Value(value/16: isize) => (println : (isize) -> ())((value/16 : isize)),
+        Choice::Empty => (println : (isize) -> ())(0),
     };
-    (println : (bool) -> unit)((factorial : (isize) -> isize)(5) == (ANSWER : isize));
+    (println : (bool) -> ())((factorial : (isize) -> isize)(5) == (ANSWER : isize));
     let shadowed/17: isize = 12;
-    (println : (isize) -> unit)((shadowed/17 : isize));
-    (println : (bool) -> unit)((shadow : (isize) -> isize)(3) == (shadowed/17 : isize));
+    (println : (isize) -> ())((shadowed/17 : isize));
+    (println : (bool) -> ())((shadow : (isize) -> isize)(3) == (shadowed/17 : isize));
     let widened/18: u64 = 18446744073709551615;
-    (println : (bool) -> unit)((widened/18 : u64) == (widen_negative : (i8) -> u64)(-1));
+    (println : (bool) -> ())((widened/18 : u64) == (widen_negative : (i8) -> u64)(-1));
     let folded_guard/19: isize = 1;
-    (println : (isize) -> unit)((guarded_match : () -> isize)());
-    (println : (isize) -> unit)((folded_guard/19 : isize));
-    (println : (isize) -> unit)((factorial : (isize) -> isize)(4))
+    (println : (isize) -> ())((guarded_match : () -> isize)());
+    (println : (isize) -> ())((folded_guard/19 : isize));
+    (println : (isize) -> ())((factorial : (isize) -> isize)(4))
 }

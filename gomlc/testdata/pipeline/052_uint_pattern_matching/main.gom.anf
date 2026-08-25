@@ -86,7 +86,7 @@ fn report(label/0: string, value/0: bool) -> string {
   jump inline_cont0(inline0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let t0 = is_flag0(200) in
   let t1 = report("u8_hit=", t0) in
   let t2 = is_flag0(15) in
@@ -101,20 +101,20 @@ fn main() -> unit {
   let t11 = is_flag2(1234567890) in
   let t12 = report(",u32_hit=", t11) in
   let t13 = (t10 + t12) in
-  join inline_cont0(t14: bool) -> unit {
-    join inline_cont1(t15: string) -> unit {
+  join inline_cont0(t14: bool) -> () {
+    join inline_cont1(t15: string) -> () {
       let t16 = (t13 + t15) in
-      join inline_cont2(t17: bool) -> unit {
-        join inline_cont3(t18: string) -> unit {
+      join inline_cont2(t17: bool) -> () {
+        join inline_cont3(t18: string) -> () {
           let t19 = (t16 + t18) in
-          join inline_cont4(t20: bool) -> unit {
-            join inline_cont5(t21: string) -> unit {
+          join inline_cont4(t20: bool) -> () {
+            join inline_cont5(t21: string) -> () {
               let t22 = (t19 + t21) in
-              join inline_cont6(t23: bool) -> unit {
-                join inline_cont7(t24: string) -> unit {
+              join inline_cont6(t23: bool) -> () {
+                join inline_cont7(t24: string) -> () {
                   let t25 = (t22 + t24) in
-                  join inline_cont8(t26: bool) -> unit {
-                    join inline_cont9(t27: string) -> unit {
+                  join inline_cont8(t26: bool) -> () {
+                    join inline_cont9(t27: string) -> () {
                       let message/0 = (t25 + t27) in
                       let inline0 = trait_impl#ToString#string#to_string(message/0) in
                       let inline1 = @runtime(core.string_println)(inline0) in
@@ -232,8 +232,8 @@ fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
   t0
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

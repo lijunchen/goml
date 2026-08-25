@@ -12,11 +12,11 @@ fn choose(flag/0: bool) -> i32 {
     (value/1 : i32) + 1
 }
 
-fn continue_branch() -> unit {
+fn continue_branch() -> () {
     let count/2: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while (Ref[isize]::get : (Ref[isize]) -> isize)((count/2 : Ref[isize])) < 2 {
         {
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (count/2 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((count/2 : Ref[isize])) + 1
             );
@@ -30,12 +30,12 @@ fn continue_branch() -> unit {
                       7
                   }
               };
-            (println : (isize) -> unit)((value/3 : isize))
+            (println : (isize) -> ())((value/3 : isize))
         }
     }
 }
 
-fn break_branch(stop/4: bool) -> unit {
+fn break_branch(stop/4: bool) -> () {
     while true {
         {
             let value/5: isize =
@@ -48,16 +48,16 @@ fn break_branch(stop/4: bool) -> unit {
                       9
                   }
               };
-            (println : (isize) -> unit)((value/5 : isize));
+            (println : (isize) -> ())((value/5 : isize));
             break
         }
     }
 }
 
-fn main() -> unit {
-    (println : (i32) -> unit)((choose : (bool) -> i32)(false));
-    (println : (i32) -> unit)((choose : (bool) -> i32)(true));
-    (continue_branch : () -> unit)();
-    (break_branch : (bool) -> unit)(false);
-    (break_branch : (bool) -> unit)(true)
+fn main() -> () {
+    (println : (i32) -> ())((choose : (bool) -> i32)(false));
+    (println : (i32) -> ())((choose : (bool) -> i32)(true));
+    (continue_branch : () -> ())();
+    (break_branch : (bool) -> ())(false);
+    (break_branch : (bool) -> ())(true)
 }

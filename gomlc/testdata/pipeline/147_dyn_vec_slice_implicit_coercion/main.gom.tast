@@ -8,15 +8,15 @@ fn render(x/1: dyn Display) -> string {
     (dyn Display::show : (dyn Display) -> string)((x/1 : dyn Display))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let v/2: Vec[dyn Display] = (Vec[dyn Display]::new : () -> Vec[dyn Display])();
     let first/3: i32 = 10;
     let second/4: i32 = 20;
-    (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> unit)(
+    (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> ())(
       (v/2 : Vec[dyn Display]),
       to_dyn[Display]{i32}((first/3 : i32))
     );
-    (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> unit)(
+    (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> ())(
       (v/2 : Vec[dyn Display]),
       to_dyn[Display]{i32}((second/4 : i32))
     );
@@ -26,12 +26,12 @@ fn main() -> unit {
         0,
         2
       );
-    (println : (string) -> unit)((render : (dyn Display) -> string)((s/5 : Slice[dyn Display])[0]));
+    (println : (string) -> ())((render : (dyn Display) -> string)((s/5 : Slice[dyn Display])[0]));
     let t/6: Slice[dyn Display] =
       (Slice[dyn Display]::sub : (Slice[dyn Display], isize, isize) -> Slice[dyn Display])(
         (s/5 : Slice[dyn Display]),
         1,
         2
       );
-    (println : (string) -> unit)((render : (dyn Display) -> string)((t/6 : Slice[dyn Display])[0]));
+    (println : (string) -> ())((render : (dyn Display) -> string)((t/6 : Slice[dyn Display])[0]));
 }

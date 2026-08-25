@@ -8,13 +8,13 @@ fn render_generic[T](renderer/2: T) -> string where T: RenderValue {
     (RenderValue::render : (T, isize) -> string)((renderer/2 : T), 11)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let direct/3: string =
       (RenderValue::render : (Prefix, string) -> string)(Prefix { value: "direct:" }, "ok");
-    (println : (string) -> unit)((direct/3 : string));
+    (println : (string) -> ())((direct/3 : string));
     let generic/4: string = (render_generic : (Prefix) -> string)(Prefix { value: "generic:" });
-    (println : (string) -> unit)((generic/4 : string));
+    (println : (string) -> ())((generic/4 : string));
     let ufcs/5: string =
       (RenderValue::render : (Prefix, isize) -> string)(Prefix { value: "ufcs:" }, 12);
-    (println : (string) -> unit)((ufcs/5 : string));
+    (println : (string) -> ())((ufcs/5 : string));
 }

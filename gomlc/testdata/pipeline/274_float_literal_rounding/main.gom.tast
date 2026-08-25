@@ -9,27 +9,27 @@ fn classify(value/1: f32) -> isize {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let below/2: f32 = 1;
     let midpoint/3: f32 = 1;
     let above/4: f32 = 1.0000001;
-    (println : (u32) -> unit)((f32::to_bits : (f32) -> u32)((below/2 : f32)));
-    (println : (u32) -> unit)((f32::to_bits : (f32) -> u32)((midpoint/3 : f32)));
-    (println : (u32) -> unit)((f32::to_bits : (f32) -> u32)((above/4 : f32)));
+    (println : (u32) -> ())((f32::to_bits : (f32) -> u32)((below/2 : f32)));
+    (println : (u32) -> ())((f32::to_bits : (f32) -> u32)((midpoint/3 : f32)));
+    (println : (u32) -> ())((f32::to_bits : (f32) -> u32)((above/4 : f32)));
     let generic/5: f32 = (identity : (f32) -> f32)(1.0000001);
-    (println : (u32) -> unit)((f32::to_bits : (f32) -> u32)((generic/5 : f32)));
-    (println : (string) -> unit)(
+    (println : (u32) -> ())((f32::to_bits : (f32) -> u32)((generic/5 : f32)));
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (classify : (f32) -> isize)((float32_from_bits : (u32) -> f32)(1065353217))
       )
     );
     let tiny32/6: f32 = 0;
     let tiny64/7: f64 = 0;
-    (println : (u32) -> unit)((f32::to_bits : (f32) -> u32)((tiny32/6 : f32)));
-    (println : (u64) -> unit)((f64::to_bits : (f64) -> u64)((tiny64/7 : f64)));
+    (println : (u32) -> ())((f32::to_bits : (f32) -> u32)((tiny32/6 : f32)));
+    (println : (u64) -> ())((f64::to_bits : (f64) -> u64)((tiny64/7 : f64)));
     let maximum32/8: f32 = 340282350000000000000000000000000000000;
     let maximum64/9: f64 =
       179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
-    (println : (u32) -> unit)((f32::to_bits : (f32) -> u32)((maximum32/8 : f32)));
-    (println : (u64) -> unit)((f64::to_bits : (f64) -> u64)((maximum64/9 : f64)))
+    (println : (u32) -> ())((f32::to_bits : (f32) -> u32)((maximum32/8 : f32)));
+    (println : (u64) -> ())((f64::to_bits : (f64) -> u64)((maximum64/9 : f64)))
 }

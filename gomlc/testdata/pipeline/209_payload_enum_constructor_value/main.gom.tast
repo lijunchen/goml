@@ -12,7 +12,7 @@ fn sum(values/3: List[i32]) -> i32 {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let cons/6: (i32, List[i32]) -> List[i32] =
       |ctor_arg_0: i32, ctor_arg_1: List[i32]| =>
         List::Cons((ctor_arg_0 : i32), (ctor_arg_1 : List[i32]));
@@ -26,7 +26,7 @@ fn main() -> unit {
           List::Nil
         )
       );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)((sum : (List[i32]) -> i32)((values/7 : List[i32])))
     )
 }

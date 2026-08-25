@@ -21,14 +21,14 @@ fn sum(values/0: List__i32) -> i32 {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let cons/0 =
     pack_closure[inherent#closure_env_cons_0#closure_env_cons_0#apply](closure_env_cons_0 {}) in
   let values/0 = prepend_with(cons/0, 1, prepend_with(cons/0, 2, List__i32::Nil)) in
   println__T_string(inherent#i32#i32#to_string(sum(values/0)))
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -95,7 +95,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

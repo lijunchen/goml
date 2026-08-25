@@ -1,23 +1,23 @@
-fn show_scalar(value/0: u32) -> unit {
+fn show_scalar(value/0: u32) -> () {
     match (char_from_u32 : (u32) -> Option[char])((value/0 : u32)) {
         Option::Some(result/1: char) =>
-          (println : (u32) -> unit)((char::to_u32 : (char) -> u32)((result/1 : char))),
-        Option::None => (println : (string) -> unit)("none"),
+          (println : (u32) -> ())((char::to_u32 : (char) -> u32)((result/1 : char))),
+        Option::None => (println : (string) -> ())("none"),
     }
 }
 
-fn main() -> unit {
-    (show_scalar : (u32) -> unit)(0);
-    (show_scalar : (u32) -> unit)(65);
-    (show_scalar : (u32) -> unit)(55295);
-    (show_scalar : (u32) -> unit)(55296);
-    (show_scalar : (u32) -> unit)(57343);
-    (show_scalar : (u32) -> unit)(57344);
-    (show_scalar : (u32) -> unit)(1114111);
-    (show_scalar : (u32) -> unit)(1114112);
+fn main() -> () {
+    (show_scalar : (u32) -> ())(0);
+    (show_scalar : (u32) -> ())(65);
+    (show_scalar : (u32) -> ())(55295);
+    (show_scalar : (u32) -> ())(55296);
+    (show_scalar : (u32) -> ())(57343);
+    (show_scalar : (u32) -> ())(57344);
+    (show_scalar : (u32) -> ())(1114111);
+    (show_scalar : (u32) -> ())(1114112);
     match (char_from_u32 : (u32) -> Option[char])(128512) {
         Option::Some(result/2: char) =>
-          (println : (string) -> unit)((char::to_string : (char) -> string)((result/2 : char))),
-        Option::None => (println : (string) -> unit)("none"),
+          (println : (string) -> ())((char::to_string : (char) -> string)((result/2 : char))),
+        Option::None => (println : (string) -> ())("none"),
     }
 }

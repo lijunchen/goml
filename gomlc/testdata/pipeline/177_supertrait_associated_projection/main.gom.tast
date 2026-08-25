@@ -5,13 +5,13 @@ impl Parent for Count {
 }
 
 impl Child for Count {
-  fn child(self/1: Count) -> unit {}
+  fn child(self/1: Count) -> () {}
 }
 
 fn get_from_child[C](value/2: C) -> C::Item where C: Child, C: Parent {
     (Parent::get : (C) -> C::Item)((value/2 : C))
 }
 
-fn main() -> unit {
-    (println : (i32) -> unit)((get_from_child : (Count) -> i32)(Count { value: 42 }));
+fn main() -> () {
+    (println : (i32) -> ())((get_from_child : (Count) -> i32)(Count { value: 42 }));
 }

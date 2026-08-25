@@ -15,23 +15,20 @@ fn show_dir(res/3: Result[Vec[string], string]) -> string {
     }
 }
 
-fn main() -> unit {
-    let _ : Result[unit, string] =
-      (std::fs::write_file : (string, string) -> Result[unit, string])(
-        "goml-std-test.txt",
-        "std-ok"
-      );
-    (std::io::println : (string) -> unit)(
+fn main() -> () {
+    let _ : Result[(), string] =
+      (std::fs::write_file : (string, string) -> Result[(), string])("goml-std-test.txt", "std-ok");
+    (std::io::println : (string) -> ())(
       (show_read : (Result[string, string]) -> string)(
         (std::fs::read_file : (string) -> Result[string, string])("goml-std-test.txt")
       )
     );
-    (std::io::println : (string) -> unit)(
+    (std::io::println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (std::fs::exists : (string) -> bool)("goml-std-test.txt")
       )
     );
-    (std::io::println : (string) -> unit)(
+    (std::io::println : (string) -> ())(
       (show_dir : (Result[Vec[string], string]) -> string)(
         (std::fs::read_dir : (string) -> Result[Vec[string], string])(".")
       )

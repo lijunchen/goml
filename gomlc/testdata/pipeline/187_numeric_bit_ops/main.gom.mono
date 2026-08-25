@@ -1,36 +1,36 @@
-fn show_u8(value/0: u8) -> unit {
+fn show_u8(value/0: u8) -> () {
   println__T_u0(value/0)
 }
 
-fn show_u16(value/0: u16) -> unit {
+fn show_u16(value/0: u16) -> () {
   println__T_u0(value/0)
 }
 
-fn show_u32(value/0: u32) -> unit {
+fn show_u32(value/0: u32) -> () {
   println__T_u0(value/0)
 }
 
-fn show_u64(value/0: u64) -> unit {
+fn show_u64(value/0: u64) -> () {
   println__T_u0(value/0)
 }
 
-fn show_i8(value/0: i8) -> unit {
+fn show_i8(value/0: i8) -> () {
   println__T_i0(value/0)
 }
 
-fn show_i16(value/0: i16) -> unit {
+fn show_i16(value/0: i16) -> () {
   println__T_i0(value/0)
 }
 
-fn show_i32(value/0: i32) -> unit {
+fn show_i32(value/0: i32) -> () {
   println__T_i0(value/0)
 }
 
-fn show_i64(value/0: i64) -> unit {
+fn show_i64(value/0: i64) -> () {
   println__T_i0(value/0)
 }
 
-fn unsigned_ops() -> unit {
+fn unsigned_ops() -> () {
   let _wild0 = show_u0((13 % 5)) in
   let _wild1 = show_u0((12 & 10)) in
   let _wild2 = show_u0((12 | 3)) in
@@ -62,7 +62,7 @@ fn unsigned_ops() -> unit {
   show_u3((~0))
 }
 
-fn signed_ops() -> unit {
+fn signed_ops() -> () {
   let _wild0 = show_i0((-13 % 5)) in
   let _wild1 = show_i0((-8 >> 2)) in
   let _wild2 = show_i0((1 << 6)) in
@@ -82,7 +82,7 @@ fn signed_ops() -> unit {
   show_i3((~4294967295))
 }
 
-fn precedence() -> unit {
+fn precedence() -> () {
   let _wild0 = show_u0((1 | (2 ^ (3 & 1)))) in
   let _wild1 = show_u0((1 << (2 + 1))) in
   let _wild2 = println__T_string(trait_impl#ToString#bool#to_string(((1 | 2) == 3))) in
@@ -90,7 +90,7 @@ fn precedence() -> unit {
   show_u0(((~1) & 15))
 }
 
-fn casts() -> unit {
+fn casts() -> () {
   let five_eleven/0 = 511 in
   let two_fifty_six/0 = 256 in
   let negative_one_i16/0 = -1 in
@@ -142,7 +142,7 @@ fn contextual(value/0: u8) -> u8 {
   (((~value/0) & 15) | ((1 << 4) % 31))
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = unsigned_ops() in
   let _wild1 = signed_ops() in
   let _wild2 = precedence() in
@@ -150,39 +150,39 @@ fn main() -> unit {
   show_u0(contextual(10))
 }
 
-fn println__T_u8(value/0: u8) -> unit {
+fn println__T_u8(value/0: u8) -> () {
   @runtime(core.string_println)(trait_impl#ToString#u8#to_string(value/0))
 }
 
-fn println__T_u16(value/0: u16) -> unit {
+fn println__T_u16(value/0: u16) -> () {
   @runtime(core.string_println)(trait_impl#ToString#u16#to_string(value/0))
 }
 
-fn println__T_u32(value/0: u32) -> unit {
+fn println__T_u32(value/0: u32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#u32#to_string(value/0))
 }
 
-fn println__T_u64(value/0: u64) -> unit {
+fn println__T_u64(value/0: u64) -> () {
   @runtime(core.string_println)(trait_impl#ToString#u64#to_string(value/0))
 }
 
-fn println__T_i8(value/0: i8) -> unit {
+fn println__T_i8(value/0: i8) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i8#to_string(value/0))
 }
 
-fn println__T_i16(value/0: i16) -> unit {
+fn println__T_i16(value/0: i16) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i16#to_string(value/0))
 }
 
-fn println__T_i32(value/0: i32) -> unit {
+fn println__T_i32(value/0: i32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
-fn println__T_i64(value/0: i64) -> unit {
+fn println__T_i64(value/0: i64) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i64#to_string(value/0))
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -385,7 +385,7 @@ fn signed_decimal_string(value/0: i64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

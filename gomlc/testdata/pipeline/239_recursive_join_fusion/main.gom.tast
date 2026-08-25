@@ -13,7 +13,7 @@ fn find(wanted/0: isize) -> Option[isize] {
                 }
             } else {
                 {
-                    (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+                    (Ref[isize]::set : (Ref[isize], isize) -> ())(
                       (current/1 : Ref[isize]),
                       (value/2 : isize) + 1
                     );
@@ -31,7 +31,7 @@ fn any(wanted/3: isize) -> bool {
     }
 }
 
-fn main() -> unit {
-    (println : (bool) -> unit)((any : (isize) -> bool)(3));
-    (println : (bool) -> unit)((any : (isize) -> bool)(8));
+fn main() -> () {
+    (println : (bool) -> ())((any : (isize) -> bool)(3));
+    (println : (bool) -> ())((any : (isize) -> bool)(8));
 }

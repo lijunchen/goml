@@ -1,4 +1,4 @@
-fn loop_return_unit(flag/0: bool) -> unit {
+fn loop_return_unit(flag/0: bool) -> () {
   while if flag/0 {
       return
   } else {
@@ -18,17 +18,17 @@ fn loop_return() -> i32 {
   0
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = loop_return_unit(true) in
   let _wild1 = println__T_i0(loop_return()) in
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_i32(value/0: i32) -> unit {
+fn println__T_i32(value/0: i32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
@@ -95,7 +95,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

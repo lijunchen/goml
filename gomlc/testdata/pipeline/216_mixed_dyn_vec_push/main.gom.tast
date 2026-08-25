@@ -10,21 +10,21 @@ impl Show for Wrap {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values/2: Vec[dyn Show] = (Vec[dyn Show]::new : () -> Vec[dyn Show])();
     let value/3: i32 = 10;
-    (Vec[dyn Show]::push : (Vec[dyn Show], dyn Show) -> unit)(
+    (Vec[dyn Show]::push : (Vec[dyn Show], dyn Show) -> ())(
       (values/2 : Vec[dyn Show]),
       to_dyn[Show]{i32}((value/3 : i32))
     );
-    (Vec[dyn Show]::push : (Vec[dyn Show], dyn Show) -> unit)(
+    (Vec[dyn Show]::push : (Vec[dyn Show], dyn Show) -> ())(
       (values/2 : Vec[dyn Show]),
       to_dyn[Show]{Wrap}(Wrap { value: "ok" })
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (dyn Show::show : (dyn Show) -> string)((values/2 : Vec[dyn Show])[0])
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (dyn Show::show : (dyn Show) -> string)((values/2 : Vec[dyn Show])[1])
     )
 }

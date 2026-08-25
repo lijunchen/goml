@@ -8,7 +8,7 @@ impl Eq for Key {}
 
 impl Hash for Key {
   fn hash(self/2: Key) -> u64 {
-      (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+      (Ref[isize]::set : (Ref[isize], isize) -> ())(
         (self/2 : Key).hashes,
         (Ref[isize]::get : (Ref[isize]) -> isize)((self/2 : Key).hashes) + 1
       );
@@ -20,11 +20,11 @@ fn key(value/3: isize, hashes/4: Ref[isize]) -> Key {
     Key { value: (value/3 : isize), hashes: (hashes/4 : Ref[isize]) }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let hashes/5: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     let created/6: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     let map/7: HashMap[Key, isize] = (HashMap[Key, isize]::new : () -> HashMap[Key, isize])();
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (HashMapEntry[Key, isize]::or_insert_with : (HashMapEntry[Key, isize], () -> isize) -> isize)(
         (HashMap[Key, isize]::entry : (HashMap[Key, isize], Key) -> HashMapEntry[Key, isize])(
           (map/7 : HashMap[Key, isize]),
@@ -32,7 +32,7 @@ fn main() -> unit {
         ),
         || =>
           {
-              (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (Ref[isize]::set : (Ref[isize], isize) -> ())(
                 (created/6 : Ref[isize]),
                 (Ref[isize]::get : (Ref[isize]) -> isize)((created/6 : Ref[isize])) + 1
               );
@@ -40,9 +40,9 @@ fn main() -> unit {
           }
       )
     );
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
-    (Ref[isize]::set : (Ref[isize], isize) -> unit)((hashes/5 : Ref[isize]), 0);
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
+    (Ref[isize]::set : (Ref[isize], isize) -> ())((hashes/5 : Ref[isize]), 0);
+    (println : (isize) -> ())(
       (HashMapEntry[Key, isize]::or_insert_with : (HashMapEntry[Key, isize], () -> isize) -> isize)(
         (HashMap[Key, isize]::entry : (HashMap[Key, isize], Key) -> HashMapEntry[Key, isize])(
           (map/7 : HashMap[Key, isize]),
@@ -50,7 +50,7 @@ fn main() -> unit {
         ),
         || =>
           {
-              (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+              (Ref[isize]::set : (Ref[isize], isize) -> ())(
                 (created/6 : Ref[isize]),
                 (Ref[isize]::get : (Ref[isize]) -> isize)((created/6 : Ref[isize])) + 1
               );
@@ -58,12 +58,10 @@ fn main() -> unit {
           }
       )
     );
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
-    (println : (isize) -> unit)(
-      (Ref[isize]::get : (Ref[isize]) -> isize)((created/6 : Ref[isize]))
-    );
-    (Ref[isize]::set : (Ref[isize], isize) -> unit)((hashes/5 : Ref[isize]), 0);
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((created/6 : Ref[isize])));
+    (Ref[isize]::set : (Ref[isize], isize) -> ())((hashes/5 : Ref[isize]), 0);
+    (println : (isize) -> ())(
       (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
         (HashMapEntry[Key, isize]::update : (HashMapEntry[Key, isize], (isize) -> isize) -> Option[
           isize
@@ -77,9 +75,9 @@ fn main() -> unit {
         -1
       )
     );
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
-    (Ref[isize]::set : (Ref[isize], isize) -> unit)((hashes/5 : Ref[isize]), 0);
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
+    (Ref[isize]::set : (Ref[isize], isize) -> ())((hashes/5 : Ref[isize]), 0);
+    (println : (isize) -> ())(
       (Option[(Key, isize)]::unwrap_or : (Option[(Key, isize)], (Key, isize)) -> (Key, isize))(
         (HashMapEntry[Key, isize]::remove_entry : (HashMapEntry[Key, isize]) -> Option[
           (Key, isize)
@@ -92,13 +90,13 @@ fn main() -> unit {
         ((key : (isize, Ref[isize]) -> Key)(0, (hashes/5 : Ref[isize])), -1)
       ).1
     );
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((hashes/5 : Ref[isize])));
+    (println : (isize) -> ())(
       (HashMap[Key, isize]::len : (HashMap[Key, isize]) -> isize)((map/7 : HashMap[Key, isize]))
     );
     let native/9: HashMap[string, isize] =
       (HashMap[string, isize]::new : () -> HashMap[string, isize])();
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (Option[isize]::is_none : (Option[isize]) -> bool)(
         (HashMap[string, isize]::insert : (HashMap[string, isize], string, isize) -> Option[isize])(
           (native/9 : HashMap[string, isize]),
@@ -107,7 +105,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
         (HashMapEntry[string, isize]::get : (HashMapEntry[string, isize]) -> Option[isize])(
           (HashMapEntry[string, isize]::and_modify : (
@@ -124,7 +122,7 @@ fn main() -> unit {
         0
       )
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
         (HashMap[string, isize]::remove_value : (HashMap[string, isize], string) -> Option[isize])(
           (native/9 : HashMap[string, isize]),

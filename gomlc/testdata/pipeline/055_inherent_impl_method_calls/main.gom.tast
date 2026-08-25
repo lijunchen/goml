@@ -10,7 +10,7 @@ impl Shape {
   }
 }
 
-fn announce(shape/6: Shape) -> unit {
+fn announce(shape/6: Shape) -> () {
     let base/7: string = (Shape::name : (Shape) -> string)((shape/6 : Shape));
     let with_suffix/8: string = (Shape::rename : (Shape, string) -> string)((shape/6 : Shape), "!");
     let combined/9: string =
@@ -19,10 +19,10 @@ fn announce(shape/6: Shape) -> unit {
         (base/7 : string),
         (with_suffix/8 : string)
       );
-    let _ : unit = (println : (string) -> unit)((combined/9 : string));
+    let _ : () = (println : (string) -> ())((combined/9 : string));
 }
 
-fn main() -> unit {
+fn main() -> () {
     let shape/10: Shape = Shape {};
-    (announce : (Shape) -> unit)((shape/10 : Shape));
+    (announce : (Shape) -> ())((shape/10 : Shape));
 }

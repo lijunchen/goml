@@ -1,25 +1,25 @@
-fn main() -> unit {
+fn main() -> () {
   let value/0 = "a你好z" in
   let t0 = inherent#string#string#starts_with(value/0, "a你") in
-  join inline_cont0(_wild0: unit) -> unit {
+  join inline_cont0(_wild0: ()) -> () {
     let t1 = inherent#string#string#starts_with(value/0, "你") in
-    join inline_cont1(_wild1: unit) -> unit {
+    join inline_cont1(_wild1: ()) -> () {
       let t2 = inherent#string#string#starts_with(value/0, "") in
-      join inline_cont2(_wild2: unit) -> unit {
+      join inline_cont2(_wild2: ()) -> () {
         let t3 = inherent#string#string#ends_with(value/0, "好z") in
-        join inline_cont3(_wild3: unit) -> unit {
+        join inline_cont3(_wild3: ()) -> () {
           let t4 = inherent#string#string#ends_with(value/0, "你好") in
-          join inline_cont4(_wild4: unit) -> unit {
-            join inline_cont5(t5: bool) -> unit {
-              join inline_cont6(_wild5: unit) -> unit {
+          join inline_cont4(_wild4: ()) -> () {
+            join inline_cont5(t5: bool) -> () {
+              join inline_cont6(_wild5: ()) -> () {
                 let t6 = inherent#string#string#contains(value/0, "你好") in
-                join inline_cont7(_wild6: unit) -> unit {
+                join inline_cont7(_wild6: ()) -> () {
                   let t7 = inherent#string#string#contains(value/0, "好z") in
-                  join inline_cont8(_wild7: unit) -> unit {
+                  join inline_cont8(_wild7: ()) -> () {
                     let t8 = inherent#string#string#contains(value/0, "你z") in
-                    join inline_cont9(_wild8: unit) -> unit {
+                    join inline_cont9(_wild8: ()) -> () {
                       let t9 = inherent#string#string#contains(value/0, "") in
-                      join inline_cont10(_wild9: unit) -> unit {
+                      join inline_cont10(_wild9: ()) -> () {
                         let t10 = inherent#string#string#contains(value/0, "a你好z!") in
                         let inline0 = trait_impl#ToString#bool#to_string(t10) in
                         let inline1 = @runtime(core.string_println)(inline0) in
@@ -87,8 +87,8 @@ fn main() -> unit {
   jump inline_cont0(())
 }
 
-fn println__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

@@ -1,4 +1,4 @@
-fn make_counter() -> (() -> i32, () -> unit) {
+fn make_counter() -> (() -> i32, () -> ()) {
   let cell/0 = inherent#Ref#Ref[T]#new__T_i0(0) in
   let next/0 =
     || {
@@ -18,7 +18,7 @@ fn make_counter() -> (() -> i32, () -> unit) {
   (next/0, reset/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let counter/0 = make_counter() in
   let mtmp0 = counter/0 in
   {
@@ -73,11 +73,11 @@ fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -164,7 +164,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

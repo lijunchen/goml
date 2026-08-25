@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
     let value/2: std::json::Value =
       match (std::json::parse : (string) -> Result[std::json::Value, string])(
         "{\"name\":\"goml\",\"version\":1,\"stable\":true}"
@@ -6,7 +6,7 @@ fn main() -> unit {
           Result::Ok(value/0: std::json::Value) => (value/0 : std::json::Value),
           Result::Err(error/1: string) =>
             {
-                (println : (string) -> unit)((error/1 : string));
+                (println : (string) -> ())((error/1 : string));
                 return
             },
       };
@@ -18,10 +18,10 @@ fn main() -> unit {
           match (std::json::as_string : (std::json::Value) -> Option[string])(
             (field/3 : std::json::Value)
           ) {
-              Option::Some(name/4: string) => (println : (string) -> unit)((name/4 : string)),
-              Option::None => (println : (string) -> unit)("invalid name"),
+              Option::Some(name/4: string) => (println : (string) -> ())((name/4 : string)),
+              Option::None => (println : (string) -> ())("invalid name"),
           },
-        Option::None => (println : (string) -> unit)("missing name"),
+        Option::None => (println : (string) -> ())("missing name"),
     };
     match (std::json::field : (std::json::Value, string) -> Option[std::json::Value])(
       (value/2 : std::json::Value),
@@ -31,10 +31,10 @@ fn main() -> unit {
           match (std::json::as_int : (std::json::Value) -> Option[isize])(
             (field/5 : std::json::Value)
           ) {
-              Option::Some(version/6: isize) => (println : (isize) -> unit)((version/6 : isize)),
-              Option::None => (println : (string) -> unit)("invalid version"),
+              Option::Some(version/6: isize) => (println : (isize) -> ())((version/6 : isize)),
+              Option::None => (println : (string) -> ())("invalid version"),
           },
-        Option::None => (println : (string) -> unit)("missing version"),
+        Option::None => (println : (string) -> ())("missing version"),
     };
     match (std::json::field : (std::json::Value, string) -> Option[std::json::Value])(
       (value/2 : std::json::Value),
@@ -44,12 +44,12 @@ fn main() -> unit {
           match (std::json::as_bool : (std::json::Value) -> Option[bool])(
             (field/7 : std::json::Value)
           ) {
-              Option::Some(stable/8: bool) => (println : (bool) -> unit)((stable/8 : bool)),
-              Option::None => (println : (string) -> unit)("invalid stable"),
+              Option::Some(stable/8: bool) => (println : (bool) -> ())((stable/8 : bool)),
+              Option::None => (println : (string) -> ())("invalid stable"),
           },
-        Option::None => (println : (string) -> unit)("missing stable"),
+        Option::None => (println : (string) -> ())("missing stable"),
     };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (std::json::encode : (std::json::Value) -> string)((value/2 : std::json::Value))
     )
 }

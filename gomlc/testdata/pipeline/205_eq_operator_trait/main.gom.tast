@@ -4,21 +4,21 @@ impl PartialEq for AlwaysDifferent {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let first/2: AlwaysDifferent = AlwaysDifferent { value: 7 };
     let second/3: AlwaysDifferent = AlwaysDifferent { value: 7 };
-    (println : (bool) -> unit)((first/2 : AlwaysDifferent) == (second/3 : AlwaysDifferent));
-    (println : (bool) -> unit)((first/2 : AlwaysDifferent) != (second/3 : AlwaysDifferent));
+    (println : (bool) -> ())((first/2 : AlwaysDifferent) == (second/3 : AlwaysDifferent));
+    (println : (bool) -> ())((first/2 : AlwaysDifferent) != (second/3 : AlwaysDifferent));
     let left_tuple/4: (AlwaysDifferent, isize) = (AlwaysDifferent { value: 1 }, 2);
     let right_tuple/5: (AlwaysDifferent, isize) = (AlwaysDifferent { value: 1 }, 2);
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (left_tuple/4 : (AlwaysDifferent, isize)) == (right_tuple/5 : (AlwaysDifferent, isize))
     );
     let left_array/6: [AlwaysDifferent; 2] =
       [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }];
     let right_array/7: [AlwaysDifferent; 2] =
       [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }];
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (left_array/6 : [AlwaysDifferent; 2]) == (right_array/7 : [AlwaysDifferent; 2])
     );
 }

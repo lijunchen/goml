@@ -137,7 +137,7 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#is_empty(self/0: std::bytes:
 fn inherent#std::bytes::Builder#std::bytes::Builder#push(
   self/0: std::bytes::Builder,
   value/0: u8
-) -> unit {
+) -> () {
   let t0 = std::bytes::Builder.values(self/0) in
   let inline0 = @intrinsic(vec.push)(t0, value/0) in
   ()
@@ -146,17 +146,17 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#push(
 fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   self/0: std::bytes::Builder,
   value/0: Slice[u8]
-) -> unit {
+) -> () {
   let t0 = std::bytes::Builder.values(self/0) in
-  join inline_cont0(t1: isize) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
+  join inline_cont0(t1: isize) -> () {
+    join inline_cont1(_wild0: ()) -> () {
       let for_limit0 = @intrinsic(slice.len)(value/0) in
       let for_index0 = 0 in
-      join exit0() -> unit {
+      join exit0() -> () {
         ()
       } in
       joinrec {
-        join loop0() -> unit {
+        join loop0() -> () {
           let t2 = (for_index0 < for_limit0) in
           if t2 {
             let for_item0 = @intrinsic(slice.get)(value/0, for_index0) in
@@ -179,7 +179,7 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   jump inline_cont0(inline2)
 }
 
-fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> unit {
+fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> () {
   let t0 = std::bytes::Builder.values(self/0) in
   let inline0 = inherent#Vec#Vec[T]#truncate__T_u0(t0, 0) in
   ()
@@ -288,7 +288,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/0: std::bytes::Bytes,
   index/0: isize,
   value/0: u8
-) -> unit {
+) -> () {
   let place0 = std::bytes::Bytes.values(self/0) in
   let place1 = @intrinsic(vec.get)(place0, index/0) in
   let t0 = @intrinsic(vec.set)(place0, index/0, value/0) in
@@ -325,10 +325,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set_checked(
   jump inline_cont0(inline7)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
-  self/0: std::bytes::Bytes,
-  value/0: u8
-) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/0: std::bytes::Bytes, value/0: u8) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = @intrinsic(vec.push)(t0, value/0) in
   ()
@@ -353,7 +350,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/0: std::bytes::Bytes) -
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/0: std::bytes::Bytes,
   additional/0: isize
-) -> unit {
+) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = @intrinsic(vec.reserve)(t0, additional/0) in
   ()
@@ -362,13 +359,13 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/0: std::bytes::Bytes,
   len/0: isize
-) -> unit {
+) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = @intrinsic(vec.truncate)(t0, len/0) in
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = inherent#Vec#Vec[T]#truncate__T_u0(t0, 0) in
   ()
@@ -433,17 +430,17 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_mut_slice(self/0: std::bytes:
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#extend_from_slice(
   self/0: std::bytes::Bytes,
   source/0: Slice[u8]
-) -> unit {
+) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
-  join inline_cont0(t1: isize) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
+  join inline_cont0(t1: isize) -> () {
+    join inline_cont1(_wild0: ()) -> () {
       let for_limit0 = @intrinsic(slice.len)(source/0) in
       let for_index0 = 0 in
-      join exit0() -> unit {
+      join exit0() -> () {
         ()
       } in
       joinrec {
-        join loop0() -> unit {
+        join loop0() -> () {
           let t2 = (for_index0 < for_limit0) in
           if t2 {
             let for_item0 = @intrinsic(slice.get)(source/0, for_index0) in
@@ -653,17 +650,17 @@ fn std::internal::host::sha256_file(path/0: string) -> (bool, string, string) {
   t0
 }
 
-fn std::internal::host::print(value/0: string) -> unit {
+fn std::internal::host::print(value/0: string) -> () {
   let t0 = @runtime(std.io.print)(value/0) in
   ()
 }
 
-fn std::internal::host::println(value/0: string) -> unit {
+fn std::internal::host::println(value/0: string) -> () {
   let t0 = @runtime(std.io.println)(value/0) in
   ()
 }
 
-fn std::internal::host::eprint(value/0: string) -> unit {
+fn std::internal::host::eprint(value/0: string) -> () {
   let t0 = @runtime(std.io.eprint)(value/0) in
   ()
 }
@@ -770,7 +767,7 @@ fn std::internal::host::path_separator() -> string {
   t0
 }
 
-fn std::internal::host::exit(code/0: isize) -> unit {
+fn std::internal::host::exit(code/0: isize) -> () {
   let t0 = @runtime(std.process.exit)(code/0) in
   ()
 }
@@ -908,7 +905,7 @@ fn std::internal::host::process_status_cancel(
   t0
 }
 
-fn std::internal::host::test_fail(message/0: string) -> unit {
+fn std::internal::host::test_fail(message/0: string) -> () {
   let t0 = @runtime(std.testing.fail)(message/0) in
   ()
 }
@@ -923,12 +920,12 @@ fn std::internal::host::unix_nanoseconds() -> i64 {
   t0
 }
 
-fn std::internal::host::sleep_nanoseconds(value/0: i64) -> unit {
+fn std::internal::host::sleep_nanoseconds(value/0: i64) -> () {
   let t0 = @runtime(std.time.sleep_nanoseconds)(value/0) in
   ()
 }
 
-fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[unit]) {
+fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[()]) {
   let t0 = @runtime(std.time.timer_new)(value/0) in
   t0
 }
@@ -1730,24 +1727,24 @@ fn std::io::read_stdin_exact_structured(
 fn std::io::write_structured(
   stderr/0: bool,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::io::Error {
-  join k0(jp0: (bool, isize, bool, isize, string)) -> Result__unit__std::io::Error {
+) -> Result__()__std::io::Error {
+  join k0(jp0: (bool, isize, bool, isize, string)) -> Result__()__std::io::Error {
     let x0 = jp0.0 in
     let x1 = jp0.1 in
     let x2 = jp0.2 in
     let x3 = jp0.3 in
     let x4 = jp0.4 in
     if x0 {
-      let t0 = Result__unit__std::io::Error::Ok(()) in
+      let t0 = Result__()__std::io::Error::Ok(()) in
       t0
     } else {
-      join k1(jp1: string) -> Result__unit__std::io::Error {
-        join inline_cont0(t1: std::io::Error) -> Result__unit__std::io::Error {
-          let t2 = Result__unit__std::io::Error::Err(t1) in
+      join k1(jp1: string) -> Result__()__std::io::Error {
+        join inline_cont0(t1: std::io::Error) -> Result__()__std::io::Error {
+          let t2 = Result__()__std::io::Error::Err(t1) in
           t2
         } in
         let inline0 = std::io::kind_from_code(x1) in
-        join inline_join0(inline1: Option__isize) -> Result__unit__std::io::Error {
+        join inline_join0(inline1: Option__isize) -> Result__()__std::io::Error {
           let inline2 =
             inherent#std::io::Error#std::io::Error#new(inline0, jp1, Tag_0, inline1, x4) in
           jump inline_cont0(inline2)
@@ -1767,14 +1764,14 @@ fn std::io::write_structured(
     }
   } in
   if stderr/0 {
-    join inline_cont1(t3: Vec[u8]) -> Result__unit__std::io::Error {
+    join inline_cont1(t3: Vec[u8]) -> Result__()__std::io::Error {
       let inline4 = @runtime(std.io.write_stderr.v2)(t3) in
       jump k0(inline4)
     } in
     let inline5 = std::bytes::Bytes.values(data/0) in
     jump inline_cont1(inline5)
   } else {
-    join inline_cont2(t4: Vec[u8]) -> Result__unit__std::io::Error {
+    join inline_cont2(t4: Vec[u8]) -> Result__()__std::io::Error {
       let inline6 = @runtime(std.io.write_stdout.v2)(t4) in
       jump k0(inline6)
     } in
@@ -1783,12 +1780,12 @@ fn std::io::write_structured(
   }
 }
 
-fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   let t0 = std::io::write_structured(false, data/0) in
   t0
 }
 
-fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   let t0 = std::io::write_structured(true, data/0) in
   t0
 }
@@ -1814,16 +1811,16 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
   jump inline_cont0(inline1)
 }
 
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont0(t0: Vec[u8]) -> Result__unit__string {
-    join inline_cont1(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__()__string {
+  join inline_cont0(t0: Vec[u8]) -> Result__()__string {
+    join inline_cont1(mtmp0: (bool, string)) -> Result__()__string {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       if x0 {
-        let t1 = Result__unit__string::Ok(()) in
+        let t1 = Result__()__string::Ok(()) in
         t1
       } else {
-        let t2 = Result__unit__string::Err(x1) in
+        let t2 = Result__()__string::Err(x1) in
         t2
       }
     } in
@@ -1834,16 +1831,16 @@ fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
   jump inline_cont0(inline1)
 }
 
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont0(t0: Vec[u8]) -> Result__unit__string {
-    join inline_cont1(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__()__string {
+  join inline_cont0(t0: Vec[u8]) -> Result__()__string {
+    join inline_cont1(mtmp0: (bool, string)) -> Result__()__string {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       if x0 {
-        let t1 = Result__unit__string::Ok(()) in
+        let t1 = Result__()__string::Ok(()) in
         t1
       } else {
-        let t2 = Result__unit__string::Err(x1) in
+        let t2 = Result__()__string::Err(x1) in
         t2
       }
     } in
@@ -2276,26 +2273,26 @@ fn std::fs::read_file_structured(path/0: string) -> Result__string__std::fs::Err
 fn std::fs::write_bytes_structured(
   path/0: string,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::fs::Error {
-  join inline_cont0(t0: Vec[u8]) -> Result__unit__std::fs::Error {
-    join inline_cont1(mtmp0: (bool, isize, bool, isize, string)) -> Result__unit__std::fs::Error {
+) -> Result__()__std::fs::Error {
+  join inline_cont0(t0: Vec[u8]) -> Result__()__std::fs::Error {
+    join inline_cont1(mtmp0: (bool, isize, bool, isize, string)) -> Result__()__std::fs::Error {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       let x2 = mtmp0.2 in
       let x3 = mtmp0.3 in
       let x4 = mtmp0.4 in
       if x0 {
-        let t1 = Result__unit__std::fs::Error::Ok(()) in
+        let t1 = Result__()__std::fs::Error::Ok(()) in
         t1
       } else {
-        join inline_cont2(t2: std::fs::Error) -> Result__unit__std::fs::Error {
-          let t3 = Result__unit__std::fs::Error::Err(t2) in
+        join inline_cont2(t2: std::fs::Error) -> Result__()__std::fs::Error {
+          let t3 = Result__()__std::fs::Error::Err(t2) in
           t3
         } in
         let inline0 = "write file" in
         let inline1 = std::io::kind_from_code(x1) in
         let inline2 = Option__string::Some(path/0) in
-        join inline_join0(inline3: Option__isize) -> Result__unit__std::fs::Error {
+        join inline_join0(inline3: Option__isize) -> Result__()__std::fs::Error {
           let inline4 =
             inherent#std::fs::Error#std::fs::Error#new(inline1, inline0, inline2, inline3, x4) in
           jump inline_cont2(inline4)
@@ -2315,11 +2312,8 @@ fn std::fs::write_bytes_structured(
   jump inline_cont0(inline7)
 }
 
-fn std::fs::write_file_structured(
-  path/0: string,
-  content/0: string
-) -> Result__unit__std::fs::Error {
-  join inline_cont0(t0: std::bytes::Bytes) -> Result__unit__std::fs::Error {
+fn std::fs::write_file_structured(path/0: string, content/0: string) -> Result__()__std::fs::Error {
+  join inline_cont0(t0: std::bytes::Bytes) -> Result__()__std::fs::Error {
     let t1 = std::fs::write_bytes_structured(path/0, t0) in
     t1
   } in
@@ -2333,26 +2327,26 @@ fn std::fs::path_operation(
   name/0: string,
   first/0: string,
   second/0: string
-) -> Result__unit__std::fs::Error {
-  join inline_cont0(mtmp0: (bool, isize, bool, isize, string)) -> Result__unit__std::fs::Error {
+) -> Result__()__std::fs::Error {
+  join inline_cont0(mtmp0: (bool, isize, bool, isize, string)) -> Result__()__std::fs::Error {
     let x0 = mtmp0.0 in
     let x1 = mtmp0.1 in
     let x2 = mtmp0.2 in
     let x3 = mtmp0.3 in
     let x4 = mtmp0.4 in
     if x0 {
-      let t0 = Result__unit__std::fs::Error::Ok(()) in
+      let t0 = Result__()__std::fs::Error::Ok(()) in
       t0
     } else {
       let t1 = (second/0 == "") in
-      join k0(jp0: string) -> Result__unit__std::fs::Error {
-        join inline_cont1(t2: std::fs::Error) -> Result__unit__std::fs::Error {
-          let t3 = Result__unit__std::fs::Error::Err(t2) in
+      join k0(jp0: string) -> Result__()__std::fs::Error {
+        join inline_cont1(t2: std::fs::Error) -> Result__()__std::fs::Error {
+          let t3 = Result__()__std::fs::Error::Err(t2) in
           t3
         } in
         let inline0 = std::io::kind_from_code(x1) in
         let inline1 = Option__string::Some(jp0) in
-        join inline_join0(inline2: Option__isize) -> Result__unit__std::fs::Error {
+        join inline_join0(inline2: Option__isize) -> Result__()__std::fs::Error {
           let inline3 =
             inherent#std::fs::Error#std::fs::Error#new(inline0, name/0, inline1, inline2, x4) in
           jump inline_cont1(inline3)
@@ -2377,32 +2371,32 @@ fn std::fs::path_operation(
   jump inline_cont0(inline5)
 }
 
-fn std::fs::create_dir(path/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::create_dir(path/0: string) -> Result__()__std::fs::Error {
   let t0 = std::fs::path_operation(0, "create directory", path/0, "") in
   t0
 }
 
-fn std::fs::rename(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::rename(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   let t0 = std::fs::path_operation(1, "rename", from/0, to/0) in
   t0
 }
 
-fn std::fs::replace(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::replace(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   let t0 = std::fs::path_operation(1, "replace", from/0, to/0) in
   t0
 }
 
-fn std::fs::hard_link(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::hard_link(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   let t0 = std::fs::path_operation(2, "create hard link", from/0, to/0) in
   t0
 }
 
-fn std::fs::symbolic_link(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::symbolic_link(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   let t0 = std::fs::path_operation(3, "create symbolic link", from/0, to/0) in
   t0
 }
 
-fn std::fs::copy(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::copy(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   let t0 = std::fs::path_operation(4, "copy file", from/0, to/0) in
   t0
 }
@@ -2410,26 +2404,26 @@ fn std::fs::copy(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
 fn std::fs::atomic_write_bytes(
   path/0: string,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::fs::Error {
-  join inline_cont0(t0: Vec[u8]) -> Result__unit__std::fs::Error {
-    join inline_cont1(mtmp0: (bool, isize, bool, isize, string)) -> Result__unit__std::fs::Error {
+) -> Result__()__std::fs::Error {
+  join inline_cont0(t0: Vec[u8]) -> Result__()__std::fs::Error {
+    join inline_cont1(mtmp0: (bool, isize, bool, isize, string)) -> Result__()__std::fs::Error {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       let x2 = mtmp0.2 in
       let x3 = mtmp0.3 in
       let x4 = mtmp0.4 in
       if x0 {
-        let t1 = Result__unit__std::fs::Error::Ok(()) in
+        let t1 = Result__()__std::fs::Error::Ok(()) in
         t1
       } else {
-        join inline_cont2(t2: std::fs::Error) -> Result__unit__std::fs::Error {
-          let t3 = Result__unit__std::fs::Error::Err(t2) in
+        join inline_cont2(t2: std::fs::Error) -> Result__()__std::fs::Error {
+          let t3 = Result__()__std::fs::Error::Err(t2) in
           t3
         } in
         let inline0 = "atomic write" in
         let inline1 = std::io::kind_from_code(x1) in
         let inline2 = Option__string::Some(path/0) in
-        join inline_join0(inline3: Option__isize) -> Result__unit__std::fs::Error {
+        join inline_join0(inline3: Option__isize) -> Result__()__std::fs::Error {
           let inline4 =
             inherent#std::fs::Error#std::fs::Error#new(inline1, inline0, inline2, inline3, x4) in
           jump inline_cont2(inline4)
@@ -2449,8 +2443,8 @@ fn std::fs::atomic_write_bytes(
   jump inline_cont0(inline7)
 }
 
-fn std::fs::atomic_write(path/0: string, content/0: string) -> Result__unit__std::fs::Error {
-  join inline_cont0(t0: std::bytes::Bytes) -> Result__unit__std::fs::Error {
+fn std::fs::atomic_write(path/0: string, content/0: string) -> Result__()__std::fs::Error {
+  join inline_cont0(t0: std::bytes::Bytes) -> Result__()__std::fs::Error {
     let t1 = std::fs::atomic_write_bytes(path/0, t0) in
     t1
   } in
@@ -2722,17 +2716,17 @@ fn std::fs::read_file(path/0: string) -> Result__string__string {
   }
 }
 
-fn std::fs::write_file(path/0: string, content/0: string) -> Result__unit__string {
-  join inline_cont0(t0: std::bytes::Bytes) -> Result__unit__string {
+fn std::fs::write_file(path/0: string, content/0: string) -> Result__()__string {
+  join inline_cont0(t0: std::bytes::Bytes) -> Result__()__string {
     let inline0 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(t0) in
     let inline1 = std::internal::host::write_bytes(path/0, inline0) in
     let inline2 = inline1.0 in
     let inline3 = inline1.1 in
     if inline2 {
-      let inline4 = Result__unit__string::Ok(()) in
+      let inline4 = Result__()__string::Ok(()) in
       inline4
     } else {
-      let inline5 = Result__unit__string::Err(inline3) in
+      let inline5 = Result__()__string::Err(inline3) in
       inline5
     }
   } in
@@ -2762,16 +2756,16 @@ fn std::fs::read_bytes(path/0: string) -> Result__std::bytes::Bytes__string {
   jump inline_cont0(inline1)
 }
 
-fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont0(t0: Vec[u8]) -> Result__unit__string {
-    join inline_cont1(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__()__string {
+  join inline_cont0(t0: Vec[u8]) -> Result__()__string {
+    join inline_cont1(mtmp0: (bool, string)) -> Result__()__string {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       if x0 {
-        let t1 = Result__unit__string::Ok(()) in
+        let t1 = Result__()__string::Ok(()) in
         t1
       } else {
-        let t2 = Result__unit__string::Err(x1) in
+        let t2 = Result__()__string::Err(x1) in
         t2
       }
     } in
@@ -2782,15 +2776,15 @@ fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__un
   jump inline_cont0(inline1)
 }
 
-fn std::fs::create_dir_all(path/0: string) -> Result__unit__string {
-  join inline_cont0(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::fs::create_dir_all(path/0: string) -> Result__()__string {
+  join inline_cont0(mtmp0: (bool, string)) -> Result__()__string {
     let x0 = mtmp0.0 in
     let x1 = mtmp0.1 in
     if x0 {
-      let t0 = Result__unit__string::Ok(()) in
+      let t0 = Result__()__string::Ok(()) in
       t0
     } else {
-      let t1 = Result__unit__string::Err(x1) in
+      let t1 = Result__()__string::Err(x1) in
       t1
     }
   } in
@@ -2798,15 +2792,15 @@ fn std::fs::create_dir_all(path/0: string) -> Result__unit__string {
   jump inline_cont0(inline0)
 }
 
-fn std::fs::remove_file(path/0: string) -> Result__unit__string {
-  join inline_cont0(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::fs::remove_file(path/0: string) -> Result__()__string {
+  join inline_cont0(mtmp0: (bool, string)) -> Result__()__string {
     let x0 = mtmp0.0 in
     let x1 = mtmp0.1 in
     if x0 {
-      let t0 = Result__unit__string::Ok(()) in
+      let t0 = Result__()__string::Ok(()) in
       t0
     } else {
-      let t1 = Result__unit__string::Err(x1) in
+      let t1 = Result__()__string::Err(x1) in
       t1
     }
   } in
@@ -2814,15 +2808,15 @@ fn std::fs::remove_file(path/0: string) -> Result__unit__string {
   jump inline_cont0(inline0)
 }
 
-fn std::fs::remove_dir_all(path/0: string) -> Result__unit__string {
-  join inline_cont0(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::fs::remove_dir_all(path/0: string) -> Result__()__string {
+  join inline_cont0(mtmp0: (bool, string)) -> Result__()__string {
     let x0 = mtmp0.0 in
     let x1 = mtmp0.1 in
     if x0 {
-      let t0 = Result__unit__string::Ok(()) in
+      let t0 = Result__()__string::Ok(()) in
       t0
     } else {
-      let t1 = Result__unit__string::Err(x1) in
+      let t1 = Result__()__string::Err(x1) in
       t1
     }
   } in
@@ -2896,13 +2890,13 @@ fn std::fs::sha256_file(path/0: string) -> Result__string__string {
   jump inline_cont0(inline0)
 }
 
-fn show_unit(result/0: Result__unit__string) -> string {
+fn show_unit(result/0: Result__()__string) -> string {
   match result/0 {
     Tag_0 => {
       "ok"
     },
     Tag_1 => {
-      let x0 = Result__unit__string::Err._0(result/0) in
+      let x0 = Result__()__string::Err._0(result/0) in
       let t0 = ("err " + x0) in
       t0
     },
@@ -2923,19 +2917,19 @@ fn show_string(result/0: Result__string__string) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let t0 = string_byte_slice("a你好z", 1, 7) in
   let _wild0 = std::io::println__T_string(t0) in
   let _wild1 = std::io::eprint__T_string("") in
-  join inline_cont0(_wild2: unit) -> unit {
+  join inline_cont0(_wild2: ()) -> () {
     let t1 = std::fs::create_dir_all("goml-self-host/nested") in
-    join inline_cont1(t2: string) -> unit {
-      join inline_cont2(_wild3: unit) -> unit {
-        join inline_cont3(t3: Result__unit__string) -> unit {
-          join inline_cont4(t4: string) -> unit {
-            join inline_cont5(_wild4: unit) -> unit {
-              join inline_cont6(t5: Result__string__string) -> unit {
-                join inline_cont7(t6: string) -> unit {
+    join inline_cont1(t2: string) -> () {
+      join inline_cont2(_wild3: ()) -> () {
+        join inline_cont3(t3: Result__()__string) -> () {
+          join inline_cont4(t4: string) -> () {
+            join inline_cont5(_wild4: ()) -> () {
+              join inline_cont6(t5: Result__string__string) -> () {
+                join inline_cont7(t6: string) -> () {
                   let inline0 = trait_impl#ToString#string#to_string(t6) in
                   let inline1 = std::internal::host::println(inline0) in
                   ()
@@ -2976,7 +2970,7 @@ fn main() -> unit {
               jump inline_cont4("ok")
             },
             Tag_1 => {
-              let inline13 = Result__unit__string::Err._0(t3) in
+              let inline13 = Result__()__string::Err._0(t3) in
               let inline14 = ("err " + inline13) in
               jump inline_cont4(inline14)
             },
@@ -2997,7 +2991,7 @@ fn main() -> unit {
         jump inline_cont1("ok")
       },
       Tag_1 => {
-        let inline21 = Result__unit__string::Err._0(t1) in
+        let inline21 = Result__()__string::Err._0(t1) in
         let inline22 = ("err " + inline21) in
         jump inline_cont1(inline22)
       },
@@ -3037,7 +3031,7 @@ fn inherent#Vec#Vec[T]#is_empty__T_u8(self/0: Vec[u8]) -> bool {
   t1
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -3047,12 +3041,12 @@ fn inherent#Slice#Slice[T]#len__T_u8(self/0: Slice[u8]) -> isize {
   t0
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> () {
   let t0 = @intrinsic(vec.reserve)(self/0, additional/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> () {
   let inline0 = 0 in
   let inline1 = @intrinsic(vec.truncate)(self/0, inline0) in
   ()
@@ -3136,7 +3130,7 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
       let t1 = (len/0 - 1) in
       let value/0 = @intrinsic(vec.get)(self/0, t1) in
       let t2 = (len/0 - 1) in
-      join inline_cont1(_wild0: unit) -> Option__u8 {
+      join inline_cont1(_wild0: ()) -> Option__u8 {
         let t3 = Option__u8::Some(value/0) in
         t3
       } in
@@ -3148,7 +3142,7 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
   jump inline_cont0(inline1)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> () {
   let t0 = @intrinsic(vec.truncate)(self/0, len/0) in
   ()
 }
@@ -3344,13 +3338,13 @@ fn inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() -> Vec[std::fs::DirEntry] {
 fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
   self/0: Vec[std::fs::DirEntry],
   elem/0: std::fs::DirEntry
-) -> unit {
+) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
 
-fn std::io::println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn std::io::println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let inline0 = @runtime(std.io.println)(t0) in
     ()
   } in
@@ -3376,16 +3370,16 @@ fn string_byte_slice(value/0: string, start/0: isize, end/0: isize) -> string {
   }
 }
 
-fn std::io::eprint__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn std::io::eprint__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let inline0 = @runtime(std.io.eprint)(t0) in
     ()
   } in
   jump inline_cont0(value/0)
 }
 
-fn std::io::eprintln__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn std::io::eprintln__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = (t0 + "\n") in
     let inline0 = @runtime(std.io.eprint)(t1) in
     ()
@@ -3813,7 +3807,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -3845,7 +3839,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in

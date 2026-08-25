@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let wrapped/0 = Wrapper__NoTraits { value: NoTraits { value: 1 } } in
   let left/0 = Generic__NoTraits__NoTraits { first: wrapped/0, second: wrapped/0 } in
   let right/0 = Generic__NoTraits__NoTraits { first: wrapped/0, second: wrapped/0 } in
@@ -27,7 +27,7 @@ fn main() -> unit {
   )
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -57,7 +57,7 @@ fn trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(
   }
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 

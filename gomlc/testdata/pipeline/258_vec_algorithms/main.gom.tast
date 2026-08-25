@@ -1,7 +1,7 @@
-fn main() -> unit {
+fn main() -> () {
     let values/0: Vec[isize] =
       (@intrinsic(vec.from_array) : ([isize; 8]) -> Vec[isize])([3, 1, 4, 1, 5, 9, 2, 6]);
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
           (Vec[isize]::position : (Vec[isize], (isize) -> bool) -> Option[isize])(
@@ -12,7 +12,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
           (Vec[isize]::position : (Vec[isize], (isize) -> bool) -> Option[isize])(
@@ -23,20 +23,20 @@ fn main() -> unit {
         )
       )
     );
-    (Vec[isize]::sort_by : (Vec[isize], (isize, isize) -> isize) -> unit)(
+    (Vec[isize]::sort_by : (Vec[isize], (isize, isize) -> isize) -> ())(
       (values/0 : Vec[isize]),
       |left/3: isize, right/4: isize| => (left/3 : isize) - (right/4 : isize)
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Vec[isize]::join : (Vec[isize], string) -> string)((values/0 : Vec[isize]), ",")
     );
-    (Vec[isize]::dedup : (Vec[isize]) -> unit)((values/0 : Vec[isize]));
-    (println : (string) -> unit)(
+    (Vec[isize]::dedup : (Vec[isize]) -> ())((values/0 : Vec[isize]));
+    (println : (string) -> ())(
       (Vec[isize]::join : (Vec[isize], string) -> string)((values/0 : Vec[isize]), ",")
     );
     let ordered/5: Vec[isize] =
       (@intrinsic(vec.from_array) : ([isize; 5]) -> Vec[isize])([1, 2, 4, 4, 5]);
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
           (Vec[isize]::binary_search_by : (Vec[isize], (isize) -> isize) -> Option[isize])(
@@ -47,7 +47,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
           (Vec[isize]::binary_search_by : (Vec[isize], (isize) -> isize) -> Option[isize])(
@@ -58,7 +58,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
           (Vec[isize]::min_by : (Vec[isize], (isize, isize) -> isize) -> Option[isize])(
@@ -69,7 +69,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
           (Vec[isize]::max_by : (Vec[isize], (isize, isize) -> isize) -> Option[isize])(
@@ -82,12 +82,12 @@ fn main() -> unit {
     );
     let names/12: Vec[string] =
       (@intrinsic(vec.from_array) : ([string; 3]) -> Vec[string])(["beta", "alpha", "gamma"]);
-    (Vec[string]::sort_by_ordering : (Vec[string], (string, string) -> Ordering) -> unit)(
+    (Vec[string]::sort_by_ordering : (Vec[string], (string, string) -> Ordering) -> ())(
       (names/12 : Vec[string]),
       |left/13: string, right/14: string| =>
         (std::cmp::compare : (string, string) -> Ordering)((left/13 : string), (right/14 : string))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Vec[string]::join : (Vec[string], string) -> string)((names/12 : Vec[string]), "|")
     );
     let pairs/15: Vec[(isize, isize)] =
@@ -97,7 +97,7 @@ fn main() -> unit {
     (Vec[(isize, isize)]::sort_by_ordering : (
       Vec[(isize, isize)],
       ((isize, isize), (isize, isize)) -> Ordering
-    ) -> unit)(
+    ) -> ())(
       (pairs/15 : Vec[(isize, isize)]),
       |left/16: (isize, isize), right/17: (isize, isize)| =>
         (std::cmp::compare : (isize, isize) -> Ordering)(
@@ -105,7 +105,7 @@ fn main() -> unit {
           (right/17 : (isize, isize)).0
         )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Vec[(isize, isize)]::len : (Vec[(isize, isize)]) -> isize)(
           (pairs/15 : Vec[(isize, isize)])
@@ -118,12 +118,12 @@ fn main() -> unit {
         0,
         2
       );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (Slice[isize]::contains : (Slice[isize], isize) -> bool)((view/18 : Slice[isize]), 8)
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (Slice[isize]::contains : (Slice[isize], isize) -> bool)((view/18 : Slice[isize]), 9)
       )
@@ -132,7 +132,7 @@ fn main() -> unit {
       (Vec[isize]::freeze : (Vec[isize]) -> FrozenVec[isize])(
         (@intrinsic(vec.from_array) : ([isize; 2]) -> Vec[isize])([1, 2])
       );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (FrozenVec[isize]::contains : (FrozenVec[isize], isize) -> bool)(
           (frozen/19 : FrozenVec[isize]),
@@ -140,7 +140,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (FrozenVec[isize]::contains : (FrozenVec[isize], isize) -> bool)(
           (frozen/19 : FrozenVec[isize]),
@@ -149,10 +149,10 @@ fn main() -> unit {
       )
     );
     let empty/20: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Vec[isize]::join : (Vec[isize], string) -> string)((empty/20 : Vec[isize]), ",")
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (Option[isize]::is_none : (Option[isize]) -> bool)(
           (Vec[isize]::min_by : (Vec[isize], (isize, isize) -> isize) -> Option[isize])(

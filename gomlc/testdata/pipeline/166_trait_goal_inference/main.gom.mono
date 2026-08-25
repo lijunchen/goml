@@ -2,7 +2,7 @@ fn trait_impl#Measure#Vec[i32]#measure(self/0: Vec[i32]) -> isize {
   inherent#Vec#Vec[T]#len__T_i0(self/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let values/0 = @intrinsic(vec.new)() in
   println__T_string(inherent#isize#isize#to_string(read_measure__T_Vec[i32](values/0)))
 }
@@ -11,7 +11,7 @@ fn inherent#Vec#Vec[T]#len__T_i32(self/0: Vec[i32]) -> isize {
   @intrinsic(vec.len)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -102,7 +102,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

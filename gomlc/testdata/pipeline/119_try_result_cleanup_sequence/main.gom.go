@@ -40,7 +40,7 @@ type Result__Handle__string struct {
     _v1_0 string
 }
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string
@@ -76,9 +76,9 @@ func use_handle(open_ok__0 bool, close_ok__0 bool) Result__string__string {
         var x1 Handle = mtmp0._v0_0
         jp0 = x1
         var name__0 string = jp0.name
-        var mtmp1 Result__unit__string
+        var mtmp1 _goml_m_Result_____o__q_____string
         if close_ok__0 {
-            var inline0 Result__unit__string = Result__unit__string{
+            var inline0 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 0,
                 _v0_0: struct{}{},
             }
@@ -86,7 +86,7 @@ func use_handle(open_ok__0 bool, close_ok__0 bool) Result__string__string {
         } else {
             var inline1 string = jp0.name
             var inline2 string = "close failed for " + inline1
-            var inline3 Result__unit__string = Result__unit__string{
+            var inline3 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 1,
                 _v1_0: inline2,
             }

@@ -15,7 +15,7 @@ file main.gom
       Option::Some(number/1)
   }
 
-  fn loop_cleanup() -> unit {
+  fn loop_cleanup() -> () {
       let local/1/2 = Ref::new(0);
       while index/2.get() < 3 {
           {
@@ -31,7 +31,7 @@ file main.gom
       }
   }
 
-  fn observed_at_exit() -> unit {
+  fn observed_at_exit() -> () {
       let local/1/4 = Ref::new("before");
       defer println("observed:" + value/4.get());
       value/4.set("after")
@@ -48,7 +48,7 @@ file main.gom
       left/7 + right/8
   }
 
-  fn closure_cleanup() -> unit {
+  fn closure_cleanup() -> () {
       defer println("closure:outer");
       let local/1/9 =
         || {
@@ -59,7 +59,7 @@ file main.gom
       println("closure:after")
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       defer println("main:first");
       defer println("main:second");
       {

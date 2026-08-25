@@ -21,7 +21,7 @@ type ParsedFloat struct {
 
 type Ordering int32
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string

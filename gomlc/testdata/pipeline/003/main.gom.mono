@@ -1,5 +1,5 @@
-fn main() -> unit {
-  let mtmp0 = print__T_unit(()) in
+fn main() -> () {
+  let mtmp0 = print__T_()(()) in
   {
     let mtmp1 = print__T_bool(true) in
     {
@@ -14,19 +14,19 @@ fn main() -> unit {
   }
 }
 
-fn print__T_unit(value/0: unit) -> unit {
-  @runtime(core.string_print)(trait_impl#ToString#unit#to_string(value/0))
+fn print__T_()(value/0: ()) -> () {
+  @runtime(core.string_print)(trait_impl#ToString#()#to_string(value/0))
 }
 
-fn print__T_bool(value/0: bool) -> unit {
+fn print__T_bool(value/0: bool) -> () {
   @runtime(core.string_print)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn print__T_isize(value/0: isize) -> unit {
+fn print__T_isize(value/0: isize) -> () {
   @runtime(core.string_print)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn trait_impl#ToString#unit#to_string(self/0: unit) -> string {
+fn trait_impl#ToString#()#to_string(self/0: ()) -> string {
   @runtime(core.unit_to_string)(self/0)
 }
 
@@ -113,7 +113,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

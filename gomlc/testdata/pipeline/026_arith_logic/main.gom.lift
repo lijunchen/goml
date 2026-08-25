@@ -1,14 +1,14 @@
-fn show_int(label/0: string, value/0: i32) -> unit {
+fn show_int(label/0: string, value/0: i32) -> () {
   let mtmp0 = println__T_string((label/0 + inherent#i32#i32#to_string(value/0))) in
   ()
 }
 
-fn show_bool(label/0: string, value/0: bool) -> unit {
+fn show_bool(label/0: string, value/0: bool) -> () {
   let mtmp0 = println__T_string((label/0 + trait_impl#ToString#bool#to_string(value/0))) in
   ()
 }
 
-fn main() -> unit {
+fn main() -> () {
   let base/0 = 10 in
   let sum/0 = (base/0 + 5) in
   let diff/0 = (sum/0 - 3) in
@@ -60,7 +60,7 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -131,7 +131,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

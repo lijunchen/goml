@@ -31,7 +31,7 @@ impl Iterator for Counter {
       let current/7: i32 = (Ref[i32]::get : (Ref[i32]) -> i32)((self/6 : Counter).current);
       if (current/7 : i32) < (self/6 : Counter).end {
           {
-              (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+              (Ref[i32]::set : (Ref[i32], i32) -> ())(
                 (self/6 : Counter).current,
                 (current/7 : i32) + 1
               );
@@ -45,14 +45,14 @@ impl Iterator for Counter {
   }
 }
 
-fn main() -> unit {
-    (println : (i32) -> unit)((Convert[i32]::convert : (Token) -> i32)(Token {}));
-    (println : (string) -> unit)((Convert[string]::convert : (Token) -> string)(Token {}));
+fn main() -> () {
+    (println : (i32) -> ())((Convert[i32]::convert : (Token) -> i32)(Token {}));
+    (println : (string) -> ())((Convert[string]::convert : (Token) -> string)(Token {}));
     let converted/8: i32 = (convert_to : (Token) -> i32)(Token {});
-    (println : (i32) -> unit)((converted/8 : i32));
-    (println : (string) -> unit)((Marker[i32]::marker : (Any) -> string)(Any {}));
-    (println : (string) -> unit)((Marker[string]::marker : (Any) -> string)(Any {}));
-    (println : (string) -> unit)((Marker[Vec[i32]]::marker : (Any) -> string)(Any {}));
+    (println : (i32) -> ())((converted/8 : i32));
+    (println : (string) -> ())((Marker[i32]::marker : (Any) -> string)(Any {}));
+    (println : (string) -> ())((Marker[string]::marker : (Any) -> string)(Any {}));
+    (println : (string) -> ())((Marker[Vec[i32]]::marker : (Any) -> string)(Any {}));
     let mapped/10: FnIterator[i32] =
       (std::iter::map : (Counter, (i32) -> i32) -> FnIterator[i32])(
         (Counter::new : (i32, i32) -> Counter)(0, 8),
@@ -70,7 +70,7 @@ fn main() -> unit {
       );
     for value/14: i32 in
       (limited/13 : FnIterator[i32]) {
-        (println : (i32) -> unit)((value/14 : i32));
+        (println : (i32) -> ())((value/14 : i32));
     };
     let sum/17: isize =
       (std::iter::fold : (FnIterator[isize], isize, (isize, isize) -> isize) -> isize)(
@@ -81,7 +81,7 @@ fn main() -> unit {
               (total/15 : isize) + (value/16 : isize)
           }
       );
-    (println : (isize) -> unit)((sum/17 : isize));
+    (println : (isize) -> ())((sum/17 : isize));
     let texts/19: Vec[string] =
       (std::iter::collect : (FnIterator[string]) -> Vec[string])(
         (std::iter::map : (FnIterator[isize], (isize) -> string) -> FnIterator[string])(
@@ -91,6 +91,6 @@ fn main() -> unit {
       );
     for text/20: string in
       (texts/19 : Vec[string]) {
-        (println : (string) -> unit)((text/20 : string));
+        (println : (string) -> ())((text/20 : string));
     }
 }

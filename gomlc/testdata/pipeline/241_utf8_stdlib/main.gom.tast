@@ -1,151 +1,151 @@
-fn check_utf8(bytes/0: Vec[u8], expected/1: bool) -> unit {
+fn check_utf8(bytes/0: Vec[u8], expected/1: bool) -> () {
     let expected_length/2: isize = (Vec[u8]::len : (Vec[u8]) -> isize)((bytes/0 : Vec[u8]));
     let (valid/3: bool, value/4: string) =
       (string_from_utf8 : (Vec[u8]) -> (bool, string))((bytes/0 : Vec[u8]));
-    (println : (bool) -> unit)((valid/3 : bool) == (expected/1 : bool));
+    (println : (bool) -> ())((valid/3 : bool) == (expected/1 : bool));
     if (valid/3 : bool) {
         {
-            (println : (bool) -> unit)(
+            (println : (bool) -> ())(
               (string::byte_len : (string) -> isize)((value/4 : string)) ==
                 (expected_length/2 : isize)
             )
         }
     } else {
         {
-            (println : (bool) -> unit)((value/4 : string) == "")
+            (println : (bool) -> ())((value/4 : string) == "")
         }
     }
 }
 
-fn check_scalar(bytes/5: Vec[u8], expected/6: u32, expected_width/7: isize) -> unit {
+fn check_scalar(bytes/5: Vec[u8], expected/6: u32, expected_width/7: isize) -> () {
     let (valid/8: bool, value/9: string) =
       (string_from_utf8 : (Vec[u8]) -> (bool, string))((bytes/5 : Vec[u8]));
-    (println : (bool) -> unit)((valid/8 : bool));
+    (println : (bool) -> ())((valid/8 : bool));
     match (string::decode_at : (string, isize) -> Option[(char, isize)])((value/9 : string), 0) {
         Option::Some(decoded/10: (char, isize)) =>
           {
               let (character/11: char, width/12: isize) = (decoded/10 : (char, isize));
-              (println : (bool) -> unit)(
+              (println : (bool) -> ())(
                 (char::to_u32 : (char) -> u32)((character/11 : char)) == (expected/6 : u32)
               );
-              (println : (bool) -> unit)((width/12 : isize) == (expected_width/7 : isize))
+              (println : (bool) -> ())((width/12 : isize) == (expected_width/7 : isize))
           },
         Option::None =>
           {
-              (println : (bool) -> unit)(false);
-              (println : (bool) -> unit)(false)
+              (println : (bool) -> ())(false);
+              (println : (bool) -> ())(false)
           },
     }
 }
 
-fn main() -> unit {
-    (check_utf8 : (Vec[u8], bool) -> unit)((Vec[u8]::new : () -> Vec[u8])(), true);
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+fn main() -> () {
+    (check_utf8 : (Vec[u8], bool) -> ())((Vec[u8]::new : () -> Vec[u8])(), true);
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 1]) -> Vec[u8])([0]),
       true
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 1]) -> Vec[u8])([127]),
       true
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 2]) -> Vec[u8])([194, 128]),
       128,
       2
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 2]) -> Vec[u8])([223, 191]),
       2047,
       2
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([224, 160, 128]),
       2048,
       3
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([237, 159, 191]),
       55295,
       3
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([238, 128, 128]),
       57344,
       3
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([239, 191, 189]),
       65533,
       3
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([239, 191, 191]),
       65535,
       3
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 4]) -> Vec[u8])([240, 144, 128, 128]),
       65536,
       4
     );
-    (check_scalar : (Vec[u8], u32, isize) -> unit)(
+    (check_scalar : (Vec[u8], u32, isize) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 4]) -> Vec[u8])([244, 143, 191, 191]),
       1114111,
       4
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 1]) -> Vec[u8])([128]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 1]) -> Vec[u8])([191]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 2]) -> Vec[u8])([192, 128]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 2]) -> Vec[u8])([193, 191]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 1]) -> Vec[u8])([194]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 2]) -> Vec[u8])([194, 127]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([224, 159, 191]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 2]) -> Vec[u8])([225, 128]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([225, 128, 127]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([237, 160, 128]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 4]) -> Vec[u8])([240, 143, 191, 191]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 3]) -> Vec[u8])([240, 144, 128]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 4]) -> Vec[u8])([244, 144, 128, 128]),
       false
     );
-    (check_utf8 : (Vec[u8], bool) -> unit)(
+    (check_utf8 : (Vec[u8], bool) -> ())(
       (@intrinsic(vec.from_array) : ([u8; 4]) -> Vec[u8])([245, 128, 128, 128]),
       false
     )

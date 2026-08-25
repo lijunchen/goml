@@ -6,7 +6,7 @@ fn render(x/0: dyn Display) -> string {
   dyn_call[Display::show](x/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let v/0 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
   let first/0 = 10 in
   let second/0 = 20 in
@@ -26,7 +26,7 @@ fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/0: Vec[dyn Display], elem/0: dyn Display) -> unit {
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/0: Vec[dyn Display], elem/0: dyn Display) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -38,7 +38,7 @@ fn inherent#Vec#Vec[T]#slice__T_dynDisplay(
   @intrinsic(slice.new)(self/0, start/0, end/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -129,7 +129,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

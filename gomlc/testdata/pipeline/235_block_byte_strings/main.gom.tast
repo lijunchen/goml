@@ -14,7 +14,7 @@ fn loop_answer() -> isize {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let plain/2: Vec[u8] = bytes[65, 10, 66];
     let empty/3: Vec[u8] = bytes[];
     let raw/4: Vec[u8] = bytes[114, 97, 119, 32, 92, 110, 32, 98, 121, 116, 101, 115];
@@ -26,54 +26,54 @@ fn main() -> unit {
           let value/7: isize = (answer : () -> isize)();
           (value/7 : isize) + (loop_answer : () -> isize)()
       };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Vec[u8]::len : (Vec[u8]) -> isize)((plain/2 : Vec[u8]))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Vec[u8]::len : (Vec[u8]) -> isize)((empty/3 : Vec[u8]))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (u8::to_isize : (u8) -> isize)(
           (Vec[u8]::get : (Vec[u8], isize) -> u8)((plain/2 : Vec[u8]), 0)
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (u8::to_isize : (u8) -> isize)(
           (Vec[u8]::get : (Vec[u8], isize) -> u8)((plain/2 : Vec[u8]), 1)
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (u8::to_isize : (u8) -> isize)(
           (Vec[u8]::get : (Vec[u8], isize) -> u8)((plain/2 : Vec[u8]), 2)
         )
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((Vec[u8]::len : (Vec[u8]) -> isize)((raw/4 : Vec[u8])))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (Vec[u8]::len : (Vec[u8]) -> isize)((quoted/5 : Vec[u8]))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((u8::to_isize : (u8) -> isize)((fixed/6 : [u8; 3])[2]))
     );
-    (println : (string) -> unit)((isize::to_string : (isize) -> string)((nested/8 : isize)));
+    (println : (string) -> ())((isize::to_string : (isize) -> string)((nested/8 : isize)));
     if {
         true
     } {
         {
-            (println : (string) -> unit)("block condition")
+            (println : (string) -> ())("block condition")
         }
     } else {
         ()

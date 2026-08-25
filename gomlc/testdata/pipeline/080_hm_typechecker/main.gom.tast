@@ -5,37 +5,29 @@ fn state_new() -> CheckerState {
     }
 }
 
-fn reset_gensym(st/0: CheckerState) -> unit {
-    let _ : unit =
-      (Ref[i32]::set : (Ref[i32], i32) -> unit)((st/0 : CheckerState).gensym_counter, 0);
+fn reset_gensym(st/0: CheckerState) -> () {
+    let _ : () = (Ref[i32]::set : (Ref[i32], i32) -> ())((st/0 : CheckerState).gensym_counter, 0);
 }
 
-fn reset_level(st/1: CheckerState) -> unit {
-    let _ : unit =
-      (Ref[i32]::set : (Ref[i32], i32) -> unit)((st/1 : CheckerState).current_level, 1);
+fn reset_level(st/1: CheckerState) -> () {
+    let _ : () = (Ref[i32]::set : (Ref[i32], i32) -> ())((st/1 : CheckerState).current_level, 1);
 }
 
-fn reset_type_variables(st/2: CheckerState) -> unit {
-    (reset_gensym : (CheckerState) -> unit)((st/2 : CheckerState));
-    (reset_level : (CheckerState) -> unit)((st/2 : CheckerState))
+fn reset_type_variables(st/2: CheckerState) -> () {
+    (reset_gensym : (CheckerState) -> ())((st/2 : CheckerState));
+    (reset_level : (CheckerState) -> ())((st/2 : CheckerState))
 }
 
-fn enter_level(st/3: CheckerState) -> unit {
+fn enter_level(st/3: CheckerState) -> () {
     let l/4: i32 = (Ref[i32]::get : (Ref[i32]) -> i32)((st/3 : CheckerState).current_level);
-    let _ : unit =
-      (Ref[i32]::set : (Ref[i32], i32) -> unit)(
-        (st/3 : CheckerState).current_level,
-        (l/4 : i32) + 1
-      );
+    let _ : () =
+      (Ref[i32]::set : (Ref[i32], i32) -> ())((st/3 : CheckerState).current_level, (l/4 : i32) + 1);
 }
 
-fn leave_level(st/5: CheckerState) -> unit {
+fn leave_level(st/5: CheckerState) -> () {
     let l/6: i32 = (Ref[i32]::get : (Ref[i32]) -> i32)((st/5 : CheckerState).current_level);
-    let _ : unit =
-      (Ref[i32]::set : (Ref[i32], i32) -> unit)(
-        (st/5 : CheckerState).current_level,
-        (l/6 : i32) - 1
-      );
+    let _ : () =
+      (Ref[i32]::set : (Ref[i32], i32) -> ())((st/5 : CheckerState).current_level, (l/6 : i32) - 1);
 }
 
 fn min_i32(a/7: i32, b/8: i32) -> i32 {
@@ -84,8 +76,8 @@ fn nth_letter(n/9: i32) -> char {
 
 fn gensym(st/10: CheckerState) -> string {
     let n/11: i32 = (Ref[i32]::get : (Ref[i32]) -> i32)((st/10 : CheckerState).gensym_counter);
-    let _ : unit =
-      (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+    let _ : () =
+      (Ref[i32]::set : (Ref[i32], i32) -> ())(
         (st/10 : CheckerState).gensym_counter,
         (n/11 : i32) + 1
       );
@@ -157,7 +149,7 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option[Typ] {
     let found/31: Ref[Option[Typ]] =
       (Ref[Option[Typ]]::new : (Option[Typ]) -> Ref[Option[Typ]])(Option::None);
     let done/32: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
-    let _ : unit =
+    let _ : () =
       while !(Ref[bool]::get : (Ref[bool]) -> bool)((done/32 : Ref[bool])) &&
         (Ref[isize]::get : (Ref[isize]) -> isize)((i/30 : Ref[isize])) >= 0 {
           {
@@ -167,16 +159,16 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option[Typ] {
                 )];
               if (entry/33 : EnvEntry).name == (name/29 : string) {
                   {
-                      let _ : unit =
-                        (Ref[Option[Typ]]::set : (Ref[Option[Typ]], Option[Typ]) -> unit)(
+                      let _ : () =
+                        (Ref[Option[Typ]]::set : (Ref[Option[Typ]], Option[Typ]) -> ())(
                           (found/31 : Ref[Option[Typ]]),
                           Option::Some((entry/33 : EnvEntry).ty)
                         );
-                      (Ref[bool]::set : (Ref[bool], bool) -> unit)((done/32 : Ref[bool]), true)
+                      (Ref[bool]::set : (Ref[bool], bool) -> ())((done/32 : Ref[bool]), true)
                   }
               } else {
                   {
-                      (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+                      (Ref[isize]::set : (Ref[isize], isize) -> ())(
                         (i/30 : Ref[isize]),
                         (Ref[isize]::get : (Ref[isize]) -> isize)((i/30 : Ref[isize])) - 1
                       )
@@ -195,7 +187,7 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option[Typ] {
     let found/37: Ref[Option[Typ]] =
       (Ref[Option[Typ]]::new : (Option[Typ]) -> Ref[Option[Typ]])(Option::None);
     let done/38: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
-    let _ : unit =
+    let _ : () =
       while !(Ref[bool]::get : (Ref[bool]) -> bool)((done/38 : Ref[bool])) &&
         (Ref[isize]::get : (Ref[isize]) -> isize)((i/36 : Ref[isize])) >= 0 {
           {
@@ -205,16 +197,16 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option[Typ] {
                 )];
               if (entry/39 : SubstEntry).name == (name/35 : string) {
                   {
-                      let _ : unit =
-                        (Ref[Option[Typ]]::set : (Ref[Option[Typ]], Option[Typ]) -> unit)(
+                      let _ : () =
+                        (Ref[Option[Typ]]::set : (Ref[Option[Typ]], Option[Typ]) -> ())(
                           (found/37 : Ref[Option[Typ]]),
                           Option::Some((entry/39 : SubstEntry).ty)
                         );
-                      (Ref[bool]::set : (Ref[bool], bool) -> unit)((done/38 : Ref[bool]), true)
+                      (Ref[bool]::set : (Ref[bool], bool) -> ())((done/38 : Ref[bool]), true)
                   }
               } else {
                   {
-                      (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+                      (Ref[isize]::set : (Ref[isize], isize) -> ())(
                         (i/36 : Ref[isize]),
                         (Ref[isize]::get : (Ref[isize]) -> isize)((i/36 : Ref[isize])) - 1
                       )
@@ -225,7 +217,7 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option[Typ] {
     (Ref[Option[Typ]]::get : (Ref[Option[Typ]]) -> Option[Typ])((found/37 : Ref[Option[Typ]]))
 }
 
-fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, string] {
+fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[(), string] {
     match (ty/42 : Typ) {
         Typ::TVar(tvr2/43: Ref[Tv]) =>
           {
@@ -247,15 +239,15 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
                                         (min_i32 : (i32, i32) -> i32)((l/46 : i32), (l2/45 : i32)),
                                       _ : Tv => (l2/45 : i32),
                                   };
-                                let _ : unit =
-                                  (Ref[Tv]::set : (Ref[Tv], Tv) -> unit)(
+                                let _ : () =
+                                  (Ref[Tv]::set : (Ref[Tv], Tv) -> ())(
                                     (tvr2/43 : Ref[Tv]),
                                     Tv::Unbound((name/44 : string), (min_level/47 : i32))
                                   );
                                 Result::Ok(())
                             },
                           Tv::Link(inner/48: Typ) =>
-                            (occurs : (CheckerState, Ref[Tv], Typ) -> Result[unit, string])(
+                            (occurs : (CheckerState, Ref[Tv], Typ) -> Result[(), string])(
                               (st/40 : CheckerState),
                               (tvr/41 : Ref[Tv]),
                               (inner/48 : Typ)
@@ -266,13 +258,13 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
           },
         Typ::TArrow(t1/49: Typ, t2/50: Typ) =>
           {
-              match (occurs : (CheckerState, Ref[Tv], Typ) -> Result[unit, string])(
+              match (occurs : (CheckerState, Ref[Tv], Typ) -> Result[(), string])(
                 (st/40 : CheckerState),
                 (tvr/41 : Ref[Tv]),
                 (t1/49 : Typ)
               ) {
-                  Result::Ok(_ : unit) =>
-                    (occurs : (CheckerState, Ref[Tv], Typ) -> Result[unit, string])(
+                  Result::Ok(_ : ()) =>
+                    (occurs : (CheckerState, Ref[Tv], Typ) -> Result[(), string])(
                       (st/40 : CheckerState),
                       (tvr/41 : Ref[Tv]),
                       (t2/50 : Typ)
@@ -284,7 +276,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
     }
 }
 
-fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
+fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[(), string] {
     match ((t1/53 : Typ), (t2/54 : Typ)) {
         (Typ::TVar(r1/55: Ref[Tv]), Typ::TVar(r2/56: Ref[Tv])) =>
           {
@@ -299,7 +291,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
                   {
                       match (Ref[Tv]::get : (Ref[Tv]) -> Tv)((r1/55 : Ref[Tv])) {
                           Tv::Link(inner/57: Typ) =>
-                            (unify : (CheckerState, Typ, Typ) -> Result[unit, string])(
+                            (unify : (CheckerState, Typ, Typ) -> Result[(), string])(
                               (st/52 : CheckerState),
                               (inner/57 : Typ),
                               Typ::TVar((r2/56 : Ref[Tv]))
@@ -307,24 +299,24 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
                           Tv::Unbound(_ : string, _ : i32) =>
                             match (Ref[Tv]::get : (Ref[Tv]) -> Tv)((r2/56 : Ref[Tv])) {
                                 Tv::Link(inner/58: Typ) =>
-                                  (unify : (CheckerState, Typ, Typ) -> Result[unit, string])(
+                                  (unify : (CheckerState, Typ, Typ) -> Result[(), string])(
                                     (st/52 : CheckerState),
                                     Typ::TVar((r1/55 : Ref[Tv])),
                                     (inner/58 : Typ)
                                   ),
                                 Tv::Unbound(_ : string, _ : i32) =>
                                   match (occurs : (CheckerState, Ref[Tv], Typ) -> Result[
-                                    unit,
+                                    (),
                                     string
                                   ])(
                                     (st/52 : CheckerState),
                                     (r1/55 : Ref[Tv]),
                                     Typ::TVar((r2/56 : Ref[Tv]))
                                   ) {
-                                      Result::Ok(_ : unit) =>
+                                      Result::Ok(_ : ()) =>
                                         {
-                                            let _ : unit =
-                                              (Ref[Tv]::set : (Ref[Tv], Tv) -> unit)(
+                                            let _ : () =
+                                              (Ref[Tv]::set : (Ref[Tv], Tv) -> ())(
                                                 (r1/55 : Ref[Tv]),
                                                 Tv::Link(Typ::TVar((r2/56 : Ref[Tv])))
                                               );
@@ -340,21 +332,21 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
         (Typ::TVar(r1/60: Ref[Tv]), other/61: Typ) =>
           match (Ref[Tv]::get : (Ref[Tv]) -> Tv)((r1/60 : Ref[Tv])) {
               Tv::Link(inner/62: Typ) =>
-                (unify : (CheckerState, Typ, Typ) -> Result[unit, string])(
+                (unify : (CheckerState, Typ, Typ) -> Result[(), string])(
                   (st/52 : CheckerState),
                   (inner/62 : Typ),
                   (other/61 : Typ)
                 ),
               Tv::Unbound(_ : string, _ : i32) =>
-                match (occurs : (CheckerState, Ref[Tv], Typ) -> Result[unit, string])(
+                match (occurs : (CheckerState, Ref[Tv], Typ) -> Result[(), string])(
                   (st/52 : CheckerState),
                   (r1/60 : Ref[Tv]),
                   (other/61 : Typ)
                 ) {
-                    Result::Ok(_ : unit) =>
+                    Result::Ok(_ : ()) =>
                       {
-                          let _ : unit =
-                            (Ref[Tv]::set : (Ref[Tv], Tv) -> unit)(
+                          let _ : () =
+                            (Ref[Tv]::set : (Ref[Tv], Tv) -> ())(
                               (r1/60 : Ref[Tv]),
                               Tv::Link((other/61 : Typ))
                             );
@@ -366,21 +358,21 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
         (other/64: Typ, Typ::TVar(r2/65: Ref[Tv])) =>
           match (Ref[Tv]::get : (Ref[Tv]) -> Tv)((r2/65 : Ref[Tv])) {
               Tv::Link(inner/66: Typ) =>
-                (unify : (CheckerState, Typ, Typ) -> Result[unit, string])(
+                (unify : (CheckerState, Typ, Typ) -> Result[(), string])(
                   (st/52 : CheckerState),
                   (other/64 : Typ),
                   (inner/66 : Typ)
                 ),
               Tv::Unbound(_ : string, _ : i32) =>
-                match (occurs : (CheckerState, Ref[Tv], Typ) -> Result[unit, string])(
+                match (occurs : (CheckerState, Ref[Tv], Typ) -> Result[(), string])(
                   (st/52 : CheckerState),
                   (r2/65 : Ref[Tv]),
                   (other/64 : Typ)
                 ) {
-                    Result::Ok(_ : unit) =>
+                    Result::Ok(_ : ()) =>
                       {
-                          let _ : unit =
-                            (Ref[Tv]::set : (Ref[Tv], Tv) -> unit)(
+                          let _ : () =
+                            (Ref[Tv]::set : (Ref[Tv], Tv) -> ())(
                               (r2/65 : Ref[Tv]),
                               Tv::Link((other/64 : Typ))
                             );
@@ -390,13 +382,13 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
                 },
           },
         (Typ::TArrow(a1/68: Typ, a2/69: Typ), Typ::TArrow(b1/70: Typ, b2/71: Typ)) =>
-          match (unify : (CheckerState, Typ, Typ) -> Result[unit, string])(
+          match (unify : (CheckerState, Typ, Typ) -> Result[(), string])(
             (st/52 : CheckerState),
             (a1/68 : Typ),
             (b1/70 : Typ)
           ) {
-              Result::Ok(_ : unit) =>
-                (unify : (CheckerState, Typ, Typ) -> Result[unit, string])(
+              Result::Ok(_ : ()) =>
+                (unify : (CheckerState, Typ, Typ) -> Result[(), string])(
                   (st/52 : CheckerState),
                   (a2/69 : Typ),
                   (b2/71 : Typ)
@@ -549,12 +541,12 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
                                     (newvar : (CheckerState) -> Typ)((st/102 : CheckerState));
                                   let arrow/120: Typ =
                                     Typ::TArrow((ty_arg/118 : Typ), (ty_res/119 : Typ));
-                                  match (unify : (CheckerState, Typ, Typ) -> Result[unit, string])(
+                                  match (unify : (CheckerState, Typ, Typ) -> Result[(), string])(
                                     (st/102 : CheckerState),
                                     (ty_fun/116 : Typ),
                                     (arrow/120 : Typ)
                                   ) {
-                                      Result::Ok(_ : unit) => Result::Ok((ty_res/119 : Typ)),
+                                      Result::Ok(_ : ()) => Result::Ok((ty_res/119 : Typ)),
                                       Result::Err(e/121: string) => Result::Err((e/121 : string)),
                                   }
                               },
@@ -564,14 +556,14 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
           },
         Exp::Let(x/122: string, e1/123: Exp, e2/124: Exp) =>
           {
-              (enter_level : (CheckerState) -> unit)((st/102 : CheckerState));
+              (enter_level : (CheckerState) -> ())((st/102 : CheckerState));
               let ty_e/125: Result[Typ, string] =
                 (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
                   (st/102 : CheckerState),
                   (env/103 : Vec[EnvEntry]),
                   (e1/123 : Exp)
                 );
-              (leave_level : (CheckerState) -> unit)((st/102 : CheckerState));
+              (leave_level : (CheckerState) -> ())((st/102 : CheckerState));
               match (ty_e/125 : Result[Typ, string]) {
                   Result::Err(e/126: string) => Result::Err((e/126 : string)),
                   Result::Ok(ty1/127: Typ) =>
@@ -614,18 +606,18 @@ fn exp_let(name/134: string, a/135: Exp, b/136: Exp) -> Exp {
     Exp::Let((name/134 : string), (a/135 : Exp), (b/136 : Exp))
 }
 
-fn show_result(label/137: string, res/138: Result[Typ, string]) -> unit {
+fn show_result(label/137: string, res/138: Result[Typ, string]) -> () {
     match (res/138 : Result[Typ, string]) {
         Result::Ok(ty/139: Typ) =>
-          (println : (string) -> unit)(
+          (println : (string) -> ())(
             (label/137 : string) + ": " + (typ_to_string : (Typ) -> string)((ty/139 : Typ))
           ),
         Result::Err(e/140: string) =>
-          (println : (string) -> unit)((label/137 : string) + ": " + (e/140 : string)),
+          (println : (string) -> ())((label/137 : string) + ": " + (e/140 : string)),
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let st/141: CheckerState = (state_new : () -> CheckerState)();
     let id/142: Exp = (exp_lam : (string, Exp) -> Exp)("x", (exp_var : (string) -> Exp)("x"));
     let c1/143: Exp =
@@ -639,8 +631,8 @@ fn main() -> unit {
           )
         )
       );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "id",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -648,8 +640,8 @@ fn main() -> unit {
         (id/142 : Exp)
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "c1",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -657,8 +649,8 @@ fn main() -> unit {
         (c1/143 : Exp)
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "let_x_c1_x",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -666,8 +658,8 @@ fn main() -> unit {
         (exp_let : (string, Exp, Exp) -> Exp)("x", (c1/143 : Exp), (exp_var : (string) -> Exp)("x"))
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "let_y_id_y",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -679,8 +671,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "lam_x_let_y_id_y",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -695,8 +687,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "lam_x_let_y_id_yx",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -714,8 +706,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "self_apply",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -729,8 +721,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "unbound_var",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -742,8 +734,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "max_heiber",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -763,8 +755,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "kirang",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -799,8 +791,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "let_id_idid",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -815,8 +807,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "nested_lets",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -836,8 +828,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "fun_x_fun_y_let_x_xy_fun_x_yx",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -864,8 +856,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "sound_gen_1",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -880,8 +872,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "sound_gen_2",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -896,8 +888,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "sound_gen_3",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -918,8 +910,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "double_apply",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -943,8 +935,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_type_variables : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_type_variables : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "sound_gen_occurs",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -962,8 +954,8 @@ fn main() -> unit {
         )
       )
     );
-    (reset_gensym : (CheckerState) -> unit)((st/141 : CheckerState));
-    (show_result : (string, Result[Typ, string]) -> unit)(
+    (reset_gensym : (CheckerState) -> ())((st/141 : CheckerState));
+    (show_result : (string, Result[Typ, string]) -> ())(
       "fun_x_let_y_let_z_x_id_z_y",
       (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])(
         (st/141 : CheckerState),
@@ -982,7 +974,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (string) -> unit)("");
-    (println : (string) -> unit)("All Done");
-    (println : (string) -> unit)("");
+    (println : (string) -> ())("");
+    (println : (string) -> ())("All Done");
+    (println : (string) -> ())("");
 }

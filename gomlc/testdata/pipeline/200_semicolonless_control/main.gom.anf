@@ -1,21 +1,21 @@
-fn main() -> unit {
-  join k0() -> unit {
+fn main() -> () {
+  join k0() -> () {
     let mtmp0 = 1 in
-    join k1() -> unit {
-      join inline_cont0(index/0: Ref[isize]) -> unit {
-        join exit0() -> unit {
-          join inline_cont1(values/0: Vec[string]) -> unit {
-            join inline_cont2(_wild0: unit) -> unit {
+    join k1() -> () {
+      join inline_cont0(index/0: Ref[isize]) -> () {
+        join exit0() -> () {
+          join inline_cont1(values/0: Vec[string]) -> () {
+            join inline_cont2(_wild0: ()) -> () {
               let for_limit0 = @intrinsic(vec.len)(values/0) in
               let for_index0 = 0 in
-              join exit1() -> unit {
+              join exit1() -> () {
                 let inline0 = "done" in
                 let inline1 = trait_impl#ToString#string#to_string(inline0) in
                 let inline2 = @runtime(core.string_println)(inline1) in
                 ()
               } in
               joinrec {
-                join loop1() -> unit {
+                join loop1() -> () {
                   let t0 = (for_index0 < for_limit0) in
                   if t0 {
                     let for_item0 = @intrinsic(vec.get)(values/0, for_index0) in
@@ -39,14 +39,14 @@ fn main() -> unit {
           jump inline_cont1(inline7)
         } in
         joinrec {
-          join loop0() -> unit {
-            join inline_cont3(t2: isize) -> unit {
+          join loop0() -> () {
+            join inline_cont3(t2: isize) -> () {
               let t3 = (t2 < 2) in
               if t3 {
-                join inline_cont4(t4: isize) -> unit {
-                  join inline_cont5(t5: string) -> unit {
-                    join inline_cont6(_wild2: unit) -> unit {
-                      join inline_cont7(t6: isize) -> unit {
+                join inline_cont4(t4: isize) -> () {
+                  join inline_cont5(t5: string) -> () {
+                    join inline_cont6(_wild2: ()) -> () {
+                      join inline_cont7(t6: isize) -> () {
                         let t7 = (t6 + 1) in
                         let inline8 = @intrinsic(ref.set)(index/0, t7) in
                         jump loop0()
@@ -95,8 +95,8 @@ fn main() -> unit {
   jump k0()
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -119,7 +119,7 @@ fn inherent#isize#isize#to_string(self/0: isize) -> string {
   inline1
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
@@ -129,7 +129,7 @@ fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   t0
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> unit {
+fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -192,7 +192,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -224,7 +224,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -247,7 +247,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }

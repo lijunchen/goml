@@ -6,7 +6,7 @@ fn take_f32(x/1: f32) -> f32 {
     (x/1 : f32)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let a/2: u8 = 1;
     let b/3: i8 = 2;
     let c/4: i16 = 3;
@@ -15,18 +15,16 @@ fn main() -> unit {
     let f/7: i64 = 6;
     let g/8: u64 = 7;
     let h/9: f32 = 1;
-    (println : (string) -> unit)((ToString::to_string : (u8) -> string)((a/2 : u8)));
-    (println : (string) -> unit)((ToString::to_string : (i8) -> string)((b/3 : i8)));
-    (println : (string) -> unit)((ToString::to_string : (i16) -> string)((c/4 : i16)));
-    (println : (string) -> unit)((ToString::to_string : (u16) -> string)((d/5 : u16)));
-    (println : (string) -> unit)((ToString::to_string : (u32) -> string)((e/6 : u32)));
-    (println : (string) -> unit)((ToString::to_string : (i64) -> string)((f/7 : i64)));
-    (println : (string) -> unit)((ToString::to_string : (u64) -> string)((g/8 : u64)));
-    (println : (string) -> unit)((ToString::to_string : (f32) -> string)((h/9 : f32)));
-    (println : (string) -> unit)(
-      (ToString::to_string : (u8) -> string)((take_u8 : (u8) -> u8)(10))
-    );
-    (println : (string) -> unit)(
+    (println : (string) -> ())((ToString::to_string : (u8) -> string)((a/2 : u8)));
+    (println : (string) -> ())((ToString::to_string : (i8) -> string)((b/3 : i8)));
+    (println : (string) -> ())((ToString::to_string : (i16) -> string)((c/4 : i16)));
+    (println : (string) -> ())((ToString::to_string : (u16) -> string)((d/5 : u16)));
+    (println : (string) -> ())((ToString::to_string : (u32) -> string)((e/6 : u32)));
+    (println : (string) -> ())((ToString::to_string : (i64) -> string)((f/7 : i64)));
+    (println : (string) -> ())((ToString::to_string : (u64) -> string)((g/8 : u64)));
+    (println : (string) -> ())((ToString::to_string : (f32) -> string)((h/9 : f32)));
+    (println : (string) -> ())((ToString::to_string : (u8) -> string)((take_u8 : (u8) -> u8)(10)));
+    (println : (string) -> ())(
       (ToString::to_string : (f32) -> string)((take_f32 : (f32) -> f32)(2.5))
     );
 }

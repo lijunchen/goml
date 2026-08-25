@@ -125,8 +125,8 @@ fn build_counter(label/42: string, start/43: i32) -> (
       |delta/48: i32| =>
         {
             let before/49: i32 = (Ref[i32]::get : (Ref[i32]) -> i32)((count/44 : Ref[i32]));
-            let _ : unit =
-              (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+            let _ : () =
+              (Ref[i32]::set : (Ref[i32], i32) -> ())(
                 (count/44 : Ref[i32]),
                 (before/49 : i32) + (delta/48 : i32)
               );
@@ -139,8 +139,8 @@ fn build_counter(label/42: string, start/43: i32) -> (
       || =>
         {
             let before/51: bool = (Ref[bool]::get : (Ref[bool]) -> bool)((toggled/45 : Ref[bool]));
-            let _ : unit =
-              (Ref[bool]::set : (Ref[bool], bool) -> unit)(
+            let _ : () =
+              (Ref[bool]::set : (Ref[bool], bool) -> ())(
                 (toggled/45 : Ref[bool]),
                 !(before/51 : bool)
               );
@@ -158,7 +158,7 @@ fn build_counter(label/42: string, start/43: i32) -> (
     )
 }
 
-fn main() -> unit {
+fn main() -> () {
     let (
       tracker/54: Tracker,
       snapshot/55: () -> Record[i32],
@@ -219,11 +219,11 @@ fn main() -> unit {
         )
       );
     let bool_text/77: string = (ToString::to_string : (bool) -> string)((order_check/70 : bool));
-    let _ : unit = (println : (string) -> unit)((tracker_info/58 : string));
-    let _ : unit = (println : (string) -> unit)((first_text/71 : string));
-    let _ : unit = (println : (string) -> unit)((bumped_text/72 : string));
-    let _ : unit = (println : (string) -> unit)((flipped_text/73 : string));
-    let _ : unit = (println : (string) -> unit)((summary/75 : string));
-    let _ : unit = (println : (string) -> unit)((pair_text/76 : string));
-    let _ : unit = (println : (string) -> unit)((bool_text/77 : string));
+    let _ : () = (println : (string) -> ())((tracker_info/58 : string));
+    let _ : () = (println : (string) -> ())((first_text/71 : string));
+    let _ : () = (println : (string) -> ())((bumped_text/72 : string));
+    let _ : () = (println : (string) -> ())((flipped_text/73 : string));
+    let _ : () = (println : (string) -> ())((summary/75 : string));
+    let _ : () = (println : (string) -> ())((pair_text/76 : string));
+    let _ : () = (println : (string) -> ())((bool_text/77 : string));
 }

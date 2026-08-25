@@ -5,7 +5,7 @@ fn values() -> FrozenVec[isize] {
     VALUES.get_or_init(|| Vec::from_array([1, 2, 3]).freeze())
 }
 
-fn main() -> unit {
+fn main() -> () {
     let frozen = values();
     let copy = frozen.to_vec();
     copy.set(0, 9);

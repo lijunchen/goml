@@ -50,28 +50,28 @@ fn show(res/7: Result[i32, string]) -> string {
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (show : (Result[i32, string]) -> string)(
         (choose : (Choice) -> Result[i32, string])(Choice::Left(true))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Result[i32, string]) -> string)(
         (choose : (Choice) -> Result[i32, string])(Choice::Right(true))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Result[i32, string]) -> string)(
         (choose : (Choice) -> Result[i32, string])(Choice::Keep(5))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Result[i32, string]) -> string)(
         (choose : (Choice) -> Result[i32, string])(Choice::Left(false))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Result[i32, string]) -> string)(
         (choose : (Choice) -> Result[i32, string])(Choice::Right(false))
       )

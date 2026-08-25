@@ -8,7 +8,7 @@ fn to_dyn[T](x/1: T) -> dyn Display where T: Display {
     to_dyn[Display]{T}((x/1 : T))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let _ : dyn Display = (to_dyn : (S) -> dyn Display)(S {});
-    (println : (string) -> unit)("ok");
+    (println : (string) -> ())("ok");
 }

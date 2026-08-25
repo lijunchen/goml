@@ -2,7 +2,7 @@ fn make_string_channel() -> Channel[string] {
   inherent#Channel#Channel[T]#new__T_string(0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let buffered/0 = inherent#Channel#Channel[T]#new__T_isize(2) in
   let _wild0 = inherent#Channel#Channel[T]#send__T_isize(buffered/0, 10) in
   let _wild1 = inherent#Channel#Channel[T]#send__T_isize(buffered/0, 20) in
@@ -95,15 +95,15 @@ fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize]
   @intrinsic(channel.new)(capacity/0)
 }
 
-fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> () {
   @intrinsic(channel.send)(self/0, value/0)
 }
 
-fn inherent#Channel#Channel[T]#close__T_isize(self/0: Channel[isize]) -> unit {
+fn inherent#Channel#Channel[T]#close__T_isize(self/0: Channel[isize]) -> () {
   @intrinsic(channel.close)(self/0)
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
@@ -132,7 +132,7 @@ fn inherent#Channel#Channel[T]#recv__T_isize(self/0: Channel[isize]) -> Option__
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -141,7 +141,7 @@ fn roundtrip__T_string(channel/0: Channel[string], value/0: string) -> Option__s
   inherent#Channel#Channel[T]#recv__T_string(channel/0)
 }
 
-fn inherent#Channel#Channel[T]#close__T_string(self/0: Channel[string]) -> unit {
+fn inherent#Channel#Channel[T]#close__T_string(self/0: Channel[string]) -> () {
   @intrinsic(channel.close)(self/0)
 }
 
@@ -153,7 +153,7 @@ fn trait_impl#ToString#string#to_string(self/0: string) -> string {
   self/0
 }
 
-fn inherent#Channel#Channel[T]#send__T_string(self/0: Channel[string], value/0: string) -> unit {
+fn inherent#Channel#Channel[T]#send__T_string(self/0: Channel[string], value/0: string) -> () {
   @intrinsic(channel.send)(self/0, value/0)
 }
 
@@ -257,7 +257,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

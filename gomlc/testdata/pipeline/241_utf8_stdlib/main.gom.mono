@@ -1,4 +1,4 @@
-fn check_utf8(bytes/0: Vec[u8], expected/0: bool) -> unit {
+fn check_utf8(bytes/0: Vec[u8], expected/0: bool) -> () {
   let expected_length/0 = inherent#Vec#Vec[T]#len__T_u0(bytes/0) in
   let mtmp0 = string_from_utf0(bytes/0) in
   {
@@ -25,7 +25,7 @@ fn check_utf8(bytes/0: Vec[u8], expected/0: bool) -> unit {
   }
 }
 
-fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> unit {
+fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> () {
   let mtmp0 = string_from_utf0(bytes/0) in
   {
     let x0 = mtmp0.0 in
@@ -78,7 +78,7 @@ fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> u
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = check_utf0(inherent#Vec#Vec[T]#new__T_u0(), true) in
   let _wild1 = check_utf0(@intrinsic(vec.from_array)([0]), true) in
   let _wild2 = check_utf0(@intrinsic(vec.from_array)([127]), true) in
@@ -157,7 +157,7 @@ fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   }
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 

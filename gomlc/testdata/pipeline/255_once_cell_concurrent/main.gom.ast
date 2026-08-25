@@ -2,7 +2,7 @@ package main;
 static VALUE: OnceCell[isize] = OnceCell::new();
 
 #[allow(unstructured_go)]
-fn main() -> unit {
+fn main() -> () {
     let results = Channel::new(2);
     go || results.send(VALUE.get_or_init(|| 41));
     go || results.send(VALUE.get_or_init(|| 42));

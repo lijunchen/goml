@@ -119,21 +119,21 @@ impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let wrapped/24: Wrapper[NoTraits] = Wrapper { value: NoTraits { value: 1 } };
     let left/25: Generic[NoTraits, NoTraits] =
       Generic { first: (wrapped/24 : Wrapper[NoTraits]), second: (wrapped/24 : Wrapper[NoTraits]) };
     let right/26: Generic[NoTraits, NoTraits] =
       Generic { first: (wrapped/24 : Wrapper[NoTraits]), second: (wrapped/24 : Wrapper[NoTraits]) };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (Generic[NoTraits, NoTraits]) -> string)(
         (left/25 : Generic[NoTraits, NoTraits])
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (left/25 : Generic[NoTraits, NoTraits]) == (right/26 : Generic[NoTraits, NoTraits])
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (Hash::hash : (Generic[NoTraits, NoTraits]) -> u64)(
         (left/25 : Generic[NoTraits, NoTraits])
       ) ==
@@ -144,21 +144,21 @@ fn main() -> unit {
     let empty/27: GenericChoice[NoTraits, NoTraits] = GenericChoice::Empty;
     let value/28: GenericChoice[NoTraits, NoTraits] =
       GenericChoice::Value((wrapped/24 : Wrapper[NoTraits]));
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (GenericChoice[NoTraits, NoTraits]) -> string)(
         (empty/27 : GenericChoice[NoTraits, NoTraits])
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (GenericChoice[NoTraits, NoTraits]) -> string)(
         (value/28 : GenericChoice[NoTraits, NoTraits])
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (empty/27 : GenericChoice[NoTraits, NoTraits]) !=
         (value/28 : GenericChoice[NoTraits, NoTraits])
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> u64)(
         (value/28 : GenericChoice[NoTraits, NoTraits])
       ) ==

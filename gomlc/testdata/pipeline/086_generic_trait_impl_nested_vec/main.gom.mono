@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let a/0 = Wrap__isize { value: 1 } in
   let b/0 = Wrap__string { value: "x" } in
   let _wild0 =
@@ -7,7 +7,7 @@ fn main() -> unit {
     println__T_string(inherent#i32#i32#to_string(trait_impl#Size#Wrap__string#size(b/0))) in
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -102,7 +102,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

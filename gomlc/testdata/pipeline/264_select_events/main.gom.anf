@@ -3,27 +3,27 @@ fn std::internal::task::scope_new(parent/0: i64) -> i64 {
   t0
 }
 
-fn std::internal::task::scope_spawn(scope/0: i64, body/0: () -> unit) -> bool {
+fn std::internal::task::scope_spawn(scope/0: i64, body/0: () -> ()) -> bool {
   let t0 = @runtime(std.task.scope_spawn)(scope/0, body/0) in
   t0
 }
 
-fn std::internal::task::scope_run(scope/0: i64, body/0: () -> unit) -> unit {
+fn std::internal::task::scope_run(scope/0: i64, body/0: () -> ()) -> () {
   let t0 = @runtime(std.task.scope_run)(scope/0, body/0) in
   ()
 }
 
-fn std::internal::task::scope_try_spawn(scope/0: i64, body/0: () -> unit) -> bool {
+fn std::internal::task::scope_try_spawn(scope/0: i64, body/0: () -> ()) -> bool {
   let t0 = @runtime(std.task.scope_try_spawn)(scope/0, body/0) in
   t0
 }
 
-fn std::internal::task::scope_cancel(scope/0: i64) -> unit {
+fn std::internal::task::scope_cancel(scope/0: i64) -> () {
   let t0 = @runtime(std.task.scope_cancel)(scope/0) in
   ()
 }
 
-fn std::internal::task::scope_finish(scope/0: i64) -> unit {
+fn std::internal::task::scope_finish(scope/0: i64) -> () {
   let t0 = @runtime(std.task.scope_finish)(scope/0) in
   ()
 }
@@ -33,7 +33,7 @@ fn std::internal::task::scope_cancelled(scope/0: i64) -> bool {
   t0
 }
 
-fn std::internal::task::scope_done(scope/0: i64) -> Receiver[unit] {
+fn std::internal::task::scope_done(scope/0: i64) -> Receiver[()] {
   let t0 = @runtime(std.task.scope_done)(scope/0) in
   t0
 }
@@ -70,10 +70,7 @@ fn std::internal::task::child_scope(
   jump inline_cont0(inline0)
 }
 
-fn std::internal::task::spawn(
-  scope/0: std::internal::task::ScopeHandle,
-  body/0: () -> unit
-) -> unit {
+fn std::internal::task::spawn(scope/0: std::internal::task::ScopeHandle, body/0: () -> ()) -> () {
   let t0 = std::internal::task::ScopeHandle.id(scope/0) in
   let inline0 = @runtime(std.task.scope_spawn)(t0, body/0) in
   ()
@@ -81,16 +78,16 @@ fn std::internal::task::spawn(
 
 fn std::internal::task::try_spawn(
   scope/0: std::internal::task::ScopeHandle,
-  body/0: () -> unit
+  body/0: () -> ()
 ) -> bool {
   let t0 = std::internal::task::ScopeHandle.id(scope/0) in
   let inline0 = @runtime(std.task.scope_try_spawn)(t0, body/0) in
   inline0
 }
 
-fn std::internal::task::run(scope/0: std::internal::task::ScopeHandle, body/0: () -> unit) -> unit {
+fn std::internal::task::run(scope/0: std::internal::task::ScopeHandle, body/0: () -> ()) -> () {
   let t0 = std::internal::task::ScopeHandle.id(scope/0) in
-  join inline_cont0(_wild0: unit) -> unit {
+  join inline_cont0(_wild0: ()) -> () {
     let t1 = std::internal::task::ScopeHandle.id(scope/0) in
     let inline0 = @runtime(std.task.scope_finish)(t1) in
     ()
@@ -99,13 +96,13 @@ fn std::internal::task::run(scope/0: std::internal::task::ScopeHandle, body/0: (
   jump inline_cont0(())
 }
 
-fn std::internal::task::cancel(scope/0: std::internal::task::ScopeHandle) -> unit {
+fn std::internal::task::cancel(scope/0: std::internal::task::ScopeHandle) -> () {
   let t0 = std::internal::task::ScopeHandle.id(scope/0) in
   let inline0 = @runtime(std.task.scope_cancel)(t0) in
   ()
 }
 
-fn std::internal::task::finish(scope/0: std::internal::task::ScopeHandle) -> unit {
+fn std::internal::task::finish(scope/0: std::internal::task::ScopeHandle) -> () {
   let t0 = std::internal::task::ScopeHandle.id(scope/0) in
   let inline0 = @runtime(std.task.scope_finish)(t0) in
   ()
@@ -148,7 +145,7 @@ fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is
 
 fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#done(
   self/0: std::internal::task::CancelToken
-) -> Receiver[unit] {
+) -> Receiver[()] {
   let t0 = std::internal::task::CancelToken.id(self/0) in
   let inline0 = @runtime(std.task.scope_done)(t0) in
   inline0
@@ -159,7 +156,7 @@ fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
 ) -> std::task::ConcurrencyLimit {
   let t0 = (limit/0 > 0) in
   join k0(jp0: isize) -> std::task::ConcurrencyLimit {
-    join inline_cont0(slots/0: Channel[unit]) -> std::task::ConcurrencyLimit {
+    join inline_cont0(slots/0: Channel[()]) -> std::task::ConcurrencyLimit {
       let for_index0 = 0 in
       join exit0() -> std::task::ConcurrencyLimit {
         let t1 = std::task::ConcurrencyLimit { slots: slots/0 } in
@@ -196,7 +193,7 @@ fn std::task::active_scope_count() -> isize {
   inline0
 }
 
-fn inherent#std::task::Scope#std::task::Scope#cancel(self/0: std::task::Scope) -> unit {
+fn inherent#std::task::Scope#std::task::Scope#cancel(self/0: std::task::Scope) -> () {
   let t0 = std::task::Scope.handle(self/0) in
   let inline0 = std::internal::task::ScopeHandle.id(t0) in
   let inline1 = std::internal::task::scope_cancel(inline0) in
@@ -235,7 +232,7 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
 
 fn inherent#std::task::CancelToken#std::task::CancelToken#done(
   self/0: std::task::CancelToken
-) -> Receiver[unit] {
+) -> Receiver[()] {
   let t0 = std::task::CancelToken.value(self/0) in
   let inline0 = std::internal::task::CancelToken.id(t0) in
   let inline1 = std::internal::task::scope_done(inline0) in
@@ -245,11 +242,11 @@ fn inherent#std::task::CancelToken#std::task::CancelToken#done(
 fn std::task::sleep_nanoseconds_with(
   cancel/0: std::task::CancelToken,
   nanoseconds/0: i64
-) -> std::task::WaitResult__unit {
+) -> std::task::WaitResult__() {
   let t0 = std::task::CancelToken.value(cancel/0) in
-  join inline_cont0(t1: bool) -> std::task::WaitResult__unit {
+  join inline_cont0(t1: bool) -> std::task::WaitResult__() {
     if t1 {
-      let t2 = std::task::WaitResult__unit::Completed(()) in
+      let t2 = std::task::WaitResult__()::Completed(()) in
       t2
     } else {
       Tag_1
@@ -420,17 +417,17 @@ fn std::internal::host::sha256_file(path/0: string) -> (bool, string, string) {
   t0
 }
 
-fn std::internal::host::print(value/0: string) -> unit {
+fn std::internal::host::print(value/0: string) -> () {
   let t0 = @runtime(std.io.print)(value/0) in
   ()
 }
 
-fn std::internal::host::println(value/0: string) -> unit {
+fn std::internal::host::println(value/0: string) -> () {
   let t0 = @runtime(std.io.println)(value/0) in
   ()
 }
 
-fn std::internal::host::eprint(value/0: string) -> unit {
+fn std::internal::host::eprint(value/0: string) -> () {
   let t0 = @runtime(std.io.eprint)(value/0) in
   ()
 }
@@ -537,7 +534,7 @@ fn std::internal::host::path_separator() -> string {
   t0
 }
 
-fn std::internal::host::exit(code/0: isize) -> unit {
+fn std::internal::host::exit(code/0: isize) -> () {
   let t0 = @runtime(std.process.exit)(code/0) in
   ()
 }
@@ -675,7 +672,7 @@ fn std::internal::host::process_status_cancel(
   t0
 }
 
-fn std::internal::host::test_fail(message/0: string) -> unit {
+fn std::internal::host::test_fail(message/0: string) -> () {
   let t0 = @runtime(std.testing.fail)(message/0) in
   ()
 }
@@ -690,12 +687,12 @@ fn std::internal::host::unix_nanoseconds() -> i64 {
   t0
 }
 
-fn std::internal::host::sleep_nanoseconds(value/0: i64) -> unit {
+fn std::internal::host::sleep_nanoseconds(value/0: i64) -> () {
   let t0 = @runtime(std.time.sleep_nanoseconds)(value/0) in
   ()
 }
 
-fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[unit]) {
+fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[()]) {
   let t0 = @runtime(std.time.timer_new)(value/0) in
   t0
 }
@@ -859,7 +856,7 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#is_empty(self/0: std::bytes:
 fn inherent#std::bytes::Builder#std::bytes::Builder#push(
   self/0: std::bytes::Builder,
   value/0: u8
-) -> unit {
+) -> () {
   let t0 = std::bytes::Builder.values(self/0) in
   let inline0 = @intrinsic(vec.push)(t0, value/0) in
   ()
@@ -868,17 +865,17 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#push(
 fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   self/0: std::bytes::Builder,
   value/0: Slice[u8]
-) -> unit {
+) -> () {
   let t0 = std::bytes::Builder.values(self/0) in
-  join inline_cont0(t1: isize) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
+  join inline_cont0(t1: isize) -> () {
+    join inline_cont1(_wild0: ()) -> () {
       let for_limit0 = @intrinsic(slice.len)(value/0) in
       let for_index0 = 0 in
-      join exit0() -> unit {
+      join exit0() -> () {
         ()
       } in
       joinrec {
-        join loop0() -> unit {
+        join loop0() -> () {
           let t2 = (for_index0 < for_limit0) in
           if t2 {
             let for_item0 = @intrinsic(slice.get)(value/0, for_index0) in
@@ -901,7 +898,7 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   jump inline_cont0(inline2)
 }
 
-fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> unit {
+fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> () {
   let t0 = std::bytes::Builder.values(self/0) in
   let inline0 = inherent#Vec#Vec[T]#truncate__T_u0(t0, 0) in
   ()
@@ -1010,7 +1007,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/0: std::bytes::Bytes,
   index/0: isize,
   value/0: u8
-) -> unit {
+) -> () {
   let place0 = std::bytes::Bytes.values(self/0) in
   let place1 = @intrinsic(vec.get)(place0, index/0) in
   let t0 = @intrinsic(vec.set)(place0, index/0, value/0) in
@@ -1047,10 +1044,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set_checked(
   jump inline_cont0(inline7)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
-  self/0: std::bytes::Bytes,
-  value/0: u8
-) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/0: std::bytes::Bytes, value/0: u8) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = @intrinsic(vec.push)(t0, value/0) in
   ()
@@ -1075,7 +1069,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/0: std::bytes::Bytes) -
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/0: std::bytes::Bytes,
   additional/0: isize
-) -> unit {
+) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = @intrinsic(vec.reserve)(t0, additional/0) in
   ()
@@ -1084,13 +1078,13 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/0: std::bytes::Bytes,
   len/0: isize
-) -> unit {
+) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = @intrinsic(vec.truncate)(t0, len/0) in
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
   let inline0 = inherent#Vec#Vec[T]#truncate__T_u0(t0, 0) in
   ()
@@ -1155,17 +1149,17 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_mut_slice(self/0: std::bytes:
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#extend_from_slice(
   self/0: std::bytes::Bytes,
   source/0: Slice[u8]
-) -> unit {
+) -> () {
   let t0 = std::bytes::Bytes.values(self/0) in
-  join inline_cont0(t1: isize) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
+  join inline_cont0(t1: isize) -> () {
+    join inline_cont1(_wild0: ()) -> () {
       let for_limit0 = @intrinsic(slice.len)(source/0) in
       let for_index0 = 0 in
-      join exit0() -> unit {
+      join exit0() -> () {
         ()
       } in
       joinrec {
-        join loop0() -> unit {
+        join loop0() -> () {
           let t2 = (for_index0 < for_limit0) in
           if t2 {
             let for_item0 = @intrinsic(slice.get)(source/0, for_index0) in
@@ -1992,24 +1986,24 @@ fn std::io::read_stdin_exact_structured(
 fn std::io::write_structured(
   stderr/0: bool,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::io::Error {
-  join k0(jp0: (bool, isize, bool, isize, string)) -> Result__unit__std::io::Error {
+) -> Result__()__std::io::Error {
+  join k0(jp0: (bool, isize, bool, isize, string)) -> Result__()__std::io::Error {
     let x0 = jp0.0 in
     let x1 = jp0.1 in
     let x2 = jp0.2 in
     let x3 = jp0.3 in
     let x4 = jp0.4 in
     if x0 {
-      let t0 = Result__unit__std::io::Error::Ok(()) in
+      let t0 = Result__()__std::io::Error::Ok(()) in
       t0
     } else {
-      join k1(jp1: string) -> Result__unit__std::io::Error {
-        join inline_cont0(t1: std::io::Error) -> Result__unit__std::io::Error {
-          let t2 = Result__unit__std::io::Error::Err(t1) in
+      join k1(jp1: string) -> Result__()__std::io::Error {
+        join inline_cont0(t1: std::io::Error) -> Result__()__std::io::Error {
+          let t2 = Result__()__std::io::Error::Err(t1) in
           t2
         } in
         let inline0 = std::io::kind_from_code(x1) in
-        join inline_join0(inline1: Option__isize) -> Result__unit__std::io::Error {
+        join inline_join0(inline1: Option__isize) -> Result__()__std::io::Error {
           let inline2 =
             inherent#std::io::Error#std::io::Error#new(inline0, jp1, Tag_0, inline1, x4) in
           jump inline_cont0(inline2)
@@ -2029,14 +2023,14 @@ fn std::io::write_structured(
     }
   } in
   if stderr/0 {
-    join inline_cont1(t3: Vec[u8]) -> Result__unit__std::io::Error {
+    join inline_cont1(t3: Vec[u8]) -> Result__()__std::io::Error {
       let inline4 = @runtime(std.io.write_stderr.v2)(t3) in
       jump k0(inline4)
     } in
     let inline5 = std::bytes::Bytes.values(data/0) in
     jump inline_cont1(inline5)
   } else {
-    join inline_cont2(t4: Vec[u8]) -> Result__unit__std::io::Error {
+    join inline_cont2(t4: Vec[u8]) -> Result__()__std::io::Error {
       let inline6 = @runtime(std.io.write_stdout.v2)(t4) in
       jump k0(inline6)
     } in
@@ -2045,12 +2039,12 @@ fn std::io::write_structured(
   }
 }
 
-fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   let t0 = std::io::write_structured(false, data/0) in
   t0
 }
 
-fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   let t0 = std::io::write_structured(true, data/0) in
   t0
 }
@@ -2076,16 +2070,16 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
   jump inline_cont0(inline1)
 }
 
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont0(t0: Vec[u8]) -> Result__unit__string {
-    join inline_cont1(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__()__string {
+  join inline_cont0(t0: Vec[u8]) -> Result__()__string {
+    join inline_cont1(mtmp0: (bool, string)) -> Result__()__string {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       if x0 {
-        let t1 = Result__unit__string::Ok(()) in
+        let t1 = Result__()__string::Ok(()) in
         t1
       } else {
-        let t2 = Result__unit__string::Err(x1) in
+        let t2 = Result__()__string::Err(x1) in
         t2
       }
     } in
@@ -2096,16 +2090,16 @@ fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
   jump inline_cont0(inline1)
 }
 
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont0(t0: Vec[u8]) -> Result__unit__string {
-    join inline_cont1(mtmp0: (bool, string)) -> Result__unit__string {
+fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__()__string {
+  join inline_cont0(t0: Vec[u8]) -> Result__()__string {
+    join inline_cont1(mtmp0: (bool, string)) -> Result__()__string {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       if x0 {
-        let t1 = Result__unit__string::Ok(()) in
+        let t1 = Result__()__string::Ok(()) in
         t1
       } else {
-        let t2 = Result__unit__string::Err(x1) in
+        let t2 = Result__()__string::Err(x1) in
         t2
       }
     } in
@@ -3146,8 +3140,8 @@ fn trait_impl#PartialEq#std::time::SystemTime#eq(
   t2
 }
 
-fn std::time::sleep(duration/0: std::time::Duration) -> unit {
-  join inline_cont0(t0: i64) -> unit {
+fn std::time::sleep(duration/0: std::time::Duration) -> () {
+  join inline_cont0(t0: i64) -> () {
     let inline0 = @runtime(std.time.sleep_nanoseconds)(t0) in
     ()
   } in
@@ -3159,7 +3153,7 @@ fn inherent#std::time::Timer#std::time::Timer#new(
   duration/0: std::time::Duration
 ) -> std::time::Timer {
   join inline_cont0(t0: i64) -> std::time::Timer {
-    join inline_cont1(mtmp0: (i64, Receiver[unit])) -> std::time::Timer {
+    join inline_cont1(mtmp0: (i64, Receiver[()])) -> std::time::Timer {
       let x0 = mtmp0.0 in
       let x1 = mtmp0.1 in
       let t1 = std::time::Timer { id: x0, ready: x1 } in
@@ -3172,7 +3166,7 @@ fn inherent#std::time::Timer#std::time::Timer#new(
   jump inline_cont0(inline1)
 }
 
-fn inherent#std::time::Timer#std::time::Timer#done(self/0: std::time::Timer) -> Receiver[unit] {
+fn inherent#std::time::Timer#std::time::Timer#done(self/0: std::time::Timer) -> Receiver[()] {
   let t0 = std::time::Timer.ready(self/0) in
   t0
 }
@@ -3183,8 +3177,8 @@ fn inherent#std::time::Timer#std::time::Timer#stop(self/0: std::time::Timer) -> 
   inline0
 }
 
-fn std::time::after(duration/0: std::time::Duration) -> Receiver[unit] {
-  join inline_cont0(t0: std::time::Timer) -> Receiver[unit] {
+fn std::time::after(duration/0: std::time::Duration) -> Receiver[()] {
+  join inline_cont0(t0: std::time::Timer) -> Receiver[()] {
     let inline0 = std::time::Timer.ready(t0) in
     inline0
   } in
@@ -3199,12 +3193,12 @@ fn std::time::after(duration/0: std::time::Duration) -> Receiver[unit] {
 fn std::time::sleep_with(
   cancel/0: std::task::CancelToken,
   duration/0: std::time::Duration
-) -> std::task::WaitResult__unit {
-  join inline_cont0(t0: i64) -> std::task::WaitResult__unit {
+) -> std::task::WaitResult__() {
+  join inline_cont0(t0: i64) -> std::task::WaitResult__() {
     let inline0 = std::task::CancelToken.value(cancel/0) in
     let inline1 = std::internal::task::sleep_with(inline0, t0) in
     if inline1 {
-      let inline2 = std::task::WaitResult__unit::Completed(()) in
+      let inline2 = std::task::WaitResult__()::Completed(()) in
       inline2
     } else {
       Tag_1
@@ -3214,54 +3208,54 @@ fn std::time::sleep_with(
   jump inline_cont0(inline3)
 }
 
-fn main() -> unit {
-  join inline_cont0(t0: std::time::Duration) -> unit {
+fn main() -> () {
+  join inline_cont0(t0: std::time::Duration) -> () {
     let timer/0 = inherent#std::time::Timer#std::time::Timer#new(t0) in
-    join inline_cont1(t1: Receiver[unit]) -> unit {
-      join k0() -> unit {
-        join inline_cont2(t2: std::time::Duration) -> unit {
-          join inline_cont3(stopped/0: std::time::Timer) -> unit {
-            join inline_cont4(t3: bool) -> unit {
-              join inline_cont5(_wild0: unit) -> unit {
-                join inline_cont6(t4: Receiver[unit]) -> unit {
-                  join k1() -> unit {
+    join inline_cont1(t1: Receiver[()]) -> () {
+      join k0() -> () {
+        join inline_cont2(t2: std::time::Duration) -> () {
+          join inline_cont3(stopped/0: std::time::Timer) -> () {
+            join inline_cont4(t3: bool) -> () {
+              join inline_cont5(_wild0: ()) -> () {
+                join inline_cont6(t4: Receiver[()]) -> () {
+                  join k1() -> () {
                     let t5 = closure_env_main_1 {} in
                     let t6 =
                       pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t5) in
-                    join inline_cont7(_wild1: unit) -> unit {
+                    join inline_cont7(_wild1: ()) -> () {
                       let t7 = closure_env_main_2 {} in
                       let t8 =
                         pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t7) in
                       let inline0 = std::internal::task::root_scope() in
-                      let inline1 = inherent#Ref#Ref[T]#new__T_Option[unit](Tag_0) in
+                      let inline1 = inherent#Ref#Ref[T]#new__T_Option[()](Tag_0) in
                       let inline2 =
-                        closure_env_std_task_scope_T_unit_3 {
+                        closure_env_std_task_scope_T_3 {
                           result_0: inline1,
                           body_1: t8,
                           handle_2: inline0
                         } in
                       let inline3 =
-                        pack_closure[inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply](
+                        pack_closure[inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply](
                           inline2
                         ) in
                       let inline4 = std::internal::task::run(inline0, inline3) in
-                      let inline5 = std::task::completed_scope_value__T_unit(inline1) in
+                      let inline5 = std::task::completed_scope_value__T_()(inline1) in
                       ()
                     } in
                     let inline6 = std::internal::task::root_scope() in
-                    let inline7 = inherent#Ref#Ref[T]#new__T_Option[unit](Tag_0) in
+                    let inline7 = inherent#Ref#Ref[T]#new__T_Option[()](Tag_0) in
                     let inline8 =
-                      closure_env_std_task_scope_T_unit_3 {
+                      closure_env_std_task_scope_T_3 {
                         result_0: inline7,
                         body_1: t6,
                         handle_2: inline6
                       } in
                     let inline9 =
-                      pack_closure[inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply](
+                      pack_closure[inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply](
                         inline8
                       ) in
                     let inline10 = std::internal::task::run(inline6, inline9) in
-                    let inline11 = std::task::completed_scope_value__T_unit(inline7) in
+                    let inline11 = std::task::completed_scope_value__T_()(inline7) in
                     jump inline_cont7(())
                   } in
                   select priority {
@@ -3319,12 +3313,12 @@ fn main() -> unit {
   jump inline_cont0(inline35)
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/0: isize) -> Channel[unit] {
+fn inherent#Channel#Channel[T]#new__T_()(capacity/0: isize) -> Channel[()] {
   let t0 = @intrinsic(channel.new)(capacity/0) in
   t0
 }
 
-fn inherent#Channel#Channel[T]#send__T_unit(self/0: Channel[unit], value/0: unit) -> unit {
+fn inherent#Channel#Channel[T]#send__T_()(self/0: Channel[()], value/0: ()) -> () {
   let t0 = @intrinsic(channel.send)(self/0, value/0) in
   ()
 }
@@ -3356,7 +3350,7 @@ fn inherent#Vec#Vec[T]#is_empty__T_u8(self/0: Vec[u8]) -> bool {
   t1
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -3366,12 +3360,12 @@ fn inherent#Slice#Slice[T]#len__T_u8(self/0: Slice[u8]) -> isize {
   t0
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> () {
   let t0 = @intrinsic(vec.reserve)(self/0, additional/0) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> () {
   let inline0 = 0 in
   let inline1 = @intrinsic(vec.truncate)(self/0, inline0) in
   ()
@@ -3455,7 +3449,7 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
       let t1 = (len/0 - 1) in
       let value/0 = @intrinsic(vec.get)(self/0, t1) in
       let t2 = (len/0 - 1) in
-      join inline_cont1(_wild0: unit) -> Option__u8 {
+      join inline_cont1(_wild0: ()) -> Option__u8 {
         let t3 = Option__u8::Some(value/0) in
         t3
       } in
@@ -3467,7 +3461,7 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
   jump inline_cont0(inline1)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> () {
   let t0 = @intrinsic(vec.truncate)(self/0, len/0) in
   ()
 }
@@ -3670,8 +3664,8 @@ fn inherent#Option#Option[T]#unwrap_or__T_std::time::Duration(
   }
 }
 
-fn println__T_isize(value/0: isize) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_isize(value/0: isize) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -3679,8 +3673,8 @@ fn println__T_isize(value/0: isize) -> unit {
   jump inline_cont0(inline0)
 }
 
-fn println__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -3688,21 +3682,17 @@ fn println__T_bool(value/0: bool) -> unit {
   jump inline_cont0(inline0)
 }
 
-fn std::task::scope__T_unit(body/0: (std::task::Scope) -> unit) -> unit {
-  join inline_cont0(handle/0: std::internal::task::ScopeHandle) -> unit {
-    join inline_cont1(result/0: Ref[Option__unit]) -> unit {
+fn std::task::scope__T_()(body/0: (std::task::Scope) -> ()) -> () {
+  join inline_cont0(handle/0: std::internal::task::ScopeHandle) -> () {
+    join inline_cont1(result/0: Ref[Option__()]) -> () {
       let t0 =
-        closure_env_std_task_scope_T_unit_3 {
-          result_0: result/0,
-          body_1: body/0,
-          handle_2: handle/0
-        } in
+        closure_env_std_task_scope_T_3 { result_0: result/0, body_1: body/0, handle_2: handle/0 } in
       let t1 =
-        pack_closure[inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply](
+        pack_closure[inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply](
           t0
         ) in
-      join inline_cont2(_wild0: unit) -> unit {
-        let t2 = std::task::completed_scope_value__T_unit(result/0) in
+      join inline_cont2(_wild0: ()) -> () {
+        let t2 = std::task::completed_scope_value__T_()(result/0) in
         ()
       } in
       let inline0 = std::internal::task::ScopeHandle.id(handle/0) in
@@ -3724,7 +3714,7 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
   body/0: (std::task::CancelToken) -> isize
 ) -> std::task::Task__isize {
   join inline_cont0(result/0: Ref[Option__isize]) -> std::task::Task__isize {
-    join inline_cont1(ready/0: Channel[unit]) -> std::task::Task__isize {
+    join inline_cont1(ready/0: Channel[()]) -> std::task::Task__isize {
       let t0 = std::task::Scope.handle(self/0) in
       join inline_cont2(t1: std::internal::task::CancelToken) -> std::task::Task__isize {
         let token/0 = std::task::CancelToken { value: t1 } in
@@ -3740,7 +3730,7 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
           pack_closure[inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#apply](
             t3
           ) in
-        join inline_cont3(_wild0: unit) -> std::task::Task__isize {
+        join inline_cont3(_wild0: ()) -> std::task::Task__isize {
           let t5 = std::task::Task__isize { result: result/0, ready: ready/0 } in
           t5
         } in
@@ -3762,7 +3752,7 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_isize(
 
 fn inherent#std::task::Task#std::task::Task[T]#done__T_isize(
   self/0: std::task::Task__isize
-) -> Receiver[unit] {
+) -> Receiver[()] {
   let t0 = std::task::Task__isize.ready(self/0) in
   let inline0 = @intrinsic(channel.receiver)(t0) in
   inline0
@@ -3777,7 +3767,7 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
   joinrec {
     join loop_expr0() -> isize {
       let t0 = std::task::Task__isize.ready(self/0) in
-      join inline_cont0(mtmp0: Option__unit) -> isize {
+      join inline_cont0(mtmp0: Option__()) -> isize {
         let t1 = std::task::Task__isize.result(self/0) in
         join inline_cont1(mtmp1: Option__isize) -> isize {
           match mtmp1 {
@@ -3797,7 +3787,7 @@ fn inherent#std::task::Task#std::task::Task[T]#join__T_isize(
       let inline2 = inline1.0 in
       let inline3 = inline1.1 in
       if inline3 {
-        let inline4 = Option__unit::Some(inline2) in
+        let inline4 = Option__()::Some(inline2) in
         jump inline_cont0(inline4)
       } else {
         jump inline_cont0(Tag_0)
@@ -4121,26 +4111,23 @@ fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
   t0
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[unit](value/0: Option__unit) -> Ref[Option__unit] {
+fn inherent#Ref#Ref[T]#new__T_Option[()](value/0: Option__()) -> Ref[Option__()] {
   let t0 = @intrinsic(ref.new)(value/0) in
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Option[unit](
-  self/0: Ref[Option__unit],
-  value/0: Option__unit
-) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Option[()](self/0: Ref[Option__()], value/0: Option__()) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn std::task::completed_scope_value__T_unit(result/0: Ref[Option__unit]) -> unit {
-  join exit0() -> unit {
+fn std::task::completed_scope_value__T_()(result/0: Ref[Option__()]) -> () {
+  join exit0() -> () {
     ()
   } in
   joinrec {
-    join loop_expr0() -> unit {
-      join inline_cont0(mtmp0: Option__unit) -> unit {
+    join loop_expr0() -> () {
+      join inline_cont0(mtmp0: Option__()) -> () {
         match mtmp0 {
           Tag_0 => {
             jump loop_expr0()
@@ -4165,27 +4152,27 @@ fn inherent#Ref#Ref[T]#new__T_Option[isize](value/0: Option__isize) -> Ref[Optio
 fn inherent#Ref#Ref[T]#set__T_Option[isize](
   self/0: Ref[Option__isize],
   value/0: Option__isize
-) -> unit {
+) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#close__T_unit(self/0: Channel[unit]) -> unit {
+fn inherent#Channel#Channel[T]#close__T_()(self/0: Channel[()]) -> () {
   let t0 = @intrinsic(channel.close)(self/0) in
   ()
 }
 
-fn inherent#Channel#Channel[T]#receiver__T_unit(self/0: Channel[unit]) -> Receiver[unit] {
+fn inherent#Channel#Channel[T]#receiver__T_()(self/0: Channel[()]) -> Receiver[()] {
   let t0 = @intrinsic(channel.receiver)(self/0) in
   t0
 }
 
-fn inherent#Channel#Channel[T]#recv__T_unit(self/0: Channel[unit]) -> Option__unit {
+fn inherent#Channel#Channel[T]#recv__T_()(self/0: Channel[()]) -> Option__() {
   let mtmp0 = @intrinsic(channel.recv)(self/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
   if x1 {
-    let t0 = Option__unit::Some(x0) in
+    let t0 = Option__()::Some(x0) in
     t0
   } else {
     Tag_0
@@ -4251,7 +4238,7 @@ fn utf8_invalid_continuation(value/0: u32) -> bool {
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[unit](self/0: Ref[Option__unit]) -> Option__unit {
+fn inherent#Ref#Ref[T]#get__T_Option[()](self/0: Ref[Option__()]) -> Option__() {
   let t0 = @intrinsic(ref.get)(self/0) in
   t0
 }
@@ -4279,7 +4266,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -4311,7 +4298,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -4382,7 +4369,7 @@ fn utf8_valid_scalar(value/0: u32) -> bool {
   }
 }
 
-fn trait_impl#PartialEq#Option__unit#eq(self/0: Option__unit, other/0: Option__unit) -> bool {
+fn trait_impl#PartialEq#Option__()#eq(self/0: Option__(), other/0: Option__()) -> bool {
   match other/0 {
     Tag_0 => {
       match self/0 {
@@ -4407,7 +4394,7 @@ fn trait_impl#PartialEq#Option__unit#eq(self/0: Option__unit, other/0: Option__u
   }
 }
 
-fn trait_impl#Hash#Option__unit#hash(self/0: Option__unit) -> u64 {
+fn trait_impl#Hash#Option__()#hash(self/0: Option__()) -> u64 {
   match self/0 {
     Tag_0 => {
       14695981039346656038
@@ -4439,11 +4426,11 @@ fn trait_impl#Hash#Option__isize#hash(self/0: Option__isize) -> u64 {
   }
 }
 
-fn trait_impl#PartialEq#unit#eq(self/0: unit, other/0: unit) -> bool {
+fn trait_impl#PartialEq#()#eq(self/0: (), other/0: ()) -> bool {
   true
 }
 
-fn trait_impl#Hash#unit#hash(self/0: unit) -> u64 {
+fn trait_impl#Hash#()#hash(self/0: ()) -> u64 {
   0
 }
 
@@ -4462,11 +4449,11 @@ fn inherent#closure_env_main_0#closure_env_main_0#apply(
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
   env0: closure_env_main_1,
   scope/0: std::task::Scope
-) -> unit {
+) -> () {
   let t0 = closure_env_main_0 {} in
   let t1 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t0) in
-  join inline_cont0(work/0: std::task::Task__isize) -> unit {
-    join inline_cont1(t2: Receiver[unit]) -> unit {
+  join inline_cont0(work/0: std::task::Task__isize) -> () {
+    join inline_cont1(t2: Receiver[()]) -> () {
       select {
         recv(t2) as _/0 => {
           let t3 = inherent#std::task::Task#std::task::Task[T]#join__T_isize(work/0) in
@@ -4477,11 +4464,11 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(
       }
     } in
     let inline2 = std::task::Task__isize.ready(work/0) in
-    let inline3 = inherent#Channel#Channel[T]#receiver__T_unit(inline2) in
+    let inline3 = inherent#Channel#Channel[T]#receiver__T_()(inline2) in
     jump inline_cont1(inline3)
   } in
   let inline4 = inherent#Ref#Ref[T]#new__T_Option[isize](Tag_0) in
-  let inline5 = inherent#Channel#Channel[T]#new__T_unit(0) in
+  let inline5 = inherent#Channel#Channel[T]#new__T_()(0) in
   let inline6 = std::task::Scope.handle(scope/0) in
   let inline7 = std::internal::task::token(inline6) in
   let inline8 = std::task::CancelToken { value: inline7 } in
@@ -4505,10 +4492,10 @@ fn inherent#closure_env_main_1#closure_env_main_1#apply(
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
   env0: closure_env_main_2,
   scope/0: std::task::Scope
-) -> unit {
-  join inline_cont0(cancel/0: std::task::CancelToken) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
-      join inline_cont2(t0: Receiver[unit]) -> unit {
+) -> () {
+  join inline_cont0(cancel/0: std::task::CancelToken) -> () {
+    join inline_cont1(_wild0: ()) -> () {
+      join inline_cont2(t0: Receiver[()]) -> () {
         select {
           recv(t0) as _/0 => {
             let inline0 = 4 in
@@ -4533,22 +4520,22 @@ fn inherent#closure_env_main_2#closure_env_main_2#apply(
   jump inline_cont0(inline9)
 }
 
-fn inherent#closure_env_std_task_scope_T_unit_3#closure_env_std_task_scope_T_unit_3#apply(
-  env0: closure_env_std_task_scope_T_unit_3
-) -> unit {
-  let result/0 = closure_env_std_task_scope_T_unit_3.result_0(env0) in
-  let body/0 = closure_env_std_task_scope_T_unit_3.body_1(env0) in
-  let handle/0 = closure_env_std_task_scope_T_unit_3.handle_2(env0) in
+fn inherent#closure_env_std_task_scope_T_3#closure_env_std_task_scope_T_3#apply(
+  env0: closure_env_std_task_scope_T_3
+) -> () {
+  let result/0 = closure_env_std_task_scope_T_3.result_0(env0) in
+  let body/0 = closure_env_std_task_scope_T_3.body_1(env0) in
+  let handle/0 = closure_env_std_task_scope_T_3.handle_2(env0) in
   let t0 = std::task::Scope { handle: handle/0 } in
   let t1 = body/0(t0) in
-  let t2 = Option__unit::Some(t1) in
+  let t2 = Option__()::Some(t1) in
   let inline0 = @intrinsic(ref.set)(result/0, t2) in
   ()
 }
 
 fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#apply(
   env0: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4
-) -> unit {
+) -> () {
   let result/0 =
     closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.result_0(env0) in
   let body/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.body_1(env0) in
@@ -4556,7 +4543,7 @@ fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4#c
   let ready/0 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_isize_4.ready_3(env0) in
   let t0 = body/0(token/0) in
   let t1 = Option__isize::Some(t0) in
-  join inline_cont0(_wild0: unit) -> unit {
+  join inline_cont0(_wild0: ()) -> () {
     let inline0 = @intrinsic(channel.close)(ready/0) in
     ()
   } in

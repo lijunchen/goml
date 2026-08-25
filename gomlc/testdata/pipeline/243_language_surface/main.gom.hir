@@ -20,7 +20,7 @@ file main.gom
       source/1.get()
   }
 
-  fn labeled_cleanup() -> unit {
+  fn labeled_cleanup() -> () {
       'outer: loop {
           defer println("outer cleanup");
           loop {
@@ -30,7 +30,7 @@ file main.gom
       }
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       println(def/1/3(NumberSource { value: 11 } as dyn Source[Item = isize]));
       let (mut local/1/2, local/1/3) = (1, 2);
       index/2 += value/3;

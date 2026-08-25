@@ -7,7 +7,7 @@ fn values() -> FrozenVec__isize {
   )
 }
 
-fn main() -> unit {
+fn main() -> () {
   let frozen/0 = values() in
   let copy/0 = inherent#FrozenVec#FrozenVec[T]#to_vec__T_isize(frozen/0) in
   let _wild0 = inherent#Vec#Vec[T]#set__T_isize(copy/0, 0, 9) in
@@ -39,11 +39,11 @@ fn inherent#FrozenVec#FrozenVec[T]#to_vec__T_isize(self/0: FrozenVec__isize) -> 
   inherent#Vec#Vec[T]#copy__T_isize(FrozenVec__isize.values(self/0))
 }
 
-fn inherent#Vec#Vec[T]#set__T_isize(self/0: Vec[isize], index/0: isize, elem/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#set__T_isize(self/0: Vec[isize], index/0: isize, elem/0: isize) -> () {
   @intrinsic(vec.set)(self/0, index/0, elem/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -95,7 +95,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_isize(capacity/0: isize) -> Vec[isize] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -170,7 +170,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

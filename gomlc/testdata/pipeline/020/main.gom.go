@@ -76,7 +76,7 @@ type Wrapper__i32 struct {
     value int32
 }
 
-type Wrapper__unit struct {
+type _goml_m_Wrapper_____o__q_ struct {
     value struct{}
 }
 
@@ -88,10 +88,10 @@ type Shape__i32 struct {
     _v1_0 Wrapper__i32
 }
 
-type Shape__unit struct {
+type _goml_m_Shape_____o__q_ struct {
     _tag int32
     _v0_0 Point
-    _v1_0 Wrapper__unit
+    _v1_0 _goml_m_Wrapper_____o__q_
 }
 
 func bounce_int(shape__0 Shape__i32) Shape__i32 {
@@ -145,7 +145,7 @@ func wrapper_int32_to_string(wrapper__0 Wrapper__i32) string {
     return t1
 }
 
-func wrapper_unit_to_string(wrapper__0 Wrapper__unit) string {
+func wrapper_unit_to_string(wrapper__0 _goml_m_Wrapper_____o__q_) string {
     var x0 struct{} = wrapper__0.value
     var t0 string
     var inline0 string = _goml_runtime_core_unit_to_string(x0)
@@ -190,7 +190,7 @@ func shape_int32_to_string(shape__0 Shape__i32) string {
     }
 }
 
-func shape_unit_to_string(shape__0 Shape__unit) string {
+func shape_unit_to_string(shape__0 _goml_m_Shape_____o__q_) string {
     switch shape__0._tag {
     case 0:
         var x0 Point = shape__0._v0_0
@@ -208,10 +208,10 @@ func shape_unit_to_string(shape__0 Shape__unit) string {
         var t1 string = prefix__0 + ")"
         return t1
     case 1:
-        var x1 Wrapper__unit = shape__0._v1_0
+        var x1 _goml_m_Wrapper_____o__q_ = shape__0._v1_0
         var t2 string
         var inline8 struct{} = x1.value
-        var inline9 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline8)
+        var inline9 string = _goml_m_trait__impl_i_ToString_i__o__q__i_to__string(inline8)
         var inline10 string = "Wrapper[unit] { value: " + inline9
         var inline11 string = inline10 + " }"
         t2 = inline11
@@ -237,7 +237,7 @@ func main0() struct{} {
     }
     var t3 string = wrapper_int32_to_string(t2)
     println__T_string(t3)
-    var t4 Wrapper__unit = Wrapper__unit{
+    var t4 _goml_m_Wrapper_____o__q_ = _goml_m_Wrapper_____o__q_{
         value: struct{}{},
     }
     var t5 string = wrapper_unit_to_string(t4)
@@ -272,17 +272,17 @@ func main0() struct{} {
         x: 3,
         y: 4,
     }
-    var t14 Shape__unit = Shape__unit{
+    var t14 _goml_m_Shape_____o__q_ = _goml_m_Shape_____o__q_{
         _tag: 0,
         _v0_0: t13,
     }
     var t15 string = shape_unit_to_string(t14)
     var inline7 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t15)
     _goml_runtime_core_string_println(inline7)
-    var t16 Wrapper__unit = Wrapper__unit{
+    var t16 _goml_m_Wrapper_____o__q_ = _goml_m_Wrapper_____o__q_{
         value: struct{}{},
     }
-    var t17 Shape__unit = Shape__unit{
+    var t17 _goml_m_Shape_____o__q_ = _goml_m_Shape_____o__q_{
         _tag: 1,
         _v1_0: t16,
     }
@@ -316,7 +316,7 @@ func _goml_m_inherent_i_i32_i_i32_i_to__string(self__0 int32) string {
     return inline1
 }
 
-func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__0 struct{}) string {
+func _goml_m_trait__impl_i_ToString_i__o__q__i_to__string(self__0 struct{}) string {
     var t0 string = _goml_runtime_core_unit_to_string(self__0)
     return t0
 }

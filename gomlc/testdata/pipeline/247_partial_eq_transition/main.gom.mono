@@ -91,31 +91,28 @@ fn trait_impl#std::cmp::Ord#Ordering#cmp(self/0: Ordering, other/0: Ordering) ->
   }
 }
 
-fn trait_impl#std::cmp::Ord#unit#cmp(self/0: unit, other/0: unit) -> Ordering {
+fn trait_impl#std::cmp::Ord#()#cmp(self/0: (), other/0: ()) -> Ordering {
   Ordering::Equal
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#partial_cmp(
-  self/0: unit,
-  other/0: unit
-) -> Option__Ordering {
+fn trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0: (), other/0: ()) -> Option__Ordering {
   Option__Ordering::Some(Ordering::Equal)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#lt(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#lt__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#lt(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#le(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#le__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#le(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#gt(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#gt__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#gt(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_()(default_arg0, default_arg1)
 }
 
-fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: unit) -> bool {
-  std::cmp::trait_default#PartialOrd#ge__Self_unit(default_arg0, default_arg1)
+fn trait_impl#std::cmp::PartialOrd#()#ge(default_arg0: (), default_arg1: ()) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_()(default_arg0, default_arg1)
 }
 
 fn trait_impl#std::cmp::Ord#bool#cmp(self/0: bool, other/0: bool) -> Ordering {
@@ -984,7 +981,7 @@ fn trait_impl#std::cmp::PartialOrd#Rank#ge(default_arg0: Rank, default_arg1: Ran
   std::cmp::trait_default#PartialOrd#ge__Self_Rank(default_arg0, default_arg1)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let legacy/0 = LegacyKey { value: 7 } in
   let modern/0 = ModernKey { value: 9 } in
   let _wild0 = println__T_bool(equal__T_LegacyKey(legacy/0, LegacyKey { value: 7 })) in
@@ -1163,9 +1160,9 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_Ordering(
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#lt__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -1183,9 +1180,9 @@ fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#le__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -1203,9 +1200,9 @@ fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#gt__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -1223,9 +1220,9 @@ fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/0: unit, other/0: unit)
   }
 }
 
-fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/0: unit, other/0: unit) -> bool {
+fn std::cmp::trait_default#PartialOrd#ge__Self_()(self/0: (), other/0: ()) -> bool {
   {
-    let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/0, other/0) in
+    let mtmp0 = trait_impl#std::cmp::PartialOrd#()#partial_cmp(self/0, other/0) in
     match mtmp0 {
       Option__Ordering::None => {
         false
@@ -2531,7 +2528,7 @@ fn std::cmp::trait_default#PartialOrd#ge__Self_Rank(self/0: Rank, other/0: Rank)
   }
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
@@ -2543,7 +2540,7 @@ fn equal__T_ModernKey(left/0: ModernKey, right/0: ModernKey) -> bool {
   trait_impl#PartialEq#ModernKey#eq(left/0, right/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -2559,7 +2556,7 @@ fn inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(
   self/0: HashMap[LegacyKey, string],
   key/0: LegacyKey,
   value/0: string
-) -> unit {
+) -> () {
   @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
@@ -2598,7 +2595,7 @@ fn inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(
   self/0: HashMap[ModernKey, string],
   key/0: ModernKey,
   value/0: string
-) -> unit {
+) -> () {
   @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 

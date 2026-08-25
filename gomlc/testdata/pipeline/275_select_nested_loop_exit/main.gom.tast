@@ -4,7 +4,7 @@ fn default_break_outer_continue() -> isize {
     loop {
         if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) == 0 {
             {
-                (Ref[isize]::set : (Ref[isize], isize) -> unit)((rounds/0 : Ref[isize]), 1);
+                (Ref[isize]::set : (Ref[isize], isize) -> ())((rounds/0 : Ref[isize]), 1);
                 loop {
                     select {
                         recv((channel/1 : Channel[isize])) as _/2 => continue,
@@ -37,11 +37,11 @@ fn default_break_outer_break() -> isize {
 fn arm_break_outer_continue() -> isize {
     let rounds/5: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     let channel/6: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
-    (Channel[isize]::send : (Channel[isize], isize) -> unit)((channel/6 : Channel[isize]), 1);
+    (Channel[isize]::send : (Channel[isize], isize) -> ())((channel/6 : Channel[isize]), 1);
     loop {
         if (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/5 : Ref[isize])) == 0 {
             {
-                (Ref[isize]::set : (Ref[isize], isize) -> unit)((rounds/5 : Ref[isize]), 1);
+                (Ref[isize]::set : (Ref[isize], isize) -> ())((rounds/5 : Ref[isize]), 1);
                 loop {
                     select {
                         recv((channel/6 : Channel[isize])) as _/7 => break,
@@ -60,7 +60,7 @@ fn arm_break_outer_continue() -> isize {
 
 fn arm_break_outer_break() -> isize {
     let channel/8: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
-    (Channel[isize]::send : (Channel[isize], isize) -> unit)((channel/8 : Channel[isize]), 1);
+    (Channel[isize]::send : (Channel[isize], isize) -> ())((channel/8 : Channel[isize]), 1);
     loop {
         loop {
             select {
@@ -72,9 +72,9 @@ fn arm_break_outer_break() -> isize {
     }
 }
 
-fn main() -> unit {
-    (println : (isize) -> unit)((default_break_outer_continue : () -> isize)());
-    (println : (isize) -> unit)((default_break_outer_break : () -> isize)());
-    (println : (isize) -> unit)((arm_break_outer_continue : () -> isize)());
-    (println : (isize) -> unit)((arm_break_outer_break : () -> isize)())
+fn main() -> () {
+    (println : (isize) -> ())((default_break_outer_continue : () -> isize)());
+    (println : (isize) -> ())((default_break_outer_break : () -> isize)());
+    (println : (isize) -> ())((arm_break_outer_continue : () -> isize)());
+    (println : (isize) -> ())((arm_break_outer_break : () -> isize)())
 }

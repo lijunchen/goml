@@ -2,7 +2,7 @@ package main;
 use std::task;
 use std::time;
 
-fn main() -> unit {
+fn main() -> () {
     let timer = time::Timer::new(time::Duration::zero());
     select {
         recv(timer.done()) as _ => println(1),

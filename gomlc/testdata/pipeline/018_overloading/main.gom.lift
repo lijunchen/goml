@@ -6,15 +6,15 @@ fn trait_impl#Arith#i32#less(self/0: i32, other/0: i32) -> bool {
   (self/0 < other/0)
 }
 
-fn trait_impl#Output#i32#output(self/0: i32) -> unit {
+fn trait_impl#Output#i32#output(self/0: i32) -> () {
   println__T_string(trait_impl#ToString#i32#to_string(self/0))
 }
 
-fn trait_impl#Output#bool#output(self/0: bool) -> unit {
+fn trait_impl#Output#bool#output(self/0: bool) -> () {
   println__T_string(trait_impl#ToString#bool#to_string(self/0))
 }
 
-fn main() -> unit {
+fn main() -> () {
   let a/0 = id__T_i0(1) in
   let b/0 = id__T_i0(2) in
   let c/0 = trait_impl#Arith#i32#add(a/0, b/0) in
@@ -28,7 +28,7 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -111,7 +111,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

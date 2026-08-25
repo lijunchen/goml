@@ -6,9 +6,9 @@ extern fn to_upper(value: string) -> string
 extern fn cut(value: string, separator: string) -> (string, string, bool)
 
 #[go_ffi("runtime", "Gosched")]
-extern fn gosched() -> unit
+extern fn gosched() -> ()
 
-fn main() -> unit {
+fn main() -> () {
     println(to_upper("goml"));
     let (before, after, found) = cut("left:right", ":");
     println(before);

@@ -9,14 +9,14 @@ fn open_handle(ok/0: bool) -> Result__Handle__string {
   }
 }
 
-fn close_handle(handle/0: Handle, ok/0: bool) -> Result__unit__string {
+fn close_handle(handle/0: Handle, ok/0: bool) -> Result__()__string {
   if ok/0 {
-    let t0 = Result__unit__string::Ok(()) in
+    let t0 = Result__()__string::Ok(()) in
     t0
   } else {
     let t1 = Handle.name(handle/0) in
     let t2 = ("close failed for " + t1) in
-    let t3 = Result__unit__string::Err(t2) in
+    let t3 = Result__()__string::Err(t2) in
     t3
   }
 }
@@ -25,7 +25,7 @@ fn use_handle(open_ok/0: bool, close_ok/0: bool) -> Result__string__string {
   join inline_cont0(mtmp0: Result__Handle__string) -> Result__string__string {
     join k0(jp0: Handle) -> Result__string__string {
       let name/0 = Handle.name(jp0) in
-      join inline_cont1(mtmp1: Result__unit__string) -> Result__string__string {
+      join inline_cont1(mtmp1: Result__()__string) -> Result__string__string {
         join k1() -> Result__string__string {
           let t0 = ("closed " + name/0) in
           let t1 = Result__string__string::Ok(t0) in
@@ -36,19 +36,19 @@ fn use_handle(open_ok/0: bool, close_ok/0: bool) -> Result__string__string {
             jump k1()
           },
           Tag_1 => {
-            let x0 = Result__unit__string::Err._0(mtmp1) in
+            let x0 = Result__()__string::Err._0(mtmp1) in
             let t2 = Result__string__string::Err(x0) in
             t2
           },
         }
       } in
       if close_ok/0 {
-        let inline0 = Result__unit__string::Ok(()) in
+        let inline0 = Result__()__string::Ok(()) in
         jump inline_cont1(inline0)
       } else {
         let inline1 = Handle.name(jp0) in
         let inline2 = ("close failed for " + inline1) in
-        let inline3 = Result__unit__string::Err(inline2) in
+        let inline3 = Result__()__string::Err(inline2) in
         jump inline_cont1(inline3)
       }
     } in
@@ -89,15 +89,15 @@ fn show(res/0: Result__string__string) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let t0 = use_handle(true, true) in
-  join inline_cont0(t1: string) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
+  join inline_cont0(t1: string) -> () {
+    join inline_cont1(_wild0: ()) -> () {
       let t2 = use_handle(false, true) in
-      join inline_cont2(t3: string) -> unit {
-        join inline_cont3(_wild1: unit) -> unit {
+      join inline_cont2(t3: string) -> () {
+        join inline_cont3(_wild1: ()) -> () {
           let t4 = use_handle(true, false) in
-          join inline_cont4(t5: string) -> unit {
+          join inline_cont4(t5: string) -> () {
             let inline0 = trait_impl#ToString#string#to_string(t5) in
             let inline1 = @runtime(core.string_println)(inline0) in
             ()
@@ -150,8 +150,8 @@ fn main() -> unit {
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

@@ -1,9 +1,9 @@
-fn main() -> unit {
+fn main() -> () {
     let i/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     let total/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while if (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize])) == 0 {
         {
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)((i/0 : Ref[isize]), 1);
+            (Ref[isize]::set : (Ref[isize], isize) -> ())((i/0 : Ref[isize]), 1);
             true
         }
     } else {
@@ -18,44 +18,44 @@ fn main() -> unit {
         }
     } {
         {
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (total/1 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((total/1 : Ref[isize])) +
                 (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize]))
             );
             if (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize])) == 1 {
                 {
-                    (Ref[isize]::set : (Ref[isize], isize) -> unit)((i/0 : Ref[isize]), 2);
+                    (Ref[isize]::set : (Ref[isize], isize) -> ())((i/0 : Ref[isize]), 2);
                     continue
                 }
             } else {
                 {}
             };
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (i/0 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize])) + 1
             );
         }
     };
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((total/1 : Ref[isize])));
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((total/1 : Ref[isize])));
     let j/2: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     let total2/3: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while match (Ref[isize]::get : (Ref[isize]) -> isize)((j/2 : Ref[isize])) {
         0 =>
           {
-              (Ref[isize]::set : (Ref[isize], isize) -> unit)((j/2 : Ref[isize]), 1);
+              (Ref[isize]::set : (Ref[isize], isize) -> ())((j/2 : Ref[isize]), 1);
               true
           },
         1 =>
           {
-              (Ref[isize]::set : (Ref[isize], isize) -> unit)((j/2 : Ref[isize]), 2);
+              (Ref[isize]::set : (Ref[isize], isize) -> ())((j/2 : Ref[isize]), 2);
               true
           },
         2 => true,
         _ : isize => false,
     } {
         {
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (total2/3 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((total2/3 : Ref[isize])) +
                 (Ref[isize]::get : (Ref[isize]) -> isize)((j/2 : Ref[isize]))
@@ -69,5 +69,5 @@ fn main() -> unit {
             };
         }
     };
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((total2/3 : Ref[isize])));
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((total2/3 : Ref[isize])));
 }

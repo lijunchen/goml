@@ -1,9 +1,9 @@
 static VALUE: OnceCell[isize] = OnceCell::new();
 
-fn main() -> unit {
+fn main() -> () {
     let results/0: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(2);
     go || =>
-      (Channel[isize]::send : (Channel[isize], isize) -> unit)(
+      (Channel[isize]::send : (Channel[isize], isize) -> ())(
         (results/0 : Channel[isize]),
         (OnceCell[isize]::get_or_init : (OnceCell[isize], () -> isize) -> isize)(
           (VALUE : OnceCell[isize]),
@@ -11,7 +11,7 @@ fn main() -> unit {
         )
       );
     go || =>
-      (Channel[isize]::send : (Channel[isize], isize) -> unit)(
+      (Channel[isize]::send : (Channel[isize], isize) -> ())(
         (results/0 : Channel[isize]),
         (OnceCell[isize]::get_or_init : (OnceCell[isize], () -> isize) -> isize)(
           (VALUE : OnceCell[isize]),
@@ -28,7 +28,7 @@ fn main() -> unit {
         (Channel[isize]::recv : (Channel[isize]) -> Option[isize])((results/0 : Channel[isize])),
         0
       );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)((first/1 : isize) == (second/2 : isize))
     )
 }

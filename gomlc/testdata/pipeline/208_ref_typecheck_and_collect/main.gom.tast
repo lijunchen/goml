@@ -1,5 +1,5 @@
 fn main() -> i32 {
     let value/0: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(1);
-    let _ : unit = (Ref[i32]::set : (Ref[i32], i32) -> unit)((value/0 : Ref[i32]), 2);
+    let _ : () = (Ref[i32]::set : (Ref[i32], i32) -> ())((value/0 : Ref[i32]), 2);
     (Ref[i32]::get : (Ref[i32]) -> i32)((value/0 : Ref[i32]))
 }

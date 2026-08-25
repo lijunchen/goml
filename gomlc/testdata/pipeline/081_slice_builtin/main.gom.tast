@@ -1,28 +1,18 @@
-fn main() -> unit {
+fn main() -> () {
     let v/0: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((v/0 : Vec[i32]), 10);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((v/0 : Vec[i32]), 20);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((v/0 : Vec[i32]), 30);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((v/0 : Vec[i32]), 40);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((v/0 : Vec[i32]), 10);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((v/0 : Vec[i32]), 20);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((v/0 : Vec[i32]), 30);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((v/0 : Vec[i32]), 40);
     let s/1: Slice[i32] =
       (Vec[i32]::slice : (Vec[i32], isize, isize) -> Slice[i32])((v/0 : Vec[i32]), 1, 4);
-    (println : (isize) -> unit)((Slice[i32]::len : (Slice[i32]) -> isize)((s/1 : Slice[i32])));
-    (println : (i32) -> unit)(
-      (Slice[i32]::get : (Slice[i32], isize) -> i32)((s/1 : Slice[i32]), 0)
-    );
-    (println : (i32) -> unit)(
-      (Slice[i32]::get : (Slice[i32], isize) -> i32)((s/1 : Slice[i32]), 1)
-    );
-    (println : (i32) -> unit)(
-      (Slice[i32]::get : (Slice[i32], isize) -> i32)((s/1 : Slice[i32]), 2)
-    );
+    (println : (isize) -> ())((Slice[i32]::len : (Slice[i32]) -> isize)((s/1 : Slice[i32])));
+    (println : (i32) -> ())((Slice[i32]::get : (Slice[i32], isize) -> i32)((s/1 : Slice[i32]), 0));
+    (println : (i32) -> ())((Slice[i32]::get : (Slice[i32], isize) -> i32)((s/1 : Slice[i32]), 1));
+    (println : (i32) -> ())((Slice[i32]::get : (Slice[i32], isize) -> i32)((s/1 : Slice[i32]), 2));
     let t/2: Slice[i32] =
       (Slice[i32]::sub : (Slice[i32], isize, isize) -> Slice[i32])((s/1 : Slice[i32]), 1, 3);
-    (println : (isize) -> unit)((Slice[i32]::len : (Slice[i32]) -> isize)((t/2 : Slice[i32])));
-    (println : (i32) -> unit)(
-      (Slice[i32]::get : (Slice[i32], isize) -> i32)((t/2 : Slice[i32]), 0)
-    );
-    (println : (i32) -> unit)(
-      (Slice[i32]::get : (Slice[i32], isize) -> i32)((t/2 : Slice[i32]), 1)
-    );
+    (println : (isize) -> ())((Slice[i32]::len : (Slice[i32]) -> isize)((t/2 : Slice[i32])));
+    (println : (i32) -> ())((Slice[i32]::get : (Slice[i32], isize) -> i32)((t/2 : Slice[i32]), 0));
+    (println : (i32) -> ())((Slice[i32]::get : (Slice[i32], isize) -> i32)((t/2 : Slice[i32]), 1));
 }

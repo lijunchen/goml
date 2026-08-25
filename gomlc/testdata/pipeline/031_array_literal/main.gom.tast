@@ -2,10 +2,10 @@ fn make_array() -> [i32; 3] {
     [1, 2, 3]
 }
 
-fn main() -> unit {
+fn main() -> () {
     let arr/0: [i32; 3] = (make_array : () -> [i32; 3])();
     let inline/1: [isize; 3] = [4, 5, 6];
-    let _ : unit = (print : (string) -> unit)("array literal");
+    let _ : () = (print : (string) -> ())("array literal");
     let _ : [i32; 3] = (arr/0 : [i32; 3]);
     let _ : [isize; 3] = (inline/1 : [isize; 3]);
 }

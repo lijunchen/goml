@@ -1,38 +1,38 @@
 package main
 file main.gom
-  fn show_u8(local/1/0: u8) -> unit {
+  fn show_u8(local/1/0: u8) -> () {
       println(value/0)
   }
 
-  fn show_u16(local/1/1: u16) -> unit {
+  fn show_u16(local/1/1: u16) -> () {
       println(value/1)
   }
 
-  fn show_u32(local/1/2: u32) -> unit {
+  fn show_u32(local/1/2: u32) -> () {
       println(value/2)
   }
 
-  fn show_u64(local/1/3: u64) -> unit {
+  fn show_u64(local/1/3: u64) -> () {
       println(value/3)
   }
 
-  fn show_i8(local/1/4: i8) -> unit {
+  fn show_i8(local/1/4: i8) -> () {
       println(value/4)
   }
 
-  fn show_i16(local/1/5: i16) -> unit {
+  fn show_i16(local/1/5: i16) -> () {
       println(value/5)
   }
 
-  fn show_i32(local/1/6: i32) -> unit {
+  fn show_i32(local/1/6: i32) -> () {
       println(value/6)
   }
 
-  fn show_i64(local/1/7: i64) -> unit {
+  fn show_i64(local/1/7: i64) -> () {
       println(value/7)
   }
 
-  fn unsigned_ops() -> unit {
+  fn unsigned_ops() -> () {
       def/1/0(13 % 5);
       def/1/0(12 & 10);
       def/1/0(12 | 3);
@@ -64,7 +64,7 @@ file main.gom
       def/1/3(~0)
   }
 
-  fn signed_ops() -> unit {
+  fn signed_ops() -> () {
       def/1/4(-13 % 5);
       def/1/4(-8 >> 2);
       def/1/4(1 << 6);
@@ -84,7 +84,7 @@ file main.gom
       def/1/7(~4294967295)
   }
 
-  fn precedence() -> unit {
+  fn precedence() -> () {
       def/1/0(1 | 2 ^ 3 & 1);
       def/1/0(1 << 2 + 1);
       println(1 | 2 == 3.to_string());
@@ -92,7 +92,7 @@ file main.gom
       def/1/0(~1 & 15)
   }
 
-  fn casts() -> unit {
+  fn casts() -> () {
       let local/1/8: u16 = 511;
       let local/1/9: u16 = 256;
       let local/1/10: i16 = -1;
@@ -130,7 +130,7 @@ file main.gom
       ~value/22 & 15 | 1 << 4 % 31
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       def/1/8();
       def/1/9();
       def/1/10();

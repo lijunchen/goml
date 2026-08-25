@@ -1,8 +1,8 @@
-fn child(signal/0: Ref[i32]) -> unit {
+fn child(signal/0: Ref[i32]) -> () {
   inherent#Ref#Ref[T]#set__T_i0(signal/0, 1)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let signal/0 = inherent#Ref#Ref[T]#new__T_i0(0) in
   let _wild0 =
     go pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](
@@ -16,7 +16,7 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -28,7 +28,7 @@ fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -44,7 +44,7 @@ fn trait_impl#Hash#i32#hash(self/0: i32) -> u64 {
   @runtime(core.int32_hash)(self/0)
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env0: closure_env_main_0) -> unit {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env0: closure_env_main_0) -> () {
   let signal/0 = closure_env_main_0.signal_0(env0) in
   child(signal/0)
 }

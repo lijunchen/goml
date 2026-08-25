@@ -1,6 +1,6 @@
 impl IntoIterator for Numbers {
   fn into_iter(self/0: Numbers) -> FnIterator[i32] {
-      (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+      (Ref[i32]::set : (Ref[i32], i32) -> ())(
         (self/0 : Numbers).conversions,
         (Ref[i32]::get : (Ref[i32]) -> i32)((self/0 : Numbers).conversions) + 1
       );
@@ -9,14 +9,14 @@ impl IntoIterator for Numbers {
 }
 
 fn make_numbers(builds/1: Ref[i32], conversions/2: Ref[i32]) -> Numbers {
-    (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+    (Ref[i32]::set : (Ref[i32], i32) -> ())(
       (builds/1 : Ref[i32]),
       (Ref[i32]::get : (Ref[i32]) -> i32)((builds/1 : Ref[i32])) + 1
     );
     let values/3: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/3 : Vec[i32]), 1);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/3 : Vec[i32]), 2);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/3 : Vec[i32]), 3);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/3 : Vec[i32]), 1);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/3 : Vec[i32]), 2);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/3 : Vec[i32]), 3);
     Numbers { values: (values/3 : Vec[i32]), conversions: (conversions/2 : Ref[i32]) }
 }
 
@@ -28,7 +28,7 @@ fn sum[S](source/4: S) -> i32 where
     let total/5: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
     for value/6: i32 in
       (source/4 : S) {
-        (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+        (Ref[i32]::set : (Ref[i32], i32) -> ())(
           (total/5 : Ref[i32]),
           (Ref[i32]::get : (Ref[i32]) -> i32)((total/5 : Ref[i32])) + (value/6 : i32)
         );
@@ -36,10 +36,10 @@ fn sum[S](source/4: S) -> i32 where
     (Ref[i32]::get : (Ref[i32]) -> i32)((total/5 : Ref[i32]))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let builds/7: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
     let conversions/8: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
-    (println : (i32) -> unit)(
+    (println : (i32) -> ())(
       (sum : (Numbers) -> i32)(
         (make_numbers : (Ref[i32], Ref[i32]) -> Numbers)(
           (builds/7 : Ref[i32]),
@@ -47,14 +47,14 @@ fn main() -> unit {
         )
       )
     );
-    (println : (i32) -> unit)((Ref[i32]::get : (Ref[i32]) -> i32)((builds/7 : Ref[i32])));
-    (println : (i32) -> unit)((Ref[i32]::get : (Ref[i32]) -> i32)((conversions/8 : Ref[i32])));
+    (println : (i32) -> ())((Ref[i32]::get : (Ref[i32]) -> i32)((builds/7 : Ref[i32])));
+    (println : (i32) -> ())((Ref[i32]::get : (Ref[i32]) -> i32)((conversions/8 : Ref[i32])));
     let values/9: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/9 : Vec[i32]), 10);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/9 : Vec[i32]), 20);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/9 : Vec[i32]), 30);
-    (println : (i32) -> unit)((sum : (Vec[i32]) -> i32)((values/9 : Vec[i32])));
-    (println : (i32) -> unit)(
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/9 : Vec[i32]), 10);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/9 : Vec[i32]), 20);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/9 : Vec[i32]), 30);
+    (println : (i32) -> ())((sum : (Vec[i32]) -> i32)((values/9 : Vec[i32])));
+    (println : (i32) -> ())(
       (sum : (Slice[i32]) -> i32)(
         (Vec[i32]::slice : (Vec[i32], isize, isize) -> Slice[i32])((values/9 : Vec[i32]), 1, 3)
       )

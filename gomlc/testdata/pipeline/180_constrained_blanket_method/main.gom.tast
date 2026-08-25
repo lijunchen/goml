@@ -1,5 +1,5 @@
 impl Mark for i32 {
-  fn mark(self/0: i32) -> unit {}
+  fn mark(self/0: i32) -> () {}
 }
 
 impl[T] Extra for T where T: Mark {
@@ -12,9 +12,9 @@ fn apply[T](value/2: T) -> i32 where T: Extra {
     (Extra::extra : (T) -> i32)((value/2 : T))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let first/3: i32 = 1;
     let second/4: i32 = 2;
-    (println : (i32) -> unit)((apply : (i32) -> i32)((first/3 : i32)));
-    (println : (i32) -> unit)((Extra::extra : (i32) -> i32)((second/4 : i32)));
+    (println : (i32) -> ())((apply : (i32) -> i32)((first/3 : i32)));
+    (println : (i32) -> ())((Extra::extra : (i32) -> i32)((second/4 : i32)));
 }

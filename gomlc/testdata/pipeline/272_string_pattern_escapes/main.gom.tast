@@ -8,17 +8,17 @@ fn classify(value/0: string) -> isize {
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((classify : (string) -> isize)("Aλ"))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((classify : (string) -> isize)("\n\r\t\u{8}\u{c}/"))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((classify : (string) -> isize)("\"\\"))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((classify : (string) -> isize)("\\n"))
     )
 }

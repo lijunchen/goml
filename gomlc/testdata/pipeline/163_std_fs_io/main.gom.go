@@ -398,21 +398,21 @@ type _goml_m_Result____string____std_p_io_p_Error_Err struct {
 
 func (_ _goml_m_Result____string____std_p_io_p_Error_Err) is_goml_m_Result____string____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error interface {
-    is_goml_m_Result____unit____std_p_io_p_Error()
+type _goml_m_Result_____o__q_____std_p_io_p_Error interface {
+    is_goml_m_Result_____o__q_____std_p_io_p_Error()
 }
 
-type _goml_m_Result____unit____std_p_io_p_Error_Ok struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Ok struct {
     _0 struct{}
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Ok) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Ok) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error_Err struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
     _0 _goml_m_std_p_io_p_Error
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Err) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _tag int32
@@ -420,7 +420,7 @@ type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _v1_0 string
 }
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string
@@ -458,21 +458,21 @@ type _goml_m_Result____string____std_p_fs_p_Error_Err struct {
 
 func (_ _goml_m_Result____string____std_p_fs_p_Error_Err) is_goml_m_Result____string____std_p_fs_p_Error() {}
 
-type _goml_m_Result____unit____std_p_fs_p_Error interface {
-    is_goml_m_Result____unit____std_p_fs_p_Error()
+type _goml_m_Result_____o__q_____std_p_fs_p_Error interface {
+    is_goml_m_Result_____o__q_____std_p_fs_p_Error()
 }
 
-type _goml_m_Result____unit____std_p_fs_p_Error_Ok struct {
+type _goml_m_Result_____o__q_____std_p_fs_p_Error_Ok struct {
     _0 struct{}
 }
 
-func (_ _goml_m_Result____unit____std_p_fs_p_Error_Ok) is_goml_m_Result____unit____std_p_fs_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_fs_p_Error_Ok) is_goml_m_Result_____o__q_____std_p_fs_p_Error() {}
 
-type _goml_m_Result____unit____std_p_fs_p_Error_Err struct {
+type _goml_m_Result_____o__q_____std_p_fs_p_Error_Err struct {
     _0 _goml_m_std_p_fs_p_Error
 }
 
-func (_ _goml_m_Result____unit____std_p_fs_p_Error_Err) is_goml_m_Result____unit____std_p_fs_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_fs_p_Error_Err) is_goml_m_Result_____o__q_____std_p_fs_p_Error() {}
 
 type _goml_m_Result____std_p_fs_p_Metadata____std_p_fs_p_Error interface {
     is_goml_m_Result____std_p_fs_p_Metadata____std_p_fs_p_Error()
@@ -607,7 +607,7 @@ func _goml_m_std_p_fs_p_read__file(path__0 string) Result__string__string {
     }
 }
 
-func _goml_m_std_p_fs_p_write__bytes(path__0 string, data__0 _goml_m_std_p_bytes_p_Bytes) Result__unit__string {
+func _goml_m_std_p_fs_p_write__bytes(path__0 string, data__0 _goml_m_std_p_bytes_p_Bytes) _goml_m_Result_____o__q_____string {
     var t0 *_goml_vec_uint8
     var inline1 *_goml_vec_uint8 = data__0.values
     t0 = inline1
@@ -617,13 +617,13 @@ func _goml_m_std_p_fs_p_write__bytes(path__0 string, data__0 _goml_m_std_p_bytes
     var x0 bool = mtmp0._0
     var x1 string = mtmp0._1
     if x0 {
-        var t1 Result__unit__string = Result__unit__string{
+        var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
             _v0_0: struct{}{},
         }
         return t1
     } else {
-        var t2 Result__unit__string = Result__unit__string{
+        var t2 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 1,
             _v1_0: x1,
         }

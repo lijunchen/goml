@@ -18,7 +18,7 @@ fn count_to(limit/2: isize) -> isize {
         } else {
             ()
         };
-        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+        (Ref[isize]::set : (Ref[isize], isize) -> ())(
           (counter/3 : Ref[isize]),
           (current/4 : isize) + 1
         );
@@ -56,34 +56,34 @@ fn matches_raw_path(value/7: string) -> bool {
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)("C:\\tmp\\\"quoted\\\"");
-    (println : (string) -> unit)("" + "}");
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())("C:\\tmp\\\"quoted\\\"");
+    (println : (string) -> ())("" + "}");
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (unwrap_or_negative : (Option[isize]) -> isize)(Option::Some(11))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (unwrap_or_negative : (Option[isize]) -> isize)(Option::None)
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((count_to : (isize) -> isize)(4))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (loop_option : (Option[isize]) -> isize)(Option::Some(9))
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((loop_option : (Option[isize]) -> isize)(Option::None))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((nested_loop_value : () -> isize)())
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)((matches_raw_path : (string) -> bool)("C:\\tmp"))
     );
 }

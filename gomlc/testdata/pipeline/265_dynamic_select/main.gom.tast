@@ -1,9 +1,9 @@
-fn print_selection(value/0: std::channel::Selection[isize]) -> unit {
+fn print_selection(value/0: std::channel::Selection[isize]) -> () {
     match (value/0 : std::channel::Selection[isize]) {
         std::channel::Selection::Received(index/1: isize, value/2: Option[isize]) =>
           {
-              (println : (isize) -> unit)((index/1 : isize));
-              (println : (isize) -> unit)(
+              (println : (isize) -> ())((index/1 : isize));
+              (println : (isize) -> ())(
                 (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
                   (value/2 : Option[isize]),
                   -1
@@ -11,15 +11,15 @@ fn print_selection(value/0: std::channel::Selection[isize]) -> unit {
               )
           },
         std::channel::Selection::Sent(index/3: isize) =>
-          (println : (isize) -> unit)((index/3 : isize)),
+          (println : (isize) -> ())((index/3 : isize)),
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let first/4: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
     let second/5: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
-    (Channel[isize]::send : (Channel[isize], isize) -> unit)((first/4 : Channel[isize]), 10);
-    (Channel[isize]::send : (Channel[isize], isize) -> unit)((second/5 : Channel[isize]), 20);
+    (Channel[isize]::send : (Channel[isize], isize) -> ())((first/4 : Channel[isize]), 10);
+    (Channel[isize]::send : (Channel[isize], isize) -> ())((second/5 : Channel[isize]), 20);
     let operations/6: Vec[std::channel::Operation[isize]] =
       (@intrinsic(vec.from_array) : ([std::channel::Operation[isize]; 2]) -> Vec[
         std::channel::Operation[isize]
@@ -52,11 +52,11 @@ fn main() -> unit {
       )
     ) {
         Result::Ok(Option::Some(value/7: std::channel::Selection[isize])) =>
-          (print_selection : (std::channel::Selection[isize]) -> unit)(
+          (print_selection : (std::channel::Selection[isize]) -> ())(
             (value/7 : std::channel::Selection[isize])
           ),
         _ : Result[Option[std::channel::Selection[isize]], std::channel::SelectError] =>
-          (println : (isize) -> unit)(-1),
+          (println : (isize) -> ())(-1),
     };
     match (std::channel::try_select : (Slice[std::channel::Operation[isize]]) -> Result[
       Option[std::channel::Selection[isize]],
@@ -73,11 +73,11 @@ fn main() -> unit {
       )
     ) {
         Result::Ok(Option::Some(value/8: std::channel::Selection[isize])) =>
-          (print_selection : (std::channel::Selection[isize]) -> unit)(
+          (print_selection : (std::channel::Selection[isize]) -> ())(
             (value/8 : std::channel::Selection[isize])
           ),
         _ : Result[Option[std::channel::Selection[isize]], std::channel::SelectError] =>
-          (println : (isize) -> unit)(-2),
+          (println : (isize) -> ())(-2),
     };
     let empty/9: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(0);
     let target/10: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
@@ -114,12 +114,12 @@ fn main() -> unit {
       )
     ) {
         Result::Ok(value/12: std::channel::Selection[isize]) =>
-          (print_selection : (std::channel::Selection[isize]) -> unit)(
+          (print_selection : (std::channel::Selection[isize]) -> ())(
             (value/12 : std::channel::Selection[isize])
           ),
-        Result::Err(_ : std::channel::SelectError) => (println : (isize) -> unit)(-3),
+        Result::Err(_ : std::channel::SelectError) => (println : (isize) -> ())(-3),
     };
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (Option[isize]::unwrap_or : (Option[isize], isize) -> isize)(
         (Channel[isize]::recv : (Channel[isize]) -> Option[isize])((target/10 : Channel[isize])),
         -4
@@ -137,7 +137,7 @@ fn main() -> unit {
           )
         ]
       );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       match (std::channel::try_select : (Slice[std::channel::Operation[isize]]) -> Result[
         Option[std::channel::Selection[isize]],
         std::channel::SelectError
@@ -158,7 +158,7 @@ fn main() -> unit {
     );
     let no_operations/14: Vec[std::channel::Operation[isize]] =
       (Vec[std::channel::Operation[isize]]::new : () -> Vec[std::channel::Operation[isize]])();
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       match (std::channel::select : (Slice[std::channel::Operation[isize]]) -> Result[
         std::channel::Selection[isize],
         std::channel::SelectError

@@ -39,21 +39,21 @@ file main.gom
     }
   }
 
-  fn print_opt_string(local/1/8: Option[string]) -> unit {
+  fn print_opt_string(local/1/8: Option[string]) -> () {
       match value/8 {
           Option::Some(local/1/9) => println(text/9),
           Option::None => println("none"),
       }
   }
 
-  fn print_opt_int(local/1/10: Option[i32]) -> unit {
+  fn print_opt_int(local/1/10: Option[i32]) -> () {
       match value/10 {
           Option::Some(local/1/11) => println(number/11),
           Option::None => println("none"),
       }
   }
 
-  fn float_comparison_contracts() -> unit {
+  fn float_comparison_contracts() -> () {
       let local/1/12: f32 = 0.0;
       let local/1/13 = -zero32/12;
       println(zero32/12 == negative_zero32/13.to_string());
@@ -66,7 +66,7 @@ file main.gom
       println(cmp::PartialOrd::partial_cmp(nan/16, nan/16).is_none().to_string());
   }
 
-  fn collision_contracts() -> unit {
+  fn collision_contracts() -> () {
       let local/1/17: HashMap[CollisionKey, i32] = HashMap::new();
       values/17.set(CollisionKey { value: 1 }, 10);
       values/17.set(CollisionKey { value: 2 }, 20);
@@ -96,7 +96,7 @@ file main.gom
       println(values/17.len());
   }
 
-  fn reference_contracts() -> unit {
+  fn reference_contracts() -> () {
       let local/1/20: HashMap[Ref[CollisionKey], string] = HashMap::new();
       let local/1/21 = Ref::new(CollisionKey { value: 1 });
       let local/1/22 = key/21;
@@ -111,7 +111,7 @@ file main.gom
       def/1/7(values/20.get(key/21));
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       def/1/9();
       def/1/10();
       def/1/11();

@@ -79,7 +79,7 @@ type Ordering int32
 
 func main0() struct{} {
     var inline9 struct{} = struct{}{}
-    var inline10 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline9)
+    var inline10 string = _goml_m_trait__impl_i_ToString_i__o__q__i_to__string(inline9)
     _goml_runtime_core_string_print(inline10)
     var inline6 bool = true
     var inline7 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline6)
@@ -93,7 +93,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__0 struct{}) string {
+func _goml_m_trait__impl_i_ToString_i__o__q__i_to__string(self__0 struct{}) string {
     var t0 string = _goml_runtime_core_unit_to_string(self__0)
     return t0
 }

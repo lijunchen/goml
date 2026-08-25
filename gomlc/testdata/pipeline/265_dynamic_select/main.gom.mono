@@ -1,4 +1,4 @@
-fn print_selection(value/0: std::channel::Selection__isize) -> unit {
+fn print_selection(value/0: std::channel::Selection__isize) -> () {
   match value/0 {
     std::channel::Selection__isize::Received(x0, x1) => {
       {
@@ -28,7 +28,7 @@ fn print_selection(value/0: std::channel::Selection__isize) -> unit {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let first/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
   let second/0 = inherent#Channel#Channel[T]#new__T_isize(1) in
   let _wild0 = inherent#Channel#Channel[T]#send__T_isize(first/0, 10) in
@@ -228,7 +228,7 @@ fn main() -> unit {
   )
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
@@ -253,7 +253,7 @@ fn inherent#Channel#Channel[T]#new__T_isize(capacity/0: isize) -> Channel[isize]
   @intrinsic(channel.new)(capacity/0)
 }
 
-fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> () {
   @intrinsic(channel.send)(self/0, value/0)
 }
 
@@ -700,21 +700,21 @@ fn inherent#Vec#Vec[T]#new__T_isize() -> Vec[isize] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#push__T_isize(self/0: Vec[isize], elem/0: isize) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
 fn inherent#Vec#Vec[T]#push__T_Receiver[isize](
   self/0: Vec[Receiver[isize]],
   elem/0: Receiver[isize]
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
 fn inherent#Vec#Vec[T]#push__T_Sender[isize](
   self/0: Vec[Sender[isize]],
   elem/0: Sender[isize]
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -801,7 +801,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

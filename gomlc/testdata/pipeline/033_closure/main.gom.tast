@@ -1,52 +1,51 @@
-fn test() -> unit {
+fn test() -> () {
     let y/0: i32 = 3;
     let z/1: i32 = 5;
     let f/3: (i32) -> i32 = |x/2: i32| => (x/2 : i32) * (y/0 : i32) * (z/1 : i32);
-    let _ : unit =
-      (println : (string) -> unit)((i32::to_string : (i32) -> string)((f/3 : (i32) -> i32)(2)));
-    (println : (string) -> unit)((i32::to_string : (i32) -> string)((f/3 : (i32) -> i32)(3)))
+    let _ : () =
+      (println : (string) -> ())((i32::to_string : (i32) -> string)((f/3 : (i32) -> i32)(2)));
+    (println : (string) -> ())((i32::to_string : (i32) -> string)((f/3 : (i32) -> i32)(3)))
 }
 
 fn call_int_id(f/4: (i32) -> i32, v/5: i32) -> i32 {
     (f/4 : (i32) -> i32)((v/5 : i32))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let base/6: i32 = 5;
     let add_base/8: (i32) -> i32 = |x/7: i32| => (x/7 : i32) + (base/6 : i32);
     let result/9: i32 = (add_base/8 : (i32) -> i32)(7);
-    let printer/13: (string, i32) -> unit =
+    let printer/13: (string, i32) -> () =
       |prefix/10: string, value/11: i32| =>
         {
             let message/12: string =
               (prefix/10 : string) + (i32::to_string : (i32) -> string)((value/11 : i32));
-            (println : (string) -> unit)((message/12 : string))
+            (println : (string) -> ())((message/12 : string))
         };
-    let _ : unit = (printer/13 : (string, i32) -> unit)("result: ", (result/9 : i32));
+    let _ : () = (printer/13 : (string, i32) -> ())("result: ", (result/9 : i32));
     let unused/15: (i32) -> i32 = |y/14: i32| => (y/14 : i32) + (result/9 : i32);
     let no_capture/17: (i32) -> i32 = |z/16: i32| => (z/16 : i32) * 2;
     let doubled/18: i32 = (no_capture/17 : (i32) -> i32)(3);
-    let _ : unit =
-      (println : (string) -> unit)((i32::to_string : (i32) -> string)((doubled/18 : i32)));
-    let _ : unit = (test : () -> unit)();
+    let _ : () = (println : (string) -> ())((i32::to_string : (i32) -> string)((doubled/18 : i32)));
+    let _ : () = (test : () -> ())();
     let list123/19: IntList = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil)));
     let point/20: Point = Point { x: 10, y: 20 };
-    let play_list_and_point/25: () -> unit =
+    let play_list_and_point/25: () -> () =
       || =>
         {
             match (list123/19 : IntList) {
-                IntList::Nil => (println : (string) -> unit)("Empty list"),
+                IntList::Nil => (println : (string) -> ())("Empty list"),
                 IntList::Cons(head/21: i32, tail/22: IntList) =>
                   {
-                      let _ : unit =
-                        (println : (string) -> unit)(
+                      let _ : () =
+                        (println : (string) -> ())(
                           (i32::to_string : (i32) -> string)((head/21 : i32))
                         );
                       match (point/20 : Point) {
                           Point { x: x/23: i32, y: y/24: i32 } =>
                             {
-                                let _ : unit =
-                                  (println : (string) -> unit)(
+                                let _ : () =
+                                  (println : (string) -> ())(
                                     "Point: (" + (i32::to_string : (i32) -> string)((x/23 : i32)) +
                                       ", " +
                                       (i32::to_string : (i32) -> string)((y/24 : i32)) +
@@ -57,5 +56,5 @@ fn main() -> unit {
                   },
             }
         };
-    let _ : unit = (play_list_and_point/25 : () -> unit)();
+    let _ : () = (play_list_and_point/25 : () -> ())();
 }

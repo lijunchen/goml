@@ -1,10 +1,10 @@
-fn main() -> unit {
+fn main() -> () {
   let name/0 = "Alice" in
   let p/0 = Person { name: name/0 } in
   let _wild0 = println__T_string(Person.name(p/0)) in
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

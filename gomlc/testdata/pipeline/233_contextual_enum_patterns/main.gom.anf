@@ -92,7 +92,7 @@ fn take_once(value/0: Option__isize) -> isize {
             match mtmp0 {
               Tag_1 => {
                 let x0 = Option__isize::Some._0(mtmp0) in
-                join inline_cont3(_wild0: unit) -> isize {
+                join inline_cont3(_wild0: ()) -> isize {
                   let inline1 = @intrinsic(ref.set)(current/0, Tag_0) in
                   jump loop0()
                 } in
@@ -166,7 +166,7 @@ fn sum_boxed(values/0: Vec[Boxed__isize]) -> isize {
   jump inline_cont0(inline4)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let t0 = Boxed__isize::Value(19) in
   let t1 = Boxed__isize::Value(23) in
   let t2 = [t0, t1] in
@@ -188,20 +188,20 @@ fn main() -> unit {
   let t13 = nested(t12) in
   let _wild4 = println__T_string(t13) in
   let t14 = nested(Tag_0) in
-  join inline_cont0(_wild5: unit) -> unit {
-    join inline_cont1(t15: isize) -> unit {
-      join inline_cont2(_wild6: unit) -> unit {
-        join inline_cont3(t16: isize) -> unit {
-          join inline_cont4(_wild7: unit) -> unit {
-            join inline_cont5(t17: bool) -> unit {
-              join inline_cont6(_wild8: unit) -> unit {
-                join inline_cont7(t18: bool) -> unit {
-                  join inline_cont8(_wild9: unit) -> unit {
+  join inline_cont0(_wild5: ()) -> () {
+    join inline_cont1(t15: isize) -> () {
+      join inline_cont2(_wild6: ()) -> () {
+        join inline_cont3(t16: isize) -> () {
+          join inline_cont4(_wild7: ()) -> () {
+            join inline_cont5(t17: bool) -> () {
+              join inline_cont6(_wild8: ()) -> () {
+                join inline_cont7(t18: bool) -> () {
+                  join inline_cont8(_wild9: ()) -> () {
                     let t19 = Option__isize::Some(15) in
                     let t20 = take_once(t19) in
-                    join inline_cont9(_wild10: unit) -> unit {
-                      join inline_cont10(t21: isize) -> unit {
-                        join inline_cont11(_wild11: unit) -> unit {
+                    join inline_cont9(_wild10: ()) -> () {
+                      join inline_cont10(t21: isize) -> () {
+                        join inline_cont11(_wild11: ()) -> () {
                           let t22 = sum_boxed(boxed/0) in
                           let inline0 = trait_impl#ToString#isize#to_string(t22) in
                           let inline1 = @runtime(core.string_println)(inline0) in
@@ -269,7 +269,7 @@ fn inherent#Ref#Ref[T]#get__T_Option[isize](self/0: Ref[Option__isize]) -> Optio
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
@@ -277,7 +277,7 @@ fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit 
 fn inherent#Ref#Ref[T]#set__T_Option[isize](
   self/0: Ref[Option__isize],
   value/0: Option__isize
-) -> unit {
+) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
@@ -287,16 +287,16 @@ fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
   t0
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
   jump inline_cont0(value/0)
 }
 
-fn println__T_isize(value/0: isize) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_isize(value/0: isize) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -304,8 +304,8 @@ fn println__T_isize(value/0: isize) -> unit {
   jump inline_cont0(inline0)
 }
 
-fn println__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -382,7 +382,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -414,7 +414,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -437,7 +437,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }

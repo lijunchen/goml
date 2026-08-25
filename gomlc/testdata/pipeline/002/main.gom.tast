@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
     let a/0: (bool, bool) = (true, false);
     let b/1: (bool, bool) =
       match (a/0 : (bool, bool)) {
@@ -11,12 +11,12 @@ fn main() -> unit {
       match (b/1 : (bool, bool)) {
           (_ : bool, w/2: bool) => (w/2 : bool),
       };
-    let c/4: unit =
+    let c/4: () =
       match (true, (b_1/3 : bool)) {
-          (false, false) => (println : (string) -> unit)((isize::to_string : (isize) -> string)(0)),
-          (false, true) => (println : (string) -> unit)((isize::to_string : (isize) -> string)(1)),
-          (true, false) => (println : (string) -> unit)((isize::to_string : (isize) -> string)(2)),
-          (true, true) => (println : (string) -> unit)((isize::to_string : (isize) -> string)(3)),
+          (false, false) => (println : (string) -> ())((isize::to_string : (isize) -> string)(0)),
+          (false, true) => (println : (string) -> ())((isize::to_string : (isize) -> string)(1)),
+          (true, false) => (println : (string) -> ())((isize::to_string : (isize) -> string)(2)),
+          (true, true) => (println : (string) -> ())((isize::to_string : (isize) -> string)(3)),
       };
-    (println : (string) -> unit)((ToString::to_string : (unit) -> string)((c/4 : unit)))
+    (println : (string) -> ())((ToString::to_string : (()) -> string)((c/4 : ())))
 }

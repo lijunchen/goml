@@ -30,21 +30,21 @@ type ParsedFloat struct {
 
 type Ordering int32
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string
 }
 
-func step(ok__0 bool) Result__unit__string {
+func step(ok__0 bool) _goml_m_Result_____o__q_____string {
     if ok__0 {
-        var t0 Result__unit__string = Result__unit__string{
+        var t0 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
             _v0_0: struct{}{},
         }
         return t0
     } else {
-        var t1 Result__unit__string = Result__unit__string{
+        var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 1,
             _v1_0: "step failed",
         }
@@ -53,12 +53,12 @@ func step(ok__0 bool) Result__unit__string {
 }
 
 func main0() struct{} {
-    var t0 Result__unit__string
+    var t0 _goml_m_Result_____o__q_____string
     var inline15 bool = true
-    var inline16 Result__unit__string = step(inline15)
+    var inline16 _goml_m_Result_____o__q_____string = step(inline15)
     switch inline16._tag {
     case 0:
-        var inline17 Result__unit__string = Result__unit__string{
+        var inline17 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
             _v0_0: struct{}{},
         }
@@ -76,12 +76,12 @@ func main0() struct{} {
         }
         var inline10 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
         _goml_runtime_core_string_println(inline10)
-        var t2 Result__unit__string
+        var t2 _goml_m_Result_____o__q_____string
         var inline5 bool = false
-        var inline6 Result__unit__string = step(inline5)
+        var inline6 _goml_m_Result_____o__q_____string = step(inline5)
         switch inline6._tag {
         case 0:
-            var inline7 Result__unit__string = Result__unit__string{
+            var inline7 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 0,
                 _v0_0: struct{}{},
             }
@@ -102,7 +102,7 @@ func main0() struct{} {
             return struct{}{}
         case 1:
             var inline8 string = inline6._v1_0
-            var inline9 Result__unit__string = Result__unit__string{
+            var inline9 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 1,
                 _v1_0: inline8,
             }
@@ -126,7 +126,7 @@ func main0() struct{} {
         }
     case 1:
         var inline18 string = inline16._v1_0
-        var inline19 Result__unit__string = Result__unit__string{
+        var inline19 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 1,
             _v1_0: inline18,
         }
@@ -144,12 +144,12 @@ func main0() struct{} {
         }
         var inline10 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1)
         _goml_runtime_core_string_println(inline10)
-        var t2 Result__unit__string
+        var t2 _goml_m_Result_____o__q_____string
         var inline5 bool = false
-        var inline6 Result__unit__string = step(inline5)
+        var inline6 _goml_m_Result_____o__q_____string = step(inline5)
         switch inline6._tag {
         case 0:
-            var inline7 Result__unit__string = Result__unit__string{
+            var inline7 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 0,
                 _v0_0: struct{}{},
             }
@@ -170,7 +170,7 @@ func main0() struct{} {
             return struct{}{}
         case 1:
             var inline8 string = inline6._v1_0
-            var inline9 Result__unit__string = Result__unit__string{
+            var inline9 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 1,
                 _v1_0: inline8,
             }

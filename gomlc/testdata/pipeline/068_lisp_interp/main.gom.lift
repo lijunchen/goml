@@ -792,7 +792,7 @@ fn apply_lambda(lambda/0: Lambda, args/0: Vec[Value]) -> Value {
   )
 }
 
-fn main() -> unit {
+fn main() -> () {
   let global/0 = inherent#Ref#Ref[T]#new__T_Vec[Binding](inherent#Vec#Vec[T]#new__T_Binding()) in
   let program/0 =
     "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
@@ -831,11 +831,11 @@ fn inherent#string#string#get(self/0: string, index/0: isize) -> char {
   string_get(self/0, index/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> unit {
+fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -847,7 +847,7 @@ fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -863,7 +863,7 @@ fn inherent#char#char#to_string(self/0: char) -> string {
   char_to_string(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/0: Ref[string], value/0: string) -> unit {
+fn inherent#Ref#Ref[T]#set__T_string(self/0: Ref[string], value/0: string) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -897,7 +897,7 @@ fn inherent#Vec#Vec[T]#pushed__T_Token(self/0: Vec[Token], elem/0: Token) -> Vec
   result/0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/0: Ref[Vec[Token]], value/0: Vec[Token]) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/0: Ref[Vec[Token]], value/0: Vec[Token]) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -909,7 +909,7 @@ fn inherent#Ref#Ref[T]#new__T_Value(value/0: Value) -> Ref[Value] {
   @intrinsic(ref.new)(value/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Value(self/0: Ref[Value], value/0: Value) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Value(self/0: Ref[Value], value/0: Value) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -951,7 +951,7 @@ fn inherent#Vec#Vec[T]#pushed__T_SExpr(self/0: Vec[SExpr], elem/0: SExpr) -> Vec
   result/0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/0: Ref[Vec[SExpr]], value/0: Vec[SExpr]) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/0: Ref[Vec[SExpr]], value/0: Vec[SExpr]) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -991,10 +991,7 @@ fn inherent#Vec#Vec[T]#pushed__T_Binding(self/0: Vec[Binding], elem/0: Binding) 
   result/0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Binding](
-  self/0: Ref[Vec[Binding]],
-  value/0: Vec[Binding]
-) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[Binding](self/0: Ref[Vec[Binding]], value/0: Vec[Binding]) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -1028,7 +1025,7 @@ fn inherent#Vec#Vec[T]#pushed__T_string(self/0: Vec[string], elem/0: string) -> 
   result/0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[string](self/0: Ref[Vec[string]], value/0: Vec[string]) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[string](self/0: Ref[Vec[string]], value/0: Vec[string]) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -1062,7 +1059,7 @@ fn inherent#Vec#Vec[T]#pushed__T_Value(self/0: Vec[Value], elem/0: Value) -> Vec
   result/0
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/0: Ref[Vec[Value]], value/0: Vec[Value]) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/0: Ref[Vec[Value]], value/0: Vec[Value]) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -1082,7 +1079,7 @@ fn inherent#Vec#Vec[T]#new__T_Binding() -> Vec[Binding] {
   @intrinsic(vec.new)()
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -1112,7 +1109,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_Token(capacity/0: isize) -> Vec[Token] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_Token(self/0: Vec[Token], elem/0: Token) -> unit {
+fn inherent#Vec#Vec[T]#push__T_Token(self/0: Vec[Token], elem/0: Token) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -1120,7 +1117,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_SExpr(capacity/0: isize) -> Vec[SExpr] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_SExpr(self/0: Vec[SExpr], elem/0: SExpr) -> unit {
+fn inherent#Vec#Vec[T]#push__T_SExpr(self/0: Vec[SExpr], elem/0: SExpr) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -1132,7 +1129,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_Binding(capacity/0: isize) -> Vec[Bindin
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_Binding(self/0: Vec[Binding], elem/0: Binding) -> unit {
+fn inherent#Vec#Vec[T]#push__T_Binding(self/0: Vec[Binding], elem/0: Binding) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -1140,7 +1137,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_string(capacity/0: isize) -> Vec[string]
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> unit {
+fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -1148,7 +1145,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_Value(capacity/0: isize) -> Vec[Value] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_Value(self/0: Vec[Value], elem/0: Value) -> unit {
+fn inherent#Vec#Vec[T]#push__T_Value(self/0: Vec[Value], elem/0: Value) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -1391,7 +1388,7 @@ fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

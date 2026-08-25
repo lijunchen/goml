@@ -38,7 +38,7 @@ func _goml_ffi_strings_x00_Cut_x00__o__ng_c_bool_q__hbfb59822899b5650c9939dcbef2
     }
 }
 
-func _goml_ffi_runtime_x00_Gosched_x00_q__m__z_unit_heb04ed8262b1bc7e893c8de929f316b2() struct{} {
+func _goml_ffi_runtime_x00_Gosched_x00__m__z__o__q__h57c0f10f30d747e7ca95481c1b6b72c3() struct{} {
     _goml_ffi_import_runtime_hbfd85f862b823c92c4bdefd661241cfa.Gosched()
     return struct{}{}
 }
@@ -84,7 +84,7 @@ func main0() struct{} {
     _goml_runtime_core_string_println(inline2)
     var inline0 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x2)
     _goml_runtime_core_string_println(inline0)
-    _goml_ffi_runtime_x00_Gosched_x00_q__m__z_unit_heb04ed8262b1bc7e893c8de929f316b2()
+    _goml_ffi_runtime_x00_Gosched_x00__m__z__o__q__h57c0f10f30d747e7ca95481c1b6b72c3()
     return struct{}{}
 }
 

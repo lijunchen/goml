@@ -35,65 +35,65 @@ impl PartialEq for Key {
 
 impl Eq for Key where i32: Eq, i32: PartialEq {}
 
-fn print_opt_int(x/9: Option[i32]) -> unit {
+fn print_opt_int(x/9: Option[i32]) -> () {
     match (x/9 : Option[i32]) {
-        Option::Some(v/10: i32) => (println : (i32) -> unit)((v/10 : i32)),
-        Option::None => (println : (string) -> unit)("none"),
+        Option::Some(v/10: i32) => (println : (i32) -> ())((v/10 : i32)),
+        Option::None => (println : (string) -> ())("none"),
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let v/11: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
-    (Vec[isize]::push : (Vec[isize], isize) -> unit)((v/11 : Vec[isize]), 10);
-    (Vec[isize]::push : (Vec[isize], isize) -> unit)((v/11 : Vec[isize]), 20);
-    (Vec[isize]::push : (Vec[isize], isize) -> unit)((v/11 : Vec[isize]), 30);
-    (println : (isize) -> unit)(
+    (Vec[isize]::push : (Vec[isize], isize) -> ())((v/11 : Vec[isize]), 10);
+    (Vec[isize]::push : (Vec[isize], isize) -> ())((v/11 : Vec[isize]), 20);
+    (Vec[isize]::push : (Vec[isize], isize) -> ())((v/11 : Vec[isize]), 30);
+    (println : (isize) -> ())(
       (Vec[isize]::get : (Vec[isize], isize) -> isize)((v/11 : Vec[isize]), 0)
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (Vec[isize]::get : (Vec[isize], isize) -> isize)((v/11 : Vec[isize]), 1)
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (Vec[isize]::get : (Vec[isize], isize) -> isize)((v/11 : Vec[isize]), 2)
     );
-    (println : (isize) -> unit)((Vec[isize]::len : (Vec[isize]) -> isize)((v/11 : Vec[isize])));
+    (println : (isize) -> ())((Vec[isize]::len : (Vec[isize]) -> isize)((v/11 : Vec[isize])));
     let m/12: HashMap[Key, i32] = (HashMap[Key, i32]::new : () -> HashMap[Key, i32])();
-    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> unit)(
+    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> ())(
       (m/12 : HashMap[Key, i32]),
       Key::A,
       10
     );
-    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> unit)(
+    (HashMap[Key, i32]::set : (HashMap[Key, i32], Key, i32) -> ())(
       (m/12 : HashMap[Key, i32]),
       Key::B(1),
       20
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (HashMap[Key, i32]::len : (HashMap[Key, i32]) -> isize)((m/12 : HashMap[Key, i32]))
     );
-    (print_opt_int : (Option[i32]) -> unit)(
+    (print_opt_int : (Option[i32]) -> ())(
       (HashMap[Key, i32]::get : (HashMap[Key, i32], Key) -> Option[i32])(
         (m/12 : HashMap[Key, i32]),
         Key::A
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (HashMap[Key, i32]::contains : (HashMap[Key, i32], Key) -> bool)(
         (m/12 : HashMap[Key, i32]),
         Key::B(1)
       )
     );
-    (HashMap[Key, i32]::remove : (HashMap[Key, i32], Key) -> unit)(
+    (HashMap[Key, i32]::remove : (HashMap[Key, i32], Key) -> ())(
       (m/12 : HashMap[Key, i32]),
       Key::B(1)
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (HashMap[Key, i32]::contains : (HashMap[Key, i32], Key) -> bool)(
         (m/12 : HashMap[Key, i32]),
         Key::B(1)
       )
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (HashMap[Key, i32]::len : (HashMap[Key, i32]) -> isize)((m/12 : HashMap[Key, i32]))
     );
 }

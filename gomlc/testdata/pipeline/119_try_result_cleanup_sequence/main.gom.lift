@@ -6,11 +6,11 @@ fn open_handle(ok/0: bool) -> Result__Handle__string {
   }
 }
 
-fn close_handle(handle/0: Handle, ok/0: bool) -> Result__unit__string {
+fn close_handle(handle/0: Handle, ok/0: bool) -> Result__()__string {
   if ok/0 {
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   } else {
-      Result__unit__string::Err(("close failed for " + Handle.name(handle/0)))
+      Result__()__string::Err(("close failed for " + Handle.name(handle/0)))
   }
 }
 
@@ -33,13 +33,13 @@ fn use_handle(open_ok/0: bool, close_ok/0: bool) -> Result__string__string {
   let _wild0 =
     let mtmp1 = close_handle(handle/0, close_ok/0) in
     match mtmp1 {
-      Result__unit__string::Ok(x2) => {
-        let x2 = Result__unit__string::Ok._0(mtmp1) in
+      Result__()__string::Ok(x2) => {
+        let x2 = Result__()__string::Ok._0(mtmp1) in
         let try_value/1 = x2 in
         try_value/1
       },
-      Result__unit__string::Err(x3) => {
-        let x3 = Result__unit__string::Err._0(mtmp1) in
+      Result__()__string::Err(x3) => {
+        let x3 = Result__()__string::Err._0(mtmp1) in
         let try_residual/1 = x3 in
         return Result__string__string::Err(try_residual/1)
       },
@@ -62,14 +62,14 @@ fn show(res/0: Result__string__string) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = println__T_string(show(use_handle(true, true))) in
   let _wild1 = println__T_string(show(use_handle(false, true))) in
   let _wild2 = println__T_string(show(use_handle(true, false))) in
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

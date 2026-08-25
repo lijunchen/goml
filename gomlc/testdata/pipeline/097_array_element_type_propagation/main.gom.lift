@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let arr/0 = [10, 20, 30] in
   let i/0 = inherent#Ref#Ref[T]#new__T_isize(0) in
   let _wild0 =
@@ -34,7 +34,7 @@ fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -42,7 +42,7 @@ fn trait_impl#ToString#u8#to_string(self/0: u8) -> string {
   __goml_builtin_uint8_to_string(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -285,7 +285,7 @@ fn signed_decimal_string(value/0: i64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -764,7 +764,7 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
   ((!overflow/0), (sign/0 | bits/0))
 }
 
-fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
+fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
   let _wild0 =
     if (factor/0 == 0) {
         let _wild1 = inherent#Vec#Vec[T]#clear__T_u0(FloatNatural.words(value/0)) in
@@ -805,7 +805,7 @@ fn float_natural_zero() -> FloatNatural {
   FloatNatural { words: @intrinsic(vec.new)() }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u32(self/0: Vec[u32], elem/0: u32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u32(self/0: Vec[u32], elem/0: u32) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -1339,7 +1339,7 @@ fn float_rational_bits(
   }
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u32(self/0: Vec[u32]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_u32(self/0: Vec[u32]) -> () {
   inherent#Vec#Vec[T]#truncate__T_u0(self/0, 0)
 }
 
@@ -1347,7 +1347,7 @@ fn inherent#Vec#Vec[T]#is_empty__T_u32(self/0: Vec[u32]) -> bool {
   (@intrinsic(vec.len)(self/0) == 0)
 }
 
-fn float_natural_trim(value/0: FloatNatural) -> unit {
+fn float_natural_trim(value/0: FloatNatural) -> () {
   while if (!inherent#Vec#Vec[T]#is_empty__T_u0(FloatNatural.words(value/0))) {
       (@intrinsic(vec.get)(
         FloatNatural.words(value/0),
@@ -1440,7 +1440,7 @@ fn float_digit(value/0: u8, base/0: isize) -> (bool, isize) {
   }
 }
 
-fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> unit {
+fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> () {
   let carry/0 = (addition/0 as u64) in
   let index/0 = 0 in
   while (carry/0 != 0) {
@@ -1607,7 +1607,7 @@ fn float_rational_quotient(
   quotient/0
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u32(self/0: Vec[u32], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u32(self/0: Vec[u32], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -1627,7 +1627,7 @@ fn string_is_char_boundary(value/0: string, index/0: isize) -> bool {
   }
 }
 
-fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> unit {
+fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> () {
   let base/0 = 4294967296 in
   let borrow/0 = 0 in
   let index/0 = 0 in

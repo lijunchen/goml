@@ -1,9 +1,9 @@
-fn stop() -> unit {
+fn stop() -> () {
   ()
 }
 
-fn main() -> unit {
-  join inline_cont0(_wild0: unit) -> unit {
+fn main() -> () {
+  join inline_cont0(_wild0: ()) -> () {
     let inline0 = "continued" in
     let inline1 = trait_impl#ToString#string#to_string(inline0) in
     let inline2 = @runtime(core.string_println)(inline1) in
@@ -12,8 +12,8 @@ fn main() -> unit {
   jump inline_cont0(())
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

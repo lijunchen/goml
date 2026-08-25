@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let vi/0 = inherent#Vec#Vec[T]#new__T_i0() in
   let _wild0 = inherent#Vec#Vec[T]#push__T_i0(vi/0, 42) in
   let val_i/0 = @intrinsic(vec.get)(vi/0, 0) in
@@ -38,7 +38,7 @@ fn inherent#Vec#Vec[T]#new__T_i32() -> Vec[i32] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_i32(self/0: Vec[i32], elem/0: i32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_i32(self/0: Vec[i32], elem/0: i32) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -50,7 +50,7 @@ fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> unit {
+fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -62,7 +62,7 @@ fn inherent#Vec#Vec[T]#new__T_bool() -> Vec[bool] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_bool(self/0: Vec[bool], elem/0: bool) -> unit {
+fn inherent#Vec#Vec[T]#push__T_bool(self/0: Vec[bool], elem/0: bool) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -70,7 +70,7 @@ fn inherent#Vec#Vec[T]#len__T_bool(self/0: Vec[bool]) -> isize {
   @intrinsic(vec.len)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -169,7 +169,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

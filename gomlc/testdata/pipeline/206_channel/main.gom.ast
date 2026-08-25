@@ -8,7 +8,7 @@ fn roundtrip[T](channel: Channel[T], value: T) -> Option[T] {
     channel.recv()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let buffered = Channel::[isize]::new(2);
     buffered.send(10);
     buffered.send(20);

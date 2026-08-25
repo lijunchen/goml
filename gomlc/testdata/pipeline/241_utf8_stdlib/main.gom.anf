@@ -1,12 +1,12 @@
-fn check_utf8(bytes/0: Vec[u8], expected/0: bool) -> unit {
-  join inline_cont0(expected_length/0: isize) -> unit {
+fn check_utf8(bytes/0: Vec[u8], expected/0: bool) -> () {
+  join inline_cont0(expected_length/0: isize) -> () {
     let mtmp0 = string_from_utf0(bytes/0) in
     let x0 = mtmp0.0 in
     let x1 = mtmp0.1 in
     let t0 = (x0 == expected/0) in
-    join inline_cont1(_wild0: unit) -> unit {
+    join inline_cont1(_wild0: ()) -> () {
       if x0 {
-        join inline_cont2(t1: isize) -> unit {
+        join inline_cont2(t1: isize) -> () {
           let t2 = (t1 == expected_length/0) in
           let inline0 = trait_impl#ToString#bool#to_string(t2) in
           let inline1 = @runtime(core.string_println)(inline0) in
@@ -29,13 +29,13 @@ fn check_utf8(bytes/0: Vec[u8], expected/0: bool) -> unit {
   jump inline_cont0(inline7)
 }
 
-fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> unit {
+fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> () {
   let mtmp0 = string_from_utf0(bytes/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
-  join inline_cont0(_wild0: unit) -> unit {
-    join commute_arm0() -> unit {
-      join inline_cont1(_wild1: unit) -> unit {
+  join inline_cont0(_wild0: ()) -> () {
+    join commute_arm0() -> () {
+      join inline_cont1(_wild1: ()) -> () {
         let inline0 = false in
         let inline1 = trait_impl#ToString#bool#to_string(inline0) in
         let inline2 = @runtime(core.string_println)(inline1) in
@@ -46,12 +46,12 @@ fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> u
       let inline5 = @runtime(core.string_println)(inline4) in
       jump inline_cont1(())
     } in
-    join commute_arm1(commute_field0: (char, isize)) -> unit {
+    join commute_arm1(commute_field0: (char, isize)) -> () {
       let x2 = commute_field0.0 in
       let x3 = commute_field0.1 in
       let t0 = (x2 as u32) in
       let t1 = (t0 == expected/0) in
-      join inline_cont2(_wild2: unit) -> unit {
+      join inline_cont2(_wild2: ()) -> () {
         let t2 = (x3 == expected_width/0) in
         let inline6 = trait_impl#ToString#bool#to_string(t2) in
         let inline7 = @runtime(core.string_println)(inline6) in
@@ -78,7 +78,7 @@ fn check_scalar(bytes/0: Vec[u8], expected/0: u32, expected_width/0: isize) -> u
   jump inline_cont0(())
 }
 
-fn main() -> unit {
+fn main() -> () {
   let t0 = inherent#Vec#Vec[T]#new__T_u0() in
   let _wild0 = check_utf0(t0, true) in
   let t1 = [0] in
@@ -149,10 +149,10 @@ fn main() -> unit {
   let _wild22 = check_utf0(t44, false) in
   let t45 = [240, 144, 128] in
   let t46 = @intrinsic(vec.from_array)(t45) in
-  join inline_cont0(_wild23: unit) -> unit {
+  join inline_cont0(_wild23: ()) -> () {
     let t47 = [244, 144, 128, 128] in
     let t48 = @intrinsic(vec.from_array)(t47) in
-    join inline_cont1(_wild24: unit) -> unit {
+    join inline_cont1(_wild24: ()) -> () {
       let t49 = [245, 128, 128, 128] in
       let t50 = @intrinsic(vec.from_array)(t49) in
       let inline0 = false in
@@ -251,8 +251,8 @@ fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   jump loop0()
 }
 
-fn println__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

@@ -18,14 +18,14 @@ fn read_as[P, T](provider/3: P) -> T where P: Provider, P::Item = T, P::Item: To
     (Provider::get : (P) -> T)((provider/3 : P))
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)((read : (Number) -> i32)(Number { value: 42 }))
     );
     let value/4: i32 = (read_as : (Number) -> i32)(Number { value: 7 });
-    (println : (string) -> unit)((i32::to_string : (i32) -> string)((value/4 : i32)));
-    (println : (string) -> unit)((read : (Box[string]) -> string)(Box { value: "generic" }));
-    (println : (string) -> unit)(
+    (println : (string) -> ())((i32::to_string : (i32) -> string)((value/4 : i32)));
+    (println : (string) -> ())((read : (Box[string]) -> string)(Box { value: "generic" }));
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)((Provider::get : (Number) -> i32)(Number { value: 11 }))
     )
 }

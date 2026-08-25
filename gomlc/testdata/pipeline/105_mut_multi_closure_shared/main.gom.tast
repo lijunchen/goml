@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
     let mut x/0: isize = 0;
     let inc/1: () -> isize =
       || =>
@@ -8,5 +8,5 @@ fn main() -> unit {
         };
     let get/2: () -> isize = || => (x/0 : isize);
     let _ : isize = (inc/1 : () -> isize)();
-    (println : (string) -> unit)((isize::to_string : (isize) -> string)((get/2 : () -> isize)()));
+    (println : (string) -> ())((isize::to_string : (isize) -> string)((get/2 : () -> isize)()));
 }

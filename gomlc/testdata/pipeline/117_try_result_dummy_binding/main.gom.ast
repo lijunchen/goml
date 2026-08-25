@@ -1,5 +1,5 @@
 package main;
-fn configure(ok: bool) -> Result[unit, string] {
+fn configure(ok: bool) -> Result[(), string] {
     if ok {
         {
             Result::Ok(())
@@ -40,7 +40,7 @@ fn show(res: Result[string, string]) -> string {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     println(show(configure_and_format(true, true)));
     println(show(configure_and_format(true, false)));
     println(show(configure_and_format(false, true)));

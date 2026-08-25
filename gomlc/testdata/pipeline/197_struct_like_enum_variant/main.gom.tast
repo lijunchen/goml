@@ -77,17 +77,17 @@ fn label(value/19: Message[string]) -> string {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let x/22: i32 = 3;
     let direction/23: string = "north";
     let first/24: Message[string] = Message::Move((x/22 : i32), 4, (direction/23 : string));
     let second/25: Message[string] = Message::Move(3, 4, "north");
-    (println : (i32) -> unit)((score : (Message[string]) -> i32)((first/24 : Message[string])));
-    (println : (string) -> unit)(
+    (println : (i32) -> ())((score : (Message[string]) -> i32)((first/24 : Message[string])));
+    (println : (string) -> ())(
       (label : (Message[string]) -> string)((second/25 : Message[string]))
     );
-    (println : (string) -> unit)((ToString::to_string : (Key) -> string)(Key::Point(1, 2)));
-    (println : (bool) -> unit)(
+    (println : (string) -> ())((ToString::to_string : (Key) -> string)(Key::Point(1, 2)));
+    (println : (bool) -> ())(
       (PartialEq::eq : (Key, Key) -> bool)(Key::Point(1, 2), Key::Point(1, 2))
     );
 }

@@ -1,23 +1,23 @@
-fn main() -> unit {
+fn main() -> () {
     let arr/0: [u8; 3] = [10, 20, 30];
     let i/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while (Ref[isize]::get : (Ref[isize]) -> isize)((i/1 : Ref[isize])) < 3 {
         {
-            (println : (string) -> unit)(
+            (println : (string) -> ())(
               (ToString::to_string : (u8) -> string)(
                 (arr/0 : [u8; 3])[(Ref[isize]::get : (Ref[isize]) -> isize)((i/1 : Ref[isize]))]
               )
             );
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (i/1 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((i/1 : Ref[isize])) + 1
             );
         }
     };
     let floats/2: [f32; 2] = [1.5, 2.5];
-    (println : (string) -> unit)((ToString::to_string : (f32) -> string)((floats/2 : [f32; 2])[0]));
-    (println : (string) -> unit)((ToString::to_string : (f32) -> string)((floats/2 : [f32; 2])[1]));
+    (println : (string) -> ())((ToString::to_string : (f32) -> string)((floats/2 : [f32; 2])[0]));
+    (println : (string) -> ())((ToString::to_string : (f32) -> string)((floats/2 : [f32; 2])[1]));
     let longs/3: [i64; 2] = [100, 200];
-    (println : (string) -> unit)((ToString::to_string : (i64) -> string)((longs/3 : [i64; 2])[0]));
-    (println : (string) -> unit)((ToString::to_string : (i64) -> string)((longs/3 : [i64; 2])[1]));
+    (println : (string) -> ())((ToString::to_string : (i64) -> string)((longs/3 : [i64; 2])[0]));
+    (println : (string) -> ())((ToString::to_string : (i64) -> string)((longs/3 : [i64; 2])[1]));
 }

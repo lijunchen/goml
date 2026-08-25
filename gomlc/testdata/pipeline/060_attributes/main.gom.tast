@@ -26,14 +26,14 @@ impl ToString for Message {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let point/7: Point = Point { x: 4, y: 7 };
     let summary/8: string = (ToString::to_string : (Point) -> string)((point/7 : Point));
     let mv/9: string = (ToString::to_string : (Message) -> string)(Message::Move(1, 2));
     let text/10: string = (ToString::to_string : (Message) -> string)(Message::Write("done"));
     let exit/11: string = (ToString::to_string : (Message) -> string)(Message::Quit);
-    (println : (string) -> unit)((summary/8 : string));
-    (println : (string) -> unit)((mv/9 : string));
-    (println : (string) -> unit)((text/10 : string));
-    (println : (string) -> unit)((exit/11 : string));
+    (println : (string) -> ())((summary/8 : string));
+    (println : (string) -> ())((mv/9 : string));
+    (println : (string) -> ())((text/10 : string));
+    (println : (string) -> ())((exit/11 : string));
 }

@@ -6,7 +6,7 @@ fn trait_impl#Show#Wrap#show(self/0: Wrap) -> string {
   Wrap.value(self/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let values/0 = inherent#Vec#Vec[T]#new__T_dynShow() in
   let value/0 = 10 in
   let _wild0 = inherent#Vec#Vec[T]#push__T_dynShow(values/0, to_dyn[Show]{i32}(value/0)) in
@@ -24,11 +24,11 @@ fn inherent#Vec#Vec[T]#new__T_dynShow() -> Vec[dyn Show] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynShow(self/0: Vec[dyn Show], elem/0: dyn Show) -> unit {
+fn inherent#Vec#Vec[T]#push__T_dynShow(self/0: Vec[dyn Show], elem/0: dyn Show) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -111,7 +111,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

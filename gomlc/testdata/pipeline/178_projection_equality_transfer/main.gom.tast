@@ -25,8 +25,8 @@ fn combine[A, B](left/3: A, right/4: B) -> string where
       (Mark::marked : (B::Item) -> string)((Source::get : (B) -> B::Item)((right/4 : B)))
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (combine : (LeftSource, RightSource) -> string)(
         LeftSource { value: 3 },
         RightSource { value: 4 }

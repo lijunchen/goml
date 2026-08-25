@@ -264,21 +264,21 @@ type _goml_vec_uint32 struct {
     items []uint32
 }
 
-type ref_Option__unit_x struct {
-    value Option__unit
+type ref__goml_m_Option_____o__q__x struct {
+    value _goml_m_Option_____o__q_
 }
 
-func ref__Ref_12Option__unit(value Option__unit) *ref_Option__unit_x {
-    return &ref_Option__unit_x{
+func ref___goml_m_Ref__10Option_____o__q_(value _goml_m_Option_____o__q_) *ref__goml_m_Option_____o__q__x {
+    return &ref__goml_m_Option_____o__q__x{
         value: value,
     }
 }
 
-func ref_get__Ref_12Option__unit(reference *ref_Option__unit_x) Option__unit {
+func ref_get___goml_m_Ref__10Option_____o__q_(reference *ref__goml_m_Option_____o__q__x) _goml_m_Option_____o__q_ {
     return reference.value
 }
 
-func ref_set__Ref_12Option__unit(reference *ref_Option__unit_x, value Option__unit) struct{} {
+func ref_set___goml_m_Ref__10Option_____o__q_(reference *ref__goml_m_Option_____o__q__x, value _goml_m_Option_____o__q_) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -512,8 +512,8 @@ type closure_env_main_1 struct {}
 
 type closure_env_main_2 struct {}
 
-type closure_env_std_task_scope_T_unit_3 struct {
-    result_0 *ref_Option__unit_x
+type closure_env_std_task_scope_T_3 struct {
+    result_0 *ref__goml_m_Option_____o__q__x
     body_1 func(_goml_m_std_p_task_p_Scope) struct{}
     handle_2 _goml_m_std_p_internal_p_task_p_ScopeHandle
 }
@@ -529,7 +529,7 @@ type Ordering int32
 
 type _goml_m_std_p_io_p_ErrorKind int32
 
-type _goml_m_std_p_task_p_WaitResult____unit struct {
+type _goml_m_std_p_task_p_WaitResult_____o__q_ struct {
     _tag int32
     _v0_0 struct{}
 }
@@ -597,21 +597,21 @@ type _goml_m_Result____string____std_p_io_p_Error_Err struct {
 
 func (_ _goml_m_Result____string____std_p_io_p_Error_Err) is_goml_m_Result____string____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error interface {
-    is_goml_m_Result____unit____std_p_io_p_Error()
+type _goml_m_Result_____o__q_____std_p_io_p_Error interface {
+    is_goml_m_Result_____o__q_____std_p_io_p_Error()
 }
 
-type _goml_m_Result____unit____std_p_io_p_Error_Ok struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Ok struct {
     _0 struct{}
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Ok) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Ok) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error_Err struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
     _0 _goml_m_std_p_io_p_Error
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Err) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _tag int32
@@ -619,7 +619,7 @@ type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _v1_0 string
 }
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string
@@ -662,7 +662,7 @@ type _goml_m_Result____std_p_time_p_Duration____std_p_time_p_Error_Err struct {
 
 func (_ _goml_m_Result____std_p_time_p_Duration____std_p_time_p_Error_Err) is_goml_m_Result____std_p_time_p_Duration____std_p_time_p_Error() {}
 
-type Option__unit struct {
+type _goml_m_Option_____o__q_ struct {
     _tag int32
     _v1_0 struct{}
 }
@@ -821,41 +821,41 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t5, p0)
     }
     var inline6 _goml_m_std_p_internal_p_task_p_ScopeHandle = _goml_m_std_p_internal_p_task_p_root__scope()
-    var inline7 *ref_Option__unit_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_unit_r_(Option__unit{
+    var inline7 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q_{
         _tag: 0,
     })
-    var inline8 closure_env_std_task_scope_T_unit_3 = closure_env_std_task_scope_T_unit_3{
+    var inline8 closure_env_std_task_scope_T_3 = closure_env_std_task_scope_T_3{
         result_0: inline7,
         body_1: t6,
         handle_2: inline6,
     }
     var inline9 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__en_h1a4b8fcc393b2b50e0101934341de27f_unit__3_i_apply(inline8)
+        return _goml_m_inherent_i_closure__en_h78f773e7d4b2cfe5d41554b5624d043f_e__T__3_i_apply(inline8)
     }
     _goml_m_std_p_internal_p_task_p_run(inline6, inline9)
-    _goml_m_std_p_task_p_completed__scope__value____T__unit(inline7)
+    _goml_m_std_p_task_p_completed__scope__value____T___o__q_(inline7)
     var t7 closure_env_main_2 = closure_env_main_2{}
     var t8 func(_goml_m_std_p_task_p_Scope) struct{} = func(p0 _goml_m_std_p_task_p_Scope) struct{} {
         return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t7, p0)
     }
     var inline0 _goml_m_std_p_internal_p_task_p_ScopeHandle = _goml_m_std_p_internal_p_task_p_root__scope()
-    var inline1 *ref_Option__unit_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_unit_r_(Option__unit{
+    var inline1 *ref__goml_m_Option_____o__q__x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(_goml_m_Option_____o__q_{
         _tag: 0,
     })
-    var inline2 closure_env_std_task_scope_T_unit_3 = closure_env_std_task_scope_T_unit_3{
+    var inline2 closure_env_std_task_scope_T_3 = closure_env_std_task_scope_T_3{
         result_0: inline1,
         body_1: t8,
         handle_2: inline0,
     }
     var inline3 func() struct{} = func() struct{} {
-        return _goml_m_inherent_i_closure__en_h1a4b8fcc393b2b50e0101934341de27f_unit__3_i_apply(inline2)
+        return _goml_m_inherent_i_closure__en_h78f773e7d4b2cfe5d41554b5624d043f_e__T__3_i_apply(inline2)
     }
     _goml_m_std_p_internal_p_task_p_run(inline0, inline3)
-    _goml_m_std_p_task_p_completed__scope__value____T__unit(inline1)
+    _goml_m_std_p_task_p_completed__scope__value____T___o__q_(inline1)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__unit(capacity__0 int) chan struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T___o__q_(capacity__0 int) chan struct{} {
     var t0 chan struct{} = func(p0 int) chan struct{} {
         return make(chan struct{}, p0)
     }(capacity__0)
@@ -907,16 +907,16 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
     return t0
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_unit_r_(value__0 Option__unit) *ref_Option__unit_x {
-    var t0 *ref_Option__unit_x = ref__Ref_12Option__unit(value__0)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l__o__q__r_(value__0 _goml_m_Option_____o__q_) *ref__goml_m_Option_____o__q__x {
+    var t0 *ref__goml_m_Option_____o__q__x = ref___goml_m_Ref__10Option_____o__q_(value__0)
     return t0
 }
 
-func _goml_m_std_p_task_p_completed__scope__value____T__unit(result__0 *ref_Option__unit_x) struct{} {
+func _goml_m_std_p_task_p_completed__scope__value____T___o__q_(result__0 *ref__goml_m_Option_____o__q__x) struct{} {
     Loop_loop_expr0:
     for {
-        var mtmp0 Option__unit
-        var inline0 Option__unit = ref_get__Ref_12Option__unit(result__0)
+        var mtmp0 _goml_m_Option_____o__q_
+        var inline0 _goml_m_Option_____o__q_ = ref_get___goml_m_Ref__10Option_____o__q_(result__0)
         mtmp0 = inline0
         switch mtmp0._tag {
         case 0:
@@ -935,7 +935,7 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_isize_r_(value__0 
     return t0
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__unit(self__0 chan struct{}) <-chan struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T___o__q_(self__0 chan struct{}) <-chan struct{} {
     var t0 <-chan struct{} = func(p0 chan struct{}) <-chan struct{} {
         return p0
     }(self__0)
@@ -1028,7 +1028,7 @@ func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(en
     var inline4 *ref_Option__isize_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_isize_r_(Option__isize{
         _tag: 0,
     })
-    var inline5 chan struct{} = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__unit(0)
+    var inline5 chan struct{} = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T___o__q_(0)
     var inline6 _goml_m_std_p_internal_p_task_p_ScopeHandle = scope__0.handle
     var inline7 _goml_m_std_p_internal_p_task_p_CancelToken = _goml_m_std_p_internal_p_task_p_token(inline6)
     var inline8 _goml_m_std_p_task_p_CancelToken = _goml_m_std_p_task_p_CancelToken{
@@ -1052,7 +1052,7 @@ func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(en
     work__0 = inline13
     var t2 <-chan struct{}
     var inline2 chan struct{} = work__0.ready
-    var inline3 <-chan struct{} = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T__unit(inline2)
+    var inline3 <-chan struct{} = _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_receiver____T___o__q_(inline2)
     t2 = inline3
     var _goml_m_______0_i_select__open bool
     select {
@@ -1090,19 +1090,19 @@ func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(en
     }
 }
 
-func _goml_m_inherent_i_closure__en_h1a4b8fcc393b2b50e0101934341de27f_unit__3_i_apply(env0 closure_env_std_task_scope_T_unit_3) struct{} {
-    var result__0 *ref_Option__unit_x = env0.result_0
+func _goml_m_inherent_i_closure__en_h78f773e7d4b2cfe5d41554b5624d043f_e__T__3_i_apply(env0 closure_env_std_task_scope_T_3) struct{} {
+    var result__0 *ref__goml_m_Option_____o__q__x = env0.result_0
     var body__0 func(_goml_m_std_p_task_p_Scope) struct{} = env0.body_1
     var handle__0 _goml_m_std_p_internal_p_task_p_ScopeHandle = env0.handle_2
     var t0 _goml_m_std_p_task_p_Scope = _goml_m_std_p_task_p_Scope{
         handle: handle__0,
     }
     var t1 struct{} = body__0(t0)
-    var t2 Option__unit = Option__unit{
+    var t2 _goml_m_Option_____o__q_ = _goml_m_Option_____o__q_{
         _tag: 1,
         _v1_0: t1,
     }
-    ref_set__Ref_12Option__unit(result__0, t2)
+    ref_set___goml_m_Ref__10Option_____o__q_(result__0, t2)
     return struct{}{}
 }
 

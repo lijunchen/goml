@@ -10,21 +10,21 @@ fn c_value() -> i8 {
     3
 }
 
-fn show_int8(label/0: string, value/1: i8) -> unit {
-    let _ : unit =
-      (println : (string) -> unit)(
+fn show_int8(label/0: string, value/1: i8) -> () {
+    let _ : () =
+      (println : (string) -> ())(
         (label/0 : string) + (ToString::to_string : (i8) -> string)((value/1 : i8))
       );
 }
 
-fn show_bool(label/2: string, value/3: bool) -> unit {
-    let _ : unit =
-      (println : (string) -> unit)(
+fn show_bool(label/2: string, value/3: bool) -> () {
+    let _ : () =
+      (println : (string) -> ())(
         (label/2 : string) + (ToString::to_string : (bool) -> string)((value/3 : bool))
       );
 }
 
-fn main() -> unit {
+fn main() -> () {
     let a/4: i8 = (a_value : () -> i8)();
     let b/5: i8 = (b_value : () -> i8)();
     let c/6: i8 = (c_value : () -> i8)();
@@ -34,13 +34,13 @@ fn main() -> unit {
     let quot/10: i8 = (a/4 : i8) / (c/6 : i8);
     let neg/11: i8 = -(b/5 : i8);
     let less/12: bool = (b/5 : i8) < (a/4 : i8);
-    let _ : unit = (show_int8 : (string, i8) -> unit)("a=", (a/4 : i8));
-    let _ : unit = (show_int8 : (string, i8) -> unit)("b=", (b/5 : i8));
-    let _ : unit = (show_int8 : (string, i8) -> unit)("c=", (c/6 : i8));
-    let _ : unit = (show_int8 : (string, i8) -> unit)("sum=", (sum/7 : i8));
-    let _ : unit = (show_int8 : (string, i8) -> unit)("diff=", (diff/8 : i8));
-    let _ : unit = (show_int8 : (string, i8) -> unit)("prod=", (prod/9 : i8));
-    let _ : unit = (show_int8 : (string, i8) -> unit)("quot=", (quot/10 : i8));
-    let _ : unit = (show_int8 : (string, i8) -> unit)("neg=", (neg/11 : i8));
-    let _ : unit = (show_bool : (string, bool) -> unit)("b<a=", (less/12 : bool));
+    let _ : () = (show_int8 : (string, i8) -> ())("a=", (a/4 : i8));
+    let _ : () = (show_int8 : (string, i8) -> ())("b=", (b/5 : i8));
+    let _ : () = (show_int8 : (string, i8) -> ())("c=", (c/6 : i8));
+    let _ : () = (show_int8 : (string, i8) -> ())("sum=", (sum/7 : i8));
+    let _ : () = (show_int8 : (string, i8) -> ())("diff=", (diff/8 : i8));
+    let _ : () = (show_int8 : (string, i8) -> ())("prod=", (prod/9 : i8));
+    let _ : () = (show_int8 : (string, i8) -> ())("quot=", (quot/10 : i8));
+    let _ : () = (show_int8 : (string, i8) -> ())("neg=", (neg/11 : i8));
+    let _ : () = (show_bool : (string, bool) -> ())("b<a=", (less/12 : bool));
 }

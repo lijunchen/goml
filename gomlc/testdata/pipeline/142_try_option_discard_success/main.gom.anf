@@ -46,12 +46,12 @@ fn show(opt/0: Option__string) -> string {
   }
 }
 
-fn main() -> unit {
-  join inline_cont0(t0: Option__string) -> unit {
-    join inline_cont1(t1: string) -> unit {
-      join inline_cont2(_wild0: unit) -> unit {
-        join inline_cont3(t2: Option__string) -> unit {
-          join inline_cont4(t3: string) -> unit {
+fn main() -> () {
+  join inline_cont0(t0: Option__string) -> () {
+    join inline_cont1(t1: string) -> () {
+      join inline_cont2(_wild0: ()) -> () {
+        join inline_cont3(t2: Option__string) -> () {
+          join inline_cont4(t3: string) -> () {
             let inline0 = trait_impl#ToString#string#to_string(t3) in
             let inline1 = @runtime(core.string_println)(inline0) in
             ()
@@ -69,7 +69,7 @@ fn main() -> unit {
         } in
         let inline4 = false in
         let inline5 = cut_pair(inline4) in
-        join inline_join1(inline6: (string, string)) -> unit {
+        join inline_join1(inline6: (string, string)) -> () {
           let inline7 = Option__string::Some("ok") in
           jump inline_cont3(inline7)
         } in
@@ -100,7 +100,7 @@ fn main() -> unit {
   } in
   let inline13 = true in
   let inline14 = cut_pair(inline13) in
-  join inline_join0(inline15: (string, string)) -> unit {
+  join inline_join0(inline15: (string, string)) -> () {
     let inline16 = Option__string::Some("ok") in
     jump inline_cont0(inline16)
   } in
@@ -115,8 +115,8 @@ fn main() -> unit {
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

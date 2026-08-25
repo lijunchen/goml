@@ -139,37 +139,37 @@ impl[T] Default for Selected[T] where T: Default {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let settings/15: Settings = (Default::default : () -> Settings)();
-    (println : (string) -> unit)((Debug::debug : (Settings) -> string)((settings/15 : Settings)));
-    (println : (string) -> unit)(
+    (println : (string) -> ())((Debug::debug : (Settings) -> string)((settings/15 : Settings)));
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (settings/15 : Settings) == Settings { enabled: false, retries: 0, label: "" }
       )
     );
     let empty/16: Empty = (Default::default : () -> Empty)();
-    (println : (string) -> unit)((Debug::debug : (Empty) -> string)((empty/16 : Empty)));
+    (println : (string) -> ())((Debug::debug : (Empty) -> string)((empty/16 : Empty)));
     let pair/17: PairDefaults[isize] = (Default::default : () -> PairDefaults[isize])();
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (pair/17 : PairDefaults[isize]).first + (pair/17 : PairDefaults[isize]).second
       )
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)(
         (Option[isize]::is_none : (Option[isize]) -> bool)((pair/17 : PairDefaults[isize]).nested)
       )
     );
     let state/18: State = (Default::default : () -> State)();
-    (println : (string) -> unit)((Debug::debug : (State) -> string)((state/18 : State)));
+    (println : (string) -> ())((Debug::debug : (State) -> string)((state/18 : State)));
     let message/19: Message = (Default::default : () -> Message)();
-    (println : (string) -> unit)((Debug::debug : (Message) -> string)((message/19 : Message)));
+    (println : (string) -> ())((Debug::debug : (Message) -> string)((message/19 : Message)));
     let event/20: Event = (Default::default : () -> Event)();
-    (println : (string) -> unit)((Debug::debug : (Event) -> string)((event/20 : Event)));
+    (println : (string) -> ())((Debug::debug : (Event) -> string)((event/20 : Event)));
     let lazy/21: Lazy[NoDefault] = (Default::default : () -> Lazy[NoDefault])();
     (println : (
       string
-    ) -> unit)(
+    ) -> ())(
       match (lazy/21 : Lazy[NoDefault]) {
           Lazy::Empty => "empty",
           Lazy::Value(_ : NoDefault) => "value",
@@ -178,7 +178,7 @@ fn main() -> unit {
     let selected/22: Selected[isize] = (Default::default : () -> Selected[isize])();
     (println : (
       string
-    ) -> unit)(
+    ) -> ())(
       match (selected/22 : Selected[isize]) {
           Selected::Values(first/23: isize, second/24: isize) =>
             (isize::to_string : (isize) -> string)((first/23 : isize) + (second/24 : isize)),

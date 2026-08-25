@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let p1/0 = inherent#Point#Point[U,V]#new__U_i32__V_string(10, "hello") in
   let p2/0 = inherent#Point#Point[U,V]#new__U_string__V_string("goml", "lang") in
   let p3/0 = inherent#Point#Point[U,V]#swap__U_i32__V_string(p1/0) in
@@ -25,7 +25,7 @@ fn inherent#Point#Point[U,V]#swap__U_i32__V_string(
   Point__string__i32 { x: Point__i32__string.y(self/0), y: Point__i32__string.x(self/0) }
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -116,7 +116,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

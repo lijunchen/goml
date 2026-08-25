@@ -1,128 +1,122 @@
-fn print_chars(value/0: string) -> unit {
+fn print_chars(value/0: string) -> () {
     for character/1: char in
       (string::chars : (string) -> FnIterator[char])((value/0 : string)) {
-        (println : (char) -> unit)((character/1 : char))
+        (println : (char) -> ())((character/1 : char))
     }
 }
 
-fn print_char_indices(value/2: string) -> unit {
+fn print_char_indices(value/2: string) -> () {
     for item/3: (isize, char) in
       (string::char_indices : (string) -> FnIterator[(isize, char)])((value/2 : string)) {
         let (index/4: isize, character/5: char) = (item/3 : (isize, char));
-        (println : (string) -> unit)(
+        (println : (string) -> ())(
           (isize::to_string : (isize) -> string)((index/4 : isize)) + ":" +
             (char::to_string : (char) -> string)((character/5 : char))
         )
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/6: string = "a你好😀z";
-    (println : (isize) -> unit)((string::byte_len : (string) -> isize)((value/6 : string)));
-    (println : (isize) -> unit)((string::len : (string) -> isize)((value/6 : string)));
-    (println : (char) -> unit)((string::get : (string, isize) -> char)((value/6 : string), 0));
-    (println : (char) -> unit)((string::get : (string, isize) -> char)((value/6 : string), 1));
-    (println : (char) -> unit)((string::get : (string, isize) -> char)((value/6 : string), 4));
-    (println : (char) -> unit)((string::get : (string, isize) -> char)((value/6 : string), 7));
-    (println : (char) -> unit)((string::get : (string, isize) -> char)((value/6 : string), 11));
-    (println : (bool) -> unit)(
+    (println : (isize) -> ())((string::byte_len : (string) -> isize)((value/6 : string)));
+    (println : (isize) -> ())((string::len : (string) -> isize)((value/6 : string)));
+    (println : (char) -> ())((string::get : (string, isize) -> char)((value/6 : string), 0));
+    (println : (char) -> ())((string::get : (string, isize) -> char)((value/6 : string), 1));
+    (println : (char) -> ())((string::get : (string, isize) -> char)((value/6 : string), 4));
+    (println : (char) -> ())((string::get : (string, isize) -> char)((value/6 : string), 7));
+    (println : (char) -> ())((string::get : (string, isize) -> char)((value/6 : string), 11));
+    (println : (bool) -> ())(
       (string::is_char_boundary : (string, isize) -> bool)((value/6 : string), 0)
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::is_char_boundary : (string, isize) -> bool)((value/6 : string), 2)
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::is_char_boundary : (string, isize) -> bool)((value/6 : string), 7)
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (string::is_char_boundary : (string, isize) -> bool)((value/6 : string), 12)
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (string::byte_slice : (string, isize, isize) -> string)((value/6 : string), 1, 7)
     );
     match (string::decode_at : (string, isize) -> Option[(char, isize)])((value/6 : string), 7) {
         Option::Some(decoded/7: (char, isize)) =>
           {
               let (character/8: char, width/9: isize) = (decoded/7 : (char, isize));
-              (println : (char) -> unit)((character/8 : char));
-              (println : (isize) -> unit)((width/9 : isize))
+              (println : (char) -> ())((character/8 : char));
+              (println : (isize) -> ())((width/9 : isize))
           },
-        Option::None => (println : (string) -> unit)("missing"),
+        Option::None => (println : (string) -> ())("missing"),
     };
-    (print_chars : (string) -> unit)((value/6 : string));
-    (print_char_indices : (string) -> unit)((value/6 : string));
+    (print_chars : (string) -> ())((value/6 : string));
+    (print_char_indices : (string) -> ())((value/6 : string));
     let bytes/10: Vec[u8] = (string::to_bytes : (string) -> Vec[u8])((value/6 : string));
-    (println : (isize) -> unit)((Vec[u8]::len : (Vec[u8]) -> isize)((bytes/10 : Vec[u8])));
-    (println : (u8) -> unit)((Vec[u8]::get : (Vec[u8], isize) -> u8)((bytes/10 : Vec[u8]), 0));
-    (println : (u8) -> unit)((Vec[u8]::get : (Vec[u8], isize) -> u8)((bytes/10 : Vec[u8]), 1));
+    (println : (isize) -> ())((Vec[u8]::len : (Vec[u8]) -> isize)((bytes/10 : Vec[u8])));
+    (println : (u8) -> ())((Vec[u8]::get : (Vec[u8], isize) -> u8)((bytes/10 : Vec[u8]), 0));
+    (println : (u8) -> ())((Vec[u8]::get : (Vec[u8], isize) -> u8)((bytes/10 : Vec[u8]), 1));
     let (roundtrip_valid/11: bool, roundtrip/12: string) =
       (string_from_utf8 : (Vec[u8]) -> (bool, string))((bytes/10 : Vec[u8]));
-    (println : (bool) -> unit)((roundtrip_valid/11 : bool));
-    (println : (string) -> unit)((roundtrip/12 : string));
+    (println : (bool) -> ())((roundtrip_valid/11 : bool));
+    (println : (string) -> ())((roundtrip/12 : string));
     let invalid/13: Vec[u8] = (Vec[u8]::new : () -> Vec[u8])();
-    (Vec[u8]::push : (Vec[u8], u8) -> unit)((invalid/13 : Vec[u8]), 255);
-    (Vec[u8]::push : (Vec[u8], u8) -> unit)((invalid/13 : Vec[u8]), 254);
+    (Vec[u8]::push : (Vec[u8], u8) -> ())((invalid/13 : Vec[u8]), 255);
+    (Vec[u8]::push : (Vec[u8], u8) -> ())((invalid/13 : Vec[u8]), 254);
     let (invalid_valid/14: bool, invalid_text/15: string) =
       (string_from_utf8 : (Vec[u8]) -> (bool, string))((invalid/13 : Vec[u8]));
-    (println : (bool) -> unit)((invalid_valid/14 : bool));
-    (println : (bool) -> unit)((invalid_text/15 : string) == "");
+    (println : (bool) -> ())((invalid_valid/14 : bool));
+    (println : (bool) -> ())((invalid_text/15 : string) == "");
     let parts/16: Vec[string] = (Vec[string]::with_capacity : (isize) -> Vec[string])(3);
-    (Vec[string]::push : (Vec[string], string) -> unit)((parts/16 : Vec[string]), "hello");
-    (Vec[string]::push : (Vec[string], string) -> unit)((parts/16 : Vec[string]), "，");
-    (Vec[string]::push : (Vec[string], string) -> unit)((parts/16 : Vec[string]), "世界");
-    (println : (bool) -> unit)(
+    (Vec[string]::push : (Vec[string], string) -> ())((parts/16 : Vec[string]), "hello");
+    (Vec[string]::push : (Vec[string], string) -> ())((parts/16 : Vec[string]), "，");
+    (Vec[string]::push : (Vec[string], string) -> ())((parts/16 : Vec[string]), "世界");
+    (println : (bool) -> ())(
       (Vec[string]::capacity : (Vec[string]) -> isize)((parts/16 : Vec[string])) >= 3
     );
-    (println : (string) -> unit)(
-      (string_concat : (Vec[string]) -> string)((parts/16 : Vec[string]))
-    );
+    (println : (string) -> ())((string_concat : (Vec[string]) -> string)((parts/16 : Vec[string])));
     let values/17: Vec[i32] = (Vec[i32]::with_capacity : (isize) -> Vec[i32])(1);
-    (println : (isize) -> unit)((Vec[i32]::len : (Vec[i32]) -> isize)((values/17 : Vec[i32])));
-    (println : (bool) -> unit)(
+    (println : (isize) -> ())((Vec[i32]::len : (Vec[i32]) -> isize)((values/17 : Vec[i32])));
+    (println : (bool) -> ())(
       (Vec[i32]::capacity : (Vec[i32]) -> isize)((values/17 : Vec[i32])) >= 1
     );
-    (Vec[i32]::reserve : (Vec[i32], isize) -> unit)((values/17 : Vec[i32]), 100);
-    (println : (bool) -> unit)(
+    (Vec[i32]::reserve : (Vec[i32], isize) -> ())((values/17 : Vec[i32]), 100);
+    (println : (bool) -> ())(
       (Vec[i32]::capacity : (Vec[i32]) -> isize)((values/17 : Vec[i32])) >= 100
     );
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/17 : Vec[i32]), 1);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/17 : Vec[i32]), 2);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/17 : Vec[i32]), 3);
-    (Vec[i32]::insert : (Vec[i32], isize, i32) -> unit)((values/17 : Vec[i32]), 1, 9);
-    (println : (isize) -> unit)((Vec[i32]::len : (Vec[i32]) -> isize)((values/17 : Vec[i32])));
-    (println : (i32) -> unit)(
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/17 : Vec[i32]), 1);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/17 : Vec[i32]), 2);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/17 : Vec[i32]), 3);
+    (Vec[i32]::insert : (Vec[i32], isize, i32) -> ())((values/17 : Vec[i32]), 1, 9);
+    (println : (isize) -> ())((Vec[i32]::len : (Vec[i32]) -> isize)((values/17 : Vec[i32])));
+    (println : (i32) -> ())(
       (Vec[i32]::remove : (Vec[i32], isize) -> i32)((values/17 : Vec[i32]), 2)
     );
-    (println : (i32) -> unit)(
+    (println : (i32) -> ())(
       (Vec[i32]::swap_remove : (Vec[i32], isize) -> i32)((values/17 : Vec[i32]), 0)
     );
-    (Vec[i32]::reverse : (Vec[i32]) -> unit)((values/17 : Vec[i32]));
-    (println : (i32) -> unit)(
-      (Vec[i32]::get : (Vec[i32], isize) -> i32)((values/17 : Vec[i32]), 0)
-    );
-    (println : (i32) -> unit)(
-      (Vec[i32]::get : (Vec[i32], isize) -> i32)((values/17 : Vec[i32]), 1)
-    );
+    (Vec[i32]::reverse : (Vec[i32]) -> ())((values/17 : Vec[i32]));
+    (println : (i32) -> ())((Vec[i32]::get : (Vec[i32], isize) -> i32)((values/17 : Vec[i32]), 0));
+    (println : (i32) -> ())((Vec[i32]::get : (Vec[i32], isize) -> i32)((values/17 : Vec[i32]), 1));
     match (Vec[i32]::last : (Vec[i32]) -> Option[i32])((values/17 : Vec[i32])) {
-        Option::Some(value/18: i32) => (println : (i32) -> unit)((value/18 : i32)),
-        Option::None => (println : (isize) -> unit)(-1),
+        Option::Some(value/18: i32) => (println : (i32) -> ())((value/18 : i32)),
+        Option::None => (println : (isize) -> ())(-1),
     };
     match (Vec[i32]::pop : (Vec[i32]) -> Option[i32])((values/17 : Vec[i32])) {
-        Option::Some(value/19: i32) => (println : (i32) -> unit)((value/19 : i32)),
-        Option::None => (println : (isize) -> unit)(-1),
+        Option::Some(value/19: i32) => (println : (i32) -> ())((value/19 : i32)),
+        Option::None => (println : (isize) -> ())(-1),
     };
-    (Vec[i32]::truncate : (Vec[i32], isize) -> unit)((values/17 : Vec[i32]), 0);
-    (println : (bool) -> unit)((Vec[i32]::is_empty : (Vec[i32]) -> bool)((values/17 : Vec[i32])));
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/17 : Vec[i32]), 42);
-    (Vec[i32]::clear : (Vec[i32]) -> unit)((values/17 : Vec[i32]));
-    (println : (isize) -> unit)((Vec[i32]::len : (Vec[i32]) -> isize)((values/17 : Vec[i32])));
+    (Vec[i32]::truncate : (Vec[i32], isize) -> ())((values/17 : Vec[i32]), 0);
+    (println : (bool) -> ())((Vec[i32]::is_empty : (Vec[i32]) -> bool)((values/17 : Vec[i32])));
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/17 : Vec[i32]), 42);
+    (Vec[i32]::clear : (Vec[i32]) -> ())((values/17 : Vec[i32]));
+    (println : (isize) -> ())((Vec[i32]::len : (Vec[i32]) -> isize)((values/17 : Vec[i32])));
     let map/20: HashMap[string, i32] = (HashMap[string, i32]::new : () -> HashMap[string, i32])();
-    (HashMap[string, i32]::set : (HashMap[string, i32], string, i32) -> unit)(
+    (HashMap[string, i32]::set : (HashMap[string, i32], string, i32) -> ())(
       (map/20 : HashMap[string, i32]),
       "a",
       1
     );
-    (HashMap[string, i32]::set : (HashMap[string, i32], string, i32) -> unit)(
+    (HashMap[string, i32]::set : (HashMap[string, i32], string, i32) -> ())(
       (map/20 : HashMap[string, i32]),
       "b",
       2
@@ -131,19 +125,19 @@ fn main() -> unit {
       (HashMap[string, i32]::entries : (HashMap[string, i32]) -> Vec[(string, i32)])(
         (map/20 : HashMap[string, i32])
       );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (Vec[(string, i32)]::len : (Vec[(string, i32)]) -> isize)((entries/21 : Vec[(string, i32)]))
     );
-    (HashMap[string, i32]::set : (HashMap[string, i32], string, i32) -> unit)(
+    (HashMap[string, i32]::set : (HashMap[string, i32], string, i32) -> ())(
       (map/20 : HashMap[string, i32]),
       "c",
       3
     );
-    (HashMap[string, i32]::remove : (HashMap[string, i32], string) -> unit)(
+    (HashMap[string, i32]::remove : (HashMap[string, i32], string) -> ())(
       (map/20 : HashMap[string, i32]),
       "a"
     );
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (Vec[(string, i32)]::len : (Vec[(string, i32)]) -> isize)((entries/21 : Vec[(string, i32)]))
     );
     let seen_a/22: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
@@ -153,18 +147,18 @@ fn main() -> unit {
         let (key/25: string, item_value/26: i32) = (entry/24 : (string, i32));
         if (key/25 : string) == "a" && (item_value/26 : i32) == 1 {
             {
-                (Ref[bool]::set : (Ref[bool], bool) -> unit)((seen_a/22 : Ref[bool]), true)
+                (Ref[bool]::set : (Ref[bool], bool) -> ())((seen_a/22 : Ref[bool]), true)
             }
         } else {
             if (key/25 : string) == "b" && (item_value/26 : i32) == 2 {
                 {
-                    (Ref[bool]::set : (Ref[bool], bool) -> unit)((seen_b/23 : Ref[bool]), true)
+                    (Ref[bool]::set : (Ref[bool], bool) -> ())((seen_b/23 : Ref[bool]), true)
                 }
             } else {
                 {}
             }
         }
     };
-    (println : (bool) -> unit)((Ref[bool]::get : (Ref[bool]) -> bool)((seen_a/22 : Ref[bool])));
-    (println : (bool) -> unit)((Ref[bool]::get : (Ref[bool]) -> bool)((seen_b/23 : Ref[bool])))
+    (println : (bool) -> ())((Ref[bool]::get : (Ref[bool]) -> bool)((seen_a/22 : Ref[bool])));
+    (println : (bool) -> ())((Ref[bool]::get : (Ref[bool]) -> bool)((seen_b/23 : Ref[bool])))
 }

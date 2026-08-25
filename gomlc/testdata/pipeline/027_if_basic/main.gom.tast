@@ -10,11 +10,11 @@ fn choose(flag/0: bool, x/1: i32, y/2: i32) -> i32 {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let yes/3: i32 = (choose : (bool, i32, i32) -> i32)(true, 10, 99);
     let no/4: i32 = (choose : (bool, i32, i32) -> i32)(false, 10, 99);
-    let _ : unit =
-      (println : (string) -> unit)("yes=" + (i32::to_string : (i32) -> string)((yes/3 : i32)));
-    let _ : unit =
-      (println : (string) -> unit)("no=" + (i32::to_string : (i32) -> string)((no/4 : i32)));
+    let _ : () =
+      (println : (string) -> ())("yes=" + (i32::to_string : (i32) -> string)((yes/3 : i32)));
+    let _ : () =
+      (println : (string) -> ())("no=" + (i32::to_string : (i32) -> string)((no/4 : i32)));
 }

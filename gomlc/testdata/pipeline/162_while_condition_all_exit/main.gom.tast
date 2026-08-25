@@ -1,4 +1,4 @@
-fn loop_return_unit(flag/0: bool) -> unit {
+fn loop_return_unit(flag/0: bool) -> () {
     while if (flag/0 : bool) {
         {
             return
@@ -9,7 +9,7 @@ fn loop_return_unit(flag/0: bool) -> unit {
         }
     } {
         {
-            (println : (string) -> unit)("unreachable");
+            (println : (string) -> ())("unreachable");
         }
     }
 }
@@ -19,13 +19,13 @@ fn loop_return() -> i32 {
         _ : isize => return 5,
     } {
         {
-            (println : (string) -> unit)("unreachable");
+            (println : (string) -> ())("unreachable");
         }
     };
     0
 }
 
-fn main() -> unit {
-    (loop_return_unit : (bool) -> unit)(true);
-    (println : (i32) -> unit)((loop_return : () -> i32)());
+fn main() -> () {
+    (loop_return_unit : (bool) -> ())(true);
+    (println : (i32) -> ())((loop_return : () -> i32)());
 }

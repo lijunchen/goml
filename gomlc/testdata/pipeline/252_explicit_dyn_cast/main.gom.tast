@@ -14,21 +14,21 @@ fn erase[T](value/2: T) -> dyn Display where T: Display {
     to_dyn[Display]{T}((value/2 : T))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let display/3: dyn Display = to_dyn[Display]{Number}(Number { value: 42 });
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (dyn Display::display : (dyn Display) -> string)((display/3 : dyn Display))
     );
     let erased/4: dyn Display = (erase : (Number) -> dyn Display)(Number { value: 7 });
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (dyn Display::display : (dyn Display) -> string)((erased/4 : dyn Display))
     );
     let source/5: dyn Source[Item = isize] = to_dyn[Source]{Number}(Number { value: 11 });
-    (println : (isize) -> unit)(
+    (println : (isize) -> ())(
       (dyn Source::get : (dyn Source[Item = isize]) -> isize)((source/5 : dyn Source[Item = isize]))
     );
     let same/6: dyn Display = to_dyn[Display]{Number}(Number { value: 13 });
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (dyn Display::display : (dyn Display) -> string)((same/6 : dyn Display))
     )
 }

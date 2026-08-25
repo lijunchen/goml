@@ -2,7 +2,7 @@ fn trait_impl#Display#S#show(self/0: S) -> string {
   "ok"
 }
 
-fn main() -> unit {
+fn main() -> () {
   let mtmp0 = to_dyn__T_S(S {}) in
   let _wild0 = println__T_string("ok") in
   ()
@@ -12,7 +12,7 @@ fn to_dyn__T_S(x/0: S) -> dyn Display {
   to_dyn[Display]{S}(x/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

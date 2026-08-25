@@ -1,27 +1,26 @@
-fn main() -> unit {
+fn main() -> () {
     let vi/0: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((vi/0 : Vec[i32]), 42);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((vi/0 : Vec[i32]), 42);
     let val_i/1: i32 = (vi/0 : Vec[i32])[0];
     let len_i/2: isize = (Vec[i32]::len : (Vec[i32]) -> isize)((vi/0 : Vec[i32]));
     let vs/3: Vec[string] = (Vec[string]::new : () -> Vec[string])();
-    (Vec[string]::push : (Vec[string], string) -> unit)((vs/3 : Vec[string]), "hello");
-    (Vec[string]::push : (Vec[string], string) -> unit)((vs/3 : Vec[string]), "world");
+    (Vec[string]::push : (Vec[string], string) -> ())((vs/3 : Vec[string]), "hello");
+    (Vec[string]::push : (Vec[string], string) -> ())((vs/3 : Vec[string]), "world");
     let val_s/4: string = (vs/3 : Vec[string])[1];
     let len_s/5: isize = (Vec[string]::len : (Vec[string]) -> isize)((vs/3 : Vec[string]));
     let vb/6: Vec[bool] = (Vec[bool]::new : () -> Vec[bool])();
-    (Vec[bool]::push : (Vec[bool], bool) -> unit)((vb/6 : Vec[bool]), true);
-    (Vec[bool]::push : (Vec[bool], bool) -> unit)((vb/6 : Vec[bool]), false);
+    (Vec[bool]::push : (Vec[bool], bool) -> ())((vb/6 : Vec[bool]), true);
+    (Vec[bool]::push : (Vec[bool], bool) -> ())((vb/6 : Vec[bool]), false);
     let val_b/7: bool = (vb/6 : Vec[bool])[0];
     let len_b/8: isize = (Vec[bool]::len : (Vec[bool]) -> isize)((vb/6 : Vec[bool]));
-    let _ : unit =
-      (println : (string) -> unit)((i32::to_string : (i32) -> string)((val_i/1 : i32)));
-    let _ : unit =
-      (println : (string) -> unit)((isize::to_string : (isize) -> string)((len_i/2 : isize)));
-    let _ : unit = (println : (string) -> unit)((val_s/4 : string));
-    let _ : unit =
-      (println : (string) -> unit)((isize::to_string : (isize) -> string)((len_s/5 : isize)));
-    let _ : unit =
-      (println : (string) -> unit)((ToString::to_string : (bool) -> string)((val_b/7 : bool)));
-    let _ : unit =
-      (println : (string) -> unit)((isize::to_string : (isize) -> string)((len_b/8 : isize)));
+    let _ : () = (println : (string) -> ())((i32::to_string : (i32) -> string)((val_i/1 : i32)));
+    let _ : () =
+      (println : (string) -> ())((isize::to_string : (isize) -> string)((len_i/2 : isize)));
+    let _ : () = (println : (string) -> ())((val_s/4 : string));
+    let _ : () =
+      (println : (string) -> ())((isize::to_string : (isize) -> string)((len_s/5 : isize)));
+    let _ : () =
+      (println : (string) -> ())((ToString::to_string : (bool) -> string)((val_b/7 : bool)));
+    let _ : () =
+      (println : (string) -> ())((isize::to_string : (isize) -> string)((len_b/8 : isize)));
 }

@@ -114,7 +114,7 @@ fn label(value/0: Message__string) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let x/0 = 3 in
   let direction/0 = "north" in
   let first/0 = Message__string::Move(x/0, 4, direction/0) in
@@ -138,15 +138,15 @@ fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
   (self/0 == other/0)
 }
 
-fn println__T_i32(value/0: i32) -> unit {
+fn println__T_i32(value/0: i32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
@@ -213,7 +213,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

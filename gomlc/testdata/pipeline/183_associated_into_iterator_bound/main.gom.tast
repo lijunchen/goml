@@ -12,7 +12,7 @@ fn count[B](batch/1: B) -> i32 where
     let total/2: Ref[i32] = (Ref[i32]::new : (i32) -> Ref[i32])(0);
     for _ : B::Items::IntoIter::Item in
       (Batch::items : (B) -> B::Items)((batch/1 : B)) {
-        (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+        (Ref[i32]::set : (Ref[i32], i32) -> ())(
           (total/2 : Ref[i32]),
           (Ref[i32]::get : (Ref[i32]) -> i32)((total/2 : Ref[i32])) + 1
         );
@@ -20,12 +20,10 @@ fn count[B](batch/1: B) -> i32 where
     (Ref[i32]::get : (Ref[i32]) -> i32)((total/2 : Ref[i32]))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values/3: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/3 : Vec[i32]), 10);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/3 : Vec[i32]), 20);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/3 : Vec[i32]), 30);
-    (println : (i32) -> unit)(
-      (count : (Numbers) -> i32)(Numbers { values: (values/3 : Vec[i32]) })
-    );
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/3 : Vec[i32]), 10);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/3 : Vec[i32]), 20);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/3 : Vec[i32]), 30);
+    (println : (i32) -> ())((count : (Numbers) -> i32)(Numbers { values: (values/3 : Vec[i32]) }));
 }

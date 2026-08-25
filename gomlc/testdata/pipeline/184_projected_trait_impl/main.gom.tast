@@ -16,8 +16,8 @@ fn copy[S](source/2: S) -> S::Item where S: Source, S: Pick[S::Item] {
     (identity/5 : (S::Item) -> S::Item)((value/3 : S::Item))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let direct/6: i32 = (Pick[Value::Item]::pick : (Value) -> i32)(Value { value: 41 });
-    (println : (i32) -> unit)((direct/6 : i32));
-    (println : (i32) -> unit)((copy : (Value) -> i32)(Value { value: 42 }));
+    (println : (i32) -> ())((direct/6 : i32));
+    (println : (i32) -> ())((copy : (Value) -> i32)(Value { value: 42 }));
 }

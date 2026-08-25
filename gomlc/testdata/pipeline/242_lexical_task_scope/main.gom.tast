@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
     let completed/0: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
     let total/7: isize =
       (std::task::scope : (
@@ -22,14 +22,14 @@ fn main() -> unit {
                   (scope/1 : std::task::Scope),
                   |_cancel/4: std::task::CancelToken| => 22
                 );
-              let _ : std::task::Task[unit] =
+              let _ : std::task::Task[()] =
                 (std::task::Scope::spawn : (
                   std::task::Scope,
-                  (std::task::CancelToken) -> unit
-                ) -> std::task::Task[unit])(
+                  (std::task::CancelToken) -> ()
+                ) -> std::task::Task[()])(
                   (scope/1 : std::task::Scope),
                   |_cancel/6: std::task::CancelToken| =>
-                    (Ref[bool]::set : (Ref[bool], bool) -> unit)((completed/0 : Ref[bool]), true)
+                    (Ref[bool]::set : (Ref[bool], bool) -> ())((completed/0 : Ref[bool]), true)
                 );
               (std::task::Task[isize]::join : (std::task::Task[isize]) -> isize)(
                 (left/3 : std::task::Task[isize])
@@ -39,8 +39,8 @@ fn main() -> unit {
                 )
           }
       );
-    (println : (isize) -> unit)((total/7 : isize));
-    (println : (bool) -> unit)((Ref[bool]::get : (Ref[bool]) -> bool)((completed/0 : Ref[bool])));
+    (println : (isize) -> ())((total/7 : isize));
+    (println : (bool) -> ())((Ref[bool]::get : (Ref[bool]) -> bool)((completed/0 : Ref[bool])));
     let nested/12: isize =
       (std::task::scope : (
         (std::task::Scope) -> isize
@@ -71,8 +71,8 @@ fn main() -> unit {
               )
           }
       );
-    (println : (isize) -> unit)((nested/12 : isize));
+    (println : (isize) -> ())((nested/12 : isize));
     let scope/13: isize = 3;
     let spawn/15: (isize) -> isize = |value/14: isize| => (value/14 : isize) + 1;
-    (println : (isize) -> unit)((spawn/15 : (isize) -> isize)((scope/13 : isize)))
+    (println : (isize) -> ())((spawn/15 : (isize) -> isize)((scope/13 : isize)))
 }

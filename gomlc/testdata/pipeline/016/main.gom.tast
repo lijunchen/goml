@@ -14,23 +14,23 @@ fn int_list_length(xs/2: List[i32]) -> i32 {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let x/4: List[isize] = List::Cons(1, List::Nil);
     let length/5: i32 = (list_length : (List[isize]) -> i32)((x/4 : List[isize]));
-    let _ : unit = (println : (i32) -> unit)((length/5 : i32));
+    let _ : () = (println : (i32) -> ())((length/5 : i32));
     let x/6: List[isize] = List::Cons(1, List::Cons(2, List::Nil));
     let length/7: i32 = (list_length : (List[isize]) -> i32)((x/6 : List[isize]));
-    let _ : unit = (println : (i32) -> unit)((length/7 : i32));
+    let _ : () = (println : (i32) -> ())((length/7 : i32));
     let x/8: List[i32] = List::Cons(0, List::Cons(1, List::Cons(2, List::Nil)));
     let length/9: i32 = (int_list_length : (List[i32]) -> i32)((x/8 : List[i32]));
-    let _ : unit = (println : (i32) -> unit)((length/9 : i32));
-    let x/10: List[unit] = List::Cons((), List::Nil);
-    let length/11: i32 = (list_length : (List[unit]) -> i32)((x/10 : List[unit]));
-    let _ : unit = (println : (i32) -> unit)((length/11 : i32));
-    let x/12: List[unit] = List::Cons((), List::Cons((), List::Nil));
-    let length/13: i32 = (list_length : (List[unit]) -> i32)((x/12 : List[unit]));
-    let _ : unit = (println : (i32) -> unit)((length/13 : i32));
+    let _ : () = (println : (i32) -> ())((length/9 : i32));
+    let x/10: List[()] = List::Cons((), List::Nil);
+    let length/11: i32 = (list_length : (List[()]) -> i32)((x/10 : List[()]));
+    let _ : () = (println : (i32) -> ())((length/11 : i32));
+    let x/12: List[()] = List::Cons((), List::Cons((), List::Nil));
+    let length/13: i32 = (list_length : (List[()]) -> i32)((x/12 : List[()]));
+    let _ : () = (println : (i32) -> ())((length/13 : i32));
     let x/14: List[bool] = List::Cons(true, List::Cons(false, List::Nil));
     let length/15: i32 = (list_length : (List[bool]) -> i32)((x/14 : List[bool]));
-    let _ : unit = (println : (i32) -> unit)((length/15 : i32));
+    let _ : () = (println : (i32) -> ())((length/15 : i32));
 }

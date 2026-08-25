@@ -111,7 +111,7 @@ fn for_binding() -> isize {
     let total/14: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     for answer/15: isize in
       [1, 2] {
-        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+        (Ref[isize]::set : (Ref[isize], isize) -> ())(
           (total/14 : Ref[isize]),
           (Ref[isize]::get : (Ref[isize]) -> isize)((total/14 : Ref[isize])) + (answer/15 : isize)
         )
@@ -119,26 +119,26 @@ fn for_binding() -> isize {
     (Ref[isize]::get : (Ref[isize]) -> isize)((total/14 : Ref[isize]))
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)((classify : (isize) -> string)(42));
-    (println : (string) -> unit)((classify : (isize) -> string)(7));
-    (println : (string) -> unit)((classify : (isize) -> string)(0));
-    (println : (string) -> unit)((classify_bool : (bool) -> string)(true));
-    (println : (string) -> unit)((classify_bool : (bool) -> string)(false));
-    (println : (string) -> unit)((classify_computed_bool : (bool) -> string)(true));
-    (println : (string) -> unit)((classify_computed_bool : (bool) -> string)(false));
-    (println : (string) -> unit)((classify_comptime_guard : (bool) -> string)(true));
-    (println : (string) -> unit)((classify_comptime_guard : (bool) -> string)(false));
-    (println : (bool) -> unit)((classify_pair : ((isize, u8)) -> bool)((42, 65)));
-    (println : (bool) -> unit)((classify_pair : ((isize, u8)) -> bool)((42, 66)));
-    (println : (bool) -> unit)((classify_string : (string) -> bool)("hello"));
-    (println : (bool) -> unit)((classify_float : (f64) -> bool)(1.5));
-    (println : (isize) -> unit)((shadow_constant : () -> isize)());
-    (println : (isize) -> unit)((explicit_binding : (isize) -> isize)(11));
-    (println : (bool) -> unit)((matches_if_let : (isize) -> bool)(42));
-    (println : (bool) -> unit)((matches_if_let : (isize) -> bool)(41));
-    (println : (bool) -> unit)((matches_let_else : (isize) -> bool)(42));
-    (println : (bool) -> unit)((matches_let_else : (isize) -> bool)(41));
-    (println : (isize) -> unit)((for_binding : () -> isize)());
-    (println : (isize) -> unit)((CLASSIFIED_AT_COMPILE_TIME : isize))
+fn main() -> () {
+    (println : (string) -> ())((classify : (isize) -> string)(42));
+    (println : (string) -> ())((classify : (isize) -> string)(7));
+    (println : (string) -> ())((classify : (isize) -> string)(0));
+    (println : (string) -> ())((classify_bool : (bool) -> string)(true));
+    (println : (string) -> ())((classify_bool : (bool) -> string)(false));
+    (println : (string) -> ())((classify_computed_bool : (bool) -> string)(true));
+    (println : (string) -> ())((classify_computed_bool : (bool) -> string)(false));
+    (println : (string) -> ())((classify_comptime_guard : (bool) -> string)(true));
+    (println : (string) -> ())((classify_comptime_guard : (bool) -> string)(false));
+    (println : (bool) -> ())((classify_pair : ((isize, u8)) -> bool)((42, 65)));
+    (println : (bool) -> ())((classify_pair : ((isize, u8)) -> bool)((42, 66)));
+    (println : (bool) -> ())((classify_string : (string) -> bool)("hello"));
+    (println : (bool) -> ())((classify_float : (f64) -> bool)(1.5));
+    (println : (isize) -> ())((shadow_constant : () -> isize)());
+    (println : (isize) -> ())((explicit_binding : (isize) -> isize)(11));
+    (println : (bool) -> ())((matches_if_let : (isize) -> bool)(42));
+    (println : (bool) -> ())((matches_if_let : (isize) -> bool)(41));
+    (println : (bool) -> ())((matches_let_else : (isize) -> bool)(42));
+    (println : (bool) -> ())((matches_let_else : (isize) -> bool)(41));
+    (println : (isize) -> ())((for_binding : () -> isize)());
+    (println : (isize) -> ())((CLASSIFIED_AT_COMPILE_TIME : isize))
 }

@@ -19,10 +19,10 @@ fn inherent#Shape#Shape#join(self/0: Shape, left/0: string, right/0: string) -> 
   jump inline_cont0("Shape")
 }
 
-fn announce(shape/0: Shape) -> unit {
-  join inline_cont0(base/0: string) -> unit {
-    join inline_cont1(with_suffix/0: string) -> unit {
-      join inline_cont2(combined/0: string) -> unit {
+fn announce(shape/0: Shape) -> () {
+  join inline_cont0(base/0: string) -> () {
+    join inline_cont1(with_suffix/0: string) -> () {
+      join inline_cont2(combined/0: string) -> () {
         let inline0 = trait_impl#ToString#string#to_string(combined/0) in
         let inline1 = @runtime(core.string_println)(inline0) in
         ()
@@ -40,7 +40,7 @@ fn announce(shape/0: Shape) -> unit {
   jump inline_cont0("Shape")
 }
 
-fn main() -> unit {
+fn main() -> () {
   let shape/0 = Shape {} in
   let inline0 = inherent#Shape#Shape#name(shape/0) in
   let inline1 = inherent#Shape#Shape#rename(shape/0, "!") in
@@ -49,8 +49,8 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

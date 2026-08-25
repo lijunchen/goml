@@ -327,7 +327,7 @@ type Option__Typ struct {
     _v1_0 Typ
 }
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string
@@ -649,13 +649,13 @@ func subst_lookup(subst__0 *_goml_vec_SubstEntry, name__0 string) Option__Typ {
     return inline0
 }
 
-func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) Result__unit__string {
+func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) _goml_m_Result_____o__q_____string {
     switch ty__0.(type) {
     case TVar:
         var x0 *ref_Tv_x = ty__0.(TVar)._0
         var t0 bool = ptr_eq__Ref_2Tv(tvr__0, x0)
         if t0 {
-            var t1 Result__unit__string = Result__unit__string{
+            var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 1,
                 _v1_0: "occurs check",
             }
@@ -689,14 +689,14 @@ func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) Result__unit__strin
                     _1: jp0,
                 }
                 ref_set__Ref_2Tv(x0, t2)
-                var t3 Result__unit__string = Result__unit__string{
+                var t3 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                     _tag: 0,
                     _v0_0: struct{}{},
                 }
                 return t3
             case Link:
                 var x4 Typ = mtmp0.(Link)._0
-                var t4 Result__unit__string = occurs(st__0, tvr__0, x4)
+                var t4 _goml_m_Result_____o__q_____string = occurs(st__0, tvr__0, x4)
                 return t4
             default:
                 panic("non-exhaustive match")
@@ -705,14 +705,14 @@ func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) Result__unit__strin
     case TArrow:
         var x5 Typ = ty__0.(TArrow)._0
         var x6 Typ = ty__0.(TArrow)._1
-        var mtmp3 Result__unit__string = occurs(st__0, tvr__0, x5)
+        var mtmp3 _goml_m_Result_____o__q_____string = occurs(st__0, tvr__0, x5)
         switch mtmp3._tag {
         case 0:
-            var t5 Result__unit__string = occurs(st__0, tvr__0, x6)
+            var t5 _goml_m_Result_____o__q_____string = occurs(st__0, tvr__0, x6)
             return t5
         case 1:
             var x7 string = mtmp3._v1_0
-            var t6 Result__unit__string = Result__unit__string{
+            var t6 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 1,
                 _v1_0: x7,
             }
@@ -721,7 +721,7 @@ func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) Result__unit__strin
             panic("non-exhaustive match")
         }
     default:
-        var t7 Result__unit__string = Result__unit__string{
+        var t7 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
             _tag: 0,
             _v0_0: struct{}{},
         }
@@ -729,7 +729,7 @@ func occurs(st__0 CheckerState, tvr__0 *ref_Tv_x, ty__0 Typ) Result__unit__strin
     }
 }
 
-func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
+func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) _goml_m_Result_____o__q_____string {
     switch t2__0.(type) {
     case TVar:
         var x0 *ref_Tv_x = t2__0.(TVar)._0
@@ -738,7 +738,7 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
             var x1 *ref_Tv_x = t1__0.(TVar)._0
             var t0 bool = ptr_eq__Ref_2Tv(x1, x0)
             if t0 {
-                var t1 Result__unit__string = Result__unit__string{
+                var t1 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                     _tag: 0,
                     _v0_0: struct{}{},
                 }
@@ -757,7 +757,7 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                         var t2 Typ = TVar{
                             _0: x0,
                         }
-                        var mtmp2 Result__unit__string = occurs(st__0, x1, t2)
+                        var mtmp2 _goml_m_Result_____o__q_____string = occurs(st__0, x1, t2)
                         switch mtmp2._tag {
                         case 0:
                             var t3 Typ = TVar{
@@ -767,14 +767,14 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                                 _0: t3,
                             }
                             ref_set__Ref_2Tv(x1, t4)
-                            var t5 Result__unit__string = Result__unit__string{
+                            var t5 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                                 _tag: 0,
                                 _v0_0: struct{}{},
                             }
                             return t5
                         case 1:
                             var x2 string = mtmp2._v1_0
-                            var t6 Result__unit__string = Result__unit__string{
+                            var t6 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                                 _tag: 1,
                                 _v1_0: x2,
                             }
@@ -787,7 +787,7 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                         var t7 Typ = TVar{
                             _0: x1,
                         }
-                        var t8 Result__unit__string = unify(st__0, t7, x3)
+                        var t8 _goml_m_Result_____o__q_____string = unify(st__0, t7, x3)
                         return t8
                     default:
                         panic("non-exhaustive match")
@@ -797,7 +797,7 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                     var t9 Typ = TVar{
                         _0: x0,
                     }
-                    var t10 Result__unit__string = unify(st__0, x4, t9)
+                    var t10 _goml_m_Result_____o__q_____string = unify(st__0, x4, t9)
                     return t10
                 default:
                     panic("non-exhaustive match")
@@ -809,21 +809,21 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
             mtmp4 = inline4
             switch mtmp4.(type) {
             case Unbound:
-                var mtmp5 Result__unit__string = occurs(st__0, x0, t1__0)
+                var mtmp5 _goml_m_Result_____o__q_____string = occurs(st__0, x0, t1__0)
                 switch mtmp5._tag {
                 case 0:
                     var t11 Tv = Link{
                         _0: t1__0,
                     }
                     ref_set__Ref_2Tv(x0, t11)
-                    var t12 Result__unit__string = Result__unit__string{
+                    var t12 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 0,
                         _v0_0: struct{}{},
                     }
                     return t12
                 case 1:
                     var x5 string = mtmp5._v1_0
-                    var t13 Result__unit__string = Result__unit__string{
+                    var t13 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 1,
                         _v1_0: x5,
                     }
@@ -833,7 +833,7 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                 }
             case Link:
                 var x6 Typ = mtmp4.(Link)._0
-                var t14 Result__unit__string = unify(st__0, t1__0, x6)
+                var t14 _goml_m_Result_____o__q_____string = unify(st__0, t1__0, x6)
                 return t14
             default:
                 panic("non-exhaustive match")
@@ -850,21 +850,21 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
             mtmp7 = inline6
             switch mtmp7.(type) {
             case Unbound:
-                var mtmp8 Result__unit__string = occurs(st__0, x9, t2__0)
+                var mtmp8 _goml_m_Result_____o__q_____string = occurs(st__0, x9, t2__0)
                 switch mtmp8._tag {
                 case 0:
                     var t15 Tv = Link{
                         _0: t2__0,
                     }
                     ref_set__Ref_2Tv(x9, t15)
-                    var t16 Result__unit__string = Result__unit__string{
+                    var t16 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 0,
                         _v0_0: struct{}{},
                     }
                     return t16
                 case 1:
                     var x10 string = mtmp8._v1_0
-                    var t17 Result__unit__string = Result__unit__string{
+                    var t17 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 1,
                         _v1_0: x10,
                     }
@@ -874,7 +874,7 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                 }
             case Link:
                 var x11 Typ = mtmp7.(Link)._0
-                var t18 Result__unit__string = unify(st__0, x11, t2__0)
+                var t18 _goml_m_Result_____o__q_____string = unify(st__0, x11, t2__0)
                 return t18
             default:
                 panic("non-exhaustive match")
@@ -882,14 +882,14 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
         case TArrow:
             var x12 Typ = t1__0.(TArrow)._0
             var x13 Typ = t1__0.(TArrow)._1
-            var mtmp10 Result__unit__string = unify(st__0, x12, x7)
+            var mtmp10 _goml_m_Result_____o__q_____string = unify(st__0, x12, x7)
             switch mtmp10._tag {
             case 0:
-                var t19 Result__unit__string = unify(st__0, x13, x8)
+                var t19 _goml_m_Result_____o__q_____string = unify(st__0, x13, x8)
                 return t19
             case 1:
                 var x14 string = mtmp10._v1_0
-                var t20 Result__unit__string = Result__unit__string{
+                var t20 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                     _tag: 1,
                     _v1_0: x14,
                 }
@@ -898,7 +898,7 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                 panic("non-exhaustive match")
             }
         default:
-            var t21 Result__unit__string = Result__unit__string{
+            var t21 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 1,
                 _v1_0: "unify error",
             }
@@ -913,21 +913,21 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
             mtmp11 = inline8
             switch mtmp11.(type) {
             case Unbound:
-                var mtmp12 Result__unit__string = occurs(st__0, x15, t2__0)
+                var mtmp12 _goml_m_Result_____o__q_____string = occurs(st__0, x15, t2__0)
                 switch mtmp12._tag {
                 case 0:
                     var t22 Tv = Link{
                         _0: t2__0,
                     }
                     ref_set__Ref_2Tv(x15, t22)
-                    var t23 Result__unit__string = Result__unit__string{
+                    var t23 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 0,
                         _v0_0: struct{}{},
                     }
                     return t23
                 case 1:
                     var x16 string = mtmp12._v1_0
-                    var t24 Result__unit__string = Result__unit__string{
+                    var t24 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                         _tag: 1,
                         _v1_0: x16,
                     }
@@ -937,13 +937,13 @@ func unify(st__0 CheckerState, t1__0 Typ, t2__0 Typ) Result__unit__string {
                 }
             case Link:
                 var x17 Typ = mtmp11.(Link)._0
-                var t25 Result__unit__string = unify(st__0, x17, t2__0)
+                var t25 _goml_m_Result_____o__q_____string = unify(st__0, x17, t2__0)
                 return t25
             default:
                 panic("non-exhaustive match")
             }
         default:
-            var t26 Result__unit__string = Result__unit__string{
+            var t26 _goml_m_Result_____o__q_____string = _goml_m_Result_____o__q_____string{
                 _tag: 1,
                 _v1_0: "unify error",
             }
@@ -1139,7 +1139,7 @@ func typeof(st__0 CheckerState, env__0 *_goml_vec_EnvEntry, e__0 Exp) Result__Ty
                     _0: x5,
                     _1: ty_res__0,
                 }
-                var mtmp3 Result__unit__string = unify(st__0, x4, arrow__0)
+                var mtmp3 _goml_m_Result_____o__q_____string = unify(st__0, x4, arrow__0)
                 switch mtmp3._tag {
                 case 0:
                     var t3 Result__Typ__string = Result__Typ__string{

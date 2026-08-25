@@ -1,5 +1,5 @@
 fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[isize]) -> Channel[isize] {
-    (Ref[string]::set : (Ref[string], string) -> unit)(
+    (Ref[string]::set : (Ref[string], string) -> ())(
       (log/0 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/0 : Ref[string])) + (mark/1 : string)
     );
@@ -7,16 +7,16 @@ fn mark_channel(log/0: Ref[string], mark/1: string, channel/2: Channel[isize]) -
 }
 
 fn mark_value(log/3: Ref[string], mark/4: string, value/5: isize) -> isize {
-    (Ref[string]::set : (Ref[string], string) -> unit)(
+    (Ref[string]::set : (Ref[string], string) -> ())(
       (log/3 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/3 : Ref[string])) + (mark/4 : string)
     );
     (value/5 : isize)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let received/6: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(1);
-    (Channel[isize]::send : (Channel[isize], isize) -> unit)((received/6 : Channel[isize]), 7);
+    (Channel[isize]::send : (Channel[isize], isize) -> ())((received/6 : Channel[isize]), 7);
     let first/9: isize =
       select {
           recv((received/6 : Channel[isize])) as value/7 =>
@@ -31,15 +31,15 @@ fn main() -> unit {
             },
           default => 0,
       };
-    (println : (isize) -> unit)((first/9 : isize));
+    (println : (isize) -> ())((first/9 : isize));
     let sent/10: Channel[string] = (Channel[string]::new : (isize) -> Channel[string])(1);
     let branch/11: string =
       select {
           send((sent/10 : Channel[string]), "ready") => "sent",
           default => "blocked",
       };
-    (println : (string) -> unit)((branch/11 : string));
-    (println : (string) -> unit)(
+    (println : (string) -> ())((branch/11 : string));
+    (println : (string) -> ())(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
         (Channel[string]::recv : (Channel[string]) -> Option[string])((sent/10 : Channel[string])),
         "missing"
@@ -51,7 +51,7 @@ fn main() -> unit {
           recv((empty/12 : Channel[isize])) as _/13 => -1,
           default => 42,
       };
-    (println : (isize) -> unit)((fallback/14 : isize));
+    (println : (isize) -> ())((fallback/14 : isize));
     let log/15: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("");
     let left/16: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(0);
     let right/17: Channel[isize] = (Channel[isize]::new : (isize) -> Channel[isize])(0);
@@ -70,10 +70,10 @@ fn main() -> unit {
           (),
         default => (),
     };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Ref[string]::get : (Ref[string]) -> string)((log/15 : Ref[string]))
     );
-    (Channel[isize]::close : (Channel[isize]) -> unit)((received/6 : Channel[isize]));
+    (Channel[isize]::close : (Channel[isize]) -> ())((received/6 : Channel[isize]));
     let closed/19: string =
       select {
           recv((received/6 : Channel[isize])) as value/18 =>
@@ -82,5 +82,5 @@ fn main() -> unit {
                 Option::None => "closed",
             },
       };
-    (println : (string) -> unit)((closed/19 : string))
+    (println : (string) -> ())((closed/19 : string))
 }

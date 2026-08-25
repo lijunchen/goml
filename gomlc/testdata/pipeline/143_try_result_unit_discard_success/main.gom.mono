@@ -1,50 +1,50 @@
-fn step(ok/0: bool) -> Result__unit__string {
+fn step(ok/0: bool) -> Result__()__string {
   if ok/0 {
       {
-        Result__unit__string::Ok(())
+        Result__()__string::Ok(())
       }
   } else {
       {
-        Result__unit__string::Err("step failed")
+        Result__()__string::Err("step failed")
       }
   }
 }
 
-fn run(ok/0: bool) -> Result__unit__string {
+fn run(ok/0: bool) -> Result__()__string {
   let mtmp0 =
     {
       let mtmp1 = step(ok/0) in
       match mtmp1 {
-        Result__unit__string::Ok(x0) => {
+        Result__()__string::Ok(x0) => {
           {
-            let x0 = Result__unit__string::Ok._0(mtmp1) in
+            let x0 = Result__()__string::Ok._0(mtmp1) in
             {
               let try_value/0 = x0 in
               try_value/0
             }
           }
         },
-        Result__unit__string::Err(x1) => {
+        Result__()__string::Err(x1) => {
           {
-            let x1 = Result__unit__string::Err._0(mtmp1) in
+            let x1 = Result__()__string::Err._0(mtmp1) in
             {
               let try_residual/0 = x1 in
-              return Result__unit__string::Err(try_residual/0)
+              return Result__()__string::Err(try_residual/0)
             }
           }
         },
       }
     } in
   {
-    Result__unit__string::Ok(())
+    Result__()__string::Ok(())
   }
 }
 
-fn show(res/0: Result__unit__string) -> string {
+fn show(res/0: Result__()__string) -> string {
   match res/0 {
-    Result__unit__string::Ok(x0) => {
+    Result__()__string::Ok(x0) => {
       {
-        let x0 = Result__unit__string::Ok._0(res/0) in
+        let x0 = Result__()__string::Ok._0(res/0) in
         match x0 {
           () => {
             "ok unit"
@@ -52,9 +52,9 @@ fn show(res/0: Result__unit__string) -> string {
         }
       }
     },
-    Result__unit__string::Err(x1) => {
+    Result__()__string::Err(x1) => {
       {
-        let x1 = Result__unit__string::Err._0(res/0) in
+        let x1 = Result__()__string::Err._0(res/0) in
         {
           let err/0 = x1 in
           ("err " + err/0)
@@ -64,12 +64,12 @@ fn show(res/0: Result__unit__string) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = println__T_string(show(run(true))) in
   let _wild1 = println__T_string(show(run(false))) in
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

@@ -1,6 +1,6 @@
 fn main() -> i32 {
   join inline_cont0(value/0: Ref[i32]) -> i32 {
-    join inline_cont1(mtmp0: unit) -> i32 {
+    join inline_cont1(mtmp0: ()) -> i32 {
       let inline0 = @intrinsic(ref.get)(value/0) in
       inline0
     } in
@@ -18,7 +18,7 @@ fn inherent#Ref#Ref[T]#new__T_i32(value/0: i32) -> Ref[i32] {
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }

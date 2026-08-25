@@ -78,14 +78,14 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#is_empty(self/0: std::bytes:
 fn inherent#std::bytes::Builder#std::bytes::Builder#push(
   self/0: std::bytes::Builder,
   value/0: u8
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#push__T_u0(std::bytes::Builder.values(self/0), value/0)
 }
 
 fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   self/0: std::bytes::Builder,
   value/0: Slice[u8]
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#Vec#Vec[T]#reserve__T_u0(
       std::bytes::Builder.values(self/0),
@@ -110,7 +110,7 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   }
 }
 
-fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> unit {
+fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> () {
   inherent#Vec#Vec[T]#clear__T_u0(std::bytes::Builder.values(self/0))
 }
 
@@ -172,7 +172,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/0: std::bytes::Bytes,
   index/0: isize,
   value/0: u8
-) -> unit {
+) -> () {
   let _wild0 =
     {
       let place_root0 = self/0 in
@@ -196,10 +196,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set_checked(
   )
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
-  self/0: std::bytes::Bytes,
-  value/0: u8
-) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/0: std::bytes::Bytes, value/0: u8) -> () {
   inherent#Vec#Vec[T]#push__T_u0(std::bytes::Bytes.values(self/0), value/0)
 }
 
@@ -210,18 +207,18 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/0: std::bytes::Bytes) -
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/0: std::bytes::Bytes,
   additional/0: isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#reserve__T_u0(std::bytes::Bytes.values(self/0), additional/0)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/0: std::bytes::Bytes,
   len/0: isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#truncate__T_u0(std::bytes::Bytes.values(self/0), len/0)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> () {
   inherent#Vec#Vec[T]#clear__T_u0(std::bytes::Bytes.values(self/0))
 }
 
@@ -270,7 +267,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_mut_slice(self/0: std::bytes:
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#extend_from_slice(
   self/0: std::bytes::Bytes,
   source/0: Slice[u8]
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#Vec#Vec[T]#reserve__T_u0(
       std::bytes::Bytes.values(self/0),
@@ -466,15 +463,15 @@ fn std::internal::host::sha256_file(path/0: string) -> (bool, string, string) {
   @runtime(std.fs.sha256_file)(path/0)
 }
 
-fn std::internal::host::print(value/0: string) -> unit {
+fn std::internal::host::print(value/0: string) -> () {
   @runtime(std.io.print)(value/0)
 }
 
-fn std::internal::host::println(value/0: string) -> unit {
+fn std::internal::host::println(value/0: string) -> () {
   @runtime(std.io.println)(value/0)
 }
 
-fn std::internal::host::eprint(value/0: string) -> unit {
+fn std::internal::host::eprint(value/0: string) -> () {
   @runtime(std.io.eprint)(value/0)
 }
 
@@ -561,7 +558,7 @@ fn std::internal::host::path_separator() -> string {
   @runtime(std.path.separator)()
 }
 
-fn std::internal::host::exit(code/0: isize) -> unit {
+fn std::internal::host::exit(code/0: isize) -> () {
   @runtime(std.process.exit)(code/0)
 }
 
@@ -679,7 +676,7 @@ fn std::internal::host::process_status_cancel(
   )
 }
 
-fn std::internal::host::test_fail(message/0: string) -> unit {
+fn std::internal::host::test_fail(message/0: string) -> () {
   @runtime(std.testing.fail)(message/0)
 }
 
@@ -691,11 +688,11 @@ fn std::internal::host::unix_nanoseconds() -> i64 {
   @runtime(std.time.unix_nanoseconds)()
 }
 
-fn std::internal::host::sleep_nanoseconds(value/0: i64) -> unit {
+fn std::internal::host::sleep_nanoseconds(value/0: i64) -> () {
   @runtime(std.time.sleep_nanoseconds)(value/0)
 }
 
-fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[unit]) {
+fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[()]) {
   @runtime(std.time.timer_new)(value/0)
 }
 
@@ -1217,7 +1214,7 @@ fn std::io::read_stdin_exact_structured(
 fn std::io::write_structured(
   stderr/0: bool,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::io::Error {
+) -> Result__()__std::io::Error {
   let result/0 =
     if stderr/0 {
         {
@@ -1252,11 +1249,11 @@ fn std::io::write_structured(
               {
                 if ok/0 {
                     {
-                      Result__unit__std::io::Error::Ok(())
+                      Result__()__std::io::Error::Ok(())
                     }
                 } else {
                     {
-                      Result__unit__std::io::Error::Err(
+                      Result__()__std::io::Error::Err(
                         std::io::structured_error(
                           if stderr/0 {
                               {
@@ -1284,11 +1281,11 @@ fn std::io::write_structured(
   }
 }
 
-fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   std::io::write_structured(false, data/0)
 }
 
-fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   std::io::write_structured(true, data/0)
 }
 
@@ -1323,7 +1320,7 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
   }
 }
 
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
+fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__()__string {
   let mtmp0 =
     std::internal::host::write_stdout(
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
@@ -1338,11 +1335,11 @@ fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
         {
           if ok/0 {
               {
-                Result__unit__string::Ok(())
+                Result__()__string::Ok(())
               }
           } else {
               {
-                Result__unit__string::Err(err/0)
+                Result__()__string::Err(err/0)
               }
           }
         }
@@ -1351,7 +1348,7 @@ fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
   }
 }
 
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__unit__string {
+fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__()__string {
   let mtmp0 =
     std::internal::host::write_stderr(
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
@@ -1366,11 +1363,11 @@ fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__unit__string {
         {
           if ok/0 {
               {
-                Result__unit__string::Ok(())
+                Result__()__string::Ok(())
               }
           } else {
               {
-                Result__unit__string::Err(err/0)
+                Result__()__string::Err(err/0)
               }
           }
         }
@@ -1716,7 +1713,7 @@ fn std::fs::read_file_structured(path/0: string) -> Result__string__std::fs::Err
 fn std::fs::write_bytes_structured(
   path/0: string,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::fs::Error {
+) -> Result__()__std::fs::Error {
   let mtmp0 =
     std::internal::host::write_bytes_v0(
       path/0,
@@ -1741,11 +1738,11 @@ fn std::fs::write_bytes_structured(
               {
                 if ok/0 {
                     {
-                      Result__unit__std::fs::Error::Ok(())
+                      Result__()__std::fs::Error::Ok(())
                     }
                 } else {
                     {
-                      Result__unit__std::fs::Error::Err(
+                      Result__()__std::fs::Error::Err(
                         std::fs::structured_error(
                           "write file",
                           path/0,
@@ -1766,10 +1763,7 @@ fn std::fs::write_bytes_structured(
   }
 }
 
-fn std::fs::write_file_structured(
-  path/0: string,
-  content/0: string
-) -> Result__unit__std::fs::Error {
+fn std::fs::write_file_structured(path/0: string, content/0: string) -> Result__()__std::fs::Error {
   std::fs::write_bytes_structured(
     path/0,
     inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/0)
@@ -1781,7 +1775,7 @@ fn std::fs::path_operation(
   name/0: string,
   first/0: string,
   second/0: string
-) -> Result__unit__std::fs::Error {
+) -> Result__()__std::fs::Error {
   let mtmp0 = std::internal::host::fs_path_operation_v0(operation/0, first/0, second/0) in
   {
     let x0 = mtmp0.0 in
@@ -1802,11 +1796,11 @@ fn std::fs::path_operation(
               {
                 if ok/0 {
                     {
-                      Result__unit__std::fs::Error::Ok(())
+                      Result__()__std::fs::Error::Ok(())
                     }
                 } else {
                     {
-                      Result__unit__std::fs::Error::Err(
+                      Result__()__std::fs::Error::Err(
                         std::fs::structured_error(
                           name/0,
                           if (second/0 == "") {
@@ -1835,34 +1829,34 @@ fn std::fs::path_operation(
   }
 }
 
-fn std::fs::create_dir(path/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::create_dir(path/0: string) -> Result__()__std::fs::Error {
   std::fs::path_operation(0, "create directory", path/0, "")
 }
 
-fn std::fs::rename(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::rename(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   std::fs::path_operation(1, "rename", from/0, to/0)
 }
 
-fn std::fs::replace(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::replace(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   std::fs::path_operation(1, "replace", from/0, to/0)
 }
 
-fn std::fs::hard_link(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::hard_link(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   std::fs::path_operation(2, "create hard link", from/0, to/0)
 }
 
-fn std::fs::symbolic_link(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::symbolic_link(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   std::fs::path_operation(3, "create symbolic link", from/0, to/0)
 }
 
-fn std::fs::copy(from/0: string, to/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::copy(from/0: string, to/0: string) -> Result__()__std::fs::Error {
   std::fs::path_operation(4, "copy file", from/0, to/0)
 }
 
 fn std::fs::atomic_write_bytes(
   path/0: string,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::fs::Error {
+) -> Result__()__std::fs::Error {
   let mtmp0 =
     std::internal::host::fs_atomic_write_v0(
       path/0,
@@ -1887,11 +1881,11 @@ fn std::fs::atomic_write_bytes(
               {
                 if ok/0 {
                     {
-                      Result__unit__std::fs::Error::Ok(())
+                      Result__()__std::fs::Error::Ok(())
                     }
                 } else {
                     {
-                      Result__unit__std::fs::Error::Err(
+                      Result__()__std::fs::Error::Err(
                         std::fs::structured_error(
                           "atomic write",
                           path/0,
@@ -1912,7 +1906,7 @@ fn std::fs::atomic_write_bytes(
   }
 }
 
-fn std::fs::atomic_write(path/0: string, content/0: string) -> Result__unit__std::fs::Error {
+fn std::fs::atomic_write(path/0: string, content/0: string) -> Result__()__std::fs::Error {
   std::fs::atomic_write_bytes(
     path/0,
     inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/0)
@@ -2192,7 +2186,7 @@ fn std::fs::read_file(path/0: string) -> Result__string__string {
   }
 }
 
-fn std::fs::write_file(path/0: string, content/0: string) -> Result__unit__string {
+fn std::fs::write_file(path/0: string, content/0: string) -> Result__()__string {
   std::fs::write_bytes(path/0, inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/0))
 }
 
@@ -2227,7 +2221,7 @@ fn std::fs::read_bytes(path/0: string) -> Result__std::bytes::Bytes__string {
   }
 }
 
-fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__unit__string {
+fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__()__string {
   let mtmp0 =
     std::internal::host::write_bytes(
       path/0,
@@ -2243,11 +2237,11 @@ fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__un
         {
           if ok/0 {
               {
-                Result__unit__string::Ok(())
+                Result__()__string::Ok(())
               }
           } else {
               {
-                Result__unit__string::Err(err/0)
+                Result__()__string::Err(err/0)
               }
           }
         }
@@ -2256,7 +2250,7 @@ fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__un
   }
 }
 
-fn std::fs::create_dir_all(path/0: string) -> Result__unit__string {
+fn std::fs::create_dir_all(path/0: string) -> Result__()__string {
   let mtmp0 = std::internal::host::create_dir_all(path/0) in
   {
     let x0 = mtmp0.0 in
@@ -2268,11 +2262,11 @@ fn std::fs::create_dir_all(path/0: string) -> Result__unit__string {
         {
           if ok/0 {
               {
-                Result__unit__string::Ok(())
+                Result__()__string::Ok(())
               }
           } else {
               {
-                Result__unit__string::Err(err/0)
+                Result__()__string::Err(err/0)
               }
           }
         }
@@ -2281,7 +2275,7 @@ fn std::fs::create_dir_all(path/0: string) -> Result__unit__string {
   }
 }
 
-fn std::fs::remove_file(path/0: string) -> Result__unit__string {
+fn std::fs::remove_file(path/0: string) -> Result__()__string {
   let mtmp0 = std::internal::host::remove_file(path/0) in
   {
     let x0 = mtmp0.0 in
@@ -2293,11 +2287,11 @@ fn std::fs::remove_file(path/0: string) -> Result__unit__string {
         {
           if ok/0 {
               {
-                Result__unit__string::Ok(())
+                Result__()__string::Ok(())
               }
           } else {
               {
-                Result__unit__string::Err(err/0)
+                Result__()__string::Err(err/0)
               }
           }
         }
@@ -2306,7 +2300,7 @@ fn std::fs::remove_file(path/0: string) -> Result__unit__string {
   }
 }
 
-fn std::fs::remove_dir_all(path/0: string) -> Result__unit__string {
+fn std::fs::remove_dir_all(path/0: string) -> Result__()__string {
   let mtmp0 = std::internal::host::remove_dir_all(path/0) in
   {
     let x0 = mtmp0.0 in
@@ -2318,11 +2312,11 @@ fn std::fs::remove_dir_all(path/0: string) -> Result__unit__string {
         {
           if ok/0 {
               {
-                Result__unit__string::Ok(())
+                Result__()__string::Ok(())
               }
           } else {
               {
-                Result__unit__string::Err(err/0)
+                Result__()__string::Err(err/0)
               }
           }
         }
@@ -2476,7 +2470,7 @@ fn show_dir(res/0: Result__Vec[string]__string) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let mtmp0 = std::fs::write_file("goml-std-test.txt", "std-ok") in
   {
     let _wild0 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
@@ -2508,7 +2502,7 @@ fn inherent#Vec#Vec[T]#is_empty__T_u8(self/0: Vec[u8]) -> bool {
   (@intrinsic(vec.len)(self/0) == 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -2516,11 +2510,11 @@ fn inherent#Slice#Slice[T]#len__T_u8(self/0: Slice[u8]) -> isize {
   @intrinsic(slice.len)(self/0)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> () {
   @intrinsic(vec.reserve)(self/0, additional/0)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> () {
   inherent#Vec#Vec[T]#truncate__T_u0(self/0, 0)
 }
 
@@ -2595,7 +2589,7 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
   }
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -2794,7 +2788,7 @@ fn inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() -> Vec[std::fs::DirEntry] {
 fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
   self/0: Vec[std::fs::DirEntry],
   elem/0: std::fs::DirEntry
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -2806,7 +2800,7 @@ fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
   @runtime(core.bool_to_string)(self/0)
 }
 
-fn std::io::println__T_string(value/0: string) -> unit {
+fn std::io::println__T_string(value/0: string) -> () {
   std::internal::host::println(trait_impl#ToString#string#to_string(value/0))
 }
 

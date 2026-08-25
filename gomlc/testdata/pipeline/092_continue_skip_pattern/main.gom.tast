@@ -1,8 +1,8 @@
-fn main() -> unit {
+fn main() -> () {
     let i/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize])) < 8 {
         {
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (i/0 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize])) + 1
             );
@@ -20,11 +20,11 @@ fn main() -> unit {
             } else {
                 {}
             };
-            let _ : unit =
-              (println : (isize) -> unit)(
+            let _ : () =
+              (println : (isize) -> ())(
                 (Ref[isize]::get : (Ref[isize]) -> isize)((i/0 : Ref[isize]))
               );
         }
     };
-    let _ : unit = (println : (string) -> unit)("done");
+    let _ : () = (println : (string) -> ())("done");
 }

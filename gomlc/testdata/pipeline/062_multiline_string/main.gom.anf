@@ -1,8 +1,8 @@
-fn main() -> unit {
+fn main() -> () {
   let poem/0 =
     "roses are red\nviolets are blue\n\"quotes\" stay quoted\nbackslash \\\\\\\\ stays too" in
   let trailing_blank/0 = "line one\n\nline three" in
-  join inline_cont0(_wild0: unit) -> unit {
+  join inline_cont0(_wild0: ()) -> () {
     let inline0 = trait_impl#ToString#string#to_string(trailing_blank/0) in
     let inline1 = @runtime(core.string_println)(inline0) in
     ()
@@ -12,8 +12,8 @@ fn main() -> unit {
   jump inline_cont0(())
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

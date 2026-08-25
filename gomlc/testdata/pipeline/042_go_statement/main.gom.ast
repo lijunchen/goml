@@ -1,9 +1,9 @@
 package main;
-fn child(signal: Ref[i32]) -> unit {
+fn child(signal: Ref[i32]) -> () {
     signal.set(1)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let signal = Ref::new(0);
     go || {
         child(signal)

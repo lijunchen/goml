@@ -134,15 +134,15 @@ fn std::internal::host::sha256_file(path/0: string) -> (bool, string, string) {
   @runtime(std.fs.sha256_file)(path/0)
 }
 
-fn std::internal::host::print(value/0: string) -> unit {
+fn std::internal::host::print(value/0: string) -> () {
   @runtime(std.io.print)(value/0)
 }
 
-fn std::internal::host::println(value/0: string) -> unit {
+fn std::internal::host::println(value/0: string) -> () {
   @runtime(std.io.println)(value/0)
 }
 
-fn std::internal::host::eprint(value/0: string) -> unit {
+fn std::internal::host::eprint(value/0: string) -> () {
   @runtime(std.io.eprint)(value/0)
 }
 
@@ -229,7 +229,7 @@ fn std::internal::host::path_separator() -> string {
   @runtime(std.path.separator)()
 }
 
-fn std::internal::host::exit(code/0: isize) -> unit {
+fn std::internal::host::exit(code/0: isize) -> () {
   @runtime(std.process.exit)(code/0)
 }
 
@@ -347,7 +347,7 @@ fn std::internal::host::process_status_cancel(
   )
 }
 
-fn std::internal::host::test_fail(message/0: string) -> unit {
+fn std::internal::host::test_fail(message/0: string) -> () {
   @runtime(std.testing.fail)(message/0)
 }
 
@@ -359,11 +359,11 @@ fn std::internal::host::unix_nanoseconds() -> i64 {
   @runtime(std.time.unix_nanoseconds)()
 }
 
-fn std::internal::host::sleep_nanoseconds(value/0: i64) -> unit {
+fn std::internal::host::sleep_nanoseconds(value/0: i64) -> () {
   @runtime(std.time.sleep_nanoseconds)(value/0)
 }
 
-fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[unit]) {
+fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[()]) {
   @runtime(std.time.timer_new)(value/0)
 }
 
@@ -463,14 +463,14 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#is_empty(self/0: std::bytes:
 fn inherent#std::bytes::Builder#std::bytes::Builder#push(
   self/0: std::bytes::Builder,
   value/0: u8
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#push__T_u0(std::bytes::Builder.values(self/0), value/0)
 }
 
 fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   self/0: std::bytes::Builder,
   value/0: Slice[u8]
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#Vec#Vec[T]#reserve__T_u0(
       std::bytes::Builder.values(self/0),
@@ -487,7 +487,7 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   }
 }
 
-fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> unit {
+fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> () {
   inherent#Vec#Vec[T]#clear__T_u0(std::bytes::Builder.values(self/0))
 }
 
@@ -549,7 +549,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/0: std::bytes::Bytes,
   index/0: isize,
   value/0: u8
-) -> unit {
+) -> () {
   let _wild0 =
     let place_root0 = self/0 in
     let place0 = std::bytes::Bytes.values(place_root0) in
@@ -572,10 +572,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set_checked(
   )
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
-  self/0: std::bytes::Bytes,
-  value/0: u8
-) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/0: std::bytes::Bytes, value/0: u8) -> () {
   inherent#Vec#Vec[T]#push__T_u0(std::bytes::Bytes.values(self/0), value/0)
 }
 
@@ -586,18 +583,18 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/0: std::bytes::Bytes) -
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/0: std::bytes::Bytes,
   additional/0: isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#reserve__T_u0(std::bytes::Bytes.values(self/0), additional/0)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/0: std::bytes::Bytes,
   len/0: isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#truncate__T_u0(std::bytes::Bytes.values(self/0), len/0)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> () {
   inherent#Vec#Vec[T]#clear__T_u0(std::bytes::Bytes.values(self/0))
 }
 
@@ -646,7 +643,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_mut_slice(self/0: std::bytes:
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#extend_from_slice(
   self/0: std::bytes::Bytes,
   source/0: Slice[u8]
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#Vec#Vec[T]#reserve__T_u0(
       std::bytes::Bytes.values(self/0),
@@ -1108,7 +1105,7 @@ fn std::io::read_stdin_exact_structured(
 fn std::io::write_structured(
   stderr/0: bool,
   data/0: std::bytes::Bytes
-) -> Result__unit__std::io::Error {
+) -> Result__()__std::io::Error {
   let result/0 =
     if stderr/0 {
         std::internal::host::write_stderr_v0(
@@ -1131,9 +1128,9 @@ fn std::io::write_structured(
   let kind_code/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__unit__std::io::Error::Ok(())
+      Result__()__std::io::Error::Ok(())
   } else {
-      Result__unit__std::io::Error::Err(
+      Result__()__std::io::Error::Err(
         std::io::structured_error(
           if stderr/0 {
               "write stderr"
@@ -1149,11 +1146,11 @@ fn std::io::write_structured(
   }
 }
 
-fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   std::io::write_structured(false, data/0)
 }
 
-fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__unit__std::io::Error {
+fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   std::io::write_structured(true, data/0)
 }
 
@@ -1174,7 +1171,7 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
   }
 }
 
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
+fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__()__string {
   let mtmp0 =
     std::internal::host::write_stdout(
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
@@ -1184,13 +1181,13 @@ fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__unit__string {
   let err/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   } else {
-      Result__unit__string::Err(err/0)
+      Result__()__string::Err(err/0)
   }
 }
 
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__unit__string {
+fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__()__string {
   let mtmp0 =
     std::internal::host::write_stderr(
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
@@ -1200,9 +1197,9 @@ fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__unit__string {
   let err/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   } else {
-      Result__unit__string::Err(err/0)
+      Result__()__string::Err(err/0)
   }
 }
 
@@ -2362,8 +2359,8 @@ fn std::serde::tuple_values(
   }
 }
 
-fn std::serde::error(message/0: string) -> Result__unit__string {
-  Result__unit__string::Err(message/0)
+fn std::serde::error(message/0: string) -> Result__()__string {
+  Result__()__string::Err(message/0)
 }
 
 fn std::serde::value_deserializer(value/0: std::serde::Value) -> std::serde::ValueDeserializer {
@@ -2377,20 +2374,20 @@ fn std::serde::value_deserializer(value/0: std::serde::Value) -> std::serde::Val
 
 fn std::serde::finish_value_deserializer(
   deserializer/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   if (!inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
     std::serde::ValueDeserializer.frames(deserializer/0)
   )) {
-      Result__unit__string::Err("deserialization ended inside a compound value")
+      Result__()__string::Err("deserialization ended inside a compound value")
   } else {
       if inherent#Option#Option[T]#is_some__T_std::serde::Value(
         inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
           std::serde::ValueDeserializer.current(deserializer/0)
         )
       ) {
-          Result__unit__string::Err("deserialization did not consume the value")
+          Result__()__string::Err("deserialization did not consume the value")
       } else {
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
   }
 }
@@ -2422,24 +2419,24 @@ fn std::serde::take_deserializer_value(
 fn std::serde::set_deserializer_value(
   deserializer/0: std::serde::ValueDeserializer,
   value/0: std::serde::Value
-) -> Result__unit__string {
+) -> Result__()__string {
   if inherent#Option#Option[T]#is_some__T_std::serde::Value(
     inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
       std::serde::ValueDeserializer.current(deserializer/0)
     )
   ) {
-      Result__unit__string::Err("previous deserializer value was not consumed")
+      Result__()__string::Err("previous deserializer value was not consumed")
   } else {
       let _wild0 =
         inherent#Ref#Ref[T]#set__T_Option[std::serde::Value](
           std::serde::ValueDeserializer.current(deserializer/0),
           Option__std::serde::Value::Some(value/0)
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   }
 }
 
-fn std::serde::pop_value_deserializer_frame(deserializer/0: std::serde::ValueDeserializer) -> unit {
+fn std::serde::pop_value_deserializer_frame(deserializer/0: std::serde::ValueDeserializer) -> () {
   let mtmp0 =
     inherent#Vec#Vec[T]#pop__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(deserializer/0)
@@ -2581,7 +2578,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize_unit(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let mtmp0 =
     let mtmp1 = std::serde::take_deserializer_value(self/0) in
     match mtmp1 {
@@ -2593,14 +2590,14 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
       Result__std::serde::Value__string::Err(x1) => {
         let x1 = Result__std::serde::Value__string::Err._0(mtmp1) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   match mtmp0 {
     std::serde::Value::Unit => {
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
     },
-    _ => Result__unit__string::Err("expected unit"),
+    _ => Result__()__string::Err("expected unit"),
   }
 }
 
@@ -3309,13 +3306,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_optio
                 let mtmp1 =
                   std::serde::set_deserializer_value(self/0, @intrinsic(vec.get)(values/0, 0)) in
                 match mtmp1 {
-                  Result__unit__string::Ok(x3) => {
-                    let x3 = Result__unit__string::Ok._0(mtmp1) in
+                  Result__()__string::Ok(x3) => {
+                    let x3 = Result__()__string::Ok._0(mtmp1) in
                     let try_value/1 = x3 in
                     try_value/1
                   },
-                  Result__unit__string::Err(x4) => {
-                    let x4 = Result__unit__string::Err._0(mtmp1) in
+                  Result__()__string::Err(x4) => {
+                    let x4 = Result__()__string::Err._0(mtmp1) in
                     let try_residual/1 = x4 in
                     return Result__bool__string::Err(try_residual/1)
                   },
@@ -3336,13 +3333,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_optio
       let _wild5 =
         let mtmp2 = std::serde::set_deserializer_value(self/0, value/1) in
         match mtmp2 {
-          Result__unit__string::Ok(x5) => {
-            let x5 = Result__unit__string::Ok._0(mtmp2) in
+          Result__()__string::Ok(x5) => {
+            let x5 = Result__()__string::Ok._0(mtmp2) in
             let try_value/2 = x5 in
             try_value/2
           },
-          Result__unit__string::Err(x6) => {
-            let x6 = Result__unit__string::Err._0(mtmp2) in
+          Result__()__string::Err(x6) => {
+            let x6 = Result__()__string::Err._0(mtmp2) in
             let try_residual/2 = x6 in
             return Result__bool__string::Err(try_residual/2)
           },
@@ -3353,19 +3350,19 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_optio
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_optional(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_optional without begin_optional")
+        return Result__()__string::Err("end_optional without begin_optional")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("optional item was not consumed")
+            return Result__()__string::Err("optional item was not consumed")
         } else {
             ()
         }
@@ -3381,9 +3378,9 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_optiona
   match mtmp0 {
     std::serde::ValueDeserializeFrame::Optional => {
       let _wild1 = std::serde::pop_value_deserializer_frame(self/0) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
     },
-    _ => Result__unit__string::Err("end_optional does not match the active compound value"),
+    _ => Result__()__string::Err("end_optional does not match the active compound value"),
   }
 }
 
@@ -3464,13 +3461,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_sequen
                 @intrinsic(vec.get)(values/0, inherent#Ref#Ref[T]#get__T_isize(index/0))
               ) in
             match mtmp1 {
-              Result__unit__string::Ok(x2) => {
-                let x2 = Result__unit__string::Ok._0(mtmp1) in
+              Result__()__string::Ok(x2) => {
+                let x2 = Result__()__string::Ok._0(mtmp1) in
                 let try_value/0 = x2 in
                 try_value/0
               },
-              Result__unit__string::Err(x3) => {
-                let x3 = Result__unit__string::Err._0(mtmp1) in
+              Result__()__string::Err(x3) => {
+                let x3 = Result__()__string::Err._0(mtmp1) in
                 let try_residual/0 = x3 in
                 return Result__bool__string::Err(try_residual/0)
               },
@@ -3489,19 +3486,19 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_sequen
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_sequence(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_sequence without begin_sequence")
+        return Result__()__string::Err("end_sequence without begin_sequence")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("sequence element was not consumed")
+            return Result__()__string::Err("sequence element was not consumed")
         } else {
             ()
         }
@@ -3522,20 +3519,20 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_sequenc
       let values/0 = x0 in
       if (inherent#Ref#Ref[T]#get__T_isize(index/0) !=
         inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0)) {
-          Result__unit__string::Err("sequence ended before all elements were consumed")
+          Result__()__string::Err("sequence ended before all elements were consumed")
       } else {
           let _wild1 = std::serde::pop_value_deserializer_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_sequence does not match the active compound value"),
+    _ => Result__()__string::Err("end_sequence does not match the active compound value"),
   }
 }
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple(
   self/0: std::serde::ValueDeserializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let value/0 =
     let mtmp0 = std::serde::take_deserializer_value(self/0) in
     match mtmp0 {
@@ -3547,7 +3544,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple
       Result__std::serde::Value__string::Err(x1) => {
         let x1 = Result__std::serde::Value__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let values/0 =
@@ -3562,36 +3559,36 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple
         let values/2 = x3 in
         values/2
       },
-      _ => return Result__unit__string::Err("expected tuple"),
+      _ => return Result__()__string::Err("expected tuple"),
     } in
   if (inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0) != length/0) {
-      Result__unit__string::Err("tuple length does not match the expected length")
+      Result__()__string::Err("tuple length does not match the expected length")
   } else {
       let _wild0 =
         inherent#Vec#Vec[T]#push__T_std::serde::ValueDeserializeFrame(
           std::serde::ValueDeserializer.frames(self/0),
           std::serde::ValueDeserializeFrame::Tuple(values/0, inherent#Ref#Ref[T]#new__T_isize(0))
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   }
 }
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple_element(
   self/0: std::serde::ValueDeserializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("tuple element without tuple")
+        return Result__()__string::Err("tuple element without tuple")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("previous tuple element was not consumed")
+            return Result__()__string::Err("previous tuple element was not consumed")
         } else {
             ()
         }
@@ -3615,46 +3612,46 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple
       } else {
           (index/0 >= inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0))
       } {
-          Result__unit__string::Err("tuple element index is out of order")
+          Result__()__string::Err("tuple element index is out of order")
       } else {
           let _wild1 =
             let mtmp1 =
               std::serde::set_deserializer_value(self/0, @intrinsic(vec.get)(values/0, index/0)) in
             match mtmp1 {
-              Result__unit__string::Ok(x2) => {
-                let x2 = Result__unit__string::Ok._0(mtmp1) in
+              Result__()__string::Ok(x2) => {
+                let x2 = Result__()__string::Ok._0(mtmp1) in
                 let try_value/0 = x2 in
                 try_value/0
               },
-              Result__unit__string::Err(x3) => {
-                let x3 = Result__unit__string::Err._0(mtmp1) in
+              Result__()__string::Err(x3) => {
+                let x3 = Result__()__string::Err._0(mtmp1) in
                 let try_residual/0 = x3 in
-                return Result__unit__string::Err(try_residual/0)
+                return Result__()__string::Err(try_residual/0)
               },
             } in
           let _wild2 = inherent#Ref#Ref[T]#set__T_isize(next/0, (index/0 + 1)) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("tuple element outside a tuple"),
+    _ => Result__()__string::Err("tuple element outside a tuple"),
   }
 }
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_tuple(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_tuple without begin_tuple")
+        return Result__()__string::Err("end_tuple without begin_tuple")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("tuple element was not consumed")
+            return Result__()__string::Err("tuple element was not consumed")
         } else {
             ()
         }
@@ -3675,13 +3672,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_tuple(
       let values/0 = x0 in
       if (inherent#Ref#Ref[T]#get__T_isize(index/0) !=
         inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0)) {
-          Result__unit__string::Err("tuple ended before all elements were consumed")
+          Result__()__string::Err("tuple ended before all elements were consumed")
       } else {
           let _wild1 = std::serde::pop_value_deserializer_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_tuple does not match the active compound value"),
+    _ => Result__()__string::Err("end_tuple does not match the active compound value"),
   }
 }
 
@@ -3786,12 +3783,12 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_map_en
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_key(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("map key without map")
+        return Result__()__string::Err("map key without map")
     } else {
         ()
     } in
@@ -3812,7 +3809,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_k
       let index/0 = x1 in
       let entries/0 = x0 in
       if (inherent#Ref#Ref[T]#get__T_isize(state/0) != 1) {
-          Result__unit__string::Err("map is not expecting a key")
+          Result__()__string::Err("map is not expecting a key")
       } else {
           let mtmp1 = @intrinsic(vec.get)(entries/0, inherent#Ref#Ref[T]#get__T_isize(index/0)) in
           match mtmp1 {
@@ -3827,46 +3824,46 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_k
                         @intrinsic(vec.get)(values/0, 0)
                       ) in
                     match mtmp2 {
-                      Result__unit__string::Ok(x4) => {
-                        let x4 = Result__unit__string::Ok._0(mtmp2) in
+                      Result__()__string::Ok(x4) => {
+                        let x4 = Result__()__string::Ok._0(mtmp2) in
                         let try_value/0 = x4 in
                         try_value/0
                       },
-                      Result__unit__string::Err(x5) => {
-                        let x5 = Result__unit__string::Err._0(mtmp2) in
+                      Result__()__string::Err(x5) => {
+                        let x5 = Result__()__string::Err._0(mtmp2) in
                         let try_residual/0 = x5 in
-                        return Result__unit__string::Err(try_residual/0)
+                        return Result__()__string::Err(try_residual/0)
                       },
                     } in
                   let _wild2 = inherent#Ref#Ref[T]#set__T_isize(state/0, 3) in
-                  Result__unit__string::Ok(())
+                  Result__()__string::Ok(())
               } else {
-                  Result__unit__string::Err("map entry tuple must contain two values")
+                  Result__()__string::Err("map entry tuple must contain two values")
               }
             },
-            _ => Result__unit__string::Err("map entry must be a tuple"),
+            _ => Result__()__string::Err("map entry must be a tuple"),
           }
       }
     },
-    _ => Result__unit__string::Err("map key outside a map"),
+    _ => Result__()__string::Err("map key outside a map"),
   }
 }
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_value(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("map value without map")
+        return Result__()__string::Err("map value without map")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("map key was not consumed")
+            return Result__()__string::Err("map key was not consumed")
         } else {
             ()
         }
@@ -3888,7 +3885,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_v
       let index/0 = x1 in
       let entries/0 = x0 in
       if (inherent#Ref#Ref[T]#get__T_isize(state/0) != 3) {
-          Result__unit__string::Err("map is not expecting a value")
+          Result__()__string::Err("map is not expecting a value")
       } else {
           let mtmp1 = @intrinsic(vec.get)(entries/0, inherent#Ref#Ref[T]#get__T_isize(index/0)) in
           match mtmp1 {
@@ -3899,43 +3896,43 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_v
                 let mtmp2 =
                   std::serde::set_deserializer_value(self/0, @intrinsic(vec.get)(values/0, 1)) in
                 match mtmp2 {
-                  Result__unit__string::Ok(x4) => {
-                    let x4 = Result__unit__string::Ok._0(mtmp2) in
+                  Result__()__string::Ok(x4) => {
+                    let x4 = Result__()__string::Ok._0(mtmp2) in
                     let try_value/0 = x4 in
                     try_value/0
                   },
-                  Result__unit__string::Err(x5) => {
-                    let x5 = Result__unit__string::Err._0(mtmp2) in
+                  Result__()__string::Err(x5) => {
+                    let x5 = Result__()__string::Err._0(mtmp2) in
                     let try_residual/0 = x5 in
-                    return Result__unit__string::Err(try_residual/0)
+                    return Result__()__string::Err(try_residual/0)
                   },
                 } in
               let _wild2 = inherent#Ref#Ref[T]#set__T_isize(state/0, 2) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
             },
-            _ => Result__unit__string::Err("map entry must be a tuple"),
+            _ => Result__()__string::Err("map entry must be a tuple"),
           }
       }
     },
-    _ => Result__unit__string::Err("map value outside a map"),
+    _ => Result__()__string::Err("map value outside a map"),
   }
 }
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_map(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_map without begin_map")
+        return Result__()__string::Err("end_map without begin_map")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("map value was not consumed")
+            return Result__()__string::Err("map value was not consumed")
         } else {
             ()
         }
@@ -3973,13 +3970,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_map(
           (inherent#Ref#Ref[T]#get__T_isize(index/0) !=
             inherent#Vec#Vec[T]#len__T_std::serde::Value(entries/0))
       } {
-          Result__unit__string::Err("map ended before all entries were consumed")
+          Result__()__string::Err("map ended before all entries were consumed")
       } else {
           let _wild3 = std::serde::pop_value_deserializer_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_map does not match the active compound value"),
+    _ => Result__()__string::Err("end_map does not match the active compound value"),
   }
 }
 
@@ -3987,7 +3984,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_struc
   self/0: std::serde::ValueDeserializer,
   name/0: string,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let mtmp0 =
     let mtmp1 = std::serde::take_deserializer_value(self/0) in
     match mtmp1 {
@@ -3999,7 +3996,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_struc
       Result__std::serde::Value__string::Err(x1) => {
         let x1 = Result__std::serde::Value__string::Err._0(mtmp1) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   match mtmp0 {
@@ -4011,9 +4008,9 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_struc
           std::serde::ValueDeserializer.frames(self/0),
           std::serde::ValueDeserializeFrame::Struct(values/0, inherent#Ref#Ref[T]#new__T_isize(0))
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
     },
-    _ => Result__unit__string::Err("expected struct value"),
+    _ => Result__()__string::Err("expected struct value"),
   }
 }
 
@@ -4062,13 +4059,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_struct
           let _wild2 =
             let mtmp1 = std::serde::set_deserializer_value(self/0, field/0.1) in
             match mtmp1 {
-              Result__unit__string::Ok(x2) => {
-                let x2 = Result__unit__string::Ok._0(mtmp1) in
+              Result__()__string::Ok(x2) => {
+                let x2 = Result__()__string::Ok._0(mtmp1) in
                 let try_value/0 = x2 in
                 try_value/0
               },
-              Result__unit__string::Err(x3) => {
-                let x3 = Result__unit__string::Err._0(mtmp1) in
+              Result__()__string::Err(x3) => {
+                let x3 = Result__()__string::Err._0(mtmp1) in
                 let try_residual/0 = x3 in
                 return Result__Option__std::serde::FieldKey__string::Err(try_residual/0)
               },
@@ -4090,7 +4087,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_struct
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#skip_value(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let mtmp0 =
     let mtmp1 = std::serde::take_deserializer_value(self/0) in
     match mtmp1 {
@@ -4102,27 +4099,27 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#skip_value(
       Result__std::serde::Value__string::Err(x1) => {
         let x1 = Result__std::serde::Value__string::Err._0(mtmp1) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_struct(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_struct without begin_struct")
+        return Result__()__string::Err("end_struct without begin_struct")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("struct field was not consumed")
+            return Result__()__string::Err("struct field was not consumed")
         } else {
             ()
         }
@@ -4143,13 +4140,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_struct(
       let fields/0 = x0 in
       if (inherent#Ref#Ref[T]#get__T_isize(index/0) !=
         inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(fields/0)) {
-          Result__unit__string::Err("struct ended before all fields were consumed")
+          Result__()__string::Err("struct ended before all fields were consumed")
       } else {
           let _wild1 = std::serde::pop_value_deserializer_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_struct does not match the active compound value"),
+    _ => Result__()__string::Err("end_struct does not match the active compound value"),
   }
 }
 
@@ -4227,12 +4224,12 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_varia
   self/0: std::serde::ValueDeserializer,
   kind/0: isize,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("variant fields without variant")
+        return Result__()__string::Err("variant fields without variant")
     } else {
         ()
     } in
@@ -4253,21 +4250,21 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_varia
       let actual_fields/0 = x1 in
       let actual_kind/0 = x0 in
       if inherent#Ref#Ref[T]#get__T_bool(begun/0) {
-          Result__unit__string::Err("variant fields were already begun")
+          Result__()__string::Err("variant fields were already begun")
       } else {
           if if (actual_kind/0 != kind/0) {
               true
           } else {
               (inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(actual_fields/0) != fields/0)
           } {
-              Result__unit__string::Err("variant payload shape does not match the expected shape")
+              Result__()__string::Err("variant payload shape does not match the expected shape")
           } else {
               let _wild1 = inherent#Ref#Ref[T]#set__T_bool(begun/0, true) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("variant fields outside a variant"),
+    _ => Result__()__string::Err("variant fields outside a variant"),
   }
 }
 
@@ -4323,13 +4320,13 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_varian
               let _wild2 =
                 let mtmp1 = std::serde::set_deserializer_value(self/0, field/0.1) in
                 match mtmp1 {
-                  Result__unit__string::Ok(x4) => {
-                    let x4 = Result__unit__string::Ok._0(mtmp1) in
+                  Result__()__string::Ok(x4) => {
+                    let x4 = Result__()__string::Ok._0(mtmp1) in
                     let try_value/0 = x4 in
                     try_value/0
                   },
-                  Result__unit__string::Err(x5) => {
-                    let x5 = Result__unit__string::Err._0(mtmp1) in
+                  Result__()__string::Err(x5) => {
+                    let x5 = Result__()__string::Err._0(mtmp1) in
                     let try_residual/0 = x5 in
                     return Result__Option__std::serde::FieldKey__string::Err(try_residual/0)
                   },
@@ -4356,19 +4353,19 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_varian
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_variant(
   self/0: std::serde::ValueDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueDeserializeFrame(
       std::serde::ValueDeserializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_variant without begin_variant")
+        return Result__()__string::Err("end_variant without begin_variant")
     } else {
         if inherent#Option#Option[T]#is_some__T_std::serde::Value(
           inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](
             std::serde::ValueDeserializer.current(self/0)
           )
         ) {
-            return Result__unit__string::Err("variant field was not consumed")
+            return Result__()__string::Err("variant field was not consumed")
         } else {
             ()
         }
@@ -4390,18 +4387,18 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_variant
       let index/0 = x2 in
       let fields/0 = x1 in
       if (!inherent#Ref#Ref[T]#get__T_bool(begun/0)) {
-          Result__unit__string::Err("variant fields were not begun")
+          Result__()__string::Err("variant fields were not begun")
       } else {
           if (inherent#Ref#Ref[T]#get__T_isize(index/0) !=
             inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(fields/0)) {
-              Result__unit__string::Err("variant ended before all fields were consumed")
+              Result__()__string::Err("variant ended before all fields were consumed")
           } else {
               let _wild1 = std::serde::pop_value_deserializer_frame(self/0) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("end_variant does not match the active compound value"),
+    _ => Result__()__string::Err("end_variant does not match the active compound value"),
   }
 }
 
@@ -4511,7 +4508,7 @@ fn std::serde::value_slot_ready(serializer/0: std::serde::ValueSerializer) -> bo
 fn std::serde::append_serialized_value(
   serializer/0: std::serde::ValueSerializer,
   value/0: std::serde::Value
-) -> Result__unit__string {
+) -> Result__()__string {
   if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
     std::serde::ValueSerializer.frames(serializer/0)
   ) {
@@ -4520,14 +4517,14 @@ fn std::serde::append_serialized_value(
           std::serde::ValueSerializer.result(serializer/0)
         )
       ) {
-          Result__unit__string::Err("serialization produced more than one root value")
+          Result__()__string::Err("serialization produced more than one root value")
       } else {
           let _wild0 =
             inherent#Ref#Ref[T]#set__T_Option[std::serde::Value](
               std::serde::ValueSerializer.result(serializer/0),
               Option__std::serde::Value::Some(value/0)
             ) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
   } else {
       let mtmp0 =
@@ -4547,9 +4544,9 @@ fn std::serde::append_serialized_value(
           if inherent#Ref#Ref[T]#get__T_bool(ready/0) {
               let _wild1 = inherent#Vec#Vec[T]#push__T_std::serde::Value(values/0, value/0) in
               let _wild2 = inherent#Ref#Ref[T]#set__T_bool(ready/0, false) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
-              Result__unit__string::Err("optional value is not expecting an item")
+              Result__()__string::Err("optional value is not expecting an item")
           }
         },
         std::serde::ValueSerializeFrame::Sequence(x3, x4, x5) => {
@@ -4560,9 +4557,9 @@ fn std::serde::append_serialized_value(
           if inherent#Ref#Ref[T]#get__T_bool(ready/1) {
               let _wild3 = inherent#Vec#Vec[T]#push__T_std::serde::Value(values/1, value/0) in
               let _wild4 = inherent#Ref#Ref[T]#set__T_bool(ready/1, false) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
-              Result__unit__string::Err("sequence is not expecting an element")
+              Result__()__string::Err("sequence is not expecting an element")
           }
         },
         std::serde::ValueSerializeFrame::Tuple(x6, x7, x8) => {
@@ -4573,9 +4570,9 @@ fn std::serde::append_serialized_value(
           if inherent#Ref#Ref[T]#get__T_bool(ready/2) {
               let _wild5 = inherent#Vec#Vec[T]#push__T_std::serde::Value(values/2, value/0) in
               let _wild6 = inherent#Ref#Ref[T]#set__T_bool(ready/2, false) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
-              Result__unit__string::Err("tuple is not expecting an element")
+              Result__()__string::Err("tuple is not expecting an element")
           }
         },
         std::serde::ValueSerializeFrame::Map(x9, x10, x11, x12) => {
@@ -4592,13 +4589,13 @@ fn std::serde::append_serialized_value(
                   Option__std::serde::Value::Some(value/0)
                 ) in
               let _wild8 = inherent#Ref#Ref[T]#set__T_isize(state/0, 0) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
               if (inherent#Ref#Ref[T]#get__T_isize(state/0) == 2) {
                   let mtmp1 = inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](key/0) in
                   match mtmp1 {
                     Option__std::serde::Value::None => {
-                      Result__unit__string::Err("map value has no key")
+                      Result__()__string::Err("map value has no key")
                     },
                     Option__std::serde::Value::Some(x13) => {
                       let x13 = Option__std::serde::Value::Some._0(mtmp1) in
@@ -4616,11 +4613,11 @@ fn std::serde::append_serialized_value(
                           Option__std::serde::Value::None
                         ) in
                       let _wild11 = inherent#Ref#Ref[T]#set__T_isize(state/0, 0) in
-                      Result__unit__string::Ok(())
+                      Result__()__string::Ok(())
                     },
                   }
               } else {
-                  Result__unit__string::Err("map is not expecting a value")
+                  Result__()__string::Err("map is not expecting a value")
               }
           }
         },
@@ -4632,7 +4629,7 @@ fn std::serde::append_serialized_value(
           let mtmp2 = inherent#Ref#Ref[T]#get__T_Option[string](pending/0) in
           match mtmp2 {
             Option__string::None => {
-              Result__unit__string::Err("struct is not expecting a field value")
+              Result__()__string::Err("struct is not expecting a field value")
             },
             Option__string::Some(x17) => {
               let x17 = Option__string::Some._0(mtmp2) in
@@ -4644,7 +4641,7 @@ fn std::serde::append_serialized_value(
                 ) in
               let _wild13 =
                 inherent#Ref#Ref[T]#set__T_Option[string](pending/0, Option__string::None) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
             },
           }
         },
@@ -4656,7 +4653,7 @@ fn std::serde::append_serialized_value(
           let mtmp3 = inherent#Ref#Ref[T]#get__T_Option[string](pending/1) in
           match mtmp3 {
             Option__string::None => {
-              Result__unit__string::Err("variant is not expecting a field value")
+              Result__()__string::Err("variant is not expecting a field value")
             },
             Option__string::Some(x24) => {
               let x24 = Option__string::Some._0(mtmp3) in
@@ -4668,7 +4665,7 @@ fn std::serde::append_serialized_value(
                 ) in
               let _wild15 =
                 inherent#Ref#Ref[T]#set__T_Option[string](pending/1, Option__string::None) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
             },
           }
         },
@@ -4679,141 +4676,141 @@ fn std::serde::append_serialized_value(
 fn std::serde::begin_value_frame(
   serializer/0: std::serde::ValueSerializer,
   frame/0: std::serde::ValueSerializeFrame
-) -> Result__unit__string {
+) -> Result__()__string {
   if std::serde::value_slot_ready(serializer/0) {
       let _wild0 =
         inherent#Vec#Vec[T]#push__T_std::serde::ValueSerializeFrame(
           std::serde::ValueSerializer.frames(serializer/0),
           frame/0
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   } else {
-      Result__unit__string::Err("serializer is not expecting a value")
+      Result__()__string::Err("serializer is not expecting a value")
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_unit(
   self/0: std::serde::ValueSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Unit)
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bool(
   self/0: std::serde::ValueSerializer,
   value/0: bool
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Bool(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int(
   self/0: std::serde::ValueSerializer,
   value/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int8(
   self/0: std::serde::ValueSerializer,
   value/0: i8
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int8(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int16(
   self/0: std::serde::ValueSerializer,
   value/0: i16
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int16(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int32(
   self/0: std::serde::ValueSerializer,
   value/0: i32
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int32(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int64(
   self/0: std::serde::ValueSerializer,
   value/0: i64
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int64(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint(
   self/0: std::serde::ValueSerializer,
   value/0: usize
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint8(
   self/0: std::serde::ValueSerializer,
   value/0: u8
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint8(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint16(
   self/0: std::serde::ValueSerializer,
   value/0: u16
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint16(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint32(
   self/0: std::serde::ValueSerializer,
   value/0: u32
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint32(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint64(
   self/0: std::serde::ValueSerializer,
   value/0: u64
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint64(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_float32(
   self/0: std::serde::ValueSerializer,
   value/0: f32
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Float32(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_float64(
   self/0: std::serde::ValueSerializer,
   value/0: f64
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Float64(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_number(
   self/0: std::serde::ValueSerializer,
   value/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Number(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_string(
   self/0: std::serde::ValueSerializer,
   value/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::String(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_char(
   self/0: std::serde::ValueSerializer,
   value/0: char
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::append_serialized_value(self/0, std::serde::Value::Char(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes(
   self/0: std::serde::ValueSerializer,
   value/0: Slice[u8]
-) -> Result__unit__string {
+) -> Result__()__string {
   let values/0 =
     inherent#Vec#Vec[T]#with_capacity__T_std::serde::Value(
       inherent#Slice#Slice[T]#len__T_u0(value/0)
@@ -4835,7 +4832,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_optional(
   self/0: std::serde::ValueSerializer,
   present/0: bool
-) -> Result__unit__string {
+) -> Result__()__string {
   std::serde::begin_value_frame(
     self/0,
     std::serde::ValueSerializeFrame::Optional(
@@ -4848,12 +4845,12 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_optional(
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_optional(
   self/0: std::serde::ValueSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_optional without begin_optional")
+        return Result__()__string::Err("end_optional without begin_optional")
     } else {
         ()
     } in
@@ -4884,7 +4881,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_optional(
                   0
               })
         } {
-            return Result__unit__string::Err("optional value has the wrong number of items")
+            return Result__()__string::Err("optional value has the wrong number of items")
         } else {
             ()
         } in
@@ -4894,16 +4891,16 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_optional(
         ) in
       std::serde::append_serialized_value(self/0, std::serde::Value::Optional(values/0))
     },
-    _ => Result__unit__string::Err("end_optional does not match the active compound value"),
+    _ => Result__()__string::Err("end_optional does not match the active compound value"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence(
   self/0: std::serde::ValueSerializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   if (length/0 < 0) {
-      Result__unit__string::Err("sequence length cannot be negative")
+      Result__()__string::Err("sequence length cannot be negative")
   } else {
       std::serde::begin_value_frame(
         self/0,
@@ -4919,12 +4916,12 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence_element(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("sequence element without sequence")
+        return Result__()__string::Err("sequence element without sequence")
     } else {
         ()
     } in
@@ -4945,32 +4942,32 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence_
       let length/0 = x1 in
       let values/0 = x0 in
       if inherent#Ref#Ref[T]#get__T_bool(ready/0) {
-          Result__unit__string::Err("previous sequence element has no value")
+          Result__()__string::Err("previous sequence element has no value")
       } else {
           if if (index/0 != inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0)) {
               true
           } else {
               (index/0 >= length/0)
           } {
-              Result__unit__string::Err("sequence element index is out of order")
+              Result__()__string::Err("sequence element index is out of order")
           } else {
               let _wild1 = inherent#Ref#Ref[T]#set__T_bool(ready/0, true) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("sequence element outside a sequence"),
+    _ => Result__()__string::Err("sequence element outside a sequence"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_sequence(
   self/0: std::serde::ValueSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_sequence without begin_sequence")
+        return Result__()__string::Err("end_sequence without begin_sequence")
     } else {
         ()
     } in
@@ -4996,7 +4993,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_sequence(
         } else {
             (inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0) != length/0)
         } {
-            return Result__unit__string::Err("sequence length does not match its elements")
+            return Result__()__string::Err("sequence length does not match its elements")
         } else {
             ()
         } in
@@ -5006,16 +5003,16 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_sequence(
         ) in
       std::serde::append_serialized_value(self/0, std::serde::Value::Sequence(values/0))
     },
-    _ => Result__unit__string::Err("end_sequence does not match the active compound value"),
+    _ => Result__()__string::Err("end_sequence does not match the active compound value"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple(
   self/0: std::serde::ValueSerializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   if (length/0 < 0) {
-      Result__unit__string::Err("tuple length cannot be negative")
+      Result__()__string::Err("tuple length cannot be negative")
   } else {
       std::serde::begin_value_frame(
         self/0,
@@ -5031,12 +5028,12 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple_element(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("tuple element without tuple")
+        return Result__()__string::Err("tuple element without tuple")
     } else {
         ()
     } in
@@ -5057,32 +5054,32 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple_ele
       let length/0 = x1 in
       let values/0 = x0 in
       if inherent#Ref#Ref[T]#get__T_bool(ready/0) {
-          Result__unit__string::Err("previous tuple element has no value")
+          Result__()__string::Err("previous tuple element has no value")
       } else {
           if if (index/0 != inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0)) {
               true
           } else {
               (index/0 >= length/0)
           } {
-              Result__unit__string::Err("tuple element index is out of order")
+              Result__()__string::Err("tuple element index is out of order")
           } else {
               let _wild1 = inherent#Ref#Ref[T]#set__T_bool(ready/0, true) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("tuple element outside a tuple"),
+    _ => Result__()__string::Err("tuple element outside a tuple"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_tuple(
   self/0: std::serde::ValueSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_tuple without begin_tuple")
+        return Result__()__string::Err("end_tuple without begin_tuple")
     } else {
         ()
     } in
@@ -5108,7 +5105,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_tuple(
         } else {
             (inherent#Vec#Vec[T]#len__T_std::serde::Value(values/0) != length/0)
         } {
-            return Result__unit__string::Err("tuple length does not match its elements")
+            return Result__()__string::Err("tuple length does not match its elements")
         } else {
             ()
         } in
@@ -5118,16 +5115,16 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_tuple(
         ) in
       std::serde::append_serialized_value(self/0, std::serde::Value::Tuple(values/0))
     },
-    _ => Result__unit__string::Err("end_tuple does not match the active compound value"),
+    _ => Result__()__string::Err("end_tuple does not match the active compound value"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map(
   self/0: std::serde::ValueSerializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   if (length/0 < 0) {
-      Result__unit__string::Err("map length cannot be negative")
+      Result__()__string::Err("map length cannot be negative")
   } else {
       std::serde::begin_value_frame(
         self/0,
@@ -5144,12 +5141,12 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_key(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("map key without map")
+        return Result__()__string::Err("map key without map")
     } else {
         ()
     } in
@@ -5178,33 +5175,33 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_key(
             inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](key/0)
           )
       } {
-          Result__unit__string::Err("previous map entry is incomplete")
+          Result__()__string::Err("previous map entry is incomplete")
       } else {
           if if (index/0 != inherent#Vec#Vec[T]#len__T_std::serde::Value(entries/0)) {
               true
           } else {
               (index/0 >= length/0)
           } {
-              Result__unit__string::Err("map entry index is out of order")
+              Result__()__string::Err("map entry index is out of order")
           } else {
               let _wild1 = inherent#Ref#Ref[T]#set__T_isize(state/0, 1) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("map key outside a map"),
+    _ => Result__()__string::Err("map key outside a map"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_value(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("map value without map")
+        return Result__()__string::Err("map value without map")
     } else {
         ()
     } in
@@ -5231,28 +5228,28 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_value
             inherent#Ref#Ref[T]#get__T_Option[std::serde::Value](key/0)
           )
       } {
-          Result__unit__string::Err("map value has no completed key")
+          Result__()__string::Err("map value has no completed key")
       } else {
           if (index/0 != inherent#Vec#Vec[T]#len__T_std::serde::Value(entries/0)) {
-              Result__unit__string::Err("map entry index is out of order")
+              Result__()__string::Err("map entry index is out of order")
           } else {
               let _wild1 = inherent#Ref#Ref[T]#set__T_isize(state/0, 2) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("map value outside a map"),
+    _ => Result__()__string::Err("map value outside a map"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_map(
   self/0: std::serde::ValueSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_map without begin_map")
+        return Result__()__string::Err("end_map without begin_map")
     } else {
         ()
     } in
@@ -5286,7 +5283,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_map(
         } else {
             (inherent#Vec#Vec[T]#len__T_std::serde::Value(entries/0) != length/0)
         } {
-            return Result__unit__string::Err("map length does not match its entries")
+            return Result__()__string::Err("map length does not match its entries")
         } else {
             ()
         } in
@@ -5296,7 +5293,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_map(
         ) in
       std::serde::append_serialized_value(self/0, std::serde::Value::Sequence(entries/0))
     },
-    _ => Result__unit__string::Err("end_map does not match the active compound value"),
+    _ => Result__()__string::Err("end_map does not match the active compound value"),
   }
 }
 
@@ -5304,9 +5301,9 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_struct(
   self/0: std::serde::ValueSerializer,
   name/0: string,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   if (fields/0 < 0) {
-      Result__unit__string::Err("struct field count cannot be negative")
+      Result__()__string::Err("struct field count cannot be negative")
   } else {
       std::serde::begin_value_frame(
         self/0,
@@ -5323,12 +5320,12 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_struct_fi
   self/0: std::serde::ValueSerializer,
   index/0: isize,
   name/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("struct field without struct")
+        return Result__()__string::Err("struct field without struct")
     } else {
         ()
     } in
@@ -5351,36 +5348,36 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_struct_fi
       if inherent#Option#Option[T]#is_some__T_string(
         inherent#Ref#Ref[T]#get__T_Option[string](pending/0)
       ) {
-          Result__unit__string::Err("previous struct field has no value")
+          Result__()__string::Err("previous struct field has no value")
       } else {
           if if (index/0 != inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(fields/0)) {
               true
           } else {
               (index/0 >= length/0)
           } {
-              Result__unit__string::Err("struct field index is out of order")
+              Result__()__string::Err("struct field index is out of order")
           } else {
               let _wild1 =
                 inherent#Ref#Ref[T]#set__T_Option[string](
                   pending/0,
                   Option__string::Some(name/0)
                 ) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("struct field outside a struct"),
+    _ => Result__()__string::Err("struct field outside a struct"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_struct(
   self/0: std::serde::ValueSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_struct without begin_struct")
+        return Result__()__string::Err("end_struct without begin_struct")
     } else {
         ()
     } in
@@ -5408,7 +5405,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_struct(
         } else {
             (inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(fields/0) != length/0)
         } {
-            return Result__unit__string::Err("struct field count does not match its values")
+            return Result__()__string::Err("struct field count does not match its values")
         } else {
             ()
         } in
@@ -5418,7 +5415,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_struct(
         ) in
       std::serde::append_serialized_value(self/0, std::serde::Value::Struct(fields/0))
     },
-    _ => Result__unit__string::Err("end_struct does not match the active compound value"),
+    _ => Result__()__string::Err("end_struct does not match the active compound value"),
   }
 }
 
@@ -5429,9 +5426,9 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_variant(
   name/0: string,
   kind/0: isize,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   if (fields/0 < 0) {
-      Result__unit__string::Err("variant field count cannot be negative")
+      Result__()__string::Err("variant field count cannot be negative")
   } else {
       std::serde::begin_value_frame(
         self/0,
@@ -5451,12 +5448,12 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_variant_f
   self/0: std::serde::ValueSerializer,
   index/0: isize,
   name/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("variant field without variant")
+        return Result__()__string::Err("variant field without variant")
     } else {
         ()
     } in
@@ -5479,36 +5476,36 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_variant_f
       if inherent#Option#Option[T]#is_some__T_string(
         inherent#Ref#Ref[T]#get__T_Option[string](pending/0)
       ) {
-          Result__unit__string::Err("previous variant field has no value")
+          Result__()__string::Err("previous variant field has no value")
       } else {
           if if (index/0 != inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(fields/0)) {
               true
           } else {
               (index/0 >= length/0)
           } {
-              Result__unit__string::Err("variant field index is out of order")
+              Result__()__string::Err("variant field index is out of order")
           } else {
               let _wild1 =
                 inherent#Ref#Ref[T]#set__T_Option[string](
                   pending/0,
                   Option__string::Some(name/0)
                 ) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
-    _ => Result__unit__string::Err("variant field outside a variant"),
+    _ => Result__()__string::Err("variant field outside a variant"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_variant(
   self/0: std::serde::ValueSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::serde::ValueSerializeFrame(
       std::serde::ValueSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_variant without begin_variant")
+        return Result__()__string::Err("end_variant without begin_variant")
     } else {
         ()
     } in
@@ -5542,7 +5539,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_variant(
         } else {
             (inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(fields/0) != length/0)
         } {
-            return Result__unit__string::Err("variant field count does not match its values")
+            return Result__()__string::Err("variant field count does not match its values")
         } else {
             ()
         } in
@@ -5555,7 +5552,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_variant(
         std::serde::Value::Variant(index/0, name/0, kind/0, fields/0)
       )
     },
-    _ => Result__unit__string::Err("end_variant does not match the active compound value"),
+    _ => Result__()__string::Err("end_variant does not match the active compound value"),
   }
 }
 
@@ -5757,7 +5754,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
   self/0: std::text::StringBuilder,
   value/0: string
-) -> unit {
+) -> () {
   let length/0 = inherent#string#string#byte_len(value/0) in
   let _wild0 =
     inherent#Vec#Vec[T]#reserve__T_u0(std::text::StringBuilder.values(self/0), length/0) in
@@ -5777,7 +5774,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
   self/0: std::text::StringBuilder,
   value/0: char
-) -> unit {
+) -> () {
   inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
     self/0,
     inherent#char#char#to_string(value/0)
@@ -5787,7 +5784,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
   self/0: std::text::StringBuilder,
   value/0: std::bytes::Bytes
-) -> Result__unit__string {
+) -> Result__()__string {
   let mtmp0 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/0) in
   match mtmp0 {
     Result__string__string::Ok(x0) => {
@@ -5795,12 +5792,12 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
       let text/0 = x0 in
       let _wild0 =
         inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/0, text/0) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
     },
     Result__string__string::Err(x1) => {
       let x1 = Result__string__string::Err._0(mtmp0) in
       let error/0 = x1 in
-      Result__unit__string::Err(error/0)
+      Result__()__string::Err(error/0)
     },
   }
 }
@@ -5808,7 +5805,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(
   self/0: std::text::StringBuilder,
   value/0: string
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/0, value/0) in
   inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/0, "\n")
@@ -5816,7 +5813,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(
   self/0: std::text::StringBuilder
-) -> unit {
+) -> () {
   inherent#Vec#Vec[T]#clear__T_u0(std::text::StringBuilder.values(self/0))
 }
 
@@ -6077,11 +6074,11 @@ fn std::json::json_deserializer(input/0: string) -> std::json::JsonDeserializer 
 
 fn std::json::finish_json_deserializer(
   deserializer/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   if (!inherent#Vec#Vec[T]#is_empty__T_std::json::JsonDeserializeFrame(
     std::json::JsonDeserializer.frames(deserializer/0)
   )) {
-      Result__unit__string::Err("JSON deserialization ended inside a compound value")
+      Result__()__string::Err("JSON deserialization ended inside a compound value")
   } else {
       let _wild0 =
         std::json::skip_json_whitespace(std::json::JsonDeserializer.parser(deserializer/0)) in
@@ -6091,9 +6088,9 @@ fn std::json::finish_json_deserializer(
         inherent#string#string#byte_len(
           std::json::JsonParser.input(std::json::JsonDeserializer.parser(deserializer/0))
         )) {
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       } else {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(deserializer/0),
               "trailing JSON data"
@@ -6107,7 +6104,7 @@ fn std::json::consume_json_byte(
   parser/0: std::json::JsonParser,
   expected/0: u8,
   message/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 = std::json::skip_json_whitespace(parser/0) in
   if if (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) >=
     inherent#string#string#byte_len(std::json::JsonParser.input(parser/0))) {
@@ -6119,21 +6116,21 @@ fn std::json::consume_json_byte(
       ) !=
         expected/0)
   } {
-      Result__unit__string::Err(std::json::json_error(parser/0, message/0))
+      Result__()__string::Err(std::json::json_error(parser/0, message/0))
   } else {
       let _wild1 =
         inherent#Ref#Ref[T]#set__T_isize(
           std::json::JsonParser.index(parser/0),
           (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) + 1)
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   }
 }
 
 fn std::json::consume_json_literal(
   parser/0: std::json::JsonParser,
   expected/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 = std::json::skip_json_whitespace(parser/0) in
   if if ((inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) +
     inherent#string#string#byte_len(expected/0)) <=
@@ -6154,25 +6151,25 @@ fn std::json::consume_json_literal(
           (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) +
             inherent#string#string#byte_len(expected/0))
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   } else {
-      Result__unit__string::Err(std::json::json_error(parser/0, "invalid literal"))
+      Result__()__string::Err(std::json::json_error(parser/0, "invalid literal"))
   }
 }
 
-fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result__unit__string {
+fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::consume_json_byte(parser/0, 91, "expected array") in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 = std::json::skip_json_whitespace(parser/0) in
@@ -6192,7 +6189,7 @@ fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result_
             std::json::JsonParser.index(parser/0),
             (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) + 1)
           ) in
-        return Result__unit__string::Ok(())
+        return Result__()__string::Ok(())
     } else {
         ()
     } in
@@ -6202,21 +6199,21 @@ fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result_
         let _wild5 =
           let mtmp1 = std::json::skip_direct_json_value(parser/0) in
           match mtmp1 {
-            Result__unit__string::Ok(x2) => {
-              let x2 = Result__unit__string::Ok._0(mtmp1) in
+            Result__()__string::Ok(x2) => {
+              let x2 = Result__()__string::Ok._0(mtmp1) in
               let try_value/1 = x2 in
               try_value/1
             },
-            Result__unit__string::Err(x3) => {
-              let x3 = Result__unit__string::Err._0(mtmp1) in
+            Result__()__string::Err(x3) => {
+              let x3 = Result__()__string::Err._0(mtmp1) in
               let try_residual/1 = x3 in
-              return Result__unit__string::Err(try_residual/1)
+              return Result__()__string::Err(try_residual/1)
             },
           } in
         let _wild6 = std::json::skip_json_whitespace(parser/0) in
         if (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) >=
           inherent#string#string#byte_len(std::json::JsonParser.input(parser/0))) {
-            return Result__unit__string::Err(std::json::json_error(parser/0, "unterminated array"))
+            return Result__()__string::Err(std::json::json_error(parser/0, "unterminated array"))
         } else {
             if (inherent#string#string#byte_get(
               std::json::JsonParser.input(parser/0),
@@ -6228,7 +6225,7 @@ fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result_
                     std::json::JsonParser.index(parser/0),
                     (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) + 1)
                   ) in
-                return Result__unit__string::Ok(())
+                return Result__()__string::Ok(())
             } else {
                 if (inherent#string#string#byte_get(
                   std::json::JsonParser.input(parser/0),
@@ -6240,29 +6237,29 @@ fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result_
                       (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) + 1)
                     )
                 } else {
-                    return Result__unit__string::Err(
+                    return Result__()__string::Err(
                       std::json::json_error(parser/0, "expected array separator")
                     )
                 }
             }
         }
     } in
-  Result__unit__string::Err(std::json::json_error(parser/0, "unterminated array"))
+  Result__()__string::Err(std::json::json_error(parser/0, "unterminated array"))
 }
 
-fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result__unit__string {
+fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::consume_json_byte(parser/0, 123, "expected object") in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 = std::json::skip_json_whitespace(parser/0) in
@@ -6282,7 +6279,7 @@ fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result
             std::json::JsonParser.index(parser/0),
             (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) + 1)
           ) in
-        return Result__unit__string::Ok(())
+        return Result__()__string::Ok(())
     } else {
         ()
     } in
@@ -6300,41 +6297,41 @@ fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result
             Result__string__string::Err(x3) => {
               let x3 = Result__string__string::Err._0(mtmp2) in
               let try_residual/1 = x3 in
-              return Result__unit__string::Err(try_residual/1)
+              return Result__()__string::Err(try_residual/1)
             },
           } in
         let _wild5 =
           let mtmp3 = std::json::consume_json_byte(parser/0, 58, "expected object colon") in
           match mtmp3 {
-            Result__unit__string::Ok(x4) => {
-              let x4 = Result__unit__string::Ok._0(mtmp3) in
+            Result__()__string::Ok(x4) => {
+              let x4 = Result__()__string::Ok._0(mtmp3) in
               let try_value/2 = x4 in
               try_value/2
             },
-            Result__unit__string::Err(x5) => {
-              let x5 = Result__unit__string::Err._0(mtmp3) in
+            Result__()__string::Err(x5) => {
+              let x5 = Result__()__string::Err._0(mtmp3) in
               let try_residual/2 = x5 in
-              return Result__unit__string::Err(try_residual/2)
+              return Result__()__string::Err(try_residual/2)
             },
           } in
         let _wild6 =
           let mtmp4 = std::json::skip_direct_json_value(parser/0) in
           match mtmp4 {
-            Result__unit__string::Ok(x6) => {
-              let x6 = Result__unit__string::Ok._0(mtmp4) in
+            Result__()__string::Ok(x6) => {
+              let x6 = Result__()__string::Ok._0(mtmp4) in
               let try_value/3 = x6 in
               try_value/3
             },
-            Result__unit__string::Err(x7) => {
-              let x7 = Result__unit__string::Err._0(mtmp4) in
+            Result__()__string::Err(x7) => {
+              let x7 = Result__()__string::Err._0(mtmp4) in
               let try_residual/3 = x7 in
-              return Result__unit__string::Err(try_residual/3)
+              return Result__()__string::Err(try_residual/3)
             },
           } in
         let _wild7 = std::json::skip_json_whitespace(parser/0) in
         if (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) >=
           inherent#string#string#byte_len(std::json::JsonParser.input(parser/0))) {
-            return Result__unit__string::Err(std::json::json_error(parser/0, "unterminated object"))
+            return Result__()__string::Err(std::json::json_error(parser/0, "unterminated object"))
         } else {
             if (inherent#string#string#byte_get(
               std::json::JsonParser.input(parser/0),
@@ -6346,7 +6343,7 @@ fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result
                     std::json::JsonParser.index(parser/0),
                     (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) + 1)
                   ) in
-                return Result__unit__string::Ok(())
+                return Result__()__string::Ok(())
             } else {
                 if (inherent#string#string#byte_get(
                   std::json::JsonParser.input(parser/0),
@@ -6358,21 +6355,21 @@ fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result
                       (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) + 1)
                     )
                 } else {
-                    return Result__unit__string::Err(
+                    return Result__()__string::Err(
                       std::json::json_error(parser/0, "expected object separator")
                     )
                 }
             }
         }
     } in
-  Result__unit__string::Err(std::json::json_error(parser/0, "unterminated object"))
+  Result__()__string::Err(std::json::json_error(parser/0, "unterminated object"))
 }
 
-fn std::json::skip_direct_json_value(parser/0: std::json::JsonParser) -> Result__unit__string {
+fn std::json::skip_direct_json_value(parser/0: std::json::JsonParser) -> Result__()__string {
   let _wild0 = std::json::skip_json_whitespace(parser/0) in
   if (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(parser/0)) >=
     inherent#string#string#byte_len(std::json::JsonParser.input(parser/0))) {
-      Result__unit__string::Err(std::json::json_error(parser/0, "expected JSON value"))
+      Result__()__string::Err(std::json::json_error(parser/0, "expected JSON value"))
   } else {
       let byte/0 =
         inherent#string#string#byte_get(
@@ -6397,10 +6394,10 @@ fn std::json::skip_direct_json_value(parser/0: std::json::JsonParser) -> Result_
                       Result__string__string::Err(x1) => {
                         let x1 = Result__string__string::Err._0(mtmp1) in
                         let try_residual/0 = x1 in
-                        return Result__unit__string::Err(try_residual/0)
+                        return Result__()__string::Err(try_residual/0)
                       },
                     } in
-                  Result__unit__string::Ok(())
+                  Result__()__string::Ok(())
               } else {
                   if (byte/0 == 116) {
                       std::json::consume_json_literal(parser/0, "true")
@@ -6427,12 +6424,12 @@ fn std::json::skip_direct_json_value(parser/0: std::json::JsonParser) -> Result_
                                       Result__string__string::Err(x3) => {
                                         let x3 = Result__string__string::Err._0(mtmp3) in
                                         let try_residual/1 = x3 in
-                                        return Result__unit__string::Err(try_residual/1)
+                                        return Result__()__string::Err(try_residual/1)
                                       },
                                     } in
-                                  Result__unit__string::Ok(())
+                                  Result__()__string::Ok(())
                               } else {
-                                  Result__unit__string::Err(
+                                  Result__()__string::Err(
                                     std::json::json_error(parser/0, "unexpected JSON token")
                                   )
                               }
@@ -6689,7 +6686,7 @@ fn std::json::json_frame_index(
   }
 }
 
-fn std::json::pop_json_frame(deserializer/0: std::json::JsonDeserializer) -> unit {
+fn std::json::pop_json_frame(deserializer/0: std::json::JsonDeserializer) -> () {
   let mtmp0 =
     inherent#Vec#Vec[T]#pop__T_std::json::JsonDeserializeFrame(
       std::json::JsonDeserializer.frames(deserializer/0)
@@ -6897,13 +6894,13 @@ fn std::json::next_json_object_field(
                 "expected object colon"
               ) in
             match mtmp1 {
-              Result__unit__string::Ok(x2) => {
-                let x2 = Result__unit__string::Ok._0(mtmp1) in
+              Result__()__string::Ok(x2) => {
+                let x2 = Result__()__string::Ok._0(mtmp1) in
                 let try_value/1 = x2 in
                 try_value/1
               },
-              Result__unit__string::Err(x3) => {
-                let x3 = Result__unit__string::Err._0(mtmp1) in
+              Result__()__string::Err(x3) => {
+                let x3 = Result__()__string::Err._0(mtmp1) in
                 let try_residual/1 = x3 in
                 return Result__(bool,bool,Option__string)__string::Err(try_residual/1)
               },
@@ -7079,7 +7076,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_a
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_unit(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 = std::json::skip_json_whitespace(std::json::JsonDeserializer.parser(self/0)) in
   if if (inherent#Ref#Ref[T]#get__T_isize(
     std::json::JsonParser.index(std::json::JsonDeserializer.parser(self/0))
@@ -7099,7 +7096,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_u
   } {
       std::json::consume_json_literal(std::json::JsonDeserializer.parser(self/0), "null")
   } else {
-      Result__unit__string::Err(std::json::expected_json_value(self/0, "null"))
+      Result__()__string::Err(std::json::expected_json_value(self/0, "null"))
   }
 }
 
@@ -7127,13 +7124,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_b
         let mtmp0 =
           std::json::consume_json_literal(std::json::JsonDeserializer.parser(self/0), "true") in
         match mtmp0 {
-          Result__unit__string::Ok(x0) => {
-            let x0 = Result__unit__string::Ok._0(mtmp0) in
+          Result__()__string::Ok(x0) => {
+            let x0 = Result__()__string::Ok._0(mtmp0) in
             let try_value/0 = x0 in
             try_value/0
           },
-          Result__unit__string::Err(x1) => {
-            let x1 = Result__unit__string::Err._0(mtmp0) in
+          Result__()__string::Err(x1) => {
+            let x1 = Result__()__string::Err._0(mtmp0) in
             let try_residual/0 = x1 in
             return Result__bool__string::Err(try_residual/0)
           },
@@ -7163,13 +7160,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_b
                 "false"
               ) in
             match mtmp1 {
-              Result__unit__string::Ok(x2) => {
-                let x2 = Result__unit__string::Ok._0(mtmp1) in
+              Result__()__string::Ok(x2) => {
+                let x2 = Result__()__string::Ok._0(mtmp1) in
                 let try_value/1 = x2 in
                 try_value/1
               },
-              Result__unit__string::Err(x3) => {
-                let x3 = Result__unit__string::Err._0(mtmp1) in
+              Result__()__string::Err(x3) => {
+                let x3 = Result__()__string::Err._0(mtmp1) in
                 let try_residual/1 = x3 in
                 return Result__bool__string::Err(try_residual/1)
               },
@@ -7563,13 +7560,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_b
         "expected byte array"
       ) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
         return Result__Vec[u8]__string::Err(try_residual/0)
       },
@@ -7618,13 +7615,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_b
                         "expected byte array separator"
                       ) in
                     match mtmp1 {
-                      Result__unit__string::Ok(x2) => {
-                        let x2 = Result__unit__string::Ok._0(mtmp1) in
+                      Result__()__string::Ok(x2) => {
+                        let x2 = Result__()__string::Ok._0(mtmp1) in
                         let try_value/1 = x2 in
                         try_value/1
                       },
-                      Result__unit__string::Err(x3) => {
-                        let x3 = Result__unit__string::Err._0(mtmp1) in
+                      Result__()__string::Err(x3) => {
+                        let x3 = Result__()__string::Err._0(mtmp1) in
                         let try_residual/1 = x3 in
                         return Result__Vec[u8]__string::Err(try_residual/1)
                       },
@@ -7677,13 +7674,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_optiona
           let mtmp0 =
             std::json::consume_json_literal(std::json::JsonDeserializer.parser(self/0), "null") in
           match mtmp0 {
-            Result__unit__string::Ok(x0) => {
-              let x0 = Result__unit__string::Ok._0(mtmp0) in
+            Result__()__string::Ok(x0) => {
+              let x0 = Result__()__string::Ok._0(mtmp0) in
               let try_value/0 = x0 in
               try_value/0
             },
-            Result__unit__string::Err(x1) => {
-              let x1 = Result__unit__string::Err._0(mtmp0) in
+            Result__()__string::Err(x1) => {
+              let x1 = Result__()__string::Err._0(mtmp0) in
               let try_residual/0 = x1 in
               return Result__bool__string::Err(try_residual/0)
             },
@@ -7702,7 +7699,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_optiona
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_optional(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -7714,17 +7711,17 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_optional(
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
   match mtmp1 {
     std::json::JsonDeserializeFrame::Optional => {
       let _wild0 = std::json::pop_json_frame(self/0) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "end_optional does not match active value"
@@ -7744,13 +7741,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_sequenc
         "expected array"
       ) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
         return Result__Option__isize__string::Err(try_residual/0)
       },
@@ -7837,7 +7834,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_sequence
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_sequence(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -7849,7 +7846,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_sequence(
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -7858,7 +7855,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_sequence(
       let x3 = std::json::JsonDeserializeFrame::Sequence._1(mtmp1) in
       let done/0 = x3 in
       if (!inherent#Ref#Ref[T]#get__T_bool(done/0)) {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "array ended before all elements"
@@ -7873,23 +7870,23 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_sequence(
                 "expected array end"
               ) in
             match mtmp2 {
-              Result__unit__string::Ok(x5) => {
-                let x5 = Result__unit__string::Ok._0(mtmp2) in
+              Result__()__string::Ok(x5) => {
+                let x5 = Result__()__string::Ok._0(mtmp2) in
                 let try_value/1 = x5 in
                 try_value/1
               },
-              Result__unit__string::Err(x6) => {
-                let x6 = Result__unit__string::Err._0(mtmp2) in
+              Result__()__string::Err(x6) => {
+                let x6 = Result__()__string::Err._0(mtmp2) in
                 let try_residual/1 = x6 in
-                return Result__unit__string::Err(try_residual/1)
+                return Result__()__string::Err(try_residual/1)
               },
             } in
           let _wild1 = std::json::pop_json_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "end_sequence does not match active value"
@@ -7901,10 +7898,10 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_sequence(
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple(
   self/0: std::json::JsonDeserializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if (length/0 < 0) {
-        return Result__unit__string::Err(
+        return Result__()__string::Err(
           std::json::json_error(
             std::json::JsonDeserializer.parser(self/0),
             "tuple length cannot be negative"
@@ -7921,15 +7918,15 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple(
         "expected tuple array"
       ) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild2 =
@@ -7937,13 +7934,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple(
       std::json::JsonDeserializer.frames(self/0),
       std::json::JsonDeserializeFrame::Tuple(length/0, inherent#Ref#Ref[T]#new__T_isize(0))
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_element(
   self/0: std::json::JsonDeserializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -7955,7 +7952,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_e
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -7970,7 +7967,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_e
       } else {
           (index/0 >= length/0)
       } {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "tuple element index is out of order"
@@ -7986,15 +7983,15 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_e
                     "expected tuple separator"
                   ) in
                 match mtmp2 {
-                  Result__unit__string::Ok(x4) => {
-                    let x4 = Result__unit__string::Ok._0(mtmp2) in
+                  Result__()__string::Ok(x4) => {
+                    let x4 = Result__()__string::Ok._0(mtmp2) in
                     let try_value/1 = x4 in
                     try_value/1
                   },
-                  Result__unit__string::Err(x5) => {
-                    let x5 = Result__unit__string::Err._0(mtmp2) in
+                  Result__()__string::Err(x5) => {
+                    let x5 = Result__()__string::Err._0(mtmp2) in
                     let try_residual/1 = x5 in
-                    return Result__unit__string::Err(try_residual/1)
+                    return Result__()__string::Err(try_residual/1)
                   },
                 }
             } else {
@@ -8016,7 +8013,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_e
               ) ==
                 93)
           } {
-              Result__unit__string::Err(
+              Result__()__string::Err(
                 std::json::json_error(
                   std::json::JsonDeserializer.parser(self/0),
                   "tuple has too few elements"
@@ -8024,12 +8021,12 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_e
               )
           } else {
               let _wild1 = inherent#Ref#Ref[T]#set__T_isize(next/0, (index/0 + 1)) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           }
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "tuple element outside a tuple"
@@ -8040,7 +8037,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_e
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_tuple(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -8052,7 +8049,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_tuple(
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -8063,7 +8060,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_tuple(
       let index/0 = x3 in
       let length/0 = x2 in
       if (inherent#Ref#Ref[T]#get__T_isize(index/0) != length/0) {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "tuple ended before all elements"
@@ -8078,23 +8075,23 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_tuple(
                 "tuple has too many elements"
               ) in
             match mtmp2 {
-              Result__unit__string::Ok(x4) => {
-                let x4 = Result__unit__string::Ok._0(mtmp2) in
+              Result__()__string::Ok(x4) => {
+                let x4 = Result__()__string::Ok._0(mtmp2) in
                 let try_value/1 = x4 in
                 try_value/1
               },
-              Result__unit__string::Err(x5) => {
-                let x5 = Result__unit__string::Err._0(mtmp2) in
+              Result__()__string::Err(x5) => {
+                let x5 = Result__()__string::Err._0(mtmp2) in
                 let try_residual/1 = x5 in
-                return Result__unit__string::Err(try_residual/1)
+                return Result__()__string::Err(try_residual/1)
               },
             } in
           let _wild1 = std::json::pop_json_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "end_tuple does not match active value"
@@ -8114,13 +8111,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map(
         "expected map object"
       ) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
         return Result__Option__isize__string::Err(try_residual/0)
       },
@@ -8226,7 +8223,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_map_entr
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_key(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -8238,7 +8235,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_key
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -8249,7 +8246,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_key
       let key/0 = x5 in
       let state/0 = x4 in
       if (inherent#Ref#Ref[T]#get__T_isize(state/0) != 1) {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "map is not expecting a key"
@@ -8267,17 +8264,17 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_key
               Result__string__string::Err(x7) => {
                 let x7 = Result__string__string::Err._0(mtmp2) in
                 let try_residual/1 = x7 in
-                return Result__unit__string::Err(try_residual/1)
+                return Result__()__string::Err(try_residual/1)
               },
             } in
           let _wild0 = inherent#Ref#Ref[T]#set__T_isize(state/0, 2) in
           let _wild1 =
             inherent#Ref#Ref[T]#set__T_Option[string](key/0, Option__string::Some(value/0)) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(std::json::JsonDeserializer.parser(self/0), "map key outside a map")
       ),
   }
@@ -8285,7 +8282,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_key
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_value(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -8297,7 +8294,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_val
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -8306,7 +8303,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_val
       let x4 = std::json::JsonDeserializeFrame::Map._2(mtmp1) in
       let state/0 = x4 in
       if (inherent#Ref#Ref[T]#get__T_isize(state/0) != 3) {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "map is not expecting a value"
@@ -8321,23 +8318,23 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_val
                 "expected map entry colon"
               ) in
             match mtmp2 {
-              Result__unit__string::Ok(x6) => {
-                let x6 = Result__unit__string::Ok._0(mtmp2) in
+              Result__()__string::Ok(x6) => {
+                let x6 = Result__()__string::Ok._0(mtmp2) in
                 let try_value/1 = x6 in
                 try_value/1
               },
-              Result__unit__string::Err(x7) => {
-                let x7 = Result__unit__string::Err._0(mtmp2) in
+              Result__()__string::Err(x7) => {
+                let x7 = Result__()__string::Err._0(mtmp2) in
                 let try_residual/1 = x7 in
-                return Result__unit__string::Err(try_residual/1)
+                return Result__()__string::Err(try_residual/1)
               },
             } in
           let _wild1 = inherent#Ref#Ref[T]#set__T_isize(state/0, 4) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(std::json::JsonDeserializer.parser(self/0), "map value outside a map")
       ),
   }
@@ -8345,7 +8342,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_val
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_map(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -8357,7 +8354,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_map(
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -8372,7 +8369,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_map(
       } else {
           (inherent#Ref#Ref[T]#get__T_isize(state/0) != 0)
       } {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "map ended before all entries"
@@ -8387,23 +8384,23 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_map(
                 "expected map end"
               ) in
             match mtmp2 {
-              Result__unit__string::Ok(x6) => {
-                let x6 = Result__unit__string::Ok._0(mtmp2) in
+              Result__()__string::Ok(x6) => {
+                let x6 = Result__()__string::Ok._0(mtmp2) in
                 let try_value/1 = x6 in
                 try_value/1
               },
-              Result__unit__string::Err(x7) => {
-                let x7 = Result__unit__string::Err._0(mtmp2) in
+              Result__()__string::Err(x7) => {
+                let x7 = Result__()__string::Err._0(mtmp2) in
                 let try_residual/1 = x7 in
-                return Result__unit__string::Err(try_residual/1)
+                return Result__()__string::Err(try_residual/1)
               },
             } in
           let _wild1 = std::json::pop_json_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "end_map does not match active value"
@@ -8416,10 +8413,10 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_struct(
   self/0: std::json::JsonDeserializer,
   name/0: string,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if (fields/0 < 0) {
-        return Result__unit__string::Err(
+        return Result__()__string::Err(
           std::json::json_error(
             std::json::JsonDeserializer.parser(self/0),
             "struct field count cannot be negative"
@@ -8436,15 +8433,15 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_struct(
         "expected object"
       ) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild2 =
@@ -8457,7 +8454,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_struct(
         inherent#Ref#Ref[T]#new__T_Option[string](Option__string::None)
       )
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_struct_field(
@@ -8536,13 +8533,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_struct_f
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#skip_value(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   std::json::skip_direct_json_value(std::json::JsonDeserializer.parser(self/0))
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_struct(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -8554,7 +8551,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_struct(
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -8563,7 +8560,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_struct(
       let x4 = std::json::JsonDeserializeFrame::Struct._2(mtmp1) in
       let done/0 = x4 in
       if (!inherent#Ref#Ref[T]#get__T_bool(done/0)) {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "object ended before all fields"
@@ -8578,23 +8575,23 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_struct(
                 "expected object end"
               ) in
             match mtmp2 {
-              Result__unit__string::Ok(x6) => {
-                let x6 = Result__unit__string::Ok._0(mtmp2) in
+              Result__()__string::Ok(x6) => {
+                let x6 = Result__()__string::Ok._0(mtmp2) in
                 let try_value/1 = x6 in
                 try_value/1
               },
-              Result__unit__string::Err(x7) => {
-                let x7 = Result__unit__string::Err._0(mtmp2) in
+              Result__()__string::Err(x7) => {
+                let x7 = Result__()__string::Err._0(mtmp2) in
                 let try_residual/1 = x7 in
-                return Result__unit__string::Err(try_residual/1)
+                return Result__()__string::Err(try_residual/1)
               },
             } in
           let _wild1 = std::json::pop_json_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "end_struct does not match active value"
@@ -8676,13 +8673,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
                 "expected externally tagged enum object"
               ) in
             match mtmp1 {
-              Result__unit__string::Ok(x2) => {
-                let x2 = Result__unit__string::Ok._0(mtmp1) in
+              Result__()__string::Ok(x2) => {
+                let x2 = Result__()__string::Ok._0(mtmp1) in
                 let try_value/1 = x2 in
                 try_value/1
               },
-              Result__unit__string::Err(x3) => {
-                let x3 = Result__unit__string::Err._0(mtmp1) in
+              Result__()__string::Err(x3) => {
+                let x3 = Result__()__string::Err._0(mtmp1) in
                 let try_residual/1 = x3 in
                 return Result__std::serde::VariantKey__string::Err(try_residual/1)
               },
@@ -8709,13 +8706,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
                 "expected enum payload colon"
               ) in
             match mtmp3 {
-              Result__unit__string::Ok(x6) => {
-                let x6 = Result__unit__string::Ok._0(mtmp3) in
+              Result__()__string::Ok(x6) => {
+                let x6 = Result__()__string::Ok._0(mtmp3) in
                 let try_value/3 = x6 in
                 try_value/3
               },
-              Result__unit__string::Err(x7) => {
-                let x7 = Result__unit__string::Err._0(mtmp3) in
+              Result__()__string::Err(x7) => {
+                let x7 = Result__()__string::Err._0(mtmp3) in
                 let try_residual/3 = x7 in
                 return Result__std::serde::VariantKey__string::Err(try_residual/3)
               },
@@ -8744,7 +8741,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
   self/0: std::json::JsonDeserializer,
   kind/0: isize,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if if if if (kind/0 < 0) {
         true
@@ -8763,7 +8760,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
             false
         }
     } {
-        return Result__unit__string::Err(
+        return Result__()__string::Err(
           std::json::json_error(
             std::json::JsonDeserializer.parser(self/0),
             "invalid enum variant payload shape"
@@ -8783,7 +8780,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -8804,7 +8801,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
       let actual_kind/0 = x5 in
       let representation/0 = x4 in
       if inherent#Ref#Ref[T]#get__T_bool(begun/0) {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "variant fields were already begun"
@@ -8817,7 +8814,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
               } else {
                   (fields/0 != 0)
               } {
-                  Result__unit__string::Err(
+                  Result__()__string::Err(
                     std::json::json_error(
                       std::json::JsonDeserializer.parser(self/0),
                       "unit variant has an unexpected payload"
@@ -8830,7 +8827,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
                   let _wild4 = inherent#Ref#Ref[T]#set__T_bool(first/0, true) in
                   let _wild5 = inherent#Ref#Ref[T]#set__T_bool(done/0, true) in
                   let _wild6 = inherent#Ref#Ref[T]#set__T_bool(begun/0, true) in
-                  Result__unit__string::Ok(())
+                  Result__()__string::Ok(())
               }
           } else {
               if if (kind/0 == 1) {
@@ -8850,15 +8847,15 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
                         "unexpected enum payload shape"
                       ) in
                     match mtmp2 {
-                      Result__unit__string::Ok(x11) => {
-                        let x11 = Result__unit__string::Ok._0(mtmp2) in
+                      Result__()__string::Ok(x11) => {
+                        let x11 = Result__()__string::Ok._0(mtmp2) in
                         let try_value/1 = x11 in
                         try_value/1
                       },
-                      Result__unit__string::Err(x12) => {
-                        let x12 = Result__unit__string::Err._0(mtmp2) in
+                      Result__()__string::Err(x12) => {
+                        let x12 = Result__()__string::Err._0(mtmp2) in
                         let try_residual/1 = x12 in
-                        return Result__unit__string::Err(try_residual/1)
+                        return Result__()__string::Err(try_residual/1)
                       },
                     } in
                   let _wild8 = inherent#Ref#Ref[T]#set__T_isize(actual_kind/0, kind/0) in
@@ -8867,9 +8864,9 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
                   let _wild11 = inherent#Ref#Ref[T]#set__T_bool(first/0, true) in
                   let _wild12 = inherent#Ref#Ref[T]#set__T_bool(done/0, false) in
                   let _wild13 = inherent#Ref#Ref[T]#set__T_bool(begun/0, true) in
-                  Result__unit__string::Ok(())
+                  Result__()__string::Ok(())
               } else {
-                  Result__unit__string::Err(
+                  Result__()__string::Err(
                     std::json::json_error(
                       std::json::JsonDeserializer.parser(self/0),
                       "unexpected enum payload shape"
@@ -8880,7 +8877,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "variant fields outside a variant"
@@ -9032,7 +9029,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
   self/0: std::json::JsonDeserializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let frame/0 =
     let mtmp0 = std::json::json_frame_index(self/0) in
     match mtmp0 {
@@ -9044,7 +9041,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
       Result__isize__string::Err(x1) => {
         let x1 = Result__isize__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let mtmp1 = @intrinsic(vec.get)(std::json::JsonDeserializer.frames(self/0), frame/0) in
@@ -9063,7 +9060,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
       } else {
           (!inherent#Ref#Ref[T]#get__T_bool(done/0))
       } {
-          Result__unit__string::Err(
+          Result__()__string::Err(
             std::json::json_error(
               std::json::JsonDeserializer.parser(self/0),
               "variant ended before all fields"
@@ -9079,15 +9076,15 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
                     "expected tuple variant end"
                   ) in
                 match mtmp2 {
-                  Result__unit__string::Ok(x11) => {
-                    let x11 = Result__unit__string::Ok._0(mtmp2) in
+                  Result__()__string::Ok(x11) => {
+                    let x11 = Result__()__string::Ok._0(mtmp2) in
                     let try_value/1 = x11 in
                     try_value/1
                   },
-                  Result__unit__string::Err(x12) => {
-                    let x12 = Result__unit__string::Err._0(mtmp2) in
+                  Result__()__string::Err(x12) => {
+                    let x12 = Result__()__string::Err._0(mtmp2) in
                     let try_residual/1 = x12 in
-                    return Result__unit__string::Err(try_residual/1)
+                    return Result__()__string::Err(try_residual/1)
                   },
                 }
             } else {
@@ -9099,15 +9096,15 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
                         "expected struct variant end"
                       ) in
                     match mtmp3 {
-                      Result__unit__string::Ok(x13) => {
-                        let x13 = Result__unit__string::Ok._0(mtmp3) in
+                      Result__()__string::Ok(x13) => {
+                        let x13 = Result__()__string::Ok._0(mtmp3) in
                         let try_value/2 = x13 in
                         try_value/2
                       },
-                      Result__unit__string::Err(x14) => {
-                        let x14 = Result__unit__string::Err._0(mtmp3) in
+                      Result__()__string::Err(x14) => {
+                        let x14 = Result__()__string::Err._0(mtmp3) in
                         let try_residual/2 = x14 in
-                        return Result__unit__string::Err(try_residual/2)
+                        return Result__()__string::Err(try_residual/2)
                       },
                     }
                 } else {
@@ -9123,26 +9120,26 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
                     "expected enum object end"
                   ) in
                 match mtmp4 {
-                  Result__unit__string::Ok(x15) => {
-                    let x15 = Result__unit__string::Ok._0(mtmp4) in
+                  Result__()__string::Ok(x15) => {
+                    let x15 = Result__()__string::Ok._0(mtmp4) in
                     let try_value/3 = x15 in
                     try_value/3
                   },
-                  Result__unit__string::Err(x16) => {
-                    let x16 = Result__unit__string::Err._0(mtmp4) in
+                  Result__()__string::Err(x16) => {
+                    let x16 = Result__()__string::Err._0(mtmp4) in
                     let try_residual/3 = x16 in
-                    return Result__unit__string::Err(try_residual/3)
+                    return Result__()__string::Err(try_residual/3)
                   },
                 }
             } else {
                 ()
             } in
           let _wild2 = std::json::pop_json_frame(self/0) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
     _ =>
-      Result__unit__string::Err(
+      Result__()__string::Err(
         std::json::json_error(
           std::json::JsonDeserializer.parser(self/0),
           "end_variant does not match active value"
@@ -9178,7 +9175,7 @@ fn std::json::json_whitespace(value/0: u8) -> bool {
   }
 }
 
-fn std::json::skip_json_whitespace(value/0: std::json::JsonParser) -> unit {
+fn std::json::skip_json_whitespace(value/0: std::json::JsonParser) -> () {
   while if (inherent#Ref#Ref[T]#get__T_isize(std::json::JsonParser.index(value/0)) <
     inherent#string#string#byte_len(std::json::JsonParser.input(value/0))) {
       std::json::json_whitespace(
@@ -9273,11 +9270,11 @@ fn std::json::write_codepoint(
   value/0: std::json::JsonParser,
   builder/0: std::text::StringBuilder,
   codepoint/0: u32
-) -> Result__unit__string {
+) -> Result__()__string {
   let mtmp0 = char_from_u0(codepoint/0) in
   match mtmp0 {
     Option__char::None => {
-      Result__unit__string::Err(std::json::json_error(value/0, "invalid unicode codepoint"))
+      Result__()__string::Err(std::json::json_error(value/0, "invalid unicode codepoint"))
     },
     Option__char::Some(x0) => {
       let x0 = Option__char::Some._0(mtmp0) in
@@ -9287,7 +9284,7 @@ fn std::json::write_codepoint(
           builder/0,
           character/0
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
     },
   }
 }
@@ -9295,7 +9292,7 @@ fn std::json::write_codepoint(
 fn std::json::parse_unicode_escape(
   value/0: std::json::JsonParser,
   builder/0: std::text::StringBuilder
-) -> Result__unit__string {
+) -> Result__()__string {
   let first/0 =
     let mtmp0 = std::json::parse_hex_quad(value/0) in
     match mtmp0 {
@@ -9307,7 +9304,7 @@ fn std::json::parse_unicode_escape(
       Result__u32__string::Err(x1) => {
         let x1 = Result__u32__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   if if (first/0 >= 55296) {
@@ -9333,7 +9330,7 @@ fn std::json::parse_unicode_escape(
           ) !=
             117)
       } {
-          Result__unit__string::Err(std::json::json_error(value/0, "missing low surrogate"))
+          Result__()__string::Err(std::json::json_error(value/0, "missing low surrogate"))
       } else {
           let _wild0 =
             inherent#Ref#Ref[T]#set__T_isize(
@@ -9351,7 +9348,7 @@ fn std::json::parse_unicode_escape(
               Result__u32__string::Err(x3) => {
                 let x3 = Result__u32__string::Err._0(mtmp1) in
                 let try_residual/1 = x3 in
-                return Result__unit__string::Err(try_residual/1)
+                return Result__()__string::Err(try_residual/1)
               },
             } in
           if if (second/0 < 56320) {
@@ -9359,7 +9356,7 @@ fn std::json::parse_unicode_escape(
           } else {
               (second/0 > 57343)
           } {
-              Result__unit__string::Err(std::json::json_error(value/0, "invalid low surrogate"))
+              Result__()__string::Err(std::json::json_error(value/0, "invalid low surrogate"))
           } else {
               std::json::write_codepoint(
                 value/0,
@@ -9374,7 +9371,7 @@ fn std::json::parse_unicode_escape(
       } else {
           false
       } {
-          Result__unit__string::Err(std::json::json_error(value/0, "unexpected low surrogate"))
+          Result__()__string::Err(std::json::json_error(value/0, "unexpected low surrogate"))
       } else {
           std::json::write_codepoint(value/0, builder/0, first/0)
       }
@@ -9549,15 +9546,15 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result__strin
                                                           builder/0
                                                         ) in
                                                       match mtmp2 {
-                                                        Result__unit__string::Ok(x2) => {
+                                                        Result__()__string::Ok(x2) => {
                                                           let x2 =
-                                                            Result__unit__string::Ok._0(mtmp2) in
+                                                            Result__()__string::Ok._0(mtmp2) in
                                                           let try_value/0 = x2 in
                                                           try_value/0
                                                         },
-                                                        Result__unit__string::Err(x3) => {
+                                                        Result__()__string::Err(x3) => {
                                                           let x3 =
-                                                            Result__unit__string::Err._0(mtmp2) in
+                                                            Result__()__string::Err._0(mtmp2) in
                                                           let try_residual/0 = x3 in
                                                           return Result__string__string::Err(
                                                             try_residual/0
@@ -10137,7 +10134,7 @@ fn std::json::json_hex_digit(value/0: u8) -> char {
   inherent#string#string#get("0123456789abcdef", (value/0 as isize))
 }
 
-fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: string) -> unit {
+fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: string) -> () {
   let _wild0 =
     inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, '"') in
   let start/0 = 0 in
@@ -10276,7 +10273,7 @@ fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: st
 fn std::json::write_json_value(
   builder/0: std::text::StringBuilder,
   value/0: std::json::Value
-) -> unit {
+) -> () {
   match value/0 {
     std::json::Value::Object(x0) => {
       let x0 = std::json::Value::Object._0(value/0) in
@@ -10511,19 +10508,19 @@ fn std::json::json_serializer() -> std::json::JsonSerializer {
   }
 }
 
-fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Result__unit__string {
+fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Result__()__string {
   if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
     std::json::JsonSerializer.frames(serializer/0)
   ) {
       if inherent#Ref#Ref[T]#get__T_bool(std::json::JsonSerializer.root_written(serializer/0)) {
-          Result__unit__string::Err("JSON serialization produced more than one root value")
+          Result__()__string::Err("JSON serialization produced more than one root value")
       } else {
           let _wild0 =
             inherent#Ref#Ref[T]#set__T_bool(
               std::json::JsonSerializer.root_written(serializer/0),
               true
             ) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
   } else {
       let frame/0 =
@@ -10538,9 +10535,9 @@ fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Resul
           let ready/0 = x0 in
           if inherent#Ref#Ref[T]#get__T_bool(ready/0) {
               let _wild1 = inherent#Ref#Ref[T]#set__T_bool(ready/0, false) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
-              Result__unit__string::Err("optional is not expecting a value")
+              Result__()__string::Err("optional is not expecting a value")
           }
         },
         std::json::JsonSerializeFrame::Array(x1, x2, x3) => {
@@ -10548,9 +10545,9 @@ fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Resul
           let ready/1 = x3 in
           if inherent#Ref#Ref[T]#get__T_bool(ready/1) {
               let _wild2 = inherent#Ref#Ref[T]#set__T_bool(ready/1, false) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
-              Result__unit__string::Err("array is not expecting a value")
+              Result__()__string::Err("array is not expecting a value")
           }
         },
         std::json::JsonSerializeFrame::Map(x4, x5, x6) => {
@@ -10565,12 +10562,12 @@ fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Resul
                   (inherent#Ref#Ref[T]#get__T_isize(index/0) + 1)
                 ) in
               let _wild4 = inherent#Ref#Ref[T]#set__T_isize(state/0, 0) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
               if (inherent#Ref#Ref[T]#get__T_isize(state/0) == 1) {
-                  Result__unit__string::Err("JSON object keys must serialize as strings")
+                  Result__()__string::Err("JSON object keys must serialize as strings")
               } else {
-                  Result__unit__string::Err("map is not expecting a value")
+                  Result__()__string::Err("map is not expecting a value")
               }
           }
         },
@@ -10579,9 +10576,9 @@ fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Resul
           let ready/2 = x9 in
           if inherent#Ref#Ref[T]#get__T_bool(ready/2) {
               let _wild5 = inherent#Ref#Ref[T]#set__T_bool(ready/2, false) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
-              Result__unit__string::Err("object is not expecting a field value")
+              Result__()__string::Err("object is not expecting a field value")
           }
         },
         std::json::JsonSerializeFrame::Variant(x10, x11, x12, x13) => {
@@ -10589,16 +10586,16 @@ fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Resul
           let ready/3 = x13 in
           if inherent#Ref#Ref[T]#get__T_bool(ready/3) {
               let _wild6 = inherent#Ref#Ref[T]#set__T_bool(ready/3, false) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
-              Result__unit__string::Err("variant is not expecting a field value")
+              Result__()__string::Err("variant is not expecting a field value")
           }
         },
       }
   }
 }
 
-fn std::json::claim_json_string(serializer/0: std::json::JsonSerializer) -> Result__unit__string {
+fn std::json::claim_json_string(serializer/0: std::json::JsonSerializer) -> Result__()__string {
   if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
     std::json::JsonSerializer.frames(serializer/0)
   ) {
@@ -10616,7 +10613,7 @@ fn std::json::claim_json_string(serializer/0: std::json::JsonSerializer) -> Resu
           let state/0 = x2 in
           if (inherent#Ref#Ref[T]#get__T_isize(state/0) == 1) {
               let _wild0 = inherent#Ref#Ref[T]#set__T_isize(state/0, 2) in
-              Result__unit__string::Ok(())
+              Result__()__string::Ok(())
           } else {
               std::json::claim_json_value(serializer/0)
           }
@@ -10648,19 +10645,19 @@ fn std::json::finish_json_serializer(
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_unit(
   self/0: std::json::JsonSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10668,25 +10665,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_unit(
       std::json::JsonSerializer.builder(self/0),
       "null"
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bool(
   self/0: std::json::JsonSerializer,
   value/0: bool
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10698,25 +10695,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bool(
           "false"
       }
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int(
   self/0: std::json::JsonSerializer,
   value/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10724,25 +10721,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int(
       std::json::JsonSerializer.builder(self/0),
       inherent#isize#isize#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int8(
   self/0: std::json::JsonSerializer,
   value/0: i8
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10750,25 +10747,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int8(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#i8#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int16(
   self/0: std::json::JsonSerializer,
   value/0: i16
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10776,25 +10773,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int16(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#i16#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int32(
   self/0: std::json::JsonSerializer,
   value/0: i32
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10802,25 +10799,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int32(
       std::json::JsonSerializer.builder(self/0),
       inherent#i32#i32#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int64(
   self/0: std::json::JsonSerializer,
   value/0: i64
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10828,25 +10825,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int64(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#i64#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint(
   self/0: std::json::JsonSerializer,
   value/0: usize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10854,25 +10851,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#usize#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint8(
   self/0: std::json::JsonSerializer,
   value/0: u8
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10880,25 +10877,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint8(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#u8#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint16(
   self/0: std::json::JsonSerializer,
   value/0: u16
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10906,25 +10903,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint16(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#u16#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint32(
   self/0: std::json::JsonSerializer,
   value/0: u32
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10932,25 +10929,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint32(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#u32#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint64(
   self/0: std::json::JsonSerializer,
   value/0: u64
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10958,25 +10955,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint64(
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#u64#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float32(
   self/0: std::json::JsonSerializer,
   value/0: f32
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -10984,25 +10981,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float32
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#f32#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float64(
   self/0: std::json::JsonSerializer,
   value/0: f64
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -11010,25 +11007,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float64
       std::json::JsonSerializer.builder(self/0),
       trait_impl#ToString#f64#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_number(
   self/0: std::json::JsonSerializer,
   value/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -11036,47 +11033,47 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_number(
       std::json::JsonSerializer.builder(self/0),
       value/0
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_string(
   self/0: std::json::JsonSerializer,
   value/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_string(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 = std::json::write_json_string(std::json::JsonSerializer.builder(self/0), value/0) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_char(
   self/0: std::json::JsonSerializer,
   value/0: char
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_string(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -11084,25 +11081,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_char(
       std::json::JsonSerializer.builder(self/0),
       inherent#char#char#to_string(value/0)
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
   self/0: std::json::JsonSerializer,
   value/0: Slice[u8]
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -11135,25 +11132,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
       std::json::JsonSerializer.builder(self/0),
       ']'
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_optional(
   self/0: std::json::JsonSerializer,
   present/0: bool
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild1 =
@@ -11170,17 +11167,17 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_optional(
       std::json::JsonSerializer.frames(self/0),
       std::json::JsonSerializeFrame::Optional(inherent#Ref#Ref[T]#new__T_bool(present/0))
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_optional(
   self/0: std::json::JsonSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_optional without begin_optional")
+        return Result__()__string::Err("end_optional without begin_optional")
     } else {
         ()
     } in
@@ -11197,41 +11194,41 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_optional(
       let x0 = std::json::JsonSerializeFrame::Optional._0(mtmp0) in
       let ready/0 = x0 in
       if inherent#Ref#Ref[T]#get__T_bool(ready/0) {
-          Result__unit__string::Err("optional item was not serialized")
+          Result__()__string::Err("optional item was not serialized")
       } else {
           let mtmp1 =
             inherent#Vec#Vec[T]#pop__T_std::json::JsonSerializeFrame(
               std::json::JsonSerializer.frames(self/0)
             ) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_optional does not match active JSON value"),
+    _ => Result__()__string::Err("end_optional does not match active JSON value"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_sequence(
   self/0: std::json::JsonSerializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if (length/0 < 0) {
-        return Result__unit__string::Err("sequence length cannot be negative")
+        return Result__()__string::Err("sequence length cannot be negative")
     } else {
         ()
     } in
   let _wild1 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild2 =
@@ -11248,44 +11245,44 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_sequence(
         inherent#Ref#Ref[T]#new__T_bool(false)
       )
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_sequence_element(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   std::json::begin_json_array_element(self/0, index/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_sequence(
   self/0: std::json::JsonSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   std::json::end_json_array(self/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_tuple(
   self/0: std::json::JsonSerializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if (length/0 < 0) {
-        return Result__unit__string::Err("tuple length cannot be negative")
+        return Result__()__string::Err("tuple length cannot be negative")
     } else {
         ()
     } in
   let _wild1 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild2 =
@@ -11302,41 +11299,41 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_tuple(
         inherent#Ref#Ref[T]#new__T_bool(false)
       )
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_tuple_element(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   std::json::begin_json_array_element(self/0, index/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_tuple(
   self/0: std::json::JsonSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   std::json::end_json_array(self/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map(
   self/0: std::json::JsonSerializer,
   length/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   if (length/0 < 0) {
-      Result__unit__string::Err("map length cannot be negative")
+      Result__()__string::Err("map length cannot be negative")
   } else {
       let _wild0 =
         let mtmp0 = std::json::claim_json_value(self/0) in
         match mtmp0 {
-          Result__unit__string::Ok(x0) => {
-            let x0 = Result__unit__string::Ok._0(mtmp0) in
+          Result__()__string::Ok(x0) => {
+            let x0 = Result__()__string::Ok._0(mtmp0) in
             let try_value/0 = x0 in
             try_value/0
           },
-          Result__unit__string::Err(x1) => {
-            let x1 = Result__unit__string::Err._0(mtmp0) in
+          Result__()__string::Err(x1) => {
+            let x1 = Result__()__string::Err._0(mtmp0) in
             let try_residual/0 = x1 in
-            return Result__unit__string::Err(try_residual/0)
+            return Result__()__string::Err(try_residual/0)
           },
         } in
       let _wild1 =
@@ -11353,19 +11350,19 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map(
             inherent#Ref#Ref[T]#new__T_isize(0)
           )
         ) in
-      Result__unit__string::Ok(())
+      Result__()__string::Ok(())
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_key(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("map key without map")
+        return Result__()__string::Err("map key without map")
     } else {
         ()
     } in
@@ -11392,7 +11389,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_key(
       } else {
           (index/0 >= length/0)
       } {
-          Result__unit__string::Err("map key index is out of order")
+          Result__()__string::Err("map key index is out of order")
       } else {
           let _wild1 =
             if (index/0 > 0) {
@@ -11404,22 +11401,22 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_key(
                 ()
             } in
           let _wild2 = inherent#Ref#Ref[T]#set__T_isize(state/0, 1) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("map key outside a map"),
+    _ => Result__()__string::Err("map key outside a map"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_value(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("map value without map")
+        return Result__()__string::Err("map value without map")
     } else {
         ()
     } in
@@ -11440,7 +11437,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_value(
       } else {
           (index/0 != inherent#Ref#Ref[T]#get__T_isize(next/0))
       } {
-          Result__unit__string::Err("map value has no completed key")
+          Result__()__string::Err("map value has no completed key")
       } else {
           let _wild1 =
             inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
@@ -11448,21 +11445,21 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_value(
               ':'
             ) in
           let _wild2 = inherent#Ref#Ref[T]#set__T_isize(state/0, 3) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("map value outside a map"),
+    _ => Result__()__string::Err("map value outside a map"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_map(
   self/0: std::json::JsonSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_map without begin_map")
+        return Result__()__string::Err("end_map without begin_map")
     } else {
         ()
     } in
@@ -11487,7 +11484,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_map(
       } else {
           (inherent#Ref#Ref[T]#get__T_isize(index/0) != length/0)
       } {
-          Result__unit__string::Err("map length does not match serialized entries")
+          Result__()__string::Err("map length does not match serialized entries")
       } else {
           let mtmp1 =
             inherent#Vec#Vec[T]#pop__T_std::json::JsonSerializeFrame(
@@ -11498,10 +11495,10 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_map(
               std::json::JsonSerializer.builder(self/0),
               '}'
             ) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_map does not match active JSON value"),
+    _ => Result__()__string::Err("end_map does not match active JSON value"),
   }
 }
 
@@ -11509,25 +11506,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_struct(
   self/0: std::json::JsonSerializer,
   name/0: string,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if (fields/0 < 0) {
-        return Result__unit__string::Err("struct field count cannot be negative")
+        return Result__()__string::Err("struct field count cannot be negative")
     } else {
         ()
     } in
   let _wild1 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild2 =
@@ -11544,25 +11541,25 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_struct(
         inherent#Ref#Ref[T]#new__T_bool(false)
       )
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_struct_field(
   self/0: std::json::JsonSerializer,
   index/0: isize,
   name/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   std::json::begin_json_named_field(self/0, index/0, name/0, false)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_struct(
   self/0: std::json::JsonSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_struct without begin_struct")
+        return Result__()__string::Err("end_struct without begin_struct")
     } else {
         ()
     } in
@@ -11587,7 +11584,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_struct(
       } else {
           (inherent#Ref#Ref[T]#get__T_isize(index/0) != length/0)
       } {
-          Result__unit__string::Err("struct field count does not match serialized values")
+          Result__()__string::Err("struct field count does not match serialized values")
       } else {
           let mtmp1 =
             inherent#Vec#Vec[T]#pop__T_std::json::JsonSerializeFrame(
@@ -11598,10 +11595,10 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_struct(
               std::json::JsonSerializer.builder(self/0),
               '}'
             ) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_struct does not match active JSON value"),
+    _ => Result__()__string::Err("end_struct does not match active JSON value"),
   }
 }
 
@@ -11612,17 +11609,17 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant(
   name/0: string,
   kind/0: isize,
   fields/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if (index/0 < 0) {
-        return Result__unit__string::Err("enum variant index cannot be negative")
+        return Result__()__string::Err("enum variant index cannot be negative")
     } else {
         if if (kind/0 < 0) {
             true
         } else {
             (kind/0 > 2)
         } {
-            return Result__unit__string::Err("invalid enum variant kind")
+            return Result__()__string::Err("invalid enum variant kind")
         } else {
             if if (fields/0 < 0) {
                 true
@@ -11633,7 +11630,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant(
                     false
                 }
             } {
-                return Result__unit__string::Err("invalid enum variant field count")
+                return Result__()__string::Err("invalid enum variant field count")
             } else {
                 ()
             }
@@ -11642,15 +11639,15 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant(
   let _wild1 =
     let mtmp0 = std::json::claim_json_value(self/0) in
     match mtmp0 {
-      Result__unit__string::Ok(x0) => {
-        let x0 = Result__unit__string::Ok._0(mtmp0) in
+      Result__()__string::Ok(x0) => {
+        let x0 = Result__()__string::Ok._0(mtmp0) in
         let try_value/0 = x0 in
         try_value/0
       },
-      Result__unit__string::Err(x1) => {
-        let x1 = Result__unit__string::Err._0(mtmp0) in
+      Result__()__string::Err(x1) => {
+        let x1 = Result__()__string::Err._0(mtmp0) in
         let try_residual/0 = x1 in
-        return Result__unit__string::Err(try_residual/0)
+        return Result__()__string::Err(try_residual/0)
       },
     } in
   let _wild2 =
@@ -11688,19 +11685,19 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant(
         inherent#Ref#Ref[T]#new__T_bool(false)
       )
     ) in
-  Result__unit__string::Ok(())
+  Result__()__string::Ok(())
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_field(
   self/0: std::json::JsonSerializer,
   index/0: isize,
   name/0: string
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("variant field without variant")
+        return Result__()__string::Err("variant field without variant")
     } else {
         ()
     } in
@@ -11735,7 +11732,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_fie
       } else {
           (index/0 >= length/0)
       } {
-          Result__unit__string::Err("variant field index is out of order")
+          Result__()__string::Err("variant field index is out of order")
       } else {
           let _wild1 =
             if (index/0 > 0) {
@@ -11759,21 +11756,21 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_fie
             } in
           let _wild4 = inherent#Ref#Ref[T]#set__T_isize(next/0, (index/0 + 1)) in
           let _wild5 = inherent#Ref#Ref[T]#set__T_bool(ready/0, true) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("variant field outside a variant"),
+    _ => Result__()__string::Err("variant field outside a variant"),
   }
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_variant(
   self/0: std::json::JsonSerializer
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(self/0)
     ) {
-        return Result__unit__string::Err("end_variant without begin_variant")
+        return Result__()__string::Err("end_variant without begin_variant")
     } else {
         ()
     } in
@@ -11800,7 +11797,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_variant(
       } else {
           (inherent#Ref#Ref[T]#get__T_isize(index/0) != length/0)
       } {
-          Result__unit__string::Err("variant field count does not match serialized values")
+          Result__()__string::Err("variant field count does not match serialized values")
       } else {
           let mtmp1 =
             inherent#Vec#Vec[T]#pop__T_std::json::JsonSerializeFrame(
@@ -11822,22 +11819,22 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_variant(
                     ()
                 }
             } in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("end_variant does not match active JSON value"),
+    _ => Result__()__string::Err("end_variant does not match active JSON value"),
   }
 }
 
 fn std::json::begin_json_array_element(
   serializer/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(serializer/0)
     ) {
-        return Result__unit__string::Err("array element without array")
+        return Result__()__string::Err("array element without array")
     } else {
         ()
     } in
@@ -11866,7 +11863,7 @@ fn std::json::begin_json_array_element(
       } else {
           (index/0 >= length/0)
       } {
-          Result__unit__string::Err("array element index is out of order")
+          Result__()__string::Err("array element index is out of order")
       } else {
           let _wild1 =
             if (index/0 > 0) {
@@ -11879,19 +11876,19 @@ fn std::json::begin_json_array_element(
             } in
           let _wild2 = inherent#Ref#Ref[T]#set__T_isize(next/0, (index/0 + 1)) in
           let _wild3 = inherent#Ref#Ref[T]#set__T_bool(ready/0, true) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("array element outside an array"),
+    _ => Result__()__string::Err("array element outside an array"),
   }
 }
 
-fn std::json::end_json_array(serializer/0: std::json::JsonSerializer) -> Result__unit__string {
+fn std::json::end_json_array(serializer/0: std::json::JsonSerializer) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(serializer/0)
     ) {
-        return Result__unit__string::Err("array end without array")
+        return Result__()__string::Err("array end without array")
     } else {
         ()
     } in
@@ -11916,7 +11913,7 @@ fn std::json::end_json_array(serializer/0: std::json::JsonSerializer) -> Result_
       } else {
           (inherent#Ref#Ref[T]#get__T_isize(index/0) != length/0)
       } {
-          Result__unit__string::Err("array length does not match serialized elements")
+          Result__()__string::Err("array length does not match serialized elements")
       } else {
           let mtmp1 =
             inherent#Vec#Vec[T]#pop__T_std::json::JsonSerializeFrame(
@@ -11927,10 +11924,10 @@ fn std::json::end_json_array(serializer/0: std::json::JsonSerializer) -> Result_
               std::json::JsonSerializer.builder(serializer/0),
               ']'
             ) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("array end does not match active JSON value"),
+    _ => Result__()__string::Err("array end does not match active JSON value"),
   }
 }
 
@@ -11939,12 +11936,12 @@ fn std::json::begin_json_named_field(
   index/0: isize,
   name/0: string,
   variant/0: bool
-) -> Result__unit__string {
+) -> Result__()__string {
   let _wild0 =
     if inherent#Vec#Vec[T]#is_empty__T_std::json::JsonSerializeFrame(
       std::json::JsonSerializer.frames(serializer/0)
     ) {
-        return Result__unit__string::Err("object field without object")
+        return Result__()__string::Err("object field without object")
     } else {
         ()
     } in
@@ -11973,7 +11970,7 @@ fn std::json::begin_json_named_field(
       } else {
           (index/0 >= length/0)
       } {
-          Result__unit__string::Err("object field index is out of order")
+          Result__()__string::Err("object field index is out of order")
       } else {
           let _wild1 =
             if (index/0 > 0) {
@@ -11993,10 +11990,10 @@ fn std::json::begin_json_named_field(
             ) in
           let _wild4 = inherent#Ref#Ref[T]#set__T_isize(next/0, (index/0 + 1)) in
           let _wild5 = inherent#Ref#Ref[T]#set__T_bool(ready/0, true) in
-          Result__unit__string::Ok(())
+          Result__()__string::Ok(())
       }
     },
-    _ => Result__unit__string::Err("object field outside an object"),
+    _ => Result__()__string::Err("object field outside an object"),
   }
 }
 
@@ -12279,7 +12276,7 @@ fn std::json::into_serde_value(value/0: std::json::Value) -> std::serde::Value {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let value/0 =
     let mtmp0 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
     match mtmp0 {
@@ -12384,7 +12381,7 @@ fn inherent#Vec#Vec[T]#is_empty__T_u8(self/0: Vec[u8]) -> bool {
   (@intrinsic(vec.len)(self/0) == 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -12392,11 +12389,11 @@ fn inherent#Slice#Slice[T]#len__T_u8(self/0: Slice[u8]) -> isize {
   @intrinsic(slice.len)(self/0)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#reserve__T_u8(self/0: Vec[u8], additional/0: isize) -> () {
   @intrinsic(vec.reserve)(self/0, additional/0)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_u8(self/0: Vec[u8]) -> () {
   inherent#Vec#Vec[T]#truncate__T_u0(self/0, 0)
 }
 
@@ -12457,7 +12454,7 @@ fn inherent#Vec#Vec[T]#pop__T_u8(self/0: Vec[u8]) -> Option__u8 {
   }
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u8(self/0: Vec[u8], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -12661,7 +12658,7 @@ fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::serde::Value)(capacity/0: i
 fn inherent#Vec#Vec[T]#push__T_(string,std::serde::Value)(
   self/0: Vec[(string, std::serde::Value)],
   elem/0: (string, std::serde::Value)
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -12705,7 +12702,7 @@ fn inherent#Option#Option[T]#is_some__T_std::serde::Value(
 fn inherent#Ref#Ref[T]#set__T_Option[std::serde::Value](
   self/0: Ref[Option__std::serde::Value],
   value/0: Option__std::serde::Value
-) -> unit {
+) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -12778,7 +12775,7 @@ fn inherent#string#string#get(self/0: string, index/0: isize) -> char {
 fn inherent#Vec#Vec[T]#push__T_std::serde::ValueDeserializeFrame(
   self/0: Vec[std::serde::ValueDeserializeFrame],
   elem/0: std::serde::ValueDeserializeFrame
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -12796,7 +12793,7 @@ fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -12808,7 +12805,7 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/0: Ref[bool]) -> bool {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> unit {
+fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -12861,21 +12858,21 @@ fn inherent#Option#Option[T]#is_some__T_string(self/0: Option__string) -> bool {
 fn inherent#Vec#Vec[T]#push__T_std::serde::Value(
   self/0: Vec[std::serde::Value],
   elem/0: std::serde::Value
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[string](
   self/0: Ref[Option__string],
   value/0: Option__string
-) -> unit {
+) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::serde::ValueSerializeFrame(
   self/0: Vec[std::serde::ValueSerializeFrame],
   elem/0: std::serde::ValueSerializeFrame
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -13611,7 +13608,7 @@ fn inherent#string#string#decode_at(self/0: string, index/0: isize) -> Option__(
 fn inherent#Vec#Vec[T]#push__T_std::json::JsonDeserializeFrame(
   self/0: Vec[std::json::JsonDeserializeFrame],
   elem/0: std::json::JsonDeserializeFrame
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -13626,7 +13623,7 @@ fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
 fn inherent#Vec#Vec[T]#push__T_std::json::Value(
   self/0: Vec[std::json::Value],
   elem/0: std::json::Value
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -13637,7 +13634,7 @@ fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::j
 fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
   self/0: Vec[(string, std::json::Value)],
   elem/0: (string, std::json::Value)
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -13662,7 +13659,7 @@ fn inherent#Vec#Vec[T]#len__T_std::json::JsonSerializeFrame(
 fn inherent#Vec#Vec[T]#push__T_std::json::JsonSerializeFrame(
   self/0: Vec[std::json::JsonSerializeFrame],
   elem/0: std::json::JsonSerializeFrame
-) -> unit {
+) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -13702,15 +13699,15 @@ fn inherent#Vec#Vec[T]#len__T_std::json::Value(self/0: Vec[std::json::Value]) ->
   @intrinsic(vec.len)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
@@ -14038,7 +14035,7 @@ fn __goml_builtin_float64_to_float32(value/0: f64) -> f32 {
 fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueDeserializeFrame(
   self/0: Vec[std::serde::ValueDeserializeFrame],
   len/0: isize
-) -> unit {
+) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -14102,7 +14099,7 @@ fn string_get(value/0: string, index/0: isize) -> char {
 fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueSerializeFrame(
   self/0: Vec[std::serde::ValueSerializeFrame],
   len/0: isize
-) -> unit {
+) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -14220,7 +14217,7 @@ fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> unit {
+fn inherent#Vec#Vec[T]#push__T_string(self/0: Vec[string], elem/0: string) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -14352,7 +14349,7 @@ fn string_byte_slice(value/0: string, start/0: isize, end/0: isize) -> string {
 fn inherent#Vec#Vec[T]#truncate__T_std::json::JsonDeserializeFrame(
   self/0: Vec[std::json::JsonDeserializeFrame],
   len/0: isize
-) -> unit {
+) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -14370,7 +14367,7 @@ fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
 fn inherent#Vec#Vec[T]#truncate__T_std::json::JsonSerializeFrame(
   self/0: Vec[std::json::JsonSerializeFrame],
   len/0: isize
-) -> unit {
+) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -14799,7 +14796,7 @@ fn float_natural_copy(value/0: FloatNatural) -> FloatNatural {
   result/0
 }
 
-fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
+fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
   let _wild0 =
     if (factor/0 == 0) {
         let _wild1 = inherent#Vec#Vec[T]#clear__T_u0(FloatNatural.words(value/0)) in
@@ -15231,7 +15228,7 @@ fn inherent#FnIterator#FnIterator[T]#from_fn__T_char(
   FnIterator__char { next_fn: next_fn/0 }
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_string(self/0: Vec[string], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_string(self/0: Vec[string], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
@@ -15325,7 +15322,7 @@ fn float_digit(value/0: u8, base/0: isize) -> (bool, isize) {
   }
 }
 
-fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> unit {
+fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> () {
   let carry/0 = (addition/0 as u64) in
   let index/0 = 0 in
   while (carry/0 != 0) {
@@ -15373,11 +15370,11 @@ fn inherent#Vec#Vec[T]#len__T_u32(self/0: Vec[u32]) -> isize {
   @intrinsic(vec.len)(self/0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_u32(self/0: Vec[u32], elem/0: u32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u32(self/0: Vec[u32], elem/0: u32) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u32(self/0: Vec[u32]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_u32(self/0: Vec[u32]) -> () {
   inherent#Vec#Vec[T]#truncate__T_u0(self/0, 0)
 }
 
@@ -15841,11 +15838,11 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
   result/0
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u32(self/0: Vec[u32], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u32(self/0: Vec[u32], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
-fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> unit {
+fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> () {
   let base/0 = 4294967296 in
   let borrow/0 = 0 in
   let index/0 = 0 in
@@ -15916,7 +15913,7 @@ fn float_natural_divide_small(value/0: FloatNatural, divisor/0: u32) -> u32 {
   (remainder/0 as u32)
 }
 
-fn float_natural_trim(value/0: FloatNatural) -> unit {
+fn float_natural_trim(value/0: FloatNatural) -> () {
   while if (!inherent#Vec#Vec[T]#is_empty__T_u0(FloatNatural.words(value/0))) {
       (@intrinsic(vec.get)(
         FloatNatural.words(value/0),

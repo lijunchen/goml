@@ -329,21 +329,21 @@ type _goml_m_Result____string____std_p_io_p_Error_Err struct {
 
 func (_ _goml_m_Result____string____std_p_io_p_Error_Err) is_goml_m_Result____string____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error interface {
-    is_goml_m_Result____unit____std_p_io_p_Error()
+type _goml_m_Result_____o__q_____std_p_io_p_Error interface {
+    is_goml_m_Result_____o__q_____std_p_io_p_Error()
 }
 
-type _goml_m_Result____unit____std_p_io_p_Error_Ok struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Ok struct {
     _0 struct{}
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Ok) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Ok) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
-type _goml_m_Result____unit____std_p_io_p_Error_Err struct {
+type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
     _0 _goml_m_std_p_io_p_Error
 }
 
-func (_ _goml_m_Result____unit____std_p_io_p_Error_Err) is_goml_m_Result____unit____std_p_io_p_Error() {}
+func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _tag int32
@@ -351,7 +351,7 @@ type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
     _v1_0 string
 }
 
-type Result__unit__string struct {
+type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}
     _v1_0 string

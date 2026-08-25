@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let values/0 = @intrinsic(vec.from_array)([1, 2, 3, 4, 5]) in
   let view/0 = inherent#Vec#Vec[T]#slice_mut__T_isize(values/0, 1, 5) in
   let _wild0 =
@@ -65,7 +65,7 @@ fn inherent#Vec#Vec[T]#slice_mut__T_isize(
   @intrinsic(mut_slice.new)(self/0, start/0, end/0)
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
@@ -154,7 +154,7 @@ fn inherent#MutSlice#MutSlice[T]#sub_checked__T_isize(
   }
 }
 
-fn inherent#MutSlice#MutSlice[T]#fill__T_isize(self/0: MutSlice[isize], value/0: isize) -> unit {
+fn inherent#MutSlice#MutSlice[T]#fill__T_isize(self/0: MutSlice[isize], value/0: isize) -> () {
   let index/0 = 0 in
   while (index/0 < inherent#MutSlice#MutSlice[T]#len__T_isize(self/0)) {
       let _wild0 =
@@ -171,7 +171,7 @@ fn inherent#MutSlice#MutSlice[T]#fill__T_isize(self/0: MutSlice[isize], value/0:
   }
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
@@ -335,7 +335,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

@@ -4,13 +4,13 @@ impl[T] Size for Wrap[T] {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let a/1: Wrap[isize] = Wrap { value: 1 };
     let b/2: Wrap[string] = Wrap { value: "x" };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)((Size::size : (Wrap[isize]) -> i32)((a/1 : Wrap[isize])))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)((Size::size : (Wrap[string]) -> i32)((b/2 : Wrap[string])))
     );
 }

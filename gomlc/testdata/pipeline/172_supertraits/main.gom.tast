@@ -28,10 +28,10 @@ fn describe[T, B](value/3: B) -> string where
       (Child[T]::child : (B) -> string)((value/3 : B))
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)((describe : (Box[isize]) -> string)(Box { value: 5 }));
+fn main() -> () {
+    (println : (string) -> ())((describe : (Box[isize]) -> string)(Box { value: 5 }));
     let value/4: Box[i32] = Box { value: 6 };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)(
         (Parent[i32]::parent : (Box[i32]) -> i32)((value/4 : Box[i32]))
       )

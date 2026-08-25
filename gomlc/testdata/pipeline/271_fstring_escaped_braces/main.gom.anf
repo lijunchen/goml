@@ -1,13 +1,13 @@
-fn main() -> unit {
+fn main() -> () {
   let t0 = ("" + "{{") in
   let t1 = (t0 == "{{") in
-  join inline_cont0(_wild0: unit) -> unit {
+  join inline_cont0(_wild0: ()) -> () {
     let t2 = ("" + "}}") in
     let t3 = (t2 == "}}") in
-    join inline_cont1(_wild1: unit) -> unit {
+    join inline_cont1(_wild1: ()) -> () {
       let t4 = ("" + "{{") in
       let t5 = (t4 == "{{") in
-      join inline_cont2(_wild2: unit) -> unit {
+      join inline_cont2(_wild2: ()) -> () {
         let t6 = ("" + "}}") in
         let t7 = (t6 == "}}") in
         let inline0 = trait_impl#ToString#bool#to_string(t7) in
@@ -27,8 +27,8 @@ fn main() -> unit {
   jump inline_cont0(())
 }
 
-fn println__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

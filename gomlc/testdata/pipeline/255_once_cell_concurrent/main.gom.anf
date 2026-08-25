@@ -1,19 +1,19 @@
 static VALUE: OnceCell__isize = OnceCell::new();
 
-fn main() -> unit {
-  join inline_cont0(results/0: Channel[isize]) -> unit {
+fn main() -> () {
+  join inline_cont0(results/0: Channel[isize]) -> () {
     let t0 = closure_env_main_1 { results_0: results/0 } in
     let t1 = pack_closure[inherent#closure_env_main_1#closure_env_main_1#apply](t0) in
     let _wild0 = go t1 in
     let t2 = closure_env_main_3 { results_0: results/0 } in
     let t3 = pack_closure[inherent#closure_env_main_3#closure_env_main_3#apply](t2) in
     let _wild1 = go t3 in
-    join inline_cont1(t4: Option__isize) -> unit {
-      join inline_cont2(first/0: isize) -> unit {
-        join inline_cont3(t5: Option__isize) -> unit {
-          join inline_cont4(second/0: isize) -> unit {
+    join inline_cont1(t4: Option__isize) -> () {
+      join inline_cont2(first/0: isize) -> () {
+        join inline_cont3(t5: Option__isize) -> () {
+          join inline_cont4(second/0: isize) -> () {
             let t6 = (first/0 == second/0) in
-            join inline_cont5(t7: string) -> unit {
+            join inline_cont5(t7: string) -> () {
               let inline0 = trait_impl#ToString#string#to_string(t7) in
               let inline1 = @runtime(core.string_println)(inline0) in
               ()
@@ -81,7 +81,7 @@ fn inherent#OnceCell#OnceCell[T]#get_or_init__T_isize(
   t0
 }
 
-fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> unit {
+fn inherent#Channel#Channel[T]#send__T_isize(self/0: Channel[isize], value/0: isize) -> () {
   let t0 = @intrinsic(channel.send)(self/0, value/0) in
   ()
 }
@@ -110,8 +110,8 @@ fn inherent#Option#Option[T]#unwrap_or__T_isize(self/0: Option__isize, fallback/
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -131,11 +131,11 @@ fn inherent#closure_env_main_0#closure_env_main_0#apply(env0: closure_env_main_0
   41
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(env0: closure_env_main_1) -> unit {
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env0: closure_env_main_1) -> () {
   let results/0 = closure_env_main_1.results_0(env0) in
   let t0 = closure_env_main_0 {} in
   let t1 = pack_closure[inherent#closure_env_main_0#closure_env_main_0#apply](t0) in
-  join inline_cont0(t2: isize) -> unit {
+  join inline_cont0(t2: isize) -> () {
     let inline0 = @intrinsic(channel.send)(results/0, t2) in
     ()
   } in
@@ -147,11 +147,11 @@ fn inherent#closure_env_main_2#closure_env_main_2#apply(env0: closure_env_main_2
   42
 }
 
-fn inherent#closure_env_main_3#closure_env_main_3#apply(env0: closure_env_main_3) -> unit {
+fn inherent#closure_env_main_3#closure_env_main_3#apply(env0: closure_env_main_3) -> () {
   let results/0 = closure_env_main_3.results_0(env0) in
   let t0 = closure_env_main_2 {} in
   let t1 = pack_closure[inherent#closure_env_main_2#closure_env_main_2#apply](t0) in
-  join inline_cont0(t2: isize) -> unit {
+  join inline_cont0(t2: isize) -> () {
     let inline0 = @intrinsic(channel.send)(results/0, t2) in
     ()
   } in

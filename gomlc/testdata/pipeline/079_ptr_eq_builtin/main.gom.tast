@@ -1,14 +1,14 @@
-fn main() -> unit {
+fn main() -> () {
     let a/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(1);
     let b/1: Ref[isize] = (a/0 : Ref[isize]);
     let c/2: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(1);
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (@intrinsic(ref.ptr_eq) : (Ref[isize], Ref[isize]) -> bool)(
         (a/0 : Ref[isize]),
         (b/1 : Ref[isize])
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (@intrinsic(ref.ptr_eq) : (Ref[isize], Ref[isize]) -> bool)(
         (a/0 : Ref[isize]),
         (c/2 : Ref[isize])

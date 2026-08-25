@@ -1,9 +1,9 @@
-fn main() -> unit {
+fn main() -> () {
   let c/0 = 'A' in
-  join inline_cont0(t0: string) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
+  join inline_cont0(t0: string) -> () {
+    join inline_cont1(_wild0: ()) -> () {
       let d/0 = 'b' in
-      join k0(jp0: string) -> unit {
+      join k0(jp0: string) -> () {
         let inline0 = trait_impl#ToString#string#to_string(jp0) in
         let inline1 = @runtime(core.string_println)(inline0) in
         ()
@@ -28,8 +28,8 @@ fn main() -> unit {
   jump inline_cont0(inline4)
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

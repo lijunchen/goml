@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn print_selection(local/1/0: channel::Selection[isize]) -> unit {
+  fn print_selection(local/1/0: channel::Selection[isize]) -> () {
       match value/0 {
           channel::Selection::Received { index: local/1/1, value: local/1/2 } =>
             {
@@ -11,7 +11,7 @@ file main.gom
       }
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       let local/1/4: Channel[isize] = Channel::new(1);
       let local/1/5: Channel[isize] = Channel::new(1);
       first/4.send(10);

@@ -9,8 +9,8 @@ fn mk_renderer[T](x/1: T) -> () -> string where T: Display {
     || => (dyn Display::show : (dyn Display) -> string)((d/2 : dyn Display))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/3: i32 = 42;
     let f/4: () -> string = (mk_renderer : (i32) -> () -> string)((value/3 : i32));
-    (println : (string) -> unit)((f/4 : () -> string)());
+    (println : (string) -> ())((f/4 : () -> string)());
 }

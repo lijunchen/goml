@@ -26,11 +26,11 @@ fn show(res/2: Result[string, string]) -> string {
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (show : (Result[string, string]) -> string)((check : (bool) -> Result[string, string])(true))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Result[string, string]) -> string)((check : (bool) -> Result[string, string])(false))
     );
 }

@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn show_unit(local/1/0: Result[unit, string]) -> string {
+  fn show_unit(local/1/0: Result[(), string]) -> string {
       match result/0 {
           Result::Ok(_) => "ok",
           Result::Err(local/1/1) => "err " + err/1,
@@ -14,7 +14,7 @@ file main.gom
       }
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       io::println(string_byte_slice("a你好z", 1, 7));
       io::eprint("");
       io::eprintln("");

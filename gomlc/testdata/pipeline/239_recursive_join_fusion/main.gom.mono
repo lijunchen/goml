@@ -39,7 +39,7 @@ fn any(wanted/0: isize) -> bool {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = println__T_bool(any(3)) in
   let _wild1 = println__T_bool(any(8)) in
 }
@@ -52,11 +52,11 @@ fn inherent#Ref#Ref[T]#get__T_isize(self/0: Ref[isize]) -> isize {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> unit {
+fn inherent#Ref#Ref[T]#set__T_isize(self/0: Ref[isize], value/0: isize) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn println__T_bool(value/0: bool) -> unit {
+fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 

@@ -16,12 +16,12 @@ fn read_uint32(value/0: Ref[u32]) -> u32 {
   inline0
 }
 
-fn main() -> unit {
+fn main() -> () {
   let default_integer/0 = 40 in
   let default_float/0 = 0.5 in
   let small/0 = 41 in
   let inferred/0 = [small/0, 2] in
-  join k0(jp0: u8) -> unit {
+  join k0(jp0: u8) -> () {
     let values/0 = [10, 20] in
     let delayed/0 = inherent#Ref#Ref[T]#new__T_u0(0) in
     let byte/0 = inherent#string#string#byte_get("A", 0) in
@@ -31,29 +31,29 @@ fn main() -> unit {
     let t2 = trait_impl#ToString#f64#to_string(default_float/0) in
     let _wild1 = println__T_string(t2) in
     let t3 = increment(small/0) in
-    join inline_cont0(t4: string) -> unit {
-      join inline_cont1(_wild2: unit) -> unit {
+    join inline_cont0(t4: string) -> () {
+      join inline_cont1(_wild2: ()) -> () {
         let t5 = @intrinsic(array.get)(inferred/0, 1) in
-        join inline_cont2(t6: string) -> unit {
-          join inline_cont3(_wild3: unit) -> unit {
-            join inline_cont4(t7: string) -> unit {
-              join inline_cont5(_wild4: unit) -> unit {
+        join inline_cont2(t6: string) -> () {
+          join inline_cont3(_wild3: ()) -> () {
+            join inline_cont4(t7: string) -> () {
+              join inline_cont5(_wild4: ()) -> () {
                 let t8 = @intrinsic(array.get)(values/0, 1) in
-                join inline_cont6(t9: string) -> unit {
-                  join inline_cont7(_wild5: unit) -> unit {
-                    join inline_cont8(t10: f32) -> unit {
-                      join inline_cont9(t11: string) -> unit {
-                        join inline_cont10(_wild6: unit) -> unit {
-                          join inline_cont11(t12: i16) -> unit {
-                            join inline_cont12(t13: string) -> unit {
-                              join inline_cont13(_wild7: unit) -> unit {
-                                join inline_cont14(t14: u32) -> unit {
-                                  join inline_cont15(t15: string) -> unit {
-                                    join inline_cont16(_wild8: unit) -> unit {
+                join inline_cont6(t9: string) -> () {
+                  join inline_cont7(_wild5: ()) -> () {
+                    join inline_cont8(t10: f32) -> () {
+                      join inline_cont9(t11: string) -> () {
+                        join inline_cont10(_wild6: ()) -> () {
+                          join inline_cont11(t12: i16) -> () {
+                            join inline_cont12(t13: string) -> () {
+                              join inline_cont13(_wild7: ()) -> () {
+                                join inline_cont14(t14: u32) -> () {
+                                  join inline_cont15(t15: string) -> () {
+                                    join inline_cont16(_wild8: ()) -> () {
                                       let t16 = (byte/0 == 65) in
-                                      join inline_cont17(t17: string) -> unit {
-                                        join inline_cont18(_wild9: unit) -> unit {
-                                          join k1(jp1: string) -> unit {
+                                      join inline_cont17(t17: string) -> () {
+                                        join inline_cont18(_wild9: ()) -> () {
+                                          join k1(jp1: string) -> () {
                                             let inline0 =
                                               trait_impl#ToString#string#to_string(jp1) in
                                             let inline1 = @runtime(core.string_println)(inline0) in
@@ -149,8 +149,8 @@ fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
   t0
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -557,7 +557,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -589,7 +589,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -621,7 +621,7 @@ fn float_natural_from_u64(value/0: u64) -> FloatNatural {
     if t0 {
       let t1 = FloatNatural.words(result/0) in
       let t2 = (value/0 as u32) in
-      join inline_cont1(_wild0: unit) -> FloatNatural {
+      join inline_cont1(_wild0: ()) -> FloatNatural {
         let t3 = (value/0 >> 32) in
         let high/0 = (t3 as u32) in
         let t4 = (high/0 != 0) in
@@ -681,7 +681,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
                   let shifted/0 = (t9 | carry/0) in
                   let t10 = FloatNatural.words(result/0) in
                   let t11 = (shifted/0 as u32) in
-                  join inline_cont3(_wild1: unit) -> FloatNatural {
+                  join inline_cont3(_wild1: ()) -> FloatNatural {
                     let t12 = (shifted/0 >> 32) in
                     let _wild2 = carry/0 = t12 in
                     let compound_old0 = index/0 in
@@ -707,7 +707,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
             let t15 = (index/0 < word_shift/0) in
             if t15 {
               let t16 = FloatNatural.words(result/0) in
-              join inline_cont4(_wild3: unit) -> FloatNatural {
+              join inline_cont4(_wild3: ()) -> FloatNatural {
                 let compound_old1 = index/0 in
                 let compound_value1 = 1 in
                 let t17 = (compound_old1 + compound_value1) in
@@ -770,7 +770,7 @@ fn float_natural_decimal(value/0: FloatNatural) -> string {
                     let t5 = (t4 - offset/0) in
                     let t6 = (t5 - 1) in
                     let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                    join inline_cont4(_wild0: unit) -> string {
+                    join inline_cont4(_wild0: ()) -> string {
                       let compound_old0 = offset/0 in
                       let compound_value0 = 1 in
                       let t8 = (compound_old0 + compound_value0) in
@@ -853,7 +853,7 @@ fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
                     join inline_cont3(t5: isize) -> (string, bool) {
                       let t6 = (t5 + 1) in
                       let carried/0 = @intrinsic(vec.with_capacity)(t6) in
-                      join inline_cont4(_wild1: unit) -> (string, bool) {
+                      join inline_cont4(_wild1: ()) -> (string, bool) {
                         let _wild2 = index/1 = 0 in
                         join exit3() -> (string, bool) {
                           let mtmp0 = @runtime(core.string_from_utf8)(carried/0) in
@@ -867,7 +867,7 @@ fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
                               let t9 = (index/1 < t8) in
                               if t9 {
                                 let t10 = @intrinsic(vec.get)(output/0, index/1) in
-                                join inline_cont6(_wild3: unit) -> (string, bool) {
+                                join inline_cont6(_wild3: ()) -> (string, bool) {
                                   let compound_old0 = index/1 in
                                   let compound_value0 = 1 in
                                   let t11 = (compound_old0 + compound_value0) in
@@ -1013,7 +1013,7 @@ fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
       let t37 = (index/0 < count/0) in
       if t37 {
         join inline_cont10(t38: u8) -> (string, bool) {
-          join inline_cont11(_wild5: unit) -> (string, bool) {
+          join inline_cont11(_wild5: ()) -> (string, bool) {
             let compound_old3 = index/0 in
             let compound_value3 = 1 in
             let t39 = (compound_old3 + compound_value3) in
@@ -1083,8 +1083,8 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
       x0
     } in
     if t0 {
-      join inline_cont0(_wild0: unit) -> string {
-        join inline_cont1(_wild1: unit) -> string {
+      join inline_cont0(_wild0: ()) -> string {
+        join inline_cont1(_wild1: ()) -> string {
           let index/0 = 0 in
           join exit0() -> string {
             let _wild2 = index/0 = 0 in
@@ -1097,7 +1097,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
                   let t2 = (index/0 < t1) in
                   if t2 {
                     join inline_cont3(t3: u8) -> string {
-                      join inline_cont4(_wild3: unit) -> string {
+                      join inline_cont4(_wild3: ()) -> string {
                         let compound_old0 = index/0 in
                         let compound_value0 = 1 in
                         let t4 = (compound_old0 + compound_value0) in
@@ -1124,7 +1124,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
             join loop0() -> string {
               let t7 = (index/0 < t6) in
               if t7 {
-                join inline_cont5(_wild4: unit) -> string {
+                join inline_cont5(_wild4: ()) -> string {
                   let compound_old1 = index/0 in
                   let compound_value1 = 1 in
                   let t8 = (compound_old1 + compound_value1) in
@@ -1161,7 +1161,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
               join loop3() -> string {
                 let t12 = (index/1 < decimal_point/0) in
                 if t12 {
-                  join inline_cont7(_wild5: unit) -> string {
+                  join inline_cont7(_wild5: ()) -> string {
                     let compound_old2 = index/1 in
                     let compound_value2 = 1 in
                     let t13 = (compound_old2 + compound_value2) in
@@ -1184,7 +1184,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
                 let t16 = (index/1 < t15) in
                 if t16 {
                   join inline_cont9(t17: u8) -> string {
-                    join inline_cont10(_wild6: unit) -> string {
+                    join inline_cont10(_wild6: ()) -> string {
                       let compound_old3 = index/1 in
                       let compound_value3 = 1 in
                       let t18 = (compound_old3 + compound_value3) in
@@ -1208,7 +1208,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
         } else {
           let index/2 = 0 in
           join exit4() -> string {
-            join inline_cont11(_wild7: unit) -> string {
+            join inline_cont11(_wild7: ()) -> string {
               join exit5() -> string {
                 jump k1()
               } in
@@ -1218,7 +1218,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
                     let t21 = (index/2 < t20) in
                     if t21 {
                       join inline_cont13(t22: u8) -> string {
-                        join inline_cont14(_wild8: unit) -> string {
+                        join inline_cont14(_wild8: ()) -> string {
                           let compound_old4 = index/2 in
                           let compound_value4 = 1 in
                           let t23 = (compound_old4 + compound_value4) in
@@ -1249,7 +1249,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
               let t25 = (index/2 < decimal_point/0) in
               if t25 {
                 join inline_cont15(t26: u8) -> string {
-                  join inline_cont16(_wild9: unit) -> string {
+                  join inline_cont16(_wild9: ()) -> string {
                     let compound_old5 = index/2 in
                     let compound_value5 = 1 in
                     let t27 = (compound_old5 + compound_value5) in
@@ -1493,12 +1493,12 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
   }
 }
 
-fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
+fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
   let t0 = (factor/0 == 0) in
-  join k0() -> unit {
+  join k0() -> () {
     let carry/0 = 0 in
     let index/0 = 0 in
-    join exit0() -> unit {
+    join exit0() -> () {
       let t1 = (carry/0 != 0) in
       if t1 {
         let t2 = FloatNatural.words(value/0) in
@@ -1511,9 +1511,9 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
     } in
     let t4 = (factor/0 as u64) in
     joinrec {
-      join loop0() -> unit {
+      join loop0() -> () {
         let t5 = FloatNatural.words(value/0) in
-        join inline_cont0(t6: isize) -> unit {
+        join inline_cont0(t6: isize) -> () {
           let t7 = (index/0 < t6) in
           if t7 {
             let t8 = FloatNatural.words(value/0) in
@@ -1552,7 +1552,7 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -1568,7 +1568,7 @@ fn float_natural_zero() -> FloatNatural {
   t1
 }
 
-fn inherent#Vec#Vec[T]#push__T_u32(self/0: Vec[u32], elem/0: u32) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u32(self/0: Vec[u32], elem/0: u32) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -1595,7 +1595,7 @@ fn float_natural_copy(value/0: FloatNatural) -> FloatNatural {
             let t3 = FloatNatural.words(result/0) in
             let t4 = FloatNatural.words(value/0) in
             let t5 = @intrinsic(vec.get)(t4, index/0) in
-            join inline_cont2(_wild0: unit) -> FloatNatural {
+            join inline_cont2(_wild0: ()) -> FloatNatural {
               let compound_old0 = index/0 in
               let compound_value0 = 1 in
               let t6 = (compound_old0 + compound_value0) in
@@ -2489,7 +2489,7 @@ fn float_rational_bits(
   jump inline_cont0(inline1)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_u32(self/0: Vec[u32]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_u32(self/0: Vec[u32]) -> () {
   let inline0 = 0 in
   let inline1 = @intrinsic(vec.truncate)(self/0, inline0) in
   ()
@@ -2501,20 +2501,20 @@ fn inherent#Vec#Vec[T]#is_empty__T_u32(self/0: Vec[u32]) -> bool {
   t1
 }
 
-fn float_natural_trim(value/0: FloatNatural) -> unit {
-  join exit0() -> unit {
+fn float_natural_trim(value/0: FloatNatural) -> () {
+  join exit0() -> () {
     ()
   } in
   joinrec {
-    join loop0() -> unit {
+    join loop0() -> () {
       let t0 = FloatNatural.words(value/0) in
-      join inline_cont0(t1: bool) -> unit {
+      join inline_cont0(t1: bool) -> () {
         let t2 = (!t1) in
-        join k0(jp0: bool) -> unit {
+        join k0(jp0: bool) -> () {
           if jp0 {
             let t3 = FloatNatural.words(value/0) in
             let t4 = FloatNatural.words(value/0) in
-            join inline_cont1(t5: isize) -> unit {
+            join inline_cont1(t5: isize) -> () {
               let t6 = (t5 - 1) in
               let inline0 = @intrinsic(vec.truncate)(t3, t6) in
               jump loop0()
@@ -2528,7 +2528,7 @@ fn float_natural_trim(value/0: FloatNatural) -> unit {
         if t2 {
           let t7 = FloatNatural.words(value/0) in
           let t8 = FloatNatural.words(value/0) in
-          join inline_cont2(t9: isize) -> unit {
+          join inline_cont2(t9: isize) -> () {
             let t10 = (t9 - 1) in
             let t11 = @intrinsic(vec.get)(t7, t10) in
             let t12 = (t11 == 0) in
@@ -2762,20 +2762,20 @@ fn float_digit(value/0: u8, base/0: isize) -> (bool, isize) {
   }
 }
 
-fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> unit {
+fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> () {
   let carry/0 = (addition/0 as u64) in
   let index/0 = 0 in
-  join exit0() -> unit {
+  join exit0() -> () {
     ()
   } in
   joinrec {
-    join loop0() -> unit {
+    join loop0() -> () {
       let t0 = (carry/0 != 0) in
       if t0 {
         let t1 = FloatNatural.words(value/0) in
-        join inline_cont0(t2: isize) -> unit {
+        join inline_cont0(t2: isize) -> () {
           let t3 = (index/0 == t2) in
-          join k0() -> unit {
+          join k0() -> () {
             let t4 = FloatNatural.words(value/0) in
             let t5 = @intrinsic(vec.get)(t4, index/0) in
             let t6 = (t5 as u64) in
@@ -3060,7 +3060,7 @@ fn float_rational_quotient(
   }
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_u32(self/0: Vec[u32], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate__T_u32(self/0: Vec[u32], len/0: isize) -> () {
   let t0 = @intrinsic(vec.truncate)(self/0, len/0) in
   ()
 }
@@ -3101,30 +3101,30 @@ fn string_is_char_boundary(value/0: string, index/0: isize) -> bool {
   }
 }
 
-fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> unit {
+fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> () {
   let base/0 = 4294967296 in
   let borrow/0 = 0 in
   let index/0 = 0 in
-  join exit0() -> unit {
+  join exit0() -> () {
     let t0 = float_natural_trim(value/0) in
     ()
   } in
   joinrec {
-    join loop0() -> unit {
+    join loop0() -> () {
       let t1 = FloatNatural.words(value/0) in
-      join inline_cont0(t2: isize) -> unit {
+      join inline_cont0(t2: isize) -> () {
         let t3 = (index/0 < t2) in
         if t3 {
           let t4 = FloatNatural.words(other/0) in
-          join inline_cont1(t5: isize) -> unit {
+          join inline_cont1(t5: isize) -> () {
             let t6 = (index/0 < t5) in
-            join k0(jp0: u64) -> unit {
+            join k0(jp0: u64) -> () {
               let right/0 = (jp0 + borrow/0) in
               let t7 = FloatNatural.words(value/0) in
               let t8 = @intrinsic(vec.get)(t7, index/0) in
               let left/0 = (t8 as u64) in
               let t9 = (left/0 >= right/0) in
-              join k1() -> unit {
+              join k1() -> () {
                 let compound_old0 = index/0 in
                 let compound_value0 = 1 in
                 let t10 = (compound_old0 + compound_value0) in

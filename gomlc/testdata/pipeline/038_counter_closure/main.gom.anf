@@ -1,5 +1,5 @@
-fn make_counter() -> (() -> i32, () -> unit) {
-  join inline_cont0(cell/0: Ref[i32]) -> (() -> i32, () -> unit) {
+fn make_counter() -> (() -> i32, () -> ()) {
+  join inline_cont0(cell/0: Ref[i32]) -> (() -> i32, () -> ()) {
     let t0 = closure_env_next_0 { cell_0: cell/0 } in
     let next/0 = pack_closure[inherent#closure_env_next_0#closure_env_next_0#apply](t0) in
     let t1 = closure_env_reset_1 { cell_0: cell/0 } in
@@ -12,24 +12,24 @@ fn make_counter() -> (() -> i32, () -> unit) {
   jump inline_cont0(inline1)
 }
 
-fn main() -> unit {
-  join inline_cont0(counter/0: (() -> i32, () -> unit)) -> unit {
+fn main() -> () {
+  join inline_cont0(counter/0: (() -> i32, () -> ())) -> () {
     let x0 = counter/0.0 in
     let x1 = counter/0.1 in
     let first/0 = x0() in
     let second/0 = x0() in
     let mtmp0 = x1() in
     let third/0 = x0() in
-    join inline_cont1(new_counter/0: (() -> i32, () -> unit)) -> unit {
+    join inline_cont1(new_counter/0: (() -> i32, () -> ())) -> () {
       let x2 = new_counter/0.0 in
       let fourth/0 = x2() in
-      join inline_cont2(t0: string) -> unit {
-        join inline_cont3(mtmp1: unit) -> unit {
-          join inline_cont4(t1: string) -> unit {
-            join inline_cont5(mtmp2: unit) -> unit {
-              join inline_cont6(t2: string) -> unit {
-                join inline_cont7(mtmp3: unit) -> unit {
-                  join inline_cont8(t3: string) -> unit {
+      join inline_cont2(t0: string) -> () {
+        join inline_cont3(mtmp1: ()) -> () {
+          join inline_cont4(t1: string) -> () {
+            join inline_cont5(mtmp2: ()) -> () {
+              join inline_cont6(t2: string) -> () {
+                join inline_cont7(mtmp3: ()) -> () {
+                  join inline_cont8(t3: string) -> () {
                     let inline0 = trait_impl#ToString#string#to_string(t3) in
                     let inline1 = @runtime(core.string_println)(inline0) in
                     ()
@@ -85,13 +85,13 @@ fn inherent#Ref#Ref[T]#get__T_i32(self/0: Ref[i32]) -> i32 {
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_i32(self/0: Ref[i32], value/0: i32) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -162,7 +162,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -194,7 +194,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -217,7 +217,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }
@@ -248,7 +248,7 @@ fn inherent#closure_env_next_0#closure_env_next_0#apply(env0: closure_env_next_0
   jump inline_cont0(inline1)
 }
 
-fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env0: closure_env_reset_1) -> unit {
+fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env0: closure_env_reset_1) -> () {
   let cell/0 = closure_env_reset_1.cell_0(env0) in
   let inline0 = 0 in
   let inline1 = @intrinsic(ref.set)(cell/0, inline0) in

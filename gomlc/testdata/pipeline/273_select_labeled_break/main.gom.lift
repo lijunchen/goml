@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let keep/0 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let channel/0 = inherent#Channel#Channel[T]#new__T_isize(0) in
   let _wild0 =
@@ -31,7 +31,7 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/0: Ref[bool]) -> bool {
   @intrinsic(ref.get)(self/0)
 }
 
-fn println__T_isize(value/0: isize) -> unit {
+fn println__T_isize(value/0: isize) -> () {
   @runtime(core.string_println)(trait_impl#ToString#isize#to_string(value/0))
 }
 
@@ -94,7 +94,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

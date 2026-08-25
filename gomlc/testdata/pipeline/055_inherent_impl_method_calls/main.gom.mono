@@ -10,7 +10,7 @@ fn inherent#Shape#Shape#join(self/0: Shape, left/0: string, right/0: string) -> 
   ((left/0 + inherent#Shape#Shape#name(self/0)) + right/0)
 }
 
-fn announce(shape/0: Shape) -> unit {
+fn announce(shape/0: Shape) -> () {
   let base/0 = inherent#Shape#Shape#name(shape/0) in
   let with_suffix/0 = inherent#Shape#Shape#rename(shape/0, "!") in
   let combined/0 = inherent#Shape#Shape#join(shape/0, base/0, with_suffix/0) in
@@ -20,12 +20,12 @@ fn announce(shape/0: Shape) -> unit {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let shape/0 = Shape {} in
   let _wild0 = announce(shape/0) in
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

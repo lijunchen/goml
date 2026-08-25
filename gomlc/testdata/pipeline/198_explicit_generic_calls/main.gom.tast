@@ -2,7 +2,7 @@ fn identity[T](value/0: T) -> T {
     (value/0 : T)
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)((identity : (string) -> string)("direct"));
-    (println : (string) -> unit)((i32::to_string : (i32) -> string)((identity : (i32) -> i32)(42)))
+fn main() -> () {
+    (println : (string) -> ())((identity : (string) -> string)("direct"));
+    (println : (string) -> ())((i32::to_string : (i32) -> string)((identity : (i32) -> i32)(42)))
 }

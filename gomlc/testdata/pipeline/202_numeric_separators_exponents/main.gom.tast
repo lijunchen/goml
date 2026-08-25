@@ -1,18 +1,18 @@
-fn accepts_array_length(value/0: [i32; 10]) -> unit {
+fn accepts_array_length(value/0: [i32; 10]) -> () {
     let _ : [i32; 10] = (value/0 : [i32; 10]);
 }
 
-fn main() -> unit {
+fn main() -> () {
     let integer/1: i32 = 1000;
     let unsigned/2: u64 = 4294967296;
     let float/3: f64 = 125;
     let small/4: f32 = 2.5;
-    (println : (i32) -> unit)((integer/1 : i32));
-    (println : (u64) -> unit)((unsigned/2 : u64));
-    (println : (f64) -> unit)((float/3 : f64));
-    (println : (f32) -> unit)((small/4 : f32));
+    (println : (i32) -> ())((integer/1 : i32));
+    (println : (u64) -> ())((unsigned/2 : u64));
+    (println : (f64) -> ())((float/3 : f64));
+    (println : (f32) -> ())((small/4 : f32));
     match (integer/1 : i32) {
-        1000 => (println : (string) -> unit)("matched"),
-        _ : i32 => (println : (string) -> unit)("missed"),
+        1000 => (println : (string) -> ())("matched"),
+        _ : i32 => (println : (string) -> ())("missed"),
     }
 }

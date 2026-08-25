@@ -1,36 +1,36 @@
-fn main() -> unit {
+fn main() -> () {
     if true {
         {
-            (println : (string) -> unit)("if")
+            (println : (string) -> ())("if")
         }
     } else {
         {
-            (println : (string) -> unit)("else")
+            (println : (string) -> ())("else")
         }
     };
     match 1 {
-        1 => (println : (string) -> unit)("match"),
+        1 => (println : (string) -> ())("match"),
         _ : isize => (),
     };
     let index/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while (Ref[isize]::get : (Ref[isize]) -> isize)((index/0 : Ref[isize])) < 2 {
         {
-            (println : (string) -> unit)(
+            (println : (string) -> ())(
               (isize::to_string : (isize) -> string)(
                 (Ref[isize]::get : (Ref[isize]) -> isize)((index/0 : Ref[isize]))
               )
             );
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (index/0 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((index/0 : Ref[isize])) + 1
             )
         }
     };
     let values/1: Vec[string] = (Vec[string]::new : () -> Vec[string])();
-    (Vec[string]::push : (Vec[string], string) -> unit)((values/1 : Vec[string]), "for");
+    (Vec[string]::push : (Vec[string], string) -> ())((values/1 : Vec[string]), "for");
     for value/2: string in
       (values/1 : Vec[string]) {
-        (println : (string) -> unit)((value/2 : string))
+        (println : (string) -> ())((value/2 : string))
     };
-    (println : (string) -> unit)("done")
+    (println : (string) -> ())("done")
 }

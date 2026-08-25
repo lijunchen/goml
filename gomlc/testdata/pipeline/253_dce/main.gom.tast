@@ -1,10 +1,10 @@
 fn touch(counter/0: Ref[isize]) -> isize {
     let next/1: isize = (Ref[isize]::get : (Ref[isize]) -> isize)((counter/0 : Ref[isize])) + 1;
-    (Ref[isize]::set : (Ref[isize], isize) -> unit)((counter/0 : Ref[isize]), (next/1 : isize));
+    (Ref[isize]::set : (Ref[isize], isize) -> ())((counter/0 : Ref[isize]), (next/1 : isize));
     (next/1 : isize)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let dead/2: isize = 1;
     let dead_pair/3: (isize, isize) = ((dead/2 : isize), 2);
     let dead_if/4: isize =
@@ -27,5 +27,5 @@ fn main() -> unit {
     let ignored/9: isize = (touch : (Ref[isize]) -> isize)((counter/8 : Ref[isize]));
     let divisor/10: isize = 2;
     let quotient/11: isize = 8 / (divisor/10 : isize);
-    (println : (isize) -> unit)((Ref[isize]::get : (Ref[isize]) -> isize)((counter/8 : Ref[isize])))
+    (println : (isize) -> ())((Ref[isize]::get : (Ref[isize]) -> isize)((counter/8 : Ref[isize])))
 }

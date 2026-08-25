@@ -5,15 +5,15 @@ fn trait_impl#PartialEq#AlwaysDifferent#eq(
   false
 }
 
-fn main() -> unit {
-  join inline_cont0(t0: bool) -> unit {
-    join inline_cont1(_wild0: unit) -> unit {
-      join inline_cont2(t1: bool) -> unit {
+fn main() -> () {
+  join inline_cont0(t0: bool) -> () {
+    join inline_cont1(_wild0: ()) -> () {
+      join inline_cont2(t1: bool) -> () {
         let t2 = (!t1) in
-        join inline_cont3(_wild1: unit) -> unit {
-          join inline_cont4(t3: bool) -> unit {
-            join k0(jp0: bool) -> unit {
-              join inline_cont5(_wild2: unit) -> unit {
+        join inline_cont3(_wild1: ()) -> () {
+          join inline_cont4(t3: bool) -> () {
+            join k0(jp0: bool) -> () {
+              join inline_cont5(_wild2: ()) -> () {
                 let t4 = AlwaysDifferent { value: 1 } in
                 let t5 = AlwaysDifferent { value: 2 } in
                 let left_array/0 = [t4, t5] in
@@ -22,8 +22,8 @@ fn main() -> unit {
                 let right_array/0 = [t6, t7] in
                 let t8 = @intrinsic(array.get)(left_array/0, 0) in
                 let t9 = @intrinsic(array.get)(right_array/0, 0) in
-                join inline_cont6(t10: bool) -> unit {
-                  join k1(jp1: bool) -> unit {
+                join inline_cont6(t10: bool) -> () {
+                  join k1(jp1: bool) -> () {
                     let inline0 = trait_impl#ToString#bool#to_string(jp1) in
                     let inline1 = @runtime(core.string_println)(inline0) in
                     ()
@@ -66,8 +66,8 @@ fn main() -> unit {
   jump inline_cont0(false)
 }
 
-fn println__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

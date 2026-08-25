@@ -14,14 +14,14 @@ fn render(value/1: Boxed) -> string {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let one/5: i32 = 42;
     let left/6: i32 = 7;
     let right/7: i32 = 9;
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (render : (Boxed) -> string)(Boxed::One(to_dyn[Display]{i32}((one/5 : i32))))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (render : (Boxed) -> string)(
         Boxed::Pair(to_dyn[Display]{i32}((left/6 : i32)), to_dyn[Display]{i32}((right/7 : i32)))
       )

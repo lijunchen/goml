@@ -1,4 +1,4 @@
-fn test() -> unit {
+fn test() -> () {
   let y/0 = 3 in
   let z/0 = 5 in
   let f/0 = |x/0| ((x/0 * y/0) * z/0) in
@@ -12,7 +12,7 @@ fn call_int_id(f/0: (i32) -> i32, v/0: i32) -> i32 {
   f/0(v/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let base/0 = 5 in
   let add_base/0 = |x/0| (x/0 + base/0) in
   let result/0 = add_base/0(7) in
@@ -85,7 +85,7 @@ fn main() -> unit {
   }
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -172,7 +172,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

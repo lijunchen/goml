@@ -2,7 +2,7 @@ fn trait_impl#Source#Value#get(self/0: Value) -> i32 {
   Value.value(self/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let direct/0 = trait_impl#Pick#[i32]@Value#pick(Value { value: 41 }) in
   let _wild0 = println__T_i0(direct/0) in
   let _wild1 = println__T_i0(copy__S_Value(Value { value: 42 })) in
@@ -13,7 +13,7 @@ fn trait_impl#Pick#[i32]@Value#pick(self/0: Value) -> i32 {
   trait_impl#Source#Value#get(self/0)
 }
 
-fn println__T_i32(value/0: i32) -> unit {
+fn println__T_i32(value/0: i32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
@@ -85,7 +85,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

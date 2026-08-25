@@ -1,13 +1,13 @@
-fn main() -> unit {
+fn main() -> () {
     let a/0: (bool, bool) = (true, false);
-    let _ : unit =
+    let _ : () =
       match (a/0 : (bool, bool)) {
-          (true, b/1: bool) => (print : (bool) -> unit)((b/1 : bool)),
+          (true, b/1: bool) => (print : (bool) -> ())((b/1 : bool)),
           _ : (bool, bool) => (),
       };
     let c/2: (bool, bool) = (true, true);
     match (c/2 : (bool, bool)) {
-        (true, d/3: bool) => (print : (bool) -> unit)((d/3 : bool)),
+        (true, d/3: bool) => (print : (bool) -> ())((d/3 : bool)),
         _ : (bool, bool) => (),
     }
 }

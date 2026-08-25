@@ -17,7 +17,7 @@ fn render(x: dyn Display) -> string {
     Display::show(x)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value: i32 = 42;
     let holder: Holder[dyn Display] = Holder { value: value as dyn Display };
     println(render(holder.value));

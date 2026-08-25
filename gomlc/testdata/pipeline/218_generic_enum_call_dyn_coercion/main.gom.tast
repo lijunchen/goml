@@ -14,9 +14,9 @@ fn render(value/3: dyn Show) -> string {
     (dyn Show::show : (dyn Show) -> string)((value/3 : dyn Show))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/4: i32 = 42;
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (render : (dyn Show) -> string)(
         to_dyn[Show]{Boxed[i32]}((make_boxed : (i32) -> Boxed[i32])((value/4 : i32)))
       )

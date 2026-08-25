@@ -10,19 +10,19 @@ impl Display for Point {
   }
 }
 
-fn render(value/3: dyn Display) -> unit {
-    (println : (string) -> unit)(
+fn render(value/3: dyn Display) -> () {
+    (println : (string) -> ())(
       (dyn Display::show : (dyn Display, string) -> string)((value/3 : dyn Display), "value=")
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (dyn Display::name : (dyn Display) -> string)((value/3 : dyn Display))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (dyn Display::show : (dyn Display, string) -> string)((value/3 : dyn Display), "again=")
     );
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/4: dyn Display = to_dyn[Display]{Point}(Point { value: 7 });
-    (render : (dyn Display) -> unit)((value/4 : dyn Display));
+    (render : (dyn Display) -> ())((value/4 : dyn Display));
 }

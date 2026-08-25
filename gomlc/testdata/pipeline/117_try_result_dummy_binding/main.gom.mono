@@ -1,11 +1,11 @@
-fn configure(ok/0: bool) -> Result__unit__string {
+fn configure(ok/0: bool) -> Result__()__string {
   if ok/0 {
       {
-        Result__unit__string::Ok(())
+        Result__()__string::Ok(())
       }
   } else {
       {
-        Result__unit__string::Err("config failed")
+        Result__()__string::Err("config failed")
       }
   }
 }
@@ -31,18 +31,18 @@ fn configure_and_format(config_ok/0: bool, read_ok/0: bool) -> Result__string__s
     {
       let mtmp0 = configure(config_ok/0) in
       match mtmp0 {
-        Result__unit__string::Ok(x0) => {
+        Result__()__string::Ok(x0) => {
           {
-            let x0 = Result__unit__string::Ok._0(mtmp0) in
+            let x0 = Result__()__string::Ok._0(mtmp0) in
             {
               let try_value/0 = x0 in
               try_value/0
             }
           }
         },
-        Result__unit__string::Err(x1) => {
+        Result__()__string::Err(x1) => {
           {
-            let x1 = Result__unit__string::Err._0(mtmp0) in
+            let x1 = Result__()__string::Err._0(mtmp0) in
             {
               let try_residual/0 = x1 in
               return Result__string__string::Err(try_residual/0)
@@ -101,13 +101,13 @@ fn show(res/0: Result__string__string) -> string {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let _wild0 = println__T_string(show(configure_and_format(true, true))) in
   let _wild1 = println__T_string(show(configure_and_format(true, false))) in
   let _wild2 = println__T_string(show(configure_and_format(false, true))) in
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

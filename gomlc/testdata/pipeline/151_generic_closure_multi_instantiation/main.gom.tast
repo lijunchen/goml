@@ -2,9 +2,9 @@ fn make_pairer[T](x/0: T) -> (string) -> string where T: ToString {
     |tag/1: string| => (tag/1 : string) + ":" + (ToString::to_string : (T) -> string)((x/0 : T))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let int_pairer/2: (string) -> string = (make_pairer : (isize) -> (string) -> string)(7);
     let string_pairer/3: (string) -> string = (make_pairer : (string) -> (string) -> string)("ok");
-    (println : (string) -> unit)((int_pairer/2 : (string) -> string)("a"));
-    (println : (string) -> unit)((string_pairer/3 : (string) -> string)("b"));
+    (println : (string) -> ())((int_pairer/2 : (string) -> string)("a"));
+    (println : (string) -> ())((string_pairer/3 : (string) -> string)("b"));
 }

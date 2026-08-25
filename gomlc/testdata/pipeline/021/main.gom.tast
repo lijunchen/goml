@@ -29,34 +29,28 @@ fn repeated(n/3: i32) -> i32 {
     }
 }
 
-fn main() -> unit {
-    let _ : unit =
-      (println : (string) -> unit)(
-        (i32::to_string : (i32) -> string)((match_int : (i32) -> i32)(0))
-      );
-    let _ : unit =
-      (println : (string) -> unit)(
-        (i32::to_string : (i32) -> string)((match_int : (i32) -> i32)(5))
-      );
-    let _ : unit =
-      (println : (string) -> unit)(
+fn main() -> () {
+    let _ : () =
+      (println : (string) -> ())((i32::to_string : (i32) -> string)((match_int : (i32) -> i32)(0)));
+    let _ : () =
+      (println : (string) -> ())((i32::to_string : (i32) -> string)((match_int : (i32) -> i32)(5)));
+    let _ : () =
+      (println : (string) -> ())(
         (i32::to_string : (i32) -> string)((wildcard_first : (i32) -> i32)(0))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (i32::to_string : (i32) -> string)((wildcard_first : (i32) -> i32)(2))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (i32::to_string : (i32) -> string)((wildcard_middle : (i32) -> i32)(2))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
+    let _ : () =
+      (println : (string) -> ())(
         (i32::to_string : (i32) -> string)((wildcard_middle : (i32) -> i32)(3))
       );
-    let _ : unit =
-      (println : (string) -> unit)(
-        (i32::to_string : (i32) -> string)((repeated : (i32) -> i32)(1))
-      );
-    (println : (string) -> unit)((i32::to_string : (i32) -> string)((repeated : (i32) -> i32)(3)))
+    let _ : () =
+      (println : (string) -> ())((i32::to_string : (i32) -> string)((repeated : (i32) -> i32)(1)));
+    (println : (string) -> ())((i32::to_string : (i32) -> string)((repeated : (i32) -> i32)(3)))
 }

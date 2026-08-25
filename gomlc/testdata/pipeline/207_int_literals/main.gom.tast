@@ -14,7 +14,7 @@ fn read_uint32(value/1: Ref[u32]) -> u32 {
     (Ref[u32]::get : (Ref[u32]) -> u32)((value/1 : Ref[u32]))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let default_integer/2: isize = 40;
     let default_float/3: f64 = 0.5;
     let small/4: u8 = 41;
@@ -32,31 +32,29 @@ fn main() -> unit {
     let values/7: [u16; 2] = [10, 20];
     let delayed/8: Ref[u32] = (Ref[u32]::new : (u32) -> Ref[u32])(0);
     let byte/9: u8 = (string::byte_get : (string, isize) -> u8)("A", 0);
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)((default_integer/2 : isize) + 2)
     );
-    (println : (string) -> unit)((ToString::to_string : (f64) -> string)((default_float/3 : f64)));
-    (println : (string) -> unit)(
+    (println : (string) -> ())((ToString::to_string : (f64) -> string)((default_float/3 : f64)));
+    (println : (string) -> ())(
       (ToString::to_string : (u8) -> string)((increment : (u8) -> u8)((small/4 : u8)))
     );
-    (println : (string) -> unit)((ToString::to_string : (u8) -> string)((inferred/5 : [u8; 2])[1]));
-    (println : (string) -> unit)((ToString::to_string : (u8) -> string)((branch/6 : u8)));
-    (println : (string) -> unit)((ToString::to_string : (u16) -> string)((values/7 : [u16; 2])[1]));
-    (println : (string) -> unit)(
+    (println : (string) -> ())((ToString::to_string : (u8) -> string)((inferred/5 : [u8; 2])[1]));
+    (println : (string) -> ())((ToString::to_string : (u8) -> string)((branch/6 : u8)));
+    (println : (string) -> ())((ToString::to_string : (u16) -> string)((values/7 : [u16; 2])[1]));
+    (println : (string) -> ())(
       (ToString::to_string : (f32) -> string)((one_float32 : () -> f32)())
     );
-    (println : (string) -> unit)(
-      (ToString::to_string : (i16) -> string)((two_int16 : () -> i16)())
-    );
-    (println : (string) -> unit)(
+    (println : (string) -> ())((ToString::to_string : (i16) -> string)((two_int16 : () -> i16)()));
+    (println : (string) -> ())(
       (ToString::to_string : (u32) -> string)(
         (read_uint32 : (Ref[u32]) -> u32)((delayed/8 : Ref[u32]))
       )
     );
-    (println : (string) -> unit)((ToString::to_string : (bool) -> string)((byte/9 : u8) == 65));
+    (println : (string) -> ())((ToString::to_string : (bool) -> string)((byte/9 : u8) == 65));
     (println : (
       string
-    ) -> unit)(
+    ) -> ())(
       match (byte/9 : u8) {
           65 => "byte",
           _ : u8 => "other",

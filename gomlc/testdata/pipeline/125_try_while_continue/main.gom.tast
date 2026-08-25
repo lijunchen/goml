@@ -16,7 +16,7 @@ fn accumulate(limit/1: i32) -> Option[i32] {
     while (Ref[i32]::get : (Ref[i32]) -> i32)((i/3 : Ref[i32])) < (limit/1 : i32) {
         {
             let cur/4: i32 = (Ref[i32]::get : (Ref[i32]) -> i32)((i/3 : Ref[i32]));
-            (Ref[i32]::set : (Ref[i32], i32) -> unit)((i/3 : Ref[i32]), (cur/4 : i32) + 1);
+            (Ref[i32]::set : (Ref[i32], i32) -> ())((i/3 : Ref[i32]), (cur/4 : i32) + 1);
             if (cur/4 : i32) == 1 {
                 {
                     continue
@@ -29,7 +29,7 @@ fn accumulate(limit/1: i32) -> Option[i32] {
                   Option::Some(try_value/42: i32) => (try_value/42 : i32),
                   Option::None => return Option::None,
               };
-            (Ref[i32]::set : (Ref[i32], i32) -> unit)(
+            (Ref[i32]::set : (Ref[i32], i32) -> ())(
               (sum/2 : Ref[i32]),
               (Ref[i32]::get : (Ref[i32]) -> i32)((sum/2 : Ref[i32])) + (value/5 : i32)
             );
@@ -45,11 +45,11 @@ fn show(opt/6: Option[i32]) -> string {
     }
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)(
+fn main() -> () {
+    (println : (string) -> ())(
       (show : (Option[i32]) -> string)((accumulate : (i32) -> Option[i32])(2))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (show : (Option[i32]) -> string)((accumulate : (i32) -> Option[i32])(4))
     );
 }

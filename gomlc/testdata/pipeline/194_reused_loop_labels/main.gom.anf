@@ -1,26 +1,26 @@
-fn main() -> unit {
-  join inline_cont0(running/0: Ref[bool]) -> unit {
-    join exit0() -> unit {
+fn main() -> () {
+  join inline_cont0(running/0: Ref[bool]) -> () {
+    join exit0() -> () {
       let inline0 = "ok" in
       let inline1 = trait_impl#ToString#string#to_string(inline0) in
       let inline2 = @runtime(core.string_println)(inline1) in
       ()
     } in
     joinrec {
-      join loop0() -> unit {
-        join inline_cont1(t0: bool) -> unit {
+      join loop0() -> () {
+        join inline_cont1(t0: bool) -> () {
           if t0 {
             let event/0 = Tag_0 in
-            join k0() -> unit {
-              join inline_cont2(scanning/0: Ref[bool]) -> unit {
-                join exit1() -> unit {
+            join k0() -> () {
+              join inline_cont2(scanning/0: Ref[bool]) -> () {
+                join exit1() -> () {
                   let inline3 = false in
                   let inline4 = @intrinsic(ref.set)(running/0, inline3) in
                   jump loop0()
                 } in
                 joinrec {
-                  join loop1() -> unit {
-                    join inline_cont3(t1: bool) -> unit {
+                  join loop1() -> () {
+                    join inline_cont3(t1: bool) -> () {
                       if t1 {
                         jump loop1()
                       } else {
@@ -39,13 +39,13 @@ fn main() -> unit {
             } in
             match event/0 {
               Tag_0 => {
-                join inline_cont4(scanning/1: Ref[bool]) -> unit {
-                  join exit2() -> unit {
+                join inline_cont4(scanning/1: Ref[bool]) -> () {
+                  join exit2() -> () {
                     jump k0()
                   } in
                   joinrec {
-                    join loop2() -> unit {
-                      join inline_cont5(t2: bool) -> unit {
+                    join loop2() -> () {
+                      join inline_cont5(t2: bool) -> () {
                         if t2 {
                           jump loop2()
                         } else {
@@ -97,13 +97,13 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/0: Ref[bool]) -> bool {
   t0
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> unit {
+fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> () {
   let t0 = @intrinsic(ref.set)(self/0, value/0) in
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

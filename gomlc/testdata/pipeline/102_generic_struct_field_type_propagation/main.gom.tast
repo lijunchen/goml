@@ -1,9 +1,7 @@
-fn main() -> unit {
+fn main() -> () {
     let p/0: Pair[u8, f32] = Pair { first: 10, second: 3.14 };
-    (println : (string) -> unit)(
-      (ToString::to_string : (u8) -> string)((p/0 : Pair[u8, f32]).first)
-    );
-    (println : (string) -> unit)(
+    (println : (string) -> ())((ToString::to_string : (u8) -> string)((p/0 : Pair[u8, f32]).first));
+    (println : (string) -> ())(
       (ToString::to_string : (f32) -> string)((p/0 : Pair[u8, f32]).second)
     );
 }

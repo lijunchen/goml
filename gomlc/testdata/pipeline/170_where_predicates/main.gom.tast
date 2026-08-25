@@ -25,13 +25,13 @@ fn require[T](value/4: T) -> string where T: Selected {
     (Selected::selected : (T) -> string)((value/4 : T))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values/5: Vec[i32] = (@intrinsic(vec.new) : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/5 : Vec[i32]), 1);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/5 : Vec[i32]), 2);
-    (println : (string) -> unit)((render_all : (Vec[i32]) -> string)((values/5 : Vec[i32])));
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/5 : Vec[i32]), 1);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/5 : Vec[i32]), 2);
+    (println : (string) -> ())((render_all : (Vec[i32]) -> string)((values/5 : Vec[i32])));
     let text/6: string = (same : (string) -> string)("equal");
-    (println : (string) -> unit)((text/6 : string));
+    (println : (string) -> ())((text/6 : string));
     let selected/7: Wrap[i32] = Wrap { value: 7 };
-    (println : (string) -> unit)((require : (Wrap[i32]) -> string)((selected/7 : Wrap[i32])));
+    (println : (string) -> ())((require : (Wrap[i32]) -> string)((selected/7 : Wrap[i32])));
 }

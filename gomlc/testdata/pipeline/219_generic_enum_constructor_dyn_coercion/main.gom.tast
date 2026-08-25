@@ -10,9 +10,9 @@ fn render(value/2: dyn Show) -> string {
     (dyn Show::show : (dyn Show) -> string)((value/2 : dyn Show))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/3: i32 = 42;
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (render : (dyn Show) -> string)(to_dyn[Show]{Boxed[i32]}(Boxed::One((value/3 : i32))))
     )
 }

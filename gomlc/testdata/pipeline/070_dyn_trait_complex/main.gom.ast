@@ -15,7 +15,7 @@ struct Counter {
 trait Display {
   fn show(self: Self) -> string;
   fn show_with(self: Self, arg1: string, arg2: string) -> string;
-  fn tick(self: Self) -> unit;
+  fn tick(self: Self) -> ();
   fn bump(self: Self, arg1: i32) -> i32;
 }
 
@@ -26,7 +26,7 @@ impl Display for Point {
   fn show_with(self: Point, prefix: string, suffix: string) -> string {
       prefix + "Point(" + self.x.to_string() + "," + self.y.to_string() + ")" + suffix
   }
-  fn tick(self: Point) -> unit {}
+  fn tick(self: Point) -> () {}
   fn bump(self: Point, delta: i32) -> i32 {
       self.x + self.y + delta
   }
@@ -55,7 +55,7 @@ impl Display for Flag {
           }
       }
   }
-  fn tick(self: Flag) -> unit {}
+  fn tick(self: Flag) -> () {}
   fn bump(self: Flag, delta: i32) -> i32 {
       if self.value {
           {
@@ -76,7 +76,7 @@ impl Display for Counter {
   fn show_with(self: Counter, prefix: string, suffix: string) -> string {
       prefix + "Counter(" + self.cell.get().to_string() + ")" + suffix
   }
-  fn tick(self: Counter) -> unit {
+  fn tick(self: Counter) -> () {
       let next = self.cell.get() + 1;
       let _ = self.cell.set(next);
   }
@@ -106,7 +106,7 @@ fn bump_and_show(x: dyn Display, delta: i32) -> string {
     Display::show_with(x, "[", "]") + ":" + Display::bump(x, delta).to_string()
 }
 
-fn main() -> unit {
+fn main() -> () {
     let p1 = Point { x: 1, y: 2 };
     let p2 = Point { x: 3, y: 4 };
     let f1 = Flag { value: true };

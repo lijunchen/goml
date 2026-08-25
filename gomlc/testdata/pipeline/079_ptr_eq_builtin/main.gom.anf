@@ -1,8 +1,8 @@
-fn main() -> unit {
-  join inline_cont0(a/0: Ref[isize]) -> unit {
-    join inline_cont1(c/0: Ref[isize]) -> unit {
+fn main() -> () {
+  join inline_cont0(a/0: Ref[isize]) -> () {
+    join inline_cont1(c/0: Ref[isize]) -> () {
       let t0 = @intrinsic(ref.ptr_eq)(a/0, a/0) in
-      join inline_cont2(_wild0: unit) -> unit {
+      join inline_cont2(_wild0: ()) -> () {
         let t1 = @intrinsic(ref.ptr_eq)(a/0, c/0) in
         let inline0 = trait_impl#ToString#bool#to_string(t1) in
         let inline1 = @runtime(core.string_println)(inline0) in
@@ -26,8 +26,8 @@ fn inherent#Ref#Ref[T]#new__T_isize(value/0: isize) -> Ref[isize] {
   t0
 }
 
-fn println__T_bool(value/0: bool) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_bool(value/0: bool) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in

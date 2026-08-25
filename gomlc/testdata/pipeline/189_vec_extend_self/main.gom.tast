@@ -1,25 +1,25 @@
-fn print_values(values/0: Vec[i32]) -> unit {
-    (println : (isize) -> unit)((Vec[i32]::len : (Vec[i32]) -> isize)((values/0 : Vec[i32])));
+fn print_values(values/0: Vec[i32]) -> () {
+    (println : (isize) -> ())((Vec[i32]::len : (Vec[i32]) -> isize)((values/0 : Vec[i32])));
     for value/1: i32 in
       (values/0 : Vec[i32]) {
-        (println : (i32) -> unit)((value/1 : i32))
+        (println : (i32) -> ())((value/1 : i32))
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values/2: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/2 : Vec[i32]), 1);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/2 : Vec[i32]), 2);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((values/2 : Vec[i32]), 3);
-    (Vec[i32]::extend : (Vec[i32], Vec[i32]) -> unit)((values/2 : Vec[i32]), (values/2 : Vec[i32]));
-    (print_values : (Vec[i32]) -> unit)((values/2 : Vec[i32]));
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/2 : Vec[i32]), 1);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/2 : Vec[i32]), 2);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((values/2 : Vec[i32]), 3);
+    (Vec[i32]::extend : (Vec[i32], Vec[i32]) -> ())((values/2 : Vec[i32]), (values/2 : Vec[i32]));
+    (print_values : (Vec[i32]) -> ())((values/2 : Vec[i32]));
     let aliased/3: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((aliased/3 : Vec[i32]), 4);
-    (Vec[i32]::push : (Vec[i32], i32) -> unit)((aliased/3 : Vec[i32]), 5);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((aliased/3 : Vec[i32]), 4);
+    (Vec[i32]::push : (Vec[i32], i32) -> ())((aliased/3 : Vec[i32]), 5);
     let same/4: Vec[i32] = (aliased/3 : Vec[i32]);
-    (Vec[i32]::extend : (Vec[i32], Vec[i32]) -> unit)((aliased/3 : Vec[i32]), (same/4 : Vec[i32]));
-    (print_values : (Vec[i32]) -> unit)((aliased/3 : Vec[i32]));
+    (Vec[i32]::extend : (Vec[i32], Vec[i32]) -> ())((aliased/3 : Vec[i32]), (same/4 : Vec[i32]));
+    (print_values : (Vec[i32]) -> ())((aliased/3 : Vec[i32]));
     let empty/5: Vec[i32] = (Vec[i32]::new : () -> Vec[i32])();
-    (Vec[i32]::extend : (Vec[i32], Vec[i32]) -> unit)((empty/5 : Vec[i32]), (empty/5 : Vec[i32]));
-    (print_values : (Vec[i32]) -> unit)((empty/5 : Vec[i32]))
+    (Vec[i32]::extend : (Vec[i32], Vec[i32]) -> ())((empty/5 : Vec[i32]), (empty/5 : Vec[i32]));
+    (print_values : (Vec[i32]) -> ())((empty/5 : Vec[i32]))
 }

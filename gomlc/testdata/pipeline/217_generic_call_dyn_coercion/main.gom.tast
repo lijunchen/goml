@@ -12,9 +12,9 @@ fn render(value/2: dyn Show) -> string {
     (dyn Show::show : (dyn Show) -> string)((value/2 : dyn Show))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/3: i32 = 42;
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (render : (dyn Show) -> string)(
         to_dyn[Show]{Wrap[i32]}((make_wrap : (i32) -> Wrap[i32])((value/3 : i32)))
       )

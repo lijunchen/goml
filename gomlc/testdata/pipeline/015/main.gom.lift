@@ -1,4 +1,4 @@
-fn print_int_list(xs/0: IntList) -> unit {
+fn print_int_list(xs/0: IntList) -> () {
   match xs/0 {
     IntList::Nil => {
       println__T_string("Nil")
@@ -51,13 +51,13 @@ fn int_list_length(xs/0: IntList) -> i32 {
   }
 }
 
-fn print_int_list_length(xs/0: IntList) -> unit {
+fn print_int_list_length(xs/0: IntList) -> () {
   let mtmp0 = println__T_string("Length: ") in
   let mtmp1 = println__T_string(inherent#i32#i32#to_string(int_list_length(xs/0))) in
   ()
 }
 
-fn main() -> unit {
+fn main() -> () {
   let x/0 = IntList::Nil in
   let mtmp0 = print_int_list(x/0) in
   let mtmp1 = println__T_string("") in
@@ -76,7 +76,7 @@ fn main() -> unit {
   ()
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 
@@ -143,7 +143,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

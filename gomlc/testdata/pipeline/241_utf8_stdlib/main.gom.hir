@@ -1,6 +1,6 @@
 package main
 file main.gom
-  fn check_utf8(local/1/0: Vec[byte], local/1/1: bool) -> unit {
+  fn check_utf8(local/1/0: Vec[byte], local/1/1: bool) -> () {
       let local/1/2 = bytes/0.len();
       let (local/1/3, local/1/4) = string_from_utf8(bytes/0);
       println(valid/3 == expected/1);
@@ -11,7 +11,7 @@ file main.gom
       }
   }
 
-  fn check_scalar(local/1/5: Vec[byte], local/1/6: u32, local/1/7: isize) -> unit {
+  fn check_scalar(local/1/5: Vec[byte], local/1/6: u32, local/1/7: isize) -> () {
       let (local/1/8, local/1/9) = string_from_utf8(bytes/5);
       println(valid/8);
       match value/9.decode_at(0) {
@@ -29,7 +29,7 @@ file main.gom
       }
   }
 
-  fn main() -> unit {
+  fn main() -> () {
       def/1/0(Vec::new(), true);
       def/1/0(Vec::from_array([0]), true);
       def/1/0(Vec::from_array([127]), true);

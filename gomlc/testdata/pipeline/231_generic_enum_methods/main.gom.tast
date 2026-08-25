@@ -7,13 +7,13 @@ impl[T] Maybe[T] {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/3: Maybe[isize] = Maybe::Some(3);
     match (Maybe[isize]::map : (Maybe[isize], (isize) -> string) -> Maybe[string])(
       (value/3 : Maybe[isize]),
       |item/4: isize| => (isize::to_string : (isize) -> string)((item/4 : isize))
     ) {
-        Maybe::Some(text/5: string) => (println : (string) -> unit)((text/5 : string)),
-        Maybe::None => (println : (string) -> unit)("none"),
+        Maybe::Some(text/5: string) => (println : (string) -> ())((text/5 : string)),
+        Maybe::None => (println : (string) -> ())("none"),
     }
 }

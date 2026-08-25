@@ -11,7 +11,7 @@ fn int_list_length(xs/0: List__i32) -> i32 {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
   let x/0 = List__isize::Cons(1, List__isize::Nil) in
   let length/0 = list_length__T_isize(x/0) in
   let mtmp0 = println__T_i0(length/0) in
@@ -21,11 +21,11 @@ fn main() -> unit {
   let x/2 = List__i32::Cons(0, List__i32::Cons(1, List__i32::Cons(2, List__i32::Nil))) in
   let length/2 = int_list_length(x/2) in
   let mtmp2 = println__T_i0(length/2) in
-  let x/3 = List__unit::Cons((), List__unit::Nil) in
-  let length/3 = list_length__T_unit(x/3) in
+  let x/3 = List__()::Cons((), List__()::Nil) in
+  let length/3 = list_length__T_()(x/3) in
   let mtmp3 = println__T_i0(length/3) in
-  let x/4 = List__unit::Cons((), List__unit::Cons((), List__unit::Nil)) in
-  let length/4 = list_length__T_unit(x/4) in
+  let x/4 = List__()::Cons((), List__()::Cons((), List__()::Nil)) in
+  let length/4 = list_length__T_()(x/4) in
   let mtmp4 = println__T_i0(length/4) in
   let x/5 = List__bool::Cons(true, List__bool::Cons(false, List__bool::Nil)) in
   let length/5 = list_length__T_bool(x/5) in
@@ -46,19 +46,19 @@ fn list_length__T_isize(xs/0: List__isize) -> i32 {
   }
 }
 
-fn println__T_i32(value/0: i32) -> unit {
+fn println__T_i32(value/0: i32) -> () {
   @runtime(core.string_println)(trait_impl#ToString#i32#to_string(value/0))
 }
 
-fn list_length__T_unit(xs/0: List__unit) -> i32 {
+fn list_length__T_()(xs/0: List__()) -> i32 {
   match xs/0 {
-    List__unit::Nil => {
+    List__()::Nil => {
       0
     },
-    List__unit::Cons(x0, x1) => {
-      let x1 = List__unit::Cons._1(xs/0) in
+    List__()::Cons(x0, x1) => {
+      let x1 = List__()::Cons._1(xs/0) in
       let tail/0 = x1 in
-      (1 + list_length__T_unit(tail/0))
+      (1 + list_length__T_()(tail/0))
     },
   }
 }
@@ -135,7 +135,7 @@ fn decimal_string(value/0: u64) -> string {
   result/0
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 

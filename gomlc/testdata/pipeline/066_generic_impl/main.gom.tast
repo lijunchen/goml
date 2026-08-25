@@ -10,7 +10,7 @@ impl[U, V] Point[U, V] {
   }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let p1/4: Point[i32, string] = (Point::new : (i32, string) -> Point[i32, string])(10, "hello");
     let p2/5: Point[string, string] =
       (Point::new : (string, string) -> Point[string, string])("goml", "lang");
@@ -19,10 +19,10 @@ fn main() -> unit {
         (p1/4 : Point[i32, string])
       );
     let x/7: i32 = (p3/6 : Point[string, i32]).y;
-    (println : (string) -> unit)((i32::to_string : (i32) -> string)((x/7 : i32)));
+    (println : (string) -> ())((i32::to_string : (i32) -> string)((x/7 : i32)));
     let x2/8: string =
       (Point[string, string]::get_x : (Point[string, string]) -> string)(
         (p2/5 : Point[string, string])
       );
-    (println : (string) -> unit)((x2/8 : string))
+    (println : (string) -> ())((x2/8 : string))
 }

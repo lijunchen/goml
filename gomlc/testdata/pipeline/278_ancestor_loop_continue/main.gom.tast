@@ -1,7 +1,7 @@
 fn grandparent_continue() -> isize {
     let rounds/0: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     loop {
-        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+        (Ref[isize]::set : (Ref[isize], isize) -> ())(
           (rounds/0 : Ref[isize]),
           (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/0 : Ref[isize])) + 1
         );
@@ -33,13 +33,13 @@ fn mixed_self_local_and_ancestor() -> isize {
     let rounds/1: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     let steps/2: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     loop {
-        (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+        (Ref[isize]::set : (Ref[isize], isize) -> ())(
           (rounds/1 : Ref[isize]),
           (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/1 : Ref[isize])) + 1
         );
-        (Ref[isize]::set : (Ref[isize], isize) -> unit)((steps/2 : Ref[isize]), 0);
+        (Ref[isize]::set : (Ref[isize], isize) -> ())((steps/2 : Ref[isize]), 0);
         loop {
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (steps/2 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((steps/2 : Ref[isize])) + 1
             );
@@ -69,7 +69,7 @@ fn grandparent_while_continue() -> isize {
     let rounds/3: Ref[isize] = (Ref[isize]::new : (isize) -> Ref[isize])(0);
     while (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/3 : Ref[isize])) < 3 {
         {
-            (Ref[isize]::set : (Ref[isize], isize) -> unit)(
+            (Ref[isize]::set : (Ref[isize], isize) -> ())(
               (rounds/3 : Ref[isize]),
               (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/3 : Ref[isize])) + 1
             );
@@ -83,8 +83,8 @@ fn grandparent_while_continue() -> isize {
     (Ref[isize]::get : (Ref[isize]) -> isize)((rounds/3 : Ref[isize]))
 }
 
-fn main() -> unit {
-    (println : (isize) -> unit)((grandparent_continue : () -> isize)());
-    (println : (isize) -> unit)((mixed_self_local_and_ancestor : () -> isize)());
-    (println : (isize) -> unit)((grandparent_while_continue : () -> isize)())
+fn main() -> () {
+    (println : (isize) -> ())((grandparent_continue : () -> isize)());
+    (println : (isize) -> ())((mixed_self_local_and_ancestor : () -> isize)());
+    (println : (isize) -> ())((grandparent_while_continue : () -> isize)())
 }

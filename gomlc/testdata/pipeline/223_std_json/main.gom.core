@@ -55,7 +55,7 @@ fn float_natural_copy(value/0: FloatNatural) -> FloatNatural {
   result/0
 }
 
-fn float_natural_trim(value/0: FloatNatural) -> unit {
+fn float_natural_trim(value/0: FloatNatural) -> () {
   while if (!inherent#Vec#Vec[u32]#is_empty(FloatNatural.words(value/0))) {
       (@intrinsic(vec.get)(
         FloatNatural.words(value/0),
@@ -166,7 +166,7 @@ fn float_natural_compare(left/0: FloatNatural, right/0: FloatNatural) -> isize {
   0
 }
 
-fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
+fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
   let _wild0 =
     if (factor/0 == 0) {
         {
@@ -216,7 +216,7 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> unit {
   }
 }
 
-fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> unit {
+fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> () {
   let carry/0 = (addition/0 as u64) in
   let index/0 = 0 in
   while (carry/0 != 0) {
@@ -335,7 +335,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
   result/0
 }
 
-fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> unit {
+fn float_natural_subtract(value/0: FloatNatural, other/0: FloatNatural) -> () {
   let base/0 = 4294967296 in
   let borrow/0 = 0 in
   let index/0 = 0 in
@@ -3813,7 +3813,7 @@ fn ascii_eq_ignore_case(left/0: u8, right/0: u8) -> bool {
   (ascii_to_lowercase(left/0) == ascii_to_lowercase(right/0))
 }
 
-fn trait_impl#ToString#unit#to_string(self/0: unit) -> string {
+fn trait_impl#ToString#()#to_string(self/0: ()) -> string {
   @runtime(core.unit_to_string)(self/0)
 }
 
@@ -3873,11 +3873,11 @@ fn trait_impl#ToString#f64#to_string(self/0: f64) -> string {
   __goml_builtin_float64_to_string(self/0)
 }
 
-fn trait_impl#PartialEq#unit#eq(self/0: unit, other/0: unit) -> bool {
+fn trait_impl#PartialEq#()#eq(self/0: (), other/0: ()) -> bool {
   true
 }
 
-fn trait_impl#Eq#unit#__marker() -> unit {
+fn trait_impl#Eq#()#__marker() -> () {
   ()
 }
 
@@ -3885,7 +3885,7 @@ fn trait_impl#PartialEq#bool#eq(self/0: bool, other/0: bool) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#bool#__marker() -> unit {
+fn trait_impl#Eq#bool#__marker() -> () {
   ()
 }
 
@@ -3893,7 +3893,7 @@ fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#string#__marker() -> unit {
+fn trait_impl#Eq#string#__marker() -> () {
   ()
 }
 
@@ -3901,7 +3901,7 @@ fn trait_impl#PartialEq#char#eq(self/0: char, other/0: char) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#char#__marker() -> unit {
+fn trait_impl#Eq#char#__marker() -> () {
   ()
 }
 
@@ -3909,7 +3909,7 @@ fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#isize#__marker() -> unit {
+fn trait_impl#Eq#isize#__marker() -> () {
   ()
 }
 
@@ -3917,7 +3917,7 @@ fn trait_impl#PartialEq#i8#eq(self/0: i8, other/0: i8) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i8#__marker() -> unit {
+fn trait_impl#Eq#i8#__marker() -> () {
   ()
 }
 
@@ -3925,7 +3925,7 @@ fn trait_impl#PartialEq#i16#eq(self/0: i16, other/0: i16) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i16#__marker() -> unit {
+fn trait_impl#Eq#i16#__marker() -> () {
   ()
 }
 
@@ -3933,7 +3933,7 @@ fn trait_impl#PartialEq#i32#eq(self/0: i32, other/0: i32) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i32#__marker() -> unit {
+fn trait_impl#Eq#i32#__marker() -> () {
   ()
 }
 
@@ -3941,7 +3941,7 @@ fn trait_impl#PartialEq#i64#eq(self/0: i64, other/0: i64) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#i64#__marker() -> unit {
+fn trait_impl#Eq#i64#__marker() -> () {
   ()
 }
 
@@ -3949,7 +3949,7 @@ fn trait_impl#PartialEq#u8#eq(self/0: u8, other/0: u8) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u8#__marker() -> unit {
+fn trait_impl#Eq#u8#__marker() -> () {
   ()
 }
 
@@ -3957,7 +3957,7 @@ fn trait_impl#PartialEq#u16#eq(self/0: u16, other/0: u16) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u16#__marker() -> unit {
+fn trait_impl#Eq#u16#__marker() -> () {
   ()
 }
 
@@ -3965,7 +3965,7 @@ fn trait_impl#PartialEq#u32#eq(self/0: u32, other/0: u32) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u32#__marker() -> unit {
+fn trait_impl#Eq#u32#__marker() -> () {
   ()
 }
 
@@ -3973,7 +3973,7 @@ fn trait_impl#PartialEq#u64#eq(self/0: u64, other/0: u64) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#u64#__marker() -> unit {
+fn trait_impl#Eq#u64#__marker() -> () {
   ()
 }
 
@@ -3985,7 +3985,7 @@ fn trait_impl#PartialEq#f64#eq(self/0: f64, other/0: f64) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Hash#unit#hash(self/0: unit) -> u64 {
+fn trait_impl#Hash#()#hash(self/0: ()) -> u64 {
   0
 }
 
@@ -4049,7 +4049,7 @@ fn trait_impl#PartialEq#Ref[T]#eq[T](self/0: Ref[T], other/0: Ref[T]) -> bool {
   @intrinsic(ref.ptr_eq)(self/0, other/0)
 }
 
-fn trait_impl#Eq#Ref[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Ref[T]#__marker[T]() -> () {
   ()
 }
 
@@ -4092,7 +4092,7 @@ fn trait_impl#PartialEq#Vec[T]#eq[T](self/0: Vec[T], other/0: Vec[T]) -> bool {
   }
 }
 
-fn trait_impl#Eq#Vec[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Vec[T]#__marker[T]() -> () {
   ()
 }
 
@@ -4151,7 +4151,7 @@ fn trait_impl#PartialEq#Slice[T]#eq[T](self/0: Slice[T], other/0: Slice[T]) -> b
   }
 }
 
-fn trait_impl#Eq#Slice[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Slice[T]#__marker[T]() -> () {
   ()
 }
 
@@ -4215,7 +4215,7 @@ fn trait_impl#PartialEq#Option[T]#eq[T](self/0: Option[T], other/0: Option[T]) -
   }
 }
 
-fn trait_impl#Eq#Option[T]#__marker[T]() -> unit {
+fn trait_impl#Eq#Option[T]#__marker[T]() -> () {
   ()
 }
 
@@ -4288,7 +4288,7 @@ fn trait_impl#PartialEq#Result[T,E]#eq[T, E](self/0: Result[T, E], other/0: Resu
   }
 }
 
-fn trait_impl#Eq#Result[T,E]#__marker[T, E]() -> unit {
+fn trait_impl#Eq#Result[T,E]#__marker[T, E]() -> () {
   ()
 }
 
@@ -4340,7 +4340,7 @@ fn inherent#Vec#Vec[T]#with_capacity[T](capacity/0: isize) -> Vec[T] {
   @intrinsic(vec.with_capacity)(capacity/0)
 }
 
-fn inherent#Vec#Vec[T]#push[T](self/0: Vec[T], elem/0: T) -> unit {
+fn inherent#Vec#Vec[T]#push[T](self/0: Vec[T], elem/0: T) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
 }
 
@@ -4382,7 +4382,7 @@ fn inherent#Vec#Vec[T]#get_checked[T](self/0: Vec[T], index/0: isize) -> Option[
   }
 }
 
-fn inherent#Vec#Vec[T]#set[T](self/0: Vec[T], index/0: isize, elem/0: T) -> unit {
+fn inherent#Vec#Vec[T]#set[T](self/0: Vec[T], index/0: isize, elem/0: T) -> () {
   @intrinsic(vec.set)(self/0, index/0, elem/0)
 }
 
@@ -4398,15 +4398,15 @@ fn inherent#Vec#Vec[T]#is_empty[T](self/0: Vec[T]) -> bool {
   (@intrinsic(vec.len)(self/0) == 0)
 }
 
-fn inherent#Vec#Vec[T]#reserve[T](self/0: Vec[T], additional/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#reserve[T](self/0: Vec[T], additional/0: isize) -> () {
   @intrinsic(vec.reserve)(self/0, additional/0)
 }
 
-fn inherent#Vec#Vec[T]#truncate[T](self/0: Vec[T], len/0: isize) -> unit {
+fn inherent#Vec#Vec[T]#truncate[T](self/0: Vec[T], len/0: isize) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
 }
 
-fn inherent#Vec#Vec[T]#clear[T](self/0: Vec[T]) -> unit {
+fn inherent#Vec#Vec[T]#clear[T](self/0: Vec[T]) -> () {
   inherent#Vec#Vec[T]#truncate(self/0, 0)
 }
 
@@ -4774,7 +4774,7 @@ fn inherent#MutSlice#MutSlice[T]#get_checked[T](self/0: MutSlice[T], index/0: is
   }
 }
 
-fn inherent#MutSlice#MutSlice[T]#set[T](self/0: MutSlice[T], index/0: isize, value/0: T) -> unit {
+fn inherent#MutSlice#MutSlice[T]#set[T](self/0: MutSlice[T], index/0: isize, value/0: T) -> () {
   @intrinsic(mut_slice.set)(self/0, index/0, value/0)
 }
 
@@ -4838,7 +4838,7 @@ fn inherent#HashMap#HashMap[K,V]#get[K, V](self/0: HashMap[K, V], key/0: K) -> O
   @intrinsic(hashmap.get)(self/0, key/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set[K, V](self/0: HashMap[K, V], key/0: K, value/0: V) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set[K, V](self/0: HashMap[K, V], key/0: K, value/0: V) -> () {
   @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
@@ -4862,7 +4862,7 @@ fn inherent#Ref#Ref[T]#get[T](self/0: Ref[T]) -> T {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set[T](self/0: Ref[T], value/0: T) -> unit {
+fn inherent#Ref#Ref[T]#set[T](self/0: Ref[T], value/0: T) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
@@ -4882,7 +4882,7 @@ fn trait_impl#PartialEq#usize#eq(self/0: usize, other/0: usize) -> bool {
   (self/0 == other/0)
 }
 
-fn trait_impl#Eq#usize#__marker() -> unit {
+fn trait_impl#Eq#usize#__marker() -> () {
   ()
 }
 
@@ -5065,11 +5065,11 @@ fn trait_impl#PartialEq#Ordering#eq(self/0: Ordering, other/0: Ordering) -> bool
   }
 }
 
-fn trait_impl#Eq#Ordering#__marker() -> unit {
+fn trait_impl#Eq#Ordering#__marker() -> () {
   ()
 }
 
-fn println(value/0: T) -> unit {
+fn println(value/0: T) -> () {
   @runtime(core.string_println)(trait_call[ToString::to_string](value/0))
 }
 
@@ -5213,15 +5213,15 @@ fn std::internal::host::sha256_file(path/0: string) -> (bool, string, string) {
   @runtime(std.fs.sha256_file)(path/0)
 }
 
-fn std::internal::host::print(value/0: string) -> unit {
+fn std::internal::host::print(value/0: string) -> () {
   @runtime(std.io.print)(value/0)
 }
 
-fn std::internal::host::println(value/0: string) -> unit {
+fn std::internal::host::println(value/0: string) -> () {
   @runtime(std.io.println)(value/0)
 }
 
-fn std::internal::host::eprint(value/0: string) -> unit {
+fn std::internal::host::eprint(value/0: string) -> () {
   @runtime(std.io.eprint)(value/0)
 }
 
@@ -5308,7 +5308,7 @@ fn std::internal::host::path_separator() -> string {
   @runtime(std.path.separator)()
 }
 
-fn std::internal::host::exit(code/0: isize) -> unit {
+fn std::internal::host::exit(code/0: isize) -> () {
   @runtime(std.process.exit)(code/0)
 }
 
@@ -5426,7 +5426,7 @@ fn std::internal::host::process_status_cancel(
   )
 }
 
-fn std::internal::host::test_fail(message/0: string) -> unit {
+fn std::internal::host::test_fail(message/0: string) -> () {
   @runtime(std.testing.fail)(message/0)
 }
 
@@ -5438,11 +5438,11 @@ fn std::internal::host::unix_nanoseconds() -> i64 {
   @runtime(std.time.unix_nanoseconds)()
 }
 
-fn std::internal::host::sleep_nanoseconds(value/0: i64) -> unit {
+fn std::internal::host::sleep_nanoseconds(value/0: i64) -> () {
   @runtime(std.time.sleep_nanoseconds)(value/0)
 }
 
-fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[unit]) {
+fn std::internal::host::timer_new(value/0: i64) -> (i64, Receiver[()]) {
   @runtime(std.time.timer_new)(value/0)
 }
 
@@ -5542,14 +5542,14 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#is_empty(self/0: std::bytes:
 fn inherent#std::bytes::Builder#std::bytes::Builder#push(
   self/0: std::bytes::Builder,
   value/0: u8
-) -> unit {
+) -> () {
   inherent#Vec#Vec[u8]#push(std::bytes::Builder.values(self/0), value/0)
 }
 
 fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   self/0: std::bytes::Builder,
   value/0: Slice[u8]
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#Vec#Vec[u8]#reserve(
       std::bytes::Builder.values(self/0),
@@ -5574,7 +5574,7 @@ fn inherent#std::bytes::Builder#std::bytes::Builder#extend(
   }
 }
 
-fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> unit {
+fn inherent#std::bytes::Builder#std::bytes::Builder#clear(self/0: std::bytes::Builder) -> () {
   inherent#Vec#Vec[u8]#clear(std::bytes::Builder.values(self/0))
 }
 
@@ -5636,7 +5636,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   self/0: std::bytes::Bytes,
   index/0: isize,
   value/0: u8
-) -> unit {
+) -> () {
   let _wild0 =
     {
       let place_root0 = self/0 in
@@ -5660,10 +5660,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set_checked(
   )
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
-  self/0: std::bytes::Bytes,
-  value/0: u8
-) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/0: std::bytes::Bytes, value/0: u8) -> () {
   inherent#Vec#Vec[u8]#push(std::bytes::Bytes.values(self/0), value/0)
 }
 
@@ -5674,18 +5671,18 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/0: std::bytes::Bytes) -
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/0: std::bytes::Bytes,
   additional/0: isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[u8]#reserve(std::bytes::Bytes.values(self/0), additional/0)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/0: std::bytes::Bytes,
   len/0: isize
-) -> unit {
+) -> () {
   inherent#Vec#Vec[u8]#truncate(std::bytes::Bytes.values(self/0), len/0)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/0: std::bytes::Bytes) -> () {
   inherent#Vec#Vec[u8]#clear(std::bytes::Bytes.values(self/0))
 }
 
@@ -5734,7 +5731,7 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#as_mut_slice(self/0: std::bytes:
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#extend_from_slice(
   self/0: std::bytes::Bytes,
   source/0: Slice[u8]
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#Vec#Vec[u8]#reserve(
       std::bytes::Bytes.values(self/0),
@@ -5850,7 +5847,7 @@ fn trait_impl#PartialEq#std::io::ErrorKind#eq(
   (std::io::kind_code(self/0) == std::io::kind_code(other/0))
 }
 
-fn trait_impl#Eq#std::io::ErrorKind#__marker() -> unit {
+fn trait_impl#Eq#std::io::ErrorKind#__marker() -> () {
   ()
 }
 
@@ -6295,7 +6292,7 @@ fn std::io::read_stdin_exact_structured(length/0: isize) -> Result[
 }
 
 fn std::io::write_structured(stderr/0: bool, data/0: std::bytes::Bytes) -> Result[
-  unit,
+  (),
   std::io::Error
 ] {
   let result/0 =
@@ -6364,27 +6361,27 @@ fn std::io::write_structured(stderr/0: bool, data/0: std::bytes::Bytes) -> Resul
   }
 }
 
-fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result[unit, std::io::Error] {
+fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result[(), std::io::Error] {
   std::io::write_structured(false, data/0)
 }
 
-fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result[unit, std::io::Error] {
+fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result[(), std::io::Error] {
   std::io::write_structured(true, data/0)
 }
 
-fn std::io::print(value/0: T) -> unit {
+fn std::io::print(value/0: T) -> () {
   std::internal::host::print(trait_call[ToString::to_string](value/0))
 }
 
-fn std::io::println(value/0: T) -> unit {
+fn std::io::println(value/0: T) -> () {
   std::internal::host::println(trait_call[ToString::to_string](value/0))
 }
 
-fn std::io::eprint(value/0: T) -> unit {
+fn std::io::eprint(value/0: T) -> () {
   std::internal::host::eprint(trait_call[ToString::to_string](value/0))
 }
 
-fn std::io::eprintln(value/0: T) -> unit {
+fn std::io::eprintln(value/0: T) -> () {
   std::internal::host::eprint((trait_call[ToString::to_string](value/0) + "\n"))
 }
 
@@ -6417,7 +6414,7 @@ fn std::io::read_stdin() -> Result[std::bytes::Bytes, string] {
   }
 }
 
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result[unit, string] {
+fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result[(), string] {
   let mtmp0 =
     std::internal::host::write_stdout(
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
@@ -6445,7 +6442,7 @@ fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result[unit, string] {
   }
 }
 
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result[unit, string] {
+fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result[(), string] {
   let mtmp0 =
     std::internal::host::write_stderr(
       inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
@@ -9630,14 +9627,14 @@ fn std::serde::tuple_values(value/0: std::serde::Value, size/0: isize) -> Result
   }
 }
 
-fn std::serde::error(message/0: string) -> Result[unit, string] {
+fn std::serde::error(message/0: string) -> Result[(), string] {
   Result::Err(message/0)
 }
 
 fn trait_impl#std::serde::Serialize#std::serde::Value#serialize[S](
   self/0: std::serde::Value,
   serializer/0: S
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::serialize_value_into(self/0, serializer/0)
 }
 
@@ -9648,22 +9645,19 @@ fn trait_impl#std::serde::Deserialize#std::serde::Value#deserialize[D](deseriali
   trait_call[std::serde::Deserializer::deserialize_any](deserializer/0)
 }
 
-fn trait_impl#std::serde::Serialize#unit#serialize[S](self/0: unit, serializer/0: S) -> Result[
-  unit,
+fn trait_impl#std::serde::Serialize#()#serialize[S](self/0: (), serializer/0: S) -> Result[
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_unit](serializer/0)
 }
 
-fn trait_impl#std::serde::Deserialize#unit#deserialize[D](deserializer/0: D) -> Result[
-  unit,
-  string
-] {
+fn trait_impl#std::serde::Deserialize#()#deserialize[D](deserializer/0: D) -> Result[(), string] {
   trait_call[std::serde::Deserializer::deserialize_unit](deserializer/0)
 }
 
 fn trait_impl#std::serde::Serialize#bool#serialize[S](self/0: bool, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_bool](serializer/0, self/0)
@@ -9677,7 +9671,7 @@ fn trait_impl#std::serde::Deserialize#bool#deserialize[D](deserializer/0: D) -> 
 }
 
 fn trait_impl#std::serde::Serialize#string#serialize[S](self/0: string, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_string](serializer/0, self/0)
@@ -9691,7 +9685,7 @@ fn trait_impl#std::serde::Deserialize#string#deserialize[D](deserializer/0: D) -
 }
 
 fn trait_impl#std::serde::Serialize#char#serialize[S](self/0: char, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_char](serializer/0, self/0)
@@ -9705,7 +9699,7 @@ fn trait_impl#std::serde::Deserialize#char#deserialize[D](deserializer/0: D) -> 
 }
 
 fn trait_impl#std::serde::Serialize#isize#serialize[S](self/0: isize, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_int](serializer/0, self/0)
@@ -9719,7 +9713,7 @@ fn trait_impl#std::serde::Deserialize#isize#deserialize[D](deserializer/0: D) ->
 }
 
 fn trait_impl#std::serde::Serialize#i8#serialize[S](self/0: i8, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_int8](serializer/0, self/0)
@@ -9730,7 +9724,7 @@ fn trait_impl#std::serde::Deserialize#i8#deserialize[D](deserializer/0: D) -> Re
 }
 
 fn trait_impl#std::serde::Serialize#i16#serialize[S](self/0: i16, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_int16](serializer/0, self/0)
@@ -9741,7 +9735,7 @@ fn trait_impl#std::serde::Deserialize#i16#deserialize[D](deserializer/0: D) -> R
 }
 
 fn trait_impl#std::serde::Serialize#i32#serialize[S](self/0: i32, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_int32](serializer/0, self/0)
@@ -9752,7 +9746,7 @@ fn trait_impl#std::serde::Deserialize#i32#deserialize[D](deserializer/0: D) -> R
 }
 
 fn trait_impl#std::serde::Serialize#i64#serialize[S](self/0: i64, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_int64](serializer/0, self/0)
@@ -9763,7 +9757,7 @@ fn trait_impl#std::serde::Deserialize#i64#deserialize[D](deserializer/0: D) -> R
 }
 
 fn trait_impl#std::serde::Serialize#usize#serialize[S](self/0: usize, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_uint](serializer/0, self/0)
@@ -9777,7 +9771,7 @@ fn trait_impl#std::serde::Deserialize#usize#deserialize[D](deserializer/0: D) ->
 }
 
 fn trait_impl#std::serde::Serialize#u8#serialize[S](self/0: u8, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_uint8](serializer/0, self/0)
@@ -9788,7 +9782,7 @@ fn trait_impl#std::serde::Deserialize#u8#deserialize[D](deserializer/0: D) -> Re
 }
 
 fn trait_impl#std::serde::Serialize#u16#serialize[S](self/0: u16, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_uint16](serializer/0, self/0)
@@ -9799,7 +9793,7 @@ fn trait_impl#std::serde::Deserialize#u16#deserialize[D](deserializer/0: D) -> R
 }
 
 fn trait_impl#std::serde::Serialize#u32#serialize[S](self/0: u32, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_uint32](serializer/0, self/0)
@@ -9810,7 +9804,7 @@ fn trait_impl#std::serde::Deserialize#u32#deserialize[D](deserializer/0: D) -> R
 }
 
 fn trait_impl#std::serde::Serialize#u64#serialize[S](self/0: u64, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_uint64](serializer/0, self/0)
@@ -9821,7 +9815,7 @@ fn trait_impl#std::serde::Deserialize#u64#deserialize[D](deserializer/0: D) -> R
 }
 
 fn trait_impl#std::serde::Serialize#f32#serialize[S](self/0: f32, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_float32](serializer/0, self/0)
@@ -9832,7 +9826,7 @@ fn trait_impl#std::serde::Deserialize#f32#deserialize[D](deserializer/0: D) -> R
 }
 
 fn trait_impl#std::serde::Serialize#f64#serialize[S](self/0: f64, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   trait_call[std::serde::Serializer::serialize_float64](serializer/0, self/0)
@@ -9845,7 +9839,7 @@ fn trait_impl#std::serde::Deserialize#f64#deserialize[D](deserializer/0: D) -> R
 fn trait_impl#std::serde::Serialize#Vec[T]#serialize[T, S](
   self/0: Vec[T],
   serializer/0: S
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 =
@@ -10049,7 +10043,7 @@ fn trait_impl#std::serde::Deserialize#Vec[T]#deserialize[T, D](deserializer/0: D
 fn trait_impl#std::serde::Serialize#Option[T]#serialize[T, S](
   self/0: Option[T],
   serializer/0: S
-) -> Result[unit, string] {
+) -> Result[(), string] {
   match self/0 {
     Option::None => {
       {
@@ -10233,7 +10227,7 @@ fn trait_impl#std::serde::Deserialize#Option[T]#deserialize[T, D](deserializer/0
 fn trait_impl#std::serde::Serialize#(A,B)#serialize[A, B, S](
   self/0: (A, B),
   serializer/0: S
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = trait_call[std::serde::Serializer::begin_tuple](serializer/0, 2) in
@@ -10511,7 +10505,7 @@ fn trait_impl#std::serde::Deserialize#(A,B)#deserialize[A, B, D](deserializer/0:
 fn trait_impl#std::serde::Serialize#(A,B,C)#serialize[A, B, C, S](
   self/0: (A, B, C),
   serializer/0: S
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = trait_call[std::serde::Serializer::begin_tuple](serializer/0, 3) in
@@ -10883,7 +10877,7 @@ fn trait_impl#std::serde::Deserialize#(A,B,C)#deserialize[A, B, C, D](deserializ
 }
 
 fn std::serde::serialize_value_into(value/0: std::serde::Value, serializer/0: S) -> Result[
-  unit,
+  (),
   string
 ] {
   match value/0 {
@@ -11573,7 +11567,7 @@ fn std::serde::value_deserializer(value/0: std::serde::Value) -> std::serde::Val
 }
 
 fn std::serde::finish_value_deserializer(deserializer/0: std::serde::ValueDeserializer) -> Result[
-  unit,
+  (),
   string
 ] {
   if (!inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
@@ -11635,7 +11629,7 @@ fn std::serde::take_deserializer_value(deserializer/0: std::serde::ValueDeserial
 fn std::serde::set_deserializer_value(
   deserializer/0: std::serde::ValueDeserializer,
   value/0: std::serde::Value
-) -> Result[unit, string] {
+) -> Result[(), string] {
   if inherent#Option#Option[std::serde::Value]#is_some(
     inherent#Ref#Ref[Option[std::serde::Value]]#get(
       std::serde::ValueDeserializer.current(deserializer/0)
@@ -11656,7 +11650,7 @@ fn std::serde::set_deserializer_value(
   }
 }
 
-fn std::serde::pop_value_deserializer_frame(deserializer/0: std::serde::ValueDeserializer) -> unit {
+fn std::serde::pop_value_deserializer_frame(deserializer/0: std::serde::ValueDeserializer) -> () {
   let mtmp0 =
     inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#pop(
       std::serde::ValueDeserializer.frames(deserializer/0)
@@ -11890,7 +11884,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize_unit(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     let mtmp0 =
       {
@@ -13155,7 +13149,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_optio
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_optional(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -13350,7 +13344,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_sequen
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_sequence(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -13414,7 +13408,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_sequenc
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple(
   self/0: std::serde::ValueDeserializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let value/0 =
     {
       let mtmp0 = std::serde::take_deserializer_value(self/0) in
@@ -13480,7 +13474,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple_element(
   self/0: std::serde::ValueDeserializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -13574,7 +13568,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_tuple(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -13782,7 +13776,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_map_en
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_key(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -13889,7 +13883,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_k
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_value(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -14000,7 +13994,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_v
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_map(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -14090,7 +14084,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_struc
   self/0: std::serde::ValueDeserializer,
   name/0: string,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     {
       {
@@ -14244,7 +14238,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_struct
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#skip_value(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let mtmp0 =
     {
       let mtmp1 = std::serde::take_deserializer_value(self/0) in
@@ -14276,7 +14270,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#skip_value(
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_struct(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -14448,7 +14442,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_varia
   self/0: std::serde::ValueDeserializer,
   kind/0: isize,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -14632,7 +14626,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_varian
 
 fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_variant(
   self/0: std::serde::ValueDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueDeserializeFrame]#is_empty(
       std::serde::ValueDeserializer.frames(self/0)
@@ -14851,7 +14845,7 @@ fn std::serde::value_slot_ready(serializer/0: std::serde::ValueSerializer) -> bo
 fn std::serde::append_serialized_value(
   serializer/0: std::serde::ValueSerializer,
   value/0: std::serde::Value
-) -> Result[unit, string] {
+) -> Result[(), string] {
   if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
     std::serde::ValueSerializer.frames(serializer/0)
   ) {
@@ -15115,7 +15109,7 @@ fn std::serde::append_serialized_value(
 fn std::serde::begin_value_frame(
   serializer/0: std::serde::ValueSerializer,
   frame/0: std::serde::ValueSerializeFrame
-) -> Result[unit, string] {
+) -> Result[(), string] {
   if std::serde::value_slot_ready(serializer/0) {
       {
         let _wild0 =
@@ -15134,126 +15128,126 @@ fn std::serde::begin_value_frame(
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_unit(
   self/0: std::serde::ValueSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Unit)
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bool(
   self/0: std::serde::ValueSerializer,
   value/0: bool
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Bool(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int(
   self/0: std::serde::ValueSerializer,
   value/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int8(
   self/0: std::serde::ValueSerializer,
   value/0: i8
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int8(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int16(
   self/0: std::serde::ValueSerializer,
   value/0: i16
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int16(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int32(
   self/0: std::serde::ValueSerializer,
   value/0: i32
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int32(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_int64(
   self/0: std::serde::ValueSerializer,
   value/0: i64
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Int64(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint(
   self/0: std::serde::ValueSerializer,
   value/0: usize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint8(
   self/0: std::serde::ValueSerializer,
   value/0: u8
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint8(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint16(
   self/0: std::serde::ValueSerializer,
   value/0: u16
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint16(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint32(
   self/0: std::serde::ValueSerializer,
   value/0: u32
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint32(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_uint64(
   self/0: std::serde::ValueSerializer,
   value/0: u64
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Uint64(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_float32(
   self/0: std::serde::ValueSerializer,
   value/0: f32
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Float32(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_float64(
   self/0: std::serde::ValueSerializer,
   value/0: f64
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Float64(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_number(
   self/0: std::serde::ValueSerializer,
   value/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Number(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_string(
   self/0: std::serde::ValueSerializer,
   value/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::String(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_char(
   self/0: std::serde::ValueSerializer,
   value/0: char
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::append_serialized_value(self/0, std::serde::Value::Char(value/0))
 }
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes(
   self/0: std::serde::ValueSerializer,
   value/0: Slice[u8]
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let values/0 =
     inherent#Vec#Vec[std::serde::Value]#with_capacity(inherent#Slice#Slice[u8]#len(value/0)) in
   let index/0 = 0 in
@@ -15274,7 +15268,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#serialize_bytes
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_optional(
   self/0: std::serde::ValueSerializer,
   present/0: bool
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::begin_value_frame(
     self/0,
     std::serde::ValueSerializeFrame::Optional(
@@ -15287,7 +15281,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_optional(
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_optional(
   self/0: std::serde::ValueSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15369,7 +15363,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_optional(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence(
   self/0: std::serde::ValueSerializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   if (length/0 < 0) {
       {
         Result::Err("sequence length cannot be negative")
@@ -15391,7 +15385,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence_element(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15457,7 +15451,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence_
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_sequence(
   self/0: std::serde::ValueSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15530,7 +15524,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_sequence(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple(
   self/0: std::serde::ValueSerializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   if (length/0 < 0) {
       {
         Result::Err("tuple length cannot be negative")
@@ -15552,7 +15546,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple_element(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15618,7 +15612,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple_ele
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_tuple(
   self/0: std::serde::ValueSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15688,7 +15682,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_tuple(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map(
   self/0: std::serde::ValueSerializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   if (length/0 < 0) {
       {
         Result::Err("map length cannot be negative")
@@ -15711,7 +15705,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_key(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15788,7 +15782,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_key(
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_value(
   self/0: std::serde::ValueSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15856,7 +15850,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_value
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_map(
   self/0: std::serde::ValueSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -15940,7 +15934,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_struct(
   self/0: std::serde::ValueSerializer,
   name/0: string,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     if (fields/0 < 0) {
         {
@@ -15965,7 +15959,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_struct_fi
   self/0: std::serde::ValueSerializer,
   index/0: isize,
   name/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -16034,7 +16028,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_struct_fi
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_struct(
   self/0: std::serde::ValueSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -16110,7 +16104,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_variant(
   name/0: string,
   kind/0: isize,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     if (fields/0 < 0) {
         {
@@ -16138,7 +16132,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_variant_f
   self/0: std::serde::ValueSerializer,
   index/0: isize,
   name/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -16207,7 +16201,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_variant_f
 
 fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_variant(
   self/0: std::serde::ValueSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::serde::ValueSerializeFrame]#is_empty(
       std::serde::ValueSerializer.frames(self/0)
@@ -16508,7 +16502,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
   self/0: std::text::StringBuilder,
   value/0: string
-) -> unit {
+) -> () {
   let length/0 = inherent#string#string#byte_len(value/0) in
   let _wild0 = inherent#Vec#Vec[u8]#reserve(std::text::StringBuilder.values(self/0), length/0) in
   {
@@ -16535,7 +16529,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
   self/0: std::text::StringBuilder,
   value/0: char
-) -> unit {
+) -> () {
   inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
     self/0,
     inherent#char#char#to_string(value/0)
@@ -16545,7 +16539,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
   self/0: std::text::StringBuilder,
   value/0: std::bytes::Bytes
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     let mtmp0 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/0) in
     match mtmp0 {
@@ -16581,7 +16575,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(
   self/0: std::text::StringBuilder,
   value/0: string
-) -> unit {
+) -> () {
   let _wild0 =
     inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/0, value/0) in
   inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/0, "\n")
@@ -16589,7 +16583,7 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(
   self/0: std::text::StringBuilder
-) -> unit {
+) -> () {
   inherent#Vec#Vec[u8]#clear(std::text::StringBuilder.values(self/0))
 }
 
@@ -16940,7 +16934,7 @@ fn std::json::json_deserializer(input/0: string) -> std::json::JsonDeserializer 
 }
 
 fn std::json::finish_json_deserializer(deserializer/0: std::json::JsonDeserializer) -> Result[
-  unit,
+  (),
   string
 ] {
   if (!inherent#Vec#Vec[std::json::JsonDeserializeFrame]#is_empty(
@@ -16980,7 +16974,7 @@ fn std::json::consume_json_byte(
   parser/0: std::json::JsonParser,
   expected/0: u8,
   message/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 = std::json::skip_json_whitespace(parser/0) in
   if if (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(parser/0)) >=
     inherent#string#string#byte_len(std::json::JsonParser.input(parser/0))) {
@@ -17008,7 +17002,7 @@ fn std::json::consume_json_byte(
 }
 
 fn std::json::consume_json_literal(parser/0: std::json::JsonParser, expected/0: string) -> Result[
-  unit,
+  (),
   string
 ] {
   let _wild0 = std::json::skip_json_whitespace(parser/0) in
@@ -17041,7 +17035,7 @@ fn std::json::consume_json_literal(parser/0: std::json::JsonParser, expected/0: 
   }
 }
 
-fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result[unit, string] {
+fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::consume_json_byte(parser/0, 91, "expected array") in
@@ -17165,7 +17159,7 @@ fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result[
   Result::Err(std::json::json_error(parser/0, "unterminated array"))
 }
 
-fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result[unit, string] {
+fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::consume_json_byte(parser/0, 123, "expected object") in
@@ -17339,7 +17333,7 @@ fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result
   Result::Err(std::json::json_error(parser/0, "unterminated object"))
 }
 
-fn std::json::skip_direct_json_value(parser/0: std::json::JsonParser) -> Result[unit, string] {
+fn std::json::skip_direct_json_value(parser/0: std::json::JsonParser) -> Result[(), string] {
   let _wild0 = std::json::skip_json_whitespace(parser/0) in
   if (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(parser/0)) >=
     inherent#string#string#byte_len(std::json::JsonParser.input(parser/0))) {
@@ -17784,7 +17778,7 @@ fn std::json::json_frame_index(deserializer/0: std::json::JsonDeserializer) -> R
   }
 }
 
-fn std::json::pop_json_frame(deserializer/0: std::json::JsonDeserializer) -> unit {
+fn std::json::pop_json_frame(deserializer/0: std::json::JsonDeserializer) -> () {
   let mtmp0 =
     inherent#Vec#Vec[std::json::JsonDeserializeFrame]#pop(
       std::json::JsonDeserializer.frames(deserializer/0)
@@ -18287,7 +18281,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_a
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_unit(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 = std::json::skip_json_whitespace(std::json::JsonDeserializer.parser(self/0)) in
   if if (inherent#Ref#Ref[isize]#get(
     std::json::JsonParser.index(std::json::JsonDeserializer.parser(self/0))
@@ -19185,7 +19179,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_optiona
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_optional(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -19380,7 +19374,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_sequence
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_sequence(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -19474,7 +19468,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_sequence(
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple(
   self/0: std::json::JsonDeserializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if (length/0 < 0) {
         {
@@ -19530,7 +19524,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple(
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_element(
   self/0: std::json::JsonDeserializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -19669,7 +19663,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple_e
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_tuple(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -19944,7 +19938,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_map_entr
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_key(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -20038,7 +20032,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_key
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_value(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -20131,7 +20125,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_map_val
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_map(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -20234,7 +20228,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_struct(
   self/0: std::json::JsonDeserializer,
   name/0: string,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if (fields/0 < 0) {
         {
@@ -20412,13 +20406,13 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_struct_f
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#skip_value(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::json::skip_direct_json_value(std::json::JsonDeserializer.parser(self/0))
 }
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_struct(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -20702,7 +20696,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
   self/0: std::json::JsonDeserializer,
   kind/0: isize,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if if if if (kind/0 < 0) {
         true
@@ -21143,7 +21137,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
 
 fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
   self/0: std::json::JsonDeserializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let frame/0 =
     {
       let mtmp0 = std::json::json_frame_index(self/0) in
@@ -21355,7 +21349,7 @@ fn std::json::json_whitespace(value/0: u8) -> bool {
   }
 }
 
-fn std::json::skip_json_whitespace(value/0: std::json::JsonParser) -> unit {
+fn std::json::skip_json_whitespace(value/0: std::json::JsonParser) -> () {
   while if (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(value/0)) <
     inherent#string#string#byte_len(std::json::JsonParser.input(value/0))) {
       std::json::json_whitespace(
@@ -21481,7 +21475,7 @@ fn std::json::write_codepoint(
   value/0: std::json::JsonParser,
   builder/0: std::text::StringBuilder,
   codepoint/0: u32
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     let mtmp0 = char_from_u0(codepoint/0) in
     match mtmp0 {
@@ -21511,7 +21505,7 @@ fn std::json::write_codepoint(
 fn std::json::parse_unicode_escape(
   value/0: std::json::JsonParser,
   builder/0: std::text::StringBuilder
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let first/0 =
     {
       let mtmp0 = std::json::parse_hex_quad(value/0) in
@@ -22587,7 +22581,7 @@ fn std::json::json_hex_digit(value/0: u8) -> char {
   inherent#string#string#get("0123456789abcdef", (value/0 as isize))
 }
 
-fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: string) -> unit {
+fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: string) -> () {
   let _wild0 =
     inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, '"') in
   let start/0 = 0 in
@@ -22761,7 +22755,7 @@ fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: st
 fn std::json::write_json_value(
   builder/0: std::text::StringBuilder,
   value/0: std::json::Value
-) -> unit {
+) -> () {
   match value/0 {
     std::json::Value::Object(x0) => {
       {
@@ -23115,7 +23109,7 @@ fn std::json::json_serializer() -> std::json::JsonSerializer {
   }
 }
 
-fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Result[unit, string] {
+fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Result[(), string] {
   if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
     std::json::JsonSerializer.frames(serializer/0)
   ) {
@@ -23257,7 +23251,7 @@ fn std::json::claim_json_value(serializer/0: std::json::JsonSerializer) -> Resul
   }
 }
 
-fn std::json::claim_json_string(serializer/0: std::json::JsonSerializer) -> Result[unit, string] {
+fn std::json::claim_json_string(serializer/0: std::json::JsonSerializer) -> Result[(), string] {
   if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
     std::json::JsonSerializer.frames(serializer/0)
   ) {
@@ -23329,7 +23323,7 @@ fn std::json::finish_json_serializer(serializer/0: std::json::JsonSerializer) ->
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_unit(
   self/0: std::json::JsonSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23365,7 +23359,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_unit(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bool(
   self/0: std::json::JsonSerializer,
   value/0: bool
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23409,7 +23403,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bool(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int(
   self/0: std::json::JsonSerializer,
   value/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23445,7 +23439,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int8(
   self/0: std::json::JsonSerializer,
   value/0: i8
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23481,7 +23475,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int8(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int16(
   self/0: std::json::JsonSerializer,
   value/0: i16
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23517,7 +23511,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int16(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int32(
   self/0: std::json::JsonSerializer,
   value/0: i32
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23553,7 +23547,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int32(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int64(
   self/0: std::json::JsonSerializer,
   value/0: i64
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23589,7 +23583,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_int64(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint(
   self/0: std::json::JsonSerializer,
   value/0: usize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23625,7 +23619,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint8(
   self/0: std::json::JsonSerializer,
   value/0: u8
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23661,7 +23655,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint8(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint16(
   self/0: std::json::JsonSerializer,
   value/0: u16
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23697,7 +23691,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint16(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint32(
   self/0: std::json::JsonSerializer,
   value/0: u32
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23733,7 +23727,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint32(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint64(
   self/0: std::json::JsonSerializer,
   value/0: u64
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23769,7 +23763,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_uint64(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float32(
   self/0: std::json::JsonSerializer,
   value/0: f32
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23805,7 +23799,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float32
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float64(
   self/0: std::json::JsonSerializer,
   value/0: f64
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23841,7 +23835,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_float64
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_number(
   self/0: std::json::JsonSerializer,
   value/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -23877,7 +23871,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_number(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_string(
   self/0: std::json::JsonSerializer,
   value/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_string(self/0) in
@@ -23909,7 +23903,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_string(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_char(
   self/0: std::json::JsonSerializer,
   value/0: char
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_string(self/0) in
@@ -23945,7 +23939,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_char(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
   self/0: std::json::JsonSerializer,
   value/0: Slice[u8]
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -24011,7 +24005,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_optional(
   self/0: std::json::JsonSerializer,
   present/0: bool
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     {
       let mtmp0 = std::json::claim_json_value(self/0) in
@@ -24059,7 +24053,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_optional(
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_optional(
   self/0: std::json::JsonSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(self/0)
@@ -24113,7 +24107,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_optional(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_sequence(
   self/0: std::json::JsonSerializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if (length/0 < 0) {
         {
@@ -24168,20 +24162,20 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_sequence(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_sequence_element(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::json::begin_json_array_element(self/0, index/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_sequence(
   self/0: std::json::JsonSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::json::end_json_array(self/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_tuple(
   self/0: std::json::JsonSerializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if (length/0 < 0) {
         {
@@ -24236,20 +24230,20 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_tuple(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_tuple_element(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::json::begin_json_array_element(self/0, index/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_tuple(
   self/0: std::json::JsonSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::json::end_json_array(self/0)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map(
   self/0: std::json::JsonSerializer,
   length/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   if (length/0 < 0) {
       {
         Result::Err("map length cannot be negative")
@@ -24302,7 +24296,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_key(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(self/0)
@@ -24376,7 +24370,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_key(
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_value(
   self/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(self/0)
@@ -24433,7 +24427,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_value(
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_map(
   self/0: std::json::JsonSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(self/0)
@@ -24505,7 +24499,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_struct(
   self/0: std::json::JsonSerializer,
   name/0: string,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     let _wild0 =
       if (fields/0 < 0) {
@@ -24563,13 +24557,13 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_struct_fiel
   self/0: std::json::JsonSerializer,
   index/0: isize,
   name/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::json::begin_json_named_field(self/0, index/0, name/0, false)
 }
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_struct(
   self/0: std::json::JsonSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(self/0)
@@ -24644,7 +24638,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant(
   name/0: string,
   kind/0: isize,
   fields/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     let _wild0 =
       if (index/0 < 0) {
@@ -24755,7 +24749,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_fie
   self/0: std::json::JsonSerializer,
   index/0: isize,
   name/0: string
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(self/0)
@@ -24859,7 +24853,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_fie
 
 fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_variant(
   self/0: std::json::JsonSerializer
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(self/0)
@@ -24951,7 +24945,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_variant(
 fn std::json::begin_json_array_element(
   serializer/0: std::json::JsonSerializer,
   index/0: isize
-) -> Result[unit, string] {
+) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(serializer/0)
@@ -25027,7 +25021,7 @@ fn std::json::begin_json_array_element(
   }
 }
 
-fn std::json::end_json_array(serializer/0: std::json::JsonSerializer) -> Result[unit, string] {
+fn std::json::end_json_array(serializer/0: std::json::JsonSerializer) -> Result[(), string] {
   let _wild0 =
     if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
       std::json::JsonSerializer.frames(serializer/0)
@@ -25100,7 +25094,7 @@ fn std::json::begin_json_named_field(
   index/0: isize,
   name/0: string,
   variant/0: bool
-) -> Result[unit, string] {
+) -> Result[(), string] {
   {
     let _wild0 =
       if inherent#Vec#Vec[std::json::JsonSerializeFrame]#is_empty(
@@ -25779,7 +25773,7 @@ fn std::json::from_string(input/0: string) -> Result[T, string] {
 fn trait_impl#std::serde::Serialize#std::json::Value#serialize[S](
   self/0: std::json::Value,
   serializer/0: S
-) -> Result[unit, string] {
+) -> Result[(), string] {
   std::serde::serialize_value_into(std::json::into_serde_value(self/0), serializer/0)
 }
 
@@ -25816,7 +25810,7 @@ fn trait_impl#std::serde::Deserialize#std::json::Value#deserialize[D](deserializ
   )
 }
 
-fn main() -> unit {
+fn main() -> () {
   let value/0 =
     {
       let mtmp0 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in

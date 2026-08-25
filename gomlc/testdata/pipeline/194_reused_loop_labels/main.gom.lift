@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
   let running/0 = inherent#Ref#Ref[T]#new__T_bool(true) in
   let _wild0 =
     while inherent#Ref#Ref[T]#get__T_bool(running/0) {
@@ -39,11 +39,11 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/0: Ref[bool]) -> bool {
   @intrinsic(ref.get)(self/0)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> unit {
+fn inherent#Ref#Ref[T]#set__T_bool(self/0: Ref[bool], value/0: bool) -> () {
   @intrinsic(ref.set)(self/0, value/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

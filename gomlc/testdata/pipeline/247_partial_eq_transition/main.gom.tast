@@ -92,32 +92,32 @@ fn equal[T](left/12: T, right/13: T) -> bool where T: Eq, T: PartialEq {
     (left/12 : T) == (right/13 : T)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let legacy/14: LegacyKey = LegacyKey { value: 7 };
     let modern/15: ModernKey = ModernKey { value: 9 };
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (equal : (LegacyKey, LegacyKey) -> bool)((legacy/14 : LegacyKey), LegacyKey { value: 7 })
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (PartialEq::eq : (LegacyKey, LegacyKey) -> bool)(
         (legacy/14 : LegacyKey),
         LegacyKey { value: 8 }
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (equal : (ModernKey, ModernKey) -> bool)((modern/15 : ModernKey), ModernKey { value: 19 })
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)((modern/15 : ModernKey) != ModernKey { value: 20 })
     );
     let legacy_map/16: HashMap[LegacyKey, string] =
       (HashMap[LegacyKey, string]::new : () -> HashMap[LegacyKey, string])();
-    (HashMap[LegacyKey, string]::set : (HashMap[LegacyKey, string], LegacyKey, string) -> unit)(
+    (HashMap[LegacyKey, string]::set : (HashMap[LegacyKey, string], LegacyKey, string) -> ())(
       (legacy_map/16 : HashMap[LegacyKey, string]),
       (legacy/14 : LegacyKey),
       "legacy"
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
         (HashMap[LegacyKey, string]::get : (HashMap[LegacyKey, string], LegacyKey) -> Option[
           string
@@ -127,12 +127,12 @@ fn main() -> unit {
     );
     let modern_map/17: HashMap[ModernKey, string] =
       (HashMap[ModernKey, string]::new : () -> HashMap[ModernKey, string])();
-    (HashMap[ModernKey, string]::set : (HashMap[ModernKey, string], ModernKey, string) -> unit)(
+    (HashMap[ModernKey, string]::set : (HashMap[ModernKey, string], ModernKey, string) -> ())(
       (modern_map/17 : HashMap[ModernKey, string]),
       (modern/15 : ModernKey),
       "modern"
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
         (HashMap[ModernKey, string]::get : (HashMap[ModernKey, string], ModernKey) -> Option[
           string
@@ -142,16 +142,16 @@ fn main() -> unit {
     );
     let high/18: Rank = Rank { value: 2 };
     let low/19: Rank = Rank { value: 1 };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)((high/18 : Rank) < (low/19 : Rank))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)((high/18 : Rank) <= (high/18 : Rank))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)((low/19 : Rank) > (high/18 : Rank))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (ToString::to_string : (bool) -> string)((low/19 : Rank) >= (low/19 : Rank))
     )
 }

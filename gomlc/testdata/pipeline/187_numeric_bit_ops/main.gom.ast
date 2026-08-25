@@ -1,37 +1,37 @@
 package main;
-fn show_u8(value: u8) -> unit {
+fn show_u8(value: u8) -> () {
     println(value)
 }
 
-fn show_u16(value: u16) -> unit {
+fn show_u16(value: u16) -> () {
     println(value)
 }
 
-fn show_u32(value: u32) -> unit {
+fn show_u32(value: u32) -> () {
     println(value)
 }
 
-fn show_u64(value: u64) -> unit {
+fn show_u64(value: u64) -> () {
     println(value)
 }
 
-fn show_i8(value: i8) -> unit {
+fn show_i8(value: i8) -> () {
     println(value)
 }
 
-fn show_i16(value: i16) -> unit {
+fn show_i16(value: i16) -> () {
     println(value)
 }
 
-fn show_i32(value: i32) -> unit {
+fn show_i32(value: i32) -> () {
     println(value)
 }
 
-fn show_i64(value: i64) -> unit {
+fn show_i64(value: i64) -> () {
     println(value)
 }
 
-fn unsigned_ops() -> unit {
+fn unsigned_ops() -> () {
     show_u8(13 % 5);
     show_u8(12 & 10);
     show_u8(12 | 3);
@@ -63,7 +63,7 @@ fn unsigned_ops() -> unit {
     show_u64(~0)
 }
 
-fn signed_ops() -> unit {
+fn signed_ops() -> () {
     show_i8(-13 % 5);
     show_i8(-8 >> 2);
     show_i8(1 << 6);
@@ -83,7 +83,7 @@ fn signed_ops() -> unit {
     show_i64(~4294967295)
 }
 
-fn precedence() -> unit {
+fn precedence() -> () {
     show_u8(1 | 2 ^ 3 & 1);
     show_u8(1 << 2 + 1);
     println(1 | 2 == 3.to_string());
@@ -91,7 +91,7 @@ fn precedence() -> unit {
     show_u8(~1 & 15)
 }
 
-fn casts() -> unit {
+fn casts() -> () {
     let five_eleven: u16 = 511;
     let two_fifty_six: u16 = 256;
     let negative_one_i16: i16 = -1;
@@ -129,7 +129,7 @@ fn contextual(value: u8) -> u8 {
     ~value & 15 | 1 << 4 % 31
 }
 
-fn main() -> unit {
+fn main() -> () {
     unsigned_ops();
     signed_ops();
     precedence();

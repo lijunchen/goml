@@ -8,9 +8,9 @@ fn read_measure[T](value/1: T) -> isize where T: Measure {
     (Measure::measure : (T) -> isize)((value/1 : T))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let values/2: Vec[i32] = (@intrinsic(vec.new) : () -> Vec[i32])();
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (isize::to_string : (isize) -> string)(
         (read_measure : (Vec[i32]) -> isize)((values/2 : Vec[i32]))
       )

@@ -14,20 +14,18 @@ fn unsigned_sum(first/5: u8, second/6: u16, third/7: u32, fourth/8: u64, fifth/9
       (fifth/9 : usize)
 }
 
-fn main() -> unit {
+fn main() -> () {
     let small/10: f32 = 1.5;
     let large/11: f64 = 2.25;
     let value/12: u8 = 65;
-    (println : (isize) -> unit)((signed_sum : (i8, i16, i32, i64, isize) -> isize)(-1, 2, 3, 4, 5));
-    (println : (usize) -> unit)(
-      (unsigned_sum : (u8, u16, u32, u64, usize) -> usize)(1, 2, 3, 4, 5)
-    );
-    (println : (string) -> unit)(
+    (println : (isize) -> ())((signed_sum : (i8, i16, i32, i64, isize) -> isize)(-1, 2, 3, 4, 5));
+    (println : (usize) -> ())((unsigned_sum : (u8, u16, u32, u64, usize) -> usize)(1, 2, 3, 4, 5));
+    (println : (string) -> ())(
       (ToString::to_string : (f32) -> string)((small/10 : f32)) + "," +
         (ToString::to_string : (f64) -> string)((large/11 : f64))
     );
-    (println : (u16) -> unit)((u8::to_u16 : (u8) -> u16)((value/12 : u8)));
-    (println : (char) -> unit)(
+    (println : (u16) -> ())((u8::to_u16 : (u8) -> u16)((value/12 : u8)));
+    (println : (char) -> ())(
       (Option[char]::unwrap_or : (Option[char], char) -> char)(
         (char_from_u32 : (u32) -> Option[char])(65),
         '?'

@@ -34,7 +34,7 @@ fn list_value(value/10: List) -> i32 {
     }
 }
 
-fn main() -> unit {
+fn main() -> () {
     let offset/12: i32 = 1;
     let add/14: (i32) -> i32 = |value/13: i32| => (value/13 : i32) + (offset/12 : i32);
     let point/15: Point = (Point::new : (i32, i32) -> Point)((add/14 : (i32) -> i32)(1), 3);
@@ -42,7 +42,7 @@ fn main() -> unit {
       (Point::copy : (Point, Point) -> Point)((point/15 : Point), (Point::origin : () -> Point)());
     let wrapped/17: Shape[i32] = Shape::Wrapped(Wrapper { value: (wrap : (i32) -> i32)(4) });
     let list/18: List = List::Cons(Node { value: 5, next: List::Nil });
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (i32::to_string : (i32) -> string)(
         (combined/16 : Point).x + (combined/16 : Point).y +
           (shape_value : (Shape[i32]) -> i32)((wrapped/17 : Shape[i32])) +

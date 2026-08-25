@@ -1,4 +1,4 @@
-fn main() -> unit {
+fn main() -> () {
     let values/0: Vec[isize] =
       (@intrinsic(vec.from_array) : ([isize; 5]) -> Vec[isize])([1, 2, 3, 4, 5]);
     let view/1: MutSlice[isize] =
@@ -8,21 +8,21 @@ fn main() -> unit {
         5
       );
     (view/1 : MutSlice[isize])[0] = 20;
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (MutSlice[isize]::set_checked : (MutSlice[isize], isize, isize) -> bool)(
         (view/1 : MutSlice[isize]),
         9,
         30
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (MutSlice[isize]::set_checked : (MutSlice[isize], isize, isize) -> bool)(
         (view/1 : MutSlice[isize]),
         1,
         30
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (MutSlice[isize]::copy_within : (MutSlice[isize], isize, isize, isize) -> bool)(
         (view/1 : MutSlice[isize]),
         0,
@@ -30,7 +30,7 @@ fn main() -> unit {
         1
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (MutSlice[isize]::copy_from : (MutSlice[isize], isize, Slice[isize]) -> bool)(
         (view/1 : MutSlice[isize]),
         0,
@@ -43,14 +43,14 @@ fn main() -> unit {
       MutSlice[isize]
     ])((view/1 : MutSlice[isize]), 1, 3) {
         Option::Some(part/2: MutSlice[isize]) =>
-          (MutSlice[isize]::fill : (MutSlice[isize], isize) -> unit)((part/2 : MutSlice[isize]), 6),
+          (MutSlice[isize]::fill : (MutSlice[isize], isize) -> ())((part/2 : MutSlice[isize]), 6),
         Option::None => (),
     };
     for value/3: isize in
       (values/0 : Vec[isize]) {
-        (println : (isize) -> unit)((value/3 : isize))
+        (println : (isize) -> ())((value/3 : isize))
     };
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (Option[Slice[isize]]::is_none : (Option[Slice[isize]]) -> bool)(
         (Vec[isize]::slice_checked : (Vec[isize], isize, isize) -> Option[Slice[isize]])(
           (values/0 : Vec[isize]),
@@ -59,7 +59,7 @@ fn main() -> unit {
         )
       )
     );
-    (println : (bool) -> unit)(
+    (println : (bool) -> ())(
       (Option[isize]::is_none : (Option[isize]) -> bool)(
         (Slice[isize]::get_checked : (Slice[isize], isize) -> Option[isize])(
           (MutSlice[isize]::as_slice : (MutSlice[isize]) -> Slice[isize])(

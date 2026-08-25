@@ -23,7 +23,7 @@ file main.gom
       }
   }
 
-  fn wrap_unit(local/1/3: Wrapper[unit]) -> Shape[unit] {
+  fn wrap_unit(local/1/3: Wrapper[()]) -> Shape[()] {
       ctor(def/1/2::v1)(value/3)
   }
 
@@ -56,7 +56,7 @@ file main.gom
       prefix/16 + " }"
   }
 
-  fn wrapper_unit_to_string(local/1/17: Wrapper[unit]) -> string {
+  fn wrapper_unit_to_string(local/1/17: Wrapper[()]) -> string {
       let Wrapper { value: local/1/18 } = wrapper/17;
       let local/1/19 = "Wrapper[unit] { value: " + value/18.to_string();
       prefix/19 + " }"
@@ -78,7 +78,7 @@ file main.gom
       }
   }
 
-  fn shape_unit_to_string(local/1/25: Shape[unit]) -> string {
+  fn shape_unit_to_string(local/1/25: Shape[()]) -> string {
       match shape/25 {
           Dot(local/1/26) =>
             {

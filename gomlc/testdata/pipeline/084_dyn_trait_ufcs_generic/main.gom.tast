@@ -12,7 +12,7 @@ fn render(x/2: dyn Display) -> string {
     (dyn Display::show : (dyn Display) -> string)((x/2 : dyn Display))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let d/3: dyn Display = (to_dyn : (Point) -> dyn Display)(Point { value: 7 });
-    (println : (string) -> unit)((render : (dyn Display) -> string)((d/3 : dyn Display)));
+    (println : (string) -> ())((render : (dyn Display) -> string)((d/3 : dyn Display)));
 }

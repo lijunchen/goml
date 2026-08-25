@@ -29,7 +29,7 @@ fn erase[T: Display](value: T) -> dyn Display {
     value as dyn Display
 }
 
-fn main() -> unit {
+fn main() -> () {
     let display = Number { value: 42 } as dyn Display;
     println(display.display());
     let erased = erase(Number { value: 7 });

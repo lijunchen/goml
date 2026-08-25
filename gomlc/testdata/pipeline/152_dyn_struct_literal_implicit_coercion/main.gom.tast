@@ -8,10 +8,10 @@ fn render(x/1: dyn Display) -> string {
     (dyn Display::show : (dyn Display) -> string)((x/1 : dyn Display))
 }
 
-fn main() -> unit {
+fn main() -> () {
     let value/2: i32 = 42;
     let holder/3: Holder[dyn Display] = Holder { value: to_dyn[Display]{i32}((value/2 : i32)) };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (render : (dyn Display) -> string)((holder/3 : Holder[dyn Display]).value)
     );
 }

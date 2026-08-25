@@ -1,4 +1,4 @@
-fn print_int_list(xs/0: IntList) -> unit {
+fn print_int_list(xs/0: IntList) -> () {
   match xs/0 {
     Tag_0 => {
       let inline0 = "Nil" in
@@ -9,11 +9,11 @@ fn print_int_list(xs/0: IntList) -> unit {
     Tag_1 => {
       let x0 = IntList::Cons._0(xs/0) in
       let x1 = IntList::Cons._1(xs/0) in
-      join inline_cont0(mtmp0: unit) -> unit {
-        join inline_cont1(mtmp1: unit) -> unit {
-          join inline_cont2(t0: string) -> unit {
-            join inline_cont3(mtmp2: unit) -> unit {
-              join inline_cont4(mtmp3: unit) -> unit {
+      join inline_cont0(mtmp0: ()) -> () {
+        join inline_cont1(mtmp1: ()) -> () {
+          join inline_cont2(t0: string) -> () {
+            join inline_cont3(mtmp2: ()) -> () {
+              join inline_cont4(mtmp3: ()) -> () {
                 let mtmp4 = print_int_list(x1) in
                 let inline3 = ")" in
                 let inline4 = trait_impl#ToString#string#to_string(inline3) in
@@ -79,10 +79,10 @@ fn int_list_length(xs/0: IntList) -> i32 {
   }
 }
 
-fn print_int_list_length(xs/0: IntList) -> unit {
-  join inline_cont0(mtmp0: unit) -> unit {
+fn print_int_list_length(xs/0: IntList) -> () {
+  join inline_cont0(mtmp0: ()) -> () {
     let t0 = int_list_length(xs/0) in
-    join inline_cont1(t1: string) -> unit {
+    join inline_cont1(t1: string) -> () {
       let inline0 = trait_impl#ToString#string#to_string(t1) in
       let inline1 = @runtime(core.string_println)(inline0) in
       ()
@@ -96,22 +96,22 @@ fn print_int_list_length(xs/0: IntList) -> unit {
   jump inline_cont0(())
 }
 
-fn main() -> unit {
+fn main() -> () {
   let x/0 = Tag_0 in
   let mtmp0 = print_int_list(x/0) in
-  join inline_cont0(mtmp1: unit) -> unit {
-    join inline_cont1(mtmp2: unit) -> unit {
+  join inline_cont0(mtmp1: ()) -> () {
+    join inline_cont1(mtmp2: ()) -> () {
       let x/1 = IntList::Cons(1, Tag_0) in
       let mtmp3 = print_int_list(x/1) in
-      join inline_cont2(mtmp4: unit) -> unit {
-        join inline_cont3(mtmp5: unit) -> unit {
+      join inline_cont2(mtmp4: ()) -> () {
+        join inline_cont3(mtmp5: ()) -> () {
           let t0 = IntList::Cons(3, Tag_0) in
           let t1 = IntList::Cons(2, t0) in
           let x/2 = IntList::Cons(1, t1) in
           let mtmp6 = print_int_list(x/2) in
-          join inline_cont4(mtmp7: unit) -> unit {
-            join inline_cont5(mtmp8: unit) -> unit {
-              join inline_cont6(y/0: IntList) -> unit {
+          join inline_cont4(mtmp7: ()) -> () {
+            join inline_cont5(mtmp8: ()) -> () {
+              join inline_cont6(y/0: IntList) -> () {
                 let mtmp9 = print_int_list(y/0) in
                 let inline0 = "" in
                 let inline1 = trait_impl#ToString#string#to_string(inline0) in
@@ -155,8 +155,8 @@ fn main() -> unit {
   jump inline_cont0(())
 }
 
-fn println__T_string(value/0: string) -> unit {
-  join inline_cont0(t0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
+  join inline_cont0(t0: string) -> () {
     let t1 = @runtime(core.string_println)(t0) in
     ()
   } in
@@ -227,7 +227,7 @@ fn decimal_string(value/0: u64) -> string {
                   let t5 = (t4 - offset/0) in
                   let t6 = (t5 - 1) in
                   let t7 = @intrinsic(vec.get)(reversed/0, t6) in
-                  join inline_cont3(_wild0: unit) -> string {
+                  join inline_cont3(_wild0: ()) -> string {
                     let compound_old0 = offset/0 in
                     let compound_value0 = 1 in
                     let t8 = (compound_old0 + compound_value0) in
@@ -259,7 +259,7 @@ fn decimal_string(value/0: u64) -> string {
           let t11 = (remaining/0 % 10) in
           let t12 = (t11 as u8) in
           let t13 = (t12 + 48) in
-          join inline_cont4(_wild1: unit) -> string {
+          join inline_cont4(_wild1: ()) -> string {
             let compound_old1 = remaining/0 in
             let compound_value1 = 10 in
             let t14 = (compound_old1 / compound_value1) in
@@ -282,7 +282,7 @@ fn decimal_string(value/0: u64) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> unit {
+fn inherent#Vec#Vec[T]#push__T_u8(self/0: Vec[u8], elem/0: u8) -> () {
   let t0 = @intrinsic(vec.push)(self/0, elem/0) in
   ()
 }

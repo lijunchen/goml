@@ -18,7 +18,7 @@ fn describe_dyn(value/0: dyn Describe) -> string {
   dyn_call[Describe::describe](value/0)
 }
 
-fn main() -> unit {
+fn main() -> () {
   let default_value/0 = DefaultValue { name: "value" } in
   let _wild0 =
     println__T_string(trait_default#Describe#describe__Self_DefaultValue(default_value/0)) in
@@ -35,7 +35,7 @@ fn trait_default#Describe#describe__Self_DefaultValue(self/0: DefaultValue) -> s
   ("default:" + trait_impl#Describe#DefaultValue#name(self/0))
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

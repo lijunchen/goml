@@ -22,7 +22,7 @@ fn bounce_int(shape: Shape[i32]) -> Shape[i32] {
     }
 }
 
-fn wrap_unit(value: Wrapper[unit]) -> Shape[unit] {
+fn wrap_unit(value: Wrapper[()]) -> Shape[()] {
     Wrapped(value)
 }
 
@@ -55,7 +55,7 @@ fn wrapper_int32_to_string(wrapper: Wrapper[i32]) -> string {
     prefix + " }"
 }
 
-fn wrapper_unit_to_string(wrapper: Wrapper[unit]) -> string {
+fn wrapper_unit_to_string(wrapper: Wrapper[()]) -> string {
     let Wrapper { value: value } = wrapper;
     let prefix = "Wrapper[unit] { value: " + value.to_string();
     prefix + " }"
@@ -77,7 +77,7 @@ fn shape_int32_to_string(shape: Shape[i32]) -> string {
     }
 }
 
-fn shape_unit_to_string(shape: Shape[unit]) -> string {
+fn shape_unit_to_string(shape: Shape[()]) -> string {
     match shape {
         Dot(point) =>
           {

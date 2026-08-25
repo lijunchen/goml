@@ -85,7 +85,7 @@ fn report(label/0: string, value/0: bool) -> string {
   (label/0 + trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn main() -> unit {
+fn main() -> () {
   let tuple_first/0 = 1 in
   let tuple_second/0 = 2 in
   let tuple_result_hit/0 = match_tuple((tuple_first/0, tuple_second/0)) in
@@ -112,7 +112,7 @@ fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
   @runtime(core.bool_to_string)(self/0)
 }
 
-fn println__T_string(value/0: string) -> unit {
+fn println__T_string(value/0: string) -> () {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
 }
 

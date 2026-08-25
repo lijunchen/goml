@@ -1,5 +1,5 @@
 fn record(log/0: Ref[string], label/1: string, value/2: isize) -> isize {
-    (Ref[string]::set : (Ref[string], string) -> unit)(
+    (Ref[string]::set : (Ref[string], string) -> ())(
       (log/0 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/0 : Ref[string])) + (label/1 : string)
     );
@@ -7,7 +7,7 @@ fn record(log/0: Ref[string], label/1: string, value/2: isize) -> isize {
 }
 
 fn record_point(log/3: Ref[string], label/4: string, value/5: Point) -> Point {
-    (Ref[string]::set : (Ref[string], string) -> unit)(
+    (Ref[string]::set : (Ref[string], string) -> ())(
       (log/3 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/3 : Ref[string])) + (label/4 : string)
     );
@@ -15,28 +15,28 @@ fn record_point(log/3: Ref[string], label/4: string, value/5: Point) -> Point {
 }
 
 fn record_vec(log/6: Ref[string], label/7: string, value/8: Vec[isize]) -> Vec[isize] {
-    (Ref[string]::set : (Ref[string], string) -> unit)(
+    (Ref[string]::set : (Ref[string], string) -> ())(
       (log/6 : Ref[string]),
       (Ref[string]::get : (Ref[string]) -> string)((log/6 : Ref[string])) + (label/7 : string)
     );
     (value/8 : Vec[isize])
 }
 
-fn main() -> unit {
+fn main() -> () {
     let mut number/9: isize = 5;
     (number/9 : isize) += 3;
     (number/9 : isize) *= 2;
     (number/9 : isize) >>= 1;
-    (println : (string) -> unit)((isize::to_string : (isize) -> string)((number/9 : isize)));
+    (println : (string) -> ())((isize::to_string : (isize) -> string)((number/9 : isize)));
     let mut direct/10: Point = Point { x: 3, y: 4 };
     (direct/10 : Point).x += 5;
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       "" + (isize::to_string : (isize) -> string)((direct/10 : Point).x) + "," +
         (isize::to_string : (isize) -> string)((direct/10 : Point).y)
     );
     let mut pair/11: (isize, isize) = (2, 9);
     (pair/11 : (isize, isize)).0 *= 3;
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       "" + (isize::to_string : (isize) -> string)((pair/11 : (isize, isize)).0) + "," +
         (isize::to_string : (isize) -> string)((pair/11 : (isize, isize)).1)
     );
@@ -54,14 +54,14 @@ fn main() -> unit {
             );
           Point { x: (struct_update_field/789/0 : isize), y: (struct_update_base/789 : Point).y }
       };
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string]))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       "" + (isize::to_string : (isize) -> string)((updated/14 : Point).x) + "," +
         (isize::to_string : (isize) -> string)((updated/14 : Point).y)
     );
-    (Ref[string]::set : (Ref[string], string) -> unit)((log/12 : Ref[string]), "");
+    (Ref[string]::set : (Ref[string], string) -> ())((log/12 : Ref[string]), "");
     let values/15: Vec[isize] =
       (@intrinsic(vec.from_array) : ([isize; 2]) -> Vec[isize])(
         [
@@ -75,10 +75,10 @@ fn main() -> unit {
       (values/15 : Vec[isize])
     )[(record : (Ref[string], string, isize) -> isize)((log/12 : Ref[string]), "I", 1)] +=
       (record : (Ref[string], string, isize) -> isize)((log/12 : Ref[string]), "V", 5);
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string]))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       "" +
         (isize::to_string : (isize) -> string)(
           (Vec[isize]::get : (Vec[isize], isize) -> isize)((values/15 : Vec[isize]), 0)
@@ -88,7 +88,7 @@ fn main() -> unit {
           (Vec[isize]::get : (Vec[isize], isize) -> isize)((values/15 : Vec[isize]), 1)
         )
     );
-    (Ref[string]::set : (Ref[string], string) -> unit)((log/12 : Ref[string]), "");
+    (Ref[string]::set : (Ref[string], string) -> ())((log/12 : Ref[string]), "");
     let table/16: HashMap[string, isize] =
       (@intrinsic(hashmap.from_array) : ([(string, isize); 3]) -> HashMap[string, isize])(
         [
@@ -106,10 +106,10 @@ fn main() -> unit {
           ("same", (record : (Ref[string], string, isize) -> isize)((log/12 : Ref[string]), "B", 2))
         ]
       );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       (Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string]))
     );
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       match (HashMap[string, isize]::get : (HashMap[string, isize], string) -> Option[isize])(
         (table/16 : HashMap[string, isize]),
         "same"
@@ -122,7 +122,7 @@ fn main() -> unit {
     let empty_values/18: Vec[isize] = (Vec[isize]::new : () -> Vec[isize])();
     let empty_table/19: HashMap[string, isize] =
       (HashMap[string, isize]::new : () -> HashMap[string, isize])();
-    (println : (string) -> unit)(
+    (println : (string) -> ())(
       "" + "empty=" +
         (isize::to_string : (isize) -> string)(
           (Vec[isize]::len : (Vec[isize]) -> isize)((empty_values/18 : Vec[isize])) +
