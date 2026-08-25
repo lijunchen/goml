@@ -8,24 +8,24 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 
 1. The project source code uses `.gom`; the project root directory uses `goml.toml` to declare the canonical module path.
 2. Each source file in the project first writes `package name;`, then writes the file's own `use`, and finally writes the top-level definition.
-3. Parameters of top-level functions must have types; the return type is fixed to `unit` when omitted and is not inferred from the function body.
+3. Parameters of top-level functions must have types; the return type is fixed to `()` when omitted and is not inferred from the function body.
 4. Generics use square brackets: `Vec[i32]`, `fn id[T](x: T) -> T`, not `<...>`.
 5. Generic calls usually rely on type inference; when explicit type arguments are required, write `id::[i32](1)`, not `id[i32](1)` or Rust's `id::<i32>(1)`.
-6. `if`, `match`, and `select` are expressions. `if` without `else` must return `unit`; `match` must be exhaustive.
+6. `if`, `match`, and `select` are expressions. `if` without `else` must return `()`; `match` must be exhaustive.
 7. The last semicolon-free expression of a block is the block value; adding a semicolon discards the value.
 8. `let` and assignment statements must end with a semicolon. Mutable bindings may be introduced with `let mut pattern` or precisely inside a pattern with `mut name`; the semicolon can be omitted for `if`, `match`, `select`, `while`, `loop` and `for` as statements.
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package and trait with `use alias::Trait;` or a braced import; when in doubt, use UFCS: `Trait::method(value)`.
 12. Use `module::path` for a package below the current module root. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, or Go `var` / `:=`. A user `extern fn` is valid only with the typed Go FFI attribute described below.
-13. The test function uses `#[test]`, which must have no parameters, no type parameters and return `unit`; the white-box test is placed in `*_test.gom` of the same package, and the black-box test is placed in the `tests/` directory of the package under test.
+13. The test function uses `#[test]`, which must have no parameters, no type parameters and return `()`; the white-box test is placed in `*_test.gom` of the same package, and the black-box test is placed in the `tests/` directory of the package under test.
 
 ## minimal program
 
 Single-file compilation allows omission of `package main;`:
 
 ```goml
-fn main() -> unit {
+fn main() -> () {
     println("hello, goml")
 }
 ```
@@ -35,12 +35,12 @@ The entry file in the project should explicitly declare the package:
 ```goml
 package main;
 
-fn main() -> unit {
+fn main() -> () {
     println("hello, goml")
 }
 ```
 
-`main` cannot have parameters or type parameters.When generating an executable file, the package selected as the entry must be declared as `package main;` and define `fn main()`.It is recommended to let `main` return `unit`.
+`main` cannot have parameters or type parameters.When generating an executable file, the package selected as the entry must be declared as `package main;` and define `fn main()`.It is recommended to let `main` return `()`.
 
 ## Lexical rules
 
@@ -65,9 +65,11 @@ Common keywords include:
 ```text
 package use as pub fn struct enum trait impl for type const static where defer
 let mut if else match while loop for in break continue return go dyn
-true false unit bool isize i8 i16 i32 i64 usize u8 u16 u32 u64
+true false bool isize i8 i16 i32 i64 usize u8 u16 u32 u64
 f32 f64 string char extern
 ```
+
+The `0.1.41` transition release still accepts the legacy `unit` type keyword, but `goml fmt` rewrites it to `()` and all compiler and language-server output uses `()`. New source must use `()`; the compatibility keyword is removed in the following release.
 
 `import`, `mod`, `crate`, `super` and `array` are not current keywords, but similar old declarations will receive migration diagnostics.`self` is a special abbreviation for the receiver parameter, and can also be used as a common receiver variable name; `Self` has special meaning in the type position of trait and impl.
 
@@ -77,7 +79,7 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 
 | category | Syntax example | Default or description |
 | --- | --- | --- |
-| unit | `()` | Type is `unit` |
+| empty tuple | `()` | Type is `()` |
 | bool | `true`、`false` | Type is `bool` |
 | integer | `0`、`42`、`1_000`、`0b1010`、`0o755`、`0xff` | Determined by context; defaults to `isize` when unconstrained |
 | floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `f64` when unconstrained |
@@ -255,7 +257,7 @@ package main;
 
 use alice::myapp::utils;
 
-fn main() -> unit {
+fn main() -> () {
     println(utils::message())
 }
 ```
@@ -357,7 +359,7 @@ All files in the same package can use private top-level items.The trait impl met
 
 | type | Example | illustrate |
 | --- | --- | --- |
-| unit | `unit` | The only value is `()`; `()` is not a type notation |
+| empty tuple | `()` | The only value is `()` |
 | Boolean | `bool` | `true`、`false` |
 | raw integer | `isize` | Corresponds to the `int` of the target Go platform and is also the default type of integers. |
 | signed integer | `i8`、`i16`、`i32`、`i64` | fixed width |
@@ -366,7 +368,7 @@ All files in the same package can use private top-level items.The trait impl met
 | floating point | `f32`、`f64` | IEEE floating point |
 | string | `string` | Go string backend |
 | character | `char` | Compile to Go `rune` |
-| tuple | `(i32, string)` | Tuples in type syntax have at least two elements |
+| tuple | `(i32, string)` | Nonempty tuples in type syntax have at least two elements |
 | fixed array | `[i32; 4]` | The length is part of the type |
 | function | `(i32, string) -> bool` | parameter type list to return type |
 | Generic application | `Option[i32]`、`pkg::Box[string]` | Use square brackets |
@@ -381,8 +383,11 @@ Example of function type:
 ```goml
 let predicate: (i32) -> bool = |value: i32| value > 0;
 let combine: (i32, i32) -> i32 = |a, b| a + b;
-let action: () -> unit = || println("run");
+let action: () -> () = || println("run");
+let accepts_empty: (()) -> () = |value: ()| value;
 ```
+
+`()` is the empty-tuple type. At the left of `->`, `() -> T` is a zero-parameter function type, while `(()) -> T` is a function taking one `()` parameter.
 
 `(value)` in value and pattern is a group, `(value,)` is a single-element tuple.The current type syntax cannot directly annotate single-element tuples: `(T,)` still normalizes to `T`, so the type of such values ​​must be inferred from the local context.
 
@@ -653,7 +658,7 @@ fn log(message: string) {
 }
 ```
 
-The parameter type cannot be omitted.Omitting `-> ...` is equivalent to `-> unit`.The top-level function name must be unique in the same package, and overloading by parameter type is not supported.
+The parameter type cannot be omitted.Omitting `-> ...` is equivalent to `-> ()`.The top-level function name must be unique in the same package, and overloading by parameter type is not supported.
 
 ### Generic function
 
@@ -727,10 +732,10 @@ fn square(value: i32) -> i32 {
 }
 ```
 
-A block without a tail expression returns `unit`.Adding `;` after an expression turns it into an expression statement and discards the result:
+A block without a tail expression returns `()`.Adding `;` after an expression turns it into an expression statement and discards the result:
 
 ```goml
-fn run() -> unit {
+fn run() -> () {
     println("first");
     1 + 2;
 }
@@ -738,12 +743,12 @@ fn run() -> unit {
 
 `let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, brace-delimited structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them. Newtype declarations such as `struct UserId(u64);` do require the trailing semicolon.
 
-`defer expression;` registers a `unit` expression to run when the current lexical block is left. Deferred expressions run in last-in-first-out order on normal completion and when `return`, `?`, `break`, or `continue` crosses their block. A return or break value is evaluated before cleanup begins. Each loop-body block has its own cleanup stack, so a deferred expression registered during one iteration runs before that iteration exits.
+`defer expression;` registers a `()` expression to run when the current lexical block is left. Deferred expressions run in last-in-first-out order on normal completion and when `return`, `?`, `break`, or `continue` crosses their block. A return or break value is evaluated before cleanup begins. Each loop-body block has its own cleanup stack, so a deferred expression registered during one iteration runs before that iteration exits.
 
 Unlike Go's `defer`, GoML does not evaluate call arguments when the statement is reached. The complete expression is evaluated at block exit, so reads through `Ref` observe the value at cleanup time. A closure body is a separate control-flow scope. Deferred expressions cannot contain `return`, `break`, `continue`, or `?`, and cleanup during an unrecovered runtime panic is not currently guaranteed. The compiler lowers cleanup to ordinary structured control flow and never emits a Go `defer` statement.
 
 ```goml
-fn work() -> unit {
+fn work() -> () {
     let state = Ref::new("open");
     defer println("closing:" + state.get());
     defer println("flush");
@@ -866,7 +871,7 @@ GoML supports:
 - closure
 - `return`, `break`, `continue`, `go` and `?`
 
-A block is an expression in any ordinary expression position. Its last expression without a semicolon supplies the value; a block without a tail expression has type `unit`:
+A block is an expression in any ordinary expression position. Its last expression without a semicolon supplies the value; a block without a tail expression has type `()`:
 
 ```goml
 let answer = {
@@ -962,7 +967,7 @@ Both ends are `isize`. A half-open range is empty when `start >= end`; an inclus
 
 ### `if`
 
-`if` is always an expression.`else` is required when generating non-`unit` values:
+`if` is always an expression.`else` is required when generating values other than `()`:
 
 ```goml
 fn absolute(value: i32) -> i32 {
@@ -974,7 +979,7 @@ fn absolute(value: i32) -> i32 {
 }
 ```
 
-Both branches must produce compatible types.Conditions with only side effects can omit `else`; in this case the then branch must produce `unit`:
+Both branches must produce compatible types.Conditions with only side effects can omit `else`; in this case the then branch must produce `()`:
 
 ```goml
 if enabled {
@@ -1004,7 +1009,7 @@ let number = if let Option::Some(value) = candidate {
 };
 ```
 
-The `else` of `if let` can also be omitted; in this case the compiler treats the else branch as `()`, so the then branch must produce `unit`:
+The `else` of `if let` can also be omitted; in this case the compiler treats the else branch as `()`, so the then branch must produce `()`:
 
 ```goml
 if let Option::Some(value) = candidate {
@@ -1100,7 +1105,7 @@ Every `select` contains at least one `recv` or `send` arm. It may have one `defa
 
 Channel operands, send values, and guards are evaluated exactly once from top to bottom before selection. Arm bodies are evaluated only after their operation is chosen, receive bindings are visible only in their own bodies, and all bodies must produce compatible types. A body may be a single expression or a block. Arms are comma-separated, with an optional final comma. `select`, `priority`, `recv`, `send`, `when`, `match`, and `default` are contextual spellings in these positions rather than globally reserved identifiers.
 
-`select` is a runtime operation and is unavailable in `comptime` evaluation. Cancellation, task completion, and timers participate through `Receiver[unit]` values rather than dedicated select-arm syntax.
+`select` is a runtime operation and is unavailable in `comptime` evaluation. Cancellation, task completion, and timers participate through `Receiver[()]` values rather than dedicated select-arm syntax.
 
 ### `while`
 
@@ -1111,7 +1116,7 @@ while index < limit {
 };
 ```
 
-The condition must be `bool` and the loop result is `unit`. A `while` loop accepts only `break` without a value.
+The condition must be `bool` and the loop result is `()`. A `while` loop accepts only `break` without a value.
 
 `while let` evaluates the right-hand expression once in each round; when the match is successful, it enters the loop body and provides pattern binding, and when the match fails, it exits the loop:
 
@@ -1121,7 +1126,7 @@ while let Option::Some(value) = iterator.next() {
 };
 ```
 
-The loop body must return `unit`.Pattern binding is only visible within the loop body.
+The loop body must return `()`.Pattern binding is only visible within the loop body.
 
 ### `loop`
 
@@ -1136,7 +1141,7 @@ let result = loop {
 };
 ```
 
-All `break` values targeting the same `loop` must have compatible types. `break;` supplies `unit`, so it cannot be mixed with non-`unit` break values. A `loop` with no `break` targeting it has type `never` and does not continue to the following expression. Unlabeled `break` and `continue` target the nearest loop.
+All `break` values targeting the same `loop` must have compatible types. `break;` supplies `()`, so it cannot be mixed with other break value types. A `loop` with no `break` targeting it has type `never` and does not continue to the following expression. Unlabeled `break` and `continue` target the nearest loop.
 
 ### `for`
 
@@ -1150,7 +1155,7 @@ for value in values {
 };
 ```
 
-`for pattern in source { ... }` accepts fixed arrays and values ​​that implement `IntoIterator`.Both the source expression and the `into_iter` transformation are executed only once.The pattern must be irrefutable and the loop body must return `unit`.`start..end` can be used directly as a native `isize` range.
+`for pattern in source { ... }` accepts fixed arrays and values ​​that implement `IntoIterator`.Both the source expression and the `into_iter` transformation are executed only once.The pattern must be irrefutable and the loop body must return `()` .`start..end` can be used directly as a native `isize` range.
 
 Tuple destructuring can be used directly in loops:
 
@@ -1230,7 +1235,7 @@ When using `?` with `Option[T]`, the nearest function or closure must return `Op
 
 ### `go`
 
-`go` starts a zero-argument closure that returns `unit`:
+`go` starts a zero-argument closure that returns `()`:
 
 ```goml
 go || {
@@ -1238,7 +1243,7 @@ go || {
 };
 ```
 
-Don't write `go work();`; that will get `unit` first, and the value type required by `go` is `() -> unit`.Should be written `go || work();` .
+Don't write `go work();`; that evaluates `work()` first, while `go` requires a value of type `() -> ()`.Write `go || work();` instead.
 
 `go` is a detached, unstructured escape hatch. Its lifetime is not tied to the caller, it does not return a task handle, and its failures are not propagated. Use `std::task` when the caller must wait for child work or coordinate cancellation.
 
@@ -1252,7 +1257,7 @@ Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
 | --- | --- |
 | variable binding | `value` |
 | Wildcard | `_` |
-| unit | `()` |
+| empty tuple | `()` |
 | bool/number/string/character | `true`、`42`、`"ok"`、`'x'` |
 | top-level constant | `ANSWER` or `config::ANSWER` |
 | Group | `(pattern)` |
@@ -1905,7 +1910,7 @@ The builder operations are:
 meta_type_named(input, name) -> MetaType
 meta_type_call_site(name) -> MetaType
 meta_type_list_new() -> MetaTypeList
-meta_type_list_push(list, type) -> unit
+meta_type_list_push(list, type) -> ()
 meta_type_tuple(list) -> MetaType
 meta_type_apply(type, arguments) -> MetaType
 meta_type_array(element, length) -> MetaType
@@ -1934,7 +1939,7 @@ meta_expr_constructor(name, arguments) -> MetaExpr
 meta_expr_target_constructor(input, variant, arguments) -> MetaExpr
 meta_expr_tuple/array(elements) -> MetaExpr
 meta_expr_field_list_new() -> MetaExprFieldList
-meta_expr_field_list_push(list, name, value) -> unit
+meta_expr_field_list_push(list, name, value) -> ()
 meta_expr_struct(input, name, fields) -> MetaExpr
 meta_expr_struct_call_site(name, fields) -> MetaExpr
 meta_expr_target_struct(input, fields) -> MetaExpr
@@ -1945,7 +1950,7 @@ meta_expr_cast(value, type) -> MetaExpr
 meta_expr_return(value) -> MetaExpr
 meta_expr_try(value) -> MetaExpr
 meta_expr_list_new() -> MetaExprList
-meta_expr_list_push(list, expression) -> unit
+meta_expr_list_push(list, expression) -> ()
 
 meta_pattern_wild() -> MetaPattern
 meta_pattern_bind(name) -> MetaPattern
@@ -1954,42 +1959,42 @@ meta_pattern_tuple/array(patterns) -> MetaPattern
 meta_pattern_constructor(name, patterns) -> MetaPattern
 meta_pattern_target_constructor(input, variant, patterns) -> MetaPattern
 meta_pattern_field_list_new() -> MetaPatternFieldList
-meta_pattern_field_list_push(list, name, pattern) -> unit
+meta_pattern_field_list_push(list, name, pattern) -> ()
 meta_pattern_struct(name, fields, has_rest) -> MetaPattern
 meta_pattern_target_struct(input, fields, has_rest) -> MetaPattern
 meta_pattern_alias(name, pattern) -> MetaPattern
 meta_pattern_or(patterns) -> MetaPattern
 meta_pattern_range(start, end, inclusive) -> MetaPattern
 meta_pattern_list_new() -> MetaPatternList
-meta_pattern_list_push(list, pattern) -> unit
+meta_pattern_list_push(list, pattern) -> ()
 meta_arm(pattern, expression) -> MetaArm
 meta_arm_guarded(pattern, guard, expression) -> MetaArm
 meta_arm_list_new() -> MetaArmList
-meta_arm_list_push(list, arm) -> unit
+meta_arm_list_push(list, arm) -> ()
 
 meta_block_new() -> MetaBlock
-meta_block_let(block, name, value) -> unit
-meta_block_let_mut(block, name, value) -> unit
-meta_block_let_mut_typed(block, name, type, value) -> unit
-meta_block_let_typed(block, name, type, value) -> unit
-meta_block_let_pattern(block, pattern, value) -> unit
-meta_block_assign(block, target, value) -> unit
-meta_block_expr(block, expression) -> unit
+meta_block_let(block, name, value) -> ()
+meta_block_let_mut(block, name, value) -> ()
+meta_block_let_mut_typed(block, name, type, value) -> ()
+meta_block_let_typed(block, name, type, value) -> ()
+meta_block_let_pattern(block, pattern, value) -> ()
+meta_block_assign(block, target, value) -> ()
+meta_block_expr(block, expression) -> ()
 meta_block_finish(block, tail) -> MetaExpr
 meta_block_finish_unit(block) -> MetaExpr
 meta_param_list_new() -> MetaParamList
-meta_param_list_push(list, name, type) -> unit
+meta_param_list_push(list, name, type) -> ()
 meta_generic_list_new() -> MetaGenericList
-meta_generic_list_push(list, name) -> unit
-meta_generic_list_add_bound(input, list, name, trait_name) -> unit
+meta_generic_list_push(list, name) -> ()
+meta_generic_list_add_bound(input, list, name, trait_name) -> ()
 meta_method(name, parameters, return_type, body) -> MetaMethod
 meta_method_generic(name, generics, parameters, return_type, body) -> MetaMethod
 
 derive_output_new(input, trait_name) -> DeriveOutput
 derive_output_new_call_site(input, trait_name) -> DeriveOutput
-derive_output_add_predicate(output, type, trait_name) -> unit
-derive_output_add_call_site_predicate(output, type, trait_name) -> unit
-derive_output_add_method(output, method) -> unit
+derive_output_add_predicate(output, type, trait_name) -> ()
+derive_output_add_call_site_predicate(output, type, trait_name) -> ()
+derive_output_add_method(output, method) -> ()
 ```
 
 `meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_expr_integer` accepts a normalized integer literal string plus its exact integer type, so builders can represent values outside the host `isize` range. `meta_expr_cast` accepts only a `dyn` target type; generated numeric conversions should use `meta_expr_method_call`. `meta_expr_trait_call` resolves the trait in the handler's defining package and builds a static trait method call. `meta_type_equal` compares structural type identity. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
@@ -2033,10 +2038,10 @@ The initial ABI supports values whose generated Go representations are already d
 | `Sender[T]` | `chan<- T` |
 | `Receiver[T]` | `<-chan T` |
 | Direct `dyn Marker` parameter or single return | Go `any` through the trait object's `data` field |
-| `unit` return | Go function with no result |
+| `()` return | Go function with no result |
 | `(A, B, ...)` return | Multiple Go results in the same order |
 
-Tuple types are supported only as the complete return type. Tuple elements and array, slice, or channel elements must themselves be FFI-safe. Parameters cannot be `unit`.
+Tuple types are supported only as the complete return type. Tuple elements and array, slice, or channel elements must themselves be FFI-safe. Parameters cannot be `()`.
 
 `dyn Marker` is supported only as a direct parameter or as the complete single return type. `Marker` must be strictly empty: it cannot declare generic parameters, predicates, supertraits, associated types, or methods, and the `dyn` type cannot have arguments, associated-type bindings, or additional bounds. The wrapper passes the object's `data` field to Go as `any` and wraps a returned Go value back into the empty marker object. Empty marker objects are not yet supported inside tuples, arrays, slices, or channels.
 
@@ -2076,7 +2081,7 @@ package math;
 use std::testing;
 
 #[test]
-fn addition_works() -> unit {
+fn addition_works() -> () {
     testing::assert_eq(1 + 1, 2)
 }
 ```
@@ -2086,7 +2091,7 @@ Test functions must meet the following rules:
 - It can only be a top-level function, not an impl method, `extern fn`, structure, enumeration or trait;
 - Cannot be named `main`;
 - Cannot have parameters or type parameters;
-- The return type must be `unit`;
+- The return type must be `()`;
 - Canonical test IDs generated within the same test package must be unique.
 
 Test functions do not require `pub`.`#[test]` does not accept parameters.When you need to skip a test by default, you can use `#[ignore]` without parameters or `#[ignore("reason")]` with a string reason; `#[ignore]` cannot be used alone without `#[test]`:
@@ -2094,13 +2099,13 @@ Test functions do not require `pub`.`#[test]` does not accept parameters.When yo
 ```goml
 #[test]
 #[ignore]
-fn unfinished_case() -> unit {
+fn unfinished_case() -> () {
     ()
 }
 
 #[test]
 #[ignore("requires an external service")]
-fn integration_case() -> unit {
+fn integration_case() -> () {
     ()
 }
 ```
@@ -2130,7 +2135,7 @@ package math;
 use std::testing;
 
 #[test]
-fn private_helper_works() -> unit {
+fn private_helper_works() -> () {
     testing::assert_eq(private_helper(), 42)
 }
 ```
@@ -2156,7 +2161,7 @@ use alice::myapp::math;
 use std::testing;
 
 #[test]
-fn public_add_works() -> unit {
+fn public_add_works() -> () {
     testing::assert_eq(math::add(20, 22), 42)
 }
 ```
@@ -2247,8 +2252,8 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 
 ### Output and string conversion
 
-- `print[T: ToString](value: T) -> unit`
-- `println[T: ToString](value: T) -> unit`
+- `print[T: ToString](value: T) -> ()`
+- `println[T: ToString](value: T) -> ()`
 - `value.to_string() -> string`, suitable for values ​​that implement `ToString`
 - `value.debug() -> string`, suitable for values that implement `Debug`
 - `string.len() -> isize` and `string.byte_len() -> isize`, both returning the UTF-8 byte length
@@ -2291,7 +2296,7 @@ API：
 
 - `Ref::new(value) -> Ref[T]`
 - `reference.get() -> T`
-- `reference.set(value) -> unit`
+- `reference.set(value) -> ()`
 - `ptr_eq(a, b) -> bool`, compare reference identities
 
 The built-in `PartialEq`, `Eq`, and `Hash` implementations for `Ref[T]` use reference identity and do not require `T` to implement those traits. Mutating the referenced value therefore does not change equality or hashing. `Ref[T]` does not implement `Default`, because implicit allocation and recursive default construction would be surprising.
@@ -2322,41 +2327,41 @@ Commonly used methods:
 - `Vec::new() -> Vec[T]`
 - `Vec::from_array(values: [T; N]) -> Vec[T]`
 - `Vec::with_capacity(capacity) -> Vec[T]`
-- `push(value) -> unit`
+- `push(value) -> ()`
 - `pushed(value) -> Vec[T]`
 - `copy() -> Vec[T]`
 - `freeze() -> FrozenVec[T]`
 - `get(index) -> T`
-- `set(index, value) -> unit`
+- `set(index, value) -> ()`
 - `len() -> isize`
 - `capacity() -> isize`
 - `is_empty() -> bool`
 - `contains(value) -> bool`
 - `position(predicate) -> Option[isize]`
-- `sort_by(compare) -> unit`
-- `stable_sort_by(compare) -> unit`
-- `sort_by_ordering(compare) -> unit`
-- `stable_sort_by_ordering(compare) -> unit`
+- `sort_by(compare) -> ()`
+- `stable_sort_by(compare) -> ()`
+- `sort_by_ordering(compare) -> ()`
+- `stable_sort_by_ordering(compare) -> ()`
 - `binary_search_by(compare) -> Option[isize]`
 - `binary_search_by_ordering(compare) -> Option[isize]`
 - `min_by(compare) -> Option[T]`
 - `max_by(compare) -> Option[T]`
 - `min_by_ordering(compare) -> Option[T]`
 - `max_by_ordering(compare) -> Option[T]`
-- `dedup_by(equal) -> unit`
-- `dedup() -> unit`
+- `dedup_by(equal) -> ()`
+- `dedup() -> ()`
 - `join(separator) -> string`
-- `reserve(additional) -> unit`
-- `truncate(len) -> unit`
-- `clear() -> unit`
+- `reserve(additional) -> ()`
+- `truncate(len) -> ()`
+- `clear() -> ()`
 - `last() -> Option[T]`
 - `pop() -> Option[T]`
-- `swap(left, right) -> unit`
+- `swap(left, right) -> ()`
 - `swap_remove(index) -> T`
-- `insert(index, value) -> unit`
+- `insert(index, value) -> ()`
 - `remove(index) -> T`
-- `reverse() -> unit`
-- `extend(other) -> unit`
+- `reverse() -> ()`
+- `extend(other) -> ()`
 - `slice(start, end) -> Slice[T]`
 - `iter() -> FnIterator[T]`
 
@@ -2439,9 +2444,9 @@ channel.close();
 Commonly used methods:
 
 - `Channel::[T]::new(capacity: isize) -> Channel[T]`
-- `send(value: T) -> unit`
+- `send(value: T) -> ()`
 - `recv() -> Option[T]`, returns `Option::None` when closed and drained
-- `close() -> unit`
+- `close() -> ()`
 - `sender() -> Sender[T]`
 - `receiver() -> Receiver[T]`
 - `split() -> (Sender[T], Receiver[T])`
@@ -2681,9 +2686,9 @@ fn load(input: string) -> Result[Server, string] {
 
 `std::ascii` operates on `byte`. Classification and case conversion use only the 7-bit ASCII range, and bytes above `0x7f` remain unchanged. `escape_default` emits short escapes for tabs, carriage returns, newlines, quotes, and backslashes, preserves printable ASCII, and uses lowercase `\\xNN` escapes for other bytes.
 
-`std::cmp` provides `PartialOrd` and `Ord`. `unit`, `bool`, `string`, `char`, and all signed and unsigned integer types implement both. Floating-point values implement only `PartialOrd`, because NaN does not form a total order; comparison with NaN yields `Option::None`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` implement the comparison traits conditionally and use lexicographic order. `cmp::compare` returns `Ordering::Less`, `Equal`, or `Greater`; `Ordering` supports predicates, reversal, lexicographic chaining, and conversion to the negative/zero/positive integer convention. `cmp::Reverse[T]` reverses an existing ordering. `cmp::clamp` returns an error when the minimum exceeds the maximum.
+`std::cmp` provides `PartialOrd` and `Ord`. `()`, `bool`, `string`, `char`, and all signed and unsigned integer types implement both. Floating-point values implement only `PartialOrd`, because NaN does not form a total order; comparison with NaN yields `Option::None`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` implement the comparison traits conditionally and use lexicographic order. `cmp::compare` returns `Ordering::Less`, `Equal`, or `Greater`; `Ordering` supports predicates, reversal, lexicographic chaining, and conversion to the negative/zero/positive integer convention. `cmp::Reverse[T]` reverses an existing ordering. `cmp::clamp` returns an error when the minimum exceeds the maximum.
 
-The prelude `Default` implementations use `()` for `unit`, `false` for `bool`, zero for numeric types, and the empty string for `string`. `Vec` and `HashMap` default to empty containers, and the standard collection types `HashSet`, `IndexMap`, `Stack`, `Deque`, `BitSet`, `Arena`, `IndexVec`, and `Interner` likewise default through their empty constructors. `Option[T]` defaults to `None` without requiring `T: Default`, while tuples and fixed arrays default each element. `Result[T, E]` and `Ref[T]` intentionally have no global default implementation.
+The prelude `Default` implementations use `()` for the empty tuple, `false` for `bool`, zero for numeric types, and the empty string for `string`. `Vec` and `HashMap` default to empty containers, and the standard collection types `HashSet`, `IndexMap`, `Stack`, `Deque`, `BitSet`, `Arena`, `IndexVec`, and `Interner` likewise default through their empty constructors. `Option[T]` defaults to `None` without requiring `T: Default`, while tuples and fixed arrays default each element. `Result[T, E]` and `Ref[T]` intentionally have no global default implementation.
 
 ### Structured concurrency
 
@@ -2726,14 +2731,14 @@ fn load_pair() -> Result[(isize, isize), string] {
 Cancellation is cooperative. `Scope::cancel` changes the state observed by `CancelToken::is_cancelled`; it does not forcibly terminate a goroutine. Blocking work can use:
 
 - `task::recv_with(token, channel) -> WaitResult[Option[T]]`
-- `task::send_with(token, channel, value) -> WaitResult[unit]`
-- `time::sleep_with(token, duration) -> WaitResult[unit]`
+- `task::send_with(token, channel, value) -> WaitResult[()]`
+- `time::sleep_with(token, duration) -> WaitResult[()]`
 - `Command::output_with(token) -> Result[WaitResult[Output], string]`
 - `Command::status_with(token) -> Result[WaitResult[ExitStatus], string]`
 
-`CancelToken::done() -> Receiver[unit]` exposes the scope context's shared completion channel, and `Task::done() -> Receiver[unit]` exposes the task's shared ready channel. Neither method starts a bridge goroutine. A task stores its result before closing the ready channel, so `join()` is immediately observable after its completion event.
+`CancelToken::done() -> Receiver[()]` exposes the scope context's shared completion channel, and `Task::done() -> Receiver[()]` exposes the task's shared ready channel. Neither method starts a bridge goroutine. A task stores its result before closing the ready channel, so `join()` is immediately observable after its completion event.
 
-`std::time::Timer::new(duration)` creates a stoppable one-shot timer. `done()` returns its `Receiver[unit]`, `stop()` reports whether it prevented a pending firing, and `time::after(duration)` is the one-shot convenience form. A successful stop leaves the completion channel unready. Timer firing and stopping are synchronized so the channel closes at most once.
+`std::time::Timer::new(duration)` creates a stoppable one-shot timer. `done()` returns its `Receiver[()]`, `stop()` reports whether it prevented a pending firing, and `time::after(duration)` is the one-shot convenience form. A successful stop leaves the completion channel unready. Timer firing and stopping are synchronized so the channel closes at most once.
 
 `WaitResult::Cancelled` means cancellation woke the operation. Process cancellation uses the host command context, so the scope waits for the process operation to return before it exits. Task scopes never close user channels automatically. `active_scope_count()` exposes the number of live runtime scopes for tests and leak diagnostics.
 
@@ -2893,8 +2898,10 @@ type          = primitive_type
               | dyn_type
               | "[" type ";" integer_literal "]"
               | "(" type_list ")"
-              | "()" "->" type
               | type "->" type
+primitive_type = "()" | "bool" | "isize" | "i8" | "i16" | "i32" | "i64"
+               | "usize" | "u8" | "u16" | "u32" | "u64" | "f32" | "f64"
+               | "string" | "char"
 type_args     = "[" type_list "]"
 type_list     = type ("," type)* ","?
 dyn_bound     = path dyn_args?

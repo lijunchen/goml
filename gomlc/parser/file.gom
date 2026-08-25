@@ -986,11 +986,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             parser.close(marker, cst::NodeKind::TYPE_CHAR)
         },
         LParen => {
-            let empty = token_is(parser.nth(1), lexer::TokenKind::RParen);
             type_list(parser);
-            if empty && !parser.at(lexer::TokenKind::Arrow) {
-                parser.error("empty parenthesized type must be followed by '->'")
-            } else {};
             parser.close(marker, cst::NodeKind::TYPE_TUPLE)
         },
         LBracket => {

@@ -122,7 +122,7 @@ pub fn type_doc(value: Type) -> pretty::Doc {
 
 fn type_doc_with_contract(builtin: BuiltinContract, value: Type) -> pretty::Doc {
     match resolve_type(value) {
-        Unit => pretty::text("unit"),
+        Unit => pretty::text("()"),
         Never => pretty::text("never"),
         Bool => pretty::text("bool"),
         Int => pretty::text("isize"),
@@ -328,7 +328,7 @@ fn write_dyn_bound_value(
 
 fn write_type_value(builtin: BuiltinContract, builder: text::StringBuilder, value: Type) -> unit {
     match prune(value) {
-        Unit => builder.write_string("unit"),
+        Unit => builder.write_string("()"),
         Never => builder.write_string("never"),
         Bool => builder.write_string("bool"),
         Int => builder.write_string("isize"),

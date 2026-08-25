@@ -260,6 +260,39 @@ fn format_generic(value: Builder, node: LocatedNode) -> BuiltDoc {
     format_generic_with_options(value, node, false, false)
 }
 
+fn format_function_type(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let output = parts();
+    let first_type = Ref::new(true);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => {
+                if first_type.get() && node_is(child, cst::NodeKind::TYPE_UNIT) {
+                    output.push_syntax(
+                        built(
+                            text("(())"),
+                            Option::Some(lexer::TokenKind::LParen),
+                            Option::Some(lexer::TokenKind::RParen),
+                        ),
+                    )
+                } else {
+                    output.push_syntax(format_node(value, child))
+                };
+                first_type.set(false)
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Whitespace) {
+                output.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                output.push_comment(token)
+            } else {
+                output.push_token(token)
+            },
+            None => (),
+        }
+    }
+    output.finish()
+}
+
 fn format_item_content(value: Builder, node: LocatedNode) -> BuiltDoc {
     if node_is(node, cst::NodeKind::ARG) || node_is(node, cst::NodeKind::PARAM)
         || node_is(node, cst::NodeKind::CLOSURE_PARAM) {
@@ -302,6 +335,12 @@ fn format_node(value: Builder, node: LocatedNode) -> BuiltDoc {
         ),
         ATTRIBUTE_LIST => format_attribute_list(value, node),
         WHERE_CLAUSE => format_where_clause(value, node),
+        TYPE_FUNC => format_function_type(value, node),
+        TYPE_UNIT => built(
+            text("()"),
+            Option::Some(lexer::TokenKind::LParen),
+            Option::Some(lexer::TokenKind::RParen),
+        ),
         EXPR_INTERPOLATED_STRING | ATTRIBUTE => {
             let first = match first_significant_token(node) {
                 Some(token) => Option::Some(token.token.kind),
