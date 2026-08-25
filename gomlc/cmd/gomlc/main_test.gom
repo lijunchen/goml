@@ -317,9 +317,7 @@ fn tracks_standard_root_package_needs() -> () {
 #[test]
 fn tracks_ascii_and_iter_package_needs() -> () {
     let needs = source_standard_needs(
-        ast::lower(
-            parser::parse("package main; use std::ascii; use std::iter; fn main() -> () {}"),
-        ),
+        ast::lower(parser::parse("package main; use std::ascii; use std::iter; fn main() -> () {}")),
     );
     testing::assert(needs.ascii);
     testing::assert(needs.iter);

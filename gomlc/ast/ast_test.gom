@@ -254,6 +254,16 @@ fn reports_invalid_parameter_types() -> () {
 }
 
 #[test]
+fn rejects_removed_unit_type_keyword() -> () {
+    let result = lower(parser::parse("fn main() -> unit {}"));
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(
+        result.diagnostics.get(0).message,
+        "type, trait, and generic names must start with an uppercase letter",
+    )
+}
+
+#[test]
 fn reports_trait_impl_method_visibility_on_the_impl() -> () {
     let source = "trait Render { fn render(self: Self) -> string; } struct Value {} impl Render for Value { pub fn render(self: Value) -> string { \"value\" } }";
     let result = lower(parser::parse(source));

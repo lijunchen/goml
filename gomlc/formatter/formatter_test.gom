@@ -165,7 +165,7 @@ fn formats_basic_file() -> () {
 }
 
 #[test]
-fn canonicalizes_legacy_unit_types() -> () {
+fn formats_empty_tuple_function_types() -> () {
     expect_format(
         "type Callback=(()) ->();fn consume(value:(),callback:Callback)->(){callback(value)}",
         "type Callback = (()) -> ();\n\nfn consume(value: (), callback: Callback) -> () {\n    callback(value)\n}\n",

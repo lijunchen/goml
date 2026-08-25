@@ -96,7 +96,7 @@ fn parses_half_open_and_inclusive_range_expressions() -> () {
 }
 
 #[test]
-fn parses_unit_type_with_empty_parentheses() -> () {
+fn parses_empty_tuple_type() -> () {
     let source = "type Callback = () -> (); fn consume(value: (), callback: Callback) -> () { callback() } fn one_unit_argument(callback: (()) -> ()) -> () { callback(()) }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 0);
