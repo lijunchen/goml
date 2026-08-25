@@ -34,7 +34,7 @@ fn formatting_result(server: Server, uri: string) -> Vec[json::Value] {
     }
 }
 
-fn formatting_document(server: Server, uri: string, text: string) -> unit {
+fn formatting_document(server: Server, uri: string, text: string) -> () {
     open_document(
         server,
         Document {
@@ -48,7 +48,7 @@ fn formatting_document(server: Server, uri: string, text: string) -> unit {
 }
 
 #[test]
-fn advertises_document_formatting() -> unit {
+fn advertises_document_formatting() -> () {
     let result = initialize_result();
     match json::field(result, "capabilities") {
         Some(capabilities) => match json::field(capabilities, "documentFormattingProvider") {
@@ -63,7 +63,7 @@ fn advertises_document_formatting() -> unit {
 }
 
 #[test]
-fn formats_the_latest_unicode_document() -> unit {
+fn formats_the_latest_unicode_document() -> () {
     let server = new_server();
     let uri = "file:///tmp/formatting.gom";
     formatting_document(server, uri, "package main;\n");
@@ -104,10 +104,10 @@ fn formats_the_latest_unicode_document() -> unit {
 }
 
 #[test]
-fn returns_no_edits_for_formatted_or_invalid_source() -> unit {
+fn returns_no_edits_for_formatted_or_invalid_source() -> () {
     let formatted_server = new_server();
     let formatted_uri = "file:///tmp/formatted.gom";
-    formatting_document(formatted_server, formatted_uri, "package main;\n\nfn main() -> unit {}\n");
+    formatting_document(formatted_server, formatted_uri, "package main;\n\nfn main() -> () {}\n");
     testing::assert_eq(formatting_result(formatted_server, formatted_uri).len(), 0);
     let invalid_server = new_server();
     let invalid_uri = "file:///tmp/invalid.gom";
@@ -116,15 +116,15 @@ fn returns_no_edits_for_formatted_or_invalid_source() -> unit {
 }
 
 #[test]
-fn formats_redundant_unit_tail() -> unit {
+fn formats_redundant_unit_tail() -> () {
     let server = new_server();
-    let uri = "file:///tmp/redundant-unit.gom";
-    formatting_document(server, uri, "package main;\n\nfn main() -> unit {\n    ()\n}\n");
+    let uri = "file:///tmp/redundant-().gom";
+    formatting_document(server, uri, "package main;\n\nfn main() -> () {\n    ()\n}\n");
     let edits = formatting_result(server, uri);
     testing::assert_eq(edits.len(), 1);
     match json::field(edits.get(0), "newText") {
         Some(value) => match json::as_string(value) {
-            Some(value) => testing::assert_eq(value, "package main;\n\nfn main() -> unit {}\n"),
+            Some(value) => testing::assert_eq(value, "package main;\n\nfn main() -> () {}\n"),
             None => testing::fail("formatted text must be a string"),
         },
         None => testing::fail("missing formatted text"),

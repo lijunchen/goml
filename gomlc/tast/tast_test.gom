@@ -50,7 +50,7 @@ fn has_diagnostic_containing(values: Vec[Diagnostic], expected: string) -> bool 
 }
 
 #[test]
-fn evaluates_explicit_comptime_functions() -> unit {
+fn evaluates_explicit_comptime_functions() -> () {
     let file = checked_file(
         "#[comptime] fn fibonacci(n: isize) -> isize { if n < 2 { n } else { fibonacci(n - 1) + fibonacci(n - 2) } } fn main() -> isize { comptime { fibonacci(10) } }",
     );
@@ -67,7 +67,7 @@ fn evaluates_explicit_comptime_functions() -> unit {
 }
 
 #[test]
-fn validates_comptime_derive_capability_boundaries() -> unit {
+fn validates_comptime_derive_capability_boundaries() -> () {
     let named = checked_file(
         "#[comptime_derive(Label)] pub fn handler(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") }",
     );
@@ -132,7 +132,7 @@ fn validates_comptime_derive_capability_boundaries() -> unit {
 }
 
 #[test]
-fn evaluates_comptime_shadowing_like_runtime() -> unit {
+fn evaluates_comptime_shadowing_like_runtime() -> () {
     let file = checked_file(
         "#[comptime] fn shadow(value: isize) -> isize { let base = value; let nested = { let base = base + 1; base * 2 }; base + nested } fn main() -> isize { comptime { shadow(3) } }",
     );
@@ -148,7 +148,7 @@ fn evaluates_comptime_shadowing_like_runtime() -> unit {
 }
 
 #[test]
-fn eliminates_comptime_before_core_lowering() -> unit {
+fn eliminates_comptime_before_core_lowering() -> () {
     let file = checked_file(
         "#[comptime] fn double(value: isize) -> isize { value * 2 } fn main() -> isize { comptime { double(21) } }",
     );
@@ -156,7 +156,7 @@ fn eliminates_comptime_before_core_lowering() -> unit {
 }
 
 #[test]
-fn evaluates_top_level_constants_with_comptime_functions() -> unit {
+fn evaluates_top_level_constants_with_comptime_functions() -> () {
     let file = checked_file(
         "#[comptime] fn square(value: isize) -> isize { value * value } const answer: isize = square(12); fn main() -> isize { answer }",
     );
@@ -170,7 +170,7 @@ fn evaluates_top_level_constants_with_comptime_functions() -> unit {
 }
 
 #[test]
-fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> unit {
+fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> () {
     let capture = checked_diagnostics("fn main(value: isize) -> isize { comptime { value + 1 } }");
     testing::assert(
         has_diagnostic(capture, "comptime expression cannot capture runtime local `value/0`"),
@@ -184,7 +184,7 @@ fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> unit {
             "comptime function calls runtime-only function `runtime_value`",
         ),
     );
-    let source = "fn runtime_value() -> isize { 1 } #[comptime] fn checked() -> isize { runtime_value() } fn main() -> unit {}";
+    let source = "fn runtime_value() -> isize { 1 } #[comptime] fn checked() -> isize { runtime_value() } fn main() -> () {}";
     let diagnostics = checked_diagnostics(source);
     let expected_call = match text::rfind(source, "runtime_value") {
         Some(value) => value,
@@ -216,7 +216,7 @@ fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> unit {
 }
 
 #[test]
-fn reports_compile_error_from_comptime() -> unit {
+fn reports_compile_error_from_comptime() -> () {
     let source = "#[comptime] fn checked(value: isize) -> isize { if value < 0 { compile_error(\"value must be non-negative\") } else { value } } fn main() -> isize { comptime { checked(-1) } }";
     let diagnostics = checked_diagnostics(source);
     testing::assert(has_diagnostic_containing(diagnostics, "value must be non-negative"));
@@ -246,9 +246,9 @@ fn reports_compile_error_from_comptime() -> unit {
 }
 
 #[test]
-fn validates_comptime_attributes_and_function_capabilities() -> unit {
+fn validates_comptime_attributes_and_function_capabilities() -> () {
     let invalid = checked_diagnostics(
-        "#[comptime(1)] #[comptime] #[comptime] fn generic[T](value: T) -> T { value } #[comptime] struct Value {} fn main() -> unit {}",
+        "#[comptime(1)] #[comptime] #[comptime] fn generic[T](value: T) -> T { value } #[comptime] struct Value {} fn main() -> () {}",
     );
     testing::assert(has_diagnostic(invalid, "#[comptime] does not accept arguments"));
     testing::assert(has_diagnostic(invalid, "duplicate #[comptime] attribute"));
@@ -262,19 +262,19 @@ fn validates_comptime_attributes_and_function_capabilities() -> unit {
         has_diagnostic(invalid, "#[comptime] is only valid on free function declarations"),
     );
     let closure = checked_diagnostics(
-        "#[comptime] fn invalid() -> isize { let value = || 1; value() } fn main() -> unit {}",
+        "#[comptime] fn invalid() -> isize { let value = || 1; value() } fn main() -> () {}",
     );
     testing::assert(has_diagnostic_containing(closure, "closures are not available in comptime"));
     testing::assert(
         has_diagnostic(
-            checked_diagnostics("fn main() -> unit { compile_error(\"runtime\"); }"),
+            checked_diagnostics("fn main() -> () { compile_error(\"runtime\"); }"),
             "compile_error is only available in comptime",
         ),
     )
 }
 
 #[test]
-fn checks_let_else_and_value_break_restrictions() -> unit {
+fn checks_let_else_and_value_break_restrictions() -> () {
     let source = "enum Choice { Value(isize), Empty } fn non_exit(value: Choice) -> isize { let Value(item) = value else { 0 }; item } fn while_value() { while true { break 1; }; } fn irrefutable() { let item = 1 else { return; }; }";
     let diagnostics = checked_diagnostics(source);
     testing::assert(
@@ -284,14 +284,14 @@ fn checks_let_else_and_value_break_restrictions() -> unit {
     testing::assert(has_diagnostic(diagnostics, "`let else` requires a refutable pattern"));
     testing::assert_eq(
         checked_diagnostics(
-            "fn exhaustive_exit(value: bool, flag: bool) -> unit { let true = value else { match flag { true => return, false => return } }; }",
+            "fn exhaustive_exit(value: bool, flag: bool) -> () { let true = value else { match flag { true => return, false => return } }; }",
         ).len(),
         0,
     )
 }
 
 #[test]
-fn checks_value_break_types_across_loop_paths() -> unit {
+fn checks_value_break_types_across_loop_paths() -> () {
     let source = "fn choose(flag: bool) -> isize { loop { if flag { break 1; } else { break \"wrong\"; }; } }";
     testing::assert(
         has_diagnostic(checked_diagnostics(source), "Type mismatch: expected isize, found string"),
@@ -299,9 +299,9 @@ fn checks_value_break_types_across_loop_paths() -> unit {
 }
 
 #[test]
-fn checks_block_and_byte_string_types() -> unit {
+fn checks_block_and_byte_string_types() -> () {
     let valid = checked_diagnostics(
-        "fn answer() -> isize { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let fixed: [byte; 3] = b\"raw\"; let _ = empty.len() + bytes.len() + fixed[0].to_isize(); }",
+        "fn answer() -> isize { { let base = 40; base + 2 } } fn main() -> () { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let fixed: [byte; 3] = b\"raw\"; let _ = empty.len() + bytes.len() + fixed[0].to_isize(); }",
     );
     testing::assert_eq(valid.len(), 0);
     let invalid = checked_diagnostics("fn wrong() -> Vec[isize] { b\"value\" }");
@@ -331,7 +331,7 @@ fn dependency_hir(source: string, package_name: string) -> hir::File {
 }
 
 #[test]
-fn environment_collection_preserves_hir_trait_scope() -> unit {
+fn environment_collection_preserves_hir_trait_scope() -> () {
     let file = dependency_hir(
         "package values; trait Local { fn value(self: Self) -> i32; }",
         "example::values",
@@ -387,7 +387,7 @@ fn checked_package_file_with_dependencies(source: string, dependencies: Vec[hir:
 }
 
 #[test]
-fn records_typecheck_query_facts() -> unit {
+fn records_typecheck_query_facts() -> () {
     let result = check(
         hir::lower(
             ast::lower(
@@ -441,7 +441,7 @@ fn records_typecheck_query_facts() -> unit {
 }
 
 #[test]
-fn merges_typecheck_query_facts_for_package_files() -> unit {
+fn merges_typecheck_query_facts_for_package_files() -> () {
     let parsed = Vec::new();
     parsed.push(parser::parse("package values; fn value() -> i32 { 42 }"));
     parsed.push(parser::parse("package values; fn answer() -> i32 { value() }"));
@@ -472,7 +472,7 @@ fn merges_typecheck_query_facts_for_package_files() -> unit {
 }
 
 #[test]
-fn checks_cross_file_package_definitions() -> unit {
+fn checks_cross_file_package_definitions() -> () {
     let parsed = Vec::new();
     parsed.push(
         parser::parse(
@@ -481,7 +481,7 @@ fn checks_cross_file_package_definitions() -> unit {
     );
     parsed.push(
         parser::parse(
-            "package main; fn main() -> unit { println(Idle.label()); println(Busy(4).label()) }",
+            "package main; fn main() -> () { println(Idle.label()); println(Busy(4).label()) }",
         ),
     );
     let ast_files = ast::lower_package(parsed);
@@ -521,7 +521,7 @@ fn checks_cross_file_package_definitions() -> unit {
 }
 
 #[test]
-fn diagnoses_overlapping_impls_across_package_files() -> unit {
+fn diagnoses_overlapping_impls_across_package_files() -> () {
     let parsed = Vec::from_array(
         [
             parser::parse(
@@ -553,10 +553,10 @@ fn diagnoses_overlapping_impls_across_package_files() -> unit {
 }
 
 #[test]
-fn diagnoses_duplicate_functions_across_package_files() -> unit {
+fn diagnoses_duplicate_functions_across_package_files() -> () {
     let parsed = Vec::new();
-    parsed.push(parser::parse("package values; fn duplicate() -> unit { () }"));
-    parsed.push(parser::parse("package values; fn duplicate() -> unit { () }"));
+    parsed.push(parser::parse("package values; fn duplicate() -> () { () }"));
+    parsed.push(parser::parse("package values; fn duplicate() -> () { () }"));
     let ast_files = ast::lower_package(parsed);
     let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     inputs.push((ast_files.get(0), "first.gom"));
@@ -578,9 +578,9 @@ fn diagnoses_duplicate_functions_across_package_files() -> unit {
 }
 
 #[test]
-fn diagnoses_duplicate_declaration_names() -> unit {
+fn diagnoses_duplicate_declaration_names() -> () {
     let diagnostics = checked_diagnostics(
-        "enum E { A, A } struct S { x: i32, x: string } enum Both { A } struct Both { value: i32 } type Alias = i32; type Alias = string; struct Mixed {} type Mixed = i32; trait T[T, T] { type Item; type Item; fn f(self: Self) -> unit; fn f(self: Self) -> unit; } fn duplicate[T, T](x: i32, x: string) -> unit {} fn duplicate() -> unit {} const repeated: isize = 1; const repeated: isize = 2; fn conflict() -> isize { 1 } const conflict: isize = 1;",
+        "enum E { A, A } struct S { x: i32, x: string } enum Both { A } struct Both { value: i32 } type Alias = i32; type Alias = string; struct Mixed {} type Mixed = i32; trait T[T, T] { type Item; type Item; fn f(self: Self) -> (); fn f(self: Self) -> (); } fn duplicate[T, T](x: i32, x: string) -> () {} fn duplicate() -> () {} const repeated: isize = 1; const repeated: isize = 2; fn conflict() -> isize { 1 } const conflict: isize = 1;",
     );
     let expected = Vec::new();
     expected.push("variant A is defined multiple times in enum E");
@@ -601,7 +601,7 @@ fn diagnoses_duplicate_declaration_names() -> unit {
 }
 
 #[test]
-fn distinguishes_same_named_associated_types_from_different_traits() -> unit {
+fn distinguishes_same_named_associated_types_from_different_traits() -> () {
     let diagnostics = checked_diagnostics(
         "trait Iterator { type Item; } trait IntoIterator { type Item; type IntoIter; } impl[I: Iterator] IntoIterator for I { type Item = I::Item; type IntoIter = I; }",
     );
@@ -618,7 +618,7 @@ fn distinguishes_same_named_associated_types_from_different_traits() -> unit {
 }
 
 #[test]
-fn resolves_generic_functions_from_package_interfaces() -> unit {
+fn resolves_generic_functions_from_package_interfaces() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir(
@@ -654,8 +654,8 @@ fn resolves_generic_functions_from_package_interfaces() -> unit {
 }
 
 #[test]
-fn enforces_source_extern_capabilities() -> unit {
-    let source = "#[runtime(\"std.io.println\")] extern fn output(value: string) -> unit; fn main() -> unit { output(\"ok\") }";
+fn enforces_source_extern_capabilities() -> () {
+    let source = "#[runtime(\"std.io.println\")] extern fn output(value: string) -> (); fn main() -> () { output(\"ok\") }";
     let rejected = checked_diagnostics(source);
     testing::assert_eq(rejected.len(), 2);
     testing::assert_eq(
@@ -684,8 +684,8 @@ fn enforces_source_extern_capabilities() -> unit {
 }
 
 #[test]
-fn classifies_extern_attributes_by_name_instead_of_payload_text() -> unit {
-    let source = "#[intrinsic(\"ref.get\")] extern fn probe() -> unit; fn main() -> unit { probe() }";
+fn classifies_extern_attributes_by_name_instead_of_payload_text() -> () {
+    let source = "#[intrinsic(\"ref.get\")] extern fn probe() -> (); fn main() -> () { probe() }";
     let allowed = check_for_link_with_dependencies_allowing_externs(
         hir::lower(ast::lower(parser::parse(source)), "host.gom"),
         Vec::new(),
@@ -707,7 +707,7 @@ fn classifies_extern_attributes_by_name_instead_of_payload_text() -> unit {
 }
 
 #[test]
-fn permits_typed_go_ffi_externs_in_user_sources() -> unit {
+fn permits_typed_go_ffi_externs_in_user_sources() -> () {
     let source = "type Text = string; #[go_ffi(\"strings\", \"ToUpper\")] extern fn to_upper(value: Text) -> Text; fn main() -> Text { to_upper(\"goml\") }";
     let file = checked_file(source);
     match file.items.get(0) {
@@ -727,7 +727,7 @@ fn permits_typed_go_ffi_externs_in_user_sources() -> unit {
 }
 
 #[test]
-fn permits_empty_marker_dyn_go_ffi_values() -> unit {
+fn permits_empty_marker_dyn_go_ffi_values() -> () {
     let diagnostics = checked_diagnostics(
         "trait NativeValue {} #[go_ffi(\"example.com/ffi\", \"Echo\")] extern fn echo(value: dyn NativeValue) -> dyn NativeValue;",
     );
@@ -737,11 +737,11 @@ fn permits_empty_marker_dyn_go_ffi_values() -> unit {
 }
 
 #[test]
-fn rejects_nonempty_and_nested_marker_dyn_go_ffi_values() -> unit {
+fn rejects_nonempty_and_nested_marker_dyn_go_ffi_values() -> () {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
-                "trait NativeValue { fn inspect(self: Self) -> unit; } #[go_ffi(\"example.com/ffi\", \"Echo\")] extern fn echo(value: dyn NativeValue) -> dyn NativeValue;",
+                "trait NativeValue { fn inspect(self: Self) -> (); } #[go_ffi(\"example.com/ffi\", \"Echo\")] extern fn echo(value: dyn NativeValue) -> dyn NativeValue;",
             ),
             "Go FFI parameter value has unsupported type dyn NativeValue",
         ),
@@ -749,7 +749,7 @@ fn rejects_nonempty_and_nested_marker_dyn_go_ffi_values() -> unit {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
-                "trait NativeValue {} #[go_ffi(\"example.com/ffi\", \"Use\")] extern fn use_value(values: Slice[dyn NativeValue]) -> unit;",
+                "trait NativeValue {} #[go_ffi(\"example.com/ffi\", \"Use\")] extern fn use_value(values: Slice[dyn NativeValue]) -> ();",
             ),
             "Go FFI parameter values has unsupported type Slice[dyn NativeValue]",
         ),
@@ -765,10 +765,10 @@ fn rejects_nonempty_and_nested_marker_dyn_go_ffi_values() -> unit {
 }
 
 #[test]
-fn diagnoses_invalid_go_ffi_declarations() -> unit {
+fn diagnoses_invalid_go_ffi_declarations() -> () {
     testing::assert(
         has_diagnostic(
-            checked_diagnostics("#[go_ffi(\"strings\")] extern fn probe() -> unit;"),
+            checked_diagnostics("#[go_ffi(\"strings\")] extern fn probe() -> ();"),
             "go_ffi attribute expects import path and symbol string arguments",
         ),
     );
@@ -783,7 +783,7 @@ fn diagnoses_invalid_go_ffi_declarations() -> unit {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
-                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe(values: Vec[i32]) -> unit;",
+                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe(values: Vec[i32]) -> ();",
             ),
             "Go FFI parameter values has unsupported type Vec[i32]",
         ),
@@ -791,7 +791,7 @@ fn diagnoses_invalid_go_ffi_declarations() -> unit {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
-                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe[T](value: T) -> unit;",
+                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe[T](value: T) -> ();",
             ),
             "Go FFI functions cannot declare generic parameters or predicates",
         ),
@@ -799,7 +799,7 @@ fn diagnoses_invalid_go_ffi_declarations() -> unit {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
-                "#[runtime(\"std.io.println\")] #[go_ffi(\"fmt\", \"Println\")] extern fn probe(value: string) -> unit;",
+                "#[runtime(\"std.io.println\")] #[go_ffi(\"fmt\", \"Println\")] extern fn probe(value: string) -> ();",
             ),
             "Extern declarations require exactly one ABI attribute",
         ),
@@ -807,7 +807,7 @@ fn diagnoses_invalid_go_ffi_declarations() -> unit {
 }
 
 #[test]
-fn permits_runtime_externs_in_builtin_sources() -> unit {
+fn permits_runtime_externs_in_builtin_sources() -> () {
     let lowered = hir::lower(
         ast::lower(
             parser::parse(
@@ -826,11 +826,11 @@ fn permits_runtime_externs_in_builtin_sources() -> unit {
 }
 
 #[test]
-fn rejects_runtime_externs_in_prelude_sources() -> unit {
+fn rejects_runtime_externs_in_prelude_sources() -> () {
     let lowered = hir::lower_package(
         ast::lower(
             parser::parse(
-                "package prelude; #[runtime(\"std.io.println\")] extern fn output(value: string) -> unit;",
+                "package prelude; #[runtime(\"std.io.println\")] extern fn output(value: string) -> ();",
             ),
         ),
         "prelude/prelude.gom",
@@ -848,7 +848,7 @@ fn rejects_runtime_externs_in_prelude_sources() -> unit {
 }
 
 #[test]
-fn hides_raw_builtin_helpers_from_user_sources() -> unit {
+fn hides_raw_builtin_helpers_from_user_sources() -> () {
     testing::assert(
         has_diagnostic(
             checked_diagnostics("fn main() -> char { string_get_raw(\"value\", 0) }"),
@@ -870,10 +870,10 @@ fn hides_raw_builtin_helpers_from_user_sources() -> unit {
 }
 
 #[test]
-fn diagnoses_unknown_extern_callable_keys() -> unit {
+fn diagnoses_unknown_extern_callable_keys() -> () {
     let runtime = check_for_link_with_dependencies_allowing_externs(
         hir::lower(
-            ast::lower(parser::parse("#[runtime(\"vendor.unknown\")] extern fn probe() -> unit;")),
+            ast::lower(parser::parse("#[runtime(\"vendor.unknown\")] extern fn probe() -> ();")),
             "host.gom",
         ),
         Vec::new(),
@@ -881,7 +881,7 @@ fn diagnoses_unknown_extern_callable_keys() -> unit {
     testing::assert(has_diagnostic(runtime.diagnostics, "Unknown runtime hook vendor.unknown"));
     let intrinsic = check_for_link_with_dependencies_allowing_externs(
         hir::lower(
-            ast::lower(parser::parse("#[intrinsic(\"vendor.unknown\")] extern fn probe() -> unit;")),
+            ast::lower(parser::parse("#[intrinsic(\"vendor.unknown\")] extern fn probe() -> ();")),
             "host.gom",
         ),
         Vec::new(),
@@ -890,9 +890,9 @@ fn diagnoses_unknown_extern_callable_keys() -> unit {
 }
 
 #[test]
-fn recovers_rejected_externs_with_builtin_signatures() -> unit {
+fn recovers_rejected_externs_with_builtin_signatures() -> () {
     let diagnostics = checked_diagnostics(
-        "#[intrinsic(\"ref.get\")] extern fn ref_get[T](reference: Ref[T]) -> T; fn main() -> unit { println(ref_get(1)) }",
+        "#[intrinsic(\"ref.get\")] extern fn ref_get[T](reference: Ref[T]) -> T; fn main() -> () { println(ref_get(1)) }",
     );
     testing::assert_eq(diagnostics.len(), 3);
     testing::assert(has_diagnostic(diagnostics, "extern ref_get is not permitted in this source"));
@@ -903,16 +903,16 @@ fn recovers_rejected_externs_with_builtin_signatures() -> unit {
 }
 
 #[test]
-fn resolves_runtime_externs_from_package_interfaces() -> unit {
+fn resolves_runtime_externs_from_package_interfaces() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir(
-            "package host; #[runtime(\"std.io.println\")] pub extern fn output(value: string) -> unit;",
+            "package host; #[runtime(\"std.io.println\")] pub extern fn output(value: string) -> ();",
             "std::internal::host",
         ),
     );
     let file = checked_file_with_dependencies(
-        "use std::internal::host; fn main() -> unit { host::output(\"ok\") }",
+        "use std::internal::host; fn main() -> () { host::output(\"ok\") }",
         dependencies,
     );
     match file.items.get(0) {
@@ -928,7 +928,7 @@ fn resolves_runtime_externs_from_package_interfaces() -> unit {
 }
 
 #[test]
-fn resolves_enum_patterns_from_package_interfaces() -> unit {
+fn resolves_enum_patterns_from_package_interfaces() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir("package api; pub enum Choice { Empty, Value(i32) }", "vendor::api"),
@@ -949,7 +949,7 @@ fn resolves_enum_patterns_from_package_interfaces() -> unit {
 }
 
 #[test]
-fn prefers_exact_struct_names_over_dependency_short_names() -> unit {
+fn prefers_exact_struct_names_over_dependency_short_names() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir("package api; pub struct Context { foreign: string }", "vendor::api"),
@@ -968,7 +968,7 @@ fn prefers_exact_struct_names_over_dependency_short_names() -> unit {
 }
 
 #[test]
-fn resolves_deferred_field_constraints() -> unit {
+fn resolves_deferred_field_constraints() -> () {
     let source = "struct Named { name: string } fn read(value: Named) -> string { let values = Vec::new(); let selected = values.get(0).name; values.push(value); selected }";
     let file = checked_file(source);
     match file.items.get(0) {
@@ -984,19 +984,19 @@ fn resolves_deferred_field_constraints() -> unit {
 }
 
 #[test]
-fn diagnoses_invalid_deferred_field_constraints() -> unit {
-    let source = "struct Named { name: string } fn read(value: Named) -> unit { let values = Vec::new(); let _ = values.get(0).missing; values.push(value) }";
+fn diagnoses_invalid_deferred_field_constraints() -> () {
+    let source = "struct Named { name: string } fn read(value: Named) -> () { let values = Vec::new(); let _ = values.get(0).missing; values.push(value) }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(result.diagnostics.get(0).message, "field not found: missing")
 }
 
 #[test]
-fn rejects_mismatched_let_annotations() -> unit {
+fn rejects_mismatched_let_annotations() -> () {
     let result = check(
         hir::lower(
             ast::lower(
-                parser::parse("fn main() -> unit { let value: i32 = \"wrong\"; let _ = value; }"),
+                parser::parse("fn main() -> () { let value: i32 = \"wrong\"; let _ = value; }"),
             ),
             "main.gom",
         ),
@@ -1009,7 +1009,7 @@ fn rejects_mismatched_let_annotations() -> unit {
 }
 
 #[test]
-fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
+fn reports_call_return_mismatches_once_per_constraint_phase() -> () {
     let local = checked_diagnostics("fn value() -> i32 { 1 } fn main() -> string { value() }");
     testing::assert_eq(local.len(), 2);
     for diagnostic in local {
@@ -1031,26 +1031,23 @@ fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
 }
 
 #[test]
-fn infers_numeric_generic_arguments_from_expected_types() -> unit {
-    let source = "fn main() -> unit { let r: Ref[u8] = Ref::new(10); }";
+fn infers_numeric_generic_arguments_from_expected_types() -> () {
+    let source = "fn main() -> () { let r: Ref[u8] = Ref::new(10); }";
     let diagnostics = checked_diagnostics(source);
     testing::assert_eq(diagnostics.len(), 0)
 }
 
 #[test]
-fn rejects_float_remainder_operands() -> unit {
+fn rejects_float_remainder_operands() -> () {
     let result = check(
-        hir::lower(
-            ast::lower(parser::parse("fn main() -> unit { let _ = 5.0 % 2.0; }")),
-            "main.gom",
-        ),
+        hir::lower(ast::lower(parser::parse("fn main() -> () { let _ = 5.0 % 2.0; }")), "main.gom"),
     );
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(result.diagnostics.get(0).message, "Operator % is not defined for type f64")
 }
 
 #[test]
-fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
+fn rejects_missing_dyn_impls_and_noncomparable_equality() -> () {
     let dyn_result = check(
         hir::lower(
             ast::lower(
@@ -1070,7 +1067,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn main() -> unit { let left: (i32) -> i32 = |value| value; let right: (i32) -> i32 = |value| value; let _ = left == right; }",
+                    "fn main() -> () { let left: (i32) -> i32 = |value| value; let right: (i32) -> i32 = |value| value; let _ = left == right; }",
                 ),
             ),
             "main.gom",
@@ -1084,10 +1081,10 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
 }
 
 #[test]
-fn rejects_non_function_go_operands() -> unit {
+fn rejects_non_function_go_operands() -> () {
     let result = check(
         hir::lower(
-            ast::lower(parser::parse("fn main() -> unit { while true { go break; } }")),
+            ast::lower(parser::parse("fn main() -> () { while true { go break; } }")),
             "main.gom",
         ),
     );
@@ -1101,7 +1098,7 @@ fn rejects_non_function_go_operands() -> unit {
     };
     testing::assert_eq(
         result.diagnostics.get(1).message,
-        "`go` expects a value of type () -> unit, found never",
+        "`go` expects a value of type () -> (), found never",
     );
     match result.diagnostics.get(1).severity {
         Error => (),
@@ -1110,10 +1107,10 @@ fn rejects_non_function_go_operands() -> unit {
 }
 
 #[test]
-fn rejects_invalid_signature_names_and_integer_literals() -> unit {
+fn rejects_invalid_signature_names_and_integer_literals() -> () {
     let unknown_trait = check(
         hir::lower(
-            ast::lower(parser::parse("fn use_value[T: Missing](value: T) -> unit { () }")),
+            ast::lower(parser::parse("fn use_value[T: Missing](value: T) -> () { () }")),
             "main.gom",
         ),
     );
@@ -1121,7 +1118,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     testing::assert_eq(unknown_trait.diagnostics.get(0).message, "Unknown trait Missing");
     let bad_application = check(
         hir::lower(
-            ast::lower(parser::parse("fn use_value[T](value: T[i32]) -> unit { () }")),
+            ast::lower(parser::parse("fn use_value[T](value: T[i32]) -> () { () }")),
             "main.gom",
         ),
     );
@@ -1132,7 +1129,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     );
     let overflow = check(
         hir::lower(
-            ast::lower(parser::parse("fn main() -> unit { let value: i8 = 999; }")),
+            ast::lower(parser::parse("fn main() -> () { let value: i8 = 999; }")),
             "main.gom",
         ),
     );
@@ -1142,10 +1139,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
         "Integer literal 999 does not fit in i8",
     );
     let negative_unsigned = check(
-        hir::lower(
-            ast::lower(parser::parse("fn main() -> unit { let value: u8 = -1; }")),
-            "main.gom",
-        ),
+        hir::lower(ast::lower(parser::parse("fn main() -> () { let value: u8 = -1; }")), "main.gom"),
     );
     testing::assert_eq(negative_unsigned.diagnostics.len(), 1);
     testing::assert_eq(
@@ -1155,7 +1149,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     let uint_overflow = check(
         hir::lower(
             ast::lower(
-                parser::parse("fn main() -> unit { let value: usize = 18446744073709551616; }"),
+                parser::parse("fn main() -> () { let value: usize = 18446744073709551616; }"),
             ),
             "main.gom",
         ),
@@ -1168,7 +1162,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
 }
 
 #[test]
-fn rejects_out_of_range_integer_patterns() -> unit {
+fn rejects_out_of_range_integer_patterns() -> () {
     let scalar = checked_diagnostics(
         "fn unsigned(value: u8) -> isize { match value { 999 => 1, -1 => 2, _ => 3 } } fn signed(value: i8) -> isize { match value { 128 => 1, _ => 0 } }",
     );
@@ -1189,9 +1183,9 @@ fn rejects_out_of_range_integer_patterns() -> unit {
 }
 
 #[test]
-fn rejects_generic_and_parameterized_main_functions() -> unit {
+fn rejects_generic_and_parameterized_main_functions() -> () {
     let result = check(
-        hir::lower(ast::lower(parser::parse("fn main[T](value: T) -> unit { () }")), "main.gom"),
+        hir::lower(ast::lower(parser::parse("fn main[T](value: T) -> () { () }")), "main.gom"),
     );
     testing::assert_eq(result.diagnostics.len(), 2);
     testing::assert(has_diagnostic(result.diagnostics, "main function must not have parameters"));
@@ -1201,9 +1195,9 @@ fn rejects_generic_and_parameterized_main_functions() -> unit {
 }
 
 #[test]
-fn rejects_self_types_outside_impl_methods() -> unit {
+fn rejects_self_types_outside_impl_methods() -> () {
     let diagnostics = checked_diagnostics(
-        "struct Direct { value: Self } struct Nested { value: Vec[Self] } struct Repeated { value: (Self, Self) } fn takes(value: Self) -> Self { value } fn main() -> unit {}",
+        "struct Direct { value: Self } struct Nested { value: Vec[Self] } struct Repeated { value: (Self, Self) } fn takes(value: Self) -> Self { value } fn main() -> () {}",
     );
     testing::assert_eq(diagnostics.len(), 6);
     for diagnostic in diagnostics {
@@ -1218,7 +1212,7 @@ fn rejects_self_types_outside_impl_methods() -> unit {
 }
 
 #[test]
-fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
+fn checks_match_exhaustiveness_and_irrefutable_bindings() -> () {
     let exhaustive = check(
         hir::lower(
             ast::lower(
@@ -1270,7 +1264,7 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "enum Choice { None, Some(i32) } fn make() -> Choice { Choice::None } fn main() -> unit { let Choice::Some(value) = make(); }",
+                    "enum Choice { None, Some(i32) } fn make() -> Choice { Choice::None } fn main() -> () { let Choice::Some(value) = make(); }",
                 ),
             ),
             "main.gom",
@@ -1284,7 +1278,7 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
 }
 
 #[test]
-fn checks_dynamic_guarded_arm_usefulness() -> unit {
+fn checks_dynamic_guarded_arm_usefulness() -> () {
     let dynamic = checked_diagnostics(
         "fn choose(value: bool, enabled: bool) -> isize { match value { true if enabled => 1, true if !enabled => 2, true => 3, false => 0 } }",
     );
@@ -1302,7 +1296,7 @@ fn checks_dynamic_guarded_arm_usefulness() -> unit {
 }
 
 #[test]
-fn suppresses_match_coverage_after_pattern_errors() -> unit {
+fn suppresses_match_coverage_after_pattern_errors() -> () {
     let diagnostics = checked_diagnostics(
         "struct Pair { left: bool, right: bool } fn choose(value: Pair) -> i32 { match value { Pair { left: true } => 1, Pair { left: true, right: false } => 2, _ => 3 } }",
     );
@@ -1311,13 +1305,13 @@ fn suppresses_match_coverage_after_pattern_errors() -> unit {
 }
 
 #[test]
-fn suppresses_secondary_diagnostics_after_pattern_and_guard_errors() -> unit {
+fn suppresses_secondary_diagnostics_after_pattern_and_guard_errors() -> () {
     let let_else = checked_diagnostics(
-        "enum Choice { A } fn inspect(value: Choice) -> unit { let Missing = value else { return; }; }",
+        "enum Choice { A } fn inspect(value: Choice) -> () { let Missing = value else { return; }; }",
     );
     testing::assert_eq(let_else.len(), 1);
     testing::assert_eq(let_else[0].message, "Enum Choice has no variant Missing");
-    let let_binding = checked_diagnostics("fn inspect() -> unit { let true = 1; }");
+    let let_binding = checked_diagnostics("fn inspect() -> () { let true = 1; }");
     testing::assert_eq(let_binding.len(), 1);
     let guard = checked_diagnostics("fn choose(value: bool) -> i32 { match value { _ if 1 => 0 } }");
     testing::assert_eq(guard.len(), 1);
@@ -1325,9 +1319,9 @@ fn suppresses_secondary_diagnostics_after_pattern_and_guard_errors() -> unit {
 }
 
 #[test]
-fn validates_or_pattern_binding_consistency() -> unit {
+fn validates_or_pattern_binding_consistency() -> () {
     let types = checked_diagnostics(
-        "enum Value { Number(i32), Text(string) } fn inspect(value: Value) -> unit { match value { Value::Number(item) | Value::Text(item) => () } }",
+        "enum Value { Number(i32), Text(string) } fn inspect(value: Value) -> () { match value { Value::Number(item) | Value::Text(item) => () } }",
     );
     testing::assert(
         has_diagnostic(
@@ -1350,7 +1344,7 @@ fn validates_or_pattern_binding_consistency() -> unit {
 }
 
 #[test]
-fn validates_fixed_array_pattern_lengths() -> unit {
+fn validates_fixed_array_pattern_lengths() -> () {
     let too_short = checked_diagnostics(
         "fn choose(value: [i32; 2]) -> i32 { match value { [first] => first, _ => 0 } }",
     );
@@ -1378,7 +1372,7 @@ fn validates_fixed_array_pattern_lengths() -> unit {
 }
 
 #[test]
-fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
+fn checks_sequence_range_and_uninhabited_exhaustiveness() -> () {
     testing::assert_eq(
         coverage_decrement_magnitude("100000000000000000000"),
         "99999999999999999999",
@@ -1448,7 +1442,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
 }
 
 #[test]
-fn rejects_invalid_range_pattern_endpoint_types() -> unit {
+fn rejects_invalid_range_pattern_endpoint_types() -> () {
     let expected = "Range pattern endpoints must be integer or character literals";
     let boolean = checked_diagnostics(
         "fn classify(value: bool) -> bool { match value { false..=true => true, _ => false } }",
@@ -1471,7 +1465,7 @@ fn rejects_invalid_range_pattern_endpoint_types() -> unit {
 }
 
 #[test]
-fn rejects_invalid_range_pattern_ordering() -> unit {
+fn rejects_invalid_range_pattern_ordering() -> () {
     let expected = "Range pattern lower bound must be less than its upper bound";
     let signed = checked_diagnostics(
         "fn classify(value: i16) -> bool { match value { 2..=-2 => true, _ => false } }",
@@ -1512,11 +1506,11 @@ fn rejects_invalid_range_pattern_ordering() -> unit {
 }
 
 #[test]
-fn checks_loop_control_contexts_and_impl_overlap() -> unit {
+fn checks_loop_control_contexts_and_impl_overlap() -> () {
     let condition = check(
         hir::lower(
             ast::lower(
-                parser::parse("fn main() -> unit { while if true { break } else { false } {} }"),
+                parser::parse("fn main() -> () { while if true { break } else { false } {} }"),
             ),
             "main.gom",
         ),
@@ -1528,7 +1522,7 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
     );
     let nested = check(
         hir::lower(
-            ast::lower(parser::parse("fn main() -> unit { while true { break; } }")),
+            ast::lower(parser::parse("fn main() -> () { while true { break; } }")),
             "main.gom",
         ),
     );
@@ -1551,7 +1545,7 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
 }
 
 #[test]
-fn rejects_impls_overlapping_builtin_ref_blankets() -> unit {
+fn rejects_impls_overlapping_builtin_ref_blankets() -> () {
     let diagnostics = checked_diagnostics(
         "impl PartialEq for Ref[i32] { fn eq(self: Ref[i32], other: Ref[i32]) -> bool { true } } impl Eq for Ref[i32] {} impl Hash for Ref[i32] { fn hash(self: Ref[i32]) -> u64 { 0 } }",
     );
@@ -1579,21 +1573,21 @@ fn rejects_impls_overlapping_builtin_ref_blankets() -> unit {
 }
 
 #[test]
-fn distinguishes_fully_qualified_trait_names() -> unit {
+fn distinguishes_fully_qualified_trait_names() -> () {
     testing::assert(!names_match("first::Flag", "second::Flag"));
     testing::assert(names_match("Flag", "first::Flag"));
     testing::assert(names_match("second::Flag", "Flag"))
 }
 
 #[test]
-fn solves_trait_chains_without_an_arbitrary_depth_cutoff() -> unit {
+fn solves_trait_chains_without_an_arbitrary_depth_cutoff() -> () {
     let ty = Ref::new("i32");
     let value = Ref::new("0");
     for _ in 0..24 {
         ty.set("Wrap[" + ty.get() + "]");
         value.set("Wrap { value: " + value.get() + " }")
     }
-    let source = "trait Mark {} struct Wrap[T] { value: T } impl Mark for i32 {} impl[T: Mark] Mark for Wrap[T] {} fn require[T: Mark](value: T) -> unit {} fn main() -> unit { let value: "
+    let source = "trait Mark {} struct Wrap[T] { value: T } impl Mark for i32 {} impl[T: Mark] Mark for Wrap[T] {} fn require[T: Mark](value: T) -> () {} fn main() -> () { let value: "
         + ty.get()
         + " = "
         + value.get()
@@ -1603,21 +1597,21 @@ fn solves_trait_chains_without_an_arbitrary_depth_cutoff() -> unit {
 }
 
 #[test]
-fn rejects_invalid_for_sources_and_patterns() -> unit {
-    let non_iterator = checked_diagnostics("fn main() -> unit { for _ in 1 {} }");
+fn rejects_invalid_for_sources_and_patterns() -> () {
+    let non_iterator = checked_diagnostics("fn main() -> () { for _ in 1 {} }");
     testing::assert(
         has_diagnostic(non_iterator, "for loop expects a type implementing IntoIterator, got isize"),
     );
-    let refutable = checked_diagnostics("fn main() -> unit { for 1 in range(0, 3) {} }");
+    let refutable = checked_diagnostics("fn main() -> () { for 1 in range(0, 3) {} }");
     testing::assert(
         has_diagnostic(refutable, "Refutable pattern is not allowed in for loop; use match instead"),
     )
 }
 
 #[test]
-fn checks_indexed_assignment_roots() -> unit {
+fn checks_indexed_assignment_roots() -> () {
     let temporary = checked_diagnostics(
-        "fn make() -> [i32; 2] { [1, 2] } fn main() -> unit { make()[0] = 3; }",
+        "fn make() -> [i32; 2] { [1, 2] } fn main() -> () { make()[0] = 3; }",
     );
     testing::assert(
         has_diagnostic(
@@ -1632,33 +1626,33 @@ fn checks_indexed_assignment_roots() -> unit {
         },
     );
     let readonly = checked_diagnostics(
-        "fn main() -> unit { let values = Vec::new().pushed(1); let view = values.slice(0, 1); view[0] = 2; }",
+        "fn main() -> () { let values = Vec::new().pushed(1); let view = values.slice(0, 1); view[0] = 2; }",
     );
     testing::assert(
         has_diagnostic(readonly, "cannot assign through Slice indexing; Slice is read-only"),
     );
     let writable = checked_diagnostics(
-        "fn main() -> unit { let mut values = [1, 2]; values[0] = 3; let cell = Ref::new([1, 2]); cell.get()[0] = 4; }",
+        "fn main() -> () { let mut values = [1, 2]; values[0] = 3; let cell = Ref::new([1, 2]); cell.get()[0] = 4; }",
     );
     testing::assert_eq(writable.len(), 0)
 }
 
 #[test]
-fn checks_practical_expression_syntax() -> unit {
+fn checks_practical_expression_syntax() -> () {
     let valid = checked_diagnostics(
-        "struct Point { x: isize, y: isize } fn main() -> unit { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[isize] = Vec::new(); let table: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
+        "struct Point { x: isize, y: isize } fn main() -> () { let mut point = Point { x: 1, y: 2 }; point.x += 3; let base = Point { x: 4, y: 5 }; let _ = Point { x: 6, ..base }; let values: Vec[isize] = Vec::new(); let table: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); let _ = f\"{point.x}:{values.len()}:{table.len()}\"; }",
     );
     testing::assert_eq(valid.len(), 0)
 }
 
 #[test]
-fn checks_collection_from_array_inference_and_constraints() -> unit {
+fn checks_collection_from_array_inference_and_constraints() -> () {
     let valid = checked_diagnostics(
-        "fn main() -> unit { let values: Vec[isize] = Vec::new(); let entries = HashMap::[string, isize]::new(); let make: ([isize; 2]) -> Vec[isize] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",
+        "fn main() -> () { let values: Vec[isize] = Vec::new(); let entries = HashMap::[string, isize]::new(); let make: ([isize; 2]) -> Vec[isize] = Vec::from_array; let _ = make([1, 2]); let _ = values; let _ = entries; }",
     );
     testing::assert_eq(valid.len(), 0);
     let uninferred = checked_diagnostics(
-        "fn main() -> unit { let _ = Vec::new(); let _ = HashMap::new(); }",
+        "fn main() -> () { let _ = Vec::new(); let _ = HashMap::new(); }",
     );
     testing::assert(has_diagnostic_containing(uninferred, "Could not infer"));
     let wrong_element = checked_diagnostics(
@@ -1676,7 +1670,7 @@ fn checks_collection_from_array_inference_and_constraints() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "use vendor::shadow; fn main() -> unit { let _ = shadow::Vec::from_array([1]); }",
+                    "use vendor::shadow; fn main() -> () { let _ = shadow::Vec::from_array([1]); }",
                 ),
             ),
             "main.gom",
@@ -1687,7 +1681,7 @@ fn checks_collection_from_array_inference_and_constraints() -> unit {
 }
 
 #[test]
-fn lowers_collection_from_array_to_specialized_intrinsic() -> unit {
+fn lowers_collection_from_array_to_specialized_intrinsic() -> () {
     let file = checked_file("fn main() -> Vec[isize] { Vec::from_array([1, 2]) }");
     match file.items[0] {
         Function(value) => match value.body.tail {
@@ -1714,25 +1708,25 @@ fn lowers_collection_from_array_to_specialized_intrinsic() -> unit {
 }
 
 #[test]
-fn infers_empty_vectors_from_later_builtin_method_arguments() -> unit {
+fn infers_empty_vectors_from_later_builtin_method_arguments() -> () {
     let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let values = Vec::new(); values.push(Vec::from_array([1, 2])); }",
+        "fn main() -> () { let values = Vec::new(); values.push(Vec::from_array([1, 2])); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
 
 #[test]
-fn infers_empty_vectors_from_return_and_call_context() -> unit {
+fn infers_empty_vectors_from_return_and_call_context() -> () {
     let diagnostics = checked_diagnostics(
-        "fn values() -> Option[Vec[Vec[u16]]] { Option::Some(Vec::new()) } fn main() -> unit { let values = values().unwrap_or(Vec::new()); let _ = values.len(); }",
+        "fn values() -> Option[Vec[Vec[u16]]] { Option::Some(Vec::new()) } fn main() -> () { let values = values().unwrap_or(Vec::new()); let _ = values.len(); }",
     );
     testing::assert_eq(diagnostics.len(), 0)
 }
 
 #[test]
-fn rejects_hashmap_index_compound_assignment() -> unit {
+fn rejects_hashmap_index_compound_assignment() -> () {
     let hashmap_compound = checked_diagnostics(
-        "fn main() -> unit { let values: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); values[\"x\"] += 2; }",
+        "fn main() -> () { let values: HashMap[string, isize] = HashMap::from_array([(\"x\", 1)]); values[\"x\"] += 2; }",
     );
     testing::assert(
         has_diagnostic(
@@ -1743,18 +1737,18 @@ fn rejects_hashmap_index_compound_assignment() -> unit {
 }
 
 #[test]
-fn rejects_non_stringifiable_interpolation() -> unit {
-    let interpolation = checked_diagnostics("fn main() -> unit { let _ = f\"{|| ()}\"; }");
+fn rejects_non_stringifiable_interpolation() -> () {
+    let interpolation = checked_diagnostics("fn main() -> () { let _ = f\"{|| ()}\"; }");
     testing::assert(
         has_diagnostic(
             interpolation,
-            "interpolated expression of type () -> unit does not implement ToString",
+            "interpolated expression of type () -> () does not implement ToString",
         ),
     )
 }
 
 #[test]
-fn validates_trait_impl_contracts() -> unit {
+fn validates_trait_impl_contracts() -> () {
     let duplicate = checked_diagnostics(
         "trait Display { fn show(self: Self) -> string; } impl Display for i32 { fn show(self: i32) -> string { \"a\" } fn show(self: i32) -> string { \"b\" } }",
     );
@@ -1795,40 +1789,38 @@ fn validates_trait_impl_contracts() -> unit {
 }
 
 #[test]
-fn validates_declared_types_and_tostring_requirements() -> unit {
+fn validates_declared_types_and_tostring_requirements() -> () {
     let declarations = checked_diagnostics(
         "enum Maybe[T] { Just(T), Nothing } struct UseMaybe { value: Maybe, missing: Unknown[i32] } struct Generic[T] { field: V }",
     );
     testing::assert(has_diagnostic(declarations, "Type Maybe expects 1 type arguments, but got 0"));
     testing::assert(has_diagnostic(declarations, "Unknown type constructor Unknown"));
     testing::assert(has_diagnostic(declarations, "Unknown type constructor V"));
-    let println_error = checked_diagnostics(
-        "struct Value {} fn main() -> unit { println(Value {}) }",
-    );
+    let println_error = checked_diagnostics("struct Value {} fn main() -> () { println(Value {}) }");
     testing::assert(has_diagnostic(println_error, "No instance found for trait ToString<Value>"));
     let method_error = checked_diagnostics(
-        "struct Value {} fn main() -> unit { let _ = (Value {}).to_string(); }",
+        "struct Value {} fn main() -> () { let _ = (Value {}).to_string(); }",
     );
     testing::assert(has_diagnostic(method_error, "Method to_string not found for type Value"))
 }
 
 #[test]
-fn rejects_removed_numeric_conversion_methods() -> unit {
+fn rejects_removed_numeric_conversion_methods() -> () {
     let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let value: i32 = 1; let _: i64 = value.to_int64(); }",
+        "fn main() -> () { let value: i32 = 1; let _: i64 = value.to_int64(); }",
     );
     testing::assert(has_diagnostic(diagnostics, "Method to_int64 not found for type i32"))
 }
 
 #[test]
-fn reports_unimported_package_members_canonically() -> unit {
+fn reports_unimported_package_members_canonically() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir("package dep; pub fn value() -> i32 { 1 }", "package_model_test::dep"),
     );
     let result = check_for_link_with_dependencies(
         hir::lower_package(
-            ast::lower(parser::parse("package main; fn main() -> unit { let _ = dep::value(); }")),
+            ast::lower(parser::parse("package main; fn main() -> () { let _ = dep::value(); }")),
             "main.gom",
             "package_model_test",
         ),
@@ -1848,9 +1840,9 @@ fn reports_unimported_package_members_canonically() -> unit {
 }
 
 #[test]
-fn reports_missing_constructor_inference_canonically() -> unit {
+fn reports_missing_constructor_inference_canonically() -> () {
     let diagnostics = checked_diagnostics(
-        "enum Direction { North } fn main() -> unit { let _ = Direction::Up; }",
+        "enum Direction { North } fn main() -> () { let _ = Direction::Up; }",
     );
     testing::assert_eq(diagnostics.len(), 2);
     testing::assert_eq(diagnostics.get(0).message, "Could not infer type");
@@ -1862,14 +1854,14 @@ fn reports_missing_constructor_inference_canonically() -> unit {
 }
 
 #[test]
-fn accepts_blocks_terminated_by_return() -> unit {
+fn accepts_blocks_terminated_by_return() -> () {
     let source = "fn direct() -> i32 { return 1; } fn branch(flag: bool) -> i32 { if flag { return 1; } else { return 2; }; }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0)
 }
 
 #[test]
-fn resolves_enum_constructors_from_package_interfaces() -> unit {
+fn resolves_enum_constructors_from_package_interfaces() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir("package api; pub enum Choice { None, Some(i32) }", "vendor::api"),
@@ -1885,7 +1877,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> unit {
                 testing::assert_eq(values.len(), 0);
                 testing::assert_eq(name, "vendor::api::Choice")
             },
-            _ => testing::fail("expected external unit constructor"),
+            _ => testing::fail("expected external () constructor"),
         },
         _ => testing::fail("expected zero function"),
     };
@@ -1907,7 +1899,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> unit {
 }
 
 #[test]
-fn filters_external_trait_methods_by_hir_scope() -> unit {
+fn filters_external_trait_methods_by_hir_scope() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir(
@@ -1945,7 +1937,7 @@ fn filters_external_trait_methods_by_hir_scope() -> unit {
 }
 
 #[test]
-fn imports_external_supertrait_methods_with_child_scope() -> unit {
+fn imports_external_supertrait_methods_with_child_scope() -> () {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(
         dependency_hir(
@@ -1983,16 +1975,16 @@ fn primitive_text(value: Primitive) -> string {
 }
 
 #[test]
-fn erases_indexed_assignment_read_types() -> unit {
+fn erases_indexed_assignment_read_types() -> () {
     let file = checked_file(
-        "fn main() -> unit { let map: HashMap[i32, string] = HashMap::new(); map[1] = \"ok\"; }",
+        "fn main() -> () { let map: HashMap[i32, string] = HashMap::new(); map[1] = \"ok\"; }",
     );
     match file.items.get(0) {
         Function(value) => match value.body.stmts.get(1) {
             Assign { target: Index { base: _, index: _, ty: target_ty }, op: _, value } => {
                 match resolve_type(target_ty) {
                     Unit => (),
-                    _ => testing::fail("expected unit assignment target read type"),
+                    _ => testing::fail("expected () assignment target read type"),
                 };
                 match resolve_type(expr_type(value)) {
                     String => (),
@@ -2006,7 +1998,7 @@ fn erases_indexed_assignment_read_types() -> unit {
 }
 
 #[test]
-fn infers_shift_operands_independently() -> unit {
+fn infers_shift_operands_independently() -> () {
     let file = checked_file("fn shift(value: u8) -> u8 { value << 4 }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -2031,7 +2023,7 @@ fn infers_shift_operands_independently() -> unit {
 }
 
 #[test]
-fn infers_generic_function_calls() -> unit {
+fn infers_generic_function_calls() -> () {
     let source = "fn id[T](value: T) -> T { value } fn main() -> string { id(\"ok\") }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 2);
@@ -2066,7 +2058,7 @@ fn infers_generic_function_calls() -> unit {
 }
 
 #[test]
-fn resolves_reordered_result_try_tags() -> unit {
+fn resolves_reordered_result_try_tags() -> () {
     let source = "enum Result[T, E] { Err(E), Ok(T), } fn parse(flag: bool) -> Result[i32, string] { if flag { Result::Ok(1) } else { Result::Err(\"bad\") } } fn compute(flag: bool) -> Result[i32, string] { let value = parse(flag)?; Result::Ok(value) }";
     let file = checked_file(source);
     match file.items.get(1) {
@@ -2107,7 +2099,7 @@ fn resolves_reordered_result_try_tags() -> unit {
 }
 
 #[test]
-fn checks_closures_with_call_context() -> unit {
+fn checks_closures_with_call_context() -> () {
     let source = "fn zip_with[A, B, C](a: A, b: B, f: (A, B) -> C) -> C { f(a, b) } fn main() -> string { zip_with(10, \"hello\", |number, text| text + \"=\" + number.to_string()) }";
     let file = checked_file(source);
     match file.items.get(1) {
@@ -2162,7 +2154,7 @@ fn checks_closures_with_call_context() -> unit {
 }
 
 #[test]
-fn infers_trait_goals_from_function_calls() -> unit {
+fn infers_trait_goals_from_function_calls() -> () {
     let source = "trait Measure { fn measure(self: Self) -> isize; } impl Measure for Vec[isize] { fn measure(self: Vec[isize]) -> isize { self.len() } } fn read_measure[T: Measure](value: T) -> isize { Measure::measure(value) } fn main() -> isize { let values = vec_new(); read_measure(values) }";
     let file = checked_file(source);
     match file.items.get(2) {
@@ -2200,7 +2192,7 @@ fn infers_trait_goals_from_function_calls() -> unit {
 }
 
 #[test]
-fn checks_positional_struct_constructors() -> unit {
+fn checks_positional_struct_constructors() -> () {
     let source = "struct Point { x: i32, y: i32 } struct Wrapper[T] { value: T } fn point() -> Point { Point(1, 2) } fn wrapper() -> Wrapper[string] { Wrapper(\"ok\") }";
     let file = checked_file(source);
     match file.items.get(0) {
@@ -2239,7 +2231,7 @@ fn checks_positional_struct_constructors() -> unit {
 }
 
 #[test]
-fn checks_enum_patterns_and_default_integer_literals() -> unit {
+fn checks_enum_patterns_and_default_integer_literals() -> () {
     let source = "enum Choice { None, Some(i32) } fn unwrap(value: Choice) -> i32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 1);
@@ -2277,7 +2269,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
 }
 
 #[test]
-fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
+fn resolves_contextual_enum_patterns_from_expected_types() -> () {
     let source = "enum First[T] { Shared(T), Empty, Named { value: T } } enum Second[T] { Shared(T) } type Alias = First[i32]; fn classify(value: Alias) -> i32 { match value { Shared(inner) => inner, Empty => 0, Named { value } => value } } fn nested(value: Option[Result[i32, string]]) -> i32 { match value { Some(Ok(inner)) => inner, Some(Err(_)) => -1, None => 0 } }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -2314,13 +2306,13 @@ fn resolves_contextual_enum_patterns_from_expected_types() -> unit {
         "Contextual variant Some cannot match value of type i32",
     );
     let unknown = checked_diagnostics(
-        "fn inspect() -> unit { let matcher = |value| match value { Some(_) => (), _ => () }; let _ = matcher; }",
+        "fn inspect() -> () { let matcher = |value| match value { Some(_) => (), _ => () }; let _ = matcher; }",
     );
     testing::assert(has_diagnostic(unknown, "Could not infer enum type for variant Some"))
 }
 
 #[test]
-fn resolves_associated_types_and_bound_methods() -> unit {
+fn resolves_associated_types_and_bound_methods() -> () {
     let source = "trait Provider { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: i32 } impl Provider for Number { type Item = i32; fn get(self: Number) -> i32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> i32 { read(Number { value: 42 }) }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 3);
@@ -2363,8 +2355,8 @@ fn resolves_associated_types_and_bound_methods() -> unit {
 }
 
 #[test]
-fn preserves_projection_equality_owners() -> unit {
-    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } struct LeftSource {} struct RightSource {} impl Source for LeftSource { type Item = i32; fn get(self: LeftSource) -> i32 { 1 } } impl Source for RightSource { type Item = i32; fn get(self: RightSource) -> i32 { 2 } } fn combine[A: Source, B: Source](left: A, right: B) -> unit where A::Item = B::Item { () } fn main() -> unit { combine(LeftSource {}, RightSource {}) }";
+fn preserves_projection_equality_owners() -> () {
+    let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } struct LeftSource {} struct RightSource {} impl Source for LeftSource { type Item = i32; fn get(self: LeftSource) -> i32 { 1 } } impl Source for RightSource { type Item = i32; fn get(self: RightSource) -> i32 { 2 } } fn combine[A: Source, B: Source](left: A, right: B) -> () where A::Item = B::Item { () } fn main() -> () { combine(LeftSource {}, RightSource {}) }";
     let file = checked_file(source);
     match file.items.get(3) {
         Function(value) => match value.body.tail {
@@ -2389,7 +2381,7 @@ fn preserves_projection_equality_owners() -> unit {
 }
 
 #[test]
-fn applies_where_type_equalities_in_function_bodies() -> unit {
+fn applies_where_type_equalities_in_function_bodies() -> () {
     let source = "package api; trait Render { fn render(self: Self) -> string; } fn same[T, U](value: T) -> U where T = U { value } fn structural[T, U](values: Vec[T]) -> Vec[U] where Vec[T] = Vec[U] { values } fn render_equal[T: Render, U](value: U) -> string where T = U { value.render() }";
     let result = check_for_link(
         hir::lower_package(ast::lower(parser::parse(source)), "api.gom", "where_predicates::api"),
@@ -2402,23 +2394,23 @@ fn applies_where_type_equalities_in_function_bodies() -> unit {
 }
 
 #[test]
-fn rejects_unsatisfied_impl_equality_predicates() -> unit {
-    let source = "trait Selected { fn selected(self: Self) -> unit; } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T = i32 { fn selected(self: Wrap[T]) -> unit { () } } fn require[T: Selected](value: T) -> unit { () } fn main() -> unit { require(Wrap { value: \"no\" }) }";
+fn rejects_unsatisfied_impl_equality_predicates() -> () {
+    let source = "trait Selected { fn selected(self: Self) -> (); } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T = i32 { fn selected(self: Wrap[T]) -> () { () } } fn require[T: Selected](value: T) -> () { () } fn main() -> () { require(Wrap { value: \"no\" }) }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert(result.diagnostics.len() > 0)
 }
 
 #[test]
-fn checks_extended_builtin_method_catalog() -> unit {
-    let source = "fn exercise(text: string, values: Vec[isize], map: HashMap[string, i32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); let _ = text.starts_with(\"a\"); let _ = text.ends_with(\"z\"); let _ = text.contains(\"m\"); let _ = text.starts_with_at(1, \"b\"); let _ = text.find(\"b\"); let _ = text.rfind(\"b\"); let _ = text.find_bytes(\"b\"); let _ = text.char_count(); let _ = text.slice_chars(0, 1); let _ = text.trim(); let _ = text.trim_start(); let _ = text.trim_end(); let _ = text.split(\",\"); let _ = text.split_once(\",\"); let _ = text.lines(); let _ = text.replace(\"a\", \"b\"); let _ = text.repeat(2); let _ = text.is_ascii(); let _ = text.eq_ignore_ascii_case(\"a\"); let _ = text.to_ascii_lowercase(); let _ = text.to_ascii_uppercase(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); let _ = values.contains(1); let _ = values.position(|value: isize| value == 1); values.sort_by(|left: isize, right: isize| left - right); values.dedup(); let _ = values.join(\",\"); values.truncate(0); values.clear(); let _ = map.entries(); }";
+fn checks_extended_builtin_method_catalog() -> () {
+    let source = "fn exercise(text: string, values: Vec[isize], map: HashMap[string, i32]) -> () { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); let _ = text.starts_with(\"a\"); let _ = text.ends_with(\"z\"); let _ = text.contains(\"m\"); let _ = text.starts_with_at(1, \"b\"); let _ = text.find(\"b\"); let _ = text.rfind(\"b\"); let _ = text.find_bytes(\"b\"); let _ = text.char_count(); let _ = text.slice_chars(0, 1); let _ = text.trim(); let _ = text.trim_start(); let _ = text.trim_end(); let _ = text.split(\",\"); let _ = text.split_once(\",\"); let _ = text.lines(); let _ = text.replace(\"a\", \"b\"); let _ = text.repeat(2); let _ = text.is_ascii(); let _ = text.eq_ignore_ascii_case(\"a\"); let _ = text.to_ascii_lowercase(); let _ = text.to_ascii_uppercase(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); let _ = values.contains(1); let _ = values.position(|value: isize| value == 1); values.sort_by(|left: isize, right: isize| left - right); values.dedup(); let _ = values.join(\",\"); values.truncate(0); values.clear(); let _ = map.entries(); }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 1)
 }
 
 #[test]
-fn checks_builtin_source_method_constraints() -> unit {
+fn checks_builtin_source_method_constraints() -> () {
     let diagnostics = checked_diagnostics(
-        "struct Opaque {} fn exercise(values: Vec[Opaque]) -> unit { let _ = values.contains(Opaque {}); values.dedup(); let _ = values.join(\",\"); }",
+        "struct Opaque {} fn exercise(values: Vec[Opaque]) -> () { let _ = values.contains(Opaque {}); values.dedup(); let _ = values.join(\",\"); }",
     );
     testing::assert(
         has_diagnostic_containing(diagnostics, "No instance found for trait PartialEq<Opaque>"),
@@ -2429,7 +2421,7 @@ fn checks_builtin_source_method_constraints() -> unit {
 }
 
 #[test]
-fn prefers_builtin_inherent_methods() -> unit {
+fn prefers_builtin_inherent_methods() -> () {
     let source = "trait Container { fn is_empty(self: Self) -> bool; } impl Container for Vec[i32] { fn is_empty(self: Vec[i32]) -> bool { false } } fn main() -> bool { let values: Vec[i32] = Vec::new(); values.is_empty() }";
     let file = checked_file(source);
     match file.items.get(1) {
@@ -2455,7 +2447,7 @@ fn prefers_builtin_inherent_methods() -> unit {
 }
 
 #[test]
-fn specializes_array_builtin_lengths() -> unit {
+fn specializes_array_builtin_lengths() -> () {
     let file = checked_file(
         "fn exercise(values: [i32; 2]) -> i32 { array_set(values, 0, 7); array_get(values, 0) }",
     );
@@ -2505,7 +2497,7 @@ fn specializes_array_builtin_lengths() -> unit {
 }
 
 #[test]
-fn checks_char_from_u32_builtin() -> unit {
+fn checks_char_from_u32_builtin() -> () {
     let file = checked_file("fn decode(value: u32) -> Option[char] { char_from_u32(value) }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -2528,9 +2520,9 @@ fn checks_char_from_u32_builtin() -> unit {
 }
 
 #[test]
-fn restricts_expression_as_to_dyn_conversions() -> unit {
+fn restricts_expression_as_to_dyn_conversions() -> () {
     let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let value: i16 = 257; let _ = value as u8; let _ = 'A' as u32; let _ = true as u8; }",
+        "fn main() -> () { let value: i16 = 257; let _ = value as u8; let _ = 'A' as u32; let _ = true as u8; }",
     );
     testing::assert_eq(diagnostics.len(), 3);
     testing::assert(
@@ -2554,13 +2546,13 @@ fn restricts_expression_as_to_dyn_conversions() -> unit {
 }
 
 #[test]
-fn requires_explicit_dyn_conversions_in_typed_contexts() -> unit {
+fn requires_explicit_dyn_conversions_in_typed_contexts() -> () {
     for source in[
         "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn produce() -> dyn Label { 1 }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let direct: dyn Label = 1; }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn accept(value: dyn Label) -> unit {} fn main() -> unit { accept(1); }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let branch: dyn Label = if true { 1 as dyn Label } else { 2 }; }",
-        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let values: Vec[dyn Label] = Vec::new(); values.push(1); }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> () { let direct: dyn Label = 1; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn accept(value: dyn Label) -> () {} fn main() -> () { accept(1); }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> () { let branch: dyn Label = if true { 1 as dyn Label } else { 2 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> () { let values: Vec[dyn Label] = Vec::new(); values.push(1); }",
     ] {
         testing::assert(
             has_diagnostic(
@@ -2572,15 +2564,15 @@ fn requires_explicit_dyn_conversions_in_typed_contexts() -> unit {
 }
 
 #[test]
-fn validates_numeric_unary_operators() -> unit {
-    let diagnostics = checked_diagnostics("fn main() -> unit { let a = -true; let b = ~false; }");
+fn validates_numeric_unary_operators() -> () {
+    let diagnostics = checked_diagnostics("fn main() -> () { let a = -true; let b = ~false; }");
     testing::assert_eq(diagnostics.len(), 2);
     testing::assert(has_diagnostic(diagnostics, "Operator - is not defined for type bool"));
     testing::assert(has_diagnostic(diagnostics, "Operator ~ is not defined for type bool"))
 }
 
 #[test]
-fn types_control_flow_member_subexpressions_as_unit() -> unit {
+fn types_control_flow_member_subexpressions_as_unit() -> () {
     let source = "fn projected() -> i32 { let _: i32 = (return 1).0; 0 } fn indexed() -> i32 { let _: i32 = (return 1)[0]; 0 } fn field() -> i32 { let _: i32 = (return 1).value; 0 }";
     let file = checked_file(source);
     for index in range(0, 3) {
@@ -2589,7 +2581,7 @@ fn types_control_flow_member_subexpressions_as_unit() -> unit {
                 Let { is_mut: _, pat: Wild { ty: pattern_ty }, value: expression } => {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
                         (Int32, Unit) => (),
-                        _ => testing::fail("expected unit control flow expression type"),
+                        _ => testing::fail("expected () control flow expression type"),
                     };
                     if index == 1 {
                         match expression {
@@ -2610,15 +2602,15 @@ fn types_control_flow_member_subexpressions_as_unit() -> unit {
 }
 
 #[test]
-fn suppresses_unreachable_while_condition_type_errors() -> unit {
+fn suppresses_unreachable_while_condition_type_errors() -> () {
     let wrapped_index = checked_diagnostics(
-        "fn main() -> unit { while (match 0 { 0 => break, _ => continue, })[0] { break; }; }",
+        "fn main() -> () { while (match 0 { 0 => break, _ => continue, })[0] { break; }; }",
     );
     testing::assert_eq(wrapped_index.len(), 2);
     testing::assert(has_diagnostic(wrapped_index, "`break` is not allowed in a while condition"));
     testing::assert(has_diagnostic(wrapped_index, "`continue` is not allowed in a while condition"));
     let wrapped_call = checked_diagnostics(
-        "fn id_int(x: i32) -> i32 { x } fn main() -> unit { while id_int(if true { break } else { continue }) { break; }; }",
+        "fn id_int(x: i32) -> i32 { x } fn main() -> () { while id_int(if true { break } else { continue }) { break; }; }",
     );
     testing::assert_eq(wrapped_call.len(), 2);
     testing::assert(has_diagnostic(wrapped_call, "`break` is not allowed in a while condition"));
@@ -2626,7 +2618,7 @@ fn suppresses_unreachable_while_condition_type_errors() -> unit {
 }
 
 #[test]
-fn preserves_bare_fn_iterator_static_owner() -> unit {
+fn preserves_bare_fn_iterator_static_owner() -> () {
     let file = checked_file(
         "fn iterator() -> FnIterator[i32] { FnIterator::from_fn(|| Option::None) }",
     );
@@ -2650,8 +2642,8 @@ fn preserves_bare_fn_iterator_static_owner() -> unit {
 }
 
 #[test]
-fn preserves_builtin_range_language_item_identity() -> unit {
-    let file = checked_file("fn main() -> unit { for value in range(1, 3) { println(value) } }");
+fn preserves_builtin_range_language_item_identity() -> () {
+    let file = checked_file("fn main() -> () { for value in range(1, 3) { println(value) } }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
             Some(For {
@@ -2672,8 +2664,8 @@ fn preserves_builtin_range_language_item_identity() -> unit {
 }
 
 #[test]
-fn preserves_builtin_inclusive_range_language_item_identity() -> unit {
-    let file = checked_file("fn main() -> unit { for value in 1..=3 { println(value) } }");
+fn preserves_builtin_inclusive_range_language_item_identity() -> () {
+    let file = checked_file("fn main() -> () { for value in 1..=3 { println(value) } }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
             Some(For {
@@ -2694,7 +2686,7 @@ fn preserves_builtin_inclusive_range_language_item_identity() -> unit {
 }
 
 #[test]
-fn derives_builtin_protocols_from_language_item_metadata() -> unit {
+fn derives_builtin_protocols_from_language_item_metadata() -> () {
     match builtin_contract() {
         Ok(value) => {
             testing::assert_eq(value.option.name, "Option");
@@ -2716,7 +2708,7 @@ fn derives_builtin_protocols_from_language_item_metadata() -> unit {
 }
 
 #[test]
-fn rejects_parameterized_language_items_outside_builtin_sources() -> unit {
+fn rejects_parameterized_language_items_outside_builtin_sources() -> () {
     testing::assert(
         has_diagnostic(
             checked_diagnostics(
@@ -2728,7 +2720,7 @@ fn rejects_parameterized_language_items_outside_builtin_sources() -> unit {
 }
 
 #[test]
-fn preserves_bare_generic_static_owner() -> unit {
+fn preserves_bare_generic_static_owner() -> () {
     let source = "struct Box[T] { value: T } impl[T] Box[T] { fn new(value: T) -> Self { Box { value } } } fn make() -> Box[i32] { Box::new(1) }";
     let file = checked_file(source);
     match file.items.get(1) {
@@ -2754,7 +2746,7 @@ fn preserves_bare_generic_static_owner() -> unit {
 }
 
 #[test]
-fn specializes_constructor_only_static_owner() -> unit {
+fn specializes_constructor_only_static_owner() -> () {
     let file = checked_file("fn make() -> Ref[i32] { Ref::new(1) }");
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -2779,7 +2771,7 @@ fn specializes_constructor_only_static_owner() -> unit {
 }
 
 #[test]
-fn normalizes_and_escapes_char_literals() -> unit {
+fn normalizes_and_escapes_char_literals() -> () {
     match parse_char_literal("\\u0041") {
         Some(value) => testing::assert(value == 'A'),
         None => testing::fail("expected unicode char literal"),
@@ -2790,8 +2782,8 @@ fn normalizes_and_escapes_char_literals() -> unit {
 }
 
 #[test]
-fn resolves_generic_trait_associated_applications() -> unit {
-    let source = "trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[i32] for Value { type Output = string; fn convert(self: Value) -> string { \"isize\" } } impl Convert[string] for Value { type Output = i32; fn convert(self: Value) -> i32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert::[i32]::convert(Value {}); let number: i32 = Convert::[string]::convert(Value {}); let generic: string = Convert::[string]::convert(Wrapped { value: \"ok\" }); }";
+fn resolves_generic_trait_associated_applications() -> () {
+    let source = "trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[i32] for Value { type Output = string; fn convert(self: Value) -> string { \"isize\" } } impl Convert[string] for Value { type Output = i32; fn convert(self: Value) -> i32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> () { let text: string = Convert::[i32]::convert(Value {}); let number: i32 = Convert::[string]::convert(Value {}); let generic: string = Convert::[string]::convert(Wrapped { value: \"ok\" }); }";
     let file = checked_file(source);
     match file.items.get(3) {
         Function(value) => {
@@ -2825,8 +2817,8 @@ fn resolves_generic_trait_associated_applications() -> unit {
 }
 
 #[test]
-fn resolves_trait_methods_from_call_context() -> unit {
-    let source = "trait Put[T] { fn put(self: Self, arg1: T) -> string; } struct Target {} impl Put[i32] for Target { fn put(self: Target, value: i32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Convertible {} impl Convert[i32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = i32; fn convert(self: Convertible) -> i32 { 7 } } trait Source[T] where Self::Item = T { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: i32 } impl Source[i32] for Number { type Item = i32; fn get(self: Number) -> i32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source::[T]::get(source) } trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item = T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: i32 = (Convertible {}).convert(); let value: i32 = read(Number { value: 8 }); }";
+fn resolves_trait_methods_from_call_context() -> () {
+    let source = "trait Put[T] { fn put(self: Self, arg1: T) -> string; } struct Target {} impl Put[i32] for Target { fn put(self: Target, value: i32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(self: Self) -> Self::Output; } struct Convertible {} impl Convert[i32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = i32; fn convert(self: Convertible) -> i32 { 7 } } trait Source[T] where Self::Item = T { type Item; fn get(self: Self) -> Self::Item; } struct Number { value: i32 } impl Source[i32] for Number { type Item = i32; fn get(self: Number) -> i32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source::[T]::get(source) } trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item = T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> () { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: i32 = (Convertible {}).convert(); let value: i32 = read(Number { value: 8 }); }";
     let file = checked_file(source);
     match file.items.get(7) {
         Function(value) => match value.body.tail {
@@ -2898,8 +2890,8 @@ fn resolves_trait_methods_from_call_context() -> unit {
 }
 
 #[test]
-fn resolves_builtin_for_iterator_types() -> unit {
-    let source = "fn iterate(numbers: Vec[i32], words: Slice[string]) -> unit { for _ in numbers {}; for _ in words {}; }";
+fn resolves_builtin_for_iterator_types() -> () {
+    let source = "fn iterate(numbers: Vec[i32], words: Slice[string]) -> () { for _ in numbers {}; for _ in words {}; }";
     let file = checked_file(source);
     match file.items.get(0) {
         Function(value) => {
@@ -2949,9 +2941,9 @@ fn resolves_builtin_for_iterator_types() -> unit {
 }
 
 #[test]
-fn preserves_associated_into_iterator_item_projection() -> unit {
+fn preserves_associated_into_iterator_item_projection() -> () {
     let file = checked_file(
-        "trait Batch { type Items: IntoIterator; fn items(self: Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> unit { for _ in Batch::items(batch) {} }",
+        "trait Batch { type Items: IntoIterator; fn items(self: Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> () { for _ in Batch::items(batch) {} }",
     );
     match file.items.get(0) {
         Function(value) => match value.body.tail {
@@ -2990,15 +2982,15 @@ fn preserves_associated_into_iterator_item_projection() -> unit {
 }
 
 #[test]
-fn resolves_iterator_item_for_for_loop_method_calls() -> unit {
-    let source = "struct Values {} impl Iterator for Values { type Item = i32; fn next(self: Values) -> Option[i32] { Option::None } } fn main() -> unit { for value in (Values {}) { println(value.to_string()); }; }";
+fn resolves_iterator_item_for_for_loop_method_calls() -> () {
+    let source = "struct Values {} impl Iterator for Values { type Item = i32; fn next(self: Values) -> Option[i32] { Option::None } } fn main() -> () { for value in (Values {}) { println(value.to_string()); }; }";
     let result = check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0)
 }
 
 #[test]
-fn accepts_builtin_into_iterator_predicates() -> unit {
-    let source = "fn sum[S: IntoIterator](source: S) -> i32 where S::Item = i32 { let total = Ref::new(0); for value in source { total.set(total.get() + value); }; total.get() } fn use_values(values: Vec[i32], slice: Slice[i32]) -> unit { let _ = sum(values); let _ = sum(slice); }";
+fn accepts_builtin_into_iterator_predicates() -> () {
+    let source = "fn sum[S: IntoIterator](source: S) -> i32 where S::Item = i32 { let total = Ref::new(0); for value in source { total.set(total.get() + value); }; total.get() } fn use_values(values: Vec[i32], slice: Slice[i32]) -> () { let _ = sum(values); let _ = sum(slice); }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.tast {
@@ -3079,7 +3071,7 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
 }
 
 #[test]
-fn resolves_projected_trait_impls() -> unit {
+fn resolves_projected_trait_impls() -> () {
     let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: i32 } impl Source for Value { type Item = i32; fn get(self: Value) -> i32 { self.value } } fn main() -> i32 { (Value { value: 41 }).pick() }";
     let file = checked_file(source);
     match file.items.get(2) {
@@ -3109,14 +3101,14 @@ fn resolves_projected_trait_impls() -> unit {
 }
 
 #[test]
-fn accepts_projected_trait_predicates() -> unit {
+fn accepts_projected_trait_predicates() -> () {
     let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: i32 } impl Source for Value { type Item = i32; fn get(self: Value) -> i32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick::[S::Item]::pick(source) } fn main() -> i32 { copy(Value { value: 42 }) }";
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0)
 }
 
 #[test]
-fn resolves_constrained_blanket_methods() -> unit {
+fn resolves_constrained_blanket_methods() -> () {
     let source = "trait Mark { fn mark(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } struct Box[T] { value: T } impl Mark for i32 { fn mark(self: i32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { self.value } } fn string_label() -> string { (Box { value: \"text\" }).label() } fn marked_label() -> string { (Box { value: 7 }).label() }";
     let file = checked_file(source);
     for index in range(3, 5) {
@@ -3158,7 +3150,7 @@ fn resolves_constrained_blanket_methods() -> unit {
 }
 
 #[test]
-fn normalizes_float_pattern_literals() -> unit {
+fn normalizes_float_pattern_literals() -> () {
     let file = checked_file(
         "fn signed_zero(value: f64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }",
     );
@@ -3177,7 +3169,7 @@ fn normalizes_float_pattern_literals() -> unit {
 }
 
 #[test]
-fn rounds_float32_literals() -> unit {
+fn rounds_float32_literals() -> () {
     testing::assert_eq(increment_decimal("99999999999999999999"), "100000000000000000000");
     testing::assert_eq(normalized_float32_literal("3.1400001"), "3.14");
     testing::assert_eq(normalized_float32_literal("16777217"), "16777216");
@@ -3239,7 +3231,7 @@ fn rounds_float32_literals() -> unit {
 }
 
 #[test]
-fn rejects_overflowing_float_literals() -> unit {
+fn rejects_overflowing_float_literals() -> () {
     testing::assert(
         has_diagnostic(
             checked_diagnostics("fn value() -> f32 { 1e39 }"),
@@ -3254,7 +3246,7 @@ fn rejects_overflowing_float_literals() -> unit {
     );
     testing::assert(
         has_diagnostic(
-            checked_diagnostics("fn main() -> unit { let _ = 1e309; }"),
+            checked_diagnostics("fn main() -> () { let _ = 1e309; }"),
             "Float literal 1e309 cannot be represented as f64",
         ),
     );
@@ -3301,7 +3293,7 @@ fn rejects_overflowing_float_literals() -> unit {
 }
 
 #[test]
-fn checks_exact_float_literals_in_integer_patterns() -> unit {
+fn checks_exact_float_literals_in_integer_patterns() -> () {
     let valid = checked_diagnostics(
         "fn exact() -> i64 { 9007199254740993.0 } fn signed_max() -> i64 { 9223372036854775807.0 } fn unsigned_max() -> u64 { 18446744073709551615.0 } fn signed(value: i64) -> bool { match value { -9223372036854775808.0 => true, _ => false } } fn unsigned(value: u64) -> bool { match value { 18446744073709551615.0 => true, _ => false } }",
     );
@@ -3340,7 +3332,7 @@ fn checks_exact_float_literals_in_integer_patterns() -> unit {
 }
 
 #[test]
-fn indents_array_control_flow_expressions() -> unit {
+fn indents_array_control_flow_expressions() -> () {
     let file = checked_file("fn choose(flag: bool) -> [i32; 1] { [if flag { 1 } else { 2 }] }");
     let expected = "fn choose(flag/0: bool) -> [i32; 1] {\n" + "    [\n"
         + "      if (flag/0 : bool) {\n"
@@ -3358,7 +3350,7 @@ fn indents_array_control_flow_expressions() -> unit {
 }
 
 #[test]
-fn resolves_supertraits_and_implied_predicates() -> unit {
+fn resolves_supertraits_and_implied_predicates() -> () {
     let source = "trait Parent[T] { fn parent(self: Self) -> T; } trait Render { fn render(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } trait Marker { fn marker(self: Self) -> string; } trait Child[T: Label]: Parent[T] + Render where T: Marker { fn child(self: Self) -> string; } fn describe[T, B: Child[T]](value: B) -> string { value.parent().label() + value.parent().marker() + value.render() + value.child() } fn inherited[T, B: Child[T]](value: B) -> T { Child::[T]::parent(value) }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 2);
@@ -3388,13 +3380,13 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
 }
 
 #[test]
-fn validates_trait_associated_function_self_resolution() -> unit {
+fn validates_trait_associated_function_self_resolution() -> () {
     let valid = checked_diagnostics(
         "trait Decode { fn decode(input: string) -> Self; } trait TryDecode { fn try_decode(input: string) -> Result[Self, string]; } trait Default { fn default() -> Self; } struct Value { value: i32 } impl Decode for Value { fn decode(input: string) -> Value { Value { value: 1 } } } impl TryDecode for Value { fn try_decode(input: string) -> Result[Value, string] { Result::Ok(Value { value: 1 }) } } impl Default for Value { fn default() -> Value { Value { value: 0 } } } fn decode[T: Decode](input: string) -> T { Decode::decode(input) } fn try_decode[T: TryDecode](input: string) -> Result[T, string] { let value: T = TryDecode::try_decode(input)?; Result::Ok(value) } fn make[T: Default]() -> T { Default::default() }",
     );
     testing::assert_eq(valid.len(), 0);
     let ambiguous = checked_diagnostics(
-        "trait Default { fn default() -> Self; } fn value() -> unit { let result = Default::default(); () }",
+        "trait Default { fn default() -> Self; } fn value() -> () { let result = Default::default(); () }",
     );
     testing::assert(
         has_diagnostic(
@@ -3411,9 +3403,9 @@ fn validates_trait_associated_function_self_resolution() -> unit {
 }
 
 #[test]
-fn rejects_trait_associated_functions_in_dyn_traits() -> unit {
+fn rejects_trait_associated_functions_in_dyn_traits() -> () {
     let diagnostics = checked_diagnostics(
-        "trait Factory { fn create(seed: i32) -> Self; } fn use_factory(value: dyn Factory) -> unit {}",
+        "trait Factory { fn create(seed: i32) -> Self; } fn use_factory(value: dyn Factory) -> () {}",
     );
     testing::assert(
         has_diagnostic(
@@ -3424,9 +3416,9 @@ fn rejects_trait_associated_functions_in_dyn_traits() -> unit {
 }
 
 #[test]
-fn rejects_unsafe_dyn_body_annotations() -> unit {
+fn rejects_unsafe_dyn_body_annotations() -> () {
     let diagnostics = checked_diagnostics(
-        "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: i32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 } as dyn Cloneish; }",
+        "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: i32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> () { let _value: dyn Cloneish = Value { value: 1 } as dyn Cloneish; }",
     );
     testing::assert(
         has_diagnostic(
@@ -3437,7 +3429,7 @@ fn rejects_unsafe_dyn_body_annotations() -> unit {
 }
 
 #[test]
-fn resolves_dyn_dot_methods_and_reports_unavailable_methods() -> unit {
+fn resolves_dyn_dot_methods_and_reports_unavailable_methods() -> () {
     let _ = checked_file(
         "trait Parent { fn parent(self: Self) -> string; } trait Child: Parent { fn child(self: Self) -> string; } fn render(value: dyn Child) -> string { value.child() + value.parent() }",
     );
@@ -3448,9 +3440,9 @@ fn resolves_dyn_dot_methods_and_reports_unavailable_methods() -> unit {
 }
 
 #[test]
-fn rejects_dyn_patterns_without_coverage_cascades() -> unit {
+fn rejects_dyn_patterns_without_coverage_cascades() -> () {
     let diagnostics = checked_diagnostics(
-        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> unit { let concrete: i32 = 1; let value: dyn Label = concrete as dyn Label; let _ = match value { 1 => 2, _ => 3 }; }",
+        "trait Label { fn label(self: Self) -> string; } impl Label for i32 { fn label(self: i32) -> string { self.to_string() } } fn main() -> () { let concrete: i32 = 1; let value: dyn Label = concrete as dyn Label; let _ = match value { 1 => 2, _ => 3 }; }",
     );
     testing::assert_eq(diagnostics.len(), 1);
     testing::assert_eq(diagnostics.get(0).message, "Pattern matching on dyn Label is not supported");
@@ -3461,8 +3453,8 @@ fn rejects_dyn_patterns_without_coverage_cascades() -> unit {
 }
 
 #[test]
-fn warns_for_unstructured_go_and_honors_allow_attribute() -> unit {
-    let diagnostics = checked_diagnostics("fn main() -> unit { go || {}; }");
+fn warns_for_unstructured_go_and_honors_allow_attribute() -> () {
+    let diagnostics = checked_diagnostics("fn main() -> () { go || {}; }");
     testing::assert_eq(diagnostics.len(), 1);
     testing::assert(
         diagnostics.get(0).message.starts_with("unstructured_go: `go` starts detached work"),
@@ -3471,13 +3463,13 @@ fn warns_for_unstructured_go_and_honors_allow_attribute() -> unit {
         Warning => (),
         Error => testing::fail("expected unstructured go warning"),
     };
-    let allowed = checked_diagnostics("#[allow(unstructured_go)] fn main() -> unit { go || {}; }");
+    let allowed = checked_diagnostics("#[allow(unstructured_go)] fn main() -> () { go || {}; }");
     testing::assert_eq(allowed.len(), 0)
 }
 
 #[test]
-fn rejects_recursive_struct_layouts() -> unit {
-    let direct = checked_diagnostics("struct Tree { left: Tree } fn main() -> unit {}");
+fn rejects_recursive_struct_layouts() -> () {
+    let direct = checked_diagnostics("struct Tree { left: Tree } fn main() -> () {}");
     testing::assert(
         has_diagnostic(
             direct,
@@ -3485,7 +3477,7 @@ fn rejects_recursive_struct_layouts() -> unit {
         ),
     );
     let generic = checked_diagnostics(
-        "struct Wrap[T] { value: T } struct Loop { value: Wrap[Loop] } fn main() -> unit {}",
+        "struct Wrap[T] { value: T } struct Loop { value: Wrap[Loop] } fn main() -> () {}",
     );
     testing::assert(
         has_diagnostic(
@@ -3496,15 +3488,13 @@ fn rejects_recursive_struct_layouts() -> unit {
 }
 
 #[test]
-fn propagates_generic_result_constraints_to_literals() -> unit {
-    let diagnostics = checked_diagnostics(
-        "fn main() -> unit { let value: Ref[u8] = Ref::new(10); }",
-    );
+fn propagates_generic_result_constraints_to_literals() -> () {
+    let diagnostics = checked_diagnostics("fn main() -> () { let value: Ref[u8] = Ref::new(10); }");
     testing::assert_eq(diagnostics.len(), 0)
 }
 
 #[test]
-fn prefers_user_nominal_arities() -> unit {
+fn prefers_user_nominal_arities() -> () {
     let diagnostics = checked_diagnostics(
         "enum Result { Ok(string), Err(string) } fn parse(value: bool) -> Result { if value { Result::Ok(\"ok\") } else { Result::Err(\"error\") } }",
     );
@@ -3512,44 +3502,44 @@ fn prefers_user_nominal_arities() -> unit {
 }
 
 #[test]
-fn infers_nested_builtin_method_receivers() -> unit {
+fn infers_nested_builtin_method_receivers() -> () {
     let _ = checked_file(
-        "fn main() -> unit { let log = Ref::new(Vec::new()); log.set(log.get().pushed(\"x\")); }",
+        "fn main() -> () { let log = Ref::new(Vec::new()); log.set(log.get().pushed(\"x\")); }",
     );
 }
 
 #[test]
-fn checks_contextual_numeric_expressions_and_inherent_arguments() -> unit {
+fn checks_contextual_numeric_expressions_and_inherent_arguments() -> () {
     let _ = checked_file(
-        "struct Counter { value: u8 } impl Counter { fn add(self: Counter, value: u8) -> Counter { Counter { value: self.value + value } } } fn main() -> unit { let negative: i8 = -128; let total: u8 = 10 + 20; let counter = Counter { value: total }.add(5); println(counter.value.to_string()) }",
+        "struct Counter { value: u8 } impl Counter { fn add(self: Counter, value: u8) -> Counter { Counter { value: self.value + value } } } fn main() -> () { let negative: i8 = -128; let total: u8 = 10 + 20; let counter = Counter { value: total }.add(5); println(counter.value.to_string()) }",
     );
 }
 
 #[test]
-fn qualified_struct_variants_win_over_same_named_structs() -> unit {
+fn qualified_struct_variants_win_over_same_named_structs() -> () {
     let _ = checked_file(
-        "struct Path { segment: string } struct Block { value: isize } enum Expr { Path { path: Path, span: isize }, Block { block: Block, span: isize } } fn span(value: Expr) -> isize { match value { Expr::Path { path: _, span } => span, Expr::Block { block: _, span } => span } } fn main() -> unit { let path = Path { segment: \"x\" }; let block = Block { value: 1 }; let _ = span(Expr::Path { path, span: 2 }); let _ = span(Expr::Block { block, span: 3 }); }",
+        "struct Path { segment: string } struct Block { value: isize } enum Expr { Path { path: Path, span: isize }, Block { block: Block, span: isize } } fn span(value: Expr) -> isize { match value { Expr::Path { path: _, span } => span, Expr::Block { block: _, span } => span } } fn main() -> () { let path = Path { segment: \"x\" }; let block = Block { value: 1 }; let _ = span(Expr::Path { path, span: 2 }); let _ = span(Expr::Block { block, span: 3 }); }",
     );
 }
 
 #[test]
-fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
-    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[i32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: i32 = base + 2; const base: i32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[i32]) -> i32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: u8 = entry.read(); let pair: Pair[i32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_i32(); }";
+fn accepts_transparent_aliases_bytes_and_forward_constants() -> () {
+    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[i32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: i32 = base + 2; const base: i32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[i32]) -> i32 { value.0 + value.1 } fn main() -> () { let entry = Entry { marker, label: \"ok\" }; let raw: u8 = entry.read(); let pair: Pair[i32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw.to_i32(); }";
     let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
 }
 
 #[test]
-fn accepts_recursively_immutable_composite_constants() -> unit {
-    let source = "struct Pair { left: isize, bytes: [byte; 2] } enum Choice { None, Some(Pair) } const BYTES: [byte; 3] = b\"ABC\"; const PAIR: Pair = Pair { left: 7, bytes: [8, 9] }; const CHOICE: Choice = Choice::Some(PAIR); fn main() -> unit { let _ = BYTES[0]; let _ = PAIR.left; match CHOICE { Choice::None => (), Choice::Some(_) => () } }";
+fn accepts_recursively_immutable_composite_constants() -> () {
+    let source = "struct Pair { left: isize, bytes: [byte; 2] } enum Choice { None, Some(Pair) } const BYTES: [byte; 3] = b\"ABC\"; const PAIR: Pair = Pair { left: 7, bytes: [8, 9] }; const CHOICE: Choice = Choice::Some(PAIR); fn main() -> () { let _ = BYTES[0]; let _ = PAIR.left; match CHOICE { Choice::None => (), Choice::Some(_) => () } }";
     let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
 }
 
 #[test]
-fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
+fn rejects_mutable_constant_types_and_composite_patterns() -> () {
     let mutable = checked_diagnostics(
-        "const BAD: Vec[isize] = Vec::from_array([1]); fn main() -> unit {}",
+        "const BAD: Vec[isize] = Vec::from_array([1]); fn main() -> () {}",
     );
     testing::assert(
         has_diagnostic(
@@ -3562,38 +3552,36 @@ fn rejects_mutable_constant_types_and_composite_patterns() -> unit {
     );
     testing::assert(has_diagnostic(pattern, "non-scalar constants cannot be used as patterns"));
     let reassignment = checked_diagnostics(
-        "const VALUES: [isize; 2] = [1, 2]; fn main() -> unit { VALUES = [3, 4]; }",
+        "const VALUES: [isize; 2] = [1, 2]; fn main() -> () { VALUES = [3, 4]; }",
     );
     testing::assert(has_diagnostic(reassignment, "cannot assign to constant `VALUES`"))
 }
 
 #[test]
-fn checks_once_cell_statics() -> unit {
+fn checks_once_cell_statics() -> () {
     let file = checked_file(
-        "static VALUE: OnceCell[FrozenVec[isize]] = OnceCell::new(); fn value() -> FrozenVec[isize] { VALUE.get_or_init(|| Vec::from_array([1, 2]).freeze()) } fn main() -> unit { let _ = value(); }",
+        "static VALUE: OnceCell[FrozenVec[isize]] = OnceCell::new(); fn value() -> FrozenVec[isize] { VALUE.get_or_init(|| Vec::from_array([1, 2]).freeze()) } fn main() -> () { let _ = value(); }",
     );
     testing::assert_eq(file.statics.len(), 1);
     let invalid_type = checked_diagnostics(
-        "static VALUE: isize = OnceCell::new(); fn main() -> unit {}",
+        "static VALUE: isize = OnceCell::new(); fn main() -> () {}",
     );
     testing::assert(has_diagnostic(invalid_type, "static initializer must be `OnceCell::new()`"));
     let invalid_initializer = checked_diagnostics(
-        "static VALUE: OnceCell[isize] = Option::None; fn main() -> unit {}",
+        "static VALUE: OnceCell[isize] = Option::None; fn main() -> () {}",
     );
     testing::assert(
         has_diagnostic(invalid_initializer, "static initializer must be `OnceCell::new()`"),
     );
     let reassignment = checked_diagnostics(
-        "static VALUE: OnceCell[isize] = OnceCell::new(); fn main() -> unit { VALUE = OnceCell::new(); }",
+        "static VALUE: OnceCell[isize] = OnceCell::new(); fn main() -> () { VALUE = OnceCell::new(); }",
     );
     testing::assert(has_diagnostic(reassignment, "cannot assign to static binding `VALUE`"))
 }
 
 #[test]
-fn diagnoses_type_alias_cycles_and_wrong_arity() -> unit {
-    let cycle = checked_diagnostics(
-        "type First = Second; type Second = First; fn main() -> unit {}",
-    );
+fn diagnoses_type_alias_cycles_and_wrong_arity() -> () {
+    let cycle = checked_diagnostics("type First = Second; type Second = First; fn main() -> () {}");
     testing::assert(has_diagnostic(cycle, "Cyclic type alias First"));
     let arity = checked_diagnostics(
         "type Pair[T] = (T, T); fn identity(value: Pair) -> Pair { value }",
@@ -3602,20 +3590,20 @@ fn diagnoses_type_alias_cycles_and_wrong_arity() -> unit {
 }
 
 #[test]
-fn diagnoses_constant_cycles_and_non_constant_expressions() -> unit {
+fn diagnoses_constant_cycles_and_non_constant_expressions() -> () {
     let cycle = checked_diagnostics(
-        "const first: isize = second; const second: isize = first; fn main() -> unit {}",
+        "const first: isize = second; const second: isize = first; fn main() -> () {}",
     );
     testing::assert(has_diagnostic(cycle, "Cyclic constant first"));
     testing::assert(has_diagnostic(cycle, "Cyclic constant second"));
     let call = checked_diagnostics(
-        "fn value() -> isize { 1 } const answer: isize = value(); fn main() -> unit {}",
+        "fn value() -> isize { 1 } const answer: isize = value(); fn main() -> () {}",
     );
     testing::assert(has_diagnostic(call, "comptime function calls runtime-only function `value`"))
 }
 
 #[test]
-fn direct_type_writer_matches_compact_document_rendering() -> unit {
+fn direct_type_writer_matches_compact_document_rendering() -> () {
     let values = Vec::from_array(
         [
             Type::Unit,
@@ -3673,17 +3661,17 @@ fn direct_type_writer_matches_compact_document_rendering() -> unit {
 }
 
 #[test]
-fn checks_select_channels_bindings_and_branch_types() -> unit {
+fn checks_select_channels_bindings_and_branch_types() -> () {
     let valid = checked_diagnostics(
         "fn choose(input: Channel[isize], output: Channel[isize]) -> isize { select { recv(input) as value => value.unwrap_or(0), send(output, 1) => 2, default => 3, } }",
     );
     testing::assert_eq(valid.len(), 0);
     let receive = checked_diagnostics(
-        "fn main() -> unit { let _ = select { recv(1) as value => value, }; }",
+        "fn main() -> () { let _ = select { recv(1) as value => value, }; }",
     );
     testing::assert(has_diagnostic_containing(receive, "Channel"));
     let send = checked_diagnostics(
-        "fn main(channel: Channel[isize]) -> unit { select { send(channel, \"wrong\") => (), } }",
+        "fn main(channel: Channel[isize]) -> () { select { send(channel, \"wrong\") => (), } }",
     );
     testing::assert(has_diagnostic(send, "Type mismatch: expected isize, found string"));
     let branches = checked_diagnostics(
@@ -3693,45 +3681,45 @@ fn checks_select_channels_bindings_and_branch_types() -> unit {
 }
 
 #[test]
-fn checks_directional_channel_operations() -> unit {
+fn checks_directional_channel_operations() -> () {
     let valid = checked_diagnostics(
-        "fn choose(channel: Channel[isize]) -> unit { let sender: Sender[isize] = channel.sender(); let receiver: Receiver[isize] = channel.receiver(); select { recv(receiver) as _ => (), send(sender, 1) => (), default => (), } }",
+        "fn choose(channel: Channel[isize]) -> () { let sender: Sender[isize] = channel.sender(); let receiver: Receiver[isize] = channel.receiver(); select { recv(receiver) as _ => (), send(sender, 1) => (), default => (), } }",
     );
     testing::assert_eq(valid.len(), 0);
     let receive = checked_diagnostics(
-        "fn main(sender: Sender[isize]) -> unit { select { recv(sender) as _ => (), default => (), } }",
+        "fn main(sender: Sender[isize]) -> () { select { recv(sender) as _ => (), default => (), } }",
     );
     testing::assert(has_diagnostic(receive, "Cannot receive from Sender"));
     let send = checked_diagnostics(
-        "fn main(receiver: Receiver[isize]) -> unit { select { send(receiver, 1) => (), default => (), } }",
+        "fn main(receiver: Receiver[isize]) -> () { select { send(receiver, 1) => (), default => (), } }",
     );
     testing::assert(has_diagnostic(send, "Cannot send to Receiver"));
     let method = checked_diagnostics(
-        "fn main(receiver: Receiver[isize]) -> unit { receiver.close() }",
+        "fn main(receiver: Receiver[isize]) -> () { receiver.close() }",
     );
     testing::assert(has_diagnostic_containing(method, "close"))
 }
 
 #[test]
-fn checks_select_guards_and_receive_match_scope() -> unit {
+fn checks_select_guards_and_receive_match_scope() -> () {
     let valid = checked_diagnostics(
         "fn choose(channel: Channel[isize]) -> isize { select priority { recv(channel) when true match { Some(value) => value, None => 0, }, default => -1, } }",
     );
     testing::assert_eq(valid.len(), 0);
     let invalid_guard = checked_diagnostics(
-        "fn main(channel: Channel[isize]) -> unit { select { recv(channel) when 1 as value => (), default => (), } }",
+        "fn main(channel: Channel[isize]) -> () { select { recv(channel) when 1 as value => (), default => (), } }",
     );
     testing::assert(has_diagnostic(invalid_guard, "Numeric literal cannot be used as bool"));
     let invalid_scope = checked_diagnostics(
-        "fn main(channel: Channel[isize]) -> unit { select { recv(channel) when value.is_some() as value => (), default => (), } }",
+        "fn main(channel: Channel[isize]) -> () { select { recv(channel) when value.is_some() as value => (), default => (), } }",
     );
     testing::assert(has_diagnostic(invalid_scope, "Unresolved name value"))
 }
 
 #[test]
-fn rejects_select_during_comptime_evaluation() -> unit {
+fn rejects_select_during_comptime_evaluation() -> () {
     let diagnostics = checked_diagnostics(
-        "fn main(channel: Channel[isize]) -> unit { let _ = comptime { select { recv(channel) as _ => (), } }; }",
+        "fn main(channel: Channel[isize]) -> () { let _ = comptime { select { recv(channel) as _ => (), } }; }",
     );
     testing::assert(has_diagnostic(diagnostics, "select is not available in comptime"))
 }

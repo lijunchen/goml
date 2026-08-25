@@ -22,7 +22,7 @@ fn lower_source(source: string) -> File {
 }
 
 #[test]
-fn snapshot_names_restart_for_each_function() -> unit {
+fn snapshot_names_restart_for_each_function() -> () {
     let output = encode_snapshot(
         lower_source("fn first(value: i32) -> i32 { value } fn second(value: i32) -> i32 { value }"),
     );
@@ -54,7 +54,7 @@ fn verifier_file(body: Block, ret_ty: repr::Type) -> File {
     }
 }
 
-fn verifier_error_contains(result: Result[unit, string], expected: string) -> unit {
+fn verifier_error_contains(result: Result[(), string], expected: string) -> () {
     match result {
         Ok(_) => testing::fail("expected ANF verification failure"),
         Err(message) => testing::assert(message.contains(expected)),
@@ -62,7 +62,7 @@ fn verifier_error_contains(result: Result[unit, string], expected: string) -> un
 }
 
 #[test]
-fn verifies_lowered_anf() -> unit {
+fn verifies_lowered_anf() -> () {
     match verify(lower_source("fn choose(flag: bool) -> i32 { if flag { 1 } else { 2 } }")) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
@@ -70,10 +70,10 @@ fn verifies_lowered_anf() -> unit {
 }
 
 #[test]
-fn preserves_explicit_closure_packs_and_metadata() -> unit {
+fn preserves_explicit_closure_packs_and_metadata() -> () {
     let file = dce(
         lower_source(
-            "fn consume(value: (i32) -> i32) -> i32 { value(1) } fn main() -> unit { println(consume(|x: i32| x + 1)) }",
+            "fn consume(value: (i32) -> i32) -> i32 { value(1) } fn main() -> () { println(consume(|x: i32| x + 1)) }",
         ),
     );
     testing::assert_eq(file.closure_defs.len(), 1);
@@ -85,9 +85,9 @@ fn preserves_explicit_closure_packs_and_metadata() -> unit {
 }
 
 #[test]
-fn rejects_invalid_closure_pack_signatures() -> unit {
+fn rejects_invalid_closure_pack_signatures() -> () {
     let file = lower_source(
-        "fn consume(value: (i32) -> i32) -> i32 { value(1) } fn main() -> unit { println(consume(|x: i32| x + 1)) }",
+        "fn consume(value: (i32) -> i32) -> i32 { value(1) } fn main() -> () { println(consume(|x: i32| x + 1)) }",
     );
     let definition = file.closure_defs[0];
     let invalid = File {
@@ -111,10 +111,10 @@ fn rejects_invalid_closure_pack_signatures() -> unit {
 }
 
 #[test]
-fn eliminates_dead_anf_locals_without_dropping_calls() -> unit {
+fn eliminates_dead_anf_locals_without_dropping_calls() -> () {
     let value = dce(
         lower_source(
-            "fn effect() -> i32 { println(\"kept\"); 1 } fn main() -> unit { let dead = (1, 2); let kept = effect(); () }",
+            "fn effect() -> i32 { println(\"kept\"); 1 } fn main() -> () { let dead = (1, 2); let kept = effect(); () }",
         ),
     );
     match verify(value) {
@@ -127,7 +127,7 @@ fn eliminates_dead_anf_locals_without_dropping_calls() -> unit {
 }
 
 #[test]
-fn eliminates_unreachable_recursive_join_members() -> unit {
+fn eliminates_unreachable_recursive_join_members() -> () {
     let unit_value = Imm::Prim { value: repr::Primitive::Unit, ty: repr::Type::Unit };
     let live = JoinBind {
         name: "live",
@@ -167,7 +167,7 @@ fn eliminates_unreachable_recursive_join_members() -> unit {
 }
 
 #[test]
-fn eliminates_unreferenced_nonrecursive_joins() -> unit {
+fn eliminates_unreferenced_nonrecursive_joins() -> () {
     let join = JoinBind {
         name: "dead",
         role: JoinRole::Continuation,
@@ -197,7 +197,7 @@ fn eliminates_unreferenced_nonrecursive_joins() -> unit {
 }
 
 #[test]
-fn rejects_out_of_scope_join_jumps() -> unit {
+fn rejects_out_of_scope_join_jumps() -> () {
     verifier_error_contains(
         verify(
             verifier_file(
@@ -217,7 +217,7 @@ fn rejects_out_of_scope_join_jumps() -> unit {
 }
 
 #[test]
-fn rejects_nonrecursive_self_jumps() -> unit {
+fn rejects_nonrecursive_self_jumps() -> () {
     let join = JoinBind {
         name: "again",
         role: JoinRole::Continuation,
@@ -245,7 +245,7 @@ fn rejects_nonrecursive_self_jumps() -> unit {
 }
 
 #[test]
-fn rejects_join_argument_mismatches() -> unit {
+fn rejects_join_argument_mismatches() -> () {
     let params: Vec[(string, repr::Type)] = Vec::new();
     params.push(("value", repr::Type::Int32));
     let join = JoinBind {
@@ -275,7 +275,7 @@ fn rejects_join_argument_mismatches() -> unit {
 }
 
 #[test]
-fn accepts_recursive_self_jumps() -> unit {
+fn accepts_recursive_self_jumps() -> () {
     let joins: Vec[JoinBind] = Vec::new();
     joins.push(
         JoinBind {
@@ -306,7 +306,7 @@ fn accepts_recursive_self_jumps() -> unit {
 }
 
 #[test]
-fn preserves_loop_exit_joins() -> unit {
+fn preserves_loop_exit_joins() -> () {
     let join = JoinBind {
         name: "exit",
         role: JoinRole::LoopExit,
@@ -338,7 +338,7 @@ fn preserves_loop_exit_joins() -> unit {
 }
 
 #[test]
-fn rejects_bare_closure_environment_join_arguments() -> unit {
+fn rejects_bare_closure_environment_join_arguments() -> () {
     let function_ty = repr::Type::Func { params: Vec::new(), ret_ty: repr::Type::String };
     let params: Vec[(string, repr::Type)] = Vec::new();
     params.push(("result", function_ty));
@@ -371,7 +371,7 @@ fn rejects_bare_closure_environment_join_arguments() -> unit {
 }
 
 #[test]
-fn does_not_propagate_assigned_bindings() -> unit {
+fn does_not_propagate_assigned_bindings() -> () {
     let binds: Vec[Bind] = Vec::new();
     binds.push(
         Bind::Let(
@@ -417,13 +417,13 @@ fn does_not_propagate_assigned_bindings() -> unit {
 }
 
 #[test]
-fn advances_shared_counter_before_simplification() -> unit {
+fn advances_shared_counter_before_simplification() -> () {
     let lowered = lift::lower(
         mono::lower(
             core::lower(
                 tast::check(
                     hir::lower(
-                        ast::lower(parser::parse("fn main() -> unit { println(1) }")),
+                        ast::lower(parser::parse("fn main() -> () { println(1) }")),
                         "main.gom",
                     ),
                 ),
@@ -436,72 +436,72 @@ fn advances_shared_counter_before_simplification() -> unit {
 }
 
 #[test]
-fn simplifies_linear_aliases_and_tuple_projections() -> unit {
+fn simplifies_linear_aliases_and_tuple_projections() -> () {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let mtmp0 = () in\n  let t8 = (true, false) in\n  let a/0 = (true, false, t8) in\n  let x1 = true in\n  let x2 = false in\n  let x3 = t8 in\n  let x4 = true in\n  let x5 = false in\n  let w/4 = x5 in\n  let z/3 = x4 in\n  let y/2 = x2 in\n  let x/1 = x1 in\n  let b/5 = x5 in\n  let mtmp6 = print(x5) in\n  ()\n}",
+        "fn main() -> () {\n  let mtmp0 = () in\n  let t8 = (true, false) in\n  let a/0 = (true, false, t8) in\n  let x1 = true in\n  let x2 = false in\n  let x3 = t8 in\n  let x4 = true in\n  let x5 = false in\n  let w/4 = x5 in\n  let z/3 = x4 in\n  let y/2 = x2 in\n  let x/1 = x1 in\n  let b/5 = x5 in\n  let mtmp6 = print(x5) in\n  ()\n}",
     )
 }
 
 #[test]
-fn simplifies_if_joins_after_inlining() -> unit {
+fn simplifies_if_joins_after_inlining() -> () {
     let source = "fn choose(flag: bool, x: i32, y: i32) -> i32 { if flag { x } else { y } } fn main() { let yes = choose(true, 10, 99); let no = choose(false, 10, 99); let _ = println(\"yes=\" + yes.to_string()); let _ = println(\"no=\" + no.to_string()); () }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn choose(flag/0: bool, x/1: i32, y/2: i32) -> i32 {\n  if flag/0 {\n    x/1\n  } else {\n    y/2\n  }\n}\n\nfn main() -> unit {\n  join inline_cont15(yes/3: i32) -> unit {\n    join inline_cont11(no/4: i32) -> unit {\n      let t7 = inherent#i32#i32#to_string(yes/3) in\n      let t8 = (\"yes=\" + t7) in\n      let mtmp0 = println(t8) in\n      let t9 = inherent#i32#i32#to_string(no/4) in\n      let t10 = (\"no=\" + t9) in\n      let mtmp1 = println(t10) in\n      ()\n    } in\n    let inline12 = false in\n    let inline13 = 10 in\n    let inline14 = 99 in\n    if inline12 {\n      jump inline_cont11(inline13)\n    } else {\n      jump inline_cont11(inline14)\n    }\n  } in\n  let inline16 = true in\n  let inline17 = 10 in\n  let inline18 = 99 in\n  if inline16 {\n    jump inline_cont15(inline17)\n  } else {\n    jump inline_cont15(inline18)\n  }\n}",
+        "fn choose(flag/0: bool, x/1: i32, y/2: i32) -> i32 {\n  if flag/0 {\n    x/1\n  } else {\n    y/2\n  }\n}\n\nfn main() -> () {\n  join inline_cont15(yes/3: i32) -> () {\n    join inline_cont11(no/4: i32) -> () {\n      let t7 = inherent#i32#i32#to_string(yes/3) in\n      let t8 = (\"yes=\" + t7) in\n      let mtmp0 = println(t8) in\n      let t9 = inherent#i32#i32#to_string(no/4) in\n      let t10 = (\"no=\" + t9) in\n      let mtmp1 = println(t10) in\n      ()\n    } in\n    let inline12 = false in\n    let inline13 = 10 in\n    let inline14 = 99 in\n    if inline12 {\n      jump inline_cont11(inline13)\n    } else {\n      jump inline_cont11(inline14)\n    }\n  } in\n  let inline16 = true in\n  let inline17 = 10 in\n  let inline18 = 99 in\n  if inline16 {\n    jump inline_cont15(inline17)\n  } else {\n    jump inline_cont15(inline18)\n  }\n}",
     )
 }
 
 #[test]
-fn simplifies_known_constructor_matches_and_projections() -> unit {
-    let source = "enum T { A, B(bool, unit) } fn main() { let t = B(true, ()); match t { A => println((1).to_string()), B(true, ()) => println((2).to_string()), B(false, ()) => println((3).to_string()), } }";
+fn simplifies_known_constructor_matches_and_projections() -> () {
+    let source = "enum T { A, B(bool, ()) } fn main() { let t = B(true, ()); match t { A => println((1).to_string()), B(true, ()) => println((2).to_string()), B(false, ()) => println((3).to_string()), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let t/0 = T::B(true, ()) in\n  let x0 = true in\n  let x1 = () in\n  match x1 {\n    () => {\n      match x0 {\n        true => {\n          let t8 = inherent#isize#isize#to_string(2) in\n          let t9 = println(t8) in\n          ()\n        },\n        false => {\n          let t10 = inherent#isize#isize#to_string(3) in\n          let t11 = println(t10) in\n          ()\n        },\n      }\n    },\n  }\n}",
+        "fn main() -> () {\n  let t/0 = T::B(true, ()) in\n  let x0 = true in\n  let x1 = () in\n  match x1 {\n    () => {\n      match x0 {\n        true => {\n          let t8 = inherent#isize#isize#to_string(2) in\n          let t9 = println(t8) in\n          ()\n        },\n        false => {\n          let t10 = inherent#isize#isize#to_string(3) in\n          let t11 = println(t10) in\n          ()\n        },\n      }\n    },\n  }\n}",
     )
 }
 
 #[test]
-fn lowers_while_loops_through_recursive_joins() -> unit {
+fn lowers_while_loops_through_recursive_joins() -> () {
     let source = "fn main() { let i = Ref::new(0); while i.get() < 10 { if i.get() == 5 { break } else { () }; let _ = println(i.get()); i.set(i.get() + 1); }; let _ = println(\"done\"); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let i/0 = inherent#Ref#Ref[isize]#new(0) in\n  join exit6() -> unit {\n    let _wild3 = () in\n    let mtmp4 = println(\"done\") in\n    ()\n  } in\n  joinrec {\n    join loop7() -> unit {\n      let t8 = inherent#Ref#Ref[isize]#get(i/0) in\n      let t9 = (t8 < 10) in\n      if t9 {\n        let t14 = inherent#Ref#Ref[isize]#get(i/0) in\n        let t15 = (t14 == 5) in\n        join k10() -> unit {\n          let _wild0 = () in\n          let t11 = inherent#Ref#Ref[isize]#get(i/0) in\n          let mtmp1 = println(t11) in\n          let t12 = inherent#Ref#Ref[isize]#get(i/0) in\n          let t13 = (t12 + 1) in\n          let _wild2 = inherent#Ref#Ref[isize]#set(i/0, t13) in\n          jump loop7()\n        } in\n        if t15 {\n          jump exit6()\n        } else {\n          jump k10()\n        }\n      } else {\n        jump exit6()\n      }\n    } in\n  } in\n  jump loop7()\n}",
+        "fn main() -> () {\n  let i/0 = inherent#Ref#Ref[isize]#new(0) in\n  join exit6() -> () {\n    let _wild3 = () in\n    let mtmp4 = println(\"done\") in\n    ()\n  } in\n  joinrec {\n    join loop7() -> () {\n      let t8 = inherent#Ref#Ref[isize]#get(i/0) in\n      let t9 = (t8 < 10) in\n      if t9 {\n        let t14 = inherent#Ref#Ref[isize]#get(i/0) in\n        let t15 = (t14 == 5) in\n        join k10() -> () {\n          let _wild0 = () in\n          let t11 = inherent#Ref#Ref[isize]#get(i/0) in\n          let mtmp1 = println(t11) in\n          let t12 = inherent#Ref#Ref[isize]#get(i/0) in\n          let t13 = (t12 + 1) in\n          let _wild2 = inherent#Ref#Ref[isize]#set(i/0, t13) in\n          jump loop7()\n        } in\n        if t15 {\n          jump exit6()\n        } else {\n          jump k10()\n        }\n      } else {\n        jump exit6()\n      }\n    } in\n  } in\n  jump loop7()\n}",
     )
 }
 
 #[test]
-fn uses_unreachable_continuations_for_exiting_branches() -> unit {
-    let source = "fn f(flag: i32) -> i32 { while true { if flag == 0 { return 1 } else { break }; }; 2 } fn main() -> unit { println(f(0).to_string()); println(f(1).to_string()); }";
+fn uses_unreachable_continuations_for_exiting_branches() -> () {
+    let source = "fn f(flag: i32) -> i32 { while true { if flag == 0 { return 1 } else { break }; }; 2 } fn main() -> () { println(f(0).to_string()); println(f(1).to_string()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn f(flag/0: i32) -> i32 {\n  join exit6() -> i32 {\n    let _wild1 = () in\n    2\n  } in\n  let t9 = (flag/0 == 0) in\n  joinrec {\n    join loop7() -> i32 {\n      if t9 {\n        1\n      } else {\n        jump exit6()\n      }\n    } in\n  } in\n  jump loop7()\n}\n\nfn main() -> unit {\n  let t11 = f(0) in\n  let t12 = inherent#i32#i32#to_string(t11) in\n  let _wild2 = println(t12) in\n  let t13 = f(1) in\n  let t14 = inherent#i32#i32#to_string(t13) in\n  let _wild3 = println(t14) in\n  ()\n}",
+        "fn f(flag/0: i32) -> i32 {\n  join exit6() -> i32 {\n    let _wild1 = () in\n    2\n  } in\n  let t9 = (flag/0 == 0) in\n  joinrec {\n    join loop7() -> i32 {\n      if t9 {\n        1\n      } else {\n        jump exit6()\n      }\n    } in\n  } in\n  jump loop7()\n}\n\nfn main() -> () {\n  let t11 = f(0) in\n  let t12 = inherent#i32#i32#to_string(t11) in\n  let _wild2 = println(t12) in\n  let t13 = f(1) in\n  let t14 = inherent#i32#i32#to_string(t13) in\n  let _wild3 = println(t14) in\n  ()\n}",
     )
 }
 
 #[test]
-fn preserves_typed_exiting_loop_conditions() -> unit {
-    let source = "fn loop_return_unit(flag: bool) -> unit { while if flag { return } else { return } { println(\"unreachable\"); }; } fn loop_return() -> i32 { while match 0 { _ => return 5, } { println(\"unreachable\"); }; 0 } fn main() -> unit { loop_return_unit(true); println(loop_return()); }";
+fn preserves_typed_exiting_loop_conditions() -> () {
+    let source = "fn loop_return_unit(flag: bool) -> () { while if flag { return } else { return } { println(\"unreachable\"); }; } fn loop_return() -> i32 { while match 0 { _ => return 5, } { println(\"unreachable\"); }; 0 } fn main() -> () { loop_return_unit(true); println(loop_return()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn loop_return_unit(flag/0: bool) -> unit {\n  joinrec {\n    join loop9() -> unit {\n      if flag/0 {\n        ()\n      } else {\n        ()\n      }\n    } in\n  } in\n  jump loop9()\n}\n\nfn loop_return() -> i32 {\n  joinrec {\n    join loop15() -> i32 {\n      let mtmp2 = 0 in\n      5\n    } in\n  } in\n  jump loop15()\n}\n\nfn main() -> unit {\n  let _wild5 = loop_return_unit(true) in\n  let t17 = loop_return() in\n  let _wild6 = println(t17) in\n  ()\n}",
+        "fn loop_return_unit(flag/0: bool) -> () {\n  joinrec {\n    join loop9() -> () {\n      if flag/0 {\n        ()\n      } else {\n        ()\n      }\n    } in\n  } in\n  jump loop9()\n}\n\nfn loop_return() -> i32 {\n  joinrec {\n    join loop15() -> i32 {\n      let mtmp2 = 0 in\n      5\n    } in\n  } in\n  jump loop15()\n}\n\nfn main() -> () {\n  let _wild5 = loop_return_unit(true) in\n  let t17 = loop_return() in\n  let _wild6 = println(t17) in\n  ()\n}",
     )
 }
 
 #[test]
-fn retains_failed_linear_probe_names() -> unit {
+fn retains_failed_linear_probe_names() -> () {
     let source = "fn main() { let x = Ref::new(0); let result = Ref::new(\"\"); while x.get() < 5 { let current = x.get(); result.set(result.get() + match current { 0 => \"zero\", 1 => \"one\", 2 => \"two\", _ => \"many\", } + \" \" ); x.set(current + 1); }; println(result.get()); }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let x/0 = inherent#Ref#Ref[isize]#new(0) in\n  let result/1 = inherent#Ref#Ref[string]#new(\"\") in\n  join exit5() -> unit {\n    let _wild2 = () in\n    let t6 = inherent#Ref#Ref[string]#get(result/1) in\n    let _wild3 = println(t6) in\n    ()\n  } in\n  joinrec {\n    join loop7() -> unit {\n      let t8 = inherent#Ref#Ref[isize]#get(x/0) in\n      let t9 = (t8 < 5) in\n      if t9 {\n        let current/2 = inherent#Ref#Ref[isize]#get(x/0) in\n        let t11 = inherent#Ref#Ref[string]#get(result/1) in\n        join k12(jp13: string) -> unit {\n          let t14 = (t11 + jp13) in\n          let t15 = (t14 + \" \") in\n          let _wild0 = inherent#Ref#Ref[string]#set(result/1, t15) in\n          let t16 = (current/2 + 1) in\n          let _wild1 = inherent#Ref#Ref[isize]#set(x/0, t16) in\n          jump loop7()\n        } in\n        match current/2 {\n          0 => {\n            jump k12(\"zero\")\n          },\n          1 => {\n            jump k12(\"one\")\n          },\n          2 => {\n            jump k12(\"two\")\n          },\n          _ => {\n            jump k12(\"many\")\n          },\n        }\n      } else {\n        jump exit5()\n      }\n    } in\n  } in\n  jump loop7()\n}",
+        "fn main() -> () {\n  let x/0 = inherent#Ref#Ref[isize]#new(0) in\n  let result/1 = inherent#Ref#Ref[string]#new(\"\") in\n  join exit5() -> () {\n    let _wild2 = () in\n    let t6 = inherent#Ref#Ref[string]#get(result/1) in\n    let _wild3 = println(t6) in\n    ()\n  } in\n  joinrec {\n    join loop7() -> () {\n      let t8 = inherent#Ref#Ref[isize]#get(x/0) in\n      let t9 = (t8 < 5) in\n      if t9 {\n        let current/2 = inherent#Ref#Ref[isize]#get(x/0) in\n        let t11 = inherent#Ref#Ref[string]#get(result/1) in\n        join k12(jp13: string) -> () {\n          let t14 = (t11 + jp13) in\n          let t15 = (t14 + \" \") in\n          let _wild0 = inherent#Ref#Ref[string]#set(result/1, t15) in\n          let t16 = (current/2 + 1) in\n          let _wild1 = inherent#Ref#Ref[isize]#set(x/0, t16) in\n          jump loop7()\n        } in\n        match current/2 {\n          0 => {\n            jump k12(\"zero\")\n          },\n          1 => {\n            jump k12(\"one\")\n          },\n          2 => {\n            jump k12(\"two\")\n          },\n          _ => {\n            jump k12(\"many\")\n          },\n        }\n      } else {\n        jump exit5()\n      }\n    } in\n  } in\n  jump loop7()\n}",
     )
 }
 
 #[test]
-fn inlines_small_static_calls() -> unit {
+fn inlines_small_static_calls() -> () {
     let file = lower_source(
-        "fn id(value: string) -> string { value } fn main() -> unit { let value = id(\"ok\"); println(value) }",
+        "fn id(value: string) -> string { value } fn main() -> () { let value = id(\"ok\"); println(value) }",
     );
     match verify(file) {
         Ok(_) => (),
@@ -513,15 +513,15 @@ fn inlines_small_static_calls() -> unit {
 }
 
 #[test]
-fn respects_static_inline_limits() -> unit {
-    let source = "fn recurse(value: i32) -> i32 { if value == 0 { 0 } else { recurse(value - 1) } } fn large(value: i32) -> i32 { let a0 = value + 1; let a1 = a0 + 1; let a2 = a1 + 1; let a3 = a2 + 1; let a4 = a3 + 1; let a5 = a4 + 1; let a6 = a5 + 1; let a7 = a6 + 1; let a8 = a7 + 1; let a9 = a8 + 1; let a10 = a9 + 1; let a11 = a10 + 1; let a12 = a11 + 1; let a13 = a12 + 1; let a14 = a13 + 1; let a15 = a14 + 1; a15 } fn main() -> unit { println(recurse(3)); println(large(0)); }";
+fn respects_static_inline_limits() -> () {
+    let source = "fn recurse(value: i32) -> i32 { if value == 0 { 0 } else { recurse(value - 1) } } fn large(value: i32) -> i32 { let a0 = value + 1; let a1 = a0 + 1; let a2 = a1 + 1; let a3 = a2 + 1; let a4 = a3 + 1; let a5 = a4 + 1; let a6 = a5 + 1; let a7 = a6 + 1; let a8 = a7 + 1; let a9 = a8 + 1; let a10 = a9 + 1; let a11 = a10 + 1; let a12 = a11 + 1; let a13 = a12 + 1; let a14 = a13 + 1; let a15 = a14 + 1; a15 } fn main() -> () { println(recurse(3)); println(large(0)); }";
     let output = encode(lower_source(source));
     testing::assert(output.contains("recurse(3)"));
     testing::assert(output.contains("large(0)"))
 }
 
 #[test]
-fn exhausts_static_inline_budget() -> unit {
+fn exhausts_static_inline_budget() -> () {
     let file = lower_source("fn id(value: string) -> string { value }");
     let callee = match find_inline_function(file.functions, "id") {
         Some(value) => value,
@@ -563,7 +563,7 @@ fn exhausts_static_inline_budget() -> unit {
 }
 
 #[test]
-fn commutes_known_constructor_continuations() -> unit {
+fn commutes_known_constructor_continuations() -> () {
     let source = "enum Maybe { Some(i32), None } fn make(flag: bool) -> Maybe { if flag { Some(7) } else { None } } fn consume(value: Maybe) -> i32 { match value { Some(item) => item, None => 0 } } fn combined(flag: bool) -> i32 { consume(make(flag)) }";
     let lowered = lower_source(source);
     match verify(lowered) {
@@ -576,7 +576,7 @@ fn commutes_known_constructor_continuations() -> unit {
 }
 
 #[test]
-fn preserves_continuations_with_unknown_entries() -> unit {
+fn preserves_continuations_with_unknown_entries() -> () {
     let source = "enum Maybe { Some(i32), None } fn consume(value: Maybe) -> i32 { match value { Some(item) => item, None => 0 } } fn combined(flag: bool, fallback: Maybe) -> i32 { consume(if flag { Some(1) } else { fallback }) }";
     let lowered = lower_source(source);
     match verify(lowered) {
@@ -589,7 +589,7 @@ fn preserves_continuations_with_unknown_entries() -> unit {
 }
 
 #[test]
-fn invalidates_commuting_constructors_after_assignment() -> unit {
+fn invalidates_commuting_constructors_after_assignment() -> () {
     let known: Vec[CommuteBinding] = Vec::new();
     record_commute_binding(
         known,
@@ -657,7 +657,7 @@ fn encoded_function(output: string, name: string) -> string {
 }
 
 #[test]
-fn fuses_recursive_join_consumers() -> unit {
+fn fuses_recursive_join_consumers() -> () {
     let source = "fn find(wanted: isize) -> Option[isize] { let current = Ref::new(0); loop { let value = current.get(); if value >= 5 { return Option::None; } else if value == wanted { return Option::Some(value); } else { current.set(value + 1); }; }; Option::None } fn any(wanted: isize) -> bool { match find(wanted) { Some(_) => true, None => false } }";
     let lowered = lower_source(source);
     match verify(lowered) {
@@ -672,7 +672,7 @@ fn fuses_recursive_join_consumers() -> unit {
 }
 
 #[test]
-fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
+fn rejects_recursive_inlining_into_jumping_consumers() -> () {
     let arms: Vec[Arm] = Vec::new();
     arms.push(
         Arm {
@@ -731,7 +731,7 @@ fn required_position(value: string, expected: string) -> isize {
 }
 
 #[test]
-fn hoists_safe_loop_invariants() -> unit {
+fn hoists_safe_loop_invariants() -> () {
     let source = "fn work(base: isize, count: isize) -> isize { let mut index = 0; let mut result = 0; while index < count { let square = base * base; let scaled = square * 17; let offset = scaled + base; result = result + offset; index = index + 1; }; result }";
     let lowered = lower_source(source);
     match verify(lowered) {
@@ -747,7 +747,7 @@ fn hoists_safe_loop_invariants() -> unit {
 }
 
 #[test]
-fn preserves_trapping_and_mutable_loop_values() -> unit {
+fn preserves_trapping_and_mutable_loop_values() -> () {
     let source = "fn work(divisor: isize, count: isize) -> isize { let mut index = 0; let mut changing = 1; let mut result = 0; while index < count { let quotient = 100 / divisor; let derived = changing + 1; result = result + quotient + derived; changing = changing + 1; index = index + 1; }; result }";
     let lowered = lower_source(source);
     match verify(lowered) {

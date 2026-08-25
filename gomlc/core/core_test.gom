@@ -39,7 +39,7 @@ fn lower_optimized_source(source: string) -> File {
 }
 
 #[test]
-fn snapshot_names_restart_for_each_function() -> unit {
+fn snapshot_names_restart_for_each_function() -> () {
     let output = encode_snapshot(
         lower_source("fn first(value: i32) -> i32 { value } fn second(value: i32) -> i32 { value }"),
     );
@@ -48,7 +48,7 @@ fn snapshot_names_restart_for_each_function() -> unit {
 }
 
 #[test]
-fn detaches_tast_type_variables_at_the_core_boundary() -> unit {
+fn detaches_tast_type_variables_at_the_core_boundary() -> () {
     let variable = Ref::new(tast::TypeVar::Unbound { id: 7, kind: tast::VarKind::Any });
     let unbound = lower_type(tast::Type::Var(variable));
     match unbound {
@@ -69,7 +69,7 @@ fn detaches_tast_type_variables_at_the_core_boundary() -> unit {
 }
 
 #[test]
-fn preserves_open_core_types_without_tast_state() -> unit {
+fn preserves_open_core_types_without_tast_state() -> () {
     let value = lower_type(
         tast::Type::Dyn {
             trait_name: "Iterator",
@@ -105,7 +105,7 @@ fn preserves_open_core_types_without_tast_state() -> unit {
 }
 
 #[test]
-fn rejects_residual_comptime_nodes() -> unit {
+fn rejects_residual_comptime_nodes() -> () {
     let typed = tast::File {
         items: Vec::from_array(
             [
@@ -169,7 +169,7 @@ fn string_contains(value: string, expected: string) -> bool {
 }
 
 #[test]
-fn lowers_basic_functions_and_let_chains() -> unit {
+fn lowers_basic_functions_and_let_chains() -> () {
     let source = "fn take(value: u16) -> u16 { value } fn main() -> u16 { let value = take(1000); value }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -178,7 +178,7 @@ fn lowers_basic_functions_and_let_chains() -> unit {
 }
 
 #[test]
-fn folds_negative_integer_primitives() -> unit {
+fn folds_negative_integer_primitives() -> () {
     testing::assert_eq(
         encode(lower_source("fn main() -> i32 { -1 }")),
         "fn main() -> i32 {\n  -1\n}",
@@ -186,7 +186,7 @@ fn folds_negative_integer_primitives() -> unit {
 }
 
 #[test]
-fn preserves_exiting_accessor_subexpressions() -> unit {
+fn preserves_exiting_accessor_subexpressions() -> () {
     let source = "fn proj_case() -> i32 { let _: i32 = (return 1).0; 0 } fn index_case() -> i32 { let _: i32 = (return 1)[0]; 0 } fn field_case() -> i32 { let _: i32 = (return 1).value; 0 }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -195,24 +195,24 @@ fn preserves_exiting_accessor_subexpressions() -> unit {
 }
 
 #[test]
-fn nests_discard_patterns_around_the_continuation() -> unit {
+fn nests_discard_patterns_around_the_continuation() -> () {
     testing::assert_eq(
-        encode(lower_source("fn main() -> unit { let _ = (); () }")),
-        "fn main() -> unit {\n  let mtmp0 = () in\n  {\n    ()\n  }\n}",
+        encode(lower_source("fn main() -> () { let _ = (); () }")),
+        "fn main() -> () {\n  let mtmp0 = () in\n  {\n    ()\n  }\n}",
     )
 }
 
 #[test]
-fn lowers_enum_payload_patterns_in_definition_order() -> unit {
-    let source = "enum Weird[T] { Next(Ref[Weird[(i32) -> i32]]), Done(T) } fn main() -> unit { let x: Weird[i32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
+fn lowers_enum_payload_patterns_in_definition_order() -> () {
+    let source = "enum Weird[T] { Next(Ref[Weird[(i32) -> i32]]), Done(T) } fn main() -> () { let x: Weird[i32] = Weird::Done(1); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let x/0 = Weird::Done(1) in\n  match x/0 {\n    Weird::Next(x0) => {\n      {\n        let x0 = Weird::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird::Done(x1) => {\n      {\n        let x1 = Weird::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#i32#i32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
+        "fn main() -> () {\n  let x/0 = Weird::Done(1) in\n  match x/0 {\n    Weird::Next(x0) => {\n      {\n        let x0 = Weird::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird::Done(x1) => {\n      {\n        let x1 = Weird::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#i32#i32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
     )
 }
 
 #[test]
-fn lowers_or_patterns_in_match_matrices() -> unit {
+fn lowers_or_patterns_in_match_matrices() -> () {
     let source = "enum Flag { A, B, C } fn is_first(value: Flag) -> bool { match value { Flag::A | Flag::B => true, _ => false, } }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -221,7 +221,7 @@ fn lowers_or_patterns_in_match_matrices() -> unit {
 }
 
 #[test]
-fn allocates_statement_names_after_lowering_the_value() -> unit {
+fn allocates_statement_names_after_lowering_the_value() -> () {
     let file = lower_source(
         "fn f(flag: bool) -> i32 { while true { if flag { return 1 } else { break }; }; 2 }",
     );
@@ -235,8 +235,8 @@ fn allocates_statement_names_after_lowering_the_value() -> unit {
 }
 
 #[test]
-fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
-    let source = "fn build() -> Option[() -> i32] { Option::Some(|| 1) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0), } }";
+fn lowers_builtin_option_matches_with_nonvariable_sources() -> () {
+    let source = "fn build() -> Option[() -> i32] { Option::Some(|| 1) } fn main() -> () { match build() { Option::Some(f) => println(f()), Option::None => println(0), } }";
     let file = lower_source(source);
     match file.functions.get(1).body.tail {
         Some(Block { block, ty: _ }) => {
@@ -272,7 +272,7 @@ fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
 }
 
 #[test]
-fn lowers_linked_builtin_option_payload_patterns() -> unit {
+fn lowers_linked_builtin_option_payload_patterns() -> () {
     let counter = Ref::new(0);
     let builtins = test_builtins(counter);
     let user = lower_with_counter_and_types(
@@ -319,7 +319,7 @@ fn lowers_linked_builtin_option_payload_patterns() -> unit {
 }
 
 #[test]
-fn boxes_mutable_locals_captured_by_closures() -> unit {
+fn boxes_mutable_locals_captured_by_closures() -> () {
     let source = "fn main() -> i32 { let mut x = 0; let inc = || { x = x + 1; x }; inc() }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -328,7 +328,7 @@ fn boxes_mutable_locals_captured_by_closures() -> unit {
 }
 
 #[test]
-fn binds_nested_match_sources_before_lowering_them() -> unit {
+fn binds_nested_match_sources_before_lowering_them() -> () {
     let source = "fn main() -> bool { match match Option::Some(true) { Option::Some(value) => value, Option::None => false, } { false => false, true => true, } }";
     let file = lower_source(source);
     match file.functions.get(0).body.tail {
@@ -364,8 +364,8 @@ fn binds_nested_match_sources_before_lowering_them() -> unit {
 }
 
 #[test]
-fn evaluates_index_assignment_places_once() -> unit {
-    let file = lower_source("fn main() -> unit { let mut values = [1, 2]; values[0] = 3; }");
+fn evaluates_index_assignment_places_once() -> () {
+    let file = lower_source("fn main() -> () { let mut values = [1, 2]; values[0] = 3; }");
     let body = file.functions.get(0).body;
     testing::assert_eq(body.stmts.get(1).name, "_wild4");
     match body.stmts.get(1).value {
@@ -396,7 +396,7 @@ fn evaluates_index_assignment_places_once() -> unit {
 }
 
 #[test]
-fn lowers_flat_tuple_bindings_in_matrix_order() -> unit {
+fn lowers_flat_tuple_bindings_in_matrix_order() -> () {
     let source = "fn split(pair: (i32, string)) -> string { let (left, right) = pair; right }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -405,7 +405,7 @@ fn lowers_flat_tuple_bindings_in_matrix_order() -> unit {
 }
 
 #[test]
-fn lowers_nested_boolean_enum_payload_patterns() -> unit {
+fn lowers_nested_boolean_enum_payload_patterns() -> () {
     let source = "enum Pair { Values(bool, bool) } fn choose(value: Pair) -> i32 { match value { Pair::Values(false, false) => 2, Pair::Values(false, true) => 3, _ => 4, } }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -414,17 +414,17 @@ fn lowers_nested_boolean_enum_payload_patterns() -> unit {
 }
 
 #[test]
-fn lowers_for_loops_through_iterator_protocols() -> unit {
-    let source = "fn each(values: Vec[i32]) -> unit { for value in values { println(value) } }";
+fn lowers_for_loops_through_iterator_protocols() -> () {
+    let source = "fn each(values: Vec[i32]) -> () { for value in values { println(value) } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn each(values/0: Vec[i32]) -> unit {\n  {\n    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in\n    while true {\n        {\n          let for_next1 = trait_call[Iterator::next](for_iter0) in\n          match for_next1 {\n            Option::None => {\n              break\n            },\n            Option::Some(x2) => {\n              {\n                let x2 = Option::Some._0(for_next1) in\n                {\n                  let value/1 = x2 in\n                  {\n                    println(value/1)\n                  }\n                }\n              }\n            },\n          }\n        }\n    }\n  }\n}",
+        "fn each(values/0: Vec[i32]) -> () {\n  {\n    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in\n    while true {\n        {\n          let for_next1 = trait_call[Iterator::next](for_iter0) in\n          match for_next1 {\n            Option::None => {\n              break\n            },\n            Option::Some(x2) => {\n              {\n                let x2 = Option::Some._0(for_next1) in\n                {\n                  let value/1 = x2 in\n                  {\n                    println(value/1)\n                  }\n                }\n              }\n            },\n          }\n        }\n    }\n  }\n}",
     )
 }
 
 #[test]
-fn lowers_builtin_iterators_without_iterator_protocols() -> unit {
-    let source = "fn each(values: Vec[i32]) -> unit { for value in values { if value == 0 { continue } else { println(value) } }; for value in range(2, 4) { println(value) }; for value in values.slice(0, 1) { println(value) } }";
+fn lowers_builtin_iterators_without_iterator_protocols() -> () {
+    let source = "fn each(values: Vec[i32]) -> () { for value in values { if value == 0 { continue } else { println(value) } }; for value in range(2, 4) { println(value) }; for value in values.slice(0, 1) { println(value) } }";
     let encoded = encode(lower_optimized_source(source));
     testing::assert(!string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
     testing::assert(!string_contains(encoded, "trait_call[Iterator::next]"));
@@ -437,8 +437,8 @@ fn lowers_builtin_iterators_without_iterator_protocols() -> unit {
 }
 
 #[test]
-fn lowers_inclusive_ranges_without_overflowing_the_endpoint() -> unit {
-    let source = "fn each(start: isize, end: isize) -> unit { for value in start..=end { if value == 0 { continue } else { println(value) } } }";
+fn lowers_inclusive_ranges_without_overflowing_the_endpoint() -> () {
+    let source = "fn each(start: isize, end: isize) -> () { for value in start..=end { if value == 0 { continue } else { println(value) } } }";
     let encoded = encode(lower_optimized_source(source));
     testing::assert(!string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
     testing::assert(!string_contains(encoded, "trait_call[Iterator::next]"));
@@ -447,8 +447,8 @@ fn lowers_inclusive_ranges_without_overflowing_the_endpoint() -> unit {
 }
 
 #[test]
-fn does_not_optimize_user_function_named_range() -> unit {
-    let source = "fn range(start: isize, end: isize) -> FnIterator[isize] { FnIterator::from_fn(|| Option::None) } fn each() -> unit { for value in range(2, 4) { println(value) } }";
+fn does_not_optimize_user_function_named_range() -> () {
+    let source = "fn range(start: isize, end: isize) -> FnIterator[isize] { FnIterator::from_fn(|| Option::None) } fn each() -> () { for value in range(2, 4) { println(value) } }";
     let encoded = encode(lower_optimized_source(source));
     testing::assert(string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
     testing::assert(string_contains(encoded, "trait_call[Iterator::next]"));
@@ -456,7 +456,7 @@ fn does_not_optimize_user_function_named_range() -> unit {
 }
 
 #[test]
-fn lowers_flat_struct_bindings_in_field_order() -> unit {
+fn lowers_flat_struct_bindings_in_field_order() -> () {
     let source = "struct Pair { left: i32, right: string } fn right(pair: Pair) -> string { let Pair { left: _, right } = pair; right }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -465,14 +465,14 @@ fn lowers_flat_struct_bindings_in_field_order() -> unit {
 }
 
 #[test]
-fn links_builtin_core_before_user_core() -> unit {
+fn links_builtin_core_before_user_core() -> () {
     let counter = Ref::new(0);
     let builtins = test_builtins(counter);
     testing::assert(builtins.functions.len() > 20);
     let first_builtin_name = builtins.functions.get(0).name;
     let user = lower_with_counter_and_types(
         tast::check_for_link(
-            hir::lower(ast::lower(parser::parse("fn main() -> unit { print(true) }")), "main.gom"),
+            hir::lower(ast::lower(parser::parse("fn main() -> () { print(true) }")), "main.gom"),
         ),
         counter,
         enum_defs_to_tast(builtins.enums),
@@ -486,7 +486,7 @@ fn links_builtin_core_before_user_core() -> unit {
 }
 
 #[test]
-fn lowers_nested_tuple_and_enum_pattern_matrices() -> unit {
+fn lowers_nested_tuple_and_enum_pattern_matrices() -> () {
     let source = "enum Key { A, B(i32) } fn equal_pair(left: Key, right: Key) -> bool { match (left, right) { (Key::A, Key::A) => true, (Key::B(x), Key::B(y)) => x == y, _ => false, } }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -495,7 +495,7 @@ fn lowers_nested_tuple_and_enum_pattern_matrices() -> unit {
 }
 
 #[test]
-fn lowers_ordered_and_uninhabited_patterns() -> unit {
+fn lowers_ordered_and_uninhabited_patterns() -> () {
     let source = "enum Never {} enum Single { Only(i32) } fn absurd(value: Never) -> i32 { match value {} } fn unwrap(value: Single) -> i32 { let (Single::Only(inner)) = value; inner } fn classify(values: Vec[bool]) -> i32 { match values { [] => 0, [true, .., _] => 1, _ => 2, } }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -504,7 +504,7 @@ fn lowers_ordered_and_uninhabited_patterns() -> unit {
 }
 
 #[test]
-fn preserves_scalar_pattern_precedence() -> unit {
+fn preserves_scalar_pattern_precedence() -> () {
     let source = "fn choose(value: i32) -> i32 { match value { 1 => 10, _ => 20, 1 => 30, 2 => 40, } } fn first(value: i32) -> i32 { match value { _ => 50, 0 => 60, } }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -513,16 +513,16 @@ fn preserves_scalar_pattern_precedence() -> unit {
 }
 
 #[test]
-fn lowers_unit_columns_inside_enum_patterns() -> unit {
-    let source = "enum T { A, B(bool, unit) } fn main() -> unit { let value = T::B(true, ()); match value { T::A => println(1), T::B(true, ()) => println(2), T::B(false, ()) => println(3), } }";
+fn lowers_unit_columns_inside_enum_patterns() -> () {
+    let source = "enum T { A, B(bool, ()) } fn main() -> () { let value = T::B(true, ()); match value { T::A => println(1), T::B(true, ()) => println(2), T::B(false, ()) => println(3), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let value/0 = T::B(true, ()) in\n  match value/0 {\n    T::A => {\n      println(1)\n    },\n    T::B(x0, x1) => {\n      {\n        let x0 = T::B._0(value/0) in\n        let x1 = T::B._1(value/0) in\n        match x1 {\n          () => {\n            match x0 {\n              true => {\n                println(2)\n              },\n              false => {\n                println(3)\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
+        "fn main() -> () {\n  let value/0 = T::B(true, ()) in\n  match value/0 {\n    T::A => {\n      println(1)\n    },\n    T::B(x0, x1) => {\n      {\n        let x0 = T::B._0(value/0) in\n        let x1 = T::B._1(value/0) in\n        match x1 {\n          () => {\n            match x0 {\n              true => {\n                println(2)\n              },\n              false => {\n                println(3)\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
     )
 }
 
 #[test]
-fn lowers_struct_pattern_matrices_by_field_order() -> unit {
+fn lowers_struct_pattern_matrices_by_field_order() -> () {
     let source = "struct Pair { left: i32, right: i32 } fn matches(value: Pair) -> bool { match value { Pair { left: 4, right: 9 } => true, Pair { left: _, right: 6 } => true, _ => false, } }";
     testing::assert_eq(
         encode(lower_source(source)),
@@ -531,8 +531,8 @@ fn lowers_struct_pattern_matrices_by_field_order() -> unit {
 }
 
 #[test]
-fn eliminates_dead_locals_without_dropping_effects() -> unit {
-    let source = "fn effect() -> i32 { 1 } fn main() -> unit { let dead = 1; let dead_pair = (dead, 2); let unused = |value: i32| value + dead; let kept = effect(); let divisor = 2; let quotient = 8 / divisor; () }";
+fn eliminates_dead_locals_without_dropping_effects() -> () {
+    let source = "fn effect() -> i32 { 1 } fn main() -> () { let dead = 1; let dead_pair = (dead, 2); let unused = |value: i32| value + dead; let kept = effect(); let divisor = 2; let quotient = 8 / divisor; () }";
     let output = encode(eliminate_dead_locals(lower_source(source)));
     testing::assert(!string_contains(output, "dead/"));
     testing::assert(!string_contains(output, "dead_pair/"));
@@ -570,7 +570,7 @@ fn core_with_only_named_root(value: File, root_name: string) -> File {
 }
 
 #[test]
-fn eliminates_unreachable_functions_transitively() -> unit {
+fn eliminates_unreachable_functions_transitively() -> () {
     let source = "fn helper() -> i32 { 7 } fn id[T](value: T) -> T { value } fn live() -> i32 { id(helper()) } fn dead() -> i32 { 9 } fn main() -> i32 { live() }";
     let value = eliminate_unreachable_functions(
         core_with_only_named_root(eliminate_dead_locals(lower_source(source)), "main"),
@@ -584,7 +584,7 @@ fn eliminates_unreachable_functions_transitively() -> unit {
 }
 
 #[test]
-fn retains_reachable_inherent_method_candidates() -> unit {
+fn retains_reachable_inherent_method_candidates() -> () {
     let source = "struct Shape {} impl Shape { fn name(self: Self) -> string { \"Shape\" } fn unused(self: Self) -> string { \"unused\" } } fn main() -> string { Shape {}.name() }";
     let value = eliminate_unreachable_functions(
         core_with_only_named_root(eliminate_dead_locals(lower_source(source)), "main"),
@@ -595,7 +595,7 @@ fn retains_reachable_inherent_method_candidates() -> unit {
 }
 
 #[test]
-fn retains_reachable_trait_method_candidates() -> unit {
+fn retains_reachable_trait_method_candidates() -> () {
     let source = "struct Value {} trait Render { fn render(self: Self) -> string; } impl Render for Value { fn render(self: Value) -> string { \"value\" } } trait Unused { fn unused(self: Self) -> string; } impl Unused for Value { fn unused(self: Value) -> string { \"unused\" } } fn main() -> string { Render::render(Value {}) }";
     let value = eliminate_unreachable_functions(
         core_with_only_named_root(eliminate_dead_locals(lower_source(source)), "main"),
@@ -606,8 +606,8 @@ fn retains_reachable_trait_method_candidates() -> unit {
 }
 
 #[test]
-fn validates_core_binding_types() -> unit {
-    let file = lower_source("fn main() -> unit { let value = 1; () }");
+fn validates_core_binding_types() -> () {
+    let file = lower_source("fn main() -> () { let value = 1; () }");
     match validate(file) {
         Ok(_) => (),
         Err(message) => testing::fail(message),

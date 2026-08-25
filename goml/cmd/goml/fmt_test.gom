@@ -12,7 +12,7 @@ fn fmt_status_code(output: process::Output) -> isize {
     }
 }
 
-fn write_fmt_project(root: string) -> unit {
+fn write_fmt_project(root: string) -> () {
     test_support::write_file(
         path::join(root, "goml.toml"),
         "[module]\npath = \"fmt_test\"\n\n[build]\ntarget-dir = \"build/output\"\n",
@@ -21,7 +21,7 @@ fn write_fmt_project(root: string) -> unit {
 }
 
 #[test]
-fn fmt_formats_module_from_nested_directory() -> unit {
+fn fmt_formats_module_from_nested_directory() -> () {
     let root = test_support::workspace("fmt_module");
     write_fmt_project(root);
     let source = path::join(path::join(root, "src"), "lib.gom");
@@ -53,7 +53,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     test_support::assert_success(output);
     testing::assert_eq(
         test_support::read_file(path::join(root, "main.gom")),
-        "package main;\n\nfn main() -> unit {}\n",
+        "package main;\n\nfn main() -> () {}\n",
     );
     testing::assert_eq(
         test_support::read_file(source),
@@ -61,11 +61,11 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     );
     testing::assert_eq(
         test_support::read_file(test_source),
-        "package main;\n\nfn helper() -> unit {}\n",
+        "package main;\n\nfn helper() -> () {}\n",
     );
     testing::assert_eq(
         test_support::read_file(external_test_source),
-        "package tests;\n\nfn external_helper() -> unit {}\n",
+        "package tests;\n\nfn external_helper() -> () {}\n",
     );
     for file in ignored {
         testing::assert_eq(test_support::read_file(file), "invalid {")
@@ -77,7 +77,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
 }
 
 #[test]
-fn fmt_check_reports_differences_without_writing() -> unit {
+fn fmt_check_reports_differences_without_writing() -> () {
     let root = test_support::workspace("fmt_check");
     write_fmt_project(root);
     let main = path::join(root, "main.gom");
@@ -90,7 +90,7 @@ fn fmt_check_reports_differences_without_writing() -> unit {
 }
 
 #[test]
-fn fmt_does_not_write_when_any_file_is_invalid() -> unit {
+fn fmt_does_not_write_when_any_file_is_invalid() -> () {
     let root = test_support::workspace("fmt_atomic");
     write_fmt_project(root);
     let main = path::join(root, "main.gom");
@@ -102,7 +102,7 @@ fn fmt_does_not_write_when_any_file_is_invalid() -> unit {
 }
 
 #[test]
-fn fmt_reports_missing_formatter() -> unit {
+fn fmt_reports_missing_formatter() -> () {
     let root = test_support::workspace("fmt_missing_formatter");
     write_fmt_project(root);
     let missing = path::join(root, "missing-gomlfmt");
