@@ -66,7 +66,7 @@ func main0() struct{} {
         var t1 string
         switch t0._tag {
         case 0:
-            t1 = "ok unit"
+            t1 = "ok ()"
         case 1:
             var inline13 string = t0._v1_0
             var inline14 string = "err " + inline13
@@ -89,7 +89,7 @@ func main0() struct{} {
             var t3 string
             switch t2._tag {
             case 0:
-                t3 = "ok unit"
+                t3 = "ok ()"
             case 1:
                 var inline3 string = t2._v1_0
                 var inline4 string = "err " + inline3
@@ -110,7 +110,7 @@ func main0() struct{} {
             var t3 string
             switch t2._tag {
             case 0:
-                t3 = "ok unit"
+                t3 = "ok ()"
             case 1:
                 var inline3 string = t2._v1_0
                 var inline4 string = "err " + inline3
@@ -134,7 +134,7 @@ func main0() struct{} {
         var t1 string
         switch t0._tag {
         case 0:
-            t1 = "ok unit"
+            t1 = "ok ()"
         case 1:
             var inline13 string = t0._v1_0
             var inline14 string = "err " + inline13
@@ -157,7 +157,7 @@ func main0() struct{} {
             var t3 string
             switch t2._tag {
             case 0:
-                t3 = "ok unit"
+                t3 = "ok ()"
             case 1:
                 var inline3 string = t2._v1_0
                 var inline4 string = "err " + inline3
@@ -178,7 +178,7 @@ func main0() struct{} {
             var t3 string
             switch t2._tag {
             case 0:
-                t3 = "ok unit"
+                t3 = "ok ()"
             case 1:
                 var inline3 string = t2._v1_0
                 var inline4 string = "err " + inline3

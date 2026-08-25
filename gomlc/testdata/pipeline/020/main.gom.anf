@@ -66,7 +66,7 @@ fn wrapper_int32_to_string(wrapper/0: Wrapper__i32) -> string {
 fn wrapper_unit_to_string(wrapper/0: Wrapper__()) -> string {
   let x0 = Wrapper__().value(wrapper/0) in
   join inline_cont0(t0: string) -> string {
-    let prefix/0 = ("Wrapper[unit] { value: " + t0) in
+    let prefix/0 = ("Wrapper[()] { value: " + t0) in
     let t1 = (prefix/0 + " }") in
     t1
   } in
@@ -140,7 +140,7 @@ fn shape_unit_to_string(shape/0: Shape__()) -> string {
       } in
       let inline8 = Wrapper__().value(x1) in
       let inline9 = trait_impl#ToString#()#to_string(inline8) in
-      let inline10 = ("Wrapper[unit] { value: " + inline9) in
+      let inline10 = ("Wrapper[()] { value: " + inline9) in
       let inline11 = (inline10 + " }") in
       jump inline_cont1(inline11)
     },

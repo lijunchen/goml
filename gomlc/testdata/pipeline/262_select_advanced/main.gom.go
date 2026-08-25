@@ -231,9 +231,9 @@ func main0() struct{} {
     var t4 int = t4_lhs + t4_rhs
     var t5 bool = t4 == 2
     var jp2 int
-    var _goml_m__d_select__recv__1186____0_i_select__value int
-    var _goml_m__d_select__recv__1186____0_i_select__open bool
-    var _goml_m__d_select__recv__1186____0 Option__isize = Option__isize{
+    var _goml_m__d_select__recv__1184____0_i_select__value int
+    var _goml_m__d_select__recv__1184____0_i_select__open bool
+    var _goml_m__d_select__recv__1184____0 Option__isize = Option__isize{
         _tag: 0,
     }
     var select_channel_2_0 chan int
@@ -241,18 +241,18 @@ func main0() struct{} {
         select_channel_2_0 = events__0
     }
     select {
-    case _goml_m__d_select__recv__1186____0_i_select__value, _goml_m__d_select__recv__1186____0_i_select__open = <-select_channel_2_0:
-        if _goml_m__d_select__recv__1186____0_i_select__open {
-            _goml_m__d_select__recv__1186____0 = Option__isize{
+    case _goml_m__d_select__recv__1184____0_i_select__value, _goml_m__d_select__recv__1184____0_i_select__open = <-select_channel_2_0:
+        if _goml_m__d_select__recv__1184____0_i_select__open {
+            _goml_m__d_select__recv__1184____0 = Option__isize{
                 _tag: 1,
-                _v1_0: _goml_m__d_select__recv__1186____0_i_select__value,
+                _v1_0: _goml_m__d_select__recv__1184____0_i_select__value,
             }
         }
-        switch _goml_m__d_select__recv__1186____0._tag {
+        switch _goml_m__d_select__recv__1184____0._tag {
         case 0:
             jp2 = 0
         case 1:
-            var x0 int = _goml_m__d_select__recv__1186____0._v1_0
+            var x0 int = _goml_m__d_select__recv__1184____0._v1_0
             var t6 int = x0 + 1
             jp2 = t6
         default:

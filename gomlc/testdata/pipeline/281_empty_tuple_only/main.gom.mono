@@ -1,0 +1,20 @@
+fn consume(value/0: ()) -> () {
+  value/0
+}
+
+fn main() -> () {
+  let unit/0 = consume(()) in
+  match unit/0 {
+    () => {
+      println__T_string("ok")
+    },
+  }
+}
+
+fn println__T_string(value/0: string) -> () {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/0))
+}
+
+fn trait_impl#ToString#string#to_string(self/0: string) -> string {
+  self/0
+}

@@ -150,7 +150,7 @@ func wrapper_unit_to_string(wrapper__0 _goml_m_Wrapper_____o__q_) string {
     var t0 string
     var inline0 string = _goml_runtime_core_unit_to_string(x0)
     t0 = inline0
-    var prefix__0 string = "Wrapper[unit] { value: " + t0
+    var prefix__0 string = "Wrapper[()] { value: " + t0
     var t1 string = prefix__0 + " }"
     return t1
 }
@@ -212,7 +212,7 @@ func shape_unit_to_string(shape__0 _goml_m_Shape_____o__q_) string {
         var t2 string
         var inline8 struct{} = x1.value
         var inline9 string = _goml_m_trait__impl_i_ToString_i__o__q__i_to__string(inline8)
-        var inline10 string = "Wrapper[unit] { value: " + inline9
+        var inline10 string = "Wrapper[()] { value: " + inline9
         var inline11 string = inline10 + " }"
         t2 = inline11
         var prefix__1 string = "Shape::Wrapped(" + t2
