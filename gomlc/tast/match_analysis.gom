@@ -222,7 +222,7 @@ fn coverage_value_key(value: Constructor) -> string {
 
 fn coverage_primitive_value(value: Primitive) -> string {
     match value {
-        Unit => "unit",
+        Unit => "()",
         Bool { value } => if value {
             "bool:true"
         } else {
@@ -733,7 +733,7 @@ fn coverage_domain_uncached(ctx: CoverageContext, ty: Type) -> Option[Vec[Covera
     match prune(ty) {
         Never => Option::Some(Vec::new()),
         Unit => Option::Some(
-            Vec::from_array([CoverageConstructor { key: "unit", fields: Vec::new() }]),
+            Vec::from_array([CoverageConstructor { key: "()", fields: Vec::new() }]),
         ),
         Bool => Option::Some(
             Vec::from_array(
@@ -1568,7 +1568,7 @@ fn coverage_witness_text(ctx: CoverageContext, value: CoverageWitness) -> string
         Some(scalar) => coverage_scalar_text(scalar),
         None => match value.constructor {
             None => "_",
-            Some(constructor) => if constructor.key == "unit" {
+            Some(constructor) => if constructor.key == "()" {
                 "()"
             } else if constructor.key == "bool:false" {
                 "false"

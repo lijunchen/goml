@@ -14,11 +14,6 @@ struct FormatOmission {
     end: isize,
 }
 
-struct FormatExpansion {
-    start: isize,
-    end: isize,
-}
-
 fn canonical_file_ending(value: string) -> string {
     let end: Ref[isize] = Ref::new(value.byte_len());
     while end.get() > 0 {
@@ -117,31 +112,6 @@ fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> (
     }
 }
 
-fn collect_format_expansions(node: LocatedNode, result: Vec[FormatExpansion]) -> () {
-    if node_is(node, cst::NodeKind::TYPE_FUNC) {
-        let children = direct_nodes(node);
-        if !children.is_empty() && node_is(children[0], cst::NodeKind::TYPE_UNIT) {
-            result.push(FormatExpansion { start: children[0].start, end: children[0].end })
-        } else {}
-    } else {};
-    let cursor = child_cursor(node);
-    while cursor.remaining() > 0 {
-        match cursor.next() {
-            Some(Node(child)) => collect_format_expansions(child, result),
-            _ => (),
-        }
-    }
-}
-
-fn token_is_expanded(token: lexer::Token, expansions: Vec[FormatExpansion]) -> bool {
-    for expansion in expansions {
-        if token.start >= expansion.start && token.end <= expansion.end {
-            return true
-        } else {}
-    }
-    false
-}
-
 fn token_is_omitted(token: lexer::Token, omissions: Vec[FormatOmission]) -> bool {
     for omission in omissions {
         if token.start >= omission.start && token.end <= omission.end {
@@ -156,9 +126,7 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
     let output = text::StringBuilder::new();
     let in_where: Ref[bool] = Ref::new(false);
     let omissions: Vec[FormatOmission] = Vec::new();
-    let expansions: Vec[FormatExpansion] = Vec::new();
     collect_format_omissions(root, omissions);
-    collect_format_expansions(root, expansions);
     for index in 0..tokens.len() {
         let token = tokens[index];
         let optional_comma = lexer::token_kind_equal(token.kind, lexer::TokenKind::Comma)
@@ -171,31 +139,10 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
             };
         if lexer::token_kind_equal(token.kind, lexer::TokenKind::Whitespace) || optional_comma
             || token_is_omitted(token, omissions) {} else {
-            if lexer::token_kind_equal(token.kind, lexer::TokenKind::UnitKeyword) {
-                output.write_string(lexer::token_kind_name(lexer::TokenKind::LParen));
-                output.write_string(":");
-                output.write_string(lexer::encode_text_hex("("));
-                output.write_string("\n");
-                if token_is_expanded(token, expansions) {
-                    output.write_string(lexer::token_kind_name(lexer::TokenKind::LParen));
-                    output.write_string(":");
-                    output.write_string(lexer::encode_text_hex("("));
-                    output.write_string("\n");
-                    output.write_string(lexer::token_kind_name(lexer::TokenKind::RParen));
-                    output.write_string(":");
-                    output.write_string(lexer::encode_text_hex(")"));
-                    output.write_string("\n")
-                } else {};
-                output.write_string(lexer::token_kind_name(lexer::TokenKind::RParen));
-                output.write_string(":");
-                output.write_string(lexer::encode_text_hex(")"));
-                output.write_string("\n")
-            } else {
-                output.write_string(lexer::token_kind_name(token.kind));
-                output.write_string(":");
-                output.write_string(lexer::encode_text_hex(token.text));
-                output.write_string("\n")
-            }
+            output.write_string(lexer::token_kind_name(token.kind));
+            output.write_string(":");
+            output.write_string(lexer::encode_text_hex(token.text));
+            output.write_string("\n")
         };
         if lexer::token_kind_equal(token.kind, lexer::TokenKind::WhereKeyword) {
             in_where.set(true)

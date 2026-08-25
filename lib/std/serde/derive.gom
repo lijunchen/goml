@@ -363,7 +363,7 @@ pub fn derive_serialize(input: DeriveInput) -> DeriveOutput {
             "serialize",
             direct_generics,
             direct_params,
-            result_type(meta_type_call_site("unit")),
+            result_type(meta_type_call_site("()")),
             if derive_item_kind(input) == 0 {
                 serialize_struct_body(input)
             } else {

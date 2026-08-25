@@ -248,7 +248,6 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
     } else {
         ctx.type_depth.set(ctx.type_depth.get() + 1);
         let result = match node_kind(node) {
-            TYPE_UNIT => Option::Some(TypeExpr::Unit),
             TYPE_BOOL => Option::Some(TypeExpr::Bool),
             TYPE_INT => Option::Some(TypeExpr::Int),
             TYPE_INT8 => Option::Some(TypeExpr::Int8),

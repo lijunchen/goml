@@ -5,7 +5,7 @@ use module::lexer;
 
 fn is_type_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        UnitKeyword | BoolKeyword | IsizeKeyword | I8Keyword | I16Keyword | I32Keyword | I64Keyword | UsizeKeyword | U8Keyword | U16Keyword | U32Keyword | U64Keyword | F32Keyword | F64Keyword | StringKeyword | CharKeyword | DynKeyword | LBracket | LParen | Ident => true,
+        BoolKeyword | IsizeKeyword | I8Keyword | I16Keyword | I32Keyword | I64Keyword | UsizeKeyword | U8Keyword | U16Keyword | U32Keyword | U64Keyword | F32Keyword | F64Keyword | StringKeyword | CharKeyword | DynKeyword | LBracket | LParen | Ident => true,
         _ => false,
     }
 }
@@ -921,10 +921,6 @@ fn type_expr_bp(parser: Parser, min_bp: isize) -> Option[MarkerClosed] {
 fn type_atom(parser: Parser) -> Option[MarkerClosed] {
     let marker = parser.open();
     let result = match parser.peek() {
-        UnitKeyword => {
-            parser.advance();
-            parser.close(marker, cst::NodeKind::TYPE_UNIT)
-        },
         BoolKeyword => {
             parser.advance();
             parser.close(marker, cst::NodeKind::TYPE_BOOL)

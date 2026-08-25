@@ -162,7 +162,7 @@ package main;
 
 use alice::myapp::utils;
 
-fn main() -> unit {
+fn main() -> () {
     println(utils::message())
 }
 ```
@@ -367,7 +367,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `isize`, `i8/16/32/64`, `usize`, `u8/16/32/64`, `f32/f64`, `string`, `char`. `byte` is a transparent builtin alias of `u8`.
+* Primitive types: `()`, `bool`, `isize`, `i8/16/32/64`, `usize`, `u8/16/32/64`, `f32/f64`, `string`, `char`. `byte` is a transparent builtin alias of `u8`.
 * Literals: boolean, integer/unsigned/floating-point, string, char, and byte literals.
   * Numeric literals have no type suffixes. Their type comes from context; unconstrained integer literals default to `isize` and unconstrained floating-point literals default to `f64`.
   * Integer literals support binary `0b`, octal `0o`, decimal, and hexadecimal `0x` forms, including uppercase prefixes. Numeric literals may use `_` between digits. Floating-point literals support `e`/`E` scientific notation with an optional exponent sign.
@@ -391,9 +391,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Functions and Closures
 
-* Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
+* Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `()`.
 * Top-level functions and methods may declare their own generic parameters using square brackets, e.g. `fn id[T](x: T) -> T` and `fn map[U](self: Box[T], f: (T) -> U) -> Box[U]`.
-* Function and method generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
+* Function and method generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> () where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
 * Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
 * Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
 
@@ -427,8 +427,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Control Flow and Expressions
 
-* `if ... else ...` is an expression; branches may be nested. `while cond { ... }` loops return `unit`.
-* `for pattern in source { ... }` accepts any value implementing `IntoIterator`, evaluates the source expression and `into_iter` conversion once, and returns `unit`. The pattern must be irrefutable and the body must return `unit`; `Vec[T]`, `Slice[T]`, and iterator values can be used directly.
+* `if ... else ...` is an expression; branches may be nested. `while cond { ... }` loops return `()`.
+* `for pattern in source { ... }` accepts any value implementing `IntoIterator`, evaluates the source expression and `into_iter` conversion once, and returns `()`. The pattern must be irrefutable and the body must return `()`; `Vec[T]`, `Slice[T]`, and iterator values can be used directly.
 * Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
 * `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
 * `expr?` propagates `None` or `Err` from `Option[T]` and `Result[T, E]`. Other enum shapes do not opt into `?`; there is no user-defined `Try` trait yet.
@@ -476,7 +476,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Builtin `HashMap`
 
 * Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
-* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> isize`, `hashmap_contains -> bool`.
+* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> ()`, `hashmap_remove -> ()`, `hashmap_len -> isize`, `hashmap_contains -> bool`.
 * Key requirements: `K` must have both `Hash` and `Eq`.
 
 ### Builtin `Iterator`

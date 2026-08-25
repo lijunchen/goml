@@ -69,7 +69,7 @@ true false bool isize i8 i16 i32 i64 usize u8 u16 u32 u64
 f32 f64 string char extern
 ```
 
-The `0.1.41` transition release still accepts the legacy `unit` type keyword, but `goml fmt` rewrites it to `()` and all compiler and language-server output uses `()`. New source must use `()`; the compatibility keyword is removed in the following release.
+`()` is the only spelling of the empty-tuple type. The legacy `unit` keyword was removed in `0.1.42`; `unit` now lexes as an ordinary identifier.
 
 `import`, `mod`, `crate`, `super` and `array` are not current keywords, but similar old declarations will receive migration diagnostics.`self` is a special abbreviation for the receiver parameter, and can also be used as a common receiver variable name; `Self` has special meaning in the type position of trait and impl.
 
@@ -2665,7 +2665,7 @@ The first version supports the shared serde primitives, byte slices through cust
 
 ### TOML values and typed documents
 
-`std::toml` follows the same public split as JSON. `toml::Value` has string, signed 64-bit integer, 64-bit float, boolean, datetime text, array, and table variants. `parse` and `encode` operate on that schema-free representation. `to_value`, `from_value`, `to_string`, and `from_string` use the shared serde traits and enforce the destination type. TOML still plans a complete table tree before emission because headers and dotted paths require document-wide organization; it is compatible with the streaming traits but is not currently a fully direct format. Unsigned values above the TOML signed-integer range are rejected, and unit or `None` cannot be encoded because TOML has no null value.
+`std::toml` follows the same public split as JSON. `toml::Value` has string, signed 64-bit integer, 64-bit float, boolean, datetime text, array, and table variants. `parse` and `encode` operate on that schema-free representation. `to_value`, `from_value`, `to_string`, and `from_string` use the shared serde traits and enforce the destination type. TOML still plans a complete table tree before emission because headers and dotted paths require document-wide organization; it is compatible with the streaming traits but is not currently a fully direct format. Unsigned values above the TOML signed-integer range are rejected, and `()` or `None` cannot be encoded because TOML has no null value.
 
 The first parser accepts basic and literal strings, Unicode escapes, booleans, decimal and base-prefixed integers, floats, datetime text, arrays, inline tables, dotted keys, and ordinary table headers. It preserves table and field order for deterministic output. Multiline strings, array-of-table headers, and dotted keys inside inline tables are not yet supported.
 
