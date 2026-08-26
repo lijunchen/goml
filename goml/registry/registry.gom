@@ -94,7 +94,9 @@ fn quoted_values(value: string) -> Vec[string] {
 }
 
 fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
-    let source = fs::read_file(path::join(root, "index.toml"))?;
+    let source = fs::read_file_structured(path::join(root, "index.toml")).map_err(
+        |error| error.to_string(),
+    )?;
     let entries: Vec[RegistryEntry] = Vec::new();
     let mut current: Option[string] = Option::None;
     for original in text::lines(source) {
@@ -263,29 +265,29 @@ pub fn select_version(root: string, name: string, minimum: string) -> Result[str
 }
 
 pub fn cached_root() -> Result[string, string] {
-    let home = match env::var("GOML_HOME") {
-        Some(value) => if value != "" {
+    let home = match env::var_structured("GOML_HOME") {
+        Ok(value) => if value != "" {
             Option::Some(value)
         } else {
             Option::None
         },
-        None => Option::None,
+        Err(_) => Option::None,
     };
     let home = match home {
         Some(value) => value,
-        None => match env::var("HOME") {
-            Some(value) => if value != "" {
+        None => match env::var_structured("HOME") {
+            Ok(value) => if value != "" {
                 path::join(value, ".goml")
             } else {
                 return Result::Err("failed to determine home directory")
             },
-            None => match env::var("USERPROFILE") {
-                Some(value) => if value != "" {
+            Err(_) => match env::var_structured("USERPROFILE") {
+                Ok(value) => if value != "" {
                     path::join(value, ".goml")
                 } else {
                     return Result::Err("failed to determine home directory")
                 },
-                None => return Result::Err("failed to determine home directory"),
+                Err(_) => return Result::Err("failed to determine home directory"),
             },
         },
     };

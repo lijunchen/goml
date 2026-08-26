@@ -18,7 +18,7 @@ pub struct Summary {
 }
 
 fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string] {
-    let names = fs::read_dir(directory)?;
+    let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     collections::sort(names);
     for name in names {
         let entry = path::join(directory, name);
@@ -238,11 +238,19 @@ fn save_failure(
     message: string,
 ) -> Result[(), string] {
     let directory = path::join(output, input_hash(input));
-    fs::create_dir_all(directory)?;
-    fs::write_bytes(path::join(directory, "input.go"), input)?;
-    fs::write_file(path::join(directory, "gomlgo.json"), actual_json(actual))?;
-    fs::write_file(path::join(directory, "oracle.json"), oracle_json(expected))?;
-    fs::write_file(path::join(directory, "diff.txt"), message)
+    fs::create_dir_all(directory).map_err(|error| error.to_string())?;
+    fs::write_bytes_structured(path::join(directory, "input.go"), input).map_err(
+        |error| error.to_string(),
+    )?;
+    fs::write_file_structured(path::join(directory, "gomlgo.json"), actual_json(actual)).map_err(
+        |error| error.to_string(),
+    )?;
+    fs::write_file_structured(path::join(directory, "oracle.json"), oracle_json(expected)).map_err(
+        |error| error.to_string(),
+    )?;
+    fs::write_file_structured(path::join(directory, "diff.txt"), message).map_err(
+        |error| error.to_string(),
+    )
 }
 
 pub fn run(root: string, output: string, seed_limit: isize) -> Result[Summary, string] {
@@ -257,7 +265,7 @@ pub fn run(root: string, output: string, seed_limit: isize) -> Result[Summary, s
     let mut failures = 0;
     for file in files {
         if seeds < seed_limit {
-            let source = fs::read_bytes(file)?;
+            let source = fs::read_bytes_structured(file).map_err(|error| error.to_string())?;
             let seed = differential::run_oracle("parse-file", source)?;
             if seed.ok {
                 seeds += 1;

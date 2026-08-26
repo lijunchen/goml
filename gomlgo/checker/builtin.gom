@@ -927,7 +927,7 @@ fn go_version_at_least(state: CheckState, node: syntax::NodeId, required_minor: 
     if !version.starts_with("go1.") {
         return true
     } else {};
-    match num::parse_int(version.byte_slice(4, version.byte_len())) {
+    match num::parse_int_structured(version.byte_slice(4, version.byte_len())) {
         Ok(value) => value >= required_minor,
         Err(_) => true,
     }

@@ -39,7 +39,7 @@ fn build_lock_is_stale(path_value: string) -> bool {
 }
 
 fn acquire_build_lock(context: Context) -> Result[BuildLock, string] {
-    fs::create_dir_all(context.artifact_root)?;
+    fs::create_dir_all(context.artifact_root).map_err(|error| error.to_string())?;
     let lock_path = build_lock_path(context);
     let started = time::Instant::now();
     loop {
@@ -47,7 +47,7 @@ fn acquire_build_lock(context: Context) -> Result[BuildLock, string] {
             Ok(()) => return Result::Ok(BuildLock { path: lock_path }),
             Err(error) => if error.kind() == io::ErrorKind::AlreadyExists {
                 if build_lock_is_stale(lock_path) {
-                    fs::remove_dir_all(lock_path)?
+                    fs::remove_dir_all(lock_path).map_err(|error| error.to_string())?
                 } else if started.elapsed().as_seconds() >= 30 {
                     return Result::Err("timed out waiting for build lock " + lock_path)
                 } else {
@@ -61,7 +61,7 @@ fn acquire_build_lock(context: Context) -> Result[BuildLock, string] {
 }
 
 fn release_build_lock(lock: BuildLock) -> Result[(), string] {
-    fs::remove_dir_all(lock.path)
+    fs::remove_dir_all(lock.path).map_err(|error| error.to_string())
 }
 
 pub fn with_build_lock[T](context: Context, action: () -> Result[T, string]) -> Result[T, string] {
@@ -214,29 +214,7 @@ fn compile_commands(
 fn compiler_world_path(context: Context) -> Option[string] {
     match context.compiler_world {
         Source => Option::None,
-        LegacyArtifact => Option::Some(
-            module_relative(
-                context.graph.module_dir,
-                path::join(path::join(context.artifact_root, "compiler"), "world-v1.gaf"),
-            ),
-        ),
         Installed { path } => Option::Some(path),
-    }
-}
-
-fn commands_with_world(context: Context, commands: Vec[Command]) -> Vec[Command] {
-    match context.compiler_world {
-        LegacyArtifact => match compiler_world_path(context) {
-            Some(output) => {
-                let result = Vec::from_array([Command::PrepareWorld { output }]);
-                for command in commands {
-                    result.push(command)
-                }
-                result
-            },
-            None => commands,
-        },
-        _ => commands,
     }
 }
 
@@ -394,13 +372,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             }
         }
     } else {};
-    Result::Ok(
-        Plan {
-            commands: commands_with_world(context, commands),
-            executable: Option::None,
-            test_groups: Vec::new(),
-        },
-    )
+    Result::Ok(Plan { commands, executable: Option::None, test_groups: Vec::new() })
 }
 
 pub fn build_plan(context: Context) -> Result[Plan, string] {
@@ -445,13 +417,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
             },
         )
     }
-    Result::Ok(
-        Plan {
-            commands: commands_with_world(context, commands),
-            executable: Option::None,
-            test_groups: Vec::new(),
-        },
-    )
+    Result::Ok(Plan { commands, executable: Option::None, test_groups: Vec::new() })
 }
 
 pub fn load_toolchain_context(prefix: string, compiler: string) -> Result[Context, string] {
@@ -542,7 +508,7 @@ fn target_build_plan(context: Context, build_executable: bool) -> Result[Plan, s
     } else {};
     Result::Ok(
         Plan {
-            commands: commands_with_world(context, commands),
+            commands,
             executable: if build_executable {
                 Option::Some(executable)
             } else {
@@ -753,13 +719,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             groups,
         )
     } else {};
-    Result::Ok(
-        Plan {
-            commands: commands_with_world(context, commands),
-            executable: Option::None,
-            test_groups: groups,
-        },
-    )
+    Result::Ok(Plan { commands, executable: Option::None, test_groups: groups })
 }
 
 fn display_args(program: string, args: Vec[string]) -> string {
@@ -774,10 +734,6 @@ fn display_args(program: string, args: Vec[string]) -> string {
 
 fn command_args(value: Command) -> (string, Vec[string]) {
     match value {
-        PrepareWorld { output } => (
-            GOMLC_PROGRAM,
-            Vec::from_array(["prepare-world", "--output", output]),
-        ),
         Compile {
             subcommand,
             package_name,
@@ -926,7 +882,6 @@ pub fn display_command(value: Command) -> string {
 
 fn progress_label(value: Command) -> string {
     match value {
-        PrepareWorld { .. } => "preparing compiler world",
         Compile { subcommand, package_name, .. } => match subcommand {
             CHECK_SUBCOMMAND => f"checking {package_name}",
             BUILD_SUBCOMMAND => f"compiling {package_name}",
@@ -944,10 +899,10 @@ fn progress_label(value: Command) -> string {
 
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[(), string] {
     let output = match value {
-        PrepareWorld { output } | Compile { output, .. } | ToolchainCompile { output, .. } | PackToolchainWorld {
+        Compile { output, .. } | ToolchainCompile { output, .. } | PackToolchainWorld { output, .. } | Link {
             output,
             ..,
-        } | Link { output, .. } | TestLink { output, .. } | GoBuild { output, .. } => output,
+        } | TestLink { output, .. } | GoBuild { output, .. } => output,
     };
     let absolute = if path::is_absolute(output) {
         output
@@ -955,7 +910,7 @@ fn ensure_output_parent(value: Command, module_dir: string) -> Result[(), string
         path::join(module_dir, output)
     };
     match path::parent(absolute) {
-        Some(parent) => fs::create_dir_all(parent),
+        Some(parent) => fs::create_dir_all(parent).map_err(|error| error.to_string()),
         None => Result::Ok(()),
     }
 }
@@ -981,14 +936,17 @@ fn execute_command(cancel: task::CancelToken, context: Context, value: Command) 
             let _ = process.env("GO111MODULE", "on");
         }
     } else {};
-    match process.status_with(cancel) {
-        Ok(task::WaitResult::Completed(status)) => if process::ExitStatus::success(status) {
+    match process.status_cancel_structured(cancel) {
+        Ok(status) => if process::ExitStatus::success(status) {
             Result::Ok(())
         } else {
             Result::Err(f"{display_command(value)} failed")
         },
-        Ok(task::WaitResult::Cancelled) => Result::Err("build cancelled"),
-        Err(message) => Result::Err(message),
+        Err(error) => if error.kind() == io::ErrorKind::Interrupted {
+            Result::Err("build cancelled")
+        } else {
+            Result::Err(error.to_string())
+        },
     }
 }
 
@@ -1451,7 +1409,7 @@ pub fn run_executable(context: Context, executable: string, args: Vec[string], d
         io::println(display_args(relative, args));
         Result::Ok(())
     } else {
-        match process::Command::new(executable).args(args).current_dir(context.graph.module_dir).status() {
+        match process::Command::new(executable).args(args).current_dir(context.graph.module_dir).status_structured() {
             Ok(status) => if process::ExitStatus::success(status) {
                 Result::Ok(())
             } else {
@@ -1460,7 +1418,7 @@ pub fn run_executable(context: Context, executable: string, args: Vec[string], d
                     None => Result::Err("program terminated by signal"),
                 }
             },
-            Err(message) => Result::Err(message),
+            Err(error) => Result::Err(error.to_string()),
         }
     }
 }

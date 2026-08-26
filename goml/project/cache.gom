@@ -37,7 +37,9 @@ fn absolute_from_module(module_dir: string, value: string) -> string {
 fn file_digest(module_dir: string, value: string) -> Result[string, string] {
     match fs::sha256_file(absolute_from_module(module_dir, value)) {
         Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err("failed to read cache input " + value + ": " + message),
+        Err(message) => Result::Err(
+            "failed to read cache input " + value + ": " + message.to_string(),
+        ),
     }
 }
 
@@ -72,15 +74,6 @@ fn compiler_digest(context: Context) -> Result[string, string] {
 
 fn cache_spec(value: Command) -> Option[CacheSpec] {
     match value {
-        PrepareWorld { output } => Option::Some(
-            CacheSpec {
-                kind: "prepare-world",
-                args: command_args(value).1,
-                inputs: Vec::new(),
-                outputs: Vec::from_array([output]),
-                anchor: output,
-            },
-        ),
         Compile { subcommand, input_files, interface_files, output, world, .. } => {
             let inputs: Vec[string] = Vec::new();
             for input in input_files {
@@ -262,7 +255,7 @@ fn cache_is_fresh(cache: DigestCache, context: Context, spec: CacheSpec, fingerp
     if !fs::is_file(record_path) {
         return Result::Ok(false)
     } else {};
-    let source = fs::read_file(record_path)?;
+    let source = fs::read_file_structured(record_path).map_err(|error| error.to_string())?;
     let lines = text::split(source, "\n");
     if lines.len() != spec.outputs.len() + 1 || lines[0] != fingerprint {
         return Result::Ok(false)
@@ -282,7 +275,7 @@ fn cache_is_fresh(cache: DigestCache, context: Context, spec: CacheSpec, fingerp
 
 fn remove_cache_file(value: string) -> Result[(), string] {
     if fs::exists(value) {
-        fs::remove_file(value)
+        fs::remove_file(value).map_err(|error| error.to_string())
     } else {
         Result::Ok(())
     }
@@ -333,8 +326,8 @@ fn store_cache(
     }
     let record_path = cache_path(context.graph.module_dir, spec);
     match path::parent(record_path) {
-        Some(parent) => fs::create_dir_all(parent)?,
+        Some(parent) => fs::create_dir_all(parent).map_err(|error| error.to_string())?,
         None => return Result::Err("fingerprint path has no parent directory"),
     };
-    fs::write_file(record_path, builder.finish())
+    fs::write_file_structured(record_path, builder.finish()).map_err(|error| error.to_string())
 }

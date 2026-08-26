@@ -4,6 +4,8 @@ use gomlgo::bytecode;
 use gomlgo::syntax;
 use gomlgo::types as go_types;
 use std::bytes;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub struct VmConfig {
     pub max_steps: i64,
@@ -5245,7 +5247,9 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
             Result::Ok(new_native_complex(type_key, real, imaginary))
         },
         Value::Local(LocalValue::String(value)) => {
-            Result::Ok(new_native_string(value.to_string()?))
+            Result::Ok(
+                new_native_string(value.to_string_utf8().map_err(|error| error.to_string())?),
+            )
         },
         Value::Local(LocalValue::Slice(slice)) => {
             let host = new_native_slice(
@@ -10038,7 +10042,7 @@ fn unhandled_panic_message(payload: PanicPayload) -> Result[string, string] {
             Value::Interface { static_type: _, dynamic_type: Some(_), value: Some(value) } => value.get(),
             value => value,
         };
-        Result::Ok("panic: " + output_bytes(value)?.to_string().unwrap_or("<value>"))
+        Result::Ok("panic: " + output_bytes(value)?.to_string_utf8().unwrap_or("<value>"))
     }
 }
 

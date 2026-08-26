@@ -672,25 +672,10 @@ pub fn from_value[T: Deserialize](value: Value) -> Result[T, string] {
     serde::from_value(into_serde_value(value))
 }
 
-pub fn try_stringify[T: Serialize](value: T) -> Result[string, string] {
+pub fn try_to_string[T: Serialize](value: T) -> Result[string, string] {
     let serializer = json_serializer();
     Serialize::serialize(value, serializer)?;
     finish_json_serializer(serializer)
-}
-
-pub fn stringify[T: Serialize](value: T) -> string {
-    match try_stringify(value) {
-        Ok(encoded) => encoded,
-        Err(_) => "",
-    }
-}
-
-pub fn try_to_string[T: Serialize](value: T) -> Result[string, string] {
-    try_stringify(value)
-}
-
-pub fn to_string[T: Serialize](value: T) -> string {
-    stringify(value)
 }
 
 pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {

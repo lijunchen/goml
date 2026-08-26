@@ -49,10 +49,10 @@ fn artifact_read_interface_unit(path_value: string) -> Result[
     output_snapshot(
         path::with_extension(path_value, ""),
         || {
-            let source = match fs::read_bytes(path_value) {
+            let source = match fs::read_bytes_structured(path_value) {
                 Ok(value) => value,
                 Err(error) => return Result::Err(
-                    "failed to read interface " + path_value + ": " + error,
+                    "failed to read interface " + path_value + ": " + error.to_string(),
                 ),
             };
             match decode_artifact_interface_bytes(source) {
@@ -887,9 +887,11 @@ fn artifact_read_core_unit(path_value: string) -> Result[artifact::ArtifactCoreU
     output_snapshot(
         path::with_extension(path_value, ""),
         || {
-            let source = match fs::read_bytes(path_value) {
+            let source = match fs::read_bytes_structured(path_value) {
                 Ok(value) => value,
-                Err(error) => return Result::Err("failed to read core " + path_value + ": " + error),
+                Err(error) => return Result::Err(
+                    "failed to read core " + path_value + ": " + error.to_string(),
+                ),
             };
             match decode_artifact_core_bytes(source) {
                 Ok(value) => Result::Ok(value),

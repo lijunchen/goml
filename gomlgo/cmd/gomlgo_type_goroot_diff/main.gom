@@ -28,7 +28,7 @@ fn main() -> () {
         process::exit(1)
     } else {};
     let limit = if arguments.len() >= 4 {
-        match num::parse_int(arguments[3]) {
+        match num::parse_int_structured(arguments[3]) {
             Ok(value) => value,
             Err(message) => {
                 println(message);

@@ -13,7 +13,7 @@ pub struct Summary {
 }
 
 fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string] {
-    let names = fs::read_dir(directory)?;
+    let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     collections::sort(names);
     for name in names {
         let entry = path::join(directory, name);
@@ -58,7 +58,7 @@ fn compare_diagnostics(
 }
 
 fn compare_file(file: string, mode: Mode) -> Result[bool, string] {
-    let source = fs::read_bytes(file)?;
+    let source = fs::read_bytes_structured(file).map_err(|error| error.to_string())?;
     let actual = parser::parse_file_bytes(source);
     let expected = differential::run_oracle("parse-file", source)?;
     let actual_ok = actual.diagnostics.is_empty();

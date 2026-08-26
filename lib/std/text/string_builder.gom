@@ -1,6 +1,8 @@
 package text;
 
 use module::bytes;
+use module::utf8;
+use utf8::BytesUtf8;
 
 pub struct StringBuilder {
     pub values: Vec[byte],
@@ -35,8 +37,8 @@ impl StringBuilder {
         self.write_string(value.to_string())
     }
 
-    pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[(), string] {
-        match value.to_string() {
+    pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[(), utf8::Utf8Error] {
+        match value.to_string_utf8() {
             Ok(text) => {
                 self.write_string(text);
                 Result::Ok(())

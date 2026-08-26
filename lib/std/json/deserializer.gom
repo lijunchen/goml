@@ -294,9 +294,9 @@ fn direct_json_number(deserializer: JsonDeserializer) -> Result[string, string] 
 
 fn direct_json_int(deserializer: JsonDeserializer, width: isize) -> Result[i64, string] {
     let text = direct_json_number(deserializer)?;
-    let value = match num::parse_int(text) {
+    let value = match num::parse_int_structured(text) {
         Ok(value) => value.to_i64(),
-        Err(error) => return Result::Err(json_deserializer_error(deserializer, error)),
+        Err(error) => return Result::Err(json_deserializer_error(deserializer, error.to_string())),
     };
     if width == 8 && (value < -128 || value > 127) {
         Result::Err(json_deserializer_error(deserializer, "i8 is out of range"))
@@ -311,9 +311,9 @@ fn direct_json_int(deserializer: JsonDeserializer, width: isize) -> Result[i64, 
 
 fn direct_json_uint(deserializer: JsonDeserializer, width: isize) -> Result[u64, string] {
     let text = direct_json_number(deserializer)?;
-    let value = match num::parse_uint(text) {
+    let value = match num::parse_uint_structured(text) {
         Ok(value) => value.to_u64(),
-        Err(error) => return Result::Err(json_deserializer_error(deserializer, error)),
+        Err(error) => return Result::Err(json_deserializer_error(deserializer, error.to_string())),
     };
     if width == 8 && value > 255 {
         Result::Err(json_deserializer_error(deserializer, "u8 is out of range"))
@@ -519,17 +519,17 @@ impl serde::Deserializer for JsonDeserializer {
 
     fn deserialize_float32(self: JsonDeserializer) -> Result[f32, string] {
         let text = direct_json_number(self)?;
-        match num::parse_float32(text) {
+        match num::parse_float32_structured(text) {
             Ok(value) => Result::Ok(value),
-            Err(error) => Result::Err(json_deserializer_error(self, error)),
+            Err(error) => Result::Err(json_deserializer_error(self, error.to_string())),
         }
     }
 
     fn deserialize_float64(self: JsonDeserializer) -> Result[f64, string] {
         let text = direct_json_number(self)?;
-        match num::parse_float64(text) {
+        match num::parse_float64_structured(text) {
             Ok(value) => Result::Ok(value),
-            Err(error) => Result::Err(json_deserializer_error(self, error)),
+            Err(error) => Result::Err(json_deserializer_error(self, error.to_string())),
         }
     }
 

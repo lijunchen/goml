@@ -25,12 +25,6 @@ struct WorldMetadata {
     prelude_package: string,
 }
 
-fn world_metadata_v1(counter: isize) -> bytes::Bytes {
-    let writer = wire::new_artifact_binary_writer();
-    wire::artifact_binary_write_u64(writer, counter.to_u64());
-    wire::artifact_binary_writer_finish(writer)
-}
-
 fn world_encode_metadata_v2(value: WorldMetadata) -> bytes::Bytes {
     let writer = wire::new_artifact_binary_writer();
     wire::artifact_binary_write_u64(writer, value.counter.to_u64());
@@ -64,27 +58,6 @@ fn world_decode_supported_int(value: u64, name: string) -> Result[isize, string]
         Result::Err("world artifact " + name + " exceeds supported size")
     } else {
         Result::Ok(value.to_isize())
-    }
-}
-
-fn world_decode_metadata_v1(data: bytes::Bytes) -> Result[WorldMetadata, string] {
-    let reader = wire::new_artifact_binary_reader(data);
-    let counter = world_decode_supported_int(wire::artifact_binary_read_u64(reader)?, "counter")?;
-    if wire::artifact_binary_reader_remaining(reader) != 0 {
-        Result::Err("world artifact metadata has trailing data")
-    } else {
-        Result::Ok(
-            WorldMetadata {
-                counter,
-                package_count: 0,
-                artifact_format: WORLD_ARTIFACT_FORMAT,
-                compiler_abi: WORLD_COMPILER_ABI,
-                compiler_identity: version::current(),
-                source_digest: "",
-                builtin_package: "builtin",
-                prelude_package: "prelude",
-            },
-        )
     }
 }
 
@@ -238,72 +211,6 @@ fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainP
         previous = Option::Some(name);
     }
     Result::Ok(result)
-}
-
-fn world_v1_package_section_id(package_name: string) -> Option[u16] {
-    match package_name {
-        "builtin" => Option::Some(2.to_u16()),
-        "prelude" => Option::Some(4.to_u16()),
-        resources::STD_ROOT_PACKAGE => Option::Some(10.to_u16()),
-        resources::STD_INTERNAL_HOST_PACKAGE => Option::Some(12.to_u16()),
-        resources::STD_BYTES_PACKAGE => Option::Some(14.to_u16()),
-        resources::STD_COLLECTIONS_PACKAGE => Option::Some(16.to_u16()),
-        resources::STD_ENV_PACKAGE => Option::Some(18.to_u16()),
-        resources::STD_FS_PACKAGE => Option::Some(20.to_u16()),
-        resources::STD_IO_PACKAGE => Option::Some(22.to_u16()),
-        resources::STD_JSON_PACKAGE => Option::Some(24.to_u16()),
-        resources::STD_PATH_PACKAGE => Option::Some(26.to_u16()),
-        resources::STD_PROCESS_PACKAGE => Option::Some(28.to_u16()),
-        resources::STD_TESTING_PACKAGE => Option::Some(30.to_u16()),
-        resources::STD_TEXT_PACKAGE => Option::Some(32.to_u16()),
-        resources::STD_NUM_PACKAGE => Option::Some(34.to_u16()),
-        resources::STD_TIME_PACKAGE => Option::Some(36.to_u16()),
-        resources::STD_ASCII_PACKAGE => Option::Some(38.to_u16()),
-        resources::STD_ITER_PACKAGE => Option::Some(40.to_u16()),
-        resources::STD_CMP_PACKAGE => Option::Some(42.to_u16()),
-        resources::STD_INTERNAL_TASK_PACKAGE => Option::Some(44.to_u16()),
-        resources::STD_TASK_PACKAGE => Option::Some(46.to_u16()),
-        resources::STD_SERDE_PACKAGE => Option::Some(48.to_u16()),
-        resources::STD_TOML_PACKAGE => Option::Some(50.to_u16()),
-        resources::STD_BINCODE_PACKAGE => Option::Some(52.to_u16()),
-        resources::STD_ERROR_PACKAGE => Option::Some(54.to_u16()),
-        resources::STD_UTF8_PACKAGE => Option::Some(56.to_u16()),
-        resources::STD_UNICODE_PACKAGE => Option::Some(58.to_u16()),
-        resources::STD_MATH_PACKAGE => Option::Some(60.to_u16()),
-        resources::STD_RAND_PACKAGE => Option::Some(62.to_u16()),
-        resources::STD_CRYPTO_PACKAGE => Option::Some(64.to_u16()),
-        resources::STD_CRYPTO_HASH_PACKAGE => Option::Some(66.to_u16()),
-        resources::STD_CRYPTO_RAND_PACKAGE => Option::Some(68.to_u16()),
-        resources::STD_CHANNEL_PACKAGE => Option::Some(70.to_u16()),
-        resources::STD_UTF16_PACKAGE => Option::Some(72.to_u16()),
-        resources::STD_BYTES_ENDIAN_PACKAGE => Option::Some(74.to_u16()),
-        _ => Option::None,
-    }
-}
-
-fn encode_package_world_v1(value: PackageWorld) -> Result[bytes::Bytes, string] {
-    let sections: Vec[wire::ArtifactBinarySection] = Vec::from_array(
-        [
-            wire::ArtifactBinarySection {
-                id: 1,
-                version: 1,
-                flags: wire::required_section_flag(),
-                data: world_metadata_v1(value.counter.get()),
-            },
-        ],
-    );
-    for package_value in world_all_packages(value) {
-        let section_id = match world_v1_package_section_id(
-            package_value.interface_unit.package_name,
-        ) {
-            Some(value) => value,
-            None => return Result::Err(
-                "world v1 cannot encode package " + package_value.interface_unit.package_name,
-            ),
-        };
-        world_add_package_sections(sections, section_id, package_value)?
-    }
-    wire::encode_artifact_binary_container(3, sections)
 }
 
 fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
@@ -483,109 +390,6 @@ fn world_from_packages(metadata: WorldMetadata, packages: Vec[ToolchainPackage])
     Result::Ok(world)
 }
 
-fn decode_package_world_v1(
-    container: wire::ArtifactBinaryContainer,
-    metadata_section: wire::ArtifactBinarySection,
-) -> Result[PackageWorld, string] {
-    let metadata = world_decode_metadata_v1(metadata_section.data)?;
-    let builtin_interface_section = world_required_section(container, 2)?;
-    let builtin_core_section = world_required_section(container, 3)?;
-    let builtin_interface = interface_codec::decode_binary(builtin_interface_section.data)?;
-    let builtin_core = core_codec::decode_binary(builtin_core_section.data)?;
-    if builtin_interface.package_name != "builtin" || builtin_core.package_name != "builtin"
-        || builtin_core.interface_hash != builtin_interface.interface_hash
-        || !world_dependencies_equal(builtin_core.deps, builtin_interface.deps) {
-        return Result::Err("world artifact builtin identity does not match")
-    } else {};
-    let prelude = world_decode_package(container, 4, "prelude")?;
-    if !artifact_interface_has_dependency(
-        prelude.interface_unit,
-        "builtin",
-        builtin_interface.interface_hash,
-    ) {
-        return Result::Err("world artifact prelude builtin dependency does not match")
-    } else {};
-    let root = world_decode_package(container, 10, resources::STD_ROOT_PACKAGE)?;
-    let host = world_decode_package(container, 12, resources::STD_INTERNAL_HOST_PACKAGE)?;
-    let bytes = world_decode_package(container, 14, resources::STD_BYTES_PACKAGE)?;
-    let collections = world_decode_package(container, 16, resources::STD_COLLECTIONS_PACKAGE)?;
-    let env = world_decode_package(container, 18, resources::STD_ENV_PACKAGE)?;
-    let fs_value = world_decode_package(container, 20, resources::STD_FS_PACKAGE)?;
-    let io_value = world_decode_package(container, 22, resources::STD_IO_PACKAGE)?;
-    let json = world_decode_package(container, 24, resources::STD_JSON_PACKAGE)?;
-    let path_value = world_decode_package(container, 26, resources::STD_PATH_PACKAGE)?;
-    let process = world_decode_package(container, 28, resources::STD_PROCESS_PACKAGE)?;
-    let testing = world_decode_package(container, 30, resources::STD_TESTING_PACKAGE)?;
-    let text_value = world_decode_package(container, 32, resources::STD_TEXT_PACKAGE)?;
-    let num = world_decode_package(container, 34, resources::STD_NUM_PACKAGE)?;
-    let time_value = world_decode_package(container, 36, resources::STD_TIME_PACKAGE)?;
-    let ascii = world_decode_package(container, 38, resources::STD_ASCII_PACKAGE)?;
-    let iter = world_decode_package(container, 40, resources::STD_ITER_PACKAGE)?;
-    let cmp = world_decode_package(container, 42, resources::STD_CMP_PACKAGE)?;
-    let internal_task = world_decode_package(container, 44, resources::STD_INTERNAL_TASK_PACKAGE)?;
-    let task = world_decode_package(container, 46, resources::STD_TASK_PACKAGE)?;
-    let serde = world_decode_package(container, 48, resources::STD_SERDE_PACKAGE)?;
-    let toml = world_decode_package(container, 50, resources::STD_TOML_PACKAGE)?;
-    let bincode = world_decode_package(container, 52, resources::STD_BINCODE_PACKAGE)?;
-    let error = world_decode_package(container, 54, resources::STD_ERROR_PACKAGE)?;
-    let utf8 = world_decode_package(container, 56, resources::STD_UTF8_PACKAGE)?;
-    let unicode = world_decode_package(container, 58, resources::STD_UNICODE_PACKAGE)?;
-    let math = world_decode_package(container, 60, resources::STD_MATH_PACKAGE)?;
-    let rand = world_decode_package(container, 62, resources::STD_RAND_PACKAGE)?;
-    let crypto = world_decode_package(container, 64, resources::STD_CRYPTO_PACKAGE)?;
-    let crypto_hash = world_decode_package(container, 66, resources::STD_CRYPTO_HASH_PACKAGE)?;
-    let crypto_rand = world_decode_package(container, 68, resources::STD_CRYPTO_RAND_PACKAGE)?;
-    let channel = world_decode_package(container, 70, resources::STD_CHANNEL_PACKAGE)?;
-    let utf16 = world_decode_package(container, 72, resources::STD_UTF16_PACKAGE)?;
-    let bytes_endian = world_decode_package(container, 74, resources::STD_BYTES_ENDIAN_PACKAGE)?;
-    world_from_packages(
-        metadata,
-        Vec::from_array(
-            [
-                ToolchainPackage {
-                    core_value: builtin_core.core_ir,
-                    interface_unit: builtin_interface,
-                    environment_exports: builtin_core.exports,
-                },
-                prelude,
-                root,
-                host,
-                ascii,
-                bincode,
-                bytes,
-                bytes_endian,
-                cmp,
-                collections,
-                error,
-                env,
-                fs_value,
-                io_value,
-                internal_task,
-                iter,
-                json,
-                num,
-                path_value,
-                process,
-                serde,
-                task,
-                testing,
-                text_value,
-                toml,
-                time_value,
-                utf8,
-                utf16,
-                unicode,
-                math,
-                rand,
-                crypto,
-                crypto_hash,
-                crypto_rand,
-                channel,
-            ],
-        ),
-    )
-}
-
 fn decode_package_world_v2(
     container: wire::ArtifactBinaryContainer,
     metadata_section: wire::ArtifactBinarySection,
@@ -628,17 +432,19 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     if metadata_section.flags != wire::required_section_flag() {
         return Result::Err("invalid world artifact section")
     } else {};
-    match metadata_section.version {
-        1 => decode_package_world_v1(container, metadata_section),
-        2 => decode_package_world_v2(container, metadata_section),
-        _ => Result::Err("unsupported world artifact version"),
+    if metadata_section.version == 2 {
+        decode_package_world_v2(container, metadata_section)
+    } else {
+        Result::Err("unsupported world artifact version")
     }
 }
 
 fn read_package_world(path: string) -> Result[PackageWorld, string] {
-    let data = match fs::read_bytes(path) {
+    let data = match fs::read_bytes_structured(path) {
         Ok(value) => value,
-        Err(error) => return Result::Err("failed to read compiler world " + path + ": " + error),
+        Err(error) => return Result::Err(
+            "failed to read compiler world " + path + ": " + error.to_string(),
+        ),
     };
     match decode_package_world(data) {
         Ok(value) => Result::Ok(value),
@@ -651,57 +457,5 @@ fn write_package_world(path: string, value: PackageWorld) -> Result[(), string] 
     match ensure_parent(path) {
         Ok(()) => atomic_write_data(path, data),
         Err(error) => Result::Err(error),
-    }
-}
-
-fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
-    let mut output: Option[string] = Option::None;
-    let mut index = 2;
-    while index < args.len() {
-        let argument = args[index];
-        if cli_help_argument(argument) {
-            return Result::Err(cli_help_signal())
-        } else if argument == "--output" {
-            if option_string_present(output) {
-                return Result::Err(
-                    repeated_argument_error(PREPARE_WORLD_COMMAND, "--output <OUTPUT>"),
-                )
-            } else if index + 1 >= args.len() || cli_option(args[index + 1]) {
-                return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
-            } else {
-                output = Option::Some(args[index + 1]);
-                index = index + 2;
-            }
-        } else if option_string_present(inline_cli_value(argument, "--output")) {
-            if option_string_present(output) {
-                return Result::Err(
-                    repeated_argument_error(PREPARE_WORLD_COMMAND, "--output <OUTPUT>"),
-                )
-            } else if option_string_empty(inline_cli_value(argument, "--output")) {
-                return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
-            } else {
-                output = inline_cli_value(argument, "--output");
-                index = index + 1;
-            }
-        } else {
-            return Result::Err(unexpected_argument_error(PREPARE_WORLD_COMMAND, argument, false))
-        }
-    }
-    match output {
-        Some(value) => Result::Ok(value),
-        None => {
-            let missing: Vec[string] = Vec::from_array(["--output <OUTPUT>"]);
-            Result::Err(missing_required_arguments_error(PREPARE_WORLD_COMMAND, missing))
-        },
-    }
-}
-
-fn run_prepare_world(args: Vec[string]) -> () {
-    match parse_prepare_world_args(args) {
-        Ok(output) => match write_package_world(output, package_world()) {
-            Ok(()) => (),
-            Err(error) => fail(COMPILE_ERROR_PREFIX + error),
-        },
-        Err(error) => handle_cli_parse_error(PREPARE_WORLD_COMMAND, error),
     }
 }

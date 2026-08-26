@@ -10,6 +10,8 @@ use std::collections;
 use std::fs;
 use std::json;
 use std::path;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub struct TypecheckSummary {
     pub seeds: isize,
@@ -157,15 +159,23 @@ fn save_typecheck_failure(
 ) -> Result[(), string] {
     let directory = path::join(output, input_hash(input));
     let sources = path::join(directory, "sources");
-    fs::create_dir_all(sources)?;
-    fs::write_file(
+    fs::create_dir_all(sources).map_err(|error| error.to_string())?;
+    fs::write_file_structured(
         path::join(directory, "request.json"),
         typecheck_diff::encode_check_request(request),
+    ).map_err(|error| error.to_string())?;
+    fs::write_bytes_structured(path::join(sources, "input.go"), input).map_err(
+        |error| error.to_string(),
     )?;
-    fs::write_bytes(path::join(sources, "input.go"), input)?;
-    fs::write_file(path::join(directory, "gomlgo.json"), checker_response_json(actual))?;
-    fs::write_file(path::join(directory, "oracle.json"), oracle_response_json(expected))?;
-    fs::write_file(path::join(directory, "diff.txt"), message)
+    fs::write_file_structured(path::join(directory, "gomlgo.json"), checker_response_json(actual)).map_err(
+        |error| error.to_string(),
+    )?;
+    fs::write_file_structured(path::join(directory, "oracle.json"), oracle_response_json(expected)).map_err(
+        |error| error.to_string(),
+    )?;
+    fs::write_file_structured(path::join(directory, "diff.txt"), message).map_err(
+        |error| error.to_string(),
+    )
 }
 
 pub fn run_typecheck(root: string, output: string, seed_limit: isize) -> Result[
@@ -184,8 +194,8 @@ pub fn run_typecheck(root: string, output: string, seed_limit: isize) -> Result[
     let mut failures = 0;
     for file in files {
         if seeds < seed_limit {
-            let source = fs::read_bytes(file)?;
-            let source_text = source.to_string()?;
+            let source = fs::read_bytes_structured(file).map_err(|error| error.to_string())?;
+            let source_text = source.to_string_utf8().map_err(|error| error.to_string())?;
             let seed_request = typecheck_diff::request(
                 "mutation/fixture",
                 Vec::from_array([typecheck_diff::SourceFile { name: file, source: source_text }]),
@@ -195,7 +205,7 @@ pub fn run_typecheck(root: string, output: string, seed_limit: isize) -> Result[
                 seeds += 1;
                 for input in semantic_mutations(source) {
                     cases += 1;
-                    let input_text = input.to_string()?;
+                    let input_text = input.to_string_utf8().map_err(|error| error.to_string())?;
                     let request = typecheck_diff::request(
                         "mutation/fixture",
                         Vec::from_array(

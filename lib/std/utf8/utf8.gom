@@ -1,7 +1,6 @@
 package utf8;
 
 use module::bytes;
-use module::io;
 
 pub trait BytesUtf8 {
     fn to_string_utf8(self: Self) -> Result[string, Utf8Error];
@@ -21,10 +20,6 @@ pub struct Utf8Error {
 impl Utf8Error {
     pub fn new(valid_up_to: isize, error_length: Option[isize]) -> Utf8Error {
         Utf8Error { valid_up_to_value: valid_up_to, error_length_value: error_length }
-    }
-
-    pub fn kind(self: Utf8Error) -> io::ErrorKind {
-        io::ErrorKind::InvalidData
     }
 
     pub fn valid_up_to(self: Utf8Error) -> isize {

@@ -13,7 +13,7 @@ fn main() -> () {
         "testdata/typecheck/valid"
     };
     let limit = if arguments.len() >= 3 {
-        match num::parse_int(arguments[2]) {
+        match num::parse_int_structured(arguments[2]) {
             Ok(value) => value,
             Err(message) => {
                 println(message);

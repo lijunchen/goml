@@ -6,15 +6,17 @@ use std::fs;
 use std::json;
 use std::process;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
 fn default_go_binary() -> string {
-    match env::var("GOMLGO_GO") {
-        Some(value) => if value == "" {
+    match env::var_structured("GOMLGO_GO") {
+        Ok(value) => if value == "" {
             "go"
         } else {
             value
         },
-        None => if fs::is_file("/usr/lib/go-1.26/bin/go") {
+        Err(_) => if fs::is_file("/usr/lib/go-1.26/bin/go") {
             "/usr/lib/go-1.26/bin/go"
         } else {
             "go"
@@ -34,7 +36,7 @@ pub fn default_config() -> ExecutionConfig {
 }
 
 fn process_text(value: bytes::Bytes) -> string {
-    value.to_string().unwrap_or("<non-UTF-8 process output>")
+    value.to_string_utf8().unwrap_or("<non-UTF-8 process output>")
 }
 
 fn successful_output(output: process::Output, operation: string) -> Result[string, string] {
@@ -156,10 +158,10 @@ fn compatible_go_version(value: string) -> bool {
 }
 
 pub fn discover_toolchain(go_binary: string) -> Result[GoToolchain, string] {
-    let binary = process::look_path(go_binary)?;
+    let binary = process::look_path_structured(go_binary).map_err(|error| error.to_string())?;
     let output = process::Command::new(binary).arg("env").arg("-json").args(
         Vec::from_array(["GOROOT", "GOVERSION", "GOOS", "GOARCH", "CGO_ENABLED"]),
-    ).env("GOTOOLCHAIN", "local").output()?;
+    ).env("GOTOOLCHAIN", "local").output_structured().map_err(|error| error.to_string())?;
     let root = json::parse(successful_output(output, "go env")?)?;
     let version = required_json_string(root, "GOVERSION")?;
     if !compatible_go_version(version) {
@@ -260,7 +262,7 @@ fn list_go_package_patterns(
         } else {
             "0"
         },
-    ).output()?;
+    ).output_structured().map_err(|error| error.to_string())?;
     let encoded = successful_output(output, "go list")?;
     let decoded = parse_json_stream(encoded)?;
     let packages: Vec[GoListPackage] = Vec::with_capacity(decoded.len());

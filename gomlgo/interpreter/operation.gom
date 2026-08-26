@@ -29,25 +29,25 @@ fn maximum_uint64() -> u64 {
 }
 
 fn widen_float32(value: f32) -> Result[f64, string] {
-    num::parse_float64(value.to_string())
+    num::parse_float64_structured(value.to_string()).map_err(|error| error.to_string())
 }
 
 fn narrow_float64(value: f64) -> Result[f32, string] {
-    num::parse_float32(value.to_string())
+    num::parse_float32_structured(value.to_string()).map_err(|error| error.to_string())
 }
 
 fn signed_float64(value: i64) -> Result[f64, string] {
-    num::parse_float64(value.to_string())
+    num::parse_float64_structured(value.to_string()).map_err(|error| error.to_string())
 }
 
 fn unsigned_float64(value: u64) -> Result[f64, string] {
-    num::parse_float64(value.to_string())
+    num::parse_float64_structured(value.to_string()).map_err(|error| error.to_string())
 }
 
 fn float64_integer(value: f64) -> Result[i64, string] {
     let truncated = truncate_float(value);
     let text = format_float(truncated, b'f', 0, 64);
-    Result::Ok(num::parse_int(text)?.to_i64())
+    Result::Ok(num::parse_int_structured(text).map_err(|error| error.to_string())?.to_i64())
 }
 
 pub fn basic_kind(world: go_types::World, type_id: go_types::TypeId) -> Option[go_types::BasicKind] {

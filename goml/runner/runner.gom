@@ -9,6 +9,9 @@ use std::io;
 use std::json;
 use std::process;
 use std::task;
+use std::time;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub struct Options {
     pub filter: Option[string],
@@ -53,7 +56,7 @@ struct Execution {
 }
 
 fn bytes_text(value: bytes::Bytes) -> string {
-    match value.to_string() {
+    match value.to_string_utf8() {
         Ok(value) => value,
         Err(_) => "<non-UTF-8 output>",
     }
@@ -80,7 +83,7 @@ fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
 }
 
 fn load_tests(group: Group) -> Result[Vec[Test], string] {
-    let source = fs::read_file(group.manifest_path)?;
+    let source = fs::read_file_structured(group.manifest_path).map_err(|error| error.to_string())?;
     let root = json::parse(source)?;
     let Some(values) = json::as_array(root) else {
         return Result::Err("test manifest must be an array")
@@ -180,17 +183,17 @@ fn run_one(module_dir: string, index: isize, test: Test, options: Options) -> Ex
             "UTC",
         ).env("GOML_TEST_SEED", options.seed.to_string());
         if options.nocapture {
-            match command.status_timeout(options.timeout_ms) {
-                Ok(result) => Execution {
+            match command.status_timeout_structured(
+                time::Duration::from_milliseconds(options.timeout_ms.to_i64()),
+            ) {
+                Ok(status) => Execution {
                     index,
                     test,
-                    status: if result.1 {
-                        Status::TimedOut
-                    } else if process::ExitStatus::success(result.0) {
+                    status: if process::ExitStatus::success(status) {
                         Status::Passed
                     } else {
                         Status::Failed(
-                            match process::ExitStatus::code(result.0) {
+                            match process::ExitStatus::code(status) {
                                 Some(value) => value,
                                 None => -1,
                             },
@@ -199,24 +202,27 @@ fn run_one(module_dir: string, index: isize, test: Test, options: Options) -> Ex
                     stdout: "",
                     stderr: "",
                 },
-                Err(message) => Execution {
+                Err(error) => Execution {
                     index,
                     test,
-                    status: Status::Failed(-1),
+                    status: if error.kind() == io::ErrorKind::TimedOut {
+                        Status::TimedOut
+                    } else {
+                        Status::Failed(-1)
+                    },
                     stdout: "",
-                    stderr: message,
+                    stderr: error.to_string(),
                 },
             }
         } else {
-            match command.output_timeout(options.timeout_ms) {
-                Ok(result) => {
-                    let output = result.0;
+            match command.output_timeout_structured(
+                time::Duration::from_milliseconds(options.timeout_ms.to_i64()),
+            ) {
+                Ok(output) => {
                     Execution {
                         index,
                         test,
-                        status: if result.1 {
-                            Status::TimedOut
-                        } else if process::ExitStatus::success(process::Output::status(output)) {
+                        status: if process::ExitStatus::success(process::Output::status(output)) {
                             Status::Passed
                         } else {
                             Status::Failed(
@@ -230,12 +236,16 @@ fn run_one(module_dir: string, index: isize, test: Test, options: Options) -> Ex
                         stderr: bytes_text(process::Output::stderr(output)),
                     }
                 },
-                Err(message) => Execution {
+                Err(error) => Execution {
                     index,
                     test,
-                    status: Status::Failed(-1),
+                    status: if error.kind() == io::ErrorKind::TimedOut {
+                        Status::TimedOut
+                    } else {
+                        Status::Failed(-1)
+                    },
                     stdout: "",
-                    stderr: message,
+                    stderr: error.to_string(),
                 },
             }
         }

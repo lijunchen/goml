@@ -516,7 +516,7 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
             if namespace == project.module_path || namespace.starts_with(project.module_path + "::") {
                 complete_local_package_children(result, project, namespace, context.prefix)
             } else {};
-            match fs::read_file(path::join(project.module_root, MANIFEST_FILENAME)) {
+            match fs::read_file_structured(path::join(project.module_root, MANIFEST_FILENAME)) {
                 Ok(manifest) => for dependency in manifest_dependencies(manifest) {
                     match namespace_next_segment(dependency.name, namespace) {
                         Some(segment) => push_package_completion(

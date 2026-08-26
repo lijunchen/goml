@@ -59,9 +59,9 @@ fn unsigned_integer(value: u64) -> Result[Value, string] {
 }
 
 fn float32_value(value: f32) -> Result[Value, string] {
-    match num::parse_float64(value.to_string()) {
+    match num::parse_float64_structured(value.to_string()) {
         Ok(parsed) => Result::Ok(Value::Float(parsed)),
-        Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error.to_string()),
     }
 }
 
@@ -83,7 +83,7 @@ pub fn from_serde_value(value: serde::Value) -> Result[Value, string] {
         serde::Value::Float64(value) => Result::Ok(Value::Float(value)),
         serde::Value::Number(value) => match parse_integer(value) {
             Ok(parsed) => Result::Ok(Value::Integer(parsed)),
-            Err(_) => match num::parse_float64(value) {
+            Err(_) => match num::parse_float64_structured(value) {
                 Ok(parsed) => Result::Ok(Value::Float(parsed)),
                 Err(_) => Result::Err("invalid TOML number"),
             },

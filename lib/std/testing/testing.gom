@@ -5,9 +5,9 @@ use module::internal::host;
 use module::num;
 
 pub fn seed() -> isize {
-    match env::var("GOML_TEST_SEED") {
-        Some(value) => num::parse_int(value).unwrap_or(0),
-        None => 0,
+    match env::var_structured("GOML_TEST_SEED") {
+        Ok(value) => num::parse_int_structured(value).unwrap_or(0),
+        Err(_) => 0,
     }
 }
 

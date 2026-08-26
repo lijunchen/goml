@@ -432,8 +432,8 @@ fn manual_rational_short_string(value: BigRat) -> string {
 
 fn rational_short_string(value: BigRat) -> string {
     match (
-        num::parse_float64(integer_to_string(value.numerator)),
-        num::parse_float64(natural_to_string(value.denominator)),
+        num::parse_float64_structured(integer_to_string(value.numerator)),
+        num::parse_float64_structured(natural_to_string(value.denominator)),
     ) {
         (Ok(numerator), Ok(denominator)) => {
             let approximate = numerator / denominator;

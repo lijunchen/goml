@@ -489,7 +489,7 @@ fn constant_index(
                 Some(value) => {
                     let int_type = basic_type_id(state, "int");
                     update_contextual_operand_fact(state, node, operand, int_type);
-                    match num::parse_int(constant::integer_to_string(value)) {
+                    match num::parse_int_structured(constant::integer_to_string(value)) {
                         Ok(value) => if value < 0 {
                             diagnostic(
                                 state,

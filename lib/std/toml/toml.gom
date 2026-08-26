@@ -239,13 +239,19 @@ fn parse_integer(value: string) -> Result[i64, string] {
     };
     let unsigned = normalized.byte_slice(sign_offset, normalized.byte_len());
     let parsed = if unsigned.byte_len() > 2 && unsigned.byte_slice(0, 2) == "0x" {
-        num::parse_int_radix(unsigned.byte_slice(2, unsigned.byte_len()), 16)?
+        num::parse_int_radix_structured(unsigned.byte_slice(2, unsigned.byte_len()), 16).map_err(
+            |error| error.to_string(),
+        )?
     } else if unsigned.byte_len() > 2 && unsigned.byte_slice(0, 2) == "0o" {
-        num::parse_int_radix(unsigned.byte_slice(2, unsigned.byte_len()), 8)?
+        num::parse_int_radix_structured(unsigned.byte_slice(2, unsigned.byte_len()), 8).map_err(
+            |error| error.to_string(),
+        )?
     } else if unsigned.byte_len() > 2 && unsigned.byte_slice(0, 2) == "0b" {
-        num::parse_int_radix(unsigned.byte_slice(2, unsigned.byte_len()), 2)?
+        num::parse_int_radix_structured(unsigned.byte_slice(2, unsigned.byte_len()), 2).map_err(
+            |error| error.to_string(),
+        )?
     } else {
-        num::parse_int(unsigned)?
+        num::parse_int_structured(unsigned).map_err(|error| error.to_string())?
     };
     Result::Ok(
         (if negative {
@@ -312,7 +318,7 @@ fn parse_value(source: string) -> Result[Value, string] {
     } else {
         match parse_integer(value) {
             Ok(result) => Result::Ok(Value::Integer(result)),
-            Err(_) => match num::parse_float64(text::replace(value, "_", "")) {
+            Err(_) => match num::parse_float64_structured(text::replace(value, "_", "")) {
                 Ok(result) => Result::Ok(Value::Float(result)),
                 Err(_) => if value.contains("-") || value.contains(":") {
                     Result::Ok(Value::Datetime(value))

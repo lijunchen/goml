@@ -84,27 +84,14 @@ pub fn with_extension(path: string, new_extension: string) -> string {
     }
 }
 
-pub fn absolute(path: string) -> Result[string, string] {
+pub fn absolute_structured(path: string) -> Result[string, Error] {
     let (ok, value, err) = host::path_absolute(path);
     if ok {
         Result::Ok(value)
     } else {
-        Result::Err(err)
-    }
-}
-
-pub fn absolute_structured(path: string) -> Result[string, Error] {
-    match absolute(path) {
-        Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(
-            Error::new(
-                io::ErrorKind::Other,
-                "absolute path",
-                Option::Some(path),
-                Option::None,
-                message,
-            ),
-        ),
+        Result::Err(
+            Error::new(io::ErrorKind::Other, "absolute path", Option::Some(path), Option::None, err),
+        )
     }
 }
 

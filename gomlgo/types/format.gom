@@ -14,7 +14,7 @@ fn contains_id(values: Vec[isize], value: isize) -> bool {
     false
 }
 
-fn legacy_any_type(world: World, id: TypeId) -> bool {
+fn predeclared_any_type(world: World, id: TypeId) -> bool {
     let object = match lookup_local(world, world.universe, "any") {
         Some(value) => value,
         None => return false,
@@ -130,7 +130,7 @@ fn type_parameter_name(world: World, object: ObjectId) -> string {
 }
 
 fn format_type_inner(world: World, id: TypeId, visited: Vec[isize]) -> string {
-    if legacy_any_type(world, id) {
+    if predeclared_any_type(world, id) {
         return "any"
     } else {};
     if contains_id(visited, id.value) {

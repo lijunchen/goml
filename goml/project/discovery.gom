@@ -10,11 +10,13 @@ use std::json;
 use std::path;
 use std::process;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
-fn result_string(value: Result[string, string], context: string) -> Result[string, string] {
+fn result_string[E: ToString](value: Result[string, E], context: string) -> Result[string, string] {
     match value {
         Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(context + ": " + message),
+        Err(message) => Result::Err(context + ": " + message.to_string()),
     }
 }
 
@@ -41,7 +43,7 @@ pub fn find_module_root(start: string) -> Result[string, string] {
 }
 
 pub fn clean(target_dir_override: Option[string]) -> Result[(), string] {
-    let current = env::current_dir()?;
+    let current = env::current_dir_structured().map_err(|error| error.to_string())?;
     let module_dir = find_module_root(current)?;
     let module_manifest = manifest::load(path::join(module_dir, manifest::FILENAME))?;
     let artifact_root = match target_dir_override {
@@ -59,12 +61,12 @@ pub fn clean(target_dir_override: Option[string]) -> Result[(), string] {
     } else if !fs::exists(artifact_root) {
         return Result::Ok(())
     } else {
-        fs::remove_dir_all(artifact_root)
+        fs::remove_dir_all(artifact_root).map_err(|error| error.to_string())
     }
 }
 
 fn target_directory(target: string) -> Result[string, string] {
-    let resolved = path::absolute(target)?;
+    let resolved = path::absolute_structured(target).map_err(|error| error.to_string())?;
     let resolved = canonical(resolved)?;
     if fs::is_file(resolved) {
         match path::parent(resolved) {
@@ -150,7 +152,7 @@ fn directory_for_package(module_dir: string, module_path: string, package_name: 
 }
 
 fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], string] {
-    let names = fs::read_dir(directory)?;
+    let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     let result: Vec[string] = Vec::new();
     for name in names {
         let source_path = path::join(directory, name);
@@ -171,7 +173,7 @@ fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], s
 }
 
 fn directory_contains_gom(directory: string) -> Result[bool, string] {
-    let names = fs::read_dir(directory)?;
+    let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     for name in names {
         let value = path::join(directory, name);
         if fs::is_file(value)
@@ -193,7 +195,7 @@ fn directory_contains_gom(directory: string) -> Result[bool, string] {
 
 fn black_box_test_files(tests_dir: string) -> Result[Vec[string], string] {
     let files = source_files(tests_dir, true)?;
-    let names = fs::read_dir(tests_dir)?;
+    let names = fs::read_dir(tests_dir).map_err(|error| error.to_string())?;
     for name in names {
         let child = path::join(tests_dir, name);
         if fs::is_dir(child) {
@@ -210,7 +212,7 @@ fn black_box_test_files(tests_dir: string) -> Result[Vec[string], string] {
 }
 
 fn output_text(value: bytes::Bytes) -> string {
-    match value.to_string() {
+    match value.to_string_utf8() {
         Ok(value) => value,
         Err(_) => "<non-UTF-8 output>",
     }
@@ -226,7 +228,9 @@ fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string
     for file in files {
         let _ = command.arg(relative_path(module_dir, file));
     }
-    let output = command.current_dir(module_dir).output()?;
+    let output = command.current_dir(module_dir).output_structured().map_err(
+        |error| error.to_string(),
+    )?;
     if !(process::ExitStatus::success(process::Output::status(output))) {
         return Result::Err(output_text(process::Output::stderr(output)))
     } else {};
@@ -618,7 +622,7 @@ fn collect_package_directories(
     if directory != module_dir && fs::is_file(path::join(directory, manifest::FILENAME)) {
         return Result::Ok(())
     } else {};
-    let names = fs::read_dir(directory)?;
+    let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     let source_files: Vec[string] = Vec::new();
     let test_directories: Vec[string] = Vec::new();
     let children: Vec[string] = Vec::new();
@@ -856,26 +860,26 @@ fn installed_compiler_world(compiler: string) -> Result[string, string] {
 fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string] {
     let candidate = match explicit {
         Some(value) => Option::Some(value),
-        None => match env::var("GOMLC") {
-            Some(value) => if value == "" {
+        None => match env::var_structured("GOMLC") {
+            Ok(value) => if value == "" {
                 Option::None
             } else {
                 Option::Some(value)
             },
-            None => Option::None,
+            Err(_) => Option::None,
         },
     };
     let compiler = match candidate {
         Some(value) => value,
-        None => match env::current_exe() {
+        None => match env::current_exe_structured() {
             Ok(value) => match path::parent(value) {
                 Some(parent) => {
                     let sibling = path::join(parent, "gomlc");
                     if fs::is_file(sibling) {
                         sibling
                     } else {
-                        match env::var("GOML_HOME") {
-                            Some(home) => {
+                        match env::var_structured("GOML_HOME") {
+                            Ok(home) => {
                                 let installed = path::join(path::join(home, "bin"), "gomlc");
                                 if fs::is_file(installed) {
                                     installed
@@ -883,12 +887,12 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
                                     "gomlc"
                                 }
                             },
-                            None => "gomlc",
+                            Err(_) => "gomlc",
                         }
                     }
                 },
-                None => match env::var("GOML_HOME") {
-                    Some(home) => {
+                None => match env::var_structured("GOML_HOME") {
+                    Ok(home) => {
                         let installed = path::join(path::join(home, "bin"), "gomlc");
                         if fs::is_file(installed) {
                             installed
@@ -896,7 +900,7 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
                             "gomlc"
                         }
                     },
-                    None => "gomlc",
+                    Err(_) => "gomlc",
                 },
             },
             Err(_) => "gomlc",
@@ -905,30 +909,26 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
     let compiler = if fs::is_file(compiler) {
         canonical(compiler)?
     } else {
-        match process::look_path(compiler) {
+        match process::look_path_structured(compiler) {
             Ok(value) => canonical(value)?,
-            Err(message) => return Result::Err(message),
+            Err(message) => return Result::Err(message.to_string()),
         }
     };
-    let output = process::Command::new(compiler).arg("version").arg("--format").arg("json").output()?;
+    let output = process::Command::new(compiler).arg("version").arg("--format").arg("json").output_structured().map_err(
+        |error| error.to_string(),
+    )?;
     if !(process::ExitStatus::success(process::Output::status(output))) {
         return Result::Err("gomlc does not support the driver protocol")
     } else {};
     let version = json::parse(output_text(process::Output::stdout(output)))?;
     match json::field(version, "driver_protocol") {
-        Some(Number(value)) => if value == "1" {
-            let world_artifact = match json::field(version, "world_artifact") {
-                Some(Number(value)) => value == "1",
-                _ => false,
-            };
+        Some(Number(value)) => if value == "2" {
             let installed_world = match json::field(version, "installed_world") {
                 Some(Number(value)) => value == "1",
                 _ => false,
             };
             let world = if installed_world {
                 CompilerWorld::Installed { path: installed_compiler_world(compiler)? }
-            } else if world_artifact {
-                CompilerWorld::LegacyArtifact
             } else {
                 CompilerWorld::Source
             };
@@ -944,7 +944,7 @@ pub fn load_context(target_dir_override: Option[string], compiler_override: Opti
     Context,
     string,
 ] {
-    let current = env::current_dir()?;
+    let current = env::current_dir_structured().map_err(|error| error.to_string())?;
     let module_dir = find_module_root(current)?;
     let module_manifest = manifest::load(path::join(module_dir, manifest::FILENAME))?;
     let resolved_compiler = resolve_compiler(compiler_override)?;

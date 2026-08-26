@@ -65,9 +65,6 @@ cp -R "$repo_root/tools/release/testdata/smoke" "$temporary/project"
     "$temporary/toolchain/bin/goml" check --dry-run > "$temporary/project-plan"
 )
 grep -F -- "--world $temporary/toolchain/lib/compiler/compiler-world-v2.gaf" "$temporary/project-plan" >/dev/null
-if grep -F "prepare-world" "$temporary/project-plan" >/dev/null; then
-    exit 1
-fi
 "$temporary/toolchain/bin/gomlc" build \
     --package tests::toml \
     --input "$repo_root/gomlc/testdata/module/project055_toml/main.gom" \

@@ -10,7 +10,7 @@ use std::process;
 fn canonical(value: string) -> Result[string, string] {
     match fs::canonicalize(value) {
         Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err("failed to resolve " + value + ": " + message),
+        Err(message) => Result::Err("failed to resolve " + value + ": " + message.to_string()),
     }
 }
 
@@ -18,15 +18,15 @@ fn resolve_program(value: string) -> Result[string, string] {
     if fs::is_file(value) {
         canonical(value)
     } else {
-        match process::look_path(value) {
+        match process::look_path_structured(value) {
             Ok(value) => canonical(value),
-            Err(message) => Result::Err("failed to find gomlfmt: " + message),
+            Err(message) => Result::Err("failed to find gomlfmt: " + message.to_string()),
         }
     }
 }
 
 fn default_formatter_candidate() -> string {
-    match env::current_exe() {
+    match env::current_exe_structured() {
         Ok(value) => match path::parent(value) {
             Some(parent) => {
                 let sibling = path::join(parent, "gomlfmt");
@@ -54,13 +54,13 @@ fn default_formatter_candidate() -> string {
 fn formatter_candidate(explicit: Option[string]) -> string {
     match explicit {
         Some(value) => value,
-        None => match env::var("GOMLFMT") {
-            Some(value) => if value != "" {
+        None => match env::var_structured("GOMLFMT") {
+            Ok(value) => if value != "" {
                 value
             } else {
                 default_formatter_candidate()
             },
-            None => default_formatter_candidate(),
+            Err(_) => default_formatter_candidate(),
         },
     }
 }
@@ -115,11 +115,11 @@ pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[
     for file in files {
         let _ = command.arg(relative_path(module_root, file));
     }
-    match command.status() {
+    match command.status_structured() {
         Ok(status) => match process::ExitStatus::code(status) {
             Some(code) => Result::Ok(code),
             None => Result::Err("gomlfmt terminated by signal"),
         },
-        Err(message) => Result::Err(message),
+        Err(error) => Result::Err(error.to_string()),
     }
 }

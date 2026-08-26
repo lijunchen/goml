@@ -106,14 +106,14 @@ fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
     let result = loop {
         let manifest = path::join(current, MANIFEST_FILENAME);
         if fs::is_file(manifest) {
-            match fs::read_file(manifest) {
+            match fs::read_file_structured(manifest) {
                 Ok(source) => match manifest_module_path(source) {
                     Some(module_path) => break Option::Some(
                         ModuleInfo { root: current, path: module_path },
                     ),
                     None => (),
                 },
-                Err(error) => return Result::Err(error),
+                Err(error) => return Result::Err(error.to_string()),
             }
         } else {};
         match path::parent(current) {
@@ -215,7 +215,7 @@ fn read_project_source(
     } else {
         match override_source(overrides, source_path) {
             Some(source) => Result::Ok(source),
-            None => fs::read_file(source_path),
+            None => fs::read_file_structured(source_path).map_err(|error| error.to_string()),
         }
     }
 }
@@ -240,7 +240,7 @@ fn collect_package_files(
                 }
             } else {}
         },
-        Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error.to_string()),
     };
     for value in overrides {
         let value_parent = source_directory(value.path);
@@ -310,7 +310,7 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
                 }
             } else {}
         },
-        Err(error) => return Result::Err(error),
+        Err(error) => return Result::Err(error.to_string()),
     };
     for value in overrides {
         let value_parent = source_directory(value.path);

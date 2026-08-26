@@ -8,6 +8,8 @@ use gomlgo::types as go_types;
 use std::collections;
 use std::fs;
 use std::path;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub const ACCEPTANCE_MODE: string = "acceptance";
 
@@ -94,7 +96,7 @@ fn collect_packages(
         },
         None => {},
     };
-    for child in fs::read_dir(directory)? {
+    for child in fs::read_dir(directory).map_err(|error| error.to_string())? {
         let entry = path::join(directory, child);
         if fs::is_dir(entry) {
             collect_packages(config, root, entry, include_cmd, packages)?
@@ -110,7 +112,10 @@ fn oracle_sources(values: Vec[checker::SourceFile]) -> Result[
     let result: Vec[typecheck_diff::SourceFile] = Vec::new();
     for value in values {
         result.push(
-            typecheck_diff::SourceFile { name: value.name, source: value.source.to_string()? },
+            typecheck_diff::SourceFile {
+                name: value.name,
+                source: value.source.to_string_utf8().map_err(|error| error.to_string())?,
+            },
         )
     }
     Result::Ok(result)

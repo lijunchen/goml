@@ -173,11 +173,10 @@ pub struct RuntimeAbiSpec {
     pub key: string,
     pub source_name: string,
     pub artifact_id: string,
-    pub legacy_ids: Vec[string],
 }
 
 fn runtime_abi(hook: RuntimeHook, key: string, source_name: string, artifact_id: string) -> RuntimeAbiSpec {
-    RuntimeAbiSpec { hook, key, source_name, artifact_id, legacy_ids: Vec::new() }
+    RuntimeAbiSpec { hook, key, source_name, artifact_id }
 }
 
 pub fn runtime_abi_specs() -> Vec[RuntimeAbiSpec] {
@@ -864,13 +863,7 @@ pub fn runtime_abi_by_id(id: string) -> Option[RuntimeAbiSpec] {
     for spec in runtime_abi_specs() {
         if spec.artifact_id == id {
             return Option::Some(spec)
-        } else {
-            for legacy_id in spec.legacy_ids {
-                if legacy_id == id {
-                    return Option::Some(spec)
-                } else {}
-            }
-        }
+        } else {}
     }
     Option::None
 }

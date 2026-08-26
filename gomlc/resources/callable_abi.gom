@@ -4,161 +4,86 @@ pub struct CallableAbiSpec {
     pub key: string,
     pub source_name: string,
     pub artifact_id: string,
-    pub legacy_ids: Vec[string],
 }
 
-fn callable_abi(key: string, source_name: string, artifact_id: string, legacy_ids: Vec[string]) -> CallableAbiSpec {
-    CallableAbiSpec { key, source_name, artifact_id, legacy_ids }
+fn callable_abi(key: string, source_name: string, artifact_id: string) -> CallableAbiSpec {
+    CallableAbiSpec { key, source_name, artifact_id }
 }
 
 pub fn intrinsic_abi_specs() -> Vec[CallableAbiSpec] {
     Vec::from_array(
         [
-            callable_abi("array.get", "array_get", "array_get", Vec::new()),
-            callable_abi("array.set", "array_set", "array_set", Vec::new()),
-            callable_abi("ref.new", "ref", "ref_new", Vec::new()),
-            callable_abi("ref.get", "ref_get", "ref_get", Vec::new()),
-            callable_abi("ref.set", "ref_set", "ref_set", Vec::new()),
-            callable_abi("ref.ptr_eq", "ptr_eq", "ref_ptr_eq", Vec::new()),
-            callable_abi("ref.ptr_hash", "ptr_hash", "ref_ptr_hash", Vec::new()),
-            callable_abi("vec.new", "vec_new", "vec_new", Vec::new()),
-            callable_abi("vec.with_capacity", "vec_with_capacity", "vec_with_capacity", Vec::new()),
-            callable_abi("vec.push", "vec_push", "vec_push", Vec::new()),
-            callable_abi("vec.get", "vec_get", "vec_get", Vec::new()),
-            callable_abi("vec.set", "vec_set", "vec_set", Vec::new()),
-            callable_abi("vec.len", "vec_len", "vec_len", Vec::new()),
-            callable_abi("vec.capacity", "vec_capacity", "vec_capacity", Vec::new()),
-            callable_abi("vec.reserve", "vec_reserve", "vec_reserve", Vec::new()),
-            callable_abi("vec.truncate", "vec_truncate", "vec_truncate", Vec::new()),
-            callable_abi("vec.from_array", "vec_from_array", "vec_from_array", Vec::new()),
-            callable_abi("once_cell.new", "once_cell_new", "once_cell_new", Vec::new()),
-            callable_abi(
-                "once_cell.get_or_init",
-                "once_cell_get_or_init",
-                "once_cell_get_or_init",
-                Vec::new(),
-            ),
-            callable_abi("slice.new", "slice", "slice_new", Vec::new()),
-            callable_abi("slice.get", "slice_get", "slice_get", Vec::new()),
-            callable_abi("slice.len", "slice_len", "slice_len", Vec::new()),
-            callable_abi("slice.sub", "slice_sub", "slice_sub", Vec::new()),
-            callable_abi("mut_slice.new", "mut_slice", "mut_slice_new", Vec::new()),
-            callable_abi("mut_slice.get", "mut_slice_get", "mut_slice_get", Vec::new()),
-            callable_abi("mut_slice.set", "mut_slice_set", "mut_slice_set", Vec::new()),
-            callable_abi("mut_slice.len", "mut_slice_len", "mut_slice_len", Vec::new()),
-            callable_abi("mut_slice.sub", "mut_slice_sub", "mut_slice_sub", Vec::new()),
-            callable_abi(
-                "mut_slice.as_slice",
-                "mut_slice_as_slice",
-                "mut_slice_as_slice",
-                Vec::new(),
-            ),
-            callable_abi(
-                "mut_slice.copy_from",
-                "mut_slice_copy_from",
-                "mut_slice_copy_from",
-                Vec::new(),
-            ),
-            callable_abi(
-                "hashmap.new",
-                "hashmap_new",
-                "hash_map_new",
-                Vec::from_array(["hashmap_new"]),
-            ),
-            callable_abi(
-                "hashmap.get",
-                "hashmap_get",
-                "hash_map_get",
-                Vec::from_array(["hashmap_get"]),
-            ),
-            callable_abi(
-                "hashmap.set",
-                "hashmap_set",
-                "hash_map_set",
-                Vec::from_array(["hashmap_set"]),
-            ),
-            callable_abi("hashmap.insert", "hashmap_insert", "hash_map_insert", Vec::new()),
+            callable_abi("array.get", "array_get", "array_get"),
+            callable_abi("array.set", "array_set", "array_set"),
+            callable_abi("ref.new", "ref", "ref_new"),
+            callable_abi("ref.get", "ref_get", "ref_get"),
+            callable_abi("ref.set", "ref_set", "ref_set"),
+            callable_abi("ref.ptr_eq", "ptr_eq", "ref_ptr_eq"),
+            callable_abi("ref.ptr_hash", "ptr_hash", "ref_ptr_hash"),
+            callable_abi("vec.new", "vec_new", "vec_new"),
+            callable_abi("vec.with_capacity", "vec_with_capacity", "vec_with_capacity"),
+            callable_abi("vec.push", "vec_push", "vec_push"),
+            callable_abi("vec.get", "vec_get", "vec_get"),
+            callable_abi("vec.set", "vec_set", "vec_set"),
+            callable_abi("vec.len", "vec_len", "vec_len"),
+            callable_abi("vec.capacity", "vec_capacity", "vec_capacity"),
+            callable_abi("vec.reserve", "vec_reserve", "vec_reserve"),
+            callable_abi("vec.truncate", "vec_truncate", "vec_truncate"),
+            callable_abi("vec.from_array", "vec_from_array", "vec_from_array"),
+            callable_abi("once_cell.new", "once_cell_new", "once_cell_new"),
+            callable_abi("once_cell.get_or_init", "once_cell_get_or_init", "once_cell_get_or_init"),
+            callable_abi("slice.new", "slice", "slice_new"),
+            callable_abi("slice.get", "slice_get", "slice_get"),
+            callable_abi("slice.len", "slice_len", "slice_len"),
+            callable_abi("slice.sub", "slice_sub", "slice_sub"),
+            callable_abi("mut_slice.new", "mut_slice", "mut_slice_new"),
+            callable_abi("mut_slice.get", "mut_slice_get", "mut_slice_get"),
+            callable_abi("mut_slice.set", "mut_slice_set", "mut_slice_set"),
+            callable_abi("mut_slice.len", "mut_slice_len", "mut_slice_len"),
+            callable_abi("mut_slice.sub", "mut_slice_sub", "mut_slice_sub"),
+            callable_abi("mut_slice.as_slice", "mut_slice_as_slice", "mut_slice_as_slice"),
+            callable_abi("mut_slice.copy_from", "mut_slice_copy_from", "mut_slice_copy_from"),
+            callable_abi("hashmap.new", "hashmap_new", "hash_map_new"),
+            callable_abi("hashmap.get", "hashmap_get", "hash_map_get"),
+            callable_abi("hashmap.set", "hashmap_set", "hash_map_set"),
+            callable_abi("hashmap.insert", "hashmap_insert", "hash_map_insert"),
             callable_abi(
                 "hashmap.get_or_insert_with",
                 "hashmap_get_or_insert_with",
                 "hash_map_get_or_insert_with",
-                Vec::new(),
             ),
-            callable_abi("hashmap.update", "hashmap_update", "hash_map_update", Vec::new()),
-            callable_abi(
-                "hashmap.remove_value",
-                "hashmap_remove_value",
-                "hash_map_remove_value",
-                Vec::new(),
-            ),
-            callable_abi(
-                "hashmap.remove",
-                "hashmap_remove",
-                "hash_map_remove",
-                Vec::from_array(["hashmap_remove"]),
-            ),
-            callable_abi(
-                "hashmap.len",
-                "hashmap_len",
-                "hash_map_len",
-                Vec::from_array(["hashmap_len"]),
-            ),
-            callable_abi(
-                "hashmap.contains",
-                "hashmap_contains",
-                "hash_map_contains",
-                Vec::from_array(["hashmap_contains"]),
-            ),
-            callable_abi(
-                "hashmap.entries",
-                "hashmap_entries",
-                "hash_map_entries",
-                Vec::from_array(["hashmap_entries"]),
-            ),
-            callable_abi(
-                "hashmap.from_array",
-                "hashmap_from_array",
-                "hash_map_from_array",
-                Vec::new(),
-            ),
-            callable_abi("channel.new", "channel_new", "channel_new", Vec::new()),
-            callable_abi("channel.send", "channel_send", "channel_send", Vec::new()),
-            callable_abi("channel.recv", "channel_recv", "channel_recv", Vec::new()),
-            callable_abi(
-                "channel.send_cancel",
-                "channel_send_cancel",
-                "channel_send_cancel",
-                Vec::new(),
-            ),
-            callable_abi(
-                "channel.recv_cancel",
-                "channel_recv_cancel",
-                "channel_recv_cancel",
-                Vec::new(),
-            ),
-            callable_abi("channel.close", "channel_close", "channel_close", Vec::new()),
-            callable_abi("channel.sender", "channel_sender", "channel_sender", Vec::new()),
-            callable_abi("channel.receiver", "channel_receiver", "channel_receiver", Vec::new()),
-            callable_abi("channel.split", "channel_split", "channel_split", Vec::new()),
+            callable_abi("hashmap.update", "hashmap_update", "hash_map_update"),
+            callable_abi("hashmap.remove_value", "hashmap_remove_value", "hash_map_remove_value"),
+            callable_abi("hashmap.remove", "hashmap_remove", "hash_map_remove"),
+            callable_abi("hashmap.len", "hashmap_len", "hash_map_len"),
+            callable_abi("hashmap.contains", "hashmap_contains", "hash_map_contains"),
+            callable_abi("hashmap.entries", "hashmap_entries", "hash_map_entries"),
+            callable_abi("hashmap.from_array", "hashmap_from_array", "hash_map_from_array"),
+            callable_abi("channel.new", "channel_new", "channel_new"),
+            callable_abi("channel.send", "channel_send", "channel_send"),
+            callable_abi("channel.recv", "channel_recv", "channel_recv"),
+            callable_abi("channel.send_cancel", "channel_send_cancel", "channel_send_cancel"),
+            callable_abi("channel.recv_cancel", "channel_recv_cancel", "channel_recv_cancel"),
+            callable_abi("channel.close", "channel_close", "channel_close"),
+            callable_abi("channel.sender", "channel_sender", "channel_sender"),
+            callable_abi("channel.receiver", "channel_receiver", "channel_receiver"),
+            callable_abi("channel.split", "channel_split", "channel_split"),
             callable_abi(
                 "channel.dynamic_select",
                 "channel_dynamic_select",
                 "channel_dynamic_select",
-                Vec::new(),
             ),
             callable_abi(
                 "channel.dynamic_try_select",
                 "channel_dynamic_try_select",
                 "channel_dynamic_try_select",
-                Vec::new(),
             ),
             callable_abi(
                 "channel.dynamic_try_select_priority",
                 "channel_dynamic_try_select_priority",
                 "channel_dynamic_try_select_priority",
-                Vec::new(),
             ),
-            callable_abi("compiler.missing", "missing", "missing", Vec::new()),
+            callable_abi("compiler.missing", "missing", "missing"),
         ],
     )
 }
@@ -176,13 +101,7 @@ fn callable_abi_by_id(values: Vec[CallableAbiSpec], id: string) -> Option[Callab
     for value in values {
         if value.artifact_id == id {
             return Option::Some(value)
-        } else {
-            for legacy_id in value.legacy_ids {
-                if legacy_id == id {
-                    return Option::Some(value)
-                } else {}
-            }
-        }
+        } else {}
     }
     Option::None
 }

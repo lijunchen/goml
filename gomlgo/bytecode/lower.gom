@@ -2468,7 +2468,9 @@ fn lower_composite_literal(
                         let exact = checker::type_fact_constant(fact).ok_or(
                             "composite literal index is not constant",
                         )?;
-                        let index = num::parse_int(exact)?;
+                        let index = num::parse_int_structured(exact).map_err(
+                            |error| error.to_string(),
+                        )?;
                         if index < 0 {
                             return Result::Err("composite literal index is negative")
                         } else if index + 1 > length {

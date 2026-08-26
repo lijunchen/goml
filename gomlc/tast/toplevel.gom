@@ -746,11 +746,11 @@ fn constant_type_supported(ctx: Checker, value: Type, active: Vec[string]) -> bo
     }
 }
 
-fn legacy_constant_expr(value: Expr) -> bool {
+fn direct_constant_expr(value: Expr) -> bool {
     match value {
         Prim { .. } | Var { .. } => true,
-        Unary { expr, .. } | Cast { expr, .. } => legacy_constant_expr(expr),
-        Binary { lhs, rhs, .. } => legacy_constant_expr(lhs) && legacy_constant_expr(rhs),
+        Unary { expr, .. } | Cast { expr, .. } => direct_constant_expr(expr),
+        Binary { lhs, rhs, .. } => direct_constant_expr(lhs) && direct_constant_expr(rhs),
         _ => false,
     }
 }
@@ -797,7 +797,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
     let resolved_ty = resolve_type(ty);
     let result = if !supported_type {
         (Option::None, Option::None)
-    } else if legacy_constant_expr(checked) {
+    } else if direct_constant_expr(checked) {
         (
             Option::Some(
                 Constant {
@@ -1896,19 +1896,10 @@ fn validate_trait_impl(
                             owner_predicates.len(),
                         )
                     },
-                    None => if names_match(reference.name, ctx.builtin.eq.name)
-                        && method.name == ctx.builtin.partial_eq.method
-                        && !trait_infos_contain_exact_name(ctx.traits, ctx.builtin.eq.name) {
-                        push_diagnostic(
-                            ctx,
-                            "Old-style Eq implementations cannot define eq; implement PartialEq with fn eq and use an empty impl Eq",
-                        )
-                    } else {
-                        push_diagnostic(
-                            ctx,
-                            "Method " + method.name + " is not declared in trait " + reference.name,
-                        )
-                    },
+                    None => push_diagnostic(
+                        ctx,
+                        "Method " + method.name + " is not declared in trait " + reference.name,
+                    ),
                 }
             }
             for expected in info.methods {

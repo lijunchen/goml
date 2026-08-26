@@ -9,6 +9,8 @@ use std::fs;
 use std::json;
 use std::path;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub const ACCEPTANCE_MODE: string = "acceptance";
 
@@ -44,7 +46,7 @@ fn collect_go_files(root: string, files: Vec[string]) -> Result[(), string] {
             files.push(root)
         } else {}
     } else {
-        let names = fs::read_dir(root)?;
+        let names = fs::read_dir(root).map_err(|error| error.to_string())?;
         collections::sort(names);
         for name in names {
             collect_go_files(path::join(root, name), files)?
@@ -231,14 +233,14 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
                 return Result::Err(
                     file + ": " + name + " has extra actual node " + actual_keys[actual_index]
                         + "\nactual fact="
-                        + json::to_string(actual[actual_index]),
+                        + json::try_to_string(actual[actual_index]).unwrap_or(""),
                 )
             } else {
                 return Result::Err(
                     file + ": " + name + " is missing expected node "
                         + expected_keys[expected_index]
                         + "\nexpected fact="
-                        + json::to_string(expected[expected_index]),
+                        + json::try_to_string(expected[expected_index]).unwrap_or(""),
                 )
             }
         }
@@ -246,13 +248,13 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
             return Result::Err(
                 file + ": " + name + " has extra actual node " + actual_keys[actual_index]
                     + "\nactual fact="
-                    + json::to_string(actual[actual_index]),
+                    + json::try_to_string(actual[actual_index]).unwrap_or(""),
             )
         } else if expected_index < expected_keys.len() {
             return Result::Err(
                 file + ": " + name + " is missing expected node " + expected_keys[expected_index]
                     + "\nexpected fact="
-                    + json::to_string(expected[expected_index]),
+                    + json::try_to_string(expected[expected_index]).unwrap_or(""),
             )
         } else {}
     } else {};
@@ -271,9 +273,9 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
                         + "\nexpected="
                         + difference.expected
                         + "\nactual fact="
-                        + json::to_string(actual[index])
+                        + json::try_to_string(actual[index]).unwrap_or("")
                         + "\nexpected fact="
-                        + json::to_string(expected[index]),
+                        + json::try_to_string(expected[index]).unwrap_or(""),
                 ),
                 None => {},
             }
@@ -337,8 +339,8 @@ pub fn compare_info(
 }
 
 fn compare_file(file: string, mode: CompareMode) -> Result[(bool, bool), string] {
-    let source_bytes = fs::read_bytes(file)?;
-    let source = source_bytes.to_string()?;
+    let source_bytes = fs::read_bytes_structured(file).map_err(|error| error.to_string())?;
+    let source = source_bytes.to_string_utf8().map_err(|error| error.to_string())?;
     let package_path = "typecheck/fixture";
     let go_version = source_go_version(source);
     let fake_import_c = source_fake_import_c(source);

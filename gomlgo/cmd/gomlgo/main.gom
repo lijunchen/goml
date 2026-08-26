@@ -54,8 +54,16 @@ fn fail(message: string) -> () {
     process::exit(1)
 }
 
+fn read_bytes(file: string) -> Result[bytes::Bytes, string] {
+    fs::read_bytes_structured(file).map_err(|error| error.to_string())
+}
+
+fn read_file(file: string) -> Result[string, string] {
+    fs::read_file_structured(file).map_err(|error| error.to_string())
+}
+
 fn read_source(file: string) -> bytes::Bytes {
-    match fs::read_bytes(file) {
+    match read_bytes(file) {
         Ok(source) => source,
         Err(message) => {
             fail(message);
@@ -165,16 +173,16 @@ fn check_package(directory: string) -> () {
 }
 
 fn write_stderr(message: string) -> () {
-    match io::write_stderr(bytes::Bytes::from_string(message + "\n")) {
+    match io::write_stderr_structured(bytes::Bytes::from_string(message + "\n")) {
         Ok(()) => {},
-        Err(error) => fail(error),
+        Err(error) => fail(error.to_string()),
     }
 }
 
 fn source_hash(files: Vec[string]) -> Result[string, string] {
     let builder = bytes::Bytes::new();
     for file in files {
-        for value in fs::read_bytes(file)?.to_vec() {
+        for value in read_bytes(file)?.to_vec() {
             builder.push(value)
         }
     }
@@ -215,14 +223,14 @@ fn artifact_module_root(generated: string) -> Result[string, string] {
 }
 
 fn artifact_source() -> Result[string, string] {
-    match env::var(IMAGE_SOURCE_ENV) {
-        Some(value) => if fs::is_file(value) {
+    match env::var_structured(IMAGE_SOURCE_ENV) {
+        Ok(value) => if fs::is_file(value) {
             Result::Ok(value)
         } else {
             Result::Err(IMAGE_SOURCE_ENV + " is not a file: " + value)
         },
-        None => {
-            let executable = env::current_exe()?;
+        Err(_) => {
+            let executable = env::current_exe_structured().map_err(|error| error.to_string())?;
             let directory = path::parent(executable).ok_or("gomlgo executable has no parent")?;
             let artifact_root = path::parent(
                 path::parent(path::parent(directory).ok_or("gomlgo executable has no artifact")?).ok_or(
@@ -249,29 +257,29 @@ fn artifact_source() -> Result[string, string] {
 }
 
 fn bridge_sources() -> Result[Vec[native::GeneratedFile], string] {
-    match env::var(BRIDGE_SOURCE_ENV) {
-        Some(value) => {
+    match env::var_structured(BRIDGE_SOURCE_ENV) {
+        Ok(value) => {
             let directory = path::parent(value).ok_or("native bridge source has no parent")?;
             Result::Ok(
                 Vec::from_array(
                     [
                         native::GeneratedFile {
                             relative_path: "nativebridge/bridge.go",
-                            content: fs::read_file(value)?,
+                            content: read_file(value)?,
                         },
                         native::GeneratedFile {
                             relative_path: "nativebridge/advanced.go",
-                            content: fs::read_file(path::join(directory, "advanced.go"))?,
+                            content: read_file(path::join(directory, "advanced.go"))?,
                         },
                         native::GeneratedFile {
                             relative_path: "nativebridge/catalog.go",
-                            content: fs::read_file(path::join(directory, "catalog.go"))?,
+                            content: read_file(path::join(directory, "catalog.go"))?,
                         },
                     ],
                 ),
             )
         },
-        None => {
+        Err(_) => {
             let generated = artifact_source()?;
             let package_root = artifact_module_root(generated)?;
             Result::Ok(
@@ -279,21 +287,15 @@ fn bridge_sources() -> Result[Vec[native::GeneratedFile], string] {
                     [
                         native::GeneratedFile {
                             relative_path: "nativebridge/bridge.go",
-                            content: fs::read_file(
-                                path::join(package_root, "nativebridge/bridge.go"),
-                            )?,
+                            content: read_file(path::join(package_root, "nativebridge/bridge.go"))?,
                         },
                         native::GeneratedFile {
                             relative_path: "nativebridge/advanced.go",
-                            content: fs::read_file(
-                                path::join(package_root, "nativebridge/advanced.go"),
-                            )?,
+                            content: read_file(path::join(package_root, "nativebridge/advanced.go"))?,
                         },
                         native::GeneratedFile {
                             relative_path: "nativebridge/catalog.go",
-                            content: fs::read_file(
-                                path::join(package_root, "nativebridge/catalog.go"),
-                            )?,
+                            content: read_file(path::join(package_root, "nativebridge/catalog.go"))?,
                         },
                     ],
                 ),
@@ -303,9 +305,9 @@ fn bridge_sources() -> Result[Vec[native::GeneratedFile], string] {
 }
 
 fn cache_root() -> Result[string, string] {
-    match env::var(CACHE_ROOT_ENV) {
-        Some(value) => Result::Ok(value),
-        None => {
+    match env::var_structured(CACHE_ROOT_ENV) {
+        Ok(value) => Result::Ok(value),
+        Err(_) => {
             let module_root = artifact_module_root(artifact_source()?)?;
             Result::Ok(path::join(path::join(module_root, "_artifact"), "native-cache"))
         },
@@ -321,10 +323,10 @@ fn native_image(
     let module_root = artifact_module_root(generated)?;
     let image_sources = Vec::from_array(
         [
-            native::GeneratedFile { relative_path: "main.go", content: fs::read_file(generated)? },
+            native::GeneratedFile { relative_path: "main.go", content: read_file(generated)? },
             native::GeneratedFile {
                 relative_path: "rawstring/rawstring.go",
-                content: fs::read_file(path::join(module_root, "rawstring/rawstring.go"))?,
+                content: read_file(path::join(module_root, "rawstring/rawstring.go"))?,
             },
         ],
     );
@@ -336,8 +338,8 @@ fn native_image(
                 go_version: toolchain.version,
                 goos: toolchain.host_goos,
                 goarch: toolchain.host_goarch,
-                goamd64: env::var("GOAMD64").unwrap_or("v1"),
-                goexperiment: env::var("GOEXPERIMENT").unwrap_or(""),
+                goamd64: env::var_structured("GOAMD64").unwrap_or("v1"),
+                goexperiment: env::var_structured("GOEXPERIMENT").unwrap_or(""),
                 cgo: false,
                 tags: Vec::new(),
                 source_hash: source_hash(files)?,
@@ -375,7 +377,7 @@ fn execute_loaded(
         process::exit(1);
         return
     };
-    if !program.native_calls.is_empty() && env::var(EXECUTION_IMAGE_ENV).is_none() {
+    if !program.native_calls.is_empty() && env::var_structured(EXECUTION_IMAGE_ENV).is_err() {
         let catalog_installed = match bytecode::native_manifest(program) {
             Ok(manifest) => native::install_catalog(manifest),
             Err(_) => false,
@@ -406,13 +408,13 @@ fn execute_loaded(
         } else {}
     } else {};
     let result = interpreter::run(program, vm_config);
-    match io::write_stdout(result.stdout) {
+    match io::write_stdout_structured(result.stdout) {
         Ok(()) => {},
-        Err(message) => fail(message),
+        Err(message) => fail(message.to_string()),
     };
-    match io::write_stderr(result.stderr) {
+    match io::write_stderr_structured(result.stderr) {
         Ok(()) => {},
-        Err(message) => fail(message),
+        Err(message) => fail(message.to_string()),
     };
     if result.exit_code != 0 {
         process::exit(result.exit_code)
@@ -428,10 +430,10 @@ fn run_files(arguments: Vec[string]) -> () {
             if index + 1 >= arguments.len() {
                 fail(COMMAND_USAGE)
             } else {};
-            vm_config.select_seed = match num::parse_uint(arguments[index + 1]) {
+            vm_config.select_seed = match num::parse_uint_structured(arguments[index + 1]) {
                 Ok(value) => value.to_u64(),
                 Err(message) => {
-                    fail("invalid select seed: " + message);
+                    fail("invalid select seed: " + message.to_string());
                     0.to_u64()
                 },
             };
@@ -440,7 +442,7 @@ fn run_files(arguments: Vec[string]) -> () {
             if index + 1 >= arguments.len() {
                 fail(COMMAND_USAGE)
             } else {};
-            vm_config.max_goroutines = match num::parse_int(arguments[index + 1]) {
+            vm_config.max_goroutines = match num::parse_int_structured(arguments[index + 1]) {
                 Ok(value) => if value > 0 {
                     value
                 } else {
@@ -448,7 +450,7 @@ fn run_files(arguments: Vec[string]) -> () {
                     1
                 },
                 Err(message) => {
-                    fail("invalid maximum goroutine count: " + message);
+                    fail("invalid maximum goroutine count: " + message.to_string());
                     1
                 },
             };
@@ -457,7 +459,7 @@ fn run_files(arguments: Vec[string]) -> () {
             if index + 1 >= arguments.len() {
                 fail(COMMAND_USAGE)
             } else {};
-            vm_config.max_steps = match num::parse_int(arguments[index + 1]) {
+            vm_config.max_steps = match num::parse_int_structured(arguments[index + 1]) {
                 Ok(value) => if value > 0 || value == -1 {
                     value.to_i64()
                 } else {
@@ -465,7 +467,7 @@ fn run_files(arguments: Vec[string]) -> () {
                     1.to_i64()
                 },
                 Err(message) => {
-                    fail("invalid maximum step count: " + message);
+                    fail("invalid maximum step count: " + message.to_string());
                     1.to_i64()
                 },
             };

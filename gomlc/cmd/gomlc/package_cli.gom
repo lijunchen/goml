@@ -623,7 +623,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
 
 fn ensure_parent(path_value: string) -> Result[(), string] {
     match path::parent(path_value) {
-        Some(parent) => fs::create_dir_all(parent),
+        Some(parent) => fs::create_dir_all(parent).map_err(|error| error.to_string()),
         None => Result::Ok(()),
     }
 }

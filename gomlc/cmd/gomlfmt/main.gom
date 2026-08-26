@@ -6,6 +6,8 @@ use std::env;
 use std::fs;
 use std::io;
 use std::process;
+use std::utf8;
+use utf8::BytesUtf8;
 
 struct Options {
     write: bool,
@@ -76,9 +78,9 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
 }
 
 fn read_stdin_source() -> Result[string, string] {
-    match io::read_stdin() {
-        Ok(bytes) => bytes.to_string(),
-        Err(error) => Result::Err(error),
+    match io::read_stdin_structured() {
+        Ok(bytes) => bytes.to_string_utf8().map_err(|error| error.to_string()),
+        Err(error) => Result::Err(error.to_string()),
     }
 }
 
@@ -86,7 +88,7 @@ fn read_source(path: string) -> Result[string, string] {
     if path == "-" {
         read_stdin_source()
     } else {
-        fs::read_file(path)
+        fs::read_file_structured(path).map_err(|error| error.to_string())
     }
 }
 
@@ -122,7 +124,7 @@ fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
 fn write_files(values: Vec[FormattedFile]) -> Result[(), string] {
     for value in values {
         if value.source != value.formatted {
-            match fs::write_file(value.path, value.formatted) {
+            match fs::write_file_structured(value.path, value.formatted) {
                 Ok(_) => (),
                 Err(error) => return Result::Err(f"{value.path}: {error}"),
             }

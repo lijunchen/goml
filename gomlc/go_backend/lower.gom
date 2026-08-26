@@ -544,7 +544,7 @@ fn compact_go_float_literal(value: string) -> string {
 fn go_float_literal(value: string, ty: repr::Type) -> string {
     match repr::resolve_type(ty) {
         Float32 => value,
-        Float64 => match num::parse_float64(value) {
+        Float64 => match num::parse_float64_structured(value) {
             Ok(parsed) => compact_go_float_literal(parsed.to_string()),
             Err(_) => value,
         },

@@ -109,7 +109,7 @@ fn consume_constraint(parser: ConstraintParser, value: string) -> bool {
 
 fn version_minor(value: string) -> isize {
     if value.starts_with("go1.") && value.byte_len() > 4 {
-        num::parse_int(value.byte_slice(4, value.byte_len())).unwrap_or(-1)
+        num::parse_int_structured(value.byte_slice(4, value.byte_len())).unwrap_or(-1)
     } else if value == "go1" {
         0
     } else {
@@ -237,7 +237,7 @@ fn evaluate_constraint(value: string, goos: string, goarch: string, cgo: bool, g
     evaluate_constraint_with_tags(value, goos, goarch, cgo, go_version, Vec::new())
 }
 
-fn evaluate_legacy_option(
+fn evaluate_plus_build_option(
     value: string,
     goos: string,
     goarch: string,
@@ -272,7 +272,7 @@ fn evaluate_legacy_option(
     true
 }
 
-fn evaluate_legacy_constraint(
+fn evaluate_plus_build_constraint(
     value: string,
     goos: string,
     goarch: string,
@@ -282,7 +282,7 @@ fn evaluate_legacy_constraint(
 ) -> bool {
     for option in text::split(text::trim(value), " ") {
         if text::trim(option) != ""
-            && evaluate_legacy_option(option, goos, goarch, cgo, go_version, tags) {
+            && evaluate_plus_build_option(option, goos, goarch, cgo, go_version, tags) {
             return true
         } else {}
     }

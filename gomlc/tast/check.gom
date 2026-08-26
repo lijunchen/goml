@@ -237,11 +237,11 @@ fn closer_float_literal(
     right: string,
     right_coefficient: string,
 ) -> string {
-    let left_value = match num::parse_float64(left) {
+    let left_value = match num::parse_float64_structured(left) {
         Ok(value) => value,
         Err(_) => 0.0,
     };
-    let right_value = match num::parse_float64(right) {
+    let right_value = match num::parse_float64_structured(right) {
         Ok(value) => value,
         Err(_) => 0.0,
     };
@@ -315,7 +315,7 @@ fn normalized_float32_literal(value: string) -> string {
 }
 
 fn try_normalized_float64_literal(value: string) -> Option[string] {
-    match num::parse_float64(value) {
+    match num::parse_float64_structured(value) {
         Ok(parsed) => Option::Some(parsed.to_string()),
         Err(_) => Option::None,
     }

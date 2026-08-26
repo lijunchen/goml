@@ -3,6 +3,8 @@ package lsp;
 use std::bytes;
 use std::path;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
 fn uri_unreserved(value: u8) -> bool {
     (value >= 65 && value <= 90) || (value >= 97 && value <= 122) || (value >= 48 && value <= 57)
@@ -17,7 +19,7 @@ fn uri_hex(value: u8) -> char {
 }
 
 pub fn path_to_uri(value: string) -> string {
-    let absolute = match path::absolute(value) {
+    let absolute = match path::absolute_structured(value) {
         Ok(result) => result,
         Err(_) => path::clean(value),
     };
@@ -77,7 +79,7 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
                 index = index + 1;
             }
         }
-        match bytes::Bytes::from_vec(decoded_bytes).to_string() {
+        match bytes::Bytes::from_vec(decoded_bytes).to_string_utf8() {
             Ok(decoded) => Result::Ok(path::clean(decoded)),
             Err(_) => Result::Err("URI path is not valid UTF-8"),
         }

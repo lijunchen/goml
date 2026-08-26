@@ -2,6 +2,8 @@ package bincode;
 
 use module::bytes;
 use module::serde;
+use module::utf8;
+use utf8::BytesUtf8;
 
 enum BincodeFrame {
     Optional {
@@ -238,7 +240,7 @@ fn read_string(decoder: Decoder) -> Result[string, string] {
             values.push(read_byte(decoder)?);
             index = index + 1;
         }
-        match bytes::Bytes::from_vec(values).to_string() {
+        match bytes::Bytes::from_vec(values).to_string_utf8() {
             Ok(value) => Result::Ok(value),
             Err(_) => Result::Err(decoder_error(decoder, "invalid UTF-8 string")),
         }

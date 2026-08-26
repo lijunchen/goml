@@ -2,6 +2,22 @@ package serde;
 
 use module::num;
 
+fn parse_int(value: string) -> Result[isize, string] {
+    num::parse_int_structured(value).map_err(|error| error.to_string())
+}
+
+fn parse_uint(value: string) -> Result[usize, string] {
+    num::parse_uint_structured(value).map_err(|error| error.to_string())
+}
+
+fn parse_float32(value: string) -> Result[f32, string] {
+    num::parse_float32_structured(value).map_err(|error| error.to_string())
+}
+
+fn parse_float64(value: string) -> Result[f64, string] {
+    num::parse_float64_structured(value).map_err(|error| error.to_string())
+}
+
 enum ValueDeserializeFrame {
     Optional,
     Sequence {
@@ -98,7 +114,7 @@ fn deserialize_bytes_value(value: Value) -> Result[Vec[byte], string] {
                 match value {
                     Value::Uint8(value) => bytes.push(value),
                     Value::Number(value) => {
-                        let parsed = num::parse_uint(value)?;
+                        let parsed = parse_uint(value)?;
                         if parsed > 255 {
                             return Result::Err("u8 is out of range")
                         } else {
@@ -136,7 +152,7 @@ impl Deserializer for ValueDeserializer {
     fn deserialize_int(self: ValueDeserializer) -> Result[isize, string] {
         match take_deserializer_value(self)? {
             Value::Int(value) => Result::Ok(value),
-            Value::Number(value) => num::parse_int(value),
+            Value::Number(value) => parse_int(value),
             _ => Result::Err("expected isize"),
         }
     }
@@ -145,7 +161,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Int8(value) => Result::Ok(value),
             Value::Number(value) => {
-                let parsed = num::parse_int(value)?;
+                let parsed = parse_int(value)?;
                 if parsed < -128 || parsed > 127 {
                     Result::Err("i8 is out of range")
                 } else {
@@ -160,7 +176,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Int16(value) => Result::Ok(value),
             Value::Number(value) => {
-                let parsed = num::parse_int(value)?;
+                let parsed = parse_int(value)?;
                 if parsed < -32768 || parsed > 32767 {
                     Result::Err("i16 is out of range")
                 } else {
@@ -175,7 +191,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Int32(value) => Result::Ok(value),
             Value::Number(value) => {
-                let parsed = num::parse_int(value)?;
+                let parsed = parse_int(value)?;
                 if parsed < -2147483648 || parsed > 2147483647 {
                     Result::Err("i32 is out of range")
                 } else {
@@ -189,7 +205,7 @@ impl Deserializer for ValueDeserializer {
     fn deserialize_int64(self: ValueDeserializer) -> Result[i64, string] {
         match take_deserializer_value(self)? {
             Value::Int64(value) => Result::Ok(value),
-            Value::Number(value) => match num::parse_int(value) {
+            Value::Number(value) => match parse_int(value) {
                 Ok(value) => Result::Ok(value.to_i64()),
                 Err(error) => Result::Err(error),
             },
@@ -200,7 +216,7 @@ impl Deserializer for ValueDeserializer {
     fn deserialize_uint(self: ValueDeserializer) -> Result[usize, string] {
         match take_deserializer_value(self)? {
             Value::Uint(value) => Result::Ok(value),
-            Value::Number(value) => num::parse_uint(value),
+            Value::Number(value) => parse_uint(value),
             _ => Result::Err("expected usize"),
         }
     }
@@ -209,7 +225,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Uint8(value) => Result::Ok(value),
             Value::Number(value) => {
-                let parsed = num::parse_uint(value)?;
+                let parsed = parse_uint(value)?;
                 if parsed > 255 {
                     Result::Err("u8 is out of range")
                 } else {
@@ -224,7 +240,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Uint16(value) => Result::Ok(value),
             Value::Number(value) => {
-                let parsed = num::parse_uint(value)?;
+                let parsed = parse_uint(value)?;
                 if parsed > 65535 {
                     Result::Err("u16 is out of range")
                 } else {
@@ -239,7 +255,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Uint32(value) => Result::Ok(value),
             Value::Number(value) => {
-                let parsed = num::parse_uint(value)?;
+                let parsed = parse_uint(value)?;
                 if parsed > 4294967295 {
                     Result::Err("u32 is out of range")
                 } else {
@@ -253,7 +269,7 @@ impl Deserializer for ValueDeserializer {
     fn deserialize_uint64(self: ValueDeserializer) -> Result[u64, string] {
         match take_deserializer_value(self)? {
             Value::Uint64(value) => Result::Ok(value),
-            Value::Number(value) => match num::parse_uint(value) {
+            Value::Number(value) => match parse_uint(value) {
                 Ok(value) => Result::Ok(value.to_u64()),
                 Err(error) => Result::Err(error),
             },
@@ -264,7 +280,7 @@ impl Deserializer for ValueDeserializer {
     fn deserialize_float32(self: ValueDeserializer) -> Result[f32, string] {
         match take_deserializer_value(self)? {
             Value::Float32(value) => Result::Ok(value),
-            Value::Number(value) => num::parse_float32(value),
+            Value::Number(value) => parse_float32(value),
             _ => Result::Err("expected f32"),
         }
     }
@@ -272,7 +288,7 @@ impl Deserializer for ValueDeserializer {
     fn deserialize_float64(self: ValueDeserializer) -> Result[f64, string] {
         match take_deserializer_value(self)? {
             Value::Float64(value) => Result::Ok(value),
-            Value::Number(value) => num::parse_float64(value),
+            Value::Number(value) => parse_float64(value),
             _ => Result::Err("expected f64"),
         }
     }

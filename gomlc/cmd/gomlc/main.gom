@@ -62,7 +62,7 @@ fn fail(message: string) -> () {
 }
 
 fn read_source(path: string) -> string {
-    match fs::read_file(path) {
+    match fs::read_file_structured(path) {
         Ok(source) => source,
         Err(_) => {
             fail("error reading goml file: " + path);
@@ -310,7 +310,6 @@ fn main() -> () {
         match args[1] {
             HELP_COMMAND => run_help_command(args),
             VERSION_COMMAND => run_version(args),
-            PREPARE_WORLD_COMMAND => run_prepare_world(args),
             CHECK_COMMAND => run_package_command(args, false, false),
             TEST_CHECK_COMMAND => run_package_command(args, false, true),
             BUILD_COMMAND => run_package_command(args, true, false),

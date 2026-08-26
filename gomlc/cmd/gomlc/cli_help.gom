@@ -18,8 +18,6 @@ const LINK_COMMAND: string = "link";
 
 const TEST_LINK_COMMAND: string = "test-link";
 
-const PREPARE_WORLD_COMMAND: string = "prepare-world";
-
 const PACKAGE_INFO_COMMAND: string = "package-info";
 
 const RUN_SINGLE_COMMAND: string = "run-single";
@@ -56,7 +54,7 @@ fn package_command(command: string) -> bool {
 }
 
 fn top_level_help() -> string {
-    "Usage: gomlc <COMMAND>\n\nCommands:\n  check          \n  test-check     \n  build          \n  test-build     \n  link           \n  test-link      \n  prepare-world  \n  package-info   \n  run-single     \n  version        \n  help           Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
+    "Usage: gomlc <COMMAND>\n\nCommands:\n  check          \n  test-check     \n  build          \n  test-build     \n  link           \n  test-link      \n  package-info   \n  run-single     \n  version        \n  help           Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn package_command_help(command: string) -> string {
@@ -74,9 +72,6 @@ fn command_help(command: string) -> Option[string] {
         ),
         TEST_LINK_COMMAND => Option::Some(
             "Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help",
-        ),
-        PREPARE_WORLD_COMMAND => Option::Some(
-            "Usage: gomlc prepare-world --output <OUTPUT>\n\nOptions:\n      --output <OUTPUT>  \n  -h, --help             Print help",
         ),
         PACKAGE_INFO_COMMAND => Option::Some(
             "Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help",
@@ -101,7 +96,6 @@ fn command_usage(command: string) -> string {
             + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>",
         LINK_COMMAND => "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>",
         TEST_LINK_COMMAND => "gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>",
-        PREPARE_WORLD_COMMAND => "gomlc prepare-world --output <OUTPUT>",
         PACKAGE_INFO_COMMAND => "gomlc package-info [OPTIONS] --input <INPUT>...",
         RUN_SINGLE_COMMAND => "gomlc run-single [OPTIONS] <FILE>",
         VERSION_COMMAND => "gomlc version [OPTIONS]",
@@ -115,7 +109,6 @@ fn required_command_usage(command: string) -> string {
             + command
             + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>",
         RUN_SINGLE_COMMAND => "gomlc run-single <FILE>",
-        PREPARE_WORLD_COMMAND => "gomlc prepare-world --output <OUTPUT>",
         PACKAGE_INFO_COMMAND => "gomlc package-info --input <INPUT>...",
         _ => command_usage(command),
     }
@@ -226,10 +219,6 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
             candidates.push("--manifest");
             candidates.push("--help")
         },
-        PREPARE_WORLD_COMMAND => {
-            candidates.push("--output");
-            candidates.push("--help")
-        },
         PACKAGE_INFO_COMMAND => {
             candidates.push("--input");
             candidates.push("--format");
@@ -307,7 +296,6 @@ fn cli_value_option(command: string, argument: string) -> bool {
         TEST_LINK_COMMAND => argument == "--input" || argument == "--package"
             || argument == "--output"
             || argument == "--manifest",
-        PREPARE_WORLD_COMMAND => argument == "--output",
         PACKAGE_INFO_COMMAND => argument == "--input" || argument == "--format",
         VERSION_COMMAND => argument == "--format",
         _ => false,
@@ -335,7 +323,6 @@ fn known_cli_option(command: string, argument: string) -> bool {
                 || option_string_present(inline_cli_value(argument, "--package"))
                 || option_string_present(inline_cli_value(argument, "--output"))
                 || option_string_present(inline_cli_value(argument, "--manifest")),
-            PREPARE_WORLD_COMMAND => option_string_present(inline_cli_value(argument, "--output")),
             PACKAGE_INFO_COMMAND => option_string_present(inline_cli_value(argument, "--input"))
                 || option_string_present(inline_cli_value(argument, "--format")),
             VERSION_COMMAND => option_string_present(inline_cli_value(argument, "--format")),
@@ -525,7 +512,6 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
     candidates.push(TEST_BUILD_COMMAND);
     candidates.push(LINK_COMMAND);
     candidates.push(TEST_LINK_COMMAND);
-    candidates.push(PREPARE_WORLD_COMMAND);
     candidates.push(PACKAGE_INFO_COMMAND);
     candidates.push(RUN_SINGLE_COMMAND);
     candidates.push(VERSION_COMMAND);

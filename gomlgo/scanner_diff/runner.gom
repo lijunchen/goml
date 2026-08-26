@@ -13,7 +13,7 @@ pub struct Summary {
 }
 
 fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string] {
-    let names = fs::read_dir(directory)?;
+    let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     collections::sort(names);
     for name in names {
         let entry = path::join(directory, name);
@@ -42,7 +42,7 @@ fn render_expected(value: differential::OracleToken) -> string {
 }
 
 fn compare_file(file: string) -> Result[isize, string] {
-    let source = fs::read_bytes(file)?;
+    let source = fs::read_bytes_structured(file).map_err(|error| error.to_string())?;
     let actual = scanner::scan_bytes(source);
     let expected = differential::run_oracle("scan", source)?;
     let shared = if actual.tokens.len() < expected.tokens.len() {

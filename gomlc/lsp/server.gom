@@ -158,7 +158,7 @@ fn source_for_path(analysis: query::Analysis, source_path: string) -> Option[str
             index = index - 1;
         }
     }
-    match fs::read_file(source_path) {
+    match fs::read_file_structured(source_path) {
         Ok(source) => Option::Some(source),
         Err(_) => Option::None,
     }

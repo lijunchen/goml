@@ -3142,7 +3142,7 @@ fn shift_amount(value: constant::ConstValue) -> Option[isize] {
         Some(value) => if value.sign < 0 {
             Option::None
         } else {
-            match num::parse_int(constant::integer_to_string(value)) {
+            match num::parse_int_structured(constant::integer_to_string(value)) {
                 Ok(value) => Option::Some(value),
                 Err(_) => Option::None,
             }

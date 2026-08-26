@@ -3040,93 +3040,86 @@ fn resolve_trait_static(
     explicit: Vec[Type],
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
-    let eq_trait = ctx.builtin.eq.name;
-    let partial_eq_trait = ctx.builtin.partial_eq.name;
-    let equality_method = ctx.builtin.partial_eq.method;
-    if owner == eq_trait && name == equality_method
-        && !trait_infos_contain_exact_name(ctx.traits, eq_trait) {
-        validate_explicit_method_type_arguments(ctx, name, "method", Vec::new(), method_explicit);
-        let receiver = fresh_type(ctx.counter, VarKind::Any);
-        push_diagnostic(ctx, "Trait Eq has no associated method eq; use PartialEq::eq");
-        Option::Some(
-            trait_callable(
-                partial_eq_trait,
-                explicit,
-                name,
-                two_types(receiver, receiver),
-                Type::Bool,
-                receiver,
-                true,
-            ),
-        )
-    } else {
-        match find_trait(ctx, owner) {
-            Some(info) => {
-                let diagnostics_start = ctx.diagnostics.len();
-                for value in explicit {
-                    validate_signature_type(ctx, value)
-                }
-                if explicit.len() != info.generics.len() {
-                    push_diagnostic(
-                        ctx,
-                        f"Trait {short_name(info.name)} expects {info.generics.len()} type arguments, but got {explicit.len()}",
-                    )
-                } else {};
-                if ctx.diagnostics.len() > diagnostics_start {
-                    return Option::Some(
-                        ResolvedCallable {
-                            callable: Callable::Function("<error>"),
-                            ty: fresh_unresolved_inference(ctx),
-                            predicates: Vec::new(),
-                        },
-                    )
-                } else {};
-                let substitutions = instantiate_substitutions(ctx.counter, info.generics, explicit);
-                let args: Vec[Type] = Vec::new();
-                for generic in info.generics {
-                    match find_substitution(substitutions, generic) {
-                        Some(ty) => args.push(ty),
-                        None => (),
-                    }
-                }
-                let reference = TraitRef { name: info.name, args };
-                match resolve_trait_reference_method(
+    match find_trait(ctx, owner) {
+        Some(info) => {
+            let diagnostics_start = ctx.diagnostics.len();
+            for value in explicit {
+                validate_signature_type(ctx, value)
+            }
+            if explicit.len() != info.generics.len() {
+                push_diagnostic(
                     ctx,
-                    reference,
-                    name,
-                    Option::None,
-                    method_explicit,
-                ) {
-                    Some(value) => Option::Some(value),
-                    None => {
-                        let resolved: Vec[ResolvedCallable] = Vec::new();
-                        for candidate in trait_ref_closure(ctx, reference) {
-                            if trait_ref_equal(candidate, reference) {} else {
-                                match resolve_trait_reference_method(
-                                    ctx,
-                                    candidate,
-                                    name,
-                                    Option::None,
-                                    method_explicit,
-                                ) {
-                                    Some(value) => resolved.push(value),
-                                    None => (),
-                                }
+                    f"Trait {short_name(info.name)} expects {info.generics.len()} type arguments, but got {explicit.len()}",
+                )
+            } else {};
+            if ctx.diagnostics.len() > diagnostics_start {
+                return Option::Some(
+                    ResolvedCallable {
+                        callable: Callable::Function("<error>"),
+                        ty: fresh_unresolved_inference(ctx),
+                        predicates: Vec::new(),
+                    },
+                )
+            } else {};
+            let substitutions = instantiate_substitutions(ctx.counter, info.generics, explicit);
+            let args: Vec[Type] = Vec::new();
+            for generic in info.generics {
+                match find_substitution(substitutions, generic) {
+                    Some(ty) => args.push(ty),
+                    None => (),
+                }
+            }
+            let reference = TraitRef { name: info.name, args };
+            match resolve_trait_reference_method(
+                ctx,
+                reference,
+                name,
+                Option::None,
+                method_explicit,
+            ) {
+                Some(value) => Option::Some(value),
+                None => {
+                    if owner == ctx.builtin.eq.name && name == ctx.builtin.partial_eq.method
+                        && !trait_infos_contain_exact_name(ctx.traits, ctx.builtin.eq.name) {
+                        push_diagnostic(
+                            ctx,
+                            "Method " + name + " is not declared in trait " + owner,
+                        );
+                        return Option::Some(
+                            ResolvedCallable {
+                                callable: Callable::Function("<error>"),
+                                ty: fresh_unresolved_inference(ctx),
+                                predicates: Vec::new(),
+                            },
+                        )
+                    } else {};
+                    let resolved: Vec[ResolvedCallable] = Vec::new();
+                    for candidate in trait_ref_closure(ctx, reference) {
+                        if trait_ref_equal(candidate, reference) {} else {
+                            match resolve_trait_reference_method(
+                                ctx,
+                                candidate,
+                                name,
+                                Option::None,
+                                method_explicit,
+                            ) {
+                                Some(value) => resolved.push(value),
+                                None => (),
                             }
                         }
-                        if resolved.len() == 1 {
-                            Option::Some(resolved[0])
-                        } else {
-                            if resolved.len() > 1 {
-                                push_diagnostic(ctx, f"ambiguous method: {name}")
-                            } else {};
-                            Option::None
-                        }
-                    },
-                }
-            },
-            None => Option::None,
-        }
+                    }
+                    if resolved.len() == 1 {
+                        Option::Some(resolved[0])
+                    } else {
+                        if resolved.len() > 1 {
+                            push_diagnostic(ctx, f"ambiguous method: {name}")
+                        } else {};
+                        Option::None
+                    }
+                },
+            }
+        },
+        None => Option::None,
     }
 }
 

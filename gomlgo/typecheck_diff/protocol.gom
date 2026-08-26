@@ -120,11 +120,11 @@ pub fn request(package_path: string, files: Vec[SourceFile]) -> CheckRequest {
 }
 
 pub fn encode_check_request(value: CheckRequest) -> string {
-    json::to_string(value)
+    json::try_to_string(value).unwrap_or("")
 }
 
 pub fn encode_constant_request(value: ConstantRequest) -> string {
-    json::to_string(value)
+    json::try_to_string(value).unwrap_or("")
 }
 
 pub fn decode_check_response(input: string) -> Result[CheckResponse, string] {

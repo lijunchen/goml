@@ -189,8 +189,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 Vec::from_array(
                     ["std/bincode/bincode.gom", "std/bincode/decode.gom", "std/bincode/encode.gom"],
                 ),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_SERDE_PACKAGE]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_SERDE_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_SERDE_PACKAGE, STD_UTF8_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_SERDE_PACKAGE, STD_UTF8_PACKAGE]),
             ),
             standard_package(
                 STD_BYTES_PACKAGE,
@@ -289,8 +289,12 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "fs",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/fs/error.gom", "std/fs/fs.gom"]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE]),
+                Vec::from_array(
+                    [STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE, STD_UTF8_PACKAGE],
+                ),
+                Vec::from_array(
+                    [STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_IO_PACKAGE, STD_UTF8_PACKAGE],
+                ),
             ),
             standard_package(
                 STD_INTERNAL_HOST_PACKAGE,
@@ -313,8 +317,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "io",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/io/error.gom", "std/io/io.gom"]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_UTF8_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE, STD_UTF8_PACKAGE]),
             ),
             standard_package(
                 STD_ITER_PACKAGE,
@@ -428,8 +432,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "text",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/text/string_builder.gom", "std/text/text.gom"]),
-                Vec::from_array([STD_ASCII_PACKAGE, STD_BYTES_PACKAGE]),
-                Vec::from_array([STD_ASCII_PACKAGE, STD_BYTES_PACKAGE]),
+                Vec::from_array([STD_ASCII_PACKAGE, STD_BYTES_PACKAGE, STD_UTF8_PACKAGE]),
+                Vec::from_array([STD_ASCII_PACKAGE, STD_BYTES_PACKAGE, STD_UTF8_PACKAGE]),
             ),
             standard_package(
                 STD_TOML_PACKAGE,
@@ -452,8 +456,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "utf8",
                 STD_ROOT_PACKAGE,
                 Vec::from_array(["std/utf8/utf8.gom"]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_IO_PACKAGE]),
-                Vec::from_array([STD_BYTES_PACKAGE, STD_IO_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE]),
             ),
             standard_package(
                 STD_UTF16_PACKAGE,
@@ -548,9 +552,11 @@ pub fn standard_package_link_closure(package_names: Vec[string]) -> Vec[string] 
 }
 
 pub fn toolchain_lib_dir() -> Result[string, string] {
-    let executable = match env::current_exe() {
+    let executable = match env::current_exe_structured() {
         Ok(value) => value,
-        Err(error) => return Result::Err("could not locate compiler executable: " + error),
+        Err(error) => return Result::Err(
+            "could not locate compiler executable: " + error.to_string(),
+        ),
     };
     let binary_dir = match path::parent(executable) {
         Some(value) => value,
@@ -570,10 +576,10 @@ fn read_sources_from_dir(lib_dir: string, category: string, relative_paths: Vec[
     let result: Vec[Source] = Vec::new();
     for relative_path in relative_paths {
         let source_path = path::join(lib_dir, relative_path);
-        match fs::read_file(source_path) {
+        match fs::read_file_structured(source_path) {
             Ok(source) => result.push(Source { path: source_path, source }),
             Err(error) => return Result::Err(
-                "could not read " + category + " resource " + source_path + ": " + error,
+                "could not read " + category + " resource " + source_path + ": " + error.to_string(),
             ),
         }
     }

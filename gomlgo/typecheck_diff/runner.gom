@@ -3,19 +3,23 @@ package typecheck_diff;
 use std::bytes;
 use std::env;
 use std::process;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub const DEFAULT_ORACLE: string = "../_artifact/gomlgo/oracle";
 
 fn bytes_to_string(value: bytes::Bytes) -> Result[string, string] {
-    value.to_string()
+    value.to_string_utf8().map_err(|error| error.to_string())
 }
 
 pub fn oracle_path() -> string {
-    env::var("GOMLGO_ORACLE").unwrap_or(DEFAULT_ORACLE)
+    env::var_structured("GOMLGO_ORACLE").unwrap_or(DEFAULT_ORACLE)
 }
 
 fn invoke(executable: string, mode: string, input: string) -> Result[string, string] {
-    let output = process::Command::new(executable).arg(mode).input(bytes::Bytes::from_string(input)).output()?;
+    let output = process::Command::new(executable).arg(mode).input(bytes::Bytes::from_string(input)).output_structured().map_err(
+        |error| error.to_string(),
+    )?;
     let stdout = bytes_to_string(output.stdout())?;
     if output.status().success() {
         Result::Ok(stdout)

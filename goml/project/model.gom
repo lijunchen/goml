@@ -40,7 +40,6 @@ pub struct Graph {
 
 pub enum CompilerWorld {
     Source,
-    LegacyArtifact,
     Installed { path: string },
 }
 
@@ -57,9 +56,6 @@ pub struct ExternalTest {
 }
 
 pub enum Command {
-    PrepareWorld {
-        output: string,
-    },
     Compile {
         subcommand: string,
         package_name: string,

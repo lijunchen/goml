@@ -24,6 +24,8 @@ use std::io;
 use std::path;
 use std::process;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
 const COMPILE_ERROR_PREFIX: string = "error[compile]: ";
 
@@ -906,7 +908,7 @@ fn diagnostic_source(source_path: string, fallback_path: string, fallback_source
     if source_path == fallback_path {
         fallback_source
     } else {
-        match fs::read_file(source_path) {
+        match fs::read_file_structured(source_path) {
             Ok(source) => source,
             Err(_) => "",
         }
@@ -1747,16 +1749,16 @@ fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> ()
 }
 
 fn write_stdout(data: bytes::Bytes) -> () {
-    match io::write_stdout(data) {
+    match io::write_stdout_structured(data) {
         Ok(()) => (),
-        Err(error) => fail(error),
+        Err(error) => fail(error.to_string()),
     }
 }
 
 fn bytes_to_string(data: bytes::Bytes) -> string {
-    match data.to_string() {
+    match data.to_string_utf8() {
         Ok(value) => value,
-        Err(error) => fail_string(error),
+        Err(error) => fail_string(error.to_string()),
     }
 }
 
@@ -1778,13 +1780,13 @@ fn trim_ascii(value: string) -> string {
 }
 
 fn temp_root() -> string {
-    match env::var("TMPDIR") {
-        Some(value) => if value == "" {
+    match env::var_structured("TMPDIR") {
+        Ok(value) => if value == "" {
             "/tmp"
         } else {
             value
         },
-        None => "/tmp",
+        Err(_) => "/tmp",
     }
 }
 
@@ -1792,7 +1794,7 @@ fn temp_go_path(source_path: string, source: string) -> string {
     let root = path::join(temp_root(), "gomlc-selfhost");
     match fs::create_dir_all(root) {
         Ok(()) => (),
-        Err(error) => fail(error),
+        Err(error) => fail(error.to_string()),
     };
     let prefix = Hash::hash(source_path + "\n" + source).to_string();
     let mut suffix = 0;
@@ -1826,9 +1828,9 @@ fn execute_with_go_run(directory: string, go_file: string) -> Result[process::Ou
     match process::Command::new("go").arg("run").arg(go_file).current_dir(directory).env(
         "TZ",
         "UTC",
-    ).env("GOWORK", "off").env("GO111MODULE", "off").output() {
+    ).env("GOWORK", "off").env("GO111MODULE", "off").output_structured() {
         Ok(output) => Result::Ok(output),
-        Err(error) => Result::Err("failed to execute go run: " + error),
+        Err(error) => Result::Err("failed to execute go run: " + error.to_string()),
     }
 }
 
@@ -1838,9 +1840,9 @@ fn execute_go_source(source_path: string, source: string) -> () {
         Some(value) => value,
         None => temp_root(),
     };
-    let result = match fs::write_file(go_file, source) {
+    let result = match fs::write_file_structured(go_file, source) {
         Ok(()) => execute_with_go_run(directory, go_file),
-        Err(error) => Result::Err(error),
+        Err(error) => Result::Err(error.to_string()),
     };
     cleanup_temp_directory(go_file);
     match result {

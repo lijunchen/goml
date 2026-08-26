@@ -195,15 +195,6 @@ impl Bytes {
         self.values
     }
 
-    pub fn to_string(self: Bytes) -> Result[string, string] {
-        let (valid, value) = string_from_utf8(self.values);
-        if valid {
-            Result::Ok(value)
-        } else {
-            Result::Err("invalid UTF-8")
-        }
-    }
-
     pub fn builder() -> Builder {
         Builder::new()
     }

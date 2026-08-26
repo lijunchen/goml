@@ -3,6 +3,8 @@ package fs;
 use module::bytes;
 use module::internal::host;
 use module::io;
+use module::utf8;
+use utf8::BytesUtf8;
 
 pub enum FileType {
     File,
@@ -128,15 +130,15 @@ pub fn read_bytes_structured(path: string) -> Result[bytes::Bytes, Error] {
 
 pub fn read_file_structured(path: string) -> Result[string, Error] {
     match read_bytes_structured(path) {
-        Ok(data) => match data.to_string() {
+        Ok(data) => match data.to_string_utf8() {
             Ok(value) => Result::Ok(value),
-            Err(message) => Result::Err(
+            Err(error) => Result::Err(
                 Error::new(
                     io::ErrorKind::InvalidData,
                     "read file",
                     Option::Some(path),
                     Option::None,
-                    message,
+                    error.to_string(),
                 ),
             ),
         },
@@ -298,59 +300,30 @@ pub fn read_dir_structured(path: string) -> Result[Vec[DirEntry], Error] {
     }
 }
 
-pub fn read_file(path: string) -> Result[string, string] {
-    match read_bytes(path) {
-        Ok(data) => data.to_string(),
-        Err(error) => Result::Err(error),
-    }
-}
-
-pub fn write_file(path: string, content: string) -> Result[(), string] {
-    write_bytes(path, bytes::Bytes::from_string(content))
-}
-
-pub fn read_bytes(path: string) -> Result[bytes::Bytes, string] {
-    let (ok, data, err) = host::read_bytes(path);
-    if ok {
-        Result::Ok(bytes::Bytes::from_vec(data))
-    } else {
-        Result::Err(err)
-    }
-}
-
-pub fn write_bytes(path: string, data: bytes::Bytes) -> Result[(), string] {
-    let (ok, err) = host::write_bytes(path, data.to_vec());
-    if ok {
-        Result::Ok(())
-    } else {
-        Result::Err(err)
-    }
-}
-
-pub fn create_dir_all(path: string) -> Result[(), string] {
+pub fn create_dir_all(path: string) -> Result[(), Error] {
     let (ok, err) = host::create_dir_all(path);
     if ok {
         Result::Ok(())
     } else {
-        Result::Err(err)
+        Result::Err(structured_error("create directories", path, 0, false, 0, err))
     }
 }
 
-pub fn remove_file(path: string) -> Result[(), string] {
+pub fn remove_file(path: string) -> Result[(), Error] {
     let (ok, err) = host::remove_file(path);
     if ok {
         Result::Ok(())
     } else {
-        Result::Err(err)
+        Result::Err(structured_error("remove file", path, 0, false, 0, err))
     }
 }
 
-pub fn remove_dir_all(path: string) -> Result[(), string] {
+pub fn remove_dir_all(path: string) -> Result[(), Error] {
     let (ok, err) = host::remove_dir_all(path);
     if ok {
         Result::Ok(())
     } else {
-        Result::Err(err)
+        Result::Err(structured_error("remove directory", path, 0, false, 0, err))
     }
 }
 
@@ -366,29 +339,29 @@ pub fn is_dir(path: string) -> bool {
     host::is_dir(path)
 }
 
-pub fn canonicalize(path: string) -> Result[string, string] {
+pub fn canonicalize(path: string) -> Result[string, Error] {
     let (ok, result, err) = host::canonicalize(path);
     if ok {
         Result::Ok(result)
     } else {
-        Result::Err(err)
+        Result::Err(structured_error("canonicalize", path, 0, false, 0, err))
     }
 }
 
-pub fn read_dir(path: string) -> Result[Vec[string], string] {
+pub fn read_dir(path: string) -> Result[Vec[string], Error] {
     let (ok, names, err) = host::read_dir(path);
     if ok {
         Result::Ok(names)
     } else {
-        Result::Err(err)
+        Result::Err(structured_error("read directory", path, 0, false, 0, err))
     }
 }
 
-pub fn sha256_file(path: string) -> Result[string, string] {
+pub fn sha256_file(path: string) -> Result[string, Error] {
     let (ok, result, err) = host::sha256_file(path);
     if ok {
         Result::Ok(result)
     } else {
-        Result::Err(err)
+        Result::Err(structured_error("hash file", path, 0, false, 0, err))
     }
 }

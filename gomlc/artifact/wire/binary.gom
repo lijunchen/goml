@@ -2,6 +2,8 @@ package wire;
 
 use std::bytes;
 use std::bytes::endian;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub struct ArtifactBinaryWriter {
     data: endian::Builder,
@@ -242,7 +244,7 @@ fn artifact_binary_read_raw_bytes(reader: ArtifactBinaryReader, length: isize) -
 
 pub fn artifact_binary_read_string(reader: ArtifactBinaryReader) -> Result[string, string] {
     match artifact_binary_read_bytes(reader) {
-        Ok(value) => match value.to_string() {
+        Ok(value) => match value.to_string_utf8() {
             Ok(value) => Result::Ok(value),
             Err(_) => Result::Err(artifact_binary_reader_error(reader, "invalid UTF-8 string")),
         },

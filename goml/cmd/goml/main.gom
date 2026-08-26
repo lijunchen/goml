@@ -557,9 +557,9 @@ fn run_toolchain_finalize(args: Vec[string]) -> Result[(), string] {
                 }
             } else {};
             let plan = project::toolchain_world_plan(context, temporary)?;
-            let jobs = match env::var("GOML_BUILD_JOBS") {
-                Some(value) => util::parse_positive_int(value)?,
-                None => 16,
+            let jobs = match env::var_structured("GOML_BUILD_JOBS") {
+                Ok(value) => util::parse_positive_int(value)?,
+                Err(_) => 16,
             };
             project::execute_plan(context, plan, false, jobs)?;
             match fs::replace(temporary, output) {

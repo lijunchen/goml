@@ -431,7 +431,7 @@ fn run_toolchain_build(args: Vec[string]) -> () {
     let request = match parse_toolchain_build_args(args) {
         Ok(value) => value,
         Err(error) => {
-            fail(COMPILE_ERROR_PREFIX + error);
+            fail(COMPILE_ERROR_PREFIX + error.to_string());
             return
         },
     };
@@ -517,7 +517,9 @@ fn toolchain_source_digest(paths: Vec[string]) -> Result[string, string] {
     for path in paths {
         builder.write_string(path);
         builder.write_char('\u0000');
-        builder.write_string(hash::sha256_hex(fs::read_file(path)?));
+        builder.write_string(
+            hash::sha256_hex(fs::read_file_structured(path).map_err(|error| error.to_string())?),
+        );
         builder.write_char('\n')
     }
     Result::Ok(hash::sha256_hex(builder.finish()))
@@ -547,9 +549,13 @@ fn read_toolchain_package(base: string) -> Result[ToolchainPackage, string] {
         base,
         || {
             let interface = decode_artifact_interface_bytes(
-                fs::read_bytes(interface_output_path(base))?,
+                fs::read_bytes_structured(interface_output_path(base)).map_err(
+                    |error| error.to_string(),
+                )?,
             )?;
-            let core = decode_artifact_core_bytes(fs::read_bytes(core_output_path(base))?)?;
+            let core = decode_artifact_core_bytes(
+                fs::read_bytes_structured(core_output_path(base)).map_err(|error| error.to_string())?,
+            )?;
             if interface.package_name != core.package_name
                 || interface.interface_hash != core.interface_hash
                 || !world_dependencies_equal(interface.deps, core.deps) {
@@ -571,7 +577,7 @@ fn run_pack_toolchain_world(args: Vec[string]) -> () {
     let request = match parse_toolchain_pack_args(args) {
         Ok(value) => value,
         Err(error) => {
-            fail(COMPILE_ERROR_PREFIX + error);
+            fail(COMPILE_ERROR_PREFIX + error.to_string());
             return
         },
     };
@@ -585,7 +591,7 @@ fn run_pack_toolchain_world(args: Vec[string]) -> () {
             },
         };
     }
-    let counter = match fs::read_file(request.counter_file) {
+    let counter = match fs::read_file_structured(request.counter_file) {
         Ok(value) => match parse_toolchain_counter(value) {
             Ok(value) => value,
             Err(error) => {
@@ -594,7 +600,7 @@ fn run_pack_toolchain_world(args: Vec[string]) -> () {
             },
         },
         Err(error) => {
-            fail(COMPILE_ERROR_PREFIX + error);
+            fail(COMPILE_ERROR_PREFIX + error.to_string());
             return
         },
     };

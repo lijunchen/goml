@@ -12,6 +12,8 @@ use std::fs;
 use std::path;
 use std::text;
 use std::unicode;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub struct LoadConfig {
     pub checker_config: checker::CheckConfig,
@@ -118,14 +120,14 @@ fn filename_selected(name: string, config: LoadConfig) -> bool {
 
 fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool {
     let mut go_build: Option[string] = Option::None;
-    let legacy: Vec[string] = Vec::new();
+    let plus_build_constraints: Vec[string] = Vec::new();
     for value in scanner::leading_comments(source) {
         if value.starts_with("//go:build") {
             let start = "//go:build".byte_len();
             go_build = Option::Some(value.byte_slice(start, value.byte_len()));
         } else if value.starts_with("// +build") {
             let start = "// +build".byte_len();
-            legacy.push(value.byte_slice(start, value.byte_len()));
+            plus_build_constraints.push(value.byte_slice(start, value.byte_len()));
         } else {}
     }
     match go_build {
@@ -138,8 +140,8 @@ fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool 
             config.tags,
         ),
         None => {
-            for value in legacy {
-                if !evaluate_legacy_constraint(
+            for value in plus_build_constraints {
+                if !evaluate_plus_build_constraint(
                     value,
                     config.goos,
                     config.goarch,
@@ -210,7 +212,9 @@ fn missing_import_message(config: LoadConfig, import_path: string) -> string {
     } else {
         config.source_roots[0]
     };
-    let gopath = env::var("GOPATH").unwrap_or(path::join(env::var("HOME").unwrap_or(""), "go"));
+    let gopath = env::var_structured("GOPATH").unwrap_or(
+        path::join(env::var_structured("HOME").unwrap_or(""), "go"),
+    );
     "can't find import: \"" + import_path + "\": cannot find package \"" + import_path
         + "\" in any of:\n\t"
         + path::join(goroot_source, import_path)
@@ -229,18 +233,18 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
     let directory = package_directory(config, import_path).ok_or(
         "package not found: " + import_path,
     )?;
-    let names = fs::read_dir(directory)?;
+    let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     collections::sort(names);
     let selected: Vec[checker::SourceFile] = Vec::new();
     for name in names {
         if filename_selected(name, config) {
             let file = path::join(directory, name);
-            let source = fs::read_bytes(file);
+            let source = fs::read_bytes_structured(file);
             match source {
                 Ok(source) => if source_constraint_selected(source, config) {
                     selected.push(checker::SourceFile { name: file, source })
                 } else {},
-                Err(message) => return Result::Err(message),
+                Err(message) => return Result::Err(message.to_string()),
             }
         } else {}
     }
@@ -634,7 +638,7 @@ pub fn check_sources_with_diagnostics(
     sources: Vec[checker::SourceFile],
 ) -> Result[checker::CheckResult, string] {
     for source in sources {
-        match source.source.to_string() {
+        match source.source.to_string_utf8() {
             Ok(value) => {
                 if value.contains("// -fakeImportC") {
                     config.checker_config.fake_import_c = true;

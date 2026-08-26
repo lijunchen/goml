@@ -9,6 +9,8 @@ use gomlgo::types as go_types;
 use std::collections;
 use std::num;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
 struct ConstantObjectValue {
     object: go_types::ObjectId,
@@ -984,7 +986,7 @@ fn effective_file_version(package_version: string, file_version: string) -> stri
     } else if !file_version.starts_with("go1.") {
         return package_version
     } else {};
-    match num::parse_int(file_version.byte_slice(4, file_version.byte_len())) {
+    match num::parse_int_structured(file_version.byte_slice(4, file_version.byte_len())) {
         Ok(value) => if value < 21 {
             "go1.21"
         } else {
@@ -1730,7 +1732,7 @@ fn type_syntax_contains_named_object(
     }
 }
 
-fn unresolved_legacy_alias(state: CheckState, object: go_types::ObjectId) -> bool {
+fn unresolved_disabled_alias(state: CheckState, object: go_types::ObjectId) -> bool {
     if state.config.enable_alias {
         return false
     } else {};
@@ -3714,7 +3716,7 @@ fn resolve_array_length(state: CheckState, scope: go_types::ScopeId, length_node
                     go_types::BasicKind::Int,
                     state.config.sizes,
                 ) {
-                    Some(_) => match num::parse_int(constant::integer_to_string(value)) {
+                    Some(_) => match num::parse_int_structured(constant::integer_to_string(value)) {
                         Ok(length) => Option::Some(length.to_i64()),
                         Err(_) => {
                             diagnostic(
@@ -3811,7 +3813,7 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
             state.world.invalid
         } else {
             match go_types::lookup(state.world, scope, name) {
-                Some(object_id) => if unresolved_legacy_alias(state, object_id) {
+                Some(object_id) => if unresolved_disabled_alias(state, object_id) {
                     record_use(state, node, object_id);
                     diagnostic(
                         state,
@@ -6806,7 +6808,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
     let source_texts: Vec[(string, string)] = Vec::new();
     for file in input.files {
         source_lengths.push((file.name, file.source.len()));
-        match file.source.to_string() {
+        match file.source.to_string_utf8() {
             Ok(text) => source_texts.push((file.name, text)),
             Err(_) => {},
         }

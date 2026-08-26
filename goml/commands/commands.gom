@@ -9,35 +9,35 @@ use std::path;
 fn create_directory(value: string) -> Result[(), string] {
     match fs::create_dir_all(value) {
         Ok(()) => Result::Ok(()),
-        Err(message) => Result::Err(message),
+        Err(message) => Result::Err(message.to_string()),
     }
 }
 
 fn write_file(value: string, content: string) -> Result[(), string] {
-    match fs::write_file(value, content) {
+    match fs::write_file_structured(value, content) {
         Ok(()) => Result::Ok(()),
-        Err(message) => Result::Err(message),
+        Err(message) => Result::Err(message.to_string()),
     }
 }
 
 pub fn home_directory() -> Result[string, string] {
-    match env::var("GOML_HOME") {
-        Some(value) => if value != "" {
+    match env::var_structured("GOML_HOME") {
+        Ok(value) => if value != "" {
             return Result::Ok(value)
         } else {},
-        None => (),
+        Err(_) => (),
     };
-    match env::var("HOME") {
-        Some(value) => if value != "" {
+    match env::var_structured("HOME") {
+        Ok(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
         } else {},
-        None => (),
+        Err(_) => (),
     };
-    match env::var("USERPROFILE") {
-        Some(value) => if value != "" {
+    match env::var_structured("USERPROFILE") {
+        Ok(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
         } else {},
-        None => (),
+        Err(_) => (),
     };
     Result::Err("failed to determine home directory")
 }
@@ -102,7 +102,7 @@ fn ensure_project_directory(value: string) -> Result[(), string] {
     if fs::is_file(value) {
         return Result::Err("target directory " + value + " already exists and is not empty")
     } else if fs::is_dir(value) {
-        let entries = fs::read_dir(value)?;
+        let entries = fs::read_dir(value).map_err(|error| error.to_string())?;
         if !entries.is_empty() {
             return Result::Err("target directory " + value + " already exists and is not empty")
         } else {

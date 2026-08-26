@@ -4,6 +4,8 @@ use module::version;
 use std::env;
 use std::io;
 use std::process;
+use std::utf8;
+use utf8::BytesUtf8;
 
 enum VersionFormat {
     Text,
@@ -121,9 +123,9 @@ fn trim_version_value(value: string) -> string {
 }
 
 fn git_version_value(args: Vec[string]) -> Option[string] {
-    match process::Command::new("git").args(args).output() {
+    match process::Command::new("git").args(args).output_structured() {
         Ok(output) => if output.status().success() {
-            match output.stdout().to_string() {
+            match output.stdout().to_string_utf8() {
                 Ok(value) => {
                     let value = trim_version_value(value);
                     if value == "" {
@@ -142,16 +144,16 @@ fn git_version_value(args: Vec[string]) -> Option[string] {
 }
 
 fn version_git_hash() -> Option[string] {
-    match env::var("GOML_GIT_HASH") {
-        Some(value) => Option::Some(value),
-        None => git_version_value(Vec::from_array(["rev-parse", "--short=9", "HEAD"])),
+    match env::var_structured("GOML_GIT_HASH") {
+        Ok(value) => Option::Some(value),
+        Err(_) => git_version_value(Vec::from_array(["rev-parse", "--short=9", "HEAD"])),
     }
 }
 
 fn version_git_date() -> Option[string] {
-    match env::var("GOML_GIT_DATE") {
-        Some(value) => Option::Some(value),
-        None => git_version_value(
+    match env::var_structured("GOML_GIT_DATE") {
+        Ok(value) => Option::Some(value),
+        Err(_) => git_version_value(
             Vec::from_array(["show", "-s", "--date=format:%Y-%m-%d", "--format=%cd", "HEAD"]),
         ),
     }
@@ -173,7 +175,7 @@ fn version_output_with(format: VersionFormat, hash: Option[string], date: Option
             _ => "gomlc " + version::current(),
         },
         Json => {
-            "{\"artifact_format\":18,\"compiler_abi\":5,\"driver_protocol\":1,\"installed_world\":1,\"world_artifact\":1,\"git_date\":"
+            "{\"artifact_format\":18,\"compiler_abi\":5,\"driver_protocol\":2,\"installed_world\":1,\"git_date\":"
                 + version_json_option(date)
                 + ",\"git_hash\":"
                 + version_json_option(hash)

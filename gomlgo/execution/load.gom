@@ -61,7 +61,12 @@ fn package_sources(package_value: GoListPackage) -> Result[Vec[checker::SourceFi
     let result: Vec[checker::SourceFile] = Vec::with_capacity(package_value.go_files.len());
     for name in package_value.go_files {
         let file = path::join(package_value.directory, name);
-        result.push(checker::SourceFile { name: file, source: fs::read_bytes(file)? })
+        result.push(
+            checker::SourceFile {
+                name: file,
+                source: fs::read_bytes_structured(file).map_err(|error| error.to_string())?,
+            },
+        )
     }
     if result.is_empty() {
         Result::Err("package " + package_value.import_path + " has no Go source files")
@@ -347,7 +352,7 @@ pub fn load_program(config: ExecutionConfig, directory: string) -> Result[
     ExecutionLoadResult,
     string,
 ] {
-    let directory = fs::canonicalize(directory)?;
+    let directory = fs::canonicalize(directory).map_err(|error| error.to_string())?;
     let toolchain = discover_toolchain(config.go_binary)?;
     let listed = list_go_packages(config, toolchain, directory)?;
     load_checked_packages(config, listed)
@@ -360,11 +365,11 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
     if files.len() != 1 {
         return Result::Err("single-file execution requires exactly one Go source file")
     } else {};
-    let first = fs::canonicalize(files[0])?;
+    let first = fs::canonicalize(files[0]).map_err(|error| error.to_string())?;
     let directory = path::parent(first).ok_or("Go source file has no parent directory")?;
     let names: Vec[string] = Vec::with_capacity(files.len());
     for file in files {
-        let canonical = fs::canonicalize(file)?;
+        let canonical = fs::canonicalize(file).map_err(|error| error.to_string())?;
         if path::parent(canonical).ok_or("Go source file has no parent directory")? != directory {
             return Result::Err("named Go source files must all be in one directory")
         } else {};
@@ -372,7 +377,12 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
     }
     let toolchain = discover_toolchain(config.go_binary)?;
     if native_api_file(names[0]) {
-        match native_api_listed(toolchain, directory, names[0], fs::read_bytes(first)?) {
+        match native_api_listed(
+            toolchain,
+            directory,
+            names[0],
+            fs::read_bytes_structured(first).map_err(|error| error.to_string())?,
+        ) {
             Some(value) => {
                 let loaded = load_checked_packages_with_order(
                     config,
