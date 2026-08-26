@@ -48,6 +48,21 @@ suite('GoML Syntax Tests', () => {
         assert.ok(regex('associated-type-bindings', 0).test('dyn Iterator[Item = int]'));
     });
 
+    test('Current declarations and builtin types are recognized', () => {
+        const declarations = regex('declarations', 2);
+        const keywords = regex('keywords', 4);
+        const primitives = regex('types', 0);
+        const builtins = regex('types', 1);
+        assert.ok(declarations.test('static cache: OnceCell[string];'));
+        assert.ok(keywords.test('static'));
+        assert.ok(primitives.test('byte'));
+        assert.ok(!primitives.test('unit'));
+        assert.ok(builtins.test('MutSlice[byte]'));
+        assert.ok(builtins.test('HashMapEntry[string, isize]'));
+        assert.ok(builtins.test('OnceCell[string]'));
+        assert.ok(builtins.test('FrozenVec[byte]'));
+    });
+
     test('Task keywords remain contextual', () => {
         const contextual = regex('keywords', 0);
         assert.ok(contextual.test('scope {'));
