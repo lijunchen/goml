@@ -39,4 +39,4 @@ goml remove owner::module
 
 `update`, `add`, and `remove` accept `--local-registry <path>`. Registry state is stored under `$GOML_HOME/cache/registry`, defaulting to `~/.goml/cache/registry`.
 
-Driver tests live beside the CLI in `cmd/goml/cli_migration_test.gom`. Their isolated workspaces are written below `_artifact/test-work`.
+Driver tests live beside the CLI in `cmd/goml/cli_test.gom`. Their isolated workspaces are written below `_artifact/test-work`.

@@ -69,9 +69,9 @@ true false bool isize i8 i16 i32 i64 usize u8 u16 u32 u64
 f32 f64 string char extern
 ```
 
-`()` is the only spelling of the empty-tuple type. The legacy `unit` keyword was removed in `0.1.42`; `unit` now lexes as an ordinary identifier.
+`()` is the only spelling of the empty-tuple type.
 
-`import`, `mod`, `crate`, `super` and `array` are not current keywords, but similar old declarations will receive migration diagnostics.`self` is a special abbreviation for the receiver parameter, and can also be used as a common receiver variable name; `Self` has special meaning in the type position of trait and impl.
+`self` is a special abbreviation for the receiver parameter, and can also be used as a common receiver variable name; `Self` has special meaning in the type position of trait and impl.
 
 The white space is not noticeable.Only line comments from `//` to the end of the line are supported, block comments are not supported.
 
@@ -375,8 +375,6 @@ All files in the same package can use private top-level items.The trait impl met
 | channel | `Channel[isize]`, `Sender[isize]`, `Receiver[isize]` | Bidirectional and directional Go channel backends |
 | trait object | `dyn Render`、`dyn Iterator[Item = isize]` | A single, non-generic dyn-safe trait; associated types must be bound |
 | Associative type projection | `I::Item`、`Self::Output`、`I::IntoIter::Item` | There must be corresponding trait constraints; projections may be chained |
-
-The `0.1.35` transition release accepted the former numeric type spellings and conversion method names. They are removed in `0.1.36`; migrate to the names in the table above and to the compact conversion methods before upgrading.
 
 Example of function type:
 
@@ -1845,9 +1843,9 @@ struct User {
 }
 ```
 
-`std::json` supports two deliberately separate modes. The value mode uses `json::Value`, `json::parse`, and `json::encode` for schema-free inspection and editing. JSON numbers remain their exact source text in `Value::Number`. In the typed mode, `json::to_string` and `from_string` write and consume JSON directly through the streaming serde traits; neither operation first builds a `json::Value` or `serde::Value` tree. `json::to_value` and `from_value` return `Result` and are the explicit bridge to the dynamic JSON model. Numeric range and destination-width checks happen while deserializing into the requested type. `json::try_to_string` and `try_stringify` return serialization errors; the older infallible `to_string` and `stringify` signatures remain compatibility wrappers and return an empty string on such an error.
+`std::json` supports two deliberately separate modes. The value mode uses `json::Value`, `json::parse`, and `json::encode` for schema-free inspection and editing. JSON numbers remain their exact source text in `Value::Number`. In the typed mode, `json::try_to_string` and `from_string` write and consume JSON directly through the streaming serde traits; neither operation first builds a `json::Value` or `serde::Value` tree. `json::to_value` and `from_value` return `Result` and are the explicit bridge to the dynamic JSON model. Numeric range and destination-width checks happen while deserializing into the requested type.
 
-`json` publicly re-exports the shared `Serialize` and `Deserialize` traits and derive handlers, so either `use serde::Serialize` or `use json::Serialize` selects the same implementation identity. The JSON serializer emits struct fields in source order. Direct maps use JSON objects and therefore require keys whose direct representation is a string or char; `try_to_string` returns a recoverable error for other key types. The deserializer accepts any field order, recursively skips unknown values, rejects duplicate and missing fields, and rejects trailing input. Typed errors retain the byte offset and nested struct, sequence, map, or enum path. JSON uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object. `json::stringify` remains an alias of `json::to_string`.
+`json` publicly re-exports the shared `Serialize` and `Deserialize` traits and derive handlers, so either `use serde::Serialize` or `use json::Serialize` selects the same implementation identity. The JSON serializer emits struct fields in source order. Direct maps use JSON objects and therefore require keys whose direct representation is a string or char; `try_to_string` returns a recoverable error for other key types. The deserializer accepts any field order, recursively skips unknown values, rejects duplicate and missing fields, and rejects trailing input. Typed errors retain the byte offset and nested struct, sequence, map, or enum path. JSON uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object.
 
 ```goml
 use std::json;
@@ -1860,8 +1858,8 @@ struct User {
     active: bool,
 }
 
-fn encode_user(value: User) -> string {
-    json::to_string(value)
+fn encode_user(value: User) -> Result[string, string] {
+    json::try_to_string(value)
 }
 
 fn decode_user(input: string) -> Result[User, string] {
@@ -2320,8 +2318,6 @@ let first = values.get(0);
 
 `Vec::from_array([values...])` creates a vector from a fixed array. Array items are evaluated once from left to right. The vector receives new outer backing storage, so replacing an array element later does not change the vector, while referenced elements remain shared because the copy is shallow. Use `Vec::new()` for an empty vector. Direct nonempty array calls coallocate the vector header and backing array. Passing an array variable retains the same shallow-copy semantics. The associated function is an ordinary first-class value, for example `let make: ([i32; 3]) -> Vec[i32] = Vec::from_array;`.
 
-GoML 0.1.27 formatted the former `Vec::[...]` spelling to `Vec::from_array([...])`; 0.1.28 removed the former syntax.
-
 Commonly used methods:
 
 - `Vec::new() -> Vec[T]`
@@ -2409,8 +2405,6 @@ let value: Option[i32] = counts.get("a");
 ```
 
 `HashMap::from_array([(key, value), ...])` creates a map from an entries array. It first evaluates the complete array from left to right, then inserts its pairs in array order. Later duplicate keys overwrite earlier entries. Use `HashMap::new()` for an empty map. Direct array-literal calls preallocate their build storage from the entry count. The associated function is an ordinary first-class value when its array length is fixed by a function type.
-
-GoML 0.1.27 formatted the former map-literal spelling to `HashMap::from_array([(key, value), ...])`; 0.1.28 removed the former syntax.
 
 Commonly used methods: `new`, `from_array`, `get`, `set`, `insert`, `get_or_insert_with`, `update`, `remove`, `remove_value`, `entry`, `len`, `contains`, and `entries`. `insert` returns the previous value, `update` applies a `(V) -> V` closure only when the key exists, and `remove_value` returns the removed value. `entries()` returns a snapshot `Vec[(K, V)]`.
 
@@ -2537,13 +2531,13 @@ Current public entrances include:
 - `crypto::hash` one-shot SHA-256 and `crypto::rand` operating-system random bytes
 - `error::Error`, `ErrorKind`, `Details`, and stable error-kind code conversion
 - `env::args`, current-directory and executable queries, and environment-variable reads
-- `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
+- `fs::read_file_structured`, `write_file_structured`, structured byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
-- `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `try_to_string`, `try_stringify`, `to_string`, `from_string`, `field`, and typed `as_*` accessors
+- `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `try_to_string`, `from_string`, `field`, and typed `as_*` accessors
 - `math` f32/f64 elementary functions, IEEE 754 classification, and the `E`, `PI`, `TAU`, `SQRT_2`, `LN_2`, and `LN_10` constants
-- `num` string and structured parsing plus checked and saturating `i64` arithmetic
-- `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
+- `num` structured parsing plus checked and saturating `i64` arithmetic
+- `path::join`, `clean`, `is_absolute`, component inspection, and `absolute_structured`
 - `process::Command`, structured whole-process execution, `ExitStatus`, `Output`, `exit`, and `look_path`
 - `rand::ALGORITHM`, `next_u64`, deterministic byte generation, integer ranges, and shuffle with an explicit seed
 - `serde::Value`, `Serializer`, `Deserializer`, `Serialize`, `Deserialize`, `value_serializer`, `value_deserializer`, `to_value`, and `from_value`
@@ -2560,7 +2554,7 @@ Current public entrances include:
 
 `std::error` provides the common protocol used by structured standard-library errors. `Error` is a marker trait requiring `Debug` and `ToString`. `ErrorKind` defines stable, message-independent categories including missing files, permission failures, invalid input or data, timeouts, interruption, short I/O, broken pipes, unsupported operations, and `Other`.
 
-`Error` has a blanket implementation for every value implementing `Debug` and `ToString`. This lets domain errors participate in the common protocol without making their older standard-library packages depend on the newly introduced `std::error` package during the bootstrap transition.
+`Error` has a blanket implementation for every value implementing `Debug` and `ToString`, so domain errors participate in the common protocol directly.
 
 `kind_code` and `kind_from_code` convert between `ErrorKind` and the stable integer representation used by runtime and artifact boundaries. Unknown integer values map to `Other`. `Details` stores the stable kind code, operation, optional context, optional raw operating-system code, and a display-only message. Programs may branch on the kind code or `ErrorKind`, but must not parse the host message.
 
@@ -2583,13 +2577,13 @@ fn example() -> string {
 }
 ```
 
-The existing `io`, `fs`, `path`, `env`, `process`, and `num` string-error APIs remain unchanged during the first compatibility phase. Domain-specific error types and structured entry points are introduced only after a released stage0 can load `std::error`.
+`io`, `fs`, `path`, `env`, `process`, and `num` expose domain-specific error types. Callers can branch on stable error kinds and use `to_string()` only when a display message is needed.
 
 ### UTF-8 validation and conversion
 
 `std::utf8` validates byte slices and converts complete byte vectors to strings without admitting invalid UTF-8. `Utf8Error::valid_up_to` is the length of the valid prefix. `error_length` is the length of the invalid sequence when known and is `None` for an incomplete sequence at the end of the input. `encode` returns the UTF-8 bytes of a string, and `encoded_len` returns the byte length of one Unicode scalar value.
 
-Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Error`. The original `Bytes::to_string` string-error method remains available for bootstrap and source compatibility.
+Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Error`.
 
 `decode_slice` accepts a read-only byte view. `encode_into` writes into a `MutSlice[byte]` at a checked offset and reports `bytes::BoundsError` without a partial write; `encode_to` appends to the lightweight `bytes::Builder`.
 
@@ -2619,17 +2613,17 @@ Parameterized tests use one or more `#[test_case(...)]` attributes on a top-leve
 
 `Duration` provides checked and saturating scaled constructors, addition, subtraction, and multiplication. Checked operations return `None` on overflow, underflow, or a negative input. Saturating operations clamp to zero or the largest signed 64-bit nanosecond value. `Duration`, `Instant`, and `SystemTime` expose `compare`; `Instant::checked_duration_since` returns `None` when the receiver precedes the supplied instant.
 
-`fs::read_file_structured`, `read_bytes_structured`, `write_file_structured`, and `write_bytes_structured` are the additive structured-error forms of whole-file I/O. They return `fs::Error` with a stable `io::ErrorKind`, operation, path, optional raw operating-system code, and display message. The original string-error functions remain available during the compatibility period.
+`fs::read_file_structured`, `read_bytes_structured`, `write_file_structured`, and `write_bytes_structured` perform whole-file I/O. They return `fs::Error` with a stable `io::ErrorKind`, operation, path, optional raw operating-system code, and display message. Directory creation and removal, canonicalization, directory listing, and file hashing use the same error type.
 
 `fs::create_dir`, `rename`, `copy`, `hard_link`, and `symbolic_link` are eager operations returning `fs::Error`. `copy` reads and writes the complete file and currently creates the destination with portable `0644` permissions; it does not preserve source metadata.
 
 `fs::metadata` and `symlink_metadata` return value-only metadata including file type, length, portable permission bits, and modification time. `read_dir_structured` eagerly snapshots directory entries. `atomic_write` writes, synchronizes, closes, and atomically renames a same-directory temporary file before returning; temporary cleanup stays inside the runtime call. `replace` exposes the host atomic rename operation under replacement semantics.
 
-`io::read_stdin_structured`, `read_stdin_exact_structured`, `write_stdout_structured`, and `write_stderr_structured` provide the same additive migration for standard streams. `read_stdin_to_string` validates the complete input as UTF-8 and reports `InvalidData` on failure. A negative exact-read length reports `InvalidInput` before accessing stdin.
+`io::read_stdin_structured`, `read_stdin_exact_structured`, `write_stdout_structured`, and `write_stderr_structured` provide structured errors for standard streams. `read_stdin_to_string` validates the complete input as UTF-8 and reports `InvalidData` on failure. A negative exact-read length reports `InvalidInput` before accessing stdin.
 
-`num::parse_int_structured`, radix and unsigned variants, and the structured float parsers return domain parse errors without changing the original parsing entry points. The `checked_*_int64` operations return `None` on overflow; the corresponding `saturating_*_int64` operations clamp to the signed 64-bit bounds.
+`num::parse_int_structured`, radix and unsigned variants, and the structured float parsers return domain parse errors. The `checked_*_int64` operations return `None` on overflow; the corresponding `saturating_*_int64` operations clamp to the signed 64-bit bounds.
 
-`env::current_dir_structured`, `current_exe_structured`, and `var_structured`, `path::absolute_structured`, and `process` structured execution methods are additive whole-operation forms. Process timeout methods take `time::Duration`, terminate and wait through the existing command runtime, and return `TimedOut` instead of a separate boolean.
+`env::current_dir_structured`, `current_exe_structured`, and `var_structured`, `path::absolute_structured`, and the `process` structured execution methods expose whole-operation errors. Process timeout methods take `time::Duration`, terminate and wait through the command runtime, and return `TimedOut` through `process::Error`.
 
 Paths remain UTF-8 `string` values. `path::separator` reports the host separator, `components` recognizes both slash forms, `relative` uses host path rules, and `windows_prefix` recognizes drive and UNC prefixes independently of the host operating system. Non-UTF-8 operating-system names cannot be represented and therefore cannot appear in these APIs.
 
@@ -2782,7 +2776,7 @@ Text search indices are UTF-8 byte offsets, matching the indices accepted by the
 
 Numeric parsing returns `Result[_, string]` and is implemented by the GoML standard library. Integer radix parsing accepts radix `0` or `2..36`; radix `0` recognizes `0b`, `0o`, and `0x` prefixes and permits Go-style digit separators. Invalid radices, malformed input, and overflow return `Result::Err`. Floating-point parsing supports decimal and hexadecimal IEEE 754 input, signed exponents, digit separators, `inf`, `infinity`, and `NaN`, and rounds directly to the requested `f32` or `f64` width.
 
-Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `sort_by_ordering` and `stable_sort_by_ordering` use `cmp::Ordering`. The older `sort_by` and `stable_sort_by` variants accept negative/zero/positive integer comparators. All current sorting variants are stable. `binary_search` and its comparator-based variants expect the vector to already be ordered and return the first matching index.
+Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `sort_by_ordering` and `stable_sort_by_ordering` use `cmp::Ordering`; `sort_by` and `stable_sort_by` accept negative/zero/positive integer comparators. All sorting variants are stable. `binary_search` and its comparator-based variants expect the vector to already be ordered and return the first matching index.
 
 `Duration` stores a non-negative number of nanoseconds and offers constructors and whole-unit accessors for nanoseconds, microseconds, milliseconds, and seconds. Subtraction saturates at zero. `Instant` is monotonic and is suitable for elapsed-time measurement. `SystemTime` exposes Unix nanosecond, millisecond, and second timestamps. `time::sleep` blocks the current goroutine for a `Duration`.
 

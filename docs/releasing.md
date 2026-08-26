@@ -64,7 +64,7 @@ goml-X.Y.Z-linux-amd64/
         └── ...
 ```
 
-The compiler resolves `lib` relative to its executable. The archive must preserve this layout exactly. `builtin`, `prelude`, and `std` are separate GoML projects; legacy flat `builtin_*.gom` files must not be packaged.
+The compiler resolves `lib` relative to its executable. The archive must preserve this layout exactly. `builtin`, `prelude`, and `std` are separate GoML projects; flat `builtin_*.gom` files must not be packaged.
 
 Release archives contain the toolchain project sources and manifests, but do not contain `lib/compiler/compiler-world-v2.gaf`. After extracting an archive, installation must finalize it once with the binaries from that same archive:
 
