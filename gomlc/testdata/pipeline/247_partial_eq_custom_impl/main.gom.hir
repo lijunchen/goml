@@ -1,20 +1,20 @@
 package main
 file main.gom
   #[derive(PartialEq, Eq, Hash)]
-  struct LegacyKey {
+  struct DerivedKey {
       value: isize,
   }
 
-  impl PartialEq for LegacyKey {
-    fn eq(local/1/0: LegacyKey, local/1/1: LegacyKey) -> bool {
+  impl PartialEq for DerivedKey {
+    fn eq(local/1/0: DerivedKey, local/1/1: DerivedKey) -> bool {
         true && PartialEq::eq(self/0.value, other/1.value)
     }
   }
 
-  impl Eq for LegacyKey where isize: Eq {}
+  impl Eq for DerivedKey where isize: Eq {}
 
-  impl Hash for LegacyKey {
-    fn hash(local/1/2: LegacyKey) -> u64 {
+  impl Hash for DerivedKey {
+    fn hash(local/1/2: DerivedKey) -> u64 {
         {
             let local/1/3 = 0.to_u64() + 14695981039346656037;
             let local/1/4 = h/3 * 0.to_u64() + 1099511628211 + Hash::hash(self/2.value);
@@ -23,20 +23,20 @@ file main.gom
     }
   }
 
-  struct ModernKey {
+  struct CustomKey {
       value: isize,
   }
 
-  impl PartialEq for ModernKey {
-    fn eq(local/1/5: ModernKey, local/1/6: ModernKey) -> bool {
+  impl PartialEq for CustomKey {
+    fn eq(local/1/5: CustomKey, local/1/6: CustomKey) -> bool {
         self/5.value % 10 == other/6.value % 10
     }
   }
 
-  impl Eq for ModernKey {}
+  impl Eq for CustomKey {}
 
-  impl Hash for ModernKey {
-    fn hash(local/1/7: ModernKey) -> u64 {
+  impl Hash for CustomKey {
+    fn hash(local/1/7: CustomKey) -> u64 {
         self/7.value % 10.to_u64()
     }
   }
@@ -70,18 +70,18 @@ file main.gom
   }
 
   fn main() -> () {
-      let local/1/14 = LegacyKey { value: 7 };
-      let local/1/15 = ModernKey { value: 9 };
-      println(def/1/11(legacy/14, LegacyKey { value: 7 }));
-      println(PartialEq::eq(legacy/14, LegacyKey { value: 8 }));
-      println(def/1/11(modern/15, ModernKey { value: 19 }));
-      println(modern/15 != ModernKey { value: 20 }.to_string());
-      let local/1/16: HashMap[LegacyKey, string] = HashMap::new();
-      legacy_map/16.set(legacy/14, "legacy");
-      println(legacy_map/16.get(LegacyKey { value: 7 }).unwrap_or("missing"));
-      let local/1/17: HashMap[ModernKey, string] = HashMap::new();
-      modern_map/17.set(modern/15, "modern");
-      println(modern_map/17.get(ModernKey { value: 19 }).unwrap_or("missing"));
+      let local/1/14 = DerivedKey { value: 7 };
+      let local/1/15 = CustomKey { value: 9 };
+      println(def/1/11(derived/14, DerivedKey { value: 7 }));
+      println(PartialEq::eq(derived/14, DerivedKey { value: 8 }));
+      println(def/1/11(custom/15, CustomKey { value: 19 }));
+      println(custom/15 != CustomKey { value: 20 }.to_string());
+      let local/1/16: HashMap[DerivedKey, string] = HashMap::new();
+      derived_map/16.set(derived/14, "derived");
+      println(derived_map/16.get(DerivedKey { value: 7 }).unwrap_or("missing"));
+      let local/1/17: HashMap[CustomKey, string] = HashMap::new();
+      custom_map/17.set(custom/15, "custom");
+      println(custom_map/17.get(CustomKey { value: 19 }).unwrap_or("missing"));
       let local/1/18 = Rank { value: 2 };
       let local/1/19 = Rank { value: 1 };
       println(high/18 < low/19.to_string());

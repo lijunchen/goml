@@ -1,38 +1,38 @@
-impl PartialEq for LegacyKey {
-  fn eq(self/0: LegacyKey, other/1: LegacyKey) -> bool {
+impl PartialEq for DerivedKey {
+  fn eq(self/0: DerivedKey, other/1: DerivedKey) -> bool {
       true &&
         (PartialEq::eq : (isize, isize) -> bool)(
-          (self/0 : LegacyKey).value,
-          (other/1 : LegacyKey).value
+          (self/0 : DerivedKey).value,
+          (other/1 : DerivedKey).value
         )
   }
 }
 
-impl Eq for LegacyKey where isize: Eq, isize: PartialEq {}
+impl Eq for DerivedKey where isize: Eq, isize: PartialEq {}
 
-impl Hash for LegacyKey {
-  fn hash(self/2: LegacyKey) -> u64 {
+impl Hash for DerivedKey {
+  fn hash(self/2: DerivedKey) -> u64 {
       {
           let h/3: u64 = (isize::to_u64 : (isize) -> u64)(0) + 14695981039346656037;
           let h/4: u64 =
             (h/3 : u64) * (isize::to_u64 : (isize) -> u64)(0) + 1099511628211 +
-              (Hash::hash : (isize) -> u64)((self/2 : LegacyKey).value);
+              (Hash::hash : (isize) -> u64)((self/2 : DerivedKey).value);
           (h/4 : u64)
       }
   }
 }
 
-impl PartialEq for ModernKey {
-  fn eq(self/5: ModernKey, other/6: ModernKey) -> bool {
-      (self/5 : ModernKey).value % 10 == (other/6 : ModernKey).value % 10
+impl PartialEq for CustomKey {
+  fn eq(self/5: CustomKey, other/6: CustomKey) -> bool {
+      (self/5 : CustomKey).value % 10 == (other/6 : CustomKey).value % 10
   }
 }
 
-impl Eq for ModernKey {}
+impl Eq for CustomKey {}
 
-impl Hash for ModernKey {
-  fn hash(self/7: ModernKey) -> u64 {
-      (isize::to_u64 : (isize) -> u64)((self/7 : ModernKey).value % 10)
+impl Hash for CustomKey {
+  fn hash(self/7: CustomKey) -> u64 {
+      (isize::to_u64 : (isize) -> u64)((self/7 : CustomKey).value % 10)
   }
 }
 
@@ -93,50 +93,50 @@ fn equal[T](left/12: T, right/13: T) -> bool where T: Eq, T: PartialEq {
 }
 
 fn main() -> () {
-    let legacy/14: LegacyKey = LegacyKey { value: 7 };
-    let modern/15: ModernKey = ModernKey { value: 9 };
+    let derived/14: DerivedKey = DerivedKey { value: 7 };
+    let custom/15: CustomKey = CustomKey { value: 9 };
     (println : (bool) -> ())(
-      (equal : (LegacyKey, LegacyKey) -> bool)((legacy/14 : LegacyKey), LegacyKey { value: 7 })
+      (equal : (DerivedKey, DerivedKey) -> bool)((derived/14 : DerivedKey), DerivedKey { value: 7 })
     );
     (println : (bool) -> ())(
-      (PartialEq::eq : (LegacyKey, LegacyKey) -> bool)(
-        (legacy/14 : LegacyKey),
-        LegacyKey { value: 8 }
+      (PartialEq::eq : (DerivedKey, DerivedKey) -> bool)(
+        (derived/14 : DerivedKey),
+        DerivedKey { value: 8 }
       )
     );
     (println : (bool) -> ())(
-      (equal : (ModernKey, ModernKey) -> bool)((modern/15 : ModernKey), ModernKey { value: 19 })
+      (equal : (CustomKey, CustomKey) -> bool)((custom/15 : CustomKey), CustomKey { value: 19 })
     );
     (println : (string) -> ())(
-      (ToString::to_string : (bool) -> string)((modern/15 : ModernKey) != ModernKey { value: 20 })
+      (ToString::to_string : (bool) -> string)((custom/15 : CustomKey) != CustomKey { value: 20 })
     );
-    let legacy_map/16: HashMap[LegacyKey, string] =
-      (HashMap[LegacyKey, string]::new : () -> HashMap[LegacyKey, string])();
-    (HashMap[LegacyKey, string]::set : (HashMap[LegacyKey, string], LegacyKey, string) -> ())(
-      (legacy_map/16 : HashMap[LegacyKey, string]),
-      (legacy/14 : LegacyKey),
-      "legacy"
+    let derived_map/16: HashMap[DerivedKey, string] =
+      (HashMap[DerivedKey, string]::new : () -> HashMap[DerivedKey, string])();
+    (HashMap[DerivedKey, string]::set : (HashMap[DerivedKey, string], DerivedKey, string) -> ())(
+      (derived_map/16 : HashMap[DerivedKey, string]),
+      (derived/14 : DerivedKey),
+      "derived"
     );
     (println : (string) -> ())(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
-        (HashMap[LegacyKey, string]::get : (HashMap[LegacyKey, string], LegacyKey) -> Option[
+        (HashMap[DerivedKey, string]::get : (HashMap[DerivedKey, string], DerivedKey) -> Option[
           string
-        ])((legacy_map/16 : HashMap[LegacyKey, string]), LegacyKey { value: 7 }),
+        ])((derived_map/16 : HashMap[DerivedKey, string]), DerivedKey { value: 7 }),
         "missing"
       )
     );
-    let modern_map/17: HashMap[ModernKey, string] =
-      (HashMap[ModernKey, string]::new : () -> HashMap[ModernKey, string])();
-    (HashMap[ModernKey, string]::set : (HashMap[ModernKey, string], ModernKey, string) -> ())(
-      (modern_map/17 : HashMap[ModernKey, string]),
-      (modern/15 : ModernKey),
-      "modern"
+    let custom_map/17: HashMap[CustomKey, string] =
+      (HashMap[CustomKey, string]::new : () -> HashMap[CustomKey, string])();
+    (HashMap[CustomKey, string]::set : (HashMap[CustomKey, string], CustomKey, string) -> ())(
+      (custom_map/17 : HashMap[CustomKey, string]),
+      (custom/15 : CustomKey),
+      "custom"
     );
     (println : (string) -> ())(
       (Option[string]::unwrap_or : (Option[string], string) -> string)(
-        (HashMap[ModernKey, string]::get : (HashMap[ModernKey, string], ModernKey) -> Option[
+        (HashMap[CustomKey, string]::get : (HashMap[CustomKey, string], CustomKey) -> Option[
           string
-        ])((modern_map/17 : HashMap[ModernKey, string]), ModernKey { value: 19 }),
+        ])((custom_map/17 : HashMap[CustomKey, string]), CustomKey { value: 19 }),
         "missing"
       )
     );

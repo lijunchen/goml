@@ -215,6 +215,11 @@ type _goml_m_std_p_bytes_p_Bytes struct {
     values *_goml_vec_uint8
 }
 
+type _goml_m_std_p_utf8_p_Utf8Error struct {
+    valid_up_to_value int
+    error_length_value Option__isize
+}
+
 type _goml_m_std_p_io_p_ErrorDetails struct {
     kind_value _goml_m_std_p_io_p_ErrorKind
     operation_value string
@@ -281,20 +286,32 @@ type _goml_m_Option____MutSlice_l_u8_r_ struct {
     _v1_0 []uint8
 }
 
-type Result__string__string struct {
+type _goml_m_Result____string____std_p_utf8_p_Utf8Error struct {
     _tag int32
     _v0_0 string
-    _v1_0 string
-}
-
-type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
 }
 
 type Option__isize struct {
     _tag int32
     _v1_0 int
+}
+
+type _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+}
+
+type _goml_m_Result____isize____std_p_bytes_p_BoundsError struct {
+    _tag int32
+    _v0_0 int
+    _v1_0 _goml_m_std_p_bytes_p_BoundsError
+}
+
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
@@ -344,18 +361,6 @@ type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
 }
 
 func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
-
-type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
-    _tag int32
-    _v0_0 _goml_m_std_p_bytes_p_Bytes
-    _v1_0 string
-}
-
-type _goml_m_Result_____o__q_____string struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 string
-}
 
 type _goml_m_Option_____o_isize_c_char_q_ struct {
     _tag int32

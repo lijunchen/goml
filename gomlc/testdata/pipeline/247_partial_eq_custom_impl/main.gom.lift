@@ -724,27 +724,27 @@ fn trait_impl#std::cmp::PartialOrd#f64#ge(default_arg0: f64, default_arg1: f64) 
   std::cmp::trait_default#PartialOrd#ge__Self_f0(default_arg0, default_arg1)
 }
 
-fn trait_impl#PartialEq#LegacyKey#eq(self/0: LegacyKey, other/0: LegacyKey) -> bool {
+fn trait_impl#PartialEq#DerivedKey#eq(self/0: DerivedKey, other/0: DerivedKey) -> bool {
   if true {
-      trait_impl#PartialEq#isize#eq(LegacyKey.value(self/0), LegacyKey.value(other/0))
+      trait_impl#PartialEq#isize#eq(DerivedKey.value(self/0), DerivedKey.value(other/0))
   } else {
       false
   }
 }
 
-fn trait_impl#Hash#LegacyKey#hash(self/0: LegacyKey) -> u64 {
+fn trait_impl#Hash#DerivedKey#hash(self/0: DerivedKey) -> u64 {
   let h/0 = ((0 as u64) + 14695981039346656037) in
   let h/1 =
-    ((h/0 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#isize#hash(LegacyKey.value(self/0))) in
+    ((h/0 * ((0 as u64) + 1099511628211)) + trait_impl#Hash#isize#hash(DerivedKey.value(self/0))) in
   h/1
 }
 
-fn trait_impl#PartialEq#ModernKey#eq(self/0: ModernKey, other/0: ModernKey) -> bool {
-  ((ModernKey.value(self/0) % 10) == (ModernKey.value(other/0) % 10))
+fn trait_impl#PartialEq#CustomKey#eq(self/0: CustomKey, other/0: CustomKey) -> bool {
+  ((CustomKey.value(self/0) % 10) == (CustomKey.value(other/0) % 10))
 }
 
-fn trait_impl#Hash#ModernKey#hash(self/0: ModernKey) -> u64 {
-  ((ModernKey.value(self/0) % 10) as u64)
+fn trait_impl#Hash#CustomKey#hash(self/0: CustomKey) -> u64 {
+  ((CustomKey.value(self/0) % 10) as u64)
 }
 
 fn trait_impl#PartialEq#Rank#eq(self/0: Rank, other/0: Rank) -> bool {
@@ -785,40 +785,44 @@ fn trait_impl#std::cmp::PartialOrd#Rank#ge(default_arg0: Rank, default_arg1: Ran
 }
 
 fn main() -> () {
-  let legacy/0 = LegacyKey { value: 7 } in
-  let modern/0 = ModernKey { value: 9 } in
-  let _wild0 = println__T_bool(equal__T_LegacyKey(legacy/0, LegacyKey { value: 7 })) in
+  let derived/0 = DerivedKey { value: 7 } in
+  let custom/0 = CustomKey { value: 9 } in
+  let _wild0 = println__T_bool(equal__T_DerivedKey(derived/0, DerivedKey { value: 7 })) in
   let _wild1 =
-    println__T_bool(trait_impl#PartialEq#LegacyKey#eq(legacy/0, LegacyKey { value: 8 })) in
-  let _wild2 = println__T_bool(equal__T_ModernKey(modern/0, ModernKey { value: 19 })) in
+    println__T_bool(trait_impl#PartialEq#DerivedKey#eq(derived/0, DerivedKey { value: 8 })) in
+  let _wild2 = println__T_bool(equal__T_CustomKey(custom/0, CustomKey { value: 19 })) in
   let _wild3 =
     println__T_string(
       trait_impl#ToString#bool#to_string(
-        (!trait_impl#PartialEq#ModernKey#eq(modern/0, ModernKey { value: 20 }))
+        (!trait_impl#PartialEq#CustomKey#eq(custom/0, CustomKey { value: 20 }))
       )
     ) in
-  let legacy_map/0 = inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() in
+  let derived_map/0 = inherent#HashMap#HashMap[K,V]#new__K_DerivedKey__V_string() in
   let _wild4 =
-    inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(legacy_map/0, legacy/0, "legacy") in
+    inherent#HashMap#HashMap[K,V]#set__K_DerivedKey__V_string(
+      derived_map/0,
+      derived/0,
+      "derived"
+    ) in
   let _wild5 =
     println__T_string(
       inherent#Option#Option[T]#unwrap_or__T_string(
-        inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
-          legacy_map/0,
-          LegacyKey { value: 7 }
+        inherent#HashMap#HashMap[K,V]#get__K_DerivedKey__V_string(
+          derived_map/0,
+          DerivedKey { value: 7 }
         ),
         "missing"
       )
     ) in
-  let modern_map/0 = inherent#HashMap#HashMap[K,V]#new__K_ModernKey__V_string() in
+  let custom_map/0 = inherent#HashMap#HashMap[K,V]#new__K_CustomKey__V_string() in
   let _wild6 =
-    inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(modern_map/0, modern/0, "modern") in
+    inherent#HashMap#HashMap[K,V]#set__K_CustomKey__V_string(custom_map/0, custom/0, "custom") in
   let _wild7 =
     println__T_string(
       inherent#Option#Option[T]#unwrap_or__T_string(
-        inherent#HashMap#HashMap[K,V]#get__K_ModernKey__V_string(
-          modern_map/0,
-          ModernKey { value: 19 }
+        inherent#HashMap#HashMap[K,V]#get__K_CustomKey__V_string(
+          custom_map/0,
+          CustomKey { value: 19 }
         ),
         "missing"
       )
@@ -1903,12 +1907,12 @@ fn println__T_bool(value/0: bool) -> () {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/0))
 }
 
-fn equal__T_LegacyKey(left/0: LegacyKey, right/0: LegacyKey) -> bool {
-  trait_impl#PartialEq#LegacyKey#eq(left/0, right/0)
+fn equal__T_DerivedKey(left/0: DerivedKey, right/0: DerivedKey) -> bool {
+  trait_impl#PartialEq#DerivedKey#eq(left/0, right/0)
 }
 
-fn equal__T_ModernKey(left/0: ModernKey, right/0: ModernKey) -> bool {
-  trait_impl#PartialEq#ModernKey#eq(left/0, right/0)
+fn equal__T_CustomKey(left/0: CustomKey, right/0: CustomKey) -> bool {
+  trait_impl#PartialEq#CustomKey#eq(left/0, right/0)
 }
 
 fn println__T_string(value/0: string) -> () {
@@ -1919,21 +1923,21 @@ fn trait_impl#ToString#bool#to_string(self/0: bool) -> string {
   @runtime(core.bool_to_string)(self/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() -> HashMap[LegacyKey, string] {
+fn inherent#HashMap#HashMap[K,V]#new__K_DerivedKey__V_string() -> HashMap[DerivedKey, string] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(
-  self/0: HashMap[LegacyKey, string],
-  key/0: LegacyKey,
+fn inherent#HashMap#HashMap[K,V]#set__K_DerivedKey__V_string(
+  self/0: HashMap[DerivedKey, string],
+  key/0: DerivedKey,
   value/0: string
 ) -> () {
   @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
-  self/0: HashMap[LegacyKey, string],
-  key/0: LegacyKey
+fn inherent#HashMap#HashMap[K,V]#get__K_DerivedKey__V_string(
+  self/0: HashMap[DerivedKey, string],
+  key/0: DerivedKey
 ) -> Option__string {
   @intrinsic(hashmap.get)(self/0, key/0)
 }
@@ -1954,21 +1958,21 @@ fn inherent#Option#Option[T]#unwrap_or__T_string(
   }
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_ModernKey__V_string() -> HashMap[ModernKey, string] {
+fn inherent#HashMap#HashMap[K,V]#new__K_CustomKey__V_string() -> HashMap[CustomKey, string] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(
-  self/0: HashMap[ModernKey, string],
-  key/0: ModernKey,
+fn inherent#HashMap#HashMap[K,V]#set__K_CustomKey__V_string(
+  self/0: HashMap[CustomKey, string],
+  key/0: CustomKey,
   value/0: string
 ) -> () {
   @intrinsic(hashmap.set)(self/0, key/0, value/0)
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_ModernKey__V_string(
-  self/0: HashMap[ModernKey, string],
-  key/0: ModernKey
+fn inherent#HashMap#HashMap[K,V]#get__K_CustomKey__V_string(
+  self/0: HashMap[CustomKey, string],
+  key/0: CustomKey
 ) -> Option__string {
   @intrinsic(hashmap.get)(self/0, key/0)
 }

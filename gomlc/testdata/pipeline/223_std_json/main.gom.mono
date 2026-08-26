@@ -681,25 +681,315 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/0: std::bytes::Bytes
   std::bytes::Bytes.values(self/0)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#builder() -> std::bytes::Builder {
+  inherent#std::bytes::Builder#std::bytes::Builder#new()
+}
+
+fn trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf8(
   self/0: std::bytes::Bytes
-) -> Result__string__string {
-  let mtmp0 = string_from_utf0(std::bytes::Bytes.values(self/0)) in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
+) -> Result__string__std::utf8::Utf8Error {
+  std::utf8::decode(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/0))
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(
+  valid_up_to/0: isize,
+  error_length/0: Option__isize
+) -> std::utf8::Utf8Error {
+  std::utf8::Utf8Error { valid_up_to_value: valid_up_to/0, error_length_value: error_length/0 }
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#valid_up_to(
+  self/0: std::utf8::Utf8Error
+) -> isize {
+  std::utf8::Utf8Error.valid_up_to_value(self/0)
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#error_length(
+  self/0: std::utf8::Utf8Error
+) -> Option__isize {
+  std::utf8::Utf8Error.error_length_value(self/0)
+}
+
+fn trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0: std::utf8::Utf8Error) -> string {
+  ("invalid UTF-8 at byte " +
+    inherent#isize#isize#to_string(std::utf8::Utf8Error.valid_up_to_value(self/0)))
+}
+
+fn trait_impl#Debug#std::utf8::Utf8Error#debug(self/0: std::utf8::Utf8Error) -> string {
+  trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0)
+}
+
+fn trait_impl#PartialEq#std::utf8::Utf8Error#eq(
+  self/0: std::utf8::Utf8Error,
+  other/0: std::utf8::Utf8Error
+) -> bool {
+  if (std::utf8::Utf8Error.valid_up_to_value(self/0) ==
+    std::utf8::Utf8Error.valid_up_to_value(other/0)) {
+      trait_impl#PartialEq#Option__isize#eq(
+        std::utf8::Utf8Error.error_length_value(self/0),
+        std::utf8::Utf8Error.error_length_value(other/0)
+      )
+  } else {
+      false
+  }
+}
+
+fn std::utf8::continuation(value/0: u8) -> bool {
+  if (value/0 >= 128) {
+      (value/0 <= 191)
+  } else {
+      false
+  }
+}
+
+fn std::utf8::invalid(index/0: isize) -> Result__()__std::utf8::Utf8Error {
+  Result__()__std::utf8::Utf8Error::Err(
+    inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(index/0, Option__isize::Some(1))
+  )
+}
+
+fn std::utf8::truncated(index/0: isize) -> Result__()__std::utf8::Utf8Error {
+  Result__()__std::utf8::Utf8Error::Err(
+    inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(index/0, Option__isize::None)
+  )
+}
+
+fn std::utf8::validate(bytes/0: Slice[u8]) -> Result__()__std::utf8::Utf8Error {
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+        {
+          let first/0 = inherent#Slice#Slice[T]#get__T_u0(bytes/0, index/0) in
+          if (first/0 <= 127) {
+              {
+                let _wild1 =
+                  {
+                    let compound_old0 = index/0 in
+                    let compound_value0 = 1 in
+                    index/0 = (compound_old0 + compound_value0)
+                  } in
+              }
+          } else {
+              if if (first/0 >= 194) {
+                  (first/0 <= 223)
+              } else {
+                  false
+              } {
+                  {
+                    if ((index/0 + 1) >= inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+                        {
+                          return std::utf8::truncated(index/0)
+                        }
+                    } else {
+                        if (!std::utf8::continuation(
+                          inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 1))
+                        )) {
+                            {
+                              return std::utf8::invalid(index/0)
+                            }
+                        } else {
+                            {
+                              let _wild2 =
+                                {
+                                  let compound_old1 = index/0 in
+                                  let compound_value1 = 2 in
+                                  index/0 = (compound_old1 + compound_value1)
+                                } in
+                            }
+                        }
+                    }
+                  }
+              } else {
+                  if if (first/0 >= 224) {
+                      (first/0 <= 239)
+                  } else {
+                      false
+                  } {
+                      {
+                        if ((index/0 + 2) >= inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+                            {
+                              return std::utf8::truncated(index/0)
+                            }
+                        } else {
+                            {
+                              let second/0 =
+                                inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 1)) in
+                              let second_valid/0 =
+                                if (first/0 == 224) {
+                                    {
+                                      if (second/0 >= 160) {
+                                          (second/0 <= 191)
+                                      } else {
+                                          false
+                                      }
+                                    }
+                                } else {
+                                    if (first/0 == 237) {
+                                        {
+                                          if (second/0 >= 128) {
+                                              (second/0 <= 159)
+                                          } else {
+                                              false
+                                          }
+                                        }
+                                    } else {
+                                        {
+                                          std::utf8::continuation(second/0)
+                                        }
+                                    }
+                                } in
+                              if if (!second_valid/0) {
+                                  true
+                              } else {
+                                  (!std::utf8::continuation(
+                                    inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 2))
+                                  ))
+                              } {
+                                  {
+                                    return std::utf8::invalid(index/0)
+                                  }
+                              } else {
+                                  {
+                                    let _wild3 =
+                                      {
+                                        let compound_old2 = index/0 in
+                                        let compound_value2 = 3 in
+                                        index/0 = (compound_old2 + compound_value2)
+                                      } in
+                                  }
+                              }
+                            }
+                        }
+                      }
+                  } else {
+                      if if (first/0 >= 240) {
+                          (first/0 <= 244)
+                      } else {
+                          false
+                      } {
+                          {
+                            if ((index/0 + 3) >= inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+                                {
+                                  return std::utf8::truncated(index/0)
+                                }
+                            } else {
+                                {
+                                  let second/1 =
+                                    inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 1)) in
+                                  let second_valid/1 =
+                                    if (first/0 == 240) {
+                                        {
+                                          if (second/1 >= 144) {
+                                              (second/1 <= 191)
+                                          } else {
+                                              false
+                                          }
+                                        }
+                                    } else {
+                                        if (first/0 == 244) {
+                                            {
+                                              if (second/1 >= 128) {
+                                                  (second/1 <= 143)
+                                              } else {
+                                                  false
+                                              }
+                                            }
+                                        } else {
+                                            {
+                                              std::utf8::continuation(second/1)
+                                            }
+                                        }
+                                    } in
+                                  if if if (!second_valid/1) {
+                                      true
+                                  } else {
+                                      (!std::utf8::continuation(
+                                        inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 2))
+                                      ))
+                                  } {
+                                      true
+                                  } else {
+                                      (!std::utf8::continuation(
+                                        inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 3))
+                                      ))
+                                  } {
+                                      {
+                                        return std::utf8::invalid(index/0)
+                                      }
+                                  } else {
+                                      {
+                                        let _wild4 =
+                                          {
+                                            let compound_old3 = index/0 in
+                                            let compound_value3 = 4 in
+                                            index/0 = (compound_old3 + compound_value3)
+                                          } in
+                                      }
+                                  }
+                                }
+                            }
+                          }
+                      } else {
+                          {
+                            return std::utf8::invalid(index/0)
+                          }
+                      }
+                  }
+              }
+          }
+        }
+    } in
+  Result__()__std::utf8::Utf8Error::Ok(())
+}
+
+fn std::utf8::decode(bytes/0: Vec[u8]) -> Result__string__std::utf8::Utf8Error {
+  std::utf8::decode_slice(inherent#Vec#Vec[T]#as_slice__T_u0(bytes/0))
+}
+
+fn std::utf8::decode_slice(bytes/0: Slice[u8]) -> Result__string__std::utf8::Utf8Error {
+  let _wild0 =
     {
-      let value/0 = x1 in
+      let mtmp0 = std::utf8::validate(bytes/0) in
+      match mtmp0 {
+        Result__()__std::utf8::Utf8Error::Ok(x0) => {
+          {
+            let x0 = Result__()__std::utf8::Utf8Error::Ok._0(mtmp0) in
+            {
+              let try_value/0 = x0 in
+              try_value/0
+            }
+          }
+        },
+        Result__()__std::utf8::Utf8Error::Err(x1) => {
+          {
+            let x1 = Result__()__std::utf8::Utf8Error::Err._0(mtmp0) in
+            {
+              let try_residual/0 = x1 in
+              return Result__string__std::utf8::Utf8Error::Err(try_residual/0)
+            }
+          }
+        },
+      }
+    } in
+  let values/0 = inherent#Slice#Slice[T]#to_vec__T_u0(bytes/0) in
+  let mtmp1 = string_from_utf0(values/0) in
+  {
+    let x2 = mtmp1.0 in
+    let x3 = mtmp1.1 in
+    {
+      let value/0 = x3 in
       {
-        let valid/0 = x0 in
+        let valid/0 = x2 in
         {
           if valid/0 {
               {
-                Result__string__string::Ok(value/0)
+                Result__string__std::utf8::Utf8Error::Ok(value/0)
               }
           } else {
               {
-                Result__string__string::Err("invalid UTF-8")
+                Result__string__std::utf8::Utf8Error::Err(
+                  inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(0, Option__isize::None)
+                )
               }
           }
         }
@@ -708,8 +998,54 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
   }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#builder() -> std::bytes::Builder {
-  inherent#std::bytes::Builder#std::bytes::Builder#new()
+fn std::utf8::encode(value/0: string) -> Vec[u8] {
+  inherent#string#string#to_bytes(value/0)
+}
+
+fn std::utf8::encode_into(
+  value/0: string,
+  output/0: MutSlice[u8],
+  offset/0: isize
+) -> Result__isize__std::bytes::BoundsError {
+  let encoded/0 = inherent#string#string#to_bytes(value/0) in
+  if inherent#MutSlice#MutSlice[T]#copy_from__T_u0(
+    output/0,
+    offset/0,
+    inherent#Vec#Vec[T]#as_slice__T_u0(encoded/0)
+  ) {
+      {
+        Result__isize__std::bytes::BoundsError::Ok(inherent#Vec#Vec[T]#len__T_u0(encoded/0))
+      }
+  } else {
+      {
+        Result__isize__std::bytes::BoundsError::Err(
+          inherent#std::bytes::BoundsError#std::bytes::BoundsError#new(
+            offset/0,
+            inherent#Vec#Vec[T]#len__T_u0(encoded/0),
+            inherent#MutSlice#MutSlice[T]#len__T_u0(output/0)
+          )
+        )
+      }
+  }
+}
+
+fn std::utf8::encode_to(value/0: string, output/0: std::bytes::Builder) -> () {
+  inherent#std::bytes::Builder#std::bytes::Builder#extend(
+    output/0,
+    inherent#Vec#Vec[T]#as_slice__T_u0(inherent#string#string#to_bytes(value/0))
+  )
+}
+
+fn std::utf8::encode_char_into(
+  value/0: char,
+  output/0: MutSlice[u8],
+  offset/0: isize
+) -> Result__isize__std::bytes::BoundsError {
+  std::utf8::encode_into(inherent#char#char#to_string(value/0), output/0, offset/0)
+}
+
+fn std::utf8::encoded_len(value/0: char) -> isize {
+  inherent#string#string#byte_len(inherent#char#char#to_string(value/0))
 }
 
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
@@ -1096,29 +1432,30 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
           {
             let data/0 = x0 in
             {
-              let mtmp1 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/0) in
+              let mtmp1 =
+                trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
               match mtmp1 {
-                Result__string__string::Ok(x1) => {
+                Result__string__std::utf8::Utf8Error::Ok(x1) => {
                   {
-                    let x1 = Result__string__string::Ok._0(mtmp1) in
+                    let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
                     {
                       let value/0 = x1 in
                       Result__string__std::io::Error::Ok(value/0)
                     }
                   }
                 },
-                Result__string__string::Err(x2) => {
+                Result__string__std::utf8::Utf8Error::Err(x2) => {
                   {
-                    let x2 = Result__string__string::Err._0(mtmp1) in
+                    let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
                     {
-                      let message/0 = x2 in
+                      let error/0 = x2 in
                       Result__string__std::io::Error::Err(
                         inherent#std::io::Error#std::io::Error#new(
                           std::io::ErrorKind::InvalidData,
                           "read stdin",
                           Option__string::None,
                           Option__isize::None,
-                          message/0
+                          trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
                         )
                       )
                     }
@@ -1133,8 +1470,8 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
         {
           let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
           {
-            let error/0 = x3 in
-            Result__string__std::io::Error::Err(error/0)
+            let error/1 = x3 in
+            Result__string__std::io::Error::Err(error/1)
           }
         }
       },
@@ -1287,132 +1624,6 @@ fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__()__st
 
 fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   std::io::write_structured(true, data/0)
-}
-
-fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  let mtmp0 = std::internal::host::read_stdin() in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    let x2 = mtmp0.2 in
-    {
-      let err/0 = x2 in
-      {
-        let data/0 = x1 in
-        {
-          let ok/0 = x0 in
-          {
-            if ok/0 {
-                {
-                  Result__std::bytes::Bytes__string::Ok(
-                    inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/0)
-                  )
-                }
-            } else {
-                {
-                  Result__std::bytes::Bytes__string::Err(err/0)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__()__string {
-  let mtmp0 =
-    std::internal::host::write_stdout(
-      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
-    ) in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    {
-      let err/0 = x1 in
-      {
-        let ok/0 = x0 in
-        {
-          if ok/0 {
-              {
-                Result__()__string::Ok(())
-              }
-          } else {
-              {
-                Result__()__string::Err(err/0)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__()__string {
-  let mtmp0 =
-    std::internal::host::write_stderr(
-      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
-    ) in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    {
-      let err/0 = x1 in
-      {
-        let ok/0 = x0 in
-        {
-          if ok/0 {
-              {
-                Result__()__string::Ok(())
-              }
-          } else {
-              {
-                Result__()__string::Err(err/0)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::io::read_stdin_exact(length/0: isize) -> Result__std::bytes::Bytes__string {
-  if (length/0 < 0) {
-      {
-        Result__std::bytes::Bytes__string::Err("read length must be non-negative")
-      }
-  } else {
-      {
-        let mtmp0 = std::internal::host::read_stdin_exact(length/0) in
-        {
-          let x0 = mtmp0.0 in
-          let x1 = mtmp0.1 in
-          let x2 = mtmp0.2 in
-          {
-            let err/0 = x2 in
-            {
-              let data/0 = x1 in
-              {
-                let ok/0 = x0 in
-                {
-                  if ok/0 {
-                      {
-                        Result__std::bytes::Bytes__string::Ok(
-                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/0)
-                        )
-                      }
-                  } else {
-                      {
-                        Result__std::bytes::Bytes__string::Err(err/0)
-                      }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-  }
 }
 
 fn inherent#std::num::ParseIntError#std::num::ParseIntError#new(
@@ -2111,146 +2322,6 @@ fn std::num::parse_float64_value(value/0: string) -> (bool, f64, string) {
       }
     }
   }
-}
-
-fn std::num::int_result(value/0: (bool, isize, string)) -> Result__isize__string {
-  let mtmp0 = value/0 in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    let x2 = mtmp0.2 in
-    {
-      let error/0 = x2 in
-      {
-        let parsed/0 = x1 in
-        {
-          let ok/0 = x0 in
-          {
-            if ok/0 {
-                {
-                  Result__isize__string::Ok(parsed/0)
-                }
-            } else {
-                {
-                  Result__isize__string::Err(error/0)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::num::uint_result(value/0: (bool, usize, string)) -> Result__usize__string {
-  let mtmp0 = value/0 in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    let x2 = mtmp0.2 in
-    {
-      let error/0 = x2 in
-      {
-        let parsed/0 = x1 in
-        {
-          let ok/0 = x0 in
-          {
-            if ok/0 {
-                {
-                  Result__usize__string::Ok(parsed/0)
-                }
-            } else {
-                {
-                  Result__usize__string::Err(error/0)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::num::float32_result(value/0: (bool, f32, string)) -> Result__f32__string {
-  let mtmp0 = value/0 in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    let x2 = mtmp0.2 in
-    {
-      let error/0 = x2 in
-      {
-        let parsed/0 = x1 in
-        {
-          let ok/0 = x0 in
-          {
-            if ok/0 {
-                {
-                  Result__f32__string::Ok(parsed/0)
-                }
-            } else {
-                {
-                  Result__f32__string::Err(error/0)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::num::float64_result(value/0: (bool, f64, string)) -> Result__f64__string {
-  let mtmp0 = value/0 in
-  {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    let x2 = mtmp0.2 in
-    {
-      let error/0 = x2 in
-      {
-        let parsed/0 = x1 in
-        {
-          let ok/0 = x0 in
-          {
-            if ok/0 {
-                {
-                  Result__f64__string::Ok(parsed/0)
-                }
-            } else {
-                {
-                  Result__f64__string::Err(error/0)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::num::parse_int(value/0: string) -> Result__isize__string {
-  std::num::parse_int_radix(value/0, 10)
-}
-
-fn std::num::parse_int_radix(value/0: string, radix/0: isize) -> Result__isize__string {
-  std::num::int_result(std::num::parse_int_value(value/0, radix/0))
-}
-
-fn std::num::parse_uint(value/0: string) -> Result__usize__string {
-  std::num::parse_uint_radix(value/0, 10)
-}
-
-fn std::num::parse_uint_radix(value/0: string, radix/0: isize) -> Result__usize__string {
-  std::num::uint_result(std::num::parse_uint_value(value/0, radix/0))
-}
-
-fn std::num::parse_float32(value/0: string) -> Result__f32__string {
-  std::num::float32_result(std::num::parse_float32_value(value/0))
-}
-
-fn std::num::parse_float64(value/0: string) -> Result__f64__string {
-  std::num::float64_result(std::num::parse_float64_value(value/0))
 }
 
 fn std::num::parse_int_structured(value/0: string) -> Result__isize__std::num::ParseIntError {
@@ -3044,6 +3115,34 @@ fn std::serde::error(message/0: string) -> Result__()__string {
   Result__()__string::Err(message/0)
 }
 
+fn std::serde::parse_int(value/0: string) -> Result__isize__string {
+  inherent#Result#Result[T,E]#map_err__E_std::num::ParseIntError__F_string__T_isize(
+    std::num::parse_int_structured(value/0),
+    |error/0| trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
+  )
+}
+
+fn std::serde::parse_uint(value/0: string) -> Result__usize__string {
+  inherent#Result#Result[T,E]#map_err__E_std::num::ParseIntError__F_string__T_usize(
+    std::num::parse_uint_structured(value/0),
+    |error/0| trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
+  )
+}
+
+fn std::serde::parse_float32(value/0: string) -> Result__f32__string {
+  inherent#Result#Result[T,E]#map_err__E_std::num::ParseFloatError__F_string__T_f0(
+    std::num::parse_float32_structured(value/0),
+    |error/0| trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
+  )
+}
+
+fn std::serde::parse_float64(value/0: string) -> Result__f64__string {
+  inherent#Result#Result[T,E]#map_err__E_std::num::ParseFloatError__F_string__T_f0(
+    std::num::parse_float64_structured(value/0),
+    |error/0| trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
+  )
+}
+
 fn std::serde::value_deserializer(value/0: std::serde::Value) -> std::serde::ValueDeserializer {
   std::serde::ValueDeserializer {
     current: inherent#Ref#Ref[T]#new__T_Option[std::serde::Value](
@@ -3310,7 +3409,7 @@ fn std::serde::deserialize_bytes_value(value/0: std::serde::Value) -> Result__Ve
                                   {
                                     let parsed/0 =
                                       {
-                                        let mtmp0 = std::num::parse_uint(value/3) in
+                                        let mtmp0 = std::serde::parse_uint(value/3) in
                                         match mtmp0 {
                                           Result__usize__string::Ok(x3) => {
                                             {
@@ -3490,7 +3589,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            std::num::parse_int(value/1)
+            std::serde::parse_int(value/1)
           }
         }
       },
@@ -3545,7 +3644,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
             {
               let parsed/0 =
                 {
-                  let mtmp2 = std::num::parse_int(value/1) in
+                  let mtmp2 = std::serde::parse_int(value/1) in
                   match mtmp2 {
                     Result__isize__string::Ok(x4) => {
                       {
@@ -3635,7 +3734,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
             {
               let parsed/0 =
                 {
-                  let mtmp2 = std::num::parse_int(value/1) in
+                  let mtmp2 = std::serde::parse_int(value/1) in
                   match mtmp2 {
                     Result__isize__string::Ok(x4) => {
                       {
@@ -3725,7 +3824,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
             {
               let parsed/0 =
                 {
-                  let mtmp2 = std::num::parse_int(value/1) in
+                  let mtmp2 = std::serde::parse_int(value/1) in
                   match mtmp2 {
                     Result__isize__string::Ok(x4) => {
                       {
@@ -3813,7 +3912,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           {
             let value/1 = x3 in
             {
-              let mtmp2 = std::num::parse_int(value/1) in
+              let mtmp2 = std::serde::parse_int(value/1) in
               match mtmp2 {
                 Result__isize__string::Ok(x4) => {
                   {
@@ -3886,7 +3985,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            std::num::parse_uint(value/1)
+            std::serde::parse_uint(value/1)
           }
         }
       },
@@ -3941,7 +4040,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
             {
               let parsed/0 =
                 {
-                  let mtmp2 = std::num::parse_uint(value/1) in
+                  let mtmp2 = std::serde::parse_uint(value/1) in
                   match mtmp2 {
                     Result__usize__string::Ok(x4) => {
                       {
@@ -4027,7 +4126,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
             {
               let parsed/0 =
                 {
-                  let mtmp2 = std::num::parse_uint(value/1) in
+                  let mtmp2 = std::serde::parse_uint(value/1) in
                   match mtmp2 {
                     Result__usize__string::Ok(x4) => {
                       {
@@ -4113,7 +4212,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
             {
               let parsed/0 =
                 {
-                  let mtmp2 = std::num::parse_uint(value/1) in
+                  let mtmp2 = std::serde::parse_uint(value/1) in
                   match mtmp2 {
                     Result__usize__string::Ok(x4) => {
                       {
@@ -4197,7 +4296,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           {
             let value/1 = x3 in
             {
-              let mtmp2 = std::num::parse_uint(value/1) in
+              let mtmp2 = std::serde::parse_uint(value/1) in
               match mtmp2 {
                 Result__usize__string::Ok(x4) => {
                   {
@@ -4270,7 +4369,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            std::num::parse_float0(value/1)
+            std::serde::parse_float0(value/1)
           }
         }
       },
@@ -4322,7 +4421,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#deserialize
           let x3 = std::serde::Value::Number._0(mtmp0) in
           {
             let value/1 = x3 in
-            std::num::parse_float0(value/1)
+            std::serde::parse_float0(value/1)
           }
         }
       },
@@ -8100,13 +8199,13 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
   self/0: std::text::StringBuilder,
   value/0: std::bytes::Bytes
-) -> Result__()__string {
+) -> Result__()__std::utf8::Utf8Error {
   {
-    let mtmp0 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/0) in
+    let mtmp0 = trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(value/0) in
     match mtmp0 {
-      Result__string__string::Ok(x0) => {
+      Result__string__std::utf8::Utf8Error::Ok(x0) => {
         {
-          let x0 = Result__string__string::Ok._0(mtmp0) in
+          let x0 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp0) in
           {
             let text/0 = x0 in
             {
@@ -8115,17 +8214,17 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
                   self/0,
                   text/0
                 ) in
-              Result__()__string::Ok(())
+              Result__()__std::utf8::Utf8Error::Ok(())
             }
           }
         }
       },
-      Result__string__string::Err(x1) => {
+      Result__string__std::utf8::Utf8Error::Err(x1) => {
         {
-          let x1 = Result__string__string::Err._0(mtmp0) in
+          let x1 = Result__string__std::utf8::Utf8Error::Err._0(mtmp0) in
           {
             let error/0 = x1 in
-            Result__()__string::Err(error/0)
+            Result__()__std::utf8::Utf8Error::Err(error/0)
           }
         }
       },
@@ -9160,24 +9259,27 @@ fn std::json::direct_json_int(
     } in
   let value/0 =
     {
-      let mtmp1 = std::num::parse_int(text/0) in
+      let mtmp1 = std::num::parse_int_structured(text/0) in
       match mtmp1 {
-        Result__isize__string::Ok(x2) => {
+        Result__isize__std::num::ParseIntError::Ok(x2) => {
           {
-            let x2 = Result__isize__string::Ok._0(mtmp1) in
+            let x2 = Result__isize__std::num::ParseIntError::Ok._0(mtmp1) in
             {
               let value/1 = x2 in
               (value/1 as i64)
             }
           }
         },
-        Result__isize__string::Err(x3) => {
+        Result__isize__std::num::ParseIntError::Err(x3) => {
           {
-            let x3 = Result__isize__string::Err._0(mtmp1) in
+            let x3 = Result__isize__std::num::ParseIntError::Err._0(mtmp1) in
             {
               let error/0 = x3 in
               return Result__i64__string::Err(
-                std::json::json_deserializer_error(deserializer/0, error/0)
+                std::json::json_deserializer_error(
+                  deserializer/0,
+                  trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
+                )
               )
             }
           }
@@ -9267,24 +9369,27 @@ fn std::json::direct_json_uint(
     } in
   let value/0 =
     {
-      let mtmp1 = std::num::parse_uint(text/0) in
+      let mtmp1 = std::num::parse_uint_structured(text/0) in
       match mtmp1 {
-        Result__usize__string::Ok(x2) => {
+        Result__usize__std::num::ParseIntError::Ok(x2) => {
           {
-            let x2 = Result__usize__string::Ok._0(mtmp1) in
+            let x2 = Result__usize__std::num::ParseIntError::Ok._0(mtmp1) in
             {
               let value/1 = x2 in
               (value/1 as u64)
             }
           }
         },
-        Result__usize__string::Err(x3) => {
+        Result__usize__std::num::ParseIntError::Err(x3) => {
           {
-            let x3 = Result__usize__string::Err._0(mtmp1) in
+            let x3 = Result__usize__std::num::ParseIntError::Err._0(mtmp1) in
             {
               let error/0 = x3 in
               return Result__u64__string::Err(
-                std::json::json_deserializer_error(deserializer/0, error/0)
+                std::json::json_deserializer_error(
+                  deserializer/0,
+                  trait_impl#ToString#std::num::ParseIntError#to_string(error/0)
+                )
               )
             }
           }
@@ -10280,23 +10385,28 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
       }
     } in
   {
-    let mtmp1 = std::num::parse_float0(text/0) in
+    let mtmp1 = std::num::parse_float32_structured(text/0) in
     match mtmp1 {
-      Result__f32__string::Ok(x2) => {
+      Result__f32__std::num::ParseFloatError::Ok(x2) => {
         {
-          let x2 = Result__f32__string::Ok._0(mtmp1) in
+          let x2 = Result__f32__std::num::ParseFloatError::Ok._0(mtmp1) in
           {
             let value/0 = x2 in
             Result__f32__string::Ok(value/0)
           }
         }
       },
-      Result__f32__string::Err(x3) => {
+      Result__f32__std::num::ParseFloatError::Err(x3) => {
         {
-          let x3 = Result__f32__string::Err._0(mtmp1) in
+          let x3 = Result__f32__std::num::ParseFloatError::Err._0(mtmp1) in
           {
             let error/0 = x3 in
-            Result__f32__string::Err(std::json::json_deserializer_error(self/0, error/0))
+            Result__f32__string::Err(
+              std::json::json_deserializer_error(
+                self/0,
+                trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
+              )
+            )
           }
         }
       },
@@ -10332,23 +10442,28 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#deserialize_f
       }
     } in
   {
-    let mtmp1 = std::num::parse_float0(text/0) in
+    let mtmp1 = std::num::parse_float64_structured(text/0) in
     match mtmp1 {
-      Result__f64__string::Ok(x2) => {
+      Result__f64__std::num::ParseFloatError::Ok(x2) => {
         {
-          let x2 = Result__f64__string::Ok._0(mtmp1) in
+          let x2 = Result__f64__std::num::ParseFloatError::Ok._0(mtmp1) in
           {
             let value/0 = x2 in
             Result__f64__string::Ok(value/0)
           }
         }
       },
-      Result__f64__string::Err(x3) => {
+      Result__f64__std::num::ParseFloatError::Err(x3) => {
         {
-          let x3 = Result__f64__string::Err._0(mtmp1) in
+          let x3 = Result__f64__std::num::ParseFloatError::Err._0(mtmp1) in
           {
             let error/0 = x3 in
-            Result__f64__string::Err(std::json::json_deserializer_error(self/0, error/0))
+            Result__f64__string::Err(
+              std::json::json_deserializer_error(
+                self/0,
+                trait_impl#ToString#std::num::ParseFloatError#to_string(error/0)
+              )
+            )
           }
         }
       },
@@ -17614,6 +17729,70 @@ fn inherent#Vec#Vec[T]#slice_mut_checked__T_u8(
   }
 }
 
+fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option__isize) -> bool {
+  {
+    let mtmp0 = (self/0, other/0) in
+    {
+      let x0 = mtmp0.0 in
+      let x1 = mtmp0.1 in
+      match x1 {
+        Option__isize::None => {
+          match x0 {
+            Option__isize::None => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Option__isize::Some(x2) => {
+          {
+            let x2 = Option__isize::Some._0(x1) in
+            match x0 {
+              Option__isize::Some(x3) => {
+                {
+                  let x3 = Option__isize::Some._0(x0) in
+                  {
+                    let left/0 = x3 in
+                    {
+                      let right/0 = x2 in
+                      trait_impl#PartialEq#isize#eq(left/0, right/0)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn inherent#Slice#Slice[T]#get__T_u8(self/0: Slice[u8], index/0: isize) -> u8 {
+  @intrinsic(slice.get)(self/0, index/0)
+}
+
+fn inherent#Slice#Slice[T]#to_vec__T_u8(self/0: Slice[u8]) -> Vec[u8] {
+  let result/0 =
+    inherent#Vec#Vec[T]#with_capacity__T_u0(inherent#Slice#Slice[T]#len__T_u0(self/0)) in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(self/0)) {
+        {
+          let _wild1 =
+            inherent#Vec#Vec[T]#push__T_u0(result/0, @intrinsic(slice.get)(self/0, index/0)) in
+          let _wild2 =
+            {
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0)
+            } in
+        }
+    } in
+  result/0
+}
+
 fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   {
@@ -17660,6 +17839,26 @@ fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   }
 }
 
+fn inherent#MutSlice#MutSlice[T]#copy_from__T_u8(
+  self/0: MutSlice[u8],
+  start/0: isize,
+  source/0: Slice[u8]
+) -> bool {
+  @intrinsic(mut_slice.copy_from)(self/0, start/0, source/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
+  @intrinsic(mut_slice.len)(self/0)
+}
+
+fn inherent#char#char#to_string(self/0: char) -> string {
+  char_to_string(self/0)
+}
+
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
+}
+
 fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Option__string) -> bool {
   {
     let mtmp0 = (self/0, other/0) in
@@ -17698,50 +17897,6 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
       }
     }
   }
-}
-
-fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option__isize) -> bool {
-  {
-    let mtmp0 = (self/0, other/0) in
-    {
-      let x0 = mtmp0.0 in
-      let x1 = mtmp0.1 in
-      match x1 {
-        Option__isize::None => {
-          match x0 {
-            Option__isize::None => {
-              true
-            },
-            _ => false,
-          }
-        },
-        Option__isize::Some(x2) => {
-          {
-            let x2 = Option__isize::Some._0(x1) in
-            match x0 {
-              Option__isize::Some(x3) => {
-                {
-                  let x3 = Option__isize::Some._0(x0) in
-                  {
-                    let left/0 = x3 in
-                    {
-                      let right/0 = x2 in
-                      trait_impl#PartialEq#isize#eq(left/0, right/0)
-                    }
-                  }
-                }
-              },
-              _ => false,
-            }
-          }
-        },
-      }
-    }
-  }
-}
-
-fn inherent#string#string#byte_len(self/0: string) -> isize {
-  @runtime(core.string_len)(self/0)
 }
 
 fn inherent#string#string#byte_get(self/0: string, index/0: isize) -> u8 {
@@ -17823,6 +17978,110 @@ fn inherent#Vec#Vec[T]#push__T_(string,std::serde::Value)(
   elem/0: (string, std::serde::Value)
 ) -> () {
   @intrinsic(vec.push)(self/0, elem/0)
+}
+
+fn inherent#Result#Result[T,E]#map_err__E_std::num::ParseIntError__F_string__T_isize(
+  self/0: Result__isize__std::num::ParseIntError,
+  map_fn/0: (std::num::ParseIntError) -> string
+) -> Result__isize__string {
+  match self/0 {
+    Result__isize__std::num::ParseIntError::Ok(x0) => {
+      {
+        let x0 = Result__isize__std::num::ParseIntError::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__isize__string::Ok(value/0)
+        }
+      }
+    },
+    Result__isize__std::num::ParseIntError::Err(x1) => {
+      {
+        let x1 = Result__isize__std::num::ParseIntError::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__isize__string::Err(map_fn/0(error/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err__E_std::num::ParseIntError__F_string__T_usize(
+  self/0: Result__usize__std::num::ParseIntError,
+  map_fn/0: (std::num::ParseIntError) -> string
+) -> Result__usize__string {
+  match self/0 {
+    Result__usize__std::num::ParseIntError::Ok(x0) => {
+      {
+        let x0 = Result__usize__std::num::ParseIntError::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__usize__string::Ok(value/0)
+        }
+      }
+    },
+    Result__usize__std::num::ParseIntError::Err(x1) => {
+      {
+        let x1 = Result__usize__std::num::ParseIntError::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__usize__string::Err(map_fn/0(error/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err__E_std::num::ParseFloatError__F_string__T_f32(
+  self/0: Result__f32__std::num::ParseFloatError,
+  map_fn/0: (std::num::ParseFloatError) -> string
+) -> Result__f32__string {
+  match self/0 {
+    Result__f32__std::num::ParseFloatError::Ok(x0) => {
+      {
+        let x0 = Result__f32__std::num::ParseFloatError::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__f32__string::Ok(value/0)
+        }
+      }
+    },
+    Result__f32__std::num::ParseFloatError::Err(x1) => {
+      {
+        let x1 = Result__f32__std::num::ParseFloatError::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__f32__string::Err(map_fn/0(error/0))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err__E_std::num::ParseFloatError__F_string__T_f64(
+  self/0: Result__f64__std::num::ParseFloatError,
+  map_fn/0: (std::num::ParseFloatError) -> string
+) -> Result__f64__string {
+  match self/0 {
+    Result__f64__std::num::ParseFloatError::Ok(x0) => {
+      {
+        let x0 = Result__f64__std::num::ParseFloatError::Ok._0(self/0) in
+        {
+          let value/0 = x0 in
+          Result__f64__string::Ok(value/0)
+        }
+      }
+    },
+    Result__f64__std::num::ParseFloatError::Err(x1) => {
+      {
+        let x1 = Result__f64__std::num::ParseFloatError::Err._0(self/0) in
+        {
+          let error/0 = x1 in
+          Result__f64__string::Err(map_fn/0(error/0))
+        }
+      }
+    },
+  }
 }
 
 fn inherent#Ref#Ref[T]#new__T_Option[std::serde::Value](value/0: Option__std::serde::Value) -> Ref[
@@ -18077,10 +18336,6 @@ fn inherent#Vec#Vec[T]#pop__T_std::serde::ValueSerializeFrame(
 
 fn inherent#Ref#Ref[T]#new__T_Option[string](value/0: Option__string) -> Ref[Option__string] {
   @intrinsic(ref.new)(value/0)
-}
-
-fn inherent#char#char#to_string(self/0: char) -> string {
-  char_to_string(self/0)
 }
 
 fn inherent#string#string#starts_with_at(self/0: string, start/0: isize, prefix/0: string) -> bool {
@@ -19227,8 +19482,8 @@ fn __goml_builtin_int_to_string(value/0: isize) -> string {
   signed_decimal_string((value/0 as i64))
 }
 
-fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
-  @intrinsic(mut_slice.len)(self/0)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
 fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
@@ -19400,11 +19655,22 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
   }
 }
 
-fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
-  (self/0 == other/0)
+fn char_to_string(value/0: char) -> string {
+  if utf8_valid_scalar((value/0 as u32)) {
+      {
+        @runtime(core.char_to_string)(value/0)
+      }
+  } else {
+      {
+        let mtmp0 = @runtime(core.string_get)("", -1) in
+        {
+          ""
+        }
+      }
+  }
 }
 
-fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
   (self/0 == other/0)
 }
 
@@ -19755,21 +20021,6 @@ fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueSerializeFrame(
   len/0: isize
 ) -> () {
   @intrinsic(vec.truncate)(self/0, len/0)
-}
-
-fn char_to_string(value/0: char) -> string {
-  if utf8_valid_scalar((value/0 as u32)) {
-      {
-        @runtime(core.char_to_string)(value/0)
-      }
-  } else {
-      {
-        let mtmp0 = @runtime(core.string_get)("", -1) in
-        {
-          ""
-        }
-      }
-  }
 }
 
 fn inherent#string#string#is_char_boundary(self/0: string, index/0: isize) -> bool {
@@ -20185,6 +20436,18 @@ fn utf8_invalid_continuation(value/0: u32) -> bool {
       true
   } else {
       (value/0 > 191)
+  }
+}
+
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  if (value/0 <= 1114111) {
+      (!if (value/0 >= 55296) {
+          (value/0 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
   }
 }
 
@@ -21305,18 +21568,6 @@ fn format_float_bits(
         }
     } in
   fixed_float_text(float_natural_decimal(exact_value/0), decimal_point/0, negative/0)
-}
-
-fn utf8_valid_scalar(value/0: u32) -> bool {
-  if (value/0 <= 1114111) {
-      (!if (value/0 >= 55296) {
-          (value/0 <= 57343)
-      } else {
-          false
-      })
-  } else {
-      false
-  }
 }
 
 fn string_is_char_boundary(value/0: string, index/0: isize) -> bool {

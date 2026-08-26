@@ -25,41 +25,41 @@ type _goml_vec_uint32 struct {
     items []uint32
 }
 
-type hashmap_LegacyKey_string_x_entry struct {
+type hashmap_DerivedKey_string_x_entry struct {
     active bool
-    key LegacyKey
+    key DerivedKey
     value string
 }
 
-type hashmap_LegacyKey_string_x struct {
-    buckets map[uint64][]hashmap_LegacyKey_string_x_entry
+type hashmap_DerivedKey_string_x struct {
+    buckets map[uint64][]hashmap_DerivedKey_string_x_entry
     hashes []uint64
     len int
 }
 
-func hashmap_new__HashMap_9LegacyKey_6string() *hashmap_LegacyKey_string_x {
-    return &hashmap_LegacyKey_string_x{
-        buckets: make(map[uint64][]hashmap_LegacyKey_string_x_entry),
+func hashmap_new__HashMap_10DerivedKey_6string() *hashmap_DerivedKey_string_x {
+    return &hashmap_DerivedKey_string_x{
+        buckets: make(map[uint64][]hashmap_DerivedKey_string_x_entry),
         len: 0,
         hashes: nil,
     }
 }
 
-func hashmap_lookup__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key LegacyKey) (string, bool, int, uint64) {
+func hashmap_lookup__HashMap_10DerivedKey_6string(m *hashmap_DerivedKey_string_x, key DerivedKey) (string, bool, int, uint64) {
     if m == nil {
         var zero string
         return zero, false, -1, 0
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(key)
-    var bucket []hashmap_LegacyKey_string_x_entry = m.buckets[h]
+    var h uint64 = _goml_m_trait__impl_i_Hash_i_DerivedKey_i_hash(key)
+    var bucket []hashmap_DerivedKey_string_x_entry = m.buckets[h]
     var i int = 0
     var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
-        var entry hashmap_LegacyKey_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(entry.key, key) {
+        var entry hashmap_DerivedKey_string_x_entry = bucket[i]
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_DerivedKey_i_eq(entry.key, key) {
             return entry.value, true, i, h
         }
         if !entry.active && reuse_index < 0 {
@@ -71,10 +71,10 @@ func hashmap_lookup__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, k
     return zero, false, reuse_index, h
 }
 
-func hashmap_get__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key LegacyKey) Option__string {
+func hashmap_get__HashMap_10DerivedKey_6string(m *hashmap_DerivedKey_string_x, key DerivedKey) Option__string {
     var value string
     var ok bool
-    value, ok, _, _ = hashmap_lookup__HashMap_9LegacyKey_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_10DerivedKey_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,
@@ -86,13 +86,13 @@ func hashmap_get__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key 
     }
 }
 
-func hashmap_set__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key LegacyKey, value string) struct{} {
+func hashmap_set__HashMap_10DerivedKey_6string(m *hashmap_DerivedKey_string_x, key DerivedKey, value string) struct{} {
     var reuse_index int = -1
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(key)
-    var bucket []hashmap_LegacyKey_string_x_entry = m.buckets[h]
+    var h uint64 = _goml_m_trait__impl_i_Hash_i_DerivedKey_i_hash(key)
+    var bucket []hashmap_DerivedKey_string_x_entry = m.buckets[h]
     if len(bucket) == 0 {
         m.hashes = append(m.hashes, h)
     }
@@ -101,8 +101,8 @@ func hashmap_set__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key 
         if i >= int(len(bucket)) {
             break
         }
-        var entry hashmap_LegacyKey_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(entry.key, key) {
+        var entry hashmap_DerivedKey_string_x_entry = bucket[i]
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_DerivedKey_i_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -112,7 +112,7 @@ func hashmap_set__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key 
         i = i + 1
     }
     if reuse_index >= 0 {
-        bucket[reuse_index] = hashmap_LegacyKey_string_x_entry{
+        bucket[reuse_index] = hashmap_DerivedKey_string_x_entry{
             active: true,
             key: key,
             value: value,
@@ -120,7 +120,7 @@ func hashmap_set__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key 
         m.len = m.len + 1
         return struct{}{}
     }
-    bucket = append(bucket, hashmap_LegacyKey_string_x_entry{
+    bucket = append(bucket, hashmap_DerivedKey_string_x_entry{
         active: true,
         key: key,
         value: value,
@@ -130,41 +130,41 @@ func hashmap_set__HashMap_9LegacyKey_6string(m *hashmap_LegacyKey_string_x, key 
     return struct{}{}
 }
 
-type hashmap_ModernKey_string_x_entry struct {
+type hashmap_CustomKey_string_x_entry struct {
     active bool
-    key ModernKey
+    key CustomKey
     value string
 }
 
-type hashmap_ModernKey_string_x struct {
-    buckets map[uint64][]hashmap_ModernKey_string_x_entry
+type hashmap_CustomKey_string_x struct {
+    buckets map[uint64][]hashmap_CustomKey_string_x_entry
     hashes []uint64
     len int
 }
 
-func hashmap_new__HashMap_9ModernKey_6string() *hashmap_ModernKey_string_x {
-    return &hashmap_ModernKey_string_x{
-        buckets: make(map[uint64][]hashmap_ModernKey_string_x_entry),
+func hashmap_new__HashMap_9CustomKey_6string() *hashmap_CustomKey_string_x {
+    return &hashmap_CustomKey_string_x{
+        buckets: make(map[uint64][]hashmap_CustomKey_string_x_entry),
         len: 0,
         hashes: nil,
     }
 }
 
-func hashmap_lookup__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key ModernKey) (string, bool, int, uint64) {
+func hashmap_lookup__HashMap_9CustomKey_6string(m *hashmap_CustomKey_string_x, key CustomKey) (string, bool, int, uint64) {
     if m == nil {
         var zero string
         return zero, false, -1, 0
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_ModernKey_i_hash(key)
-    var bucket []hashmap_ModernKey_string_x_entry = m.buckets[h]
+    var h uint64 = _goml_m_trait__impl_i_Hash_i_CustomKey_i_hash(key)
+    var bucket []hashmap_CustomKey_string_x_entry = m.buckets[h]
     var i int = 0
     var reuse_index int = -1
     for {
         if i >= int(len(bucket)) {
             break
         }
-        var entry hashmap_ModernKey_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(entry.key, key) {
+        var entry hashmap_CustomKey_string_x_entry = bucket[i]
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_CustomKey_i_eq(entry.key, key) {
             return entry.value, true, i, h
         }
         if !entry.active && reuse_index < 0 {
@@ -176,10 +176,10 @@ func hashmap_lookup__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, k
     return zero, false, reuse_index, h
 }
 
-func hashmap_get__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key ModernKey) Option__string {
+func hashmap_get__HashMap_9CustomKey_6string(m *hashmap_CustomKey_string_x, key CustomKey) Option__string {
     var value string
     var ok bool
-    value, ok, _, _ = hashmap_lookup__HashMap_9ModernKey_6string(m, key)
+    value, ok, _, _ = hashmap_lookup__HashMap_9CustomKey_6string(m, key)
     if ok {
         return Option__string{
             _tag: 1,
@@ -191,13 +191,13 @@ func hashmap_get__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key 
     }
 }
 
-func hashmap_set__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key ModernKey, value string) struct{} {
+func hashmap_set__HashMap_9CustomKey_6string(m *hashmap_CustomKey_string_x, key CustomKey, value string) struct{} {
     var reuse_index int = -1
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_m_trait__impl_i_Hash_i_ModernKey_i_hash(key)
-    var bucket []hashmap_ModernKey_string_x_entry = m.buckets[h]
+    var h uint64 = _goml_m_trait__impl_i_Hash_i_CustomKey_i_hash(key)
+    var bucket []hashmap_CustomKey_string_x_entry = m.buckets[h]
     if len(bucket) == 0 {
         m.hashes = append(m.hashes, h)
     }
@@ -206,8 +206,8 @@ func hashmap_set__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key 
         if i >= int(len(bucket)) {
             break
         }
-        var entry hashmap_ModernKey_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(entry.key, key) {
+        var entry hashmap_CustomKey_string_x_entry = bucket[i]
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_CustomKey_i_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -217,7 +217,7 @@ func hashmap_set__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key 
         i = i + 1
     }
     if reuse_index >= 0 {
-        bucket[reuse_index] = hashmap_ModernKey_string_x_entry{
+        bucket[reuse_index] = hashmap_CustomKey_string_x_entry{
             active: true,
             key: key,
             value: value,
@@ -225,7 +225,7 @@ func hashmap_set__HashMap_9ModernKey_6string(m *hashmap_ModernKey_string_x, key 
         m.len = m.len + 1
         return struct{}{}
     }
-    bucket = append(bucket, hashmap_ModernKey_string_x_entry{
+    bucket = append(bucket, hashmap_CustomKey_string_x_entry{
         active: true,
         key: key,
         value: value,
@@ -250,11 +250,11 @@ type ParsedFloat struct {
     significant_digits int
 }
 
-type LegacyKey struct {
+type DerivedKey struct {
     value int
 }
 
-type ModernKey struct {
+type CustomKey struct {
     value int
 }
 
@@ -280,14 +280,14 @@ type Option__string struct {
     _v1_0 string
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(self__0 LegacyKey, other__0 LegacyKey) bool {
+func _goml_m_trait__impl_i_PartialEq_i_DerivedKey_i_eq(self__0 DerivedKey, other__0 DerivedKey) bool {
     var t0 int = self__0.value
     var t1 int = other__0.value
     var inline0 bool = t0 == t1
     return inline0
 }
 
-func _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(self__0 LegacyKey) uint64 {
+func _goml_m_trait__impl_i_Hash_i_DerivedKey_i_hash(self__0 DerivedKey) uint64 {
     var t0_source int = 0
     var t0 uint64 = uint64(int(t0_source))
     var h__0 uint64 = t0 + 14695981039346656037
@@ -303,7 +303,7 @@ func _goml_m_trait__impl_i_Hash_i_LegacyKey_i_hash(self__0 LegacyKey) uint64 {
     return h__1
 }
 
-func _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(self__0 ModernKey, other__0 ModernKey) bool {
+func _goml_m_trait__impl_i_PartialEq_i_CustomKey_i_eq(self__0 CustomKey, other__0 CustomKey) bool {
     var t0 int = self__0.value
     var t1 int = t0 % 10
     var t2 int = other__0.value
@@ -312,7 +312,7 @@ func _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(self__0 ModernKey, other__
     return t4
 }
 
-func _goml_m_trait__impl_i_Hash_i_ModernKey_i_hash(self__0 ModernKey) uint64 {
+func _goml_m_trait__impl_i_Hash_i_CustomKey_i_hash(self__0 CustomKey) uint64 {
     var t0 int = self__0.value
     var t1 int = t0 % 10
     var t2 uint64 = uint64(int(t1))
@@ -320,55 +320,55 @@ func _goml_m_trait__impl_i_Hash_i_ModernKey_i_hash(self__0 ModernKey) uint64 {
 }
 
 func main0() struct{} {
-    var legacy__0 LegacyKey = LegacyKey{
+    var derived__0 DerivedKey = DerivedKey{
         value: 7,
     }
-    var modern__0 ModernKey = ModernKey{
+    var custom__0 CustomKey = CustomKey{
         value: 9,
     }
-    var t0 LegacyKey = LegacyKey{
+    var t0 DerivedKey = DerivedKey{
         value: 7,
     }
-    var t1 bool = equal__T_LegacyKey(legacy__0, t0)
+    var t1 bool = equal__T_DerivedKey(derived__0, t0)
     println__T_bool(t1)
-    var t2 LegacyKey = LegacyKey{
+    var t2 DerivedKey = DerivedKey{
         value: 8,
     }
-    var t3 bool = _goml_m_trait__impl_i_PartialEq_i_LegacyKey_i_eq(legacy__0, t2)
+    var t3 bool = _goml_m_trait__impl_i_PartialEq_i_DerivedKey_i_eq(derived__0, t2)
     println__T_bool(t3)
-    var t4 ModernKey = ModernKey{
+    var t4 CustomKey = CustomKey{
         value: 19,
     }
-    var t5 bool = equal__T_ModernKey(modern__0, t4)
+    var t5 bool = equal__T_CustomKey(custom__0, t4)
     println__T_bool(t5)
-    var t6 ModernKey = ModernKey{
+    var t6 CustomKey = CustomKey{
         value: 20,
     }
-    var t7 bool = _goml_m_trait__impl_i_PartialEq_i_ModernKey_i_eq(modern__0, t6)
+    var t7 bool = _goml_m_trait__impl_i_PartialEq_i_CustomKey_i_eq(custom__0, t6)
     var t8 bool = !t7
     var t9 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t8)
     println__T_string(t9)
-    var legacy_map__0 *hashmap_LegacyKey_string_x = _goml_m_inherent_i_HashMap_i_H_h4f35fad7fd3ed72455715cdf3969637d_ey____V__string()
-    _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__string(legacy_map__0, legacy__0, "legacy")
-    var t10 LegacyKey = LegacyKey{
+    var derived_map__0 *hashmap_DerivedKey_string_x = _goml_m_inherent_i_HashMap_i_H_h11367fd98aaafe315368863eb9d8e24f_ey____V__string()
+    _goml_m_inherent_i_HashMap_i_H_h1cee44072715470f45f5985ef34cf1f9_ey____V__string(derived_map__0, derived__0, "derived")
+    var t10 DerivedKey = DerivedKey{
         value: 7,
     }
     var t11 Option__string
-    var inline26 Option__string = hashmap_get__HashMap_9LegacyKey_6string(legacy_map__0, t10)
+    var inline26 Option__string = hashmap_get__HashMap_10DerivedKey_6string(derived_map__0, t10)
     t11 = inline26
     var t12 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(t11, "missing")
     var inline24 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t12)
     _goml_runtime_core_string_println(inline24)
-    var modern_map__0 *hashmap_ModernKey_string_x
-    var inline23 *hashmap_ModernKey_string_x = hashmap_new__HashMap_9ModernKey_6string()
-    modern_map__0 = inline23
-    var inline21 string = "modern"
-    hashmap_set__HashMap_9ModernKey_6string(modern_map__0, modern__0, inline21)
-    var t13 ModernKey = ModernKey{
+    var custom_map__0 *hashmap_CustomKey_string_x
+    var inline23 *hashmap_CustomKey_string_x = hashmap_new__HashMap_9CustomKey_6string()
+    custom_map__0 = inline23
+    var inline21 string = "custom"
+    hashmap_set__HashMap_9CustomKey_6string(custom_map__0, custom__0, inline21)
+    var t13 CustomKey = CustomKey{
         value: 19,
     }
     var t14 Option__string
-    var inline20 Option__string = hashmap_get__HashMap_9ModernKey_6string(modern_map__0, t13)
+    var inline20 Option__string = hashmap_get__HashMap_9CustomKey_6string(custom_map__0, t13)
     t14 = inline20
     var t15 string
     var inline18 string = "missing"
@@ -567,14 +567,14 @@ func println__T_bool(value__0 bool) struct{} {
     return struct{}{}
 }
 
-func equal__T_LegacyKey(left__0 LegacyKey, right__0 LegacyKey) bool {
+func equal__T_DerivedKey(left__0 DerivedKey, right__0 DerivedKey) bool {
     var inline0 int = left__0.value
     var inline1 int = right__0.value
     var inline2 bool = _goml_m_trait__impl_i_PartialEq_i_isize_i_eq(inline0, inline1)
     return inline2
 }
 
-func equal__T_ModernKey(left__0 ModernKey, right__0 ModernKey) bool {
+func equal__T_CustomKey(left__0 CustomKey, right__0 CustomKey) bool {
     var inline0 int = left__0.value
     var inline1 int = inline0 % 10
     var inline2 int = right__0.value
@@ -595,13 +595,13 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__0 bool) string {
     return t0
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h4f35fad7fd3ed72455715cdf3969637d_ey____V__string() *hashmap_LegacyKey_string_x {
-    var t0 *hashmap_LegacyKey_string_x = hashmap_new__HashMap_9LegacyKey_6string()
+func _goml_m_inherent_i_HashMap_i_H_h11367fd98aaafe315368863eb9d8e24f_ey____V__string() *hashmap_DerivedKey_string_x {
+    var t0 *hashmap_DerivedKey_string_x = hashmap_new__HashMap_10DerivedKey_6string()
     return t0
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h4c415936d3e2c958d5274434037d6231_ey____V__string(self__0 *hashmap_LegacyKey_string_x, key__0 LegacyKey, value__0 string) struct{} {
-    hashmap_set__HashMap_9LegacyKey_6string(self__0, key__0, value__0)
+func _goml_m_inherent_i_HashMap_i_H_h1cee44072715470f45f5985ef34cf1f9_ey____V__string(self__0 *hashmap_DerivedKey_string_x, key__0 DerivedKey, value__0 string) struct{} {
+    hashmap_set__HashMap_10DerivedKey_6string(self__0, key__0, value__0)
     return struct{}{}
 }
 

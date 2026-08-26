@@ -483,6 +483,11 @@ type _goml_m_std_p_bytes_p_Bytes struct {
     values *_goml_vec_uint8
 }
 
+type _goml_m_std_p_utf8_p_Utf8Error struct {
+    valid_up_to_value int
+    error_length_value Option__isize
+}
+
 type _goml_m_std_p_io_p_ErrorDetails struct {
     kind_value _goml_m_std_p_io_p_ErrorKind
     operation_value string
@@ -555,17 +560,25 @@ type FnIterator__isize struct {
     next_fn func() Option__isize
 }
 
-type closure_env_inherent_string_string_char_indices_0 struct {
+type closure_env_std_serde_parse_int_0 struct {}
+
+type closure_env_std_serde_parse_uint_1 struct {}
+
+type closure_env_std_serde_parse_float32_2 struct {}
+
+type closure_env_std_serde_parse_float64_3 struct {}
+
+type closure_env_inherent_string_string_char_indices_4 struct {
     index_0 *ref_int_x
     self_1 string
 }
 
-type closure_env_inherent_string_string_chars_1 struct {
+type closure_env_inherent_string_string_chars_5 struct {
     self_0 string
     index_1 *ref_int_x
 }
 
-type closure_env_goml_builtin_range_2 struct {
+type closure_env_goml_builtin_range_6 struct {
     current_0 *ref_int_x
     end_1 int
 }
@@ -1043,20 +1056,32 @@ type _goml_m_Option____MutSlice_l_u8_r_ struct {
     _v1_0 []uint8
 }
 
-type Result__string__string struct {
+type _goml_m_Result____string____std_p_utf8_p_Utf8Error struct {
     _tag int32
     _v0_0 string
-    _v1_0 string
-}
-
-type Option__string struct {
-    _tag int32
-    _v1_0 string
+    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
 }
 
 type Option__isize struct {
     _tag int32
     _v1_0 int
+}
+
+type _goml_m_Result_____o__q_____std_p_utf8_p_Utf8Error struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 _goml_m_std_p_utf8_p_Utf8Error
+}
+
+type _goml_m_Result____isize____std_p_bytes_p_BoundsError struct {
+    _tag int32
+    _v0_0 int
+    _v1_0 _goml_m_std_p_bytes_p_BoundsError
+}
+
+type Option__string struct {
+    _tag int32
+    _v1_0 string
 }
 
 type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
@@ -1106,42 +1131,6 @@ type _goml_m_Result_____o__q_____std_p_io_p_Error_Err struct {
 }
 
 func (_ _goml_m_Result_____o__q_____std_p_io_p_Error_Err) is_goml_m_Result_____o__q_____std_p_io_p_Error() {}
-
-type _goml_m_Result____std_p_bytes_p_Bytes____string struct {
-    _tag int32
-    _v0_0 _goml_m_std_p_bytes_p_Bytes
-    _v1_0 string
-}
-
-type _goml_m_Result_____o__q_____string struct {
-    _tag int32
-    _v0_0 struct{}
-    _v1_0 string
-}
-
-type Result__isize__string struct {
-    _tag int32
-    _v0_0 int
-    _v1_0 string
-}
-
-type Result__usize__string struct {
-    _tag int32
-    _v0_0 uint
-    _v1_0 string
-}
-
-type Result__f32__string struct {
-    _tag int32
-    _v0_0 float32
-    _v1_0 string
-}
-
-type Result__f64__string struct {
-    _tag int32
-    _v0_0 float64
-    _v1_0 string
-}
 
 type _goml_m_Result____isize____std_p_num_p_ParseIntError interface {
     is_goml_m_Result____isize____std_p_num_p_ParseIntError()
@@ -1235,6 +1224,36 @@ type _goml_m_Result____Vec_l_std_p_serde_p_Value_r_____string struct {
     _v1_0 string
 }
 
+type _goml_m_Result_____o__q_____string struct {
+    _tag int32
+    _v0_0 struct{}
+    _v1_0 string
+}
+
+type Result__isize__string struct {
+    _tag int32
+    _v0_0 int
+    _v1_0 string
+}
+
+type Result__usize__string struct {
+    _tag int32
+    _v0_0 uint
+    _v1_0 string
+}
+
+type Result__f32__string struct {
+    _tag int32
+    _v0_0 float32
+    _v1_0 string
+}
+
+type Result__f64__string struct {
+    _tag int32
+    _v0_0 float64
+    _v1_0 string
+}
+
 type _goml_m_Option____std_p_serde_p_Value struct {
     _tag int32
     _v1_0 _goml_m_std_p_serde_p_Value
@@ -1243,6 +1262,12 @@ type _goml_m_Option____std_p_serde_p_Value struct {
 type _goml_m_Option____std_p_serde_p_ValueDeserializeFrame struct {
     _tag int32
     _v1_0 _goml_m_std_p_serde_p_ValueDeserializeFrame
+}
+
+type Result__string__string struct {
+    _tag int32
+    _v0_0 string
+    _v1_0 string
 }
 
 type _goml_m_Result____Vec_l_u8_r_____string struct {
@@ -4199,6 +4224,18 @@ func string_from_utf8(bytes__0 *_goml_vec_uint8) Tuple2_4bool_6string {
     return t0
 }
 
+func _goml_m_inherent_i_char_i_char_i_to__string(self__0 rune) string {
+    var inline0 uint32 = uint32(rune(self__0))
+    var inline1 bool = utf8_valid_scalar(inline0)
+    if inline1 {
+        var inline2 string = _goml_runtime_core_char_to_string(self__0)
+        return inline2
+    } else {
+        _goml_runtime_core_string_get("", -1)
+        return ""
+    }
+}
+
 func _goml_m_inherent_i_string_i_string_i_byte__len(self__0 string) int {
     var t0 int = _goml_runtime_core_string_len(self__0)
     return t0
@@ -4234,18 +4271,6 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__isize(self__0 *ref_int_x) i
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__isize(self__0 *ref_int_x, value__0 int) struct{} {
     ref_set__Ref_3int(self__0, value__0)
     return struct{}{}
-}
-
-func _goml_m_inherent_i_char_i_char_i_to__string(self__0 rune) string {
-    var inline0 uint32 = uint32(rune(self__0))
-    var inline1 bool = utf8_valid_scalar(inline0)
-    if inline1 {
-        var inline2 string = _goml_runtime_core_char_to_string(self__0)
-        return inline2
-    } else {
-        _goml_runtime_core_string_get("", -1)
-        return ""
-    }
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__slice(self__0 string, start__0 int, end__0 int) string {
@@ -4751,6 +4776,24 @@ func utf8_invalid_continuation(value__0 uint32) bool {
     }
 }
 
+func utf8_valid_scalar(value__0 uint32) bool {
+    var t0 bool = value__0 <= 1114111
+    if t0 {
+        var t1 bool = value__0 >= 55296
+        var jp0 bool
+        if t1 {
+            var t3 bool = value__0 <= 57343
+            jp0 = t3
+        } else {
+            jp0 = false
+        }
+        var t2 bool = !jp0
+        return t2
+    } else {
+        return false
+    }
+}
+
 func decimal_string(value__0 uint64) string {
     var t0 bool = value__0 == 0
     if t0 {
@@ -4806,24 +4849,6 @@ func decimal_string(value__0 uint64) string {
         var mtmp0 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__0)
         var x0 string = mtmp0._1
         return x0
-    }
-}
-
-func utf8_valid_scalar(value__0 uint32) bool {
-    var t0 bool = value__0 <= 1114111
-    if t0 {
-        var t1 bool = value__0 >= 55296
-        var jp0 bool
-        if t1 {
-            var t3 bool = value__0 <= 57343
-            jp0 = t3
-        } else {
-            jp0 = false
-        }
-        var t2 bool = !jp0
-        return t2
-    } else {
-        return false
     }
 }
 

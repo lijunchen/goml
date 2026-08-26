@@ -279,21 +279,6 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/0: std::bytes::Bytes
   std::bytes::Bytes.values(self/0)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
-  self/0: std::bytes::Bytes
-) -> Result__string__string {
-  let mtmp0 = string_from_utf0(std::bytes::Bytes.values(self/0)) in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  let value/0 = x1 in
-  let valid/0 = x0 in
-  if valid/0 {
-      Result__string__string::Ok(value/0)
-  } else {
-      Result__string__string::Err("invalid UTF-8")
-  }
-}
-
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#builder() -> std::bytes::Builder {
   inherent#std::bytes::Builder#std::bytes::Builder#new()
 }
@@ -683,6 +668,292 @@ fn std::internal::host::crypto_random_bytes(length/0: isize) -> (bool, Vec[u8], 
   @runtime(std.crypto.rand.bytes)(length/0)
 }
 
+fn trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf8(
+  self/0: std::bytes::Bytes
+) -> Result__string__std::utf8::Utf8Error {
+  std::utf8::decode(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/0))
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(
+  valid_up_to/0: isize,
+  error_length/0: Option__isize
+) -> std::utf8::Utf8Error {
+  std::utf8::Utf8Error { valid_up_to_value: valid_up_to/0, error_length_value: error_length/0 }
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#valid_up_to(
+  self/0: std::utf8::Utf8Error
+) -> isize {
+  std::utf8::Utf8Error.valid_up_to_value(self/0)
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#error_length(
+  self/0: std::utf8::Utf8Error
+) -> Option__isize {
+  std::utf8::Utf8Error.error_length_value(self/0)
+}
+
+fn trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0: std::utf8::Utf8Error) -> string {
+  ("invalid UTF-8 at byte " +
+    inherent#isize#isize#to_string(std::utf8::Utf8Error.valid_up_to_value(self/0)))
+}
+
+fn trait_impl#Debug#std::utf8::Utf8Error#debug(self/0: std::utf8::Utf8Error) -> string {
+  trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0)
+}
+
+fn trait_impl#PartialEq#std::utf8::Utf8Error#eq(
+  self/0: std::utf8::Utf8Error,
+  other/0: std::utf8::Utf8Error
+) -> bool {
+  if (std::utf8::Utf8Error.valid_up_to_value(self/0) ==
+    std::utf8::Utf8Error.valid_up_to_value(other/0)) {
+      trait_impl#PartialEq#Option__isize#eq(
+        std::utf8::Utf8Error.error_length_value(self/0),
+        std::utf8::Utf8Error.error_length_value(other/0)
+      )
+  } else {
+      false
+  }
+}
+
+fn std::utf8::continuation(value/0: u8) -> bool {
+  if (value/0 >= 128) {
+      (value/0 <= 191)
+  } else {
+      false
+  }
+}
+
+fn std::utf8::invalid(index/0: isize) -> Result__()__std::utf8::Utf8Error {
+  Result__()__std::utf8::Utf8Error::Err(
+    inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(index/0, Option__isize::Some(1))
+  )
+}
+
+fn std::utf8::truncated(index/0: isize) -> Result__()__std::utf8::Utf8Error {
+  Result__()__std::utf8::Utf8Error::Err(
+    inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(index/0, Option__isize::None)
+  )
+}
+
+fn std::utf8::validate(bytes/0: Slice[u8]) -> Result__()__std::utf8::Utf8Error {
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+        let first/0 = inherent#Slice#Slice[T]#get__T_u0(bytes/0, index/0) in
+        if (first/0 <= 127) {
+            let _wild1 =
+              let compound_old0 = index/0 in
+              let compound_value0 = 1 in
+              index/0 = (compound_old0 + compound_value0) in
+            ()
+        } else {
+            if if (first/0 >= 194) {
+                (first/0 <= 223)
+            } else {
+                false
+            } {
+                if ((index/0 + 1) >= inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+                    return std::utf8::truncated(index/0)
+                } else {
+                    if (!std::utf8::continuation(
+                      inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 1))
+                    )) {
+                        return std::utf8::invalid(index/0)
+                    } else {
+                        let _wild2 =
+                          let compound_old1 = index/0 in
+                          let compound_value1 = 2 in
+                          index/0 = (compound_old1 + compound_value1) in
+                        ()
+                    }
+                }
+            } else {
+                if if (first/0 >= 224) {
+                    (first/0 <= 239)
+                } else {
+                    false
+                } {
+                    if ((index/0 + 2) >= inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+                        return std::utf8::truncated(index/0)
+                    } else {
+                        let second/0 = inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 1)) in
+                        let second_valid/0 =
+                          if (first/0 == 224) {
+                              if (second/0 >= 160) {
+                                  (second/0 <= 191)
+                              } else {
+                                  false
+                              }
+                          } else {
+                              if (first/0 == 237) {
+                                  if (second/0 >= 128) {
+                                      (second/0 <= 159)
+                                  } else {
+                                      false
+                                  }
+                              } else {
+                                  std::utf8::continuation(second/0)
+                              }
+                          } in
+                        if if (!second_valid/0) {
+                            true
+                        } else {
+                            (!std::utf8::continuation(
+                              inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 2))
+                            ))
+                        } {
+                            return std::utf8::invalid(index/0)
+                        } else {
+                            let _wild3 =
+                              let compound_old2 = index/0 in
+                              let compound_value2 = 3 in
+                              index/0 = (compound_old2 + compound_value2) in
+                            ()
+                        }
+                    }
+                } else {
+                    if if (first/0 >= 240) {
+                        (first/0 <= 244)
+                    } else {
+                        false
+                    } {
+                        if ((index/0 + 3) >= inherent#Slice#Slice[T]#len__T_u0(bytes/0)) {
+                            return std::utf8::truncated(index/0)
+                        } else {
+                            let second/1 =
+                              inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 1)) in
+                            let second_valid/1 =
+                              if (first/0 == 240) {
+                                  if (second/1 >= 144) {
+                                      (second/1 <= 191)
+                                  } else {
+                                      false
+                                  }
+                              } else {
+                                  if (first/0 == 244) {
+                                      if (second/1 >= 128) {
+                                          (second/1 <= 143)
+                                      } else {
+                                          false
+                                      }
+                                  } else {
+                                      std::utf8::continuation(second/1)
+                                  }
+                              } in
+                            if if if (!second_valid/1) {
+                                true
+                            } else {
+                                (!std::utf8::continuation(
+                                  inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 2))
+                                ))
+                            } {
+                                true
+                            } else {
+                                (!std::utf8::continuation(
+                                  inherent#Slice#Slice[T]#get__T_u0(bytes/0, (index/0 + 3))
+                                ))
+                            } {
+                                return std::utf8::invalid(index/0)
+                            } else {
+                                let _wild4 =
+                                  let compound_old3 = index/0 in
+                                  let compound_value3 = 4 in
+                                  index/0 = (compound_old3 + compound_value3) in
+                                ()
+                            }
+                        }
+                    } else {
+                        return std::utf8::invalid(index/0)
+                    }
+                }
+            }
+        }
+    } in
+  Result__()__std::utf8::Utf8Error::Ok(())
+}
+
+fn std::utf8::decode(bytes/0: Vec[u8]) -> Result__string__std::utf8::Utf8Error {
+  std::utf8::decode_slice(inherent#Vec#Vec[T]#as_slice__T_u0(bytes/0))
+}
+
+fn std::utf8::decode_slice(bytes/0: Slice[u8]) -> Result__string__std::utf8::Utf8Error {
+  let _wild0 =
+    let mtmp0 = std::utf8::validate(bytes/0) in
+    match mtmp0 {
+      Result__()__std::utf8::Utf8Error::Ok(x0) => {
+        let x0 = Result__()__std::utf8::Utf8Error::Ok._0(mtmp0) in
+        let try_value/0 = x0 in
+        try_value/0
+      },
+      Result__()__std::utf8::Utf8Error::Err(x1) => {
+        let x1 = Result__()__std::utf8::Utf8Error::Err._0(mtmp0) in
+        let try_residual/0 = x1 in
+        return Result__string__std::utf8::Utf8Error::Err(try_residual/0)
+      },
+    } in
+  let values/0 = inherent#Slice#Slice[T]#to_vec__T_u0(bytes/0) in
+  let mtmp1 = string_from_utf0(values/0) in
+  let x2 = mtmp1.0 in
+  let x3 = mtmp1.1 in
+  let value/0 = x3 in
+  let valid/0 = x2 in
+  if valid/0 {
+      Result__string__std::utf8::Utf8Error::Ok(value/0)
+  } else {
+      Result__string__std::utf8::Utf8Error::Err(
+        inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(0, Option__isize::None)
+      )
+  }
+}
+
+fn std::utf8::encode(value/0: string) -> Vec[u8] {
+  inherent#string#string#to_bytes(value/0)
+}
+
+fn std::utf8::encode_into(
+  value/0: string,
+  output/0: MutSlice[u8],
+  offset/0: isize
+) -> Result__isize__std::bytes::BoundsError {
+  let encoded/0 = inherent#string#string#to_bytes(value/0) in
+  if inherent#MutSlice#MutSlice[T]#copy_from__T_u0(
+    output/0,
+    offset/0,
+    inherent#Vec#Vec[T]#as_slice__T_u0(encoded/0)
+  ) {
+      Result__isize__std::bytes::BoundsError::Ok(inherent#Vec#Vec[T]#len__T_u0(encoded/0))
+  } else {
+      Result__isize__std::bytes::BoundsError::Err(
+        inherent#std::bytes::BoundsError#std::bytes::BoundsError#new(
+          offset/0,
+          inherent#Vec#Vec[T]#len__T_u0(encoded/0),
+          inherent#MutSlice#MutSlice[T]#len__T_u0(output/0)
+        )
+      )
+  }
+}
+
+fn std::utf8::encode_to(value/0: string, output/0: std::bytes::Builder) -> () {
+  inherent#std::bytes::Builder#std::bytes::Builder#extend(
+    output/0,
+    inherent#Vec#Vec[T]#as_slice__T_u0(inherent#string#string#to_bytes(value/0))
+  )
+}
+
+fn std::utf8::encode_char_into(
+  value/0: char,
+  output/0: MutSlice[u8],
+  offset/0: isize
+) -> Result__isize__std::bytes::BoundsError {
+  std::utf8::encode_into(inherent#char#char#to_string(value/0), output/0, offset/0)
+}
+
+fn std::utf8::encoded_len(value/0: char) -> isize {
+  inherent#string#string#byte_len(inherent#char#char#to_string(value/0))
+}
+
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
   match self/0 {
     std::io::ErrorKind::NotFound => {
@@ -1027,23 +1298,23 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
     Result__std::bytes::Bytes__std::io::Error::Ok(x0) => {
       let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
       let data/0 = x0 in
-      let mtmp1 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/0) in
+      let mtmp1 = trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
       match mtmp1 {
-        Result__string__string::Ok(x1) => {
-          let x1 = Result__string__string::Ok._0(mtmp1) in
+        Result__string__std::utf8::Utf8Error::Ok(x1) => {
+          let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
           let value/0 = x1 in
           Result__string__std::io::Error::Ok(value/0)
         },
-        Result__string__string::Err(x2) => {
-          let x2 = Result__string__string::Err._0(mtmp1) in
-          let message/0 = x2 in
+        Result__string__std::utf8::Utf8Error::Err(x2) => {
+          let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
+          let error/0 = x2 in
           Result__string__std::io::Error::Err(
             inherent#std::io::Error#std::io::Error#new(
               std::io::ErrorKind::InvalidData,
               "read stdin",
               Option__string::None,
               Option__isize::None,
-              message/0
+              trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
             )
           )
         },
@@ -1051,8 +1322,8 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
     },
     Result__std::bytes::Bytes__std::io::Error::Err(x3) => {
       let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
-      let error/0 = x3 in
-      Result__string__std::io::Error::Err(error/0)
+      let error/1 = x3 in
+      Result__string__std::io::Error::Err(error/1)
     },
   }
 }
@@ -1152,76 +1423,6 @@ fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__()__st
 
 fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   std::io::write_structured(true, data/0)
-}
-
-fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  let mtmp0 = std::internal::host::read_stdin() in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  let x2 = mtmp0.2 in
-  let err/0 = x2 in
-  let data/0 = x1 in
-  let ok/0 = x0 in
-  if ok/0 {
-      Result__std::bytes::Bytes__string::Ok(
-        inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/0)
-      )
-  } else {
-      Result__std::bytes::Bytes__string::Err(err/0)
-  }
-}
-
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__()__string {
-  let mtmp0 =
-    std::internal::host::write_stdout(
-      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
-    ) in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  let err/0 = x1 in
-  let ok/0 = x0 in
-  if ok/0 {
-      Result__()__string::Ok(())
-  } else {
-      Result__()__string::Err(err/0)
-  }
-}
-
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__()__string {
-  let mtmp0 =
-    std::internal::host::write_stderr(
-      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
-    ) in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  let err/0 = x1 in
-  let ok/0 = x0 in
-  if ok/0 {
-      Result__()__string::Ok(())
-  } else {
-      Result__()__string::Err(err/0)
-  }
-}
-
-fn std::io::read_stdin_exact(length/0: isize) -> Result__std::bytes::Bytes__string {
-  if (length/0 < 0) {
-      Result__std::bytes::Bytes__string::Err("read length must be non-negative")
-  } else {
-      let mtmp0 = std::internal::host::read_stdin_exact(length/0) in
-      let x0 = mtmp0.0 in
-      let x1 = mtmp0.1 in
-      let x2 = mtmp0.2 in
-      let err/0 = x2 in
-      let data/0 = x1 in
-      let ok/0 = x0 in
-      if ok/0 {
-          Result__std::bytes::Bytes__string::Ok(
-            inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/0)
-          )
-      } else {
-          Result__std::bytes::Bytes__string::Err(err/0)
-      }
-  }
 }
 
 fn inherent#std::fs::Error#std::fs::Error#new(
@@ -1441,23 +1642,23 @@ fn std::fs::read_file_structured(path/0: string) -> Result__string__std::fs::Err
     Result__std::bytes::Bytes__std::fs::Error::Ok(x0) => {
       let x0 = Result__std::bytes::Bytes__std::fs::Error::Ok._0(mtmp0) in
       let data/0 = x0 in
-      let mtmp1 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/0) in
+      let mtmp1 = trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf0(data/0) in
       match mtmp1 {
-        Result__string__string::Ok(x1) => {
-          let x1 = Result__string__string::Ok._0(mtmp1) in
+        Result__string__std::utf8::Utf8Error::Ok(x1) => {
+          let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
           let value/0 = x1 in
           Result__string__std::fs::Error::Ok(value/0)
         },
-        Result__string__string::Err(x2) => {
-          let x2 = Result__string__string::Err._0(mtmp1) in
-          let message/0 = x2 in
+        Result__string__std::utf8::Utf8Error::Err(x2) => {
+          let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
+          let error/0 = x2 in
           Result__string__std::fs::Error::Err(
             inherent#std::fs::Error#std::fs::Error#new(
               std::io::ErrorKind::InvalidData,
               "read file",
               Option__string::Some(path/0),
               Option__isize::None,
-              message/0
+              trait_impl#ToString#std::utf8::Utf8Error#to_string(error/0)
             )
           )
         },
@@ -1465,8 +1666,8 @@ fn std::fs::read_file_structured(path/0: string) -> Result__string__std::fs::Err
     },
     Result__std::bytes::Bytes__std::fs::Error::Err(x3) => {
       let x3 = Result__std::bytes::Bytes__std::fs::Error::Err._0(mtmp0) in
-      let error/0 = x3 in
-      Result__string__std::fs::Error::Err(error/0)
+      let error/1 = x3 in
+      Result__string__std::fs::Error::Err(error/1)
     },
   }
 }
@@ -1747,96 +1948,48 @@ fn std::fs::read_dir_structured(path/0: string) -> Result__Vec[std::fs::DirEntry
   }
 }
 
-fn std::fs::read_file(path/0: string) -> Result__string__string {
-  let mtmp0 = std::fs::read_bytes(path/0) in
-  match mtmp0 {
-    Result__std::bytes::Bytes__string::Ok(x0) => {
-      let x0 = Result__std::bytes::Bytes__string::Ok._0(mtmp0) in
-      let data/0 = x0 in
-      inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/0)
-    },
-    Result__std::bytes::Bytes__string::Err(x1) => {
-      let x1 = Result__std::bytes::Bytes__string::Err._0(mtmp0) in
-      let error/0 = x1 in
-      Result__string__string::Err(error/0)
-    },
-  }
-}
-
-fn std::fs::write_file(path/0: string, content/0: string) -> Result__()__string {
-  std::fs::write_bytes(path/0, inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/0))
-}
-
-fn std::fs::read_bytes(path/0: string) -> Result__std::bytes::Bytes__string {
-  let mtmp0 = std::internal::host::read_bytes(path/0) in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  let x2 = mtmp0.2 in
-  let err/0 = x2 in
-  let data/0 = x1 in
-  let ok/0 = x0 in
-  if ok/0 {
-      Result__std::bytes::Bytes__string::Ok(
-        inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/0)
-      )
-  } else {
-      Result__std::bytes::Bytes__string::Err(err/0)
-  }
-}
-
-fn std::fs::write_bytes(path/0: string, data/0: std::bytes::Bytes) -> Result__()__string {
-  let mtmp0 =
-    std::internal::host::write_bytes(
-      path/0,
-      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/0)
-    ) in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  let err/0 = x1 in
-  let ok/0 = x0 in
-  if ok/0 {
-      Result__()__string::Ok(())
-  } else {
-      Result__()__string::Err(err/0)
-  }
-}
-
-fn std::fs::create_dir_all(path/0: string) -> Result__()__string {
+fn std::fs::create_dir_all(path/0: string) -> Result__()__std::fs::Error {
   let mtmp0 = std::internal::host::create_dir_all(path/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
   let err/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__()__string::Ok(())
+      Result__()__std::fs::Error::Ok(())
   } else {
-      Result__()__string::Err(err/0)
+      Result__()__std::fs::Error::Err(
+        std::fs::structured_error("create directories", path/0, 0, false, 0, err/0)
+      )
   }
 }
 
-fn std::fs::remove_file(path/0: string) -> Result__()__string {
+fn std::fs::remove_file(path/0: string) -> Result__()__std::fs::Error {
   let mtmp0 = std::internal::host::remove_file(path/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
   let err/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__()__string::Ok(())
+      Result__()__std::fs::Error::Ok(())
   } else {
-      Result__()__string::Err(err/0)
+      Result__()__std::fs::Error::Err(
+        std::fs::structured_error("remove file", path/0, 0, false, 0, err/0)
+      )
   }
 }
 
-fn std::fs::remove_dir_all(path/0: string) -> Result__()__string {
+fn std::fs::remove_dir_all(path/0: string) -> Result__()__std::fs::Error {
   let mtmp0 = std::internal::host::remove_dir_all(path/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
   let err/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__()__string::Ok(())
+      Result__()__std::fs::Error::Ok(())
   } else {
-      Result__()__string::Err(err/0)
+      Result__()__std::fs::Error::Err(
+        std::fs::structured_error("remove directory", path/0, 0, false, 0, err/0)
+      )
   }
 }
 
@@ -1852,7 +2005,7 @@ fn std::fs::is_dir(path/0: string) -> bool {
   std::internal::host::is_dir(path/0)
 }
 
-fn std::fs::canonicalize(path/0: string) -> Result__string__string {
+fn std::fs::canonicalize(path/0: string) -> Result__string__std::fs::Error {
   let mtmp0 = std::internal::host::canonicalize(path/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
@@ -1861,13 +2014,15 @@ fn std::fs::canonicalize(path/0: string) -> Result__string__string {
   let result/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__string__string::Ok(result/0)
+      Result__string__std::fs::Error::Ok(result/0)
   } else {
-      Result__string__string::Err(err/0)
+      Result__string__std::fs::Error::Err(
+        std::fs::structured_error("canonicalize", path/0, 0, false, 0, err/0)
+      )
   }
 }
 
-fn std::fs::read_dir(path/0: string) -> Result__Vec[string]__string {
+fn std::fs::read_dir(path/0: string) -> Result__Vec[string]__std::fs::Error {
   let mtmp0 = std::internal::host::read_dir(path/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
@@ -1876,13 +2031,15 @@ fn std::fs::read_dir(path/0: string) -> Result__Vec[string]__string {
   let names/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__Vec[string]__string::Ok(names/0)
+      Result__Vec[string]__std::fs::Error::Ok(names/0)
   } else {
-      Result__Vec[string]__string::Err(err/0)
+      Result__Vec[string]__std::fs::Error::Err(
+        std::fs::structured_error("read directory", path/0, 0, false, 0, err/0)
+      )
   }
 }
 
-fn std::fs::sha256_file(path/0: string) -> Result__string__string {
+fn std::fs::sha256_file(path/0: string) -> Result__string__std::fs::Error {
   let mtmp0 = std::internal::host::sha256_file(path/0) in
   let x0 = mtmp0.0 in
   let x1 = mtmp0.1 in
@@ -1891,37 +2048,11 @@ fn std::fs::sha256_file(path/0: string) -> Result__string__string {
   let result/0 = x1 in
   let ok/0 = x0 in
   if ok/0 {
-      Result__string__string::Ok(result/0)
+      Result__string__std::fs::Error::Ok(result/0)
   } else {
-      Result__string__string::Err(err/0)
-  }
-}
-
-fn show_unit(result/0: Result__()__string) -> string {
-  match result/0 {
-    Result__()__string::Ok(x0) => {
-      "ok"
-    },
-    Result__()__string::Err(x1) => {
-      let x1 = Result__()__string::Err._0(result/0) in
-      let err/0 = x1 in
-      ("err " + err/0)
-    },
-  }
-}
-
-fn show_string(result/0: Result__string__string) -> string {
-  match result/0 {
-    Result__string__string::Ok(x0) => {
-      let x0 = Result__string__string::Ok._0(result/0) in
-      let value/0 = x0 in
-      value/0
-    },
-    Result__string__string::Err(x1) => {
-      let x1 = Result__string__string::Err._0(result/0) in
-      let err/0 = x1 in
-      ("err " + err/0)
-    },
+      Result__string__std::fs::Error::Err(
+        std::fs::structured_error("hash file", path/0, 0, false, 0, err/0)
+      )
   }
 }
 
@@ -1930,12 +2061,18 @@ fn main() -> () {
   let _wild1 = std::io::eprint__T_string("") in
   let _wild2 = std::io::eprintln__T_string("") in
   let _wild3 =
-    std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
+    std::io::println__T_string(
+      show_unit__E_std::fs::Error(std::fs::create_dir_all("goml-self-host/nested"))
+    ) in
   let _wild4 =
     std::io::println__T_string(
-      show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))
+      show_unit__E_std::fs::Error(
+        std::fs::write_file_structured("goml-self-host/nested/output.txt", "boot")
+      )
     ) in
-  std::io::println__T_string(show_string(std::fs::read_file("goml-self-host/nested/output.txt")))
+  std::io::println__T_string(
+    show_string__E_std::fs::Error(std::fs::read_file_structured("goml-self-host/nested/output.txt"))
+  )
 }
 
 fn inherent#isize#isize#to_string(self/0: isize) -> string {
@@ -2089,6 +2226,55 @@ fn inherent#Vec#Vec[T]#slice_mut_checked__T_u8(
   }
 }
 
+fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option__isize) -> bool {
+  let mtmp0 = (self/0, other/0) in
+  let x0 = mtmp0.0 in
+  let x1 = mtmp0.1 in
+  match x1 {
+    Option__isize::None => {
+      match x0 {
+        Option__isize::None => {
+          true
+        },
+        _ => false,
+      }
+    },
+    Option__isize::Some(x2) => {
+      let x2 = Option__isize::Some._0(x1) in
+      match x0 {
+        Option__isize::Some(x3) => {
+          let x3 = Option__isize::Some._0(x0) in
+          let left/0 = x3 in
+          let right/0 = x2 in
+          trait_impl#PartialEq#isize#eq(left/0, right/0)
+        },
+        _ => false,
+      }
+    },
+  }
+}
+
+fn inherent#Slice#Slice[T]#get__T_u8(self/0: Slice[u8], index/0: isize) -> u8 {
+  @intrinsic(slice.get)(self/0, index/0)
+}
+
+fn inherent#Slice#Slice[T]#to_vec__T_u8(self/0: Slice[u8]) -> Vec[u8] {
+  let result/0 =
+    inherent#Vec#Vec[T]#with_capacity__T_u0(inherent#Slice#Slice[T]#len__T_u0(self/0)) in
+  let index/0 = 0 in
+  let _wild0 =
+    while (index/0 < inherent#Slice#Slice[T]#len__T_u0(self/0)) {
+        let _wild1 =
+          inherent#Vec#Vec[T]#push__T_u0(result/0, @intrinsic(slice.get)(self/0, index/0)) in
+        let _wild2 =
+          let compound_old0 = index/0 in
+          let compound_value0 = 1 in
+          index/0 = (compound_old0 + compound_value0) in
+        ()
+    } in
+  result/0
+}
+
 fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   let x0 = mtmp0.1 in
@@ -2114,6 +2300,26 @@ fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   (true, value/0)
 }
 
+fn inherent#MutSlice#MutSlice[T]#copy_from__T_u8(
+  self/0: MutSlice[u8],
+  start/0: isize,
+  source/0: Slice[u8]
+) -> bool {
+  @intrinsic(mut_slice.copy_from)(self/0, start/0, source/0)
+}
+
+fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
+  @intrinsic(mut_slice.len)(self/0)
+}
+
+fn inherent#char#char#to_string(self/0: char) -> string {
+  char_to_string(self/0)
+}
+
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  @runtime(core.string_len)(self/0)
+}
+
 fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Option__string) -> bool {
   let mtmp0 = (self/0, other/0) in
   let x0 = mtmp0.0 in
@@ -2135,34 +2341,6 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
           let left/0 = x3 in
           let right/0 = x2 in
           trait_impl#PartialEq#string#eq(left/0, right/0)
-        },
-        _ => false,
-      }
-    },
-  }
-}
-
-fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option__isize) -> bool {
-  let mtmp0 = (self/0, other/0) in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  match x1 {
-    Option__isize::None => {
-      match x0 {
-        Option__isize::None => {
-          true
-        },
-        _ => false,
-      }
-    },
-    Option__isize::Some(x2) => {
-      let x2 = Option__isize::Some._0(x1) in
-      match x0 {
-        Option__isize::Some(x3) => {
-          let x3 = Option__isize::Some._0(x0) in
-          let left/0 = x3 in
-          let right/0 = x2 in
-          trait_impl#PartialEq#isize#eq(left/0, right/0)
         },
         _ => false,
       }
@@ -2205,16 +2383,40 @@ fn std::io::eprintln__T_string(value/0: string) -> () {
   std::internal::host::eprint((trait_impl#ToString#string#to_string(value/0) + "\n"))
 }
 
+fn show_unit__E_std::fs::Error(result/0: Result__()__std::fs::Error) -> string {
+  match result/0 {
+    Result__()__std::fs::Error::Ok(x0) => {
+      "ok"
+    },
+    Result__()__std::fs::Error::Err(x1) => {
+      let x1 = Result__()__std::fs::Error::Err._0(result/0) in
+      let err/0 = x1 in
+      ("err " + trait_impl#ToString#std::fs::Error#to_string(err/0))
+    },
+  }
+}
+
+fn show_string__E_std::fs::Error(result/0: Result__string__std::fs::Error) -> string {
+  match result/0 {
+    Result__string__std::fs::Error::Ok(x0) => {
+      let x0 = Result__string__std::fs::Error::Ok._0(result/0) in
+      let value/0 = x0 in
+      value/0
+    },
+    Result__string__std::fs::Error::Err(x1) => {
+      let x1 = Result__string__std::fs::Error::Err._0(result/0) in
+      let err/0 = x1 in
+      ("err " + trait_impl#ToString#std::fs::Error#to_string(err/0))
+    },
+  }
+}
+
 fn __goml_builtin_int_to_string(value/0: isize) -> string {
   signed_decimal_string((value/0 as i64))
 }
 
-fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
-  @intrinsic(mut_slice.len)(self/0)
-}
-
-fn inherent#string#string#byte_len(self/0: string) -> isize {
-  @runtime(core.string_len)(self/0)
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  (self/0 == other/0)
 }
 
 fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize) {
@@ -2344,11 +2546,16 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
   }
 }
 
-fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
-  (self/0 == other/0)
+fn char_to_string(value/0: char) -> string {
+  if utf8_valid_scalar((value/0 as u32)) {
+      @runtime(core.char_to_string)(value/0)
+  } else {
+      let mtmp0 = @runtime(core.string_get)("", -1) in
+      ""
+  }
 }
 
-fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
   (self/0 == other/0)
 }
 
@@ -2410,6 +2617,18 @@ fn utf8_invalid_continuation(value/0: u32) -> bool {
   }
 }
 
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  if (value/0 <= 1114111) {
+      (!if (value/0 >= 55296) {
+          (value/0 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
+}
+
 fn decimal_string(value/0: u64) -> string {
   let _wild0 =
     if (value/0 == 0) {
@@ -2461,17 +2680,5 @@ fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
       Option__char::Some(character/0)
   } else {
       Option__char::None
-  }
-}
-
-fn utf8_valid_scalar(value/0: u32) -> bool {
-  if (value/0 <= 1114111) {
-      (!if (value/0 >= 55296) {
-          (value/0 <= 57343)
-      } else {
-          false
-      })
-  } else {
-      false
   }
 }

@@ -226,11 +226,11 @@ func main0() struct{} {
             break Loop_loop0
         }
     }
-    var legacy__0 Tuple2_3int_3int = Tuple2_3int_3int{
+    var tuple__0 Tuple2_3int_3int = Tuple2_3int_3int{
         _0: 8,
         _1: 9,
     }
-    var place_root0 Tuple2_3int_3int = legacy__0
+    var place_root0 Tuple2_3int_3int = tuple__0
     var place0 int = place_root0._0
     var value0 int = 1
     var t7 int = place0 + value0
@@ -239,8 +239,8 @@ func main0() struct{} {
         _0: t7,
         _1: t8,
     }
-    legacy__0 = t9
-    var place_root1 Tuple2_3int_3int = legacy__0
+    tuple__0 = t9
+    var place_root1 Tuple2_3int_3int = tuple__0
     var place1 int = place_root1._1
     var value1 int = 1
     var t11 int = place_root1._0
@@ -249,9 +249,9 @@ func main0() struct{} {
         _0: t11,
         _1: t12,
     }
-    legacy__0 = t13
-    var t15 int = legacy__0._0
-    var t16 int = legacy__0._1
+    tuple__0 = t13
+    var t15 int = tuple__0._0
+    var t16 int = tuple__0._1
     var t17 int = t15 + t16
     var inline11 string = _goml_m_trait__impl_i_ToString_i_isize_i_to__string(t17)
     _goml_runtime_core_string_println(inline11)

@@ -1,26 +1,31 @@
-fn show_read(res/0: Result[string, string]) -> string {
-    match (res/0 : Result[string, string]) {
+fn show_read[E](res/0: Result[string, E]) -> string where E: ToString {
+    match (res/0 : Result[string, E]) {
         Result::Ok(value/1: string) => (value/1 : string),
-        Result::Err(err/2: string) => "err " + (err/2 : string),
+        Result::Err(err/2: E) => "err " + (ToString::to_string : (E) -> string)((err/2 : E)),
     }
 }
 
-fn show_dir(res/3: Result[Vec[string], string]) -> string {
-    match (res/3 : Result[Vec[string], string]) {
+fn show_dir[E](res/3: Result[Vec[string], E]) -> string where E: ToString {
+    match (res/3 : Result[Vec[string], E]) {
         Result::Ok(names/4: Vec[string]) =>
           (ToString::to_string : (bool) -> string)(
             (Vec[string]::len : (Vec[string]) -> isize)((names/4 : Vec[string])) > 0
           ),
-        Result::Err(err/5: string) => "err " + (err/5 : string),
+        Result::Err(err/5: E) => "err " + (ToString::to_string : (E) -> string)((err/5 : E)),
     }
 }
 
 fn main() -> () {
-    let _ : Result[(), string] =
-      (std::fs::write_file : (string, string) -> Result[(), string])("goml-std-test.txt", "std-ok");
+    let _ : Result[(), std::fs::Error] =
+      (std::fs::write_file_structured : (string, string) -> Result[(), std::fs::Error])(
+        "goml-std-test.txt",
+        "std-ok"
+      );
     (std::io::println : (string) -> ())(
-      (show_read : (Result[string, string]) -> string)(
-        (std::fs::read_file : (string) -> Result[string, string])("goml-std-test.txt")
+      (show_read : (Result[string, std::fs::Error]) -> string)(
+        (std::fs::read_file_structured : (string) -> Result[string, std::fs::Error])(
+          "goml-std-test.txt"
+        )
       )
     );
     (std::io::println : (string) -> ())(
@@ -29,8 +34,8 @@ fn main() -> () {
       )
     );
     (std::io::println : (string) -> ())(
-      (show_dir : (Result[Vec[string], string]) -> string)(
-        (std::fs::read_dir : (string) -> Result[Vec[string], string])(".")
+      (show_dir : (Result[Vec[string], std::fs::Error]) -> string)(
+        (std::fs::read_dir : (string) -> Result[Vec[string], std::fs::Error])(".")
       )
     );
 }

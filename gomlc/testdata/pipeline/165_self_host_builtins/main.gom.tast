@@ -1,14 +1,14 @@
-fn show_unit(result/0: Result[(), string]) -> string {
-    match (result/0 : Result[(), string]) {
+fn show_unit[E](result/0: Result[(), E]) -> string where E: ToString {
+    match (result/0 : Result[(), E]) {
         Result::Ok(_ : ()) => "ok",
-        Result::Err(err/1: string) => "err " + (err/1 : string),
+        Result::Err(err/1: E) => "err " + (ToString::to_string : (E) -> string)((err/1 : E)),
     }
 }
 
-fn show_string(result/2: Result[string, string]) -> string {
-    match (result/2 : Result[string, string]) {
+fn show_string[E](result/2: Result[string, E]) -> string where E: ToString {
+    match (result/2 : Result[string, E]) {
         Result::Ok(value/3: string) => (value/3 : string),
-        Result::Err(err/4: string) => "err " + (err/4 : string),
+        Result::Err(err/4: E) => "err " + (ToString::to_string : (E) -> string)((err/4 : E)),
     }
 }
 
@@ -19,21 +19,21 @@ fn main() -> () {
     (std::io::eprint : (string) -> ())("");
     (std::io::eprintln : (string) -> ())("");
     (std::io::println : (string) -> ())(
-      (show_unit : (Result[(), string]) -> string)(
-        (std::fs::create_dir_all : (string) -> Result[(), string])("goml-self-host/nested")
+      (show_unit : (Result[(), std::fs::Error]) -> string)(
+        (std::fs::create_dir_all : (string) -> Result[(), std::fs::Error])("goml-self-host/nested")
       )
     );
     (std::io::println : (string) -> ())(
-      (show_unit : (Result[(), string]) -> string)(
-        (std::fs::write_file : (string, string) -> Result[(), string])(
+      (show_unit : (Result[(), std::fs::Error]) -> string)(
+        (std::fs::write_file_structured : (string, string) -> Result[(), std::fs::Error])(
           "goml-self-host/nested/output.txt",
           "boot"
         )
       )
     );
     (std::io::println : (string) -> ())(
-      (show_string : (Result[string, string]) -> string)(
-        (std::fs::read_file : (string) -> Result[string, string])(
+      (show_string : (Result[string, std::fs::Error]) -> string)(
+        (std::fs::read_file_structured : (string) -> Result[string, std::fs::Error])(
           "goml-self-host/nested/output.txt"
         )
       )

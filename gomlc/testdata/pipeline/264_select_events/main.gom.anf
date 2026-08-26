@@ -1187,26 +1187,553 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/0: std::bytes::Bytes
   t0
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
-  self/0: std::bytes::Bytes
-) -> Result__string__string {
-  let t0 = std::bytes::Bytes.values(self/0) in
-  let mtmp0 = string_from_utf0(t0) in
-  let x0 = mtmp0.0 in
-  let x1 = mtmp0.1 in
-  if x0 {
-    let t1 = Result__string__string::Ok(x1) in
-    t1
-  } else {
-    let t2 = Result__string__string::Err("invalid UTF-8") in
-    t2
-  }
-}
-
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#builder() -> std::bytes::Builder {
   let inline0 = inherent#Vec#Vec[T]#new__T_u0() in
   let inline1 = std::bytes::Builder { values: inline0 } in
   inline1
+}
+
+fn trait_impl#std::utf8::BytesUtf8#std::bytes::Bytes#to_string_utf8(
+  self/0: std::bytes::Bytes
+) -> Result__string__std::utf8::Utf8Error {
+  join inline_cont0(t0: Vec[u8]) -> Result__string__std::utf8::Utf8Error {
+    let inline0 = inherent#Vec#Vec[T]#as_slice__T_u0(t0) in
+    let inline1 = std::utf8::decode_slice(inline0) in
+    inline1
+  } in
+  let inline2 = std::bytes::Bytes.values(self/0) in
+  jump inline_cont0(inline2)
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(
+  valid_up_to/0: isize,
+  error_length/0: Option__isize
+) -> std::utf8::Utf8Error {
+  let t0 =
+    std::utf8::Utf8Error { valid_up_to_value: valid_up_to/0, error_length_value: error_length/0 } in
+  t0
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#valid_up_to(
+  self/0: std::utf8::Utf8Error
+) -> isize {
+  let t0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  t0
+}
+
+fn inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#error_length(
+  self/0: std::utf8::Utf8Error
+) -> Option__isize {
+  let t0 = std::utf8::Utf8Error.error_length_value(self/0) in
+  t0
+}
+
+fn trait_impl#ToString#std::utf8::Utf8Error#to_string(self/0: std::utf8::Utf8Error) -> string {
+  let t0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  join inline_cont0(t1: string) -> string {
+    let t2 = ("invalid UTF-8 at byte " + t1) in
+    t2
+  } in
+  let inline0 = __goml_builtin_int_to_string(t0) in
+  jump inline_cont0(inline0)
+}
+
+fn trait_impl#Debug#std::utf8::Utf8Error#debug(self/0: std::utf8::Utf8Error) -> string {
+  let inline0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  let inline1 = inherent#isize#isize#to_string(inline0) in
+  let inline2 = ("invalid UTF-8 at byte " + inline1) in
+  inline2
+}
+
+fn trait_impl#PartialEq#std::utf8::Utf8Error#eq(
+  self/0: std::utf8::Utf8Error,
+  other/0: std::utf8::Utf8Error
+) -> bool {
+  let t0 = std::utf8::Utf8Error.valid_up_to_value(self/0) in
+  let t1 = std::utf8::Utf8Error.valid_up_to_value(other/0) in
+  let t2 = (t0 == t1) in
+  if t2 {
+    let t3 = std::utf8::Utf8Error.error_length_value(self/0) in
+    let t4 = std::utf8::Utf8Error.error_length_value(other/0) in
+    match t4 {
+      Tag_0 => {
+        match t3 {
+          Tag_0 => {
+            true
+          },
+          _ => {
+            false
+          },
+        }
+      },
+      Tag_1 => {
+        let inline0 = Option__isize::Some._0(t4) in
+        match t3 {
+          Tag_1 => {
+            let inline1 = Option__isize::Some._0(t3) in
+            let inline2 = trait_impl#PartialEq#isize#eq(inline1, inline0) in
+            inline2
+          },
+          _ => {
+            false
+          },
+        }
+      },
+    }
+  } else {
+    false
+  }
+}
+
+fn std::utf8::continuation(value/0: u8) -> bool {
+  let t0 = (value/0 >= 128) in
+  if t0 {
+    let t1 = (value/0 <= 191) in
+    t1
+  } else {
+    false
+  }
+}
+
+fn std::utf8::invalid(index/0: isize) -> Result__()__std::utf8::Utf8Error {
+  let t0 = Option__isize::Some(1) in
+  join inline_cont0(t1: std::utf8::Utf8Error) -> Result__()__std::utf8::Utf8Error {
+    let t2 = Result__()__std::utf8::Utf8Error::Err(t1) in
+    t2
+  } in
+  let inline0 = std::utf8::Utf8Error { valid_up_to_value: index/0, error_length_value: t0 } in
+  jump inline_cont0(inline0)
+}
+
+fn std::utf8::truncated(index/0: isize) -> Result__()__std::utf8::Utf8Error {
+  join inline_cont0(t0: std::utf8::Utf8Error) -> Result__()__std::utf8::Utf8Error {
+    let t1 = Result__()__std::utf8::Utf8Error::Err(t0) in
+    t1
+  } in
+  let inline0 = std::utf8::Utf8Error { valid_up_to_value: index/0, error_length_value: Tag_0 } in
+  jump inline_cont0(inline0)
+}
+
+fn std::utf8::validate(bytes/0: Slice[u8]) -> Result__()__std::utf8::Utf8Error {
+  let index/0 = 0 in
+  join exit0() -> Result__()__std::utf8::Utf8Error {
+    let t0 = Result__()__std::utf8::Utf8Error::Ok(()) in
+    t0
+  } in
+  joinrec {
+    join loop0() -> Result__()__std::utf8::Utf8Error {
+      let t1 = inherent#Slice#Slice[T]#len__T_u0(bytes/0) in
+      let t2 = (index/0 < t1) in
+      if t2 {
+        let first/0 = inherent#Slice#Slice[T]#get__T_u0(bytes/0, index/0) in
+        let t3 = (first/0 <= 127) in
+        if t3 {
+          let compound_old0 = index/0 in
+          let compound_value0 = 1 in
+          let t4 = (compound_old0 + compound_value0) in
+          let t5 = index/0 = t4 in
+          jump loop0()
+        } else {
+          let t6 = (first/0 >= 194) in
+          join k0(jp0: bool) -> Result__()__std::utf8::Utf8Error {
+            if jp0 {
+              let t7 = (index/0 + 1) in
+              join inline_cont0(t8: isize) -> Result__()__std::utf8::Utf8Error {
+                let t9 = (t7 >= t8) in
+                if t9 {
+                  let inline0 =
+                    inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(index/0, Tag_0) in
+                  let inline1 = Result__()__std::utf8::Utf8Error::Err(inline0) in
+                  inline1
+                } else {
+                  let t10 = (index/0 + 1) in
+                  join inline_cont1(t11: u8) -> Result__()__std::utf8::Utf8Error {
+                    join inline_cont2(t12: bool) -> Result__()__std::utf8::Utf8Error {
+                      let t13 = (!t12) in
+                      if t13 {
+                        let inline2 = Option__isize::Some(1) in
+                        let inline3 =
+                          inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(
+                            index/0,
+                            inline2
+                          ) in
+                        let inline4 = Result__()__std::utf8::Utf8Error::Err(inline3) in
+                        inline4
+                      } else {
+                        let compound_old1 = index/0 in
+                        let compound_value1 = 2 in
+                        let t14 = (compound_old1 + compound_value1) in
+                        let t15 = index/0 = t14 in
+                        jump loop0()
+                      }
+                    } in
+                    let inline5 = (t11 >= 128) in
+                    if inline5 {
+                      let inline6 = (t11 <= 191) in
+                      jump inline_cont2(inline6)
+                    } else {
+                      jump inline_cont2(false)
+                    }
+                  } in
+                  let inline7 = @intrinsic(slice.get)(bytes/0, t10) in
+                  jump inline_cont1(inline7)
+                }
+              } in
+              let inline8 = @intrinsic(slice.len)(bytes/0) in
+              jump inline_cont0(inline8)
+            } else {
+              let t16 = (first/0 >= 224) in
+              join k1(jp1: bool) -> Result__()__std::utf8::Utf8Error {
+                if jp1 {
+                  let t17 = (index/0 + 2) in
+                  join inline_cont3(t18: isize) -> Result__()__std::utf8::Utf8Error {
+                    let t19 = (t17 >= t18) in
+                    if t19 {
+                      let inline9 =
+                        inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(index/0, Tag_0) in
+                      let inline10 = Result__()__std::utf8::Utf8Error::Err(inline9) in
+                      inline10
+                    } else {
+                      let t20 = (index/0 + 1) in
+                      join inline_cont4(second/0: u8) -> Result__()__std::utf8::Utf8Error {
+                        let t21 = (first/0 == 224) in
+                        join k2(jp2: bool) -> Result__()__std::utf8::Utf8Error {
+                          let t22 = (!jp2) in
+                          join k3(jp3: bool) -> Result__()__std::utf8::Utf8Error {
+                            if jp3 {
+                              let inline11 = Option__isize::Some(1) in
+                              let inline12 =
+                                inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(
+                                  index/0,
+                                  inline11
+                                ) in
+                              let inline13 = Result__()__std::utf8::Utf8Error::Err(inline12) in
+                              inline13
+                            } else {
+                              let compound_old2 = index/0 in
+                              let compound_value2 = 3 in
+                              let t23 = (compound_old2 + compound_value2) in
+                              let t24 = index/0 = t23 in
+                              jump loop0()
+                            }
+                          } in
+                          if t22 {
+                            jump k3(true)
+                          } else {
+                            let t25 = (index/0 + 2) in
+                            join inline_cont5(t26: u8) -> Result__()__std::utf8::Utf8Error {
+                              join inline_cont6(t27: bool) -> Result__()__std::utf8::Utf8Error {
+                                let t28 = (!t27) in
+                                jump k3(t28)
+                              } in
+                              let inline14 = (t26 >= 128) in
+                              if inline14 {
+                                let inline15 = (t26 <= 191) in
+                                jump inline_cont6(inline15)
+                              } else {
+                                jump inline_cont6(false)
+                              }
+                            } in
+                            let inline16 = @intrinsic(slice.get)(bytes/0, t25) in
+                            jump inline_cont5(inline16)
+                          }
+                        } in
+                        if t21 {
+                          let t29 = (second/0 >= 160) in
+                          if t29 {
+                            let t30 = (second/0 <= 191) in
+                            jump k2(t30)
+                          } else {
+                            jump k2(false)
+                          }
+                        } else {
+                          let t31 = (first/0 == 237) in
+                          if t31 {
+                            let t32 = (second/0 >= 128) in
+                            if t32 {
+                              let t33 = (second/0 <= 159) in
+                              jump k2(t33)
+                            } else {
+                              jump k2(false)
+                            }
+                          } else {
+                            let inline17 = (second/0 >= 128) in
+                            if inline17 {
+                              let inline18 = (second/0 <= 191) in
+                              jump k2(inline18)
+                            } else {
+                              jump k2(false)
+                            }
+                          }
+                        }
+                      } in
+                      let inline19 = @intrinsic(slice.get)(bytes/0, t20) in
+                      jump inline_cont4(inline19)
+                    }
+                  } in
+                  let inline20 = @intrinsic(slice.len)(bytes/0) in
+                  jump inline_cont3(inline20)
+                } else {
+                  let t34 = (first/0 >= 240) in
+                  join k4(jp4: bool) -> Result__()__std::utf8::Utf8Error {
+                    if jp4 {
+                      let t35 = (index/0 + 3) in
+                      let t36 = inherent#Slice#Slice[T]#len__T_u0(bytes/0) in
+                      let t37 = (t35 >= t36) in
+                      if t37 {
+                        let inline21 =
+                          inherent#std::utf8::Utf8Error#std::utf8::Utf8Error#new(index/0, Tag_0) in
+                        let inline22 = Result__()__std::utf8::Utf8Error::Err(inline21) in
+                        inline22
+                      } else {
+                        let t38 = (index/0 + 1) in
+                        let second/1 = inherent#Slice#Slice[T]#get__T_u0(bytes/0, t38) in
+                        let t39 = (first/0 == 240) in
+                        join k5(jp5: bool) -> Result__()__std::utf8::Utf8Error {
+                          let t40 = (!jp5) in
+                          join k6(jp6: bool) -> Result__()__std::utf8::Utf8Error {
+                            join k7(jp7: bool) -> Result__()__std::utf8::Utf8Error {
+                              if jp7 {
+                                let t41 = std::utf8::invalid(index/0) in
+                                t41
+                              } else {
+                                let compound_old3 = index/0 in
+                                let compound_value3 = 4 in
+                                let t42 = (compound_old3 + compound_value3) in
+                                let t43 = index/0 = t42 in
+                                jump loop0()
+                              }
+                            } in
+                            if jp6 {
+                              jump k7(true)
+                            } else {
+                              let t44 = (index/0 + 3) in
+                              let t45 = inherent#Slice#Slice[T]#get__T_u0(bytes/0, t44) in
+                              let t46 = std::utf8::continuation(t45) in
+                              let t47 = (!t46) in
+                              jump k7(t47)
+                            }
+                          } in
+                          if t40 {
+                            jump k6(true)
+                          } else {
+                            let t48 = (index/0 + 2) in
+                            let t49 = inherent#Slice#Slice[T]#get__T_u0(bytes/0, t48) in
+                            let t50 = std::utf8::continuation(t49) in
+                            let t51 = (!t50) in
+                            jump k6(t51)
+                          }
+                        } in
+                        if t39 {
+                          let t52 = (second/1 >= 144) in
+                          if t52 {
+                            let t53 = (second/1 <= 191) in
+                            jump k5(t53)
+                          } else {
+                            jump k5(false)
+                          }
+                        } else {
+                          let t54 = (first/0 == 244) in
+                          if t54 {
+                            let t55 = (second/1 >= 128) in
+                            if t55 {
+                              let t56 = (second/1 <= 143) in
+                              jump k5(t56)
+                            } else {
+                              jump k5(false)
+                            }
+                          } else {
+                            let inline23 = (second/1 >= 128) in
+                            if inline23 {
+                              let inline24 = (second/1 <= 191) in
+                              jump k5(inline24)
+                            } else {
+                              jump k5(false)
+                            }
+                          }
+                        }
+                      }
+                    } else {
+                      let t57 = std::utf8::invalid(index/0) in
+                      t57
+                    }
+                  } in
+                  if t34 {
+                    let t58 = (first/0 <= 244) in
+                    jump k4(t58)
+                  } else {
+                    jump k4(false)
+                  }
+                }
+              } in
+              if t16 {
+                let t59 = (first/0 <= 239) in
+                jump k1(t59)
+              } else {
+                jump k1(false)
+              }
+            }
+          } in
+          if t6 {
+            let t60 = (first/0 <= 223) in
+            jump k0(t60)
+          } else {
+            jump k0(false)
+          }
+        }
+      } else {
+        jump exit0()
+      }
+    } in
+  } in
+  jump loop0()
+}
+
+fn std::utf8::decode(bytes/0: Vec[u8]) -> Result__string__std::utf8::Utf8Error {
+  join inline_cont0(t0: Slice[u8]) -> Result__string__std::utf8::Utf8Error {
+    let t1 = std::utf8::decode_slice(t0) in
+    t1
+  } in
+  let inline0 = inherent#Vec#Vec[T]#len__T_u0(bytes/0) in
+  let inline1 = @intrinsic(slice.new)(bytes/0, 0, inline0) in
+  jump inline_cont0(inline1)
+}
+
+fn std::utf8::decode_slice(bytes/0: Slice[u8]) -> Result__string__std::utf8::Utf8Error {
+  let mtmp0 = std::utf8::validate(bytes/0) in
+  join k0() -> Result__string__std::utf8::Utf8Error {
+    let values/0 = inherent#Slice#Slice[T]#to_vec__T_u0(bytes/0) in
+    let mtmp1 = string_from_utf0(values/0) in
+    let x0 = mtmp1.0 in
+    let x1 = mtmp1.1 in
+    if x0 {
+      let t0 = Result__string__std::utf8::Utf8Error::Ok(x1) in
+      t0
+    } else {
+      join inline_cont0(t1: std::utf8::Utf8Error) -> Result__string__std::utf8::Utf8Error {
+        let t2 = Result__string__std::utf8::Utf8Error::Err(t1) in
+        t2
+      } in
+      let inline0 = 0 in
+      let inline1 =
+        std::utf8::Utf8Error { valid_up_to_value: inline0, error_length_value: Tag_0 } in
+      jump inline_cont0(inline1)
+    }
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      jump k0()
+    },
+    Tag_1 => {
+      let x2 = Result__()__std::utf8::Utf8Error::Err._0(mtmp0) in
+      let t3 = Result__string__std::utf8::Utf8Error::Err(x2) in
+      t3
+    },
+  }
+}
+
+fn std::utf8::encode(value/0: string) -> Vec[u8] {
+  let inline0 = @runtime(core.string_to_bytes)(value/0) in
+  inline0
+}
+
+fn std::utf8::encode_into(
+  value/0: string,
+  output/0: MutSlice[u8],
+  offset/0: isize
+) -> Result__isize__std::bytes::BoundsError {
+  join inline_cont0(encoded/0: Vec[u8]) -> Result__isize__std::bytes::BoundsError {
+    join inline_cont1(t0: Slice[u8]) -> Result__isize__std::bytes::BoundsError {
+      join inline_cont2(t1: bool) -> Result__isize__std::bytes::BoundsError {
+        if t1 {
+          join inline_cont3(t2: isize) -> Result__isize__std::bytes::BoundsError {
+            let t3 = Result__isize__std::bytes::BoundsError::Ok(t2) in
+            t3
+          } in
+          let inline0 = @intrinsic(vec.len)(encoded/0) in
+          jump inline_cont3(inline0)
+        } else {
+          join inline_cont4(t4: isize) -> Result__isize__std::bytes::BoundsError {
+            join inline_cont5(t5: isize) -> Result__isize__std::bytes::BoundsError {
+              join inline_cont6(
+                t6: std::bytes::BoundsError
+              ) -> Result__isize__std::bytes::BoundsError {
+                let t7 = Result__isize__std::bytes::BoundsError::Err(t6) in
+                t7
+              } in
+              let inline1 =
+                std::bytes::BoundsError {
+                  offset_value: offset/0,
+                  needed_value: t4,
+                  length_value: t5
+                } in
+              jump inline_cont6(inline1)
+            } in
+            let inline2 = @intrinsic(mut_slice.len)(output/0) in
+            jump inline_cont5(inline2)
+          } in
+          let inline3 = @intrinsic(vec.len)(encoded/0) in
+          jump inline_cont4(inline3)
+        }
+      } in
+      let inline4 = @intrinsic(mut_slice.copy_from)(output/0, offset/0, t0) in
+      jump inline_cont2(inline4)
+    } in
+    let inline5 = inherent#Vec#Vec[T]#len__T_u0(encoded/0) in
+    let inline6 = @intrinsic(slice.new)(encoded/0, 0, inline5) in
+    jump inline_cont1(inline6)
+  } in
+  let inline7 = @runtime(core.string_to_bytes)(value/0) in
+  jump inline_cont0(inline7)
+}
+
+fn std::utf8::encode_to(value/0: string, output/0: std::bytes::Builder) -> () {
+  join inline_cont0(t0: Vec[u8]) -> () {
+    join inline_cont1(t1: Slice[u8]) -> () {
+      let t2 = inherent#std::bytes::Builder#std::bytes::Builder#extend(output/0, t1) in
+      ()
+    } in
+    let inline0 = inherent#Vec#Vec[T]#len__T_u0(t0) in
+    let inline1 = @intrinsic(slice.new)(t0, 0, inline0) in
+    jump inline_cont1(inline1)
+  } in
+  let inline2 = @runtime(core.string_to_bytes)(value/0) in
+  jump inline_cont0(inline2)
+}
+
+fn std::utf8::encode_char_into(
+  value/0: char,
+  output/0: MutSlice[u8],
+  offset/0: isize
+) -> Result__isize__std::bytes::BoundsError {
+  join inline_cont0(t0: string) -> Result__isize__std::bytes::BoundsError {
+    let inline0 = inherent#string#string#to_bytes(t0) in
+    let inline1 = inherent#Vec#Vec[T]#as_slice__T_u0(inline0) in
+    let inline2 = inherent#MutSlice#MutSlice[T]#copy_from__T_u0(output/0, offset/0, inline1) in
+    if inline2 {
+      let inline3 = inherent#Vec#Vec[T]#len__T_u0(inline0) in
+      let inline4 = Result__isize__std::bytes::BoundsError::Ok(inline3) in
+      inline4
+    } else {
+      let inline5 = inherent#Vec#Vec[T]#len__T_u0(inline0) in
+      let inline6 = inherent#MutSlice#MutSlice[T]#len__T_u0(output/0) in
+      let inline7 =
+        inherent#std::bytes::BoundsError#std::bytes::BoundsError#new(offset/0, inline5, inline6) in
+      let inline8 = Result__isize__std::bytes::BoundsError::Err(inline7) in
+      inline8
+    }
+  } in
+  let inline9 = char_to_string(value/0) in
+  jump inline_cont0(inline9)
+}
+
+fn std::utf8::encoded_len(value/0: char) -> isize {
+  join inline_cont0(t0: string) -> isize {
+    let inline0 = @runtime(core.string_len)(t0) in
+    inline0
+  } in
+  let inline1 = char_to_string(value/0) in
+  jump inline_cont0(inline1)
 }
 
 fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
@@ -1881,41 +2408,49 @@ fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
   match mtmp0 {
     Tag_0 => {
       let x0 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp0) in
-      join commute_arm0(commute_field0: string) -> Result__string__std::io::Error {
-        let t0 = Result__string__std::io::Error::Ok(commute_field0) in
-        t0
+      join inline_cont0(
+        mtmp1: Result__string__std::utf8::Utf8Error
+      ) -> Result__string__std::io::Error {
+        match mtmp1 {
+          Tag_0 => {
+            let x1 = Result__string__std::utf8::Utf8Error::Ok._0(mtmp1) in
+            let t0 = Result__string__std::io::Error::Ok(x1) in
+            t0
+          },
+          Tag_1 => {
+            let x2 = Result__string__std::utf8::Utf8Error::Err._0(mtmp1) in
+            join inline_cont1(t1: string) -> Result__string__std::io::Error {
+              join inline_cont2(t2: std::io::Error) -> Result__string__std::io::Error {
+                let t3 = Result__string__std::io::Error::Err(t2) in
+                t3
+              } in
+              let inline0 = "read stdin" in
+              let inline1 =
+                inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+                  Tag_4,
+                  inline0,
+                  Tag_0,
+                  Tag_0,
+                  t1
+                ) in
+              let inline2 = std::io::Error { details: inline1 } in
+              jump inline_cont2(inline2)
+            } in
+            let inline3 = std::utf8::Utf8Error.valid_up_to_value(x2) in
+            let inline4 = inherent#isize#isize#to_string(inline3) in
+            let inline5 = ("invalid UTF-8 at byte " + inline4) in
+            jump inline_cont1(inline5)
+          },
+        }
       } in
-      join commute_arm1(commute_field1: string) -> Result__string__std::io::Error {
-        join inline_cont0(t1: std::io::Error) -> Result__string__std::io::Error {
-          let t2 = Result__string__std::io::Error::Err(t1) in
-          t2
-        } in
-        let inline0 = "read stdin" in
-        let inline1 =
-          inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
-            Tag_4,
-            inline0,
-            Tag_0,
-            Tag_0,
-            commute_field1
-          ) in
-        let inline2 = std::io::Error { details: inline1 } in
-        jump inline_cont0(inline2)
-      } in
-      let inline3 = std::bytes::Bytes.values(x0) in
-      let inline4 = string_from_utf0(inline3) in
-      let inline5 = inline4.0 in
-      let inline6 = inline4.1 in
-      if inline5 {
-        jump commute_arm0(inline6)
-      } else {
-        jump commute_arm1("invalid UTF-8")
-      }
+      let inline6 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(x0) in
+      let inline7 = std::utf8::decode(inline6) in
+      jump inline_cont0(inline7)
     },
     Tag_1 => {
-      let x1 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
-      let t3 = Result__string__std::io::Error::Err(x1) in
-      t3
+      let x3 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp0) in
+      let t4 = Result__string__std::io::Error::Err(x3) in
+      t4
     },
   }
 }
@@ -2047,94 +2582,6 @@ fn std::io::write_stdout_structured(data/0: std::bytes::Bytes) -> Result__()__st
 fn std::io::write_stderr_structured(data/0: std::bytes::Bytes) -> Result__()__std::io::Error {
   let t0 = std::io::write_structured(true, data/0) in
   t0
-}
-
-fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  join inline_cont0(mtmp0: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
-    let x0 = mtmp0.0 in
-    let x1 = mtmp0.1 in
-    let x2 = mtmp0.2 in
-    if x0 {
-      join inline_cont1(t0: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
-        let t1 = Result__std::bytes::Bytes__string::Ok(t0) in
-        t1
-      } in
-      let inline0 = std::bytes::Bytes { values: x1 } in
-      jump inline_cont1(inline0)
-    } else {
-      let t2 = Result__std::bytes::Bytes__string::Err(x2) in
-      t2
-    }
-  } in
-  let inline1 = @runtime(std.io.read_stdin)() in
-  jump inline_cont0(inline1)
-}
-
-fn std::io::write_stdout(data/0: std::bytes::Bytes) -> Result__()__string {
-  join inline_cont0(t0: Vec[u8]) -> Result__()__string {
-    join inline_cont1(mtmp0: (bool, string)) -> Result__()__string {
-      let x0 = mtmp0.0 in
-      let x1 = mtmp0.1 in
-      if x0 {
-        let t1 = Result__()__string::Ok(()) in
-        t1
-      } else {
-        let t2 = Result__()__string::Err(x1) in
-        t2
-      }
-    } in
-    let inline0 = @runtime(std.io.write_stdout)(t0) in
-    jump inline_cont1(inline0)
-  } in
-  let inline1 = std::bytes::Bytes.values(data/0) in
-  jump inline_cont0(inline1)
-}
-
-fn std::io::write_stderr(data/0: std::bytes::Bytes) -> Result__()__string {
-  join inline_cont0(t0: Vec[u8]) -> Result__()__string {
-    join inline_cont1(mtmp0: (bool, string)) -> Result__()__string {
-      let x0 = mtmp0.0 in
-      let x1 = mtmp0.1 in
-      if x0 {
-        let t1 = Result__()__string::Ok(()) in
-        t1
-      } else {
-        let t2 = Result__()__string::Err(x1) in
-        t2
-      }
-    } in
-    let inline0 = @runtime(std.io.write_stderr)(t0) in
-    jump inline_cont1(inline0)
-  } in
-  let inline1 = std::bytes::Bytes.values(data/0) in
-  jump inline_cont0(inline1)
-}
-
-fn std::io::read_stdin_exact(length/0: isize) -> Result__std::bytes::Bytes__string {
-  let t0 = (length/0 < 0) in
-  if t0 {
-    let t1 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
-    t1
-  } else {
-    join inline_cont0(mtmp0: (bool, Vec[u8], string)) -> Result__std::bytes::Bytes__string {
-      let x0 = mtmp0.0 in
-      let x1 = mtmp0.1 in
-      let x2 = mtmp0.2 in
-      if x0 {
-        join inline_cont1(t2: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
-          let t3 = Result__std::bytes::Bytes__string::Ok(t2) in
-          t3
-        } in
-        let inline0 = std::bytes::Bytes { values: x1 } in
-        jump inline_cont1(inline0)
-      } else {
-        let t4 = Result__std::bytes::Bytes__string::Err(x2) in
-        t4
-      }
-    } in
-    let inline1 = @runtime(std.io.read_stdin_exact)(length/0) in
-    jump inline_cont0(inline1)
-  }
 }
 
 fn inherent#std::time::Error#std::time::Error#new(
@@ -3557,6 +4004,78 @@ fn inherent#Vec#Vec[T]#slice_mut_checked__T_u8(
   }
 }
 
+fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option__isize) -> bool {
+  match other/0 {
+    Tag_0 => {
+      match self/0 {
+        Tag_0 => {
+          true
+        },
+        _ => {
+          false
+        },
+      }
+    },
+    Tag_1 => {
+      let x0 = Option__isize::Some._0(other/0) in
+      match self/0 {
+        Tag_1 => {
+          let x1 = Option__isize::Some._0(self/0) in
+          let inline0 = (x1 == x0) in
+          inline0
+        },
+        _ => {
+          false
+        },
+      }
+    },
+  }
+}
+
+fn inherent#Slice#Slice[T]#get__T_u8(self/0: Slice[u8], index/0: isize) -> u8 {
+  let t0 = @intrinsic(slice.get)(self/0, index/0) in
+  t0
+}
+
+fn inherent#Slice#Slice[T]#to_vec__T_u8(self/0: Slice[u8]) -> Vec[u8] {
+  join inline_cont0(t0: isize) -> Vec[u8] {
+    join inline_cont1(result/0: Vec[u8]) -> Vec[u8] {
+      let index/0 = 0 in
+      join exit0() -> Vec[u8] {
+        result/0
+      } in
+      joinrec {
+        join loop0() -> Vec[u8] {
+          join inline_cont2(t1: isize) -> Vec[u8] {
+            let t2 = (index/0 < t1) in
+            if t2 {
+              let t3 = @intrinsic(slice.get)(self/0, index/0) in
+              join inline_cont3(_wild0: ()) -> Vec[u8] {
+                let compound_old0 = index/0 in
+                let compound_value0 = 1 in
+                let t4 = (compound_old0 + compound_value0) in
+                let t5 = index/0 = t4 in
+                jump loop0()
+              } in
+              let inline0 = @intrinsic(vec.push)(result/0, t3) in
+              jump inline_cont3(())
+            } else {
+              jump exit0()
+            }
+          } in
+          let inline1 = @intrinsic(slice.len)(self/0) in
+          jump inline_cont2(inline1)
+        } in
+      } in
+      jump loop0()
+    } in
+    let inline2 = @intrinsic(vec.with_capacity)(t0) in
+    jump inline_cont1(inline2)
+  } in
+  let inline3 = @intrinsic(slice.len)(self/0) in
+  jump inline_cont0(inline3)
+}
+
 fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   let mtmp0 = @runtime(core.string_from_utf8)(bytes/0) in
   let x0 = mtmp0.1 in
@@ -3593,6 +4112,37 @@ fn string_from_utf8(bytes/0: Vec[u8]) -> (bool, string) {
   jump loop0()
 }
 
+fn inherent#MutSlice#MutSlice[T]#copy_from__T_u8(
+  self/0: MutSlice[u8],
+  start/0: isize,
+  source/0: Slice[u8]
+) -> bool {
+  let t0 = @intrinsic(mut_slice.copy_from)(self/0, start/0, source/0) in
+  t0
+}
+
+fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
+  let t0 = @intrinsic(mut_slice.len)(self/0) in
+  t0
+}
+
+fn inherent#char#char#to_string(self/0: char) -> string {
+  let inline0 = (self/0 as u32) in
+  let inline1 = utf8_valid_scalar(inline0) in
+  if inline1 {
+    let inline2 = @runtime(core.char_to_string)(self/0) in
+    inline2
+  } else {
+    let inline3 = @runtime(core.string_get)("", -1) in
+    ""
+  }
+}
+
+fn inherent#string#string#byte_len(self/0: string) -> isize {
+  let t0 = @runtime(core.string_len)(self/0) in
+  t0
+}
+
 fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Option__string) -> bool {
   match other/0 {
     Tag_0 => {
@@ -3610,34 +4160,6 @@ fn trait_impl#PartialEq#Option__string#eq(self/0: Option__string, other/0: Optio
       match self/0 {
         Tag_1 => {
           let x1 = Option__string::Some._0(self/0) in
-          let inline0 = (x1 == x0) in
-          inline0
-        },
-        _ => {
-          false
-        },
-      }
-    },
-  }
-}
-
-fn trait_impl#PartialEq#Option__isize#eq(self/0: Option__isize, other/0: Option__isize) -> bool {
-  match other/0 {
-    Tag_0 => {
-      match self/0 {
-        Tag_0 => {
-          true
-        },
-        _ => {
-          false
-        },
-      }
-    },
-    Tag_1 => {
-      let x0 = Option__isize::Some._0(other/0) in
-      match self/0 {
-        Tag_1 => {
-          let x1 = Option__isize::Some._0(self/0) in
           let inline0 = (x1 == x0) in
           inline0
         },
@@ -3813,13 +4335,8 @@ fn __goml_builtin_int_to_string(value/0: isize) -> string {
   }
 }
 
-fn inherent#MutSlice#MutSlice[T]#len__T_u8(self/0: MutSlice[u8]) -> isize {
-  let t0 = @intrinsic(mut_slice.len)(self/0) in
-  t0
-}
-
-fn inherent#string#string#byte_len(self/0: string) -> isize {
-  let t0 = @runtime(core.string_len)(self/0) in
+fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+  let t0 = (self/0 == other/0) in
   t0
 }
 
@@ -4090,12 +4607,36 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
   }
 }
 
-fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
-  let t0 = (self/0 == other/0) in
-  t0
+fn char_to_string(value/0: char) -> string {
+  let t0 = (value/0 as u32) in
+  join inline_cont0(t1: bool) -> string {
+    if t1 {
+      let t2 = @runtime(core.char_to_string)(value/0) in
+      t2
+    } else {
+      let mtmp0 = @runtime(core.string_get)("", -1) in
+      ""
+    }
+  } in
+  let inline0 = (t0 <= 1114111) in
+  if inline0 {
+    let inline1 = (t0 >= 55296) in
+    join inline_join0(inline2: bool) -> string {
+      let inline3 = (!inline2) in
+      jump inline_cont0(inline3)
+    } in
+    if inline1 {
+      let inline4 = (t0 <= 57343) in
+      jump inline_join0(inline4)
+    } else {
+      jump inline_join0(false)
+    }
+  } else {
+    jump inline_cont0(false)
+  }
 }
 
-fn trait_impl#PartialEq#isize#eq(self/0: isize, other/0: isize) -> bool {
+fn trait_impl#PartialEq#string#eq(self/0: string, other/0: string) -> bool {
   let t0 = (self/0 == other/0) in
   t0
 }
@@ -4238,6 +4779,25 @@ fn utf8_invalid_continuation(value/0: u32) -> bool {
   }
 }
 
+fn utf8_valid_scalar(value/0: u32) -> bool {
+  let t0 = (value/0 <= 1114111) in
+  if t0 {
+    let t1 = (value/0 >= 55296) in
+    join k0(jp0: bool) -> bool {
+      let t2 = (!jp0) in
+      t2
+    } in
+    if t1 {
+      let t3 = (value/0 <= 57343) in
+      jump k0(t3)
+    } else {
+      jump k0(false)
+    }
+  } else {
+    false
+  }
+}
+
 fn inherent#Ref#Ref[T]#get__T_Option[()](self/0: Ref[Option__()]) -> Option__() {
   let t0 = @intrinsic(ref.get)(self/0) in
   t0
@@ -4347,25 +4907,6 @@ fn __goml_builtin_char_from_uint32(value/0: u32) -> Option__char {
     }
   } else {
     jump inline_cont0(false)
-  }
-}
-
-fn utf8_valid_scalar(value/0: u32) -> bool {
-  let t0 = (value/0 <= 1114111) in
-  if t0 {
-    let t1 = (value/0 >= 55296) in
-    join k0(jp0: bool) -> bool {
-      let t2 = (!jp0) in
-      t2
-    } in
-    if t1 {
-      let t3 = (value/0 <= 57343) in
-      jump k0(t3)
-    } else {
-      jump k0(false)
-    }
-  } else {
-    false
   }
 }
 
