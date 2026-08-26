@@ -58,14 +58,14 @@ fn binary_core_artifact_is_deterministic_and_independent() -> () {
     let first = match core_codec::encode_binary(binary_core_fixture()) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     let second = match core_codec::encode_binary(binary_core_fixture()) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -79,6 +79,6 @@ fn binary_core_artifact_is_deterministic_and_independent() -> () {
                 core_codec::encode_json(binary_core_fixture(), false),
             )
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }

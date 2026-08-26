@@ -10,14 +10,16 @@ use std::path;
 use std::process;
 use std::testing;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
 pub fn repository_root() -> string {
-    match env::var("GOML_REPO") {
-        Some(value) => value,
-        None => match path::absolute("..") {
+    match env::var_structured("GOML_REPO") {
+        Ok(value) => value,
+        Err(_) => match path::absolute_structured("..") {
             Ok(value) => value,
             Err(message) => {
-                testing::fail(message);
+                testing::fail(message.to_string());
                 ".."
             },
         },
@@ -29,10 +31,10 @@ pub fn compiler_tests_root() -> string {
 }
 
 pub fn read_file(file: string) -> string {
-    match fs::read_file(file) {
+    match fs::read_file_structured(file) {
         Ok(value) => value,
         Err(message) => {
-            testing::fail("failed to read " + file + ": " + message);
+            testing::fail("failed to read " + file + ": " + message.to_string());
             ""
         },
     }
@@ -42,7 +44,7 @@ fn read_directory(directory: string) -> Vec[string] {
     match fs::read_dir(directory) {
         Ok(value) => value,
         Err(message) => {
-            testing::fail("failed to read directory " + directory + ": " + message);
+            testing::fail("failed to read directory " + directory + ": " + message.to_string());
             Vec::new()
         },
     }
@@ -83,10 +85,10 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
 }
 
 fn bytes_text(value: bytes::Bytes) -> string {
-    match value.to_string() {
+    match value.to_string_utf8() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             ""
         },
     }
@@ -103,7 +105,9 @@ fn assert_bytes(actual: bytes::Bytes, expected: Vec[u8]) -> () {
 fn create_directory(directory: string) -> () {
     match fs::create_dir_all(directory) {
         Ok(()) => (),
-        Err(message) => testing::fail("failed to create directory " + directory + ": " + message),
+        Err(message) => testing::fail(
+            "failed to create directory " + directory + ": " + message.to_string(),
+        ),
     }
 }
 
@@ -115,12 +119,12 @@ fn copy_directory(source: string, target: string) -> () {
         if fs::is_dir(source_entry) {
             copy_directory(source_entry, target_entry)
         } else {
-            match fs::read_bytes(source_entry) {
-                Ok(value) => match fs::write_bytes(target_entry, value) {
+            match fs::read_bytes_structured(source_entry) {
+                Ok(value) => match fs::write_bytes_structured(target_entry, value) {
                     Ok(()) => (),
-                    Err(message) => testing::fail(message),
+                    Err(message) => testing::fail(message.to_string()),
                 },
-                Err(message) => testing::fail(message),
+                Err(message) => testing::fail(message.to_string()),
             }
         }
     }
@@ -135,7 +139,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
     let main_file = path::join(directory, "main.go");
     let executable = path::join(directory, "main");
     let source_current = if fs::is_file(main_file) {
-        match fs::read_file(main_file) {
+        match fs::read_file_structured(main_file) {
             Ok(value) => value == source,
             Err(_) => false,
         }
@@ -143,10 +147,10 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
         false
     };
     if source_current {} else {
-        match fs::write_file(main_file, source) {
+        match fs::write_file_structured(main_file, source) {
             Ok(()) => (),
             Err(message) => {
-                testing::fail("failed to write " + main_file + ": " + message);
+                testing::fail("failed to write " + main_file + ": " + message.to_string());
                 return ""
             },
         };
@@ -155,7 +159,8 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
                 Ok(()) => (),
                 Err(message) => {
                     testing::fail(
-                        "failed to remove stale executable " + executable + ": " + message,
+                        "failed to remove stale executable " + executable + ": "
+                            + message.to_string(),
                     );
                     return ""
                 },
@@ -166,9 +171,9 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
         || !go_backend::yaegi_compatible(source) {
         Option::None
     } else {
-        match process::Command::new("yaegi").arg("main.go").current_dir(directory).env("TZ", "UTC").output() {
+        match process::Command::new("yaegi").arg("main.go").current_dir(directory).env("TZ", "UTC").output_structured() {
             Ok(output) => if process::ExitStatus::success(process::Output::status(output)) {
-                match process::Output::stdout(output).to_string() {
+                match process::Output::stdout(output).to_string_utf8() {
                     Ok(value) => if value == expected {
                         Option::Some(value)
                     } else {
@@ -189,7 +194,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
     if source_current && fs::is_file(executable) {} else {
         match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
             directory,
-        ).env("GOWORK", "off").env("GO111MODULE", "off").output() {
+        ).env("GOWORK", "off").env("GO111MODULE", "off").output_structured() {
             Ok(output) => if process::ExitStatus::success(process::Output::status(output)) {} else {
                 testing::fail(
                     "go build failed\nstdout:\n" + bytes_text(process::Output::stdout(output))
@@ -199,12 +204,12 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
                 return ""
             },
             Err(message) => {
-                testing::fail("failed to build Go source: " + message);
+                testing::fail("failed to build Go source: " + message.to_string());
                 return ""
             },
         }
     };
-    match process::Command::new(executable).current_dir(directory).env("TZ", "UTC").output() {
+    match process::Command::new(executable).current_dir(directory).env("TZ", "UTC").output_structured() {
         Ok(output) => if process::ExitStatus::success(process::Output::status(output)) {
             bytes_text(process::Output::stdout(output))
         } else {
@@ -216,21 +221,23 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
             ""
         },
         Err(message) => {
-            testing::fail("failed to execute generated program: " + message);
+            testing::fail("failed to execute generated program: " + message.to_string());
             ""
         },
     }
 }
 
 fn update_expected() -> bool {
-    env::var("UPDATE_EXPECT").is_some()
+    env::var_structured("UPDATE_EXPECT").is_ok()
 }
 
 fn assert_text(actual: string, expected_path: string, source: string) -> () {
     if update_expected() {
-        match fs::write_file(expected_path, actual) {
+        match fs::write_file_structured(expected_path, actual) {
             Ok(()) => (),
-            Err(message) => testing::fail("failed to write " + expected_path + ": " + message),
+            Err(message) => testing::fail(
+                "failed to write " + expected_path + ": " + message.to_string(),
+            ),
         };
         return ()
     } else {};
@@ -355,28 +362,28 @@ pub fn assert_distinct_type_diagnostic_count(minimum: isize) -> () {
 }
 
 fn bootstrap_goml_binary() -> string {
-    match env::var("GOML_TEST_GOML") {
-        Some(value) => match path::absolute(value) {
+    match env::var_structured("GOML_TEST_GOML") {
+        Ok(value) => match path::absolute_structured(value) {
             Ok(value) => value,
             Err(message) => {
-                testing::fail(message);
+                testing::fail(message.to_string());
                 value
             },
         },
-        None => path::join(repository_root(), "stage1/bin/goml"),
+        Err(_) => path::join(repository_root(), "stage1/bin/goml"),
     }
 }
 
 fn bootstrap_gomlc_binary() -> string {
-    match env::var("GOML_TEST_GOMLC") {
-        Some(value) => match path::absolute(value) {
+    match env::var_structured("GOML_TEST_GOMLC") {
+        Ok(value) => match path::absolute_structured(value) {
             Ok(value) => value,
             Err(message) => {
-                testing::fail(message);
+                testing::fail(message.to_string());
                 value
             },
         },
-        None => path::join(repository_root(), "stage1/bin/gomlc"),
+        Err(_) => path::join(repository_root(), "stage1/bin/gomlc"),
     }
 }
 
@@ -393,10 +400,10 @@ fn assert_command_success(output: process::Output, label: string) -> () {
 fn project_command(command: string, project: string, target: string) -> process::Output {
     match process::Command::new(bootstrap_goml_binary()).arg(command).arg("--compiler").arg(
         bootstrap_gomlc_binary(),
-    ).arg("--target-dir").arg(target).current_dir(project).output() {
+    ).arg("--target-dir").arg(target).current_dir(project).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
                 stdout_value: bytes::Bytes::new(),
@@ -522,16 +529,19 @@ pub fn assert_module_diagnostics() -> () {
 pub fn assert_standard_binary_stdio() -> () {
     let project = path::join(repository_root(), "gomlc/_artifact/test-work/compiler/stdio");
     create_directory(project);
-    match fs::write_file(path::join(project, "goml.toml"), "[module]\npath = \"stdio_test\"\n") {
-        Ok(()) => (),
-        Err(message) => testing::fail(message),
-    };
-    match fs::write_file(
-        path::join(project, "main.gom"),
-        "package main;\n\nuse std::bytes;\nuse std::env;\nuse std::io;\nuse std::process;\n\nfn main() -> () {\n    match env::var(\"GOML_EMPTY\") {\n        Option::Some(value) => if value != \"\" { process::exit(1) } else { () },\n        Option::None => process::exit(1),\n    };\n    match env::var(\"GOML_MISSING_ENVIRONMENT_VALUE\") {\n        Option::Some(_) => process::exit(1),\n        Option::None => (),\n    };\n    match io::read_stdin() {\n        Result::Ok(data) => {\n            match io::write_stdout(data) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            };\n            match io::write_stderr(bytes::Bytes::from_string(\"binary stderr\")) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            }\n        },\n        Result::Err(_) => process::exit(1),\n    }\n}\n",
+    match fs::write_file_structured(
+        path::join(project, "goml.toml"),
+        "[module]\npath = \"stdio_test\"\n",
     ) {
         Ok(()) => (),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
+    };
+    match fs::write_file_structured(
+        path::join(project, "main.gom"),
+        "package main;\n\nuse std::bytes;\nuse std::env;\nuse std::io;\nuse std::process;\n\nfn main() -> () {\n    match env::var_structured(\"GOML_EMPTY\") {\n        Result::Ok(value) => if value != \"\" { process::exit(1) } else { () },\n        Result::Err(_) => process::exit(1),\n    };\n    match env::var_structured(\"GOML_MISSING_ENVIRONMENT_VALUE\") {\n        Result::Ok(_) => process::exit(1),\n        Result::Err(_) => (),\n    };\n    match io::read_stdin_structured() {\n        Result::Ok(data) => {\n            match io::write_stdout_structured(data) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            };\n            match io::write_stderr_structured(bytes::Bytes::from_string(\"binary stderr\")) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            }\n        },\n        Result::Err(_) => process::exit(1),\n    }\n}\n",
+    ) {
+        Ok(()) => (),
+        Err(message) => testing::fail(message.to_string()),
     };
     let target = path::join(project, "_artifact");
     let built = project_command("build", project, target);
@@ -544,10 +554,10 @@ pub fn assert_standard_binary_stdio() -> () {
     let executed = match process::Command::new(path::join(path::join(target, "bin"), "stdio_test")).env(
         "GOML_EMPTY",
         "",
-    ).input(bytes::Bytes::from_vec(input)).output() {
+    ).input(bytes::Bytes::from_vec(input)).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
                 stdout_value: bytes::Bytes::new(),

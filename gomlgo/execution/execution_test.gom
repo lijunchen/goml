@@ -8,7 +8,7 @@ use std::path;
 use std::testing;
 
 fn fixture(name: string) -> string {
-    path::join(path::join(env::current_dir().unwrap_or("."), "testdata/execution"), name)
+    path::join(path::join(env::current_dir_structured().unwrap_or("."), "testdata/execution"), name)
 }
 
 fn package_named(packages: Vec[GoListPackage], name: string) -> Option[GoListPackage] {
@@ -76,7 +76,7 @@ fn discovers_go126_toolchain_and_package_graph() -> () {
 #[test]
 fn loads_a_named_go_source_file() -> () {
     let file = path::join(
-        path::join(env::current_dir().unwrap_or("."), "testdata/execute/pure/control"),
+        path::join(env::current_dir_structured().unwrap_or("."), "testdata/execute/pure/control"),
         "main.go",
     );
     let loaded = testing::expect_ok(
@@ -121,7 +121,7 @@ fn falls_back_when_generated_file_uses_uncatalogued_api() -> () {
 #[test]
 fn rejects_multiple_entry_source_files() -> () {
     let file = path::join(
-        path::join(env::current_dir().unwrap_or("."), "testdata/execute/pure/control"),
+        path::join(env::current_dir_structured().unwrap_or("."), "testdata/execute/pure/control"),
         "main.go",
     );
     testing::assert(load_files(default_config(), Vec::from_array([file, file])).is_err())

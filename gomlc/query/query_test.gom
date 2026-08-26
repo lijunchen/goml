@@ -71,9 +71,9 @@ fn completion_labels(values: Vec[CompletionItem]) -> string {
 }
 
 fn write_query_fixture(path: string, source: string) -> () {
-    match fs::write_file(path, source) {
+    match fs::write_file_structured(path, source) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -85,7 +85,7 @@ fn required_builtin_comptime_module() -> ctir::CtModule {
             ctir::empty_module("builtin")
         },
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ctir::empty_module("builtin")
         },
     }
@@ -122,12 +122,12 @@ fn builtin_source_derive_expansion(source: string) -> string {
                 Vec::from_array([environment]),
             ),
             Err(error) => {
-                testing::fail(error);
+                testing::fail(error.to_string());
                 tast::check_package_files_for_link_with_dependencies(files, Vec::new())
             },
         },
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             tast::check_package_files_for_link_with_dependencies(files, Vec::new())
         },
     };
@@ -182,7 +182,7 @@ fn parses_module_paths_and_package_names() -> () {
         Ok(value) => {
             testing::assert_eq(value, "alice::tools::lsp::server")
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -221,9 +221,9 @@ fn analyzes_package_files_with_unsaved_overrides() -> () {
     let analysis = analyze_with_overrides(main_path, source, overrides);
     testing::assert_eq(analysis.package_name, "test::cross_file_pattern_constructor");
     testing::assert_eq(analysis.checked.diagnostics.len(), 0);
-    match fs::read_file(main_path) {
+    match fs::read_file_structured(main_path) {
         Ok(on_disk) => testing::assert(on_disk != source),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -231,13 +231,13 @@ fn analyzes_package_files_with_unsaved_overrides() -> () {
 fn analyzes_local_package_dependencies() -> () {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
-    match fs::read_file(main_path) {
+    match fs::read_file_structured(main_path) {
         Ok(source) => {
             let analysis = analyze(main_path, source);
             testing::assert_eq(analysis.package_name, "project001");
             assert_no_diagnostics(analysis)
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -245,10 +245,10 @@ fn analyzes_local_package_dependencies() -> () {
 fn analyzes_and_navigates_module_root_imports() -> () {
     let root = "../gomlc/testdata/module/project067_module_root";
     let main_path = root + "/main.gom";
-    let source = match fs::read_file(main_path) {
+    let source = match fs::read_file_structured(main_path) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ""
         },
     };
@@ -304,9 +304,9 @@ fn analyzes_and_navigates_module_root_imports() -> () {
 fn analyzes_cross_package_comptime_derives() -> () {
     let root = "../gomlc/testdata/module/project050_comptime_derive";
     let main_path = root + "/main.gom";
-    match fs::read_file(main_path) {
+    match fs::read_file_structured(main_path) {
         Ok(source) => assert_no_diagnostics(analyze(main_path, source)),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -314,7 +314,7 @@ fn analyzes_cross_package_comptime_derives() -> () {
 fn returns_cross_package_expanded_derive_source() -> () {
     let root = "../gomlc/testdata/module/project050_comptime_derive";
     let main_path = root + "/main.gom";
-    match fs::read_file(main_path) {
+    match fs::read_file_structured(main_path) {
         Ok(source) => {
             let analysis = analyze(main_path, source);
             assert_no_diagnostics(analysis);
@@ -327,7 +327,7 @@ fn returns_cross_package_expanded_derive_source() -> () {
             testing::assert(expanded.contains("fn serialize[S"));
             testing::assert(expanded.contains("self: Record, serializer: S"))
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -335,7 +335,7 @@ fn returns_cross_package_expanded_derive_source() -> () {
 fn navigates_hovers_and_completes_comptime_derives() -> () {
     let root = "../gomlc/testdata/module/project050_comptime_derive";
     let main_path = root + "/main.gom";
-    match fs::read_file(main_path) {
+    match fs::read_file_structured(main_path) {
         Ok(source) => {
             let analysis = analyze(main_path, source);
             assert_no_diagnostics(analysis);
@@ -350,7 +350,7 @@ fn navigates_hovers_and_completes_comptime_derives() -> () {
                         )
                     } else {};
                     testing::assert(definitions[0].source_path.ends_with("/macros/macros.gom"));
-                    match fs::read_file(definitions[0].source_path) {
+                    match fs::read_file_structured(definitions[0].source_path) {
                         Ok(definition_source) => testing::assert_eq(
                             definition_source.byte_slice(
                                 definitions[0].span.start,
@@ -358,7 +358,7 @@ fn navigates_hovers_and_completes_comptime_derives() -> () {
                             ),
                             "derive_label",
                         ),
-                        Err(error) => testing::fail(error),
+                        Err(error) => testing::fail(error.to_string()),
                     };
                     match hover(analysis, offset) {
                         Some(result) => testing::assert_eq(result.contents, "comptime derive Label"),
@@ -396,7 +396,7 @@ fn navigates_hovers_and_completes_comptime_derives() -> () {
                 None => testing::fail("expected standard library comptime derive"),
             }
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -460,19 +460,19 @@ fn resolves_local_and_function_definitions() -> () {
 fn resolves_definitions_in_local_dependencies() -> () {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
-    match fs::read_file(main_path) {
+    match fs::read_file_structured(main_path) {
         Ok(source) => match last_substring(source, "sum_point") {
             Some(offset) => {
                 let analysis = analyze(main_path, source);
                 match goto_definition(analysis, offset) {
                     Some(definition) => {
                         testing::assert(definition.source_path.ends_with("/lib/lib.gom"));
-                        match fs::read_file(definition.source_path) {
+                        match fs::read_file_structured(definition.source_path) {
                             Ok(target_source) => testing::assert_eq(
                                 target_source.byte_slice(definition.span.start, definition.span.end),
                                 "sum_point",
                             ),
-                            Err(error) => testing::fail(error),
+                            Err(error) => testing::fail(error.to_string()),
                         }
                     },
                     None => {
@@ -482,7 +482,7 @@ fn resolves_definitions_in_local_dependencies() -> () {
             },
             None => testing::fail("expected sum_point call"),
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -490,10 +490,10 @@ fn resolves_definitions_in_local_dependencies() -> () {
 fn resolves_package_type_variant_and_field_definitions() -> () {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
-    let source = match fs::read_file(main_path) {
+    let source = match fs::read_file_structured(main_path) {
         Ok(source) => source,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ""
         },
     };
@@ -554,10 +554,10 @@ fn resolves_package_type_variant_and_field_definitions() -> () {
 fn resolves_contextual_pattern_variant_definitions() -> () {
     let root = "../gomlc/testdata/module/project041_contextual_enum_patterns";
     let main_path = root + "/main.gom";
-    let source = match fs::read_file(main_path) {
+    let source = match fs::read_file_structured(main_path) {
         Ok(source) => source,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ""
         },
     };
@@ -854,7 +854,7 @@ fn keeps_signature_names_for_canonical_cross_package_targets() -> () {
     for directory in Vec::from_array([root, left_dir, right_dir]) {
         match fs::create_dir_all(directory) {
             Ok(()) => (),
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         }
     }
     let left_path = left_dir + "/item.gom";
@@ -1025,7 +1025,7 @@ fn separates_members_for_same_named_types_across_packages() -> () {
     for directory in Vec::from_array([root, left_dir, right_dir]) {
         match fs::create_dir_all(directory) {
             Ok(()) => (),
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         }
     }
     let left_path = left_dir + "/item.gom";
@@ -1102,7 +1102,7 @@ fn filters_member_completion_visibility_and_receivers() -> () {
     for directory in Vec::from_array([root, lib_dir]) {
         match fs::create_dir_all(directory) {
             Ok(()) => (),
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         }
     }
     let lib_path = lib_dir + "/lib.gom";
@@ -1336,7 +1336,7 @@ fn completes_only_the_public_prelude_surface() -> () {
 fn completes_imported_package_namespaces() -> () {
     let root = "../gomlc/testdata/module/project001";
     let main_path = root + "/main.gom";
-    match fs::read_file(main_path) {
+    match fs::read_file_structured(main_path) {
         Ok(source) => match last_substring(source, "sum_point") {
             Some(offset) => {
                 let analysis = analyze(main_path, source);
@@ -1344,7 +1344,7 @@ fn completes_imported_package_namespaces() -> () {
             },
             None => testing::fail("expected sum_point"),
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -1593,7 +1593,7 @@ fn keeps_hover_types_for_canonical_declarations() -> () {
     for directory in Vec::from_array([root, left_dir, right_dir]) {
         match fs::create_dir_all(directory) {
             Ok(()) => (),
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         }
     }
     let left_path = left_dir + "/left.gom";
@@ -1722,7 +1722,7 @@ fn resolves_external_registry_packages_with_mvs() -> () {
     for directory in Vec::from_array([project, http, shared_one, shared_two]) {
         match fs::create_dir_all(directory) {
             Ok(()) => (),
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         }
     }
     write_query_fixture(
@@ -1747,7 +1747,7 @@ fn resolves_external_registry_packages_with_mvs() -> () {
             testing::assert_eq(files.len(), 1);
             testing::assert_eq(files.get(0).package_name, "alice::http")
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match resolve_external_modules_at(project, registry) {
         Ok(modules) => {
@@ -1759,6 +1759,6 @@ fn resolves_external_registry_packages_with_mvs() -> () {
             }
             testing::assert_eq(selected.get(), "2.0.0")
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }

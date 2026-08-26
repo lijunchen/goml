@@ -19,7 +19,7 @@ fn source_named(values: Vec[checker::SourceFile], name: string) -> bool {
 fn loads_source_dependencies_with_platform_selection() -> () {
     let config = default_config();
     config.source_roots = Vec::from_array(
-        [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
+        [path::join(env::current_dir_structured().unwrap_or("."), "testdata/loader")],
     );
     let result = testing::expect_ok(check_import_path(config, "example/p"), "source import failed");
     testing::assert_eq(result.diagnostics.len(), 0);
@@ -57,9 +57,9 @@ fn evaluates_go_build_boolean_constraints() -> () {
 }
 
 #[test]
-fn evaluates_legacy_and_custom_build_constraints() -> () {
+fn evaluates_plus_build_and_custom_constraints() -> () {
     testing::assert(
-        evaluate_legacy_constraint(
+        evaluate_plus_build_constraint(
             "linux,amd64 windows",
             "linux",
             "amd64",
@@ -69,7 +69,7 @@ fn evaluates_legacy_and_custom_build_constraints() -> () {
         ),
     );
     testing::assert(
-        !evaluate_legacy_constraint(
+        !evaluate_plus_build_constraint(
             "linux,!amd64 windows",
             "linux",
             "amd64",
@@ -106,7 +106,7 @@ fn evaluates_legacy_and_custom_build_constraints() -> () {
 fn selects_target_cgo_and_test_package_variants() -> () {
     let config = default_config();
     config.source_roots = Vec::from_array(
-        [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
+        [path::join(env::current_dir_structured().unwrap_or("."), "testdata/loader")],
     );
     let linux_amd64 = testing::expect_ok(
         selected_sources(config, "example/q"),
@@ -153,7 +153,7 @@ fn selects_target_cgo_and_test_package_variants() -> () {
 fn checks_internal_and_external_test_packages_separately() -> () {
     let selection = default_config();
     selection.source_roots = Vec::from_array(
-        [path::join(env::current_dir().unwrap_or("."), "testdata/loader")],
+        [path::join(env::current_dir_structured().unwrap_or("."), "testdata/loader")],
     );
     selection.include_tests = true;
     let internal_sources = testing::expect_ok(

@@ -11,7 +11,7 @@ fn test_builtins(counter: Ref[isize]) -> File {
     match lower_builtins(counter) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             File {
                 functions: Vec::new(),
                 enums: Vec::new(),

@@ -7,50 +7,52 @@ use std::io;
 use std::path;
 use std::process;
 use std::testing;
+use std::utf8;
+use utf8::BytesUtf8;
 
-fn unwrap_string(value: Result[string, string]) -> string {
+fn unwrap_string[E: ToString](value: Result[string, E]) -> string {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ""
         },
     }
 }
 
-fn unwrap_unit(value: Result[(), string]) -> () {
+fn unwrap_unit[E: ToString](value: Result[(), E]) -> () {
     match value {
         Result::Ok(value) => value,
-        Result::Err(error) => testing::fail(error),
+        Result::Err(error) => testing::fail(error.to_string()),
     }
 }
 
-fn unwrap_bytes(value: Result[bytes::Bytes, string]) -> bytes::Bytes {
+fn unwrap_bytes[E: ToString](value: Result[bytes::Bytes, E]) -> bytes::Bytes {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     }
 }
 
-fn unwrap_output(value: Result[process::Output, string]) -> process::Output {
+fn unwrap_output(value: Result[process::Output, process::Error]) -> process::Output {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
-            unwrap_output(process::Command::new("sh").arg("-c").arg("exit 0").output())
+            testing::fail(error.to_string());
+            unwrap_output(process::Command::new("sh").arg("-c").arg("exit 0").output_structured())
         },
     }
 }
 
-fn unwrap_status(value: Result[process::ExitStatus, string]) -> process::ExitStatus {
+fn unwrap_status(value: Result[process::ExitStatus, process::Error]) -> process::ExitStatus {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
-            unwrap_status(process::Command::new("sh").arg("-c").arg("exit 0").status())
+            testing::fail(error.to_string());
+            unwrap_status(process::Command::new("sh").arg("-c").arg("exit 0").status_structured())
         },
     }
 }
@@ -109,17 +111,17 @@ fn assert_file_stem(path_value: string, expected: string) -> () {
 }
 
 fn main() -> () {
-    let cwd = unwrap_string(env::current_dir());
-    let executable = unwrap_string(env::current_exe());
+    let cwd = unwrap_string(env::current_dir_structured());
+    let executable = unwrap_string(env::current_exe_structured());
     testing::assert(path::is_absolute(cwd));
     testing::assert(path::is_absolute(executable));
-    match env::var("PATH") {
-        Option::Some(value) => testing::assert(value != ""),
-        Option::None => testing::fail("PATH is missing"),
+    match env::var_structured("PATH") {
+        Result::Ok(value) => testing::assert(value != ""),
+        Result::Err(_) => testing::fail("PATH is missing"),
     };
-    match env::var("GOML_HOST_API_EXPECTED_ABSENT_5F498A") {
-        Option::Some(value) => testing::fail("unexpected environment value: " + value),
-        Option::None => (),
+    match env::var_structured("GOML_HOST_API_EXPECTED_ABSENT_5F498A") {
+        Result::Ok(value) => testing::fail("unexpected environment value: " + value),
+        Result::Err(_) => (),
     };
     testing::assert_eq(path::clean(path::join("a", "../b")), "b");
     let file_path = path::join(cwd, "host-api.bin");
@@ -129,22 +131,25 @@ fn main() -> () {
     assert_file_stem(file_path, "host-api");
     assert_file_stem(".gitignore", ".gitignore");
     testing::assert_eq(path::with_extension("archive.tar.gz", "go"), "archive.tar.go");
-    testing::assert_eq(unwrap_string(path::absolute(".")), cwd);
+    testing::assert_eq(unwrap_string(path::absolute_structured(".")), cwd);
     let expected = binary_data();
-    unwrap_unit(fs::write_bytes(file_path, expected));
+    unwrap_unit(fs::write_bytes_structured(file_path, expected));
     testing::assert(fs::exists(file_path));
     testing::assert(fs::is_file(file_path));
     testing::assert(fs::is_dir(cwd));
     testing::assert_eq(unwrap_string(fs::canonicalize(file_path)), file_path);
-    testing::assert(bytes_equal(unwrap_bytes(fs::read_bytes(file_path)), expected));
-    match fs::read_file(file_path) {
+    testing::assert(bytes_equal(unwrap_bytes(fs::read_bytes_structured(file_path)), expected));
+    match fs::read_file_structured(file_path) {
         Result::Ok(value) => testing::fail("invalid UTF-8 accepted: " + value),
-        Result::Err(error) => testing::assert_eq(error, "invalid UTF-8"),
+        Result::Err(error) => {
+            testing::assert(error.kind() == io::ErrorKind::InvalidData);
+            testing::assert(error.to_string().contains("invalid UTF-8 at byte 2"))
+        },
     };
     let output = unwrap_output(
         process::Command::new("sh").arg("-c").arg(
             "printf '%s' \"$GOML_HOST_TEST:$PWD\"; printf err >&2; exit 7",
-        ).env("GOML_HOST_TEST", "present").current_dir(cwd).output(),
+        ).env("GOML_HOST_TEST", "present").current_dir(cwd).output_structured(),
     );
     let output_status = process::Output::status(output);
     testing::assert(!process::ExitStatus::success(output_status));
@@ -154,18 +159,18 @@ fn main() -> () {
     };
     let output_stdout = process::Output::stdout(output);
     let output_stderr = process::Output::stderr(output);
-    testing::assert_eq(unwrap_string(output_stdout.to_string()), "present:" + cwd);
-    testing::assert_eq(unwrap_string(output_stderr.to_string()), "err");
-    let status = unwrap_status(process::Command::new("sh").arg("-c").arg("exit 3").status());
+    testing::assert_eq(unwrap_string(output_stdout.to_string_utf8()), "present:" + cwd);
+    testing::assert_eq(unwrap_string(output_stderr.to_string_utf8()), "err");
+    let status = unwrap_status(process::Command::new("sh").arg("-c").arg("exit 3").status_structured());
     match process::ExitStatus::code(status) {
         Option::Some(code) => testing::assert_eq(code, 3),
         Option::None => testing::fail("missing status code"),
     };
-    match process::Command::new("goml-command-that-does-not-exist").output() {
+    match process::Command::new("goml-command-that-does-not-exist").output_structured() {
         Result::Ok(value) => testing::fail("missing command succeeded"),
-        Result::Err(error) => testing::assert(error != ""),
+        Result::Err(error) => testing::assert(error.to_string() != ""),
     };
-    unwrap_unit(io::write_stdout(bytes::Bytes::from_string("raw stdout\n")));
-    unwrap_unit(io::write_stderr(bytes::Bytes::from_string("raw stderr\n")));
+    unwrap_unit(io::write_stdout_structured(bytes::Bytes::from_string("raw stdout\n")));
+    unwrap_unit(io::write_stderr_structured(bytes::Bytes::from_string("raw stderr\n")));
     io::println("host api ok")
 }

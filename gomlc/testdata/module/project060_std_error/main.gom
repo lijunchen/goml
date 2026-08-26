@@ -102,7 +102,7 @@ fn main() -> () {
     );
     println(
         process::Command::new("/usr/bin/env").env_clear().env("ONLY", "yes").output_structured().map(
-            |output: process::Output| output.stdout().to_string().unwrap_or(""),
+            |output: process::Output| output.stdout().to_string_utf8().unwrap_or(""),
         ).unwrap_or("")
             == "ONLY=yes\n",
     );
@@ -125,7 +125,7 @@ fn main() -> () {
     match utf8::validate(invalid.slice(0, invalid.len())) {
         Result::Ok(()) => println("valid"),
         Result::Err(error) => {
-            println(error.kind().to_string());
+            println(error.to_string());
             println(error.valid_up_to());
             println(error.error_length().unwrap_or(0))
         },

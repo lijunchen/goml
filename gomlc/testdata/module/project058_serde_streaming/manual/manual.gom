@@ -1,24 +1,24 @@
-package legacy;
+package manual;
 
 use std::serde;
 use serde::{Deserialize, Serialize};
 
-pub struct Legacy {
+pub struct Manual {
     pub value: i32,
 }
 
-impl Serialize for Legacy {
-    fn serialize[S: serde::Serializer](self: Legacy, serializer: S) -> Result[(), string] {
-        serializer.begin_struct("Legacy", 1)?;
+impl Serialize for Manual {
+    fn serialize[S: serde::Serializer](self: Manual, serializer: S) -> Result[(), string] {
+        serializer.begin_struct("Manual", 1)?;
         serializer.begin_struct_field(0, "value")?;
         Serialize::serialize(self.value, serializer)?;
         serializer.end_struct()
     }
 }
 
-impl Deserialize for Legacy {
-    fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[Legacy, string] {
-        deserializer.begin_struct("Legacy", 1)?;
+impl Deserialize for Manual {
+    fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[Manual, string] {
+        deserializer.begin_struct("Manual", 1)?;
         let mut value: Option[i32] = Option::None;
         let mut field = deserializer.next_struct_field()?;
         while field.is_some() {
@@ -38,7 +38,7 @@ impl Deserialize for Legacy {
         }
         deserializer.end_struct()?;
         match value {
-            Some(value) => Result::Ok(Legacy { value }),
+            Some(value) => Result::Ok(Manual { value }),
             None => Result::Err("missing field `value`"),
         }
     }

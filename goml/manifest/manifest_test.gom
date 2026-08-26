@@ -35,7 +35,7 @@ fn internal_loader_accepts_toolchain_module_paths() -> () {
     test_support::write_file(path, "[module]\npath = \"builtin\"\n");
     match load_toolchain(path) {
         Ok(value) => testing::assert_eq(value.module_path, "builtin"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -43,6 +43,6 @@ fn internal_loader_accepts_toolchain_module_paths() -> () {
 fn parses_escaped_unicode_manifest_strings() -> () {
     match parse_string("\"工具\\\\\\\"路径\"") {
         Ok(value) => testing::assert_eq(value, "工具\\\"路径"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }

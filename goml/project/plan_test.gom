@@ -29,7 +29,7 @@ fn hashes_cache_text_with_standard_sha256() -> () {
 fn derives_unicode_package_names_from_directories() -> () {
     match package_name_for_directory("/tmp/项目", "alice::app", "/tmp/项目/工具/解析") {
         Ok(value) => testing::assert_eq(value, "alice::app::工具::解析"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -55,13 +55,18 @@ fn serializes_builds_for_one_artifact_root() -> () {
                     |_: task::CancelToken| with_build_lock(
                         context,
                         || {
-                            fs::write_file(state, "first")?;
+                            fs::write_file_structured(state, "first").map_err(
+                                |error| error.to_string(),
+                            )?;
                             first_started.send(());
                             time::sleep(time::Duration::from_milliseconds(50));
-                            if fs::read_file(state)? != "first" {
+                            if fs::read_file_structured(state).map_err(|error| error.to_string())?
+                                != "first" {
                                 return Result::Err("second build entered the active lock")
                             } else {};
-                            fs::write_file(state, "first-complete")
+                            fs::write_file_structured(state, "first-complete").map_err(
+                                |error| error.to_string(),
+                            )
                         },
                     ),
                 ),
@@ -76,10 +81,15 @@ fn serializes_builds_for_one_artifact_root() -> () {
                         with_build_lock(
                             context,
                             || {
-                                if fs::read_file(state)? != "first-complete" {
+                                if fs::read_file_structured(state).map_err(
+                                    |error| error.to_string(),
+                                )?
+                                    != "first-complete" {
                                     return Result::Err("second build observed an incomplete output")
                                 } else {};
-                                fs::write_file(state, "second")
+                                fs::write_file_structured(state, "second").map_err(
+                                    |error| error.to_string(),
+                                )
                             },
                         )
                     },
@@ -92,9 +102,9 @@ fn serializes_builds_for_one_artifact_root() -> () {
         Ok(values) => testing::assert_eq(values.len(), 2),
         Err(errors) => testing::fail(errors[0]),
     };
-    match fs::read_file(state) {
+    match fs::read_file_structured(state) {
         Ok(value) => testing::assert_eq(value, "second"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     testing::assert(!fs::exists(build_lock_path(context)))
 }
@@ -110,7 +120,7 @@ fn discovers_toolchain_projects_with_implicit_layers() -> () {
     ) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             Graph {
                 module_dir: "",
                 module_path: "",
@@ -148,7 +158,7 @@ fn discovers_toolchain_projects_with_implicit_layers() -> () {
                 _ => testing::fail("toolchain plan did not end with world packing"),
             }
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -212,31 +222,15 @@ fn installed_compiler_world_is_a_read_only_plan_input() -> () {
     }
 }
 
-#[test]
-fn legacy_compiler_world_keeps_prepare_world_compatibility() -> () {
-    let plan = match check_plan(compiler_world_test_context(CompilerWorld::LegacyArtifact), false) {
-        Ok(value) => value,
-        Err(message) => {
-            testing::fail(message);
-            Plan { commands: Vec::new(), executable: Option::None, test_groups: Vec::new() }
-        },
-    };
-    testing::assert_eq(plan.commands.len(), 2);
-    match plan.commands[0] {
-        PrepareWorld { .. } => (),
-        _ => testing::fail("legacy compiler world did not retain preparation"),
-    }
-}
-
 fn installed_world_compiler(root: string) -> string {
     let compiler = path::join(path::join(root, "bin"), "gomlc");
     test_support::write_file(
         compiler,
-        "#!/bin/sh\nprintf '%s\\n' '{\"driver_protocol\":1,\"installed_world\":1,\"world_artifact\":1}'\n",
+        "#!/bin/sh\nprintf '%s\\n' '{\"driver_protocol\":2,\"installed_world\":1}'\n",
     );
-    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status() {
+    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     };
     compiler
 }
@@ -304,7 +298,7 @@ fn build_graph_tracks_compile_link_and_go_dependencies() -> () {
 
 #[test]
 fn build_graph_tracks_compiler_world_dependencies() -> () {
-    let world = "out/compiler/world-v1.gaf";
+    let world = "out/compiler/compiler-world-v2.gaf";
     let command = Command::Compile {
         subcommand: "check",
         package_name: "a",
@@ -315,7 +309,17 @@ fn build_graph_tracks_compiler_world_dependencies() -> () {
         world: Option::Some(world),
     };
     let graph = match build_graph(
-        Vec::from_array([Command::PrepareWorld { output: world }, command]),
+        Vec::from_array(
+            [
+                Command::PackToolchainWorld {
+                    input_packages: Vec::new(),
+                    source_files: Vec::new(),
+                    counter_file: "counter",
+                    output: world,
+                },
+                command,
+            ],
+        ),
     ) {
         Ok(value) => value,
         Err(message) => {
@@ -424,9 +428,9 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
     );
     test_support::write_file(path::join(root, "slow.input"), "slow");
     test_support::write_file(path::join(root, "fail.input"), "fail");
-    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status() {
+    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     };
     let result = execute_plan(
         cancellation_test_context(root, compiler),
@@ -455,10 +459,10 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
                 "for attempt in 1 2 3 4 5 6 7 8 9 10; do if ! kill -0 \"$(cat slow.pid)\" 2>/dev/null; then exit 0; fi; sleep 0.1; done; exit 1",
             ],
         ),
-    ).current_dir(root).status() {
+    ).current_dir(root).status_structured() {
         Ok(status) => status,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             process::ExitStatus { code_value: -1 }
         },
     };
@@ -470,9 +474,9 @@ fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> () {
     let root = test_support::workspace("uncommitted_plan_cache");
     let compiler = path::join(root, "compiler");
     test_support::write_file(compiler, "#!/bin/sh\ntouch out/owned.interface\n");
-    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status() {
+    match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     };
     let context = cancellation_test_context(root, compiler);
     let command = cancellation_test_command("owned");

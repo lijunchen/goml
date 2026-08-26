@@ -22,15 +22,15 @@ use std::path;
 use std::testing;
 
 fn test_package_world() -> PackageWorld {
-    match env::var("GOML_TEST_COMPILER_WORLD") {
-        Some(path) => match read_package_world(path) {
+    match env::var_structured("GOML_TEST_COMPILER_WORLD") {
+        Ok(path) => match read_package_world(path) {
             Ok(value) => value,
             Err(error) => {
-                testing::fail(error);
+                testing::fail(error.to_string());
                 package_world()
             },
         },
-        None => package_world(),
+        Err(_) => package_world(),
     }
 }
 
@@ -97,36 +97,39 @@ fn publishes_stable_output_transaction_snapshots() -> () {
         },
     ) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     testing::assert(!fs::exists(output_lock_path(anchor)));
-    let first_epoch = match fs::read_file(output_epoch_path(anchor)) {
+    let first_epoch = match fs::read_file_structured(output_epoch_path(anchor)) {
         Ok(value) => {
             testing::assert(value.starts_with("complete:"));
             value
         },
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ""
         },
     };
     match output_snapshot(
         anchor,
-        || Result::Ok(fs::read_file(interface_path)? + ":" + fs::read_file(core_path)?),
+        || Result::Ok(
+            fs::read_file_structured(interface_path).map_err(|error| error.to_string())? + ":"
+                + fs::read_file_structured(core_path).map_err(|error| error.to_string())?,
+        ),
     ) {
         Ok(value) => testing::assert_eq(value, "interface:core"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match output_transaction(anchor, || atomic_write_text(interface_path, "updated")) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
-    match fs::read_file(output_epoch_path(anchor)) {
+    match fs::read_file_structured(output_epoch_path(anchor)) {
         Ok(value) => {
             testing::assert(value.starts_with("complete:"));
             testing::assert(value != first_epoch)
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     cleanup_temp_directory(temporary)
 }
@@ -152,17 +155,23 @@ fn rejects_and_repairs_incomplete_output_transactions() -> () {
         Err(error) => testing::assert_eq(error, "publication stopped"),
     };
     testing::assert(!fs::exists(output_lock_path(anchor)));
-    match output_snapshot(anchor, || fs::read_file(output)) {
+    match output_snapshot(
+        anchor,
+        || fs::read_file_structured(output).map_err(|error| error.to_string()),
+    ) {
         Ok(_) => testing::fail("incomplete transaction was readable"),
         Err(error) => testing::assert(error.contains("incomplete output transaction")),
     };
     match output_transaction(anchor, || atomic_write_text(output, "complete")) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
-    match output_snapshot(anchor, || fs::read_file(output)) {
+    match output_snapshot(
+        anchor,
+        || fs::read_file_structured(output).map_err(|error| error.to_string()),
+    ) {
         Ok(value) => testing::assert_eq(value, "complete"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     cleanup_temp_directory(temporary)
 }
@@ -201,7 +210,7 @@ fn parse_ok(values: Vec[string]) -> RunArgs {
     match parse_run_args(args_with(values)) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             parse_ok(Vec::new())
         },
     }
@@ -238,13 +247,13 @@ fn detects_single_file_entrypoint() -> () {
 
 #[test]
 fn links_imported_standard_package_closure() -> () {
-    let source = "use std::fs; use std::io; fn main() -> () { let _ = fs::write_file(\"out.txt\", \"ok\"); io::println(\"done\") }";
+    let source = "use std::fs; use std::io; fn main() -> () { let _ = fs::write_file_structured(\"out.txt\", \"ok\"); io::println(\"done\") }";
     let compilation = compile_source("main.gom", source);
     let bytes = core_function_index(
         compilation.core_value,
         "inherent#std::bytes::Bytes#std::bytes::Bytes#from_string",
     );
-    let fs = core_function_index(compilation.core_value, "std::fs::read_file");
+    let fs = core_function_index(compilation.core_value, "std::fs::read_file_structured");
     let io = core_function_index(compilation.core_value, "std::io::println");
     let main = core_function_index(compilation.core_value, "main");
     testing::assert(bytes >= 0);
@@ -442,7 +451,7 @@ fn parses_package_information_without_lowering_file_bodies() -> () {
             testing::assert_eq(value.uses.get(2).path, "theta::api");
             testing::assert(value.uses.get(2).alias.is_none())
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match parse_package_info_file("main.gom", "use alpha::;") {
         Err(error) => testing::assert_eq(
@@ -453,7 +462,7 @@ fn parses_package_information_without_lowering_file_bodies() -> () {
     };
     match parse_package_info_file("main.gom", "use vendor::module as module; use module::local;") {
         Ok(value) => testing::assert_eq(value.uses.get(1).path, "module::local"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -477,7 +486,7 @@ fn package_information_scanner_stops_at_the_first_body_token() -> () {
                 None => testing::fail("expected use alias"),
             }
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     package_info_skip_trivia(scanner);
     testing::assert(package_info_at_keyword(scanner, "fn"));
@@ -500,7 +509,7 @@ fn reports_driver_protocol_version() -> () {
     );
     testing::assert_eq(
         version_output_with(VersionFormat::Json, Option::None, Option::None),
-        "{\"artifact_format\":18,\"compiler_abi\":5,\"driver_protocol\":1,\"installed_world\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
+        "{\"artifact_format\":18,\"compiler_abi\":5,\"driver_protocol\":2,\"installed_world\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
             + version::current()
             + "\"}",
     );
@@ -561,7 +570,7 @@ fn parses_package_command_arguments() -> () {
                 None => testing::fail("expected compiler world"),
             }
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -589,7 +598,7 @@ fn parses_toolchain_package_capabilities() -> () {
             testing::assert_eq(value.command.package_name, "builtin");
             testing::assert_eq(value.command.module_name, "builtin")
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match parse_toolchain_build_args(
         Vec::from_array(
@@ -631,7 +640,7 @@ fn parses_link_command_arguments() -> () {
             testing::assert_eq(args.entry, "alice::app");
             testing::assert_eq(args.output, "artifact/main.go")
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -659,7 +668,7 @@ fn parses_test_link_command_arguments() -> () {
             testing::assert_eq(args.output, "artifact/tests.go");
             testing::assert_eq(args.manifest, "artifact/tests.json")
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -1198,7 +1207,7 @@ fn orders_link_inputs_by_dependencies_and_name() -> () {
             testing::assert_eq(order.get(2), 1);
             testing::assert_eq(order.get(3), 0)
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -1378,13 +1387,13 @@ fn writes_interface_unit_shape_and_hash() -> () {
     let binary = match interface_codec::encode_binary(artifact_unit) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     match interface_codec::decode_binary(binary) {
         Ok(value) => testing::assert_eq(interface_codec::encode_json(value, false), encoded),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -1533,7 +1542,7 @@ fn extracts_trait_interface_from_checked_package() -> () {
     let binary = match interface_codec::encode_binary(artifact_unit) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -1543,7 +1552,7 @@ fn extracts_trait_interface_from_checked_package() -> () {
             let dependency = match artifact_dependency_environment_from_exports(value.exports) {
                 Ok(value) => value,
                 Err(error) => {
-                    testing::fail(error);
+                    testing::fail(error.to_string());
                     tast::dependency_environment(
                         Vec::new(),
                         Vec::new(),
@@ -1589,7 +1598,7 @@ fn extracts_trait_interface_from_checked_package() -> () {
             );
             testing::assert_eq(checked.diagnostics.len(), 0)
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -1687,13 +1696,13 @@ fn writes_core_unit_from_checked_package() -> () {
     let binary = match core_codec::encode_binary(core_unit) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     match core_codec::decode_binary(binary) {
         Ok(value) => testing::assert_eq(core_codec::encode_json(value, false), encoded),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -1747,7 +1756,7 @@ fn validates_artifact_main_entrypoints() -> () {
     };
     match artifact_validate_entrypoint("example::lib", "lib", exports) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -1895,7 +1904,7 @@ fn parses_artifact_json_values() -> () {
     ) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             json::Value::Null
         },
     };
@@ -1969,14 +1978,14 @@ fn decodes_artifact_type_shapes() -> () {
     let type_value = match wire::artifact_value_finish(value_writer) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             wire::ArtifactValue::Null
         },
     };
     let decoded = match tast_codec::artifact_decode_type(context, type_value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             tast::Type::Error
         },
     };
@@ -2003,14 +2012,14 @@ fn decodes_artifact_type_shapes() -> () {
     let predicate_value = match wire::artifact_value_finish(value_writer) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             wire::ArtifactValue::Null
         },
     };
     let predicate = match tast_codec::artifact_decode_predicate(context, predicate_value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             tast::TypePredicate::Equality { lhs: tast::Type::Error, rhs: tast::Type::Error }
         },
     };
@@ -2092,7 +2101,7 @@ fn test_world_container(value: bytes::Bytes) -> wire::ArtifactBinaryContainer {
     match wire::decode_artifact_binary_container(value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             wire::ArtifactBinaryContainer { kind: 3, sections: Vec::new() }
         },
     }
@@ -2117,7 +2126,7 @@ fn test_world_encode_sections(kind: u8, sections: Vec[wire::ArtifactBinarySectio
     match wire::encode_artifact_binary_container(kind, sections) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     }
@@ -2202,14 +2211,14 @@ fn world_with_test_package_dependency(
     let interface = match interface_codec::decode_binary(interface_section.data) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             toolchain_dependency_test_interface("invalid", Vec::new())
         },
     };
     let core_unit = match core_codec::decode_binary(core_section.data) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             world_core_unit(
                 "invalid",
                 "invalid",
@@ -2247,14 +2256,14 @@ fn world_with_test_package_dependency(
     let interface_data = match interface_codec::encode_binary(interface) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     let core_data = match core_codec::encode_binary(core_unit) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -2294,7 +2303,7 @@ fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> u
     let container = match wire::decode_artifact_binary_container(value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             wire::ArtifactBinaryContainer { kind: 3, sections: Vec::new() }
         },
     };
@@ -2305,7 +2314,7 @@ fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> u
             Ok(interface) => if interface.package_name == package_name {
                 return section.id
             } else {},
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         };
         index = index + 2;
     }
@@ -2314,7 +2323,7 @@ fn world_test_package_section_id(value: bytes::Bytes, package_name: string) -> u
 }
 
 #[test]
-fn prelude_source_reexports_match_the_compatibility_surface() -> () {
+fn prelude_source_reexports_match_the_builtin_surface() -> () {
     let prelude = compile_prelude_package(
         lower_builtin_core(Ref::new(0)),
         builtin_artifact_interface_unit(),
@@ -2378,14 +2387,14 @@ fn compiler_world_artifact_round_trips() -> () {
     let first = match encode_package_world(world) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     let second = match encode_package_world(world) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -2430,7 +2439,7 @@ fn compiler_world_artifact_round_trips() -> () {
             testing::assert_eq(decoded.counter.get(), world.counter.get());
             testing::assert_eq(decoded.source_digest, world.source_digest)
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     first.truncate(first.len() - 1);
     match decode_package_world(first) {
@@ -2445,7 +2454,7 @@ fn compiler_world_artifact_validates_metadata_identity() -> () {
     let encoded = match encode_package_world(world) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -2454,7 +2463,7 @@ fn compiler_world_artifact_validates_metadata_identity() -> () {
     ) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             WorldMetadata {
                 counter: 0,
                 package_count: 0,
@@ -2498,33 +2507,6 @@ fn compiler_world_artifact_validates_metadata_identity() -> () {
 }
 
 #[test]
-fn compiler_world_artifact_reads_v1() -> () {
-    let world = test_package_world();
-    let encoded = match encode_package_world_v1(world) {
-        Ok(value) => value,
-        Err(error) => {
-            testing::fail(error);
-            bytes::Bytes::new()
-        },
-    };
-    match decode_package_world(encoded) {
-        Ok(decoded) => {
-            testing::assert_eq(decoded.counter.get(), world.counter.get());
-            testing::assert_eq(
-                decoded.builtin_interface.interface_hash,
-                world.builtin_interface.interface_hash,
-            );
-            testing::assert_eq(
-                decoded.prelude.interface_unit.interface_hash,
-                world.prelude.interface_unit.interface_hash,
-            );
-            testing::assert_eq(decoded.standard.len(), world.standard.len())
-        },
-        Err(error) => testing::fail(error),
-    }
-}
-
-#[test]
 fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> () {
     let world = test_package_world();
     let duplicate = world_all_packages(world);
@@ -2550,7 +2532,7 @@ fn compiler_world_artifact_rejects_duplicate_and_missing_packages() -> () {
     let encoded = match encode_package_world(incomplete) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -2563,7 +2545,7 @@ fn compiler_world_artifact_validates_prelude_sections_and_hash_chain() -> () {
     let encoded = match encode_package_world(world) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };

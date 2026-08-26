@@ -3,7 +3,7 @@ package main;
 use std::bincode;
 use std::json;
 use std::serde;
-use tests::serde_streaming::legacy;
+use tests::serde_streaming::manual;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Serialize, Deserialize)]
@@ -296,21 +296,21 @@ fn main() -> () {
     );
     let _ = unfinished.begin_sequence();
     println(serde::finish_value_deserializer(unfinished).is_err());
-    let legacy_value = serde::to_value(legacy::Legacy { value: 31 }).unwrap_or(serde::Value::Unit);
-    let legacy_decoded: Result[legacy::Legacy, string] = serde::from_value(legacy_value);
-    match legacy_decoded {
+    let manual_value = serde::to_value(manual::Manual { value: 31 }).unwrap_or(serde::Value::Unit);
+    let manual_decoded: Result[manual::Manual, string] = serde::from_value(manual_value);
+    match manual_decoded {
         Ok(value) => println(value.value),
         Err(error) => println(error),
     };
-    let legacy_json = json::to_string(legacy::Legacy { value: 32 });
-    println(legacy_json);
-    let legacy_from_json: Result[legacy::Legacy, string] = json::from_string(legacy_json);
-    match legacy_from_json {
+    let manual_json = json::try_to_string(manual::Manual { value: 32 }).unwrap_or("");
+    println(manual_json);
+    let manual_from_json: Result[manual::Manual, string] = json::from_string(manual_json);
+    match manual_from_json {
         Ok(value) => println(value.value),
         Err(error) => println(error),
     };
-    let legacy_bytes: Vec[byte] = match bincode::encode_to_vec(
-        legacy::Legacy { value: 33 },
+    let manual_bytes: Vec[byte] = match bincode::encode_to_vec(
+        manual::Manual { value: 33 },
         bincode::standard(),
     ) {
         Ok(value) => value,
@@ -319,18 +319,18 @@ fn main() -> () {
             Vec::new()
         },
     };
-    let legacy_from_bytes: Result[(legacy::Legacy, isize), string] = bincode::decode_from_slice(
-        legacy_bytes.slice(0, legacy_bytes.len()),
+    let manual_from_bytes: Result[(manual::Manual, isize), string] = bincode::decode_from_slice(
+        manual_bytes.slice(0, manual_bytes.len()),
         bincode::standard(),
     );
-    match legacy_from_bytes {
+    match manual_from_bytes {
         Ok((value, consumed)) => println(value.value.to_string() + ":" + consumed.to_string()),
         Err(error) => println(error),
     };
     let string_map = StringIntMap {
         entries: Vec::from_array([("one", 1.to_i32()), ("two", 2.to_i32())]),
     };
-    let string_map_json: string = json::to_string(string_map);
+    let string_map_json: string = json::try_to_string(string_map).unwrap_or("");
     println(string_map_json);
     let string_map_from_json: Result[StringIntMap, string] = json::from_string(string_map_json);
     match string_map_from_json {
@@ -394,7 +394,7 @@ fn main() -> () {
         Ok(_) => println("wrong bincode decode state"),
         Err(error) => println(error),
     };
-    let primitive_json = json::to_string(primitives());
+    let primitive_json = json::try_to_string(primitives()).unwrap_or("");
     let primitive_from_json: Result[Primitives, string] = json::from_string(primitive_json);
     match primitive_from_json {
         Ok(value) => println(
@@ -423,7 +423,7 @@ fn main() -> () {
         Err(error) => println(error),
     };
     let bytes = ByteBuffer { values: Vec::from_array([0.to_u8(), 1.to_u8(), 255.to_u8()]) };
-    let bytes_json = json::to_string(bytes);
+    let bytes_json = json::try_to_string(bytes).unwrap_or("");
     println(bytes_json);
     let bytes_from_json: Result[ByteBuffer, string] = json::from_string(bytes_json);
     match bytes_from_json {
@@ -458,7 +458,7 @@ fn main() -> () {
         name: "differential",
         values: Vec::from_array([Option::Some(5), Option::None, Option::Some(-8)]),
     };
-    let differential_json = json::to_string(differential);
+    let differential_json = json::try_to_string(differential).unwrap_or("");
     println(
         differential_json == json::encode(json::to_value(differential).unwrap_or(json::Value::Null)),
     );
@@ -526,7 +526,10 @@ fn main() -> () {
         Ok((value, _)) => value,
         Err(_) => Item { name: "error", values: Vec::new() },
     };
-    println(json::to_string(dynamic_item) == json::to_string(direct_item));
+    println(
+        json::try_to_string(dynamic_item).unwrap_or("")
+            == json::try_to_string(direct_item).unwrap_or(""),
+    );
     let type_error: Result[Numeric, string] = json::from_string("{\"value\":\"wrong\"}");
     match type_error {
         Ok(_) => println("wrong JSON type"),

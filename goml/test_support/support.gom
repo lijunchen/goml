@@ -6,15 +6,17 @@ use std::fs;
 use std::path;
 use std::process;
 use std::testing;
+use std::utf8;
+use utf8::BytesUtf8;
 
 fn absolute(value: string) -> string {
     if path::is_absolute(value) {
         value
     } else {
-        match path::absolute(value) {
+        match path::absolute_structured(value) {
             Ok(value) => value,
             Err(message) => {
-                testing::fail(message);
+                testing::fail(message.to_string());
                 value
             },
         }
@@ -22,33 +24,33 @@ fn absolute(value: string) -> string {
 }
 
 pub fn module_root() -> string {
-    match env::current_dir() {
+    match env::current_dir_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             "."
         },
     }
 }
 
 pub fn repository_root() -> string {
-    match env::var("GOML_REPO") {
-        Some(value) => absolute(value),
-        None => absolute(path::join(module_root(), "..")),
+    match env::var_structured("GOML_REPO") {
+        Ok(value) => absolute(value),
+        Err(_) => absolute(path::join(module_root(), "..")),
     }
 }
 
 pub fn goml_binary() -> string {
-    match env::var("GOML_TEST_GOML") {
-        Some(value) => absolute(value),
-        None => path::join(repository_root(), "stage2/bin/goml"),
+    match env::var_structured("GOML_TEST_GOML") {
+        Ok(value) => absolute(value),
+        Err(_) => path::join(repository_root(), "stage2/bin/goml"),
     }
 }
 
 pub fn gomlc_binary() -> string {
-    match env::var("GOML_TEST_GOMLC") {
-        Some(value) => absolute(value),
-        None => path::join(repository_root(), "stage2/bin/gomlc"),
+    match env::var_structured("GOML_TEST_GOMLC") {
+        Ok(value) => absolute(value),
+        Err(_) => path::join(repository_root(), "stage2/bin/gomlc"),
     }
 }
 
@@ -57,13 +59,13 @@ pub fn workspace(name: string) -> string {
     if fs::exists(result) {
         match fs::remove_dir_all(result) {
             Ok(()) => (),
-            Err(message) => testing::fail(message),
+            Err(message) => testing::fail(message.to_string()),
         }
     } else {};
     match fs::create_dir_all(result) {
         Ok(()) => result,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             result
         },
     }
@@ -72,7 +74,7 @@ pub fn workspace(name: string) -> string {
 pub fn create_dir(value: string) -> () {
     match fs::create_dir_all(value) {
         Ok(()) => (),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     }
 }
 
@@ -81,27 +83,27 @@ pub fn write_file(file: string, content: string) -> () {
         Some(parent) => create_dir(parent),
         None => (),
     };
-    match fs::write_file(file, content) {
+    match fs::write_file_structured(file, content) {
         Ok(()) => (),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     }
 }
 
 pub fn read_file(file: string) -> string {
-    match fs::read_file(file) {
+    match fs::read_file_structured(file) {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             ""
         },
     }
 }
 
 fn bytes_text(value: bytes::Bytes) -> string {
-    match value.to_string() {
+    match value.to_string_utf8() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             ""
         },
     }
@@ -138,10 +140,10 @@ pub fn assert_not_contains(value: string, unexpected: string) -> () {
 }
 
 pub fn run(args: Vec[string], directory: string) -> process::Output {
-    match process::Command::new(goml_binary()).args(args).current_dir(directory).output() {
+    match process::Command::new(goml_binary()).args(args).current_dir(directory).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
                 stdout_value: bytes::Bytes::new(),

@@ -90,7 +90,7 @@ fn formats_the_latest_unicode_document() -> () {
                 testing::assert_eq(value.end.line, 2);
                 testing::assert_eq(value.end.character, 5)
             },
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         },
         None => testing::fail("missing formatting range"),
     };

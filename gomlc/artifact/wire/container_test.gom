@@ -3,6 +3,8 @@ package wire;
 use module::hash;
 use std::bytes;
 use std::testing;
+use std::utf8;
+use utf8::BytesUtf8;
 
 fn artifact_container_test_section(id: u16, text: string) -> ArtifactBinarySection {
     ArtifactBinarySection { id, version: 1, flags: 0, data: bytes::Bytes::from_string(text) }
@@ -12,7 +14,7 @@ fn artifact_container_expect_ok(value: Result[bytes::Bytes, string]) -> bytes::B
     match value {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     }
@@ -22,7 +24,7 @@ fn artifact_container_expect_decode_ok(value: Result[ArtifactBinaryContainer, st
     match value {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ArtifactBinaryContainer { kind: 1, sections: Vec::new() }
         },
     }
@@ -49,7 +51,10 @@ fn binary_artifact_container_is_deterministic() -> () {
             artifact_container_test_section(3, "")
         },
     };
-    artifact_binary_expect_ok(section.data.to_string(), "three")
+    artifact_binary_expect_ok(
+        section.data.to_string_utf8().map_err(|error| error.to_string()),
+        "three",
+    )
 }
 
 #[test]

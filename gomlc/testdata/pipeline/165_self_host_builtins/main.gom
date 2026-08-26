@@ -1,17 +1,17 @@
 use std::fs;
 use std::io;
 
-fn show_unit(result: Result[(), string]) -> string {
+fn show_unit[E: ToString](result: Result[(), E]) -> string {
     match result {
         Result::Ok(_) => "ok",
-        Result::Err(err) => "err " + err,
+        Result::Err(err) => "err " + err.to_string(),
     }
 }
 
-fn show_string(result: Result[string, string]) -> string {
+fn show_string[E: ToString](result: Result[string, E]) -> string {
     match result {
         Result::Ok(value) => value,
-        Result::Err(err) => "err " + err,
+        Result::Err(err) => "err " + err.to_string(),
     }
 }
 
@@ -20,6 +20,6 @@ fn main() -> () {
     io::eprint("");
     io::eprintln("");
     io::println(show_unit(fs::create_dir_all("goml-self-host/nested")));
-    io::println(show_unit(fs::write_file("goml-self-host/nested/output.txt", "boot")));
-    io::println(show_string(fs::read_file("goml-self-host/nested/output.txt")))
+    io::println(show_unit(fs::write_file_structured("goml-self-host/nested/output.txt", "boot")));
+    io::println(show_string(fs::read_file_structured("goml-self-host/nested/output.txt")))
 }

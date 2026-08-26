@@ -19,41 +19,41 @@ fn compare_int(left: isize, right: isize) -> isize {
     }
 }
 
-fn unwrap_int(value: Result[isize, string]) -> isize {
+fn unwrap_int[E: ToString](value: Result[isize, E]) -> isize {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             0
         },
     }
 }
 
-fn unwrap_uint(value: Result[usize, string]) -> usize {
+fn unwrap_uint[E: ToString](value: Result[usize, E]) -> usize {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             0
         },
     }
 }
 
-fn unwrap_float32(value: Result[f32, string]) -> f32 {
+fn unwrap_float32[E: ToString](value: Result[f32, E]) -> f32 {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             0.0
         },
     }
 }
 
-fn unwrap_float64(value: Result[f64, string]) -> f64 {
+fn unwrap_float64[E: ToString](value: Result[f64, E]) -> f64 {
     match value {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             0.0
         },
     }
@@ -133,22 +133,22 @@ fn assert_ascii() -> () {
 }
 
 fn assert_num() -> () {
-    testing::assert_eq(unwrap_int(num::parse_int("-42")), -42);
-    testing::assert_eq(unwrap_int(num::parse_int_radix("ff", 16)), 255);
-    testing::assert_eq(unwrap_int(num::parse_int_radix("0xff", 0)), 255);
-    testing::assert_eq(unwrap_int(num::parse_int("-9223372036854775808")), -9223372036854775807 - 1);
-    testing::assert_eq(unwrap_uint(num::parse_uint("42")), 42);
-    testing::assert_eq(unwrap_uint(num::parse_uint_radix("101", 2)), 5);
-    testing::assert_eq(unwrap_uint(num::parse_uint("18446744073709551615")), 18446744073709551615);
-    testing::assert_eq(unwrap_float32(num::parse_float32("1.5")), 1.5);
-    testing::assert_eq(unwrap_float64(num::parse_float64("-2.25e2")), -225.0);
-    testing::assert_eq(unwrap_float64(num::parse_float64("0x1.8p+1")), 3.0);
-    testing::assert(num::parse_int("bad").is_err());
-    testing::assert(num::parse_int_radix("10", 1).is_err());
-    testing::assert(num::parse_int("9223372036854775808").is_err());
-    testing::assert(num::parse_uint("18446744073709551616").is_err());
-    testing::assert(num::parse_float64("1e309").is_err());
-    testing::assert_eq(unwrap_float64(num::parse_float64("1e-400")), 0.0)
+    testing::assert_eq(unwrap_int(num::parse_int_structured("-42")), -42);
+    testing::assert_eq(unwrap_int(num::parse_int_radix_structured("ff", 16)), 255);
+    testing::assert_eq(unwrap_int(num::parse_int_radix_structured("0xff", 0)), 255);
+    testing::assert_eq(unwrap_int(num::parse_int_structured("-9223372036854775808")), -9223372036854775807 - 1);
+    testing::assert_eq(unwrap_uint(num::parse_uint_structured("42")), 42);
+    testing::assert_eq(unwrap_uint(num::parse_uint_radix_structured("101", 2)), 5);
+    testing::assert_eq(unwrap_uint(num::parse_uint_structured("18446744073709551615")), 18446744073709551615);
+    testing::assert_eq(unwrap_float32(num::parse_float32_structured("1.5")), 1.5);
+    testing::assert_eq(unwrap_float64(num::parse_float64_structured("-2.25e2")), -225.0);
+    testing::assert_eq(unwrap_float64(num::parse_float64_structured("0x1.8p+1")), 3.0);
+    testing::assert(num::parse_int_structured("bad").is_err());
+    testing::assert(num::parse_int_radix_structured("10", 1).is_err());
+    testing::assert(num::parse_int_structured("9223372036854775808").is_err());
+    testing::assert(num::parse_uint_structured("18446744073709551616").is_err());
+    testing::assert(num::parse_float64_structured("1e309").is_err());
+    testing::assert_eq(unwrap_float64(num::parse_float64_structured("1e-400")), 0.0)
 }
 
 fn assert_option_result() -> () {

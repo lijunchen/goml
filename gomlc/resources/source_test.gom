@@ -14,7 +14,7 @@ fn required_abi(value: Option[CallableAbiSpec]) -> CallableAbiSpec {
         Some(spec) => spec,
         None => {
             testing::fail("expected callable ABI entry");
-            callable_abi("", "", "", Vec::new())
+            callable_abi("", "", "")
         },
     }
 }
@@ -43,14 +43,14 @@ fn loads_builtin_and_prelude_layers_independently() -> () {
             testing::assert(values[6].path.ends_with("/builtin/derive.gom"));
             testing::assert(values[7].path.ends_with("/builtin/ordering.gom"))
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match prelude_sources() {
         Ok(values) => {
             testing::assert_eq(values.len(), 1);
             testing::assert(values[0].path.ends_with("/prelude/prelude.gom"))
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -70,7 +70,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> () {
     for source in match builtin_layer_sources() {
         Ok(values) => values,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             Vec::new()
         },
     } {
@@ -82,7 +82,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> () {
     for source in match prelude_sources() {
         Ok(values) => values,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             Vec::new()
         },
     } {
@@ -94,7 +94,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> () {
                 testing::assert(!source.source.contains("#[runtime("))
             },
             Ok(None) => testing::fail("expected standard package source"),
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         }
     }
 }
@@ -104,17 +104,17 @@ fn loads_multifile_standard_package() -> () {
     match standard_sources("std::collections") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 9),
         Ok(None) => testing::fail("expected standard package"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match standard_sources("std::json") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 3),
         Ok(None) => testing::fail("expected standard package"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match standard_sources("std::bincode") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 3),
         Ok(None) => testing::fail("expected bincode package"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -122,7 +122,7 @@ fn loads_multifile_standard_package() -> () {
 fn ignores_unknown_standard_package() -> () {
     match standard_sources("example::unknown") {
         Ok(value) => testing::assert(value.is_none()),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -139,11 +139,11 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     assert_strings(fs.source_paths, Vec::from_array(["std/fs/error.gom", "std/fs/fs.gom"]));
     assert_strings(
         fs.dependencies,
-        Vec::from_array(["std::bytes", "std::internal::host", "std::io"]),
+        Vec::from_array(["std::bytes", "std::internal::host", "std::io", "std::utf8"]),
     );
     assert_strings(
         fs.link_dependencies,
-        Vec::from_array(["std::bytes", "std::internal::host", "std::io"]),
+        Vec::from_array(["std::bytes", "std::internal::host", "std::io", "std::utf8"]),
     );
     let host = match standard_package_spec("std::internal::host") {
         Some(value) => value,
@@ -194,17 +194,17 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     match standard_sources("std::serde") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 6),
         Ok(None) => testing::fail("expected serde package"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match standard_sources("std::toml") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 2),
         Ok(None) => testing::fail("expected TOML package"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match standard_sources("std::error") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 1),
         Ok(None) => testing::fail("expected error package"),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     assert_strings(
         standard_package_closure(Vec::from_array(["std::json", "std::fs"])),
@@ -212,6 +212,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
             [
                 "std::internal::host",
                 "std::bytes",
+                "std::utf8",
                 "std::io",
                 "std::num",
                 "std::serde",
@@ -228,6 +229,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
             [
                 "std::internal::host",
                 "std::bytes",
+                "std::utf8",
                 "std::io",
                 "std::num",
                 "std::serde",

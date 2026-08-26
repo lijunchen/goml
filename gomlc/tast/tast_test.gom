@@ -339,7 +339,7 @@ fn environment_collection_preserves_hir_trait_scope() -> () {
     testing::assert_eq(file.use_traits.len(), 0);
     match package_signatures(file) {
         Ok(_) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     testing::assert_eq(file.use_traits.len(), 0)
 }
@@ -498,16 +498,16 @@ fn checks_cross_file_package_definitions() -> () {
     let dependencies: Vec[DependencyEnvironment] = Vec::new();
     match implicit_builtin_dependency_environment() {
         Ok(environment) => dependencies.push(environment),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match implicit_prelude_hir_files() {
         Ok(files) => match dependency_environments(files) {
             Ok(values) => for environment in values {
                 dependencies.push(environment)
             },
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     let checked = check_package_files_for_link_with_environments(hir_files, dependencies);
     testing::assert_eq(checked.diagnostics.len(), 0);

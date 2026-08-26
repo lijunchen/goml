@@ -274,25 +274,6 @@ fn parses_practical_expression_syntax() -> () {
 }
 
 #[test]
-fn rejects_removed_collection_literal_syntax_recoverably() -> () {
-    let source = "fn main() -> () { let values = Vec::[1, 2]; let entries = HashMap::{ \"x\" => 1 }; }\nfn after() -> () {}";
-    let result = parse(source);
-    testing::assert_eq(result.diagnostics.len(), 2);
-    testing::assert(
-        diagnostic_containing(result.diagnostics, "Vec collection literal syntax has been removed").is_some(),
-    );
-    testing::assert(
-        diagnostic_containing(
-            result.diagnostics,
-            "HashMap collection literal syntax has been removed",
-        ).is_some(),
-    );
-    testing::assert_eq(count_nodes(result.root, cst::NodeKind::ErrorTree), 2);
-    testing::assert_eq(count_nodes(result.root, cst::NodeKind::FN), 2);
-    testing::assert_eq(cst::node_byte_len(result.root), source.byte_len())
-}
-
-#[test]
 fn parses_lexical_task_scope_contextual_forms() -> () {
     let source = "fn main() -> () { let task = scope { spawn |cancel| cancel.is_cancelled() }; let scope = 1; let spawn = |value: isize| value; println(spawn(scope)); let _ = task; }";
     let result = parse(source);

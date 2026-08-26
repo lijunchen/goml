@@ -49,7 +49,7 @@ fn main() -> () {
         },
     };
     println(json::encode(parsed));
-    let encoded = json::to_string(User { name: "goml", age: 13 });
+    let encoded = json::try_to_string(User { name: "goml", age: 13 }).unwrap_or("");
     println(encoded);
     let user = match decode_user(encoded) {
         Ok(value) => value,
@@ -59,7 +59,7 @@ fn main() -> () {
         },
     };
     println(user.name + user.age.to_string());
-    let event_text = json::to_string(Event::Login("li", 15));
+    let event_text = json::try_to_string(Event::Login("li", 15)).unwrap_or("");
     println(event_text);
     match decode_event(event_text) {
         Ok(Login(name, id)) => println(name + id.to_string()),
@@ -112,11 +112,11 @@ fn main() -> () {
         Ok(value) => println(json::encode(value)),
         Err(error) => println(error),
     };
-    println(json::to_string(toml::Value::String("world-default")));
-    let legacy: Result[toml::Value, string] = json::from_string("\"world-default\"");
-    match legacy {
+    println(json::try_to_string(toml::Value::String("world-default")).unwrap_or(""));
+    let dynamic_value: Result[toml::Value, string] = json::from_string("\"world-default\"");
+    match dynamic_value {
         Ok(toml::Value::String(value)) => println(value),
-        Ok(_) => println("wrong legacy value"),
+        Ok(_) => println("wrong dynamic value"),
         Err(error) => println(error),
     };
     let bytes: Result[RawBytes, string] = json::from_string("[1,2,255]");
@@ -124,7 +124,7 @@ fn main() -> () {
         Ok(value) => println(value.values.len().to_string() + ":" + value.values[2].to_string()),
         Err(error) => println(error),
     };
-    let empty_text = json::to_string(Empty {});
+    let empty_text = json::try_to_string(Empty {}).unwrap_or("");
     println(empty_text);
     let empty: Result[Empty, string] = json::from_string(empty_text);
     println(empty.is_ok())

@@ -21,7 +21,7 @@ fn parses_formatter_modes() -> () {
             testing::assert(!options.check);
             testing::assert_eq(options.paths.len(), 2)
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -32,7 +32,7 @@ fn defaults_to_stdin() -> () {
             testing::assert_eq(options.paths.len(), 1);
             testing::assert_eq(options.paths[0], "-")
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -56,23 +56,23 @@ fn test_file(name: string) -> string {
     let root = "../_artifact/test-work/gomlfmt";
     match fs::create_dir_all(root) {
         Ok(_) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     path::join(root, name)
 }
 
 fn write_test_file(path_value: string, content: string) -> () {
-    match fs::write_file(path_value, content) {
+    match fs::write_file_structured(path_value, content) {
         Ok(_) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
 fn read_test_file(path_value: string) -> string {
-    match fs::read_file(path_value) {
+    match fs::read_file_structured(path_value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ""
         },
     }

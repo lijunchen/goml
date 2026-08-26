@@ -113,7 +113,7 @@ fn evaluate_expression(expression: ctir::CtExpr, local_types: Vec[ctir::CtType],
     match verify_module(module, Vec::new()) {
         Ok(()) => evaluate_site(module, Vec::new(), 0, limits),
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             Result::Err(
                 CtError {
                     kind: CtErrorKind::Failure,
@@ -185,7 +185,7 @@ fn expect_string_intrinsic(name: string, args: Vec[ctir::CtValue]) -> ctir::CtVa
     match call_value_intrinsic(ctir::CtTarget { int_width: 64 }, name, args) {
         Some(Ok(value)) => value,
         Some(Err(error)) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             ctir::CtValue::Unit
         },
         None => {
@@ -273,7 +273,7 @@ fn evaluates_recursive_direct_calls() -> () {
     let module = factorial_module();
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     testing::assert_eq(
         expect_int(
@@ -371,7 +371,7 @@ fn evaluates_local_state_and_loops() -> () {
     let module = loop_site_module();
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 10)
 }
@@ -479,7 +479,7 @@ fn evaluates_structured_match_values() -> () {
     );
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 42)
 }
@@ -632,7 +632,7 @@ fn applies_fixed_width_integer_semantics() -> () {
     );
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
@@ -830,7 +830,7 @@ fn evaluates_return_break_and_continue() -> () {
     module.entries.push(ctir::CtEntry { name: "return_value", function_id: 0, public: true });
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     };
     testing::assert_eq(
         expect_int(evaluate_entry(module, Vec::new(), "return_value", Vec::new(), default_limits())),

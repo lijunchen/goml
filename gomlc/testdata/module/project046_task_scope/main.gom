@@ -1,5 +1,6 @@
 package main;
 
+use std::io;
 use std::task;
 use std::process;
 use std::time;
@@ -151,10 +152,12 @@ fn main() -> () {
             let _ = scope.spawn(
                 |token: task::CancelToken| {
                     process_started.send(());
-                    match process::Command::new("sh").args(Vec::from_array(["-c", "sleep 10"])).output_with(
+                    match process::Command::new("sh").args(Vec::from_array(["-c", "sleep 10"])).output_cancel_structured(
                         token,
                     ) {
-                        Ok(task::WaitResult::Cancelled) => process_cancelled.set(true),
+                        Err(error) => if error.kind() == io::ErrorKind::Interrupted {
+                            process_cancelled.set(true)
+                        } else {},
                         _ => (),
                     }
                 },

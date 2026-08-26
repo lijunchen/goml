@@ -57,9 +57,9 @@ fn main() -> () {
     println(State::Ready(1).label());
     println(Alias { value: 1 }.label());
     println(Facade { value: 1 }.label());
-    println(json::stringify(Record { value: 1, label: "ok" }));
-    println(json::stringify(Event::Ready));
-    println(json::stringify(Event::Tuple(2, true)));
-    println(json::stringify(Event::Named { value: 3 }));
-    println(json::stringify(Envelope { value: Vec::from_array([1, 2]) }))
+    println(json::try_to_string(Record { value: 1, label: "ok" }).unwrap_or(""));
+    println(json::try_to_string(Event::Ready).unwrap_or(""));
+    println(json::try_to_string(Event::Tuple(2, true)).unwrap_or(""));
+    println(json::try_to_string(Event::Named { value: 3 }).unwrap_or(""));
+    println(json::try_to_string(Envelope { value: Vec::from_array([1, 2]) }).unwrap_or(""))
 }

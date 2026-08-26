@@ -111,7 +111,7 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
     let signatures = match tast::package_signatures(hir_file) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             tast::PackageSignatures {
                 traits: Vec::new(),
                 functions: Vec::new(),
@@ -185,16 +185,16 @@ fn binary_artifact_value_round_trips_value_shapes() -> () {
     let encoded = match wire::encode_artifact_binary_value(table, value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     match wire::decode_artifact_binary_value(table, encoded) {
         Ok(decoded) => match wire::encode_artifact_binary_value(table, decoded) {
             Ok(reencoded) => testing::assert(wire::artifact_binary_bytes_equal(encoded, reencoded)),
-            Err(error) => testing::fail(error),
+            Err(error) => testing::fail(error.to_string()),
         },
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -203,14 +203,14 @@ fn binary_interface_artifact_is_deterministic() -> () {
     let first = match interface_codec::encode_binary(binary_interface_fixture()) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     let second = match interface_codec::encode_binary(binary_interface_fixture()) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -220,7 +220,7 @@ fn binary_interface_artifact_is_deterministic() -> () {
             interface_codec::encode_json(value, false),
             interface_codec::encode_json(binary_interface_fixture(), false),
         ),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -230,7 +230,7 @@ fn binary_comptime_interface_round_trips() -> () {
     let encoded = match interface_codec::encode_binary(value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -239,7 +239,7 @@ fn binary_comptime_interface_round_trips() -> () {
             interface_codec::encode_json(decoded, false),
             interface_codec::encode_json(value, false),
         ),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -289,14 +289,14 @@ fn derive_entries_round_trip_and_affect_interface_hash() -> () {
     let encoded = match interface_codec::encode_binary(first) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
     let decoded = match interface_codec::decode_binary(encoded) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             first
         },
     };
@@ -345,7 +345,7 @@ fn comptime_interface_rejects_invalid_semantic_hash() -> () {
     let encoded = match interface_codec::encode_binary(value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -375,7 +375,7 @@ fn comptime_interface_rejects_unknown_ctir_version() -> () {
     let encoded = match interface_codec::encode_binary(value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -420,7 +420,7 @@ fn binary_interface_artifact_streams_standard_type_data() -> () {
     let encoded = match interface_codec::encode_binary(value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };
@@ -429,7 +429,7 @@ fn binary_interface_artifact_streams_standard_type_data() -> () {
             interface_codec::encode_json(decoded, false),
             interface_codec::encode_json(value, false),
         ),
-        Err(error) => testing::fail(error),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
@@ -440,7 +440,7 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> () {
     ) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             Vec::new()
         },
     };
@@ -455,7 +455,7 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> () {
     let encoded = match wire::encode_artifact_binary_container(1, sections) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             bytes::Bytes::new()
         },
     };

@@ -9,9 +9,14 @@ use std::env;
 use std::path;
 use std::process;
 use std::testing;
+use std::utf8;
+use utf8::BytesUtf8;
 
 fn fixture(name: string) -> string {
-    path::join(path::join(env::current_dir().unwrap_or("."), "testdata/execute/pure"), name)
+    path::join(
+        path::join(env::current_dir_structured().unwrap_or("."), "testdata/execute/pure"),
+        name,
+    )
 }
 
 fn load_bytecode(name: string) -> bytecode::BytecodeProgram {
@@ -194,8 +199,8 @@ fn excludes_native_call_waiters_from_channel_matching() -> () {
 fn executes_functions_assignments_loops_and_switches() -> () {
     let result = run(load_bytecode("control"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "6\n");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "6\n");
     testing::assert(result.error.is_none());
     testing::assert(result.steps > 0.to_i64())
 }
@@ -205,10 +210,10 @@ fn executes_aggregate_pointer_and_slice_operations() -> () {
     let result = run(load_bytecode("aggregate_slice"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "1 9 4 7 5 3 5 7 12 13 2 8 3 9 10 11 21 22 1 99 20\n",
     );
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert(result.error.is_none())
 }
 
@@ -216,11 +221,11 @@ fn executes_aggregate_pointer_and_slice_operations() -> () {
 fn executes_compiler_generated_vector_shape() -> () {
     let result = run(load_bytecode("generated_vec"), default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("generated vector execution failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("generated vector execution failed"))
     } else {};
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "42\n");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "42\n");
     testing::assert(result.error.is_none())
 }
 
@@ -230,7 +235,7 @@ fn executes_slices_grow_for_interpreted_structs() -> () {
     testing::assert(program.native_calls.is_empty());
     let result = run(program, default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "1 5 7\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "1 5 7\n");
     testing::assert(result.error.is_none())
 }
 
@@ -244,7 +249,7 @@ fn writes_native_slice_mutations_back_with_interpreted_goroutine_identity() -> (
     );
     let result = run(program, default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "true\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "true\n");
     testing::assert(result.error.is_none())
 }
 
@@ -258,9 +263,9 @@ fn passes_native_backed_pointers_through_native_interfaces() -> () {
     };
     let result = run(program, default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("native locker execution failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("native locker execution failed"))
     } else {};
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "true\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "true\n");
     testing::assert(result.error.is_none())
 }
 
@@ -274,7 +279,7 @@ fn compares_host_backed_errors_with_nil() -> () {
     );
     let result = run(program, default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "false\ntrue\ntrue\ntrue\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "false\ntrue\ntrue\ntrue\n");
     testing::assert(result.error.is_none())
 }
 
@@ -288,9 +293,9 @@ fn calls_host_interface_methods_with_named_scalar_results() -> () {
     );
     let result = run(program, default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("native file mode execution failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("native file mode execution failed"))
     } else {};
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "true true\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "true true\n");
     testing::assert(result.error.is_none())
 }
 
@@ -304,9 +309,9 @@ fn wakes_mixed_native_selects_from_local_channels() -> () {
     );
     let result = run(program, default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("mixed select execution failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("mixed select execution failed"))
     } else {};
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "ready\ndefault\ndone\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "ready\ndefault\ndone\n");
     testing::assert(result.error.is_none())
 }
 
@@ -320,9 +325,9 @@ fn initializes_native_composite_literals_with_callbacks() -> () {
     );
     let result = run(program, default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("native command literal failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("native command literal failed"))
     } else {};
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "/bin/true 1\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "/bin/true 1\n");
     testing::assert(result.error.is_none())
 }
 
@@ -330,12 +335,14 @@ fn initializes_native_composite_literals_with_callbacks() -> () {
 fn converts_strings_and_byte_slices() -> () {
     let result = run(load_bytecode("string_byte_conversion"), default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("string conversion execution failed"))
+        testing::fail(
+            result.stderr.to_string_utf8().unwrap_or("string conversion execution failed"),
+        )
     } else {};
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "goML 世界 GoML 世界 11 世 goML 世界 � 1 65533\n",
     );
     testing::assert(result.error.is_none())
@@ -345,8 +352,8 @@ fn converts_strings_and_byte_slices() -> () {
 fn preserves_switch_evaluation_and_branch_control_flow() -> () {
     let result = run(load_bytecode("control_flow"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "2\n2 8 3\n3\n4\n");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "2\n2 8 3\n3\n4\n");
     testing::assert(result.error.is_none())
 }
 
@@ -355,10 +362,10 @@ fn executes_basic_values_multi_return_and_numeric_edges() -> () {
     let result = run(load_bytecode("basic_values"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "4 5 0 -128 -128 3 goml\ntrue false true false\n(4-2i) (11+2i) 11 2\n",
     );
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert(result.error.is_none())
 }
 
@@ -367,10 +374,10 @@ fn executes_integer_array_slice_pointer_and_string_ranges() -> () {
     let result = run(load_bytecode("range_values"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "12 3 6 12 104 3\n0 65533\n1 65\n2 30028\n",
     );
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert(result.error.is_none())
 }
 
@@ -378,8 +385,8 @@ fn executes_integer_array_slice_pointer_and_string_ranges() -> () {
 fn executes_package_globals_and_init_functions() -> () {
     let result = run(load_bytecode("globals_init"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "2 21 213 2134 213456\n");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "2 21 213 2134 213456\n");
     testing::assert(result.error.is_none())
 }
 
@@ -387,9 +394,9 @@ fn executes_package_globals_and_init_functions() -> () {
 fn executes_maps_and_clear() -> () {
     let result = run(load_bytecode("maps"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "3 5 0 false 2 true\n2 0\n0\n0 0 false true\n0 0 0\n6 3\ntrue 9\n8 1\n2 3\n3 3\n",
     );
     testing::assert(result.error.is_none())
@@ -399,9 +406,9 @@ fn executes_maps_and_clear() -> () {
 fn executes_methods_interfaces_and_type_assertions() -> () {
     let result = run(load_bytecode("methods_interfaces"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "5\n4\n8\n4 true\nfalse\n4\n9\n5\n6 21\n21\n11\n12\n13 31\n32\n35\n36\n41\n42\n45\n37\n38\n39\n49\n37\n38\n46\n",
     );
     testing::assert(result.error.is_none())
@@ -411,9 +418,9 @@ fn executes_methods_interfaces_and_type_assertions() -> () {
 fn executes_closures_function_values_and_loop_captures() -> () {
     let result = run(load_bytecode("closures"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "3 6 11\n120 6 8\n9\n1 2 3\n6 6 6\n0 1 2\n0 1 2\n",
     );
     testing::assert(result.error.is_none())
@@ -423,8 +430,11 @@ fn executes_closures_function_values_and_loop_captures() -> () {
 fn executes_generic_function_and_method_instances() -> () {
     let result = run(load_bytecode("generics"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "3 go\n4 ml 0\n7 box\n7 box\n12\n");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
+    testing::assert_eq(
+        result.stderr.to_string_utf8().unwrap_or(""),
+        "3 go\n4 ml 0\n7 box\n7 box\n12\n",
+    );
     testing::assert(result.error.is_none())
 }
 
@@ -432,9 +442,9 @@ fn executes_generic_function_and_method_instances() -> () {
 fn executes_type_switches_in_source_order() -> () {
     let result = run(load_bytecode("type_switch"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "nil true 1\nitem 7 2\nnumber 8 3\nmulti true false false true 4\nmulti false true false true 5\ndefault true 6\nplain 7\ninit 7 8 true\nlabeled 10 9\ndone 9\ntyped-nil true 10\ncaptures 1 2\n",
     );
     testing::assert(result.error.is_none())
@@ -444,11 +454,11 @@ fn executes_type_switches_in_source_order() -> () {
 fn schedules_goroutines_and_channels_cooperatively() -> () {
     let result = run(load_bytecode("channels"), default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("channel execution failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("channel execution failed"))
     } else {};
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "6\n2 2\n1 2 0 2\n7 8 true 0 false\nrange 9\n7\n",
     );
     testing::assert(result.error.is_none())
@@ -458,10 +468,10 @@ fn schedules_goroutines_and_channels_cooperatively() -> () {
 fn executes_channel_select_and_labeled_breaks() -> () {
     let result = run(load_bytecode("select"), default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("select execution failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("select execution failed"))
     } else {};
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "recv 4\ndefault\nclosed 0 false\nsend-ready\nsent 9\nreceive-ready 12\nlabeled\n",
     );
     testing::assert(result.error.is_none())
@@ -474,16 +484,16 @@ fn selects_ready_cases_from_the_configured_seed() -> () {
     let first = run(load_bytecode("select_seed"), first_config);
     let repeated = run(load_bytecode("select_seed"), first_config);
     testing::assert_eq(first.exit_code, 0);
-    testing::assert_eq(first.stderr.to_string().unwrap_or(""), "first 1\nblocked-second\n");
+    testing::assert_eq(first.stderr.to_string_utf8().unwrap_or(""), "first 1\nblocked-second\n");
     testing::assert_eq(
-        repeated.stderr.to_string().unwrap_or(""),
-        first.stderr.to_string().unwrap_or(""),
+        repeated.stderr.to_string_utf8().unwrap_or(""),
+        first.stderr.to_string_utf8().unwrap_or(""),
     );
     let second_config = default_config();
     second_config.select_seed = 2.to_u64();
     let second = run(load_bytecode("select_seed"), second_config);
     testing::assert_eq(second.exit_code, 0);
-    testing::assert_eq(second.stderr.to_string().unwrap_or(""), "second 2\nblocked-first\n")
+    testing::assert_eq(second.stderr.to_string_utf8().unwrap_or(""), "second 2\nblocked-first\n")
 }
 
 #[test]
@@ -492,7 +502,7 @@ fn reports_scheduler_deadlocks() -> () {
     testing::assert_eq(result.exit_code, 1);
     testing::assert(result.error.is_some());
     testing::assert(
-        result.stderr.to_string().unwrap_or("").contains(
+        result.stderr.to_string_utf8().unwrap_or("").contains(
             "fatal error: all goroutines are asleep - deadlock!",
         ),
     )
@@ -503,7 +513,7 @@ fn unwinds_channel_runtime_faults_through_recover() -> () {
     let result = run(load_bytecode("channel_panic_recover"), default_config());
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "send true\nnil true\nclosed true\n",
     );
     testing::assert(result.error.is_none())
@@ -513,7 +523,7 @@ fn unwinds_channel_runtime_faults_through_recover() -> () {
 fn schedules_deferred_channel_operations_and_recover() -> () {
     let result = run(load_bytecode("defer_channels"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stderr.to_string().unwrap_or(""), "defer 8\nrecover true\n");
+    testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "defer 8\nrecover true\n");
     testing::assert(result.error.is_none())
 }
 
@@ -521,11 +531,11 @@ fn schedules_deferred_channel_operations_and_recover() -> () {
 fn executes_defer_panic_and_recover() -> () {
     let result = run(load_bytecode("defer_panic_recover"), default_config());
     if result.exit_code != 0 {
-        testing::fail(result.stderr.to_string().unwrap_or("defer execution failed"))
+        testing::fail(result.stderr.to_string_utf8().unwrap_or("defer execution failed"))
     } else {};
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "21 12 1232 6\n9 false\ntrue true\ntrue true\ntrue true true\n",
     );
     testing::assert(result.error.is_none())
@@ -535,9 +545,9 @@ fn executes_defer_panic_and_recover() -> () {
 fn unwinds_runtime_faults_through_defer_and_recover() -> () {
     let result = run(load_bytecode("runtime_fault_recover"), default_config());
     testing::assert_eq(result.exit_code, 0);
-    testing::assert_eq(result.stdout.to_string().unwrap_or(""), "");
+    testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
-        result.stderr.to_string().unwrap_or(""),
+        result.stderr.to_string_utf8().unwrap_or(""),
         "divide defer\ndivide true\nindex defer\nindex true\npointer defer\npointer true\nslice defer\nslice true\ndone\n",
     );
     testing::assert(result.error.is_none())
@@ -548,7 +558,7 @@ fn assert_runtime_error(name: string, message: string) -> () {
     testing::assert_eq(result.exit_code, 1);
     let error = testing::expect_some(result.error, "runtime error is missing for " + name);
     let _ = testing::expect_some(error.location, "runtime error location is missing for " + name);
-    let stderr = result.stderr.to_string().unwrap_or("<non-UTF-8>");
+    let stderr = result.stderr.to_string_utf8().unwrap_or("<non-UTF-8>");
     if !stderr.contains(message) {
         testing::fail("runtime error for " + name + " was: " + stderr)
     } else {}
@@ -568,7 +578,7 @@ fn assert_matches_go(name: string) -> () {
         process::Command::new(config.go_binary).arg("run").arg("main.go").current_dir(fixture(name)).env(
             "GOTOOLCHAIN",
             "local",
-        ).output(),
+        ).output_structured(),
         "Go execution failed",
     );
     let interpreted = run(load_bytecode(name), default_config());
@@ -576,7 +586,7 @@ fn assert_matches_go(name: string) -> () {
         != process::ExitStatus::code(process::Output::status(native)).unwrap_or(-1) {
         testing::fail(
             "exit mismatch for " + name + ": "
-                + interpreted.stderr.to_string().unwrap_or("<non-UTF-8>"),
+                + interpreted.stderr.to_string_utf8().unwrap_or("<non-UTF-8>"),
         )
     } else {};
     testing::assert_eq(
@@ -584,12 +594,12 @@ fn assert_matches_go(name: string) -> () {
         process::ExitStatus::code(process::Output::status(native)).unwrap_or(-1),
     );
     testing::assert_eq(
-        interpreted.stdout.to_string().unwrap_or("<non-UTF-8>"),
-        process::Output::stdout(native).to_string().unwrap_or("<non-UTF-8>"),
+        interpreted.stdout.to_string_utf8().unwrap_or("<non-UTF-8>"),
+        process::Output::stdout(native).to_string_utf8().unwrap_or("<non-UTF-8>"),
     );
     testing::assert_eq(
-        interpreted.stderr.to_string().unwrap_or("<non-UTF-8>"),
-        process::Output::stderr(native).to_string().unwrap_or("<non-UTF-8>"),
+        interpreted.stderr.to_string_utf8().unwrap_or("<non-UTF-8>"),
+        process::Output::stderr(native).to_string_utf8().unwrap_or("<non-UTF-8>"),
     )
 }
 
@@ -635,7 +645,7 @@ fn stops_execution_when_instruction_fuel_is_exhausted() -> () {
     let result = run(load_bytecode("control"), config);
     testing::assert_eq(result.exit_code, 1);
     testing::assert(result.error.is_some());
-    testing::assert(result.stderr.to_string().unwrap_or("").contains("instruction limit"))
+    testing::assert(result.stderr.to_string_utf8().unwrap_or("").contains("instruction limit"))
 }
 
 #[test]

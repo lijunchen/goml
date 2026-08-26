@@ -81,17 +81,17 @@ fn expect_format(source: string, expected: string) -> () {
 }
 
 fn repository_root() -> string {
-    match env::var("GOML_REPO") {
-        Some(value) => value,
-        None => "..",
+    match env::var_structured("GOML_REPO") {
+        Ok(value) => value,
+        Err(_) => "..",
     }
 }
 
 fn read_fixture(path_value: string) -> string {
-    match fs::read_file(path_value) {
+    match fs::read_file_structured(path_value) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(path_value + ": " + error);
+            testing::fail(path_value + ": " + error.to_string());
             ""
         },
     }
@@ -127,7 +127,7 @@ fn formatter_goldens_match() -> () {
     let names = match fs::read_dir(root) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             Vec::new()
         },
     };
@@ -143,10 +143,10 @@ fn formatter_goldens_match() -> () {
                     ""
                 },
             };
-            if env::var("UPDATE_EXPECT").is_some() {
-                match fs::write_file(golden_path, formatted) {
+            if env::var_structured("UPDATE_EXPECT").is_ok() {
+                match fs::write_file_structured(golden_path, formatted) {
                     Ok(_) => (),
-                    Err(error) => testing::fail(error),
+                    Err(error) => testing::fail(error.to_string()),
                 }
             } else {
                 testing::assert_eq(formatted, read_fixture(golden_path))

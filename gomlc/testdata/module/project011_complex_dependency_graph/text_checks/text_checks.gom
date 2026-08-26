@@ -2,6 +2,8 @@ package text_checks;
 
 use std::bytes;
 use std::text;
+use std::utf8;
+use utf8::BytesUtf8;
 
 fn check(ok: Ref[bool], condition: bool) -> () {
     if condition {} else {
@@ -15,15 +17,15 @@ pub fn verify() -> bool {
     let data = bytes::Bytes::from_string(source);
     check(ok, data.len() == source.byte_len());
     check(ok, data.capacity() >= data.len());
-    match data.to_string() {
+    match data.to_string_utf8() {
         Result::Ok(value) => check(ok, value == source),
         Result::Err(_) => check(ok, false),
     };
     let invalid = bytes::Bytes::new();
     invalid.push(255);
-    match invalid.to_string() {
+    match invalid.to_string_utf8() {
         Result::Ok(_) => check(ok, false),
-        Result::Err(message) => check(ok, message == "invalid UTF-8"),
+        Result::Err(error) => check(ok, error.valid_up_to() == 0),
     };
     let builder = text::StringBuilder::with_capacity(4);
     check(ok, builder.is_empty());

@@ -12,7 +12,7 @@ fn test_builtins(counter: Ref[isize]) -> core::File {
     match core::lower_builtins(counter) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             core::File {
                 functions: Vec::new(),
                 enums: Vec::new(),
@@ -29,7 +29,7 @@ fn test_prelude(builtins: core::File, counter: Ref[isize]) -> core::File {
     match core::lower_prelude(builtins, counter) {
         Ok(value) => value,
         Err(error) => {
-            testing::fail(error);
+            testing::fail(error.to_string());
             core::File {
                 functions: Vec::new(),
                 enums: Vec::new(),

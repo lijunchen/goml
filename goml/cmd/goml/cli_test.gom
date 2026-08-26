@@ -9,7 +9,7 @@ use std::process;
 use std::testing;
 use std::text;
 
-fn migration_deep_ref_type(depth: isize) -> string {
+fn cli_deep_ref_type(depth: isize) -> string {
     let result = Ref::new("i32");
     for _ in range(0, depth) {
         result.set("Ref[" + result.get() + "]")
@@ -17,11 +17,11 @@ fn migration_deep_ref_type(depth: isize) -> string {
     result.get()
 }
 
-fn migration_build(root: string) -> process::Output {
+fn cli_build(root: string) -> process::Output {
     test_support::project_command("build", "", Vec::new(), root)
 }
 
-fn migration_check(root: string) -> process::Output {
+fn cli_check(root: string) -> process::Output {
     test_support::project_command("check", "", Vec::new(), root)
 }
 
@@ -31,14 +31,14 @@ fn project_build_handles_deep_public_interface_type() -> () {
     test_support::write_file(path::join(root, "goml.toml"), "[module]\npath = \"iface_deep\"\n");
     test_support::write_file(
         path::join(root, "Lib/Lib.gom"),
-        "package lib;\n\npub struct Wrap { value: " + migration_deep_ref_type(200)
+        "package lib;\n\npub struct Wrap { value: " + cli_deep_ref_type(200)
             + " }\n\npub fn ping() -> i32 { 1 }\n",
     );
     test_support::write_file(
         path::join(root, "main.gom"),
         "package main;\n\nuse iface_deep::Lib;\n\nfn main() -> () { println(lib::ping().to_string()) }\n",
     );
-    let output = migration_build(root);
+    let output = cli_build(root);
     test_support::assert_success(output);
     testing::assert(
         fs::is_file(path::join(root, "_artifact/build/pkg/iface_deep/goml_generated.go")),
@@ -64,12 +64,12 @@ fn project_build_loads_transitive_public_type_interfaces() -> () {
         path::join(root, "main.gom"),
         "package main;\n\nuse transitive_types::facade;\n\nfn main() -> () { println(facade::make().value.to_string()) }\n",
     );
-    let output = migration_build(root);
+    let output = cli_build(root);
     test_support::assert_success(output);
-    let execution = match process::Command::new(path::join(root, "_artifact/bin/transitive_types")).output() {
+    let execution = match process::Command::new(path::join(root, "_artifact/bin/transitive_types")).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             output
         },
     };
@@ -112,10 +112,10 @@ fn project_check_resolves_compiler_from_path() -> () {
     };
     let output = match process::Command::new(test_support::goml_binary()).arg("check").current_dir(
         root,
-    ).env("PATH", compiler_dir).output() {
+    ).env("PATH", compiler_dir).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             test_support::run(Vec::from_array(["version"]), root)
         },
     };
@@ -127,7 +127,7 @@ fn project_check_resolves_compiler_from_path() -> () {
 fn project_build_writes_default_artifact_layout() -> () {
     let root = test_support::workspace("default_artifact_layout");
     test_support::write_basic_project(root, "demo");
-    test_support::assert_success(migration_build(root));
+    test_support::assert_success(cli_build(root));
     testing::assert(fs::is_file(path::join(root, "_artifact/build/pkg/demo/goml_generated.go")));
     testing::assert(fs::is_file(path::join(root, "_artifact/bin/demo")))
 }
@@ -143,7 +143,7 @@ fn project_uses_manifest_and_cli_target_directories() -> () {
         path::join(root, "main.gom"),
         "package main;\n\nfn main() -> () { println(\"hello\") }\n",
     );
-    test_support::assert_success(migration_build(root));
+    test_support::assert_success(cli_build(root));
     testing::assert(fs::is_file(path::join(root, "out/generated/build/pkg/demo/goml_generated.go")));
     testing::assert(fs::is_file(path::join(root, "out/generated/bin/demo")));
     let override_output = test_support::project_command(
@@ -163,10 +163,7 @@ fn project_clean_removes_only_module_artifacts() -> () {
         path::join(root, "goml.toml"),
         "[module]\npath = \"demo\"\n\n[build]\ntarget-dir = \"out/generated\"\n",
     );
-    test_support::write_file(
-        path::join(root, "main.gom"),
-        "package main;\n\nfn main() -> () {}\n",
-    );
+    test_support::write_file(path::join(root, "main.gom"), "package main;\n\nfn main() -> () {}\n");
     let nested = path::join(root, "src");
     test_support::create_dir(nested);
     let artifact_root = path::join(root, "out/generated");
@@ -193,10 +190,7 @@ fn project_clean_rejects_module_directory() -> () {
         path::join(root, "goml.toml"),
         "[module]\npath = \"demo\"\n\n[build]\ntarget-dir = \".\"\n",
     );
-    test_support::write_file(
-        path::join(root, "main.gom"),
-        "package main;\n\nfn main() -> () {}\n",
-    );
+    test_support::write_file(path::join(root, "main.gom"), "package main;\n\nfn main() -> () {}\n");
     let output = test_support::run(Vec::from_array(["clean"]), root);
     test_support::assert_failure(output);
     test_support::assert_contains(
@@ -214,8 +208,8 @@ fn project_check_and_build_support_std_imports() -> () {
         path::join(root, "main.gom"),
         "package main;\n\nuse std::io;\n\nfn main() -> () { io::println(\"std-project\") }\n",
     );
-    test_support::assert_success(migration_check(root));
-    test_support::assert_success(migration_build(root));
+    test_support::assert_success(cli_check(root));
+    test_support::assert_success(cli_build(root));
     testing::assert(fs::is_file(path::join(root, "_artifact/build/pkg/demo/goml_generated.go")))
 }
 
@@ -231,7 +225,7 @@ fn project_module_path_may_contain_tests_segment() -> () {
         path::join(root, "main.gom"),
         "package main;\nuse tests::demo::events;\nfn main() -> () { println(events::value().to_string()) }\n",
     );
-    test_support::assert_success(migration_build(root));
+    test_support::assert_success(cli_build(root));
     testing::assert(
         fs::is_file(path::join(root, "_artifact/build/pkg/tests/demo/goml_generated.go")),
     )
@@ -314,11 +308,11 @@ fn project_run_dry_run_prints_the_complete_plan_without_tools() -> () {
 fn project_build_creates_and_runs_the_native_binary() -> () {
     let root = test_support::workspace("native_binary");
     test_support::write_basic_project(root, "demo");
-    test_support::assert_success(migration_build(root));
-    let output = match process::Command::new(path::join(root, "_artifact/bin/demo")).output() {
+    test_support::assert_success(cli_build(root));
+    let output = match process::Command::new(path::join(root, "_artifact/bin/demo")).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             test_support::run(Vec::from_array(["version"]), root)
         },
     };
@@ -372,7 +366,7 @@ fn project_build_stops_when_compiler_subcommand_fails() -> () {
         path::join(root, "A/A.gom"),
         "package A;\n\npub fn msg() -> string { \"bad\" }\n",
     );
-    let output = migration_build(root);
+    let output = cli_build(root);
     test_support::assert_failure(output);
     test_support::assert_contains(
         test_support::stderr(output),
@@ -413,7 +407,7 @@ fn project_build_links_every_main_package() -> () {
         path::join(root, "cmd/client/main.gom"),
         "package main;\nfn main() -> () { println(\"client\") }\n",
     );
-    test_support::assert_success(migration_build(root));
+    test_support::assert_success(cli_build(root));
     testing::assert(fs::is_file(path::join(root, "_artifact/build/pkg/alice/app/pkg/pkg.core")));
     testing::assert(
         fs::is_file(path::join(root, "_artifact/build/pkg/alice/app/pkg/pkg.interface")),
@@ -462,7 +456,7 @@ fn project_build_and_test_use_safe_generated_go_filename() -> () {
         path::join(root, "compiler_test/main_test.gom"),
         "package main;\nuse std::testing;\n#[test]\nfn safe_name() -> () { testing::assert(true) }\n",
     );
-    test_support::assert_success(migration_build(root));
+    test_support::assert_success(cli_build(root));
     testing::assert(
         fs::is_file(path::join(root, "_artifact/build/pkg/demo/compiler_test/goml_generated.go")),
     );
@@ -483,7 +477,7 @@ fn project_build_accepts_modules_without_main_packages() -> () {
         path::join(root, "pkg/pkg.gom"),
         "package pkg;\npub fn value() -> i32 { 1 }\n",
     );
-    test_support::assert_success(migration_build(root));
+    test_support::assert_success(cli_build(root));
     testing::assert(fs::is_file(path::join(root, "_artifact/build/pkg/demo/pkg/pkg.core")));
     testing::assert(fs::is_file(path::join(root, "_artifact/build/pkg/demo/pkg/pkg.interface")));
     testing::assert(!fs::exists(path::join(root, "_artifact/build/pkg/demo/pkg/goml_generated.go")))
@@ -542,23 +536,23 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> () {
 fn project_commands_validate_incremental_fingerprints_and_outputs() -> () {
     let root = test_support::workspace("incremental_fingerprints");
     test_support::write_basic_project(root, "demo");
-    test_support::assert_success(migration_check(root));
+    test_support::assert_success(cli_check(root));
     let artifact = path::join(root, "_artifact/check/pkg/demo/demo.interface");
     let fingerprint = path::join(root, "_artifact/check/pkg/demo/demo.goml-check-fingerprint");
     testing::assert(fs::is_file(artifact));
     testing::assert(fs::is_file(fingerprint));
     let initial = test_support::read_file(fingerprint);
-    test_support::assert_success(migration_check(root));
+    test_support::assert_success(cli_check(root));
     testing::assert_eq(test_support::read_file(fingerprint), initial);
-    match fs::write_bytes(artifact, bytes::Bytes::from_string("corrupt")) {
+    match fs::write_bytes_structured(artifact, bytes::Bytes::from_string("corrupt")) {
         Ok(()) => (),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     };
-    test_support::assert_success(migration_check(root));
-    let restored = match fs::read_bytes(artifact) {
+    test_support::assert_success(cli_check(root));
+    let restored = match fs::read_bytes_structured(artifact) {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             bytes::Bytes::new()
         },
     };
@@ -566,15 +560,15 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> () {
     testing::assert_eq(test_support::read_file(fingerprint), initial);
     match fs::remove_file(artifact) {
         Ok(()) => (),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     };
-    test_support::assert_success(migration_check(root));
+    test_support::assert_success(cli_check(root));
     testing::assert(fs::is_file(artifact));
     test_support::write_file(
         path::join(root, "main.gom"),
         "package main;\n\nfn main() -> () { println(\"changed\") }\n",
     );
-    test_support::assert_success(migration_check(root));
+    test_support::assert_success(cli_check(root));
     testing::assert(test_support::read_file(fingerprint) != initial)
 }
 
@@ -592,7 +586,7 @@ fn sha256_file_handles_streamed_content_and_missing_files() -> () {
             digest,
             "48705161f98666a9d694f3b8e9d1bc5b842fa1ff0e85d710150616c433af9aae",
         ),
-        Err(message) => testing::fail(message),
+        Err(message) => testing::fail(message.to_string()),
     };
     match fs::sha256_file(path::join(root, "missing.txt")) {
         Ok(_) => testing::fail("missing file produced a digest"),
@@ -616,7 +610,7 @@ fn project_build_graph_reuses_unaffected_local_cache_nodes() -> () {
         path::join(root, "right/right.gom"),
         "package right;\n\npub fn value() -> i32 { 2 }\n",
     );
-    test_support::assert_success(migration_check(root));
+    test_support::assert_success(cli_check(root));
     let main_fingerprint = path::join(root, "_artifact/check/pkg/demo/demo.goml-check-fingerprint");
     let left_fingerprint = path::join(
         root,
@@ -629,7 +623,7 @@ fn project_build_graph_reuses_unaffected_local_cache_nodes() -> () {
     let initial_main = test_support::read_file(main_fingerprint);
     let initial_left = test_support::read_file(left_fingerprint);
     let initial_right = test_support::read_file(right_fingerprint);
-    test_support::assert_success(migration_check(root));
+    test_support::assert_success(cli_check(root));
     testing::assert_eq(test_support::read_file(main_fingerprint), initial_main);
     testing::assert_eq(test_support::read_file(left_fingerprint), initial_left);
     testing::assert_eq(test_support::read_file(right_fingerprint), initial_right);
@@ -637,7 +631,7 @@ fn project_build_graph_reuses_unaffected_local_cache_nodes() -> () {
         path::join(root, "left/left.gom"),
         "package left;\n\npub fn value() -> i32 { 3 }\n",
     );
-    test_support::assert_success(migration_check(root));
+    test_support::assert_success(cli_check(root));
     testing::assert_eq(test_support::read_file(main_fingerprint), initial_main);
     testing::assert(test_support::read_file(left_fingerprint) != initial_left);
     testing::assert_eq(test_support::read_file(right_fingerprint), initial_right)
@@ -647,7 +641,7 @@ fn project_build_graph_reuses_unaffected_local_cache_nodes() -> () {
 fn project_commands_report_build_progress_on_stderr() -> () {
     let root = test_support::workspace("build_progress");
     test_support::write_basic_project(root, "demo");
-    let checked = migration_check(root);
+    let checked = cli_check(root);
     test_support::assert_success(checked);
     test_support::assert_contains(
         test_support::stderr(checked),
@@ -658,7 +652,7 @@ fn project_commands_report_build_progress_on_stderr() -> () {
         test_support::stderr(checked),
         "\r\u001b[2K[####################] 1/1 finished\n",
     );
-    let built = migration_build(root);
+    let built = cli_build(root);
     test_support::assert_success(built);
     test_support::assert_contains(
         test_support::stderr(built),
@@ -669,7 +663,7 @@ fn project_commands_report_build_progress_on_stderr() -> () {
         test_support::stderr(built),
         "\r\u001b[2K[####################] 3/3 finished\n",
     );
-    let cached = migration_build(root);
+    let cached = cli_build(root);
     test_support::assert_success(cached);
     test_support::assert_contains(
         test_support::stderr(cached),
@@ -922,7 +916,7 @@ fn project_test_dry_run_and_invalid_signature_diagnostics() -> () {
     test_support::assert_contains(stderr, "must return ()")
 }
 
-fn migration_wide_fields(count: isize) -> string {
+fn cli_wide_fields(count: isize) -> string {
     let parts = Vec::new();
     for idx in range(0, count) {
         parts.push("field" + idx.to_string() + ": i32")
@@ -930,7 +924,7 @@ fn migration_wide_fields(count: isize) -> string {
     text::join(parts, ", ")
 }
 
-fn migration_wide_values(count: isize) -> string {
+fn cli_wide_values(count: isize) -> string {
     let parts = Vec::new();
     for idx in range(0, count) {
         parts.push("field" + idx.to_string() + ": " + idx.to_string())
@@ -938,7 +932,7 @@ fn migration_wide_values(count: isize) -> string {
     text::join(parts, ", ")
 }
 
-fn migration_wide_pattern(count: isize) -> string {
+fn cli_wide_pattern(count: isize) -> string {
     let parts = Vec::new();
     for idx in range(0, count) {
         parts.push("field" + idx.to_string() + ": x" + idx.to_string())
@@ -946,7 +940,7 @@ fn migration_wide_pattern(count: isize) -> string {
     text::join(parts, ", ")
 }
 
-fn migration_wide_sum(count: isize) -> string {
+fn cli_wide_sum(count: isize) -> string {
     let parts = Vec::new();
     for idx in range(0, count) {
         parts.push("x" + idx.to_string())
@@ -954,14 +948,14 @@ fn migration_wide_sum(count: isize) -> string {
     text::join(parts, " + ")
 }
 
-fn migration_wide_struct_program(field_count: isize, sum_count: isize) -> string {
-    "package main;\n\nstruct S { " + migration_wide_fields(field_count)
+fn cli_wide_struct_program(field_count: isize, sum_count: isize) -> string {
+    "package main;\n\nstruct S { " + cli_wide_fields(field_count)
         + " }\nfn main() -> () { let s = S { "
-        + migration_wide_values(field_count)
+        + cli_wide_values(field_count)
         + " }; let total = match s { S { "
-        + migration_wide_pattern(field_count)
+        + cli_wide_pattern(field_count)
         + " } => "
-        + migration_wide_sum(sum_count)
+        + cli_wide_sum(sum_count)
         + " }; println(total.to_string()) }\n"
 }
 
@@ -969,8 +963,8 @@ fn migration_wide_struct_program(field_count: isize, sum_count: isize) -> string
 fn project_build_handles_very_wide_struct_pattern() -> () {
     let root = test_support::workspace("wide_struct_pattern");
     test_support::write_file(path::join(root, "goml.toml"), "[module]\npath = \"wideproj\"\n");
-    test_support::write_file(path::join(root, "main.gom"), migration_wide_struct_program(128, 128));
-    let output = migration_build(root);
+    test_support::write_file(path::join(root, "main.gom"), cli_wide_struct_program(128, 128));
+    let output = cli_build(root);
     test_support::assert_success(output);
     testing::assert(fs::is_file(path::join(root, "_artifact/build/pkg/wideproj/goml_generated.go")))
 }
@@ -1016,10 +1010,10 @@ fn home_creates_and_prints_the_layout() -> () {
     let output = match process::Command::new(test_support::goml_binary()).arg("home").env(
         "GOML_HOME",
         home,
-    ).current_dir(root).output() {
+    ).current_dir(root).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
                 stdout_value: bytes::Bytes::new(),
@@ -1035,10 +1029,10 @@ fn home_creates_and_prints_the_layout() -> () {
 }
 
 fn registry_command(program: string, arguments: Vec[string], directory: string) -> () {
-    let output = match process::Command::new(program).args(arguments).current_dir(directory).output() {
+    let output = match process::Command::new(program).args(arguments).current_dir(directory).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             return
         },
     };
@@ -1105,10 +1099,10 @@ fn local_registry(root: string) -> string {
 fn run_with_home(arguments: Vec[string], directory: string, home: string) -> process::Output {
     match process::Command::new(test_support::goml_binary()).args(arguments).env("GOML_HOME", home).current_dir(
         directory,
-    ).output() {
+    ).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             process::Output {
                 status_value: process::ExitStatus { code_value: -1 },
                 stdout_value: bytes::Bytes::new(),
@@ -1182,10 +1176,10 @@ fn cached_registry_dependencies_build_with_mvs_layout() -> () {
             path::join(project, "_artifact/build/deps/alice/http/1.2.0/pkg/alice/http/http.core"),
         ),
     );
-    let execution = match process::Command::new(path::join(project, "_artifact/bin/demo")).output() {
+    let execution = match process::Command::new(path::join(project, "_artifact/bin/demo")).output_structured() {
         Ok(value) => value,
         Err(message) => {
-            testing::fail(message);
+            testing::fail(message.to_string());
             built
         },
     };
