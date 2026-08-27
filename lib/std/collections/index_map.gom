@@ -109,7 +109,6 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             position = ((position.to_u64() * 5 + perturb + 1) & mask.to_u64()).to_isize();
             perturb >>= 5;
         }
-        IndexMapProbe::Vacant(0)
     }
 
     fn place_entry_index(self: IndexMap[K, V], dense_index: isize) -> () {

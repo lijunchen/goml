@@ -3562,11 +3562,18 @@ fn check_if_expr(
         Some(ty) => ty,
         None => fresh_type(ctx.counter, VarKind::Any),
     };
+    let cond = check_expr(ctx, cond, Option::Some(Type::Bool));
+    let then_branch = check_expr(ctx, then_branch, Option::Some(result_ty));
+    let else_branch = check_expr(ctx, else_branch, Option::Some(result_ty));
     Expr::If {
-        cond: check_expr(ctx, cond, Option::Some(Type::Bool)),
-        then_branch: check_expr(ctx, then_branch, Option::Some(result_ty)),
-        else_branch: check_expr(ctx, else_branch, Option::Some(result_ty)),
-        ty: result_ty,
+        cond,
+        then_branch,
+        else_branch,
+        ty: if tast_expr_never(then_branch) && tast_expr_never(else_branch) {
+            Type::Never
+        } else {
+            result_ty
+        },
     }
 }
 
@@ -6123,12 +6130,14 @@ fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
             hir_expr_always_exits_loop_control(base) || hir_expr_always_exits_loop_control(index)
         },
         Block { block } => hir_block_always_exits_loop_control(block),
-        If { cond: _, then_branch, else_branch } => {
-            hir_expr_always_exits_loop_control(then_branch)
-                && hir_expr_always_exits_loop_control(else_branch)
+        If { cond, then_branch, else_branch } => {
+            hir_expr_always_exits_loop_control(cond)
+                || (hir_expr_always_exits_loop_control(then_branch)
+                    && hir_expr_always_exits_loop_control(else_branch))
         },
-        Match { expr: _, arms } => {
-            hir_match_has_catch_all(arms) && hir_match_bodies_all_exit_loop_control(arms)
+        Match { expr, arms } => {
+            hir_expr_always_exits_loop_control(expr)
+                || (hir_match_has_catch_all(arms) && hir_match_bodies_all_exit_loop_control(arms))
         },
         While { cond, body: _, .. } => hir_expr_always_exits_loop_control(cond),
         For { pat: _, iterator, body: _, .. } => {
@@ -6140,8 +6149,58 @@ fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
 
 fn hir_stmt_always_exits_loop_control(value: hir::Stmt) -> bool {
     match value {
+        Let { is_mut: _, pat: _, annotation: _, value, else_branch: _ } => {
+            hir_expr_always_exits_loop_control(value)
+        },
+        Assign { target, op: _, value } => {
+            hir_expr_always_exits_loop_control(target) || hir_expr_always_exits_loop_control(value)
+        },
         Expr { expr } => hir_expr_always_exits_loop_control(expr),
+        Defer { expr: _ } => false,
+    }
+}
+
+fn hir_stmt_span(value: hir::Stmt) -> ast::Span {
+    match value {
+        Defer { expr } | Expr { expr } => expr.span,
+        Let { is_mut: _, pat, annotation: _, value, else_branch } => ast::span(
+            pat.span.start,
+            match else_branch {
+                Some(value) => value.span.end,
+                None => value.span.end,
+            },
+        ),
+        Assign { target, op: _, value } => ast::span(target.span.start, value.span.end),
+    }
+}
+
+fn tast_expr_never(value: Expr) -> bool {
+    match resolve_type(expr_type(value)) {
+        Never => true,
         _ => false,
+    }
+}
+
+fn tast_stmt_always_exits(value: Stmt) -> bool {
+    match value {
+        Let { is_mut: _, pat: _, value } | LetElse { is_mut: _, pat: _, value, else_branch: _ } => tast_expr_never(
+            value,
+        ),
+        Assign { target, op: _, value } => tast_expr_never(target) || tast_expr_never(value),
+        Expr { expr } => tast_expr_never(expr),
+        Defer { expr: _ } => false,
+    }
+}
+
+fn push_unreachable_code_warning(ctx: Checker, span: ast::Span, exit_span: ast::Span) -> () {
+    if ctx.allow_unreachable_code {} else {
+        push_warning_with_secondary_at(
+            ctx,
+            "unreachable_code: unreachable code",
+            span,
+            "control flow exits here",
+            exit_span,
+        )
     }
 }
 
@@ -6159,13 +6218,38 @@ fn hir_block_always_exits_loop_control(value: hir::Block) -> bool {
 
 fn check_block(ctx: Checker, value: hir::Block, expected: Option[Type]) -> (Block, Type) {
     let stmts: Vec[Stmt] = Vec::new();
+    let mut reachable = true;
+    let mut unreachable_reported = false;
+    let mut exit_span = Option::None;
     for stmt in value.stmts {
-        stmts.push(check_stmt(ctx, stmt))
+        let stmt_span = hir_stmt_span(stmt);
+        if !reachable && !unreachable_reported {
+            match exit_span {
+                Some(cause) => push_unreachable_code_warning(ctx, stmt_span, cause),
+                None => (),
+            };
+            unreachable_reported = true;
+        } else {};
+        let checked = check_stmt(ctx, stmt);
+        if reachable
+            && (hir_stmt_always_exits_loop_control(stmt) || tast_stmt_always_exits(checked)) {
+            reachable = false;
+            exit_span = Option::Some(stmt_span);
+        } else {};
+        stmts.push(checked)
     }
     let tail = match value.tail {
-        Some(expr) => Option::Some(check_expr(ctx, expr, expected)),
+        Some(expr) => {
+            if !reachable && !unreachable_reported {
+                match exit_span {
+                    Some(cause) => push_unreachable_code_warning(ctx, expr.span, cause),
+                    None => (),
+                }
+            } else {};
+            Option::Some(check_expr(ctx, expr, expected))
+        },
         None => {
-            if !hir_block_always_exits_loop_control(value) {
+            if reachable {
                 match expected {
                     Some(ty) => expect_type(ctx, Type::Unit, ty),
                     None => (),
@@ -6176,7 +6260,11 @@ fn check_block(ctx: Checker, value: hir::Block, expected: Option[Type]) -> (Bloc
     };
     let ty = match tail {
         Some(expr) => expr_type(expr),
-        None => Type::Unit,
+        None => if reachable {
+            Type::Unit
+        } else {
+            Type::Never
+        },
     };
     (Block { stmts, tail }, ty)
 }

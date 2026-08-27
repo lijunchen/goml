@@ -279,9 +279,7 @@ fn compile_toolchain_package(
         hir_files,
         toolchain_dependency_environments(hir_dependencies),
     );
-    if !tast_value.diagnostics.is_empty() {
-        fail(render_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, ""))
-    } else {};
+    fail_on_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, "");
     let signatures = match tast::package_signatures(hir_file) {
         Ok(value) => value,
         Err(error) => {
@@ -1145,7 +1143,26 @@ fn fail_on_typer_diagnostics(
 ) -> () {
     if typer_diagnostics_have_errors(diagnostics) {
         fail(render_typer_diagnostics(diagnostics, fallback_path, fallback_source))
-    } else {}
+    } else {
+        emit_typer_warnings(diagnostics, fallback_path, fallback_source)
+    }
+}
+
+fn emit_typer_warnings(
+    diagnostics: Vec[tast::Diagnostic],
+    fallback_path: string,
+    fallback_source: string,
+) -> () {
+    let warnings: Vec[tast::Diagnostic] = Vec::new();
+    for diagnostic in diagnostics {
+        match diagnostic.severity {
+            Error => (),
+            Warning => warnings.push(diagnostic),
+        }
+    }
+    if warnings.is_empty() {} else {
+        io::eprintln(render_typer_diagnostics(warnings, fallback_path, fallback_source))
+    }
 }
 
 fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path: string) -> Vec[
@@ -1317,23 +1334,14 @@ fn compact_diagnostic_compare(left: tast::Diagnostic, right: tast::Diagnostic) -
 fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnostic] {
     let result: Vec[tast::Diagnostic] = Vec::new();
     for value in values {
-        match value.severity {
-            Error => result.push(value),
-            Warning => (),
-        }
+        result.push(value)
     }
     collections::sort_by_ordering(result, compact_diagnostic_compare);
     result
 }
 
 fn typer_diagnostics_have_errors(diagnostics: Vec[tast::Diagnostic]) -> bool {
-    for diagnostic in diagnostics {
-        match diagnostic.severity {
-            Error => return true,
-            Warning => (),
-        }
-    }
-    false
+    tast::diagnostics_have_errors(diagnostics)
 }
 
 fn compact_typer_diagnostics(
@@ -1388,7 +1396,7 @@ fn diagnostic_output_optional(
     };
     let core_dependencies = source_core_dependencies(compiler, ast_value);
     let tast_value = tast::check_for_link_with_environments(hir_value, environments);
-    if typer_diagnostics_have_errors(tast_value.diagnostics) {
+    if !tast_value.diagnostics.is_empty() {
         return compact_typer_diagnostics(tast_value.diagnostics, source_path, source)
     } else {};
     if !has_single_file_entrypoint(tast_value) {

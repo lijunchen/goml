@@ -1214,6 +1214,16 @@ fn first_positive(values: Vec[i32]) -> i32 {
 }
 ```
 
+The `unreachable_code` lint warns when a statement or tail expression follows control flow that cannot continue, including `return`, `break`, `continue`, an infinite `loop`, or an exhaustive `if` or `match` whose branches all exit. The compiler reports one warning for each continuous unreachable region, continues checking that code for other errors, and does not fail the build for the warning alone. A function or method can suppress intentional unreachable code with `#[allow(unreachable_code)]`; closures inherit the setting of their enclosing function.
+
+```goml
+#[allow(unreachable_code)]
+fn platform_exit() -> () {
+    return;
+    println("unreachable fallback")
+}
+```
+
 ### `?`
 
 The suffix `?` only supports the built-in semantics `Option[T]` and `Result[T, E]`:

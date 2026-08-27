@@ -44,7 +44,6 @@ where
                     None => return Option::None,
                 }
             }
-            Option::None
         },
     )
 }
@@ -64,7 +63,6 @@ where
                     None => return Option::None,
                 }
             }
-            Option::None
         },
     )
 }
@@ -156,7 +154,6 @@ where
                     None => return Option::None,
                 }
             }
-            Option::None
         },
     )
 }
@@ -288,7 +285,6 @@ pub fn find[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[T] wh
             None => return Option::None,
         }
     }
-    Option::None
 }
 
 pub fn find_map[A, B, I: Iterator](iterator: I, map_fn: (A) -> Option[B]) -> Option[B]
@@ -304,7 +300,6 @@ where
             None => return Option::None,
         }
     }
-    Option::None
 }
 
 pub fn any[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
@@ -343,7 +338,6 @@ where
             None => return Option::None,
         }
     }
-    Option::None
 }
 
 pub fn nth[I: Iterator](iterator: I, index: isize) -> Option[I::Item] {
@@ -361,7 +355,6 @@ pub fn nth[I: Iterator](iterator: I, index: isize) -> Option[I::Item] {
                 None => return Option::None,
             }
         }
-        Option::None
     }
 }
 

@@ -375,7 +375,9 @@ fn derive_enum_eq_body(input: DeriveInput, trait_name: string) -> MetaExpr {
         meta_arm_list_push(arms, meta_arm(meta_pattern_tuple(tuple), body));
         variant_index = variant_index + 1;
     }
-    meta_arm_list_push(arms, meta_arm(meta_pattern_wild(), meta_expr_bool(false)));
+    if derive_variant_count(input) > 1 {
+        meta_arm_list_push(arms, meta_arm(meta_pattern_wild(), meta_expr_bool(false)))
+    } else {};
     meta_expr_match(
         meta_expr_tuple(derive_expr_list_two(meta_expr_var("self"), meta_expr_var("other"))),
         arms,

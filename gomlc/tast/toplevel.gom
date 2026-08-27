@@ -12,6 +12,7 @@ fn function_context(
     type_params: Vec[string],
     predicates: Vec[TypePredicate],
     allow_unstructured_go: bool,
+    allow_unreachable_code: bool,
     comptime: ComptimeCapability,
 ) -> Checker {
     let predicates = expand_implied_predicates(base, predicates);
@@ -78,6 +79,7 @@ fn function_context(
         ),
         comptime_capability: comptime,
         allow_unstructured_go,
+        allow_unreachable_code,
     }
 }
 
@@ -138,6 +140,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         comptime_depth: base.comptime_depth,
         comptime_capability: base.comptime_capability,
         allow_unstructured_go: base.allow_unstructured_go,
+        allow_unreachable_code: base.allow_unreachable_code,
     }
 }
 
@@ -565,6 +568,7 @@ fn check_function(
         type_params,
         predicates,
         false,
+        false,
         comptime,
     );
     let previous_span = base.current_span.get();
@@ -578,6 +582,7 @@ fn check_function(
         type_params,
         predicates,
         attribute_allows(value.attrs, "unstructured_go"),
+        attribute_allows(value.attrs, "unreachable_code"),
         comptime,
     );
     let comptime_origin_start = base.typeck_results.exprs.len();
@@ -782,6 +787,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
         Vec::new(),
         Vec::new(),
         false,
+        false,
         ComptimeCapability::Capable,
     );
     let comptime_origin_start = base.typeck_results.exprs.len();
@@ -876,6 +882,7 @@ fn check_static(base: Checker, value: hir::Static) -> Static {
         Option::None,
         Vec::new(),
         Vec::new(),
+        false,
         false,
         ComptimeCapability::RuntimeOnly,
     );
@@ -1770,6 +1777,7 @@ fn validate_trait_impl_definition_requirements(
                 Option::Some(for_type),
                 Vec::new(),
                 predicates,
+                false,
                 false,
                 ComptimeCapability::RuntimeOnly,
             );

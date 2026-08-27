@@ -327,12 +327,11 @@ fn collect_dependency(
                         lowered.files,
                         environments,
                     );
-                    if checked.diagnostics.is_empty() {
+                    if !tast::diagnostics_have_errors(checked.diagnostics) {
                         derive_modules.push(checked.comptime)
-                    } else {
-                        for diagnostic in checked.diagnostics {
-                            diagnostics.push(diagnostic)
-                        }
+                    } else {};
+                    for diagnostic in checked.diagnostics {
+                        diagnostics.push(diagnostic)
                     }
                 } else {};
                 append_derive_reexports(lowered.files, derive_reexports);

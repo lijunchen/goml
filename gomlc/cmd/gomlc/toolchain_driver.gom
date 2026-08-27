@@ -276,9 +276,11 @@ fn compile_builtin_contract_request(command: PackageCommandArgs) -> Result[
     let parsed = toolchain_parse_sources(command)?;
     let package_value = toolchain_lower_hir(command, parsed.0, parsed.1, false)?;
     let checked = tast::check_builtin_package_files(package_value.hir_files);
-    if !checked.diagnostics.is_empty() || checked.tast.is_none() {
+    if tast::diagnostics_have_errors(checked.diagnostics) || checked.tast.is_none() {
         return Result::Err(render_typer_diagnostics(checked.diagnostics, "", ""))
-    } else {};
+    } else {
+        emit_typer_warnings(checked.diagnostics, "", "")
+    };
     let counter = Ref::new(0);
     let core_value = core::lower_with_counter(checked, counter);
     let interface_unit = builtin_artifact_interface_unit_from_files(package_value.hir_files);
@@ -313,9 +315,11 @@ fn compile_toolchain_project_request(command: PackageCommandArgs, without_roots:
         package_value.hir_files,
         toolchain_dependency_environments_from_interfaces(dependencies)?,
     );
-    if !checked.diagnostics.is_empty() || checked.tast.is_none() {
+    if tast::diagnostics_have_errors(checked.diagnostics) || checked.tast.is_none() {
         return Result::Err(render_typer_diagnostics(checked.diagnostics, "", ""))
-    } else {};
+    } else {
+        emit_typer_warnings(checked.diagnostics, "", "")
+    };
     let hir_file = merge_hir_files(package_value.hir_files, command.package_name);
     let public_reexports = if command.package_name == "prelude" {
         let values: Vec[(string, string)] = Vec::new();
