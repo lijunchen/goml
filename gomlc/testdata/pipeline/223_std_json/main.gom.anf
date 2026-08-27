@@ -3888,46 +3888,6 @@ fn std::serde::variant_parts(
   }
 }
 
-fn std::serde::tuple_values(
-  value/0: std::serde::Value,
-  size/0: isize
-) -> Result__Vec[std::serde::Value]__string {
-  join k0(jp0: Vec[std::serde::Value]) -> Result__Vec[std::serde::Value]__string {
-    join inline_cont0(t0: isize) -> Result__Vec[std::serde::Value]__string {
-      let t1 = (t0 == size/0) in
-      if t1 {
-        let t2 = Result__Vec[std::serde::Value]__string::Ok(jp0) in
-        t2
-      } else {
-        join inline_cont1(t3: string) -> Result__Vec[std::serde::Value]__string {
-          let t4 = ("expected " + t3) in
-          let t5 = (t4 + "-element tuple") in
-          let t6 = Result__Vec[std::serde::Value]__string::Err(t5) in
-          t6
-        } in
-        let inline0 = __goml_builtin_int_to_string(size/0) in
-        jump inline_cont1(inline0)
-      }
-    } in
-    let inline1 = @intrinsic(vec.len)(jp0) in
-    jump inline_cont0(inline1)
-  } in
-  match value/0 {
-    Tag_17 => {
-      let x0 = std::serde::Value::Sequence._0(value/0) in
-      jump k0(x0)
-    },
-    Tag_18 => {
-      let x1 = std::serde::Value::Tuple._0(value/0) in
-      jump k0(x1)
-    },
-    _ => {
-      let t7 = Result__Vec[std::serde::Value]__string::Err("expected tuple") in
-      t7
-    },
-  }
-}
-
 fn std::serde::error(message/0: string) -> Result__()__string {
   let t0 = Result__()__string::Err(message/0) in
   t0

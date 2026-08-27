@@ -1218,12 +1218,6 @@ type _goml_m_Result_____o_string_c__h0fd03a31a9a9f0946c70cfe7367b8f54_r__q_____s
     _v1_0 string
 }
 
-type _goml_m_Result____Vec_l_std_p_serde_p_Value_r_____string struct {
-    _tag int32
-    _v0_0 *_goml_vec__goml_m_std_p_serde_p_Value
-    _v1_0 string
-}
-
 type _goml_m_Result_____o__q_____string struct {
     _tag int32
     _v0_0 struct{}

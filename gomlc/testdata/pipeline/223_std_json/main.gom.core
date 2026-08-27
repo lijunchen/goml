@@ -9705,43 +9705,6 @@ fn std::serde::variant_parts(value/0: std::serde::Value) -> Result[
   }
 }
 
-fn std::serde::tuple_values(value/0: std::serde::Value, size/0: isize) -> Result[
-  Vec[std::serde::Value],
-  string
-] {
-  let values/0 =
-    match value/0 {
-      std::serde::Value::Sequence(x0) => {
-        {
-          let x0 = std::serde::Value::Sequence._0(value/0) in
-          {
-            let values/1 = x0 in
-            values/1
-          }
-        }
-      },
-      std::serde::Value::Tuple(x1) => {
-        {
-          let x1 = std::serde::Value::Tuple._0(value/0) in
-          {
-            let values/2 = x1 in
-            values/2
-          }
-        }
-      },
-      _ => return Result::Err("expected tuple"),
-    } in
-  if (inherent#Vec#Vec[std::serde::Value]#len(values/0) == size/0) {
-      {
-        Result::Ok(values/0)
-      }
-  } else {
-      {
-        Result::Err((("expected " + inherent#isize#isize#to_string(size/0)) + "-element tuple"))
-      }
-  }
-}
-
 fn std::serde::error(message/0: string) -> Result[(), string] {
   Result::Err(message/0)
 }
