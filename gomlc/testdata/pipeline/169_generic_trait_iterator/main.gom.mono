@@ -169,35 +169,33 @@ fn std::iter::filter__I_FnIterator[i32]__T_i32(
 ) -> FnIterator__i32 {
   inherent#FnIterator#FnIterator[T]#from_fn__T_i0(
     || {
-      let _wild0 =
-        loop {
-          {
-            let mtmp0 = trait_impl#Iterator#FnIterator__i32#next(iterator/0) in
-            match mtmp0 {
-              Option__i32::None => {
-                return Option__i32::None
-              },
-              Option__i32::Some(x0) => {
+      loop {
+        {
+          let mtmp0 = trait_impl#Iterator#FnIterator__i32#next(iterator/0) in
+          match mtmp0 {
+            Option__i32::None => {
+              return Option__i32::None
+            },
+            Option__i32::Some(x0) => {
+              {
+                let x0 = Option__i32::Some._0(mtmp0) in
                 {
-                  let x0 = Option__i32::Some._0(mtmp0) in
-                  {
-                    let value/0 = x0 in
-                    if predicate/0(value/0) {
-                        {
-                          return Option__i32::Some(value/0)
-                        }
-                    } else {
-                        {
-                          ()
-                        }
-                    }
+                  let value/0 = x0 in
+                  if predicate/0(value/0) {
+                      {
+                        return Option__i32::Some(value/0)
+                      }
+                  } else {
+                      {
+                        ()
+                      }
                   }
                 }
-              },
-            }
+              }
+            },
           }
-        } in
-      Option__i32::None
+        }
+      }
     }
   )
 }

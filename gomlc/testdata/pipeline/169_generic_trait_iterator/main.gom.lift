@@ -444,23 +444,21 @@ fn inherent#closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5#closure_env_std
 ) -> Option__i32 {
   let iterator/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5.iterator_0(env0) in
   let predicate/0 = closure_env_std_iter_filter_I_FnIterator_i32_T_i32_5.predicate_1(env0) in
-  let _wild0 =
-    loop let mtmp0 = trait_impl#Iterator#FnIterator__i32#next(iterator/0) in
-    match mtmp0 {
-      Option__i32::None => {
-        return Option__i32::None
-      },
-      Option__i32::Some(x0) => {
-        let x0 = Option__i32::Some._0(mtmp0) in
-        let value/0 = x0 in
-        if predicate/0(value/0) {
-            return Option__i32::Some(value/0)
-        } else {
-            ()
-        }
-      },
-    } in
-  Option__i32::None
+  loop let mtmp0 = trait_impl#Iterator#FnIterator__i32#next(iterator/0) in
+  match mtmp0 {
+    Option__i32::None => {
+      return Option__i32::None
+    },
+    Option__i32::Some(x0) => {
+      let x0 = Option__i32::Some._0(mtmp0) in
+      let value/0 = x0 in
+      if predicate/0(value/0) {
+          return Option__i32::Some(value/0)
+      } else {
+          ()
+      }
+    },
+  }
 }
 
 fn inherent#closure_env_std_iter_take_I_FnIterator_i32_6#closure_env_std_iter_take_I_FnIterator_i32_6#apply(

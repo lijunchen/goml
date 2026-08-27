@@ -3367,35 +3367,33 @@ fn std::iter::map(iterator/0: I, map_fn/0: (A) -> B) -> FnIterator[B] {
 fn std::iter::filter(iterator/0: I, predicate/0: (T) -> bool) -> FnIterator[T] {
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      let _wild0 =
-        loop {
-          {
-            let mtmp0 = trait_call[Iterator::next](iterator/0) in
-            match mtmp0 {
-              Option::None => {
-                return Option::None
-              },
-              Option::Some(x0) => {
+      loop {
+        {
+          let mtmp0 = trait_call[Iterator::next](iterator/0) in
+          match mtmp0 {
+            Option::None => {
+              return Option::None
+            },
+            Option::Some(x0) => {
+              {
+                let x0 = Option::Some._0(mtmp0) in
                 {
-                  let x0 = Option::Some._0(mtmp0) in
-                  {
-                    let value/0 = x0 in
-                    if predicate/0(value/0) {
-                        {
-                          return Option::Some(value/0)
-                        }
-                    } else {
-                        {
-                          ()
-                        }
-                    }
+                  let value/0 = x0 in
+                  if predicate/0(value/0) {
+                      {
+                        return Option::Some(value/0)
+                      }
+                  } else {
+                      {
+                        ()
+                      }
                   }
                 }
-              },
-            }
+              }
+            },
           }
-        } in
-      Option::None
+        }
+      }
     }
   )
 }
@@ -3403,43 +3401,41 @@ fn std::iter::filter(iterator/0: I, predicate/0: (T) -> bool) -> FnIterator[T] {
 fn std::iter::filter_map(iterator/0: I, map_fn/0: (A) -> Option[B]) -> FnIterator[B] {
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      let _wild0 =
-        loop {
-          {
-            let mtmp0 = trait_call[Iterator::next](iterator/0) in
-            match mtmp0 {
-              Option::None => {
-                return Option::None
-              },
-              Option::Some(x0) => {
+      loop {
+        {
+          let mtmp0 = trait_call[Iterator::next](iterator/0) in
+          match mtmp0 {
+            Option::None => {
+              return Option::None
+            },
+            Option::Some(x0) => {
+              {
+                let x0 = Option::Some._0(mtmp0) in
                 {
-                  let x0 = Option::Some._0(mtmp0) in
+                  let value/0 = x0 in
                   {
-                    let value/0 = x0 in
-                    {
-                      let mtmp1 = map_fn/0(value/0) in
-                      match mtmp1 {
-                        Option::None => {
-                          ()
-                        },
-                        Option::Some(x1) => {
+                    let mtmp1 = map_fn/0(value/0) in
+                    match mtmp1 {
+                      Option::None => {
+                        ()
+                      },
+                      Option::Some(x1) => {
+                        {
+                          let x1 = Option::Some._0(mtmp1) in
                           {
-                            let x1 = Option::Some._0(mtmp1) in
-                            {
-                              let mapped/0 = x1 in
-                              return Option::Some(mapped/0)
-                            }
+                            let mapped/0 = x1 in
+                            return Option::Some(mapped/0)
                           }
-                        },
-                      }
+                        }
+                      },
                     }
                   }
                 }
-              },
-            }
+              }
+            },
           }
-        } in
-      Option::None
+        }
+      }
     }
   )
 }
@@ -3570,40 +3566,38 @@ fn std::iter::skip_while(iterator/0: I, predicate/0: (T) -> bool) -> FnIterator[
   let skipping/0 = inherent#Ref#Ref[bool]#new(true) in
   inherent#FnIterator#FnIterator#from_fn(
     || => {
-      let _wild0 =
-        loop {
-          {
-            let mtmp0 = trait_call[Iterator::next](iterator/0) in
-            match mtmp0 {
-              Option::None => {
-                return Option::None
-              },
-              Option::Some(x0) => {
+      loop {
+        {
+          let mtmp0 = trait_call[Iterator::next](iterator/0) in
+          match mtmp0 {
+            Option::None => {
+              return Option::None
+            },
+            Option::Some(x0) => {
+              {
+                let x0 = Option::Some._0(mtmp0) in
                 {
-                  let x0 = Option::Some._0(mtmp0) in
-                  {
-                    let value/0 = x0 in
-                    if if inherent#Ref#Ref[bool]#get(skipping/0) {
-                        predicate/0(value/0)
-                    } else {
-                        false
-                    } {
-                        {
-                          ()
-                        }
-                    } else {
-                        {
-                          let _wild1 = inherent#Ref#Ref[bool]#set(skipping/0, false) in
-                          return Option::Some(value/0)
-                        }
-                    }
+                  let value/0 = x0 in
+                  if if inherent#Ref#Ref[bool]#get(skipping/0) {
+                      predicate/0(value/0)
+                  } else {
+                      false
+                  } {
+                      {
+                        ()
+                      }
+                  } else {
+                      {
+                        let _wild0 = inherent#Ref#Ref[bool]#set(skipping/0, false) in
+                        return Option::Some(value/0)
+                      }
                   }
                 }
-              },
-            }
+              }
+            },
           }
-        } in
-      Option::None
+        }
+      }
     }
   )
 }
@@ -3847,75 +3841,71 @@ fn std::iter::collect(iterator/0: I) -> Vec[T] {
 }
 
 fn std::iter::find(iterator/0: I, predicate/0: (T) -> bool) -> Option[T] {
-  let _wild0 =
-    loop {
-      {
-        let mtmp0 = trait_call[Iterator::next](iterator/0) in
-        match mtmp0 {
-          Option::None => {
-            return Option::None
-          },
-          Option::Some(x0) => {
+  loop {
+    {
+      let mtmp0 = trait_call[Iterator::next](iterator/0) in
+      match mtmp0 {
+        Option::None => {
+          return Option::None
+        },
+        Option::Some(x0) => {
+          {
+            let x0 = Option::Some._0(mtmp0) in
             {
-              let x0 = Option::Some._0(mtmp0) in
-              {
-                let value/0 = x0 in
-                if predicate/0(value/0) {
-                    {
-                      return Option::Some(value/0)
-                    }
-                } else {
-                    {
-                      ()
-                    }
-                }
+              let value/0 = x0 in
+              if predicate/0(value/0) {
+                  {
+                    return Option::Some(value/0)
+                  }
+              } else {
+                  {
+                    ()
+                  }
               }
             }
-          },
-        }
+          }
+        },
       }
-    } in
-  Option::None
+    }
+  }
 }
 
 fn std::iter::find_map(iterator/0: I, map_fn/0: (A) -> Option[B]) -> Option[B] {
-  let _wild0 =
-    loop {
-      {
-        let mtmp0 = trait_call[Iterator::next](iterator/0) in
-        match mtmp0 {
-          Option::None => {
-            return Option::None
-          },
-          Option::Some(x0) => {
+  loop {
+    {
+      let mtmp0 = trait_call[Iterator::next](iterator/0) in
+      match mtmp0 {
+        Option::None => {
+          return Option::None
+        },
+        Option::Some(x0) => {
+          {
+            let x0 = Option::Some._0(mtmp0) in
             {
-              let x0 = Option::Some._0(mtmp0) in
+              let value/0 = x0 in
               {
-                let value/0 = x0 in
-                {
-                  let mtmp1 = map_fn/0(value/0) in
-                  match mtmp1 {
-                    Option::None => {
-                      ()
-                    },
-                    Option::Some(x1) => {
+                let mtmp1 = map_fn/0(value/0) in
+                match mtmp1 {
+                  Option::None => {
+                    ()
+                  },
+                  Option::Some(x1) => {
+                    {
+                      let x1 = Option::Some._0(mtmp1) in
                       {
-                        let x1 = Option::Some._0(mtmp1) in
-                        {
-                          let mapped/0 = x1 in
-                          return Option::Some(mapped/0)
-                        }
+                        let mapped/0 = x1 in
+                        return Option::Some(mapped/0)
                       }
-                    },
-                  }
+                    }
+                  },
                 }
               }
             }
-          },
-        }
+          }
+        },
       }
-    } in
-  Option::None
+    }
+  }
 }
 
 fn std::iter::any(iterator/0: I, predicate/0: (T) -> bool) -> bool {
@@ -3956,40 +3946,38 @@ fn std::iter::count(iterator/0: I) -> isize {
 
 fn std::iter::position(iterator/0: I, predicate/0: (T) -> bool) -> Option[isize] {
   let index/0 = 0 in
-  let _wild0 =
-    loop {
-      {
-        let mtmp0 = trait_call[Iterator::next](iterator/0) in
-        match mtmp0 {
-          Option::None => {
-            return Option::None
-          },
-          Option::Some(x0) => {
+  loop {
+    {
+      let mtmp0 = trait_call[Iterator::next](iterator/0) in
+      match mtmp0 {
+        Option::None => {
+          return Option::None
+        },
+        Option::Some(x0) => {
+          {
+            let x0 = Option::Some._0(mtmp0) in
             {
-              let x0 = Option::Some._0(mtmp0) in
-              {
-                let value/0 = x0 in
-                if predicate/0(value/0) {
-                    {
-                      return Option::Some(index/0)
-                    }
-                } else {
-                    {
-                      let _wild1 =
-                        {
-                          let compound_old0 = index/0 in
-                          let compound_value0 = 1 in
-                          index/0 = (compound_old0 + compound_value0)
-                        } in
-                    }
-                }
+              let value/0 = x0 in
+              if predicate/0(value/0) {
+                  {
+                    return Option::Some(index/0)
+                  }
+              } else {
+                  {
+                    let _wild0 =
+                      {
+                        let compound_old0 = index/0 in
+                        let compound_value0 = 1 in
+                        index/0 = (compound_old0 + compound_value0)
+                      } in
+                  }
               }
             }
-          },
-        }
+          }
+        },
       }
-    } in
-  Option::None
+    }
+  }
 }
 
 fn std::iter::nth(iterator/0: I, index/0: isize) -> Option[I::Item] {
@@ -4000,40 +3988,38 @@ fn std::iter::nth(iterator/0: I, index/0: isize) -> Option[I::Item] {
   } else {
       {
         let current/0 = 0 in
-        let _wild0 =
-          loop {
-            {
-              let mtmp0 = trait_call[Iterator::next](iterator/0) in
-              match mtmp0 {
-                Option::None => {
-                  return Option::None
-                },
-                Option::Some(x0) => {
+        loop {
+          {
+            let mtmp0 = trait_call[Iterator::next](iterator/0) in
+            match mtmp0 {
+              Option::None => {
+                return Option::None
+              },
+              Option::Some(x0) => {
+                {
+                  let x0 = Option::Some._0(mtmp0) in
                   {
-                    let x0 = Option::Some._0(mtmp0) in
-                    {
-                      let value/0 = x0 in
-                      if (current/0 == index/0) {
-                          {
-                            return Option::Some(value/0)
-                          }
-                      } else {
-                          {
-                            let _wild1 =
-                              {
-                                let compound_old0 = current/0 in
-                                let compound_value0 = 1 in
-                                current/0 = (compound_old0 + compound_value0)
-                              } in
-                          }
-                      }
+                    let value/0 = x0 in
+                    if (current/0 == index/0) {
+                        {
+                          return Option::Some(value/0)
+                        }
+                    } else {
+                        {
+                          let _wild0 =
+                            {
+                              let compound_old0 = current/0 in
+                              let compound_value0 = 1 in
+                              current/0 = (compound_old0 + compound_value0)
+                            } in
+                        }
                     }
                   }
-                },
-              }
+                }
+              },
             }
-          } in
-        Option::None
+          }
+        }
       }
   }
 }
