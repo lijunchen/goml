@@ -49,6 +49,17 @@ fn has_diagnostic_containing(values: Vec[Diagnostic], expected: string) -> bool 
     found.get()
 }
 
+fn assert_single_unreachable_code_warning(label: string, values: Vec[Diagnostic]) -> () {
+    if values.len() != 1 {
+        let mut messages = label + ": expected one unreachable code warning";
+        for value in values {
+            messages += "\n" + value.message;
+        }
+        testing::fail(messages)
+    } else {};
+    testing::assert_eq(values[0].message, "unreachable_code: unreachable code")
+}
+
 #[test]
 fn evaluates_explicit_comptime_functions() -> () {
     let file = checked_file(
@@ -2573,7 +2584,7 @@ fn validates_numeric_unary_operators() -> () {
 
 #[test]
 fn types_control_flow_member_subexpressions_as_unit() -> () {
-    let source = "fn projected() -> i32 { let _: i32 = (return 1).0; 0 } fn indexed() -> i32 { let _: i32 = (return 1)[0]; 0 } fn field() -> i32 { let _: i32 = (return 1).value; 0 }";
+    let source = "#[allow(unreachable_code)] fn projected() -> i32 { let _: i32 = (return 1).0; 0 } #[allow(unreachable_code)] fn indexed() -> i32 { let _: i32 = (return 1)[0]; 0 } #[allow(unreachable_code)] fn field() -> i32 { let _: i32 = (return 1).value; 0 }";
     let file = checked_file(source);
     for index in range(0, 3) {
         match file.items.get(index) {
@@ -3465,6 +3476,49 @@ fn warns_for_unstructured_go_and_honors_allow_attribute() -> () {
     };
     let allowed = checked_diagnostics("#[allow(unstructured_go)] fn main() -> () { go || {}; }");
     testing::assert_eq(allowed.len(), 0)
+}
+
+#[test]
+fn warns_for_unreachable_code_and_honors_allow_attribute() -> () {
+    let direct = checked_diagnostics("fn value() -> i32 { return 1; let dead = 2; dead }");
+    assert_single_unreachable_code_warning("direct", direct);
+    match direct[0].severity {
+        Warning => (),
+        Error => testing::fail("expected unreachable code warning"),
+    };
+    testing::assert_eq(direct[0].secondary_labels.len(), 1);
+    testing::assert_eq(direct[0].secondary_labels[0].message, "control flow exits here");
+    let branches = checked_diagnostics(
+        "fn value(flag: bool) -> i32 { if flag { return 1 } else { return 2 }; 3 }",
+    );
+    assert_single_unreachable_code_warning("branches", branches);
+    let infinite_loop = checked_diagnostics("fn value() -> i32 { loop {}; 1 }");
+    assert_single_unreachable_code_warning("infinite loop", infinite_loop);
+    let exhaustive_match = checked_diagnostics(
+        "fn value(flag: bool) -> i32 { match flag { true => return 1, false => return 2, }; 3 }",
+    );
+    assert_single_unreachable_code_warning("exhaustive match", exhaustive_match);
+    let loop_control = checked_diagnostics("fn main() -> () { loop { break; println(\"dead\") }; }");
+    assert_single_unreachable_code_warning("loop control", loop_control);
+    let conditional = checked_diagnostics(
+        "fn value(flag: bool) -> i32 { if flag { return 1 } else { () }; 2 }",
+    );
+    testing::assert_eq(conditional.len(), 0);
+    let closure = checked_diagnostics(
+        "fn main() -> () { let work = || { return; println(\"dead\") }; work() }",
+    );
+    assert_single_unreachable_code_warning("closure", closure);
+    let allowed = checked_diagnostics(
+        "#[allow(unreachable_code)] fn value() -> i32 { return 1; let dead = 2; dead }",
+    );
+    testing::assert_eq(allowed.len(), 0);
+    let allowed_closure = checked_diagnostics(
+        "#[allow(unreachable_code)] fn main() -> () { let work = || { return; println(\"dead\") }; work() }",
+    );
+    testing::assert_eq(allowed_closure.len(), 0);
+    let invalid = checked_diagnostics("fn value() -> i32 { return 1; true + false }");
+    testing::assert(has_diagnostic(invalid, "unreachable_code: unreachable code"));
+    testing::assert(has_diagnostic(invalid, "Operator + is not defined for type bool"))
 }
 
 #[test]

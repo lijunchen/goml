@@ -675,6 +675,22 @@ fn project_commands_report_build_progress_on_stderr() -> () {
 }
 
 #[test]
+fn project_check_reports_warnings_without_failing() -> () {
+    let root = test_support::workspace("check_warning");
+    test_support::write_basic_project(root, "demo");
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nfn main() -> () {\n    return;\n    println(\"dead\")\n}\n",
+    );
+    let checked = cli_check(root);
+    test_support::assert_success(checked);
+    test_support::assert_contains(
+        test_support::stderr(checked),
+        "warning[typer]: unreachable_code: unreachable code",
+    )
+}
+
+#[test]
 fn project_test_supports_nocapture_and_timeouts() -> () {
     let root = test_support::workspace("test_timeout");
     test_support::write_file(path::join(root, "goml.toml"), "[module]\npath = \"demo\"\n");

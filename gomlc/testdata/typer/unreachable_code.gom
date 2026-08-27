@@ -1,0 +1,54 @@
+fn direct() -> i32 {
+    return 1;
+    let dead = 2;
+    dead
+}
+
+fn branches(flag: bool) -> i32 {
+    if flag {
+        return 1
+    } else {
+        return 2
+    };
+    3
+}
+
+fn infinite_loop() -> i32 {
+    loop {};
+    1
+}
+
+fn exhaustive_match(flag: bool) -> i32 {
+    match flag {
+        true => return 1,
+        false => return 2,
+    };
+    3
+}
+
+fn loop_control() -> () {
+    loop {
+        break;
+        println("dead")
+    };
+}
+
+fn conditional(flag: bool) -> i32 {
+    if flag {
+        return 1
+    } else {
+        ()
+    };
+    2
+}
+
+#[allow(unreachable_code)]
+fn allowed() -> i32 {
+    return 1;
+    let dead = 2;
+    dead
+}
+
+fn main() -> () {
+    ()
+}

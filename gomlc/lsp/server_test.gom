@@ -547,3 +547,18 @@ fn publishes_recovered_parser_diagnostics_at_utf16_positions() -> () {
         Err(error) => testing::fail(error.to_string()),
     }
 }
+
+#[test]
+fn publishes_unreachable_code_as_a_warning() -> () {
+    let server = new_server();
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/unreachable.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> () {\\n    return;\\n    println(\\\"dead\\\")\\n}\\n\"}}}";
+    match handle_payload(server, open) {
+        Ok(messages) => {
+            testing::assert_eq(messages.len(), 1);
+            let encoded = json::encode(messages[0]);
+            testing::assert(encoded.contains("unreachable_code: unreachable code"));
+            testing::assert(encoded.contains("\"severity\":2"))
+        },
+        Err(error) => testing::fail(error.to_string()),
+    }
+}
