@@ -420,17 +420,6 @@ fn std_bool_strings_error_expr(
     )
 }
 
-fn std_bool_value_string_type(value: repr::Type) -> Type {
-    std_tuple_type(Vec::from_array([repr::Type::Bool, value, repr::Type::String]))
-}
-
-fn std_bool_value_string_expr(value_ty: repr::Type, valid: bool, value: Expr, error: Expr) -> Expr {
-    std_tuple_expr(
-        std_bool_value_string_type(value_ty),
-        Vec::from_array([Expr::Bool { value: valid }, value, error]),
-    )
-}
-
 fn std_env_args_item(key: string) -> Item {
     let stmts: Vec[Stmt] = Vec::new();
     stmts.push(

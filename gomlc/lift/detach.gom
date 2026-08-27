@@ -144,18 +144,6 @@ fn detach_callable(value: mono::Callable, environments: Vec[string]) -> repr::Ca
     }
 }
 
-fn detach_closure_params(values: Vec[mono::ClosureParam], environments: Vec[string]) -> Vec[
-    repr::ClosureParam,
-] {
-    let result: Vec[repr::ClosureParam] = Vec::with_capacity(values.len());
-    for value in values {
-        result.push(
-            repr::ClosureParam { name: value.name, ty: detach_type(value.ty, environments) },
-        )
-    }
-    result
-}
-
 fn detach_exprs(values: Vec[LowerExpr], environments: Vec[string]) -> Vec[Expr] {
     let result: Vec[Expr] = Vec::with_capacity(values.len());
     for value in values {

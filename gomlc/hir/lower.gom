@@ -153,10 +153,6 @@ fn last_string(values: Vec[string]) -> Option[string] {
     }
 }
 
-fn starts_with_std(values: Vec[string]) -> bool {
-    !values.is_empty() && values.len() > 1 && values[0] == "std"
-}
-
 fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec[string]] {
     if !target.is_empty() {
         for alias in aliases {
@@ -506,18 +502,6 @@ fn enum_variant(info: EnumInfo, name: string) -> Option[isize] {
         }
     }
     Option::None
-}
-
-fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> bool {
-    for info in ctx.enums {
-        if info.name == enum_name {
-            match enum_variant(info, variant_name) {
-                Some(_) => return true,
-                None => (),
-            }
-        } else {}
-    }
-    false
 }
 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
@@ -1533,6 +1517,7 @@ fn lower_function(
         attrs: value.attrs,
         visibility: value.visibility,
         name,
+        name_span: value.name_span,
         has_receiver,
         generics: value.generics,
         generic_bounds: lower_bounds(ctx, value.generic_bounds, type_params, true),

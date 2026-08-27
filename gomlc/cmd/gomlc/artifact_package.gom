@@ -431,19 +431,6 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
     }
 }
 
-fn artifact_validate_entrypoint(
-    package_name: string,
-    declared_name: string,
-    exports: artifact::ArtifactPackageExports,
-) -> Result[(), string] {
-    let diagnostics = artifact_entrypoint_diagnostics(package_name, declared_name, exports);
-    if diagnostics.is_empty() {
-        Result::Ok(())
-    } else {
-        Result::Err(diagnostics[0])
-    }
-}
-
 fn artifact_find_function(functions: Vec[artifact::ArtifactFnScheme], name: string) -> Option[
     artifact::ArtifactFnScheme,
 ] {

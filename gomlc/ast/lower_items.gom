@@ -644,6 +644,7 @@ fn lower_function(ctx: LowerCtx, node: LocatedNode, shorthand_self_ty: Option[Ty
                                 attrs: lower_attributes(node),
                                 visibility: lower_visibility(node),
                                 name: name_token.token.text,
+                                name_span: token_span(name_token),
                                 generics,
                                 generic_bounds,
                                 predicates: lower_where_clause(ctx, node),

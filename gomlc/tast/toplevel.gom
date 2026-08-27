@@ -321,56 +321,6 @@ fn report_unresolved_exprs(ctx: Checker, values: Vec[hir::Expr], report_all: boo
     }
 }
 
-fn pattern_has_unbound_any_inference(ctx: Checker, value: hir::Pat) -> bool {
-    match value.kind {
-        Var { name, is_mut: _ } => match find_local(ctx, name) {
-            Some(ty) => contains_unbound_any_type_variable(ty),
-            None => false,
-        },
-        Constr { head: _, args } | Tuple { items: args } | Or { pats: args } => {
-            for arg in args {
-                if pattern_has_unbound_any_inference(ctx, arg) {
-                    return true
-                } else {}
-            }
-            false
-        },
-        Struct { head: _, fields, has_rest: _ } => {
-            for field in fields {
-                if pattern_has_unbound_any_inference(ctx, field.1) {
-                    return true
-                } else {}
-            }
-            false
-        },
-        Array { prefix, rest: _, suffix } => {
-            for arg in prefix {
-                if pattern_has_unbound_any_inference(ctx, arg) {
-                    return true
-                } else {}
-            }
-            for arg in suffix {
-                if pattern_has_unbound_any_inference(ctx, arg) {
-                    return true
-                } else {}
-            }
-            false
-        },
-        Alias { name, pat } => {
-            let alias_unbound = match find_local(ctx, name) {
-                Some(ty) => contains_unbound_any_type_variable(ty),
-                None => false,
-            };
-            alias_unbound || pattern_has_unbound_any_inference(ctx, pat)
-        },
-        Range { start, end, inclusive: _ } => {
-            pattern_has_unbound_any_inference(ctx, start)
-                || pattern_has_unbound_any_inference(ctx, end)
-        },
-        _ => false,
-    }
-}
-
 fn report_unresolved_block(ctx: Checker, value: hir::Block, report_all: bool) -> () {
     for stmt in value.stmts {
         match stmt {
@@ -3891,6 +3841,7 @@ fn check_package_files_for_link_with_environments_options(
             },
         }
     }
+    warn_unused_functions(values, diagnostics);
     let diagnostic_source = if !values.is_empty() {
         values[0].source_path
     } else {

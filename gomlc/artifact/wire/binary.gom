@@ -55,21 +55,6 @@ fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: u64) -> ()
     writer.data.push(remaining.to_u8())
 }
 
-fn artifact_binary_write_zigzag(writer: ArtifactBinaryWriter, value: i64) -> () {
-    artifact_binary_write_uleb128(writer, ((value << 1) ^ (value >> 63)).to_u64())
-}
-
-fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> () {
-    artifact_binary_write_u8(
-        writer,
-        if value {
-            1
-        } else {
-            0
-        },
-    )
-}
-
 fn artifact_binary_write_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> () {
     artifact_binary_write_uleb128(writer, value.len().to_u64());
     writer.data.extend(value.as_slice())
@@ -89,17 +74,6 @@ fn artifact_binary_patch_u32(writer: ArtifactBinaryWriter, offset: isize, value:
 ] {
     let output = writer.data.to_vec().as_mut_slice();
     match endian::write_u32(output, offset, value, endian::Endian::Little) {
-        Ok(()) => Result::Ok(()),
-        Err(_) => Result::Err("binary patch offset out of bounds"),
-    }
-}
-
-fn artifact_binary_patch_u64(writer: ArtifactBinaryWriter, offset: isize, value: u64) -> Result[
-    (),
-    string,
-] {
-    let output = writer.data.to_vec().as_mut_slice();
-    match endian::write_u64(output, offset, value, endian::Endian::Little) {
         Ok(()) => Result::Ok(()),
         Err(_) => Result::Err("binary patch offset out of bounds"),
     }
@@ -183,22 +157,6 @@ fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[u64, str
     Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))
 }
 
-fn artifact_binary_read_zigzag(reader: ArtifactBinaryReader) -> Result[i64, string] {
-    match artifact_binary_read_uleb128(reader) {
-        Ok(value) => Result::Ok(((value >> 1).to_i64()) ^ -((value & 1).to_i64())),
-        Err(error) => Result::Err(error),
-    }
-}
-
-fn artifact_binary_read_bool(reader: ArtifactBinaryReader) -> Result[bool, string] {
-    match artifact_binary_read_u8(reader) {
-        Ok(0) => Result::Ok(false),
-        Ok(1) => Result::Ok(true),
-        Ok(_) => Result::Err(artifact_binary_reader_error(reader, "invalid boolean tag")),
-        Err(error) => Result::Err(error),
-    }
-}
-
 fn artifact_binary_read_length(reader: ArtifactBinaryReader) -> Result[isize, string] {
     match artifact_binary_read_uleb128(reader) {
         Ok(value) => if value > 2147483647 {
@@ -249,14 +207,5 @@ pub fn artifact_binary_read_string(reader: ArtifactBinaryReader) -> Result[strin
             Err(_) => Result::Err(artifact_binary_reader_error(reader, "invalid UTF-8 string")),
         },
         Err(error) => Result::Err(error),
-    }
-}
-
-fn artifact_binary_skip(reader: ArtifactBinaryReader, length: isize) -> Result[(), string] {
-    if length < 0 || length > artifact_binary_reader_remaining(reader) {
-        Result::Err(artifact_binary_reader_error(reader, "skip exceeds input"))
-    } else {
-        reader.offset.set(reader.offset.get() + length);
-        Result::Ok(())
     }
 }

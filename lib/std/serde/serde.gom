@@ -152,19 +152,6 @@ pub fn variant_parts(value: Value) -> Result[(string, isize, Vec[(string, Value)
     }
 }
 
-fn tuple_values(value: Value, size: isize) -> Result[Vec[Value], string] {
-    let values = match value {
-        Value::Tuple(values) => values,
-        Value::Sequence(values) => values,
-        _ => return Result::Err("expected tuple"),
-    };
-    if values.len() == size {
-        Result::Ok(values)
-    } else {
-        Result::Err("expected " + size.to_string() + "-element tuple")
-    }
-}
-
 pub fn error(message: string) -> Result[(), string] {
     Result::Err(message)
 }

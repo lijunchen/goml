@@ -1,0 +1,271 @@
+package tast;
+
+use module::ast;
+use module::hir;
+
+struct PackageFunction {
+    source_path: string,
+    value: hir::Function,
+}
+
+fn same_unused_definition(left: hir::DefId, right: hir::DefId) -> bool {
+    left.pkg == right.pkg && left.index == right.index
+}
+
+fn unused_definitions_contain(values: Vec[hir::DefId], expected: hir::DefId) -> bool {
+    for value in values {
+        if same_unused_definition(value, expected) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn package_function_by_def(values: Vec[PackageFunction], expected: hir::DefId) -> Option[
+    PackageFunction,
+] {
+    for value in values {
+        if same_unused_definition(value.value.def_id, expected) {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn collect_unused_name_ref(value: hir::NameRef, result: Vec[hir::DefId]) -> () {
+    match value {
+        hir::NameRef::Def(value) => result.push(value),
+        hir::NameRef::Local(_) | hir::NameRef::Other(_) => (),
+    }
+}
+
+fn collect_unused_optional_expr(value: Option[hir::Expr], result: Vec[hir::DefId]) -> () {
+    match value {
+        Some(value) => collect_unused_expr(value, result),
+        None => (),
+    }
+}
+
+fn collect_unused_exprs(values: Vec[hir::Expr], result: Vec[hir::DefId]) -> () {
+    for value in values {
+        collect_unused_expr(value, result)
+    }
+}
+
+fn collect_unused_block(value: hir::Block, result: Vec[hir::DefId]) -> () {
+    for statement in value.stmts {
+        match statement {
+            hir::Stmt::Defer { expr } => collect_unused_expr(expr, result),
+            hir::Stmt::Let { pat: _, annotation: _, value, else_branch, is_mut: _ } => {
+                collect_unused_expr(value, result);
+                collect_unused_optional_expr(else_branch, result)
+            },
+            hir::Stmt::Assign { target, op: _, value } => {
+                collect_unused_expr(target, result);
+                collect_unused_expr(value, result)
+            },
+            hir::Stmt::Expr { expr } => collect_unused_expr(expr, result),
+        }
+    }
+    collect_unused_optional_expr(value.tail, result)
+}
+
+fn collect_unused_expr(value: hir::Expr, result: Vec[hir::DefId]) -> () {
+    match value.kind {
+        NameRef { name_ref } => collect_unused_name_ref(name_ref, result),
+        StaticMember { .. } | Unit | Bool { .. } | Int { .. } | Float { .. } | String { .. } | Char {
+            ..,
+        } | Byte { .. } | ByteString { .. } | ConstructorValue { .. } | Continue { .. } => (),
+        InterpolatedString { parts } => for part in parts {
+            match part {
+                hir::InterpolatedStringPart::Text(_) => (),
+                hir::InterpolatedStringPart::Expr(value) => collect_unused_expr(value, result),
+            }
+        },
+        Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } => {
+            collect_unused_exprs(args, result)
+        },
+        StructLiteral { name: _, fields, base } => {
+            for field in fields {
+                collect_unused_expr(field.1, result)
+            }
+            collect_unused_optional_expr(base, result)
+        },
+        Closure { params: _, body } => collect_unused_expr(body, result),
+        Match { expr, arms } => {
+            collect_unused_expr(expr, result);
+            for arm in arms {
+                collect_unused_optional_expr(arm.guard, result);
+                collect_unused_expr(arm.body, result)
+            }
+        },
+        Select { mode: _, arms } => for arm in arms {
+            match arm {
+                hir::SelectArm::Receive { channel, guard, binding: _, body } => {
+                    collect_unused_expr(channel, result);
+                    collect_unused_optional_expr(guard, result);
+                    collect_unused_expr(body, result)
+                },
+                hir::SelectArm::Send { channel, value, guard, body } => {
+                    collect_unused_expr(channel, result);
+                    collect_unused_expr(value, result);
+                    collect_unused_optional_expr(guard, result);
+                    collect_unused_expr(body, result)
+                },
+                hir::SelectArm::Default { body } => collect_unused_expr(body, result),
+            }
+        },
+        If { cond, then_branch, else_branch } => {
+            collect_unused_expr(cond, result);
+            collect_unused_expr(then_branch, result);
+            collect_unused_expr(else_branch, result)
+        },
+        While { label: _, cond, body } => {
+            collect_unused_expr(cond, result);
+            collect_unused_expr(body, result)
+        },
+        Loop { label: _, body } => collect_unused_expr(body, result),
+        For { label: _, pat: _, iterator, body } => {
+            collect_unused_expr(iterator, result);
+            collect_unused_expr(body, result)
+        },
+        Break { label: _, value } | Return { expr: value } => {
+            collect_unused_optional_expr(value, result)
+        },
+        Go { expr } | Unary { op: _, expr } | Cast { expr, ty: _ } | Try { depth: _, expr } | Proj {
+            tuple: expr,
+            index: _,
+        } | Field { expr, field_name: _, method_type_args: _ } => collect_unused_expr(expr, result),
+        Comptime { block } | Block { block } => collect_unused_block(block, result),
+        Call { func, args } => {
+            collect_unused_expr(func, result);
+            collect_unused_exprs(args, result)
+        },
+        Range { start, end, inclusive: _ } | Binary { op: _, lhs: start, rhs: end } | Index {
+            base: start,
+            index: end,
+        } => {
+            collect_unused_expr(start, result);
+            collect_unused_expr(end, result)
+        },
+    }
+}
+
+fn function_has_attribute(value: hir::Function, expected: string) -> bool {
+    for attribute in value.attrs {
+        if attribute.name == expected {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn is_unused_function_root(value: hir::Function) -> bool {
+    match value.visibility {
+        ast::Visibility::Public => true,
+        ast::Visibility::Private => short_name(value.name) == "main"
+            || value.name.contains("trait_default#")
+            || function_has_attribute(value, "test")
+            || function_has_attribute(value, "test_case")
+            || function_has_attribute(value, "lang"),
+    }
+}
+
+fn push_reachable_unused_function(
+    functions: Vec[PackageFunction],
+    reachable: Vec[hir::DefId],
+    pending: Vec[hir::DefId],
+    value: hir::DefId,
+) -> () {
+    if package_function_by_def(functions, value).is_some()
+        && !unused_definitions_contain(reachable, value) {
+        reachable.push(value);
+        pending.push(value)
+    } else {}
+}
+
+fn collect_package_functions(values: Vec[hir::File]) -> Vec[PackageFunction] {
+    let result: Vec[PackageFunction] = Vec::new();
+    for file in values {
+        for item in file.items {
+            match item {
+                hir::Item::Function(value) => {
+                    result.push(PackageFunction { source_path: file.source_path, value })
+                },
+                _ => (),
+            }
+        }
+    }
+    result
+}
+
+fn collect_non_function_roots(values: Vec[hir::File], result: Vec[hir::DefId]) -> () {
+    for file in values {
+        for item in file.items {
+            match item {
+                hir::Item::ImplBlock(value) => for method in value.methods {
+                    collect_unused_block(method.body, result)
+                },
+                hir::Item::Constant(value) => collect_unused_expr(value.value, result),
+                hir::Item::Static(value) => collect_unused_expr(value.value, result),
+                _ => (),
+            }
+        }
+    }
+}
+
+fn push_unused_function_warning(value: PackageFunction, diagnostics: Vec[Diagnostic]) -> () {
+    diagnostics.push(
+        Diagnostic {
+            severity: DiagnosticSeverity::Warning,
+            stage: TYPER_STAGE,
+            message: "unused_function: function " + short_name(value.value.name) + " is never used",
+            source_path: value.source_path,
+            span: Option::Some(value.value.name_span),
+            primary_label: Option::None,
+            secondary_labels: Vec::new(),
+            sort_order: 0,
+        },
+    )
+}
+
+fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -> () {
+    let functions = collect_package_functions(values);
+    let reachable: Vec[hir::DefId] = Vec::new();
+    let pending: Vec[hir::DefId] = Vec::new();
+    for function in functions {
+        if is_unused_function_root(function.value) {
+            push_reachable_unused_function(functions, reachable, pending, function.value.def_id)
+        } else {}
+    }
+    let roots: Vec[hir::DefId] = Vec::new();
+    collect_non_function_roots(values, roots);
+    for root in roots {
+        push_reachable_unused_function(functions, reachable, pending, root)
+    }
+    let mut index = 0;
+    while index < pending.len() {
+        let current = pending[index];
+        index = index + 1;
+        match package_function_by_def(functions, current) {
+            Some(function) => {
+                let references: Vec[hir::DefId] = Vec::new();
+                collect_unused_block(function.value.body, references);
+                for reference in references {
+                    push_reachable_unused_function(functions, reachable, pending, reference)
+                }
+            },
+            None => (),
+        }
+    }
+    for function in functions {
+        if match function.value.visibility {
+            ast::Visibility::Private => true,
+            ast::Visibility::Public => false,
+        }
+            && !unused_definitions_contain(reachable, function.value.def_id)
+            && !attribute_allows(function.value.attrs, "unused_function") {
+            push_unused_function_warning(function, diagnostics)
+        } else {}
+    }
+}

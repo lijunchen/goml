@@ -60,34 +60,6 @@ fn token_is(value: LocatedToken, kind: lexer::TokenKind) -> bool {
     lexer::token_kind_equal(value.token.kind, kind)
 }
 
-fn element_node(value: LocatedElement) -> Option[LocatedNode] {
-    match value {
-        Node(node) => Option::Some(node),
-        Token(_) => Option::None,
-    }
-}
-
-fn element_token(value: LocatedElement) -> Option[LocatedToken] {
-    match value {
-        Node(_) => Option::None,
-        Token(token) => Option::Some(token),
-    }
-}
-
-fn element_start(value: LocatedElement) -> isize {
-    match value {
-        Node(node) => node.start,
-        Token(token) => token.start,
-    }
-}
-
-fn element_end(value: LocatedElement) -> isize {
-    match value {
-        Node(node) => node.end,
-        Token(token) => token.end,
-    }
-}
-
 impl ChildCursor {
     fn remaining(self: ChildCursor) -> isize {
         self.elements.len() - self.index.get()

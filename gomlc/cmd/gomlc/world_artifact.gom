@@ -266,30 +266,6 @@ fn world_dependencies_equal(left: Vec[(string, string)], right: Vec[(string, str
     }
 }
 
-fn world_decode_package(
-    value: wire::ArtifactBinaryContainer,
-    section_id: u16,
-    expected_name: string,
-) -> Result[ToolchainPackage, string] {
-    let interface_section = world_required_section(value, section_id)?;
-    let core_section = world_required_section(value, section_id + 1)?;
-    let interface = interface_codec::decode_binary(interface_section.data)?;
-    let core = core_codec::decode_binary(core_section.data)?;
-    if interface.package_name != expected_name || core.package_name != expected_name
-        || core.interface_hash != interface.interface_hash
-        || !world_dependencies_equal(core.deps, interface.deps) {
-        Result::Err("world artifact package identity does not match")
-    } else {
-        Result::Ok(
-            ToolchainPackage {
-                core_value: core.core_ir,
-                interface_unit: interface,
-                environment_exports: core.exports,
-            },
-        )
-    }
-}
-
 fn world_decode_package_any(value: wire::ArtifactBinaryContainer, section_id: u16) -> Result[
     ToolchainPackage,
     string,

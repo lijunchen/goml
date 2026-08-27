@@ -611,15 +611,6 @@ fn inline_block_calls(value: Block, name: string) -> bool {
     inline_term_calls(value.term, name)
 }
 
-fn find_inline_function(values: Vec[Function], name: string) -> Option[Function] {
-    for value in values {
-        if value.name == name {
-            return Option::Some(value)
-        } else {}
-    }
-    Option::None
-}
-
 fn inline_term_consumes(value: Term, name: string) -> bool {
     match value {
         If { cond: Var { name: present, ty: _ }, then_, else_, .. } => {
@@ -732,28 +723,6 @@ fn indexed_inline_candidate(
         budget.set(budget.get() - cost);
         Option::Some(value)
     }
-}
-
-fn inline_candidate(
-    functions: Vec[Function],
-    caller: string,
-    name: string,
-    args: Vec[Imm],
-    ty: repr::Type,
-    bind_ty: repr::Type,
-    recursive_consumer: bool,
-    budget: Ref[isize],
-) -> Option[Function] {
-    indexed_inline_candidate(
-        inline_function_index(functions),
-        caller,
-        name,
-        args,
-        ty,
-        bind_ty,
-        recursive_consumer,
-        budget,
-    )
 }
 
 fn prepend_inline_bind(value: Bind, rest: Block) -> Block {

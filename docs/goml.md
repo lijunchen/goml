@@ -1224,6 +1224,8 @@ fn platform_exit() -> () {
 }
 ```
 
+The `unused_function` lint warns about private top-level functions that are not reachable from a public function, `main`, a test, a language item, a top-level initializer, or any method body. The analysis follows calls transitively, so a recursive function or a group of private functions that only call each other is still unused. Public functions are treated as externally reachable API. Use `#[allow(unused_function)]` on an intentionally unused private function to suppress the warning.
+
 ### `?`
 
 The suffix `?` only supports the built-in semantics `Option[T]` and `Result[T, E]`:

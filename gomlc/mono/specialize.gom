@@ -1032,22 +1032,6 @@ fn trait_instance_name(ctx: SpecializeCtx, function: core::Function, bindings: V
     }
 }
 
-fn same_bindings(left: Vec[TypeBinding], right: Vec[TypeBinding]) -> bool {
-    if left.len() != right.len() {
-        false
-    } else {
-        for value in left {
-            match find_binding(right, value.name) {
-                Some(ty) => if compact_type(value.ty) == compact_type(ty) {} else {
-                    return false
-                },
-                None => return false,
-            }
-        }
-        true
-    }
-}
-
 fn find_instance(ctx: SpecializeCtx, original_name: string, bindings: Vec[TypeBinding]) -> Option[
     Instance,
 ] {
@@ -2056,15 +2040,6 @@ fn specialize_block(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core:
         )
     }
     core::Block { stmts, tail: specialize_optional_expr(ctx, bindings, value.tail) }
-}
-
-fn trait_call_types(receiver: core::Expr, args: Vec[core::Expr]) -> Vec[core::Type] {
-    let result: Vec[core::Type] = Vec::new();
-    result.push(core::expr_type(receiver));
-    for arg in args {
-        result.push(core::expr_type(arg))
-    }
-    result
 }
 
 fn trait_method_bindings(

@@ -54,14 +54,6 @@ fn copy_commute_bindings(values: Vec[CommuteBinding]) -> Vec[CommuteBinding] {
     result
 }
 
-fn copy_commute_fields(values: Vec[CommuteField]) -> Vec[CommuteField] {
-    let result: Vec[CommuteField] = Vec::with_capacity(values.len());
-    for value in values {
-        result.push(value)
-    }
-    result
-}
-
 fn find_commute_binding(values: Vec[CommuteBinding], name: string) -> CommuteKnown {
     let mut index = values.len() - 1;
     while index >= 0 {
