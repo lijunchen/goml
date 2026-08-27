@@ -562,3 +562,23 @@ fn publishes_unreachable_code_as_a_warning() -> () {
         Err(error) => testing::fail(error.to_string()),
     }
 }
+
+#[test]
+fn publishes_unused_function_as_a_warning() -> () {
+    let server = new_server();
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/unused.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn dead() -> () {}\\nfn main() -> () {}\\n\"}}}";
+    match handle_payload(server, open) {
+        Ok(messages) => {
+            testing::assert_eq(messages.len(), 1);
+            let encoded = json::encode(messages[0]);
+            testing::assert(encoded.contains("unused_function: function dead is never used"));
+            testing::assert(encoded.contains("\"severity\":2"));
+            testing::assert(
+                encoded.contains(
+                    "\"start\":{\"line\":0,\"character\":3},\"end\":{\"line\":0,\"character\":7}",
+                ),
+            )
+        },
+        Err(error) => testing::fail(error.to_string()),
+    }
+}

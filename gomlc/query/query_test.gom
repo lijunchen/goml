@@ -213,7 +213,7 @@ fn analyzes_package_files_with_unsaved_overrides() -> () {
     let root = "../gomlc/testdata/module/project033_cross_file_pattern_constructor";
     let main_path = root + "/main.gom";
     let types_path = root + "/types.gom";
-    let source = "package main; fn answer() -> i32 { helper() }";
+    let source = "package main; pub fn answer() -> i32 { helper() }";
     let overrides = Vec::new();
     overrides.push(
         SourceOverride { path: types_path, source: "package main; fn helper() -> i32 { 42 }" },
@@ -404,7 +404,7 @@ fn navigates_hovers_and_completes_comptime_derives() -> () {
 fn analyzes_toolchain_standard_library_dependencies() -> () {
     let root = "../gomlc/testdata/module/project032_std_host_api";
     let main_path = root + "/main.gom";
-    let source = "package main; use std::path; fn clean(value: string) -> string { path::clean(value) }";
+    let source = "package main; use std::path; pub fn clean(value: string) -> string { path::clean(value) }";
     let analysis = analyze(main_path, source);
     testing::assert_eq(analysis.package_name, "host_api");
     assert_no_diagnostics(analysis)
@@ -414,7 +414,7 @@ fn analyzes_toolchain_standard_library_dependencies() -> () {
 fn resolves_qualified_type_without_short_name_collision() -> () {
     let root = "../gomlc/testdata/module/project011_complex_dependency_graph";
     let main_path = root + "/main.gom";
-    let source = "package main; use project011_complex_dependency_graph::core; fn inspect(value: core::Task[isize]) -> () { () } fn main() -> () { () }";
+    let source = "package main; use project011_complex_dependency_graph::core; pub fn inspect(value: core::Task[isize]) -> () { () } fn main() -> () { () }";
     let overrides = Vec::from_array(
         [
             SourceOverride {
@@ -1004,7 +1004,7 @@ fn completes_scope_and_struct_members() -> () {
 
 #[test]
 fn keeps_member_completion_on_the_semantic_receiver() -> () {
-    let source = "struct A {} impl A { fn only_a(self: A) -> () { () } } struct B {} impl B { fn only_b(self: B) -> () { () } } fn first(value: A) -> () { value.only_a() } fn second(value: B) -> () { () }";
+    let source = "struct A {} impl A { fn only_a(self: A) -> () { () } } struct B {} impl B { fn only_b(self: B) -> () { () } } #[allow(unused_function)] fn first(value: A) -> () { value.only_a() } #[allow(unused_function)] fn second(value: B) -> () { () }";
     let analysis = analyze("main.gom", source);
     assert_no_diagnostics(analysis);
     match last_substring(source, "value.only_a") {
@@ -1107,7 +1107,7 @@ fn filters_member_completion_visibility_and_receivers() -> () {
     }
     let lib_path = lib_dir + "/lib.gom";
     let main_path = root + "/main.gom";
-    let lib_source = "package lib; pub struct Item { pub shown: isize, hidden: isize, } impl Item { pub fn new() -> Item { Item { shown: 1, hidden: 2 } } pub fn shown_method(self: Item) -> isize { self.shown } fn hidden_method(self: Item) -> isize { self.hidden } } pub trait Describe { fn describe(self: Self) -> string; fn kind() -> string; } impl Describe for Item { fn describe(self: Item) -> string { self.shown.to_string() } fn kind() -> string { \"item\" } } fn inspect(value: Item) -> () { println(value.shown); println(value.describe()) }";
+    let lib_source = "package lib; pub struct Item { pub shown: isize, hidden: isize, } impl Item { pub fn new() -> Item { Item { shown: 1, hidden: 2 } } pub fn shown_method(self: Item) -> isize { self.shown } fn hidden_method(self: Item) -> isize { self.hidden } } pub trait Describe { fn describe(self: Self) -> string; fn kind() -> string; } impl Describe for Item { fn describe(self: Item) -> string { self.shown.to_string() } fn kind() -> string { \"item\" } } #[allow(unused_function)] fn inspect(value: Item) -> () { println(value.shown); println(value.describe()) }";
     let main_source = "package main; use module::lib; use lib::Describe; fn main() -> () { let value = lib::Item::new(); println(value.shown); println(value.shown_method()); println(value.describe()); let _ = lib::Item::new(); () }";
     write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::member_visibility\"\n");
     write_query_fixture(lib_path, lib_source);
@@ -1598,7 +1598,7 @@ fn keeps_hover_types_for_canonical_declarations() -> () {
     }
     let left_path = left_dir + "/left.gom";
     let right_path = right_dir + "/right.gom";
-    let left_source = "package left; use module::right; type Label = isize; const answer: Label = 1; trait Choose { fn choose(self: Self, trait_value: string) -> string; } struct Item {} impl Choose for Item { fn choose(self: Item, implementation_value: string) -> string { implementation_value } } impl Item { fn choose(self: Item, inherent_value: isize) -> isize { inherent_value } } struct TraitOnly {} impl Choose for TraitOnly { fn choose(self: TraitOnly, trait_only_value: string) -> string { trait_only_value } } pub fn select(value: isize) -> isize { value } pub fn use_right(value: string) -> string { right::select(value) } fn use_item(value: Item) -> isize { value.choose(1) } fn use_trait(value: TraitOnly) -> string { value.choose(\"trait\") }";
+    let left_source = "package left; use module::right; type Label = isize; const answer: Label = 1; trait Choose { fn choose(self: Self, trait_value: string) -> string; } struct Item {} impl Choose for Item { fn choose(self: Item, implementation_value: string) -> string { implementation_value } } impl Item { fn choose(self: Item, inherent_value: isize) -> isize { inherent_value } } struct TraitOnly {} impl Choose for TraitOnly { fn choose(self: TraitOnly, trait_only_value: string) -> string { trait_only_value } } pub fn select(value: isize) -> isize { value } pub fn use_right(value: string) -> string { right::select(value) } #[allow(unused_function)] fn use_item(value: Item) -> isize { value.choose(1) } #[allow(unused_function)] fn use_trait(value: TraitOnly) -> string { value.choose(\"trait\") }";
     let right_source = "package right; pub type Label = string; pub const answer: Label = \"right\"; pub fn select(value: string) -> string { value }";
     write_query_fixture(root + "/goml.toml", "[module]\npath = \"query::hover_owner_collision\"\n");
     write_query_fixture(left_path, left_source);
@@ -1709,6 +1709,25 @@ fn discovers_internal_and_external_test_items() -> () {
         Internal => testing::fail("expected external test"),
     };
     testing::assert_eq(test_items("/tmp/value.gom", source).len(), 0)
+}
+
+fn external_package_sources_at(
+    registry: string,
+    module_root: string,
+    package_name: string,
+    overrides: Vec[SourceOverride],
+) -> Result[Vec[SourceFile], string] {
+    let modules = resolve_external_modules_at(module_root, registry)?;
+    for module in modules {
+        match external_package_directory(module, package_name) {
+            Some(directory) => match collect_dependency_files(directory, overrides) {
+                Ok(files) => return Result::Ok(source_files_with_package(files, package_name)),
+                Err(error) => return Result::Err(error),
+            },
+            None => (),
+        }
+    }
+    Result::Err("package " + package_name + " is not provided by a resolved dependency")
 }
 
 #[test]

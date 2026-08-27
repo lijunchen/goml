@@ -691,6 +691,22 @@ fn project_check_reports_warnings_without_failing() -> () {
 }
 
 #[test]
+fn project_check_reports_unused_functions_without_failing() -> () {
+    let root = test_support::workspace("check_unused_function");
+    test_support::write_basic_project(root, "demo");
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nfn dead() -> () {}\n\nfn main() -> () {}\n",
+    );
+    let checked = cli_check(root);
+    test_support::assert_success(checked);
+    test_support::assert_contains(
+        test_support::stderr(checked),
+        "warning[typer]: unused_function: function dead is never used",
+    )
+}
+
+#[test]
 fn project_test_supports_nocapture_and_timeouts() -> () {
     let root = test_support::workspace("test_timeout");
     test_support::write_file(path::join(root, "goml.toml"), "[module]\npath = \"demo\"\n");

@@ -523,7 +523,8 @@ fn respects_static_inline_limits() -> () {
 #[test]
 fn exhausts_static_inline_budget() -> () {
     let file = lower_source("fn id(value: string) -> string { value }");
-    let callee = match find_inline_function(file.functions, "id") {
+    let functions = inline_function_index(file.functions);
+    let callee = match functions["id"] {
         Some(value) => value,
         None => return testing::fail("missing inline candidate"),
     };
@@ -531,8 +532,8 @@ fn exhausts_static_inline_budget() -> () {
     args.push(Imm::Prim { value: repr::Primitive::String { value: "x" }, ty: repr::Type::String });
     let budget = Ref::new(2);
     for _ in 0..2 {
-        match inline_candidate(
-            file.functions,
+        match indexed_inline_candidate(
+            functions,
             "caller",
             "id",
             args,
@@ -546,8 +547,8 @@ fn exhausts_static_inline_budget() -> () {
         }
     }
     testing::assert_eq(budget.get(), 0);
-    match inline_candidate(
-        file.functions,
+    match indexed_inline_candidate(
+        functions,
         "caller",
         "id",
         args,

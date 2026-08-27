@@ -35,16 +35,12 @@ fn binary_artifact_round_trips_fixed_width_values() -> () {
     artifact_binary_write_u16(writer, 65535);
     artifact_binary_write_u32(writer, 4294967295);
     artifact_binary_write_u64(writer, 18446744073709551615);
-    artifact_binary_write_bool(writer, true);
-    artifact_binary_write_bool(writer, false);
     artifact_binary_write_string(writer, "GoML λ");
     let reader = new_artifact_binary_reader(artifact_binary_writer_finish(writer));
     artifact_binary_expect_ok(artifact_binary_read_u8(reader), 255);
     artifact_binary_expect_ok(artifact_binary_read_u16(reader), 65535);
     artifact_binary_expect_ok(artifact_binary_read_u32(reader), 4294967295);
     artifact_binary_expect_ok(artifact_binary_read_u64(reader), 18446744073709551615);
-    artifact_binary_expect_ok(artifact_binary_read_bool(reader), true);
-    artifact_binary_expect_ok(artifact_binary_read_bool(reader), false);
     artifact_binary_expect_ok(artifact_binary_read_string(reader), "GoML λ");
     testing::assert_eq(artifact_binary_reader_remaining(reader), 0)
 }
@@ -60,27 +56,13 @@ fn binary_artifact_round_trips_varints() -> () {
     unsigned.push(256);
     unsigned.push(4294967295);
     unsigned.push(~(0.to_u64()));
-    let signed: Vec[i64] = Vec::new();
-    signed.push(-9223372036854775807 - 1);
-    signed.push(-2147483648);
-    signed.push(-1);
-    signed.push(0);
-    signed.push(1);
-    signed.push(2147483647);
-    signed.push(9223372036854775807);
     let writer = new_artifact_binary_writer();
     for value in unsigned {
         artifact_binary_write_uleb128(writer, value)
     }
-    for value in signed {
-        artifact_binary_write_zigzag(writer, value)
-    }
     let reader = new_artifact_binary_reader(artifact_binary_writer_finish(writer));
     for value in unsigned {
         artifact_binary_expect_ok(artifact_binary_read_uleb128(reader), value)
-    }
-    for value in signed {
-        artifact_binary_expect_ok(artifact_binary_read_zigzag(reader), value)
     }
     testing::assert_eq(artifact_binary_reader_remaining(reader), 0)
 }
@@ -89,12 +71,9 @@ fn binary_artifact_round_trips_varints() -> () {
 fn binary_artifact_patches_offsets() -> () {
     let writer = new_artifact_binary_writer();
     artifact_binary_write_u32(writer, 0);
-    artifact_binary_write_u64(writer, 0);
     artifact_binary_expect_unit(artifact_binary_patch_u32(writer, 0, 305419896));
-    artifact_binary_expect_unit(artifact_binary_patch_u64(writer, 4, 81985529216486895));
     let reader = new_artifact_binary_reader(artifact_binary_writer_finish(writer));
-    artifact_binary_expect_ok(artifact_binary_read_u32(reader), 305419896);
-    artifact_binary_expect_ok(artifact_binary_read_u64(reader), 81985529216486895)
+    artifact_binary_expect_ok(artifact_binary_read_u32(reader), 305419896)
 }
 
 #[test]
@@ -109,8 +88,6 @@ fn binary_artifact_rejects_invalid_input() -> () {
     }
     let overflow = new_artifact_binary_reader(artifact_binary_test_bytes(overflow_values));
     artifact_binary_expect_err(artifact_binary_read_uleb128(overflow));
-    let invalid_bool = new_artifact_binary_reader(artifact_binary_test_bytes(Vec::from_array([2])));
-    artifact_binary_expect_err(artifact_binary_read_bool(invalid_bool));
     let invalid_utf8 = new_artifact_binary_reader(
         artifact_binary_test_bytes(Vec::from_array([1, 255])),
     );

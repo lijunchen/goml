@@ -455,7 +455,7 @@ fn records_typecheck_query_facts() -> () {
 fn merges_typecheck_query_facts_for_package_files() -> () {
     let parsed = Vec::new();
     parsed.push(parser::parse("package values; fn value() -> i32 { 42 }"));
-    parsed.push(parser::parse("package values; fn answer() -> i32 { value() }"));
+    parsed.push(parser::parse("package values; pub fn answer() -> i32 { value() }"));
     let ast_files = ast::lower_package(parsed);
     let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     inputs.push((ast_files.get(0), "value.gom"));
@@ -822,7 +822,7 @@ fn permits_runtime_externs_in_builtin_sources() -> () {
     let lowered = hir::lower(
         ast::lower(
             parser::parse(
-                "#[runtime(\"core.string_get\")] extern fn string_get_raw(value: string, index: isize) -> char; fn load(value: string, index: isize) -> char { string_get_raw(value, index) }",
+                "#[runtime(\"core.string_get\")] extern fn string_get_raw(value: string, index: isize) -> char; pub fn load(value: string, index: isize) -> char { string_get_raw(value, index) }",
             ),
         ),
         "builtin/runtime.gom",
@@ -3519,6 +3519,43 @@ fn warns_for_unreachable_code_and_honors_allow_attribute() -> () {
     let invalid = checked_diagnostics("fn value() -> i32 { return 1; true + false }");
     testing::assert(has_diagnostic(invalid, "unreachable_code: unreachable code"));
     testing::assert(has_diagnostic(invalid, "Operator + is not defined for type bool"))
+}
+
+#[test]
+fn warns_for_unused_private_functions_across_package_files() -> () {
+    let first = "package values; fn live_helper() -> i32 { 1 } fn method_helper() -> i32 { 2 } fn dead_leaf() -> i32 { 3 } fn dead_parent() -> i32 { dead_leaf() } fn dead_recursive(value: i32) -> i32 { if value == 0 { 0 } else { dead_recursive(value - 1) } } #[allow(unused_function)] fn allowed() -> () {}";
+    let second = "package values; struct Value {} impl Value { fn value(self: Value) -> i32 { method_helper() } } pub fn api() -> i32 { live_helper() } #[test] fn api_works() -> () { let _ = api(); () }";
+    let ast_files = ast::lower_package(
+        Vec::from_array([parser::parse(first), parser::parse(second)]),
+    );
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::from_array(
+        [(ast_files[0], "helpers.gom"), (ast_files[1], "api.gom")],
+    );
+    let hir_files: Vec[hir::File] = Vec::new();
+    for lowered in hir::lower_package_files(inputs, "example::values") {
+        match lowered.hir {
+            Some(file) => hir_files.push(file),
+            None => testing::fail("expected package HIR"),
+        }
+    }
+    let checked = check_package_files_for_link_with_dependencies(hir_files, Vec::new());
+    testing::assert_eq(checked.diagnostics.len(), 3);
+    let names: Vec[string] = Vec::new();
+    for diagnostic in checked.diagnostics {
+        match diagnostic.severity {
+            DiagnosticSeverity::Warning => (),
+            DiagnosticSeverity::Error => testing::fail(diagnostic.message),
+        };
+        testing::assert(diagnostic.message.starts_with("unused_function: function "));
+        testing::assert_eq(diagnostic.source_path, "helpers.gom");
+        match diagnostic.span {
+            Some(span) => names.push(first.byte_slice(span.start, span.end)),
+            None => testing::fail("expected unused function name span"),
+        }
+    }
+    testing::assert_eq(names[0], "dead_leaf");
+    testing::assert_eq(names[1], "dead_parent");
+    testing::assert_eq(names[2], "dead_recursive")
 }
 
 #[test]

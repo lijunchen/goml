@@ -1569,7 +1569,7 @@ fn extracts_trait_interface_from_checked_package() -> () {
             let consumer = hir::lower_package(
                 ast::lower(
                     parser::parse(
-                        "package consumer; use demo::api; use api::Child; fn consume() -> string { api::boxed(1).child() }",
+                        "package consumer; use demo::api; use api::Child; pub fn consume() -> string { api::boxed(1).child() }",
                     ),
                 ),
                 "consumer/consumer.gom",
@@ -1712,6 +1712,19 @@ fn requires_explicit_package_declarations_for_artifacts() -> () {
     match artifact_declared_package_name(values, Vec::from_array(["/tmp/main.gom"])) {
         Err(error) => testing::assert_eq(error, "/tmp/main.gom must declare `package <name>;`"),
         Ok(_) => testing::fail("expected package declaration error"),
+    }
+}
+
+fn artifact_validate_entrypoint(
+    package_name: string,
+    declared_name: string,
+    exports: artifact::ArtifactPackageExports,
+) -> Result[(), string] {
+    let diagnostics = artifact_entrypoint_diagnostics(package_name, declared_name, exports);
+    if diagnostics.is_empty() {
+        Result::Ok(())
+    } else {
+        Result::Err(diagnostics[0])
     }
 }
 
@@ -2341,6 +2354,16 @@ fn prelude_source_reexports_match_the_builtin_surface() -> () {
             testing::fail("prelude source does not re-export " + name)
         }
     }
+}
+
+fn builtin_artifact_dependency() -> (string, string) {
+    ("builtin", builtin_artifact_interface_unit().interface_hash)
+}
+
+fn prelude_artifact_dependency() -> (string, string) {
+    let builtins = lower_builtin_core(Ref::new(0));
+    let builtin_interface = builtin_artifact_interface_unit();
+    ("prelude", compile_prelude_package(builtins, builtin_interface).interface_unit.interface_hash)
 }
 
 #[test]
