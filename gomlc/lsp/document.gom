@@ -146,7 +146,7 @@ pub fn cached_document_analysis(value: Server, document: Document) -> Option[que
 
 fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
     let result: Vec[query::SourceOverride] = Vec::new();
-    for document in value.documents.values() {
+    for (_, document) in value.documents {
         result.push(query::SourceOverride { path: document.path, source: document.text })
     }
     result

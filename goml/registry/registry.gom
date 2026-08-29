@@ -200,7 +200,7 @@ pub fn module_directory(root: string, name: string, version: string) -> Result[s
 
 pub fn validate(root: string) -> Result[(), string] {
     let entries = load_index(root)?;
-    for entry in entries.values() {
+    for (_, entry) in entries {
         validate_coordinate(entry.name)?;
         let latest = parse_sem_version(entry.latest)?;
         let mut latest_matches = false;
