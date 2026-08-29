@@ -1,5 +1,7 @@
 package ctir;
 
+use std::collections;
+
 pub struct CtTarget {
     pub int_width: isize,
 }
@@ -326,27 +328,26 @@ pub fn empty_module(package_name: string) -> CtModule {
 
 struct CtReachability {
     function_ids: Vec[isize],
-    functions: HashMap[isize, ()],
-    constants: HashMap[string, ()],
+    functions: collections::HashSet[isize],
+    constants: collections::HashSet[string],
 }
 
 fn new_ct_reachability() -> CtReachability {
     CtReachability {
         function_ids: Vec::new(),
-        functions: HashMap::new(),
-        constants: HashMap::new(),
+        functions: collections::HashSet::new(),
+        constants: collections::HashSet::new(),
     }
 }
 
 fn add_reachable_function(values: CtReachability, id: isize) -> () {
-    match values.functions.insert(id, ()) {
-        Some(_) => (),
-        None => values.function_ids.push(id),
-    }
+    if values.functions.insert(id) {
+        values.function_ids.push(id)
+    } else {}
 }
 
 fn add_reachable_constant(values: CtReachability, name: string) -> () {
-    values.constants[name] = ();
+    let _ = values.constants.insert(name);
 }
 
 fn collect_reachable_expr(package_name: string, value: CtExpr, reachable: CtReachability) -> () {
@@ -432,9 +433,9 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
     for name in public_constants {
         add_reachable_constant(reachable, name)
     }
-    let public_entry_names: HashMap[string, ()] = HashMap::new();
+    let public_entry_names: collections::HashSet[string] = collections::HashSet::new();
     for name in public_entries {
-        public_entry_names[name] = ();
+        let _ = public_entry_names.insert(name);
     }
     let entries: Vec[CtEntry] = Vec::with_capacity(value.entries.len());
     for entry in value.entries {

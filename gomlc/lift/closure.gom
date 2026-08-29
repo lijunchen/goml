@@ -2,6 +2,7 @@ package lift;
 
 use module::mono;
 use std::ascii;
+use std::collections;
 use std::text;
 
 struct ScopeEntry {
@@ -30,7 +31,7 @@ struct State {
     closures: Vec[ClosureInfo],
     closures_by_struct: HashMap[string, ClosureInfo],
     closures_by_apply: HashMap[string, ClosureInfo],
-    used_types: HashMap[string, ()],
+    used_types: collections::HashSet[string],
     error: Ref[Option[string]],
 }
 
@@ -89,11 +90,11 @@ fn closure_for_type(state: State, ty: mono::Type) -> Option[ClosureInfo] {
     }
 }
 
-fn record_used_type(values: HashMap[string, ()], name: string) -> () {
-    values[name] = ();
+fn record_used_type(values: collections::HashSet[string], name: string) -> () {
+    let _ = values.insert(name);
 }
 
-fn collect_used_types(values: HashMap[string, ()], ty: mono::Type) -> () {
+fn collect_used_types(values: collections::HashSet[string], ty: mono::Type) -> () {
     match ty {
         Named { name } => record_used_type(values, name),
         Tuple { items } => {
@@ -118,20 +119,20 @@ fn collect_used_types(values: HashMap[string, ()], ty: mono::Type) -> () {
     }
 }
 
-fn collect_used_exprs(values: HashMap[string, ()], exprs: Vec[mono::Expr]) -> () {
+fn collect_used_exprs(values: collections::HashSet[string], exprs: Vec[mono::Expr]) -> () {
     for expr in exprs {
         collect_used_expr(values, expr)
     }
 }
 
-fn collect_used_optional_expr(values: HashMap[string, ()], expr: Option[mono::Expr]) -> () {
+fn collect_used_optional_expr(values: collections::HashSet[string], expr: Option[mono::Expr]) -> () {
     match expr {
         Some(expr) => collect_used_expr(values, expr),
         None => (),
     }
 }
 
-fn collect_used_block(values: HashMap[string, ()], block: mono::Block) -> () {
+fn collect_used_block(values: collections::HashSet[string], block: mono::Block) -> () {
     for stmt in block.stmts {
         collect_used_types(values, stmt.ty);
         collect_used_expr(values, stmt.value)
@@ -139,7 +140,7 @@ fn collect_used_block(values: HashMap[string, ()], block: mono::Block) -> () {
     collect_used_optional_expr(values, block.tail)
 }
 
-fn collect_used_expr(values: HashMap[string, ()], expr: mono::Expr) -> () {
+fn collect_used_expr(values: collections::HashSet[string], expr: mono::Expr) -> () {
     collect_used_types(values, mono::expr_type(expr));
     match expr {
         Constr { constructor: _, args, ty: _ } => collect_used_exprs(values, args),
@@ -226,8 +227,8 @@ fn collect_used_expr(values: HashMap[string, ()], expr: mono::Expr) -> () {
     }
 }
 
-fn initial_used_types(value: mono::File) -> HashMap[string, ()] {
-    let result: HashMap[string, ()] = HashMap::new();
+fn initial_used_types(value: mono::File) -> collections::HashSet[string] {
+    let result: collections::HashSet[string] = collections::HashSet::new();
     for function in value.functions {
         for param in function.params {
             collect_used_types(result, param.1)
@@ -292,10 +293,9 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
             Some(name) => "closure_env_" + name + "_" + index.to_string(),
             None => "closure_env_" + index.to_string(),
         };
-        if state.used_types.contains(candidate) {} else {
-            state.used_types[candidate] = ();
+        if state.used_types.insert(candidate) {
             return candidate
-        }
+        } else {}
     }
 }
 
