@@ -1,6 +1,7 @@
 package project;
 
 use module::util;
+use std::collections;
 use std::fs;
 use std::io;
 use std::path;
@@ -123,33 +124,31 @@ fn executable_path_for(context: Context, entry_package: string) -> string {
 fn collect_dependencies(
     graph: Graph,
     package_name: string,
-    seen: HashMap[string, bool],
+    seen: collections::HashSet[string],
     result: Vec[string],
 ) -> Result[(), string] {
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
     for dependency in package_value.imports {
-        if seen.contains(dependency) {} else {
-            seen[dependency] = true;
+        if seen.insert(dependency) {
             result.push(dependency);
             collect_dependencies(graph, dependency, seen, result)?
-        }
+        } else {}
     }
     Result::Ok(())
 }
 
-fn mark_reachable(graph: Graph, package_name: string, seen: HashMap[string, bool]) -> Result[
+fn mark_reachable(graph: Graph, package_name: string, seen: collections::HashSet[string]) -> Result[
     (),
     string,
 ] {
-    if seen.contains(package_name) {
+    if !seen.insert(package_name) {
         return Result::Ok(())
     } else {};
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
-    seen[package_name] = true;
     for dependency in package_value.imports {
         mark_reachable(graph, dependency, seen)?
     }
@@ -157,7 +156,7 @@ fn mark_reachable(graph: Graph, package_name: string, seen: HashMap[string, bool
 }
 
 fn reachable_packages(graph: Graph, entries: Vec[string]) -> Result[Vec[string], string] {
-    let seen: HashMap[string, bool] = HashMap::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     for entry in entries {
         mark_reachable(graph, entry, seen)?
     }
@@ -175,7 +174,7 @@ fn dependency_interfaces(graph: Graph, package_name: string, output_root: string
     string,
 ] {
     let names: Vec[string] = Vec::new();
-    collect_dependencies(graph, package_name, HashMap::new(), names)?;
+    collect_dependencies(graph, package_name, collections::HashSet::new(), names)?;
     let result: Vec[string] = Vec::new();
     for name in util::sorted_unique(names) {
         result.push(extension(package_artifact_base(output_root, graph, name), "interface"))
@@ -532,7 +531,7 @@ fn append_test_package(
     graph: Graph,
     dependency_root: string,
     output_root: string,
-    compiled_dependencies: HashMap[string, bool],
+    compiled_dependencies: collections::HashSet[string],
     commands: Vec[Command],
 ) -> Result[(), string] {
     for package_name in graph.order {
@@ -547,7 +546,7 @@ fn append_test_package(
                 compiler_world_path(context),
             )?;
             commands.push(compiled);
-            compiled_dependencies[package_name] = true;
+            let _ = compiled_dependencies.insert(package_name);
         }
     }
     let compiled = compile_test_package_command(
@@ -573,12 +572,12 @@ fn append_test_group(
     commands: Vec[Command],
     groups: Vec[TestGroup],
 ) -> () {
-    let test_packages: HashMap[string, bool] = HashMap::new();
+    let test_packages: collections::HashSet[string] = collections::HashSet::new();
     for graph in graphs {
-        test_packages[graph.entry_package] = true;
+        let _ = test_packages.insert(graph.entry_package);
     }
     let input_cores: Vec[string] = Vec::new();
-    let added: HashMap[string, bool] = HashMap::new();
+    let added: collections::HashSet[string] = collections::HashSet::new();
     for package_name in context.graph.order {
         let root = if test_packages.contains(package_name) {
             output_root
@@ -591,7 +590,7 @@ fn append_test_group(
                 extension(package_artifact_base(root, context.graph, package_name), "core"),
             ),
         );
-        added[package_name] = true;
+        let _ = added.insert(package_name);
     }
     for graph in graphs {
         for package_name in graph.order {
@@ -607,7 +606,7 @@ fn append_test_group(
                         extension(package_artifact_base(root, graph, package_name), "core"),
                     ),
                 );
-                added[package_name] = true;
+                let _ = added.insert(package_name);
             }
         }
     }
@@ -641,9 +640,9 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
         BUILD_SUBCOMMAND,
         context.graph.order,
     )?;
-    let compiled_dependencies: HashMap[string, bool] = HashMap::new();
+    let compiled_dependencies: collections::HashSet[string] = collections::HashSet::new();
     for package_name in context.graph.order {
-        compiled_dependencies[package_name] = true;
+        let _ = compiled_dependencies.insert(package_name);
     }
     let groups: Vec[TestGroup] = Vec::new();
     let internal: Vec[Graph] = match kind {

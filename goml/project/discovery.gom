@@ -4,6 +4,7 @@ use module::manifest;
 use module::registry;
 use module::util;
 use std::bytes;
+use std::collections;
 use std::env;
 use std::fs;
 use std::json;
@@ -801,14 +802,15 @@ fn discover_graph(
 ) -> Result[Graph, string] {
     let entry_package = package_name_for_directory(module_dir, module_path, entry_dir)?;
     let packages: Vec[Package] = Vec::new();
-    let pending: Vec[string] = Vec::new();
-    let mut cursor = 0;
-    let seen: HashMap[string, bool] = HashMap::new();
-    pending.push(entry_package);
-    while cursor < pending.len() {
-        let package_name = pending[cursor];
-        cursor += 1;
-        if seen.contains(package_name) {} else {
+    let pending: collections::Deque[string] = collections::Deque::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
+    pending.push_back(entry_package);
+    while !pending.is_empty() {
+        let package_name = match pending.pop_front() {
+            Some(value) => value,
+            None => break,
+        };
+        if seen.insert(package_name) {
             let package_value = load_package(
                 compiler,
                 module_dir,
@@ -817,10 +819,9 @@ fn discover_graph(
                 include_tests,
                 entry_package,
             )?;
-            seen[package_name] = true;
             for dependency in package_value.imports {
                 if !seen.contains(dependency) {
-                    pending.push(dependency)
+                    pending.push_back(dependency)
                 } else {}
             }
             packages.push(package_value)
@@ -1029,26 +1030,27 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
     string,
 ] {
     let packages: Vec[Package] = Vec::new();
-    let seen: HashMap[string, bool] = HashMap::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     for current in context.graph.packages {
         if current.name == package_value.name {
             packages.push(test_package)
         } else {
             packages.push(current)
         };
-        seen[current.name] = true;
+        let _ = seen.insert(current.name);
     }
-    let pending: Vec[string] = Vec::new();
-    let mut cursor = 0;
+    let pending: collections::Deque[string] = collections::Deque::new();
     for dependency in test_package.imports {
         if !seen.contains(dependency) {
-            pending.push(dependency)
+            pending.push_back(dependency)
         } else {}
     }
-    while cursor < pending.len() {
-        let package_name = pending[cursor];
-        cursor += 1;
-        if seen.contains(package_name) {} else {
+    while !pending.is_empty() {
+        let package_name = match pending.pop_front() {
+            Some(value) => value,
+            None => break,
+        };
+        if seen.insert(package_name) {
             let current = load_package(
                 context.compiler,
                 context.graph.module_dir,
@@ -1057,10 +1059,9 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
                 false,
                 package_value.name,
             )?;
-            seen[package_name] = true;
             for dependency in current.imports {
                 if !seen.contains(dependency) {
-                    pending.push(dependency)
+                    pending.push_back(dependency)
                 } else {}
             }
             packages.push(current)

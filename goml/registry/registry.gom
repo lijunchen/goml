@@ -2,6 +2,7 @@ package registry;
 
 use module::manifest;
 use std::cmp;
+use std::collections;
 use std::env;
 use std::fs;
 use std::path;
@@ -294,29 +295,25 @@ pub fn cached_root() -> Result[string, string] {
     Result::Ok(path::join(path::join(home, "cache"), "registry"))
 }
 
-fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[isize] {
-    for index in 0..values.len() {
-        if values[index].name == name {
-            return Option::Some(index)
-        } else {}
-    }
-    Option::None
-}
-
 pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModule], string] {
     let root_manifest = manifest::load(path::join(module_root, manifest::FILENAME))?;
-    let queue = root_manifest.dependencies;
-    let selected: Vec[ResolvedModule] = Vec::new();
-    let mut cursor = 0;
-    while cursor < queue.len() {
-        let requirement = queue[cursor];
-        cursor += 1;
+    let queue: collections::Deque[manifest::Dependency] = collections::Deque::with_capacity(
+        root_manifest.dependencies.len(),
+    );
+    for dependency in root_manifest.dependencies {
+        queue.push_back(dependency)
+    }
+    let selected: collections::IndexMap[string, ResolvedModule] = collections::IndexMap::new();
+    while !queue.is_empty() {
+        let requirement = match queue.pop_front() {
+            Some(value) => value,
+            None => break,
+        };
         let version = select_version(root, requirement.name, requirement.version)?;
         let parsed = parse_sem_version(version)?;
-        let selected_position = selected_index(selected, requirement.name);
-        let update = match selected_position {
-            Some(index) => {
-                let current = parse_sem_version(selected[index].version)?;
+        let update = match selected.get(requirement.name) {
+            Some(current) => {
+                let current = parse_sem_version(current.version)?;
                 version_less(current, parsed)
             },
             None => true,
@@ -336,16 +333,13 @@ pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModul
                 root: directory,
                 dependencies: module_manifest.dependencies,
             };
-            match selected_position {
-                Some(index) => selected.set(index, resolved),
-                None => selected.push(resolved),
-            };
+            let _ = selected.insert(requirement.name, resolved);
             for dependency in module_manifest.dependencies {
-                queue.push(dependency)
+                queue.push_back(dependency)
             }
         } else {}
     }
-    Result::Ok(selected)
+    Result::Ok(selected.values())
 }
 
 pub fn resolve(module_root: string) -> Result[Vec[ResolvedModule], string] {
