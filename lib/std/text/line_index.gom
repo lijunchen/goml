@@ -1,0 +1,232 @@
+package text;
+
+const LINE_INDEX_SWAR_LOW_BITS: u64 = 0x0101010101010101;
+
+const LINE_INDEX_SWAR_HIGH_BITS: u64 = 0x8080808080808080;
+
+const LINE_INDEX_SWAR_CR: u64 = 0x0D0D0D0D0D0D0D0D;
+
+const LINE_INDEX_SWAR_LF: u64 = 0x0A0A0A0A0A0A0A0A;
+
+pub enum PositionEncoding {
+    Utf8,
+    Utf16,
+    Utf32,
+}
+
+pub struct LineColumn {
+    pub line: isize,
+    pub column: isize,
+}
+
+struct LineIndexWideChar {
+    start: isize,
+    end: isize,
+}
+
+pub struct LineIndex {
+    line_starts: Vec[isize],
+    line_ends: Vec[isize],
+    wide_offsets: Vec[isize],
+    wide_chars: Vec[LineIndexWideChar],
+    source_length: isize,
+}
+
+fn line_index_utf8_width(value: byte) -> isize {
+    if value < 128 {
+        1
+    } else if value < 224 {
+        2
+    } else if value < 240 {
+        3
+    } else {
+        4
+    }
+}
+
+fn line_index_encoded_width(width: isize, encoding: PositionEncoding) -> isize {
+    match encoding {
+        PositionEncoding::Utf8 => width,
+        PositionEncoding::Utf16 => if width == 4 {
+            2
+        } else {
+            1
+        },
+        PositionEncoding::Utf32 => 1,
+    }
+}
+
+fn line_index_swar_word(source: string, start: isize) -> u64 {
+    source.byte_get(start).to_u64() | (source.byte_get(start + 1).to_u64() << 8)
+        | (source.byte_get(start + 2).to_u64() << 16)
+        | (source.byte_get(start + 3).to_u64() << 24)
+        | (source.byte_get(start + 4).to_u64() << 32)
+        | (source.byte_get(start + 5).to_u64() << 40)
+        | (source.byte_get(start + 6).to_u64() << 48)
+        | (source.byte_get(start + 7).to_u64() << 56)
+}
+
+fn line_index_swar_has_zero(value: u64) -> bool {
+    ((value - LINE_INDEX_SWAR_LOW_BITS) & (~value) & LINE_INDEX_SWAR_HIGH_BITS) != 0
+}
+
+fn line_index_swar_has_byte(value: u64, repeated: u64) -> bool {
+    line_index_swar_has_zero(value ^ repeated)
+}
+
+fn line_index_swar_is_plain_ascii(value: u64) -> bool {
+    value & LINE_INDEX_SWAR_HIGH_BITS == 0 && !line_index_swar_has_byte(value, LINE_INDEX_SWAR_CR)
+        && !line_index_swar_has_byte(value, LINE_INDEX_SWAR_LF)
+}
+
+fn line_index_line_at_offset(index: LineIndex, offset: isize) -> isize {
+    let mut low = 0;
+    let mut high = index.line_starts.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if index.line_starts[middle] <= offset {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    low - 1
+}
+
+impl LineIndex {
+    pub fn new(source: string) -> LineIndex {
+        let line_starts: Vec[isize] = Vec::from_array([0]);
+        let line_ends: Vec[isize] = Vec::new();
+        let wide_offsets: Vec[isize] = Vec::from_array([0]);
+        let wide_chars: Vec[LineIndexWideChar] = Vec::new();
+        let mut line_start = 0;
+        let mut offset = 0;
+        while offset < source.byte_len() {
+            if offset + 8 <= source.byte_len()
+                && line_index_swar_is_plain_ascii(line_index_swar_word(source, offset)) {
+                offset += 8;
+            } else {
+                let value = source.byte_get(offset);
+                if value == b'\r' || value == b'\n' {
+                    line_ends.push(offset);
+                    if value == b'\r' && offset + 1 < source.byte_len()
+                        && source.byte_get(offset + 1) == b'\n' {
+                        offset += 2;
+                    } else {
+                        offset += 1;
+                    };
+                    line_start = offset;
+                    line_starts.push(line_start);
+                    wide_offsets.push(wide_chars.len())
+                } else {
+                    let width = line_index_utf8_width(value);
+                    let end = if offset + width < source.byte_len() {
+                        offset + width
+                    } else {
+                        source.byte_len()
+                    };
+                    if width > 1 {
+                        wide_chars.push(
+                            LineIndexWideChar { start: offset - line_start, end: end - line_start },
+                        )
+                    } else {};
+                    offset = end;
+                }
+            }
+        }
+        line_ends.push(source.byte_len());
+        wide_offsets.push(wide_chars.len());
+        LineIndex {
+            line_starts,
+            line_ends,
+            wide_offsets,
+            wide_chars,
+            source_length: source.byte_len(),
+        }
+    }
+
+    pub fn line_count(self: LineIndex) -> isize {
+        self.line_starts.len()
+    }
+
+    pub fn source_len(self: LineIndex) -> isize {
+        self.source_length
+    }
+
+    pub fn offset_to_line_column(self: LineIndex, offset: isize, encoding: PositionEncoding) -> LineColumn {
+        let limit = if offset < 0 {
+            0
+        } else if offset > self.source_length {
+            self.source_length
+        } else {
+            offset
+        };
+        let line = line_index_line_at_offset(self, limit);
+        let start = self.line_starts[line];
+        let line_length = self.line_ends[line] - start;
+        let byte_column = if limit - start < line_length {
+            limit - start
+        } else {
+            line_length
+        };
+        let mut column = byte_column;
+        let mut wide_index = self.wide_offsets[line];
+        while wide_index < self.wide_offsets[line + 1] {
+            let wide = self.wide_chars[wide_index];
+            let width = wide.end - wide.start;
+            if wide.end <= byte_column {
+                column -= width - line_index_encoded_width(width, encoding);
+            } else if wide.start < byte_column {
+                column -= byte_column - wide.start;
+            } else {};
+            wide_index += 1;
+        }
+        LineColumn { line, column }
+    }
+
+    pub fn line_column_to_offset(self: LineIndex, position: LineColumn, encoding: PositionEncoding) -> isize {
+        if position.line < 0 || position.line >= self.line_starts.len() {
+            self.source_length
+        } else {
+            let start = self.line_starts[position.line];
+            let line_length = self.line_ends[position.line] - start;
+            let mut column = if position.column < 0 {
+                0
+            } else {
+                position.column
+            };
+            let mut wide_index = self.wide_offsets[position.line];
+            while wide_index < self.wide_offsets[position.line + 1] {
+                let wide = self.wide_chars[wide_index];
+                if column > wide.start {
+                    let width = wide.end - wide.start;
+                    column += width - line_index_encoded_width(width, encoding);
+                } else {};
+                wide_index += 1;
+            }
+            if column > line_length {
+                self.line_ends[position.line]
+            } else {
+                start + column
+            }
+        }
+    }
+
+    pub fn line_column_to_offset_checked(
+        self: LineIndex,
+        position: LineColumn,
+        encoding: PositionEncoding,
+    ) -> Option[isize] {
+        if position.line < 0 || position.column < 0 {
+            Option::None
+        } else {
+            let offset = self.line_column_to_offset(position, encoding);
+            let actual = self.offset_to_line_column(offset, encoding);
+            if actual.line == position.line && actual.column == position.column {
+                Option::Some(offset)
+            } else {
+                Option::None
+            }
+        }
+    }
+}

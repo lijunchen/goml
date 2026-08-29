@@ -115,6 +115,11 @@ fn loads_multifile_standard_package() -> () {
         Ok(Some(values)) => testing::assert_eq(values.len(), 3),
         Ok(None) => testing::fail("expected bincode package"),
         Err(error) => testing::fail(error.to_string()),
+    };
+    match standard_sources("std::text") {
+        Ok(Some(values)) => testing::assert_eq(values.len(), 3),
+        Ok(None) => testing::fail("expected text package"),
+        Err(error) => testing::fail(error.to_string()),
     }
 }
 
