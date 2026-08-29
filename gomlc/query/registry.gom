@@ -1,6 +1,7 @@
 package query;
 
 use std::cmp;
+use std::collections;
 use std::env;
 use std::fs;
 use std::path;
@@ -246,18 +247,6 @@ fn module_directory(registry: string, module_name: string, version: string) -> R
     }
 }
 
-fn selected_module_index(values: Vec[ResolvedModule], name: string) -> Option[isize] {
-    let mut index = values.len() - 1;
-    while index >= 0 {
-        if values[index].name == name {
-            return Option::Some(index)
-        } else {
-            index = index - 1;
-        }
-    }
-    Option::None
-}
-
 fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
     Vec[ResolvedModule],
     string,
@@ -265,18 +254,25 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
     let manifest = fs::read_file_structured(path::join(module_root, MANIFEST_FILENAME)).map_err(
         |error| error.to_string(),
     )?;
-    let queue = manifest_dependencies(manifest);
-    let mut cursor = 0;
-    let selected: Vec[ResolvedModule] = Vec::new();
-    while cursor < queue.len() {
-        let requirement = queue[cursor];
-        cursor = cursor + 1;
+    let dependencies = manifest_dependencies(manifest);
+    let queue: collections::Deque[DependencyRequirement] = collections::Deque::with_capacity(
+        dependencies.len(),
+    );
+    for dependency in dependencies {
+        queue.push_back(dependency)
+    }
+    let selected: collections::IndexMap[string, ResolvedModule] = collections::IndexMap::new();
+    while !queue.is_empty() {
+        let requirement = match queue.pop_front() {
+            Some(value) => value,
+            None => break,
+        };
         let version = select_registry_version(registry, requirement)?;
         let Some(parsed) = parse_sem_version(version) else {
             return Result::Err("invalid registry semver `" + version + "`")
         };
-        let update = match selected_module_index(selected, requirement.name) {
-            Some(index) => match parse_sem_version(selected[index].version) {
+        let update = match selected.get(requirement.name) {
+            Some(current) => match parse_sem_version(current.version) {
                 Some(current) => sem_version_less(current, parsed),
                 None => true,
             },
@@ -297,19 +293,16 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
                     "registry module " + requirement.name + " has no module path",
                 ),
             };
-            match selected_module_index(selected, requirement.name) {
-                Some(index) => selected.set(
-                    index,
-                    ResolvedModule { name: requirement.name, version, root },
-                ),
-                None => selected.push(ResolvedModule { name: requirement.name, version, root }),
-            };
+            let _ = selected.insert(
+                requirement.name,
+                ResolvedModule { name: requirement.name, version, root },
+            );
             for dependency in manifest_dependencies(module_manifest) {
-                queue.push(dependency)
+                queue.push_back(dependency)
             }
         } else {}
     }
-    Result::Ok(selected)
+    Result::Ok(selected.values())
 }
 
 fn resolve_external_modules(module_root: string) -> Result[Vec[ResolvedModule], string] {

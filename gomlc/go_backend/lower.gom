@@ -32,7 +32,7 @@ struct LowerEnv {
     function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
     pointer_params: Vec[PointerParamInfo],
-    pointer_vars: HashMap[string, bool],
+    pointer_vars: collections::HashSet[string],
     select_counter: Ref[isize],
 }
 
@@ -5687,7 +5687,7 @@ fn compile_function(
     let collection_array_consumers: HashMap[string, anf::Value] = HashMap::new();
     collect_collection_arrays(collection_array_consumers, value.body);
     let params: Vec[(string, Type)] = Vec::new();
-    let pointer_vars: HashMap[string, bool] = HashMap::new();
+    let pointer_vars: collections::HashSet[string] = collections::HashSet::new();
     let copied_params: Vec[(string, string, Type)] = Vec::new();
     for index in 0..value.params.len() {
         let param = value.params[index];
@@ -5698,7 +5698,7 @@ fn compile_function(
             if pointer_param_copied(pointer_params, value.name, index) {
                 copied_params.push((name, pointer_name, ty))
             } else {
-                pointer_vars[param.0] = true;
+                let _ = pointer_vars.insert(param.0);
             };
             ty = Type::Pointer { elem: ty };
         } else {};

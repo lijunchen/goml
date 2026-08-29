@@ -3,6 +3,7 @@ package query;
 use module::ast;
 use module::cst;
 use module::ctir;
+use std::collections;
 use std::text;
 
 struct ComptimeDeriveTarget {
@@ -65,22 +66,23 @@ fn comptime_derive_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxT
 }
 
 fn comptime_derive_paths(value: Analysis, canonical: string) -> Vec[string] {
-    let result = Vec::from_array([canonical]);
-    let mut cursor = 0;
-    while cursor < result.len() {
-        let current = result[cursor];
-        cursor = cursor + 1;
+    let result: Vec[string] = Vec::new();
+    let pending: collections::Deque[string] = collections::Deque::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
+    result.push(canonical);
+    pending.push_back(canonical);
+    let _ = seen.insert(canonical);
+    while !pending.is_empty() {
+        let current = match pending.pop_front() {
+            Some(value) => value,
+            None => break,
+        };
         for environment in value.environments {
             for reexport in environment.reexports {
                 if reexport.0 == current || reexport.0.ends_with("::" + current) {
-                    let mut present = false;
-                    for existing in result {
-                        if existing == reexport.1 {
-                            present = true;
-                        } else {}
-                    }
-                    if !present {
-                        result.push(reexport.1)
+                    if seen.insert(reexport.1) {
+                        result.push(reexport.1);
+                        pending.push_back(reexport.1)
                     } else {}
                 } else {}
             }

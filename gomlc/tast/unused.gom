@@ -2,6 +2,7 @@ package tast;
 
 use module::ast;
 use module::hir;
+use std::collections;
 
 struct PackageFunction {
     source_path: string,
@@ -11,23 +12,6 @@ struct PackageFunction {
 struct PackageFunctions {
     values: Vec[PackageFunction],
     positions: Vec[isize],
-}
-
-struct UnusedDefinitionSet {
-    values: Vec[bool],
-}
-
-fn unused_definitions_contains(values: UnusedDefinitionSet, expected: hir::DefId) -> bool {
-    expected.index >= 0 && expected.index < values.values.len() && values.values[expected.index]
-}
-
-fn unused_definitions_insert(values: UnusedDefinitionSet, value: hir::DefId) -> bool {
-    if unused_definitions_contains(values, value) {
-        false
-    } else {
-        values.values[value.index] = true;
-        true
-    }
 }
 
 fn package_function_by_def(values: PackageFunctions, expected: hir::DefId) -> Option[
@@ -191,13 +175,12 @@ fn is_unused_function_root(value: hir::Function) -> bool {
 
 fn push_reachable_unused_function(
     functions: PackageFunctions,
-    reachable: UnusedDefinitionSet,
-    pending: Vec[hir::DefId],
+    reachable: collections::BitSet,
+    pending: collections::Deque[hir::DefId],
     value: hir::DefId,
 ) -> () {
-    if package_function_by_def(functions, value).is_some()
-        && unused_definitions_insert(reachable, value) {
-        pending.push(value)
+    if package_function_by_def(functions, value).is_some() && reachable.insert(value.index) {
+        pending.push_back(value)
     } else {}
 }
 
@@ -253,11 +236,8 @@ fn push_unused_function_warning(value: PackageFunction, diagnostics: Vec[Diagnos
 
 fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -> () {
     let functions = collect_package_functions(values);
-    let reachable = UnusedDefinitionSet { values: Vec::with_capacity(functions.positions.len()) };
-    for _ in 0..functions.positions.len() {
-        reachable.values.push(false)
-    }
-    let pending: Vec[hir::DefId] = Vec::new();
+    let reachable = collections::BitSet::new();
+    let pending: collections::Deque[hir::DefId] = collections::Deque::new();
     for function in functions.values {
         if is_unused_function_root(function.value) {
             push_reachable_unused_function(functions, reachable, pending, function.value.def_id)
@@ -268,10 +248,11 @@ fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -
     for root in roots {
         push_reachable_unused_function(functions, reachable, pending, root)
     }
-    let mut index = 0;
-    while index < pending.len() {
-        let current = pending[index];
-        index = index + 1;
+    while !pending.is_empty() {
+        let current = match pending.pop_front() {
+            Some(value) => value,
+            None => break,
+        };
         match package_function_by_def(functions, current) {
             Some(function) => {
                 let references: Vec[hir::DefId] = Vec::new();
@@ -288,7 +269,7 @@ fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -
             ast::Visibility::Private => true,
             ast::Visibility::Public => false,
         }
-            && !unused_definitions_contains(reachable, function.value.def_id)
+            && !reachable.contains(function.value.def_id.index)
             && !attribute_allows(function.value.attrs, "unused_function") {
             push_unused_function_warning(function, diagnostics)
         } else {}
