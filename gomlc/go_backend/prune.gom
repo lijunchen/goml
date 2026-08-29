@@ -1,12 +1,14 @@
 package go_backend;
 
+use std::collections;
+
 struct NameSet {
     values: Vec[string],
-    present: HashMap[string, ()],
+    present: collections::HashSet[string],
 }
 
 fn new_name_set() -> NameSet {
-    NameSet { values: Vec::new(), present: HashMap::new() }
+    NameSet { values: Vec::new(), present: collections::HashSet::new() }
 }
 
 fn name_present(values: NameSet, expected: string) -> bool {
@@ -14,8 +16,7 @@ fn name_present(values: NameSet, expected: string) -> bool {
 }
 
 fn add_reachable(values: NameSet, value: string) -> () {
-    if !values.present.contains(value) {
-        values.present[value] = ();
+    if values.present.insert(value) {
         values.values.push(value)
     } else {}
 }

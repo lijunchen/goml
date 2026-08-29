@@ -1,10 +1,11 @@
 package anf;
 
 use module::ast;
+use std::collections;
 
 struct DceNames {
     values: Vec[string],
-    present: HashMap[string, ()],
+    present: collections::HashSet[string],
 }
 
 struct DceLive {
@@ -28,7 +29,7 @@ struct DceJoinResult {
 }
 
 fn new_dce_names() -> DceNames {
-    DceNames { values: Vec::new(), present: HashMap::new() }
+    DceNames { values: Vec::new(), present: collections::HashSet::new() }
 }
 
 fn new_dce_live() -> DceLive {
@@ -40,10 +41,9 @@ fn dce_names_contains(values: DceNames, name: string) -> bool {
 }
 
 fn dce_names_add(values: DceNames, name: string) -> () {
-    if dce_names_contains(values, name) {} else {
-        values.present[name] = ();
+    if values.present.insert(name) {
         values.values.push(name)
-    }
+    } else {}
 }
 
 fn dce_names_add_all(target: DceNames, values: DceNames) -> () {
@@ -55,7 +55,7 @@ fn dce_names_add_all(target: DceNames, values: DceNames) -> () {
 }
 
 fn dce_names_remove(values: DceNames, name: string) -> () {
-    values.present.remove(name)
+    let _ = values.present.remove(name);
 }
 
 fn dce_live_add_all(target: DceLive, values: DceLive) -> () {

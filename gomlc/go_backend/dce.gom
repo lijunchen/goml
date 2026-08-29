@@ -1,8 +1,10 @@
 package go_backend;
 
+use std::collections;
+
 struct DceNames {
     values: Vec[string],
-    present: HashMap[string, ()],
+    present: collections::HashSet[string],
 }
 
 struct DceResult {
@@ -12,7 +14,7 @@ struct DceResult {
 }
 
 fn new_dce_names() -> DceNames {
-    DceNames { values: Vec::new(), present: HashMap::new() }
+    DceNames { values: Vec::new(), present: collections::HashSet::new() }
 }
 
 fn contains_name(values: DceNames, expected: string) -> bool {
@@ -20,8 +22,7 @@ fn contains_name(values: DceNames, expected: string) -> bool {
 }
 
 fn add_name(values: DceNames, value: string) -> () {
-    if !contains_name(values, value) {
-        values.present[value] = ();
+    if values.present.insert(value) {
         values.values.push(value)
     } else {}
 }
@@ -37,14 +38,14 @@ fn add_names(target: DceNames, values: DceNames) -> () {
 fn copy_names(values: DceNames) -> DceNames {
     let result = DceNames {
         values: Vec::with_capacity(values.present.len()),
-        present: HashMap::new(),
+        present: collections::HashSet::new(),
     };
     add_names(result, values);
     result
 }
 
 fn remove_name(values: DceNames, expected: string) -> () {
-    values.present.remove(expected)
+    let _ = values.present.remove(expected);
 }
 
 fn add_expr_uses(values: DceNames, value: Expr) -> () {
