@@ -145,6 +145,14 @@ type _goml_vec__goml_m_std_p_serde_p_ValueSerializeFrame struct {
     items []_goml_m_std_p_serde_p_ValueSerializeFrame
 }
 
+type _goml_vec_int struct {
+    items []int
+}
+
+type _goml_vec__goml_m_std_p_text_p_LineIndexWideChar struct {
+    items []_goml_m_std_p_text_p_LineIndexWideChar
+}
+
 type _goml_vec__goml_m_std_p_json_p_JsonDeserializeFrame struct {
     items []_goml_m_std_p_json_p_JsonDeserializeFrame
 }
@@ -528,6 +536,24 @@ type _goml_m_std_p_serde_p_ValueSerializer struct {
     result *ref__goml_m_Option____std_p_serde_p_Value_x
 }
 
+type _goml_m_std_p_text_p_LineColumn struct {
+    line int
+    column int
+}
+
+type _goml_m_std_p_text_p_LineIndexWideChar struct {
+    start int
+    end int
+}
+
+type _goml_m_std_p_text_p_LineIndex struct {
+    line_starts *_goml_vec_int
+    line_ends *_goml_vec_int
+    wide_offsets *_goml_vec_int
+    wide_chars *_goml_vec__goml_m_std_p_text_p_LineIndexWideChar
+    source_length int
+}
+
 type _goml_m_std_p_text_p_StringBuilder struct {
     values *_goml_vec_uint8
 }
@@ -904,6 +930,8 @@ type _goml_m_std_p_serde_p_ValueSerializeFrame_Variant struct {
 }
 
 func (_ _goml_m_std_p_serde_p_ValueSerializeFrame_Variant) is_goml_m_std_p_serde_p_ValueSerializeFrame() {}
+
+type _goml_m_std_p_text_p_PositionEncoding int32
 
 type _goml_m_std_p_json_p_JsonDeserializeFrame interface {
     is_goml_m_std_p_json_p_JsonDeserializeFrame()

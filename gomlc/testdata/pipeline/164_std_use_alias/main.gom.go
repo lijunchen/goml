@@ -51,6 +51,14 @@ type _goml_vec_Tuple2_6string_6string struct {
     items []Tuple2_6string_6string
 }
 
+type _goml_vec_int struct {
+    items []int
+}
+
+type _goml_vec__goml_m_std_p_text_p_LineIndexWideChar struct {
+    items []_goml_m_std_p_text_p_LineIndexWideChar
+}
+
 type _goml_vec_uint32 struct {
     items []uint32
 }
@@ -232,6 +240,24 @@ type _goml_m_std_p_io_p_Error struct {
     details _goml_m_std_p_io_p_ErrorDetails
 }
 
+type _goml_m_std_p_text_p_LineColumn struct {
+    line int
+    column int
+}
+
+type _goml_m_std_p_text_p_LineIndexWideChar struct {
+    start int
+    end int
+}
+
+type _goml_m_std_p_text_p_LineIndex struct {
+    line_starts *_goml_vec_int
+    line_ends *_goml_vec_int
+    wide_offsets *_goml_vec_int
+    wide_chars *_goml_vec__goml_m_std_p_text_p_LineIndexWideChar
+    source_length int
+}
+
 type _goml_m_std_p_text_p_StringBuilder struct {
     values *_goml_vec_uint8
 }
@@ -270,6 +296,8 @@ type closure_env_goml_builtin_range_2 struct {
 type Ordering int32
 
 type _goml_m_std_p_io_p_ErrorKind int32
+
+type _goml_m_std_p_text_p_PositionEncoding int32
 
 type Option__u8 struct {
     _tag int32

@@ -1,3 +1,8 @@
+const std::text::LINE_INDEX_SWAR_LOW_BITS: u64 = 72340172838076673;
+const std::text::LINE_INDEX_SWAR_HIGH_BITS: u64 = 9259542123273814144;
+const std::text::LINE_INDEX_SWAR_CR: u64 = 940422246894996749;
+const std::text::LINE_INDEX_SWAR_LF: u64 = 723401728380766730;
+
 fn float_natural_zero() -> FloatNatural {
   FloatNatural { words: @intrinsic(vec.new)() }
 }
@@ -6522,6 +6527,469 @@ fn std::ascii::escape_default(value/0: u8) -> string {
               inherent#char#char#to_string(std::ascii::hex_digit((value/0 & 15))))
           }
       },
+  }
+}
+
+fn std::text::line_index_utf8_width(value/0: u8) -> isize {
+  if (value/0 < 128) {
+      {
+        1
+      }
+  } else {
+      if (value/0 < 224) {
+          {
+            2
+          }
+      } else {
+          if (value/0 < 240) {
+              {
+                3
+              }
+          } else {
+              {
+                4
+              }
+          }
+      }
+  }
+}
+
+fn std::text::line_index_encoded_width(
+  width/0: isize,
+  encoding/0: std::text::PositionEncoding
+) -> isize {
+  match encoding/0 {
+    std::text::PositionEncoding::Utf8 => {
+      width/0
+    },
+    std::text::PositionEncoding::Utf16 => {
+      if (width/0 == 4) {
+          {
+            2
+          }
+      } else {
+          {
+            1
+          }
+      }
+    },
+    std::text::PositionEncoding::Utf32 => {
+      1
+    },
+  }
+}
+
+fn std::text::line_index_swar_word(source/0: string, start/0: isize) -> u64 {
+  ((((((((inherent#string#string#byte_get(source/0, start/0) as u64) |
+    ((inherent#string#string#byte_get(source/0, (start/0 + 1)) as u64) << 8)) |
+    ((inherent#string#string#byte_get(source/0, (start/0 + 2)) as u64) << 16)) |
+    ((inherent#string#string#byte_get(source/0, (start/0 + 3)) as u64) << 24)) |
+    ((inherent#string#string#byte_get(source/0, (start/0 + 4)) as u64) << 32)) |
+    ((inherent#string#string#byte_get(source/0, (start/0 + 5)) as u64) << 40)) |
+    ((inherent#string#string#byte_get(source/0, (start/0 + 6)) as u64) << 48)) |
+    ((inherent#string#string#byte_get(source/0, (start/0 + 7)) as u64) << 56))
+}
+
+fn std::text::line_index_swar_has_zero(value/0: u64) -> bool {
+  ((((value/0 - std::text::LINE_INDEX_SWAR_LOW_BITS) & (~value/0)) &
+    std::text::LINE_INDEX_SWAR_HIGH_BITS) !=
+    0)
+}
+
+fn std::text::line_index_swar_has_byte(value/0: u64, repeated/0: u64) -> bool {
+  std::text::line_index_swar_has_zero((value/0 ^ repeated/0))
+}
+
+fn std::text::line_index_swar_is_plain_ascii(value/0: u64) -> bool {
+  if if ((value/0 & std::text::LINE_INDEX_SWAR_HIGH_BITS) == 0) {
+      (!std::text::line_index_swar_has_byte(value/0, std::text::LINE_INDEX_SWAR_CR))
+  } else {
+      false
+  } {
+      (!std::text::line_index_swar_has_byte(value/0, std::text::LINE_INDEX_SWAR_LF))
+  } else {
+      false
+  }
+}
+
+fn std::text::line_index_line_at_offset(index/0: std::text::LineIndex, offset/0: isize) -> isize {
+  let low/0 = 0 in
+  let high/0 = inherent#Vec#Vec[isize]#len(std::text::LineIndex.line_starts(index/0)) in
+  let _wild0 =
+    while (low/0 < high/0) {
+        {
+          let middle/0 = (low/0 + ((high/0 - low/0) / 2)) in
+          if (@intrinsic(vec.get)(std::text::LineIndex.line_starts(index/0), middle/0) <=
+            offset/0) {
+              {
+                let _wild1 = low/0 = (middle/0 + 1) in
+              }
+          } else {
+              {
+                let _wild2 = high/0 = middle/0 in
+              }
+          }
+        }
+    } in
+  (low/0 - 1)
+}
+
+fn inherent#std::text::LineIndex#std::text::LineIndex#new(
+  source/0: string
+) -> std::text::LineIndex {
+  let line_starts/0 = @intrinsic(vec.from_array)([0]) in
+  let line_ends/0 = inherent#Vec#Vec[isize]#new() in
+  let wide_offsets/0 = @intrinsic(vec.from_array)([0]) in
+  let wide_chars/0 = inherent#Vec#Vec[std::text::LineIndexWideChar]#new() in
+  let line_start/0 = 0 in
+  let offset/0 = 0 in
+  let _wild0 =
+    while (offset/0 < inherent#string#string#byte_len(source/0)) {
+        {
+          if if ((offset/0 + 8) <= inherent#string#string#byte_len(source/0)) {
+              std::text::line_index_swar_is_plain_ascii(
+                std::text::line_index_swar_word(source/0, offset/0)
+              )
+          } else {
+              false
+          } {
+              {
+                let _wild1 =
+                  {
+                    let compound_old0 = offset/0 in
+                    let compound_value0 = 8 in
+                    offset/0 = (compound_old0 + compound_value0)
+                  } in
+              }
+          } else {
+              {
+                let value/0 = inherent#string#string#byte_get(source/0, offset/0) in
+                if if (value/0 == 13) {
+                    true
+                } else {
+                    (value/0 == 10)
+                } {
+                    {
+                      let _wild2 = inherent#Vec#Vec[isize]#push(line_ends/0, offset/0) in
+                      let _wild3 =
+                        if if if (value/0 == 13) {
+                            ((offset/0 + 1) < inherent#string#string#byte_len(source/0))
+                        } else {
+                            false
+                        } {
+                            (inherent#string#string#byte_get(source/0, (offset/0 + 1)) == 10)
+                        } else {
+                            false
+                        } {
+                            {
+                              let _wild4 =
+                                {
+                                  let compound_old1 = offset/0 in
+                                  let compound_value1 = 2 in
+                                  offset/0 = (compound_old1 + compound_value1)
+                                } in
+                            }
+                        } else {
+                            {
+                              let _wild5 =
+                                {
+                                  let compound_old2 = offset/0 in
+                                  let compound_value2 = 1 in
+                                  offset/0 = (compound_old2 + compound_value2)
+                                } in
+                            }
+                        } in
+                      let _wild6 = line_start/0 = offset/0 in
+                      let _wild7 = inherent#Vec#Vec[isize]#push(line_starts/0, line_start/0) in
+                      inherent#Vec#Vec[isize]#push(
+                        wide_offsets/0,
+                        inherent#Vec#Vec[std::text::LineIndexWideChar]#len(wide_chars/0)
+                      )
+                    }
+                } else {
+                    {
+                      let width/0 = std::text::line_index_utf8_width(value/0) in
+                      let end/0 =
+                        if ((offset/0 + width/0) < inherent#string#string#byte_len(source/0)) {
+                            {
+                              (offset/0 + width/0)
+                            }
+                        } else {
+                            {
+                              inherent#string#string#byte_len(source/0)
+                            }
+                        } in
+                      let _wild8 =
+                        if (width/0 > 1) {
+                            {
+                              inherent#Vec#Vec[std::text::LineIndexWideChar]#push(
+                                wide_chars/0,
+                                std::text::LineIndexWideChar {
+                                  start: (offset/0 - line_start/0),
+                                  end: (end/0 - line_start/0)
+                                }
+                              )
+                            }
+                        } else {
+                            {
+                              ()
+                            }
+                        } in
+                      let _wild9 = offset/0 = end/0 in
+                    }
+                }
+              }
+          }
+        }
+    } in
+  let _wild10 =
+    inherent#Vec#Vec[isize]#push(line_ends/0, inherent#string#string#byte_len(source/0)) in
+  let _wild11 =
+    inherent#Vec#Vec[isize]#push(
+      wide_offsets/0,
+      inherent#Vec#Vec[std::text::LineIndexWideChar]#len(wide_chars/0)
+    ) in
+  std::text::LineIndex {
+    line_starts: line_starts/0,
+    line_ends: line_ends/0,
+    wide_offsets: wide_offsets/0,
+    wide_chars: wide_chars/0,
+    source_length: inherent#string#string#byte_len(source/0)
+  }
+}
+
+fn inherent#std::text::LineIndex#std::text::LineIndex#line_count(
+  self/0: std::text::LineIndex
+) -> isize {
+  inherent#Vec#Vec[isize]#len(std::text::LineIndex.line_starts(self/0))
+}
+
+fn inherent#std::text::LineIndex#std::text::LineIndex#source_len(
+  self/0: std::text::LineIndex
+) -> isize {
+  std::text::LineIndex.source_length(self/0)
+}
+
+fn inherent#std::text::LineIndex#std::text::LineIndex#offset_to_line_column(
+  self/0: std::text::LineIndex,
+  offset/0: isize,
+  encoding/0: std::text::PositionEncoding
+) -> std::text::LineColumn {
+  let limit/0 =
+    if (offset/0 < 0) {
+        {
+          0
+        }
+    } else {
+        if (offset/0 > std::text::LineIndex.source_length(self/0)) {
+            {
+              std::text::LineIndex.source_length(self/0)
+            }
+        } else {
+            {
+              offset/0
+            }
+        }
+    } in
+  let line/0 = std::text::line_index_line_at_offset(self/0, limit/0) in
+  let start/0 = @intrinsic(vec.get)(std::text::LineIndex.line_starts(self/0), line/0) in
+  let line_length/0 =
+    (@intrinsic(vec.get)(std::text::LineIndex.line_ends(self/0), line/0) - start/0) in
+  let byte_column/0 =
+    if ((limit/0 - start/0) < line_length/0) {
+        {
+          (limit/0 - start/0)
+        }
+    } else {
+        {
+          line_length/0
+        }
+    } in
+  let column/0 = byte_column/0 in
+  let wide_index/0 = @intrinsic(vec.get)(std::text::LineIndex.wide_offsets(self/0), line/0) in
+  let _wild0 =
+    while (wide_index/0 <
+      @intrinsic(vec.get)(std::text::LineIndex.wide_offsets(self/0), (line/0 + 1))) {
+        {
+          let wide/0 = @intrinsic(vec.get)(std::text::LineIndex.wide_chars(self/0), wide_index/0) in
+          let width/0 =
+            (std::text::LineIndexWideChar.end(wide/0) -
+              std::text::LineIndexWideChar.start(wide/0)) in
+          let _wild1 =
+            if (std::text::LineIndexWideChar.end(wide/0) <= byte_column/0) {
+                {
+                  let _wild2 =
+                    {
+                      let compound_old0 = column/0 in
+                      let compound_value0 =
+                        (width/0 - std::text::line_index_encoded_width(width/0, encoding/0)) in
+                      column/0 = (compound_old0 - compound_value0)
+                    } in
+                }
+            } else {
+                if (std::text::LineIndexWideChar.start(wide/0) < byte_column/0) {
+                    {
+                      let _wild3 =
+                        {
+                          let compound_old1 = column/0 in
+                          let compound_value1 =
+                            (byte_column/0 - std::text::LineIndexWideChar.start(wide/0)) in
+                          column/0 = (compound_old1 - compound_value1)
+                        } in
+                    }
+                } else {
+                    {
+                      ()
+                    }
+                }
+            } in
+          let _wild4 =
+            {
+              let compound_old2 = wide_index/0 in
+              let compound_value2 = 1 in
+              wide_index/0 = (compound_old2 + compound_value2)
+            } in
+        }
+    } in
+  std::text::LineColumn { line: line/0, column: column/0 }
+}
+
+fn inherent#std::text::LineIndex#std::text::LineIndex#line_column_to_offset(
+  self/0: std::text::LineIndex,
+  position/0: std::text::LineColumn,
+  encoding/0: std::text::PositionEncoding
+) -> isize {
+  if if (std::text::LineColumn.line(position/0) < 0) {
+      true
+  } else {
+      (std::text::LineColumn.line(position/0) >=
+        inherent#Vec#Vec[isize]#len(std::text::LineIndex.line_starts(self/0)))
+  } {
+      {
+        std::text::LineIndex.source_length(self/0)
+      }
+  } else {
+      {
+        let start/0 =
+          @intrinsic(vec.get)(
+            std::text::LineIndex.line_starts(self/0),
+            std::text::LineColumn.line(position/0)
+          ) in
+        let line_length/0 =
+          (@intrinsic(vec.get)(
+            std::text::LineIndex.line_ends(self/0),
+            std::text::LineColumn.line(position/0)
+          ) -
+            start/0) in
+        let column/0 =
+          if (std::text::LineColumn.column(position/0) < 0) {
+              {
+                0
+              }
+          } else {
+              {
+                std::text::LineColumn.column(position/0)
+              }
+          } in
+        let wide_index/0 =
+          @intrinsic(vec.get)(
+            std::text::LineIndex.wide_offsets(self/0),
+            std::text::LineColumn.line(position/0)
+          ) in
+        let _wild0 =
+          while (wide_index/0 <
+            @intrinsic(vec.get)(
+              std::text::LineIndex.wide_offsets(self/0),
+              (std::text::LineColumn.line(position/0) + 1)
+            )) {
+              {
+                let wide/0 =
+                  @intrinsic(vec.get)(std::text::LineIndex.wide_chars(self/0), wide_index/0) in
+                let _wild1 =
+                  if (column/0 > std::text::LineIndexWideChar.start(wide/0)) {
+                      {
+                        let width/0 =
+                          (std::text::LineIndexWideChar.end(wide/0) -
+                            std::text::LineIndexWideChar.start(wide/0)) in
+                        let _wild2 =
+                          {
+                            let compound_old0 = column/0 in
+                            let compound_value0 =
+                              (width/0 -
+                                std::text::line_index_encoded_width(width/0, encoding/0)) in
+                            column/0 = (compound_old0 + compound_value0)
+                          } in
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  } in
+                let _wild3 =
+                  {
+                    let compound_old1 = wide_index/0 in
+                    let compound_value1 = 1 in
+                    wide_index/0 = (compound_old1 + compound_value1)
+                  } in
+              }
+          } in
+        if (column/0 > line_length/0) {
+            {
+              @intrinsic(vec.get)(
+                std::text::LineIndex.line_ends(self/0),
+                std::text::LineColumn.line(position/0)
+              )
+            }
+        } else {
+            {
+              (start/0 + column/0)
+            }
+        }
+      }
+  }
+}
+
+fn inherent#std::text::LineIndex#std::text::LineIndex#line_column_to_offset_checked(
+  self/0: std::text::LineIndex,
+  position/0: std::text::LineColumn,
+  encoding/0: std::text::PositionEncoding
+) -> Option[isize] {
+  if if (std::text::LineColumn.line(position/0) < 0) {
+      true
+  } else {
+      (std::text::LineColumn.column(position/0) < 0)
+  } {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let offset/0 =
+          inherent#std::text::LineIndex#std::text::LineIndex#line_column_to_offset(
+            self/0,
+            position/0,
+            encoding/0
+          ) in
+        let actual/0 =
+          inherent#std::text::LineIndex#std::text::LineIndex#offset_to_line_column(
+            self/0,
+            offset/0,
+            encoding/0
+          ) in
+        if if (std::text::LineColumn.line(actual/0) == std::text::LineColumn.line(position/0)) {
+            (std::text::LineColumn.column(actual/0) == std::text::LineColumn.column(position/0))
+        } else {
+            false
+        } {
+            {
+              Option::Some(offset/0)
+            }
+        } else {
+            {
+              Option::None
+            }
+        }
+      }
   }
 }
 
