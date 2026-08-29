@@ -104,7 +104,7 @@ fn inline_dump_argument_present(value: Option[(string, string)]) -> bool {
     value.is_some()
 }
 
-fn selected_run_usage(used_dumps: Vec[string]) -> string {
+fn selected_run_usage(used_dumps: collections::IndexSet[string]) -> string {
     let builder = text::StringBuilder::new();
     builder.write_string("gomlc run-single");
     for argument in used_dumps {
@@ -117,8 +117,7 @@ fn selected_run_usage(used_dumps: Vec[string]) -> string {
 
 fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     let mut file: Option[string] = Option::None;
-    let seen: collections::HashSet[string] = collections::HashSet::new();
-    let used_dumps: Vec[string] = Vec::new();
+    let used_dumps: collections::IndexSet[string] = collections::IndexSet::new();
     let mut positional = false;
     let mut index = 2;
     while index < args.len() {
@@ -140,11 +139,9 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             };
             return Result::Err(unexpected_value_error_with_usage(value, "--help", usage))
         } else if !positional && dump_argument(argument) {
-            if seen.contains(argument) {
+            if !used_dumps.insert(argument) {
                 return Result::Err(repeated_argument_error(RUN_SINGLE_COMMAND, argument))
             } else {
-                let _ = seen.insert(argument);
-                used_dumps.push(argument);
                 index += 1;
             }
         } else if !positional && inline_dump_argument_present(inline_dump_argument(argument)) {
@@ -160,9 +157,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                     let usage = if similar == "--help" {
                         "gomlc run-single --help <FILE>"
                     } else {
-                        if !seen.contains(similar) {
-                            used_dumps.push(similar)
-                        } else {};
+                        let _ = used_dumps.insert(similar);
                         selected_run_usage(used_dumps)
                     };
                     return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
@@ -191,16 +186,16 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
         Some(value) => Result::Ok(
             RunArgs {
                 file: value,
-                dump_ast: seen.contains(DUMP_AST_OPTION),
-                dump_expanded_ast: seen.contains(DUMP_EXPANDED_AST_OPTION),
-                dump_hir: seen.contains(DUMP_HIR_OPTION),
-                dump_tast: seen.contains(DUMP_TAST_OPTION),
-                dump_ctir: seen.contains(DUMP_CTIR_OPTION),
-                dump_core: seen.contains(DUMP_CORE_OPTION),
-                dump_mono: seen.contains(DUMP_MONO_OPTION),
-                dump_lift: seen.contains(DUMP_LIFT_OPTION),
-                dump_anf: seen.contains(DUMP_ANF_OPTION),
-                dump_go: seen.contains(DUMP_GO_OPTION),
+                dump_ast: used_dumps.contains(DUMP_AST_OPTION),
+                dump_expanded_ast: used_dumps.contains(DUMP_EXPANDED_AST_OPTION),
+                dump_hir: used_dumps.contains(DUMP_HIR_OPTION),
+                dump_tast: used_dumps.contains(DUMP_TAST_OPTION),
+                dump_ctir: used_dumps.contains(DUMP_CTIR_OPTION),
+                dump_core: used_dumps.contains(DUMP_CORE_OPTION),
+                dump_mono: used_dumps.contains(DUMP_MONO_OPTION),
+                dump_lift: used_dumps.contains(DUMP_LIFT_OPTION),
+                dump_anf: used_dumps.contains(DUMP_ANF_OPTION),
+                dump_go: used_dumps.contains(DUMP_GO_OPTION),
             },
         ),
         None => {

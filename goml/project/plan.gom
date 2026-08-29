@@ -121,19 +121,16 @@ fn executable_path_for(context: Context, entry_package: string) -> string {
     path::join(result, last_segment(entry_package))
 }
 
-fn collect_dependencies(
-    graph: Graph,
-    package_name: string,
-    seen: collections::HashSet[string],
-    result: Vec[string],
-) -> Result[(), string] {
+fn collect_dependencies(graph: Graph, package_name: string, result: collections::IndexSet[string]) -> Result[
+    (),
+    string,
+] {
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
     for dependency in package_value.imports {
-        if seen.insert(dependency) {
-            result.push(dependency);
-            collect_dependencies(graph, dependency, seen, result)?
+        if result.insert(dependency) {
+            collect_dependencies(graph, dependency, result)?
         } else {}
     }
     Result::Ok(())
@@ -173,10 +170,10 @@ fn dependency_interfaces(graph: Graph, package_name: string, output_root: string
     Vec[string],
     string,
 ] {
-    let names: Vec[string] = Vec::new();
-    collect_dependencies(graph, package_name, collections::HashSet::new(), names)?;
+    let names: collections::IndexSet[string] = collections::IndexSet::new();
+    collect_dependencies(graph, package_name, names)?;
     let result: Vec[string] = Vec::new();
-    for name in util::sorted_unique(names) {
+    for name in util::sorted(names.to_vec()) {
         result.push(extension(package_artifact_base(output_root, graph, name), "interface"))
     }
     Result::Ok(result)
