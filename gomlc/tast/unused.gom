@@ -8,28 +8,46 @@ struct PackageFunction {
     value: hir::Function,
 }
 
-fn same_unused_definition(left: hir::DefId, right: hir::DefId) -> bool {
-    left.pkg == right.pkg && left.index == right.index
+struct PackageFunctions {
+    values: Vec[PackageFunction],
+    positions: Vec[isize],
 }
 
-fn unused_definitions_contain(values: Vec[hir::DefId], expected: hir::DefId) -> bool {
-    for value in values {
-        if same_unused_definition(value, expected) {
-            return true
-        } else {}
+struct UnusedDefinitionSet {
+    values: Vec[bool],
+}
+
+fn unused_definitions_contains(values: UnusedDefinitionSet, expected: hir::DefId) -> bool {
+    expected.index >= 0 && expected.index < values.values.len() && values.values[expected.index]
+}
+
+fn unused_definitions_insert(values: UnusedDefinitionSet, value: hir::DefId) -> bool {
+    if unused_definitions_contains(values, value) {
+        false
+    } else {
+        values.values[value.index] = true;
+        true
     }
-    false
 }
 
-fn package_function_by_def(values: Vec[PackageFunction], expected: hir::DefId) -> Option[
+fn package_function_by_def(values: PackageFunctions, expected: hir::DefId) -> Option[
     PackageFunction,
 ] {
-    for value in values {
-        if same_unused_definition(value.value.def_id, expected) {
-            return Option::Some(value)
-        } else {}
+    if expected.index < 0 || expected.index >= values.positions.len() {
+        Option::None
+    } else {
+        let position = values.positions[expected.index];
+        if position < 0 {
+            Option::None
+        } else {
+            let function = values.values[position];
+            if function.value.def_id.pkg == expected.pkg {
+                Option::Some(function)
+            } else {
+                Option::None
+            }
+        }
     }
-    Option::None
 }
 
 fn collect_unused_name_ref(value: hir::NameRef, result: Vec[hir::DefId]) -> () {
@@ -172,25 +190,29 @@ fn is_unused_function_root(value: hir::Function) -> bool {
 }
 
 fn push_reachable_unused_function(
-    functions: Vec[PackageFunction],
-    reachable: Vec[hir::DefId],
+    functions: PackageFunctions,
+    reachable: UnusedDefinitionSet,
     pending: Vec[hir::DefId],
     value: hir::DefId,
 ) -> () {
     if package_function_by_def(functions, value).is_some()
-        && !unused_definitions_contain(reachable, value) {
-        reachable.push(value);
+        && unused_definitions_insert(reachable, value) {
         pending.push(value)
     } else {}
 }
 
-fn collect_package_functions(values: Vec[hir::File]) -> Vec[PackageFunction] {
-    let result: Vec[PackageFunction] = Vec::new();
+fn collect_package_functions(values: Vec[hir::File]) -> PackageFunctions {
+    let result = PackageFunctions { values: Vec::new(), positions: Vec::new() };
     for file in values {
         for item in file.items {
             match item {
                 hir::Item::Function(value) => {
-                    result.push(PackageFunction { source_path: file.source_path, value })
+                    let function = PackageFunction { source_path: file.source_path, value };
+                    while result.positions.len() <= value.def_id.index {
+                        result.positions.push(-1)
+                    }
+                    result.positions[value.def_id.index] = result.values.len();
+                    result.values.push(function)
                 },
                 _ => (),
             }
@@ -231,9 +253,12 @@ fn push_unused_function_warning(value: PackageFunction, diagnostics: Vec[Diagnos
 
 fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -> () {
     let functions = collect_package_functions(values);
-    let reachable: Vec[hir::DefId] = Vec::new();
+    let reachable = UnusedDefinitionSet { values: Vec::with_capacity(functions.positions.len()) };
+    for _ in 0..functions.positions.len() {
+        reachable.values.push(false)
+    }
     let pending: Vec[hir::DefId] = Vec::new();
-    for function in functions {
+    for function in functions.values {
         if is_unused_function_root(function.value) {
             push_reachable_unused_function(functions, reachable, pending, function.value.def_id)
         } else {}
@@ -258,12 +283,12 @@ fn warn_unused_functions(values: Vec[hir::File], diagnostics: Vec[Diagnostic]) -
             None => (),
         }
     }
-    for function in functions {
+    for function in functions.values {
         if match function.value.visibility {
             ast::Visibility::Private => true,
             ast::Visibility::Public => false,
         }
-            && !unused_definitions_contain(reachable, function.value.def_id)
+            && !unused_definitions_contains(reachable, function.value.def_id)
             && !attribute_allows(function.value.attrs, "unused_function") {
             push_unused_function_warning(function, diagnostics)
         } else {}
