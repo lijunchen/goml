@@ -32,17 +32,16 @@ pub struct ArtifactJsonWriter {
     pretty: bool,
     capture: bool,
     depth: Ref[isize],
-    object_scopes: Vec[bool],
-    first_values: Vec[bool],
+    first_values: collections::Stack[Ref[bool]],
     after_name: Ref[bool],
-    captured_containers: Vec[ArtifactCapturedContainer],
+    captured_containers: collections::Stack[ArtifactCapturedContainer],
     captured_values: Vec[ArtifactValue],
     binary_mode: u8,
     binary_seen: collections::HashSet[string],
     binary_strings: Vec[string],
     binary_writer: ArtifactBinaryWriter,
     binary_table: ArtifactBinaryStringTable,
-    binary_scopes: Vec[ArtifactBinaryValueScope],
+    binary_scopes: collections::Stack[ArtifactBinaryValueScope],
     binary_error: Ref[Option[string]],
 }
 
@@ -52,17 +51,16 @@ pub fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
         pretty,
         capture: false,
         depth: Ref::new(0),
-        object_scopes: Vec::new(),
-        first_values: Vec::new(),
+        first_values: collections::Stack::new(),
         after_name: Ref::new(false),
-        captured_containers: Vec::new(),
+        captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 0,
         binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
-        binary_scopes: Vec::new(),
+        binary_scopes: collections::Stack::new(),
         binary_error: Ref::new(Option::None),
     }
 }
@@ -73,17 +71,16 @@ pub fn new_artifact_value_writer() -> ArtifactJsonWriter {
         pretty: false,
         capture: true,
         depth: Ref::new(0),
-        object_scopes: Vec::new(),
-        first_values: Vec::new(),
+        first_values: collections::Stack::new(),
         after_name: Ref::new(false),
-        captured_containers: Vec::new(),
+        captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 1,
         binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
-        binary_scopes: Vec::new(),
+        binary_scopes: collections::Stack::new(),
         binary_error: Ref::new(Option::None),
     }
 }
@@ -94,17 +91,16 @@ pub fn new_artifact_binary_string_collector() -> ArtifactJsonWriter {
         pretty: false,
         capture: false,
         depth: Ref::new(0),
-        object_scopes: Vec::new(),
-        first_values: Vec::new(),
+        first_values: collections::Stack::new(),
         after_name: Ref::new(false),
-        captured_containers: Vec::new(),
+        captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 2,
         binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
-        binary_scopes: Vec::new(),
+        binary_scopes: collections::Stack::new(),
         binary_error: Ref::new(Option::None),
     }
 }
@@ -115,27 +111,26 @@ pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> Art
         pretty: false,
         capture: false,
         depth: Ref::new(0),
-        object_scopes: Vec::new(),
-        first_values: Vec::new(),
+        first_values: collections::Stack::new(),
         after_name: Ref::new(false),
-        captured_containers: Vec::new(),
+        captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 3,
         binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: table,
-        binary_scopes: Vec::new(),
+        binary_scopes: collections::Stack::new(),
         binary_error: Ref::new(Option::None),
     }
 }
 
 fn artifact_binary_stream_before_value(value: ArtifactJsonWriter) -> () {
-    if value.binary_scopes.is_empty() {} else {
-        let scope = value.binary_scopes[value.binary_scopes.len() - 1];
-        if scope.object {} else {
+    match value.binary_scopes.peek() {
+        Some(scope) => if scope.object {} else {
             scope.count.set(scope.count.get() + 1)
-        }
+        },
+        None => (),
     }
 }
 
@@ -157,15 +152,17 @@ fn artifact_binary_stream_begin_container(value: ArtifactJsonWriter, tag: u8, ob
 }
 
 fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> () {
-    let scope = value.binary_scopes.remove(value.binary_scopes.len() - 1);
-    artifact_binary_stream_error(
-        value,
-        artifact_binary_patch_u32(
-            value.binary_writer,
-            scope.count_offset,
-            scope.count.get().to_u32(),
+    match value.binary_scopes.pop() {
+        Some(scope) => artifact_binary_stream_error(
+            value,
+            artifact_binary_patch_u32(
+                value.binary_writer,
+                scope.count_offset,
+                scope.count.get().to_u32(),
+            ),
         ),
-    )
+        None => (),
+    }
 }
 
 pub fn artifact_binary_collected_string_table(value: ArtifactJsonWriter) -> ArtifactBinaryStringTable {
@@ -184,10 +181,8 @@ pub fn artifact_binary_stream_finish(value: ArtifactJsonWriter) -> Result[bytes:
 }
 
 fn artifact_captured_push(writer: ArtifactJsonWriter, value: ArtifactValue) -> () {
-    if writer.captured_containers.is_empty() {
-        writer.captured_values.push(value)
-    } else {
-        match writer.captured_containers[writer.captured_containers.len() - 1] {
+    match writer.captured_containers.peek() {
+        Some(container) => match container {
             Object { fields, name } => {
                 match name.get() {
                     Some(name_value) => {
@@ -198,7 +193,8 @@ fn artifact_captured_push(writer: ArtifactJsonWriter, value: ArtifactValue) -> (
                 }
             },
             Array(values) => values.push(value),
-        }
+        },
+        None => writer.captured_values.push(value),
     }
 }
 
@@ -230,15 +226,19 @@ fn artifact_json_line(value: ArtifactJsonWriter) -> () {
 fn artifact_json_before_value(value: ArtifactJsonWriter) -> () {
     if value.after_name.get() {
         value.after_name.set(false)
-    } else if !value.first_values.is_empty() {
-        let index = value.first_values.len() - 1;
-        if value.first_values[index] {
-            value.first_values[index] = false;
-        } else {
-            value.builder.write_char(',')
-        };
-        artifact_json_line(value)
-    } else {}
+    } else {
+        match value.first_values.peek() {
+            Some(first) => {
+                if first.get() {
+                    first.set(false)
+                } else {
+                    value.builder.write_char(',')
+                };
+                artifact_json_line(value)
+            },
+            None => (),
+        }
+    }
 }
 
 fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: u8) -> () {
@@ -300,8 +300,7 @@ pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> () {
     } else {
         artifact_json_before_value(value);
         value.builder.write_char('{');
-        value.object_scopes.push(true);
-        value.first_values.push(true);
+        value.first_values.push(Ref::new(true));
         value.depth.set(value.depth.get() + 1)
     }
 }
@@ -310,16 +309,18 @@ pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_end_container(value)
     } else if value.capture {
-        match value.captured_containers.remove(value.captured_containers.len() - 1) {
-            Object { fields, .. } => {
+        match value.captured_containers.pop() {
+            Some(Object { fields, .. }) => {
                 artifact_captured_push(value, ArtifactValue::Object(fields))
             },
-            Array(_) => (),
+            Some(Array(_)) | None => (),
         }
     } else {
         value.depth.set(value.depth.get() - 1);
-        let first = value.first_values.remove(value.first_values.len() - 1);
-        let _ = value.object_scopes.remove(value.object_scopes.len() - 1);
+        let first = match value.first_values.pop() {
+            Some(value) => value.get(),
+            None => true,
+        };
         if !first {
             artifact_json_line(value)
         } else {};
@@ -335,8 +336,7 @@ pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> () {
     } else {
         artifact_json_before_value(value);
         value.builder.write_char('[');
-        value.object_scopes.push(false);
-        value.first_values.push(true);
+        value.first_values.push(Ref::new(true));
         value.depth.set(value.depth.get() + 1)
     }
 }
@@ -345,16 +345,18 @@ pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> () {
     if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_end_container(value)
     } else if value.capture {
-        match value.captured_containers.remove(value.captured_containers.len() - 1) {
-            Array(values) => {
+        match value.captured_containers.pop() {
+            Some(Array(values)) => {
                 artifact_captured_push(value, ArtifactValue::Array(values))
             },
-            Object { .. } => (),
+            Some(Object { .. }) | None => (),
         }
     } else {
         value.depth.set(value.depth.get() - 1);
-        let first = value.first_values.remove(value.first_values.len() - 1);
-        let _ = value.object_scopes.remove(value.object_scopes.len() - 1);
+        let first = match value.first_values.pop() {
+            Some(value) => value.get(),
+            None => true,
+        };
         if !first {
             artifact_json_line(value)
         } else {};
@@ -366,25 +368,29 @@ pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
     if value.binary_mode == 2 {
         artifact_binary_collect_string(value.binary_seen, value.binary_strings, name)
     } else if value.binary_mode == 3 {
-        let scope = value.binary_scopes[value.binary_scopes.len() - 1];
-        scope.count.set(scope.count.get() + 1);
+        match value.binary_scopes.peek() {
+            Some(scope) => scope.count.set(scope.count.get() + 1),
+            None => (),
+        };
         artifact_binary_stream_error(
             value,
             artifact_binary_encode_string_id(value.binary_writer, value.binary_table, name),
         )
     } else if value.capture {
-        match value.captured_containers[value.captured_containers.len() - 1] {
-            Object { name: captured, .. } => {
+        match value.captured_containers.peek() {
+            Some(Object { name: captured, .. }) => {
                 captured.set(Option::Some(name))
             },
-            Array(_) => (),
+            Some(Array(_)) | None => (),
         }
     } else {
-        let index = value.first_values.len() - 1;
-        if value.first_values[index] {
-            value.first_values[index] = false;
-        } else {
-            value.builder.write_char(',')
+        match value.first_values.peek() {
+            Some(first) => if first.get() {
+                first.set(false)
+            } else {
+                value.builder.write_char(',')
+            },
+            None => (),
         };
         artifact_json_line(value);
         artifact_json_write_quoted(value, name);
