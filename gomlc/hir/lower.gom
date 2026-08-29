@@ -39,7 +39,7 @@ struct LowerCtx {
     expr_counter: Ref[isize],
     diagnostics: Vec[Diagnostic],
     current_pattern_span: Ref[Option[ast::Span]],
-    lexical_scopes: Vec[LexicalScope],
+    lexical_scopes: collections::Stack[LexicalScope],
     closure_depth: Ref[isize],
 }
 
@@ -1058,11 +1058,7 @@ fn task_function(name: string, span: ast::Span) -> Expr {
 }
 
 fn current_lexical_scope(ctx: LowerCtx) -> Option[LexicalScope] {
-    if ctx.lexical_scopes.is_empty() {
-        Option::None
-    } else {
-        Option::Some(ctx.lexical_scopes[ctx.lexical_scopes.len() - 1])
-    }
+    ctx.lexical_scopes.peek()
 }
 
 fn lower_expr_value(
@@ -1797,7 +1793,7 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
         expr_counter: Ref::new(1),
         diagnostics: Vec::new(),
         current_pattern_span: Ref::new(Option::None),
-        lexical_scopes: Vec::new(),
+        lexical_scopes: collections::Stack::new(),
         closure_depth: Ref::new(0),
     }
 }
@@ -1831,7 +1827,7 @@ fn file_context(base: LowerCtx, resolved: ResolvedUses, diagnostics: Vec[Diagnos
         expr_counter: base.expr_counter,
         diagnostics,
         current_pattern_span: base.current_pattern_span,
-        lexical_scopes: Vec::new(),
+        lexical_scopes: collections::Stack::new(),
         closure_depth: Ref::new(0),
     }
 }
