@@ -94,11 +94,11 @@ fn quoted_values(value: string) -> Vec[string] {
     result
 }
 
-fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
+fn load_index(root: string) -> Result[collections::IndexMap[string, RegistryEntry], string] {
     let source = fs::read_file_structured(path::join(root, "index.toml")).map_err(
         |error| error.to_string(),
     )?;
-    let entries: Vec[RegistryEntry] = Vec::new();
+    let entries: collections::IndexMap[string, RegistryEntry] = collections::IndexMap::new();
     let mut current: Option[string] = Option::None;
     for original in text::lines(source) {
         let line = text::trim(original);
@@ -107,38 +107,47 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
             if values.len() != 1 {
                 return Result::Err("invalid registry module table " + line)
             } else {
-                current = Option::Some(values[0]);
-                entries.push(RegistryEntry { name: values[0], latest: "", versions: Vec::new() })
+                let name = values[0];
+                if entries.contains(name) {
+                    return Result::Err("duplicate registry module table " + name)
+                } else {};
+                current = Option::Some(name);
+                let _ = entries.insert(
+                    name,
+                    RegistryEntry { name, latest: "", versions: Vec::new() },
+                );
             }
         } else {
             match current {
-                Some(_) => if line.starts_with("latest") {
+                Some(name) => if line.starts_with("latest") {
                     let values = quoted_values(line);
                     if values.len() != 1 {
                         return Result::Err("invalid registry latest value")
                     } else {
-                        let index = entries.len() - 1;
-                        let entry = entries[index];
-                        entries.set(
-                            index,
+                        let Some(entry) = entries.get(name) else {
+                            return Result::Err("invalid registry module table " + name)
+                        };
+                        let _ = entries.insert(
+                            name,
                             RegistryEntry {
                                 name: entry.name,
                                 latest: values[0],
                                 versions: entry.versions,
                             },
-                        )
+                        );
                     }
                 } else if line.starts_with("versions") {
-                    let index = entries.len() - 1;
-                    let entry = entries[index];
-                    entries.set(
-                        index,
+                    let Some(entry) = entries.get(name) else {
+                        return Result::Err("invalid registry module table " + name)
+                    };
+                    let _ = entries.insert(
+                        name,
                         RegistryEntry {
                             name: entry.name,
                             latest: entry.latest,
                             versions: quoted_values(line),
                         },
-                    )
+                    );
                 } else {},
                 None => (),
             }
@@ -177,15 +186,6 @@ pub fn validate_coordinate(value: string) -> Result[(), string] {
     }
 }
 
-fn find_entry(entries: Vec[RegistryEntry], name: string) -> Option[RegistryEntry] {
-    for entry in entries {
-        if entry.name == name {
-            return Option::Some(entry)
-        } else {}
-    }
-    Option::None
-}
-
 fn module_directory_unchecked(root: string, name: string, version: string) -> string {
     let parts = text::split(name, "::");
     path::join(path::join(path::join(root, parts[0]), parts[1]), version)
@@ -200,7 +200,7 @@ pub fn module_directory(root: string, name: string, version: string) -> Result[s
 
 pub fn validate(root: string) -> Result[(), string] {
     let entries = load_index(root)?;
-    for entry in entries {
+    for entry in entries.values() {
         validate_coordinate(entry.name)?;
         let latest = parse_sem_version(entry.latest)?;
         let mut latest_matches = false;
@@ -230,7 +230,7 @@ pub fn validate(root: string) -> Result[(), string] {
 pub fn latest_version(root: string, name: string) -> Result[string, string] {
     validate_coordinate(name)?;
     let entries = load_index(root)?;
-    match find_entry(entries, name) {
+    match entries.get(name) {
         Some(entry) => match parse_sem_version(entry.latest) {
             Ok(_) => Result::Ok(entry.latest),
             Err(message) => Result::Err(message),
@@ -243,7 +243,7 @@ pub fn select_version(root: string, name: string, minimum: string) -> Result[str
     validate_coordinate(name)?;
     let minimum_value = parse_sem_version(minimum)?;
     let entries = load_index(root)?;
-    let Some(entry) = find_entry(entries, name) else {
+    let Some(entry) = entries.get(name) else {
         return Result::Err("module " + name + " not found in registry index")
     };
     let mut selected: Option[string] = Option::None;

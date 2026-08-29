@@ -5,6 +5,7 @@ use module::cst;
 use module::lexer;
 use module::resources;
 use module::tast;
+use std::collections;
 use std::fs;
 use std::path;
 use std::text;
@@ -1009,22 +1010,13 @@ fn local_visible_at(syntax: SyntaxIndex, span: ast::Span, offset: isize) -> bool
     }
 }
 
-fn local_completion_index(values: Vec[CompletionItem], label: string) -> Option[isize] {
-    for offset in 0..values.len() {
-        let index = values.len() - 1 - offset;
-        if values[index].label == label {
-            return Option::Some(index)
-        } else {}
-    }
-    Option::None
-}
-
-fn push_local_completion(values: Vec[CompletionItem], value: CompletionItem, prefix: string) -> () {
+fn push_local_completion(
+    values: collections::IndexMap[string, CompletionItem],
+    value: CompletionItem,
+    prefix: string,
+) -> () {
     if !label_matches(value.label, prefix) {} else {
-        match local_completion_index(values, value.label) {
-            Some(index) => values.set(index, value),
-            None => values.push(value),
-        }
+        let _ = values.insert(value.label, value);
     }
 }
 
@@ -1090,13 +1082,13 @@ fn append_prelude_scope_completions(result: Vec[CompletionItem], value: Analysis
 }
 
 fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[CompletionItem] {
-    let result: Vec[CompletionItem] = Vec::new();
+    let locals: collections::IndexMap[string, CompletionItem] = collections::IndexMap::new();
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
             match fact.span {
                 Some(span) => if local_visible_at(value.syntax, span, offset) {
                     push_local_completion(
-                        result,
+                        locals,
                         CompletionItem {
                             label: fact.local.hint,
                             detail: tast::diagnostic_type_text(fact.ty),
@@ -1109,6 +1101,7 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
             }
         } else {}
     }
+    let result = locals.values();
     for symbol in build_symbol_index(value).symbols {
         if immediate_package_member(symbol.qualified_name, value.package_name)
             && (symbol.package_name == value.package_name || symbol.public) {
