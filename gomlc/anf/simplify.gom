@@ -1,6 +1,7 @@
 package anf;
 
 use module::repr;
+use std::collections;
 use std::task;
 
 enum KnownValue {
@@ -91,7 +92,7 @@ fn constructors_equal(left: repr::Constructor, right: repr::Constructor) -> bool
         && optional_int_equal(left.tag, right.tag)
 }
 
-fn imms_stable(values: Vec[Imm], assigned: HashMap[string, ()]) -> bool {
+fn imms_stable(values: Vec[Imm], assigned: collections::HashSet[string]) -> bool {
     for value in values {
         match value {
             Var { name, ty: _ } => if assigned.contains(name) {
@@ -108,7 +109,7 @@ fn record_known_value(
     name: string,
     value: Value,
     ty: repr::Type,
-    assigned: HashMap[string, ()],
+    assigned: collections::HashSet[string],
 ) -> () {
     if assigned.contains(name) {
         return ()
@@ -245,16 +246,16 @@ fn simplify_known_value(value: Value, known: Vec[KnownBinding]) -> Value {
     }
 }
 
-fn collect_assigned_value(result: HashMap[string, ()], value: Value) -> () {
+fn collect_assigned_value(result: collections::HashSet[string], value: Value) -> () {
     match value {
         Assign { name, .. } => {
-            result[name] = ();
+            let _ = result.insert(name);
         },
         _ => (),
     }
 }
 
-fn collect_assigned_term(result: HashMap[string, ()], value: Term) -> () {
+fn collect_assigned_term(result: collections::HashSet[string], value: Term) -> () {
     match value {
         If { then_, else_, .. } => {
             collect_assigned_block(result, then_);
@@ -287,7 +288,7 @@ fn collect_assigned_term(result: HashMap[string, ()], value: Term) -> () {
     }
 }
 
-fn collect_assigned_block(result: HashMap[string, ()], value: Block) -> () {
+fn collect_assigned_block(result: collections::HashSet[string], value: Block) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => collect_assigned_value(result, value.value),
@@ -300,8 +301,8 @@ fn collect_assigned_block(result: HashMap[string, ()], value: Block) -> () {
     collect_assigned_term(result, value.term)
 }
 
-fn assigned_names(value: Block) -> HashMap[string, ()] {
-    let result: HashMap[string, ()] = HashMap::new();
+fn assigned_names(value: Block) -> collections::HashSet[string] {
+    let result: collections::HashSet[string] = collections::HashSet::new();
     collect_assigned_block(result, value);
     result
 }
@@ -433,7 +434,11 @@ fn select_known_match_arm(
     }
 }
 
-fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[string, ()]) -> Block {
+fn simplify_known_term(
+    value: Term,
+    known: Vec[KnownBinding],
+    assigned: collections::HashSet[string],
+) -> Block {
     match value {
         Return(value) => Block {
             binds: Vec::new(),
@@ -567,7 +572,7 @@ fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[
 fn simplify_known_block_with(
     value: Block,
     parent_known: Vec[KnownBinding],
-    assigned: HashMap[string, ()],
+    assigned: collections::HashSet[string],
 ) -> Block {
     let known = copy_known_bindings(parent_known);
     let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());

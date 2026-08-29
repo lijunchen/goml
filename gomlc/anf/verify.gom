@@ -2,6 +2,7 @@ package anf;
 
 use module::ast;
 use module::repr;
+use std::collections;
 use std::text;
 
 struct JoinSignature {
@@ -11,7 +12,7 @@ struct JoinSignature {
 }
 
 struct VerifyState {
-    join_names: HashMap[string, ()],
+    join_names: collections::HashSet[string],
     closures: HashMap[string, repr::ClosureDef],
     structs: HashMap[string, repr::StructDef],
     enums: HashMap[string, repr::EnumDef],
@@ -171,11 +172,10 @@ fn verify_constructor(
 }
 
 fn verify_join_name(state: VerifyState, name: string) -> Result[(), string] {
-    if state.join_names.contains(name) {
-        Result::Err("duplicate join " + name)
-    } else {
-        state.join_names[name] = ();
+    if state.join_names.insert(name) {
         Result::Ok(())
+    } else {
+        Result::Err("duplicate join " + name)
     }
 }
 
@@ -639,7 +639,7 @@ fn verify_function(
         },
         None => (),
     };
-    let state = VerifyState { join_names: HashMap::new(), closures, structs, enums };
+    let state = VerifyState { join_names: collections::HashSet::new(), closures, structs, enums };
     match verify_block(state, value.body, value.ret_ty, Vec::new()) {
         Ok(_) => Result::Ok(()),
         Err(message) => Result::Err("in function " + value.name + ": " + message),
@@ -649,12 +649,11 @@ fn verify_function(
 pub fn verify(value: File) -> Result[(), string] {
     let structs: HashMap[string, repr::StructDef] = HashMap::new();
     let enums: HashMap[string, repr::EnumDef] = HashMap::new();
-    let type_names: HashMap[string, ()] = HashMap::new();
+    let type_names: collections::HashSet[string] = collections::HashSet::new();
     for definition in value.structs {
-        if type_names.contains(definition.name) {
+        if !type_names.insert(definition.name) {
             return Result::Err("duplicate representation type " + definition.name)
         } else {
-            type_names[definition.name] = ();
             structs[definition.name] = definition;
         }
         for field in definition.fields {
@@ -662,10 +661,9 @@ pub fn verify(value: File) -> Result[(), string] {
         }
     }
     for definition in value.enums {
-        if type_names.contains(definition.name) {
+        if !type_names.insert(definition.name) {
             return Result::Err("duplicate representation type " + definition.name)
         } else {
-            type_names[definition.name] = ();
             enums[definition.name] = definition;
         }
         for variant in definition.variants {
@@ -693,14 +691,13 @@ pub fn verify(value: File) -> Result[(), string] {
         }
     }
     let closures: HashMap[string, repr::ClosureDef] = HashMap::new();
-    let environments: HashMap[string, ()] = HashMap::new();
+    let environments: collections::HashSet[string] = collections::HashSet::new();
     for definition in value.closure_defs {
-        if environments.contains(definition.environment) {
+        if !environments.insert(definition.environment) {
             return Result::Err("duplicate closure environment " + definition.environment)
         } else if closures.contains(definition.apply) {
             return Result::Err("duplicate closure apply function " + definition.apply)
         } else {
-            environments[definition.environment] = ();
             closures[definition.apply] = definition;
         }
     }

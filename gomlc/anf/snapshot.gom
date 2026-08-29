@@ -2,19 +2,20 @@ package anf;
 
 use module::repr;
 use module::snapshot_names;
+use std::collections;
 
 struct SnapshotNames {
     locals: snapshot_names::Names,
     joins: snapshot_names::Names,
-    declared_locals: HashMap[string, ()],
+    declared_locals: collections::HashSet[string],
     canonicalize_all_locals: bool,
 }
 
-fn collect_local(values: HashMap[string, ()], name: string) -> () {
-    values[name] = ();
+fn collect_local(values: collections::HashSet[string], name: string) -> () {
+    let _ = values.insert(name);
 }
 
-fn collect_term_locals(values: HashMap[string, ()], value: Term) -> () {
+fn collect_term_locals(values: collections::HashSet[string], value: Term) -> () {
     match value {
         If { cond: _, then_, else_, ret_ty: _ } => {
             collect_block_locals(values, then_);
@@ -48,7 +49,7 @@ fn collect_term_locals(values: HashMap[string, ()], value: Term) -> () {
     }
 }
 
-fn collect_block_locals(values: HashMap[string, ()], value: Block) -> () {
+fn collect_block_locals(values: collections::HashSet[string], value: Block) -> () {
     for binding in value.binds {
         match binding {
             Let(value) => collect_local(values, value.name),
@@ -70,7 +71,7 @@ fn collect_block_locals(values: HashMap[string, ()], value: Block) -> () {
 }
 
 fn snapshot_names_new(value: Function, canonicalize_all_locals: bool, reserved: Vec[string]) -> SnapshotNames {
-    let declared_locals: HashMap[string, ()] = HashMap::new();
+    let declared_locals: collections::HashSet[string] = collections::HashSet::new();
     for param in value.params {
         collect_local(declared_locals, param.0)
     }
