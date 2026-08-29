@@ -2,6 +2,7 @@ package ctfe;
 
 use module::ctir;
 use module::derive;
+use std::collections;
 
 struct VerifyContext {
     module: ctir::CtModule,
@@ -1041,16 +1042,14 @@ fn verify_function(
     } else if value.local_count != value.local_types.len() {
         return Result::Err("CTIR function local type count does not match local count")
     } else {};
-    let seen: Vec[isize] = Vec::new();
+    let seen: collections::HashSet[isize] = collections::HashSet::new();
     for index in 0..value.parameter_slots.len() {
         let slot = value.parameter_slots[index];
-        if slot < 0 || slot >= value.local_count || seen.contains(slot) {
+        if slot < 0 || slot >= value.local_count || !seen.insert(slot) {
             return Result::Err("invalid CTIR parameter slot")
         } else if !types_equal(value.local_types[slot], value.parameter_types[index]) {
             return Result::Err("CTIR parameter local type mismatch")
-        } else {
-            seen.push(slot)
-        }
+        } else {}
     }
     for ty in value.parameter_types {
         verify_type(ty)?
@@ -1077,15 +1076,14 @@ fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::Ct
     (),
     string,
 ] {
-    let names: Vec[string] = Vec::from_array([module.package_name]);
+    let names: collections::HashSet[string] = collections::HashSet::new();
+    let _ = names.insert(module.package_name);
     for dependency in dependencies {
-        if names.contains(dependency.package_name) {
+        if !names.insert(dependency.package_name) {
             return Result::Err("duplicate CTIR module package `" + dependency.package_name + "`")
         } else if dependency.target.int_width != module.target.int_width {
             return Result::Err("CTIR target mismatch")
-        } else {
-            names.push(dependency.package_name)
-        }
+        } else {}
     }
     Result::Ok(())
 }
@@ -1104,32 +1102,26 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     verify_unique_module_names(module, dependencies)?;
     let value_nodes = Ref::new(0);
     let value_bytes = Ref::new(0);
-    let ids: Vec[isize] = Vec::new();
+    let ids: collections::HashSet[isize] = collections::HashSet::new();
     for function in module.functions {
-        if function.id < 0 || ids.contains(function.id) {
+        if function.id < 0 || !ids.insert(function.id) {
             return Result::Err("duplicate or negative CTIR function id")
-        } else {
-            ids.push(function.id)
-        }
+        } else {}
         verify_function(module, dependencies, function, value_nodes, value_bytes)?
     }
-    let entry_names: Vec[string] = Vec::new();
+    let entry_names: collections::HashSet[string] = collections::HashSet::new();
     for entry in module.entries {
-        if entry.name == "" || entry_names.contains(entry.name)
+        if entry.name == "" || !entry_names.insert(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
             return Result::Err("invalid CTIR entry")
-        } else {
-            entry_names.push(entry.name)
-        }
+        } else {}
     }
-    let derive_export_names: Vec[string] = Vec::new();
+    let derive_export_names: collections::HashSet[string] = collections::HashSet::new();
     for entry in module.derive_entries {
-        if entry.name == "" || entry_names.contains(entry.name)
+        if entry.name == "" || !entry_names.insert(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
             return Result::Err("invalid CTIR derive entry")
-        } else {
-            entry_names.push(entry.name)
-        };
+        } else {};
         let Some(function) = verify_find_function(module, entry.function_id) else {
             return Result::Err("invalid CTIR derive entry")
         };
@@ -1138,11 +1130,9 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         } else if entry.public {
             let export_name = derive_export_name(entry);
             if export_name == "" || export_name.contains("::")
-                || derive_export_names.contains(export_name) {
+                || !derive_export_names.insert(export_name) {
                 return Result::Err("invalid or duplicate CTIR derive export name")
-            } else {
-                derive_export_names.push(export_name)
-            };
+            } else {};
             if function.parameter_types.len() != 1
                 || !types_equal(function.parameter_types[0], ctir::CtType::Meta("DeriveInput"))
                 || !types_equal(function.return_type, ctir::CtType::Meta("DeriveOutput")) {
@@ -1150,14 +1140,12 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
             } else {}
         } else {}
     }
-    let site_ids: Vec[isize] = Vec::new();
+    let site_ids: collections::HashSet[isize] = collections::HashSet::new();
     for site in module.sites {
-        if site.id < 0 || site_ids.contains(site.id) || site.local_count < 0
+        if site.id < 0 || !site_ids.insert(site.id) || site.local_count < 0
             || site.local_count != site.local_types.len() {
             return Result::Err("invalid CTIR site")
-        } else {
-            site_ids.push(site.id)
-        }
+        } else {}
         let ctx = VerifyContext {
             module,
             dependencies,
@@ -1171,13 +1159,11 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         verify_origin(ctx, site.origin)?;
         verify_expr(ctx, site.expression)?
     }
-    let constant_names: Vec[string] = Vec::new();
+    let constant_names: collections::HashSet[string] = collections::HashSet::new();
     for constant in module.constants {
-        if constant.name == "" || constant_names.contains(constant.name) {
+        if constant.name == "" || !constant_names.insert(constant.name) {
             return Result::Err("duplicate or empty CTIR constant")
-        } else {
-            constant_names.push(constant.name)
-        }
+        } else {}
         verify_type(value_type(constant.value))?;
         verify_value_limits(constant.value, value_nodes, value_bytes)?
     }

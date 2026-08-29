@@ -3,6 +3,7 @@ package tast;
 use module::ast;
 use module::ctir;
 use module::hir;
+use std::collections;
 use std::text;
 
 fn function_context(
@@ -883,11 +884,15 @@ fn checked_constant_by_name(values: Vec[Constant], name: string) -> Option[Const
     Option::None
 }
 
-fn constant_reaches(values: Vec[Constant], current: string, target: string, visited: Vec[string]) -> bool {
-    if visited.contains(current) {
+fn constant_reaches(
+    values: Vec[Constant],
+    current: string,
+    target: string,
+    visited: collections::HashSet[string],
+) -> bool {
+    if !visited.insert(current) {
         false
     } else {
-        visited.push(current);
         match checked_constant_by_name(values, current) {
             Some(value) => {
                 let references: Vec[string] = Vec::new();
@@ -906,7 +911,7 @@ fn constant_reaches(values: Vec[Constant], current: string, target: string, visi
 
 fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> () {
     for value in values {
-        if constant_reaches(values, value.name, value.name, Vec::new()) {
+        if constant_reaches(values, value.name, value.name, collections::HashSet::new()) {
             push_global_diagnostic(ctx, "Cyclic constant " + short_name(value.name))
         } else {}
     }
@@ -1365,22 +1370,20 @@ fn validate_trait_associated_types(
     for_type: Type,
     associated_types: Vec[(string, Type)],
 ) -> () {
-    let seen: Vec[string] = Vec::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     for associated in associated_types {
         if !contains_associated_type(info.associated_types, associated.0) {
             push_diagnostic(
                 ctx,
                 "Associated type " + associated.0 + " is not declared in trait " + reference.name,
             )
-        } else if seen.contains(associated.0) {
+        } else if !seen.insert(associated.0) {
             push_diagnostic(
                 ctx,
                 "Associated type " + associated.0 + " is bound multiple times in impl of trait "
                     + reference.name,
             )
-        } else {
-            seen.push(associated.0)
-        }
+        } else {}
     }
     for expected in info.associated_types {
         if !seen.contains(expected.name) {
@@ -1832,10 +1835,10 @@ fn validate_trait_impl(
                     }
                 } else {}
             }
-            let seen: Vec[string] = Vec::new();
+            let seen: collections::HashSet[string] = collections::HashSet::new();
             for method in methods {
                 match find_trait_method(info, method.name) {
-                    Some(expected) => if seen.contains(method.name) {
+                    Some(expected) => if !seen.insert(method.name) {
                         push_diagnostic(
                             ctx,
                             "Method " + method.name
@@ -1843,7 +1846,6 @@ fn validate_trait_impl(
                                 + reference.name,
                         )
                     } else {
-                        seen.push(method.name);
                         validate_method_signature(
                             ctx,
                             reference.name,
@@ -1972,17 +1974,15 @@ fn default_trait_method(
 }
 
 fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) -> () {
-    let seen: Vec[string] = Vec::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     for method in methods {
-        if seen.contains(method.name) {
+        if !seen.insert(method.name) {
             push_diagnostic(
                 ctx,
                 "Method " + method.name + " implemented multiple times in impl for "
                     + type_text(for_type),
             )
-        } else {
-            seen.push(method.name)
-        }
+        } else {}
     }
 }
 
@@ -2243,47 +2243,41 @@ fn push_declaration_diagnostic(ctx: Checker, message: string) -> () {
 }
 
 fn validate_type_parameter_names(ctx: Checker, values: Vec[string]) -> () {
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     for name in values {
-        if names.contains(name) {
+        if !names.insert(name) {
             push_declaration_diagnostic(
                 ctx,
                 "type parameter " + name + " is defined multiple times",
             )
-        } else {
-            names.push(name)
-        }
+        } else {}
     }
 }
 
 fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> () {
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     for param in value.params {
         let name = param.0.hint;
-        if names.contains(name) {
+        if !names.insert(name) {
             push_declaration_diagnostic(ctx, "parameter " + name + " is defined multiple times")
-        } else {
-            names.push(name)
-        }
+        } else {}
     }
 }
 
 fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> () {
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     for variant in value.variants {
-        if names.contains(variant.name) {
+        if !names.insert(variant.name) {
             push_declaration_diagnostic(
                 ctx,
                 "variant " + variant.name + " is defined multiple times in enum " + value.name,
             )
-        } else {
-            names.push(variant.name)
-        };
+        } else {};
         match variant.fields {
             Struct(fields) => {
-                let field_names: Vec[string] = Vec::new();
+                let field_names: collections::HashSet[string] = collections::HashSet::new();
                 for field in fields {
-                    if field_names.contains(field.0) {
+                    if !field_names.insert(field.0) {
                         push_declaration_diagnostic(
                             ctx,
                             "field " + field.0 + " is defined multiple times in variant "
@@ -2291,9 +2285,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> () {
                                 + "::"
                                 + variant.name,
                         )
-                    } else {
-                        field_names.push(field.0)
-                    }
+                    } else {}
                 }
             },
             _ => (),
@@ -2302,42 +2294,36 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> () {
 }
 
 fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> () {
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     for field in value.fields {
-        if names.contains(field.0) {
+        if !names.insert(field.0) {
             push_declaration_diagnostic(
                 ctx,
                 "field " + field.0 + " is defined multiple times in struct " + value.name,
             )
-        } else {
-            names.push(field.0)
-        }
+        } else {}
     }
 }
 
 fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> () {
-    let methods: Vec[string] = Vec::new();
+    let methods: collections::HashSet[string] = collections::HashSet::new();
     for method in value.method_sigs {
-        if methods.contains(method.name) {
+        if !methods.insert(method.name) {
             push_declaration_diagnostic(
                 ctx,
                 "method " + method.name + " is defined multiple times in trait " + value.name,
             )
-        } else {
-            methods.push(method.name)
-        }
+        } else {}
     }
-    let associated_types: Vec[string] = Vec::new();
+    let associated_types: collections::HashSet[string] = collections::HashSet::new();
     for associated in value.associated_types {
-        if associated_types.contains(associated.name) {
+        if !associated_types.insert(associated.name) {
             push_declaration_diagnostic(
                 ctx,
                 "associated type " + associated.name + " is defined multiple times in trait "
                     + value.name,
             )
-        } else {
-            associated_types.push(associated.name)
-        }
+        } else {}
     }
 }
 
@@ -3849,7 +3835,7 @@ fn check_package_files_for_link_with_environments_options(
     };
     for value in constants {
         let message = "Cyclic constant " + short_name(value.name);
-        if constant_reaches(constants, value.name, value.name, Vec::new())
+        if constant_reaches(constants, value.name, value.name, collections::HashSet::new())
             && !diagnostics_have_message(diagnostics, message) {
             diagnostics.push(new_diagnostic(TYPER_STAGE, message, diagnostic_source, Option::None))
         } else {}

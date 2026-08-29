@@ -5,6 +5,7 @@ use module::cst;
 use module::ctfe;
 use module::ctir;
 use module::derive as derive_runtime;
+use std::collections;
 use std::text;
 
 fn dummy_span() -> ast::Span {
@@ -199,13 +200,11 @@ fn resolve_derive_export_target(
     display_name: string,
 ) -> Result[(string, string), string] {
     let mut current = package_name + "::" + export_name;
-    let seen: Vec[string] = Vec::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     while true {
-        if seen.contains(current) {
+        if !seen.insert(current) {
             return Result::Err("cyclic derive re-export `" + display_name + "`")
-        } else {
-            seen.push(current)
-        };
+        } else {};
         let targets: Vec[string] = Vec::new();
         for value in environment.reexports {
             if value.0 == current {

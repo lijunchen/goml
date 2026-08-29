@@ -6,6 +6,7 @@ use module::ctir;
 use module::hir;
 use module::parser;
 use module::tast;
+use std::collections;
 
 pub struct Analysis {
     pub source_path: string,
@@ -251,7 +252,7 @@ fn collect_dependency(
     module_path: string,
     package_name: string,
     overrides: Vec[SourceOverride],
-    visited: Vec[string],
+    visited: collections::HashSet[string],
     dependencies: Vec[hir::File],
     diagnostics: Vec[tast::Diagnostic],
     all_sources: Vec[SourceFile],
@@ -261,8 +262,7 @@ fn collect_dependency(
     derive_modules: Vec[ctir::CtModule],
     derive_reexports: Vec[(string, string)],
 ) -> () {
-    if visited.contains(package_name) {} else {
-        visited.push(package_name);
+    if !visited.insert(package_name) {} else {
         match dependency_sources(module_root, module_path, package_name, overrides) {
             Ok(sources) => {
                 for source in sources {
@@ -400,11 +400,11 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     };
     let derive_reexports: Vec[(string, string)] = Vec::new();
     let discovery = lower_package(value, builtin_derive, Vec::new(), derive_reexports);
-    let visited: Vec[string] = Vec::new();
+    let visited: collections::HashSet[string] = collections::HashSet::new();
     let derive_modules: Vec[ctir::CtModule] = Vec::new();
-    visited.push(discovery.name);
-    visited.push("builtin");
-    visited.push("prelude");
+    let _ = visited.insert(discovery.name);
+    let _ = visited.insert("builtin");
+    let _ = visited.insert("prelude");
     for file in discovery.files {
         for import in file.import_aliases {
             collect_dependency(
