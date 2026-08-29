@@ -2229,15 +2229,6 @@ fn enum_option_variants(builtin: BuiltinContract, name: string, variants: Vec[En
     }
 }
 
-fn declaration_name_index(values: Vec[string], expected: string) -> isize {
-    for index in 0..values.len() {
-        if values[index] == expected {
-            return index
-        } else {}
-    };
-    -1
-}
-
 fn push_declaration_diagnostic(ctx: Checker, message: string) -> () {
     push_diagnostic_at(ctx, message, Option::None)
 }
@@ -2359,10 +2350,8 @@ fn mixed_value_declaration_message(name: string) -> string {
 }
 
 fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> () {
-    let nominal_names: Vec[string] = Vec::new();
-    let nominal_kinds: Vec[isize] = Vec::new();
-    let function_names: Vec[string] = Vec::new();
-    let function_kinds: Vec[isize] = Vec::new();
+    let nominal_kinds: collections::IndexMap[string, isize] = collections::IndexMap::new();
+    let function_kinds: collections::IndexMap[string, isize] = collections::IndexMap::new();
     for item in value.items {
         let nominal = match item {
             EnumDef(definition) => Option::Some((definition.name, 1)),
@@ -2371,12 +2360,8 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> () {
             _ => Option::None,
         };
         match nominal {
-            Some(value) => {
-                let index = declaration_name_index(nominal_names, value.0);
-                if index < 0 {
-                    nominal_names.push(value.0);
-                    nominal_kinds.push(value.1)
-                } else if nominal_kinds[index] == value.1 {
+            Some(value) => match nominal_kinds.get(value.0) {
+                Some(previous) => if previous == value.1 {
                     push_declaration_diagnostic(
                         ctx,
                         (if value.1 == 1 {
@@ -2392,9 +2377,12 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> () {
                 } else {
                     push_declaration_diagnostic(
                         ctx,
-                        mixed_nominal_declaration_message(value.0, nominal_kinds[index], value.1),
+                        mixed_nominal_declaration_message(value.0, previous, value.1),
                     )
-                }
+                },
+                None => {
+                    let _ = nominal_kinds.insert(value.0, value.1);
+                },
             },
             None => (),
         };
@@ -2406,19 +2394,18 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> () {
             _ => Option::None,
         };
         match function_name {
-            Some(value) => {
-                let index = declaration_name_index(function_names, value.0);
-                if index < 0 {
-                    function_names.push(value.0);
-                    function_kinds.push(value.1)
-                } else if function_kinds[index] == value.1 {
+            Some(value) => match function_kinds.get(value.0) {
+                Some(previous) => if previous == value.1 {
                     push_declaration_diagnostic(
                         ctx,
                         value_kind_name(value.1) + " " + value.0 + " is defined multiple times",
                     )
                 } else {
                     push_declaration_diagnostic(ctx, mixed_value_declaration_message(value.0))
-                }
+                },
+                None => {
+                    let _ = function_kinds.insert(value.0, value.1);
+                },
             },
             None => (),
         }
@@ -2479,15 +2466,11 @@ fn validate_cross_file_declaration_names(
     for file in package_files {
         files.push(file)
     }
-    let nominal_names: Vec[string] = Vec::new();
-    let nominal_kinds: Vec[isize] = Vec::new();
-    let function_names: Vec[string] = Vec::new();
-    let function_kinds: Vec[isize] = Vec::new();
+    let nominal_kinds: collections::IndexMap[string, isize] = collections::IndexMap::new();
+    let function_kinds: collections::IndexMap[string, isize] = collections::IndexMap::new();
     for file in files {
-        let local_nominal_names: Vec[string] = Vec::new();
-        let local_nominal_kinds: Vec[isize] = Vec::new();
-        let local_function_names: Vec[string] = Vec::new();
-        let local_function_kinds: Vec[isize] = Vec::new();
+        let local_nominal_kinds: collections::IndexMap[string, isize] = collections::IndexMap::new();
+        let local_function_kinds: collections::IndexMap[string, isize] = collections::IndexMap::new();
         for item in file.items {
             let nominal = match item {
                 EnumDef(definition) => Option::Some((definition.name, 1)),
@@ -2496,9 +2479,8 @@ fn validate_cross_file_declaration_names(
                 _ => Option::None,
             };
             match nominal {
-                Some(value) => if !local_nominal_names.contains(value.0) {
-                    local_nominal_names.push(value.0);
-                    local_nominal_kinds.push(value.1)
+                Some(value) => if !local_nominal_kinds.contains(value.0) {
+                    let _ = local_nominal_kinds.insert(value.0, value.1);
                 } else {},
                 None => (),
             };
@@ -2509,54 +2491,51 @@ fn validate_cross_file_declaration_names(
                 _ => Option::None,
             };
             match function_name {
-                Some(value) => if !local_function_names.contains(value.0) {
-                    local_function_names.push(value.0);
-                    local_function_kinds.push(value.1)
+                Some(value) => if !local_function_kinds.contains(value.0) {
+                    let _ = local_function_kinds.insert(value.0, value.1);
                 } else {},
                 None => (),
             }
         }
-        for index in 0..local_nominal_names.len() {
-            let name = local_nominal_names[index];
-            let kind = local_nominal_kinds[index];
-            let previous = declaration_name_index(nominal_names, name);
-            if previous < 0 {
-                nominal_names.push(name);
-                nominal_kinds.push(kind)
-            } else if nominal_kinds[previous] == kind {
-                push_global_diagnostic(
-                    ctx,
-                    (if kind == 1 {
-                        "enum "
-                    } else if kind == 2 {
-                        "struct "
-                    } else {
-                        "type alias "
-                    })
-                        + name
-                        + " is defined multiple times",
-                )
-            } else {
-                push_global_diagnostic(
-                    ctx,
-                    mixed_nominal_declaration_message(name, nominal_kinds[previous], kind),
-                )
+        for (name, kind) in local_nominal_kinds {
+            match nominal_kinds.get(name) {
+                Some(previous) => if previous == kind {
+                    push_global_diagnostic(
+                        ctx,
+                        (if kind == 1 {
+                            "enum "
+                        } else if kind == 2 {
+                            "struct "
+                        } else {
+                            "type alias "
+                        })
+                            + name
+                            + " is defined multiple times",
+                    )
+                } else {
+                    push_global_diagnostic(
+                        ctx,
+                        mixed_nominal_declaration_message(name, previous, kind),
+                    )
+                },
+                None => {
+                    let _ = nominal_kinds.insert(name, kind);
+                },
             }
         }
-        for index in 0..local_function_names.len() {
-            let name = local_function_names[index];
-            let kind = local_function_kinds[index];
-            let previous = declaration_name_index(function_names, name);
-            if previous < 0 {
-                function_names.push(name);
-                function_kinds.push(kind)
-            } else if function_kinds[previous] == kind {
-                push_global_diagnostic(
-                    ctx,
-                    value_kind_name(kind) + " " + name + " is defined multiple times",
-                )
-            } else {
-                push_global_diagnostic(ctx, mixed_value_declaration_message(name))
+        for (name, kind) in local_function_kinds {
+            match function_kinds.get(name) {
+                Some(previous) => if previous == kind {
+                    push_global_diagnostic(
+                        ctx,
+                        value_kind_name(kind) + " " + name + " is defined multiple times",
+                    )
+                } else {
+                    push_global_diagnostic(ctx, mixed_value_declaration_message(name))
+                },
+                None => {
+                    let _ = function_kinds.insert(name, kind);
+                },
             }
         }
     }
