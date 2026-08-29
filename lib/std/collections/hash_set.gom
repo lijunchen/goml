@@ -28,20 +28,16 @@ impl[K: Eq + Hash] HashSet[K] {
     }
 
     pub fn insert(self: HashSet[K], value: K) -> bool {
-        if self.entries.contains(value) {
-            false
-        } else {
-            self.entries[value] = ();
-            true
+        match self.entries.insert(value, ()) {
+            Some(_) => false,
+            None => true,
         }
     }
 
     pub fn remove(self: HashSet[K], value: K) -> bool {
-        if self.entries.contains(value) {
-            self.entries.remove(value);
-            true
-        } else {
-            false
+        match self.entries.remove_value(value) {
+            Some(_) => true,
+            None => false,
         }
     }
 
