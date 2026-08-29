@@ -293,13 +293,13 @@ impl[K: cmp::Ord, V] BTreeMap[K, V] {
                 let result = btree_remove_from_node(root, key);
                 if result.is_some() {
                     self.len.set(self.len.get() - 1);
-                    if root.keys.is_empty() {
-                        if root.leaf {
-                            self.root.set(Option::None)
-                        } else {
-                            self.root.set(Option::Some(root.children[0]))
-                        }
-                    } else {}
+                } else {};
+                if root.keys.is_empty() {
+                    if root.leaf {
+                        self.root.set(Option::None)
+                    } else {
+                        self.root.set(Option::Some(root.children[0]))
+                    }
                 } else {};
                 result
             },
