@@ -5,22 +5,23 @@ use module::ast;
 use module::resources;
 use module::repr;
 use module::tast;
-use std::task;
+use std::collections;
 use std::num;
+use std::task;
 
 pub struct FunctionNames {
     pub by_source: HashMap[string, string],
-    pub reserved: HashMap[string, ()],
+    pub reserved: collections::HashSet[string],
     pub variant_names: HashMap[string, string],
 }
 
 struct LowerEnv {
     builtin: tast::BuiltinContract,
     joins: Vec[anf::JoinBind],
-    constant_names: HashMap[string, ()],
-    static_names: HashMap[string, ()],
-    top_level_names: HashMap[string, ()],
-    local_names: HashMap[string, ()],
+    constant_names: collections::HashSet[string],
+    static_names: collections::HashSet[string],
+    top_level_names: collections::HashSet[string],
+    local_names: collections::HashSet[string],
     collection_array_consumers: HashMap[string, anf::Value],
     emitted_loop_labels: Vec[string],
     active_loop_labels: Vec[(string, string)],
@@ -76,14 +77,14 @@ fn function_name(value: string) -> string {
 fn new_function_names() -> FunctionNames {
     FunctionNames {
         by_source: HashMap::new(),
-        reserved: HashMap::new(),
+        reserved: collections::HashSet::new(),
         variant_names: HashMap::new(),
     }
 }
 
 fn add_function_name(values: FunctionNames, source: string, generated: string) -> () {
     values.by_source[source] = generated;
-    values.reserved[generated] = ();
+    let _ = values.reserved.insert(generated);
 }
 
 fn mapped_function_name(values: FunctionNames, value: string) -> Option[string] {
@@ -102,27 +103,27 @@ fn function_type_names(
     structs: Vec[repr::StructDef],
     enums: Vec[repr::EnumDef],
     instances: Vec[repr::TypeInstance],
-) -> HashMap[string, ()] {
-    let result: HashMap[string, ()] = HashMap::new();
+) -> collections::HashSet[string] {
+    let result: collections::HashSet[string] = collections::HashSet::new();
     for definition in structs {
         let name = go_user_type_name(definition.name);
-        result[name] = ();
-        function_names.reserved[name] = ();
+        let _ = result.insert(name);
+        let _ = function_names.reserved.insert(name);
     }
     for definition in enums {
         let name = go_user_type_name(definition.name);
-        result[name] = ();
-        function_names.reserved[name] = ();
+        let _ = result.insert(name);
+        let _ = function_names.reserved.insert(name);
     }
     for instance in instances {
         let name = go_user_type_name(instance.name);
-        result[name] = ();
-        function_names.reserved[name] = ();
+        let _ = result.insert(name);
+        let _ = function_names.reserved.insert(name);
     }
     result
 }
 
-fn resolve_function_name(value: string, type_names: HashMap[string, ()]) -> string {
+fn resolve_function_name(value: string, type_names: collections::HashSet[string]) -> string {
     if value == "main" {
         "main"
     } else {
@@ -225,10 +226,10 @@ fn build_function_names(
     result
 }
 
-fn build_static_names(values: Vec[repr::Static]) -> HashMap[string, ()] {
-    let result: HashMap[string, ()] = HashMap::new();
+fn build_static_names(values: Vec[repr::Static]) -> collections::HashSet[string] {
+    let result: collections::HashSet[string] = collections::HashSet::new();
     for value in values {
-        result[value.name] = ();
+        let _ = result.insert(value.name);
     }
     result
 }
@@ -241,44 +242,48 @@ fn build_top_level_names(
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
-) -> HashMap[string, ()] {
-    let result: HashMap[string, ()] = HashMap::new();
-    result["main"] = ();
+) -> collections::HashSet[string] {
+    let result: collections::HashSet[string] = collections::HashSet::new();
+    let _ = result.insert("main");
     for function in functions {
-        result[match mapped_function_name(function_names, function.name) {
-            Some(name) => name,
-            None => function_name(function.name),
-        }] = ();
+        let _ = result.insert(
+            match mapped_function_name(function_names, function.name) {
+                Some(name) => name,
+                None => function_name(function.name),
+            },
+        );
     }
     for value in constants {
-        result[go_local_ident(value.name)] = ();
+        let _ = result.insert(go_local_ident(value.name));
     }
     for value in statics {
-        result[go_local_ident(value.name)] = ();
+        let _ = result.insert(go_local_ident(value.name));
     }
     for definition in structs {
-        result[go_user_type_name(definition.name)] = ();
+        let _ = result.insert(go_user_type_name(definition.name));
     }
     for definition in enums {
-        result[go_user_type_name(definition.name)] = ();
+        let _ = result.insert(go_user_type_name(definition.name));
         for variant in definition.variants {
-            result[variant_go_name(
-                definition.name,
-                variant.name,
-                enums,
-                structs,
-                instances,
-                function_names,
-            )] = ();
+            let _ = result.insert(
+                variant_go_name(
+                    definition.name,
+                    variant.name,
+                    enums,
+                    structs,
+                    instances,
+                    function_names,
+                ),
+            );
         }
     }
     for instance in instances {
-        result[go_user_type_name(instance.name)] = ();
+        let _ = result.insert(go_user_type_name(instance.name));
     }
     result
 }
 
-fn protect_local_ident(top_level_names: HashMap[string, ()], candidate: string) -> string {
+fn protect_local_ident(top_level_names: collections::HashSet[string], candidate: string) -> string {
     if top_level_names.contains(candidate) {
         go_generated_ident("_goml_local_" + candidate)
     } else {
@@ -286,11 +291,15 @@ fn protect_local_ident(top_level_names: HashMap[string, ()], candidate: string) 
     }
 }
 
-fn local_ident(top_level_names: HashMap[string, ()], value: string) -> string {
+fn local_ident(top_level_names: collections::HashSet[string], value: string) -> string {
     protect_local_ident(top_level_names, go_local_ident(value))
 }
 
-fn local_ident_with_suffix(top_level_names: HashMap[string, ()], value: string, suffix: string) -> string {
+fn local_ident_with_suffix(
+    top_level_names: collections::HashSet[string],
+    value: string,
+    suffix: string,
+) -> string {
     protect_local_ident(top_level_names, go_local_ident(value) + suffix)
 }
 
@@ -302,7 +311,7 @@ fn env_local_ident_with_suffix(env: LowerEnv, value: string, suffix: string) -> 
     local_ident_with_suffix(env.top_level_names, value, suffix)
 }
 
-fn collect_local_term(names: HashMap[string, ()], value: anf::Term) -> () {
+fn collect_local_term(names: collections::HashSet[string], value: anf::Term) -> () {
     match value {
         If { then_, else_, .. } => {
             collect_local_block(names, then_);
@@ -321,7 +330,7 @@ fn collect_local_term(names: HashMap[string, ()], value: anf::Term) -> () {
             for arm in arms {
                 match arm {
                     Receive { binding, body, .. } => {
-                        names[binding] = ();
+                        let _ = names.insert(binding);
                         collect_local_block(names, body)
                     },
                     Send { body, .. } => collect_local_block(names, body),
@@ -336,21 +345,21 @@ fn collect_local_term(names: HashMap[string, ()], value: anf::Term) -> () {
     }
 }
 
-fn collect_local_block(names: HashMap[string, ()], value: anf::Block) -> () {
+fn collect_local_block(names: collections::HashSet[string], value: anf::Block) -> () {
     for bind in value.binds {
         match bind {
             Let(value) => {
-                names[value.name] = ();
+                let _ = names.insert(value.name);
             },
             Join(value) => {
                 for param in value.params {
-                    names[param.0] = ();
+                    let _ = names.insert(param.0);
                 }
                 collect_local_block(names, value.body)
             },
             JoinRec(values) => for value in values {
                 for param in value.params {
-                    names[param.0] = ();
+                    let _ = names.insert(param.0);
                 }
                 collect_local_block(names, value.body)
             },
@@ -359,10 +368,10 @@ fn collect_local_block(names: HashMap[string, ()], value: anf::Block) -> () {
     collect_local_term(names, value.term)
 }
 
-fn function_local_names(value: anf::Function) -> HashMap[string, ()] {
-    let result: HashMap[string, ()] = HashMap::new();
+fn function_local_names(value: anf::Function) -> collections::HashSet[string] {
+    let result: collections::HashSet[string] = collections::HashSet::new();
     for param in value.params {
-        result[param.0] = ();
+        let _ = result.insert(param.0);
     }
     collect_local_block(result, value.body);
     result
@@ -676,10 +685,10 @@ fn scalar_constant_type(value: repr::Type) -> bool {
     }
 }
 
-fn build_constant_names(values: Vec[repr::Constant]) -> HashMap[string, ()] {
-    let result: HashMap[string, ()] = HashMap::new();
+fn build_constant_names(values: Vec[repr::Constant]) -> collections::HashSet[string] {
+    let result: collections::HashSet[string] = collections::HashSet::new();
     for value in values {
-        result[value.name] = ();
+        let _ = result.insert(value.name);
     }
     result
 }
@@ -5661,9 +5670,9 @@ fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: 
 fn compile_function(
     builtin: tast::BuiltinContract,
     value: anf::Function,
-    constant_names: HashMap[string, ()],
-    static_names: HashMap[string, ()],
-    top_level_names: HashMap[string, ()],
+    constant_names: collections::HashSet[string],
+    static_names: collections::HashSet[string],
+    top_level_names: collections::HashSet[string],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],
@@ -5751,9 +5760,9 @@ fn compile_function(
 fn compile_functions(
     builtin: tast::BuiltinContract,
     values: Vec[anf::Function],
-    constant_names: HashMap[string, ()],
-    static_names: HashMap[string, ()],
-    top_level_names: HashMap[string, ()],
+    constant_names: collections::HashSet[string],
+    static_names: collections::HashSet[string],
+    top_level_names: collections::HashSet[string],
     variants: VariantInfos,
     structs: Vec[repr::StructDef],
     instances: Vec[repr::TypeInstance],

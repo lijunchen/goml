@@ -11,6 +11,7 @@ use module::parser;
 use module::repr;
 use module::resources;
 use module::tast;
+use std::collections;
 use std::text;
 use std::testing;
 
@@ -125,8 +126,8 @@ fn separates_top_level_and_local_go_names() -> () {
     testing::assert(!output.contains("_goml_local_t0("));
     testing::assert(output.contains("var _goml_local_value__0 int = 7"));
     testing::assert(!output.contains("var value__0 int = 7"));
-    let type_names: HashMap[string, ()] = HashMap::new();
-    type_names["Marker"] = ();
+    let type_names: collections::HashSet[string] = collections::HashSet::new();
+    let _ = type_names.insert("Marker");
     testing::assert_eq(local_ident(type_names, "Marker"), "_goml_local_Marker")
 }
 
