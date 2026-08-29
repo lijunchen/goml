@@ -1,0 +1,267 @@
+package base64;
+
+use module::bytes;
+use module::text;
+
+const STANDARD_ALPHABET: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+const URL_SAFE_ALPHABET: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+pub enum Variant {
+    Standard,
+    StandardNoPadding,
+    UrlSafe,
+    UrlSafeNoPadding,
+}
+
+pub enum DecodeErrorKind {
+    InvalidLength,
+    InvalidByte,
+    InvalidPadding,
+    NonCanonical,
+}
+
+pub struct DecodeError {
+    index_value: isize,
+    kind_value: DecodeErrorKind,
+}
+
+impl DecodeError {
+    pub fn new(index: isize, kind: DecodeErrorKind) -> DecodeError {
+        DecodeError { index_value: index, kind_value: kind }
+    }
+
+    pub fn index(self: DecodeError) -> isize {
+        self.index_value
+    }
+
+    pub fn kind(self: DecodeError) -> DecodeErrorKind {
+        self.kind_value
+    }
+}
+
+impl ToString for DecodeError {
+    fn to_string(self: DecodeError) -> string {
+        match self.kind_value {
+            DecodeErrorKind::InvalidLength => "invalid base64 length at byte "
+                + self.index_value.to_string(),
+            DecodeErrorKind::InvalidByte => "invalid base64 digit at byte "
+                + self.index_value.to_string(),
+            DecodeErrorKind::InvalidPadding => "invalid base64 padding at byte "
+                + self.index_value.to_string(),
+            DecodeErrorKind::NonCanonical => "non-canonical base64 trailing bits at byte "
+                + self.index_value.to_string(),
+        }
+    }
+}
+
+impl Debug for DecodeError {
+    fn debug(self: DecodeError) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for DecodeErrorKind {
+    fn eq(self: DecodeErrorKind, other: DecodeErrorKind) -> bool {
+        match (self, other) {
+            (DecodeErrorKind::InvalidLength, DecodeErrorKind::InvalidLength) => true,
+            (DecodeErrorKind::InvalidByte, DecodeErrorKind::InvalidByte) => true,
+            (DecodeErrorKind::InvalidPadding, DecodeErrorKind::InvalidPadding) => true,
+            (DecodeErrorKind::NonCanonical, DecodeErrorKind::NonCanonical) => true,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for DecodeErrorKind {}
+
+impl PartialEq for DecodeError {
+    fn eq(self: DecodeError, other: DecodeError) -> bool {
+        self.index_value == other.index_value && self.kind_value == other.kind_value
+    }
+}
+
+fn alphabet(variant: Variant) -> string {
+    match variant {
+        Variant::Standard | Variant::StandardNoPadding => STANDARD_ALPHABET,
+        Variant::UrlSafe | Variant::UrlSafeNoPadding => URL_SAFE_ALPHABET,
+    }
+}
+
+fn padded(variant: Variant) -> bool {
+    match variant {
+        Variant::Standard | Variant::UrlSafe => true,
+        Variant::StandardNoPadding | Variant::UrlSafeNoPadding => false,
+    }
+}
+
+fn digit(value: byte, variant: Variant) -> char {
+    alphabet(variant).get(value.to_isize())
+}
+
+fn decode_digit(value: byte, index: isize, variant: Variant) -> Result[byte, DecodeError] {
+    if value >= b'A' && value <= b'Z' {
+        Result::Ok(value - b'A')
+    } else if value >= b'a' && value <= b'z' {
+        Result::Ok(value - b'a' + 26)
+    } else if value >= b'0' && value <= b'9' {
+        Result::Ok(value - b'0' + 52)
+    } else {
+        match variant {
+            Variant::Standard | Variant::StandardNoPadding => if value == b'+' {
+                Result::Ok(62)
+            } else if value == b'/' {
+                Result::Ok(63)
+            } else {
+                Result::Err(DecodeError::new(index, DecodeErrorKind::InvalidByte))
+            },
+            Variant::UrlSafe | Variant::UrlSafeNoPadding => if value == b'-' {
+                Result::Ok(62)
+            } else if value == b'_' {
+                Result::Ok(63)
+            } else {
+                Result::Err(DecodeError::new(index, DecodeErrorKind::InvalidByte))
+            },
+        }
+    }
+}
+
+pub fn encode(input: bytes::Bytes) -> string {
+    encode_with(input, Variant::Standard)
+}
+
+pub fn encode_with(input: bytes::Bytes, variant: Variant) -> string {
+    let input_len = input.len();
+    let full_len = (input_len / 3) * 4;
+    let remainder = input_len % 3;
+    let output_len = if remainder == 0 {
+        full_len
+    } else if padded(variant) {
+        full_len + 4
+    } else {
+        full_len + remainder + 1
+    };
+    let output = text::StringBuilder::with_capacity(output_len);
+    let mut index = 0;
+    while index + 3 <= input_len {
+        let first = input.get(index);
+        let second = input.get(index + 1);
+        let third = input.get(index + 2);
+        output.write_char(digit(first >> 2, variant));
+        output.write_char(digit(((first & 3) << 4) | (second >> 4), variant));
+        output.write_char(digit(((second & 15) << 2) | (third >> 6), variant));
+        output.write_char(digit(third & 63, variant));
+        index += 3;
+    }
+    if remainder == 1 {
+        let first = input.get(index);
+        output.write_char(digit(first >> 2, variant));
+        output.write_char(digit((first & 3) << 4, variant));
+        if padded(variant) {
+            output.write_string("==")
+        } else {}
+    } else if remainder == 2 {
+        let first = input.get(index);
+        let second = input.get(index + 1);
+        output.write_char(digit(first >> 2, variant));
+        output.write_char(digit(((first & 3) << 4) | (second >> 4), variant));
+        output.write_char(digit((second & 15) << 2, variant));
+        if padded(variant) {
+            output.write_char('=')
+        } else {}
+    } else {};
+    output.finish()
+}
+
+fn decoded_input_length(input: string, variant: Variant) -> Result[isize, DecodeError] {
+    let length = input.byte_len();
+    if padded(variant) {
+        if length % 4 != 0 {
+            return Result::Err(DecodeError::new(length, DecodeErrorKind::InvalidLength))
+        } else if length == 0 {
+            return Result::Ok(0)
+        } else {};
+        let padding = if input.byte_get(length - 1) == b'=' {
+            if length >= 2 && input.byte_get(length - 2) == b'=' {
+                2
+            } else {
+                1
+            }
+        } else {
+            0
+        };
+        let data_length = length - padding;
+        let mut index = 0;
+        while index < data_length {
+            if input.byte_get(index) == b'=' {
+                return Result::Err(DecodeError::new(index, DecodeErrorKind::InvalidPadding))
+            } else {};
+            index += 1;
+        }
+        let remainder = data_length % 4;
+        if (padding == 1 && remainder != 3) || (padding == 2 && remainder != 2) {
+            Result::Err(DecodeError::new(data_length, DecodeErrorKind::InvalidPadding))
+        } else {
+            Result::Ok(data_length)
+        }
+    } else if length % 4 == 1 {
+        Result::Err(DecodeError::new(length, DecodeErrorKind::InvalidLength))
+    } else {
+        let mut index = 0;
+        while index < length {
+            if input.byte_get(index) == b'=' {
+                return Result::Err(DecodeError::new(index, DecodeErrorKind::InvalidPadding))
+            } else {};
+            index += 1;
+        }
+        Result::Ok(length)
+    }
+}
+
+pub fn decode(input: string) -> Result[bytes::Bytes, DecodeError] {
+    decode_with(input, Variant::Standard)
+}
+
+pub fn decode_with(input: string, variant: Variant) -> Result[bytes::Bytes, DecodeError] {
+    let data_length = decoded_input_length(input, variant)?;
+    let output = bytes::Bytes::with_capacity(data_length * 3 / 4);
+    let mut index = 0;
+    while index + 4 <= data_length {
+        let first = decode_digit(input.byte_get(index), index, variant)?;
+        let second = decode_digit(input.byte_get(index + 1), index + 1, variant)?;
+        let third = decode_digit(input.byte_get(index + 2), index + 2, variant)?;
+        let fourth = decode_digit(input.byte_get(index + 3), index + 3, variant)?;
+        output.push((first << 2) | (second >> 4));
+        output.push((second << 4) | (third >> 2));
+        output.push((third << 6) | fourth);
+        index += 4;
+    }
+    let remainder = data_length - index;
+    if remainder == 2 {
+        let first = decode_digit(input.byte_get(index), index, variant)?;
+        let second = decode_digit(input.byte_get(index + 1), index + 1, variant)?;
+        if second & 15 != 0 {
+            return Result::Err(DecodeError::new(index + 1, DecodeErrorKind::NonCanonical))
+        } else {};
+        output.push((first << 2) | (second >> 4))
+    } else if remainder == 3 {
+        let first = decode_digit(input.byte_get(index), index, variant)?;
+        let second = decode_digit(input.byte_get(index + 1), index + 1, variant)?;
+        let third = decode_digit(input.byte_get(index + 2), index + 2, variant)?;
+        if third & 3 != 0 {
+            return Result::Err(DecodeError::new(index + 2, DecodeErrorKind::NonCanonical))
+        } else {};
+        output.push((first << 2) | (second >> 4));
+        output.push((second << 4) | (third >> 2))
+    } else {};
+    if padded(variant) {
+        let mut padding_index = data_length;
+        while padding_index < input.byte_len() {
+            if input.byte_get(padding_index) != b'=' {
+                return Result::Err(DecodeError::new(padding_index, DecodeErrorKind::InvalidPadding))
+            } else {};
+            padding_index += 1;
+        }
+    } else {};
+    Result::Ok(output)
+}

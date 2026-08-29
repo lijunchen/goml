@@ -28,6 +28,12 @@ pub const STD_CRYPTO_HASH_PACKAGE: string = "std::crypto::hash";
 
 pub const STD_CRYPTO_RAND_PACKAGE: string = "std::crypto::rand";
 
+pub const STD_ENCODING_PACKAGE: string = "std::encoding";
+
+pub const STD_ENCODING_BASE64_PACKAGE: string = "std::encoding::base64";
+
+pub const STD_ENCODING_HEX_PACKAGE: string = "std::encoding::hex";
+
 pub const STD_ERROR_PACKAGE: string = "std::error";
 
 pub const STD_ENV_PACKAGE: string = "std::env";
@@ -124,6 +130,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                         STD_CMP_PACKAGE,
                         STD_COLLECTIONS_PACKAGE,
                         STD_CRYPTO_PACKAGE,
+                        STD_ENCODING_PACKAGE,
                         STD_ERROR_PACKAGE,
                         STD_ENV_PACKAGE,
                         STD_FS_PACKAGE,
@@ -154,6 +161,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                         STD_CMP_PACKAGE,
                         STD_COLLECTIONS_PACKAGE,
                         STD_CRYPTO_PACKAGE,
+                        STD_ENCODING_PACKAGE,
                         STD_ERROR_PACKAGE,
                         STD_ENV_PACKAGE,
                         STD_FS_PACKAGE,
@@ -279,6 +287,30 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 Vec::from_array(["std/crypto/rand/rand.gom"]),
                 Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE]),
                 Vec::from_array([STD_BYTES_PACKAGE, STD_INTERNAL_HOST_PACKAGE]),
+            ),
+            standard_package(
+                STD_ENCODING_PACKAGE,
+                "encoding",
+                STD_ROOT_PACKAGE,
+                Vec::from_array(["std/encoding/encoding.gom"]),
+                Vec::new(),
+                Vec::new(),
+            ),
+            standard_package(
+                STD_ENCODING_BASE64_PACKAGE,
+                "base64",
+                STD_ENCODING_PACKAGE,
+                Vec::from_array(["std/encoding/base64/base64.gom"]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
+            ),
+            standard_package(
+                STD_ENCODING_HEX_PACKAGE,
+                "hex",
+                STD_ENCODING_PACKAGE,
+                Vec::from_array(["std/encoding/hex/hex.gom"]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
+                Vec::from_array([STD_BYTES_PACKAGE, STD_TEXT_PACKAGE]),
             ),
             standard_package(
                 STD_ENV_PACKAGE,

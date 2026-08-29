@@ -2511,6 +2511,8 @@ use std::bytes::endian;
 use std::cmp;
 use std::collections;
 use std::crypto;
+use std::encoding::base64;
+use std::encoding::hex;
 use std::error;
 use std::env;
 use std::fs;
@@ -2541,6 +2543,8 @@ Current public entrances include:
 - `collections::Arena`, `BinaryHeap`, `BitSet`, `BTreeMap`, `BTreeSet`, `Deque`, `HashSet`, `IndexMap`, `IndexSet`, `IndexVec`, `Interner`, and `Stack`; hash-backed collections require `Hash + Eq`, while tree collections and heaps use `cmp::Ord`
 - `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, and their comparator variants. The sorting, search, selection, and deduplication methods on `Vec[T]` are the canonical forms.
 - `crypto::hash` one-shot SHA-256 and `crypto::rand` operating-system random bytes
+- `encoding::hex` lowercase and uppercase hexadecimal encoding plus checked decoding
+- `encoding::base64` RFC 4648 standard and URL-safe encoding with padded and unpadded variants
 - `error::Error`, `ErrorKind`, `Details`, and stable error-kind code conversion
 - `env::args`, current-directory and executable queries, and environment-variable reads
 - `fs::read_file_structured`, `write_file_structured`, structured byte I/O, directory operations, path inspection, and `sha256_file`
@@ -2622,6 +2626,10 @@ Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Err
 Parameterized tests use one or more `#[test_case(...)]` attributes on a top-level function. This release accepts string and boolean arguments and validates them against the function parameters. Each case receives a content-derived stable ID, while list, filter, text/JSON reporting, artifact manifests, and CodeLens continue to use its readable display name. Ordinary zero-argument `#[test]` functions remain unchanged.
 
 `std::crypto::hash::sha256` returns the lowercase hexadecimal SHA-256 digest of a byte buffer, and `sha256_file` hashes a complete file before returning. `std::crypto::rand::bytes` reads the requested number of bytes from the operating-system cryptographic random source. These APIs do not expose hasher or random-source handles.
+
+`std::encoding::hex` encodes `bytes::Bytes` to lowercase hexadecimal by default, while `encode_upper` emits uppercase digits. Decoding accepts either case and returns `DecodeError` with the byte offset of an odd length or invalid digit.
+
+`std::encoding::base64` uses the padded RFC 4648 standard alphabet by default. `Variant` selects standard or URL-safe alphabets with required or omitted padding. Decoding is strict: it rejects invalid lengths, alphabet mixing, misplaced padding, and nonzero unused trailing bits.
 
 `Duration` provides checked and saturating scaled constructors, addition, subtraction, and multiplication. Checked operations return `None` on overflow, underflow, or a negative input. Saturating operations clamp to zero or the largest signed 64-bit nanosecond value. `Duration`, `Instant`, and `SystemTime` expose `compare`; `Instant::checked_duration_since` returns `None` when the receiver precedes the supplied instant.
 

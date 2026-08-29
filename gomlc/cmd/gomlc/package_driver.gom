@@ -24,6 +24,9 @@ struct StandardNeeds {
     bytes_endian: bool,
     cmp: bool,
     collections: bool,
+    encoding: bool,
+    encoding_base64: bool,
+    encoding_hex: bool,
     error: bool,
     env: bool,
     fs: bool,
@@ -80,6 +83,9 @@ fn no_standard_needs() -> StandardNeeds {
         bytes_endian: false,
         cmp: false,
         collections: false,
+        encoding: false,
+        encoding_base64: false,
+        encoding_hex: false,
         error: false,
         env: false,
         fs: false,
@@ -118,6 +124,9 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         bytes_endian: closure.contains(resources::STD_BYTES_ENDIAN_PACKAGE),
         cmp: closure.contains(resources::STD_CMP_PACKAGE),
         collections: closure.contains(resources::STD_COLLECTIONS_PACKAGE),
+        encoding: closure.contains(resources::STD_ENCODING_PACKAGE),
+        encoding_base64: closure.contains(resources::STD_ENCODING_BASE64_PACKAGE),
+        encoding_hex: closure.contains(resources::STD_ENCODING_HEX_PACKAGE),
         error: closure.contains(resources::STD_ERROR_PACKAGE),
         env: closure.contains(resources::STD_ENV_PACKAGE),
         fs: closure.contains(resources::STD_FS_PACKAGE),
@@ -165,6 +174,9 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         bytes_endian: left.bytes_endian || right.bytes_endian,
         cmp: left.cmp || right.cmp,
         collections: left.collections || right.collections,
+        encoding: left.encoding || right.encoding,
+        encoding_base64: left.encoding_base64 || right.encoding_base64,
+        encoding_hex: left.encoding_hex || right.encoding_hex,
         error: left.error || right.error,
         env: left.env || right.env,
         fs: left.fs || right.fs,
@@ -645,6 +657,9 @@ fn selected_standard_package_names(needs: StandardNeeds) -> Vec[string] {
     if needs.collections {
         result.push(resources::STD_COLLECTIONS_PACKAGE)
     } else {};
+    if needs.encoding {
+        result.push(resources::STD_ENCODING_PACKAGE)
+    } else {};
     if needs.error {
         result.push(resources::STD_ERROR_PACKAGE)
     } else {};
@@ -686,6 +701,12 @@ fn selected_standard_package_names(needs: StandardNeeds) -> Vec[string] {
     } else {};
     if needs.text {
         result.push(resources::STD_TEXT_PACKAGE)
+    } else {};
+    if needs.encoding_base64 {
+        result.push(resources::STD_ENCODING_BASE64_PACKAGE)
+    } else {};
+    if needs.encoding_hex {
+        result.push(resources::STD_ENCODING_HEX_PACKAGE)
     } else {};
     if needs.toml {
         result.push(resources::STD_TOML_PACKAGE)
