@@ -5,12 +5,11 @@ use std::cmp;
 use std::collections;
 
 pub struct ArtifactBinaryStringTable {
-    values: Vec[string],
-    indexes: HashMap[string, isize],
+    interner: collections::Interner,
 }
 
 fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
-    ArtifactBinaryStringTable { values: Vec::new(), indexes: HashMap::new() }
+    ArtifactBinaryStringTable { interner: collections::Interner::new() }
 }
 
 fn artifact_binary_collect_string(
@@ -52,24 +51,24 @@ pub fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStrin
 
 fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBinaryStringTable {
     let values = sort_artifact_names(values);
-    let indexes: HashMap[string, isize] = HashMap::new();
-    for index in 0..values.len() {
-        indexes[values[index]] = index;
+    let interner = collections::Interner::new();
+    for value in values {
+        let _ = interner.intern(value);
     }
-    ArtifactBinaryStringTable { values, indexes }
+    ArtifactBinaryStringTable { interner }
 }
 
 pub fn artifact_binary_string_id(table: ArtifactBinaryStringTable, value: string) -> isize {
-    match table.indexes[value] {
-        Some(value) => value,
+    match table.interner.symbols[value] {
+        Some(symbol) => symbol.index(),
         None => -1,
     }
 }
 
 pub fn encode_artifact_binary_string_table(table: ArtifactBinaryStringTable) -> bytes::Bytes {
     let writer = new_artifact_binary_writer();
-    artifact_binary_write_uleb128(writer, table.values.len().to_u64());
-    for value in table.values {
+    artifact_binary_write_uleb128(writer, table.interner.len().to_u64());
+    for value in table.interner.values {
         artifact_binary_write_string(writer, value)
     }
     artifact_binary_writer_finish(writer)
@@ -84,23 +83,21 @@ pub fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
     if count > 10000000 {
         return Result::Err("binary artifact string table exceeds limit")
     } else {};
-    let values = Vec::with_capacity(count);
-    let indexes: HashMap[string, isize] = HashMap::new();
+    let interner = collections::Interner::new();
     for index in 0..count {
         let value = artifact_binary_read_string(reader)?;
-        if indexes.contains(value) {
+        if interner.contains(value) {
             return Result::Err("duplicate binary artifact string")
-        } else if index > 0 && cmp::compare(values[index - 1], value).is_ge() {
+        } else if index > 0 && cmp::compare(interner.values[index - 1], value).is_ge() {
             return Result::Err("binary artifact string table is not sorted")
         } else {
-            indexes[value] = index;
-            values.push(value)
+            let _ = interner.intern(value);
         }
     }
     if artifact_binary_reader_remaining(reader) != 0 {
         Result::Err("trailing bytes in binary artifact string table")
     } else {
-        Result::Ok(ArtifactBinaryStringTable { values, indexes })
+        Result::Ok(ArtifactBinaryStringTable { interner })
     }
 }
 
@@ -123,10 +120,11 @@ pub fn artifact_binary_decode_string_id(
     table: ArtifactBinaryStringTable,
 ) -> Result[string, string] {
     let id = artifact_binary_read_length(reader)?;
-    if id >= table.values.len() {
-        Result::Err(artifact_binary_reader_error(reader, "string table index out of bounds"))
-    } else {
-        Result::Ok(table.values[id])
+    match table.interner.resolve(collections::Symbol { index: id }) {
+        Some(value) => Result::Ok(value),
+        None => Result::Err(
+            artifact_binary_reader_error(reader, "string table index out of bounds"),
+        ),
     }
 }
 

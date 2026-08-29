@@ -28,8 +28,7 @@ struct State {
     next_name: Ref[isize],
     generated: Vec[LowerFunction],
     generated_structs: Vec[mono::StructDef],
-    closures: Vec[ClosureInfo],
-    closures_by_struct: HashMap[string, ClosureInfo],
+    closures_by_struct: collections::IndexMap[string, ClosureInfo],
     closures_by_apply: HashMap[string, ClosureInfo],
     used_types: collections::HashSet[string],
     error: Ref[Option[string]],
@@ -70,7 +69,7 @@ fn find_scope(values: Vec[ScopeEntry], name: string) -> Option[ScopeEntry] {
 }
 
 fn find_closure(state: State, name: string) -> Option[ClosureInfo] {
-    state.closures_by_struct[name]
+    state.closures_by_struct.get(name)
 }
 
 fn find_closure_by_apply(state: State, name: string) -> Option[ClosureInfo] {
@@ -78,9 +77,8 @@ fn find_closure_by_apply(state: State, name: string) -> Option[ClosureInfo] {
 }
 
 fn record_closure(state: State, value: ClosureInfo) -> () {
-    state.closures_by_struct[value.struct_name] = value;
+    let _ = state.closures_by_struct.insert(value.struct_name, value);
     state.closures_by_apply[value.apply_name] = value;
-    state.closures.push(value)
 }
 
 fn closure_for_type(state: State, ty: mono::Type) -> Option[ClosureInfo] {
@@ -1120,8 +1118,7 @@ fn lambda_lift_with_counter(value: mono::File, counter: Ref[isize]) -> LambdaLif
         next_name: counter,
         generated: Vec::new(),
         generated_structs: Vec::new(),
-        closures: Vec::new(),
-        closures_by_struct: HashMap::new(),
+        closures_by_struct: collections::IndexMap::new(),
         closures_by_apply: HashMap::new(),
         used_types: initial_used_types(value),
         error: Ref::new(Option::None),
@@ -1136,8 +1133,9 @@ fn lambda_lift_with_counter(value: mono::File, counter: Ref[isize]) -> LambdaLif
     for generated_struct in state.generated_structs {
         structs.push(generated_struct)
     }
-    let closure_defs: Vec[LowerClosureDef] = Vec::with_capacity(state.closures.len());
-    for info in state.closures {
+    let closure_defs: Vec[LowerClosureDef] = Vec::with_capacity(state.closures_by_struct.len());
+    for entry in state.closures_by_struct {
+        let info = entry.1;
         closure_defs.push(
             LowerClosureDef {
                 environment: info.struct_name,
