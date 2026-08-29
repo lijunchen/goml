@@ -2,6 +2,7 @@ package lsp;
 
 use module::line_index as text_index;
 use module::query;
+use std::collections;
 
 pub struct Document {
     pub uri: string,
@@ -24,9 +25,9 @@ struct CachedLineIndex {
 }
 
 pub struct Server {
-    documents: Vec[Document],
-    analyses: Vec[CachedAnalysis],
-    line_indexes: Vec[CachedLineIndex],
+    documents: collections::IndexMap[string, Document],
+    analyses: collections::IndexMap[string, CachedAnalysis],
+    line_indexes: collections::IndexMap[string, CachedLineIndex],
     analysis_context: query::AnalysisContext,
     generation: Ref[isize],
     running: Ref[bool],
@@ -35,9 +36,9 @@ pub struct Server {
 
 pub fn new_server() -> Server {
     Server {
-        documents: Vec::new(),
-        analyses: Vec::new(),
-        line_indexes: Vec::new(),
+        documents: collections::IndexMap::new(),
+        analyses: collections::IndexMap::new(),
+        line_indexes: collections::IndexMap::new(),
         analysis_context: query::analysis_context(),
         generation: Ref::new(0),
         running: Ref::new(true),
@@ -60,68 +61,43 @@ pub fn invalidate_analyses(value: Server) -> () {
 }
 
 fn invalidate_other_analyses(value: Server, path: string) -> () {
-    let mut index = value.analyses.len();
-    while index > 0 {
-        index = index - 1;
-        if value.analyses[index].path != path {
-            let _ = value.analyses.remove(index);
-        } else {}
-    }
+    let current = value.analyses.get(path);
+    value.analyses.clear();
+    match current {
+        Some(cached) => {
+            let _ = value.analyses.insert(path, cached);
+        },
+        None => (),
+    };
     advance_generation(value)
 }
 
-fn analysis_index(value: Server, path: string) -> Option[isize] {
-    let mut index = value.analyses.len() - 1;
-    while index >= 0 {
-        if value.analyses[index].path == path {
-            return Option::Some(index)
-        } else {
-            index = index - 1;
-        }
-    }
-    Option::None
-}
-
-fn document_index(value: Server, uri: string) -> Option[isize] {
-    let mut index = value.documents.len() - 1;
-    while index >= 0 {
-        if value.documents[index].uri == uri {
-            return Option::Some(index)
-        } else {
-            index = index - 1;
-        }
-    }
-    Option::None
-}
-
 pub fn server_document(value: Server, uri: string) -> Option[Document] {
-    match document_index(value, uri) {
-        Some(index) => Option::Some(value.documents[index]),
-        None => Option::None,
-    }
+    value.documents.get(uri)
 }
 
 fn source_line_index(value: Server, source_path: string, source: string) -> text_index::LineIndex {
-    let mut document_cursor = value.documents.len() - 1;
+    let documents = value.documents.values();
+    let mut document_cursor = documents.len() - 1;
     while document_cursor >= 0 {
-        let document = value.documents[document_cursor];
+        let document = documents[document_cursor];
         if document.path == source_path {
             return document.line_index
         } else {
             document_cursor = document_cursor - 1;
         }
     }
-    let mut index_cursor = value.line_indexes.len() - 1;
-    while index_cursor >= 0 {
-        let cached = value.line_indexes[index_cursor];
-        if cached.path == source_path && cached.generation == value.generation.get() {
-            return cached.index
-        } else {
-            index_cursor = index_cursor - 1;
-        }
-    }
+    match value.line_indexes.get(source_path) {
+        Some(cached) => {
+            if cached.path == source_path && cached.generation == value.generation.get() {
+                return cached.index
+            } else {}
+        },
+        None => (),
+    };
     let index = line_index(source);
-    value.line_indexes.push(
+    let _ = value.line_indexes.insert(
+        source_path,
         CachedLineIndex { path: source_path, generation: value.generation.get(), index },
     );
     index
@@ -129,19 +105,15 @@ fn source_line_index(value: Server, source_path: string, source: string) -> text
 
 pub fn open_document(value: Server, document: Document) -> () {
     let path = document.path;
-    match document_index(value, document.uri) {
-        Some(index) => value.documents.set(index, document),
-        None => value.documents.push(document),
-    };
+    let _ = value.documents.insert(document.uri, document);
     invalidate_other_analyses(value, path)
 }
 
 pub fn change_document(value: Server, uri: string, text: string, version: isize) -> () {
-    match document_index(value, uri) {
-        Some(index) => {
-            let current = value.documents[index];
-            value.documents.set(
-                index,
+    match value.documents.get(uri) {
+        Some(current) => {
+            let _ = value.documents.insert(
+                uri,
                 Document {
                     uri: current.uri,
                     path: current.path,
@@ -157,9 +129,8 @@ pub fn change_document(value: Server, uri: string, text: string, version: isize)
 }
 
 pub fn close_document(value: Server, uri: string) -> () {
-    match document_index(value, uri) {
-        Some(index) => {
-            let _ = value.documents.remove(index);
+    match value.documents.remove(uri) {
+        Some(_) => {
             invalidate_analyses(value)
         },
         None => (),
@@ -167,24 +138,23 @@ pub fn close_document(value: Server, uri: string) -> () {
 }
 
 pub fn cached_document_analysis(value: Server, document: Document) -> Option[query::Analysis] {
-    match analysis_index(value, document.path) {
-        Some(index) => Option::Some(value.analyses[index].analysis),
+    match value.analyses.get(document.path) {
+        Some(cached) => Option::Some(cached.analysis),
         None => Option::None,
     }
 }
 
 fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
     let result: Vec[query::SourceOverride] = Vec::new();
-    for document in value.documents {
+    for document in value.documents.values() {
         result.push(query::SourceOverride { path: document.path, source: document.text })
     }
     result
 }
 
 pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
-    match analysis_index(value, document.path) {
-        Some(index) => {
-            let cached = value.analyses[index];
+    match value.analyses.get(document.path) {
+        Some(cached) => {
             if cached.path == document.path && cached.generation == value.generation.get() {
                 return cached.analysis
             } else {}
@@ -202,9 +172,6 @@ pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
         generation: value.generation.get(),
         analysis,
     };
-    match analysis_index(value, document.path) {
-        Some(index) => value.analyses.set(index, cached),
-        None => value.analyses.push(cached),
-    };
+    let _ = value.analyses.insert(document.path, cached);
     analysis
 }

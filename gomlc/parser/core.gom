@@ -2,6 +2,7 @@ package parser;
 
 use module::cst;
 use module::lexer;
+use std::collections;
 
 enum Event {
     Open {
@@ -470,7 +471,7 @@ fn element_byte_len(element: cst::CstElement) -> isize {
     }
 }
 
-fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> () {
+fn finish_node(stack: collections::Stack[cst::CstNode], roots: Vec[cst::CstNode]) -> () {
     match stack.pop() {
         Some(value) => {
             let mut byte_len = 0;
@@ -478,20 +479,20 @@ fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> () {
                 byte_len = byte_len + element_byte_len(child);
             }
             let complete = cst::node(value.kind, value.children, byte_len);
-            if !stack.is_empty() {
-                stack[stack.len() - 1].children.push(cst::CstElement::Node(complete))
-            } else {
-                roots.push(complete)
+            match stack.peek() {
+                Some(parent) => parent.children.push(cst::CstElement::Node(complete)),
+                None => roots.push(complete),
             }
         },
         None => (),
     }
 }
 
-fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> () {
-    if !stack.is_empty() {
-        stack[stack.len() - 1].children.push(cst::CstElement::Token(token))
-    } else {}
+fn push_token(stack: collections::Stack[cst::CstNode], token: lexer::Token) -> () {
+    match stack.peek() {
+        Some(parent) => parent.children.push(cst::CstElement::Token(token)),
+        None => (),
+    }
 }
 
 fn event_open(event: Event) -> Option[(cst::NodeKind, Option[isize])] {
@@ -503,7 +504,7 @@ fn event_open(event: Event) -> Option[(cst::NodeKind, Option[isize])] {
 
 fn build_tree(parser: Parser) -> cst::ParseResult {
     let mut cursor = 0;
-    let stack: Vec[cst::CstNode] = Vec::new();
+    let stack: collections::Stack[cst::CstNode] = collections::Stack::new();
     let roots: Vec[cst::CstNode] = Vec::new();
     let mut index = 0;
     while index < parser.events.len() {
