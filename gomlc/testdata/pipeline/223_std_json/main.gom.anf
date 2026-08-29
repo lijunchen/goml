@@ -10825,169 +10825,276 @@ fn std::json::json_current_index(index/0: Ref[isize]) -> isize {
   jump inline_cont0(inline1)
 }
 
-fn std::json::json_deserializer_path(deserializer/0: std::json::JsonDeserializer) -> string {
-  let path/0 = "$" in
-  let for_source0 = std::json::JsonDeserializer.frames(deserializer/0) in
-  let for_limit0 = @intrinsic(vec.len)(for_source0) in
-  let for_index0 = 0 in
-  join exit0() -> string {
-    path/0
-  } in
-  joinrec {
-    join loop0() -> string {
-      let t0 = (for_index0 < for_limit0) in
-      if t0 {
-        let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
-        let t1 = (for_index0 + 1) in
-        let _wild0 = for_index0 = t1 in
-        join k0(jp0: string) -> string {
-          let t2 = (path/0 + jp0) in
-          let _wild1 = path/0 = t2 in
-          jump loop0()
+fn std::json::write_json_deserialize_frame_path(
+  builder/0: std::text::StringBuilder,
+  frame/0: std::json::JsonDeserializeFrame
+) -> () {
+  match frame/0 {
+    Tag_0 => {
+      let t0 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+          builder/0,
+          ".Some"
+        ) in
+      ()
+    },
+    Tag_1 => {
+      let x0 = std::json::JsonDeserializeFrame::Sequence._2(frame/0) in
+      join inline_cont0(_wild0: ()) -> () {
+        join inline_cont1(t1: isize) -> () {
+          join inline_cont2(t2: string) -> () {
+            let _wild1 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                t2
+              ) in
+            let inline0 = ']' in
+            let inline1 = inherent#char#char#to_string(inline0) in
+            let inline2 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                inline1
+              ) in
+            ()
+          } in
+          let inline3 = __goml_builtin_int_to_string(t1) in
+          jump inline_cont2(inline3)
         } in
-        match for_item0 {
+        let inline4 = inherent#Ref#Ref[T]#get__T_isize(x0) in
+        let inline5 = (inline4 > 0) in
+        if inline5 {
+          let inline6 = inherent#Ref#Ref[T]#get__T_isize(x0) in
+          let inline7 = (inline6 - 1) in
+          jump inline_cont1(inline7)
+        } else {
+          jump inline_cont1(0)
+        }
+      } in
+      let inline8 = '[' in
+      let inline9 = inherent#char#char#to_string(inline8) in
+      let inline10 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+          builder/0,
+          inline9
+        ) in
+      jump inline_cont0(())
+    },
+    Tag_2 => {
+      let x1 = std::json::JsonDeserializeFrame::Tuple._1(frame/0) in
+      join inline_cont3(_wild2: ()) -> () {
+        join inline_cont4(t3: isize) -> () {
+          join inline_cont5(t4: string) -> () {
+            let _wild3 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                t4
+              ) in
+            let inline11 = ']' in
+            let inline12 = inherent#char#char#to_string(inline11) in
+            let inline13 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                inline12
+              ) in
+            ()
+          } in
+          let inline14 = __goml_builtin_int_to_string(t3) in
+          jump inline_cont5(inline14)
+        } in
+        let inline15 = inherent#Ref#Ref[T]#get__T_isize(x1) in
+        let inline16 = (inline15 > 0) in
+        if inline16 {
+          let inline17 = inherent#Ref#Ref[T]#get__T_isize(x1) in
+          let inline18 = (inline17 - 1) in
+          jump inline_cont4(inline18)
+        } else {
+          jump inline_cont4(0)
+        }
+      } in
+      let inline19 = '[' in
+      let inline20 = inherent#char#char#to_string(inline19) in
+      let inline21 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+          builder/0,
+          inline20
+        ) in
+      jump inline_cont3(())
+    },
+    Tag_3 => {
+      let x2 = std::json::JsonDeserializeFrame::Map._3(frame/0) in
+      join inline_cont6(mtmp0: Option__string) -> () {
+        match mtmp0 {
           Tag_0 => {
-            jump k0(".Some")
+            let t5 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                ".map"
+              ) in
+            ()
           },
           Tag_1 => {
-            let x0 = std::json::JsonDeserializeFrame::Sequence._2(for_item0) in
-            join inline_cont0(t3: isize) -> string {
-              join inline_cont1(t4: string) -> string {
-                let t5 = ("[" + t4) in
-                let t6 = (t5 + "]") in
-                jump k0(t6)
-              } in
-              let inline0 = __goml_builtin_int_to_string(t3) in
-              jump inline_cont1(inline0)
-            } in
-            let inline1 = inherent#Ref#Ref[T]#get__T_isize(x0) in
-            let inline2 = (inline1 > 0) in
-            if inline2 {
-              let inline3 = inherent#Ref#Ref[T]#get__T_isize(x0) in
-              let inline4 = (inline3 - 1) in
-              jump inline_cont0(inline4)
-            } else {
-              jump inline_cont0(0)
-            }
-          },
-          Tag_2 => {
-            let x1 = std::json::JsonDeserializeFrame::Tuple._1(for_item0) in
-            join inline_cont2(t7: isize) -> string {
-              join inline_cont3(t8: string) -> string {
-                let t9 = ("[" + t8) in
-                let t10 = (t9 + "]") in
-                jump k0(t10)
-              } in
-              let inline5 = __goml_builtin_int_to_string(t7) in
-              jump inline_cont3(inline5)
-            } in
-            let inline6 = inherent#Ref#Ref[T]#get__T_isize(x1) in
-            let inline7 = (inline6 > 0) in
-            if inline7 {
-              let inline8 = inherent#Ref#Ref[T]#get__T_isize(x1) in
-              let inline9 = (inline8 - 1) in
-              jump inline_cont2(inline9)
-            } else {
-              jump inline_cont2(0)
-            }
-          },
-          Tag_3 => {
-            let x2 = std::json::JsonDeserializeFrame::Map._3(for_item0) in
-            join inline_cont4(mtmp0: Option__string) -> string {
-              match mtmp0 {
-                Tag_0 => {
-                  jump k0(".map")
-                },
-                Tag_1 => {
-                  let x3 = Option__string::Some._0(mtmp0) in
-                  let t11 = ("[\"" + x3) in
-                  let t12 = (t11 + "\"]") in
-                  jump k0(t12)
-                },
-              }
-            } in
-            let inline10 = @intrinsic(ref.get)(x2) in
-            jump inline_cont4(inline10)
-          },
-          Tag_4 => {
-            let x4 = std::json::JsonDeserializeFrame::Struct._0(for_item0) in
-            let x5 = std::json::JsonDeserializeFrame::Struct._3(for_item0) in
-            join inline_cont5(t13: isize) -> string {
-              let t14 = (t13 == 0) in
-              join k1(jp1: string) -> string {
-                join inline_cont6(mtmp1: Option__string) -> string {
-                  join k2(jp2: string) -> string {
-                    let t15 = (jp1 + jp2) in
-                    jump k0(t15)
-                  } in
-                  match mtmp1 {
-                    Tag_0 => {
-                      jump k2("")
-                    },
-                    Tag_1 => {
-                      let x6 = Option__string::Some._0(mtmp1) in
-                      let t16 = ("." + x6) in
-                      jump k2(t16)
-                    },
-                  }
-                } in
-                let inline11 = @intrinsic(ref.get)(x5) in
-                jump inline_cont6(inline11)
-              } in
-              if t14 {
-                jump k1("")
-              } else {
-                let t17 = ("." + x4) in
-                jump k1(t17)
-              }
-            } in
-            let inline12 = @runtime(core.string_len)(x4) in
-            jump inline_cont5(inline12)
-          },
-          Tag_5 => {
-            let x7 = std::json::JsonDeserializeFrame::Variant._0(for_item0) in
-            let x8 = std::json::JsonDeserializeFrame::Variant._1(for_item0) in
-            let x9 = std::json::JsonDeserializeFrame::Variant._3(for_item0) in
-            let x10 = std::json::JsonDeserializeFrame::Variant._5(for_item0) in
-            let t18 = ("." + x7) in
-            let t19 = (t18 + "::") in
-            let base/0 = (t19 + x8) in
-            join inline_cont7(t20: isize) -> string {
-              let t21 = (t20 == 1) in
-              if t21 {
-                let t22 = (base/0 + "[") in
-                join inline_cont8(t23: isize) -> string {
-                  join inline_cont9(t24: string) -> string {
-                    let t25 = (t22 + t24) in
-                    let t26 = (t25 + "]") in
-                    jump k0(t26)
-                  } in
-                  let inline13 = __goml_builtin_int_to_string(t23) in
-                  jump inline_cont9(inline13)
-                } in
-                let inline14 = inherent#Ref#Ref[T]#get__T_isize(x10) in
-                let inline15 = (inline14 > 0) in
-                if inline15 {
-                  let inline16 = inherent#Ref#Ref[T]#get__T_isize(x10) in
-                  let inline17 = (inline16 - 1) in
-                  jump inline_cont8(inline17)
-                } else {
-                  jump inline_cont8(0)
-                }
-              } else {
-                jump k0(base/0)
-              }
-            } in
-            let inline18 = @intrinsic(ref.get)(x9) in
-            jump inline_cont7(inline18)
+            let x3 = Option__string::Some._0(mtmp0) in
+            let _wild4 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                "[\""
+              ) in
+            let _wild5 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                x3
+              ) in
+            let t6 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                "\"]"
+              ) in
+            ()
           },
         }
+      } in
+      let inline22 = @intrinsic(ref.get)(x2) in
+      jump inline_cont6(inline22)
+    },
+    Tag_4 => {
+      let x4 = std::json::JsonDeserializeFrame::Struct._0(frame/0) in
+      let x5 = std::json::JsonDeserializeFrame::Struct._3(frame/0) in
+      join inline_cont7(t7: isize) -> () {
+        let t8 = (t7 == 0) in
+        join k0() -> () {
+          join inline_cont8(mtmp1: Option__string) -> () {
+            match mtmp1 {
+              Tag_0 => {
+                ()
+              },
+              Tag_1 => {
+                let x6 = Option__string::Some._0(mtmp1) in
+                join inline_cont9(_wild6: ()) -> () {
+                  let t9 =
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                      builder/0,
+                      x6
+                    ) in
+                  ()
+                } in
+                let inline23 = '.' in
+                let inline24 = inherent#char#char#to_string(inline23) in
+                let inline25 =
+                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                    builder/0,
+                    inline24
+                  ) in
+                jump inline_cont9(())
+              },
+            }
+          } in
+          let inline26 = @intrinsic(ref.get)(x5) in
+          jump inline_cont8(inline26)
+        } in
+        if t8 {
+          jump k0()
+        } else {
+          join inline_cont10(_wild7: ()) -> () {
+            let t10 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                x4
+              ) in
+            jump k0()
+          } in
+          let inline27 = '.' in
+          let inline28 = inherent#char#char#to_string(inline27) in
+          let inline29 =
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+              builder/0,
+              inline28
+            ) in
+          jump inline_cont10(())
+        }
+      } in
+      let inline30 = @runtime(core.string_len)(x4) in
+      jump inline_cont7(inline30)
+    },
+    Tag_5 => {
+      let x7 = std::json::JsonDeserializeFrame::Variant._0(frame/0) in
+      let x8 = std::json::JsonDeserializeFrame::Variant._1(frame/0) in
+      let x9 = std::json::JsonDeserializeFrame::Variant._3(frame/0) in
+      let x10 = std::json::JsonDeserializeFrame::Variant._5(frame/0) in
+      let _wild8 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, '.') in
+      let _wild9 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/0, x7) in
+      let _wild10 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/0, "::") in
+      let _wild11 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/0, x8) in
+      let t11 = inherent#Ref#Ref[T]#get__T_isize(x9) in
+      let t12 = (t11 == 1) in
+      if t12 {
+        let _wild12 =
+          inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, '[') in
+        let t13 = std::json::json_current_index(x10) in
+        join inline_cont11(t14: string) -> () {
+          let _wild13 =
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+              builder/0,
+              t14
+            ) in
+          let inline31 = ']' in
+          let inline32 = inherent#char#char#to_string(inline31) in
+          let inline33 =
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+              builder/0,
+              inline32
+            ) in
+          ()
+        } in
+        let inline34 = __goml_builtin_int_to_string(t13) in
+        jump inline_cont11(inline34)
       } else {
-        jump exit0()
+        ()
       }
+    },
+  }
+}
+
+fn std::json::json_deserializer_path(deserializer/0: std::json::JsonDeserializer) -> string {
+  join inline_cont0(builder/0: std::text::StringBuilder) -> string {
+    join inline_cont1(_wild0: ()) -> string {
+      let for_source0 = std::json::JsonDeserializer.frames(deserializer/0) in
+      let for_limit0 = @intrinsic(vec.len)(for_source0) in
+      let for_index0 = 0 in
+      join exit0() -> string {
+        let inline0 = std::text::StringBuilder.values(builder/0) in
+        let inline1 = string_from_utf0(inline0) in
+        let inline2 = inline1.1 in
+        inline2
+      } in
+      joinrec {
+        join loop0() -> string {
+          let t0 = (for_index0 < for_limit0) in
+          if t0 {
+            let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
+            let t1 = (for_index0 + 1) in
+            let _wild1 = for_index0 = t1 in
+            let t2 = std::json::write_json_deserialize_frame_path(builder/0, for_item0) in
+            jump loop0()
+          } else {
+            jump exit0()
+          }
+        } in
+      } in
+      jump loop0()
     } in
+    let inline3 = '$' in
+    let inline4 = inherent#char#char#to_string(inline3) in
+    let inline5 =
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/0, inline4) in
+    jump inline_cont1(())
   } in
-  jump loop0()
+  let inline6 = inherent#Vec#Vec[T]#new__T_u0() in
+  let inline7 = std::text::StringBuilder { values: inline6 } in
+  jump inline_cont0(inline7)
 }
 
 fn std::json::json_deserializer_error(

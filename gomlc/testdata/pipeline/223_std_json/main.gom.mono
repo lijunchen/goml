@@ -8789,9 +8789,230 @@ fn std::json::json_current_index(index/0: Ref[isize]) -> isize {
   }
 }
 
+fn std::json::write_json_deserialize_frame_path(
+  builder/0: std::text::StringBuilder,
+  frame/0: std::json::JsonDeserializeFrame
+) -> () {
+  match frame/0 {
+    std::json::JsonDeserializeFrame::Optional => {
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/0, ".Some")
+    },
+    std::json::JsonDeserializeFrame::Sequence(x0, x1, x2) => {
+      {
+        let x2 = std::json::JsonDeserializeFrame::Sequence._2(frame/0) in
+        {
+          let index/0 = x2 in
+          {
+            let _wild0 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                builder/0,
+                '['
+              ) in
+            let _wild1 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                inherent#isize#isize#to_string(std::json::json_current_index(index/0))
+              ) in
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, ']')
+          }
+        }
+      }
+    },
+    std::json::JsonDeserializeFrame::Tuple(x3, x4) => {
+      {
+        let x4 = std::json::JsonDeserializeFrame::Tuple._1(frame/0) in
+        {
+          let index/1 = x4 in
+          {
+            let _wild2 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                builder/0,
+                '['
+              ) in
+            let _wild3 =
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                builder/0,
+                inherent#isize#isize#to_string(std::json::json_current_index(index/1))
+              ) in
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, ']')
+          }
+        }
+      }
+    },
+    std::json::JsonDeserializeFrame::Map(x5, x6, x7, x8) => {
+      {
+        let x8 = std::json::JsonDeserializeFrame::Map._3(frame/0) in
+        {
+          let key/0 = x8 in
+          {
+            let mtmp0 = inherent#Ref#Ref[T]#get__T_Option[string](key/0) in
+            match mtmp0 {
+              Option__string::None => {
+                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                  builder/0,
+                  ".map"
+                )
+              },
+              Option__string::Some(x9) => {
+                {
+                  let x9 = Option__string::Some._0(mtmp0) in
+                  {
+                    let name/0 = x9 in
+                    {
+                      let _wild4 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/0,
+                          "[\""
+                        ) in
+                      let _wild5 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/0,
+                          name/0
+                        ) in
+                      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                        builder/0,
+                        "\"]"
+                      )
+                    }
+                  }
+                }
+              },
+            }
+          }
+        }
+      }
+    },
+    std::json::JsonDeserializeFrame::Struct(x10, x11, x12, x13) => {
+      {
+        let x10 = std::json::JsonDeserializeFrame::Struct._0(frame/0) in
+        let x13 = std::json::JsonDeserializeFrame::Struct._3(frame/0) in
+        {
+          let field/0 = x13 in
+          {
+            let name/1 = x10 in
+            {
+              let _wild6 =
+                if (inherent#string#string#byte_len(name/1) == 0) {
+                    {
+                      ()
+                    }
+                } else {
+                    {
+                      let _wild7 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                          builder/0,
+                          '.'
+                        ) in
+                      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                        builder/0,
+                        name/1
+                      )
+                    }
+                } in
+              {
+                let mtmp1 = inherent#Ref#Ref[T]#get__T_Option[string](field/0) in
+                match mtmp1 {
+                  Option__string::None => {
+                    ()
+                  },
+                  Option__string::Some(x14) => {
+                    {
+                      let x14 = Option__string::Some._0(mtmp1) in
+                      {
+                        let name/2 = x14 in
+                        {
+                          let _wild8 =
+                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                              builder/0,
+                              '.'
+                            ) in
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                            builder/0,
+                            name/2
+                          )
+                        }
+                      }
+                    }
+                  },
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    std::json::JsonDeserializeFrame::Variant(x15, x16, x17, x18, x19, x20, x21, x22, x23) => {
+      {
+        let x15 = std::json::JsonDeserializeFrame::Variant._0(frame/0) in
+        let x16 = std::json::JsonDeserializeFrame::Variant._1(frame/0) in
+        let x18 = std::json::JsonDeserializeFrame::Variant._3(frame/0) in
+        let x20 = std::json::JsonDeserializeFrame::Variant._5(frame/0) in
+        {
+          let index/2 = x20 in
+          {
+            let kind/0 = x18 in
+            {
+              let variant_name/0 = x16 in
+              {
+                let enum_name/0 = x15 in
+                {
+                  let _wild9 =
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                      builder/0,
+                      '.'
+                    ) in
+                  let _wild10 =
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                      builder/0,
+                      enum_name/0
+                    ) in
+                  let _wild11 =
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                      builder/0,
+                      "::"
+                    ) in
+                  let _wild12 =
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                      builder/0,
+                      variant_name/0
+                    ) in
+                  if (inherent#Ref#Ref[T]#get__T_isize(kind/0) == 1) {
+                      {
+                        let _wild13 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                            builder/0,
+                            '['
+                          ) in
+                        let _wild14 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                            builder/0,
+                            inherent#isize#isize#to_string(std::json::json_current_index(index/2))
+                          ) in
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                          builder/0,
+                          ']'
+                        )
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+  }
+}
+
 fn std::json::json_deserializer_path(deserializer/0: std::json::JsonDeserializer) -> string {
-  let path/0 = "$" in
+  let builder/0 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
   let _wild0 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, '$') in
+  let _wild1 =
     {
       let for_source0 = std::json::JsonDeserializer.frames(deserializer/0) in
       let for_limit0 = @intrinsic(vec.len)(for_source0) in
@@ -8799,167 +9020,17 @@ fn std::json::json_deserializer_path(deserializer/0: std::json::JsonDeserializer
       while (for_index0 < for_limit0) {
           {
             let for_item0 = @intrinsic(vec.get)(for_source0, for_index0) in
-            let _wild1 = for_index0 = (for_index0 + 1) in
+            let _wild2 = for_index0 = (for_index0 + 1) in
             {
               let frame/0 = for_item0 in
               {
-                let segment/0 =
-                  match frame/0 {
-                    std::json::JsonDeserializeFrame::Optional => {
-                      ".Some"
-                    },
-                    std::json::JsonDeserializeFrame::Sequence(x0, x1, x2) => {
-                      {
-                        let x2 = std::json::JsonDeserializeFrame::Sequence._2(frame/0) in
-                        {
-                          let index/0 = x2 in
-                          {
-                            (("[" +
-                              inherent#isize#isize#to_string(
-                                std::json::json_current_index(index/0)
-                              )) +
-                              "]")
-                          }
-                        }
-                      }
-                    },
-                    std::json::JsonDeserializeFrame::Tuple(x3, x4) => {
-                      {
-                        let x4 = std::json::JsonDeserializeFrame::Tuple._1(frame/0) in
-                        {
-                          let index/1 = x4 in
-                          {
-                            (("[" +
-                              inherent#isize#isize#to_string(
-                                std::json::json_current_index(index/1)
-                              )) +
-                              "]")
-                          }
-                        }
-                      }
-                    },
-                    std::json::JsonDeserializeFrame::Map(x5, x6, x7, x8) => {
-                      {
-                        let x8 = std::json::JsonDeserializeFrame::Map._3(frame/0) in
-                        {
-                          let key/0 = x8 in
-                          {
-                            let mtmp0 = inherent#Ref#Ref[T]#get__T_Option[string](key/0) in
-                            match mtmp0 {
-                              Option__string::None => {
-                                ".map"
-                              },
-                              Option__string::Some(x9) => {
-                                {
-                                  let x9 = Option__string::Some._0(mtmp0) in
-                                  {
-                                    let name/0 = x9 in
-                                    (("[\"" + name/0) + "\"]")
-                                  }
-                                }
-                              },
-                            }
-                          }
-                        }
-                      }
-                    },
-                    std::json::JsonDeserializeFrame::Struct(x10, x11, x12, x13) => {
-                      {
-                        let x10 = std::json::JsonDeserializeFrame::Struct._0(frame/0) in
-                        let x13 = std::json::JsonDeserializeFrame::Struct._3(frame/0) in
-                        {
-                          let field/0 = x13 in
-                          {
-                            let name/1 = x10 in
-                            {
-                              let base/0 =
-                                if (inherent#string#string#byte_len(name/1) == 0) {
-                                    {
-                                      ""
-                                    }
-                                } else {
-                                    {
-                                      ("." + name/1)
-                                    }
-                                } in
-                              let field_segment/0 =
-                                {
-                                  let mtmp1 = inherent#Ref#Ref[T]#get__T_Option[string](field/0) in
-                                  match mtmp1 {
-                                    Option__string::None => {
-                                      ""
-                                    },
-                                    Option__string::Some(x14) => {
-                                      {
-                                        let x14 = Option__string::Some._0(mtmp1) in
-                                        {
-                                          let name/2 = x14 in
-                                          ("." + name/2)
-                                        }
-                                      }
-                                    },
-                                  }
-                                } in
-                              (base/0 + field_segment/0)
-                            }
-                          }
-                        }
-                      }
-                    },
-                    std::json::JsonDeserializeFrame::Variant(
-                      x15,
-                      x16,
-                      x17,
-                      x18,
-                      x19,
-                      x20,
-                      x21,
-                      x22,
-                      x23
-                    ) => {
-                      {
-                        let x15 = std::json::JsonDeserializeFrame::Variant._0(frame/0) in
-                        let x16 = std::json::JsonDeserializeFrame::Variant._1(frame/0) in
-                        let x18 = std::json::JsonDeserializeFrame::Variant._3(frame/0) in
-                        let x20 = std::json::JsonDeserializeFrame::Variant._5(frame/0) in
-                        {
-                          let index/2 = x20 in
-                          {
-                            let kind/0 = x18 in
-                            {
-                              let variant_name/0 = x16 in
-                              {
-                                let enum_name/0 = x15 in
-                                {
-                                  let base/1 = ((("." + enum_name/0) + "::") + variant_name/0) in
-                                  if (inherent#Ref#Ref[T]#get__T_isize(kind/0) == 1) {
-                                      {
-                                        (((base/1 + "[") +
-                                          inherent#isize#isize#to_string(
-                                            std::json::json_current_index(index/2)
-                                          )) +
-                                          "]")
-                                      }
-                                  } else {
-                                      {
-                                        base/1
-                                      }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                  } in
-                let _wild2 = path/0 = (path/0 + segment/0) in
+                std::json::write_json_deserialize_frame_path(builder/0, frame/0)
               }
             }
           }
       }
     } in
-  path/0
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/0)
 }
 
 fn std::json::json_deserializer_error(
