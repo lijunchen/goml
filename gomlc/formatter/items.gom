@@ -2,6 +2,7 @@ package formatter;
 
 use module::cst;
 use module::lexer;
+use std::collections;
 
 fn file_node_category(value: LocatedNode) -> isize {
     if node_is(value, cst::NodeKind::PACKAGE) {
@@ -380,7 +381,7 @@ fn variant_requires_vertical_fields(value: Builder, node: LocatedNode) -> bool {
     } else if field_count != 1 || node_has_comment(fields) {
         true
     } else {
-        flat_width(format_variant(value, node, false).doc, HashMap::new(), 95) > 95
+        flat_width(format_variant(value, node, false).doc, collections::HashSet::new(), 95) > 95
     }
 }
 

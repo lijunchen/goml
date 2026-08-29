@@ -1,5 +1,6 @@
 package formatter;
 
+use std::collections;
 use std::text;
 
 enum RenderMode {
@@ -13,7 +14,7 @@ struct Renderer {
     indent_level: Ref[isize],
     line_width: isize,
     line_start: Ref[bool],
-    broken_groups: HashMap[isize, ()],
+    broken_groups: collections::HashSet[isize],
     suffixes: Vec[Doc],
 }
 
@@ -24,7 +25,7 @@ fn renderer(line_width: isize) -> Renderer {
         indent_level: Ref::new(0),
         line_width,
         line_start: Ref::new(true),
-        broken_groups: HashMap::new(),
+        broken_groups: collections::HashSet::new(),
         suffixes: Vec::new(),
     }
 }
@@ -53,7 +54,7 @@ fn limited_add(left: isize, right: isize, limit: isize) -> isize {
     }
 }
 
-fn flat_width(value: Doc, broken_groups: HashMap[isize, ()], limit: isize) -> isize {
+fn flat_width(value: Doc, broken_groups: collections::HashSet[isize], limit: isize) -> isize {
     match value {
         Nil => 0,
         Text(_, width) => if width > limit {
@@ -203,7 +204,7 @@ fn render_group(value: Renderer, id: isize, content: Doc, mode: RenderMode) -> (
             value.line_width - decision_column
         };
         if flat_width(content, value.broken_groups, remaining) > remaining {
-            value.broken_groups[id] = ();
+            let _ = value.broken_groups.insert(id);
             render_doc(value, content, RenderMode::Broken)
         } else {
             render_doc(value, content, RenderMode::Flat)

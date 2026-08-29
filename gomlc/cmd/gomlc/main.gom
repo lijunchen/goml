@@ -11,6 +11,7 @@ use module::lift;
 use module::mono;
 use module::parser;
 use module::tast;
+use std::collections;
 use std::env;
 use std::fs;
 use std::io;
@@ -116,7 +117,7 @@ fn selected_run_usage(used_dumps: Vec[string]) -> string {
 
 fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     let mut file: Option[string] = Option::None;
-    let seen: HashMap[string, ()] = HashMap::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     let used_dumps: Vec[string] = Vec::new();
     let mut positional = false;
     let mut index = 2;
@@ -142,7 +143,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             if seen.contains(argument) {
                 return Result::Err(repeated_argument_error(RUN_SINGLE_COMMAND, argument))
             } else {
-                seen[argument] = ();
+                let _ = seen.insert(argument);
                 used_dumps.push(argument);
                 index += 1;
             }

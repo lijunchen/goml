@@ -5,6 +5,7 @@ use module::project;
 use module::runner;
 use module::util;
 use module::version;
+use std::collections;
 use std::env;
 use std::fs;
 use std::io;
@@ -232,7 +233,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     let targets: Vec[string] = Vec::new();
     let mut target_dir: Option[string] = Option::None;
     let mut compiler: Option[string] = Option::None;
-    let flags: HashMap[string, ()] = HashMap::new();
+    let flags: collections::HashSet[string] = collections::HashSet::new();
     let program_args: Vec[string] = Vec::new();
     let mut test_filter: Option[string] = Option::None;
     let mut build_jobs = 16;
@@ -259,22 +260,22 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             io::println(command_help(command));
             process::exit(0)
         } else if argument == "--dry-run" {
-            flags[argument] = ();
+            let _ = flags.insert(argument);
             index += 1;
         } else if command == CHECK_COMMAND && argument == "--tests" {
-            flags[argument] = ();
+            let _ = flags.insert(argument);
             index += 1;
         } else if command == TEST_COMMAND && argument == "--list" {
-            flags[argument] = ();
+            let _ = flags.insert(argument);
             index += 1;
         } else if command == TEST_COMMAND && argument == "--ignored" {
-            flags[argument] = ();
+            let _ = flags.insert(argument);
             index += 1;
         } else if command == TEST_COMMAND && argument == "--include-ignored" {
-            flags[argument] = ();
+            let _ = flags.insert(argument);
             index += 1;
         } else if command == TEST_COMMAND && argument == "--nocapture" {
-            flags[argument] = ();
+            let _ = flags.insert(argument);
             index += 1;
         } else if command == TEST_COMMAND
             && (argument == "--seed" || argument.starts_with("--seed=")) {

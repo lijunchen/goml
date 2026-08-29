@@ -1,9 +1,11 @@
 package snapshot_names;
 
+use std::collections;
+
 pub struct Names {
     replacements: HashMap[string, string],
     counters: HashMap[string, isize],
-    reserved: HashMap[string, ()],
+    reserved: collections::HashSet[string],
 }
 
 struct NameShape {
@@ -12,11 +14,15 @@ struct NameShape {
 }
 
 pub fn names() -> Names {
-    Names { replacements: HashMap::new(), counters: HashMap::new(), reserved: HashMap::new() }
+    Names {
+        replacements: HashMap::new(),
+        counters: HashMap::new(),
+        reserved: collections::HashSet::new(),
+    }
 }
 
 pub fn reserve(names: Names, value: string) -> () {
-    names.reserved[value] = ();
+    let _ = names.reserved.insert(value);
 }
 
 fn is_digit(value: byte) -> bool {
