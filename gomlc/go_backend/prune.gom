@@ -2,23 +2,18 @@ package go_backend;
 
 use std::collections;
 
-struct NameSet {
-    values: Vec[string],
-    present: collections::HashSet[string],
-}
+type NameSet = collections::IndexSet[string];
 
 fn new_name_set() -> NameSet {
-    NameSet { values: Vec::new(), present: collections::HashSet::new() }
+    collections::IndexSet::new()
 }
 
 fn name_present(values: NameSet, expected: string) -> bool {
-    values.present.contains(expected)
+    values.contains(expected)
 }
 
 fn add_reachable(values: NameSet, value: string) -> () {
-    if values.present.insert(value) {
-        values.values.push(value)
-    } else {}
+    let _ = values.insert(value);
 }
 
 fn collect_type_names(result: NameSet, value: Type) -> () {
@@ -220,7 +215,7 @@ fn name_uses_import(name: string, alias: string) -> bool {
 }
 
 fn import_is_used(names: NameSet, alias: string) -> bool {
-    for name in names.values {
+    for name in names {
         if name_uses_import(name, alias) {
             return true
         } else {}
@@ -315,7 +310,7 @@ pub fn prune_functions(value: File) -> File {
     let expanded = new_name_set();
     add_reachable(reachable, "main");
     loop {
-        let previous_len = expanded.values.len();
+        let previous_len = expanded.len();
         for item in value.items {
             match item {
                 Function(function) => {
@@ -328,12 +323,12 @@ pub fn prune_functions(value: File) -> File {
                 _ => (),
             }
         }
-        if expanded.values.len() == previous_len {
+        if expanded.len() == previous_len {
             break
         } else {}
     }
     loop {
-        let previous_len = expanded.values.len();
+        let previous_len = expanded.len();
         for item in value.items {
             match item {
                 Global(global) => if name_present(reachable, global.name)
@@ -344,12 +339,12 @@ pub fn prune_functions(value: File) -> File {
                 _ => (),
             }
         }
-        if expanded.values.len() == previous_len {
+        if expanded.len() == previous_len {
             break
         } else {}
     }
     loop {
-        let previous_len = expanded.values.len();
+        let previous_len = expanded.len();
         for item in value.items {
             match item {
                 ConstGroup(group) => for spec in group.specs {
@@ -361,7 +356,7 @@ pub fn prune_functions(value: File) -> File {
                 _ => (),
             }
         }
-        if expanded.values.len() == previous_len {
+        if expanded.len() == previous_len {
             break
         } else {}
     }

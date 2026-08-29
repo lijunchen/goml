@@ -12,41 +12,33 @@ fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
     ArtifactBinaryStringTable { interner: collections::Interner::new() }
 }
 
-fn artifact_binary_collect_string(
-    seen: collections::HashSet[string],
-    values: Vec[string],
-    value: string,
-) -> () {
-    if seen.insert(value) {
-        values.push(value)
-    } else {}
+fn artifact_binary_collect_string(values: collections::IndexSet[string], value: string) -> () {
+    let _ = values.insert(value);
 }
 
 fn artifact_binary_collect_value_strings(
-    seen: collections::HashSet[string],
-    values: Vec[string],
+    values: collections::IndexSet[string],
     value: ArtifactValue,
 ) -> () {
     match value {
         Object(fields) => for field in fields {
-            artifact_binary_collect_string(seen, values, field.0);
-            artifact_binary_collect_value_strings(seen, values, field.1)
+            artifact_binary_collect_string(values, field.0);
+            artifact_binary_collect_value_strings(values, field.1)
         },
         Array(items) => for item in items {
-            artifact_binary_collect_value_strings(seen, values, item)
+            artifact_binary_collect_value_strings(values, item)
         },
         String(value) => {
-            artifact_binary_collect_string(seen, values, value)
+            artifact_binary_collect_string(values, value)
         },
         Number(_) | Bool(_) | Null => (),
     }
 }
 
 pub fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
-    let seen: collections::HashSet[string] = collections::HashSet::new();
-    let values: Vec[string] = Vec::new();
-    artifact_binary_collect_value_strings(seen, values, value);
-    artifact_binary_string_table_from_values(values)
+    let values: collections::IndexSet[string] = collections::IndexSet::new();
+    artifact_binary_collect_value_strings(values, value);
+    artifact_binary_string_table_from_values(values.to_vec())
 }
 
 fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBinaryStringTable {

@@ -37,8 +37,7 @@ pub struct ArtifactJsonWriter {
     captured_containers: collections::Stack[ArtifactCapturedContainer],
     captured_values: Vec[ArtifactValue],
     binary_mode: u8,
-    binary_seen: collections::HashSet[string],
-    binary_strings: Vec[string],
+    binary_strings: collections::IndexSet[string],
     binary_writer: ArtifactBinaryWriter,
     binary_table: ArtifactBinaryStringTable,
     binary_scopes: collections::Stack[ArtifactBinaryValueScope],
@@ -56,8 +55,7 @@ pub fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
         captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 0,
-        binary_seen: collections::HashSet::new(),
-        binary_strings: Vec::new(),
+        binary_strings: collections::IndexSet::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
         binary_scopes: collections::Stack::new(),
@@ -76,8 +74,7 @@ pub fn new_artifact_value_writer() -> ArtifactJsonWriter {
         captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 1,
-        binary_seen: collections::HashSet::new(),
-        binary_strings: Vec::new(),
+        binary_strings: collections::IndexSet::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
         binary_scopes: collections::Stack::new(),
@@ -96,8 +93,7 @@ pub fn new_artifact_binary_string_collector() -> ArtifactJsonWriter {
         captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 2,
-        binary_seen: collections::HashSet::new(),
-        binary_strings: Vec::new(),
+        binary_strings: collections::IndexSet::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
         binary_scopes: collections::Stack::new(),
@@ -116,8 +112,7 @@ pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> Art
         captured_containers: collections::Stack::new(),
         captured_values: Vec::new(),
         binary_mode: 3,
-        binary_seen: collections::HashSet::new(),
-        binary_strings: Vec::new(),
+        binary_strings: collections::IndexSet::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: table,
         binary_scopes: collections::Stack::new(),
@@ -166,7 +161,7 @@ fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> () {
 }
 
 pub fn artifact_binary_collected_string_table(value: ArtifactJsonWriter) -> ArtifactBinaryStringTable {
-    artifact_binary_string_table_from_values(value.binary_strings)
+    artifact_binary_string_table_from_values(value.binary_strings.to_vec())
 }
 
 pub fn artifact_binary_stream_finish(value: ArtifactJsonWriter) -> Result[bytes::Bytes, string] {
@@ -366,7 +361,7 @@ pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> () {
 
 pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
     if value.binary_mode == 2 {
-        artifact_binary_collect_string(value.binary_seen, value.binary_strings, name)
+        artifact_binary_collect_string(value.binary_strings, name)
     } else if value.binary_mode == 3 {
         match value.binary_scopes.peek() {
             Some(scope) => scope.count.set(scope.count.get() + 1),
@@ -405,7 +400,7 @@ pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
 
 pub fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> () {
     if value.binary_mode == 2 {
-        artifact_binary_collect_string(value.binary_seen, value.binary_strings, input)
+        artifact_binary_collect_string(value.binary_strings, input)
     } else if value.binary_mode == 3 {
         artifact_binary_stream_before_value(value);
         artifact_binary_write_u8(value.binary_writer, 4);

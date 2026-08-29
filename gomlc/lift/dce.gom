@@ -3,35 +3,28 @@ package lift;
 use module::ast;
 use std::collections;
 
-struct DceNames {
-    values: Vec[string],
-    present: collections::HashSet[string],
-}
+type DceNames = collections::IndexSet[string];
 
 fn new_dce_names() -> DceNames {
-    DceNames { values: Vec::new(), present: collections::HashSet::new() }
+    collections::IndexSet::new()
 }
 
 fn dce_names_contains(values: DceNames, name: string) -> bool {
-    values.present.contains(name)
+    values.contains(name)
 }
 
 fn dce_names_add(values: DceNames, name: string) -> () {
-    if values.present.insert(name) {
-        values.values.push(name)
-    } else {}
+    let _ = values.insert(name);
 }
 
 fn dce_names_add_all(target: DceNames, values: DceNames) -> () {
-    for name in values.values {
-        if dce_names_contains(values, name) {
-            dce_names_add(target, name)
-        } else {}
+    for name in values {
+        dce_names_add(target, name)
     }
 }
 
 fn dce_names_remove(values: DceNames, name: string) -> () {
-    let _ = values.present.remove(name);
+    let _ = values.remove(name);
 }
 
 fn dce_exprs(values: Vec[Expr]) -> Vec[Expr] {
@@ -213,7 +206,7 @@ fn dce_collect_expr(result: DceNames, value: Expr) -> () {
                 dce_collect_expr(free, arm.body);
                 let bound = new_dce_names();
                 dce_pattern_names(arm.lhs, bound);
-                for name in bound.values {
+                for name in bound {
                     dce_names_remove(free, name)
                 }
                 dce_names_add_all(result, free)
