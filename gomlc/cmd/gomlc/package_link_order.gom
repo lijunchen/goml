@@ -2,6 +2,7 @@ package main;
 
 use module::hir;
 use std::cmp;
+use std::collections;
 
 struct PackageOrderNode {
     name: string,
@@ -41,12 +42,11 @@ fn package_node_is_ready(value: PackageOrderNode, remaining: Vec[PackageOrderNod
 
 fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[isize], string] {
     let remaining: Vec[PackageOrderNode] = Vec::new();
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     for value in values {
-        if names.contains(value.name) {
+        if !names.insert(value.name) {
             return Result::Err("duplicate core provided for package " + value.name)
         } else {
-            names.push(value.name);
             remaining.push(value)
         }
     }

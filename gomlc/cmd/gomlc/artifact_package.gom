@@ -12,6 +12,7 @@ use module::hir;
 use module::parser;
 use module::resources;
 use module::tast;
+use std::collections;
 use std::fs;
 use std::path;
 use std::task;
@@ -84,15 +85,13 @@ fn artifact_read_interface_units(paths: Vec[string]) -> Result[
         Ok(values) => values,
         Err(errors) => return Result::Err(errors[0]),
     };
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     for interface in result {
-        if names.contains(interface.package_name) {
+        if !names.insert(interface.package_name) {
             return Result::Err(
                 "multiple interface files provided for package " + interface.package_name,
             )
-        } else {
-            names.push(interface.package_name);
-        }
+        } else {}
     }
     Result::Ok(result)
 }
@@ -162,7 +161,7 @@ fn artifact_resolve_interface_units(
     direct_dependencies: Vec[string],
     provided: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[artifact::ArtifactInterfaceUnit], string] {
-    let pending: Vec[ArtifactDependencyRequest] = Vec::new();
+    let pending: collections::Stack[ArtifactDependencyRequest] = collections::Stack::new();
     for package_name in direct_dependencies {
         pending.push(
             ArtifactDependencyRequest {
@@ -172,10 +171,13 @@ fn artifact_resolve_interface_units(
             },
         )
     }
-    let resolved_names: Vec[string] = Vec::new();
+    let resolved_names: collections::HashSet[string] = collections::HashSet::new();
     let resolved: Vec[artifact::ArtifactInterfaceUnit] = Vec::new();
     while !pending.is_empty() {
-        let request = pending.remove(pending.len() - 1);
+        let request = match pending.pop() {
+            Some(value) => value,
+            None => break,
+        };
         if request.package_name == "builtin" {
             if artifact_dependency_hash_matches(
                 request.expected_hash,
@@ -230,7 +232,7 @@ fn artifact_resolve_interface_units(
                         + request.package_name,
                 )
             } else {};
-            resolved_names.push(interface.package_name);
+            let _ = resolved_names.insert(interface.package_name);
             match artifact_standard_package(world.standard, interface.package_name) {
                 Some(_) => (),
                 None => resolved.push(interface),
@@ -402,32 +404,32 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
     string,
     string,
 ] {
-    let names: Vec[string] = Vec::new();
+    let mut name: Option[string] = Option::None;
     for index in 0..values.len() {
         let value = values[index];
         match value.ast {
             Some(file) => if !file.package_explicit {
                 return Result::Err(paths[index] + " must declare `package <name>;`")
             } else {
-                if !names.is_empty() {
-                    let name = names[0];
-                    if name != file.package_name {
+                match name {
+                    Some(expected) => if expected != file.package_name {
                         return Result::Err(
-                            "package mismatch in " + paths[index] + ": expected " + name
+                            "package mismatch in " + paths[index] + ": expected " + expected
                                 + ", found "
                                 + file.package_name,
                         )
-                    } else {}
-                } else {};
-                names.push(file.package_name)
+                    } else {},
+                    None => {
+                        name = Option::Some(file.package_name);
+                    },
+                }
             },
             None => (),
         }
     }
-    if !names.is_empty() {
-        Result::Ok(names[0])
-    } else {
-        Result::Err("package has no valid source files")
+    match name {
+        Some(value) => Result::Ok(value),
+        None => Result::Err("package has no valid source files"),
     }
 }
 
@@ -904,13 +906,11 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::Artifact
         Ok(values) => values,
         Err(errors) => return Result::Err(errors[0]),
     };
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     for core_unit in result {
-        if names.contains(core_unit.package_name) {
+        if !names.insert(core_unit.package_name) {
             return Result::Err("duplicate core provided for package " + core_unit.package_name)
-        } else {
-            names.push(core_unit.package_name);
-        }
+        } else {}
     }
     Result::Ok(result)
 }
@@ -937,18 +937,20 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     Vec[artifact::ArtifactCoreUnit],
     string,
 ] {
-    let pending: Vec[string] = Vec::new();
+    let pending: collections::Stack[string] = collections::Stack::new();
     for root in roots {
         pending.push(root)
     }
-    let names: Vec[string] = Vec::new();
+    let names: collections::HashSet[string] = collections::HashSet::new();
     while !pending.is_empty() {
-        let package_name = pending.remove(pending.len() - 1);
-        if names.contains(package_name) {} else {
+        let package_name = match pending.pop() {
+            Some(value) => value,
+            None => break,
+        };
+        if !names.insert(package_name) {} else {
             let Some(core_unit) = artifact_find_core_unit(values, package_name) else {
                 return Result::Err("missing core for package " + package_name)
             };
-            names.push(package_name);
             for dependency in core_unit.deps {
                 if artifact_link_dependency_name(dependency.0) {
                     pending.push(dependency.0)

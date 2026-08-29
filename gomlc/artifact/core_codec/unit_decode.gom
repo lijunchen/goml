@@ -4,6 +4,7 @@ use module::artifact::wire as wire;
 use module::artifact;
 use module::artifact::tast_codec as tast_codec;
 use module::artifact::interface_codec as interface_codec;
+use std::collections;
 
 fn artifact_decode_optional_string(value: wire::ArtifactValue, expected: string) -> Result[
     Option[string],
@@ -83,18 +84,16 @@ fn artifact_test_descriptors_valid(
     package_name: string,
     values: Vec[artifact::ArtifactTestDescriptor],
 ) -> bool {
-    let ids: Vec[string] = Vec::new();
+    let ids: collections::HashSet[string] = collections::HashSet::new();
     for value in values {
         if value.package_name != package_name || value.id == "" || value.symbol == ""
             || value.display_name == ""
             || value.source_path == ""
             || value.start > value.end
             || (!value.ignored && tast_codec::option_string_present(value.ignore_reason))
-            || ids.contains(value.id) {
+            || !ids.insert(value.id) {
             return false
-        } else {
-            ids.push(value.id)
-        }
+        } else {}
     }
     true
 }
