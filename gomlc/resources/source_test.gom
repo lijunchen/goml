@@ -102,7 +102,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> () {
 #[test]
 fn loads_multifile_standard_package() -> () {
     match standard_sources("std::collections") {
-        Ok(Some(values)) => testing::assert_eq(values.len(), 9),
+        Ok(Some(values)) => testing::assert_eq(values.len(), 13),
         Ok(None) => testing::fail("expected standard package"),
         Err(error) => testing::fail(error.to_string()),
     };

@@ -1,0 +1,81 @@
+package collections;
+
+pub struct IndexSet[T] {
+    entries: IndexMap[T, ()],
+}
+
+impl[T: Eq + Hash] Default for IndexSet[T] {
+    fn default() -> IndexSet[T] {
+        IndexSet::new()
+    }
+}
+
+impl[T: Eq + Hash] IndexSet[T] {
+    pub fn new() -> IndexSet[T] {
+        IndexSet { entries: IndexMap::new() }
+    }
+
+    pub fn with_capacity(capacity: isize) -> IndexSet[T] {
+        IndexSet { entries: IndexMap::with_capacity(capacity) }
+    }
+
+    pub fn from_vec(values: Vec[T]) -> IndexSet[T] {
+        let result = IndexSet::with_capacity(values.len());
+        for value in values {
+            let _ = result.insert(value);
+        }
+        result
+    }
+
+    pub fn len(self: IndexSet[T]) -> isize {
+        self.entries.len()
+    }
+
+    pub fn is_empty(self: IndexSet[T]) -> bool {
+        self.entries.is_empty()
+    }
+
+    pub fn contains(self: IndexSet[T], value: T) -> bool {
+        self.entries.contains(value)
+    }
+
+    pub fn insert(self: IndexSet[T], value: T) -> bool {
+        self.entries.insert(value, ()).is_none()
+    }
+
+    pub fn remove(self: IndexSet[T], value: T) -> bool {
+        self.entries.remove(value).is_some()
+    }
+
+    pub fn reserve(self: IndexSet[T], additional: isize) -> () {
+        self.entries.reserve(additional)
+    }
+
+    pub fn clear(self: IndexSet[T]) -> () {
+        self.entries.clear()
+    }
+
+    pub fn to_vec(self: IndexSet[T]) -> Vec[T] {
+        self.entries.keys()
+    }
+
+    pub fn iter(self: IndexSet[T]) -> FnIterator[T] {
+        let iterator = self.entries.iter();
+        FnIterator::from_fn(
+            || match iterator.next() {
+                Some((value, ())) => Option::Some(value),
+                None => Option::None,
+            },
+        )
+    }
+}
+
+impl[T: Eq + Hash] IntoIterator for IndexSet[T] {
+    type Item = T;
+
+    type IntoIter = FnIterator[T];
+
+    fn into_iter(self: IndexSet[T]) -> FnIterator[T] {
+        self.iter()
+    }
+}

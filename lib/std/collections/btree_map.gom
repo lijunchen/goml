@@ -1,0 +1,399 @@
+package collections;
+
+use std::cmp;
+
+const BTREE_MIN_DEGREE: isize = 8;
+
+const BTREE_MAX_KEYS: isize = 15;
+
+struct BTreeNode[K, V] {
+    leaf: bool,
+    keys: Vec[K],
+    values: Vec[V],
+    children: Vec[BTreeNode[K, V]],
+}
+
+struct BTreeIterFrame[K, V] {
+    node: BTreeNode[K, V],
+    position: isize,
+}
+
+pub struct BTreeMap[K, V] {
+    root: Ref[Option[BTreeNode[K, V]]],
+    len: Ref[isize],
+}
+
+impl[K: cmp::Ord, V] Default for BTreeMap[K, V] {
+    fn default() -> BTreeMap[K, V] {
+        BTreeMap::new()
+    }
+}
+
+fn btree_node_new[K, V](leaf: bool) -> BTreeNode[K, V] {
+    BTreeNode { leaf, keys: Vec::new(), values: Vec::new(), children: Vec::new() }
+}
+
+fn btree_node_lower_bound[K: cmp::Ord, V](node: BTreeNode[K, V], key: K) -> isize {
+    let mut low = 0;
+    let mut high = node.keys.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if cmp::Ord::cmp(node.keys[middle], key).is_lt() {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    low
+}
+
+fn btree_split_child[K: cmp::Ord, V](parent: BTreeNode[K, V], index: isize) -> () {
+    let child = parent.children[index];
+    let sibling = btree_node_new(child.leaf);
+    let middle_key = child.keys[BTREE_MIN_DEGREE - 1];
+    let middle_value = child.values[BTREE_MIN_DEGREE - 1];
+    let mut position = BTREE_MIN_DEGREE;
+    while position < child.keys.len() {
+        sibling.keys.push(child.keys[position]);
+        sibling.values.push(child.values[position]);
+        position += 1;
+    }
+    child.keys.truncate(BTREE_MIN_DEGREE - 1);
+    child.values.truncate(BTREE_MIN_DEGREE - 1);
+    if !child.leaf {
+        position = BTREE_MIN_DEGREE;
+        while position < child.children.len() {
+            sibling.children.push(child.children[position]);
+            position += 1;
+        }
+        child.children.truncate(BTREE_MIN_DEGREE);
+    } else {};
+    parent.keys.insert(index, middle_key);
+    parent.values.insert(index, middle_value);
+    parent.children.insert(index + 1, sibling)
+}
+
+fn btree_insert_non_full[K: cmp::Ord, V](node: BTreeNode[K, V], key: K, value: V) -> Option[V] {
+    let mut index = btree_node_lower_bound(node, key);
+    if index < node.keys.len() && cmp::Ord::cmp(node.keys[index], key).is_eq() {
+        let previous = node.values[index];
+        node.values[index] = value;
+        Option::Some(previous)
+    } else if node.leaf {
+        node.keys.insert(index, key);
+        node.values.insert(index, value);
+        Option::None
+    } else {
+        if node.children[index].keys.len() == BTREE_MAX_KEYS {
+            btree_split_child(node, index);
+            let ordering = cmp::Ord::cmp(key, node.keys[index]);
+            if ordering.is_eq() {
+                let previous = node.values[index];
+                node.values[index] = value;
+                return Option::Some(previous)
+            } else if ordering.is_gt() {
+                index += 1;
+            } else {}
+        } else {};
+        btree_insert_non_full(node.children[index], key, value)
+    }
+}
+
+fn btree_first_entry[K, V](node: BTreeNode[K, V]) -> (K, V) {
+    let mut current = node;
+    while !current.leaf {
+        current = current.children[0];
+    };
+    (current.keys[0], current.values[0])
+}
+
+fn btree_last_entry[K, V](node: BTreeNode[K, V]) -> (K, V) {
+    let mut current = node;
+    while !current.leaf {
+        current = current.children[current.children.len() - 1];
+    }
+    let index = current.keys.len() - 1;
+    (current.keys[index], current.values[index])
+}
+
+fn btree_borrow_from_previous[K, V](parent: BTreeNode[K, V], index: isize) -> () {
+    let child = parent.children[index];
+    let sibling = parent.children[index - 1];
+    child.keys.insert(0, parent.keys[index - 1]);
+    child.values.insert(0, parent.values[index - 1]);
+    if !child.leaf {
+        match sibling.children.pop() {
+            Some(value) => child.children.insert(0, value),
+            None => (),
+        }
+    } else {};
+    match sibling.keys.pop() {
+        Some(value) => {
+            parent.keys[index - 1] = value;
+        },
+        None => (),
+    };
+    match sibling.values.pop() {
+        Some(value) => {
+            parent.values[index - 1] = value;
+        },
+        None => (),
+    }
+}
+
+fn btree_borrow_from_next[K, V](parent: BTreeNode[K, V], index: isize) -> () {
+    let child = parent.children[index];
+    let sibling = parent.children[index + 1];
+    child.keys.push(parent.keys[index]);
+    child.values.push(parent.values[index]);
+    if !child.leaf {
+        child.children.push(sibling.children.remove(0));
+    } else {};
+    parent.keys[index] = sibling.keys.remove(0);
+    parent.values[index] = sibling.values.remove(0);
+}
+
+fn btree_merge_children[K, V](parent: BTreeNode[K, V], index: isize) -> BTreeNode[K, V] {
+    let child = parent.children[index];
+    let sibling = parent.children.remove(index + 1);
+    child.keys.push(parent.keys.remove(index));
+    child.values.push(parent.values.remove(index));
+    for key in sibling.keys {
+        child.keys.push(key)
+    }
+    for value in sibling.values {
+        child.values.push(value)
+    }
+    for descendant in sibling.children {
+        child.children.push(descendant)
+    }
+    child
+}
+
+fn btree_remove_from_node[K: cmp::Ord, V](node: BTreeNode[K, V], key: K) -> Option[V] {
+    let mut index = btree_node_lower_bound(node, key);
+    if index < node.keys.len() && cmp::Ord::cmp(node.keys[index], key).is_eq() {
+        if node.leaf {
+            let _ = node.keys.remove(index);
+            Option::Some(node.values.remove(index))
+        } else if node.children[index].keys.len() >= BTREE_MIN_DEGREE {
+            let (replacement_key, replacement_value) = btree_last_entry(node.children[index]);
+            let previous = node.values[index];
+            node.keys[index] = replacement_key;
+            node.values[index] = replacement_value;
+            let _ = btree_remove_from_node(node.children[index], replacement_key);
+            Option::Some(previous)
+        } else if node.children[index + 1].keys.len() >= BTREE_MIN_DEGREE {
+            let (replacement_key, replacement_value) = btree_first_entry(node.children[index + 1]);
+            let previous = node.values[index];
+            node.keys[index] = replacement_key;
+            node.values[index] = replacement_value;
+            let _ = btree_remove_from_node(node.children[index + 1], replacement_key);
+            Option::Some(previous)
+        } else {
+            let child = btree_merge_children(node, index);
+            btree_remove_from_node(child, key)
+        }
+    } else if node.leaf {
+        Option::None
+    } else {
+        if node.children[index].keys.len() == BTREE_MIN_DEGREE - 1 {
+            if index > 0 && node.children[index - 1].keys.len() >= BTREE_MIN_DEGREE {
+                btree_borrow_from_previous(node, index)
+            } else if index < node.keys.len()
+                && node.children[index + 1].keys.len() >= BTREE_MIN_DEGREE {
+                btree_borrow_from_next(node, index)
+            } else if index < node.keys.len() {
+                let _ = btree_merge_children(node, index);
+            } else {
+                let _ = btree_merge_children(node, index - 1);
+                index -= 1;
+            }
+        } else {};
+        btree_remove_from_node(node.children[index], key)
+    }
+}
+
+impl[K: cmp::Ord, V] BTreeMap[K, V] {
+    pub fn new() -> BTreeMap[K, V] {
+        BTreeMap { root: Ref::new(Option::None), len: Ref::new(0) }
+    }
+
+    pub fn from_vec(entries: Vec[(K, V)]) -> BTreeMap[K, V] {
+        let result = BTreeMap::new();
+        for (key, value) in entries {
+            let _ = result.insert(key, value);
+        }
+        result
+    }
+
+    pub fn len(self: BTreeMap[K, V]) -> isize {
+        self.len.get()
+    }
+
+    pub fn is_empty(self: BTreeMap[K, V]) -> bool {
+        self.len.get() == 0
+    }
+
+    pub fn get(self: BTreeMap[K, V], key: K) -> Option[V] {
+        let mut current = self.root.get();
+        loop {
+            match current {
+                Some(node) => {
+                    let index = btree_node_lower_bound(node, key);
+                    if index < node.keys.len() && cmp::Ord::cmp(node.keys[index], key).is_eq() {
+                        return Option::Some(node.values[index])
+                    } else if node.leaf {
+                        return Option::None
+                    } else {
+                        current = Option::Some(node.children[index]);
+                    }
+                },
+                None => return Option::None,
+            }
+        }
+    }
+
+    pub fn contains_key(self: BTreeMap[K, V], key: K) -> bool {
+        self.get(key).is_some()
+    }
+
+    pub fn insert(self: BTreeMap[K, V], key: K, value: V) -> Option[V] {
+        match self.root.get() {
+            None => {
+                let root = btree_node_new(true);
+                root.keys.push(key);
+                root.values.push(value);
+                self.root.set(Option::Some(root));
+                self.len.set(1);
+                Option::None
+            },
+            Some(root) => {
+                let result = if root.keys.len() == BTREE_MAX_KEYS {
+                    let next_root = btree_node_new(false);
+                    next_root.children.push(root);
+                    btree_split_child(next_root, 0);
+                    self.root.set(Option::Some(next_root));
+                    btree_insert_non_full(next_root, key, value)
+                } else {
+                    btree_insert_non_full(root, key, value)
+                };
+                if result.is_none() {
+                    self.len.set(self.len.get() + 1)
+                } else {};
+                result
+            },
+        }
+    }
+
+    pub fn remove(self: BTreeMap[K, V], key: K) -> Option[V] {
+        match self.root.get() {
+            None => Option::None,
+            Some(root) => {
+                let result = btree_remove_from_node(root, key);
+                if result.is_some() {
+                    self.len.set(self.len.get() - 1);
+                    if root.keys.is_empty() {
+                        if root.leaf {
+                            self.root.set(Option::None)
+                        } else {
+                            self.root.set(Option::Some(root.children[0]))
+                        }
+                    } else {}
+                } else {};
+                result
+            },
+        }
+    }
+
+    pub fn first(self: BTreeMap[K, V]) -> Option[(K, V)] {
+        match self.root.get() {
+            Some(root) => Option::Some(btree_first_entry(root)),
+            None => Option::None,
+        }
+    }
+
+    pub fn last(self: BTreeMap[K, V]) -> Option[(K, V)] {
+        match self.root.get() {
+            Some(root) => Option::Some(btree_last_entry(root)),
+            None => Option::None,
+        }
+    }
+
+    pub fn clear(self: BTreeMap[K, V]) -> () {
+        self.root.set(Option::None);
+        self.len.set(0)
+    }
+
+    pub fn iter(self: BTreeMap[K, V]) -> FnIterator[(K, V)] {
+        let stack: Vec[BTreeIterFrame[K, V]] = Vec::new();
+        match self.root.get() {
+            Some(root) => stack.push(BTreeIterFrame { node: root, position: 0 }),
+            None => (),
+        };
+        FnIterator::from_fn(
+            || loop {
+                if stack.is_empty() {
+                    return Option::None
+                } else {};
+                let top = stack.len() - 1;
+                let frame = stack[top];
+                if frame.node.leaf {
+                    if frame.position < frame.node.keys.len() {
+                        let index = frame.position;
+                        stack[top] = BTreeIterFrame { node: frame.node, position: index + 1 };
+                        return Option::Some((frame.node.keys[index], frame.node.values[index]))
+                    } else {
+                        let _ = stack.pop();
+                    }
+                } else if frame.position > frame.node.keys.len() * 2 {
+                    let _ = stack.pop();
+                } else if frame.position % 2 == 0 {
+                    let child_index = frame.position / 2;
+                    stack[top] = BTreeIterFrame { node: frame.node, position: frame.position + 1 };
+                    stack.push(
+                        BTreeIterFrame { node: frame.node.children[child_index], position: 0 },
+                    )
+                } else {
+                    let index = frame.position / 2;
+                    stack[top] = BTreeIterFrame { node: frame.node, position: frame.position + 1 };
+                    return Option::Some((frame.node.keys[index], frame.node.values[index]))
+                }
+            },
+        )
+    }
+
+    pub fn entries(self: BTreeMap[K, V]) -> Vec[(K, V)] {
+        let result = Vec::with_capacity(self.len());
+        for entry in self {
+            result.push(entry)
+        }
+        result
+    }
+
+    pub fn keys(self: BTreeMap[K, V]) -> Vec[K] {
+        let result = Vec::with_capacity(self.len());
+        for (key, _) in self {
+            result.push(key)
+        }
+        result
+    }
+
+    pub fn values(self: BTreeMap[K, V]) -> Vec[V] {
+        let result = Vec::with_capacity(self.len());
+        for (_, value) in self {
+            result.push(value)
+        }
+        result
+    }
+}
+
+impl[K: cmp::Ord, V] IntoIterator for BTreeMap[K, V] {
+    type Item = (K, V);
+
+    type IntoIter = FnIterator[(K, V)];
+
+    fn into_iter(self: BTreeMap[K, V]) -> FnIterator[(K, V)] {
+        self.iter()
+    }
+}

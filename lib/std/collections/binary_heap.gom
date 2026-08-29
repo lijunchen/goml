@@ -1,0 +1,121 @@
+package collections;
+
+use std::cmp;
+
+pub struct BinaryHeap[T] {
+    values: Vec[T],
+}
+
+impl[T: cmp::Ord] Default for BinaryHeap[T] {
+    fn default() -> BinaryHeap[T] {
+        BinaryHeap::new()
+    }
+}
+
+fn binary_heap_sift_down[T: cmp::Ord](values: Vec[T], start: isize) -> () {
+    let length = values.len();
+    let mut parent = start;
+    loop {
+        let left = parent * 2 + 1;
+        if left >= length {
+            return
+        } else {};
+        let right = left + 1;
+        let child = if right < length && cmp::Ord::cmp(values[right], values[left]).is_gt() {
+            right
+        } else {
+            left
+        };
+        if !cmp::Ord::cmp(values[child], values[parent]).is_gt() {
+            return
+        } else {};
+        values.swap(parent, child);
+        parent = child;
+    }
+}
+
+impl[T: cmp::Ord] BinaryHeap[T] {
+    pub fn new() -> BinaryHeap[T] {
+        BinaryHeap { values: Vec::new() }
+    }
+
+    pub fn with_capacity(capacity: isize) -> BinaryHeap[T] {
+        BinaryHeap { values: Vec::with_capacity(capacity) }
+    }
+
+    pub fn from_vec(values: Vec[T]) -> BinaryHeap[T] {
+        let mut index = values.len() / 2;
+        while index > 0 {
+            index -= 1;
+            binary_heap_sift_down(values, index);
+        }
+        BinaryHeap { values }
+    }
+
+    pub fn len(self: BinaryHeap[T]) -> isize {
+        self.values.len()
+    }
+
+    pub fn capacity(self: BinaryHeap[T]) -> isize {
+        self.values.capacity()
+    }
+
+    pub fn is_empty(self: BinaryHeap[T]) -> bool {
+        self.values.is_empty()
+    }
+
+    pub fn reserve(self: BinaryHeap[T], additional: isize) -> () {
+        self.values.reserve(additional)
+    }
+
+    pub fn peek(self: BinaryHeap[T]) -> Option[T] {
+        self.values.get_checked(0)
+    }
+
+    pub fn push(self: BinaryHeap[T], value: T) -> () {
+        self.values.push(value);
+        let mut child = self.values.len() - 1;
+        while child > 0 {
+            let parent = (child - 1) / 2;
+            if !cmp::Ord::cmp(self.values[child], self.values[parent]).is_gt() {
+                return
+            } else {};
+            self.values.swap(child, parent);
+            child = parent;
+        }
+    }
+
+    pub fn pop(self: BinaryHeap[T]) -> Option[T] {
+        let length = self.values.len();
+        if length == 0 {
+            Option::None
+        } else if length == 1 {
+            self.values.pop()
+        } else {
+            self.values.swap(0, length - 1);
+            let result = self.values.pop();
+            binary_heap_sift_down(self.values, 0);
+            result
+        }
+    }
+
+    pub fn clear(self: BinaryHeap[T]) -> () {
+        self.values.clear()
+    }
+
+    pub fn into_vec(self: BinaryHeap[T]) -> Vec[T] {
+        self.values
+    }
+
+    pub fn into_sorted_vec(self: BinaryHeap[T]) -> Vec[T] {
+        let result = Vec::with_capacity(self.len());
+        while !self.is_empty() {
+            match self.pop() {
+                Some(value) => result.push(value),
+                None => (),
+            }
+        }
+        result.reverse();
+        result
+    }
+}

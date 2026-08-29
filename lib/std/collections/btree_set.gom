@@ -1,0 +1,89 @@
+package collections;
+
+use std::cmp;
+
+pub struct BTreeSet[T] {
+    entries: BTreeMap[T, ()],
+}
+
+impl[T: cmp::Ord] Default for BTreeSet[T] {
+    fn default() -> BTreeSet[T] {
+        BTreeSet::new()
+    }
+}
+
+impl[T: cmp::Ord] BTreeSet[T] {
+    pub fn new() -> BTreeSet[T] {
+        BTreeSet { entries: BTreeMap::new() }
+    }
+
+    pub fn from_vec(values: Vec[T]) -> BTreeSet[T] {
+        let result = BTreeSet::new();
+        for value in values {
+            let _ = result.insert(value);
+        }
+        result
+    }
+
+    pub fn len(self: BTreeSet[T]) -> isize {
+        self.entries.len()
+    }
+
+    pub fn is_empty(self: BTreeSet[T]) -> bool {
+        self.entries.is_empty()
+    }
+
+    pub fn contains(self: BTreeSet[T], value: T) -> bool {
+        self.entries.contains_key(value)
+    }
+
+    pub fn insert(self: BTreeSet[T], value: T) -> bool {
+        self.entries.insert(value, ()).is_none()
+    }
+
+    pub fn remove(self: BTreeSet[T], value: T) -> bool {
+        self.entries.remove(value).is_some()
+    }
+
+    pub fn first(self: BTreeSet[T]) -> Option[T] {
+        match self.entries.first() {
+            Some((value, ())) => Option::Some(value),
+            None => Option::None,
+        }
+    }
+
+    pub fn last(self: BTreeSet[T]) -> Option[T] {
+        match self.entries.last() {
+            Some((value, ())) => Option::Some(value),
+            None => Option::None,
+        }
+    }
+
+    pub fn clear(self: BTreeSet[T]) -> () {
+        self.entries.clear()
+    }
+
+    pub fn iter(self: BTreeSet[T]) -> FnIterator[T] {
+        let iterator = self.entries.iter();
+        FnIterator::from_fn(
+            || match iterator.next() {
+                Some((value, ())) => Option::Some(value),
+                None => Option::None,
+            },
+        )
+    }
+
+    pub fn to_vec(self: BTreeSet[T]) -> Vec[T] {
+        self.entries.keys()
+    }
+}
+
+impl[T: cmp::Ord] IntoIterator for BTreeSet[T] {
+    type Item = T;
+
+    type IntoIter = FnIterator[T];
+
+    fn into_iter(self: BTreeSet[T]) -> FnIterator[T] {
+        self.iter()
+    }
+}
