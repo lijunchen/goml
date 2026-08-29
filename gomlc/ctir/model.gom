@@ -324,160 +324,147 @@ pub fn empty_module(package_name: string) -> CtModule {
     }
 }
 
-fn push_reachable_id(values: Vec[isize], value: isize) -> bool {
-    for existing in values {
-        if existing == value {
-            return false
-        } else {}
-    }
-    values.push(value);
-    true
+struct CtReachability {
+    function_ids: Vec[isize],
+    functions: HashMap[isize, ()],
+    constants: HashMap[string, ()],
 }
 
-fn push_reachable_name(values: Vec[string], value: string) -> () {
-    for existing in values {
-        if existing == value {
-            return
-        } else {}
+fn new_ct_reachability() -> CtReachability {
+    CtReachability {
+        function_ids: Vec::new(),
+        functions: HashMap::new(),
+        constants: HashMap::new(),
     }
-    values.push(value)
 }
 
-fn collect_reachable_expr(
-    package_name: string,
-    value: CtExpr,
-    ids: Vec[isize],
-    constants: Vec[string],
-) -> () {
+fn add_reachable_function(values: CtReachability, id: isize) -> () {
+    match values.functions.insert(id, ()) {
+        Some(_) => (),
+        None => values.function_ids.push(id),
+    }
+}
+
+fn add_reachable_constant(values: CtReachability, name: string) -> () {
+    values.constants[name] = ();
+}
+
+fn collect_reachable_expr(package_name: string, value: CtExpr, reachable: CtReachability) -> () {
     match value.kind {
         Value(_) | Local(_) | Continue { .. } => (),
         Constant { package_name: owner, name } => if owner == package_name {
-            push_reachable_name(constants, name)
+            add_reachable_constant(reachable, name)
         } else {},
         Tuple(values) | Array(values) | Struct { fields: values, .. } | Enum { fields: values, .. } => for value in values {
-            collect_reachable_expr(package_name, value, ids, constants)
+            collect_reachable_expr(package_name, value, reachable)
         },
         Field { value, index: _ } | Unary { op: _, value } | Cast { value, target: _ } | CompileError(value,) => collect_reachable_expr(
             package_name,
             value,
-            ids,
-            constants,
+            reachable,
         ),
         Index { value, index } | Binary { op: _, left: value, right: index } => {
-            collect_reachable_expr(package_name, value, ids, constants);
-            collect_reachable_expr(package_name, index, ids, constants)
+            collect_reachable_expr(package_name, value, reachable);
+            collect_reachable_expr(package_name, index, reachable)
         },
-        Block(value) => collect_reachable_block(package_name, value, ids, constants),
+        Block(value) => collect_reachable_block(package_name, value, reachable),
         If { condition, then_branch, else_branch } => {
-            collect_reachable_expr(package_name, condition, ids, constants);
-            collect_reachable_expr(package_name, then_branch, ids, constants);
-            collect_reachable_expr(package_name, else_branch, ids, constants)
+            collect_reachable_expr(package_name, condition, reachable);
+            collect_reachable_expr(package_name, then_branch, reachable);
+            collect_reachable_expr(package_name, else_branch, reachable)
         },
         Match { value, arms } => {
-            collect_reachable_expr(package_name, value, ids, constants);
+            collect_reachable_expr(package_name, value, reachable);
             for arm in arms {
                 match arm.guard {
-                    Some(value) => collect_reachable_expr(package_name, value, ids, constants),
+                    Some(value) => collect_reachable_expr(package_name, value, reachable),
                     None => (),
                 };
-                collect_reachable_expr(package_name, arm.body, ids, constants)
+                collect_reachable_expr(package_name, arm.body, reachable)
             }
         },
         While { target: _, condition, body } => {
-            collect_reachable_expr(package_name, condition, ids, constants);
-            collect_reachable_expr(package_name, body, ids, constants)
+            collect_reachable_expr(package_name, condition, reachable);
+            collect_reachable_expr(package_name, body, reachable)
         },
         ForRange { target: _, pattern: _, start, end, inclusive: _, body } => {
-            collect_reachable_expr(package_name, start, ids, constants);
-            collect_reachable_expr(package_name, end, ids, constants);
-            collect_reachable_expr(package_name, body, ids, constants)
+            collect_reachable_expr(package_name, start, reachable);
+            collect_reachable_expr(package_name, end, reachable);
+            collect_reachable_expr(package_name, body, reachable)
         },
         ForArray { target: _, pattern: _, value, body } => {
-            collect_reachable_expr(package_name, value, ids, constants);
-            collect_reachable_expr(package_name, body, ids, constants)
+            collect_reachable_expr(package_name, value, reachable);
+            collect_reachable_expr(package_name, body, reachable)
         },
-        Loop { target: _, body } => collect_reachable_expr(package_name, body, ids, constants),
+        Loop { target: _, body } => collect_reachable_expr(package_name, body, reachable),
         Break { target: _, value } | Return(value) => match value {
-            Some(value) => collect_reachable_expr(package_name, value, ids, constants),
+            Some(value) => collect_reachable_expr(package_name, value, reachable),
             None => (),
         },
         Call { target, args } => {
             match target {
-                Local(id) => {
-                    let _ = push_reachable_id(ids, id);
-                },
+                Local(id) => add_reachable_function(reachable, id),
                 External { .. } | Intrinsic(_) => (),
             };
             for value in args {
-                collect_reachable_expr(package_name, value, ids, constants)
+                collect_reachable_expr(package_name, value, reachable)
             }
         },
     }
 }
 
-fn collect_reachable_block(
-    package_name: string,
-    value: CtBlock,
-    ids: Vec[isize],
-    constants: Vec[string],
-) -> () {
+fn collect_reachable_block(package_name: string, value: CtBlock, reachable: CtReachability) -> () {
     for statement in value.statements {
         match statement {
             Let { pattern: _, value } | Assign { slot: _, value } | Expr(value) => {
-                collect_reachable_expr(package_name, value, ids, constants)
+                collect_reachable_expr(package_name, value, reachable)
             },
         }
     }
     match value.tail {
-        Some(value) => collect_reachable_expr(package_name, value, ids, constants),
+        Some(value) => collect_reachable_expr(package_name, value, reachable),
         None => (),
     }
 }
 
 pub fn public_module(value: CtModule, public_entries: Vec[string], public_constants: Vec[string]) -> CtModule {
-    let ids: Vec[isize] = Vec::new();
-    let constants: Vec[string] = Vec::new();
+    let reachable = new_ct_reachability();
     for name in public_constants {
-        push_reachable_name(constants, name)
+        add_reachable_constant(reachable, name)
     }
-    let entries: Vec[CtEntry] = Vec::new();
+    let public_entry_names: HashMap[string, ()] = HashMap::new();
+    for name in public_entries {
+        public_entry_names[name] = ();
+    }
+    let entries: Vec[CtEntry] = Vec::with_capacity(value.entries.len());
     for entry in value.entries {
-        let mut public = false;
-        for name in public_entries {
-            if entry.name == name {
-                public = true;
-            } else {}
-        }
-        if public {
+        if public_entry_names.contains(entry.name) {
             entries.push(entry);
-            let _ = push_reachable_id(ids, entry.function_id);
+            add_reachable_function(reachable, entry.function_id)
         } else {}
     }
-    let derive_entries: Vec[CtDeriveEntry] = Vec::new();
+    let derive_entries: Vec[CtDeriveEntry] = Vec::with_capacity(value.derive_entries.len());
     for entry in value.derive_entries {
         if entry.public {
             derive_entries.push(entry);
-            let _ = push_reachable_id(ids, entry.function_id);
+            add_reachable_function(reachable, entry.function_id)
         } else {}
     }
+    let functions_by_id: HashMap[isize, CtFunction] = HashMap::new();
+    for function in value.functions {
+        functions_by_id[function.id] = function;
+    }
     let mut index = 0;
-    while index < ids.len() {
-        for function in value.functions {
-            if function.id == ids[index] {
-                collect_reachable_block(value.package_name, function.body, ids, constants)
-            } else {}
-        }
+    while index < reachable.function_ids.len() {
+        match functions_by_id[reachable.function_ids[index]] {
+            Some(function) => collect_reachable_block(value.package_name, function.body, reachable),
+            None => (),
+        };
         index = index + 1;
     }
-    let functions: Vec[CtFunction] = Vec::new();
+    let functions: Vec[CtFunction] = Vec::with_capacity(reachable.function_ids.len());
     for function in value.functions {
-        let mut found = false;
-        for id in ids {
-            if function.id == id {
-                found = true;
-            } else {}
-        }
-        if found {
+        if reachable.functions.contains(function.id) {
             functions.push(function)
         } else {}
     }
@@ -489,13 +476,11 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
         derive_entries,
         sites: Vec::new(),
         constants: {
-            let result: Vec[CtConstant] = Vec::new();
+            let result: Vec[CtConstant] = Vec::with_capacity(reachable.constants.len());
             for constant in value.constants {
-                for name in constants {
-                    if constant.name == name {
-                        result.push(constant)
-                    } else {}
-                }
+                if reachable.constants.contains(constant.name) {
+                    result.push(constant)
+                } else {}
             }
             result
         },
