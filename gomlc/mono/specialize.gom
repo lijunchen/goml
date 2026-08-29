@@ -1362,7 +1362,7 @@ fn matching_trait_selections(
     bindings: Vec[TypeBinding],
 ) -> Vec[TraitSelection] {
     let selections: Vec[TraitSelection] = Vec::new();
-    let keys: Vec[string] = Vec::new();
+    let keys: collections::HashSet[string] = collections::HashSet::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
             Some(metadata) => if metadata.trait_ref.name == reference.name
@@ -1394,8 +1394,7 @@ fn matching_trait_selections(
                                 ),
                             };
                             let key = trait_selection_key(selection);
-                            if keys.contains(key) {} else {
-                                keys.push(key);
+                            if !keys.insert(key) {} else {
                                 selections.push(selection)
                             }
                         } else {}
@@ -1451,7 +1450,7 @@ fn matching_projection_types(
     reference: core::TraitRef,
 ) -> Vec[core::Type] {
     let result: Vec[core::Type] = Vec::new();
-    let keys: Vec[string] = Vec::new();
+    let keys: collections::HashSet[string] = collections::HashSet::new();
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
             Some(metadata) => {
@@ -1471,8 +1470,7 @@ fn matching_projection_types(
                             if associated.0 == name {
                                 let value = substitute_type(associated.1, bindings);
                                 let key = compact_type(value);
-                                if keys.contains(key) {} else {
-                                    keys.push(key);
+                                if !keys.insert(key) {} else {
                                     result.push(value)
                                 }
                             } else {}

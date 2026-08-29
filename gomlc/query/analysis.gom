@@ -153,7 +153,7 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
     string,
 ] {
     let environments = tast::dependency_environments(files)?;
-    let attached_modules: Vec[string] = Vec::new();
+    let attached_modules: collections::HashSet[string] = collections::HashSet::new();
     for index in 0..environments.len() {
         let module = Ref::new(Option::None);
         let package_name = files[index].package_name;
@@ -161,7 +161,7 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
             for value in modules {
                 if value.package_name == package_name {
                     module.set(Option::Some(value));
-                    attached_modules.push(package_name)
+                    let _ = attached_modules.insert(package_name);
                 } else {}
             }
         };

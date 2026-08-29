@@ -2,6 +2,7 @@ package go_backend;
 
 use module::repr;
 use module::tast;
+use std::collections;
 use std::text;
 
 fn find_enum(values: Vec[repr::EnumDef], name: string) -> Option[repr::EnumDef] {
@@ -531,7 +532,7 @@ pub fn emit_user_type_items(
     instances: Vec[repr::TypeInstance],
     function_names: FunctionNames,
 ) -> () {
-    let emitted: Vec[string] = Vec::new();
+    let emitted: collections::HashSet[string] = collections::HashSet::new();
     for definition in structs {
         let instance = instance_by_name(instances, definition.name);
         let custom = match instance {
@@ -545,7 +546,7 @@ pub fn emit_user_type_items(
                 fields.push((go_ident(field.0), lower_type(field.1)))
             }
             items.push(Item::Struct(StructDef { name: go_user_type_name(definition.name), fields }));
-            emitted.push(definition.name)
+            let _ = emitted.insert(definition.name);
         }
     }
     for instance in instances {
@@ -553,7 +554,7 @@ pub fn emit_user_type_items(
             match builtin_struct_instance(builtin, instance, instances) {
                 Some(definition) => {
                     items.push(Item::Struct(definition));
-                    emitted.push(instance.name)
+                    let _ = emitted.insert(instance.name);
                 },
                 None => (),
             }

@@ -4320,7 +4320,7 @@ pub fn emit_builtin_runtime_items(
             _ => (),
         }
     }
-    let options: Vec[string] = Vec::new();
+    let options: collections::HashSet[string] = collections::HashSet::new();
     for ty in types {
         match repr::resolve_type(ty) {
             HashMap { key, value } => {
@@ -4340,7 +4340,7 @@ pub fn emit_builtin_runtime_items(
                     items.push(item)
                 }
                 if include_option {
-                    options.push(option)
+                    let _ = options.insert(option);
                 } else {}
             },
             _ => (),
@@ -4367,15 +4367,14 @@ pub fn emit_dyn_runtime_items(
     functions: Vec[anf::Function],
     names: DynHelperNames,
 ) -> () {
-    let dyn_traits: Vec[string] = Vec::new();
+    let dyn_traits: collections::HashSet[string] = collections::HashSet::new();
     for ty in types {
         match repr::resolve_type(ty) {
             Dyn { trait_name: name, .. } => {
-                if !dyn_traits.contains(name) {
+                if dyn_traits.insert(name) {
                     for item in dyn_type_items(name, dyn_methods(builtin, functions, name)) {
                         items.push(item)
                     }
-                    dyn_traits.push(name)
                 } else {}
             },
             _ => (),
