@@ -1,7 +1,9 @@
 package mono;
 
+use std::collections;
+
 struct ValidateContext {
-    types: HashMap[string, ()],
+    types: collections::HashSet[string],
 }
 
 fn validate_type(ctx: ValidateContext, value: Type, context: string) -> Result[(), string] {
@@ -238,28 +240,23 @@ fn validate_function(ctx: ValidateContext, value: Function) -> Result[(), string
 }
 
 pub fn validate(value: File) -> Result[(), string] {
-    let type_names: HashMap[string, ()] = HashMap::new();
+    let type_names: collections::HashSet[string] = collections::HashSet::new();
     for definition in value.enums {
-        if type_names.contains(definition.name) {
+        if !type_names.insert(definition.name) {
             return Result::Err("duplicate Mono type definition " + definition.name)
-        } else {
-            type_names[definition.name] = ();
-        }
+        } else {}
     }
     for definition in value.structs {
-        if type_names.contains(definition.name) {
+        if !type_names.insert(definition.name) {
             return Result::Err("duplicate Mono type definition " + definition.name)
-        } else {
-            type_names[definition.name] = ();
-        }
+        } else {}
     }
-    let instance_names: HashMap[string, ()] = HashMap::new();
+    let instance_names: collections::HashSet[string] = collections::HashSet::new();
     for instance in value.type_instances {
-        if instance_names.contains(instance.name) {
+        if !instance_names.insert(instance.name) {
             return Result::Err("duplicate Mono type instance " + instance.name)
         } else {
-            instance_names[instance.name] = ();
-            type_names[instance.name] = ();
+            let _ = type_names.insert(instance.name);
         }
     }
     let ctx = ValidateContext { types: type_names };

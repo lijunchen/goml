@@ -37,7 +37,7 @@ struct SpecializeCtx {
     instances: Vec[Instance],
     instance_index: HashMap[string, Instance],
     work: Vec[Instance],
-    used_names: HashMap[string, ()],
+    used_names: collections::HashSet[string],
     active: Ref[Option[Instance]],
     error: Ref[Option[string]],
 }
@@ -974,7 +974,7 @@ fn register_structural_trait_function(
                 lookup_pair_key(reference.name, method_name),
                 function,
             );
-            ctx.used_names[function.name] = ();
+            let _ = ctx.used_names.insert(function.name);
         },
         None => (),
     }
@@ -1095,8 +1095,7 @@ fn instance_base_name(ctx: SpecializeCtx, original_name: string, bindings: Vec[T
 }
 
 fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
-    if !name_is_used(ctx, base) {
-        ctx.used_names[base] = ();
+    if ctx.used_names.insert(base) {
         base
     } else {
         let mut index = 1;
@@ -1105,7 +1104,7 @@ fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
             index = index + 1;
             candidate = base + "__mono" + index.to_string();
         }
-        ctx.used_names[candidate] = ();
+        let _ = ctx.used_names.insert(candidate);
         candidate
     }
 }
@@ -2681,10 +2680,10 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     let trait_function_index: FunctionIndex = HashMap::new();
     let trait_method_index: FunctionIndex = HashMap::new();
     let trait_method_names: HashMap[string, string] = HashMap::new();
-    let used_names: HashMap[string, ()] = HashMap::new();
+    let used_names: collections::HashSet[string] = collections::HashSet::new();
     for function in value.functions {
         function_index[function.name] = function;
-        used_names[function.name] = ();
+        let _ = used_names.insert(function.name);
         match inherent_function_method(function) {
             Some(method_name) => add_indexed_function(inherent_method_index, method_name, function),
             None => (),

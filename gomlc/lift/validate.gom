@@ -1,10 +1,11 @@
 package lift;
 
 use module::repr;
+use std::collections;
 
 struct ValidateContext {
     closures_by_apply: HashMap[string, repr::ClosureDef],
-    environments: HashMap[string, ()],
+    environments: collections::HashSet[string],
 }
 
 fn validate_type(ctx: ValidateContext, value: repr::Type, context: string) -> Result[(), string] {
@@ -233,7 +234,7 @@ fn validate_function(ctx: ValidateContext, value: Function) -> Result[(), string
 
 fn validate_closure_definition(
     definition: repr::ClosureDef,
-    structs: HashMap[string, ()],
+    structs: collections::HashSet[string],
     functions: HashMap[string, Function],
 ) -> Result[(), string] {
     if structs.contains(definition.environment) {} else {
@@ -282,9 +283,9 @@ fn validate_closure_definition(
 }
 
 pub fn validate(value: File) -> Result[(), string] {
-    let structs: HashMap[string, ()] = HashMap::new();
+    let structs: collections::HashSet[string] = collections::HashSet::new();
     for definition in value.structs {
-        structs[definition.name] = ();
+        let _ = structs.insert(definition.name);
     }
     let functions: HashMap[string, Function] = HashMap::new();
     for function in value.functions {
@@ -294,15 +295,14 @@ pub fn validate(value: File) -> Result[(), string] {
             functions[function.name] = function;
         }
     }
-    let environments: HashMap[string, ()] = HashMap::new();
+    let environments: collections::HashSet[string] = collections::HashSet::new();
     let closures_by_apply: HashMap[string, repr::ClosureDef] = HashMap::new();
     for definition in value.closure_defs {
-        if environments.contains(definition.environment) {
+        if !environments.insert(definition.environment) {
             return Result::Err("duplicate closure environment " + definition.environment)
         } else if closures_by_apply.contains(definition.apply) {
             return Result::Err("duplicate closure apply function " + definition.apply)
         } else {
-            environments[definition.environment] = ();
             closures_by_apply[definition.apply] = definition;
         }
     }

@@ -1,6 +1,7 @@
 package mono;
 
 use module::core;
+use std::collections;
 use std::text;
 
 struct PendingTypeInstance {
@@ -12,7 +13,7 @@ struct PendingTypeInstance {
 struct TypeCtx {
     instances: Vec[PendingTypeInstance],
     instance_index: HashMap[string, PendingTypeInstance],
-    used_names: HashMap[string, ()],
+    used_names: collections::HashSet[string],
     enums: Vec[core::EnumDef],
     structs: Vec[core::StructDef],
     active_instances: Vec[PendingTypeInstance],
@@ -87,9 +88,7 @@ fn type_name_is_used(ctx: TypeCtx, name: string) -> bool {
 }
 
 fn add_used_type_name(ctx: TypeCtx, name: string) -> () {
-    if type_name_is_used(ctx, name) {} else {
-        ctx.used_names[name] = ();
-    }
+    let _ = ctx.used_names.insert(name);
 }
 
 fn type_instance_base_name(name: string, args: Vec[Type]) -> string {
@@ -103,8 +102,7 @@ fn type_instance_base_name(name: string, args: Vec[Type]) -> string {
 }
 
 fn unique_type_name(ctx: TypeCtx, base: string) -> string {
-    if !type_name_is_used(ctx, base) {
-        ctx.used_names[base] = ();
+    if ctx.used_names.insert(base) {
         base
     } else {
         let mut index = 1;
@@ -113,7 +111,7 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
             index = index + 1;
             candidate = base + "__mono" + index.to_string();
         }
-        ctx.used_names[candidate] = ();
+        let _ = ctx.used_names.insert(candidate);
         candidate
     }
 }
@@ -1141,7 +1139,7 @@ fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
     let ctx = TypeCtx {
         instances: Vec::new(),
         instance_index: HashMap::new(),
-        used_names: HashMap::new(),
+        used_names: collections::HashSet::new(),
         enums: value.enums,
         structs: value.structs,
         active_instances: Vec::new(),
