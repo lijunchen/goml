@@ -15,7 +15,7 @@ struct Renderer {
     line_width: isize,
     line_start: Ref[bool],
     broken_groups: collections::HashSet[isize],
-    suffixes: Vec[Doc],
+    suffixes: collections::Deque[Doc],
 }
 
 fn renderer(line_width: isize) -> Renderer {
@@ -26,7 +26,7 @@ fn renderer(line_width: isize) -> Renderer {
         line_width,
         line_start: Ref::new(true),
         broken_groups: collections::HashSet::new(),
-        suffixes: Vec::new(),
+        suffixes: collections::Deque::new(),
     }
 }
 
@@ -161,22 +161,8 @@ fn write_verbatim(value: Renderer, content: string) -> () {
 
 fn flush_suffixes(value: Renderer) -> () {
     while !value.suffixes.is_empty() {
-        match value.suffixes.pop() {
-            Some(suffix) => {
-                let pending: Vec[Doc] = Vec::new();
-                while !value.suffixes.is_empty() {
-                    match value.suffixes.pop() {
-                        Some(item) => pending.push(item),
-                        None => (),
-                    }
-                }
-                let index: Ref[isize] = Ref::new(pending.len() - 1);
-                while index.get() >= 0 {
-                    render_doc(value, pending[index.get()], RenderMode::Flat);
-                    index.set(index.get() - 1)
-                }
-                render_doc(value, suffix, RenderMode::Flat)
-            },
+        match value.suffixes.pop_front() {
+            Some(suffix) => render_doc(value, suffix, RenderMode::Flat),
             None => (),
         }
     }
@@ -240,7 +226,7 @@ fn render_doc(value: Renderer, doc: Doc, mode: RenderMode) -> () {
             render_doc(value, content, mode);
             value.indent_level.set(value.indent_level.get() - 1)
         },
-        LineSuffix(content) => value.suffixes.push(content),
+        LineSuffix(content) => value.suffixes.push_back(content),
         BreakParent => (),
     }
 }
