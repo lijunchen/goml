@@ -1,0 +1,71 @@
+package main;
+
+use std::testing;
+use std::text;
+
+fn assert_position(position: text::LineColumn, line: isize, column: isize) -> () {
+    testing::assert_eq(position.line, line);
+    testing::assert_eq(position.column, column)
+}
+
+fn assert_lines_and_encodings() -> () {
+    let source = "abcdefghijklmnop\nabcdefg\r\nqrst😀uv\rwx";
+    let index = text::LineIndex::new(source);
+    testing::assert_eq(index.line_count(), 4);
+    testing::assert_eq(index.source_len(), source.byte_len());
+    assert_position(index.offset_to_line_column(34, text::PositionEncoding::Utf16), 2, 6);
+    testing::assert_eq(
+        index.line_column_to_offset(
+            text::LineColumn { line: 2, column: 6 },
+            text::PositionEncoding::Utf16,
+        ),
+        34,
+    );
+    testing::assert(
+        index.line_column_to_offset_checked(
+            text::LineColumn { line: 2, column: 5 },
+            text::PositionEncoding::Utf16,
+        ).is_none(),
+    );
+    assert_position(index.offset_to_line_column(25, text::PositionEncoding::Utf16), 1, 7);
+    let wide = text::LineIndex::new("a😀中");
+    assert_position(wide.offset_to_line_column(8, text::PositionEncoding::Utf8), 0, 8);
+    assert_position(wide.offset_to_line_column(8, text::PositionEncoding::Utf16), 0, 4);
+    assert_position(wide.offset_to_line_column(8, text::PositionEncoding::Utf32), 0, 3)
+}
+
+fn assert_boundaries() -> () {
+    let empty = text::LineIndex::new("");
+    testing::assert_eq(empty.line_count(), 1);
+    assert_position(empty.offset_to_line_column(-1, text::PositionEncoding::Utf8), 0, 0);
+    assert_position(empty.offset_to_line_column(8, text::PositionEncoding::Utf8), 0, 0);
+    let trailing = text::LineIndex::new("a\n");
+    testing::assert_eq(trailing.line_count(), 2);
+    assert_position(trailing.offset_to_line_column(2, text::PositionEncoding::Utf16), 1, 0);
+    testing::assert_eq(
+        trailing.line_column_to_offset(
+            text::LineColumn { line: 0, column: 99 },
+            text::PositionEncoding::Utf16,
+        ),
+        1,
+    );
+    testing::assert_eq(
+        trailing.line_column_to_offset(
+            text::LineColumn { line: 99, column: 0 },
+            text::PositionEncoding::Utf16,
+        ),
+        2,
+    );
+    testing::assert(
+        trailing.line_column_to_offset_checked(
+            text::LineColumn { line: -1, column: 0 },
+            text::PositionEncoding::Utf16,
+        ).is_none(),
+    )
+}
+
+fn main() -> () {
+    assert_lines_and_encodings();
+    assert_boundaries();
+    println("standard line index ok")
+}

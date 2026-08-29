@@ -1,0 +1,113 @@
+package main;
+
+use std::bytes;
+use std::encoding::base64;
+use std::encoding::hex;
+use std::testing;
+use std::utf8;
+
+fn decoded_hex(value: string) -> bytes::Bytes {
+    match hex::decode(value) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error.to_string());
+            bytes::Bytes::new()
+        },
+    }
+}
+
+fn decoded_base64(value: string, variant: base64::Variant) -> string {
+    let decoded = match base64::decode_with(value, variant) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error.to_string());
+            bytes::Bytes::new()
+        },
+    };
+    match utf8::decode(decoded.to_vec()) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error.to_string());
+            ""
+        },
+    }
+}
+
+fn assert_hex() -> () {
+    let value = bytes::Bytes::from_vec(Vec::from_array([0, 15, 16, 255]));
+    testing::assert_eq(hex::encode(value), "000f10ff");
+    testing::assert_eq(hex::encode_upper(value), "000F10FF");
+    let decoded = decoded_hex("000f10FF");
+    testing::assert_eq(decoded.len(), 4);
+    testing::assert_eq(decoded.get(0), 0);
+    testing::assert_eq(decoded.get(1), 15);
+    testing::assert_eq(decoded.get(2), 16);
+    testing::assert_eq(decoded.get(3), 255);
+    match hex::decode("0") {
+        Err(error) => {
+            testing::assert_eq(error.index(), 0);
+            testing::assert(error.kind() == hex::DecodeErrorKind::OddLength)
+        },
+        Ok(_) => testing::fail("odd hexadecimal input decoded"),
+    };
+    match hex::decode("0g") {
+        Err(error) => {
+            testing::assert_eq(error.index(), 1);
+            testing::assert(error.kind() == hex::DecodeErrorKind::InvalidByte)
+        },
+        Ok(_) => testing::fail("invalid hexadecimal input decoded"),
+    }
+}
+
+fn assert_base64_vectors() -> () {
+    let plain = Vec::from_array(["", "f", "fo", "foo", "foob", "fooba", "foobar"]);
+    let encoded = Vec::from_array(["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]);
+    for index in 0..plain.len() {
+        testing::assert_eq(base64::encode(bytes::Bytes::from_string(plain[index])), encoded[index]);
+        testing::assert_eq(decoded_base64(encoded[index], base64::Variant::Standard), plain[index])
+    }
+    let binary = bytes::Bytes::from_vec(Vec::from_array([251, 255]));
+    testing::assert_eq(base64::encode_with(binary, base64::Variant::UrlSafe), "-_8=");
+    testing::assert_eq(base64::encode_with(binary, base64::Variant::UrlSafeNoPadding), "-_8");
+    match base64::decode_with("-_8", base64::Variant::UrlSafeNoPadding) {
+        Ok(value) => {
+            testing::assert_eq(value.len(), 2);
+            testing::assert_eq(value.get(0), 251);
+            testing::assert_eq(value.get(1), 255)
+        },
+        Err(error) => testing::fail(error.to_string()),
+    }
+}
+
+fn assert_base64_errors() -> () {
+    match base64::decode("A") {
+        Err(error) => testing::assert(error.kind() == base64::DecodeErrorKind::InvalidLength),
+        Ok(_) => testing::fail("invalid base64 length decoded"),
+    };
+    match base64::decode("!!!!") {
+        Err(error) => {
+            testing::assert_eq(error.index(), 0);
+            testing::assert(error.kind() == base64::DecodeErrorKind::InvalidByte)
+        },
+        Ok(_) => testing::fail("invalid base64 digit decoded"),
+    };
+    match base64::decode("Zg=") {
+        Err(error) => testing::assert(error.kind() == base64::DecodeErrorKind::InvalidLength),
+        Ok(_) => testing::fail("invalid padded base64 length decoded"),
+    };
+    match base64::decode_with("Zg==", base64::Variant::StandardNoPadding) {
+        Err(error) => testing::assert(error.kind() == base64::DecodeErrorKind::InvalidPadding),
+        Ok(_) => testing::fail("padding accepted by no-padding variant"),
+    };
+    match base64::decode("Zh==") {
+        Err(error) => testing::assert(error.kind() == base64::DecodeErrorKind::NonCanonical),
+        Ok(_) => testing::fail("non-canonical base64 decoded"),
+    }
+}
+
+fn main() -> () {
+    assert_hex();
+    assert_base64_vectors();
+    assert_base64_errors();
+    println("standard encoding ok")
+}
