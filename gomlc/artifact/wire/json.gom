@@ -1,6 +1,7 @@
 package wire;
 
 use std::bytes;
+use std::collections;
 use std::text;
 
 pub enum ArtifactValue {
@@ -37,7 +38,7 @@ pub struct ArtifactJsonWriter {
     captured_containers: Vec[ArtifactCapturedContainer],
     captured_values: Vec[ArtifactValue],
     binary_mode: u8,
-    binary_seen: HashMap[string, ()],
+    binary_seen: collections::HashSet[string],
     binary_strings: Vec[string],
     binary_writer: ArtifactBinaryWriter,
     binary_table: ArtifactBinaryStringTable,
@@ -57,7 +58,7 @@ pub fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
         captured_containers: Vec::new(),
         captured_values: Vec::new(),
         binary_mode: 0,
-        binary_seen: HashMap::new(),
+        binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
@@ -78,7 +79,7 @@ pub fn new_artifact_value_writer() -> ArtifactJsonWriter {
         captured_containers: Vec::new(),
         captured_values: Vec::new(),
         binary_mode: 1,
-        binary_seen: HashMap::new(),
+        binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
@@ -99,7 +100,7 @@ pub fn new_artifact_binary_string_collector() -> ArtifactJsonWriter {
         captured_containers: Vec::new(),
         captured_values: Vec::new(),
         binary_mode: 2,
-        binary_seen: HashMap::new(),
+        binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: empty_artifact_binary_string_table(),
@@ -120,7 +121,7 @@ pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> Art
         captured_containers: Vec::new(),
         captured_values: Vec::new(),
         binary_mode: 3,
-        binary_seen: HashMap::new(),
+        binary_seen: collections::HashSet::new(),
         binary_strings: Vec::new(),
         binary_writer: new_artifact_binary_writer(),
         binary_table: table,

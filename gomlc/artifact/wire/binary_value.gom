@@ -2,6 +2,7 @@ package wire;
 
 use std::bytes;
 use std::cmp;
+use std::collections;
 
 pub struct ArtifactBinaryStringTable {
     values: Vec[string],
@@ -12,15 +13,18 @@ fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
     ArtifactBinaryStringTable { values: Vec::new(), indexes: HashMap::new() }
 }
 
-fn artifact_binary_collect_string(seen: HashMap[string, ()], values: Vec[string], value: string) -> () {
-    match seen.insert(value, ()) {
-        Some(_) => (),
-        None => values.push(value),
-    }
+fn artifact_binary_collect_string(
+    seen: collections::HashSet[string],
+    values: Vec[string],
+    value: string,
+) -> () {
+    if seen.insert(value) {
+        values.push(value)
+    } else {}
 }
 
 fn artifact_binary_collect_value_strings(
-    seen: HashMap[string, ()],
+    seen: collections::HashSet[string],
     values: Vec[string],
     value: ArtifactValue,
 ) -> () {
@@ -40,7 +44,7 @@ fn artifact_binary_collect_value_strings(
 }
 
 pub fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
-    let seen: HashMap[string, ()] = HashMap::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     let values: Vec[string] = Vec::new();
     artifact_binary_collect_value_strings(seen, values, value);
     artifact_binary_string_table_from_values(values)
@@ -235,25 +239,20 @@ fn artifact_binary_decode_value_at(
                 return Result::Err("binary artifact object exceeds limit")
             } else {};
             let fields = Vec::with_capacity(count);
-            let names: Option[HashMap[string, ()]] = if count > 32 {
-                Option::Some(HashMap::new())
+            let names: Option[collections::HashSet[string]] = if count > 32 {
+                Option::Some(collections::HashSet::new())
             } else {
                 Option::None
             };
             for _ in 0..count {
                 let name = artifact_binary_decode_string_id(reader, table)?;
                 let duplicate = match names {
-                    Some(value) => value.contains(name),
+                    Some(value) => !value.insert(name),
                     None => artifact_binary_object_has_field(fields, name),
                 };
                 if duplicate {
                     return Result::Err("duplicate binary artifact object field")
-                } else {
-                    match names {
-                        Some(value) => value.set(name, ()),
-                        None => (),
-                    }
-                };
+                } else {};
                 let value = artifact_binary_decode_value_at(reader, table, depth + 1)?;
                 fields.push((name, value))
             }
