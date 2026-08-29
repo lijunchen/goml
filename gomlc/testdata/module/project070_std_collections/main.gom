@@ -52,6 +52,9 @@ fn assert_btree_map() -> () {
     testing::assert_eq(values.len(), 512);
     testing::assert_eq(values.get(32).unwrap_or(0), 999);
     testing::assert(values.get(700).is_none());
+    testing::assert(values.remove(-1).is_none());
+    testing::assert(values.remove(700).is_none());
+    testing::assert_eq(values.len(), 512);
     match values.first() {
         Some((key, value)) => {
             testing::assert_eq(key, 0);
