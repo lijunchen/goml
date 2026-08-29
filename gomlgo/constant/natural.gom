@@ -1,5 +1,7 @@
 package constant;
 
+use std::text;
+
 pub struct Natural {
     pub limbs: Vec[u32],
 }
@@ -431,14 +433,6 @@ pub fn natural_pow_small(base: u32, exponent: isize) -> Natural {
     result
 }
 
-fn pad_decimal(value: string) -> string {
-    let mut result = value;
-    while result.byte_len() < 9 {
-        result = "0" + result;
-    }
-    result
-}
-
 pub fn natural_to_string(value: Natural) -> string {
     if natural_is_zero(value) {
         return "0"
@@ -456,10 +450,15 @@ pub fn natural_to_string(value: Natural) -> string {
     }
     let mut index = parts.len();
     index = index - 1;
-    let mut result = parts[index].to_string();
+    let result = text::StringBuilder::with_capacity(parts.len() * 9);
+    result.write_string(parts[index].to_string());
     while index > 0 {
         index = index - 1;
-        result = result + pad_decimal(parts[index].to_string());
+        let part = parts[index].to_string();
+        for _ in part.byte_len()..9 {
+            result.write_char('0')
+        }
+        result.write_string(part)
     }
-    result
+    result.finish()
 }
