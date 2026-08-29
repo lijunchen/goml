@@ -2,6 +2,7 @@ package json;
 
 use module::num;
 use module::serde;
+use module::text;
 
 enum JsonDeserializeFrame {
     Optional,
@@ -52,55 +53,71 @@ fn json_current_index(index: Ref[isize]) -> isize {
     }
 }
 
-fn json_deserializer_path(deserializer: JsonDeserializer) -> string {
-    let mut path = "$";
-    for frame in deserializer.frames {
-        let segment = match frame {
-            JsonDeserializeFrame::Optional => ".Some",
-            JsonDeserializeFrame::Sequence { first: _, done: _, index } => {
-                "[" + json_current_index(index).to_string() + "]"
+fn write_json_deserialize_frame_path(builder: text::StringBuilder, frame: JsonDeserializeFrame) -> () {
+    match frame {
+        JsonDeserializeFrame::Optional => builder.write_string(".Some"),
+        JsonDeserializeFrame::Sequence { first: _, done: _, index } => {
+            builder.write_char('[');
+            builder.write_string(json_current_index(index).to_string());
+            builder.write_char(']')
+        },
+        JsonDeserializeFrame::Tuple { length: _, index } => {
+            builder.write_char('[');
+            builder.write_string(json_current_index(index).to_string());
+            builder.write_char(']')
+        },
+        JsonDeserializeFrame::Map { first: _, done: _, state: _, key } => match key.get() {
+            Some(name) => {
+                builder.write_string("[\"");
+                builder.write_string(name);
+                builder.write_string("\"]")
             },
-            JsonDeserializeFrame::Tuple { length: _, index } => {
-                "[" + json_current_index(index).to_string() + "]"
-            },
-            JsonDeserializeFrame::Map { first: _, done: _, state: _, key } => match key.get() {
-                Some(name) => "[\"" + name + "\"]",
-                None => ".map",
-            },
-            JsonDeserializeFrame::Struct { name, first: _, done: _, field } => {
-                let base = if name.byte_len() == 0 {
-                    ""
-                } else {
-                    "." + name
-                };
-                let field_segment = match field.get() {
-                    Some(name) => "." + name,
-                    None => "",
-                };
-                base + field_segment
-            },
-            JsonDeserializeFrame::Variant {
-                enum_name,
-                variant_name,
-                representation: _,
-                kind,
-                length: _,
-                index,
-                first: _,
-                done: _,
-                begun: _,
-            } => {
-                let base = "." + enum_name + "::" + variant_name;
-                if kind.get() == 1 {
-                    base + "[" + json_current_index(index).to_string() + "]"
-                } else {
-                    base
-                }
-            },
-        };
-        path = path + segment;
+            None => builder.write_string(".map"),
+        },
+        JsonDeserializeFrame::Struct { name, first: _, done: _, field } => {
+            if name.byte_len() == 0 {} else {
+                builder.write_char('.');
+                builder.write_string(name)
+            };
+            match field.get() {
+                Some(name) => {
+                    builder.write_char('.');
+                    builder.write_string(name)
+                },
+                None => (),
+            }
+        },
+        JsonDeserializeFrame::Variant {
+            enum_name,
+            variant_name,
+            representation: _,
+            kind,
+            length: _,
+            index,
+            first: _,
+            done: _,
+            begun: _,
+        } => {
+            builder.write_char('.');
+            builder.write_string(enum_name);
+            builder.write_string("::");
+            builder.write_string(variant_name);
+            if kind.get() == 1 {
+                builder.write_char('[');
+                builder.write_string(json_current_index(index).to_string());
+                builder.write_char(']')
+            } else {}
+        },
     }
-    path
+}
+
+fn json_deserializer_path(deserializer: JsonDeserializer) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_char('$');
+    for frame in deserializer.frames {
+        write_json_deserialize_frame_path(builder, frame)
+    }
+    builder.finish()
 }
 
 fn json_deserializer_error(deserializer: JsonDeserializer, message: string) -> string {

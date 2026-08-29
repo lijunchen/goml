@@ -59,36 +59,61 @@ fn bincode_current_index(index: Ref[isize]) -> isize {
     }
 }
 
-fn bincode_decoder_path(decoder: Decoder) -> string {
-    let mut path = "$";
-    for frame in decoder.frames {
-        let segment = match frame {
-            BincodeFrame::Optional { ready: _ } => ".Some",
-            BincodeFrame::Sequence { length: _, index, ready: _ } => {
-                "[" + bincode_current_index(index).to_string() + "]"
-            },
-            BincodeFrame::Tuple { length: _, index, ready: _ } => {
-                "[" + bincode_current_index(index).to_string() + "]"
-            },
-            BincodeFrame::Map { length: _, index, state } => {
-                let entry = "[" + index.get().to_string() + "]";
-                if state.get() <= 3 {
-                    entry + ".key"
-                } else {
-                    entry + ".value"
-                }
-            },
-            BincodeFrame::Struct { name, fields: _, index, ready: _ } => {
-                "." + name + "[" + bincode_current_index(index).to_string() + "]"
-            },
-            BincodeFrame::Variant { enum_name, variant, fields: _, index, begun: _, ready: _ } => {
-                "." + enum_name + "::" + variant.to_string() + "["
-                    + bincode_current_index(index).to_string()
-                    + "]"
-            },
-        };
-        path = path + segment;
+fn write_bincode_path_string(builder: bytes::Builder, value: string) -> () {
+    for index in 0..value.byte_len() {
+        builder.push(value.byte_get(index))
     }
+}
+
+fn write_bincode_frame_path(builder: bytes::Builder, frame: BincodeFrame) -> () {
+    match frame {
+        BincodeFrame::Optional { ready: _ } => write_bincode_path_string(builder, ".Some"),
+        BincodeFrame::Sequence { length: _, index, ready: _ } => {
+            builder.push(b'[');
+            write_bincode_path_string(builder, bincode_current_index(index).to_string());
+            builder.push(b']')
+        },
+        BincodeFrame::Tuple { length: _, index, ready: _ } => {
+            builder.push(b'[');
+            write_bincode_path_string(builder, bincode_current_index(index).to_string());
+            builder.push(b']')
+        },
+        BincodeFrame::Map { length: _, index, state } => {
+            builder.push(b'[');
+            write_bincode_path_string(builder, index.get().to_string());
+            builder.push(b']');
+            if state.get() <= 3 {
+                write_bincode_path_string(builder, ".key")
+            } else {
+                write_bincode_path_string(builder, ".value")
+            }
+        },
+        BincodeFrame::Struct { name, fields: _, index, ready: _ } => {
+            builder.push(b'.');
+            write_bincode_path_string(builder, name);
+            builder.push(b'[');
+            write_bincode_path_string(builder, bincode_current_index(index).to_string());
+            builder.push(b']')
+        },
+        BincodeFrame::Variant { enum_name, variant, fields: _, index, begun: _, ready: _ } => {
+            builder.push(b'.');
+            write_bincode_path_string(builder, enum_name);
+            write_bincode_path_string(builder, "::");
+            write_bincode_path_string(builder, variant.to_string());
+            builder.push(b'[');
+            write_bincode_path_string(builder, bincode_current_index(index).to_string());
+            builder.push(b']')
+        },
+    }
+}
+
+fn bincode_decoder_path(decoder: Decoder) -> string {
+    let builder = bytes::Builder::new();
+    builder.push(b'$');
+    for frame in decoder.frames {
+        write_bincode_frame_path(builder, frame)
+    }
+    let (_, path) = string_from_utf8(builder.finish().to_vec());
     path
 }
 
