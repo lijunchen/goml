@@ -1,6 +1,6 @@
 package lsp;
 
-use module::line_index as text_index;
+use std::text as text_index;
 
 pub struct Position {
     pub line: isize,
@@ -13,29 +13,27 @@ pub struct Range {
 }
 
 pub fn line_index(source: string) -> text_index::LineIndex {
-    text_index::new(source)
+    text_index::LineIndex::new(source)
 }
 
 pub fn offset_to_position_with_index(index: text_index::LineIndex, offset: isize) -> Position {
-    let position = text_index::offset_to_line_col(index, offset, text_index::Encoding::Utf16);
+    let position = index.offset_to_line_column(offset, text_index::PositionEncoding::Utf16);
     Position { line: position.line, character: position.column }
 }
 
 pub fn position_to_offset_with_index(index: text_index::LineIndex, position: Position) -> isize {
-    text_index::line_col_to_offset(
-        index,
-        text_index::LineCol { line: position.line, column: position.character },
-        text_index::Encoding::Utf16,
+    index.line_column_to_offset(
+        text_index::LineColumn { line: position.line, column: position.character },
+        text_index::PositionEncoding::Utf16,
     )
 }
 
 pub fn position_to_offset_checked_with_index(index: text_index::LineIndex, position: Position) -> Option[
     isize,
 ] {
-    text_index::line_col_to_offset_checked(
-        index,
-        text_index::LineCol { line: position.line, column: position.character },
-        text_index::Encoding::Utf16,
+    index.line_column_to_offset_checked(
+        text_index::LineColumn { line: position.line, column: position.character },
+        text_index::PositionEncoding::Utf16,
     )
 }
 
