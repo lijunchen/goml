@@ -406,14 +406,9 @@ fn resolve_bare_derive(file: ast::File, environment: DeriveEnvironment, name: st
 
 fn derive_dependencies(environment: DeriveEnvironment, package_name: string) -> Vec[ctir::CtModule] {
     let result: Vec[ctir::CtModule] = Vec::new();
+    let seen: collections::HashSet[string] = collections::HashSet::new();
     for module in environment_modules(environment) {
-        let mut present = false;
-        for existing in result {
-            if existing.package_name == module.package_name {
-                present = true;
-            } else {}
-        }
-        if module.package_name == package_name || present {} else {
+        if module.package_name == package_name || !seen.insert(module.package_name) {} else {
             result.push(module)
         }
     }
@@ -421,14 +416,19 @@ fn derive_dependencies(environment: DeriveEnvironment, package_name: string) -> 
 }
 
 fn derive_error_message(value: ctfe::CtError) -> string {
-    let mut result = value.message;
-    if !value.stack.is_empty() {
-        result = result + "\ncomptime derive stack:";
-        for frame in value.stack {
-            result = result + "\n  " + frame.package_name + "::" + frame.function_name;
-        }
+    if value.stack.is_empty() {
+        return value.message
     } else {};
-    result
+    let builder = text::StringBuilder::new();
+    builder.write_string(value.message);
+    builder.write_string("\ncomptime derive stack:");
+    for frame in value.stack {
+        builder.write_string("\n  ");
+        builder.write_string(frame.package_name);
+        builder.write_string("::");
+        builder.write_string(frame.function_name)
+    }
+    builder.finish()
 }
 
 fn expand_handler_derive(

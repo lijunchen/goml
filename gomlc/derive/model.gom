@@ -884,16 +884,21 @@ fn selected_attribute(values: Vec[ast::Attribute], index: isize, description: st
     Result::Ok(values[index])
 }
 
-fn path_text(value: ast::Path) -> string {
-    let mut result = "";
+fn write_path_text(builder: text::StringBuilder, value: ast::Path) -> () {
+    let mut first = true;
     for segment in value.segments {
-        if result == "" {
-            result = segment.ident;
-        } else {
-            result = result + "::" + segment.ident;
-        }
+        if first {} else {
+            builder.write_string("::")
+        };
+        builder.write_string(segment.ident);
+        first = false;
     }
-    result
+}
+
+fn path_text(value: ast::Path) -> string {
+    let builder = text::StringBuilder::new();
+    write_path_text(builder, value);
+    builder.finish()
 }
 
 fn primitive_type_name(value: ast::TypeExpr) -> Option[string] {
@@ -930,62 +935,83 @@ fn meta_type_kind(value: ast::TypeExpr) -> string {
     }
 }
 
-fn meta_type_key(value: ast::TypeExpr) -> string {
+fn write_meta_type_key(builder: text::StringBuilder, value: ast::TypeExpr) -> () {
     match value {
-        ast::TypeExpr::Unit => UNIT_TYPE_NAME,
-        ast::TypeExpr::Bool => BOOL_TYPE_NAME,
-        ast::TypeExpr::Int => INT_TYPE_NAME,
-        ast::TypeExpr::Int8 => "i8",
-        ast::TypeExpr::Int16 => "i16",
-        ast::TypeExpr::Int32 => "i32",
-        ast::TypeExpr::Int64 => "i64",
-        ast::TypeExpr::Uint => "usize",
-        ast::TypeExpr::Uint8 => "u8",
-        ast::TypeExpr::Uint16 => "u16",
-        ast::TypeExpr::Uint32 => "u32",
-        ast::TypeExpr::Uint64 => "u64",
-        ast::TypeExpr::Float32 => "f32",
-        ast::TypeExpr::Float64 => "f64",
-        ast::TypeExpr::String => STRING_TYPE_NAME,
-        ast::TypeExpr::Char => "char",
+        ast::TypeExpr::Unit => builder.write_string(UNIT_TYPE_NAME),
+        ast::TypeExpr::Bool => builder.write_string(BOOL_TYPE_NAME),
+        ast::TypeExpr::Int => builder.write_string(INT_TYPE_NAME),
+        ast::TypeExpr::Int8 => builder.write_string("i8"),
+        ast::TypeExpr::Int16 => builder.write_string("i16"),
+        ast::TypeExpr::Int32 => builder.write_string("i32"),
+        ast::TypeExpr::Int64 => builder.write_string("i64"),
+        ast::TypeExpr::Uint => builder.write_string("usize"),
+        ast::TypeExpr::Uint8 => builder.write_string("u8"),
+        ast::TypeExpr::Uint16 => builder.write_string("u16"),
+        ast::TypeExpr::Uint32 => builder.write_string("u32"),
+        ast::TypeExpr::Uint64 => builder.write_string("u64"),
+        ast::TypeExpr::Float32 => builder.write_string("f32"),
+        ast::TypeExpr::Float64 => builder.write_string("f64"),
+        ast::TypeExpr::String => builder.write_string(STRING_TYPE_NAME),
+        ast::TypeExpr::Char => builder.write_string("char"),
         ast::TypeExpr::Tuple { items } => {
-            let mut result = "(";
+            builder.write_char('(');
             for item in items {
-                result = result + meta_type_key(item) + ",";
+                write_meta_type_key(builder, item);
+                builder.write_char(',')
             }
-            result + ")"
+            builder.write_char(')')
         },
-        ast::TypeExpr::Con { path } => path_text(path),
+        ast::TypeExpr::Con { path } => write_path_text(builder, path),
         ast::TypeExpr::Dyn { bounds } => {
-            let mut result = "dyn ";
+            builder.write_string("dyn ");
             for bound in bounds {
-                result = result + path_text(bound.trait_path) + "[";
+                write_path_text(builder, bound.trait_path);
+                builder.write_char('[');
                 for arg in bound.args {
-                    result = result + meta_type_key(arg) + ",";
+                    write_meta_type_key(builder, arg);
+                    builder.write_char(',')
                 }
                 for binding in bound.associated_types {
-                    result = result + binding.0 + "=" + meta_type_key(binding.1) + ",";
+                    builder.write_string(binding.0);
+                    builder.write_char('=');
+                    write_meta_type_key(builder, binding.1);
+                    builder.write_char(',')
                 }
-                result = result + "]+";
+                builder.write_string("]+")
             }
-            result
         },
         ast::TypeExpr::App { ty, args } => {
-            let mut result = meta_type_key(ty) + "[";
+            write_meta_type_key(builder, ty);
+            builder.write_char('[');
             for arg in args {
-                result = result + meta_type_key(arg) + ",";
+                write_meta_type_key(builder, arg);
+                builder.write_char(',')
             }
-            result + "]"
+            builder.write_char(']')
         },
-        ast::TypeExpr::Array { len, elem } => "[" + meta_type_key(elem) + ";" + len + "]",
+        ast::TypeExpr::Array { len, elem } => {
+            builder.write_char('[');
+            write_meta_type_key(builder, elem);
+            builder.write_char(';');
+            builder.write_string(len);
+            builder.write_char(']')
+        },
         ast::TypeExpr::Func { params, ret_ty } => {
-            let mut result = "fn(";
+            builder.write_string("fn(");
             for param in params {
-                result = result + meta_type_key(param) + ",";
+                write_meta_type_key(builder, param);
+                builder.write_char(',')
             }
-            result + ")->" + meta_type_key(ret_ty)
+            builder.write_string(")->");
+            write_meta_type_key(builder, ret_ty)
         },
     }
+}
+
+fn meta_type_key(value: ast::TypeExpr) -> string {
+    let builder = text::StringBuilder::new();
+    write_meta_type_key(builder, value);
+    builder.finish()
 }
 
 fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
