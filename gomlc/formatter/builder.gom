@@ -288,6 +288,7 @@ fn format_node(value: Builder, node: LocatedNode) -> BuiltDoc {
     match kind {
         FILE => format_file(value, node),
         BLOCK => format_block(value, node),
+        EXPR_IF => format_if(value, node),
         IMPL => format_impl(value, node),
         TRAIT_METHOD_SIG | EXTERN => format_semicolon_item(value, node),
         STMT_EXPR => format_expr_statement(value, node, Option::None),

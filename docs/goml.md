@@ -739,7 +739,7 @@ fn run() -> () {
 }
 ```
 
-`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, brace-delimited structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them. Newtype declarations such as `struct UserId(u64);` do require the trailing semicolon.
+`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `select`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, brace-delimited structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them. Newtype declarations such as `struct UserId(u64);` do require the trailing semicolon.
 
 `defer expression;` registers a `()` expression to run when the current lexical block is left. Deferred expressions run in last-in-first-out order on normal completion and when `return`, `?`, `break`, or `continue` crosses their block. A return or break value is evaluated before cleanup begins. Each loop-body block has its own cleanup stack, so a deferred expression registered during one iteration runs before that iteration exits.
 
@@ -1012,7 +1012,7 @@ The `else` of `if let` can also be omitted; in this case the compiler treats the
 ```goml
 if let Option::Some(value) = candidate {
     println(value);
-};
+}
 ```
 
 When you need to get values ​​from two branches, you must write `else` explicitly.

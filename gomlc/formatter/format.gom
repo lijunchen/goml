@@ -99,6 +99,10 @@ fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> ()
 }
 
 fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> () {
+    match omittable_empty_else_range(node) {
+        Some(value) => push_format_omission(result, value.0, value.1),
+        None => (),
+    };
     if node_is(node, cst::NodeKind::BLOCK) {
         collect_block_omissions(node, result)
     } else {

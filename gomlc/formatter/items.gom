@@ -125,12 +125,93 @@ fn meaningful_block_nodes(value: LocatedNode) -> Vec[LocatedNode] {
     result
 }
 
+fn omittable_empty_else(value: LocatedNode) -> bool {
+    if !node_is(value, cst::NodeKind::EXPR_IF_ELSE) || node_has_comment(value) {
+        false
+    } else {
+        match direct_node_of_kind(value, cst::NodeKind::BLOCK) {
+            Some(block) => meaningful_block_nodes(block).is_empty(),
+            None => false,
+        }
+    }
+}
+
+fn omittable_empty_else_range(value: LocatedNode) -> Option[(isize, isize)] {
+    if !node_is(value, cst::NodeKind::EXPR_IF) {
+        return Option::None
+    } else {};
+    let else_start: Ref[Option[isize]] = Ref::new(Option::None);
+    let cursor = child_cursor(value);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::ElseKeyword) {
+                else_start.set(Option::Some(token.start))
+            } else {},
+            Some(Node(child)) => if node_is(child, cst::NodeKind::EXPR_IF_ELSE)
+                && omittable_empty_else(child) {
+                return match else_start.get() {
+                    Some(start) => Option::Some((start, child.end)),
+                    None => Option::None,
+                }
+            } else {},
+            None => (),
+        }
+    }
+    Option::None
+}
+
+fn format_if(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let omit_else = omittable_empty_else_range(node).is_some();
+    let output = parts();
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => if omit_else && node_is(child, cst::NodeKind::EXPR_IF_ELSE) {} else {
+                output.push_syntax(format_node(value, child))
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Whitespace) {
+                output.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                output.push_comment(token)
+            } else if omit_else && token_is(token, lexer::TokenKind::ElseKeyword) {} else {
+                output.push_token(token)
+            },
+            None => (),
+        }
+    }
+    output.finish()
+}
+
 fn expression_statement_kind(value: LocatedNode) -> Option[cst::NodeKind] {
     let children = direct_nodes(value);
     if children.is_empty() {
         Option::None
     } else {
         Option::Some(cst::node_kind(children[0].node))
+    }
+}
+
+fn expression_statement_expression(value: LocatedNode) -> Option[LocatedNode] {
+    let children = direct_nodes(value);
+    if children.is_empty() {
+        Option::None
+    } else {
+        Option::Some(children[0])
+    }
+}
+
+fn if_expression_has_unit_fallback(value: LocatedNode) -> bool {
+    let else_branch = direct_node_of_kind(value, cst::NodeKind::EXPR_IF_ELSE);
+    match else_branch {
+        None => true,
+        Some(branch) => if omittable_empty_else(branch) {
+            true
+        } else {
+            match direct_node_of_kind(branch, cst::NodeKind::EXPR_IF) {
+                Some(nested) => if_expression_has_unit_fallback(nested),
+                None => false,
+            }
+        },
     }
 }
 
@@ -161,7 +242,14 @@ fn expression_statement_drops_semicolon(node: LocatedNode, following: Option[Loc
     };
     match expression_statement_kind(node) {
         Some(EXPR_WHILE) | Some(EXPR_FOR) => !following_continues,
-        Some(EXPR_LOOP) => match following {
+        Some(EXPR_IF) => match following {
+            Some(_) => !following_continues,
+            None => match expression_statement_expression(node) {
+                Some(expression) => if_expression_has_unit_fallback(expression),
+                None => false,
+            },
+        },
+        Some(EXPR_MATCH) | Some(EXPR_SELECT) | Some(EXPR_LOOP) => match following {
             Some(_) => !following_continues,
             None => false,
         },
