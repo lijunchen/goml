@@ -1,29 +1,25 @@
 package core;
 
 use module::tast;
+use std::collections;
 
-fn push_name(values: Vec[string], value: string) -> () {
-    if values.contains(value) {} else {
-        values.push(value)
-    }
+fn push_name(values: collections::IndexSet[string], value: string) -> () {
+    let _ = values.insert(value);
 }
 
-fn push_mutable(values: Vec[(string, tast::Type)], name: string, ty: tast::Type) -> () {
-    for value in values {
-        if value.0 == name {
-            return ()
-        } else {}
-    }
-    values.push((name, ty))
+fn push_mutable(values: collections::IndexMap[string, tast::Type], name: string, ty: tast::Type) -> () {
+    if !values.contains(name) {
+        let _ = values.insert(name, ty);
+    } else {}
 }
 
-fn collect_mutable_exprs(values: Vec[tast::Expr], result: Vec[(string, tast::Type)]) -> () {
+fn collect_mutable_exprs(values: Vec[tast::Expr], result: collections::IndexMap[string, tast::Type]) -> () {
     for value in values {
         collect_mutable_expr(value, result)
     }
 }
 
-fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) -> () {
+fn collect_mutable_block(value: tast::Block, result: collections::IndexMap[string, tast::Type]) -> () {
     for stmt in value.stmts {
         match stmt {
             Defer { expr } => collect_mutable_expr(expr, result),
@@ -49,7 +45,7 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
     }
 }
 
-fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) -> () {
+fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string, tast::Type]) -> () {
     match value {
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
@@ -145,7 +141,11 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
     }
 }
 
-fn collect_mutable_pattern(value: tast::Pat, inherited: bool, result: Vec[(string, tast::Type)]) -> () {
+fn collect_mutable_pattern(
+    value: tast::Pat,
+    inherited: bool,
+    result: collections::IndexMap[string, tast::Type],
+) -> () {
     match value {
         Var { name, is_mut, ty } => if inherited || is_mut {
             push_mutable(result, name, ty)
@@ -188,7 +188,7 @@ fn collect_mutable_pattern(value: tast::Pat, inherited: bool, result: Vec[(strin
     }
 }
 
-fn collect_pattern_names(value: tast::Pat, result: Vec[string]) -> () {
+fn collect_pattern_names(value: tast::Pat, result: collections::IndexSet[string]) -> () {
     match value {
         Var { name, is_mut: _, ty: _ } => push_name(result, name),
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
@@ -227,13 +227,13 @@ fn collect_pattern_names(value: tast::Pat, result: Vec[string]) -> () {
     }
 }
 
-fn collect_bound_exprs(values: Vec[tast::Expr], result: Vec[string]) -> () {
+fn collect_bound_exprs(values: Vec[tast::Expr], result: collections::IndexSet[string]) -> () {
     for value in values {
         collect_bound_expr(value, result)
     }
 }
 
-fn collect_bound_block(value: tast::Block, result: Vec[string]) -> () {
+fn collect_bound_block(value: tast::Block, result: collections::IndexSet[string]) -> () {
     for stmt in value.stmts {
         match stmt {
             Defer { expr } => collect_bound_expr(expr, result),
@@ -259,7 +259,7 @@ fn collect_bound_block(value: tast::Block, result: Vec[string]) -> () {
     }
 }
 
-fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> () {
+fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) -> () {
     match value {
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Closure {
             params: _,
@@ -356,13 +356,13 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> () {
     }
 }
 
-fn collect_reference_exprs(values: Vec[tast::Expr], result: Vec[string]) -> () {
+fn collect_reference_exprs(values: Vec[tast::Expr], result: collections::IndexSet[string]) -> () {
     for value in values {
         collect_reference_expr(value, result)
     }
 }
 
-fn collect_reference_block(value: tast::Block, result: Vec[string]) -> () {
+fn collect_reference_block(value: tast::Block, result: collections::IndexSet[string]) -> () {
     for stmt in value.stmts {
         match stmt {
             Defer { expr } => collect_reference_expr(expr, result),
@@ -384,7 +384,7 @@ fn collect_reference_block(value: tast::Block, result: Vec[string]) -> () {
     }
 }
 
-fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> () {
+fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[string]) -> () {
     match value {
         Var { name, ty: _ } => push_name(result, name),
         Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Closure {
@@ -479,13 +479,13 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> () {
     }
 }
 
-fn collect_capture_exprs(values: Vec[tast::Expr], result: Vec[string]) -> () {
+fn collect_capture_exprs(values: Vec[tast::Expr], result: collections::IndexSet[string]) -> () {
     for value in values {
         collect_capture_expr(value, result)
     }
 }
 
-fn collect_capture_block(value: tast::Block, result: Vec[string]) -> () {
+fn collect_capture_block(value: tast::Block, result: collections::IndexSet[string]) -> () {
     for stmt in value.stmts {
         match stmt {
             Defer { expr } => collect_capture_expr(expr, result),
@@ -507,13 +507,17 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> () {
     }
 }
 
-fn collect_closure_captures(params: Vec[tast::ClosureParam], body: tast::Expr, result: Vec[string]) -> () {
-    let bound: Vec[string] = Vec::new();
+fn collect_closure_captures(
+    params: Vec[tast::ClosureParam],
+    body: tast::Expr,
+    result: collections::IndexSet[string],
+) -> () {
+    let bound = collections::IndexSet::new();
     for param in params {
         push_name(bound, param.name)
     }
     collect_bound_expr(body, bound);
-    let references: Vec[string] = Vec::new();
+    let references = collections::IndexSet::new();
     collect_reference_expr(body, references);
     for name in references {
         if bound.contains(name) {} else {
@@ -523,7 +527,7 @@ fn collect_closure_captures(params: Vec[tast::ClosureParam], body: tast::Expr, r
     collect_capture_expr(body, result)
 }
 
-fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> () {
+fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]) -> () {
     match value {
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
@@ -618,9 +622,9 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> () {
 }
 
 fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
-    let mutables: Vec[(string, tast::Type)] = Vec::new();
+    let mutables: collections::IndexMap[string, tast::Type] = collections::IndexMap::new();
     collect_mutable_block(value, mutables);
-    let captures: Vec[string] = Vec::new();
+    let captures = collections::IndexSet::new();
     collect_capture_block(value, captures);
     let result: Vec[(string, tast::Type)] = Vec::new();
     for value in mutables {

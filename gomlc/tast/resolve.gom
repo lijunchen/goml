@@ -1591,9 +1591,7 @@ fn validate_impl_overlaps(ctx: Checker, local_impl_count: isize) -> () {
                     } else {
                         left_impl
                     };
-                    if !ctx.invalid_impl_origins.contains(invalid_impl.origin) {
-                        ctx.invalid_impl_origins.push(invalid_impl.origin)
-                    } else {};
+                    let _ = ctx.invalid_impl_origins.insert(invalid_impl.origin);
                     if builtin_impl(left_impl) || builtin_impl(right_impl) {
                         push_diagnostic_at(
                             ctx,

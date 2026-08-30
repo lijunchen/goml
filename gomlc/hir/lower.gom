@@ -742,12 +742,7 @@ fn lower_bounds(
 }
 
 fn sort_pattern_names(values: Vec[string]) -> Vec[string] {
-    let sorted: Vec[string] = Vec::new();
-    for value in values {
-        sorted.push(value)
-    }
-    collections::sort(sorted);
-    sorted
+    collections::BTreeSet::from_vec(values).to_vec()
 }
 
 fn join_pattern_names(values: Vec[string]) -> string {

@@ -879,18 +879,18 @@ fn coverage_inhabited_domain(ctx: CoverageContext, domain: Vec[CoverageConstruct
 }
 
 fn coverage_present(matrix: Vec[Vec[CoveragePat]]) -> Vec[string] {
-    let result: Vec[string] = Vec::new();
+    let result = collections::IndexSet::new();
     for row in matrix {
         if !row.is_empty() {
             match row[0].constructor {
-                Some(value) => if !result.contains(value.key) {
-                    result.push(value.key)
-                } else {},
+                Some(value) => {
+                    let _ = result.insert(value.key);
+                },
                 None => (),
             }
         } else {}
     }
-    result
+    result.to_vec()
 }
 
 fn coverage_tail(row: Vec[CoveragePat]) -> Vec[CoveragePat] {
@@ -951,21 +951,6 @@ fn coverage_sequence_element(ty: Type) -> Option[Type] {
             Option::Some(element)
         },
         _ => Option::None,
-    }
-}
-
-fn coverage_int_has(values: Vec[isize], expected: isize) -> bool {
-    for value in values {
-        if value == expected {
-            return true
-        } else {}
-    }
-    false
-}
-
-fn coverage_int_push_unique(values: Vec[isize], value: isize) -> () {
-    if coverage_int_has(values, value) {} else {
-        values.push(value)
     }
 }
 
@@ -1031,7 +1016,7 @@ fn coverage_useful_sequence(
     let tail = coverage_tail(candidate);
     let mut max_prefix = 0;
     let mut max_suffix = 0;
-    let exact_lengths: Vec[isize] = Vec::new();
+    let exact_lengths = collections::IndexSet::new();
     for row in matrix {
         if !row.is_empty() {
             match row[0].sequence {
@@ -1043,7 +1028,7 @@ fn coverage_useful_sequence(
                         max_suffix = shape.suffix;
                     } else {}
                 } else {
-                    coverage_int_push_unique(exact_lengths, shape.prefix + shape.suffix)
+                    let _ = exact_lengths.insert(shape.prefix + shape.suffix);
                 },
                 None => (),
             }
@@ -1058,22 +1043,22 @@ fn coverage_useful_sequence(
                 max_suffix = shape.suffix;
             } else {}
         } else {
-            coverage_int_push_unique(exact_lengths, shape.prefix + shape.suffix)
+            let _ = exact_lengths.insert(shape.prefix + shape.suffix);
         },
         None => (),
     };
     let stable_length = max_prefix + max_suffix;
     let mut large_length = stable_length + 1;
-    while coverage_int_has(exact_lengths, large_length) {
+    while exact_lengths.contains(large_length) {
         large_length = large_length + 1;
     }
-    let lengths: Vec[isize] = Vec::new();
+    let lengths = collections::IndexSet::new();
     for length in 0..stable_length + 1 {
-        coverage_int_push_unique(lengths, length)
+        let _ = lengths.insert(length);
     }
-    coverage_int_push_unique(lengths, large_length);
+    let _ = lengths.insert(large_length);
     for length in exact_lengths {
-        coverage_int_push_unique(lengths, length)
+        let _ = lengths.insert(length);
     }
     let element_inhabited = coverage_type_inhabited(ctx, element);
     for length in lengths {

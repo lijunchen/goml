@@ -849,12 +849,10 @@ fn check_static(base: Checker, value: hir::Static) -> Static {
     Static { name: value.name, ty: resolve_type(ty) }
 }
 
-fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> () {
+fn constant_expr_references(value: ConstExpr, result: collections::IndexSet[string]) -> () {
     match value {
         Ref { name, ty: _ } => {
-            if !result.contains(name) {
-                result.push(name)
-            } else {}
+            let _ = result.insert(name);
         },
         Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } => constant_expr_references(
             expr,
@@ -895,7 +893,7 @@ fn constant_reaches(
     } else {
         match checked_constant_by_name(values, current) {
             Some(value) => {
-                let references: Vec[string] = Vec::new();
+                let references = collections::IndexSet::new();
                 constant_expr_references(value.value, references);
                 for reference in references {
                     if reference == target || constant_reaches(values, reference, target, visited) {
@@ -917,10 +915,10 @@ fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> () {
     }
 }
 
-fn collect_injective_type_params(value: Type, result: Vec[string]) -> () {
+fn collect_injective_type_params(value: Type, result: collections::IndexSet[string]) -> () {
     match prune(value) {
-        Param { name } => if result.contains(name) {} else {
-            result.push(name)
+        Param { name } => {
+            let _ = result.insert(name);
         },
         Tuple { items } => for item in items {
             collect_injective_type_params(item, result)
@@ -999,7 +997,7 @@ fn validate_impl_type_params(
     for_type: Type,
     span: ast::Span,
 ) -> () {
-    let constrained: Vec[string] = Vec::new();
+    let constrained = collections::IndexSet::new();
     collect_injective_type_params(for_type, constrained);
     match reference {
         Some(reference) => for arg in reference.args {
@@ -1026,9 +1024,7 @@ fn validate_impl_type_params(
 fn mark_impl_invalid_at(ctx: Checker, span: ast::Span) -> () {
     for value in ctx.impls {
         if value.span.start == span.start && value.span.end == span.end {
-            if ctx.invalid_impl_origins.contains(value.origin) {} else {
-                ctx.invalid_impl_origins.push(value.origin)
-            }
+            let _ = ctx.invalid_impl_origins.insert(value.origin);
         } else {}
     }
 }
@@ -3134,15 +3130,17 @@ fn check_file_with_package(
     }
     append_builtin_source_impls(ctx);
     validate_go_ffi_signatures(ctx, value);
-    for index in 0..ctx.in_scope_traits.len() {
-        ctx.in_scope_traits.set(index, canonical_imported_name(ctx, ctx.in_scope_traits[index]))
+    let canonical_traits = collections::IndexSet::new();
+    for name in ctx.in_scope_traits {
+        let _ = canonical_traits.insert(canonical_imported_name(ctx, name));
     }
+    ctx.in_scope_traits = canonical_traits;
     for imported in value.imports {
         let canonical = canonical_imported_name(ctx, imported);
         match find_trait(ctx, canonical) {
-            Some(_) => if !ctx.in_scope_traits.contains(canonical) {
-                ctx.in_scope_traits.push(canonical)
-            } else {},
+            Some(_) => {
+                let _ = ctx.in_scope_traits.insert(canonical);
+            },
             None => if find_enum_by_name(ctx, canonical).is_some()
                 || find_struct_by_name(ctx, canonical).is_some()
                 || find_type_alias(ctx, canonical).is_some()

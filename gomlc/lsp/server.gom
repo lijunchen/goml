@@ -4,6 +4,7 @@ use module::ast;
 use module::query;
 use module::tast;
 use module::version;
+use std::collections;
 use std::fs;
 use std::json;
 use std::text;
@@ -197,7 +198,7 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
         Some(hover) => sections.push("```goml\n" + hover.contents + "\n```"),
         None => (),
     };
-    let diagnostic_lines: Vec[string] = Vec::new();
+    let diagnostic_lines = collections::IndexSet::new();
     for diagnostic in analysis.checked.diagnostics {
         if diagnostic_contains_offset(diagnostic, document.path, offset) {
             let line = match diagnostic.severity {
@@ -205,13 +206,13 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
                 Warning => "+ ",
             }
                 + diagnostic_text(diagnostic);
-            if diagnostic_lines.contains(line) {} else {
-                diagnostic_lines.push(line)
-            }
+            let _ = diagnostic_lines.insert(line);
         } else {}
     }
     if !diagnostic_lines.is_empty() {
-        sections.push("**Diagnostics**\n```diff\n" + join_strings(diagnostic_lines, "\n") + "\n```")
+        sections.push(
+            "**Diagnostics**\n```diff\n" + join_strings(diagnostic_lines.to_vec(), "\n") + "\n```",
+        )
     } else {};
     if sections.is_empty() {
         Result::Ok(json::Value::Null)

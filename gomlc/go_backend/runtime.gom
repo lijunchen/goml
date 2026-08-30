@@ -596,7 +596,7 @@ fn string_concat_hook_item(key: string) -> Item {
     )
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Hash)]
 enum RuntimeImport {
     Bytes,
     Context,
@@ -616,13 +616,14 @@ enum RuntimeImport {
     Time,
 }
 
-fn require_runtime_import(imports: Vec[RuntimeImport], value: RuntimeImport) -> () {
-    if !imports.contains(value) {
-        imports.push(value)
-    } else {}
+fn require_runtime_import(imports: collections::IndexSet[RuntimeImport], value: RuntimeImport) -> () {
+    let _ = imports.insert(value);
 }
 
-fn collect_core_runtime_imports(imports: Vec[RuntimeImport], hook: resources::CoreRuntimeHook) -> () {
+fn collect_core_runtime_imports(
+    imports: collections::IndexSet[RuntimeImport],
+    hook: resources::CoreRuntimeHook,
+) -> () {
     match hook {
         StringPrint | StringPrintln => require_runtime_import(imports, RuntimeImport::Os),
         Float32Hash | Float64Hash => require_runtime_import(imports, RuntimeImport::Math),
@@ -630,7 +631,10 @@ fn collect_core_runtime_imports(imports: Vec[RuntimeImport], hook: resources::Co
     }
 }
 
-fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRuntimeHook) -> () {
+fn collect_fs_runtime_imports(
+    imports: collections::IndexSet[RuntimeImport],
+    hook: resources::FsRuntimeHook,
+) -> () {
     match hook {
         Canonicalize => require_runtime_import(imports, RuntimeImport::Filepath),
         Sha256File => {
@@ -654,7 +658,10 @@ fn collect_fs_runtime_imports(imports: Vec[RuntimeImport], hook: resources::FsRu
     }
 }
 
-fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRuntimeHook) -> () {
+fn collect_io_runtime_imports(
+    imports: collections::IndexSet[RuntimeImport],
+    hook: resources::IoRuntimeHook,
+) -> () {
     match hook {
         Print | Println | Eprint => require_runtime_import(imports, RuntimeImport::Os),
         ReadStdin | ReadStdinExact => {
@@ -674,7 +681,10 @@ fn collect_io_runtime_imports(imports: Vec[RuntimeImport], hook: resources::IoRu
     }
 }
 
-fn collect_path_runtime_imports(imports: Vec[RuntimeImport], hook: resources::PathRuntimeHook) -> () {
+fn collect_path_runtime_imports(
+    imports: collections::IndexSet[RuntimeImport],
+    hook: resources::PathRuntimeHook,
+) -> () {
     require_runtime_import(imports, RuntimeImport::Filepath);
     match hook {
         Separator => require_runtime_import(imports, RuntimeImport::Os),
@@ -682,7 +692,10 @@ fn collect_path_runtime_imports(imports: Vec[RuntimeImport], hook: resources::Pa
     }
 }
 
-fn collect_process_runtime_imports(imports: Vec[RuntimeImport], hook: resources::ProcessRuntimeHook) -> () {
+fn collect_process_runtime_imports(
+    imports: collections::IndexSet[RuntimeImport],
+    hook: resources::ProcessRuntimeHook,
+) -> () {
     match hook {
         Exit => require_runtime_import(imports, RuntimeImport::Os),
         LookPath => require_runtime_import(imports, RuntimeImport::Exec),
@@ -709,7 +722,10 @@ fn collect_process_runtime_imports(imports: Vec[RuntimeImport], hook: resources:
     }
 }
 
-fn collect_task_runtime_imports(imports: Vec[RuntimeImport], hook: resources::TaskRuntimeHook) -> () {
+fn collect_task_runtime_imports(
+    imports: collections::IndexSet[RuntimeImport],
+    hook: resources::TaskRuntimeHook,
+) -> () {
     require_runtime_import(imports, RuntimeImport::Context);
     require_runtime_import(imports, RuntimeImport::Sync);
     match hook {
@@ -719,7 +735,7 @@ fn collect_task_runtime_imports(imports: Vec[RuntimeImport], hook: resources::Ta
 }
 
 fn collect_standard_runtime_imports(
-    imports: Vec[RuntimeImport],
+    imports: collections::IndexSet[RuntimeImport],
     hook: resources::StandardRuntimeHook,
 ) -> () {
     match hook {
@@ -748,7 +764,10 @@ fn collect_standard_runtime_imports(
     }
 }
 
-fn collect_runtime_hook_imports(imports: Vec[RuntimeImport], hook: resources::RuntimeHook) -> () {
+fn collect_runtime_hook_imports(
+    imports: collections::IndexSet[RuntimeImport],
+    hook: resources::RuntimeHook,
+) -> () {
     match hook {
         Core(hook) => collect_core_runtime_imports(imports, hook),
         Standard(hook) => collect_standard_runtime_imports(imports, hook),
@@ -783,7 +802,7 @@ fn runtime_hook_needs_task_support(hook: resources::RuntimeHook) -> bool {
     }
 }
 
-fn emit_runtime_import_items(items: Vec[Item], required: Vec[RuntimeImport]) -> () {
+fn emit_runtime_import_items(items: Vec[Item], required: collections::IndexSet[RuntimeImport]) -> () {
     if required.is_empty() {
         return
     } else {};
@@ -956,7 +975,7 @@ pub fn emit_runtime_hook_items(
     hooks: Vec[resources::RuntimeHook],
     intrinsics: Vec[string],
 ) -> () {
-    let required_imports: Vec[RuntimeImport] = Vec::new();
+    let required_imports = collections::IndexSet::new();
     for hook in hooks {
         collect_runtime_hook_imports(required_imports, hook)
     }

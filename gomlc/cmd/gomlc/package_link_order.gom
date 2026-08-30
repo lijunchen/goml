@@ -11,15 +11,13 @@ struct PackageOrderNode {
 }
 
 fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
-    let result: Vec[string] = Vec::new();
+    let result = collections::IndexSet::new();
     for value in values {
         for dependency in value.import_aliases {
-            if result.contains(dependency.package_name) {} else {
-                result.push(dependency.package_name)
-            }
+            let _ = result.insert(dependency.package_name);
         }
     }
-    result
+    result.to_vec()
 }
 
 fn package_node_name_present(values: Vec[PackageOrderNode], name: string) -> bool {
