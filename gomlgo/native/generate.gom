@@ -79,10 +79,10 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
             },
         )
     }
-    let blank_paths: Vec[string] = Vec::new();
+    let blank_paths: collections::BTreeSet[string] = collections::BTreeSet::new();
     for import_path in value.initialization_packages {
         if !package_paths_contain(function_paths, import_path) {
-            blank_paths.push(import_path)
+            let _ = blank_paths.insert(import_path);
         } else {}
     }
     for call in value.calls {
@@ -90,17 +90,12 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
             NativeBindingKind::Function => (),
             NativeBindingKind::Method => (),
             NativeBindingKind::Exit => if !package_paths_contain(function_paths, call.import_path) {
-                blank_paths.push(call.import_path)
+                let _ = blank_paths.insert(call.import_path);
             } else {},
         }
     }
-    collections::sort(blank_paths);
-    let previous = Ref::new("");
     for import_path in blank_paths {
-        if import_path != previous.get() {
-            imports.push(RegistryImport { import_path, alias: "_" });
-            previous.set(import_path)
-        } else {}
+        imports.push(RegistryImport { import_path, alias: "_" })
     }
     collections::sort_by(
         imports,

@@ -33,11 +33,14 @@ struct LoadState {
     config: LoadConfig,
     world: go_types::World,
     loading: Vec[string],
-    loaded: Vec[string],
-    failures: Vec[string],
+    loaded: collections::IndexMap[string, LoadedPackage],
     retain_info: bool,
-    infos: Vec[Option[LoadedInfo]],
     source_cache: HashMap[string, Vec[checker::SourceFile]],
+}
+
+struct LoadedPackage {
+    failure: string,
+    info: Option[LoadedInfo],
 }
 
 struct LoadedInfo {
@@ -353,8 +356,8 @@ fn discover_api_imports(
     state: LoadState,
     import_path: string,
     sources: Vec[checker::SourceFile],
-    imports: Vec[string],
-) -> Result[Vec[string], string] {
+    imports: collections::IndexSet[string],
+) -> Result[collections::IndexSet[string], string] {
     let config = state.config.checker_config;
     config.go_version = "go1.26";
     config.ignore_func_bodies = true;
@@ -382,10 +385,10 @@ fn discover_api_imports(
             files: sources,
         },
     );
-    let result: Vec[string] = Vec::new();
+    let result: collections::IndexSet[string] = collections::IndexSet::new();
     for dependency in imports {
         if discovered_import_used(checked, dependency) {
-            result.push(dependency)
+            let _ = result.insert(dependency);
         } else {}
     }
     Result::Ok(result)
@@ -414,17 +417,6 @@ fn string_in(values: Vec[string], value: string) -> bool {
     false
 }
 
-fn loaded_index(state: LoadState, import_path: string) -> isize {
-    let mut index = 0;
-    while index < state.loaded.len() {
-        if state.loaded[index] == import_path {
-            return index
-        } else {};
-        index += 1;
-    }
-    return 0 - 1
-}
-
 fn checker_failure(result: checker::CheckResult) -> string {
     if result.diagnostics.is_empty() {
         "type checking failed"
@@ -445,14 +437,12 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
     } else {};
     state.loading.push(import_path);
     let sources = selected_sources_cached(state, import_path)?;
-    let imports: Vec[string] = Vec::new();
+    let imports: collections::IndexSet[string] = collections::IndexSet::new();
     for source in sources {
         for dependency in source_imports(source) {
             if dependency != "unsafe"
                 && !(dependency == "C" && state.config.checker_config.fake_import_c)
-                && !string_in(imports, dependency) {
-                imports.push(dependency)
-            } else {}
+                && imports.insert(dependency) {} else {}
         }
     }
     let api_only = state.config.root_path != "" && import_path != state.config.root_path;
@@ -462,7 +452,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         imports
     };
     for dependency in selected_imports {
-        if !string_in(state.loaded, dependency) {
+        if !state.loaded.contains(dependency) {
             match load_package(state, dependency, false) {
                 Ok(checked) => {
                     state.world = checked.world;
@@ -492,7 +482,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         checker_config.disable_unused_import_check = true;
         checker_config.ignored_imports = Vec::new();
         for dependency in imports {
-            if !string_in(selected_imports, dependency) {
+            if !selected_imports.contains(dependency) {
                 checker_config.ignored_imports.push(dependency)
             } else {}
         }
@@ -507,26 +497,27 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
     );
     state.world = result.world;
     let _ = state.loading.pop();
-    state.loaded.push(import_path);
-    state.failures.push(
-        if result.diagnostics.is_empty() {
-            ""
-        } else {
-            checker_failure(result)
-        },
-    );
-    state.infos.push(
-        if state.retain_info {
-            Option::Some(
-                LoadedInfo {
-                    syntax: result.syntax,
-                    package_id: result.package_id,
-                    info: result.info,
-                    diagnostics: result.diagnostics,
-                },
-            )
-        } else {
-            Option::None
+    let failure = if result.diagnostics.is_empty() {
+        ""
+    } else {
+        checker_failure(result)
+    };
+    let _ = state.loaded.insert(
+        import_path,
+        LoadedPackage {
+            failure,
+            info: if state.retain_info {
+                Option::Some(
+                    LoadedInfo {
+                        syntax: result.syntax,
+                        package_id: result.package_id,
+                        info: result.info,
+                        diagnostics: result.diagnostics,
+                    },
+                )
+            } else {
+                Option::None
+            },
         },
     );
     if result.diagnostics.is_empty() || allow_diagnostics {
@@ -542,10 +533,8 @@ pub fn new_load_session(config: LoadConfig) -> LoadSession {
             config,
             world: go_types::new_world(),
             loading: Vec::new(),
-            loaded: Vec::new(),
-            failures: Vec::new(),
+            loaded: collections::IndexMap::new(),
             retain_info: false,
-            infos: Vec::new(),
             source_cache: HashMap::new(),
         },
     }
@@ -557,10 +546,8 @@ pub fn new_info_load_session(config: LoadConfig) -> LoadSession {
             config,
             world: go_types::new_world(),
             loading: Vec::new(),
-            loaded: Vec::new(),
-            failures: Vec::new(),
+            loaded: collections::IndexMap::new(),
             retain_info: true,
-            infos: Vec::new(),
             source_cache: HashMap::new(),
         },
     }
@@ -570,18 +557,16 @@ pub fn check_import_path_acceptance_in_session(session: LoadSession, import_path
     (),
     string,
 ] {
-    let index = loaded_index(session.state, import_path);
-    if index >= 0 {
-        if session.state.failures[index] == "" {
+    match session.state.loaded.get(import_path) {
+        Some(package_value) => if package_value.failure == "" {
             Result::Ok(())
         } else {
-            Result::Err(session.state.failures[index])
-        }
-    } else {
-        match load_package(session.state, import_path, false) {
+            Result::Err(package_value.failure)
+        },
+        None => match load_package(session.state, import_path, false) {
             Ok(_) => Result::Ok(()),
             Err(message) => Result::Err(message),
-        }
+        },
     }
 }
 
@@ -589,11 +574,9 @@ pub fn check_import_path_info_in_session(session: LoadSession, import_path: stri
     checker::CheckResult,
     string,
 ] {
-    let index = loaded_index(session.state, import_path);
-    if index < 0 {
-        load_package(session.state, import_path, false)
-    } else {
-        match session.state.infos[index] {
+    match session.state.loaded.get(import_path) {
+        None => load_package(session.state, import_path, false),
+        Some(package_value) => match package_value.info {
             Some(info) => if info.diagnostics.is_empty() {
                 Result::Ok(
                     checker::CheckResult {
@@ -605,10 +588,10 @@ pub fn check_import_path_info_in_session(session: LoadSession, import_path: stri
                     },
                 )
             } else {
-                Result::Err(session.state.failures[index])
+                Result::Err(package_value.failure)
             },
             None => Result::Err("package info not retained: " + import_path),
-        }
+        },
     }
 }
 
@@ -623,10 +606,8 @@ pub fn check_import_path(config: LoadConfig, import_path: string) -> Result[
         config,
         world: go_types::new_world(),
         loading: Vec::new(),
-        loaded: Vec::new(),
-        failures: Vec::new(),
+        loaded: collections::IndexMap::new(),
         retain_info: false,
-        infos: Vec::new(),
         source_cache: HashMap::new(),
     };
     load_package(state, import_path, false)
@@ -666,10 +647,8 @@ pub fn check_sources_with_diagnostics(
         config,
         world: go_types::new_world(),
         loading: Vec::new(),
-        loaded: Vec::new(),
-        failures: Vec::new(),
+        loaded: collections::IndexMap::new(),
         retain_info: false,
-        infos: Vec::new(),
         source_cache: HashMap::new(),
     };
     load_package(state, import_path, true)
