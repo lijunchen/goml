@@ -396,7 +396,7 @@ fn mark_void_node(state: CheckState, node: syntax::NodeId) -> () {
     if state.void_node_indices.contains(node.value) {
         return
     } else {};
-    state.void_node_indices[node.value] = true;
+    let _ = state.void_node_indices.insert(node.value);
     state.void_nodes.push(node)
 }
 
@@ -1120,7 +1120,7 @@ fn check_make_builtin(
         let operand = check_expression(state, scope, arguments[index]);
         if operand.type_id.value == state.world.invalid.value {
             valid = false;
-            state.invalid_builtin_parameter_nodes[arguments[index].value] = true;
+            let _ = state.invalid_builtin_parameter_nodes.insert(arguments[index].value);
         } else {
             match operand.value {
                 Some(value) => match constant::convert_constant(
@@ -1154,7 +1154,9 @@ fn check_make_builtin(
                                     false,
                                 );
                                 valid = false;
-                                state.invalid_builtin_parameter_nodes[arguments[index].value] = true;
+                                let _ = state.invalid_builtin_parameter_nodes.insert(
+                                    arguments[index].value,
+                                );
                             } else {},
                             _ => {},
                         };
@@ -1183,7 +1185,7 @@ fn check_make_builtin(
                             )
                         };
                         valid = false;
-                        state.invalid_builtin_parameter_nodes[arguments[index].value] = true;
+                        let _ = state.invalid_builtin_parameter_nodes.insert(arguments[index].value);
                     },
                 },
                 None => if go_types::is_untyped(state.world, operand.type_id)
@@ -1216,7 +1218,7 @@ fn check_make_builtin(
                         false,
                     );
                     valid = false;
-                    state.invalid_builtin_parameter_nodes[arguments[index].value] = true;
+                    let _ = state.invalid_builtin_parameter_nodes.insert(arguments[index].value);
                 } else {
                     indices.push(operand)
                 },
@@ -2858,12 +2860,12 @@ fn check_unsafe_size_align(
                 } else {}
             }
             if omit {
-                state.omitted_type_fact_nodes[node.value] = true;
-                state.omitted_type_fact_nodes[arguments[0].value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
+                let _ = state.omitted_type_fact_nodes.insert(arguments[0].value);
             } else {}
             return unsafe_constant_operand(state, state.config.sizes.word_size)
         } else {
-            state.omitted_type_fact_nodes[node.value] = true;
+            let _ = state.omitted_type_fact_nodes.insert(node.value);
             return invalid_operand(state)
         }
     } else {};
@@ -2913,7 +2915,7 @@ fn check_unsafe_size_align(
                     None => {},
                 }
             } else {};
-            state.omitted_type_fact_nodes[arguments[0].value] = true;
+            let _ = state.omitted_type_fact_nodes.insert(arguments[0].value);
             return invalid_operand(state)
         },
         None => {},
@@ -3038,8 +3040,8 @@ fn unparenthesized_expression(state: CheckState, node: syntax::NodeId) -> syntax
 }
 
 fn omit_selector_result(state: CheckState, argument: syntax::NodeId, selector: syntax::NodeId) -> () {
-    state.omitted_type_fact_nodes[argument.value] = true;
-    state.omitted_type_fact_nodes[selector.value] = true;
+    let _ = state.omitted_type_fact_nodes.insert(argument.value);
+    let _ = state.omitted_type_fact_nodes.insert(selector.value);
     match syntax::get_node(state.syntax.arena, selector) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -3048,7 +3050,7 @@ fn omit_selector_result(state: CheckState, argument: syntax::NodeId, selector: s
             path: _,
             kind: syntax::SyntaxKind::SelectorExpr { expression: _, selector },
         }) => {
-            state.omitted_use_fact_nodes[selector.value] = true;
+            let _ = state.omitted_use_fact_nodes.insert(selector.value);
         },
         _ => {},
     }
@@ -3058,7 +3060,7 @@ fn omit_selector_wrappers(state: CheckState, argument: syntax::NodeId, selector:
     if argument.value == selector.value {
         return
     } else {};
-    state.omitted_type_fact_nodes[argument.value] = true;
+    let _ = state.omitted_type_fact_nodes.insert(argument.value);
     match syntax::get_node(state.syntax.arena, argument) {
         Some(syntax::SyntaxNode {
             id: _,

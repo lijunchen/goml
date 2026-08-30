@@ -3943,7 +3943,7 @@ fn check_explicit_instance(
     }
     if invalid_argument {
         if recover_invalid_function_instance {
-            state.failed_inference_nodes[node.value] = true;
+            let _ = state.failed_inference_nodes.insert(node.value);
             match go_types::get_type(state.world, go_types::unalias(state.world, origin.type_id)) {
                 Some(go_types::TypeData {
                     id: _,
@@ -3979,7 +3979,7 @@ fn check_explicit_instance(
                 + parameter_count.to_string(),
             false,
         );
-        state.failed_inference_nodes[node.value] = true;
+        let _ = state.failed_inference_nodes.insert(node.value);
         return Option::Some(
             Operand {
                 type_id: origin.type_id,

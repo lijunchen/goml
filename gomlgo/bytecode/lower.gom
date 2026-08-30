@@ -662,7 +662,7 @@ fn analyze_function_capture_objects(
                 "function literal body is missing",
             )?;
             let function_scope = execution::require_scope(package_value.index, source.type_node)?.scope;
-            let selected: HashMap[isize, bool] = HashMap::new();
+            let selected = collections::BitSet::new();
             let uses = package_uses[source.package_index];
             let mut usage_index = first_capture_use_at_or_after(uses, body.file, body.span.start);
             while usage_index < uses.len() {
@@ -676,7 +676,7 @@ fn analyze_function_capture_objects(
                             Some(owner) => if owner.value != function_scope.value
                                 && scope_is_ancestor(program.world, owner, function_scope)
                                 && !selected.contains(usage.object.value) {
-                                selected[usage.object.value] = true;
+                                let _ = selected.insert(usage.object.value);
                                 captures.push(usage.object);
                             } else {},
                             None => {},

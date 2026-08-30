@@ -100,9 +100,9 @@ fn check_composite_element(
             check_composite_literal_elements(state, scope, node, element_target, elements);
             if go_types::is_type_parameter(state.world, target)
                 && core_type_id(state, target).value == state.world.invalid.value {
-                state.omitted_type_fact_nodes[node.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else if target.value == state.world.invalid.value {
-                state.retained_invalid_type_fact_nodes[node.value] = true;
+                let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
             } else {};
             Operand { type_id: target, value: Option::None, addressable: false, assignable: false }
         } else {
@@ -792,7 +792,7 @@ fn check_composite_literal(
         Some(value) => value,
         None => {
             diagnostic(state, node, "missing type in composite literal", false);
-            state.retained_invalid_type_fact_nodes[node.value] = true;
+            let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
             return Operand {
                 type_id: state.world.invalid,
                 value: Option::None,
@@ -853,9 +853,9 @@ fn check_composite_literal(
             if resolved.value != state.world.invalid.value && !valid_literal_type
                 && !track_type_cycle
                 && !invalid_core {
-                state.omitted_type_fact_nodes[node.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else if invalid_type_parameter_literal {
-                state.omitted_type_fact_nodes[node.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else {};
             if invalid_core && (track_type_cycle || invalid_type_parameter_literal) {
                 state.world.invalid
@@ -867,7 +867,7 @@ fn check_composite_literal(
     if type_id.value == state.world.invalid.value
         && !(state.array_length_depth > 0 && !state.active_type_objects.is_empty())
         && !state.omitted_type_fact_nodes.contains(node.value) {
-        state.retained_invalid_type_fact_nodes[node.value] = true;
+        let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
     } else {};
     Operand { type_id, value: Option::None, addressable: false, assignable: false }
 }
@@ -1007,8 +1007,8 @@ fn pointer_to_array_type(state: CheckState, value: go_types::TypeId) -> bool {
 }
 
 fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression: syntax::NodeId) -> () {
-    state.omitted_type_fact_nodes[expression.value] = true;
-    state.omitted_type_fact_nodes[node.value] = true;
+    let _ = state.omitted_type_fact_nodes.insert(expression.value);
+    let _ = state.omitted_type_fact_nodes.insert(node.value);
     match syntax::get_node(state.syntax.arena, expression) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -1032,7 +1032,7 @@ fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression
                     } else {}
                 }
                 for omitted_node in omitted {
-                    state.omitted_type_fact_nodes[omitted_node.value] = true;
+                    let _ = state.omitted_type_fact_nodes.insert(omitted_node.value);
                 }
             }
             match type_fact_index(state, function) {
@@ -1593,7 +1593,7 @@ fn check_type_assertion(
             };
             let recursive = record_active_value_type_cycle(state, target, false);
             if recursive {
-                state.omitted_type_fact_nodes[node.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else {};
             if !recursive && !type_contains_invalid(state, target)
                 && !go_types::assertable_to(state.world, source.type_id, target) {

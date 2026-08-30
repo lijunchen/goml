@@ -4644,7 +4644,7 @@ fn check_goto_restrictions(state: CheckState, body: syntax::NodeId) -> () {
         for label in labels {
             if value.name == label.name {
                 if !flow_blocks_prefix(label.blocks, value.blocks) {
-                    state.omitted_use_fact_nodes[value.node.value] = true;
+                    let _ = state.omitted_use_fact_nodes.insert(value.node.value);
                     diagnostic(state, value.node, "goto " + value.name + " jumps into block", false)
                 } else if value.position < label.position {
                     let mut crossed: Option[FlowDeclaration] = Option::None;
@@ -4710,7 +4710,7 @@ fn check_function_body(
     if state.checked_function_bodies.contains(body.value) {
         return
     } else {};
-    state.checked_function_bodies[body.value] = true;
+    let _ = state.checked_function_bodies.insert(body.value);
     for index in 0..state.deferred_function_type_diagnostics.len() {
         let deferred = state.deferred_function_type_diagnostics[index];
         if !deferred.emitted && deferred.signature_node.value == signature_node.value {

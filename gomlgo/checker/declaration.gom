@@ -210,14 +210,14 @@ struct CheckState {
     type_visit_marks: Vec[isize],
     type_visit_generation: Ref[isize],
     type_invalid_cache: Vec[i32],
-    omitted_type_fact_nodes: HashMap[isize, bool],
-    preserved_type_fact_nodes: HashMap[isize, bool],
-    retained_invalid_type_fact_nodes: HashMap[isize, bool],
-    failed_inference_nodes: HashMap[isize, bool],
+    omitted_type_fact_nodes: collections::BitSet,
+    preserved_type_fact_nodes: collections::BitSet,
+    retained_invalid_type_fact_nodes: collections::BitSet,
+    failed_inference_nodes: collections::BitSet,
     ignore_function_type_params: bool,
     use_fact_indices: Vec[i32],
-    omitted_use_fact_nodes: HashMap[isize, bool],
-    invalid_builtin_parameter_nodes: HashMap[isize, bool],
+    omitted_use_fact_nodes: collections::BitSet,
+    invalid_builtin_parameter_nodes: collections::BitSet,
     used_objects: HashMap[isize, bool],
     constants: Vec[ConstantObjectValue],
     declarations: Vec[DeclaredObject],
@@ -254,7 +254,7 @@ struct CheckState {
     pending_methods: Vec[PendingMethod],
     receiver_validation_nodes: Vec[syntax::NodeId],
     active_function_objects: Vec[go_types::ObjectId],
-    reported_recursive_calls: HashMap[isize, bool],
+    reported_recursive_calls: collections::BitSet,
     type_cycle_depth: isize,
     type_fact_recovery_depth: isize,
     array_length_depth: isize,
@@ -285,7 +285,7 @@ struct CheckState {
     next_function_id: isize,
     initialization_depth: isize,
     function_dependencies_enabled: bool,
-    checked_function_bodies: HashMap[isize, bool],
+    checked_function_bodies: collections::BitSet,
     defer_constraint_checks: bool,
     deferred_instances: Vec[DeferredInstanceCheck],
     checked_deferred_instances: isize,
@@ -297,7 +297,7 @@ struct CheckState {
     deferred_function_type_diagnostics: Vec[DeferredFunctionTypeDiagnostic],
     partial_instances: Vec[PartialInstance],
     void_nodes: Vec[syntax::NodeId],
-    void_node_indices: HashMap[isize, bool],
+    void_node_indices: collections::BitSet,
     current_iota: isize,
     diagnostic_override: Option[syntax::NodeId],
     diagnostics: Vec[CheckDiagnostic],
@@ -1276,8 +1276,8 @@ fn invalidate_direct_alias_cycle(state: CheckState, objects: Vec[go_types::Objec
                 let pending = state.pending_types[pending_index];
                 if index == first {
                     if !type_object_used_as_receiver(state, pending.object) {
-                        state.omitted_type_fact_nodes[pending.rhs.value] = true;
-                        state.omitted_use_fact_nodes[pending.rhs.value] = true;
+                        let _ = state.omitted_type_fact_nodes.insert(pending.rhs.value);
+                        let _ = state.omitted_use_fact_nodes.insert(pending.rhs.value);
                     } else {};
                     let _ = go_types::set_type(
                         state.world,
@@ -2131,8 +2131,8 @@ fn check_direct_named_type_cycles(state: CheckState) -> () {
                         match pending_type_index(state, cycle[0]) {
                             Some(first) => {
                                 let rhs = state.pending_types[first].rhs;
-                                state.omitted_type_fact_nodes[rhs.value] = true;
-                                state.omitted_use_fact_nodes[rhs.value] = true;
+                                let _ = state.omitted_type_fact_nodes.insert(rhs.value);
+                                let _ = state.omitted_use_fact_nodes.insert(rhs.value);
                             },
                             None => {},
                         };
@@ -2442,7 +2442,7 @@ fn report_deferred_declaration_cycles(state: CheckState) -> () {
                     for fact in state.info.uses {
                         match fact.object {
                             Some(used) => if used.value == object.value {
-                                state.omitted_type_fact_nodes[fact.node.value] = true;
+                                let _ = state.omitted_type_fact_nodes.insert(fact.node.value);
                             } else {},
                             None => {},
                         }
@@ -2561,8 +2561,8 @@ fn report_deferred_declaration_cycles(state: CheckState) -> () {
                 Some(index) => {
                     if direct_alias_cycle_rhs(state, state.pending_types[index].rhs) {
                         let rhs = state.pending_types[index].rhs;
-                        state.omitted_type_fact_nodes[rhs.value] = true;
-                        state.omitted_use_fact_nodes[rhs.value] = true;
+                        let _ = state.omitted_type_fact_nodes.insert(rhs.value);
+                        let _ = state.omitted_use_fact_nodes.insert(rhs.value);
                     } else {};
                     match syntax::get_node(state.syntax.arena, state.pending_types[index].rhs) {
                         Some(syntax::SyntaxNode {
@@ -2622,7 +2622,7 @@ fn omit_expression_array_cycle_composite_facts(state: CheckState) -> () {
                         },
                     }) => for member in cycle.objects {
                         if member.value == object.value {
-                            state.omitted_type_fact_nodes[fact.node.value] = true;
+                            let _ = state.omitted_type_fact_nodes.insert(fact.node.value);
                         } else {}
                     },
                     _ => {},
@@ -3849,7 +3849,7 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
                                 if state.type_cycle_depth > 0 {
                                     record_invalid_type_expression(state, node)
                                 } else {
-                                    state.omitted_type_fact_nodes[node.value] = true;
+                                    let _ = state.omitted_type_fact_nodes.insert(node.value);
                                 };
                                 state.world.invalid
                             } else {
@@ -3877,7 +3877,7 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
                                     false,
                                 );
                                 record_invalid_type_expression(state, node);
-                                state.omitted_use_fact_nodes[node.value] = true;
+                                let _ = state.omitted_use_fact_nodes.insert(node.value);
                                 state.world.invalid
                             } else if state.generic_type_origin_depth == 0
                                 && !generic_parameters(state, object.type_id).is_empty() {
@@ -3896,7 +3896,7 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
                                 if state.type_cycle_depth > 0 {
                                     record_invalid_type_expression(state, node)
                                 } else {
-                                    state.omitted_type_fact_nodes[node.value] = true;
+                                    let _ = state.omitted_type_fact_nodes.insert(node.value);
                                 };
                                 state.world.invalid
                             } else {
@@ -4075,7 +4075,9 @@ fn resolve_type(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeI
                                                     if state.type_cycle_depth > 0 {
                                                         record_invalid_type_expression(state, node)
                                                     } else {
-                                                        state.omitted_type_fact_nodes[node.value] = true;
+                                                        let _ = state.omitted_type_fact_nodes.insert(
+                                                            node.value,
+                                                        );
                                                     };
                                                     state.world.invalid
                                                 } else {
@@ -5459,10 +5461,10 @@ fn initializer_dependency_indices(state: CheckState, facts: Vec[InitializerFact]
 }
 
 fn initializer_cycle_dependencies(state: CheckState, facts: Vec[InitializerFact]) -> Vec[bool] {
-    let cycle_objects: HashMap[isize, bool] = HashMap::new();
+    let cycle_objects = collections::BitSet::new();
     for cycle in state.value_cycles {
         for object in cycle.objects {
-            cycle_objects[object.value] = true;
+            let _ = cycle_objects.insert(object.value);
         }
     }
     let result: Vec[bool] = Vec::new();
@@ -6967,14 +6969,14 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         type_visit_marks: Vec::new(),
         type_visit_generation: Ref::new(0),
         type_invalid_cache: Vec::new(),
-        omitted_type_fact_nodes: HashMap::new(),
-        preserved_type_fact_nodes: HashMap::new(),
-        retained_invalid_type_fact_nodes: HashMap::new(),
-        failed_inference_nodes: HashMap::new(),
+        omitted_type_fact_nodes: collections::BitSet::new(),
+        preserved_type_fact_nodes: collections::BitSet::new(),
+        retained_invalid_type_fact_nodes: collections::BitSet::new(),
+        failed_inference_nodes: collections::BitSet::new(),
         ignore_function_type_params: false,
         use_fact_indices: fact_index_slots(syntax_package.arena.nodes.len()),
-        omitted_use_fact_nodes: HashMap::new(),
-        invalid_builtin_parameter_nodes: HashMap::new(),
+        omitted_use_fact_nodes: collections::BitSet::new(),
+        invalid_builtin_parameter_nodes: collections::BitSet::new(),
         used_objects: HashMap::new(),
         constants: Vec::new(),
         declarations: Vec::new(),
@@ -7011,7 +7013,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         pending_methods: Vec::new(),
         receiver_validation_nodes: Vec::new(),
         active_function_objects: Vec::new(),
-        reported_recursive_calls: HashMap::new(),
+        reported_recursive_calls: collections::BitSet::new(),
         type_cycle_depth: 0,
         type_fact_recovery_depth: 0,
         array_length_depth: 0,
@@ -7042,7 +7044,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         next_function_id: 0,
         initialization_depth: 0,
         function_dependencies_enabled,
-        checked_function_bodies: HashMap::new(),
+        checked_function_bodies: collections::BitSet::new(),
         defer_constraint_checks: false,
         deferred_instances: Vec::new(),
         checked_deferred_instances: 0,
@@ -7054,7 +7056,7 @@ pub fn check_package_in_world(config: CheckConfig, input: PackageInput, world: g
         deferred_function_type_diagnostics: Vec::new(),
         partial_instances: Vec::new(),
         void_nodes: Vec::new(),
-        void_node_indices: HashMap::new(),
+        void_node_indices: collections::BitSet::new(),
         current_iota: -1,
         diagnostic_override: Option::None,
         diagnostics,

@@ -299,7 +299,7 @@ fn collapse_parenthesized_embedded_fact(
         Some(fact) => update_operand_fact(state, node, fact.type_id, Option::None),
         None => {},
     };
-    state.omitted_type_fact_nodes[expression.value] = true;
+    let _ = state.omitted_type_fact_nodes.insert(expression.value);
     let mut object: Option[go_types::ObjectId] = Option::None;
     for fact in state.info.uses {
         if fact.node.value == expression.value {
@@ -308,7 +308,7 @@ fn collapse_parenthesized_embedded_fact(
     }
     match object {
         Some(object) => {
-            state.omitted_use_fact_nodes[expression.value] = true;
+            let _ = state.omitted_use_fact_nodes.insert(expression.value);
             record_use(state, node, object)
         },
         None => {},

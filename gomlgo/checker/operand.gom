@@ -822,7 +822,7 @@ fn preserve_inherited_type_fact(state: CheckState, node: syntax::NodeId) -> () {
     } else {};
     match recorded_type_fact(state, node) {
         Some(fact) => if fact.type_id.value != state.world.invalid.value {
-            state.preserved_type_fact_nodes[node.value] = true;
+            let _ = state.preserved_type_fact_nodes.insert(node.value);
         } else {},
         None => {},
     }
@@ -982,7 +982,7 @@ fn contextualize_untyped_expression(
                                 );
                                 valid = false;
                                 if !convert_value {
-                                    state.omitted_type_fact_nodes[node.value] = true;
+                                    let _ = state.omitted_type_fact_nodes.insert(node.value);
                                 } else {}
                             },
                         }
@@ -1014,7 +1014,7 @@ fn contextualize_untyped_expression(
                                     + ") must be integer",
                                 false,
                             );
-                            state.omitted_type_fact_nodes[left.value] = true;
+                            let _ = state.omitted_type_fact_nodes.insert(left.value);
                         } else {};
                         contextualize_untyped_expression(state, left, target, false);
                         if !shift_operator(op) {
@@ -1638,7 +1638,7 @@ fn check_conversion(
             _ => false,
         };
         if retain_invalid {
-            state.retained_invalid_type_fact_nodes[node.value] = true;
+            let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
         } else {};
         if !uninstantiated_generic {
             for argument in arguments {
@@ -1752,7 +1752,7 @@ fn check_conversion(
         }
     } else {};
     if record_active_value_type_cycle(state, target, false) {
-        state.omitted_type_fact_nodes[node.value] = true;
+        let _ = state.omitted_type_fact_nodes.insert(node.value);
         match syntax::get_node(state.syntax.arena, node) {
             Some(syntax::SyntaxNode {
                 id: _,
@@ -1767,7 +1767,7 @@ fn check_conversion(
                     rparen: _,
                 },
             }) => {
-                state.omitted_type_fact_nodes[function.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(function.value);
             },
             _ => {},
         };
@@ -2442,7 +2442,7 @@ fn recovered_call_result(state: CheckState, node: syntax::NodeId, results: go_ty
         result_type
     };
     if result_type.value == state.world.invalid.value {
-        state.retained_invalid_type_fact_nodes[node.value] = true;
+        let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
     } else {};
     Operand { type_id: result_type, value: Option::None, addressable: false, assignable: false }
 }
@@ -2493,7 +2493,7 @@ fn recovered_generic_call_result(
     let recovered = recovered_signature_call_result(state, node, signature);
     for parameter in generic_parameters(state, signature) {
         if type_contains_parameter(state, recovered.type_id, parameter.object, Vec::new()) {
-            state.omitted_type_fact_nodes[node.value] = true;
+            let _ = state.omitted_type_fact_nodes.insert(node.value);
         } else {}
     }
     recovered
@@ -2548,11 +2548,11 @@ fn check_call(
         for argument in arguments {
             let _ = check_expression(state, scope, argument);
         }
-        state.omitted_type_fact_nodes[node.value] = true;
+        let _ = state.omitted_type_fact_nodes.insert(node.value);
         return invalid_operand(state)
     } else {};
     if state.failed_inference_nodes.contains(function_node.value) {
-        state.omitted_type_fact_nodes[node.value] = true;
+        let _ = state.omitted_type_fact_nodes.insert(node.value);
         for argument in arguments {
             match syntax::get_node(state.syntax.arena, argument) {
                 Some(syntax::SyntaxNode {
@@ -2697,7 +2697,7 @@ fn check_call(
                         ellipsis,
                         too_few,
                     );
-                    state.failed_inference_nodes[node.value] = true;
+                    let _ = state.failed_inference_nodes.insert(node.value);
                     return recovered_generic_call_result(state, node, function.type_id)
                 } else {}
             } else {}
@@ -2714,10 +2714,10 @@ fn check_call(
     );
     if function_type.value == state.world.invalid.value
         && function.type_id.value != state.world.invalid.value {
-        state.failed_inference_nodes[node.value] = true;
+        let _ = state.failed_inference_nodes.insert(node.value);
         for argument in arguments {
             if state.failed_inference_nodes.contains(argument.value) {
-                state.omitted_type_fact_nodes[node.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
                 return invalid_operand(state)
             } else {}
         }
@@ -2947,7 +2947,7 @@ fn check_call(
                     Some(object) => match go_types::get_object(state.world, object) {
                         Some(object) => {
                             if !state.reported_recursive_calls.contains(function_node.value) {
-                                state.reported_recursive_calls[function_node.value] = true;
+                                let _ = state.reported_recursive_calls.insert(function_node.value);
                                 diagnostic(
                                     state,
                                     function_node,
@@ -2993,7 +2993,7 @@ fn check_call(
                 }
             }
             if recursive_result {
-                state.omitted_type_fact_nodes[node.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else {};
             let result_type = if results.len() == 1 {
                 results[0].type_id
@@ -3006,7 +3006,7 @@ fn check_call(
                 result_type
             };
             if result_type.value == state.world.invalid.value {
-                state.retained_invalid_type_fact_nodes[node.value] = true;
+                let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
             } else {};
             Operand {
                 type_id: result_type,
@@ -3028,7 +3028,7 @@ fn check_call(
             match active_function {
                 Some(object) => match go_types::get_object(state.world, object) {
                     Some(object) => if !state.reported_recursive_calls.contains(function_node.value) {
-                        state.reported_recursive_calls[function_node.value] = true;
+                        let _ = state.reported_recursive_calls.insert(function_node.value);
                         diagnostic(
                             state,
                             function_node,
@@ -3307,7 +3307,7 @@ fn check_unary(
             return invalid_operand(state)
         } else {};
         if state.array_length_depth > 0 && type_contains_active_type(state, source.type_id) {
-            state.omitted_type_fact_nodes[node.value] = true;
+            let _ = state.omitted_type_fact_nodes.insert(node.value);
         } else {};
         return Operand {
             type_id: go_types::add_type(
@@ -3353,7 +3353,7 @@ fn check_unary(
                 kind: go_types::TypeKind::Chan { direction: _, element },
             }) => {
                 if record_active_value_type_cycle(state, element, false) {
-                    state.omitted_type_fact_nodes[node.value] = true;
+                    let _ = state.omitted_type_fact_nodes.insert(node.value);
                 } else {};
                 return Operand {
                     type_id: element,
@@ -3430,7 +3430,7 @@ fn check_unary(
                 + diagnostic_type_string(state, source.type_id),
             false,
         );
-        state.omitted_type_fact_nodes[node.value] = true;
+        let _ = state.omitted_type_fact_nodes.insert(node.value);
         return invalid_operand(state)
     } else {};
     if valid && op == BIT_XOR_OPERATOR
@@ -4221,7 +4221,7 @@ fn record_selection(state: CheckState, fact: SelectionFact) -> () {
 }
 
 fn omit_incomplete_method_receiver_facts(state: CheckState, node: syntax::NodeId) -> () {
-    state.omitted_type_fact_nodes[node.value] = true;
+    let _ = state.omitted_type_fact_nodes.insert(node.value);
     match syntax::get_node(state.syntax.arena, node) {
         Some(syntax::SyntaxNode {
             id: _,
@@ -4253,13 +4253,13 @@ fn method_expression_operand(
                 path: _,
                 kind: syntax::SyntaxKind::SelectorExpr { expression, selector: _ },
             }) => {
-                state.omitted_type_fact_nodes[expression.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(expression.value);
             },
             _ => {},
         }
     } else {};
     if incomplete_named_instance(state, receiver) {
-        state.omitted_type_fact_nodes[node.value] = true;
+        let _ = state.omitted_type_fact_nodes.insert(node.value);
         match syntax::get_node(state.syntax.arena, node) {
             Some(syntax::SyntaxNode {
                 id: _,
@@ -4569,8 +4569,8 @@ fn value_selector_operand(
                 let incomplete_field = object.kind != go_types::ObjectKind::Func
                     && incomplete_named_instance(state, base.type_id);
                 if incomplete_field {
-                    state.omitted_type_fact_nodes[node.value] = true;
-                    state.omitted_use_fact_nodes[selector.value] = true;
+                    let _ = state.omitted_type_fact_nodes.insert(node.value);
+                    let _ = state.omitted_use_fact_nodes.insert(selector.value);
                 } else {};
                 record_use(state, selector, selection.object);
                 record_selection(
@@ -4588,11 +4588,11 @@ fn value_selector_operand(
                     state.world.invalid
                 } else if recovered_field_type {
                     if selected_type.value == state.world.invalid.value {
-                        state.retained_invalid_type_fact_nodes[node.value] = true;
+                        let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
                     } else {};
                     selected_type
                 } else if selection_type_contains_direct_invalid(state, selected_type) {
-                    state.retained_invalid_type_fact_nodes[node.value] = true;
+                    let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
                     state.world.invalid
                 } else {
                     selected_type
@@ -4800,7 +4800,7 @@ fn dereference_operand(
     match go_types::get_type(state.world, core_type_id(state, source.type_id)) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
             if record_active_value_type_cycle(state, element, false) {
-                state.omitted_type_fact_nodes[node.value] = true;
+                let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else {};
             Operand { type_id: element, value: Option::None, addressable: true, assignable: true }
         },
