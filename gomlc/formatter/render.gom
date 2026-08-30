@@ -14,7 +14,7 @@ struct Renderer {
     indent_level: Ref[isize],
     line_width: isize,
     line_start: Ref[bool],
-    broken_groups: collections::HashSet[isize],
+    broken_groups: collections::BitSet,
     suffixes: collections::Deque[Doc],
 }
 
@@ -25,7 +25,7 @@ fn renderer(line_width: isize) -> Renderer {
         indent_level: Ref::new(0),
         line_width,
         line_start: Ref::new(true),
-        broken_groups: collections::HashSet::new(),
+        broken_groups: collections::BitSet::new(),
         suffixes: collections::Deque::new(),
     }
 }
@@ -54,7 +54,7 @@ fn limited_add(left: isize, right: isize, limit: isize) -> isize {
     }
 }
 
-fn flat_width(value: Doc, broken_groups: collections::HashSet[isize], limit: isize) -> isize {
+fn flat_width(value: Doc, broken_groups: collections::BitSet, limit: isize) -> isize {
     match value {
         Nil => 0,
         Text(_, width) => if width > limit {
