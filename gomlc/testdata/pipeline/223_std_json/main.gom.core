@@ -25,15 +25,11 @@ fn float_natural_from_u64(value/0: u64) -> FloatNatural {
                 inherent#Vec#Vec[u32]#push(FloatNatural.words(result/0), high/0)
               }
           } else {
-              {
-                ()
-              }
+              ()
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   result/0
 }
@@ -90,9 +86,7 @@ fn float_natural_bit_length(value/0: FloatNatural) -> isize {
           return 0
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let high/0 =
     @intrinsic(vec.get)(
@@ -134,9 +128,7 @@ fn float_natural_compare(left/0: FloatNatural, right/0: FloatNatural) -> isize {
               return 1
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let index/0 = inherent#Vec#Vec[u32]#len(FloatNatural.words(left/0)) in
@@ -161,9 +153,7 @@ fn float_natural_compare(left/0: FloatNatural, right/0: FloatNatural) -> isize {
                     return 1
                   }
               } else {
-                  {
-                    ()
-                  }
+                  ()
               }
           }
         }
@@ -179,9 +169,7 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
           return
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let carry/0 = 0 in
   let index/0 = 0 in
@@ -215,9 +203,7 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
         inherent#Vec#Vec[u32]#push(FloatNatural.words(value/0), (carry/0 as u32))
       }
   } else {
-      {
-        ()
-      }
+      ()
   }
 }
 
@@ -232,9 +218,7 @@ fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> () {
                 inherent#Vec#Vec[u32]#push(FloatNatural.words(value/0), 0)
               }
           } else {
-              {
-                ()
-              }
+              ()
           } in
         let sum/0 =
           ((@intrinsic(vec.get)(FloatNatural.words(value/0), index/0) as u64) + carry/0) in
@@ -288,9 +272,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
               return float_natural_copy(value/0)
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let result/0 = float_natural_zero() in
@@ -333,9 +315,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
           inherent#Vec#Vec[u32]#push(FloatNatural.words(result/0), (carry/0 as u32))
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   result/0
 }
@@ -436,9 +416,7 @@ fn float_natural_decimal(value/0: FloatNatural) -> string {
           return "0"
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let current/0 = float_natural_copy(value/0) in
   let reversed/0 = @intrinsic(vec.new)() in
@@ -528,9 +506,7 @@ fn float_rational_quotient(
                   let _wild3 = part/0 = float_natural_shift_left(divisor/0, offset/0) in
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild4 = float_natural_subtract(remaining/0, part/0) in
           let _wild5 =
@@ -562,9 +538,7 @@ fn float_rational_quotient(
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   quotient/0
 }
@@ -582,9 +556,7 @@ fn float_rational_bits(
           return (0, false)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let scaled_numerator/0 =
     if (binary_shift/0 >= 0) {
@@ -636,9 +608,7 @@ fn float_rational_bits(
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let minimum_exponent/0 = (1 - exponent_bias/0) in
   let maximum_exponent/0 = exponent_bias/0 in
@@ -648,9 +618,7 @@ fn float_rational_bits(
           return (((((maximum_exponent/0 + exponent_bias/0) + 1) as u64) << mantissa_bits/0), true)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let mantissa/0 =
     if (exponent/0 < minimum_exponent/0) {
@@ -707,9 +675,7 @@ fn float_rational_bits(
                   } in
               }
           } else {
-              {
-                ()
-              }
+              ()
           } in
         if (exponent/0 > maximum_exponent/0) {
             {
@@ -751,9 +717,7 @@ fn string_equals_ascii_case(value/0: string, expected/0: string) -> bool {
           return false
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let index/0 = 0 in
   let _wild1 =
@@ -766,9 +730,7 @@ fn string_equals_ascii_case(value/0: string, expected/0: string) -> bool {
                   return false
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild3 =
             {
@@ -846,9 +808,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let index/0 = 0 in
   let negative/0 = false in
@@ -872,9 +832,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let special_text/0 =
     inherent#string#string#byte_slice(value/0, index/0, inherent#string#string#byte_len(value/0)) in
@@ -897,9 +855,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let hexadecimal/0 =
     if if ((index/0 + 2) <= inherent#string#string#byte_len(value/0)) {
@@ -922,9 +878,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let mantissa_start/0 = index/0 in
   let base/0 =
@@ -973,9 +927,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                   } in
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild14 =
                           if if (significant_digits/0 > 0) {
@@ -992,9 +944,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                   } in
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild16 =
                           {
@@ -1012,9 +962,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                     return invalid_parsed_float()
                                   }
                               } else {
-                                  {
-                                    ()
-                                  }
+                                  ()
                               } in
                             let mtmp1 =
                               float_digit(
@@ -1050,9 +998,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                           return invalid_parsed_float()
                                         }
                                     } else {
-                                        {
-                                          ()
-                                        }
+                                        ()
                                     } in
                                   let _wild19 = previous_digit/0 = false in
                                   let _wild20 =
@@ -1100,9 +1046,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           return invalid_parsed_float()
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let exponent_marker/0 =
     if hexadecimal/0 {
@@ -1151,9 +1095,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                     } in
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let exponent_digits/0 = false in
           let _wild30 = previous_digit/0 = false in
@@ -1176,9 +1118,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                   exponent/0 = ((exponent/0 * 10) + ((current/1 - 48) as isize)) in
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild36 =
                           {
@@ -1208,9 +1148,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                     return invalid_parsed_float()
                                   }
                               } else {
-                                  {
-                                    ()
-                                  }
+                                  ()
                               } in
                             let _wild38 = previous_digit/0 = false in
                             let _wild39 =
@@ -1233,9 +1171,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                 return invalid_parsed_float()
               }
           } else {
-              {
-                ()
-              }
+              ()
           }
         }
     } else {
@@ -1244,9 +1180,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
               return invalid_parsed_float()
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let _wild40 =
@@ -1255,9 +1189,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           return invalid_parsed_float()
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild41 =
     if exponent_negative/0 {
@@ -1265,9 +1197,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           let _wild42 = exponent/0 = (0 - exponent/0) in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   ParsedFloat {
     valid: true,
@@ -1308,9 +1238,7 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
           return (false, 0)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let sign/0 =
     if ParsedFloat.negative(parsed/0) {
@@ -1373,9 +1301,7 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
                   return (true, sign/0)
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             }
         }
     } in
@@ -1414,16 +1340,12 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
                     return (true, sign/0)
                   }
               } else {
-                  {
-                    ()
-                  }
+                  ()
               }
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let denominator/0 =
     if if (!ParsedFloat.hexadecimal(parsed/0)) {
@@ -1636,9 +1558,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
           inherent#Vec#Vec[u8]#push(bytes/0, 45)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     if (decimal_point/0 <= 0) {
@@ -1791,9 +1711,7 @@ fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let next/0 = inherent#string#string#byte_get(exact/0, count/0) in
   let trailing/0 = false in
@@ -1807,9 +1725,7 @@ fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
                   let _wild7 = trailing/0 = true in
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild8 =
             {
@@ -1995,9 +1911,7 @@ fn format_float_bits(
               }
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let mantissa/0 =
@@ -2085,9 +1999,7 @@ fn format_float_bits(
                                         return candidate/0
                                       }
                                   } else {
-                                      {
-                                        ()
-                                      }
+                                      ()
                                   } in
                                 let _wild3 =
                                   {
@@ -2185,9 +2097,7 @@ fn format_float_bits(
                                         return candidate/1
                                       }
                                   } else {
-                                      {
-                                        ()
-                                      }
+                                      ()
                                   } in
                                 let _wild10 =
                                   {
@@ -2263,9 +2173,7 @@ fn decimal_string(value/0: u64) -> string {
           return "0"
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let reversed/0 = @intrinsic(vec.with_capacity)(20) in
   let remaining/0 = value/0 in
@@ -2486,9 +2394,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
           return utf8_invalid_decode()
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let first/0 = (inherent#string#string#byte_get(value/0, index/0) as u32) in
   if (first/0 < 128) {
@@ -2509,9 +2415,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
                         return utf8_invalid_decode()
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 let second/0 = (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
                 if utf8_invalid_continuation(second/0) {
@@ -2533,9 +2437,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
                             return utf8_invalid_decode()
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let second/1 =
                       (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
@@ -2583,9 +2485,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
                                 return utf8_invalid_decode()
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let second/2 =
                           (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
@@ -3078,9 +2978,7 @@ fn inherent#string#string#slice_chars(self/0: string, start/0: isize, end/0: isi
                                           let _wild2 = start_byte/0 = Option::Some(byte_index/0) in
                                         }
                                     } else {
-                                        {
-                                          ()
-                                        }
+                                        ()
                                     } in
                                   let _wild3 =
                                     if (char_index/0 == end/0) {
@@ -3088,9 +2986,7 @@ fn inherent#string#string#slice_chars(self/0: string, start/0: isize, end/0: isi
                                           let _wild4 = end_byte/0 = Option::Some(byte_index/0) in
                                         }
                                     } else {
-                                        {
-                                          ()
-                                        }
+                                        ()
                                     } in
                                   let _wild5 =
                                     {
@@ -3115,9 +3011,7 @@ fn inherent#string#string#slice_chars(self/0: string, start/0: isize, end/0: isi
                 let _wild7 = start_byte/0 = Option::Some(inherent#string#string#byte_len(self/0)) in
               }
           } else {
-              {
-                ()
-              }
+              ()
           } in
         let _wild8 =
           if (char_index/0 == end/0) {
@@ -3125,9 +3019,7 @@ fn inherent#string#string#slice_chars(self/0: string, start/0: isize, end/0: isi
                 let _wild9 = end_byte/0 = Option::Some(inherent#string#string#byte_len(self/0)) in
               }
           } else {
-              {
-                ()
-              }
+              ()
           } in
         {
           let mtmp1 = (start_byte/0, end_byte/0) in
@@ -3252,9 +3144,7 @@ fn inherent#string#string#split(self/0: string, separator/0: string) -> Vec[stri
           return result/0
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let start/0 = 0 in
   let _wild2 =
@@ -3350,9 +3240,7 @@ fn inherent#string#string#lines(self/0: string) -> Vec[string] {
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     {
@@ -3399,9 +3287,7 @@ fn inherent#string#string#lines(self/0: string) -> Vec[string] {
                               } in
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       }
                     }
                   }
@@ -3535,9 +3421,7 @@ fn inherent#string#string#is_ascii(self/0: string) -> bool {
                             return false
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       }
                     }
                   }
@@ -3584,9 +3468,7 @@ fn inherent#string#string#eq_ignore_ascii_case(self/0: string, other/0: string) 
                                   return false
                                 }
                             } else {
-                                {
-                                  ()
-                                }
+                                ()
                             }
                           }
                         }
@@ -4588,9 +4470,7 @@ fn inherent#Vec#Vec[T]#join[T](self/0: Vec[T], separator/0: string) -> string {
                               inherent#Vec#Vec[string]#push(result/0, separator/0)
                             }
                         } else {
-                            {
-                              ()
-                            }
+                            ()
                         } in
                       inherent#Vec#Vec[string]#push(result/0, @intrinsic(vec.get)(parts/0, index/1))
                     }
@@ -4615,9 +4495,7 @@ fn inherent#Vec#Vec[T]#contains[T](self/0: Vec[T], expected/0: T) -> bool {
                   return true
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild2 =
             {
@@ -4641,9 +4519,7 @@ fn inherent#Slice#Slice[T]#contains[T](self/0: Slice[T], expected/0: T) -> bool 
                   return true
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild2 =
             {
@@ -4670,9 +4546,7 @@ fn inherent#FrozenVec#FrozenVec[T]#contains[T](self/0: FrozenVec[T], expected/0:
                   return true
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild2 =
             {
@@ -4972,9 +4846,7 @@ fn inherent#string#string#contains(self/0: string, expected/0: string) -> bool {
                                       return true
                                     }
                                 } else {
-                                    {
-                                      ()
-                                    }
+                                    ()
                                 }
                               }
                             }
@@ -7047,17 +6919,13 @@ fn std::num::integer_base(value/0: string, start/0: isize, radix/0: isize) -> (
                                       return (true, (start/0 + 2), 2, true)
                                     }
                                 } else {
-                                    {
-                                      ()
-                                    }
+                                    ()
                                 }
                             }
                         }
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 (true, start/0, 8, true)
               }
@@ -7116,9 +6984,7 @@ fn std::num::integer_magnitude(
                         return (false, 0, "invalid syntax")
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 let _wild2 =
                   {
@@ -7140,9 +7006,7 @@ fn std::num::integer_magnitude(
                                   return (false, 0, "invalid syntax")
                                 }
                             } else {
-                                {
-                                  ()
-                                }
+                                ()
                             }
                           }
                         }
@@ -7183,9 +7047,7 @@ fn std::num::integer_magnitude(
                         return (false, 0, "invalid syntax")
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 let unsigned_digit/0 = (digit/1 as u64) in
                 let unsigned_radix/0 = (radix/0 as u64) in
@@ -7195,9 +7057,7 @@ fn std::num::integer_magnitude(
                         return (false, 0, "value out of range")
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 let _wild7 = result/0 = ((result/0 * unsigned_radix/0) + unsigned_digit/0) in
                 let _wild8 = saw_digit/0 = true in
@@ -7250,9 +7110,7 @@ fn std::num::parse_int_value(value/0: string, radix/0: isize) -> (bool, isize, s
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let mtmp0 = std::num::integer_base(value/0, start/0, radix/0) in
   {
@@ -7275,9 +7133,7 @@ fn std::num::parse_int_value(value/0: string, radix/0: isize) -> (bool, isize, s
                       return (false, 0, "invalid radix")
                     }
                 } else {
-                    {
-                      ()
-                    }
+                    ()
                 } in
               let limit/0 =
                 if negative/0 {
@@ -7369,9 +7225,7 @@ fn std::num::parse_uint_value(value/0: string, radix/0: isize) -> (bool, usize, 
                       return (false, 0, "invalid radix")
                     }
                 } else {
-                    {
-                      ()
-                    }
+                    ()
                 } in
               let mtmp1 =
                 std::num::integer_magnitude(
@@ -7925,9 +7779,7 @@ fn std::serde::schema_field_index(
                             return index/1
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let _wild2 = index/1 = (index/1 + 1) in
                   }
@@ -7964,9 +7816,7 @@ fn std::serde::schema_variant_index(
                             return index/0
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let _wild2 = index/0 = (index/0 + 1) in
                   }
@@ -7995,9 +7845,7 @@ fn std::serde::schema_variant_index(
                             return index/1
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let _wild5 = index/1 = (index/1 + 1) in
                   }
@@ -8380,9 +8228,7 @@ fn std::serde::deserialize_sequence_schema(
           return Result::Err("sequence schema must contain one item")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let mtmp0 =
     {
@@ -8634,9 +8480,7 @@ fn std::serde::deserialize_optional_schema(
           return Result::Err("optional schema must contain one item")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let values/0 = inherent#Vec#Vec[std::serde::Value]#new() in
   let _wild1 =
@@ -8696,9 +8540,7 @@ fn std::serde::deserialize_optional_schema(
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild2 =
     {
@@ -8951,9 +8793,7 @@ fn std::serde::deserialize_variant_schema_value(
           return Result::Err("unknown enum variant")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let variant/0 = @intrinsic(vec.get)(variants/0, variant_index/0) in
   let _wild1 =
@@ -9571,9 +9411,7 @@ fn std::serde::named_field(fields/0: Vec[(string, std::serde::Value)], name/0: s
                       return Result::Ok(field/0.1)
                     }
                 } else {
-                    {
-                      ()
-                    }
+                    ()
                 }
               }
             }
@@ -13278,9 +13116,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_optiona
               return Result::Err("optional item was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -13378,9 +13214,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_sequen
               return Result::Err("previous sequence element was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -13473,9 +13307,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_sequenc
               return Result::Err("sequence element was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -13603,9 +13435,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_tuple
               return Result::Err("previous tuple element was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -13697,9 +13527,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_tuple(
               return Result::Err("tuple element was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -13815,9 +13643,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_map_en
               return Result::Err("previous map value was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -13858,9 +13684,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_map_en
                               return Result::Err("previous map entry is incomplete")
                             }
                         } else {
-                            {
-                              ()
-                            }
+                            ()
                         }
                     } in
                   if (inherent#Ref#Ref[isize]#get(index/0) >=
@@ -13896,9 +13720,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_k
           return Result::Err("map key without map")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -14012,9 +13834,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_map_v
               return Result::Err("map key was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -14123,9 +13943,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_map(
               return Result::Err("map value was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -14161,9 +13979,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_map(
                           inherent#Ref#Ref[isize]#set(state/0, 0)
                         }
                     } else {
-                        {
-                          ()
-                        }
+                        ()
                     } in
                   if if (inherent#Ref#Ref[isize]#get(state/0) != 0) {
                       true
@@ -14270,9 +14086,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_struct
               return Result::Err("previous struct field was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -14399,9 +14213,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_struct(
               return Result::Err("struct field was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -14562,9 +14374,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#begin_varia
           return Result::Err("variant fields without variant")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -14638,9 +14448,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#next_varian
               return Result::Err("previous variant field was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -14755,9 +14563,7 @@ fn trait_impl#std::serde::Deserializer#std::serde::ValueDeserializer#end_variant
               return Result::Err("variant field was not consumed")
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   {
@@ -15401,9 +15207,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_optional(
           return Result::Err("end_optional without begin_optional")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -15446,9 +15250,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_optional(
                           return Result::Err("optional value has the wrong number of items")
                         }
                     } else {
-                        {
-                          ()
-                        }
+                        ()
                     } in
                   let mtmp1 =
                     inherent#Vec#Vec[std::serde::ValueSerializeFrame]#pop(
@@ -15505,9 +15307,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_sequence_
           return Result::Err("sequence element without sequence")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -15571,9 +15371,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_sequence(
           return Result::Err("end_sequence without begin_sequence")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -15607,9 +15405,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_sequence(
                           return Result::Err("sequence length does not match its elements")
                         }
                     } else {
-                        {
-                          ()
-                        }
+                        ()
                     } in
                   let mtmp1 =
                     inherent#Vec#Vec[std::serde::ValueSerializeFrame]#pop(
@@ -15666,9 +15462,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_tuple_ele
           return Result::Err("tuple element without tuple")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -15732,9 +15526,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_tuple(
           return Result::Err("end_tuple without begin_tuple")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -15768,9 +15560,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_tuple(
                           return Result::Err("tuple length does not match its elements")
                         }
                     } else {
-                        {
-                          ()
-                        }
+                        ()
                     } in
                   let mtmp1 =
                     inherent#Vec#Vec[std::serde::ValueSerializeFrame]#pop(
@@ -15825,9 +15615,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_key(
           return Result::Err("map key without map")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -15902,9 +15690,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_map_value
           return Result::Err("map value without map")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -15970,9 +15756,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_map(
           return Result::Err("end_map without begin_map")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -16015,9 +15799,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_map(
                             return Result::Err("map length does not match its entries")
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let mtmp1 =
                       inherent#Vec#Vec[std::serde::ValueSerializeFrame]#pop(
@@ -16079,9 +15861,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_struct_fi
           return Result::Err("struct field without struct")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -16148,9 +15928,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_struct(
           return Result::Err("end_struct without begin_struct")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -16186,9 +15964,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_struct(
                           return Result::Err("struct field count does not match its values")
                         }
                     } else {
-                        {
-                          ()
-                        }
+                        ()
                     } in
                   let mtmp1 =
                     inherent#Vec#Vec[std::serde::ValueSerializeFrame]#pop(
@@ -16252,9 +16028,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#begin_variant_f
           return Result::Err("variant field without variant")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -16321,9 +16095,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_variant(
           return Result::Err("end_variant without begin_variant")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -16369,9 +16141,7 @@ fn trait_impl#std::serde::Serializer#std::serde::ValueSerializer#end_variant(
                                 return Result::Err("variant field count does not match its values")
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let mtmp1 =
                           inherent#Vec#Vec[std::serde::ValueSerializeFrame]#pop(
@@ -16789,9 +16559,7 @@ fn inherent#std::text::LineIndex#std::text::LineIndex#new(
                               )
                             }
                         } else {
-                            {
-                              ()
-                            }
+                            ()
                         } in
                       let _wild9 = offset/0 = end/0 in
                     }
@@ -16896,9 +16664,7 @@ fn inherent#std::text::LineIndex#std::text::LineIndex#offset_to_line_column(
                         } in
                     }
                 } else {
-                    {
-                      ()
-                    }
+                    ()
                 }
             } in
           let _wild4 =
@@ -16979,9 +16745,7 @@ fn inherent#std::text::LineIndex#std::text::LineIndex#line_column_to_offset(
                           } in
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 let _wild3 =
                   {
@@ -17479,9 +17243,7 @@ fn std::json::write_json_deserialize_frame_path(
                         )
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   }
                 }
               }
@@ -17726,9 +17488,7 @@ fn std::json::skip_direct_json_array(parser/0: std::json::JsonParser) -> Result[
           return Result::Ok(())
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild4 =
     while (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(parser/0)) <
@@ -17850,9 +17610,7 @@ fn std::json::skip_direct_json_object(parser/0: std::json::JsonParser) -> Result
           return Result::Ok(())
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild4 =
     while (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(parser/0)) <
@@ -18454,9 +18212,7 @@ fn std::json::next_json_array_value(
           return Result::Ok((first/0, done/0, false))
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     std::json::skip_json_whitespace(std::json::JsonDeserializer.parser(deserializer/0)) in
@@ -18557,9 +18313,7 @@ fn std::json::next_json_object_field(
           return Result::Ok((first/0, done/0, Option::None))
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     std::json::skip_json_whitespace(std::json::JsonDeserializer.parser(deserializer/0)) in
@@ -18653,9 +18407,7 @@ fn std::json::next_json_object_field(
                     }
                   }
               } else {
-                  {
-                    ()
-                  }
+                  ()
               } in
             let name/0 =
               {
@@ -18730,9 +18482,7 @@ fn std::json::next_json_map_entry(
           return Result::Ok((first/0, done/0, false))
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     std::json::skip_json_whitespace(std::json::JsonDeserializer.parser(deserializer/0)) in
@@ -20007,9 +19757,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_sequence
                           )
                         }
                     } else {
-                        {
-                          ()
-                        }
+                        ()
                     } in
                   let _wild1 = inherent#Ref#Ref[bool]#set(first/0, next/0.0) in
                   let _wild2 = inherent#Ref#Ref[bool]#set(done/0, next/0.1) in
@@ -20139,9 +19887,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_tuple(
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     {
@@ -20558,9 +20304,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_map_entr
                                 inherent#Ref#Ref[Option[string]]#set(key/0, Option::None)
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild3 =
                           inherent#Ref#Ref[isize]#set(
@@ -20899,9 +20643,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_struct(
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     {
@@ -21178,9 +20920,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 = std::json::skip_json_whitespace(std::json::JsonDeserializer.parser(self/0)) in
   if (inherent#Ref#Ref[isize]#get(
@@ -21383,9 +21123,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#begin_variant
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let frame/0 =
     {
@@ -21673,9 +21411,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
                                                   )
                                                 }
                                             } else {
-                                                {
-                                                  ()
-                                                }
+                                                ()
                                             } in
                                           let _wild1 =
                                             inherent#Ref#Ref[bool]#set(first/0, next/0.0) in
@@ -21739,9 +21475,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#next_variant_
                                                   )
                                                 }
                                             } else {
-                                                {
-                                                  ()
-                                                }
+                                                ()
                                             } in
                                           let _wild4 =
                                             inherent#Ref#Ref[bool]#set(first/0, next/1.0) in
@@ -21918,9 +21652,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
                                     }
                                   }
                               } else {
-                                  {
-                                    ()
-                                  }
+                                  ()
                               }
                           } in
                         let _wild1 =
@@ -21956,9 +21688,7 @@ fn trait_impl#std::serde::Deserializer#std::json::JsonDeserializer#end_variant(
                                 }
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild2 = std::json::pop_json_frame(self/0) in
                         Result::Ok(())
@@ -22334,9 +22064,7 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result[string
                         )
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 let _wild3 =
                   inherent#Ref#Ref[isize]#set(
@@ -22364,9 +22092,7 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result[string
                             )
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let _wild5 =
                       inherent#Ref#Ref[isize]#set(
@@ -22380,9 +22106,7 @@ fn std::json::parse_json_string(value/0: std::json::JsonParser) -> Result[string
                             return Result::Err(std::json::json_error(value/0, "incomplete escape"))
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let escape/0 =
                       inherent#string#string#byte_get(
@@ -22616,9 +22340,7 @@ fn std::json::parse_json_number_text(value/0: std::json::JsonParser) -> Result[s
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     if (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(value/0)) >=
@@ -22653,9 +22375,7 @@ fn std::json::parse_json_number_text(value/0: std::json::JsonParser) -> Result[s
                     return Result::Err(std::json::json_error(value/0, "invalid leading zero"))
                   }
               } else {
-                  {
-                    ()
-                  }
+                  ()
               }
             }
         } else {
@@ -22664,9 +22384,7 @@ fn std::json::parse_json_number_text(value/0: std::json::JsonParser) -> Result[s
                   return Result::Err(std::json::json_error(value/0, "expected number"))
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             }
         }
     } in
@@ -22692,15 +22410,11 @@ fn std::json::parse_json_number_text(value/0: std::json::JsonParser) -> Result[s
                 return Result::Err(std::json::json_error(value/0, "missing fraction digits"))
               }
           } else {
-              {
-                ()
-              }
+              ()
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild5 =
     if if (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(value/0)) <
@@ -22753,24 +22467,18 @@ fn std::json::parse_json_number_text(value/0: std::json::JsonParser) -> Result[s
                   )
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           if (!std::json::parse_digits(value/0)) {
               {
                 return Result::Err(std::json::json_error(value/0, "missing exponent digits"))
               }
           } else {
-              {
-                ()
-              }
+              ()
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   Result::Ok(
     inherent#string#string#byte_slice(
@@ -22876,9 +22584,7 @@ fn std::json::parse_json_array(value/0: std::json::JsonParser) -> Result[std::js
           return Result::Ok(std::json::Value::Array(result/0))
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild4 =
     while (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(value/0)) <
@@ -22988,9 +22694,7 @@ fn std::json::parse_json_object(value/0: std::json::JsonParser) -> Result[
           return Result::Ok(std::json::Value::Object(result/0))
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild4 =
     while (inherent#Ref#Ref[isize]#get(std::json::JsonParser.index(value/0)) <
@@ -23295,9 +22999,7 @@ fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: st
                               )
                             }
                         } else {
-                            {
-                              ()
-                            }
+                            ()
                         } in
                       let _wild4 =
                         if (byte/0 == 34) {
@@ -23382,9 +23084,7 @@ fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: st
                       let _wild7 = start/0 = (index/0 + 1) in
                     }
                 } else {
-                    {
-                      ()
-                    }
+                    ()
                 }
               }
             }
@@ -23404,9 +23104,7 @@ fn std::json::write_json_string(builder/0: std::text::StringBuilder, value/0: st
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/0, '"')
 }
@@ -23449,9 +23147,7 @@ fn std::json::write_json_value(
                                   )
                                 }
                             } else {
-                                {
-                                  ()
-                                }
+                                ()
                             } in
                           let _wild4 = std::json::write_json_string(builder/0, field/0.0) in
                           let _wild5 =
@@ -23509,9 +23205,7 @@ fn std::json::write_json_value(
                                   )
                                 }
                             } else {
-                                {
-                                  ()
-                                }
+                                ()
                             } in
                           let _wild12 = std::json::write_json_value(builder/0, item/0) in
                           let _wild13 =
@@ -23608,9 +23302,7 @@ fn std::json::field(value/0: std::json::Value, name/0: string) -> Option[std::js
                                 return Option::Some(field/0.1)
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           }
                         }
                       }
@@ -23666,9 +23358,7 @@ fn std::json::parse_json_int_text(value/0: string) -> Option[isize] {
                 return Option::None
               }
           } else {
-              {
-                ()
-              }
+              ()
           } in
         let _wild1 =
           while (index/0 < inherent#string#string#byte_len(value/0)) {
@@ -24641,9 +24331,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#serialize_bytes(
                   )
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild4 =
             inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
@@ -24698,9 +24386,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_optional(
           )
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild2 =
     inherent#Vec#Vec[std::json::JsonSerializeFrame]#push(
@@ -24721,9 +24407,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_optional(
           return Result::Err("end_optional without begin_optional")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -24773,9 +24457,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_sequence(
           return Result::Err("sequence length cannot be negative")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     {
@@ -24841,9 +24523,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_tuple(
           return Result::Err("tuple length cannot be negative")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     {
@@ -24964,9 +24644,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_key(
           return Result::Err("map key without map")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let frame/0 =
     (inherent#Vec#Vec[std::json::JsonSerializeFrame]#len(std::json::JsonSerializer.frames(self/0)) -
@@ -25008,9 +24686,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_key(
                               )
                             }
                         } else {
-                            {
-                              ()
-                            }
+                            ()
                         } in
                       let _wild2 = inherent#Ref#Ref[isize]#set(state/0, 1) in
                       Result::Ok(())
@@ -25038,9 +24714,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_map_value(
           return Result::Err("map value without map")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let frame/0 =
     (inherent#Vec#Vec[std::json::JsonSerializeFrame]#len(std::json::JsonSerializer.frames(self/0)) -
@@ -25095,9 +24769,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_map(
           return Result::Err("end_map without begin_map")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -25166,9 +24838,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_struct(
             return Result::Err("struct field count cannot be negative")
           }
       } else {
-          {
-            ()
-          }
+          ()
       } in
     let _wild1 =
       {
@@ -25231,9 +24901,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_struct(
           return Result::Err("end_struct without begin_struct")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -25327,9 +24995,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant(
                     return Result::Err("invalid enum variant field count")
                   }
               } else {
-                  {
-                    ()
-                  }
+                  ()
               }
           }
       } in
@@ -25417,9 +25083,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_fie
           return Result::Err("variant field without variant")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -25472,9 +25136,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_fie
                                 )
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild2 =
                           if (kind/0 == 2) {
@@ -25490,9 +25152,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#begin_variant_fie
                                 )
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild4 = inherent#Ref#Ref[isize]#set(next/0, (index/0 + 1)) in
                         let _wild5 = inherent#Ref#Ref[bool]#set(ready/0, true) in
@@ -25521,9 +25181,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_variant(
           return Result::Err("end_variant without begin_variant")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -25581,9 +25239,7 @@ fn trait_impl#std::serde::Serializer#std::json::JsonSerializer#end_variant(
                                       )
                                     }
                                 } else {
-                                    {
-                                      ()
-                                    }
+                                    ()
                                 }
                             } in
                           Result::Ok(())
@@ -25613,9 +25269,7 @@ fn std::json::begin_json_array_element(
           return Result::Err("array element without array")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -25661,9 +25315,7 @@ fn std::json::begin_json_array_element(
                               )
                             }
                         } else {
-                            {
-                              ()
-                            }
+                            ()
                         } in
                       let _wild2 = inherent#Ref#Ref[isize]#set(next/0, (index/0 + 1)) in
                       let _wild3 = inherent#Ref#Ref[bool]#set(ready/0, true) in
@@ -25689,9 +25341,7 @@ fn std::json::end_json_array(serializer/0: std::json::JsonSerializer) -> Result[
           return Result::Err("array end without array")
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   {
     let mtmp0 =
@@ -25763,9 +25413,7 @@ fn std::json::begin_json_named_field(
             return Result::Err("object field without object")
           }
       } else {
-          {
-            ()
-          }
+          ()
       } in
     {
       let mtmp0 =
@@ -25811,9 +25459,7 @@ fn std::json::begin_json_named_field(
                                 )
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild2 =
                           std::json::write_json_string(

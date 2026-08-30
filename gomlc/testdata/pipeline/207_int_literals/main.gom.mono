@@ -197,9 +197,7 @@ fn format_float_bits(
               }
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let mantissa/0 =
@@ -287,9 +285,7 @@ fn format_float_bits(
                                         return candidate/0
                                       }
                                   } else {
-                                      {
-                                        ()
-                                      }
+                                      ()
                                   } in
                                 let _wild3 =
                                   {
@@ -387,9 +383,7 @@ fn format_float_bits(
                                         return candidate/1
                                       }
                                   } else {
-                                      {
-                                        ()
-                                      }
+                                      ()
                                   } in
                                 let _wild10 =
                                   {
@@ -419,9 +413,7 @@ fn decimal_string(value/0: u64) -> string {
           return "0"
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let reversed/0 = @intrinsic(vec.with_capacity)(20) in
   let remaining/0 = value/0 in
@@ -484,15 +476,11 @@ fn float_natural_from_u64(value/0: u64) -> FloatNatural {
                 inherent#Vec#Vec[T]#push__T_u0(FloatNatural.words(result/0), high/0)
               }
           } else {
-              {
-                ()
-              }
+              ()
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   result/0
 }
@@ -509,9 +497,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
               return float_natural_copy(value/0)
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let result/0 = float_natural_zero() in
@@ -554,9 +540,7 @@ fn float_natural_shift_left(value/0: FloatNatural, bits/0: isize) -> FloatNatura
           inherent#Vec#Vec[T]#push__T_u0(FloatNatural.words(result/0), (carry/0 as u32))
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   result/0
 }
@@ -568,9 +552,7 @@ fn float_natural_decimal(value/0: FloatNatural) -> string {
           return "0"
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let current/0 = float_natural_copy(value/0) in
   let reversed/0 = @intrinsic(vec.new)() in
@@ -654,9 +636,7 @@ fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let next/0 = inherent#string#string#byte_get(exact/0, count/0) in
   let trailing/0 = false in
@@ -670,9 +650,7 @@ fn rounded_float_digits(exact/0: string, count/0: isize) -> (string, bool) {
                   let _wild7 = trailing/0 = true in
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild8 =
             {
@@ -821,9 +799,7 @@ fn fixed_float_text(digits/0: string, decimal_point/0: isize, negative/0: bool) 
           inherent#Vec#Vec[T]#push__T_u0(bytes/0, 45)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild1 =
     if (decimal_point/0 <= 0) {
@@ -953,9 +929,7 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
           return (false, 0)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let sign/0 =
     if ParsedFloat.negative(parsed/0) {
@@ -1018,9 +992,7 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
                   return (true, sign/0)
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             }
         }
     } in
@@ -1059,16 +1031,12 @@ fn parsed_float_bits(value/0: string, mantissa_bits/0: isize, exponent_bias/0: i
                     return (true, sign/0)
                   }
               } else {
-                  {
-                    ()
-                  }
+                  ()
               }
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let denominator/0 =
     if if (!ParsedFloat.hexadecimal(parsed/0)) {
@@ -1153,9 +1121,7 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
           return
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let carry/0 = 0 in
   let index/0 = 0 in
@@ -1189,9 +1155,7 @@ fn float_natural_multiply_small(value/0: FloatNatural, factor/0: u32) -> () {
         inherent#Vec#Vec[T]#push__T_u0(FloatNatural.words(value/0), (carry/0 as u32))
       }
   } else {
-      {
-        ()
-      }
+      ()
   }
 }
 
@@ -1292,9 +1256,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let index/0 = 0 in
   let negative/0 = false in
@@ -1318,9 +1280,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let special_text/0 =
     inherent#string#string#byte_slice(value/0, index/0, inherent#string#string#byte_len(value/0)) in
@@ -1343,9 +1303,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           }
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let hexadecimal/0 =
     if if ((index/0 + 2) <= inherent#string#string#byte_len(value/0)) {
@@ -1368,9 +1326,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let mantissa_start/0 = index/0 in
   let base/0 =
@@ -1419,9 +1375,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                   } in
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild14 =
                           if if (significant_digits/0 > 0) {
@@ -1438,9 +1392,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                   } in
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild16 =
                           {
@@ -1458,9 +1410,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                     return invalid_parsed_float()
                                   }
                               } else {
-                                  {
-                                    ()
-                                  }
+                                  ()
                               } in
                             let mtmp1 =
                               float_digit(
@@ -1496,9 +1446,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                           return invalid_parsed_float()
                                         }
                                     } else {
-                                        {
-                                          ()
-                                        }
+                                        ()
                                     } in
                                   let _wild19 = previous_digit/0 = false in
                                   let _wild20 =
@@ -1546,9 +1494,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           return invalid_parsed_float()
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let exponent_marker/0 =
     if hexadecimal/0 {
@@ -1597,9 +1543,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                     } in
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let exponent_digits/0 = false in
           let _wild30 = previous_digit/0 = false in
@@ -1622,9 +1566,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                   exponent/0 = ((exponent/0 * 10) + ((current/1 - 48) as isize)) in
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let _wild36 =
                           {
@@ -1654,9 +1596,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                                     return invalid_parsed_float()
                                   }
                               } else {
-                                  {
-                                    ()
-                                  }
+                                  ()
                               } in
                             let _wild38 = previous_digit/0 = false in
                             let _wild39 =
@@ -1679,9 +1619,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
                 return invalid_parsed_float()
               }
           } else {
-              {
-                ()
-              }
+              ()
           }
         }
     } else {
@@ -1690,9 +1628,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
               return invalid_parsed_float()
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let _wild40 =
@@ -1701,9 +1637,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           return invalid_parsed_float()
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild41 =
     if exponent_negative/0 {
@@ -1711,9 +1645,7 @@ fn parse_float_text(value/0: string) -> ParsedFloat {
           let _wild42 = exponent/0 = (0 - exponent/0) in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   ParsedFloat {
     valid: true,
@@ -1780,9 +1712,7 @@ fn float_rational_bits(
           return (0, false)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let scaled_numerator/0 =
     if (binary_shift/0 >= 0) {
@@ -1834,9 +1764,7 @@ fn float_rational_bits(
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let minimum_exponent/0 = (1 - exponent_bias/0) in
   let maximum_exponent/0 = exponent_bias/0 in
@@ -1846,9 +1774,7 @@ fn float_rational_bits(
           return (((((maximum_exponent/0 + exponent_bias/0) + 1) as u64) << mantissa_bits/0), true)
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let mantissa/0 =
     if (exponent/0 < minimum_exponent/0) {
@@ -1905,9 +1831,7 @@ fn float_rational_bits(
                   } in
               }
           } else {
-              {
-                ()
-              }
+              ()
           } in
         if (exponent/0 > maximum_exponent/0) {
             {
@@ -1976,9 +1900,7 @@ fn string_equals_ascii_case(value/0: string, expected/0: string) -> bool {
           return false
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let index/0 = 0 in
   let _wild1 =
@@ -1991,9 +1913,7 @@ fn string_equals_ascii_case(value/0: string, expected/0: string) -> bool {
                   return false
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild3 =
             {
@@ -2069,9 +1989,7 @@ fn float_natural_add_small(value/0: FloatNatural, addition/0: u32) -> () {
                 inherent#Vec#Vec[T]#push__T_u0(FloatNatural.words(value/0), 0)
               }
           } else {
-              {
-                ()
-              }
+              ()
           } in
         let sum/0 =
           ((@intrinsic(vec.get)(FloatNatural.words(value/0), index/0) as u64) + carry/0) in
@@ -2115,9 +2033,7 @@ fn float_natural_bit_length(value/0: FloatNatural) -> isize {
           return 0
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let high/0 =
     @intrinsic(vec.get)(
@@ -2159,9 +2075,7 @@ fn float_natural_compare(left/0: FloatNatural, right/0: FloatNatural) -> isize {
               return 1
             }
         } else {
-            {
-              ()
-            }
+            ()
         }
     } in
   let index/0 = inherent#Vec#Vec[T]#len__T_u0(FloatNatural.words(left/0)) in
@@ -2186,9 +2100,7 @@ fn float_natural_compare(left/0: FloatNatural, right/0: FloatNatural) -> isize {
                     return 1
                   }
               } else {
-                  {
-                    ()
-                  }
+                  ()
               }
           }
         }
@@ -2240,9 +2152,7 @@ fn float_rational_quotient(
                   let _wild3 = part/0 = float_natural_shift_left(divisor/0, offset/0) in
                 }
             } else {
-                {
-                  ()
-                }
+                ()
             } in
           let _wild4 = float_natural_subtract(remaining/0, part/0) in
           let _wild5 =
@@ -2274,9 +2184,7 @@ fn float_rational_quotient(
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   quotient/0
 }

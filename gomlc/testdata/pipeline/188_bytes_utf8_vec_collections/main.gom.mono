@@ -674,9 +674,7 @@ fn inherent#Vec#Vec[T]#swap_remove__T_i32(self/0: Vec[i32], index/0: isize) -> i
             } in
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let _wild2 = inherent#Vec#Vec[T]#truncate__T_i0(self/0, (len/0 - 1)) in
   value/0
@@ -911,9 +909,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
           return utf8_invalid_decode()
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let first/0 = (inherent#string#string#byte_get(value/0, index/0) as u32) in
   if (first/0 < 128) {
@@ -934,9 +930,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
                         return utf8_invalid_decode()
                       }
                   } else {
-                      {
-                        ()
-                      }
+                      ()
                   } in
                 let second/0 = (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
                 if utf8_invalid_continuation(second/0) {
@@ -958,9 +952,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
                             return utf8_invalid_decode()
                           }
                       } else {
-                          {
-                            ()
-                          }
+                          ()
                       } in
                     let second/1 =
                       (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
@@ -1008,9 +1000,7 @@ fn string_decode_utf8_at(value/0: string, index/0: isize) -> (bool, char, isize)
                                 return utf8_invalid_decode()
                               }
                           } else {
-                              {
-                                ()
-                              }
+                              ()
                           } in
                         let second/2 =
                           (inherent#string#string#byte_get(value/0, (index/0 + 1)) as u32) in
@@ -1239,9 +1229,7 @@ fn decimal_string(value/0: u64) -> string {
           return "0"
         }
     } else {
-        {
-          ()
-        }
+        ()
     } in
   let reversed/0 = @intrinsic(vec.with_capacity)(20) in
   let remaining/0 = value/0 in
