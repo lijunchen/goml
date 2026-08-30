@@ -10,14 +10,7 @@ pub fn sorted(values: Vec[string]) -> Vec[string] {
 }
 
 pub fn sorted_unique(values: Vec[string]) -> Vec[string] {
-    let sorted_values = sorted(values);
-    let result = Vec::with_capacity(sorted_values.len());
-    for value in sorted_values {
-        if result.is_empty() || result[result.len() - 1] != value {
-            result.push(value)
-        } else {}
-    }
-    result
+    collections::BTreeSet::from_vec(values).to_vec()
 }
 
 pub fn progress_bar(completed: isize, total: isize) -> string {
