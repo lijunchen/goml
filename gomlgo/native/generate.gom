@@ -16,33 +16,28 @@ fn bridge_function(call: NativeCallSpec) -> bool {
 }
 
 fn function_package_paths(value: Manifest) -> Vec[string] {
-    let paths: Vec[string] = Vec::new();
+    let paths: collections::BTreeSet[string] = collections::BTreeSet::new();
     for call in value.calls {
         match call.binding {
             NativeBindingKind::Function => if !bridge_function(call) {
-                paths.push(call.import_path)
+                let _ = paths.insert(call.import_path);
             } else {},
-            NativeBindingKind::Method => paths.push(call.import_path),
+            NativeBindingKind::Method => {
+                let _ = paths.insert(call.import_path);
+            },
             NativeBindingKind::Exit => (),
         }
     }
     for type_value in value.types {
-        paths.push(type_value.import_path)
+        let _ = paths.insert(type_value.import_path);
     }
     for global in value.globals {
-        paths.push(global.import_path)
+        let _ = paths.insert(global.import_path);
     }
     for proxy in value.proxies {
-        paths.push(proxy.import_path)
+        let _ = paths.insert(proxy.import_path);
     }
-    collections::sort(paths);
-    let unique: Vec[string] = Vec::with_capacity(paths.len());
-    for import_path in paths {
-        if unique.is_empty() || unique[unique.len() - 1] != import_path {
-            unique.push(import_path)
-        } else {}
-    }
-    unique
+    paths.to_vec()
 }
 
 fn package_alias(paths: Vec[string], expected: string) -> string {

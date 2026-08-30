@@ -61,7 +61,7 @@ fn valid_tag_byte(value: byte) -> bool {
 }
 
 fn canonical_tags(values: Vec[string]) -> Result[Vec[string], string] {
-    let result: Vec[string] = Vec::with_capacity(values.len());
+    let result: collections::BTreeSet[string] = collections::BTreeSet::new();
     for value in values {
         if value == "" {
             return Result::Err("native cache build tag cannot be empty")
@@ -71,16 +71,9 @@ fn canonical_tags(values: Vec[string]) -> Result[Vec[string], string] {
                 return Result::Err("native cache has invalid build tag " + value)
             } else {}
         }
-        result.push(value)
+        let _ = result.insert(value);
     }
-    collections::sort(result);
-    let unique: Vec[string] = Vec::with_capacity(result.len());
-    for value in result {
-        if unique.is_empty() || unique[unique.len() - 1] != value {
-            unique.push(value)
-        } else {}
-    }
-    Result::Ok(unique)
+    Result::Ok(result.to_vec())
 }
 
 fn valid_hash(value: string) -> bool {

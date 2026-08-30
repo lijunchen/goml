@@ -498,27 +498,20 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
             return Result::Err("native aggregate is registered twice")
         } else {}
     }
-    let packages: Vec[string] = Vec::with_capacity(value.initialization_packages.len());
+    let packages: collections::BTreeSet[string] = collections::BTreeSet::new();
     for import_path in value.initialization_packages {
         if !valid_import_path(import_path) {
             return Result::Err("native manifest has invalid import path " + import_path)
         } else if import_path == NATIVE_BRIDGE_IMPORT_PATH {
             return Result::Err("native manifest cannot initialize the native bridge package")
         } else if !call_uses_package(calls, import_path) {
-            packages.push(import_path)
-        } else {}
-    }
-    collections::sort(packages);
-    let unique: Vec[string] = Vec::with_capacity(packages.len());
-    for import_path in packages {
-        if unique.is_empty() || unique[unique.len() - 1] != import_path {
-            unique.push(import_path)
+            let _ = packages.insert(import_path);
         } else {}
     }
     Result::Ok(
         Manifest {
             abi_version: value.abi_version,
-            initialization_packages: unique,
+            initialization_packages: packages.to_vec(),
             calls,
             types,
             globals,

@@ -861,7 +861,7 @@ fn native_diagnostic(
 }
 
 fn direct_native_packages(program: execution::ExecutionProgram) -> Vec[string] {
-    let paths: Vec[string] = Vec::new();
+    let paths: collections::BTreeSet[string] = collections::BTreeSet::new();
     for package_value in program.packages {
         if package_value.mode == execution::ExecutionMode::Interpreted {
             for dependency in package_value.dependencies {
@@ -869,20 +869,13 @@ fn direct_native_packages(program: execution::ExecutionProgram) -> Vec[string] {
                 if dependency_index >= 0 {
                     let value = program.packages[dependency_index];
                     if value.mode == execution::ExecutionMode::Native && value.path != "unsafe" {
-                        paths.push(value.path)
+                        let _ = paths.insert(value.path);
                     } else {}
                 } else {}
             }
         } else {}
     }
-    collections::sort(paths);
-    let unique: Vec[string] = Vec::with_capacity(paths.len());
-    for value in paths {
-        if unique.is_empty() || unique[unique.len() - 1] != value {
-            unique.push(value)
-        } else {}
-    }
-    unique
+    paths.to_vec()
 }
 
 fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
