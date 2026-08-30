@@ -13,7 +13,7 @@ use std::time;
 struct BuildNode {
     index: isize,
     command: Command,
-    dependencies: Vec[isize],
+    dependencies: collections::IndexSet[isize],
 }
 
 struct BuildGraph {
@@ -1040,7 +1040,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
     let result: Vec[BuildNode] = Vec::new();
     for index in 0..commands.len() {
         let command = commands[index];
-        let dependencies: Vec[isize] = Vec::new();
+        let dependencies: collections::IndexSet[isize] = collections::IndexSet::new();
         match cache_spec(command) {
             Some(spec) => {
                 for input in spec.inputs {
@@ -1061,8 +1061,8 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     } else {
                         following
                     };
-                    if producer >= 0 && !dependencies.contains(producer) {
-                        dependencies.push(producer)
+                    if producer >= 0 {
+                        let _ = dependencies.insert(producer);
                     } else {}
                 }
                 for output in spec.outputs {
@@ -1075,8 +1075,8 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                         },
                         None => (),
                     };
-                    if previous >= 0 && !dependencies.contains(previous) {
-                        dependencies.push(previous)
+                    if previous >= 0 {
+                        let _ = dependencies.insert(previous);
                     } else {}
                 }
             },
@@ -1095,7 +1095,7 @@ fn build_node(nodes: Vec[BuildNode], index: isize) -> Option[BuildNode] {
     }
 }
 
-fn build_node_ready(node: BuildNode, completed: Vec[isize]) -> bool {
+fn build_node_ready(node: BuildNode, completed: collections::BitSet) -> bool {
     for dependency in node.dependencies {
         if !completed.contains(dependency) {
             return false
@@ -1104,7 +1104,7 @@ fn build_node_ready(node: BuildNode, completed: Vec[isize]) -> bool {
     true
 }
 
-fn take_ready_build_node(nodes: Vec[BuildNode], pending: Vec[isize], completed: Vec[isize]) -> Result[
+fn take_ready_build_node(nodes: Vec[BuildNode], pending: Vec[isize], completed: collections::BitSet) -> Result[
     Option[BuildNode],
     string,
 ] {
@@ -1143,7 +1143,7 @@ fn accept_build_result(
     context: Context,
     identity: string,
     received: Option[BuildWorkResult],
-    completed_nodes: Vec[isize],
+    completed_nodes: collections::BitSet,
     completed: Ref[isize],
 ) -> Result[(), string] {
     let Some(value) = received else {
@@ -1158,7 +1158,7 @@ fn accept_build_result(
                     Some(completion) => completion.send(true),
                     None => (),
                 };
-                completed_nodes.push(value.index);
+                let _ = completed_nodes.insert(value.index);
                 Result::Ok(())
             },
             Err(message) => {
@@ -1232,7 +1232,7 @@ fn execute_plan_concurrently(
         initial.push(node.index)
     }
     let mut pending = initial;
-    let completed_nodes: Vec[isize] = Vec::new();
+    let completed_nodes = collections::BitSet::new();
     let mut running = 0;
     let worker_count = if jobs < total {
         jobs
@@ -1262,7 +1262,7 @@ fn execute_plan_concurrently(
             util::display_progress(completed.get(), total, progress_label(node.command), false);
             match prepare_cached_command(digests, context, node.command, identity) {
                 Ok(Fresh) => {
-                    completed_nodes.push(node.index);
+                    let _ = completed_nodes.insert(node.index);
                     completed.set(completed.get() + 1);
                 },
                 Ok(Execute(cache)) => {
