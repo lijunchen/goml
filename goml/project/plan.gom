@@ -121,7 +121,7 @@ fn executable_path_for(context: Context, entry_package: string) -> string {
     path::join(result, last_segment(entry_package))
 }
 
-fn collect_dependencies(graph: Graph, package_name: string, result: collections::IndexSet[string]) -> Result[
+fn collect_dependencies(graph: Graph, package_name: string, result: collections::BTreeSet[string]) -> Result[
     (),
     string,
 ] {
@@ -170,10 +170,10 @@ fn dependency_interfaces(graph: Graph, package_name: string, output_root: string
     Vec[string],
     string,
 ] {
-    let names: collections::IndexSet[string] = collections::IndexSet::new();
+    let names: collections::BTreeSet[string] = collections::BTreeSet::new();
     collect_dependencies(graph, package_name, names)?;
     let result: Vec[string] = Vec::new();
-    for name in util::sorted(names.to_vec()) {
+    for name in names {
         result.push(extension(package_artifact_base(output_root, graph, name), "interface"))
     }
     Result::Ok(result)
