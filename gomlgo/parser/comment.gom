@@ -25,7 +25,7 @@ fn source_lines(source: bytes::Bytes) -> Vec[isize] {
     for index in 0..source.len() {
         if source.get(index) == b'\n' {
             result.push(index + 1)
-        } else {}
+        }
     }
     result
 }
@@ -49,7 +49,7 @@ fn comment_end_line(value: token::Token, start_line: isize) -> isize {
     for index in 0..value.literal.byte_len() {
         if value.literal.byte_get(index) == b'\n' {
             result += 1;
-        } else {}
+        }
     }
     result
 }
@@ -162,7 +162,7 @@ fn analyze_comments(source: bytes::Bytes, tokens: Vec[token::Token]) -> CommentD
                     line_comment,
                 );
                 index = group_end.get();
-            } else {};
+            }
             while index < run_end.get() {
                 let group_end = Ref::new(index + 1);
                 let end_line = Ref::new(
@@ -202,7 +202,7 @@ fn lead_comment(parser: Parser, start: isize) -> Option[ast::Node] {
     for value in parser.comment_infos {
         if value.lead && value.next_start == start {
             return Option::Some(value.node)
-        } else {}
+        }
     }
     Option::None
 }
@@ -213,7 +213,7 @@ fn line_comment(parser: Parser, end: isize) -> Option[ast::Node] {
             && (value.previous_end == end
                 || (value.previous_semicolon && value.previous_start == end)) {
             return Option::Some(value.node)
-        } else {}
+        }
     }
     Option::None
 }

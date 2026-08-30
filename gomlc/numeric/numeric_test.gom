@@ -7,15 +7,15 @@ fn normalizes_integer_bases_without_machine_width_limits() -> () {
     match normalize_integer("0b1111_0000") {
         Some(value) => testing::assert_eq(value, "240"),
         None => testing::fail("expected binary integer"),
-    };
+    }
     match normalize_integer("0o17_777") {
         Some(value) => testing::assert_eq(value, "8191"),
         None => testing::fail("expected octal integer"),
-    };
+    }
     match normalize_integer("0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF") {
         Some(value) => testing::assert_eq(value, "340282366920938463463374607431768211455"),
         None => testing::fail("expected hexadecimal integer"),
-    };
+    }
     match normalize_integer("1_000_000") {
         Some(value) => testing::assert_eq(value, "1000000"),
         None => testing::fail("expected decimal integer"),
@@ -27,19 +27,19 @@ fn rejects_invalid_normalized_integers() -> () {
     match normalize_integer("0x") {
         None => (),
         Some(_) => testing::fail("expected missing hexadecimal digits"),
-    };
+    }
     match normalize_integer("0b102") {
         None => (),
         Some(_) => testing::fail("expected invalid binary digit"),
-    };
+    }
     match normalize_integer("0o8") {
         None => (),
         Some(_) => testing::fail("expected invalid octal digit"),
-    };
+    }
     match normalize_integer("0x_1") {
         None => (),
         Some(_) => testing::fail("expected invalid leading separator"),
-    };
+    }
     match normalize_integer("10_") {
         None => (),
         Some(_) => testing::fail("expected invalid trailing separator"),
@@ -82,7 +82,7 @@ fn parses_valid_float32() -> () {
     match parse_float32("3.5") {
         Some(value) => testing::assert(value == 3.5),
         None => testing::fail("expected f32"),
-    };
+    }
     match parse_float32("not-a-number") {
         None => (),
         Some(_) => testing::fail("expected invalid f32"),

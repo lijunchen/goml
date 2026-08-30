@@ -58,9 +58,9 @@ fn lexes_compound_assignment_tokens() -> () {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {};
+            }
             builder.write_string(token_kind_name(token.kind))
-        } else {}
+        }
     }
     testing::assert_eq(
         builder.finish(),
@@ -76,11 +76,11 @@ fn lexes_interpolated_string_segments() -> () {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string("|")
-            } else {};
+            }
             builder.write_string(token_kind_name(token.kind));
             builder.write_string(":");
             builder.write_string(token.text)
-        } else {}
+        }
     }
     testing::assert_eq(
         builder.finish(),
@@ -112,9 +112,9 @@ fn lexes_keywords_and_identifiers() -> () {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {};
+            }
             builder.write_string(token_kind_name(token.kind))
-        } else {}
+        }
     }
     testing::assert_eq(builder.finish(), expected)
 }
@@ -129,11 +129,11 @@ fn lexes_radix_and_byte_literals() -> () {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {};
+            }
             builder.write_string(token_kind_name(token.kind));
             builder.write_string(":");
             builder.write_string(token.text)
-        } else {}
+        }
     }
     testing::assert_eq(
         builder.finish(),
@@ -151,11 +151,11 @@ fn lexes_numeric_literals() -> () {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {};
+            }
             builder.write_string(token_kind_name(token.kind));
             builder.write_string(":");
             builder.write_string(token.text)
-        } else {}
+        }
     }
     testing::assert_eq(
         builder.finish(),
@@ -237,7 +237,7 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> () {
             testing::assert_eq(error.end, unterminated.byte_len())
         },
         None => testing::fail("expected unterminated string metadata"),
-    };
+    }
     let chars = lex("'ab'");
     testing::assert_eq(chars.len(), 1);
     testing::assert(token_kind_equal(chars.get(0).kind, TokenKind::Error));
@@ -249,7 +249,7 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> () {
             testing::assert_eq(error.end, 4)
         },
         None => testing::fail("expected invalid character metadata"),
-    };
+    }
     let unterminated_char = lex("'1");
     match unterminated_char.get(0).error {
         Some(error) => {
@@ -258,7 +258,7 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> () {
             testing::assert_eq(error.end, 2)
         },
         None => testing::fail("expected unterminated character metadata"),
-    };
+    }
     let multiline = lex("\"hello \\\nworld\";");
     testing::assert_eq(multiline.get(0).text, "\"hello \\");
     match multiline.get(0).error {
@@ -268,7 +268,7 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> () {
             testing::assert_eq(error.end, 8)
         },
         None => testing::fail("expected escaped newline string metadata"),
-    };
+    }
     testing::assert_eq(multiline.get(3).text, "\";")
 }
 
@@ -317,7 +317,7 @@ fn skips_raw_byte_string_braces_in_interpolation() -> () {
             errors.set(errors.get() + 1)
         } else if token_kind_equal(token.kind, TokenKind::RawByteStr) {
             raw_bytes.set(raw_bytes.get() + 1)
-        } else {}
+        }
     }
     testing::assert_eq(errors.get(), 0);
     testing::assert_eq(raw_bytes.get(), 1)

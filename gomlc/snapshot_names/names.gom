@@ -35,10 +35,10 @@ fn slash_shape(value: string) -> Option[NameShape] {
             for suffix_index in index + 1..value.byte_len() {
                 if !is_digit(value.byte_get(suffix_index)) {
                     return Option::None
-                } else {}
+                }
             }
             return Option::Some(NameShape { prefix: value.byte_slice(0, index), separator: "/" })
-        } else {}
+        }
     }
     Option::None
 }

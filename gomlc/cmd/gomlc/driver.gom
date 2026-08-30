@@ -138,7 +138,7 @@ fn import_path_text(value: ast::Path) -> string {
     for segment in value.segments {
         if index > 0 {
             builder.write_string("::")
-        } else {};
+        }
         builder.write_string(segment.ident);
         index = index + 1;
     }
@@ -156,7 +156,7 @@ fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
                 let package_path = import_path_text(use_decl.path);
                 if !std_import(package_path) {
                     return Option::Some(package_path)
-                } else {}
+                }
             }
             Option::None
         },
@@ -170,7 +170,7 @@ fn imports_package(value: ast::LowerResult, expected: string) -> bool {
             for use_decl in file.uses {
                 if import_path_text(use_decl.path) == expected {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -226,7 +226,7 @@ fn toolchain_dependency_environments(hir_dependencies: Vec[hir::File]) -> Vec[
             Ok(environment) => result.push(environment),
             Err(error) => fail("error[compile]: " + error),
         }
-    } else {}
+    }
     result
 }
 
@@ -257,7 +257,7 @@ fn compile_toolchain_package(
             fail(
                 "error[compile]: failed to lower " + package_name + " source " + lowered.source_path,
             )
-        } else {};
+        }
         match lowered.hir {
             Some(file) => hir_files.push(file),
             None => fail(
@@ -453,7 +453,7 @@ fn builtin_artifact_interface_unit_from_checked(
                 fail(
                     "error[compile]: duplicate builtin function " + signatures.functions[index].name,
                 )
-            } else {}
+            }
         }
     }
     let file = match checked.tast {
@@ -600,7 +600,7 @@ pub fn source_compiler_for_sources(sources: Vec[string]) -> SourceCompiler {
             for known_name in package_names {
                 if known_name == package_name {
                     known = true;
-                } else {}
+                }
             }
             if known {} else {
                 package_names.push(package_name)
@@ -656,7 +656,7 @@ fn required_standard_compilation(values: Vec[PackageCompilation], package_name: 
     for value in values {
         if value.interface_unit.package_name == package_name {
             return value
-        } else {}
+        }
     }
     fail("error[compile]: standard package dependency was not compiled: " + package_name);
     values[0]
@@ -718,7 +718,7 @@ fn standard_library_package(value: StandardLibrary, package_name: string) -> Pac
     for compilation in value.packages {
         if compilation.interface_unit.package_name == package_name {
             return compilation
-        } else {}
+        }
     }
     fail("error[compile]: unavailable standard package " + package_name);
     value.packages[0]
@@ -729,7 +729,7 @@ fn direct_imported_standard_package_names(ast_value: ast::LowerResult) -> Vec[st
     for spec in resources::standard_package_specs() {
         if imports_package(ast_value, spec.name) {
             result.push(spec.name)
-        } else {}
+        }
     }
     result
 }
@@ -761,7 +761,7 @@ fn source_hir_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResult
             result.push(dependency)
         },
         None => (),
-    };
+    }
     result
 }
 
@@ -786,7 +786,7 @@ fn source_core_dependencies(compiler: SourceCompiler, ast_value: ast::LowerResul
             result.push(dependency)
         },
         None => (),
-    };
+    }
     result
 }
 
@@ -1001,14 +1001,14 @@ fn render_diagnostic_label(
             builder.write_string((end.line + 1).to_string());
             builder.write_char(':');
             builder.write_string((end.column + 1).to_string())
-        } else {};
+        }
         match message {
             Some(value) => {
                 builder.write_string(": ");
                 builder.write_string(value)
             },
             None => (),
-        };
+        }
         let line_number = (start.line + 1).to_string();
         let gutter = line_number.len();
         let line_text = source.byte_slice(start.line_start, start.line_end);
@@ -1071,8 +1071,8 @@ fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallb
         None => if value.source_path != "" {
             builder.write_string("\nat: ");
             builder.write_string(value.source_path)
-        } else {},
-    };
+        },
+    }
     for label in value.secondary_labels {
         render_diagnostic_label(
             builder,
@@ -1097,7 +1097,7 @@ fn render_typer_diagnostics(
     for value in sorted_typer_diagnostics(values) {
         if index > 0 {
             builder.write_string("\n\n")
-        } else {};
+        }
         builder.write_string(render_typer_diagnostic(value, fallback_path, fallback_source));
         index = index + 1;
     }
@@ -1168,7 +1168,7 @@ fn fail_on_ast_diagnostics(
                 source,
             ),
         )
-    } else {}
+    }
 }
 
 fn compact_diagnostic_line(
@@ -1186,7 +1186,7 @@ fn compact_diagnostic_line(
             builder.write_string(": ")
         },
         None => (),
-    };
+    }
     builder.write_string(message);
     builder.write_char('\n')
 }
@@ -1329,26 +1329,26 @@ fn diagnostic_output_optional(
     let parsed = parser::parse(source);
     if !parsed.diagnostics.is_empty() {
         return compact_ast_diagnostics(parsed.diagnostics, source, true)
-    } else {};
+    }
     let ast_value = ast::lower(parsed);
     if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
-    } else {};
+    }
     match single_file_project_import(ast_value) {
         Some(package_path) => return "single-file compilation cannot use project package "
             + package_path
             + "\n",
         None => (),
-    };
+    }
     let compiler = select_source_compiler(compiler_value, ast_value);
     let ast_value = expand_builtin_derives_with_compiler(compiler, ast_value);
     if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
-    } else {};
+    }
     let hir_value = hir::lower_expanded(ast_value, source_path);
     if !hir_value.diagnostics.is_empty() {
         return compact_hir_diagnostics(hir_value.diagnostics, source)
-    } else {};
+    }
     let counter = Ref::new(compiler.counter_start);
     let environments = match source_dependency_environments(compiler, ast_value) {
         Ok(value) => value,
@@ -1358,10 +1358,10 @@ fn diagnostic_output_optional(
     let tast_value = tast::check_for_link_with_environments(hir_value, environments);
     if !tast_value.diagnostics.is_empty() {
         return compact_typer_diagnostics(tast_value.diagnostics, source_path, source)
-    } else {};
+    }
     if !has_single_file_entrypoint(tast_value) {
         return "main function is required\n"
-    } else {};
+    }
     let core_value = core::link_with_dependencies(
         compiler.builtins,
         core_dependencies,
@@ -1406,12 +1406,12 @@ fn lower_mono_or_fail(value: core::File) -> mono::File {
     match result.error {
         Some(error) => fail(COMPILE_ERROR_PREFIX + error),
         None => (),
-    };
+    }
     let lowered = mono::dce(result.file);
     match mono::validate(lowered) {
         Ok(_) => (),
         Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid Mono IR: " + message),
-    };
+    }
     lowered
 }
 
@@ -1435,7 +1435,7 @@ fn lower_lift_stage(value: mono::File, counter: Ref[isize]) -> lift::File {
     match lift::validate(result) {
         Ok(_) => (),
         Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid Lift IR: " + message),
-    };
+    }
     result
 }
 
@@ -1444,7 +1444,7 @@ fn lower_anf_stage(value: lift::File, counter: Ref[isize]) -> anf::File {
     match anf::verify(result) {
         Ok(_) => (),
         Err(message) => fail(COMPILE_ERROR_PREFIX + "invalid ANF IR: " + message),
-    };
+    }
     result
 }
 
@@ -1455,7 +1455,7 @@ fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
                 match item {
                     Function(function) => if function.name == "main" {
                         return true
-                    } else {},
+                    },
                     _ => (),
                 }
             }
@@ -1485,7 +1485,7 @@ fn compile_source_optional(
             "error[compile]: single-file compilation cannot use project package " + package_path,
         ),
         None => (),
-    };
+    }
     let compiler = select_source_compiler(compiler_value, source_ast_value);
     let ast_value = expand_builtin_derives_with_compiler(compiler, source_ast_value);
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
@@ -1550,32 +1550,32 @@ fn compile_source_or_diagnostics_optional(
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(parsed.diagnostics, source, true),
         )
-    } else {};
+    }
     let source_ast_value = ast::lower(parsed);
     if !source_ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(source_ast_value.diagnostics, source, false),
         )
-    } else {};
+    }
     match single_file_project_import(source_ast_value) {
         Some(package_path) => return SourceCompilation::Diagnostics(
             "single-file compilation cannot use project package " + package_path + "\n",
         ),
         None => (),
-    };
+    }
     let compiler = select_source_compiler(compiler_value, source_ast_value);
     let ast_value = expand_builtin_derives_with_compiler(compiler, source_ast_value);
     if !ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),
         )
-    } else {};
+    }
     let hir_value = hir::lower_expanded(ast_value, source_path);
     if !hir_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_hir_diagnostics(hir_value.diagnostics, source),
         )
-    } else {};
+    }
     let counter = Ref::new(compiler.counter_start);
     let environments = match source_dependency_environments(compiler, ast_value) {
         Ok(value) => value,
@@ -1589,7 +1589,7 @@ fn compile_source_or_diagnostics_optional(
         )
     } else if !has_single_file_entrypoint(tast_value) {
         return SourceCompilation::Diagnostics("main function is required\n")
-    } else {};
+    }
     let core_value = eliminate_core_dead_code(
         core::link_with_dependencies(
             compiler.builtins,
@@ -1666,7 +1666,7 @@ fn pipeline_stage_output(stage: string, source_path: string, source: string) -> 
 fn print_dump(printed: Ref[bool], label: string, content: string) -> () {
     if printed.get() {
         io::println("")
-    } else {};
+    }
     io::println("== " + label + " ==");
     io::println(content);
     printed.set(true)
@@ -1686,34 +1686,34 @@ fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> ()
     let printed = Ref::new(false);
     if args.dump_ast {
         print_dump(printed, "AST", ast::pretty(compilation.source_ast_value))
-    } else {};
+    }
     if args.dump_expanded_ast {
         print_dump(printed, "Expanded AST", ast::pretty(compilation.ast_value))
-    } else {};
+    }
     if args.dump_hir {
         print_dump(printed, "HIR", hir::encode(compilation.hir_value))
-    } else {};
+    }
     if args.dump_tast {
         print_dump(printed, "Typed AST", tast::encode(compilation.tast_value))
-    } else {};
+    }
     if args.dump_ctir {
         print_dump(printed, "CTIR", encode_comptime_module(compilation.tast_value))
-    } else {};
+    }
     if args.dump_core {
         print_dump(printed, "Core", core::encode(compilation.core_value))
-    } else {};
+    }
     if args.dump_mono {
         print_dump(printed, "Mono", mono::encode(compilation.mono_value))
-    } else {};
+    }
     if args.dump_lift {
         print_dump(printed, "Lifted", lift::encode(compilation.lift_value))
-    } else {};
+    }
     if args.dump_anf {
         print_dump(printed, "ANF", anf::encode(compilation.anf_value))
-    } else {};
+    }
     if args.dump_go {
         print_dump(printed, "Go", go_source)
-    } else {}
+    }
 }
 
 fn write_stdout(data: bytes::Bytes) -> () {
@@ -1763,7 +1763,7 @@ fn temp_go_path(source_path: string, source: string) -> string {
     match fs::create_dir_all(root) {
         Ok(()) => (),
         Err(error) => fail(error.to_string()),
-    };
+    }
     let prefix = Hash::hash(source_path + "\n" + source).to_string();
     let mut suffix = 0;
     loop {

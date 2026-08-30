@@ -24,21 +24,21 @@ pub fn home_directory() -> Result[string, string] {
     match env::var_structured("GOML_HOME") {
         Ok(value) => if value != "" {
             return Result::Ok(value)
-        } else {},
+        },
         Err(_) => (),
-    };
+    }
     match env::var_structured("HOME") {
         Ok(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
-        } else {},
+        },
         Err(_) => (),
-    };
+    }
     match env::var_structured("USERPROFILE") {
         Ok(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
-        } else {},
+        },
         Err(_) => (),
-    };
+    }
     Result::Err("failed to determine home directory")
 }
 
@@ -70,11 +70,11 @@ pub fn ensure_home_layout() -> Result[(), string] {
 fn valid_identifier(value: string) -> bool {
     if value.byte_len() == 0 {
         return false
-    } else {};
+    }
     let first = value.byte_get(0);
     if !((first >= b'A' && first <= b'Z') || (first >= b'a' && first <= b'z') || first == b'_') {
         return false
-    } else {};
+    }
     for index in 1..value.byte_len() {
         let byte = value.byte_get(index);
         if (byte >= b'0' && byte <= b'9') || (byte >= b'A' && byte <= b'Z')
@@ -128,14 +128,14 @@ pub fn new_project(name: string, base: string) -> Result[(), string] {
     ) {
         Ok(()) => (),
         Err(message) => return Result::Err(message),
-    };
+    }
     match write_file(
         path::join(lib, "lib.gom"),
         "package lib;\n\npub fn message() -> string {\n    \"hello from lib\"\n}\n",
     ) {
         Ok(()) => (),
         Err(message) => return Result::Err(message),
-    };
+    }
     io::println("Created project at " + project);
     io::println("Next steps:");
     io::println("  cd " + project);

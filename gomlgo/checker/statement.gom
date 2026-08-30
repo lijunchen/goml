@@ -61,7 +61,7 @@ fn track_local_variable(
 ) -> () {
     if state.function_ids.is_empty() {
         return
-    } else {};
+    }
     state.locals.push(
         LocalBinding {
             object,
@@ -84,7 +84,7 @@ fn declare_local(
     if name == "" {
         diagnostic(state, node, "declaration name is not an identifier", false);
         return Option::None
-    } else {};
+    }
     let object = go_types::add_object(
         state.world,
         kind,
@@ -108,9 +108,9 @@ fn declare_local(
                 );
             },
             None => {},
-        };
+        }
         return Option::Some(object)
-    } else {};
+    }
     match go_types::insert(state.world, scope, name, object) {
         Some(existing) => {
             diagnostic(state, node, name + " redeclared in this block", false);
@@ -124,7 +124,7 @@ fn declare_local(
                     None => {},
                 },
                 None => {},
-            };
+            }
             state.info.defs.push(ObjectFact { node, object: Option::Some(object) });
             Option::None
         },
@@ -132,7 +132,7 @@ fn declare_local(
             state.info.defs.push(ObjectFact { node, object: Option::Some(object) });
             if kind == go_types::ObjectKind::Var {
                 track_local_variable(state, object, node, scope)
-            } else {};
+            }
             match value {
                 Some(value) => {
                     save_constant(state, object, value);
@@ -144,7 +144,7 @@ fn declare_local(
                     );
                 },
                 None => {},
-            };
+            }
             Option::Some(object)
         },
     }
@@ -200,7 +200,7 @@ fn check_local_value_spec(
                 } else {
                     Option::Some(names[0])
                 };
-            } else {};
+            }
             let explicit_type = match effective_type {
                 Some(type_node) => Option::Some(
                     declaration_type(state, scope, type_node, constant_declaration),
@@ -224,7 +224,7 @@ fn check_local_value_spec(
                 }
                 state.diagnostic_override = previous_diagnostic_override;
                 return
-            } else {};
+            }
             let operand_values = if effective_values.len() > names.len()
                 && effective_values.len() != 1 {
                 let result: Vec[syntax::NodeId] = Vec::new();
@@ -268,7 +268,7 @@ fn check_local_value_spec(
             } else if !arity_reported && effective_values.is_empty()
                 && (constant_declaration || explicit_type.is_none()) {
                 diagnostic(state, node, "missing initializer", false)
-            } else {};
+            }
             for index in 0..names.len() {
                 let checked = if index < operands.len() {
                     declaration_operand(
@@ -325,11 +325,11 @@ fn local_type_cycle(
 ) -> bool {
     if value.value == target.value {
         return true
-    } else {};
+    }
     for existing in visited {
         if existing.value == value.value {
             return false
-        } else {}
+        }
     }
     visited.push(value);
     match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
@@ -350,7 +350,7 @@ fn local_type_cycle(
                     visited,
                 ) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -469,14 +469,14 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                 let constraint_definition = constraint_definition_node(state, type_node);
                 if constraint_definition {
                     state.constraint_type_depth += 1;
-                } else {};
+                }
                 let rhs = resolve_type(state, type_scope, type_node);
                 if constraint_definition {
                     state.constraint_type_depth -= 1;
-                } else {};
+                }
                 if assign <= 0 {
                     set_interface_method_receivers(state, rhs, placeholder)
-                } else {};
+                }
                 let _ = go_types::set_type(
                     state.world,
                     placeholder,
@@ -498,7 +498,7 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                     },
                 );
                 return
-            } else {};
+            }
             match go_types::insert(state.world, scope, type_name, object) {
                 Some(_) => {
                     diagnostic(state, name, type_name + " redeclared in this block", false);
@@ -509,25 +509,25 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                     let constraint_definition = constraint_definition_node(state, type_node);
                     if constraint_definition {
                         state.constraint_type_depth += 1;
-                    } else {};
+                    }
                     state.local_type_declaration_depth += 1;
                     if assign > 0 {
                         state.local_type_alias_depth += 1;
-                    } else {};
+                    }
                     state.active_local_type_objects.push(object);
                     let rhs = resolve_type(state, type_scope, type_node);
                     let _ = state.active_local_type_objects.pop();
                     if rhs.value == state.world.invalid.value
                         && recorded_type_fact(state, type_node).is_none() {
                         record_invalid_type_expression(state, type_node)
-                    } else {};
+                    }
                     if assign > 0 {
                         state.local_type_alias_depth -= 1;
-                    } else {};
+                    }
                     state.local_type_declaration_depth -= 1;
                     if constraint_definition {
                         state.constraint_type_depth -= 1;
-                    } else {};
+                    }
                     if assign > 0
                         && (type_contains_alias_cycle(state, rhs, object, Vec::new())
                             || local_alias_cycle_seen(state, object)) {
@@ -554,10 +554,10 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                                 "cannot use a type parameter as RHS in type declaration",
                                 false,
                             )
-                        } else {};
+                        }
                         if assign <= 0 {
                             set_interface_method_receivers(state, rhs, placeholder)
-                        } else {};
+                        }
                         let _ = go_types::set_type(
                             state.world,
                             placeholder,
@@ -581,7 +581,7 @@ fn check_local_type_spec(state: CheckState, scope: go_types::ScopeId, node: synt
                         if assign <= 0 {
                             state.deferred_local_type_validations.push(placeholder);
                             state.deferred_local_type_validation_nodes.push(type_node)
-                        } else {}
+                        }
                     }
                 },
             }
@@ -620,9 +620,9 @@ fn check_local_declaration(state: CheckState, scope: go_types::ScopeId, node: sy
                         inherited_type = type_node;
                         inherited_values = values;
                         inherited_spec = Option::Some(specs[index]);
-                    } else {},
+                    },
                     _ => {},
-                };
+                }
                 check_local_value_spec(
                     state,
                     scope,
@@ -692,7 +692,7 @@ fn assignment_operands(
         let previous_target_inference_description = state.target_inference_description.get();
         if node_index < target_descriptions.len() {
             state.target_inference_description.set(target_descriptions[node_index]);
-        } else {};
+        }
         let mut operand = if node_index < targets.len() {
             expression_with_target(state, scope, node, targets[node_index])
         } else {
@@ -706,14 +706,14 @@ fn assignment_operands(
                 expression_source_text(state, node) + " (no value) used as value",
                 false,
             )
-        } else {};
+        }
         if node_index < targets.len() {
             let diagnostic_count = state.diagnostics.len();
             update_contextual_operand_fact(state, node, operand, targets[node_index]);
             if state.diagnostics.len() > diagnostic_count {
                 operand = invalid_operand(state);
-            } else {};
-        } else {};
+            }
+        }
         if nodes.len() == 1 {
             let variables = tuple_variables(state, operand.type_id);
             if variables.len() > 1 {
@@ -749,7 +749,7 @@ fn assignment_operands(
                             Some(object) => match go_types::get_object(state.world, object) {
                                 Some(object) => if object.type_id.value == state.world.invalid.value {
                                     valid_comma_context = false;
-                                } else {},
+                                },
                                 None => {},
                             },
                             None => {},
@@ -761,9 +761,9 @@ fn assignment_operands(
                             && (index >= target_descriptions.len()
                                 || target_descriptions[index] != "_") {
                             valid_comma_context = false;
-                        } else {}
+                        }
                     }
-                };
+                }
                 if valid_comma_context {
                     let tuple = go_types::add_type(
                         state.world,
@@ -785,7 +785,7 @@ fn assignment_operands(
                         },
                     );
                     update_comma_ok_operand_fact(state, node, tuple)
-                } else {};
+                }
                 result.push(operand);
                 result.push(
                     Operand {
@@ -920,7 +920,7 @@ fn assign_checked(
             ObjectFact { node: assignment_identifier_node(state, node), object: Option::None },
         );
         return
-    } else {};
+    }
     if node_is_void(state, node) {
         diagnostic(
             state,
@@ -975,7 +975,7 @@ fn assign_checked(
                 },
             false,
         )
-    } else {}
+    }
 }
 
 fn assign_existing(
@@ -1001,9 +1001,9 @@ fn assign_existing(
     match assignment_object {
         Some(object) => if !assignment_object_used {
             state.used_objects[object.value] = false;
-        } else {},
+        },
         None => {},
-    };
+    }
     assign_checked(state, node, source_node, source, target)
 }
 
@@ -1073,7 +1073,7 @@ fn check_short_declaration(
         }
         check_short_declaration(state, scope, node, left, invalid_values);
         return
-    } else {};
+    }
     while right.len() < left.len() {
         right.push(invalid_operand(state))
     }
@@ -1105,7 +1105,7 @@ fn check_short_declaration(
             for seen in seen_names {
                 if seen == name {
                     repeated = true;
-                } else {}
+                }
             }
             if repeated {
                 invalid_left = true;
@@ -1113,7 +1113,7 @@ fn check_short_declaration(
                 continue
             } else {
                 seen_names.push(name)
-            };
+            }
             match go_types::lookup_local(state.world, scope, name) {
                 Some(object) => {
                     record_use(state, left[index], object);
@@ -1127,7 +1127,7 @@ fn check_short_declaration(
                                 "cannot assign value in short variable declaration",
                                 false,
                             )
-                        } else {},
+                        },
                         None => {},
                     }
                 },
@@ -1166,7 +1166,7 @@ fn check_short_declaration(
             _ => node_start(state, node),
         };
         diagnostic_at_position(state, node, position, "no new variables on left side of :=", true)
-    } else {}
+    }
 }
 
 fn check_assignment(
@@ -1181,7 +1181,7 @@ fn check_assignment(
         if left.len() != 1 || right_nodes.len() != 1 {
             diagnostic(state, node, "assignment count mismatch", false);
             return
-        } else {};
+        }
         let target = check_expression(state, scope, left[0]);
         let result = check_binary(
             state,
@@ -1207,9 +1207,9 @@ fn check_assignment(
         } else if result.type_id.value != state.world.invalid.value
             && !argument_assignable(state, result, target.type_id) {
             diagnostic(state, left[0], "invalid compound assignment", false)
-        } else {};
+        }
         return
-    } else {};
+    }
     let targets: Vec[go_types::TypeId] = Vec::new();
     let target_operands: Vec[Operand] = Vec::new();
     if token != DEFINE_OPERATOR {
@@ -1230,9 +1230,9 @@ fn check_assignment(
                 match assignment_object {
                     Some(object) => if !assignment_object_used {
                         state.used_objects[object.value] = false;
-                    } else {},
+                    },
                     None => {},
-                };
+                }
                 targets.push(
                     if target.assignable {
                         target.type_id
@@ -1243,7 +1243,7 @@ fn check_assignment(
                 target_operands.push(target)
             }
         }
-    } else {};
+    }
     let target_descriptions: Vec[string] = Vec::new();
     for target_node in left {
         target_descriptions.push(expression_source_text(state, target_node))
@@ -1269,7 +1269,7 @@ fn check_assignment(
         if left.len() != right.len()
             && (right.is_empty() || right[0].type_id.value != state.world.invalid.value) {
             report_assignment_count(state, node, left.len(), right_nodes, right.len())
-        } else {};
+        }
         if left.len() == right.len() && right_nodes.len() == right.len() {
             for index in 0..right.len() {
                 update_contextual_operand_fact(
@@ -1279,15 +1279,15 @@ fn check_assignment(
                     default_operand_type(state, right[index]),
                 )
             }
-        } else {};
+        }
         check_short_declaration(state, scope, node, left, right);
         return
     } else if left.len() != right.len() {
         if right.is_empty() || right[0].type_id.value != state.world.invalid.value {
             report_assignment_count(state, node, left.len(), right_nodes, right.len())
-        } else {};
+        }
         return
-    } else {};
+    }
     for index in 0..left.len() {
         if assignment_blank_identifier(state, left[index]) && index < right_nodes.len() {
             if basic_kind(state, right[index].type_id) == go_types::BasicKind::UntypedNil {
@@ -1305,7 +1305,7 @@ fn check_assignment(
                     default_operand_type(state, right[index]),
                 )
             }
-        } else {};
+        }
         assign_checked(
             state,
             left[index],
@@ -1381,7 +1381,7 @@ fn check_return(
             for variable in expected {
                 if variable.name == "" {
                     named = false;
-                } else {}
+                }
             }
             if !named {
                 report_return_count(state, node, result_nodes, Vec::new(), expected)
@@ -1431,15 +1431,15 @@ fn check_return(
                                     },
                                     None => {},
                                 }
-                            } else {},
+                            },
                             _ => {},
                         }
-                    } else {}
+                    }
                 }
             }
-        } else {};
+        }
         return
-    } else {};
+    }
     let targets: Vec[go_types::TypeId] = Vec::new();
     for variable in expected {
         targets.push(variable.type_id)
@@ -1474,7 +1474,7 @@ fn check_return(
     if actual.len() != expected.len() {
         report_return_count(state, node, result_nodes, actual, expected);
         return
-    } else {};
+    }
     for index in 0..actual.len() {
         if actual[index].type_id.value != state.world.invalid.value
             && expected[index].type_id.value != state.world.invalid.value
@@ -1509,7 +1509,7 @@ fn check_return(
                 state.diagnostics[current] = previous;
                 current -= 1;
             }
-        } else {}
+        }
     }
 }
 
@@ -1526,7 +1526,7 @@ fn check_condition(
         condition.type_id,
     ) {
         diagnostic(state, node, "non-boolean condition in " + statement + " statement", false)
-    } else {}
+    }
 }
 
 fn label_start(state: CheckState) -> isize {
@@ -1550,7 +1550,7 @@ fn label_index(state: CheckState, name: string) -> Option[isize] {
     for index in start..state.labels.len() {
         if state.labels[index].name == name {
             return Option::Some(index)
-        } else {}
+        }
     }
     Option::None
 }
@@ -1562,7 +1562,7 @@ fn declare_label(state: CheckState, node: syntax::NodeId) -> () {
     } else if name == "" {
         diagnostic(state, node, "invalid label", false);
         return
-    } else {};
+    }
     match label_index(state, name) {
         Some(index) => {
             diagnostic(state, node, "label " + name + " already declared", true);
@@ -1571,7 +1571,7 @@ fn declare_label(state: CheckState, node: syntax::NodeId) -> () {
             return
         },
         None => {},
-    };
+    }
     let object = go_types::add_object(
         state.world,
         go_types::ObjectKind::Label,
@@ -1740,7 +1740,7 @@ fn use_branch_label(state: CheckState, token: string, node: syntax::NodeId, name
         record_use(state, node, state.labels[binding].object);
         state.labels[binding].used = true;
         return
-    } else {};
+    }
     let mut allowed = false;
     let start = active_label_start(state);
     for index in start..state.active_labels.len() {
@@ -1750,7 +1750,7 @@ fn use_branch_label(state: CheckState, token: string, node: syntax::NodeId, name
             } else {
                 state.active_labels[index].breakable
             };
-        } else {}
+        }
     }
     if !allowed {
         diagnostic(state, node, "invalid " + token + " label " + name, false)
@@ -1787,8 +1787,8 @@ fn check_branch_statement(
                 },
                 false,
             )
-        } else {},
-    };
+        },
+    }
     token == GOTO_KEYWORD || token == FALLTHROUGH_KEYWORD
 }
 
@@ -1815,7 +1815,7 @@ fn check_block(
             for statement in list {
                 if check_statement(state, scope, statement, signature) {
                     terminating = true;
-                } else {}
+                }
             }
             terminating
         },
@@ -1845,7 +1845,7 @@ fn check_if_statement(
             let _ = check_statement(state, scope, init, signature);
         },
         None => {},
-    };
+    }
     check_condition(state, scope, condition, "if");
     let then_terminates = check_block(state, scope, body, signature);
     let else_terminates = match else_branch {
@@ -1905,11 +1905,11 @@ fn check_for_statement(
             let _ = check_statement(state, scope, init, signature);
         },
         None => {},
-    };
+    }
     match condition {
         Some(condition) => check_condition(state, scope, condition, "for"),
         None => {},
-    };
+    }
     match post {
         Some(post) => match syntax::get_node(state.syntax.arena, post) {
             Some(syntax::SyntaxNode {
@@ -1944,7 +1944,7 @@ fn check_for_statement(
             },
         },
         None => {},
-    };
+    }
     state.loop_depth += 1;
     state.breakable_depth += 1;
     let _ = check_block(state, scope, body, signature);
@@ -1986,7 +1986,7 @@ fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nest
             for statement in list {
                 if node_breaks_loop(state, statement, label, nested_breakable) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -2007,12 +2007,12 @@ fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nest
             match init {
                 Some(init) => if node_breaks_loop(state, init, label, nested_breakable) {
                     return true
-                } else {},
+                },
                 None => {},
-            };
+            }
             if node_breaks_loop(state, body, label, nested_breakable) {
                 return true
-            } else {};
+            }
             match else_branch {
                 Some(else_branch) => node_breaks_loop(state, else_branch, label, nested_breakable),
                 None => false,
@@ -2054,7 +2054,7 @@ fn node_breaks_loop(state: CheckState, node: syntax::NodeId, label: string, nest
             for statement in body {
                 if node_breaks_loop(state, statement, label, nested_breakable) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -2074,7 +2074,7 @@ fn range_operands(state: CheckState, source: Operand) -> Vec[Operand] {
             resolved = core_type_id(state, element);
         },
         _ => {},
-    };
+    }
     match go_types::get_type(state.world, resolved) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element } }) | Some(go_types::TypeData {
             id: _,
@@ -2158,25 +2158,25 @@ fn range_operands(state: CheckState, source: Operand) -> Vec[Operand] {
                             for parameter in yield_params {
                                 result.push(builtin_operand(parameter.type_id))
                             }
-                        } else {}
+                        }
                     },
                     _ => {},
                 }
-            } else {}
+            }
         },
         _ => {},
-    };
+    }
     result
 }
 
 fn range_type_parameter_failure(state: CheckState, value: go_types::TypeId) -> string {
     if !go_types::is_type_parameter(state.world, value) {
         return ""
-    } else {};
+    }
     let terms = go_types::type_set_specific_types(state.world, value);
     if terms.is_empty() {
         return "no specific type"
-    } else {};
+    }
     let first = terms[0];
     let first_underlying = go_types::underlying(state.world, first);
     for index in 1..terms.len() {
@@ -2188,7 +2188,7 @@ fn range_type_parameter_failure(state: CheckState, value: go_types::TypeId) -> s
             return diagnostic_type_string(state, first) + " and "
                 + diagnostic_type_string(state, terms[index])
                 + " have different underlying types"
-        } else {}
+        }
     }
     ""
 }
@@ -2198,8 +2198,8 @@ fn range_channel_type_string(state: CheckState, value: go_types::TypeId) -> stri
         let terms = go_types::type_set_specific_types(state.world, value);
         if !terms.is_empty() {
             return diagnostic_type_string(state, terms[0])
-        } else {}
-    } else {};
+        }
+    }
     diagnostic_type_string(state, value)
 }
 
@@ -2219,7 +2219,7 @@ fn valid_range_function(state: CheckState, value: go_types::TypeId) -> bool {
             let params = tuple_variables(state, params);
             if params.len() != 1 || !tuple_variables(state, results).is_empty() {
                 return false
-            } else {};
+            }
             match go_types::get_type(state.world, core_type_id(state, params[0].type_id)) {
                 Some(go_types::TypeData {
                     id: _,
@@ -2270,7 +2270,7 @@ fn range_function_failure(state: CheckState, value: go_types::TypeId) -> string 
         return prefix + "wrong argument count"
     } else if !results.is_empty() {
         return prefix + "unexpected results"
-    } else {};
+    }
     let yield_signature = match go_types::get_type(
         state.world,
         core_type_id(state, params[0].type_id),
@@ -2348,7 +2348,7 @@ fn check_range_declaration(
         } else {
             if name != "_" {
                 named += 1;
-            } else {};
+            }
             let _ = declare_local(
                 state,
                 scope,
@@ -2380,7 +2380,7 @@ fn check_range_declaration(
             _ => node_start(state, node),
         };
         diagnostic_at_position(state, node, position, "no new variables on left side of :=", false)
-    } else {}
+    }
 }
 
 fn integer_range_value_assignable(state: CheckState, source: Operand, target: go_types::TypeId) -> bool {
@@ -2400,7 +2400,7 @@ fn check_integer_range_value(
     if integer_range_value_assignable(state, source, target) {
         update_contextual_operand_fact(state, expression, source, target);
         return true
-    } else {};
+    }
     let overflow = match source.value {
         Some(value) => !constant::constant_representable(
             value,
@@ -2435,7 +2435,7 @@ fn assign_integer_range_value(
 ) -> () {
     if !contextualize_source {
         return
-    } else {};
+    }
     let assignment_object = match assignment_identifier_name(state, node) {
         Some(name) => go_types::lookup(state.world, scope, name),
         None => Option::None,
@@ -2447,7 +2447,7 @@ fn assign_integer_range_value(
     let blank = assignment_blank_identifier(state, node);
     if blank {
         state.info.defs.push(ObjectFact { node, object: Option::None })
-    } else {};
+    }
     let target = if blank {
         Operand {
             type_id: default_operand_type(state, source),
@@ -2461,9 +2461,9 @@ fn assign_integer_range_value(
     match assignment_object {
         Some(object) => if !assignment_object_used {
             state.used_objects[object.value] = false;
-        } else {},
+        },
         None => {},
-    };
+    }
     if target.type_id.value == state.world.invalid.value
         || source.type_id.value == state.world.invalid.value {
         return
@@ -2476,7 +2476,7 @@ fn assign_integer_range_value(
             false,
         );
         return
-    } else {};
+    }
     if check_integer_range_value(state, expression, source, target.type_id) {
         let inferred = if go_types::is_untyped(state.world, source.type_id) {
             target.type_id
@@ -2490,8 +2490,8 @@ fn assign_integer_range_value(
                 "cannot use iteration variable of type " + diagnostic_type_string(state, inferred),
                 true,
             )
-        } else {}
-    } else {}
+        }
+    }
 }
 
 fn check_range_statement(
@@ -2519,11 +2519,11 @@ fn check_range_statement(
             && value.start >= node_start(state, node)
             && value.start <= node_end(state, node) {
             parser_arity_error = true;
-        } else {}
+        }
     }
     if parser_arity_error {
         return false
-    } else {};
+    }
     let range_scope = new_node_scope(state, parent, node, go_types::ScopeKind::Block);
     let source = check_expression(state, parent, expression);
     let available = range_operands(state, source);
@@ -2559,16 +2559,16 @@ fn check_range_statement(
                 + ": requires go1.23 or later",
             true,
         )
-    } else {};
+    }
     let left: Vec[syntax::NodeId] = Vec::new();
     match key {
         Some(key) => left.push(key),
         None => {},
-    };
+    }
     match value {
         Some(value) => left.push(value),
         None => {},
-    };
+    }
     if source.type_id.value == state.world.invalid.value {
         if token == DEFINE_OPERATOR {
             let locals_start = state.locals.len();
@@ -2580,7 +2580,7 @@ fn check_range_statement(
             for index in locals_start..state.locals.len() {
                 state.used_objects[state.locals[index].object.value] = true;
             }
-        } else {}
+        }
     } else if available.is_empty() && !function_range {
         let failure = range_type_parameter_failure(state, source.type_id);
         let function_failure = range_function_failure(state, source.type_id);
@@ -2610,7 +2610,7 @@ fn check_range_statement(
             for index in locals_start..state.locals.len() {
                 state.used_objects[state.locals[index].object.value] = true;
             }
-        } else {}
+        }
     } else if left.len() > available.len() {
         if integer_range && go_version_at_least(state, node, 22) {
             let _ = check_integer_range_value(
@@ -2619,7 +2619,7 @@ fn check_range_statement(
                 source,
                 default_operand_type(state, source),
             );
-        } else {};
+        }
         diagnostic(
             state,
             if available.len() < left.len() {
@@ -2653,7 +2653,7 @@ fn check_range_statement(
             for index in 0..available.len() {
                 assign_existing(state, range_scope, left[index], left[index], available[index])
             }
-        } else {}
+        }
     } else if token == DEFINE_OPERATOR {
         let operands: Vec[Operand] = Vec::new();
         if integer_range && go_version_at_least(state, node, 22) && !left.is_empty() {
@@ -2690,7 +2690,7 @@ fn check_range_statement(
         }
     } else if !left.is_empty() {
         diagnostic(state, node, "invalid range assignment", false)
-    } else {};
+    }
     if integer_range && left.is_empty() {
         let _ = check_integer_range_value(
             state,
@@ -2698,7 +2698,7 @@ fn check_range_statement(
             source,
             default_operand_type(state, source),
         );
-    } else {};
+    }
     state.loop_depth += 1;
     state.breakable_depth += 1;
     let _ = check_block(state, range_scope, body, signature);
@@ -2733,7 +2733,7 @@ fn check_send_statement(
             false,
         );
         return
-    } else {};
+    }
     match go_types::get_type(state.world, core_type_id(state, channel_operand.type_id)) {
         Some(go_types::TypeData {
             id: _,
@@ -2775,7 +2775,7 @@ fn check_send_statement(
                 )
             } else if sent.type_id.value != state.world.invalid.value {
                 update_contextual_operand_fact(state, value, sent, element)
-            } else {}
+            }
         },
         _ => if channel_operand.type_id.value != state.world.invalid.value {
             diagnostic_at_position(
@@ -2788,7 +2788,7 @@ fn check_send_statement(
                     + operand_string(state, channel, channel_operand),
                 false,
             )
-        } else {},
+        },
     }
 }
 
@@ -2831,7 +2831,7 @@ fn check_go_or_defer(
                     statement + " discards result of " + operand_string(state, call, operand),
                     false,
                 )
-            } else {}
+            }
         },
         Some(syntax::SyntaxNode {
             id: _,
@@ -2843,7 +2843,7 @@ fn check_go_or_defer(
             let operand = check_expression(state, scope, expression);
             if node_is_void(state, expression) {
                 mark_void_node(state, call)
-            } else {};
+            }
             record_operand(state, call, operand)
         },
         _ => {},
@@ -2860,7 +2860,7 @@ fn check_statement_list(
     for statement in statements {
         if check_statement(state, scope, statement, signature) {
             terminating = true;
-        } else {}
+        }
     }
     terminating
 }
@@ -2872,15 +2872,15 @@ fn switch_case_compatible(state: CheckState, case_value: Operand, tag: Operand) 
             && go_types::is_nilable_type(state.world, case_value.type_id));
     if nil_comparison {
         return true
-    } else {};
+    }
     let mut common = binary_operand_type(state, case_value, tag);
     if common.value == state.world.invalid.value {
         if go_types::assignable_types(state.world, case_value.type_id, tag.type_id) {
             common = tag.type_id;
         } else if go_types::assignable_types(state.world, tag.type_id, case_value.type_id) {
             common = case_value.type_id;
-        } else {}
-    } else {};
+        }
+    }
     common.value != state.world.invalid.value
         && go_types::comparable(state.world, case_value.type_id)
         && go_types::comparable(state.world, tag.type_id)
@@ -2918,14 +2918,14 @@ fn record_switch_case_value(
 ) -> () {
     if basic_kind(state, operand.type_id) == go_types::BasicKind::UntypedNil {
         return
-    } else {};
+    }
     let value = match operand.value {
         Some(value) => value,
         None => return,
     };
     if constant::constant_kind(value) == constant::ConstantKind::Unknown {
         return
-    } else {};
+    }
     let effective_type = if go_types::is_interface(state.world, target) {
         default_operand_type(state, operand)
     } else {
@@ -2957,7 +2957,7 @@ fn record_switch_case_value(
             );
             secondary_diagnostic(state, previous.node, "\tprevious case");
             return
-        } else {}
+        }
     }
     seen.push(
         SwitchCaseValue {
@@ -2992,7 +2992,7 @@ fn check_expression_case(
                 false,
             );
             continue
-        } else {};
+        }
         match tag {
             Some(tag) => if !switch_case_compatible(state, value, tag) {
                 if value.type_id.value != state.world.invalid.value
@@ -3019,7 +3019,7 @@ fn check_expression_case(
                             + ")",
                         false,
                     )
-                } else {}
+                }
             } else if !go_types::is_interface(state.world, tag.type_id)
                 && report_binary_operand_overflow(state, expression, value, tag.type_id) {} else {
                 update_contextual_operand_fact(state, expression, value, tag.type_id);
@@ -3069,7 +3069,7 @@ fn check_expression_case(
         };
         if check_statement(state, case_scope, body[index], signature) {
             terminating = true;
-        } else {}
+        }
     }
     state.fallthrough_allowed = previous_fallthrough;
     state.fallthrough_context = previous_fallthrough_context;
@@ -3096,7 +3096,7 @@ fn check_switch_tag(state: CheckState, scope: go_types::ScopeId, node: syntax::N
     let mut value = check_expression(state, scope, node);
     if value.type_id.value == state.world.invalid.value {
         return value
-    } else {};
+    }
     if tuple_variables(state, value.type_id).len() > 1 {
         diagnostic(
             state,
@@ -3108,7 +3108,7 @@ fn check_switch_tag(state: CheckState, scope: go_types::ScopeId, node: syntax::N
     } else if basic_kind(state, value.type_id) == go_types::BasicKind::UntypedNil {
         diagnostic(state, node, "use of untyped nil in switch expression", false);
         return invalid_operand(state)
-    } else {};
+    }
     if go_types::is_untyped(state.world, value.type_id) {
         let target = default_operand_type(state, value);
         match value.value {
@@ -3126,12 +3126,12 @@ fn check_switch_tag(state: CheckState, scope: go_types::ScopeId, node: syntax::N
                     false,
                 );
                 return invalid_operand(state)
-            } else {},
+            },
             None => {},
-        };
+        }
         update_contextual_operand_fact(state, node, value, target);
         value.type_id = target;
-    } else {};
+    }
     if !go_types::comparable(state.world, value.type_id)
         && !go_types::is_nilable_type(state.world, value.type_id) {
         diagnostic(
@@ -3143,7 +3143,7 @@ fn check_switch_tag(state: CheckState, scope: go_types::ScopeId, node: syntax::N
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     value
 }
 
@@ -3162,7 +3162,7 @@ fn check_switch_statement(
             let _ = check_statement(state, switch_scope, init, signature);
         },
         None => {},
-    };
+    }
     let tag = match tag_node {
         Some(tag) => Option::Some(check_switch_tag(state, switch_scope, tag)),
         None => Option::None,
@@ -3216,10 +3216,10 @@ fn check_switch_statement(
                                     first_default = Option::Some(clause);
                                 },
                             }
-                        } else {};
+                        }
                         if !checked.1 {
                             all_terminate = false;
-                        } else {}
+                        }
                     },
                     _ => diagnostic(state, clause, "invalid switch case", false),
                 }
@@ -3227,7 +3227,7 @@ fn check_switch_statement(
             state.breakable_depth -= 1;
         },
         _ => diagnostic(state, body_node, "invalid switch body", false),
-    };
+    }
     first_default.is_some() && all_terminate && !loop_body_breaks(state, node, body_node)
 }
 
@@ -3345,7 +3345,7 @@ fn check_type_switch_case(
             for seen in seen_types {
                 if go_types::identical(state.world, seen.type_id, nil_type) {
                     duplicate = Option::Some(seen.node);
-                } else {}
+                }
             }
             match duplicate {
                 Some(previous) => {
@@ -3372,13 +3372,13 @@ fn check_type_switch_case(
                                 && !generic_parameters(state, object.type_id).is_empty() {
                                 let _ = state.omitted_type_fact_nodes.remove(type_node.value);
                                 record_invalid_type_expression(state, type_node)
-                            } else {},
+                            },
                             None => {},
                         },
                         None => {},
                     },
                     _ => {},
-                };
+                }
                 match syntax::get_node(state.syntax.arena, type_node) {
                     Some(syntax::SyntaxNode {
                         id: _,
@@ -3396,7 +3396,7 @@ fn check_type_switch_case(
                     },
                     _ => {},
                 }
-            } else {};
+            }
             if valid_case_type && go_types::is_interface(state.world, source.type_id)
                 && !go_types::assertable_to(state.world, source.type_id, case_type) {
                 let detail = interface_implementation_detail(state, case_type, source.type_id);
@@ -3415,13 +3415,13 @@ fn check_type_switch_case(
                         },
                     false,
                 )
-            } else {};
+            }
             if valid_case_type {
                 let mut duplicate: Option[syntax::NodeId] = Option::None;
                 for seen in seen_types {
                     if go_types::identical(state.world, seen.type_id, case_type) {
                         duplicate = Option::Some(seen.node);
-                    } else {}
+                    }
                 }
                 match duplicate {
                     Some(previous) => {
@@ -3438,7 +3438,7 @@ fn check_type_switch_case(
                         TypeSwitchCaseValue { type_id: case_type, node: type_node },
                     ),
                 }
-            } else {};
+            }
             case_types.push(case_type)
         }
     }
@@ -3464,10 +3464,10 @@ fn check_type_switch_case(
                 let _ = go_types::insert(state.world, case_scope, name, object);
                 guard_objects.push(object);
                 state.info.implicits.push(ObjectFact { node: clause, object: Option::Some(object) })
-            } else {}
+            }
         },
         None => {},
-    };
+    }
     let previous_fallthrough = state.fallthrough_allowed;
     let previous_fallthrough_context = state.fallthrough_context;
     let mut terminating = false;
@@ -3480,7 +3480,7 @@ fn check_type_switch_case(
         };
         if check_statement(state, case_scope, body[index], signature) {
             terminating = true;
-        } else {}
+        }
     }
     state.fallthrough_allowed = previous_fallthrough;
     state.fallthrough_context = previous_fallthrough_context;
@@ -3502,7 +3502,7 @@ fn check_type_switch_statement(
             let _ = check_statement(state, switch_scope, init, signature);
         },
         None => {},
-    };
+    }
     let guard = match type_switch_guard(state, assignment) {
         Some(value) => value,
         None => {
@@ -3512,14 +3512,14 @@ fn check_type_switch_statement(
     };
     if guard.2 != "" && guard.2 != DEFINE_OPERATOR {
         diagnostic(state, assignment, "invalid type switch assignment", false)
-    } else {};
+    }
     match guard.1 {
         Some(variable) => if guard.2 == DEFINE_OPERATOR
             && identifier(state, variable).unwrap_or("") != "_" {
             state.info.defs.push(ObjectFact { node: variable, object: Option::None })
-        } else {},
+        },
         None => {},
-    };
+    }
     let source = check_expression(state, switch_scope, guard.0);
     if go_types::is_type_parameter(state.world, source.type_id) {
         diagnostic(
@@ -3537,7 +3537,7 @@ fn check_type_switch_statement(
             operand_string(state, guard.0, source) + " is not an interface",
             false,
         )
-    } else {};
+    }
     let case_source = if source.type_id.value != state.world.invalid.value
         && !go_types::is_type_parameter(state.world, source.type_id)
         && go_types::is_interface(state.world, source.type_id) {
@@ -3594,10 +3594,10 @@ fn check_type_switch_statement(
                                     first_default = Option::Some(clause);
                                 },
                             }
-                        } else {};
+                        }
                         if !checked.1 {
                             all_terminate = false;
-                        } else {}
+                        }
                     },
                     _ => diagnostic(state, clause, "invalid type switch case", false),
                 }
@@ -3605,7 +3605,7 @@ fn check_type_switch_statement(
             state.breakable_depth -= 1;
         },
         _ => diagnostic(state, body_node, "invalid type switch body", false),
-    };
+    }
     match guard.1 {
         Some(variable) => if guard.2 == DEFINE_OPERATOR {
             let name = identifier(state, variable).unwrap_or("");
@@ -3616,15 +3616,15 @@ fn check_type_switch_statement(
                 for object in guard_objects {
                     if local_object_used(state, object) {
                         used = true;
-                    } else {}
+                    }
                 }
                 if !used {
                     diagnostic(state, variable, name + " declared and not used", true)
-                } else {}
-            } else {}
-        } else {},
+                }
+            }
+        },
         None => {},
-    };
+    }
     first_default.is_some() && all_terminate && !loop_body_breaks(state, node, body_node)
 }
 
@@ -3785,10 +3785,10 @@ fn check_select_statement(
                                     first_default = Option::Some(clause);
                                 },
                             },
-                        };
+                        }
                         if !check_statement_list(state, case_scope, body, signature) {
                             all_terminate = false;
-                        } else {}
+                        }
                     },
                     _ => diagnostic(state, clause, "invalid select case", false),
                 }
@@ -3796,7 +3796,7 @@ fn check_select_statement(
             state.breakable_depth -= 1;
         },
         _ => diagnostic(state, body_node, "invalid select body", false),
-    };
+    }
     all_terminate && !loop_body_breaks(state, node, body_node)
 }
 
@@ -3911,7 +3911,7 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> () {
     };
     if state.failed_inference_nodes.contains(function.value) {
         return
-    } else {};
+    }
     let selected = match recorded_selection_index(state, function) {
         Some(index) => Option::Some(method_value_type(state, state.info.selections[index].type_id)),
         None => Option::None,
@@ -3947,15 +3947,15 @@ fn recover_void_call_fact(state: CheckState, node: syntax::NodeId) -> () {
     };
     if !known_void {
         return
-    } else {};
+    }
     let _ = state.omitted_type_fact_nodes.remove(function.value);
     match signature {
         Some(type_id) => if type_id.value != state.world.invalid.value
             && !type_contains_invalid(state, type_id) {
             record_operand(state, function, builtin_operand(type_id))
-        } else {},
+        },
         None => {},
-    };
+    }
     mark_void_node(state, node);
     match type_fact_index(state, node) {
         Some(index) => {
@@ -4010,7 +4010,7 @@ fn check_statement(
             let operand = check_expression(state, scope, expression);
             if operand.type_id.value == state.world.invalid.value {
                 recover_void_call_fact(state, expression)
-            } else {};
+            }
             if operand.type_id.value != state.world.invalid.value
                 && expression_statement_uses_value(state, scope, expression) {
                 diagnostic(
@@ -4019,7 +4019,7 @@ fn check_statement(
                     operand_string(state, expression, operand) + " is not used",
                     false,
                 )
-            } else {};
+            }
             expression_is_terminating_panic(state, scope, expression)
         },
         Some(syntax::SyntaxNode {
@@ -4080,7 +4080,7 @@ fn check_statement(
                     match type_fact_key(fact) {
                         Some(existing) => if existing == key {
                             exists = true;
-                        } else {},
+                        },
                         None => {},
                     }
                 }
@@ -4104,8 +4104,8 @@ fn check_statement(
                             comma_ok: false,
                         },
                     )
-                } else {}
-            } else {};
+                }
+            }
             if operand.type_id.value == state.world.invalid.value {} else if !operand.assignable {
                 diagnostic(
                     state,
@@ -4124,7 +4124,7 @@ fn check_statement(
                         + ")",
                     false,
                 )
-            } else {};
+            }
             false
         },
         Some(syntax::SyntaxNode {
@@ -4287,7 +4287,7 @@ fn report_unused_locals(state: CheckState, function_id: isize, start: isize) -> 
         let depth = local_scope_depth(state, local.scope);
         if local.function_id == function_id && depth < root_depth {
             root_depth = depth;
-        } else {}
+        }
     }
     for root in Vec::from_array([true, false]) {
         for index in start..state.locals.len() {
@@ -4304,7 +4304,7 @@ fn report_unused_locals(state: CheckState, function_id: isize, start: isize) -> 
                     ),
                     None => {},
                 }
-            } else {}
+            }
         }
     }
 }
@@ -4366,7 +4366,7 @@ fn record_flow_declaration(
                     },
                 )
             }
-        } else {},
+        },
         _ => {},
     }
 }
@@ -4404,7 +4404,7 @@ fn collect_flow_points(
             for existing in labels {
                 if existing.name == name {
                     duplicate = true;
-                } else {}
+                }
             }
             if !duplicate {
                 labels.push(
@@ -4415,7 +4415,7 @@ fn collect_flow_points(
                         blocks: copied_node_ids(blocks),
                     },
                 )
-            } else {};
+            }
             collect_flow_points(state, statement, blocks, labels, gotos, declarations)
         },
         Some(syntax::SyntaxNode {
@@ -4436,7 +4436,7 @@ fn collect_flow_points(
                 ),
                 None => {},
             }
-        } else {},
+        },
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
@@ -4458,7 +4458,7 @@ fn collect_flow_points(
                     blocks: copied_node_ids(blocks),
                 },
             )
-        } else {},
+        },
         Some(syntax::SyntaxNode {
             id: _,
             file: _,
@@ -4477,7 +4477,7 @@ fn collect_flow_points(
                     declarations,
                 ),
                 None => {},
-            };
+            }
             collect_flow_points(state, body, blocks, labels, gotos, declarations);
             match else_branch {
                 Some(value) => collect_flow_points(
@@ -4509,7 +4509,7 @@ fn collect_flow_points(
                     declarations,
                 ),
                 None => {},
-            };
+            }
             match post {
                 Some(value) => collect_flow_points(
                     state,
@@ -4520,7 +4520,7 @@ fn collect_flow_points(
                     declarations,
                 ),
                 None => {},
-            };
+            }
             collect_flow_points(state, body, blocks, labels, gotos, declarations)
         },
         Some(syntax::SyntaxNode {
@@ -4563,7 +4563,7 @@ fn collect_flow_points(
                     declarations,
                 ),
                 None => {},
-            };
+            }
             collect_flow_points(state, body, blocks, labels, gotos, declarations)
         },
         Some(syntax::SyntaxNode {
@@ -4598,11 +4598,11 @@ fn collect_flow_points(
 fn flow_blocks_prefix(prefix: Vec[syntax::NodeId], value: Vec[syntax::NodeId]) -> bool {
     if prefix.len() > value.len() {
         return false
-    } else {};
+    }
     for index in 0..prefix.len() {
         if prefix[index].value != value[index].value {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -4624,10 +4624,10 @@ fn source_line(state: CheckState, node: syntax::NodeId) -> isize {
                     for index in 0..end {
                         if source.source.get(index) == b'\n' {
                             line += 1;
-                        } else {}
+                        }
                     }
                     return line
-                } else {}
+                }
             }
             0
         },
@@ -4653,7 +4653,7 @@ fn check_goto_restrictions(state: CheckState, body: syntax::NodeId) -> () {
                             && declaration.position < label.position
                             && flow_blocks_prefix(declaration.blocks, label.blocks) {
                             crossed = Option::Some(declaration);
-                        } else {}
+                        }
                     }
                     match crossed {
                         Some(declaration) => {
@@ -4667,8 +4667,8 @@ fn check_goto_restrictions(state: CheckState, body: syntax::NodeId) -> () {
                         },
                         None => {},
                     }
-                } else {}
-            } else {}
+                }
+            }
         }
     }
 }
@@ -4709,14 +4709,14 @@ fn check_function_body(
 ) -> () {
     if state.checked_function_bodies.contains(body.value) {
         return
-    } else {};
+    }
     let _ = state.checked_function_bodies.insert(body.value);
     for index in 0..state.deferred_function_type_diagnostics.len() {
         let deferred = state.deferred_function_type_diagnostics[index];
         if !deferred.emitted && deferred.signature_node.value == signature_node.value {
             state.diagnostics.push(deferred.diagnostic);
             state.deferred_function_type_diagnostics[index].emitted = true;
-        } else {}
+        }
     }
     match syntax::get_node(state.syntax.arena, signature_node) {
         Some(syntax::SyntaxNode {
@@ -4733,7 +4733,7 @@ fn check_function_body(
             }
         },
         _ => {},
-    };
+    }
     match signature_scope(state, signature_node) {
         Some(scope) => {
             let function_id = state.next_function_id;
@@ -4775,7 +4775,7 @@ fn check_function_body(
                     _ => node_end(state, body),
                 };
                 diagnostic_at_position(state, body, position, "missing return", false)
-            } else {};
+            }
             for index in labels_start..state.labels.len() {
                 if !state.labels[index].used {
                     diagnostic(
@@ -4784,7 +4784,7 @@ fn check_function_body(
                         "label " + state.labels[index].name + " declared and not used",
                         true,
                     )
-                } else {}
+                }
             }
             report_unused_locals(state, function_id, locals_start);
             state.loop_depth = previous_loop_depth;

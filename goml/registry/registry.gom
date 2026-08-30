@@ -31,7 +31,7 @@ fn decimal_number(value: string) -> Option[isize] {
     let length = value.byte_len();
     if length == 0 {
         return Option::None
-    } else {};
+    }
     let mut result = 0;
     for index in 0..length {
         let byte = value.byte_get(index);
@@ -48,7 +48,7 @@ pub fn parse_sem_version(value: string) -> Result[SemVersion, string] {
     let parts = text::split(value, ".");
     if parts.len() != 3 {
         return Result::Err("invalid semver `" + value + "`")
-    } else {};
+    }
     let Some(major) = decimal_number(parts[0]) else {
         return Result::Err("invalid semver `" + value + "`")
     };
@@ -89,7 +89,7 @@ fn quoted_values(value: string) -> Vec[string] {
                     start = Option::Some(index + 1);
                 },
             }
-        } else {}
+        }
     }
     result
 }
@@ -110,7 +110,7 @@ fn load_index(root: string) -> Result[collections::IndexMap[string, RegistryEntr
                 let name = values[0];
                 if entries.contains(name) {
                     return Result::Err("duplicate registry module table " + name)
-                } else {};
+                }
                 current = Option::Some(name);
                 let _ = entries.insert(
                     name,
@@ -148,7 +148,7 @@ fn load_index(root: string) -> Result[collections::IndexMap[string, RegistryEntr
                             versions: quoted_values(line),
                         },
                     );
-                } else {},
+                },
                 None => (),
             }
         }
@@ -159,11 +159,11 @@ fn load_index(root: string) -> Result[collections::IndexMap[string, RegistryEntr
 fn valid_identifier(value: string) -> bool {
     if value.byte_len() == 0 {
         return false
-    } else {};
+    }
     let first = value.byte_get(0);
     if !((first >= b'A' && first <= b'Z') || (first >= b'a' && first <= b'z') || first == b'_') {
         return false
-    } else {};
+    }
     for index in 1..value.byte_len() {
         let byte = value.byte_get(index);
         if (byte >= b'0' && byte <= b'9') || (byte >= b'A' && byte <= b'Z')
@@ -208,21 +208,21 @@ pub fn validate(root: string) -> Result[(), string] {
             let parsed = parse_sem_version(version)?;
             if version_equal(parsed, latest) {
                 latest_matches = true;
-            } else {};
+            }
             let directory = module_directory_unchecked(root, entry.name, version);
             if !fs::is_dir(directory) {
                 return Result::Err(
                     "registry index references missing module directory: " + entry.name + "@"
                         + version,
                 )
-            } else {}
+            }
         }
         if !latest_matches {
             return Result::Err(
                 "registry index latest version " + entry.latest + " for " + entry.name
                     + " is not listed in versions",
             )
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -257,7 +257,7 @@ pub fn select_version(root: string, name: string, minimum: string) -> Result[str
             } {
             selected = Option::Some(version);
             selected_value = Option::Some(parsed);
-        } else {}
+        }
     }
     match selected {
         Some(value) => Result::Ok(value),
@@ -326,7 +326,7 @@ pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModul
                     "registry module " + requirement.name + " declares module path "
                         + module_manifest.module_path,
                 )
-            } else {};
+            }
             let resolved = ResolvedModule {
                 name: requirement.name,
                 version,
@@ -337,7 +337,7 @@ pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModul
             for dependency in module_manifest.dependencies {
                 queue.push_back(dependency)
             }
-        } else {}
+        }
     }
     Result::Ok(selected.values())
 }
@@ -346,7 +346,7 @@ pub fn resolve(module_root: string) -> Result[Vec[ResolvedModule], string] {
     let root = cached_root()?;
     if !fs::is_dir(root) {
         return Result::Err("registry cache not found at " + root + "; run `goml update` first")
-    } else {};
+    }
     resolve_at(module_root, root)
 }
 

@@ -117,7 +117,7 @@ fn contains_message(diagnostics: Vec[VerifyDiagnostic], message: string) -> bool
     for diagnostic in diagnostics {
         if diagnostic.message.contains(message) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -435,18 +435,18 @@ fn lowers_typed_functions_assignments_and_control_flow() -> () {
     if !loaded.diagnostics.is_empty() {
         testing::fail(loaded.diagnostics[0].message);
         return
-    } else {};
+    }
     let result = lower(testing::expect_some(loaded.program, "execution program is missing"));
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     testing::assert_eq(program.functions.len(), 3);
     let verification = verify(program);
     if !verification.is_empty() {
         testing::fail(verification[0].message)
-    } else {};
+    }
     testing::assert(program.functions[program.main.value].blocks.len() >= 8)
 }
 
@@ -459,7 +459,7 @@ fn lowered_fixture(name: string) -> LowerResult {
     if !loaded.diagnostics.is_empty() {
         testing::fail(loaded.diagnostics[0].message);
         return LowerResult { program: Option::None, diagnostics: Vec::new() }
-    } else {};
+    }
     lower(testing::expect_some(loaded.program, "execution program is missing"))
 }
 
@@ -471,7 +471,7 @@ fn lowered_file(file: string) -> LowerResult {
     if !loaded.diagnostics.is_empty() {
         testing::fail(loaded.diagnostics[0].message);
         return LowerResult { program: Option::None, diagnostics: Vec::new() }
-    } else {};
+    }
     lower(testing::expect_some(loaded.program, "execution program is missing"))
 }
 
@@ -481,12 +481,12 @@ fn lowers_type_switches_with_typed_case_bindings() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     let verification = verify(program);
     if !verification.is_empty() {
         testing::fail(verification[0].message)
-    } else {};
+    }
     testing::assert(program.functions[program.main.value].blocks.len() >= 20)
 }
 
@@ -496,7 +496,7 @@ fn lowers_generic_functions_and_receiver_methods_on_demand() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     testing::assert_eq(verify(program).len(), 0);
     testing::assert(program.functions.len() >= 8)
@@ -508,7 +508,7 @@ fn omits_unsupported_compiler_generated_aggregate_shells() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     let manifest = testing::expect_ok(native_manifest(program), "native manifest failed");
     testing::assert(manifest.aggregates.is_empty())
@@ -523,26 +523,26 @@ fn lowers_gomlc_lexical_task_scope_product_with_native_methods() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     let verification = verify(program);
     if !verification.is_empty() {
         testing::fail(verification[0].message)
-    } else {};
+    }
     let methods = Ref::new(0);
     let mutex = Ref::new(false);
     let wait_group = Ref::new(false);
     for call in program.native_calls {
         if call.receiver_name != "" {
             methods.set(methods.get() + 1)
-        } else {}
+        }
     }
     for type_value in program.native_types {
         if type_value.import_path == "sync" && type_value.name == "Mutex" {
             mutex.set(true)
         } else if type_value.import_path == "sync" && type_value.name == "WaitGroup" {
             wait_group.set(true)
-        } else {}
+        }
     }
     if methods.get() < 5 {
         testing::fail("native method count is " + methods.get().to_string())
@@ -550,13 +550,13 @@ fn lowers_gomlc_lexical_task_scope_product_with_native_methods() -> () {
         testing::fail("sync.Mutex native type is missing")
     } else if !wait_group.get() {
         testing::fail("sync.WaitGroup native type is missing")
-    } else {};
+    }
     let manifest = testing::expect_ok(native_manifest(program), "native manifest failed");
     if manifest.calls.len() < methods.get() {
         testing::fail("native manifest omitted method calls")
     } else if manifest.types.len() < 2 {
         testing::fail("native manifest omitted native types")
-    } else {}
+    }
 }
 
 fn native_call_instruction_count(program: BytecodeProgram) -> isize {
@@ -586,7 +586,7 @@ fn links_used_standard_library_functions_to_a_deterministic_manifest() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     testing::assert_eq(program.packages.len(), 1);
     testing::assert_eq(program.native_calls.len(), 4);
@@ -633,7 +633,7 @@ fn links_and_deduplicates_concrete_standard_library_generic_instances() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     testing::assert_eq(verify(program).len(), 0);
     testing::assert_eq(program.native_calls.len(), 2);
@@ -662,7 +662,7 @@ fn supports_native_opaque_pointer_results() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     testing::assert_eq(program.native_calls.len(), 1);
     testing::assert_eq(program.native_calls[0].result_type_keys.len(), 1);
@@ -671,7 +671,7 @@ fn supports_native_opaque_pointer_results() -> () {
     for value in program.native_types {
         if value.key == "native:bytes.Buffer" {
             found.set(true)
-        } else {}
+        }
     }
     testing::assert(found.get())
 }
@@ -682,7 +682,7 @@ fn registers_referenced_native_globals() -> () {
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message);
         return
-    } else {};
+    }
     let program = testing::expect_some(result.program, "bytecode program is missing");
     let manifest = testing::expect_ok(native_manifest(program), "native manifest failed");
     testing::assert_eq(manifest.globals.len(), 2);
@@ -693,7 +693,7 @@ fn registers_referenced_native_globals() -> () {
             unexpected_eof.set(true)
         } else if value.import_path == "os" && value.name == "Stderr" {
             stderr.set(true)
-        } else {}
+        }
     }
     testing::assert(unexpected_eof.get());
     testing::assert(stderr.get())

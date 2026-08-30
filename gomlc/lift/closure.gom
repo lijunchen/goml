@@ -43,7 +43,7 @@ fn invalid_expr(state: State, ty: mono::Type, message: string) -> LowerExpr {
     match state.error.get() {
         Some(_) => (),
         None => state.error.set(Option::Some(message)),
-    };
+    }
     LowerExpr::Prim { value: mono::Primitive::Unit, ty }
 }
 
@@ -240,7 +240,7 @@ fn initial_used_types(value: mono::File) -> collections::HashSet[string] {
                 }
             },
             None => (),
-        };
+        }
         collect_used_block(result, function.body)
     }
     result
@@ -250,7 +250,7 @@ fn primary_name(value: string) -> string {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return value.byte_slice(0, index)
-        } else {}
+        }
     }
     value
 }
@@ -265,16 +265,16 @@ fn sanitize_name(value: string) -> Option[string] {
         if ascii::is_alphanumeric(byte) {
             if pending_separator && wrote {
                 builder.write_char('_')
-            } else {};
+            }
             if !wrote && byte >= b'0' && byte <= b'9' {
                 builder.write_char('_')
-            } else {};
+            }
             builder.write_string(value.byte_slice(index, index + 1));
             pending_separator = false;
             wrote = true;
         } else if wrote {
             pending_separator = true;
-        } else {}
+        }
     }
     if wrote {
         Option::Some(builder.finish())
@@ -293,7 +293,7 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
         };
         if state.used_types.insert(candidate) {
             return candidate
-        } else {}
+        }
     }
 }
 
@@ -307,7 +307,7 @@ fn trailing_number(value: string) -> Option[isize] {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return Option::None
-        } else {}
+        }
     }
     if value.byte_len() == 0 {
         Option::None
@@ -366,7 +366,7 @@ fn observe_name(maximum: Ref[isize], name: string) -> () {
     match trailing_number(name) {
         Some(value) => if value > maximum.get() {
             maximum.set(value)
-        } else {},
+        },
         None => (),
     }
 }
@@ -762,7 +762,7 @@ fn capture_exists(values: Vec[Capture], name: string) -> bool {
     for value in values {
         if value.name == name {
             return true
-        } else {}
+        }
     }
     false
 }

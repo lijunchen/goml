@@ -109,10 +109,10 @@ fn integer_magnitude(value: constant::BigInt) -> u64 {
     let mut result = 0.to_u64();
     if !value.magnitude.limbs.is_empty() {
         result = value.magnitude.limbs[0].to_u64();
-    } else {};
+    }
     if value.magnitude.limbs.len() > 1 {
         result = result | (value.magnitude.limbs[1].to_u64() << 32);
-    } else {};
+    }
     if value.sign < 0 {
         0.to_u64() - result
     } else {
@@ -123,21 +123,21 @@ fn integer_magnitude(value: constant::BigInt) -> u64 {
 fn natural_uint64(value: constant::Natural) -> Result[u64, string] {
     if value.limbs.len() > 2 {
         return Result::Err("floating-point significand exceeds 64 bits")
-    } else {};
+    }
     let mut result = 0.to_u64();
     if !value.limbs.is_empty() {
         result = value.limbs[0].to_u64();
-    } else {};
+    }
     if value.limbs.len() > 1 {
         result = result | (value.limbs[1].to_u64() << 32);
-    } else {};
+    }
     Result::Ok(result)
 }
 
 fn rounded_float_bits(value: constant::BigRat, width: isize) -> Result[u64, string] {
     if value.numerator.sign == 0 {
         return Result::Ok(0.to_u64())
-    } else {};
+    }
     let fraction_bits = if width == 32 {
         23
     } else {
@@ -268,7 +268,7 @@ pub fn constant_value(
                 go_types::BasicKind::Complex128
             },
         )
-    } else {};
+    }
     match constant {
         constant::ConstValue::Bool(value) => Result::Ok(Value::Local(LocalValue::Bool(value))),
         constant::ConstValue::String(value) => Result::Ok(
@@ -321,7 +321,7 @@ pub fn zero_value(world: go_types::World, type_id: go_types::TypeId) -> Result[V
         go_types::TypeKind::Array { length, element } => {
             if length < 0.to_i64() || length > 9223372036854775807.to_i64() {
                 return Result::Err("array length is outside the host integer range")
-            } else {};
+            }
             let elements: Vec[Value] = Vec::with_capacity(length.to_isize());
             for _ in 0..length.to_isize() {
                 elements.push(zero_value(world, element)?)
@@ -507,7 +507,7 @@ fn integer_binary(
         bytecode::BinaryOp::Divide | bytecode::BinaryOp::Remainder => {
             if right_bits == 0.to_u64() {
                 return Result::Err("integer divide by zero")
-            } else {};
+            }
             let bits = if signed {
                 let left = signed_integer(left_bits, width);
                 let right = signed_integer(right_bits, right_width);
@@ -792,7 +792,7 @@ fn bytes_compare(left: bytes::Bytes, right: bytes::Bytes) -> isize {
             return -1
         } else if left.get(index) > right.get(index) {
             return 1
-        } else {}
+        }
     }
     if left.len() < right.len() {
         -1
@@ -951,7 +951,7 @@ pub fn convert_value(
                     value: Option::None,
                 },
             )
-        } else {};
+        }
         return match value {
             Value::Interface { static_type: _, dynamic_type, value } => Result::Ok(
                 Value::Interface { static_type: target, dynamic_type, value },
@@ -964,7 +964,7 @@ pub fn convert_value(
                 },
             ),
         }
-    } else {};
+    }
     match go_types::type_data(world, go_types::underlying(world, target)) {
         go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction: _, element: _ } } => return match value {
             Value::Local(LocalValue::Channel(id)) => Result::Ok(
@@ -976,7 +976,7 @@ pub fn convert_value(
             _ => Result::Err("value cannot be converted to channel"),
         },
         _ => {},
-    };
+    }
     let kind = basic_kind(world, target).ok_or("target type is not a supported basic type")?;
     match integer_layout(kind) {
         Some((width, signed)) => match value {

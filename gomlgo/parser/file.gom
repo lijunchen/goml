@@ -18,7 +18,7 @@ fn parse_import_spec(parser: Parser) -> ast::Node {
         name = Option::Some(parse_ident(parser));
     } else if at(parser, token::Kind::Period) {
         name = Option::Some(ident_node(advance(parser)));
-    } else {};
+    }
     let path = if at(parser, token::Kind::String) {
         basic_lit_node(advance(parser))
     } else {
@@ -35,8 +35,8 @@ fn parse_import_spec(parser: Parser) -> ast::Node {
                     parser,
                     Vec::from_array([token::Kind::Semicolon, token::Kind::Rparen, token::Kind::Eof]),
                 )
-            } else {}
-        };
+            }
+        }
         bad_expr(start, start)
     };
     let start = match name {
@@ -81,7 +81,7 @@ fn parse_value_spec(parser: Parser, declaration_kind: token::Kind) -> ast::Node 
             current(parser).start,
             "expected type, found '" + token::name(current(parser).kind) + "'",
         )
-    } else {};
+    }
     let effective_type = if missing_type {
         Option::Some(bad_expr(current(parser).start, current(parser).start))
     } else {
@@ -171,13 +171,13 @@ fn parse_general_declaration(parser: Parser) -> ast::Node {
             } else {
                 specs.push(parse_spec(parser, keyword.kind));
                 consume_semicolon(parser)
-            };
+            }
             let _ = ensure_progress(parser, before, "declaration group");
         }
         right = expect(parser, token::Kind::Rparen).start;
     } else {
         specs.push(parse_spec(parser, keyword.kind))
-    };
+    }
     let end = if right >= 0 {
         right + 1
     } else if !specs.is_empty() {
@@ -222,9 +222,9 @@ fn parse_function_declaration(parser: Parser) -> ast::Node {
         if let Some(type_parameters) = ast::get_node(function_type, "type_params") {
             if !ast::get_nodes(type_parameters, "list").is_empty() {
                 report(parser, type_parameters.span.start, "method must have no type parameters")
-            } else {}
-        } else {}
-    } else {};
+            }
+        }
+    }
     let body = if at(parser, token::Kind::Lbrace) {
         Option::Some(
             if parser.skip_function_bodies {
@@ -308,18 +308,18 @@ fn parse_file_node(parser: Parser) -> ast::Node {
                         "imports must appear before other declarations",
                     );
                     late_import_reported = true;
-                } else {}
+                }
             } else {
                 non_import_seen = true;
                 late_import_reported = false;
-            };
+            }
             declarations.push(parse_declaration(parser));
             consume_semicolon(parser)
         } else if at(parser, token::Kind::Semicolon) {
             let semicolon = advance(parser);
             if !semicolon.synthetic {
                 report(parser, semicolon.start, "expected declaration")
-            } else {}
+            }
         } else {
             let start = current(parser).start;
             let stray_rbrace = at(parser, token::Kind::Rbrace);
@@ -358,7 +358,7 @@ fn parse_file_node(parser: Parser) -> ast::Node {
                 },
             );
             declarations.push(bad_decl(start, current(parser).start));
-        };
+        }
         let _ = ensure_progress(parser, before, "source file");
     }
     let end = if declarations.is_empty() {
@@ -440,7 +440,7 @@ pub fn parse_expr_bytes(source: bytes::Bytes) -> ParseResult {
     let _ = eat(parser, token::Kind::Semicolon);
     if !eof(parser) {
         report(parser, current(parser).start, "expected end of expression")
-    } else {};
+    }
     result(parser, Option::Some(root))
 }
 

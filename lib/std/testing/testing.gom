@@ -34,7 +34,7 @@ pub fn assert_eq[T: PartialEq + Debug](actual: T, expected: T) -> () {
 pub fn assert_ne[T: PartialEq + Debug](actual: T, expected: T) -> () {
     if PartialEq::eq(actual, expected) {
         fail("assertion failed: values are equal\nvalue: " + Debug::debug(actual))
-    } else {}
+    }
 }
 
 pub fn assert_some[T](value: Option[T]) -> () {

@@ -376,11 +376,11 @@ fn empty_slots[T](count: isize) -> Vec[Option[T]] {
 fn prepared_slots[T](slots: Vec[Option[T]], count: isize) -> Vec[Option[T]] {
     if slots.len() == count {
         return slots
-    } else {};
+    }
     slots.clear();
     if slots.capacity() < count {
         slots.reserve(count)
-    } else {};
+    }
     for _ in 0..count {
         slots.push(Option::None)
     }
@@ -390,11 +390,11 @@ fn prepared_slots[T](slots: Vec[Option[T]], count: isize) -> Vec[Option[T]] {
 fn prepared_place_roots(slots: Vec[isize], count: isize) -> Vec[isize] {
     if slots.len() == count {
         return slots
-    } else {};
+    }
     slots.clear();
     if slots.capacity() < count {
         slots.reserve(count)
-    } else {};
+    }
     for _ in 0..count {
         slots.push(-1)
     }
@@ -425,7 +425,7 @@ fn take_frame_slots(
             slots.locals.clear();
             if slots.locals.capacity() < local_count {
                 slots.locals.reserve(local_count)
-            } else {};
+            }
             slots.block_arguments.clear();
             slots.owned_cells.clear();
             slots.deferred.clear();
@@ -464,7 +464,7 @@ fn prepared_scalar_slots(slots: Vec[u64], count: isize) -> Vec[u64] {
         slots.clear();
         if slots.capacity() < count {
             slots.reserve(count)
-        } else {};
+        }
         for _ in 0..count {
             slots.push(0.to_u64())
         }
@@ -472,7 +472,7 @@ fn prepared_scalar_slots(slots: Vec[u64], count: isize) -> Vec[u64] {
         for index in 0..count {
             slots[index] = 0.to_u64();
         }
-    };
+    }
     slots
 }
 
@@ -513,7 +513,7 @@ fn release_owned_cells(memory: Memory, cells: Vec[CellId]) -> () {
 fn release_frame_slots(state: VmState, frame: Frame) -> () {
     if frame.frame_cell_checkpoint >= 0 {
         release_frame_cells(state.memory, frame.frame_cell_checkpoint)
-    } else {};
+    }
     release_owned_cells(state.memory, frame.owned_cells);
     reset_slots(frame.registers);
     reset_slots(frame.places);
@@ -660,7 +660,7 @@ fn sequential_bool_slice_local(
 ) -> bool {
     if local.value < 0 || local.value >= function.locals.len() || !function_has_back_edge(function) {
         return false
-    } else {};
+    }
     match go_types::type_data(
         world,
         go_types::underlying(world, function.locals[local.value].type_id),
@@ -764,7 +764,7 @@ fn sequential_super_operation(
 ) -> SequentialOperation {
     if index + 3 >= block.instructions.len() {
         return sequential_fallback()
-    } else {};
+    }
     let (left_place, left_local) = match block.instructions[index].kind {
         bytecode::InstructionKind::LocalPlace { target, local } => (target, local),
         _ => return sequential_fallback(),
@@ -778,12 +778,12 @@ fn sequential_super_operation(
     if !sequential_integer_local(world, function, left_local)
         || !sequential_integer_register(world, function, left) {
         return sequential_fallback()
-    } else {};
+    }
     match block.instructions[index + 2].kind {
         bytecode::InstructionKind::Constant { target: right, constant_kind, exact, .. } => {
             if !sequential_integer_register(world, function, right) {
                 return sequential_fallback()
-            } else {};
+            }
             let (target, op, binary_left, binary_right) = match block.instructions[index + 3].kind {
                 bytecode::InstructionKind::Binary { target, op, left, right } => {
                     (target, op, left, right)
@@ -794,7 +794,7 @@ fn sequential_super_operation(
                 || binary_left.value != left.value
                 || binary_right.value != right.value {
                 return sequential_fallback()
-            } else {};
+            }
             if index + 4 < block.instructions.len() && constant_kind == "Int" && exact == "1"
                 && sequential_integer_register(world, function, target)
                 && (op == bytecode::BinaryOp::Add || op == bytecode::BinaryOp::Subtract) {
@@ -864,7 +864,7 @@ fn sequential_super_operation(
                     },
                     _ => {},
                 }
-            } else {};
+            }
             let fast = sequential_register_unused_outside(
                 function,
                 block,
@@ -905,7 +905,7 @@ fn sequential_super_operation(
                     },
                     None => {},
                 }
-            } else {};
+            }
             SequentialOperation {
                 kind: if fast {
                     44
@@ -921,7 +921,7 @@ fn sequential_super_operation(
             if index + 4 >= block.instructions.len()
                 || !sequential_integer_local(world, function, right_local) {
                 return sequential_fallback()
-            } else {};
+            }
             let right = match block.instructions[index + 3].kind {
                 bytecode::InstructionKind::Load { target, source } if source.value
                     == right_place.value => target,
@@ -929,7 +929,7 @@ fn sequential_super_operation(
             };
             if !sequential_integer_register(world, function, right) {
                 return sequential_fallback()
-            } else {};
+            }
             let (target, op, binary_left, binary_right) = match block.instructions[index + 4].kind {
                 bytecode::InstructionKind::Binary { target, op, left, right } => {
                     (target, op, left, right)
@@ -940,7 +940,7 @@ fn sequential_super_operation(
                 || binary_left.value != left.value
                 || binary_right.value != right.value {
                 return sequential_fallback()
-            } else {};
+            }
             if index + 5 < block.instructions.len()
                 && sequential_integer_register(world, function, target) {
                 match block.instructions[index + 5].kind {
@@ -1008,7 +1008,7 @@ fn sequential_super_operation(
                     },
                     _ => {},
                 }
-            } else {};
+            }
             let fast = sequential_register_unused_outside(
                 function,
                 block,
@@ -1056,7 +1056,7 @@ fn sequential_register_vector_contains(values: Vec[bytecode::RegisterId], regist
     for value in values {
         if value.value == register {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1083,7 +1083,7 @@ fn sequential_aggregate_uses_register(elements: Vec[bytecode::AggregateElement],
     for element in elements {
         if element.value.value == register {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1099,7 +1099,7 @@ fn sequential_select_uses_register(cases: Vec[bytecode::SelectCase], register: i
         };
         if used || sequential_register_vector_contains(selected.arguments, register) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1253,12 +1253,12 @@ fn sequential_terminator_uses_register(terminator: bytecode::Terminator, registe
             if value.value == register
                 || sequential_register_vector_contains(default_arguments, register) {
                 return true
-            } else {};
+            }
             for arm in arms {
                 if sequential_register_vector_contains(arm.comparisons, register)
                     || sequential_register_vector_contains(arm.arguments, register) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -1300,12 +1300,12 @@ fn sequential_register_unused_outside_with_terminator(
             if !inside
                 && sequential_instruction_uses_register(candidate.instructions[offset], register) {
                 return false
-            } else {}
+            }
         }
         if !(skip_current_terminator && candidate.id.value == block.id.value)
             && sequential_terminator_uses_register(candidate.terminator, register) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -1347,7 +1347,7 @@ fn sequential_place_unused_outside(
             let inside = candidate.id.value == block.id.value && offset >= start && offset < end;
             if !inside && sequential_instruction_uses_place(candidate.instructions[offset], place) {
                 return false
-            } else {}
+            }
         }
     }
     true
@@ -1361,7 +1361,7 @@ fn sequential_bool_slice_super_operation(
 ) -> SequentialOperation {
     if index + 4 >= block.instructions.len() {
         return sequential_fallback()
-    } else {};
+    }
     let (slice_place, slice_local) = match block.instructions[index].kind {
         bytecode::InstructionKind::LocalPlace { target, local } if sequential_bool_slice_local(
             world,
@@ -1408,7 +1408,7 @@ fn sequential_bool_slice_super_operation(
                             },
                             _ => {},
                         }
-                    } else {};
+                    }
                     if end == block.instructions.len()
                         && sequential_register_unused_outside(
                             function,
@@ -1480,7 +1480,7 @@ fn sequential_bool_slice_super_operation(
                             },
                             None => {},
                         }
-                    } else {};
+                    }
                     let fast = sequential_register_unused_outside(
                         function,
                         block,
@@ -1632,11 +1632,11 @@ fn sequential_operation(
     let bool_slice_operation = sequential_bool_slice_super_operation(world, function, block, index);
     if bool_slice_operation.kind != 0 {
         return bool_slice_operation
-    } else {};
+    }
     let super_operation = sequential_super_operation(world, function, block, index, constant_index);
     if super_operation.kind != 0 {
         return super_operation
-    } else {};
+    }
     match current.kind {
         bytecode::InstructionKind::Binary { target, op, left, right } if target.value >= 0
             && target.value < function.register_types.len()
@@ -1661,10 +1661,10 @@ fn sequential_operation(
             target: function.locals[local.value].type_id.value,
         },
         _ => {},
-    };
+    }
     if index + 1 >= block.instructions.len() {
         return sequential_single_operation(world, function, current)
-    } else {};
+    }
     let next = block.instructions[index + 1];
     let paired = match (current.kind, next.kind) {
         (
@@ -1723,7 +1723,7 @@ fn sequential_operation(
     };
     if paired.kind != 0 {
         return paired
-    } else {};
+    }
     sequential_single_operation(world, function, current)
 }
 
@@ -1746,27 +1746,27 @@ fn sequential_loop_candidate(
 ) -> Option[SequentialLoopOperation] {
     if body_block < 0 || body_block >= blocks.len() || exit_block < 0 || exit_block >= blocks.len() {
         return Option::None
-    } else {};
+    }
     let body_index = sequential_prefix_operation_index(blocks[body_block]);
     if body_index >= blocks[body_block].len() {
         return Option::None
-    } else {};
+    }
     let body = blocks[body_block][body_index];
     if body.kind != 51 {
         return Option::None
-    } else {};
+    }
     let update_block = body.target / 2;
     if update_block < 0 || update_block >= blocks.len() {
         return Option::None
-    } else {};
+    }
     let update_index = sequential_prefix_operation_index(blocks[update_block]);
     if update_index >= blocks[update_block].len() {
         return Option::None
-    } else {};
+    }
     let update = blocks[update_block][update_index];
     if update.kind != 50 {
         return Option::None
-    } else {};
+    }
     let value = body.target % 2 != 0;
     let left_local = update.place;
     let right_local = update.source;
@@ -1774,7 +1774,7 @@ fn sequential_loop_candidate(
     let jump_target = update.target / 18;
     if jump_target != header_block || (binary_kind != 1 && binary_kind != 2) {
         return Option::None
-    } else {};
+    }
     let header = blocks[header_block][header_index];
     Option::Some(
         SequentialLoopOperation {
@@ -1832,7 +1832,7 @@ fn sequential_program(program: bytecode::BytecodeProgram) -> SequentialProgram {
             if header_index >= blocks[header_block].len()
                 || blocks[header_block][header_index].kind != 45 {
                 continue
-            } else {};
+            }
             let header = blocks[header_block][header_index];
             let targets = header.target / 18;
             let then_target = targets % function.blocks.len();
@@ -2006,11 +2006,11 @@ fn fast_operand_type(world: go_types::World, type_id: go_types::TypeId) -> bool 
 fn fast_constant_function(world: go_types::World, function: bytecode::BytecodeFunction) -> FastFunction {
     if !function.captures.is_empty() || function.blocks.len() != 1 || function.results.len() != 1 {
         return FastFunction::Unavailable
-    } else {};
+    }
     let block = function.blocks[0];
     if block.instructions.len() != 1 {
         return FastFunction::Unavailable
-    } else {};
+    }
     let (target, value) = match block.instructions[0].kind {
         bytecode::InstructionKind::Constant { target, type_id, constant_kind, exact } => match constant_value(
             world,
@@ -2035,13 +2035,13 @@ fn fast_constant_function(world: go_types::World, function: bytecode::BytecodeFu
 fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunction) -> FastFunction {
     if !function.captures.is_empty() || function.blocks.len() != 1 || function.results.len() != 1 {
         return FastFunction::Unavailable
-    } else {};
+    }
     let locals = empty_fast_expressions(function.locals.len());
     for index in 0..function.parameters.len() {
         let local = function.parameters[index].value;
         if local < 0 || local >= locals.len() {
             return FastFunction::Unavailable
-        } else {};
+        }
         locals[local] = FastExpression::Operand(
             FastOperand {
                 argument: index,
@@ -2058,14 +2058,14 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
             bytecode::InstructionKind::RenewLocal { local } => {
                 if local.value < 0 || local.value >= locals.len() {
                     return FastFunction::Unavailable
-                } else {};
+                }
                 locals[local.value] = FastExpression::Unknown;
             },
             bytecode::InstructionKind::LocalPlace { target, local } => {
                 if target.value < 0 || target.value >= places.len() || local.value < 0
                     || local.value >= locals.len() {
                     return FastFunction::Unavailable
-                } else {};
+                }
                 places[target.value] = local.value;
             },
             bytecode::InstructionKind::Load { target, source } => {
@@ -2073,7 +2073,7 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
                     || source.value >= places.len()
                     || places[source.value] < 0 {
                     return FastFunction::Unavailable
-                } else {};
+                }
                 registers[target.value] = locals[places[source.value]];
             },
             bytecode::InstructionKind::Store { target, value } => {
@@ -2081,14 +2081,14 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
                     || value.value < 0
                     || value.value >= registers.len() {
                     return FastFunction::Unavailable
-                } else {};
+                }
                 locals[places[target.value]] = registers[value.value];
             },
             bytecode::InstructionKind::FieldValue { target, base, index } => {
                 if target.value < 0 || target.value >= registers.len() || base.value < 0
                     || base.value >= registers.len() {
                     return FastFunction::Unavailable
-                } else {};
+                }
                 let operand = match fast_operand(registers[base.value]) {
                     Some(value) => value,
                     None => return FastFunction::Unavailable,
@@ -2104,7 +2104,7 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
                     || right.value >= registers.len()
                     || !fast_binary_operation(op) {
                     return FastFunction::Unavailable
-                } else {};
+                }
                 let left = match fast_operand(registers[left.value]) {
                     Some(value) => value,
                     None => return FastFunction::Unavailable,
@@ -2116,7 +2116,7 @@ fn fast_binary_function(world: go_types::World, function: bytecode::BytecodeFunc
                 if !fast_operand_type(world, left.type_id)
                     || !fast_operand_type(world, right.type_id) {
                     return FastFunction::Unavailable
-                } else {};
+                }
                 registers[target.value] = FastExpression::Binary {
                     operation: op,
                     left,
@@ -2195,7 +2195,7 @@ fn place_local_roots(function: bytecode::BytecodeFunction) -> Vec[isize] {
         let base = bases[index];
         if roots[index] < 0 && base >= 0 && base < index {
             roots[index] = roots[base];
-        } else {}
+        }
     }
     roots
 }
@@ -2208,7 +2208,7 @@ fn recyclable_function_locals(function: bytecode::BytecodeFunction) -> Vec[bool]
     for capture in function.captures {
         if capture.value >= 0 && capture.value < result.len() {
             result[capture.value] = false;
-        } else {}
+        }
     }
     let roots = place_local_roots(function);
     for block in function.blocks {
@@ -2218,17 +2218,17 @@ fn recyclable_function_locals(function: bytecode::BytecodeFunction) -> Vec[bool]
                     && source.value < roots.len()
                     && roots[source.value] >= 0 {
                     result[roots[source.value]] = false;
-                } else {},
+                },
                 bytecode::InstructionKind::SlicePlace { base, .. } => if base.value >= 0
                     && base.value < roots.len()
                     && roots[base.value] >= 0 {
                     result[roots[base.value]] = false;
-                } else {},
+                },
                 bytecode::InstructionKind::MakeClosure { target: _, function: _, captures } => {
                     for capture in captures {
                         if capture.value >= 0 && capture.value < result.len() {
                             result[capture.value] = false;
-                        } else {}
+                        }
                     }
                 },
                 _ => {},
@@ -2263,11 +2263,11 @@ fn block_has_back_edge(block: bytecode::BasicBlock) -> bool {
         bytecode::TerminatorKind::Switch { value: _, arms, default_target, default_arguments: _ } => {
             if backward_target(block, default_target) {
                 return true
-            } else {};
+            }
             for arm in arms {
                 if backward_target(block, arm.target) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -2279,7 +2279,7 @@ fn function_has_back_edge(function: bytecode::BytecodeFunction) -> bool {
     for block in function.blocks {
         if block_has_back_edge(block) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -2287,7 +2287,7 @@ fn function_has_back_edge(function: bytecode::BytecodeFunction) -> bool {
 fn scalar_local_safe(function: bytecode::BytecodeFunction, local: isize) -> bool {
     if local < 0 || local >= function.locals.len() || local < function.captures.len() {
         return false
-    } else {};
+    }
     for block in function.blocks {
         for index in 0..block.instructions.len() {
             let instruction = block.instructions[index];
@@ -2297,7 +2297,7 @@ fn scalar_local_safe(function: bytecode::BytecodeFunction, local: isize) -> bool
                     for capture in captures {
                         if capture.value == local {
                             return false
-                        } else {}
+                        }
                     }
                 },
                 bytecode::InstructionKind::LocalPlace { target, local: source } if source.value
@@ -2322,14 +2322,14 @@ fn scalar_local_safe(function: bytecode::BytecodeFunction, local: isize) -> bool
                             bytecode::InstructionKind::SlicePlace { target: _, base, .. } if base.value
                                 == target.value => return false,
                             _ => {},
-                        };
+                        }
                         if found {
                             break
-                        } else {}
+                        }
                     }
                     if !found {
                         return false
-                    } else {}
+                    }
                 },
                 _ => {},
             }
@@ -2344,7 +2344,7 @@ fn scalar_register_layouts(program: bytecode::BytecodeProgram) -> Vec[Vec[Scalar
         if !function_has_back_edge(function) {
             result.push(Vec::new());
             continue
-        } else {};
+        }
         let layouts: Vec[ScalarLayout] = Vec::with_capacity(function.register_types.len());
         for type_id in function.register_types {
             layouts.push(scalar_layout(program.world, type_id))
@@ -2360,7 +2360,7 @@ fn scalar_local_layouts(program: bytecode::BytecodeProgram) -> Vec[Vec[ScalarLay
         if !function_has_back_edge(function) {
             result.push(Vec::new());
             continue
-        } else {};
+        }
         let layouts: Vec[ScalarLayout] = Vec::with_capacity(function.locals.len());
         for index in 0..function.locals.len() {
             let layout = scalar_layout(program.world, function.locals[index].type_id);
@@ -2456,7 +2456,7 @@ fn scalar_place_local(frame: Frame, place: bytecode::PlaceId) -> Option[isize] {
     if frame.scalar.is_empty() || place.value < 0 || place.value >= frame.place_roots.len()
         || frame.place_roots[place.value] == -1 {
         return Option::None
-    } else {};
+    }
     let value = frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + place.value];
     if value == 0.to_u64() {
         Option::None
@@ -2473,13 +2473,13 @@ fn replace_scalar_place_local(frame: Frame, place: bytecode::PlaceId, local: isi
         } else {
             (local + 1).to_u64()
         };
-    } else {}
+    }
 }
 
 fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(u64, isize, bool), string] {
     if id.value < 0 || id.value >= frame.registers.len() {
         return Result::Err("invalid register " + id.value.to_string())
-    } else {};
+    }
     if frame.scalar.is_empty() {
         return match frame.registers[id.value] {
             Some(Value::Local(LocalValue::Integer { bits, width, signed })) => {
@@ -2490,14 +2490,14 @@ fn integer_register(frame: Frame, id: bytecode::RegisterId) -> Result[(u64, isiz
                 "register " + id.value.to_string() + " is undefined in " + frame.name,
             ),
         }
-    } else {};
+    }
     if id.value >= 0 && id.value < frame.registers.len() {
         let code = frame.scalar[frame.registers.len() + id.value];
         if code & 256.to_u64() != 0.to_u64() {
             let layout = scalar_code_layout(code).ok_or("invalid scalar register")?;
             return Result::Ok((frame.scalar[id.value], layout.width, layout.signed))
-        } else {}
-    } else {};
+        }
+    }
     match frame.registers[id.value] {
         Some(value) => integer_bits(value),
         None => Result::Err("register " + id.value.to_string() + " is undefined in " + frame.name),
@@ -2523,16 +2523,16 @@ fn integer_register_index(frame: Frame, id: bytecode::RegisterId) -> Result[isiz
 fn boolean_register(frame: Frame, id: bytecode::RegisterId) -> Result[bool, string] {
     if id.value < 0 || id.value >= frame.registers.len() {
         return Result::Err("invalid register " + id.value.to_string())
-    } else {};
+    }
     if !frame.scalar.is_empty() {
         let code = frame.scalar[frame.registers.len() + id.value];
         if code & 256.to_u64() != 0.to_u64() {
             let layout = scalar_code_layout(code).ok_or("invalid scalar register")?;
             if layout.width == 1 {
                 return Result::Ok(frame.scalar[id.value] != 0.to_u64())
-            } else {}
-        } else {}
-    } else {};
+            }
+        }
+    }
     boolean_value(register(frame, id)?)
 }
 
@@ -2548,7 +2548,7 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
                     return Result::Ok(
                         Value::Local(LocalValue::Bool(frame.scalar[id.value] != 0.to_u64())),
                     )
-                } else {};
+                }
                 return Result::Ok(
                     Value::Local(
                         LocalValue::Integer {
@@ -2558,8 +2558,8 @@ fn register(frame: Frame, id: bytecode::RegisterId) -> Result[Value, string] {
                         },
                     ),
                 )
-            } else {}
-        } else {};
+            }
+        }
         match frame.registers[id.value] {
             Some(value) => Result::Ok(value),
             None => Result::Err(
@@ -2609,7 +2609,7 @@ fn set_register(frame: Frame, id: bytecode::RegisterId, value: Value) -> Result[
             None => {
                 frame.registers[id.value] = Option::Some(copy_value(value));
             },
-        };
+        }
         Result::Ok(())
     }
 }
@@ -2628,7 +2628,7 @@ fn set_integer_register(
             target,
             Value::Local(LocalValue::Integer { bits, width, signed }),
         )
-    } else {};
+    }
     match scalar_register_layout(frame, target) {
         Some(layout) => {
             frame.scalar[target.value] = normalize_integer(bits, layout.width);
@@ -2648,7 +2648,7 @@ fn set_integer_register(
 fn set_scalar_integer_register(frame: Frame, target: isize, bits: u64) -> bool {
     if frame.scalar.is_empty() || target < 0 || target >= frame.registers.len() {
         return false
-    } else {};
+    }
     let code_index = frame.registers.len() + target;
     match scalar_code_layout(frame.scalar[code_index]) {
         Some(layout) if layout.width != 1 => {
@@ -2671,7 +2671,7 @@ fn set_scalar_bool_register(
 ) -> bool {
     if target < 0 || target >= frame.registers.len() {
         return false
-    } else {};
+    }
     if !frame.scalar.is_empty() {
         let code_index = frame.registers.len() + target;
         match scalar_code_layout(frame.scalar[code_index]) {
@@ -2687,7 +2687,7 @@ fn set_scalar_bool_register(
             },
             _ => {},
         }
-    } else {};
+    }
     frame.registers[target] = Option::Some(
         if value {
             true_value
@@ -2754,7 +2754,7 @@ fn execute_scalar_integer_binary(
         4 | 5 => {
             if right_bits == 0.to_u64() {
                 return "integer divide by zero"
-            } else {};
+            }
             if signed {
                 let left = signed_integer(left_bits, width);
                 let right = signed_integer(right_bits, right_width);
@@ -2776,7 +2776,7 @@ fn execute_scalar_integer_binary(
         10 | 11 => {
             if right_signed && signed_integer(right_bits, right_width) < 0.to_i64() {
                 return "negative shift count"
-            } else {};
+            }
             if kind == 10 {
                 if right_bits >= 64.to_u64() {
                     0.to_u64()
@@ -2875,7 +2875,7 @@ fn execute_integer_binary(
         bytecode::BinaryOp::Divide | bytecode::BinaryOp::Remainder => {
             if right_bits == 0.to_u64() {
                 return Result::Err("integer divide by zero")
-            } else {};
+            }
             let bits = if signed {
                 let left = signed_integer(left_bits, width);
                 let right = signed_integer(right_bits, right_width);
@@ -2910,7 +2910,7 @@ fn execute_integer_binary(
         bytecode::BinaryOp::ShiftLeft | bytecode::BinaryOp::ShiftRight => {
             if right_signed && signed_integer(right_bits, right_width) < 0.to_i64() {
                 return Result::Err("negative shift count")
-            } else {};
+            }
             let bits = if op == bytecode::BinaryOp::ShiftLeft {
                 if right_bits >= 64.to_u64() {
                     0.to_u64()
@@ -3043,7 +3043,7 @@ fn set_local_root_place(frame: Frame, id: bytecode::PlaceId, value: CellId, loca
     set_root_place(frame, id, value)?;
     if scalar_local_layout(frame, local).is_some() {
         replace_scalar_place_local(frame, id, local)
-    } else {};
+    }
     Result::Ok(())
 }
 
@@ -3132,7 +3132,7 @@ fn fast_call_operand(
 ) -> Result[Value, string] {
     if operand.argument < 0 || operand.argument >= arguments.len() {
         return Result::Err("fast function argument is invalid")
-    } else {};
+    }
     let value = register(frame, arguments[operand.argument])?;
     if operand.fields.is_empty() {
         Result::Ok(copy_value(value))
@@ -3149,7 +3149,7 @@ fn fast_borrow_call_operand(
 ) -> Result[Value, string] {
     if operand.argument < 0 || operand.argument >= arguments.len() {
         return Result::Err("fast function argument is invalid")
-    } else {};
+    }
     let value = register(frame, arguments[operand.argument])?;
     if operand.fields.is_empty() {
         Result::Ok(value)
@@ -3169,25 +3169,25 @@ fn execute_fast_static_call(
         || function_id.value >= state.program.functions.len()
         || results.len() != 1 {
         return Option::None
-    } else {};
+    }
     let function = state.program.functions[function_id.value];
     if arguments.len() != function.parameters.len()
         || state.depth.get() >= state.config.max_call_depth {
         return Option::None
-    } else {};
+    }
     match state.fast_functions[function_id.value] {
         FastFunction::Unavailable => Option::None,
         FastFunction::Constant { value, steps } => {
             if !fast_steps_available(state, steps) {
                 return Option::None
-            } else {};
+            }
             consume_fast_steps(state, steps);
             Option::Some(set_register(frame, results[0], value))
         },
         FastFunction::Projection { operand, steps } => {
             if !fast_steps_available(state, steps) {
                 return Option::None
-            } else {};
+            }
             let value = match fast_call_operand(state, frame, arguments, operand) {
                 Ok(value) => value,
                 Err(_) => return Option::None,
@@ -3198,7 +3198,7 @@ fn execute_fast_static_call(
         FastFunction::Binary { operation, left, right, result_type, steps } => {
             if !fast_steps_available(state, steps) {
                 return Option::None
-            } else {};
+            }
             let left = match fast_borrow_call_operand(state, frame, arguments, left) {
                 Ok(value) => value,
                 Err(_) => return Option::None,
@@ -3244,12 +3244,12 @@ fn append_output(state: VmState, values: Vec[Value], newline: bool) -> Result[()
     for index in 0..values.len() {
         if newline && index > 0 {
             state.stderr.push(b' ')
-        } else {};
+        }
         append_bytes(state.stderr, output_bytes(values[index])?)
     }
     if newline {
         state.stderr.push(b'\n')
-    } else {};
+    }
     Result::Ok(())
 }
 
@@ -3259,7 +3259,7 @@ fn result_type(state: VmState, frame: Frame, registers: Vec[bytecode::RegisterId
 ] {
     if index < 0 || index >= registers.len() {
         return Result::Err("builtin result index is invalid")
-    } else {};
+    }
     let register = registers[index];
     let function = state.program.functions[frame.function.value];
     if register.value < 0 || register.value >= function.register_types.len() {
@@ -3285,7 +3285,7 @@ fn value_length(state: VmState, value: Value) -> Result[isize, string] {
             for entry in state.maps[id].entries {
                 if entry.active.get() {
                     count = count + 1;
-                } else {};
+                }
             }
             Result::Ok(count)
         },
@@ -3333,7 +3333,7 @@ fn integer_for_type(state: VmState, type_id: go_types::TypeId, value: isize) -> 
 fn size_value(state: VmState, type_id: go_types::TypeId, value: isize) -> Result[Value, string] {
     if value < 0 || value >= state.size_values.len() {
         return integer_for_type(state, type_id, value)
-    } else {};
+    }
     match state.size_values[value] {
         Some(cached) if cached.type_id.value == type_id.value => Result::Ok(cached.value),
         _ => {
@@ -3348,7 +3348,7 @@ fn loaded_slice_values(state: VmState, value: SliceValue) -> Result[Vec[Value], 
     let result: Vec[Value] = Vec::with_capacity(value.length);
     if value.length == 0 {
         return Result::Ok(result)
-    } else {};
+    }
     let backing = value.backing.ok_or("slice backing is missing")?;
     for index in 0..value.length {
         result.push(load_place(state.memory, index_place(backing, value.offset + index))?)
@@ -3382,7 +3382,7 @@ fn string_to_slice(state: VmState, value: bytes::Bytes, type_id: go_types::TypeI
         }
     } else {
         return Result::Err("string conversion target is not a byte or rune slice")
-    };
+    }
     let result = make_slice(state, type_id, elements.len(), elements.len())?;
     let Value::Local(LocalValue::Slice(slice)) = result else {
         return Result::Err("string conversion result is not a slice")
@@ -3392,7 +3392,7 @@ fn string_to_slice(state: VmState, value: bytes::Bytes, type_id: go_types::TypeI
         for index in 0..elements.len() {
             store_place(state.memory, index_place(backing, index), elements[index])?
         }
-    } else {};
+    }
     Result::Ok(Value::Local(LocalValue::Slice(slice)))
 }
 
@@ -3422,7 +3422,7 @@ fn slice_to_string(state: VmState, value: SliceValue) -> Result[Value, string] {
     if element_kind != Option::Some(go_types::BasicKind::Uint8)
         && element_kind != Option::Some(go_types::BasicKind::Int32) {
         return Result::Err("string conversion source is not a byte or rune slice")
-    } else {};
+    }
     let result = bytes::Bytes::with_capacity(value.length);
     for element in loaded_slice_values(state, value)? {
         match element {
@@ -3490,7 +3490,7 @@ fn append_elements(state: VmState, slice: SliceValue, arguments: Vec[Value], var
         return Result::Ok(result)
     } else if arguments.len() != 2 {
         return Result::Err("variadic append has an invalid call shape")
-    } else {};
+    }
     match arguments[1] {
         Value::Local(LocalValue::Slice(value)) => loaded_slice_values(state, value),
         Value::Local(LocalValue::String(value)) => {
@@ -3519,7 +3519,7 @@ fn appended_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue,
                     values[index],
                 )?
             }
-        } else {};
+        }
         return Result::Ok(
             Value::Local(
                 LocalValue::Slice(
@@ -3533,7 +3533,7 @@ fn appended_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue,
                 ),
             ),
         )
-    } else {};
+    }
     let mut capacity = if source.capacity == 0 {
         1
     } else {
@@ -3565,11 +3565,11 @@ fn grown_slice(state: VmState, type_id: go_types::TypeId, source: SliceValue, am
         return Result::Err("cannot be negative")
     } else if amount <= source.capacity - source.length {
         return Result::Ok(Value::Local(LocalValue::Slice(source)))
-    } else {};
+    }
     let capacity = source.length + amount;
     if capacity < source.length {
         return Result::Err("len out of range")
-    } else {};
+    }
     let existing = loaded_slice_values(state, source)?;
     let result = make_slice(state, type_id, source.length, capacity)?;
     let Value::Local(LocalValue::Slice(slice)) = result else {
@@ -3608,7 +3608,7 @@ fn copy_builtin(state: VmState, destination: SliceValue, source: Value) -> Resul
     };
     if count == 0 {
         return Result::Ok(0)
-    } else {};
+    }
     let backing = destination.backing.ok_or("copy destination backing is missing")?;
     for index in 0..count {
         store_place(state.memory, index_place(backing, destination.offset + index), values[index])?
@@ -3631,7 +3631,7 @@ fn map_types(world: go_types::World, type_id: go_types::TypeId) -> Result[
 fn new_map(state: VmState, type_id: go_types::TypeId, capacity: isize) -> Result[Value, string] {
     if capacity < 0 {
         return Result::Err("makemap: size out of range")
-    } else {};
+    }
     let types = map_types(state.program.world, type_id)?;
     let id = state.maps.len();
     state.maps.push(
@@ -3757,12 +3757,12 @@ fn map_entry_index(state: VmState, value: MapValue, key: Value, hash: u64) -> Re
     while index >= 0 {
         if index >= value.entries.len() || visited > value.entries.len() {
             return Result::Err("invalid map bucket chain")
-        } else {};
+        }
         let entry = value.entries[index];
         if entry.hash == hash && entry.active.get()
             && values_equal(state.program.world, entry.key, key)? {
             return Result::Ok(index)
-        } else {};
+        }
         index = entry.next;
         visited = visited + 1;
     }
@@ -3781,7 +3781,7 @@ fn map_lookup(state: VmState, id: isize, key: Value, value_type: go_types::TypeI
     let hash = hash_value(state, key)?;
     if id < 0 {
         return Result::Ok((runtime_zero_value(state, value_type)?, false))
-    } else {};
+    }
     let value = checked_map(state, id)?;
     let index = map_entry_index(state, value, key, hash)?;
     if index < 0 {
@@ -3794,7 +3794,7 @@ fn map_lookup(state: VmState, id: isize, key: Value, value_type: go_types::TypeI
 fn map_set(state: VmState, id: isize, key: Value, value: Value) -> Result[(), string] {
     if id < 0 {
         return Result::Err("assignment to entry in nil map")
-    } else {};
+    }
     let hash = hash_value(state, key)?;
     let map = checked_map(state, id)?;
     let index = map_entry_index(state, map, key, hash)?;
@@ -3814,7 +3814,7 @@ fn map_set(state: VmState, id: isize, key: Value, value: Value) -> Result[(), st
     } else {
         map.entries[index].value.set(copy_value(value));
         map.entries[index].active.set(true);
-    };
+    }
     Result::Ok(())
 }
 
@@ -3822,19 +3822,19 @@ fn map_delete(state: VmState, id: isize, key: Value) -> Result[(), string] {
     let hash = hash_value(state, key)?;
     if id < 0 {
         return Result::Ok(())
-    } else {};
+    }
     let map = checked_map(state, id)?;
     let index = map_entry_index(state, map, key, hash)?;
     if index >= 0 {
         map.entries[index].active.set(false)
-    } else {};
+    }
     Result::Ok(())
 }
 
 fn clear_map(state: VmState, id: isize) -> Result[(), string] {
     if id < 0 {
         return Result::Ok(())
-    } else {};
+    }
     let map = checked_map(state, id)?;
     for entry in map.entries {
         entry.active.set(false)
@@ -3845,7 +3845,7 @@ fn clear_map(state: VmState, id: isize) -> Result[(), string] {
 fn clear_slice(state: VmState, value: SliceValue) -> Result[(), string] {
     if value.length == 0 {
         return Result::Ok(())
-    } else {};
+    }
     let backing = value.backing.ok_or("slice backing is missing")?;
     let zero = runtime_zero_value(state, value.element_type)?;
     for index in 0..value.length {
@@ -3866,9 +3866,9 @@ fn new_map_iterator(
         for index in 0..map.entries.len() {
             if map.entries[index].active.get() {
                 entries.push(index)
-            } else {}
+            }
         }
-    } else {};
+    }
     let iterator = state.map_iterators.len();
     state.map_iterators.push(
         MapIterator { map: id, key_type, value_type, entries, cursor: Ref::new(0) },
@@ -3879,7 +3879,7 @@ fn new_map_iterator(
 fn map_iterator_next(state: VmState, id: isize) -> Result[(Value, Value, bool), string] {
     if id < 0 || id >= state.map_iterators.len() {
         return Result::Err("invalid map iterator")
-    } else {};
+    }
     let iterator = state.map_iterators[id];
     while iterator.cursor.get() < iterator.entries.len() {
         let index = iterator.cursor.get();
@@ -3895,7 +3895,7 @@ fn map_iterator_next(state: VmState, id: isize) -> Result[(Value, Value, bool), 
                     true,
                 ),
             )
-        } else {}
+        }
     }
     Result::Ok(
         (
@@ -3921,7 +3921,7 @@ fn execute_size_builtin(
                 "len has an invalid call shape"
             },
         )
-    } else {};
+    }
     let size = if capacity {
         value_capacity(state, register(frame, arguments[0])?)?
     } else {
@@ -4092,7 +4092,7 @@ fn execute_builtin(
         bytecode::BuiltinKind::Min | bytecode::BuiltinKind::Max => {
             if arguments.is_empty() || results.len() != 1 {
                 return Result::Err("min or max has an invalid call shape")
-            } else {};
+            }
             let mut selected = arguments[0];
             for index in 1..arguments.len() {
                 let operator = if kind == bytecode::BuiltinKind::Min {
@@ -4112,7 +4112,7 @@ fn execute_builtin(
                     )?,
                 )? {
                     selected = arguments[index];
-                } else {}
+                }
             }
             Result::Ok(Vec::from_array([selected]))
         },
@@ -4152,7 +4152,7 @@ fn aggregate_element(state: VmState, value: Value, indices: Vec[isize], offset: 
 ] {
     if offset >= indices.len() {
         return Result::Ok(copy_value(value))
-    } else {};
+    }
     match value {
         Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             let index = indices[offset];
@@ -4198,7 +4198,7 @@ fn borrow_aggregate_element(state: VmState, value: Value, indices: Vec[isize], o
 ] {
     if offset >= indices.len() {
         return Result::Ok(value)
-    } else {};
+    }
     match value {
         Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }) => {
             let index = indices[offset];
@@ -4261,7 +4261,7 @@ fn indexed_value(state: VmState, value: Value, index: Value, result_type: go_typ
                     "index out of range [" + index.to_string() + "] with length "
                         + slice.length.to_string(),
                 )
-            } else {};
+            }
             let backing = slice.backing.ok_or("index of nil slice")?;
             match bool_backing(state.memory, backing) {
                 Some(elements) => Result::Ok(
@@ -4327,7 +4327,7 @@ fn indexed_integer_value(state: VmState, value: Value, index: isize) -> Result[
                     "index out of range [" + index.to_string() + "] with length "
                         + slice.length.to_string(),
                 )
-            } else {};
+            }
             let backing = slice.backing.ok_or("index of nil slice")?;
             match bool_backing(state.memory, backing) {
                 Some(elements) => Result::Ok(
@@ -4375,7 +4375,7 @@ fn continuation_byte(value: byte) -> bool {
 fn decoded_rune(value: bytes::Bytes, offset: isize) -> Result[(isize, isize), string] {
     if offset < 0 || offset >= value.len() {
         return Result::Err("string range offset is out of bounds")
-    } else {};
+    }
     let first = value.get(offset);
     if first < 128.to_u8() {
         return Result::Ok((first.to_isize(), 1))
@@ -4393,12 +4393,12 @@ fn decoded_rune(value: bytes::Bytes, offset: isize) -> Result[(isize, isize), st
         if offset + 2 >= value.len() || !continuation_byte(value.get(offset + 1))
             || !continuation_byte(value.get(offset + 2)) {
             return Result::Ok((65533, 1))
-        } else {};
+        }
         let second = value.get(offset + 1);
         if first == 224.to_u8() && second < 160.to_u8()
             || first == 237.to_u8() && second >= 160.to_u8() {
             return Result::Ok((65533, 1))
-        } else {};
+        }
         Result::Ok(
             (
                 ((first.to_isize() & 15) << 12) | ((second.to_isize() & 63) << 6)
@@ -4411,12 +4411,12 @@ fn decoded_rune(value: bytes::Bytes, offset: isize) -> Result[(isize, isize), st
             || !continuation_byte(value.get(offset + 2))
             || !continuation_byte(value.get(offset + 3)) {
             return Result::Ok((65533, 1))
-        } else {};
+        }
         let second = value.get(offset + 1);
         if first == 240.to_u8() && second < 144.to_u8()
             || first == 244.to_u8() && second >= 144.to_u8() {
             return Result::Ok((65533, 1))
-        } else {};
+        }
         Result::Ok(
             (
                 ((first.to_isize() & 7) << 18) | ((second.to_isize() & 63) << 12)
@@ -4452,7 +4452,7 @@ fn sliced_place(
             let maximum = bounded_index(maximum, elements.len())?;
             if low < 0 || high < low || maximum < high || maximum > elements.len() {
                 return Result::Err("slice bounds out of range")
-            } else {};
+            }
             Result::Ok(
                 Value::Local(
                     LocalValue::Slice(
@@ -4485,7 +4485,7 @@ fn sliced_value(
             let maximum = bounded_index(maximum, slice.capacity)?;
             if low < 0 || high < low || maximum < high || maximum > slice.capacity {
                 return Result::Err("slice bounds out of range")
-            } else {};
+            }
             Result::Ok(
                 Value::Local(
                     LocalValue::Slice(
@@ -4506,7 +4506,7 @@ fn sliced_value(
             let maximum = bounded_index(maximum, elements.len())?;
             if low < 0 || high < low || maximum < high || maximum > elements.len() {
                 return Result::Err("slice bounds out of range")
-            } else {};
+            }
             let cell = allocate_cell(
                 state.memory,
                 Value::Local(LocalValue::Aggregate { type_id, elements, host }),
@@ -4528,12 +4528,12 @@ fn sliced_value(
         Value::Local(LocalValue::String(value)) => {
             if maximum.is_some() {
                 return Result::Err("three-index slice of string")
-            } else {};
+            }
             let low = bounded_index(low, 0)?;
             let high = bounded_index(high, value.len())?;
             if low < 0 || high < low || high > value.len() {
                 return Result::Err("slice bounds out of range")
-            } else {};
+            }
             let result = bytes::Bytes::with_capacity(high - low);
             for index in low..high {
                 result.push(value.get(index))
@@ -4561,7 +4561,7 @@ fn aggregate_value(
             for value in values {
                 if value.index < 0 || value.index >= elements.len() {
                     return Result::Err("slice literal index out of range")
-                } else {};
+                }
                 elements[value.index] = copy_value(register(frame, value.value)?);
             }
             let backing = allocate_cell(state.memory, local_aggregate(type_id, elements));
@@ -4593,7 +4593,7 @@ fn aggregate_value(
                     for value in values {
                         if value.index < 0 || value.index >= updated.len() {
                             return Result::Err("aggregate literal index out of range")
-                        } else {};
+                        }
                         updated[value.index] = copy_value(register(frame, value.value)?);
                     }
                     Result::Ok(local_aggregate(type_id, updated))
@@ -4611,7 +4611,7 @@ fn aggregate_value(
                                 "native composite field " + element.index.to_string()
                                     + " is not accessible",
                             )
-                        } else {};
+                        }
                         let source = native_argument(
                             state,
                             register(frame, element.value)?,
@@ -4623,7 +4623,7 @@ fn aggregate_value(
                                 "native composite field " + element.index.to_string()
                                     + " is not assignable",
                             )
-                        } else {}
+                        }
                     }
                     Result::Ok(Value::Host { type_id, value })
                 },
@@ -4640,7 +4640,7 @@ fn make_slice(state: VmState, type_id: go_types::TypeId, length: isize, capacity
 ] {
     if length < 0 || capacity < length {
         return Result::Err("makeslice: len out of range")
-    } else {};
+    }
     let underlying = go_types::underlying(state.program.world, type_id);
     let element = match go_types::get_type(state.program.world, underlying) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => element,
@@ -4734,8 +4734,8 @@ fn native_type_value(state: VmState, type_id: go_types::TypeId) -> Option[byteco
             return Option::None
         } else if cached >= 0 && cached < state.program.native_types.len() {
             return Option::Some(state.program.native_types[cached])
-        } else {}
-    } else {};
+        }
+    }
     let mut index = 0;
     while index < state.program.native_types.len() {
         let value = state.program.native_types[index];
@@ -4743,14 +4743,14 @@ fn native_type_value(state: VmState, type_id: go_types::TypeId) -> Option[byteco
             || go_types::identical(state.program.world, value.type_id, type_id) {
             if type_id.value >= 0 && type_id.value < state.native_type_indices.len() {
                 state.native_type_indices[type_id.value] = index;
-            } else {};
+            }
             return Option::Some(value)
-        } else {};
+        }
         index += 1;
     }
     if type_id.value >= 0 && type_id.value < state.native_type_indices.len() {
         state.native_type_indices[type_id.value] = -1;
-    } else {};
+    }
     Option::None
 }
 
@@ -4834,7 +4834,7 @@ fn projected_runtime_place(state: VmState, base: RuntimePlace, indices: Vec[isiz
                 current_value = native_field_reference(current_value, index);
                 if !native_host_value_valid(current_value) {
                     return Result::Err("native field is not accessible")
-                } else {}
+                }
             }
             Result::Ok(RuntimePlace::Native { value: current_value, type_id: current_type })
         },
@@ -4927,7 +4927,7 @@ fn set_indexed_runtime_place(
                     "index out of range [" + index.to_string() + "] with length "
                         + slice.length.to_string(),
                 )
-            } else {};
+            }
             let backing = slice.backing.ok_or("index of nil slice")?;
             let index = slice.offset + index;
             match bool_backing(state.memory, backing) {
@@ -4972,7 +4972,7 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                     Some(value) => return Result::Ok(copy_value(value)),
                     None => {},
                 }
-            } else {};
+            }
             let result = match go_types::type_data(
                 state.program.world,
                 go_types::underlying(state.program.world, type_id),
@@ -4980,7 +4980,7 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                 go_types::TypeKind::Array { length, element } => {
                     if length < 0.to_i64() || length > 9223372036854775807.to_i64() {
                         return Result::Err("array length is outside the host integer range")
-                    } else {};
+                    }
                     let elements: Vec[Value] = Vec::with_capacity(length.to_isize());
                     for _ in 0..length.to_isize() {
                         elements.push(runtime_zero_value(state, element)?)
@@ -5007,7 +5007,7 @@ fn runtime_zero_value(state: VmState, type_id: go_types::TypeId) -> Result[Value
                 Ok(value) => {
                     if type_id.value >= 0 && type_id.value < state.zero_values.len() {
                         state.zero_values[type_id.value] = Option::Some(value);
-                    } else {};
+                    }
                     Result::Ok(value)
                 },
                 Err(message) => Result::Err(message),
@@ -5026,10 +5026,10 @@ fn runtime_constant_value(
         Some(values) => for cached in values {
             if cached.type_id.value == type_id.value && cached.constant_kind == constant_kind {
                 return Result::Ok(cached.value)
-            } else {}
+            }
         },
         None => {},
-    };
+    }
     let value = constant_value(state.program.world, type_id, constant_kind, exact)?;
     match state.constant_values[exact] {
         Some(values) => {
@@ -5040,7 +5040,7 @@ fn runtime_constant_value(
                 [CachedConstant { type_id, constant_kind, value }],
             );
         },
-    };
+    }
     Result::Ok(value)
 }
 
@@ -5148,7 +5148,7 @@ fn callback_signature_shape(world: go_types::World, signature: go_types::TypeId)
         }) => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() {
                 return Result::Err("generic callback cannot cross the native bridge")
-            } else {};
+            };
             (params, results)
         },
         _ => return Result::Err("native callback value has no function signature"),
@@ -5165,7 +5165,7 @@ fn callback_signature_shape(world: go_types::World, signature: go_types::TypeId)
             }
         },
         _ => return Result::Err("native callback parameter list is not a tuple"),
-    };
+    }
     match go_types::get_type(world, go_types::unalias(world, results)) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
             for variable in variables {
@@ -5174,7 +5174,7 @@ fn callback_signature_shape(world: go_types::World, signature: go_types::TypeId)
             }
         },
         _ => return Result::Err("native callback result list is not a tuple"),
-    };
+    }
     Result::Ok((parameter_types, parameter_keys, result_types, result_keys))
 }
 
@@ -5271,20 +5271,20 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
                         return Result::Err(
                             "native slice element " + index.to_string() + " could not be converted",
                         )
-                    } else {}
+                    }
                 }
-            } else {};
+            }
             Result::Ok(host)
         },
         Value::Local(LocalValue::Aggregate { type_id: aggregate_type, elements, host: _ }) => {
             let host = new_native_aggregate(type_key);
             if !native_host_value_valid(host) {
                 return Result::Err("native aggregate type is not registered: " + type_key)
-            } else {};
+            }
             let element_types = native_aggregate_element_types(state.program.world, aggregate_type)?;
             if element_types.len() != elements.len() {
                 return Result::Err("native aggregate element count does not match its type")
-            } else {};
+            }
             for index in 0..elements.len() {
                 let element_type = element_types[index];
                 if !set_native_aggregate_value(
@@ -5298,7 +5298,7 @@ fn native_argument(state: VmState, value: Value, type_id: go_types::TypeId, type
                     )?,
                 ) {
                     return Result::Err("native aggregate element conversion failed")
-                } else {}
+                }
             }
             Result::Ok(host)
         },
@@ -5362,7 +5362,7 @@ fn native_slice_result(
 ) -> Result[Value, string] {
     if native_value_nil(value) {
         return runtime_zero_value(state, type_id)
-    } else {};
+    }
     let element_type = match go_types::get_type(
         state.program.world,
         go_types::underlying(state.program.world, type_id),
@@ -5395,7 +5395,7 @@ fn native_slice_result(
                 native_result(state, native_value_index(value, index), element_type, element_key)?,
             )?
         }
-    } else {};
+    }
     Result::Ok(Value::Local(LocalValue::Slice(slice)))
 }
 
@@ -5447,7 +5447,7 @@ fn native_result(
         }
     } else if type_key == "channel" {
         return Result::Ok(Value::Host { type_id, value })
-    } else {};
+    }
     match basic_kind(state.program.world, type_id) {
         Some(go_types::BasicKind::Bool) => {
             Result::Ok(Value::Local(LocalValue::Bool(native_value_bool(value))))
@@ -5595,7 +5595,7 @@ fn prepare_native_value_invocation(state: VmState, native: NativePrepared, argum
     if arguments.len() != native.parameter_types.len()
         || arguments.len() != native.parameter_keys.len() {
         return Result::Err("native call argument count does not match its manifest")
-    } else {};
+    }
     let invocation = match native.function {
         Some(function) => new_native_value_invocation(
             function as dyn HostValueMarker,
@@ -5720,12 +5720,12 @@ fn finish_native_value_invocation(
                 },
             ),
         )
-    } else {};
+    }
     if native_invocation_result_count(invocation.value as dyn HostValueMarker)
         != native.result_types.len()
         || native.result_types.len() != native.result_keys.len() {
         return Result::Err("native call result count does not match its manifest")
-    } else {};
+    }
     let values: Vec[Value] = Vec::with_capacity(native.result_types.len());
     for index in 0..native.result_types.len() {
         values.push(
@@ -5809,7 +5809,7 @@ fn prepare_call(
                 _ => return Result::Err(
                     "interface method " + method_name + " has a nil receiver in " + function.name,
                 ),
-            };
+            }
             match native_interface_method_target(state, method, receiver) {
                 Some(target) => PreparedTarget::Dynamic(target),
                 None => PreparedTarget::InterfaceMethod { method, receiver },
@@ -5858,7 +5858,7 @@ fn prepare_call(
                     _ => {},
                 },
                 _ => {},
-            };
+            }
             PreparedTarget::Dynamic(target)
         },
         bytecode::CallTarget::Native(value) => PreparedTarget::Native(value),
@@ -6000,7 +6000,7 @@ fn invoke_prepared(
                 FunctionTarget::MethodExpression { function, receiver_type, index } => {
                     if call.arguments.is_empty() {
                         return Result::Err("method expression call has no receiver")
-                    } else {};
+                    }
                     let function_value = state.program.functions[function.value];
                     let arguments = Vec::from_array(
                         [
@@ -6349,12 +6349,12 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                             state.true_value,
                         ) {
                             return Result::Err("invalid scalar boolean register")
-                        } else {};
+                        }
                         return Result::Ok(0)
                     },
                     _ => {},
                 }
-            } else {};
+            }
             let operand = register(frame, operand)?;
             match (op, operand) {
                 (bytecode::UnaryOp::Not, Value::Local(LocalValue::Bool(value))) => set_register(
@@ -6624,7 +6624,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             for capture in captures {
                 if capture.value < 0 || capture.value >= frame.locals.len() {
                     return Result::Err("invalid closure capture local")
-                } else {};
+                }
                 cells.push(frame.locals[capture.value])
             }
             set_register(
@@ -6693,7 +6693,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
                         _ => return Result::Err(
                             "interface method " + method_name + " value has a nil receiver",
                         ),
-                    };
+                    }
                     Option::Some(Ref::new(copy_value(receiver)))
                 },
                 None => Option::None,
@@ -6773,7 +6773,7 @@ fn execute_instruction_effect(state: VmState, frame: Frame, instruction: bytecod
             match value {
                 Some(target) => set_register(frame, target, next.1)?,
                 None => {},
-            };
+            }
             set_register(frame, ok, Value::Local(LocalValue::Bool(next.2)))
         },
         bytecode::InstructionKind::Call { results, target, arguments, variadic } => match target {
@@ -6897,7 +6897,7 @@ fn execute_instruction(state: VmState, frame: Frame, instruction: bytecode::Inst
     if !count_step(state) {
         state.location.set(frame_location(frame, instruction.location));
         return instruction_error("instruction limit exceeded")
-    } else {};
+    }
     match execute_instruction_effect(state, frame, instruction) {
         Ok(0) => instruction_continue(),
         Ok(1) => {
@@ -7031,7 +7031,7 @@ fn execute_sequential_increment(
     let step_error = count_sequential_steps(state, frame, block, index, 5);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let constant = match block.instructions[index + 2].kind {
         bytecode::InstructionKind::Constant { target, .. } => target.value,
         _ => return sequential_error_at(
@@ -7070,7 +7070,7 @@ fn execute_sequential_increment(
             block.instructions[index + 3].location,
             "invalid scalar increment register",
         )
-    } else {};
+    }
     frame.scalar[frame.registers.len() * 2 + local] = value;
     ""
 }
@@ -7093,7 +7093,7 @@ fn execute_sequential_local_binary(
     let step_error = count_sequential_steps(state, frame, block, index, count);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let (left_place, left) = match (
         block.instructions[index].kind,
         block.instructions[index + 1].kind,
@@ -7147,7 +7147,7 @@ fn execute_sequential_local_binary(
             block.instructions[index + 3].location,
             "invalid scalar local register",
         )
-    } else {};
+    }
     let message = execute_scalar_integer_binary(
         frame,
         kind,
@@ -7163,13 +7163,13 @@ fn execute_sequential_local_binary(
     );
     if message != "" {
         return sequential_error_at(state, frame, block.instructions[index + 4].location, message)
-    } else {};
+    }
     if store {
         frame.scalar[frame.registers.len() * 2 + left_local] = normalize_integer(
             frame.scalar[target],
             (left_code & 127.to_u64()).to_isize(),
         );
-    } else {};
+    }
     ""
 }
 
@@ -7185,7 +7185,7 @@ fn execute_sequential_local_constant_binary(
     let step_error = count_sequential_steps(state, frame, block, index, 4);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let (place, left) = match (block.instructions[index].kind, block.instructions[index + 1].kind) {
         (
             bytecode::InstructionKind::LocalPlace { target: place, local: _ },
@@ -7236,7 +7236,7 @@ fn execute_sequential_local_constant_binary(
             block.instructions[index + 2].location,
             "invalid scalar constant register",
         )
-    } else {};
+    }
     let message = execute_scalar_integer_binary(
         frame,
         kind,
@@ -7273,7 +7273,7 @@ fn execute_fast_increment(
     };
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
     let value_index = frame.registers.len() * 2 + local;
     frame.scalar[value_index] = normalize_integer(
@@ -7286,7 +7286,7 @@ fn execute_fast_increment(
     );
     if jump_target >= 0 {
         frame.block.set(bytecode::block_id(jump_target))
-    } else {};
+    }
     ""
 }
 
@@ -7313,7 +7313,7 @@ fn execute_fast_local_binary(
     };
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let left_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + left_local];
     let right_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + right_local];
     let left_bits = frame.scalar[frame.registers.len() * 2 + left_local];
@@ -7329,9 +7329,9 @@ fn execute_fast_local_binary(
         );
         if jump_target >= 0 {
             frame.block.set(bytecode::block_id(jump_target))
-        } else {};
+        }
         return ""
-    } else {};
+    }
     let target = match block.instructions[index + 4].kind {
         bytecode::InstructionKind::Binary { target, .. } => target.value,
         _ => return sequential_error_at(
@@ -7373,7 +7373,7 @@ fn execute_fast_local_constant_binary(
     let step_error = count_sequential_steps(state, frame, block, index, 4);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let target = match block.instructions[index + 3].kind {
         bytecode::InstructionKind::Binary { target, .. } => target.value,
         _ => return sequential_error_at(
@@ -7425,7 +7425,7 @@ fn execute_fast_local_constant_branch(
     let step_error = count_sequential_branch_steps(state, frame, block, index, 4);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let (right_bits, right_width) = match state.instruction_constants[constant_index] {
         Some(Value::Local(LocalValue::Integer { bits, width, signed: _ })) => (bits, width),
         _ => return sequential_error_at(
@@ -7479,7 +7479,7 @@ fn execute_sequential_integer_binary(
     let instruction = block.instructions[index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     if frame.scalar.is_empty() {
         return match (frame.registers[left], frame.registers[right]) {
             (
@@ -7511,7 +7511,7 @@ fn execute_sequential_integer_binary(
                 Err(message) => sequential_error_at(state, frame, instruction.location, message),
             },
         }
-    } else {};
+    }
     if left >= 0 && left < frame.registers.len() && right >= 0 && right < frame.registers.len() {
         let left_code = frame.scalar[frame.registers.len() + left];
         let right_code = frame.scalar[frame.registers.len() + right];
@@ -7534,8 +7534,8 @@ fn execute_sequential_integer_binary(
             } else {
                 return sequential_error_at(state, frame, instruction.location, message)
             }
-        } else {}
-    } else {};
+        }
+    }
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
@@ -7553,7 +7553,7 @@ fn execute_sequential_constant(
     let instruction = block.instructions[index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     match state.instruction_constants[source] {
         Some(value) => if target < 0 || target >= frame.registers.len() {
             sequential_error_at(
@@ -7566,7 +7566,7 @@ fn execute_sequential_constant(
             if frame.scalar.is_empty() {
                 frame.registers[target] = Option::Some(copy_value(value));
                 return ""
-            } else {};
+            }
             match set_register(frame, bytecode::register_id(target), value) {
                 Ok(()) => "",
                 Err(message) => sequential_error_at(state, frame, instruction.location, message),
@@ -7597,8 +7597,8 @@ fn sequential_integer_register_index(frame: Frame, index: isize) -> Result[isize
             } else {
                 return Result::Ok(bits.to_isize())
             }
-        } else {}
-    } else {};
+        }
+    }
     integer_register_index(frame, bytecode::register_id(index))
 }
 
@@ -7614,7 +7614,7 @@ fn execute_sequential_index_place(
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     if !frame.scalar.is_empty() {
         match sequential_integer_register_index(frame, index) {
             Ok(index) => {
@@ -7630,7 +7630,7 @@ fn execute_sequential_index_place(
                                     "index out of range [" + index.to_string() + "] with length "
                                         + slice.length.to_string(),
                                 )
-                            } else {};
+                            }
                             match slice.backing {
                                 Some(backing) => match bool_backing(state.memory, backing) {
                                     Some(elements) => {
@@ -7657,11 +7657,11 @@ fn execute_sequential_index_place(
                         },
                         _ => {},
                     }
-                } else {}
+                }
             },
             Err(message) => return sequential_error_at(state, frame, instruction.location, message),
         }
-    } else {};
+    }
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
@@ -7679,7 +7679,7 @@ fn execute_sequential_load(
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     match frame.bool_places[source] {
         Some(place) => {
             if set_scalar_bool_register(
@@ -7700,7 +7700,7 @@ fn execute_sequential_load(
             }
         },
         None => {},
-    };
+    }
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
@@ -7718,7 +7718,7 @@ fn execute_sequential_store(
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     if !frame.scalar.is_empty() && frame.place_roots[target] != -1 {
         let local_value = frame.scalar[frame.registers.len() * 2 + frame.locals.len() * 2 + target];
         if local_value > 0.to_u64() && local_value <= frame.locals.len().to_u64() {
@@ -7735,9 +7735,9 @@ fn execute_sequential_store(
                     normalize_integer(frame.scalar[source], local_width.to_isize())
                 };
                 return ""
-            } else {}
-        } else {}
-    } else {};
+            }
+        }
+    }
     match frame.bool_places[target] {
         Some(place) => match boolean_register(frame, bytecode::register_id(source)) {
             Ok(value) => {
@@ -7747,7 +7747,7 @@ fn execute_sequential_store(
             Err(message) => return sequential_error_at(state, frame, instruction.location, message),
         },
         None => {},
-    };
+    }
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
@@ -7765,7 +7765,7 @@ fn execute_sequential_local_place(
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     frame.place_roots[target] = frame.locals[local].value;
     frame.places[target] = Option::None;
     frame.bool_places[target] = Option::None;
@@ -7792,7 +7792,7 @@ fn execute_sequential_boolean_not(
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     match boolean_register(frame, bytecode::register_id(source)) {
         Ok(value) => if set_scalar_bool_register(
             frame,
@@ -7826,7 +7826,7 @@ fn execute_sequential_boolean_index(
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     if !frame.scalar.is_empty() {
         match frame.registers[base] {
             Some(Value::Local(LocalValue::Slice(slice))) => match sequential_integer_register_index(
@@ -7842,7 +7842,7 @@ fn execute_sequential_boolean_index(
                             "index out of range [" + index.to_string() + "] with length "
                                 + slice.length.to_string(),
                         )
-                    } else {};
+                    }
                     match slice.backing {
                         Some(backing) => match bool_backing(state.memory, backing) {
                             Some(elements) => if set_scalar_bool_register(
@@ -7853,7 +7853,7 @@ fn execute_sequential_boolean_index(
                                 state.true_value,
                             ) {
                                 return ""
-                            } else {},
+                            },
                             None => {},
                         },
                         None => return sequential_error_at(
@@ -7873,7 +7873,7 @@ fn execute_sequential_boolean_index(
             },
             _ => {},
         }
-    } else {};
+    }
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
@@ -7883,12 +7883,12 @@ fn execute_sequential_boolean_index(
 fn sequential_integer_local_index(frame: Frame, local: isize) -> Result[isize, string] {
     if frame.scalar.is_empty() || local < 0 || local >= frame.locals.len() {
         return Result::Err("invalid scalar index local")
-    } else {};
+    }
     let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
     let width = (code & 127.to_u64()).to_isize();
     if width <= 1 {
         return Result::Err("invalid scalar index local")
-    } else {};
+    }
     let bits = frame.scalar[frame.registers.len() * 2 + local];
     if code & 128.to_u64() != 0.to_u64() {
         let value = signed_integer(bits, width).to_isize();
@@ -7916,7 +7916,7 @@ fn execute_sequential_bool_slice_index(
     let step_error = count_sequential_steps(state, frame, block, instruction_index, 5);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let (slice_place, slice_register) = match (
         block.instructions[instruction_index].kind,
         block.instructions[instruction_index + 1].kind,
@@ -7966,7 +7966,7 @@ fn execute_sequential_bool_slice_index(
             block.instructions[instruction_index + 3].location,
             "invalid scalar index register",
         )
-    } else {};
+    }
     let slice_value = cell_value(state.memory, frame.locals[slice_local].value);
     if set_register(frame, bytecode::register_id(slice_register), slice_value).is_err() {
         return sequential_error_at(
@@ -7975,7 +7975,7 @@ fn execute_sequential_bool_slice_index(
             block.instructions[instruction_index + 1].location,
             "invalid slice register",
         )
-    } else {};
+    }
     let Value::Local(LocalValue::Slice(slice)) = slice_value else {
         return sequential_error_at(
             state,
@@ -7991,7 +7991,7 @@ fn execute_sequential_bool_slice_index(
             block.instructions[instruction_index + 4].location,
             "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
         )
-    } else {};
+    }
     let backing = match slice.backing {
         Some(value) => value,
         None => return sequential_error_at(
@@ -8039,7 +8039,7 @@ fn execute_sequential_bool_slice_store(
     let step_error = count_sequential_steps(state, frame, block, instruction_index, 6);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let slice_place = match block.instructions[instruction_index].kind {
         bytecode::InstructionKind::LocalPlace { target, local: _ } => target.value,
         _ => return sequential_error_at(
@@ -8104,7 +8104,7 @@ fn execute_sequential_bool_slice_store(
             block.instructions[instruction_index + 2].location,
             "invalid scalar index register",
         )
-    } else {};
+    }
     let Value::Local(LocalValue::Slice(slice)) = cell_value(
         state.memory,
         frame.locals[slice_local].value,
@@ -8123,7 +8123,7 @@ fn execute_sequential_bool_slice_store(
             block.instructions[instruction_index + 3].location,
             "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
         )
-    } else {};
+    }
     let backing = match slice.backing {
         Some(value) => value,
         None => return sequential_error_at(
@@ -8153,7 +8153,7 @@ fn execute_sequential_bool_slice_store(
                     block.instructions[instruction_index + 4].location,
                     "invalid scalar boolean register",
                 )
-            } else {};
+            }
             elements[slice.offset + index] = value;
             ""
         },
@@ -8178,7 +8178,7 @@ fn execute_fast_bool_slice_index(
     let step_error = count_sequential_steps(state, frame, block, instruction_index, 5);
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let index = match sequential_integer_local_index(frame, index_local) {
         Ok(value) => value,
         Err(message) => return sequential_error_at(
@@ -8206,7 +8206,7 @@ fn execute_fast_bool_slice_index(
             block.instructions[instruction_index + 4].location,
             "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
         )
-    } else {};
+    }
     let backing = match slice.backing {
         Some(value) => value,
         None => return sequential_error_at(
@@ -8224,7 +8224,7 @@ fn execute_fast_bool_slice_index(
             "invalid boolean slice backing",
         ),
         _ => {},
-    };
+    }
     if !cell_valid(state.memory, backing.root.value) {
         return sequential_error_at(
             state,
@@ -8232,7 +8232,7 @@ fn execute_fast_bool_slice_index(
             block.instructions[instruction_index + 4].location,
             "invalid boolean slice backing",
         )
-    } else {};
+    }
     match cell_value(state.memory, backing.root.value) {
         Value::Local(LocalValue::BoolBacking(elements)) => if set_scalar_bool_register(
             frame,
@@ -8276,7 +8276,7 @@ fn execute_fast_bool_slice_store(
     };
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let index = match sequential_integer_local_index(frame, index_local) {
         Ok(value) => value,
         Err(message) => return sequential_error_at(
@@ -8304,7 +8304,7 @@ fn execute_fast_bool_slice_store(
             block.instructions[instruction_index + 3].location,
             "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
         )
-    } else {};
+    }
     let backing = match slice.backing {
         Some(value) => value,
         None => return sequential_error_at(
@@ -8322,7 +8322,7 @@ fn execute_fast_bool_slice_store(
             "invalid boolean slice backing",
         ),
         _ => {},
-    };
+    }
     if !cell_valid(state.memory, backing.root.value) {
         return sequential_error_at(
             state,
@@ -8330,13 +8330,13 @@ fn execute_fast_bool_slice_store(
             block.instructions[instruction_index + 3].location,
             "invalid boolean slice backing",
         )
-    } else {};
+    }
     match cell_value(state.memory, backing.root.value) {
         Value::Local(LocalValue::BoolBacking(elements)) => {
             elements[slice.offset + index] = value;
             if jump_target >= 0 {
                 frame.block.set(bytecode::block_id(jump_target))
-            } else {};
+            }
             ""
         },
         _ => sequential_error_at(
@@ -8387,7 +8387,7 @@ fn execute_bool_slice_update_effect(
             block.instructions[instruction_index + 3].location,
             "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
         )
-    } else {};
+    }
     let backing = match slice.backing {
         Some(value) => value,
         None => return sequential_error_at(
@@ -8405,7 +8405,7 @@ fn execute_bool_slice_update_effect(
             "invalid boolean slice backing",
         ),
         _ => {},
-    };
+    }
     if !cell_valid(state.memory, backing.root.value) {
         return sequential_error_at(
             state,
@@ -8413,7 +8413,7 @@ fn execute_bool_slice_update_effect(
             block.instructions[instruction_index + 3].location,
             "invalid boolean slice backing",
         )
-    } else {};
+    }
     match cell_value(state.memory, backing.root.value) {
         Value::Local(LocalValue::BoolBacking(elements)) => {
             elements[slice.offset + index] = value;
@@ -8424,7 +8424,7 @@ fn execute_bool_slice_update_effect(
             block.instructions[instruction_index + 3].location,
             "invalid boolean slice backing",
         ),
-    };
+    }
     let left_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + left_local];
     let left_bits = frame.scalar[frame.registers.len() * 2 + left_local];
     let right_bits = frame.scalar[frame.registers.len() * 2 + right_local];
@@ -8462,7 +8462,7 @@ fn execute_fast_bool_slice_loop(state: VmState, frame: Frame, operation: Sequent
         );
         if step_error != "" {
             return step_error
-        } else {};
+        }
         let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len()
             + operation.condition_local];
         let condition = match scalar_integer_comparison(
@@ -8484,7 +8484,7 @@ fn execute_fast_bool_slice_loop(state: VmState, frame: Frame, operation: Sequent
         if condition != operation.body_when_true {
             frame.block.set(bytecode::block_id(operation.exit_block));
             return ""
-        } else {};
+        }
         let step_error = count_sequential_branch_steps(
             state,
             frame,
@@ -8494,7 +8494,7 @@ fn execute_fast_bool_slice_loop(state: VmState, frame: Frame, operation: Sequent
         );
         if step_error != "" {
             return step_error
-        } else {};
+        }
         let step_error = count_sequential_branch_steps(
             state,
             frame,
@@ -8504,7 +8504,7 @@ fn execute_fast_bool_slice_loop(state: VmState, frame: Frame, operation: Sequent
         );
         if step_error != "" {
             return step_error
-        } else {};
+        }
         let message = execute_bool_slice_update_effect(
             state,
             frame,
@@ -8519,7 +8519,7 @@ fn execute_fast_bool_slice_loop(state: VmState, frame: Frame, operation: Sequent
         );
         if message != "" {
             return message
-        } else {}
+        }
     }
 }
 
@@ -8547,7 +8547,7 @@ fn execute_fast_bool_slice_branch(
     );
     if step_error != "" {
         return step_error
-    } else {};
+    }
     let index = match sequential_integer_local_index(frame, index_local) {
         Ok(value) => value,
         Err(message) => return sequential_error_at(
@@ -8575,7 +8575,7 @@ fn execute_fast_bool_slice_branch(
             block.instructions[instruction_index + 4].location,
             "index out of range [" + index.to_string() + "] with length " + slice.length.to_string(),
         )
-    } else {};
+    }
     let backing = match slice.backing {
         Some(value) => value,
         None => return sequential_error_at(
@@ -8593,7 +8593,7 @@ fn execute_fast_bool_slice_branch(
             "invalid boolean slice backing",
         ),
         _ => {},
-    };
+    }
     if !cell_valid(state.memory, backing.root.value) {
         return sequential_error_at(
             state,
@@ -8601,7 +8601,7 @@ fn execute_fast_bool_slice_branch(
             block.instructions[instruction_index + 4].location,
             "invalid boolean slice backing",
         )
-    } else {};
+    }
     let condition = match cell_value(state.memory, backing.root.value) {
         Value::Local(LocalValue::BoolBacking(elements)) => {
             elements[slice.offset + index] != invert
@@ -8636,13 +8636,13 @@ fn execute_sequential_clone_local(
     let instruction = block.instructions[instruction_index];
     if !count_step(state) {
         return sequential_error_at(state, frame, instruction.location, "instruction limit exceeded")
-    } else {};
+    }
     if !frame.scalar.is_empty() {
         let code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
         if code & 127.to_u64() != 0.to_u64() {
             return ""
-        } else {}
-    } else {};
+        }
+    }
     match execute_instruction_effect(state, frame, instruction) {
         Ok(_) => "",
         Err(message) => sequential_error_at(state, frame, instruction.location, message),
@@ -8684,7 +8684,7 @@ fn execute_sequential_root_load(
             block.instructions[index].location,
             "instruction limit exceeded",
         )
-    } else {};
+    }
     if !frame.scalar.is_empty() && local >= 0 && local < frame.locals.len() && target >= 0
         && target < frame.registers.len() {
         let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
@@ -8698,7 +8698,7 @@ fn execute_sequential_root_load(
                     block.instructions[index + 1].location,
                     "instruction limit exceeded",
                 )
-            } else {};
+            }
             frame.place_roots[place] = cell.value;
             frame.places[place] = Option::None;
             frame.bool_places[place] = Option::None;
@@ -8707,8 +8707,8 @@ fn execute_sequential_root_load(
             frame.scalar[target_code_index] = frame.scalar[target_code_index] | 256.to_u64();
             frame.registers[target] = Option::None;
             return ""
-        } else {}
-    } else {};
+        }
+    }
     frame.place_roots[place] = cell.value;
     frame.places[place] = Option::None;
     frame.bool_places[place] = Option::None;
@@ -8728,7 +8728,7 @@ fn execute_sequential_root_load(
             block.instructions[index + 1].location,
             "instruction limit exceeded",
         )
-    } else {};
+    }
     if !frame.scalar.is_empty() && local >= 0 && local < frame.locals.len() && target >= 0
         && target < frame.registers.len() {
         let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
@@ -8736,12 +8736,12 @@ fn execute_sequential_root_load(
         if local_code & 127.to_u64() == 0.to_u64() && target_code & 127.to_u64() == 0.to_u64() {
             frame.registers[target] = Option::Some(copy_value(cell_value(state.memory, cell.value)));
             return ""
-        } else {}
-    } else {};
+        }
+    }
     if frame.scalar.is_empty() {
         frame.registers[target] = Option::Some(copy_value(cell_value(state.memory, cell.value)));
         return ""
-    } else {};
+    }
     match scalar_local_layout(frame, local) {
         Some(layout) if layout.width == 1 => match scalar_local_value(frame, local) {
             Ok(bits) => match set_register(
@@ -8820,7 +8820,7 @@ fn execute_sequential_root_store(
             block.instructions[index].location,
             "instruction limit exceeded",
         )
-    } else {};
+    }
     if !frame.scalar.is_empty() && local >= 0 && local < frame.locals.len() && value >= 0
         && value < frame.registers.len() {
         let local_code = frame.scalar[frame.registers.len() * 2 + frame.locals.len() + local];
@@ -8833,7 +8833,7 @@ fn execute_sequential_root_store(
                     block.instructions[index + 1].location,
                     "instruction limit exceeded",
                 )
-            } else {};
+            }
             frame.place_roots[place] = cell.value;
             frame.places[place] = Option::None;
             frame.bool_places[place] = Option::None;
@@ -8843,8 +8843,8 @@ fn execute_sequential_root_store(
                 (local_code & 127.to_u64()).to_isize(),
             );
             return ""
-        } else {}
-    } else {};
+        }
+    }
     frame.place_roots[place] = cell.value;
     frame.places[place] = Option::None;
     frame.bool_places[place] = Option::None;
@@ -8864,7 +8864,7 @@ fn execute_sequential_root_store(
             block.instructions[index + 1].location,
             "instruction limit exceeded",
         )
-    } else {};
+    }
     if frame.scalar.is_empty() {
         return match frame.registers[value] {
             Some(value) => {
@@ -8878,7 +8878,7 @@ fn execute_sequential_root_store(
                 "register " + value.to_string() + " is undefined in " + frame.name,
             ),
         }
-    } else {};
+    }
     match scalar_local_layout(frame, local) {
         Some(layout) if layout.width == 1 => match boolean_register(
             frame,
@@ -8959,7 +8959,7 @@ fn execute_sequential_renew_local(
             block.instructions[index].location,
             "instruction limit exceeded",
         )
-    } else {};
+    }
     match scalar_local_layout(frame, local) {
         Some(_) => return match replace_scalar_local(frame, local, 0.to_u64()) {
             Ok(()) => "",
@@ -8971,7 +8971,7 @@ fn execute_sequential_renew_local(
             ),
         },
         None => {},
-    };
+    }
     match runtime_zero_value(state, go_types::type_id(type_id)) {
         Ok(value) => {
             replace_local_cell(state, frame, local, value);
@@ -9044,7 +9044,7 @@ fn method_receiver_place(
                 current_type = element;
             },
             None => {},
-        };
+        }
         let struct_fields = match go_types::get_type(
             state.program.world,
             go_types::underlying(state.program.world, current_type),
@@ -9054,7 +9054,7 @@ fn method_receiver_place(
         };
         if field < 0 || field >= struct_fields.len() {
             return Result::Err("method receiver field index is out of range")
-        } else {};
+        }
         current = Option::Some(
             field_place(
                 current.ok_or("method receiver is not addressable")?,
@@ -9075,7 +9075,7 @@ fn method_expression_receiver(
 ) -> Result[Value, string] {
     if index.is_empty() || function.parameters.is_empty() {
         return Result::Err("method expression has an invalid call shape")
-    } else {};
+    }
     let fields: Vec[isize] = Vec::with_capacity(index.len() - 1);
     for offset in 0..index.len() - 1 {
         fields.push(index[offset])
@@ -9084,7 +9084,7 @@ fn method_expression_receiver(
     let expected = function.locals[function.parameters[0].value].type_id;
     if go_types::identical(state.program.world, actual, expected) {
         return aggregate_element(state, receiver, fields, 0)
-    } else {};
+    }
     match (pointer_type(state.program.world, expected), pointer_type(state.program.world, actual)) {
         (Some(element), None) if go_types::identical(state.program.world, element, actual) => {
             Result::Ok(
@@ -9109,7 +9109,7 @@ fn adjusted_method_receiver(state: VmState, function: bytecode::BytecodeFunction
 ] {
     if function.parameters.is_empty() {
         return Result::Err("method function has no receiver parameter")
-    } else {};
+    }
     let expected = function.locals[function.parameters[0].value].type_id;
     match (pointer_type(state.program.world, expected), receiver) {
         (Some(_), Value::Local(LocalValue::Pointer(_))) => Result::Ok(receiver),
@@ -9143,7 +9143,7 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
     if !count_step(state) {
         state.location.set(frame_location(frame, terminator.location));
         return Result::Err("instruction limit exceeded")
-    } else {};
+    }
     let result: Result[FunctionControl, string] = match terminator.kind {
         bytecode::TerminatorKind::Jump { target, arguments } => {
             jump_control(target, arguments)
@@ -9166,14 +9166,14 @@ fn execute_terminator(state: VmState, frame: Frame, terminator: bytecode::Termin
                 for comparison in arm.comparisons {
                     if values_equal(state.program.world, value, register(frame, comparison)?)? {
                         selected = Option::Some((arm.target, arm.arguments));
-                    } else {}
+                    }
                     if selected.is_some() {
                         break
-                    } else {}
+                    }
                 }
                 if selected.is_some() {
                     break
-                } else {}
+                }
             }
             match selected {
                 Some((target, arguments)) => jump_control(target, arguments),
@@ -9202,11 +9202,11 @@ fn enter_block(
 ) -> Result[(), string] {
     if target.value < 0 || target.value >= function.blocks.len() {
         return Result::Err("invalid jump target " + target.value.to_string())
-    } else {};
+    }
     let parameters = function.blocks[target.value].parameters;
     if parameters.len() != arguments.len() {
         return Result::Err("jump argument count does not match block parameters")
-    } else {};
+    }
     for index in 0..parameters.len() {
         set_register(frame, parameters[index], arguments[index])?
     }
@@ -9221,7 +9221,7 @@ fn block_argument_values(frame: Frame, arguments: Vec[bytecode::RegisterId]) -> 
     frame.block_arguments.clear();
     if frame.block_arguments.capacity() < arguments.len() {
         frame.block_arguments.reserve(arguments.len())
-    } else {};
+    }
     for argument in arguments {
         frame.block_arguments.push(register(frame, argument)?)
     }
@@ -9275,10 +9275,10 @@ fn frame_for_call(
                 + " arguments, expected "
                 + function.parameters.len().to_string(),
         )
-    } else {};
+    }
     if captures.len() != function.captures.len() {
         return failed_frame_call("closure capture count does not match function")
-    } else {};
+    }
     let checkpoint = if arena {
         frame_cell_checkpoint(state.memory)
     } else {
@@ -9333,7 +9333,7 @@ fn frame_for_call(
                     release_frame_cells(state.memory, checkpoint)
                 } else {
                     release_owned_cells(state.memory, owned_cells)
-                };
+                }
                 return failed_frame_call(message)
             },
         }
@@ -9367,7 +9367,7 @@ fn frame_for_call(
                                 release_frame_cells(state.memory, checkpoint)
                             } else {
                                 release_owned_cells(state.memory, owned_cells)
-                            };
+                            }
                             return failed_frame_call("scalar boolean local has a non-boolean value")
                         },
                     }
@@ -9384,12 +9384,12 @@ fn frame_for_call(
                                 release_frame_cells(state.memory, checkpoint)
                             } else {
                                 release_owned_cells(state.memory, owned_cells)
-                            };
+                            }
                             return failed_frame_call(message)
                         },
                     }
                 }
-            } else {}
+            }
         }
         scalar
     };
@@ -9424,7 +9424,7 @@ fn commit_function_results(
 ) -> Result[(), string] {
     if values.len() != function.results.len() {
         return Result::Err("return value count does not match function results")
-    } else {};
+    }
     for index in 0..values.len() {
         store_place(
             state.memory,
@@ -9443,7 +9443,7 @@ fn function_result_values(state: VmState, frame: Frame, function: bytecode::Byte
     values.clear();
     if values.capacity() < function.results.len() {
         values.reserve(function.results.len())
-    } else {};
+    }
     for result in function.results {
         values.push(load_place(state.memory, root_place(frame.locals[result.value]))?)
     }
@@ -9471,7 +9471,7 @@ fn finish_invocation(
             InvocationOutcome::Returned(_) => match active {
                 Some(value) => if !value.active.get() {
                     active = Option::None;
-                } else {},
+                },
                 None => {},
             },
             InvocationOutcome::Panicked(payload) => {
@@ -9500,7 +9500,7 @@ fn execute_function(
 ) -> Result[InvocationOutcome, string] {
     if state.depth.get() >= state.config.max_call_depth {
         return Result::Err("maximum call depth exceeded")
-    } else {};
+    }
     validate_function(state, function_id)?;
     let function = state.program.functions[function_id.value];
     let _ = call_location;
@@ -9509,7 +9509,7 @@ fn execute_function(
     if frame_result.error != "" {
         state.depth.set(state.depth.get() - 1);
         return Result::Err(frame_result.error)
-    } else {};
+    }
     let frame = frame_result.frame;
     loop {
         let block_id = frame.block.get();
@@ -9517,7 +9517,7 @@ fn execute_function(
             state.depth.set(state.depth.get() - 1);
             release_frame_slots(state, frame);
             return Result::Err("invalid current block " + block_id.value.to_string())
-        } else {};
+        }
         let block = function.blocks[block_id.value];
         let operations = state.sequential_operations[function_id.value][block_id.value];
         let mut instruction_index = 0;
@@ -9859,7 +9859,7 @@ fn execute_function(
         }
         if direct_branch {
             continue
-        } else {};
+        }
         let sequential_terminator = state.sequential_terminators[function_id.value][block_id.value];
         if sequential_terminator.kind != 0 {
             if !count_step(state) {
@@ -9867,7 +9867,7 @@ fn execute_function(
                 state.depth.set(state.depth.get() - 1);
                 release_frame_slots(state, frame);
                 return Result::Err("instruction limit exceeded")
-            } else {};
+            }
             let target = if sequential_terminator.kind == 1 {
                 sequential_terminator.first
             } else {
@@ -9890,7 +9890,7 @@ fn execute_function(
             };
             frame.block.set(bytecode::block_id(target));
             continue
-        } else {};
+        }
         match execute_terminator(state, frame, block.terminator) {
             Ok(FunctionControl::Jump { target, arguments }) => match enter_block_registers(
                 function,
@@ -9911,7 +9911,7 @@ fn execute_function(
                         state.depth.set(state.depth.get() - 1);
                         release_frame_slots(state, frame);
                         return Result::Err("return value count does not match function results")
-                    } else {};
+                    }
                     state.depth.set(state.depth.get() - 1);
                     release_frame_slots(state, frame);
                     return Result::Ok(InvocationOutcome::Returned(values))
@@ -9923,7 +9923,7 @@ fn execute_function(
                             release_frame_slots(state, frame);
                             return Result::Err(message)
                         },
-                    };
+                    }
                     let outcome = finish_invocation(state, frame, function, Option::None);
                     state.depth.set(state.depth.get() - 1);
                     release_frame_slots(state, frame);
@@ -10021,7 +10021,7 @@ fn execute_program(state: VmState) -> Result[InvocationOutcome, string] {
                     },
                     None => {},
                 }
-            } else {}
+            }
         }
     }
     execute_function(

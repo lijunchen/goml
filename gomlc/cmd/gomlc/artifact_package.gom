@@ -38,7 +38,7 @@ fn artifact_find_interface_unit(values: Vec[artifact::ArtifactInterfaceUnit], pa
         let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -91,7 +91,7 @@ fn artifact_read_interface_units(paths: Vec[string]) -> Result[
             return Result::Err(
                 "multiple interface files provided for package " + interface.package_name,
             )
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -102,7 +102,7 @@ fn artifact_standard_package(standard: Vec[ToolchainPackage], package_name: stri
     for value in standard {
         if value.interface_unit.package_name == package_name {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -115,7 +115,7 @@ fn artifact_interface_has_dependency(
     for dependency in value.deps {
         if dependency.0 == package_name && dependency.1 == interface_hash {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -225,18 +225,18 @@ fn artifact_resolve_interface_units(
             match artifact_interface_toolchain_error(world, interface) {
                 Some(error) => return Result::Err(error),
                 None => (),
-            };
+            }
             if !artifact_dependency_hash_matches(request.expected_hash, interface.interface_hash) {
                 return Result::Err(
                     "interface " + request.parent + " expects a different interface_hash for "
                         + request.package_name,
                 )
-            } else {};
+            }
             let _ = resolved_names.insert(interface.package_name);
             match artifact_standard_package(world.standard, interface.package_name) {
                 Some(_) => (),
                 None => resolved.push(interface),
-            };
+            }
             for dependency in interface.deps {
                 pending.push(
                     ArtifactDependencyRequest {
@@ -277,7 +277,7 @@ fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Re
         for candidate in comptime_modules {
             if candidate.package_name != module.package_name {
                 dependencies.push(candidate)
-            } else {}
+            }
         }
         match ctfe::verify_module(module, dependencies) {
             Ok(()) => (),
@@ -317,7 +317,7 @@ fn artifact_dependency_environments(
     for function in value.functions {
         if prelude_names.contains(function.name) {
             functions.push(function)
-        } else {}
+        }
     }
     tast::append_builtin_collection_methods(value.methods)?;
     let impls: Vec[tast::ImplInfo] = Vec::new();
@@ -418,7 +418,7 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
                                 + ", found "
                                 + file.package_name,
                         )
-                    } else {},
+                    },
                     None => {
                         name = Option::Some(file.package_name);
                     },
@@ -440,7 +440,7 @@ fn artifact_find_function(functions: Vec[artifact::ArtifactFnScheme], name: stri
         let function = functions[functions.len() - 1 - offset];
         if function.name == name {
             return Option::Some(function)
-        } else {}
+        }
     }
     Option::None
 }
@@ -453,23 +453,23 @@ fn artifact_entrypoint_diagnostics(
     let diagnostics: Vec[string] = Vec::new();
     if declared_name != "main" {
         return diagnostics
-    } else {};
+    }
     let expected = package_item_name(package_name, "main");
     let found = artifact_find_function(exports.functions, expected);
     match found {
         Some(function) => {
             if !function.type_params.is_empty() {
                 diagnostics.push("main function must not have type parameters")
-            } else {};
+            }
             match tast::resolve_type(function.ty) {
                 Func { params, ret_ty: _ } => if !params.is_empty() {
                     diagnostics.push("main function must not have parameters")
-                } else {},
+                },
                 _ => (),
             }
         },
         None => diagnostics.push("main function is required"),
-    };
+    }
     diagnostics
 }
 
@@ -485,7 +485,7 @@ fn artifact_dependency_type_names(builtins: core::File, dependencies: Vec[core::
         for definition in dependency_structs(builtins, dependencies) {
             result.push(definition.name)
         }
-    };
+    }
     result
 }
 
@@ -502,7 +502,7 @@ fn artifact_use_has_explicit_alias(value: ast::LowerResult, package_name: string
                             None => (),
                         }
                     }
-                } else {}
+                }
             }
             false
         },
@@ -519,7 +519,7 @@ fn artifact_declared_package_alias(
         if interface_unit.package_name == package_name
             && interface_unit.package_interface.name != "" {
             return Option::Some(interface_unit.package_interface.name)
-        } else {}
+        }
     }
     Option::None
 }
@@ -596,7 +596,7 @@ fn standard_internal_import_diagnostics(
                             sort_order: 0,
                         },
                     )
-                } else {}
+                }
             },
             None => (),
         }
@@ -642,7 +642,7 @@ fn compile_artifact_package(
 ) -> Result[ArtifactCompiledPackage, string] {
     if disallowed_toolchain_import(command.package_name) {
         return Result::Err("package " + command.package_name + " is internal to the toolchain")
-    } else {};
+    }
     let parsed: Vec[cst::ParseResult] = Vec::new();
     let parser_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for source_path in command.inputs {
@@ -688,7 +688,7 @@ fn compile_artifact_package(
         match package_value.interface_unit.comptime {
             Some(value) => derive_modules.push(value.module),
             None => (),
-        };
+        }
         for value in package_value.interface_unit.exports.reexports {
             derive_reexports.push(value)
         }
@@ -697,7 +697,7 @@ fn compile_artifact_package(
         match interface_unit_value.comptime {
             Some(value) => derive_modules.push(value.module),
             None => (),
-        };
+        }
         for value in interface_unit_value.exports.reexports {
             derive_reexports.push(value)
         }
@@ -710,7 +710,7 @@ fn compile_artifact_package(
     match builtin_derive_module {
         Some(value) => verified_derive_modules.push(value),
         None => (),
-    };
+    }
     artifact_verify_comptime_modules(verified_derive_modules)?;
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     let derive_diagnostics: Vec[tast::Diagnostic] = Vec::new();
@@ -816,16 +816,16 @@ fn compile_artifact_package(
                 },
             )
         }
-    } else {};
+    }
     fail_on_typer_diagnostics(checked.diagnostics, "", "");
     match validate_public_trait_impls(hir_file, command.package_name, public_names) {
         Ok(()) => (),
         Err(error) => return Result::Err("error[typer]: " + error),
-    };
+    }
     match validate_public_fields_and_inherent_methods(hir_file, command.package_name, public_names) {
         Ok(()) => (),
         Err(error) => return Result::Err("error[typer]: " + error),
-    };
+    }
     let deps = artifact_direct_dependency_hashes(world, dependency_names, dependency_units)?;
     let generated_interface = interface_codec::new_unit_with_comptime(
         command.package_name,
@@ -910,7 +910,7 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::Artifact
     for core_unit in result {
         if !names.insert(core_unit.package_name) {
             return Result::Err("duplicate core provided for package " + core_unit.package_name)
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -922,7 +922,7 @@ fn artifact_find_core_unit(values: Vec[artifact::ArtifactCoreUnit], package_name
         let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -954,7 +954,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
             for dependency in core_unit.deps {
                 if artifact_link_dependency_name(dependency.0) {
                     pending.push(dependency.0)
-                } else {}
+                }
             }
         }
     }
@@ -962,7 +962,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     for value in values {
         if names.contains(value.package_name) {
             result.push(value)
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -979,14 +979,14 @@ fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[artifact::
                         "package " + value.package_name
                             + " expects a different builtin interface_hash",
                     )
-                } else {}
+                }
             } else if dependency.0 == "prelude" {
                 if dependency.1 != artifact_prelude_interface_hash(world) {
                     return Result::Err(
                         "package " + value.package_name
                             + " expects a different prelude interface_hash",
                     )
-                } else {}
+                }
             } else {
                 match artifact_standard_package(world.standard, dependency.0) {
                     Some(standard) => if dependency.1 != standard.interface_unit.interface_hash {
@@ -995,7 +995,7 @@ fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[artifact::
                                 + " expects a different interface_hash for "
                                 + dependency.0,
                         )
-                    } else {},
+                    },
                     None => match artifact_find_core_unit(values, dependency.0) {
                         Some(actual) => if dependency.1 != actual.interface_hash {
                             return Result::Err(
@@ -1003,7 +1003,7 @@ fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[artifact::
                                     + " expects a different interface_hash for "
                                     + dependency.0,
                             )
-                        } else {},
+                        },
                         None => return Result::Err(
                             "package " + value.package_name + " depends on missing package "
                                 + dependency.0,
@@ -1031,7 +1031,7 @@ fn artifact_core_compilation(value: artifact::ArtifactCoreUnit) -> ArtifactCompi
     for dependency in value.deps {
         if artifact_link_dependency_name(dependency.0) {
             dependency_names.push(dependency.0)
-        } else {}
+        }
     }
     ArtifactCompilation {
         package_name: value.package_name,

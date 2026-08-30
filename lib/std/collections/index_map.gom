@@ -95,17 +95,17 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             } else if dense_index == -2 {
                 if first_deleted < 0 {
                     first_deleted = position;
-                } else {}
+                }
             } else {
                 match self.entries.get()[dense_index] {
                     Some(entry) => {
                         if entry.hash == hash && PartialEq::eq(entry.key, key) {
                             return IndexMapProbe::Found(position, dense_index)
-                        } else {}
+                        }
                     },
                     None => (),
                 }
-            };
+            }
             position = ((position.to_u64() * 5 + perturb + 1) & mask.to_u64()).to_isize();
             perturb >>= 5;
         }
@@ -139,7 +139,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             match old_entries[old_index] {
                 Some(entry) => next_entries.push(Option::Some(entry)),
                 None => (),
-            };
+            }
             old_index += 1;
         }
         self.entries.set(next_entries);
@@ -156,7 +156,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let occupied = self.len.get() + self.deleted.get();
         if (occupied + 1) * 3 >= self.indices.get().len() * 2 {
             self.rebuild(self.len.get() + 1)
-        } else {}
+        }
     }
 
     fn compact_after_remove(self: IndexMap[K, V]) -> () {
@@ -164,7 +164,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             self.clear()
         } else if self.deleted.get() >= 8 && self.deleted.get() > self.len.get() {
             self.rebuild(self.len.get())
-        } else {}
+        }
     }
 
     pub fn contains(self: IndexMap[K, V], key: K) -> bool {
@@ -261,7 +261,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             match self.entries.get()[index] {
                 Some(entry) => result.push((entry.key, entry.value)),
                 None => (),
-            };
+            }
             index += 1;
         }
         result
@@ -274,7 +274,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             match self.entries.get()[index] {
                 Some(entry) => result.push(entry.key),
                 None => (),
-            };
+            }
             index += 1;
         }
         result
@@ -287,7 +287,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             match self.entries.get()[index] {
                 Some(entry) => result.push(entry.value),
                 None => (),
-            };
+            }
             index += 1;
         }
         result

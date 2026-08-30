@@ -159,7 +159,7 @@ pub fn encode_with(input: bytes::Bytes, variant: Variant) -> string {
         output.write_char(digit((first & 3) << 4, variant));
         if padded(variant) {
             output.write_string("==")
-        } else {}
+        }
     } else if remainder == 2 {
         let first = input.get(index);
         let second = input.get(index + 1);
@@ -168,8 +168,8 @@ pub fn encode_with(input: bytes::Bytes, variant: Variant) -> string {
         output.write_char(digit((second & 15) << 2, variant));
         if padded(variant) {
             output.write_char('=')
-        } else {}
-    } else {};
+        }
+    }
     output.finish()
 }
 
@@ -180,7 +180,7 @@ fn decoded_input_length(input: string, variant: Variant) -> Result[isize, Decode
             return Result::Err(DecodeError::new(length, DecodeErrorKind::InvalidLength))
         } else if length == 0 {
             return Result::Ok(0)
-        } else {};
+        }
         let padding = if input.byte_get(length - 1) == b'=' {
             if length >= 2 && input.byte_get(length - 2) == b'=' {
                 2
@@ -195,7 +195,7 @@ fn decoded_input_length(input: string, variant: Variant) -> Result[isize, Decode
         while index < data_length {
             if input.byte_get(index) == b'=' {
                 return Result::Err(DecodeError::new(index, DecodeErrorKind::InvalidPadding))
-            } else {};
+            }
             index += 1;
         }
         let remainder = data_length % 4;
@@ -211,7 +211,7 @@ fn decoded_input_length(input: string, variant: Variant) -> Result[isize, Decode
         while index < length {
             if input.byte_get(index) == b'=' {
                 return Result::Err(DecodeError::new(index, DecodeErrorKind::InvalidPadding))
-            } else {};
+            }
             index += 1;
         }
         Result::Ok(length)
@@ -242,7 +242,7 @@ pub fn decode_with(input: string, variant: Variant) -> Result[bytes::Bytes, Deco
         let second = decode_digit(input.byte_get(index + 1), index + 1, variant)?;
         if second & 15 != 0 {
             return Result::Err(DecodeError::new(index + 1, DecodeErrorKind::NonCanonical))
-        } else {};
+        }
         output.push((first << 2) | (second >> 4))
     } else if remainder == 3 {
         let first = decode_digit(input.byte_get(index), index, variant)?;
@@ -250,18 +250,18 @@ pub fn decode_with(input: string, variant: Variant) -> Result[bytes::Bytes, Deco
         let third = decode_digit(input.byte_get(index + 2), index + 2, variant)?;
         if third & 3 != 0 {
             return Result::Err(DecodeError::new(index + 2, DecodeErrorKind::NonCanonical))
-        } else {};
+        }
         output.push((first << 2) | (second >> 4));
         output.push((second << 4) | (third >> 2))
-    } else {};
+    }
     if padded(variant) {
         let mut padding_index = data_length;
         while padding_index < input.byte_len() {
             if input.byte_get(padding_index) != b'=' {
                 return Result::Err(DecodeError::new(padding_index, DecodeErrorKind::InvalidPadding))
-            } else {};
+            }
             padding_index += 1;
         }
-    } else {};
+    }
     Result::Ok(output)
 }

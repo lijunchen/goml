@@ -15,7 +15,7 @@ fn package_named(packages: Vec[GoListPackage], name: string) -> Option[GoListPac
     for package_value in packages {
         if package_value.import_path == name {
             return Option::Some(package_value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -26,7 +26,7 @@ fn execution_package_named(packages: Vec[ExecutionPackage], name: string) -> Opt
     for package_value in packages {
         if package_value.path == name {
             return Option::Some(package_value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -35,7 +35,7 @@ fn has_diagnostic(result: ExecutionLoadResult, expected: string) -> bool {
     for diagnostic in result.diagnostics {
         if diagnostic.message.contains(expected) {
             return true
-        } else {}
+        }
     }
     false
 }

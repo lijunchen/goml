@@ -197,7 +197,7 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
     match query::hover(analysis, offset) {
         Some(hover) => sections.push("```goml\n" + hover.contents + "\n```"),
         None => (),
-    };
+    }
     let diagnostic_lines = collections::IndexSet::new();
     for diagnostic in analysis.checked.diagnostics {
         if diagnostic_contains_offset(diagnostic, document.path, offset) {
@@ -207,13 +207,13 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
             }
                 + diagnostic_text(diagnostic);
             let _ = diagnostic_lines.insert(line);
-        } else {}
+        }
     }
     if !diagnostic_lines.is_empty() {
         sections.push(
             "**Diagnostics**\n```diff\n" + join_strings(diagnostic_lines.to_vec(), "\n") + "\n```",
         )
-    } else {};
+    }
     if sections.is_empty() {
         Result::Ok(json::Value::Null)
     } else {
@@ -292,7 +292,7 @@ fn completion_response(server: Server, params: json::Value) -> Result[json::Valu
                 push_json_field(fields, "insertTextFormat", json::Value::Number("2"))
             },
             None => (),
-        };
+        }
         result.push(json::Value::Object(fields))
     }
     Result::Ok(json::Value::Array(result))
@@ -560,7 +560,7 @@ fn diagnostic_json(
     }
     if !related.is_empty() {
         push_json_field(fields, "relatedInformation", json::Value::Array(related))
-    } else {};
+    }
     json::Value::Object(fields)
 }
 
@@ -571,7 +571,7 @@ fn publish_diagnostics(server: Server, document: Document) -> json::Value {
     for diagnostic in analysis.checked.diagnostics {
         if diagnostic.source_path == "" || diagnostic.source_path == document.path {
             diagnostics.push(diagnostic_json(server, document, analysis, diagnostic))
-        } else {}
+        }
     }
     let params: Vec[(string, json::Value)] = Vec::new();
     push_json_field(params, "uri", json::Value::String(document.uri));
@@ -643,7 +643,7 @@ fn did_change(server: Server, params: json::Value) -> Result[(), string] {
     };
     if changes.is_empty() {
         return Result::Err("contentChanges must not be empty")
-    } else {};
+    }
     let text = required_string_field(changes[changes.len() - 1], "text")?;
     change_document(server, uri, text, version);
     match server_document(server, uri) {
@@ -749,7 +749,7 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
             }
         },
         Err(error) => output.push(rpc_error(json::Value::Null, -32600, error)),
-    };
+    }
     output
 }
 
@@ -768,13 +768,13 @@ pub fn run_server() -> Result[(), string] {
         match operation {
             Some(name) => write_rpc_message(status_notification("busy", name))?,
             None => (),
-        };
+        }
         match handle_payload(server, payload) {
             Ok(messages) => for message in messages {
                 write_rpc_message(message)?
             },
             Err(error) => return Result::Err(error),
-        };
+        }
         match operation {
             Some(name) => write_rpc_message(status_notification("ready", name))?,
             None => (),

@@ -75,12 +75,12 @@ fn active_use_path_start(source: string, limit: isize) -> Option[isize] {
         } else if lexer::token_kind_equal(token.kind, lexer::TokenKind::RBrace) {
             if depth > 0 {
                 depth = depth - 1;
-            } else {}
+            }
         } else if depth == 0 && lexer::token_kind_equal(token.kind, lexer::TokenKind::UseKeyword) {
             path_start = Option::Some(token.end);
         } else if depth == 0 && lexer::token_kind_equal(token.kind, lexer::TokenKind::Semi) {
             path_start = Option::None;
-        } else {}
+        }
     }
     path_start
 }
@@ -133,7 +133,7 @@ fn contains_completion(values: Vec[CompletionItem], expected: string) -> bool {
     for value in values {
         if value.label == expected {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -141,7 +141,7 @@ fn contains_completion(values: Vec[CompletionItem], expected: string) -> bool {
 fn push_completion(values: Vec[CompletionItem], value: CompletionItem, prefix: string) -> () {
     if label_matches(value.label, prefix) && !contains_completion(values, value.label) {
         values.push(value)
-    } else {}
+    }
 }
 
 fn symbol_completion_kind(value: SymbolKind) -> CompletionKind {
@@ -164,7 +164,7 @@ fn path_text(value: ast::Path) -> string {
     for segment in value.segments {
         if index > 0 {
             builder.write_string("::")
-        } else {};
+        }
         builder.write_string(segment.ident);
         index = index + 1;
     }
@@ -207,7 +207,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
                                 + "::"
                                 + item.name,
                         )
-                    } else {}
+                    }
                 }
                 let candidate = match use_decl.alias {
                     Some(name) => name,
@@ -276,7 +276,7 @@ fn namespace_is_package(value: Analysis, namespace: string) -> bool {
     for source in value.sources {
         if source.package_name == namespace {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -310,7 +310,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
                     },
                     prefix,
                 )
-            } else {}
+            }
         }
         for environment in value.environments {
             for definition in environment.enums {
@@ -326,7 +326,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
                             prefix,
                         )
                     }
-                } else {}
+                }
             }
             for method in environment.methods {
                 let receiver = tast::diagnostic_type_text(tast::resolve_type(method.for_type));
@@ -346,7 +346,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
                         },
                         prefix,
                     )
-                } else {}
+                }
             }
         }
         result
@@ -363,7 +363,7 @@ fn immediate_package_member(qualified_name: string, package_name: string) -> boo
         while index + 1 < remainder.byte_len() {
             if remainder.byte_get(index) == b':' && remainder.byte_get(index + 1) == b':' {
                 return false
-            } else {};
+            }
             index = index + 1;
         }
         true
@@ -374,7 +374,7 @@ fn analysis_has_package(value: Analysis, package_name: string) -> bool {
     for source in value.sources {
         if source.package_name == package_name {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -393,7 +393,7 @@ fn complete_namespace(value: Analysis, package_name: string, prefix: string) -> 
                 },
                 prefix,
             )
-        } else {}
+        }
     }
     append_comptime_derive_completions(result, value, package_name, prefix);
     result
@@ -434,7 +434,7 @@ fn package_directory_has_source(directory: string) -> bool {
                         None => false,
                     } {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -454,7 +454,7 @@ fn complete_local_package_children(
                 let candidate = path::join(directory, name);
                 if fs::is_dir(candidate) && package_directory_has_source(candidate) {
                     push_package_completion(result, name, namespace + "::" + name, prefix)
-                } else {}
+                }
             },
             Err(_) => (),
         },
@@ -477,7 +477,7 @@ fn complete_source_package(source: SourceFile, prefix: string) -> Vec[Completion
                 },
                 prefix,
             )
-        } else {}
+        }
     }
     result
 }
@@ -490,7 +490,7 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
         for child in standard_library_children(context.namespace) {
             push_package_completion(result, child, context.namespace + "::" + child, context.prefix)
         }
-    };
+    }
     match standard_library_sources(context.namespace) {
         Ok(Some(sources)) => for source in sources {
             for item in complete_source_package(source, context.prefix) {
@@ -498,12 +498,12 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
             }
         },
         Ok(None) | Err(_) => (),
-    };
+    }
     match discover_project(value.source_path, value.source, value.overrides) {
         Ok(Some(project)) => {
             if context.namespace == "" {
                 push_package_completion(result, "module", project.module_path, context.prefix)
-            } else {};
+            }
             let namespace = expand_module_namespace(project.module_path, context.namespace);
             match namespace_next_segment(project.module_path, namespace) {
                 Some(segment) => push_package_completion(
@@ -513,10 +513,10 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
                     context.prefix,
                 ),
                 None => (),
-            };
+            }
             if namespace == project.module_path || namespace.starts_with(project.module_path + "::") {
                 complete_local_package_children(result, project, namespace, context.prefix)
-            } else {};
+            }
             match fs::read_file_structured(path::join(project.module_root, MANIFEST_FILENAME)) {
                 Ok(manifest) => for dependency in manifest_dependencies(manifest) {
                     match namespace_next_segment(dependency.name, namespace) {
@@ -533,7 +533,7 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
             }
         },
         _ => (),
-    };
+    }
     result
 }
 
@@ -544,7 +544,7 @@ fn short_type_name(value: string) -> string {
         if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             start = index + 2;
             index = index + 1;
-        } else {};
+        }
         index = index + 1;
     }
     value.byte_slice(start, value.byte_len())
@@ -581,7 +581,7 @@ fn visible_method_symbol(value: Analysis, owner: string, name: string, require_r
             && completion_symbol_visible(value, symbol)
             && (!require_receiver || symbol.has_receiver) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -614,7 +614,7 @@ fn current_struct_owner(value: Analysis, owner: string) -> bool {
             && symbol.package_name == value.package_name
             && completion_owner_matches(value, symbol.qualified_name, owner) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -642,7 +642,7 @@ fn reference_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[ta
                 Error => (),
                 _ => return Option::Some(fact.ty),
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -655,10 +655,10 @@ fn local_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::
             match fact.span {
                 Some(span) => if span.start < token.start {
                     return Option::Some(fact.ty)
-                } else {},
+                },
                 None => (),
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -675,7 +675,7 @@ fn receiver_type(value: Analysis, dot: isize) -> Option[tast::Type] {
                     && fact_width <= width {
                     result = Option::Some(fact.ty);
                     width = fact_width;
-                } else {}
+                }
             }
             match result {
                 Some(ty) => match tast::resolve_type(ty) {
@@ -762,7 +762,7 @@ fn source_explicit_receiver_type(source: string, name: string, limit: isize) -> 
                     while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
                         cursor = cursor + 1;
                     }
-                } else {};
+                }
                 let type_start = cursor;
                 while cursor < limit
                     && (identifier_byte(source.byte_get(cursor)) || source.byte_get(cursor) == b':') {
@@ -770,9 +770,9 @@ fn source_explicit_receiver_type(source: string, name: string, limit: isize) -> 
                 }
                 if cursor > type_start {
                     return Option::Some(source.byte_slice(type_start, cursor))
-                } else {}
-            } else {}
-        } else {};
+                }
+            }
+        }
         index = index - 1;
     }
     Option::None
@@ -798,7 +798,7 @@ fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string]
                 }
             },
             _ => (),
-        };
+        }
         item_index = item_index - 1;
     }
     Option::None
@@ -848,7 +848,7 @@ fn complete_named_methods(
                 },
                 prefix,
             )
-        } else {}
+        }
     }
     for environment in value.environments {
         for definition in environment.traits {
@@ -869,9 +869,9 @@ fn complete_named_methods(
                             },
                             prefix,
                         )
-                    } else {}
+                    }
                 }
-            } else {}
+            }
         }
     }
 }
@@ -901,9 +901,9 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                                     },
                                     prefix,
                                 )
-                            } else {}
+                            }
                         }
-                    } else {}
+                    }
                 }
                 for method in environment.methods {
                     let method_receiver = type_owner_name(method.for_type);
@@ -923,7 +923,7 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                             },
                             prefix,
                         )
-                    } else {}
+                    }
                 }
                 match tast::resolve_type(receiver) {
                     Dyn { trait_name, .. } => for definition in environment.traits {
@@ -944,9 +944,9 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
                                         },
                                         prefix,
                                     )
-                                } else {}
+                                }
                             }
-                        } else {}
+                        }
                     },
                     _ => (),
                 }
@@ -965,7 +965,7 @@ fn complete_members(value: Analysis, dot: isize, prefix: string) -> Vec[Completi
             Some(receiver_name) => complete_named_methods(result, value, receiver_name, prefix),
             None => (),
         },
-    };
+    }
     result
 }
 
@@ -1044,7 +1044,7 @@ fn prelude_builtin_symbol(value: Symbol) -> bool {
                 for name in resources::prelude_builtin_export_names() {
                     if value.name == name {
                         return true
-                    } else {}
+                    }
                 }
                 false
             },
@@ -1066,7 +1066,7 @@ fn append_prelude_scope_completions(result: Vec[CompletionItem], value: Analysis
                 },
                 prefix,
             )
-        } else {}
+        }
     }
     for name in resources::prelude_builtin_export_names() {
         push_completion(
@@ -1096,10 +1096,10 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
                         },
                         prefix,
                     )
-                } else {},
+                },
                 None => (),
             }
-        } else {}
+        }
     }
     let result = locals.values();
     for symbol in build_symbol_index(value).symbols {
@@ -1114,7 +1114,7 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
                 },
                 prefix,
             )
-        } else {}
+        }
     }
     append_prelude_scope_completions(result, value, prefix);
     let lowered = value.lowered;
@@ -1135,10 +1135,10 @@ fn complete_scope(value: Analysis, offset: isize, prefix: string) -> Vec[Complet
                     },
                     prefix,
                 )
-            } else {}
+            }
         },
         None => (),
-    };
+    }
     let keywords = Vec::from_array(
         [
             "array",
@@ -1237,7 +1237,7 @@ fn call_open_before(source: string, offset: isize) -> Option[isize] {
             } else {
                 depth = depth - 1;
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -1275,7 +1275,7 @@ fn completion_open_brace(source: string, end: isize) -> Option[isize] {
             } else {
                 depth = depth - 1;
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -1328,7 +1328,7 @@ fn append_select_completions(
     let start = prefix_start(source, offset);
     if completion_word_before(source, start) == "select" {
         push_contextual_completion(result, "priority", "priority select", prefix)
-    } else {};
+    }
     match select_completion_open(source, start) {
         Some(open) => {
             let content = source.byte_slice(open + 1, start);
@@ -1336,7 +1336,7 @@ fn append_select_completions(
             push_contextual_completion(result, "send", "select send arm", prefix);
             if !content.contains("default") {
                 push_contextual_completion(result, "default", "select default arm", prefix)
-            } else {};
+            }
             let mut arm_start = content.byte_len();
             while arm_start > 0 && content.byte_get(arm_start - 1) != b',' {
                 arm_start = arm_start - 1;
@@ -1348,7 +1348,7 @@ fn append_select_completions(
                 push_contextual_completion(result, "match", "receive match", prefix)
             } else if arm.contains("send(") && arm.contains(")") && !arm.contains("=>") {
                 push_contextual_completion(result, "when", "select guard", prefix)
-            } else {}
+            }
         },
         None => (),
     }

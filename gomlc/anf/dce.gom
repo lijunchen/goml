@@ -154,7 +154,7 @@ fn dce_join_group_reachable(values: Vec[DceJoinResult], live: DceLive, names: Dc
     for value in values {
         if dce_names_contains(live.joins, value.value.name) {
             dce_names_add(reachable, value.value.name)
-        } else {}
+        }
     }
     loop {
         let previous = reachable.len();
@@ -163,13 +163,13 @@ fn dce_join_group_reachable(values: Vec[DceJoinResult], live: DceLive, names: Dc
                 for target in value.live.joins {
                     if dce_names_contains(names, target) {
                         dce_names_add(reachable, target)
-                    } else {}
+                    }
                 }
-            } else {}
+            }
         }
         if reachable.len() == previous {
             break
-        } else {}
+        }
     }
     reachable
 }
@@ -191,10 +191,10 @@ fn dce_join_rec(values: Vec[JoinBind], live: DceLive) -> Vec[JoinBind] {
             for target in value.live.joins {
                 if !dce_names_contains(names, target) {
                     dce_names_add(live.joins, target)
-                } else {}
+                }
             }
             result.push(value.value)
-        } else {}
+        }
     }
     result
 }
@@ -246,7 +246,7 @@ fn dce_term(value: Term) -> DceTermResult {
                         match guard {
                             Some(value) => dce_collect_imm(live.values, value),
                             None => (),
-                        };
+                        }
                         let result = dce_block_with_live(body);
                         dce_names_remove(result.live.values, binding);
                         dce_live_add_all(live, result.live);
@@ -266,7 +266,7 @@ fn dce_term(value: Term) -> DceTermResult {
                         match guard {
                             Some(value) => dce_collect_imm(live.values, value),
                             None => (),
-                        };
+                        }
                         let result = dce_block_with_live(body);
                         dce_live_add_all(live, result.live);
                         lowered_arms.push(
@@ -311,7 +311,7 @@ fn dce_block_with_live(value: Block) -> DceBlockResult {
                 let lowered = dce_join(value);
                 dce_live_add_all(live, lowered.live);
                 result.push(Bind::Join(lowered.value))
-            } else {},
+            },
             JoinRec(values) => {
                 let lowered = dce_join_rec(values, live);
                 if lowered.is_empty() {} else {

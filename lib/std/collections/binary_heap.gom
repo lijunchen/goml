@@ -19,7 +19,7 @@ fn binary_heap_sift_down[T: cmp::Ord](values: Vec[T], start: isize) -> () {
         let left = parent * 2 + 1;
         if left >= length {
             return
-        } else {};
+        }
         let right = left + 1;
         let child = if right < length && cmp::Ord::cmp(values[right], values[left]).is_gt() {
             right
@@ -28,7 +28,7 @@ fn binary_heap_sift_down[T: cmp::Ord](values: Vec[T], start: isize) -> () {
         };
         if !cmp::Ord::cmp(values[child], values[parent]).is_gt() {
             return
-        } else {};
+        }
         values.swap(parent, child);
         parent = child;
     }
@@ -79,7 +79,7 @@ impl[T: cmp::Ord] BinaryHeap[T] {
             let parent = (child - 1) / 2;
             if !cmp::Ord::cmp(self.values[child], self.values[parent]).is_gt() {
                 return
-            } else {};
+            }
             self.values.swap(child, parent);
             child = parent;
         }

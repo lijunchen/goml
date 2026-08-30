@@ -63,7 +63,7 @@ fn collect_statement_omissions(
             Some(Node(child)) => collect_format_omissions(child, result),
             Some(Token(token)) => if drop_semicolon && token_is(token, lexer::TokenKind::Semi) {
                 push_format_omission(result, token.start, token.end)
-            } else {},
+            },
             None => (),
         }
     }
@@ -92,7 +92,7 @@ fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> ()
             },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::Semi) {
                 push_format_omission(result, token.start, token.end)
-            } else {},
+            },
             None => (),
         }
     }
@@ -102,7 +102,7 @@ fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> (
     match omittable_empty_else_range(node) {
         Some(value) => push_format_omission(result, value.0, value.1),
         None => (),
-    };
+    }
     if node_is(node, cst::NodeKind::BLOCK) {
         collect_block_omissions(node, result)
     } else {
@@ -120,7 +120,7 @@ fn token_is_omitted(token: lexer::Token, omissions: Vec[FormatOmission]) -> bool
     for omission in omissions {
         if token.start >= omission.start && token.end <= omission.end {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -147,13 +147,13 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
             output.write_string(":");
             output.write_string(lexer::encode_text_hex(token.text));
             output.write_string("\n")
-        };
+        }
         if lexer::token_kind_equal(token.kind, lexer::TokenKind::WhereKeyword) {
             in_where.set(true)
         } else if lexer::token_kind_equal(token.kind, lexer::TokenKind::LBrace)
             || lexer::token_kind_equal(token.kind, lexer::TokenKind::Semi) {
             in_where.set(false)
-        } else {}
+        }
     }
     output.finish()
 }

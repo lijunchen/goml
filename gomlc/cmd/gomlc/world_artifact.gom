@@ -177,7 +177,7 @@ fn world_find_package(values: Vec[ToolchainPackage], package_name: string) -> Op
     for value in values {
         if value.interface_unit.package_name == package_name {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -204,9 +204,9 @@ fn world_sorted_packages(values: Vec[ToolchainPackage]) -> Result[Vec[ToolchainP
         match previous {
             Some(value) => if value == name {
                 return Result::Err("world artifact contains duplicate package " + name)
-            } else {},
+            },
             None => (),
-        };
+        }
         result.push(world_required_package(values, name)?);
         previous = Option::Some(name);
     }
@@ -260,7 +260,7 @@ fn world_dependencies_equal(left: Vec[(string, string)], right: Vec[(string, str
         for index in 0..left.len() {
             if left[index] != right[index] {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -303,7 +303,7 @@ fn world_validate_standard_dependencies(
             prelude_hash,
         ) {
             return Result::Err("world artifact standard package prelude dependency does not match")
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -331,7 +331,7 @@ fn world_from_packages(metadata: WorldMetadata, packages: Vec[ToolchainPackage])
         return Result::Err("world compiler identity does not match compiler")
     } else if metadata.builtin_package != "builtin" || metadata.prelude_package != "prelude" {
         return Result::Err("world builtin or prelude package identity does not match")
-    } else {};
+    }
     let builtin = world_required_package(packages, metadata.builtin_package)?;
     let prelude = world_required_package(packages, metadata.prelude_package)?;
     if !artifact_interface_has_dependency(
@@ -340,13 +340,13 @@ fn world_from_packages(metadata: WorldMetadata, packages: Vec[ToolchainPackage])
         builtin.interface_unit.interface_hash,
     ) {
         return Result::Err("world artifact prelude builtin dependency does not match")
-    } else {};
+    }
     let standard: Vec[ToolchainPackage] = Vec::new();
     for package_value in packages {
         if package_value.interface_unit.package_name != "builtin"
             && package_value.interface_unit.package_name != "prelude" {
             standard.push(package_value)
-        } else {}
+        }
     }
     world_validate_standard_packages(standard)?;
     world_validate_standard_dependencies(
@@ -373,7 +373,7 @@ fn decode_package_world_v2(
     let metadata = world_decode_metadata_v2(metadata_section.data)?;
     if container.sections.len() != 1 + metadata.package_count * 2 {
         return Result::Err("world artifact package section count does not match")
-    } else {};
+    }
     let packages: Vec[ToolchainPackage] = Vec::new();
     let names: Vec[string] = Vec::new();
     for index in 0..metadata.package_count {
@@ -391,7 +391,7 @@ fn decode_package_world_v2(
             return Result::Err("world artifact packages are not sorted")
         } else if index > 0 && names[index] == names[index - 1] {
             return Result::Err("world artifact contains duplicate package " + names[index])
-        } else {}
+        }
     }
     world_from_packages(metadata, packages)
 }
@@ -400,14 +400,14 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let container = wire::decode_artifact_binary_container(data)?;
     if container.kind != 3 {
         return Result::Err("binary artifact is not a compiler world")
-    } else {};
+    }
     let metadata_section = match wire::artifact_binary_find_section(container, 1) {
         Some(value) => value,
         None => return Result::Err("world artifact is missing a required section"),
     };
     if metadata_section.flags != wire::required_section_flag() {
         return Result::Err("invalid world artifact section")
-    } else {};
+    }
     if metadata_section.version == 2 {
         decode_package_world_v2(container, metadata_section)
     } else {

@@ -74,7 +74,7 @@ pub fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
     let count = artifact_binary_read_length(reader)?;
     if count > 10000000 {
         return Result::Err("binary artifact string table exceeds limit")
-    } else {};
+    }
     let interner = collections::Interner::new();
     for index in 0..count {
         let value = artifact_binary_read_string(reader)?;
@@ -124,7 +124,7 @@ fn artifact_binary_object_has_field(fields: Vec[(string, ArtifactValue)], name: 
     for field in fields {
         if field.0 == name {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -137,7 +137,7 @@ fn artifact_binary_encode_value_at(
 ) -> Result[(), string] {
     if depth > 4096 {
         return Result::Err("binary artifact value nesting exceeds limit")
-    } else {};
+    }
     match value {
         Null => {
             artifact_binary_write_u8(writer, 0);
@@ -198,7 +198,7 @@ fn artifact_binary_decode_value_at(
 ) -> Result[ArtifactValue, string] {
     if depth > 4096 {
         return Result::Err("binary artifact value nesting exceeds limit")
-    } else {};
+    }
     let tag = artifact_binary_read_u8(reader)?;
     match tag {
         0 => Result::Ok(ArtifactValue::Null),
@@ -216,7 +216,7 @@ fn artifact_binary_decode_value_at(
             let count = artifact_binary_read_u32(reader)?.to_isize();
             if count > 10000000 {
                 return Result::Err("binary artifact array exceeds limit")
-            } else {};
+            }
             let values = Vec::with_capacity(count);
             for _ in 0..count {
                 values.push(artifact_binary_decode_value_at(reader, table, depth + 1)?)
@@ -227,7 +227,7 @@ fn artifact_binary_decode_value_at(
             let count = artifact_binary_read_u32(reader)?.to_isize();
             if count > 10000000 {
                 return Result::Err("binary artifact object exceeds limit")
-            } else {};
+            }
             let fields = Vec::with_capacity(count);
             let names: Option[collections::HashSet[string]] = if count > 32 {
                 Option::Some(collections::HashSet::new())
@@ -242,7 +242,7 @@ fn artifact_binary_decode_value_at(
                 };
                 if duplicate {
                     return Result::Err("duplicate binary artifact object field")
-                } else {};
+                }
                 let value = artifact_binary_decode_value_at(reader, table, depth + 1)?;
                 fields.push((name, value))
             }

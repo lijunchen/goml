@@ -521,7 +521,7 @@ pub fn standard_package_spec(package_name: string) -> Option[StandardPackageSpec
     for spec in standard_package_specs() {
         if spec.name == package_name {
             return Option::Some(spec)
-        } else {}
+        }
     }
     Option::None
 }
@@ -531,10 +531,10 @@ pub fn standard_package_children(package_name: string) -> Vec[string] {
     for spec in standard_package_specs() {
         if package_name == STD_ROOT_PACKAGE && spec.name == STD_IO_PACKAGE {
             result.push("internal")
-        } else {};
+        }
         if spec.parent == package_name {
             result.push(spec.declared_name)
-        } else {}
+        }
     }
     result
 }
@@ -543,7 +543,7 @@ fn add_standard_package_closure(result: Vec[string], package_name: string) -> ()
     for value in result {
         if value == package_name {
             return
-        } else {}
+        }
     }
     match standard_package_spec(package_name) {
         Some(spec) => {
@@ -568,7 +568,7 @@ fn add_standard_link_closure(result: Vec[string], package_name: string) -> () {
     for value in result {
         if value == package_name {
             return
-        } else {}
+        }
     }
     match standard_package_spec(package_name) {
         Some(spec) => {

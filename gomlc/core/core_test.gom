@@ -54,13 +54,13 @@ fn detaches_tast_type_variables_at_the_core_boundary() -> () {
     match unbound {
         Error => (),
         _ => testing::fail("expected an unbound type variable to become Core Error"),
-    };
+    }
     variable.set(tast::TypeVar::Link(tast::Type::String));
     let linked = lower_type(tast::Type::Var(variable));
     match linked {
         String => (),
         _ => testing::fail("expected a linked type variable to detach as string"),
-    };
+    }
     variable.set(tast::TypeVar::Link(tast::Type::Bool));
     match linked {
         String => (),
@@ -252,7 +252,7 @@ fn lowers_builtin_option_matches_with_nonvariable_sources() -> () {
                             }
                         },
                         _ => testing::fail("expected None arm"),
-                    };
+                    }
                     match arms.get(1).lhs {
                         Constr { constructor, args: _, ty: _ } => {
                             testing::assert_eq(constructor.name, "Option::Some");
@@ -297,7 +297,7 @@ fn lowers_linked_builtin_option_payload_patterns() -> () {
                     testing::assert_eq(constructor.name, "Option::Some")
                 },
                 _ => testing::fail("expected Some arm"),
-            };
+            }
             match arms.get(1).body {
                 Block { block: extraction, ty: _ } => match extraction.tail {
                     Some(Block { block: binding, ty: _ }) => {
@@ -340,7 +340,7 @@ fn binds_nested_match_sources_before_lowering_them() -> () {
                     "mtmp1",
                 ),
                 _ => testing::fail("expected inner match binding"),
-            };
+            }
             match outer.tail {
                 Some(Match { expr: _, arms, default: None, ty: _ }) => {
                     match arms.get(0).lhs {
@@ -348,7 +348,7 @@ fn binds_nested_match_sources_before_lowering_them() -> () {
                             testing::assert_eq(value, true)
                         },
                         _ => testing::fail("expected true arm"),
-                    };
+                    }
                     match arms.get(1).lhs {
                         Prim { value: Bool { value }, ty: _ } => {
                             testing::assert_eq(value, false)
@@ -611,7 +611,7 @@ fn validates_core_binding_types() -> () {
     match validate(file) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let function = file.functions[0];
     let statement = function.body.stmts[0];
     let invalid_statements = Vec::from_array(

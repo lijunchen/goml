@@ -90,7 +90,7 @@ fn schema_field_index(fields: Vec[(string, Schema)], key: FieldKey) -> isize {
             while index < fields.len() {
                 if fields[index].0 == name {
                     return index
-                } else {};
+                }
                 index = index + 1;
             };
             -1
@@ -105,7 +105,7 @@ fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> isize 
             while index < variants.len() {
                 if variants[index].index == expected {
                     return index
-                } else {};
+                }
                 index = index + 1;
             };
             -1
@@ -115,7 +115,7 @@ fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> isize 
             while index < variants.len() {
                 if variants[index].name == expected {
                     return index
-                } else {};
+                }
                 index = index + 1;
             };
             -1
@@ -162,7 +162,7 @@ fn deserialize_sequence_schema[D: Deserializer](deserializer: D, schemas: Vec[Sc
 ] {
     if schemas.len() != 1 {
         return Result::Err("sequence schema must contain one item")
-    } else {};
+    }
     let _ = deserializer.begin_sequence()?;
     let values: Vec[Value] = Vec::new();
     while deserializer.next_sequence_element()? {
@@ -194,11 +194,11 @@ fn deserialize_optional_schema[D: Deserializer](deserializer: D, schemas: Vec[Sc
 ] {
     if schemas.len() != 1 {
         return Result::Err("optional schema must contain one item")
-    } else {};
+    }
     let values: Vec[Value] = Vec::new();
     if deserializer.begin_optional()? {
         values.push(deserialize_schema_from(deserializer, schemas[0])?)
-    } else {};
+    }
     deserializer.end_optional()?;
     Result::Ok(Value::Optional(values))
 }
@@ -217,7 +217,7 @@ fn deserialize_struct_schema_value[D: Deserializer](deserializer: D, fields: Vec
             deserializer.skip_value()?
         } else {
             values.push((fields[index].0, deserialize_schema_from(deserializer, fields[index].1)?))
-        };
+        }
         next = deserializer.next_struct_field()?;
     }
     deserializer.end_struct()?;
@@ -232,7 +232,7 @@ fn deserialize_variant_schema_value[D: Deserializer](deserializer: D, variants: 
     let variant_index = schema_variant_index(variants, key);
     if variant_index < 0 {
         return Result::Err("unknown enum variant")
-    } else {};
+    }
     let variant = variants[variant_index];
     deserializer.begin_variant_fields(variant.kind, variant.fields.len())?;
     let fields: Vec[(string, Value)] = Vec::new();
@@ -249,7 +249,7 @@ fn deserialize_variant_schema_value[D: Deserializer](deserializer: D, variants: 
                     deserialize_schema_from(deserializer, variant.fields[index].1)?,
                 ),
             )
-        };
+        }
         next = deserializer.next_variant_field()?;
     }
     deserializer.end_variant()?;

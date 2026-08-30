@@ -128,7 +128,7 @@ fn string_tag(values: Vec[string], value: string) -> bool {
     for candidate in values {
         if candidate == value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -184,7 +184,7 @@ fn parse_constraint_atom(parser: ConstraintParser) -> bool {
         let result = parse_constraint_or(parser);
         if !consume_constraint(parser, ")") {
             parser.valid.set(false)
-        } else {};
+        }
         result
     } else {
         read_constraint_tag(parser)
@@ -248,12 +248,12 @@ fn evaluate_plus_build_option(
     let terms = text::split(value, ",");
     if terms.is_empty() {
         return false
-    } else {};
+    }
     for term in terms {
         let term = text::trim(term);
         if term == "" {
             return false
-        } else {};
+        }
         let negated = term.starts_with("!");
         let name = if negated {
             term.byte_slice(1, term.byte_len())
@@ -267,7 +267,7 @@ fn evaluate_plus_build_option(
             };
         if selected == negated {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -284,7 +284,7 @@ fn evaluate_plus_build_constraint(
         if text::trim(option) != ""
             && evaluate_plus_build_option(option, goos, goarch, cgo, go_version, tags) {
             return true
-        } else {}
+        }
     }
     false
 }

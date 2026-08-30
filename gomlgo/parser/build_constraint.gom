@@ -91,7 +91,7 @@ fn build_parse_atom(parser: BuildParser, sign: isize) -> isize {
         let value = build_parse_or(parser, sign);
         if !build_consume(parser, ")") {
             parser.valid.set(false)
-        } else {};
+        }
         value
     } else {
         build_read_tag(parser, sign)
@@ -131,7 +131,7 @@ fn build_constraint_version(value: string) -> string {
         let prefix_end = "//go:build".byte_len();
         if value.byte_len() > prefix_end && !build_space(value.byte_get(prefix_end)) {
             return ""
-        } else {};
+        }
         let expression = text::trim(value.byte_slice(prefix_end, value.byte_len()));
         let parser = BuildParser { input: expression, index: Ref::new(0), valid: Ref::new(true) };
         let version = build_parse_or(parser, 1);
@@ -155,14 +155,14 @@ fn token_metadata(tokens: Vec[token::Token]) -> (string, isize) {
         let version = build_constraint_version(tokens[index].literal);
         if version != "" {
             result = version;
-        } else {};
+        }
         index += 1;
     }
     let mut comment_limit = index;
     while index < tokens.len() {
         if token::equal(tokens[index].kind, token::Kind::Comment) {
             comment_limit = index + 1;
-        } else {};
+        }
         index += 1;
     };
     (result, comment_limit)

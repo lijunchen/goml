@@ -42,7 +42,7 @@ fn write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(hex_digit(value / 16))
-    } else {};
+    }
     builder.write_char(hex_digit(value % 16));
     builder.write_char('}')
 }
@@ -69,7 +69,7 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> () {
         } else {
             let width = utf8_width(byte);
             builder.write_string(value.byte_slice(index, index + width))
-        };
+        }
         index = index + utf8_width(byte);
     }
     builder.write_char('"')
@@ -94,7 +94,7 @@ fn write_quoted_char(builder: text::StringBuilder, value: char) -> () {
         write_control_escape(builder, code.to_u8())
     } else {
         builder.write_char(value)
-    };
+    }
     builder.write_char('\'')
 }
 
@@ -310,12 +310,12 @@ pub fn primitive_doc(value: Primitive) -> pretty::Doc {
             for index in 0..values.len() {
                 if index > 0 {
                     builder.write_string(", ")
-                } else {};
+                }
                 builder.write_string(values[index])
             }
             builder.write_string("]")
         },
-    };
+    }
     pretty::text(builder.finish())
 }
 

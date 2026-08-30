@@ -82,12 +82,12 @@ fn comptime_error_origin(
 ) -> Option[ctir::CtOrigin] {
     if module.package_name == package_name && origin >= 0 && origin < module.origins.len() {
         return Option::Some(module.origins[origin])
-    } else {};
+    }
     for dependency in dependencies {
         if dependency.package_name == package_name && origin >= 0
             && origin < dependency.origins.len() {
             return Option::Some(dependency.origins[origin])
-        } else {}
+        }
     }
     Option::None
 }
@@ -99,7 +99,7 @@ fn comptime_error_text(
 ) -> string {
     if error.stack.is_empty() {
         return error.message
-    } else {};
+    }
     let builder = text::StringBuilder::new();
     builder.write_string(error.message);
     builder.write_string("\ncomptime call stack:");
@@ -211,7 +211,7 @@ fn substitute_ct_type(value: Type, names: Vec[string], args: Vec[Type]) -> Type 
             for index in 0..names.len() {
                 if names[index] == name && index < args.len() {
                     return args[index]
-                } else {}
+                }
             }
             Type::Param { name }
         },
@@ -247,7 +247,7 @@ fn find_ct_struct(file: File, name: string) -> Option[StructDef] {
             } else {
                 result.set(Option::Some(value))
             }
-        } else {}
+        }
     }
     result.get()
 }
@@ -263,7 +263,7 @@ fn find_ct_enum(file: File, name: string) -> Option[EnumDef] {
             } else {
                 result.set(Option::Some(value))
             }
-        } else {}
+        }
     }
     result.get()
 }
@@ -386,7 +386,7 @@ fn integer_literal_bits(value: string) -> Option[u64] {
             },
             _ => (),
         }
-    } else {};
+    }
     let mut result = 0.to_u64();
     let mut found = false;
     while index < value.byte_len() {
@@ -394,7 +394,7 @@ fn integer_literal_bits(value: string) -> Option[u64] {
         if digit == b'_' {
             index = index + 1;
             continue
-        } else {};
+        }
         let part = if digit >= b'0' && digit <= b'9' {
             (digit - b'0').to_isize()
         } else if digit >= b'a' && digit <= b'f' {
@@ -406,7 +406,7 @@ fn integer_literal_bits(value: string) -> Option[u64] {
         };
         if part >= base {
             return Option::None
-        } else {};
+        }
         result = result * (base.to_u64()) + (part.to_u64());
         found = true;
         index = index + 1;
@@ -482,7 +482,7 @@ fn find_local_slot(ctx: CtLowerContext, name: string) -> Option[isize] {
         index = index - 1;
         if ctx.locals[index].0 == name {
             return Option::Some(ctx.locals[index].1)
-        } else {}
+        }
     }
     Option::None
 }
@@ -496,7 +496,7 @@ fn bind_pattern_slot(ctx: CtLowerContext, name: string, ty: Type, pattern_base: 
         index = index - 1;
         if ctx.locals[index].0 == name {
             return Result::Ok(ctx.locals[index].1)
-        } else {}
+        }
     }
     let value = ctx.next_slot.get();
     ctx.next_slot.set(value + 1);
@@ -612,15 +612,15 @@ fn function_call_target(ctx: CtLowerContext, name: string) -> Option[ctir::CtCal
     for entry in ctx.module.entries {
         if comptime_names_match(entry.name, name) {
             return Option::Some(ctir::CtCallTarget::Local(entry.function_id))
-        } else {}
+        }
     }
     if ctx.derive {
         for entry in ctx.module.derive_entries {
             if comptime_names_match(entry.name, name) {
                 return Option::Some(ctir::CtCallTarget::Local(entry.function_id))
-            } else {}
+            }
         }
-    } else {};
+    }
     for dependency in ctx.dependencies {
         for entry in dependency.entries {
             if comptime_names_match(entry.name, name) {
@@ -630,7 +630,7 @@ fn function_call_target(ctx: CtLowerContext, name: string) -> Option[ctir::CtCal
                         entry_name: entry.name,
                     },
                 )
-            } else {}
+            }
         }
         if ctx.derive {
             for entry in dependency.derive_entries {
@@ -641,9 +641,9 @@ fn function_call_target(ctx: CtLowerContext, name: string) -> Option[ctir::CtCal
                             entry_name: entry.name,
                         },
                     )
-                } else {}
+                }
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -678,9 +678,9 @@ fn external_call_return_type(ctx: CtLowerContext, target: ctir::CtCallTarget) ->
                             for function in dependency.functions {
                                 if function.id == entry.function_id {
                                     return Option::Some(function.return_type)
-                                } else {}
+                                }
                             }
-                        } else {}
+                        }
                     }
                     if ctx.derive {
                         for entry in dependency.derive_entries {
@@ -688,12 +688,12 @@ fn external_call_return_type(ctx: CtLowerContext, target: ctir::CtCallTarget) ->
                                 for function in dependency.functions {
                                     if function.id == entry.function_id {
                                         return Option::Some(function.return_type)
-                                    } else {}
+                                    }
                                 }
-                            } else {}
+                            }
                         }
-                    } else {}
-                } else {}
+                    }
+                }
             }
             Option::None
         },
@@ -747,18 +747,18 @@ fn constant_package(ctx: CtLowerContext, name: string) -> Option[string] {
     for value in ctx.constant_names {
         if comptime_names_match(value, name) {
             return Option::Some(ctx.module.package_name)
-        } else {}
+        }
     }
     for value in ctx.module.constants {
         if comptime_names_match(value.name, name) {
             return Option::Some(ctx.module.package_name)
-        } else {}
+        }
     }
     for dependency in ctx.dependencies {
         for value in dependency.constants {
             if comptime_names_match(value.name, name) {
                 return Option::Some(dependency.package_name)
-            } else {}
+            }
         }
     }
     Option::None
@@ -841,7 +841,7 @@ fn ct_builtin_equality_type(ty: Type) -> bool {
             for item in items {
                 if !ct_builtin_equality_type(item) {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -854,7 +854,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
     match value {
         Closure { .. } => return Result::Err("closures are not available in comptime"),
         _ => (),
-    };
+    }
     let ty = lower_ct_type(ctx, expr_type(value))?;
     let kind = match value {
         Var { name, ty: _ } => match find_local_slot(ctx, name) {
@@ -974,7 +974,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                 Callable::Intrinsic(name) => if name == "compile_error" {
                     if args.len() != 1 {
                         return Result::Err("compile_error expects one argument")
-                    } else {};
+                    }
                     ctir::CtExprKind::CompileError(lower_ct_expr(ctx, args[0])?)
                 } else if ctx.derive && derive::is_intrinsic(name) {
                     ctir::CtExprKind::Call {
@@ -1041,7 +1041,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                     for field_index in 0..definition.fields.len() {
                         if definition.fields[field_index].0 == field_name {
                             found = field_index;
-                        } else {}
+                        }
                     }
                     if found < 0 {
                         return Result::Err("comptime struct field is missing")
@@ -1065,7 +1065,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                     && ct_builtin_equality_type(expr_type(rhs)) {} else {
                     return Result::Err("overloaded operators are not available in comptime")
                 },
-            };
+            }
             ctir::CtExprKind::Binary {
                 op: lower_binary_op(op),
                 left: lower_ct_expr(ctx, lhs)?,
@@ -1176,7 +1176,7 @@ fn build_comptime_module(
     for index in 0..module.derive_entries.len() {
         if !module.derive_entries[index].public {
             continue
-        } else {};
+        }
         let name = match module.derive_entries[index].export_name {
             Some(value) => value,
             None => short_comptime_name(module.derive_entries[index].name),
@@ -1184,7 +1184,7 @@ fn build_comptime_module(
         for other in 0..index {
             if !module.derive_entries[other].public {
                 continue
-            } else {};
+            }
             let other_name = match module.derive_entries[other].export_name {
                 Some(value) => value,
                 None => short_comptime_name(module.derive_entries[other].name),
@@ -1199,7 +1199,7 @@ fn build_comptime_module(
                         function.end,
                     ),
                 )
-            } else {}
+            }
         }
     }
     for index in 0..functions.len() {
@@ -1430,7 +1430,7 @@ fn module_constant_primitive(module: ctir::CtModule, name: string, ty: Type) -> 
     for value in module.constants {
         if comptime_names_match(value.name, name) {
             return pattern_constant_primitive(value.value, ty)
-        } else {}
+        }
     }
     Option::None
 }
@@ -1601,7 +1601,7 @@ fn evaluate_constants(
                                             value,
                                         };
                                         break
-                                    } else {}
+                                    }
                                 }
                             },
                             Err(message) => diagnostics.push(
@@ -1612,7 +1612,7 @@ fn evaluate_constants(
                                     candidate.end,
                                 ),
                             ),
-                        };
+                        }
                         states[index] = 1;
                         remaining = remaining - 1;
                         progress = true;
@@ -1636,7 +1636,7 @@ fn evaluate_constants(
                         },
                     },
                 }
-            } else {}
+            }
         }
         if !progress {
             for index in 0..candidates.len() {
@@ -1652,9 +1652,9 @@ fn evaluate_constants(
                     );
                     states[index] = 2;
                     remaining = remaining - 1;
-                } else {}
+                }
             }
-        } else {}
+        }
     }
     module.sites.truncate(0);
     finalized
@@ -1738,7 +1738,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
             };
             if definition.has_hidden_fields {
                 return Result::Err("comptime cannot reify a struct with hidden fields")
-            } else {};
+            }
             let type_args = nominal_type_arguments(ty);
             let args: Vec[Expr] = Vec::new();
             for index in 0..fields.len() {
@@ -1777,7 +1777,7 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
             };
             if variant < 0 || variant >= definition.variants.len() {
                 return Result::Err("comptime enum result has an invalid variant")
-            } else {};
+            }
             let selected = definition.variants[variant];
             let type_args = nominal_type_arguments(ty);
             let field_types: Vec[Type] = Vec::new();
@@ -1853,7 +1853,7 @@ fn contains_comptime_exprs(values: Vec[Expr]) -> bool {
     for value in values {
         if contains_comptime_expr(value) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1872,7 +1872,7 @@ fn contains_comptime_block(value: Block) -> bool {
         };
         if found {
             return true
-        } else {}
+        }
     }
     match value.tail {
         Some(value) => contains_comptime_expr(value),
@@ -1892,7 +1892,7 @@ fn contains_comptime_expr(value: Expr) -> bool {
         Match { expr, arms, .. } => {
             if contains_comptime_expr(expr) {
                 return true
-            } else {};
+            }
             for arm in arms {
                 let guard_found = match arm.guard {
                     Some(value) => contains_comptime_expr(value),
@@ -1900,7 +1900,7 @@ fn contains_comptime_expr(value: Expr) -> bool {
                 };
                 if guard_found || contains_comptime_expr(arm.body) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -1927,7 +1927,7 @@ fn contains_comptime_expr(value: Expr) -> bool {
                 };
                 if found {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -1965,11 +1965,11 @@ pub fn contains_comptime(value: File) -> bool {
         match item {
             Item::Function(value) => if contains_comptime_block(value.body) {
                 return true
-            } else {},
+            },
             Item::ImplBlock(value) => for method in value.methods {
                 if contains_comptime_block(method.body) {
                     return true
-                } else {}
+                }
             },
         }
     }
@@ -2774,7 +2774,7 @@ pub fn finalize_comptime(
                 comptime_diagnostic(message, "<" + package_name + ">", 0, 0),
             ),
         }
-    } else {};
+    }
     module.sites.truncate(0);
     let finalized_file = File {
         items,
@@ -2792,6 +2792,6 @@ pub fn finalize_comptime(
                 0,
             ),
         )
-    } else {};
+    }
     ComptimeFinalizeResult { file: finalized_file, module, diagnostics }
 }

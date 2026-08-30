@@ -10,7 +10,7 @@ pub fn rational_new(numerator: BigInt, denominator: Natural) -> Result[BigRat, s
         return Result::Err("division by zero")
     } else if numerator.sign == 0 {
         return Result::Ok(BigRat { numerator: integer_zero(), denominator: natural_one() })
-    } else {};
+    }
     let divisor = natural_gcd(numerator.magnitude, denominator);
     let reduced_numerator = natural_div_rem(numerator.magnitude, divisor)?.0;
     let reduced_denominator = natural_div_rem(denominator, divisor)?.0;
@@ -67,7 +67,7 @@ pub fn rational_mul(left: BigRat, right: BigRat) -> BigRat {
 pub fn rational_div(left: BigRat, right: BigRat) -> Result[BigRat, string] {
     if right.numerator.sign == 0 {
         return Result::Err("division by zero")
-    } else {};
+    }
     let sign = left.numerator.sign * right.numerator.sign;
     let magnitude = natural_mul(left.numerator.magnitude, right.denominator);
     let denominator = natural_mul(left.denominator, right.numerator.magnitude);

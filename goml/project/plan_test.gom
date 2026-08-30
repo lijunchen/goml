@@ -64,7 +64,7 @@ fn serializes_builds_for_one_artifact_root() -> () {
                             if fs::read_file_structured(state).map_err(|error| error.to_string())?
                                 != "first" {
                                 return Result::Err("second build entered the active lock")
-                            } else {};
+                            }
                             fs::write_file_structured(state, "first-complete").map_err(
                                 |error| error.to_string(),
                             )
@@ -78,7 +78,7 @@ fn serializes_builds_for_one_artifact_root() -> () {
                         match first_started.recv() {
                             Some(()) => (),
                             None => return Result::Err("first build did not start"),
-                        };
+                        }
                         with_build_lock(
                             context,
                             || {
@@ -87,7 +87,7 @@ fn serializes_builds_for_one_artifact_root() -> () {
                                 )?
                                     != "first-complete" {
                                     return Result::Err("second build observed an incomplete output")
-                                } else {};
+                                }
                                 fs::write_file_structured(state, "second").map_err(
                                     |error| error.to_string(),
                                 )
@@ -102,11 +102,11 @@ fn serializes_builds_for_one_artifact_root() -> () {
     match result {
         Ok(values) => testing::assert_eq(values.len(), 2),
         Err(errors) => testing::fail(errors[0]),
-    };
+    }
     match fs::read_file_structured(state) {
         Ok(value) => testing::assert_eq(value, "second"),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert(!fs::exists(build_lock_path(context)))
 }
 
@@ -232,7 +232,7 @@ fn installed_world_compiler(root: string) -> string {
     match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     compiler
 }
 
@@ -432,7 +432,7 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
     match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     let result = execute_plan(
         cancellation_test_context(root, compiler),
         Plan {
@@ -448,7 +448,7 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> () {
     match result {
         Ok(()) => testing::fail("failing build command succeeded"),
         Err(message) => testing::assert(message.contains("--package fail")),
-    };
+    }
     testing::assert(!fs::exists(path::join(root, "out/slow.interface")));
     testing::assert(!fs::exists(path::join(root, "out/fail.interface")));
     testing::assert(!fs::exists(path::join(root, "out/slow.goml-check-fingerprint")));
@@ -478,7 +478,7 @@ fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> () {
     match process::Command::new("chmod").args(Vec::from_array(["+x", compiler])).status_structured() {
         Ok(status) => testing::assert(process::ExitStatus::success(status)),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     let context = cancellation_test_context(root, compiler);
     let command = cancellation_test_command("owned");
     let Some(spec) = cache_spec(command) else {
@@ -506,7 +506,7 @@ fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> () {
             match results.recv() {
                 Some(value) => testing::assert(value.result.is_ok()),
                 None => testing::fail("worker omitted build result"),
-            };
+            }
             Result::Err("stop")
         },
     );

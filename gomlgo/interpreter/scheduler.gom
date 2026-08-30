@@ -116,7 +116,7 @@ fn scheduled_entries(state: VmState) -> Vec[bytecode::FunctionId] {
                     Some(function) => entries.push(function),
                     None => {},
                 }
-            } else {}
+            }
         }
     }
     entries.push(state.program.main);
@@ -154,7 +154,7 @@ fn scheduled_frame(
     );
     if frame_result.error != "" {
         return Result::Err(frame_result.error)
-    } else {};
+    }
     Result::Ok(
         ScheduledFrame {
             frame: frame_result.frame,
@@ -205,7 +205,7 @@ fn start_scheduler(scheduler: Scheduler) -> Result[(), string] {
     scheduler.goroutines.push(startup);
     if !start_next_entry(scheduler, startup)? {
         return Result::Err("program has no entry function")
-    } else {};
+    }
     Result::Ok(())
 }
 
@@ -309,7 +309,7 @@ fn scheduled_call(state: VmState, call: PreparedCall) -> Result[Option[Scheduled
                 FunctionTarget::MethodExpression { function, receiver_type, index } => {
                     if call.arguments.is_empty() {
                         return Result::Err("method expression call has no receiver")
-                    } else {};
+                    }
                     let arguments = Vec::from_array(
                         [
                             method_expression_receiver(
@@ -371,7 +371,7 @@ fn scheduled_instruction(scheduled: ScheduledFrame) -> ScheduledInstruction {
     let block_id = scheduled.frame.block.get();
     if block_id.value < 0 || block_id.value >= scheduled.frame.blocks.len() {
         return invalid_scheduled_instruction("invalid current block " + block_id.value.to_string())
-    } else {};
+    }
     let block = scheduled.frame.blocks[block_id.value];
     let index = scheduled.instruction.get();
     if index < 0 || index > block.instructions.len() {
@@ -466,7 +466,7 @@ fn instruction_channel_matches(
                 };
                 if matched {
                     matches.push(index)
-                } else {}
+                }
             }
             if matches.is_empty() {
                 Result::Ok(-2)
@@ -489,7 +489,7 @@ fn cancel_scheduled_native_channel(
         return Result::Err("native channel invocation could not be canceled")
     } else if !wait_native_channel_invocation_value(pending.invocation.value) {
         return Result::Err("native channel invocation cancellation could not be joined")
-    } else {};
+    }
     complete_native_channel(scheduler, goroutine_index, pending)
 }
 
@@ -523,8 +523,8 @@ fn find_waiting_operation(scheduler: Scheduler, current: isize, channel: isize, 
                         Option::Some(WaitingOperation { goroutine: index, case_index }),
                     ),
                 }
-            } else {}
-        } else {}
+            }
+        }
     }
     Result::Ok(Option::None)
 }
@@ -576,7 +576,7 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
                     Value::Local(LocalValue::Bool(true)),
                 )?,
                 None => {},
-            };
+            }
             scheduled.instruction.set(scheduled.instruction.get() + 1);
             scheduled.waiting.set(false);
             goroutine.state.set(0);
@@ -595,7 +595,7 @@ fn complete_waiting_receive(scheduler: Scheduler, waiting: WaitingOperation, val
                         Value::Local(LocalValue::Bool(true)),
                     )?,
                     None => {},
-                };
+                }
                 select_case_enter(
                     scheduler,
                     goroutine,
@@ -653,13 +653,13 @@ fn attempt_send(scheduler: Scheduler, current: isize, channel_id: isize, value: 
 ] {
     if channel_id < 0 {
         return Result::Ok(SendAttempt::Blocked)
-    } else {};
+    }
     let channel = checked_channel(scheduler.state, channel_id)?;
     if channel.closed.get() {
         return Result::Ok(
             SendAttempt::Panicked(runtime_fault_payload(scheduler.state, "send on closed channel")?),
         )
-    } else {};
+    }
     match find_waiting_operation(scheduler, current, channel_id, true)? {
         Some(waiting) => {
             complete_waiting_receive(scheduler, waiting, value)?;
@@ -680,13 +680,13 @@ fn attempt_receive(scheduler: Scheduler, current: isize, channel_id: isize) -> R
 ] {
     if channel_id < 0 {
         return Result::Ok(ReceiveAttempt::Blocked)
-    } else {};
+    }
     let channel = checked_channel(scheduler.state, channel_id)?;
     if channel_has_value(channel) {
         return Result::Ok(
             ReceiveAttempt::Received { value: channel_buffer_receive(channel)?, ok: true },
         )
-    } else {};
+    }
     match find_waiting_operation(scheduler, current, channel_id, false)? {
         Some(waiting) => Result::Ok(
             ReceiveAttempt::Received { value: complete_waiting_send(scheduler, waiting)?, ok: true },
@@ -714,7 +714,7 @@ fn wake_channel(scheduler: Scheduler, channel: isize) -> Result[(), string] {
                 Some(pending) => cancel_scheduled_native_channel(scheduler, index, pending)?,
                 None => goroutine.state.set(0),
             }
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -800,7 +800,7 @@ fn complete_native_callback(state: VmState, callback: ScheduledCallback, outcome
             },
         ) {
             return Result::Err("native callback argument writeback failed")
-        } else {}
+        }
     }
     match outcome {
         InvocationOutcome::Returned(values) => {
@@ -836,10 +836,10 @@ fn complete_native_callback(state: VmState, callback: ScheduledCallback, outcome
             )
         },
         InvocationOutcome::Exited(code) => set_native_callback_exit(callback.completion, code),
-    };
+    }
     if !finish_native_callback(callback.completion) {
         return Result::Err("native callback completion was already finished")
-    } else {};
+    }
     Result::Ok(())
 }
 
@@ -857,7 +857,7 @@ fn start_native_callback(
         NativeCallbackTarget::Interface { receiver, interface_type } => {
             if method_name == "" {
                 return Result::Err("native interface callback has no method name")
-            } else {};
+            }
             let selection = go_types::lookup_field_or_method(
                 scheduler.state.program.world,
                 interface_type,
@@ -877,7 +877,7 @@ fn start_native_callback(
         );
         let _ = finish_native_callback(completion);
         return Result::Ok(())
-    } else {};
+    }
     let arguments: Vec[Value] = Vec::with_capacity(shape.0.len());
     for index in 0..shape.0.len() {
         let host = native_callback_argument(request, index);
@@ -966,7 +966,7 @@ fn start_scheduled_native_call(
     prepare_native_runtime_context(native, invocation, goroutine_index)?;
     if !start_native_completion(scheduler.native_completions, invocation) {
         return Result::Err("native completion queue rejected invocation")
-    } else {};
+    }
     let goroutine = scheduler.goroutines[goroutine_index];
     goroutine.native.set(
         Option::Some(ScheduledNativeCall { native, invocation, owner, results, deferred }),
@@ -1007,7 +1007,7 @@ fn complete_scheduled_native(
                             return Result::Err(
                                 "native call result count does not match destination count",
                             )
-                        } else {};
+                        }
                         for index in 0..values.len() {
                             set_register(owner.frame, pending.results[index], values[index])?
                         }
@@ -1043,7 +1043,7 @@ fn poll_scheduled_native(scheduler: Scheduler) -> Result[Option[InvocationOutcom
                     Some(outcome) => return Result::Ok(Option::Some(outcome)),
                     None => {},
                 }
-            } else {},
+            },
             None => {},
         }
     }
@@ -1054,7 +1054,7 @@ fn has_scheduled_native(scheduler: Scheduler) -> bool {
     for goroutine in scheduler.goroutines {
         if goroutine.native.get().is_some() || goroutine.native_channel.get().is_some() {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1083,14 +1083,14 @@ fn start_native_channel(
     for channel in channels {
         if !append_native_channel_receive_value(invocation.value, channel) {
             return Result::Err("native receive target is not a receive-capable channel")
-        } else {}
+        }
     }
     if default_case && !append_native_channel_default_value(invocation.value) {
         return Result::Err("native channel default case could not be appended")
-    } else {};
+    }
     if !start_native_channel_invocation_value(scheduler.native_completions.value, invocation.value) {
         return Result::Err("native channel invocation could not start")
-    } else {};
+    }
     let goroutine = scheduler.goroutines[goroutine_index];
     goroutine.native_channel.set(Option::Some(ScheduledNativeChannel { invocation, owner, target }));
     owner.waiting.set(true);
@@ -1125,7 +1125,7 @@ fn complete_native_channel(
                     Value::Local(LocalValue::Bool(open)),
                 )?,
                 None => {},
-            };
+            }
             advance_scheduled(pending.owner)
         },
         ScheduledNativeChannelTarget::Select { chosen: target, cases, native_indices } => {
@@ -1133,7 +1133,7 @@ fn complete_native_channel(
                 return Result::Ok(())
             } else if chosen < 0 || chosen >= native_indices.len() {
                 return Result::Err("native select returned an invalid case")
-            } else {};
+            }
             let case_index = native_indices[chosen];
             match cases[case_index].operation {
                 bytecode::SelectOperation::Receive { channel, value, ok } => {
@@ -1161,10 +1161,10 @@ fn complete_native_channel(
                 },
                 bytecode::SelectOperation::Default => {},
                 _ => return Result::Err("native select chose a non-receive case"),
-            };
+            }
             select_case_enter(scheduler, goroutine, pending.owner, target, cases, case_index)?
         },
-    };
+    }
     Result::Ok(())
 }
 
@@ -1173,7 +1173,7 @@ fn poll_scheduled_native_channels(scheduler: Scheduler) -> Result[(), string] {
         match scheduler.goroutines[index].native_channel.get() {
             Some(pending) => if native_channel_invocation_ready_value(pending.invocation.value) {
                 complete_native_channel(scheduler, index, pending)?
-            } else {},
+            },
             None => {},
         }
     }
@@ -1188,9 +1188,9 @@ fn update_scheduled_panic(scheduled: ScheduledFrame, outcome: InvocationOutcome)
             match scheduled.panic.get() {
                 Some(active) => if !active.active.get() {
                     scheduled.panic.set(Option::None)
-                } else {},
+                },
                 None => {},
-            };
+            }
             Option::None
         },
         InvocationOutcome::Panicked(payload) => {
@@ -1214,13 +1214,13 @@ fn complete_scheduled_frame(
         Some(callback) => {
             if !goroutine.frames.is_empty() {
                 return Result::Err("native callback root returned with caller frames")
-            } else {};
+            }
             complete_native_callback(scheduler.state, callback, outcome)?;
             goroutine.state.set(2);
             return Result::Ok(Option::None)
         },
         None => {},
-    };
+    }
     match outcome {
         InvocationOutcome::Exited(code) => {
             goroutine.state.set(2);
@@ -1246,7 +1246,7 @@ fn complete_scheduled_frame(
             } else {
                 if values.len() != completed.results.len() {
                     return Result::Err("call result count does not match destination count")
-                } else {};
+                }
                 for index in 0..values.len() {
                     set_register(caller.frame, completed.results[index], values[index])?
                 }
@@ -1291,7 +1291,7 @@ fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: isize) -> Resu
                 ),
             };
             return complete_scheduled_frame(scheduler, goroutine_index, outcome)
-        } else {};
+        }
         let call = scheduled.frame.deferred.pop().ok_or("deferred call stack is empty")?;
         match scheduled_call(scheduler.state, call) {
             Ok(Some(invocation)) => {
@@ -1321,7 +1321,7 @@ fn resume_scheduled_finish(scheduler: Scheduler, goroutine_index: isize) -> Resu
                         return Result::Ok(Option::None)
                     },
                     _ => {},
-                };
+                }
                 let outcome = match invoke_prepared(
                     scheduler.state,
                     scheduled.frame,
@@ -1393,7 +1393,7 @@ fn check_goroutine_limit(scheduler: Scheduler) -> Result[(), string] {
     for goroutine in scheduler.goroutines {
         if goroutine.state.get() != 2 {
             active = active + 1;
-        } else {}
+        }
     }
     if active >= scheduler.state.config.max_goroutines {
         Result::Err("maximum goroutine count exceeded")
@@ -1408,7 +1408,7 @@ fn add_scheduled_goroutine(scheduler: Scheduler, goroutine: ScheduledGoroutine) 
         if current.state.get() == 2 && !current.startup {
             scheduler.goroutines[index] = goroutine;
             return
-        } else {}
+        }
     }
     scheduler.goroutines.push(goroutine)
 }
@@ -1459,7 +1459,7 @@ fn execute_scheduled_select(
 ) -> Result[Option[InvocationOutcome], string] {
     if !count_scheduled_step(scheduler, scheduled, instruction.location) {
         return Result::Err("instruction limit exceeded")
-    } else {};
+    }
     let native_channels: Vec[dyn HostValueMarker] = Vec::new();
     let native_indices: Vec[isize] = Vec::new();
     let mut default_index = -1;
@@ -1506,18 +1506,18 @@ fn execute_scheduled_select(
                     cases[index].operation,
                 )? {
                     ready.push(index)
-                } else {},
+                },
             },
             bytecode::SelectOperation::Default => {},
             operation => if select_case_ready(scheduler, goroutine_index, scheduled, operation)? {
                 ready.push(index)
-            } else {},
+            },
         }
     }
     if ready.is_empty() && !native_channels.is_empty() {
         if default_index >= 0 {
             native_indices.push(default_index)
-        } else {};
+        }
         start_native_channel(
             scheduler,
             goroutine_index,
@@ -1527,7 +1527,7 @@ fn execute_scheduled_select(
             ScheduledNativeChannelTarget::Select { chosen, cases, native_indices },
         )?;
         return Result::Ok(Option::None)
-    } else {};
+    }
     let selected = if ready.is_empty() {
         default_index
     } else {
@@ -1536,7 +1536,7 @@ fn execute_scheduled_select(
     if selected < 0 {
         block_scheduled(scheduler.goroutines[goroutine_index], scheduled);
         return Result::Ok(Option::None)
-    } else {};
+    }
     match cases[selected].operation {
         bytecode::SelectOperation::Send { channel, value } => {
             let channel_id = scheduled_channel_id(scheduled.frame, channel)?;
@@ -1581,7 +1581,7 @@ fn execute_scheduled_select(
                             Value::Local(LocalValue::Bool(received_ok)),
                         )?,
                         None => {},
-                    };
+                    }
                     wake_channel(scheduler, channel_id)?;
                     select_case_enter(
                         scheduler,
@@ -1646,7 +1646,7 @@ fn execute_scheduled_instruction(
         bytecode::InstructionKind::Call { results, target, arguments, variadic } => {
             if scheduled.waiting.get() {
                 return Result::Err("call instruction is marked as waiting")
-            } else {};
+            }
             let prepared = match prepare_call(
                 scheduler.state,
                 scheduled.frame,
@@ -1673,7 +1673,7 @@ fn execute_scheduled_instruction(
                         frame_location(scheduled.frame, instruction.location),
                     ) {
                         return Result::Err("instruction limit exceeded")
-                    } else {};
+                    }
                     start_scheduled_native_call(
                         scheduler,
                         goroutine_index,
@@ -1687,7 +1687,7 @@ fn execute_scheduled_instruction(
                     return Result::Ok(Option::None)
                 },
                 _ => {},
-            };
+            }
             match scheduled_call(scheduler.state, prepared) {
                 Ok(Some(invocation)) => {
                     if !use_step(
@@ -1695,10 +1695,10 @@ fn execute_scheduled_instruction(
                         frame_location(scheduled.frame, instruction.location),
                     ) {
                         return Result::Err("instruction limit exceeded")
-                    } else {};
+                    }
                     if goroutine.frames.len() >= scheduler.state.config.max_call_depth {
                         return Result::Err("maximum call depth exceeded")
-                    } else {};
+                    }
                     advance_scheduled(scheduled);
                     goroutine.frames.push(
                         scheduled_frame(scheduler.state, invocation, results, Option::None, false)?,
@@ -1725,7 +1725,7 @@ fn execute_scheduled_instruction(
         bytecode::InstructionKind::Spawn { target, arguments, variadic } => {
             if !count_scheduled_step(scheduler, scheduled, instruction.location) {
                 return Result::Err("instruction limit exceeded")
-            } else {};
+            }
             let prepared = prepare_call(
                 scheduler.state,
                 scheduled.frame,
@@ -1737,14 +1737,14 @@ fn execute_scheduled_instruction(
             match scheduled_call(scheduler.state, prepared)? {
                 Some(invocation) => spawn_scheduled(scheduler, invocation)?,
                 None => spawn_scheduled_call(scheduler, scheduled.frame, prepared)?,
-            };
+            }
             advance_scheduled(scheduled);
             Result::Ok(Option::None)
         },
         bytecode::InstructionKind::MakeChannel { target, type_id, capacity } => {
             if !count_scheduled_step(scheduler, scheduled, instruction.location) {
                 return Result::Err("instruction limit exceeded")
-            } else {};
+            }
             let capacity = integer_host(register(scheduled.frame, capacity)?)?;
             if capacity < 0 {
                 return panic_scheduled(
@@ -1752,7 +1752,7 @@ fn execute_scheduled_instruction(
                     goroutine_index,
                     runtime_fault_payload(scheduler.state, "makechan: size out of range")?,
                 )
-            } else {};
+            }
             let element_type = match go_types::get_type(
                 scheduler.state.program.world,
                 go_types::underlying(scheduler.state.program.world, type_id),
@@ -1772,7 +1772,7 @@ fn execute_scheduled_instruction(
         bytecode::InstructionKind::Send { channel, value } => {
             if !count_scheduled_step(scheduler, scheduled, instruction.location) {
                 return Result::Err("instruction limit exceeded")
-            } else {};
+            }
             let channel_id = scheduled_channel_id(scheduled.frame, channel)?;
             match attempt_send(
                 scheduler,
@@ -1799,7 +1799,7 @@ fn execute_scheduled_instruction(
         bytecode::InstructionKind::Receive { value, ok, channel } => {
             if !count_scheduled_step(scheduler, scheduled, instruction.location) {
                 return Result::Err("instruction limit exceeded")
-            } else {};
+            }
             match register(scheduled.frame, channel)? {
                 Value::Host { type_id, value: host } => {
                     start_native_channel(
@@ -1820,7 +1820,7 @@ fn execute_scheduled_instruction(
                     return Result::Ok(Option::None)
                 },
                 _ => {},
-            };
+            }
             let channel_id = scheduled_channel_id(scheduled.frame, channel)?;
             match attempt_receive(scheduler, goroutine_index, channel_id)? {
                 ReceiveAttempt::Received { value: received, ok: received_ok } => {
@@ -1832,7 +1832,7 @@ fn execute_scheduled_instruction(
                             Value::Local(LocalValue::Bool(received_ok)),
                         )?,
                         None => {},
-                    };
+                    }
                     advance_scheduled(scheduled);
                     wake_channel(scheduler, channel_id)?;
                     Result::Ok(Option::None)
@@ -1846,7 +1846,7 @@ fn execute_scheduled_instruction(
         bytecode::InstructionKind::Close { channel } => {
             if !count_scheduled_step(scheduler, scheduled, instruction.location) {
                 return Result::Err("instruction limit exceeded")
-            } else {};
+            }
             let channel_id = scheduled_channel_id(scheduled.frame, channel)?;
             if channel_id < 0 {
                 return panic_scheduled(
@@ -1854,7 +1854,7 @@ fn execute_scheduled_instruction(
                     goroutine_index,
                     runtime_fault_payload(scheduler.state, "close of nil channel")?,
                 )
-            } else {};
+            }
             match channel_close(checked_channel(scheduler.state, channel_id)?) {
                 Ok(()) => {},
                 Err(message) => return panic_scheduled(
@@ -1862,7 +1862,7 @@ fn execute_scheduled_instruction(
                     goroutine_index,
                     runtime_fault_payload(scheduler.state, message)?,
                 ),
-            };
+            }
             advance_scheduled(scheduled);
             wake_channel(scheduler, channel_id)?;
             Result::Ok(Option::None)
@@ -1905,7 +1905,7 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: isize) -> Resul
                     return Result::Ok(Option::None)
                 },
                 _ => {},
-            };
+            }
             goroutine.state.set(2);
             return match invoke_prepared(
                 scheduler.state,
@@ -1929,7 +1929,7 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: isize) -> Resul
             }
         },
         None => {},
-    };
+    }
     let scheduled = scheduled_top(goroutine)?;
     let current = scheduled_instruction(scheduled);
     if current.message != "" {
@@ -1961,14 +1961,14 @@ fn execute_scheduled_step(scheduler: Scheduler, goroutine_index: isize) -> Resul
 fn next_runnable(scheduler: Scheduler) -> isize {
     if scheduler.goroutines.is_empty() {
         return -1
-    } else {};
+    }
     let start = scheduler.cursor.get() % scheduler.goroutines.len();
     for offset in 0..scheduler.goroutines.len() {
         let index = (start + offset) % scheduler.goroutines.len();
         if scheduler.goroutines[index].state.get() == 0 {
             scheduler.cursor.set((index + 1) % scheduler.goroutines.len());
             return index
-        } else {}
+        }
     }
     return -1
 }
@@ -1977,7 +1977,7 @@ fn has_blocked_goroutine(scheduler: Scheduler) -> bool {
     for goroutine in scheduler.goroutines {
         if goroutine.state.get() == 1 {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1995,7 +1995,7 @@ fn execute_scheduled_program(state: VmState) -> Result[InvocationOutcome, string
                 return Result::Ok(outcome)
             },
             None => {},
-        };
+        }
         let goroutine_index = next_runnable(scheduler);
         if goroutine_index < 0 {
             if has_scheduled_native(scheduler) {
@@ -2003,7 +2003,7 @@ fn execute_scheduled_program(state: VmState) -> Result[InvocationOutcome, string
                     close_native_callbacks(scheduler.state);
                     close_native_completions(scheduler.native_completions);
                     return Result::Err("native completion queue closed while calls were pending")
-                } else {};
+                }
                 continue
             } else if has_blocked_goroutine(scheduler) {
                 close_native_callbacks(scheduler.state);
@@ -2014,7 +2014,7 @@ fn execute_scheduled_program(state: VmState) -> Result[InvocationOutcome, string
                 close_native_completions(scheduler.native_completions);
                 return Result::Err("scheduler stopped before main returned")
             }
-        } else {};
+        }
         let quantum = if state.config.instruction_quantum > 0 {
             state.config.instruction_quantum
         } else {
@@ -2023,7 +2023,7 @@ fn execute_scheduled_program(state: VmState) -> Result[InvocationOutcome, string
         for _ in 0..quantum {
             if scheduler.goroutines[goroutine_index].state.get() != 0 {
                 break
-            } else {};
+            }
             match execute_scheduled_step(scheduler, goroutine_index)? {
                 Some(outcome) => {
                     close_native_callbacks(scheduler.state);
@@ -2094,7 +2094,7 @@ fn instruction_callback(
                 for argument in arguments {
                     if register_callback_type(program.world, function, argument) {
                         return true
-                    } else {}
+                    }
                 }
                 false
             },
@@ -2113,7 +2113,7 @@ fn program_needs_scheduler(program: bytecode::BytecodeProgram) -> bool {
         for parameter in call.parameter_types {
             if callback_type(program.world, parameter) {
                 return true
-            } else {}
+            }
         }
     }
     for function in program.functions {
@@ -2122,7 +2122,7 @@ fn program_needs_scheduler(program: bytecode::BytecodeProgram) -> bool {
                 if instruction_needs_scheduler(instruction.kind)
                     || instruction_callback(program, function, instruction.kind) {
                     return true
-                } else {}
+                }
             }
         }
     }

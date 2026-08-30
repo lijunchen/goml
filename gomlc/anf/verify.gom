@@ -101,7 +101,7 @@ fn find_struct_field(value: repr::StructDef, name: string) -> Option[repr::Type]
     for field in value.fields {
         if field.0 == name {
             return Option::Some(field.1)
-        } else {}
+        }
     }
     Option::None
 }
@@ -149,7 +149,7 @@ fn verify_constructor(
         for variant in definition.variants {
             if variant.name == name {
                 found = Option::Some(enum_variant_types(variant.fields));
-            } else {}
+            }
         }
         match found {
             Some(value) => value,
@@ -160,7 +160,7 @@ fn verify_constructor(
     };
     if args.len() != expected.len() {
         return Result::Err("constructor argument count does not match " + constructor.name)
-    } else {};
+    }
     for index in 0..args.len() {
         verify_type(
             imm_type(args[index]),
@@ -203,7 +203,7 @@ fn verify_jump(
     };
     if args.len() != signature.params.len() {
         return Result::Err("jump argument count does not match join " + target)
-    } else {};
+    }
     for index in 0..args.len() {
         verify_type(
             imm_type(args[index]),
@@ -266,7 +266,7 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                                 return Result::Err("select receive operand is send-only")
                             },
                             _ => return Result::Err("select receive operand is not a channel"),
-                        };
+                        }
                         match guard {
                             Some(value) => verify_type(
                                 imm_type(value),
@@ -274,7 +274,7 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                                 "select guard is not bool",
                             )?,
                             None => (),
-                        };
+                        }
                         verify_block(state, body, ret_ty, copy_join_signatures(joins))?
                     },
                     Send { channel, value, guard, body } => {
@@ -291,7 +291,7 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                                 return Result::Err("select send operand is receive-only")
                             },
                             _ => return Result::Err("select send operand is not a channel"),
-                        };
+                        }
                         match guard {
                             Some(value) => verify_type(
                                 imm_type(value),
@@ -299,7 +299,7 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: repr::Type, joins: 
                                 "select guard is not bool",
                             )?,
                             None => (),
-                        };
+                        }
                         verify_block(state, body, ret_ty, copy_join_signatures(joins))?
                     },
                 }
@@ -332,7 +332,7 @@ fn verify_recursive_joins(state: VerifyState, values: Vec[JoinBind], joins: Vec[
 ] {
     if values.is_empty() {
         return Result::Err("recursive join group is empty")
-    } else {};
+    }
     let recursive = copy_join_signatures(joins);
     for value in values {
         verify_join_name(state, value.name)?;
@@ -358,7 +358,7 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
                 Tuple { items: expected } => {
                     if items.len() != expected.len() {
                         return Result::Err("tuple value has the wrong number of items")
-                    } else {};
+                    }
                     for index in 0..items.len() {
                         verify_type(
                             imm_type(items[index]),
@@ -377,7 +377,7 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
                 Array { len, elem } => {
                     if len != items.len() {
                         return Result::Err("array value has the wrong number of items")
-                    } else {};
+                    }
                     for item in items {
                         verify_type(imm_type(item), elem, "array item type does not match")?
                     }
@@ -416,7 +416,7 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
                 for variant in definition.variants {
                     if variant.name == name {
                         found = Option::Some(enum_variant_types(variant.fields));
-                    } else {}
+                    }
                 }
                 match found {
                     Some(value) => value,
@@ -447,7 +447,7 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
                 Func { params, ret_ty } => {
                     if args.len() != params.len() {
                         return Result::Err("call argument count does not match its function")
-                    } else {};
+                    }
                     for index in 0..args.len() {
                         verify_type(
                             imm_type(args[index]),
@@ -474,7 +474,7 @@ fn verify_value(state: VerifyState, value: Value) -> Result[(), string] {
             match ty {
                 Func { params: _, ret_ty: _ } => (),
                 _ => return Result::Err("closure pack has a non-function type"),
-            };
+            }
             let definition = match state.closures[apply] {
                 Some(value) => value,
                 None => return Result::Err(
@@ -572,7 +572,7 @@ fn verify_closure_definition(
 ) -> Result[(), string] {
     if structs.contains(definition.environment) {} else {
         return Result::Err("closure apply function has no environment " + definition.environment)
-    };
+    }
     let function = match functions[definition.apply] {
         Some(value) => value,
         None => return Result::Err(
@@ -584,20 +584,20 @@ fn verify_closure_definition(
             == definition.environment
             && method_name == "apply" => (),
         _ => return Result::Err("closure apply function has invalid origin " + definition.apply),
-    };
+    }
     match definition.signature {
         Func { params, ret_ty } => {
             if function.params.len() != params.len() + 1 {
                 return Result::Err(
                     "closure apply function has invalid parameters " + definition.apply,
                 )
-            } else {};
+            }
             match function.params[0].1 {
                 ClosureEnvironment { name } if name == definition.environment => (),
                 _ => return Result::Err(
                     "closure apply function has invalid environment " + definition.apply,
                 ),
-            };
+            }
             for index in 0..params.len() {
                 verify_type(
                     function.params[index + 1].1,
@@ -628,7 +628,7 @@ fn verify_function(
     match value.origin {
         Inherent { owner, method_name: _ } => repr::validate_type(owner)?,
         Source | TraitImplementation { method_name: _ } => (),
-    };
+    }
     match value.trait_impl {
         Some(implementation) => {
             repr::validate_trait_ref(implementation.trait_ref)?;
@@ -638,7 +638,7 @@ fn verify_function(
             }
         },
         None => (),
-    };
+    }
     let state = VerifyState { join_names: collections::HashSet::new(), closures, structs, enums };
     match verify_block(state, value.body, value.ret_ty, Vec::new()) {
         Ok(_) => Result::Ok(()),

@@ -138,9 +138,9 @@ fn block_docs(value: Block, style: PrintStyle) -> Vec[pretty::Doc] {
             Some(tail) => result.push(expr_doc(tail, style)),
             None => if style.flatten_blocks {
                 result.push(pretty::text("()"))
-            } else {},
+            },
         }
-    };
+    }
     result
 }
 
@@ -303,7 +303,7 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
                     ),
                 ),
                 None => (),
-            };
+            }
             pretty::block(pretty::append(pretty::text("match "), expr_doc(source, style)), values)
         },
         Select { mode, arms, default, ty: _ } => {
@@ -331,7 +331,7 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
                     ),
                 ),
                 None => (),
-            };
+            }
             pretty::block(
                 pretty::text(
                     match mode {

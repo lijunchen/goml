@@ -40,7 +40,7 @@ fn type_contains_parameter_inner(
 ) -> bool {
     if !valid_type(program, type_id) || marks[type_id.value] == generation {
         return false
-    } else {};
+    }
     marks[type_id.value] = generation;
     match go_types::type_data(program.world, type_id) {
         go_types::TypeData {
@@ -58,7 +58,7 @@ fn type_contains_parameter_inner(
             for field in fields {
                 if type_contains_parameter_inner(program, field.variable.type_id, marks, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -66,7 +66,7 @@ fn type_contains_parameter_inner(
             for variable in variables {
                 if type_contains_parameter_inner(program, variable.type_id, marks, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -83,7 +83,7 @@ fn type_contains_parameter_inner(
         } => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() {
                 return true
-            } else {};
+            }
             match receiver {
                 Some(value) => if type_contains_parameter_inner(
                     program,
@@ -92,9 +92,9 @@ fn type_contains_parameter_inner(
                     generation,
                 ) {
                     return true
-                } else {},
+                },
                 None => {},
-            };
+            }
             type_contains_parameter_inner(program, params, marks, generation)
                 || type_contains_parameter_inner(program, results, marks, generation)
         },
@@ -111,12 +111,12 @@ fn type_contains_parameter_inner(
                         generation,
                     ) {
                     return true
-                } else {}
+                }
             }
             for embedded in embeddeds {
                 if type_contains_parameter_inner(program, embedded, marks, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -136,11 +136,11 @@ fn type_contains_parameter_inner(
         } => {
             if !type_params.is_empty() && type_args.is_empty() {
                 return true
-            } else {};
+            }
             for argument in type_args {
                 if type_contains_parameter_inner(program, argument, marks, generation) {
                     return true
-                } else {}
+                }
             }
             type_contains_parameter_inner(program, underlying, marks, generation)
         },
@@ -150,11 +150,11 @@ fn type_contains_parameter_inner(
         } => {
             if !type_params.is_empty() && type_args.is_empty() {
                 return true
-            } else {};
+            }
             for argument in type_args {
                 if type_contains_parameter_inner(program, argument, marks, generation) {
                     return true
-                } else {}
+                }
             }
             type_contains_parameter_inner(program, rhs, marks, generation)
         },
@@ -162,7 +162,7 @@ fn type_contains_parameter_inner(
             for term in terms {
                 if type_contains_parameter_inner(program, term.type_id, marks, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -179,7 +179,7 @@ fn type_contains_parameter(
 ) -> bool {
     if !valid_type(program, type_id) {
         return false
-    } else {};
+    }
     let cached = cache[type_id.value];
     if cached >= 0 {
         cached == 1
@@ -243,7 +243,7 @@ fn check_register(
             instruction,
             "invalid register " + register.value.to_string(),
         )
-    } else {}
+    }
 }
 
 fn check_registers(
@@ -286,7 +286,7 @@ fn check_place(
             instruction,
             "invalid place " + place.value.to_string(),
         )
-    } else {}
+    }
 }
 
 fn check_places(
@@ -316,7 +316,7 @@ fn check_local(
             instruction,
             "invalid local " + local.value.to_string(),
         )
-    } else {}
+    }
 }
 
 fn check_locals(
@@ -436,7 +436,7 @@ fn check_register_type(
                 instruction,
                 message,
             )
-        } else {},
+        },
         None => {},
     }
 }
@@ -459,7 +459,7 @@ fn check_bool_register(
                 instruction,
                 message,
             )
-        } else {},
+        },
         None => {},
     }
 }
@@ -482,7 +482,7 @@ fn check_integer_register(
                 instruction,
                 message,
             )
-        } else {},
+        },
         None => {},
     }
 }
@@ -553,7 +553,7 @@ fn check_call_target(
                 instruction,
                 "invalid function " + value.value.to_string(),
             )
-        } else {},
+        },
         CallTarget::Method { function: value, receiver } => {
             if !function_valid(program, value) {
                 report(
@@ -563,7 +563,7 @@ fn check_call_target(
                     instruction,
                     "invalid method function " + value.value.to_string(),
                 )
-            } else {};
+            }
             check_register(function, diagnostics, block, instruction, receiver)
         },
         CallTarget::InterfaceMethod { method, receiver } => {
@@ -575,7 +575,7 @@ fn check_call_target(
                     instruction,
                     "invalid interface method " + method.value.to_string(),
                 )
-            } else {};
+            }
             check_register(function, diagnostics, block, instruction, receiver)
         },
         CallTarget::Dynamic(value) => {
@@ -589,7 +589,7 @@ fn check_call_target(
                 instruction,
                 "invalid native call " + value.value.to_string(),
             )
-        } else {},
+        },
         CallTarget::NativeMethod { call, receiver } => {
             if !native_call_valid(program, call) {
                 report(
@@ -599,7 +599,7 @@ fn check_call_target(
                     instruction,
                     "invalid native method " + call.value.to_string(),
                 )
-            } else {};
+            }
             check_register(function, diagnostics, block, instruction, receiver)
         },
         CallTarget::Builtin(_) => {},
@@ -684,7 +684,7 @@ fn check_channel_send(
                     instruction,
                     "channel send source is receive-only",
                 )
-            } else {};
+            }
             check_register_type(
                 program,
                 function,
@@ -720,7 +720,7 @@ fn check_channel_receive(
                     instruction,
                     "channel receive source is send-only",
                 )
-            } else {};
+            }
             check_register_type(
                 program,
                 function,
@@ -733,7 +733,7 @@ fn check_channel_receive(
             )
         },
         None => {},
-    };
+    }
     check_optional_bool_register(
         program,
         function,
@@ -753,7 +753,7 @@ fn function_local_types(function: BytecodeFunction, locals: Vec[LocalId], start:
         let local = locals[index];
         if local_valid(function, local) {
             result.push(function.locals[local.value].type_id)
-        } else {}
+        }
     }
     result
 }
@@ -786,7 +786,7 @@ fn check_call_arguments(
                 + parameters.len().to_string(),
         );
         return
-    } else {};
+    }
     for index in 0..fixed {
         if index < arguments.len() {
             check_register_type(
@@ -799,20 +799,20 @@ fn check_call_arguments(
                 parameters[index],
                 "call argument type does not match target signature",
             )
-        } else {}
+        }
     }
     if !variadic {
         return
-    } else {};
+    }
     let slice_type = parameters[parameters.len() - 1];
     if arguments.len() == parameters.len() {
         match verified_register_type(function, arguments[arguments.len() - 1]) {
             Some(actual) => if go_types::identical(program.world, actual, slice_type) {
                 return
-            } else {},
+            },
             None => return,
         }
-    } else {};
+    }
     match verified_slice_element(program, slice_type) {
         Some(element) => for index in fixed..arguments.len() {
             check_register_type(
@@ -855,7 +855,7 @@ fn check_call_results(
             "call result count does not match target signature",
         );
         return
-    } else {};
+    }
     for index in 0..results.len() {
         match verified_register_type(function, results[index]) {
             Some(actual) => if !go_types::identical(program.world, actual, expected[index]) {
@@ -871,7 +871,7 @@ fn check_call_results(
                         + ", expected "
                         + go_types::format_type(program.world, expected[index]),
                 )
-            } else {},
+            },
             None => {},
         }
     }
@@ -884,7 +884,7 @@ fn interface_has_method(
 ) -> bool {
     if !valid_object(program, method) {
         return false
-    } else {};
+    }
     let expected = program.world.objects[method.value];
     for candidate in go_types::interface_methods(program.world, interface_type) {
         if valid_object(program, candidate) {
@@ -897,8 +897,8 @@ fn interface_has_method(
             )
                 && go_types::identical(program.world, value.type_id, expected.type_id) {
                 return true
-            } else {}
-        } else {}
+            }
+        }
     }
     false
 }
@@ -948,7 +948,7 @@ fn check_call_shape(
             parameters = Option::Some(function_local_types(value, value.parameters, 0));
             expected_results = Option::Some(function_local_types(value, value.results, 0));
             shape = verified_signature_shape(program, value.signature);
-        } else {},
+        },
         CallTarget::Method { function: target_function, receiver } => if function_valid(
             program,
             target_function,
@@ -979,10 +979,10 @@ fn check_call_shape(
                     remaining.push(local_types[index])
                 }
                 parameters = Option::Some(remaining);
-            };
+            }
             expected_results = Option::Some(function_local_types(value, value.results, 0));
             shape = verified_signature_shape(program, value.signature);
-        } else {},
+        },
         CallTarget::InterfaceMethod { method, receiver } => {
             match verified_register_type(function, receiver) {
                 Some(receiver_type) => if !go_types::is_interface(program.world, receiver_type) {
@@ -1001,15 +1001,15 @@ fn check_call_shape(
                         instruction,
                         "interface method does not belong to receiver interface",
                     )
-                } else {},
+                },
                 None => {},
-            };
+            }
             if valid_object(program, method) {
                 shape = verified_signature_shape(
                     program,
                     program.world.objects[method.value].type_id,
                 );
-            } else {}
+            }
         },
         CallTarget::Dynamic(target) => match verified_register_type(function, target) {
             Some(type_id) => {
@@ -1028,7 +1028,7 @@ fn check_call_shape(
                             + type_id.value.to_string()
                             + ")",
                     )
-                } else {}
+                }
             },
             None => {},
         },
@@ -1044,7 +1044,7 @@ fn check_call_shape(
                     variadic: value.variadic,
                 },
             );
-        } else {},
+        },
         CallTarget::NativeMethod { call, receiver } => if native_call_valid(program, call) {
             let value = program.native_calls[call.value];
             if value.parameter_types.is_empty() {
@@ -1081,17 +1081,17 @@ fn check_call_shape(
                     },
                 );
             };
-        } else {},
+        },
         CallTarget::Builtin(_) => {},
-    };
+    }
     match shape {
         Some(value) => {
             if parameters.is_none() {
                 parameters = Option::Some(value.parameters);
-            } else {};
+            }
             if expected_results.is_none() {
                 expected_results = Option::Some(value.results);
-            } else {};
+            }
             match parameters {
                 Some(values) => check_call_arguments(
                     program,
@@ -1105,7 +1105,7 @@ fn check_call_shape(
                     target_name,
                 ),
                 None => {},
-            };
+            }
             match (results, expected_results) {
                 (Some(actual), Some(expected)) => check_call_results(
                     program,
@@ -1146,7 +1146,7 @@ fn check_location(
             if source.package_id.value == function.package_id.value
                 && source.file.value == location.file.value {
                 found = true;
-            } else {}
+            }
         }
         if !found {
             report(
@@ -1156,8 +1156,8 @@ fn check_location(
                 instruction,
                 "source location refers to an unknown package-local file",
             )
-        } else {}
-    } else {};
+        }
+    }
     if location.start < -1 || location.end < location.start {
         report(
             diagnostics,
@@ -1166,7 +1166,7 @@ fn check_location(
             instruction,
             "invalid source span",
         )
-    } else {}
+    }
 }
 
 fn check_target_type(
@@ -1196,7 +1196,7 @@ fn check_target_type(
             instruction,
             "target register type does not match instruction type",
         )
-    } else {}
+    }
 }
 
 fn check_instruction(
@@ -1231,7 +1231,7 @@ fn check_instruction(
                     instruction,
                     "move register types do not match",
                 )
-            } else {}
+            }
         },
         InstructionKind::LocalPlace { target, local } => {
             check_place(function, diagnostics, block, instruction, target);
@@ -1247,7 +1247,7 @@ fn check_instruction(
                     instruction,
                     "invalid global " + global.value.to_string(),
                 )
-            } else {}
+            }
         },
         InstructionKind::NativeGlobalLoad { target, object } => {
             check_register(function, diagnostics, block, instruction, target);
@@ -1274,7 +1274,7 @@ fn check_instruction(
                         instruction,
                         "native global load type is inconsistent",
                     )
-                } else {}
+                }
             }
         },
         InstructionKind::FieldPlace { target, base, index } => {
@@ -1298,7 +1298,7 @@ fn check_instruction(
                             instruction,
                             "field path contains a negative index",
                         )
-                    } else {}
+                    }
                 }
             }
         },
@@ -1367,7 +1367,7 @@ fn check_instruction(
                         instruction,
                         "type assertion target is not assertable from source interface",
                     )
-                } else {},
+                },
                 None => {},
             }
         },
@@ -1381,7 +1381,7 @@ fn check_instruction(
                     instruction,
                     "aggregate literal length is negative",
                 )
-            } else {};
+            }
             for element in elements {
                 if element.index < 0 {
                     report(
@@ -1391,7 +1391,7 @@ fn check_instruction(
                         instruction,
                         "aggregate literal index is negative",
                     )
-                } else {};
+                }
                 check_register(function, diagnostics, block, instruction, element.value)
             }
         },
@@ -1406,7 +1406,7 @@ fn check_instruction(
                     instruction,
                     "field path is empty",
                 )
-            } else {}
+            }
         },
         InstructionKind::IndexValue { target, base, index, ok } => {
             check_register(function, diagnostics, block, instruction, target);
@@ -1438,7 +1438,7 @@ fn check_instruction(
                     instruction,
                     "invalid slice element type " + element_type.value.to_string(),
                 )
-            } else {};
+            }
             check_optional_register(function, diagnostics, block, instruction, low);
             check_optional_register(function, diagnostics, block, instruction, high);
             check_optional_register(function, diagnostics, block, instruction, maximum)
@@ -1453,7 +1453,7 @@ fn check_instruction(
                     instruction,
                     "invalid allocated type " + type_id.value.to_string(),
                 )
-            } else {};
+            }
             check_optional_register(function, diagnostics, block, instruction, value);
             match verified_register_type(function, target) {
                 Some(target_type) => match verified_pointer_element(program, target_type) {
@@ -1466,7 +1466,7 @@ fn check_instruction(
                             instruction,
                             "allocated pointer element does not match instruction type",
                         )
-                    } else {},
+                    },
                     None => report(
                         diagnostics,
                         Option::Some(function.id),
@@ -1476,7 +1476,7 @@ fn check_instruction(
                     ),
                 },
                 None => {},
-            };
+            }
             match value {
                 Some(source) => check_register_type(
                     program,
@@ -1503,7 +1503,7 @@ fn check_instruction(
                     instruction,
                     "make slice type is not slice typed",
                 )
-            } else {};
+            }
             check_integer_register(
                 program,
                 function,
@@ -1534,7 +1534,7 @@ fn check_instruction(
                     instruction,
                     "make map type is not map typed",
                 )
-            } else {};
+            }
             match capacity {
                 Some(value) => check_integer_register(
                     program,
@@ -1559,7 +1559,7 @@ fn check_instruction(
                     instruction,
                     "make channel type is not channel typed",
                 )
-            } else {};
+            }
             check_integer_register(
                 program,
                 function,
@@ -1615,10 +1615,10 @@ fn check_instruction(
                                 instruction,
                                 "closure capture type does not match target function",
                             )
-                        } else {}
+                        }
                     }
                 }
-            };
+            }
             check_locals(function, diagnostics, block, instruction, captures)
         },
         InstructionKind::MakeMethodValue { target, function: target_function, receiver } => {
@@ -1632,7 +1632,7 @@ fn check_instruction(
                     instruction,
                     "invalid method value function " + target_function.value.to_string(),
                 )
-            } else {}
+            }
         },
         InstructionKind::MakeMethodExpression {
             target,
@@ -1649,7 +1649,7 @@ fn check_instruction(
                     instruction,
                     "invalid method expression function " + target_function.value.to_string(),
                 )
-            } else {};
+            }
             if !valid_type(program, receiver_type) {
                 report(
                     diagnostics,
@@ -1658,14 +1658,14 @@ fn check_instruction(
                     instruction,
                     "invalid method expression receiver type",
                 )
-            } else {}
+            }
         },
         InstructionKind::MakeInterfaceMethodValue { target, method, receiver } => {
             check_register(function, diagnostics, block, instruction, target);
             match receiver {
                 Some(value) => check_register(function, diagnostics, block, instruction, value),
                 None => {},
-            };
+            }
             if method.value < 0 || method.value >= program.world.objects.len() {
                 report(
                     diagnostics,
@@ -1674,7 +1674,7 @@ fn check_instruction(
                     instruction,
                     "invalid interface method object",
                 )
-            } else {}
+            }
         },
         InstructionKind::RenewLocal { local } | InstructionKind::CloneLocal { local } => {
             check_local(function, diagnostics, block, instruction, local)
@@ -1726,7 +1726,7 @@ fn check_instruction(
                         instruction,
                         "recover target is not interface typed",
                     )
-                } else {},
+                },
                 None => {},
             }
         },
@@ -1853,7 +1853,7 @@ fn check_instruction(
                         instruction,
                         "channel close source is receive-only",
                     )
-                } else {},
+                },
                 None => {},
             }
         },
@@ -1910,7 +1910,7 @@ fn check_instruction(
                     } else {
                         default_seen = true;
                     },
-                };
+                }
                 check_edge(
                     program,
                     function,
@@ -1944,7 +1944,7 @@ fn check_edge(
             "invalid block " + target.value.to_string(),
         );
         return
-    } else {};
+    }
     let parameters = function.blocks[target.value].parameters;
     if arguments.len() != parameters.len() {
         report(
@@ -1955,7 +1955,7 @@ fn check_edge(
             "block argument count does not match parameter count",
         );
         return
-    } else {};
+    }
     for index in 0..arguments.len() {
         if register_valid(function, arguments[index]) && register_valid(function, parameters[index])
             && !go_types::identical(
@@ -1970,7 +1970,7 @@ fn check_edge(
                 instruction,
                 "block argument type does not match parameter type",
             )
-        } else {}
+        }
     }
 }
 
@@ -1991,7 +1991,7 @@ fn check_return(
             "return value count does not match result count",
         );
         return
-    } else {};
+    }
     for index in 0..values.len() {
         let result = function.results[index];
         if register_valid(function, values[index]) && local_valid(function, result)
@@ -2007,7 +2007,7 @@ fn check_return(
                 -1,
                 "return value type does not match result type",
             )
-        } else {}
+        }
     }
 }
 
@@ -2061,7 +2061,7 @@ fn check_terminator(
                         )
                     },
                     None => {},
-                };
+                }
                 check_edge(program, function, diagnostics, block, -1, arm.target, arm.arguments)
             }
             check_edge(program, function, diagnostics, block, -1, default_target, default_arguments)
@@ -2084,7 +2084,7 @@ fn check_signature(
             match shape.receiver {
                 Some(receiver) => parameters.push(receiver),
                 None => {},
-            };
+            }
             for parameter in shape.parameters {
                 parameters.push(parameter)
             }
@@ -2112,9 +2112,9 @@ fn check_signature(
                             -1,
                             "function parameter type does not match signature",
                         )
-                    } else {}
+                    }
                 }
-            };
+            }
             if function.results.len() != shape.results.len() {
                 report(
                     diagnostics,
@@ -2139,7 +2139,7 @@ fn check_signature(
                             -1,
                             "function result type does not match signature",
                         )
-                    } else {}
+                    }
                 }
             }
         },
@@ -2163,7 +2163,7 @@ fn check_function(
 ) -> () {
     if !valid_package(program, function.package_id) {
         report(diagnostics, Option::Some(function.id), Option::None, -1, "invalid function package")
-    } else {};
+    }
     if !valid_object(program, function.object) {
         report(diagnostics, Option::Some(function.id), Option::None, -1, "invalid function object")
     } else {
@@ -2184,7 +2184,7 @@ fn check_function(
                 -1,
                 "function object type does not match signature",
             )
-        } else {};
+        }
         match object.owner {
             Some(owner) => if owner.value != function.package_id.value {
                 report(
@@ -2194,7 +2194,7 @@ fn check_function(
                     -1,
                     "function object owner does not match function package",
                 )
-            } else {},
+            },
             None => report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2203,7 +2203,7 @@ fn check_function(
                 "function object has no package owner",
             ),
         }
-    };
+    }
     if valid_type(program, function.signature)
         && type_contains_parameter(
             program,
@@ -2219,7 +2219,7 @@ fn check_function(
             -1,
             "function signature contains a type parameter",
         )
-    } else {};
+    }
     for type_id in function.register_types {
         if !valid_type(program, type_id) {
             report(
@@ -2246,7 +2246,7 @@ fn check_function(
                     + " has type "
                     + go_types::format_type(program.world, type_id),
             )
-        } else {}
+        }
     }
     if function.place_count < 0 {
         report(
@@ -2256,7 +2256,7 @@ fn check_function(
             -1,
             "function has a negative place count",
         )
-    } else {};
+    }
     for index in 0..function.locals.len() {
         let local = function.locals[index];
         if local.id.value != index {
@@ -2285,7 +2285,7 @@ fn check_function(
                     + local.type_id.value.to_string()
                     + ")",
             )
-        } else {};
+        }
         if !valid_type(program, local.type_id) {
             report(
                 diagnostics,
@@ -2294,7 +2294,7 @@ fn check_function(
                 -1,
                 "local has an invalid type",
             )
-        } else {};
+        }
         match local.object {
             Some(object) => if !valid_object(program, object) {
                 report(
@@ -2304,7 +2304,7 @@ fn check_function(
                     -1,
                     "local has an invalid object",
                 )
-            } else {},
+            },
             None => {},
         }
     }
@@ -2326,7 +2326,7 @@ fn check_function(
                 -1,
                 "parameter local does not match parameter index",
             )
-        } else {}
+        }
     }
     let seen_captures = collections::BitSet::new();
     for index in 0..function.captures.len() {
@@ -2368,7 +2368,7 @@ fn check_function(
                 -1,
                 "capture local overlaps parameter local",
             )
-        } else {}
+        }
     }
     for local in function.results {
         if !local_valid(function, local) {
@@ -2387,12 +2387,12 @@ fn check_function(
                 -1,
                 "capture local overlaps result local",
             )
-        } else {}
+        }
     }
     check_signature(program, function, diagnostics);
     if function.entry.value < 0 || function.entry.value >= function.blocks.len() {
         report(diagnostics, Option::Some(function.id), Option::None, -1, "invalid entry block")
-    } else {};
+    }
     for index in 0..function.blocks.len() {
         let block = function.blocks[index];
         if block.id.value != index {
@@ -2403,7 +2403,7 @@ fn check_function(
                 -1,
                 "block id does not match block index",
             )
-        } else {};
+        }
         check_registers(function, diagnostics, block.id, -1, block.parameters);
         for instruction in 0..block.instructions.len() {
             check_instruction(
@@ -2437,8 +2437,8 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "main function has an invalid entry signature",
             )
-        } else {}
-    };
+        }
+    }
     if program.object_functions.len() != program.world.objects.len() {
         report(
             diagnostics,
@@ -2447,7 +2447,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
             -1,
             "function object index has the wrong length",
         )
-    } else {};
+    }
     if program.object_globals.len() != program.world.objects.len() {
         report(
             diagnostics,
@@ -2456,7 +2456,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
             -1,
             "global object index has the wrong length",
         )
-    } else {};
+    }
     if program.object_native_calls.len() != program.world.objects.len() {
         report(
             diagnostics,
@@ -2465,7 +2465,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
             -1,
             "native call object index has the wrong length",
         )
-    } else {};
+    }
     for index in 0..program.functions.len() {
         let function = program.functions[index];
         if function.id.value != index {
@@ -2476,7 +2476,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "function id does not match function index",
             )
-        } else {};
+        }
         check_function(
             program,
             function,
@@ -2496,7 +2496,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "global id does not match global index",
             )
-        } else {};
+        }
         if !valid_package(program, global.package_id) || !valid_object(program, global.object)
             || !valid_type(program, global.type_id) {
             report(diagnostics, Option::None, Option::None, -1, "global metadata is invalid")
@@ -2510,7 +2510,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "global object is not a variable",
                 )
-            } else {};
+            }
             if !go_types::identical(program.world, object.type_id, global.type_id) {
                 report(
                     diagnostics,
@@ -2519,7 +2519,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "global object type does not match global type",
                 )
-            } else {};
+            }
             match object.owner {
                 Some(owner) => if owner.value != global.package_id.value {
                     report(
@@ -2529,7 +2529,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                         -1,
                         "global object owner does not match global package",
                     )
-                } else {},
+                },
                 None => report(
                     diagnostics,
                     Option::None,
@@ -2550,7 +2550,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "native call id does not match native call index",
             )
-        } else {};
+        }
         if !valid_package(program, call.package_id) || !valid_object(program, call.object)
             || !valid_type(program, call.signature) {
             report(diagnostics, Option::None, Option::None, -1, "native call metadata is invalid")
@@ -2564,7 +2564,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call object does not match its symbol",
                 )
-            } else {};
+            }
             match object.owner {
                 Some(owner) => if !valid_package(program, owner)
                     || owner.value != call.package_id.value
@@ -2576,7 +2576,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                         -1,
                         "native call object owner does not match its package",
                     )
-                } else {},
+                },
                 None => report(
                     diagnostics,
                     Option::None,
@@ -2584,7 +2584,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call object has no package owner",
                 ),
-            };
+            }
             if !go_types::identical(program.world, object.type_id, call.signature) {
                 report(
                     diagnostics,
@@ -2593,7 +2593,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call object type does not match its signature",
                 )
-            } else {};
+            }
             if call.object.value < program.object_native_calls.len()
                 && program.object_native_calls[call.object.value] != Option::Some(call.id) {
                 report(
@@ -2603,7 +2603,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call object index is inconsistent",
                 )
-            } else {};
+            }
             if call.object.value < program.object_functions.len()
                 && program.object_functions[call.object.value].is_some() {
                 report(
@@ -2613,8 +2613,8 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call object also has an interpreted body",
                 )
-            } else {}
-        };
+            }
+        }
         if call.parameter_types.len() != call.parameter_type_keys.len()
             || call.result_types.len() != call.result_type_keys.len() {
             report(
@@ -2624,7 +2624,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "native call type metadata has inconsistent lengths",
             )
-        } else {};
+        }
         match verified_signature_shape(program, call.signature) {
             Some(signature) => match signature.receiver {
                 Some(receiver) => if call.receiver_name == "" || call.parameter_types.is_empty()
@@ -2636,7 +2636,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                         -1,
                         "native method receiver metadata is inconsistent",
                     )
-                } else {},
+                },
                 None => if call.receiver_name != "" || call.receiver_pointer {
                     report(
                         diagnostics,
@@ -2645,10 +2645,10 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                         -1,
                         "native function has method receiver metadata",
                     )
-                } else {},
+                },
             },
             None => {},
-        };
+        }
         for type_id in call.parameter_types {
             if !valid_type(program, type_id) {
                 report(
@@ -2658,7 +2658,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call has an invalid parameter type",
                 )
-            } else {}
+            }
         }
         for type_id in call.result_types {
             if !valid_type(program, type_id) {
@@ -2669,7 +2669,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call has an invalid result type",
                 )
-            } else {}
+            }
         }
     }
     for index in 0..program.native_types.len() {
@@ -2687,7 +2687,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "native types are not sorted and unique",
             )
-        } else {}
+        }
     }
     for index in 0..program.object_functions.len() {
         match program.object_functions[index] {
@@ -2700,7 +2700,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "function object index is inconsistent",
                 )
-            } else {},
+            },
             None => {},
         }
     }
@@ -2715,7 +2715,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "global object index is inconsistent",
                 )
-            } else {},
+            },
             None => {},
         }
     }
@@ -2730,7 +2730,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "native call object index is inconsistent",
                 )
-            } else {},
+            },
             None => {},
         }
     }
@@ -2752,7 +2752,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "native initialization packages are not sorted and unique",
             )
-        } else {}
+        }
     }
     let seen_packages = collections::BitSet::new();
     for package_value in program.packages {
@@ -2762,7 +2762,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
             report(diagnostics, Option::None, Option::None, -1, "duplicate bytecode package")
         } else {
             let _ = seen_packages.insert(package_value.package_id.value);
-        };
+        }
         let seen_functions = collections::BitSet::new();
         for function in package_value.functions {
             if !function_valid(program, function)
@@ -2833,7 +2833,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                         -1,
                         "package initializer has invalid metadata",
                     )
-                } else {}
+                }
             },
             None => {},
         }

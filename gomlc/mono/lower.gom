@@ -125,7 +125,7 @@ fn ensure_type_instance(
     match ctx.error.get() {
         Some(_) => return base_name,
         None => (),
-    };
+    }
     match find_type_instance(ctx, base_name, args) {
         Some(instance) => instance.name,
         None => {
@@ -135,7 +135,7 @@ fn ensure_type_instance(
                     return base_name
                 },
                 None => (),
-            };
+            }
             let name = unique_type_name(ctx, type_instance_base_name(base_name, name_args));
             let instance = PendingTypeInstance { base_name, args, name };
             ctx.instances.push(instance);
@@ -284,7 +284,7 @@ fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[core::Type]) -> 
     for index in 0..params.len() {
         if index < args.len() {
             result.push(TypeBinding { name: params[index], ty: args[index] })
-        } else {}
+        }
     }
     result
 }
@@ -336,9 +336,9 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[c
                             + " to "
                             + mono_type_text(next),
                     )
-                } else {}
+                }
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -367,7 +367,7 @@ fn invalid_type(ctx: TypeCtx, message: string) -> Type {
     match ctx.error.get() {
         Some(_) => (),
         None => ctx.error.set(Option::Some(message)),
-    };
+    }
     Type::Unit
 }
 
@@ -463,9 +463,9 @@ fn constructor_variant(name: string) -> string {
         for index in 0..name.byte_len() - 1 {
             if text::starts_with_at(name, index, "::") {
                 separator = index;
-            } else {}
+            }
         }
-    } else {};
+    }
     if separator < 0 {
         ""
     } else {
@@ -650,7 +650,7 @@ fn core_trait_impl_name(reference: core::TraitRef, for_type: core::Type, method_
         for index in 0..reference.args.len() {
             if index > 0 {
                 builder.write_char(',')
-            } else {};
+            }
             builder.write_string(compact_type(reference.args[index]))
         }
         builder.write_string("]@");
@@ -776,7 +776,7 @@ fn lower_static_trait_call(
             call_args.push(value)
         },
         None => (),
-    };
+    }
     for arg in args {
         params.push(expr_type(arg));
         call_args.push(arg)
@@ -1000,9 +1000,9 @@ fn constructor_owner(name: string) -> string {
         for index in 0..name.byte_len() - 1 {
             if text::starts_with_at(name, index, "::") {
                 separator = index;
-            } else {}
+            }
         }
-    } else {};
+    }
     if separator < 0 {
         name
     } else {
@@ -1160,7 +1160,7 @@ fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
                 }
             },
             None => (),
-        };
+        }
         collect_block_type_names(ctx, function.body)
     }
     ctx
@@ -1348,12 +1348,12 @@ fn materialize_definitions(ctx: TypeCtx) -> (Vec[EnumDef], Vec[StructDef]) {
     for value in ctx.enums {
         if value.generics.is_empty() {
             enums.push(materialize_enum(ctx, value, value.name, Vec::new()))
-        } else {}
+        }
     }
     for value in ctx.structs {
         if value.generics.is_empty() {
             structs.push(materialize_struct(ctx, value, value.name, Vec::new()))
-        } else {}
+        }
     }
     let mut index = 0;
     while index < ctx.instances.len() {
@@ -1373,7 +1373,7 @@ fn materialize_definitions(ctx: TypeCtx) -> (Vec[EnumDef], Vec[StructDef]) {
                 },
                 None => (),
             },
-        };
+        }
         index = index + 1;
     };
     (enums, structs)
@@ -1393,7 +1393,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
             },
             error: Option::Some("invalid Core IR: " + message),
         },
-    };
+    }
     let constants = value.constants;
     let statics = value.statics;
     let error = Ref::new(Option::None);

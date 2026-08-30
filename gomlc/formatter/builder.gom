@@ -150,14 +150,14 @@ impl Parts {
     fn add_pending_newlines(self: Parts, count: isize) -> () {
         if count > self.pending_newlines.get() {
             self.pending_newlines.set(count)
-        } else {}
+        }
     }
 
     fn push_line(self: Parts) -> () {
         self.values.push(Doc::HardLine);
         if self.first.get().is_none() && self.values.len() == 1 {
             self.starts_with_line.set(true)
-        } else {};
+        }
         self.last.set(Option::None);
         self.trailing_lines.set(self.trailing_lines.get() + 1);
         self.pending_newlines.set(0)
@@ -179,16 +179,16 @@ impl Parts {
                         && !value.starts_with_line
                         && needs_space(previous, current) {
                         self.values.push(text(" "))
-                    } else {},
+                    },
                     _ => (),
-                };
+                }
                 if self.values.is_empty() && value.starts_with_line {
                     self.starts_with_line.set(true)
-                } else {};
+                }
                 self.values.push(value.doc);
                 if self.first.get().is_none() {
                     self.first.set(value.first)
-                } else {};
+                }
                 self.last.set(value.last);
                 self.trailing_lines.set(value.trailing_lines);
                 self.pending_newlines.set(0)
@@ -213,7 +213,7 @@ impl Parts {
                 self.ensure_lines(2)
             } else if !self.values.is_empty() {
                 self.ensure_lines(1)
-            } else {};
+            }
             self.values.push(verbatim(value.token.text));
             self.trailing_lines.set(0);
             self.push_line()

@@ -26,7 +26,7 @@ fn valid_cached_image(plan: BuildPlan) -> bool {
     let metadata_file = completion_path(plan);
     if !fs::is_file(executable) || !fs::is_file(metadata_file) {
         return false
-    } else {};
+    }
     let executable_hash = match fs::sha256_file(executable) {
         Ok(value) => value,
         Err(_) => return false,
@@ -71,23 +71,23 @@ pub fn build_execution_image(plan: BuildPlan) -> Result[string, string] {
         return Result::Err("native image build directories are invalid")
     } else if valid_cached_image(plan) {
         return Result::Ok(image_path(plan))
-    } else {};
+    }
     if fs::exists(plan.final_directory) {
         fs::remove_dir_all(plan.final_directory).map_err(|error| error.to_string())?
-    } else {};
+    }
     if fs::exists(plan.staging_root) {
         fs::remove_dir_all(plan.staging_root).map_err(|error| error.to_string())?
-    } else {};
+    }
     fs::create_dir_all(plan.staging_root).map_err(|error| error.to_string())?;
     write_plan_files(plan)?;
     let output = build_command(plan).output_structured().map_err(|error| error.to_string())?;
     if !output.status().success() {
         return Result::Err(build_failure(output))
-    } else {};
+    }
     let staging_executable = path::join(plan.staging_root, plan.executable_relative_path);
     if !fs::is_file(staging_executable) {
         return Result::Err("go build did not produce the native execution image")
-    } else {};
+    }
     let executable_hash = fs::sha256_file(staging_executable).map_err(|error| error.to_string())?;
     fs::write_file_structured(
         path::join(plan.staging_root, plan.completion_relative_path),
@@ -100,6 +100,6 @@ pub fn build_execution_image(plan: BuildPlan) -> Result[string, string] {
     match fs::rename(plan.staging_root, plan.final_directory) {
         Ok(()) => {},
         Err(error) => return Result::Err(error.to_string()),
-    };
+    }
     Result::Ok(image_path(plan))
 }

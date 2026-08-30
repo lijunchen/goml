@@ -126,7 +126,7 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
     );
     if checked.diagnostics.is_empty() {} else {
         testing::fail(checked.diagnostics[0].message)
-    };
+    }
     let file = match checked.tast {
         Some(value) => value,
         None => {
@@ -307,7 +307,7 @@ fn derive_entries_round_trip_and_affect_interface_hash() -> () {
             match value.module.derive_entries[0].export_name {
                 Some(name) => testing::assert_eq(name, "Value"),
                 None => testing::fail("expected derive export name"),
-            };
+            }
             testing::assert_eq(value.module.functions.len(), 2)
         },
         None => testing::fail("expected derive comptime ()"),

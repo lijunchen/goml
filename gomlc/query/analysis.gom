@@ -143,7 +143,7 @@ fn expanded_source_for_path(values: Vec[(string, string)], source_path: string) 
     for value in values {
         if value.0 == source_path {
             return value.1
-        } else {}
+        }
     }
     ""
 }
@@ -162,9 +162,9 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
                 if value.package_name == package_name {
                     module.set(Option::Some(value));
                     let _ = attached_modules.insert(package_name);
-                } else {}
+                }
             }
-        };
+        }
         environments.set(
             index,
             tast::dependency_environment_with_comptime(environments[index], module.get()),
@@ -196,7 +196,7 @@ fn package_has_comptime(files: Vec[hir::File]) -> bool {
                 hir::Item::Function(value) => for attribute in value.attrs {
                     if attribute.name == "comptime" || attribute.name == "comptime_derive" {
                         return true
-                    } else {}
+                    }
                 },
                 _ => (),
             }
@@ -221,8 +221,8 @@ fn dependency_module_path(module_path: string, package_name: string) -> string {
                 separators = separators + 1;
                 if separators == 2 {
                     return package_name.byte_slice(0, index)
-                } else {}
-            } else {}
+                }
+            }
         }
         package_name
     }
@@ -329,11 +329,11 @@ fn collect_dependency(
                     );
                     if !tast::diagnostics_have_errors(checked.diagnostics) {
                         derive_modules.push(checked.comptime)
-                    } else {};
+                    }
                     for diagnostic in checked.diagnostics {
                         diagnostics.push(diagnostic)
                     }
-                } else {};
+                }
                 append_derive_reexports(lowered.files, derive_reexports);
                 for file in lowered.files {
                     dependencies.push(file)
@@ -390,7 +390,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
         Err(error) => diagnostics.push(
             query_diagnostic(value.files[0].path, "prelude", error, Option::None),
         ),
-    };
+    }
     let builtin_derive = match context.builtin_derive {
         Ok(value) => value,
         Err(error) => {
@@ -477,7 +477,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride], context: Analys
     match builtin_derive {
         Some(module) => comptime_modules.push(module),
         None => (),
-    };
+    }
     for module in derive_modules {
         comptime_modules.push(module)
     }

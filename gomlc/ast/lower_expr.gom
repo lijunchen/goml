@@ -160,7 +160,7 @@ fn decimal_hex_value(value: u8) -> u32 {
 fn unicode_escape_character(value: string, start: isize) -> Option[char] {
     if start + 4 > value.byte_len() {
         return Option::None
-    } else {};
+    }
     let mut code = 0;
     for cursor in start..start + 4 {
         match hex_value(value.byte_get(cursor)) {
@@ -210,14 +210,14 @@ fn unescape_string(value: string) -> string {
                             builder.write_string(character.to_string())
                         },
                         None => (),
-                    };
+                    }
                     index = index + 4;
                 },
                 _ => {
                     builder.write_string("\\");
                     builder.write_string(value.byte_slice(index + 1, index + 2))
                 },
-            };
+            }
             index = index + 2;
         }
     }
@@ -267,7 +267,7 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
                                 unescape_string(collapse_interpolated_braces(token.text)),
                             ),
                         )
-                    } else {}
+                    }
                 },
                 Node(child) => {
                     let located = LocatedNode { node: child, start: cursor };
@@ -290,9 +290,9 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
                                 "Interpolated string part missing expression",
                             )
                         }
-                    } else {}
+                    }
                 },
-            };
+            }
             cursor = cursor + cst::element_byte_len(element);
         }
         Option::Some(Expr::InterpolatedString { parts, span: node_span(node) })
@@ -321,7 +321,7 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
                 } else {
                     if line_start > 0 {
                         builder.write_string("\n")
-                    } else {};
+                    }
                     builder.write_string(value.byte_slice(marker + 2, line_end));
                     if line_end >= value.byte_len() {
                         line_start = value.byte_len() + 1;
@@ -474,7 +474,7 @@ fn lower_closure(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                 }
             },
             None => push_error(ctx, node_span(node), "Closure missing parameter list"),
-        };
+        }
         match first_child(node, cst::NodeKind::EXPR_CLOSURE_BODY) {
             Some(body_node) => match first_child(body_node, cst::NodeKind::BLOCK) {
                 Some(block_node) => match lower_block(ctx, block_node) {
@@ -553,7 +553,7 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                             }
                         },
                         None => (),
-                    };
+                    }
                     let base = match first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
                         Some(list) => match first_child(list, cst::NodeKind::STRUCT_LITERAL_UPDATE) {
                             Some(update) => {
@@ -850,7 +850,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
     if value.byte_len() < 3 || value.byte_get(0) != b'b' || value.byte_get(1) != b'"'
         || value.byte_get(value.byte_len() - 1) != b'"' {
         return Option::None
-    } else {};
+    }
     let result: Vec[string] = Vec::new();
     let mut index = 2;
     while index + 1 < value.byte_len() {
@@ -895,7 +895,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
 fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
     if value.byte_len() < 4 || value.byte_get(0) != b'b' || value.byte_get(1) != b'r' {
         return Option::None
-    } else {};
+    }
     let mut hash_count = 0;
     while 2 + hash_count < value.byte_len() && value.byte_get(2 + hash_count) == b'#' {
         hash_count = hash_count + 1;
@@ -904,7 +904,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
     let end = value.byte_len() - hash_count - 1;
     if start > end || value.byte_get(start - 1) != b'"' || value.byte_get(end) != b'"' {
         return Option::None
-    } else {};
+    }
     let result: Vec[string] = Vec::new();
     for index in start..end {
         let byte = value.byte_get(index);

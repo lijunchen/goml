@@ -199,35 +199,35 @@ fn evaluates_compile_time_string_intrinsics() -> () {
     ) {
         ctir::CtValue::Integer { bits, .. } => testing::assert_eq(bits, 3),
         _ => testing::fail("expected string length"),
-    };
+    }
     match expect_string_intrinsic(
         "comptime.string.get",
         Vec::from_array([ctir::CtValue::String("éa"), int_value(2)]),
     ) {
         ctir::CtValue::Char(value) => testing::assert_eq(value, 'a'),
         _ => testing::fail("expected string character"),
-    };
+    }
     match expect_string_intrinsic(
         "comptime.string.byte_get",
         Vec::from_array([ctir::CtValue::String("éa"), int_value(0)]),
     ) {
         ctir::CtValue::Integer { bits, .. } => testing::assert_eq(bits, 195),
         _ => testing::fail("expected string byte"),
-    };
+    }
     match expect_string_intrinsic(
         "comptime.string.byte_slice",
         Vec::from_array([ctir::CtValue::String("éa"), int_value(0), int_value(2)]),
     ) {
         ctir::CtValue::String(value) => testing::assert_eq(value, "é"),
         _ => testing::fail("expected string slice"),
-    };
+    }
     match expect_string_intrinsic(
         "comptime.string.is_char_boundary",
         Vec::from_array([ctir::CtValue::String("éa"), int_value(1)]),
     ) {
         ctir::CtValue::Bool(value) => testing::assert(!value),
         _ => testing::fail("expected character boundary result"),
-    };
+    }
     match expect_string_intrinsic(
         "comptime.string.contains",
         Vec::from_array([ctir::CtValue::String("derive"), ctir::CtValue::String("riv")]),
@@ -248,7 +248,7 @@ fn rejects_invalid_compile_time_string_boundaries() -> () {
             error.contains("out of bounds or not a character boundary"),
         ),
         _ => testing::fail("expected invalid character boundary"),
-    };
+    }
     match call_value_intrinsic(
         ctir::CtTarget { int_width: 32 },
         "comptime.string.byte_get",
@@ -270,7 +270,7 @@ fn evaluates_recursive_direct_calls() -> () {
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert_eq(
         expect_int(
             evaluate_entry(
@@ -368,7 +368,7 @@ fn evaluates_local_state_and_loops() -> () {
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 10)
 }
 
@@ -382,7 +382,7 @@ fn rejects_loop_control_after_loop_scope() -> () {
     match verify_module(expression_module(loop_then(sibling_break), Vec::new()), Vec::new()) {
         Err(error) => testing::assert_eq(error, "CTIR break target is not in scope"),
         Ok(()) => testing::fail("expected sibling break target rejection"),
-    };
+    }
     let sibling_continue = ctir::CtExpr {
         kind: ctir::CtExprKind::Continue { target: 7 },
         ty: ctir::CtType::Never,
@@ -476,7 +476,7 @@ fn evaluates_structured_match_values() -> () {
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert_eq(expect_int(evaluate_site(module, Vec::new(), 0, default_limits())), 42)
 }
 
@@ -506,7 +506,7 @@ fn reports_compile_errors_and_resource_limits() -> () {
     match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Err(error) => testing::assert_eq(error.message, "stop"),
         Ok(_) => testing::fail("expected compile_error"),
-    };
+    }
     let limits = EvalLimits {
         fuel: 4,
         call_depth: 256,
@@ -544,7 +544,7 @@ fn enforces_depth_value_and_result_limits() -> () {
     ) {
         Err(error) => testing::assert_eq(error.message, "comptime call depth limit exceeded"),
         Ok(_) => testing::fail("expected call depth exhaustion"),
-    };
+    }
     let value_limits = EvalLimits {
         fuel: 100,
         call_depth: 10,
@@ -566,7 +566,7 @@ fn enforces_depth_value_and_result_limits() -> () {
     match evaluate_site(module, Vec::new(), 0, value_limits) {
         Err(error) => testing::assert_eq(error.message, "comptime temporary value limit exceeded"),
         Ok(_) => testing::fail("expected temporary value exhaustion"),
-    };
+    }
     let size_limits = EvalLimits {
         fuel: 100,
         call_depth: 10,
@@ -608,7 +608,7 @@ fn applies_fixed_width_integer_semantics() -> () {
         },
         Ok(_) => testing::fail("expected fixed-width integer"),
         Err(error) => testing::fail(error.message),
-    };
+    }
     let shifted = binary_expr(
         ctir::CtBinaryOp::Shl,
         narrow_int_expr(false, 8, 1),
@@ -629,7 +629,7 @@ fn applies_fixed_width_integer_semantics() -> () {
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Ok(ctir::CtValue::Integer { signed, width, bits }) => {
             testing::assert(!signed);
@@ -657,14 +657,14 @@ fn rejects_invalid_ctir_before_execution() -> () {
     match verify_module(module, Vec::new()) {
         Err(error) => testing::assert_eq(error, "invalid CTIR local slot or type"),
         Ok(()) => testing::fail("expected invalid local slot"),
-    };
+    }
     match evaluate_site(module, Vec::new(), 0, default_limits()) {
         Err(error) => testing::assert_eq(
             error.message,
             "invalid CTIR: invalid CTIR local slot or type",
         ),
         Ok(_) => testing::fail("expected evaluator CTIR rejection"),
-    };
+    }
     let caller = factorial_module();
     caller.sites.push(
         ctir::CtSite {
@@ -709,7 +709,7 @@ fn evaluates_short_circuit_and_left_to_right_order() -> () {
         Ok(ctir::CtValue::Bool(value)) => testing::assert(!value),
         Ok(_) => testing::fail("expected bool result"),
         Err(error) => testing::fail(error.message),
-    };
+    }
     let ordered = ctir::CtExpr {
         kind: ctir::CtExprKind::Array(
             Vec::from_array([compile_error_expr("left"), compile_error_expr("right")]),
@@ -827,7 +827,7 @@ fn evaluates_return_break_and_continue() -> () {
     match verify_module(module, Vec::new()) {
         Ok(()) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert_eq(
         expect_int(evaluate_entry(module, Vec::new(), "return_value", Vec::new(), default_limits())),
         7,
@@ -852,7 +852,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> () {
         },
         Ok(_) => testing::fail("expected widened integer"),
         Err(error) => testing::fail(error.message),
-    };
+    }
     let truncated = ctir::CtExpr {
         kind: ctir::CtExprKind::Cast {
             value: narrow_int_expr(false, 64, 511),
@@ -865,14 +865,14 @@ fn applies_integer_casts_and_reports_numeric_failures() -> () {
         Ok(ctir::CtValue::Integer { bits, .. }) => testing::assert_eq(bits, 255),
         Ok(_) => testing::fail("expected truncated integer"),
         Err(error) => testing::fail(error.message),
-    };
+    }
     let division = binary_expr(ctir::CtBinaryOp::Div, int_expr(1), int_expr(0), int_type());
     match evaluate_expression(division, Vec::new(), default_limits()) {
         Err(error) => {
             testing::assert_eq(error.message, "division by zero during comptime evaluation")
         },
         Ok(_) => testing::fail("expected division failure"),
-    };
+    }
     let shift = binary_expr(
         ctir::CtBinaryOp::Shl,
         narrow_int_expr(false, 8, 1),
@@ -884,7 +884,7 @@ fn applies_integer_casts_and_reports_numeric_failures() -> () {
             testing::assert_eq(error.message, "negative shift count during comptime evaluation")
         },
         Ok(_) => testing::fail("expected shift failure"),
-    };
+    }
     let indexed = ctir::CtExpr {
         kind: ctir::CtExprKind::Index {
             value: ctir::CtExpr {
@@ -924,13 +924,13 @@ fn enforces_temporary_memory_and_target_limits() -> () {
             testing::assert_eq(error.message, "comptime temporary memory limit exceeded")
         },
         Ok(_) => testing::fail("expected temporary memory failure"),
-    };
+    }
     let module = factorial_module();
     module.target = ctir::CtTarget { int_width: 16 };
     match verify_module(module, Vec::new()) {
         Err(error) => testing::assert_eq(error, "invalid CTIR target integer width"),
         Ok(()) => testing::fail("expected invalid target rejection"),
-    };
+    }
     let invalid_local = factorial_module();
     invalid_local.functions[0].local_types.set(0, ctir::CtType::Bool);
     match verify_module(invalid_local, Vec::new()) {
@@ -970,7 +970,7 @@ fn rejects_invalid_derive_ctir_artifacts() -> () {
     match verify_module(invalid_signature, Vec::new()) {
         Err(error) => testing::assert_eq(error, "invalid CTIR derive entry signature"),
         Ok(()) => testing::fail("expected invalid derive signature"),
-    };
+    }
     let invalid_intrinsic = ctir::empty_module("test::derive_intrinsic");
     let input_ty = ctir::CtType::Meta("DeriveInput");
     let output_ty = ctir::CtType::Meta("DeriveOutput");

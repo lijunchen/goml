@@ -32,7 +32,7 @@ fn signature_label(parameters: Vec[string], return_type: string) -> string {
     for parameter in parameters {
         if index > 0 {
             builder.write_string(", ")
-        } else {};
+        }
         builder.write_string(parameter);
         index = index + 1;
     }
@@ -88,13 +88,13 @@ fn item_parameter_names(
                 Some(owner) => match explicit_type_name(block.for_type) {
                     Some(actual) => if short_type_name(actual) != short_type_name(owner) {
                         return Option::None
-                    } else {},
+                    },
                     None => return Option::None,
                 },
                 None => if !allow_unresolved {
                     return Option::None
-                } else {},
-            };
+                },
+            }
             let mut index = block.methods.len() - 1;
             while index >= 0 {
                 let method = block.methods[index];
@@ -110,11 +110,11 @@ fn item_parameter_names(
             match expected_owner {
                 Some(owner) => if short_type_name(definition.name) != short_type_name(owner) {
                     return Option::None
-                } else {},
+                },
                 None => if !allow_unresolved {
                     return Option::None
-                } else {},
-            };
+                },
+            }
             let mut index = definition.method_sigs.len() - 1;
             while index >= 0 {
                 let method = definition.method_sigs[index];
@@ -178,7 +178,7 @@ fn exact_function_symbol(value: Analysis, qualified_name: string) -> Option[Symb
                 _ => false,
             } {
             return Option::Some(symbol)
-        } else {}
+        }
     }
     Option::None
 }
@@ -211,7 +211,7 @@ fn method_signature_symbol(value: Analysis, owner: string, name: string, origin:
                     || actual_owner == "prelude::" + owner
             } {
             result.push(symbol)
-        } else {}
+        }
     }
     if result.len() == 1 {
         Option::Some(result[0])
@@ -314,7 +314,7 @@ fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[s
             None => (),
         },
         None => (),
-    };
+    }
     let mut source_index = value.sources.len() - 1;
     while source_index >= 0 {
         let source = value.sources[source_index];
@@ -326,7 +326,7 @@ fn unresolved_parameter_names(value: Analysis, expected: string) -> Option[Vec[s
                 },
                 None => (),
             }
-        };
+        }
         source_index = source_index - 1;
     }
     Option::None
@@ -336,9 +336,9 @@ fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Ve
     match fact.target {
         Callable(Intrinsic(name)) => if name == "vec.from_array" || name == "hashmap.from_array" {
             return Option::Some(Vec::from_array(["values"]))
-        } else {},
+        },
         _ => (),
-    };
+    }
     let expected = short_type_name(call_target_name(value, fact));
     let expected_owner = signature_target_owner(fact.target);
     match fact.target {
@@ -401,7 +401,7 @@ fn active_parameter(fact: tast::CallFact, offset: isize) -> isize {
             active = index + 1;
         } else if offset >= span.start {
             active = index;
-        } else {};
+        }
         index = index + 1;
     }
     active
@@ -417,7 +417,7 @@ pub fn signature_help(value: Analysis, offset: isize) -> Option[SignatureResult]
             && offset < fact.span.end
             && (best < 0 || fact_width <= calls[best].span.end - calls[best].span.start) {
             best = candidate;
-        } else {}
+        }
     }
     match if best >= 0 {
         Option::Some(calls[best])

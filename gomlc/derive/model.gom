@@ -533,7 +533,7 @@ pub fn is_intrinsic(name: string) -> bool {
     for value in intrinsic_specs() {
         if value.name == name {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -889,7 +889,7 @@ fn write_path_text(builder: text::StringBuilder, value: ast::Path) -> () {
     for segment in value.segments {
         if first {} else {
             builder.write_string("::")
-        };
+        }
         builder.write_string(segment.ident);
         first = false;
     }
@@ -1020,7 +1020,7 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
             for generic in generics {
                 if generic == path.segments[0].ident {
                     return true
-                } else {}
+                }
             }
             false
         } else {
@@ -1030,7 +1030,7 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
             for item in items {
                 if type_mentions_generics(item, generics) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -1039,12 +1039,12 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
                 for argument in bound.args {
                     if type_mentions_generics(argument, generics) {
                         return true
-                    } else {}
+                    }
                 }
                 for associated in bound.associated_types {
                     if type_mentions_generics(associated.1, generics) {
                         return true
-                    } else {}
+                    }
                 }
             }
             false
@@ -1056,7 +1056,7 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
                 for argument in args {
                     if type_mentions_generics(argument, generics) {
                         return true
-                    } else {}
+                    }
                 }
                 false
             }
@@ -1066,7 +1066,7 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
             for parameter in params {
                 if type_mentions_generics(parameter, generics) {
                     return true
-                } else {}
+                }
             }
             type_mentions_generics(ret_ty, generics)
         },
@@ -1882,7 +1882,7 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         match ty {
             ast::TypeExpr::Dyn { bounds: _ } => (),
             _ => return Result::Err("meta_expr_cast target must be a dyn trait type"),
-        };
+        }
         Result::Ok(
             push_expr(
                 state,
@@ -2215,7 +2215,7 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
             state.pattern_lists[id].push(pattern)
         } else {
             state.pattern_lists[id].insert(0, pattern)
-        };
+        }
         Result::Ok(unit_value())
     } else if name == "meta_arm" {
         let id = state.arms.len();
@@ -2422,7 +2422,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
                 );
                 state.generic_lists[id].set(index, entry);
                 found = true;
-            } else {}
+            }
         }
         if found {
             Result::Ok(unit_value())
@@ -2452,7 +2452,7 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
                 generics.push(generic.0);
                 generic_bounds.push(generic)
             }
-        } else {};
+        }
         let param_type_spans: Vec[ast::Span] = Vec::new();
         for _ in state.param_lists[params] {
             param_type_spans.push(value_span)
@@ -2553,7 +2553,7 @@ pub fn call_intrinsic(
         return Result::Err("derive generated syntax limit exceeded")
     } else {
         state.operations.set(operations + 1)
-    };
+    }
     if name.starts_with("derive_item_") || name.starts_with("derive_generic_")
         || name.starts_with("derive_field_")
         || name.starts_with("derive_variant_")

@@ -131,7 +131,7 @@ fn collect_dependencies(graph: Graph, package_name: string, result: collections:
     for dependency in package_value.imports {
         if result.insert(dependency) {
             collect_dependencies(graph, dependency, result)?
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -142,7 +142,7 @@ fn mark_reachable(graph: Graph, package_name: string, seen: collections::HashSet
 ] {
     if !seen.insert(package_name) {
         return Result::Ok(())
-    } else {};
+    }
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
@@ -161,7 +161,7 @@ fn reachable_packages(graph: Graph, entries: Vec[string]) -> Result[Vec[string],
     for package_name in graph.order {
         if seen.contains(package_name) {
             result.push(package_name)
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -289,7 +289,7 @@ fn compile_test_package_command(
                         ),
                     ),
                 )
-            } else {};
+            }
             Result::Ok(
                 Command::Compile {
                     subcommand,
@@ -367,7 +367,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
                 commands.push(value)
             }
         }
-    } else {};
+    }
     Result::Ok(Plan { commands, executable: Option::None, test_groups: Vec::new() })
 }
 
@@ -380,7 +380,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         };
         if package_value.declared_name == "main" {
             entries.push(package_name)
-        } else {}
+        }
     }
     let packages = if entries.is_empty() {
         context.graph.order
@@ -501,7 +501,7 @@ fn target_build_plan(context: Context, build_executable: bool) -> Result[Plan, s
                 output: module_relative(context.graph.module_dir, executable),
             },
         )
-    } else {};
+    }
     Result::Ok(
         Plan {
             commands,
@@ -677,7 +677,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             commands,
             groups,
         )
-    } else {};
+    }
     let external: Vec[ExternalTest] = match kind {
         EXTERNAL_TEST_KIND | ALL_TEST_KIND => external_test_graphs(context)?,
         _ => Vec::new(),
@@ -714,7 +714,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             commands,
             groups,
         )
-    } else {};
+    }
     Result::Ok(Plan { commands, executable: Option::None, test_groups: groups })
 }
 
@@ -777,17 +777,17 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             let args = Vec::from_array(["__toolchain-build"]);
             if builtin_contract {
                 args.push("--builtin-contract")
-            } else {};
+            }
             if without_roots {
                 args.push("--without-roots")
-            } else {};
+            }
             match counter_output {
                 Some(value) => {
                     args.push("--counter-output");
                     args.push(value)
                 },
                 None => (),
-            };
+            }
             args.push("--package");
             args.push(package_name);
             args.push("--module");
@@ -931,7 +931,7 @@ fn execute_command(cancel: task::CancelToken, context: Context, value: Command) 
         } else {
             let _ = process.env("GO111MODULE", "on");
         }
-    } else {};
+    }
     match process.status_cancel_structured(cancel) {
         Ok(status) => if process::ExitStatus::success(status) {
             Result::Ok(())
@@ -967,7 +967,7 @@ fn prepare_cached_command(
             return Result::Ok(CachePreparation::Execute(Option::None))
         },
         _ => (),
-    };
+    }
     match cache_spec(command) {
         Some(spec) => {
             let fingerprint = command_fingerprint(digests, context, identity, spec)?;
@@ -1000,7 +1000,7 @@ fn execute_prepared_command(
                     let _ = prepare_cache_execution(context, value.spec);
                 },
                 None => (),
-            };
+            }
             Result::Err(message)
         },
     }
@@ -1052,10 +1052,10 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                                 previous = candidate;
                             } else if candidate > index && following < 0 {
                                 following = candidate;
-                            } else {}
+                            }
                         },
                         None => (),
-                    };
+                    }
                     let producer = if previous >= 0 {
                         previous
                     } else {
@@ -1063,7 +1063,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     };
                     if producer >= 0 {
                         let _ = dependencies.insert(producer);
-                    } else {}
+                    }
                 }
                 for output in spec.outputs {
                     let mut previous = -1;
@@ -1071,17 +1071,17 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                         Some(values) => for candidate in values {
                             if candidate < index && candidate > previous {
                                 previous = candidate;
-                            } else {}
+                            }
                         },
                         None => (),
-                    };
+                    }
                     if previous >= 0 {
                         let _ = dependencies.insert(previous);
-                    } else {}
+                    }
                 }
             },
             None => (),
-        };
+        }
         result.push(BuildNode { index, command, dependencies })
     }
     Result::Ok(BuildGraph { nodes: result })
@@ -1099,7 +1099,7 @@ fn build_node_ready(node: BuildNode, completed: collections::BitSet) -> bool {
     for dependency in node.dependencies {
         if !completed.contains(dependency) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -1157,7 +1157,7 @@ fn accept_build_result(
                 match value.completion {
                     Some(completion) => completion.send(true),
                     None => (),
-                };
+                }
                 let _ = completed_nodes.insert(value.index);
                 Result::Ok(())
             },
@@ -1165,7 +1165,7 @@ fn accept_build_result(
                 match value.completion {
                     Some(completion) => completion.send(false),
                     None => (),
-                };
+                }
                 scope.cancel();
                 Result::Err(message)
             },
@@ -1345,7 +1345,7 @@ fn execute_plan_concurrently(
             } else if !pending.is_empty() {
                 scope.cancel();
                 return Result::Err("build plan contains a dependency cycle")
-            } else {},
+            },
         }
     }
     work.close();
@@ -1356,7 +1356,7 @@ fn execute_plan_concurrently(
 pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: isize) -> Result[(), string] {
     if !dry_run && jobs < 1 {
         return Result::Err("build jobs must be greater than zero")
-    } else {};
+    }
     let total = plan.commands.len();
     let completed = Ref::new(0);
     let identity = if dry_run {
@@ -1389,10 +1389,10 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: isize) ->
                 return Result::Err(message)
             },
         }
-    };
+    }
     if dry_run {} else {
         util::display_progress(completed.get(), total, "finished", true)
-    };
+    }
     Result::Ok(())
 }
 

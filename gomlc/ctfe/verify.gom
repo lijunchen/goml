@@ -117,7 +117,7 @@ fn type_lists_equal(left: Vec[ctir::CtType], right: Vec[ctir::CtType]) -> bool {
         for index in 0..left.len() {
             if !types_equal(left[index], right[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -130,7 +130,7 @@ fn type_list_lists_equal(left: Vec[Vec[ctir::CtType]], right: Vec[Vec[ctir::CtTy
         for index in 0..left.len() {
             if !type_lists_equal(left[index], right[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -250,7 +250,7 @@ fn value_matches_type(value: ctir::CtValue, ty: ctir::CtType) -> bool {
                 for value in values {
                     if !value_matches_type(value, elem) {
                         return false
-                    } else {}
+                    }
                 }
                 true
             }
@@ -278,7 +278,7 @@ fn value_list_matches_types(values: Vec[ctir::CtValue], types: Vec[ctir::CtType]
         for index in 0..values.len() {
             if !value_matches_type(values[index], types[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -314,7 +314,7 @@ fn loop_target(ctx: VerifyContext, target: isize) -> Option[(ctir::CtType, bool)
         index = index - 1;
         if ctx.loop_targets[index].0 == target {
             return Option::Some((ctx.loop_targets[index].1, ctx.loop_targets[index].2))
-        } else {}
+        }
     }
     Option::None
 }
@@ -367,7 +367,7 @@ fn verify_value_limits(value: ctir::CtValue, nodes: Ref[isize], bytes: Ref[isize
         ctir::CtValue::Meta { kind, id: _ } => {
             own_bytes = kind.byte_len() + 8;
         },
-    };
+    }
     if nodes.get() >= ctir_value_node_limit() {
         Result::Err("CTIR value node limit exceeded")
     } else if own_bytes > ctir_value_byte_limit() - bytes.get() {
@@ -473,7 +473,7 @@ fn verify_pattern(ctx: VerifyContext, value: ctir::CtPattern, ty: ctir::CtType) 
         ctir::CtPattern::Or(patterns) => {
             if patterns.is_empty() {
                 return Result::Err("empty CTIR or-pattern")
-            } else {};
+            }
             for pattern in patterns {
                 verify_pattern(ctx, pattern, ty)?
             }
@@ -504,7 +504,7 @@ fn verify_find_function(module: ctir::CtModule, id: isize) -> Option[ctir::CtFun
     for function in module.functions {
         if function.id == id {
             return Option::Some(function)
-        } else {}
+        }
     }
     Option::None
 }
@@ -516,7 +516,7 @@ fn verify_find_module(ctx: VerifyContext, name: string) -> Option[ctir::CtModule
         for value in ctx.dependencies {
             if value.package_name == name {
                 return Option::Some(value)
-            } else {}
+            }
         }
         Option::None
     }
@@ -526,12 +526,12 @@ fn verify_find_entry(module: ctir::CtModule, name: string) -> Option[ctir::CtFun
     for entry in module.entries {
         if entry.name == name {
             return verify_find_function(module, entry.function_id)
-        } else {}
+        }
     }
     for entry in module.derive_entries {
         if entry.name == name {
             return verify_find_function(module, entry.function_id)
-        } else {}
+        }
     }
     Option::None
 }
@@ -595,7 +595,7 @@ fn derive_intrinsic_signature(module: ctir::CtModule, name: string) -> Option[
                 params.push(derive_abi_type(module, value))
             }
             return Option::Some((params, derive_abi_type(module, spec.ret)))
-        } else {}
+        }
     }
     Option::None
 }
@@ -611,7 +611,7 @@ fn verify_expr_list(ctx: VerifyContext, values: Vec[ctir::CtExpr], types: Vec[ct
             verify_expr(ctx, values[index])?;
             if !expression_type_matches(types[index], values[index].ty) {
                 return Result::Err("CTIR expression type mismatch")
-            } else {}
+            }
         }
         Result::Ok(())
     }
@@ -641,7 +641,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
                     } else {
                         Result::Err("CTIR constant type mismatch")
                     }
-                } else {}
+                }
             }
             for site in module.sites {
                 match site.kind {
@@ -651,7 +651,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
                         } else {
                             Result::Err("CTIR pending constant type mismatch")
                         }
-                    } else {},
+                    },
                     ctir::CtSiteKind::Expression => (),
                 }
             }
@@ -712,7 +712,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
             verify_expr(ctx, index)?;
             if !is_integer_type(index.ty) && !types_equal(index.ty, ctir::CtType::Never) {
                 return Result::Err("CTIR array index is not an integer")
-            } else {};
+            }
             match source.ty {
                 ctir::CtType::Array { len: _, elem } => if types_equal(value.ty, elem) {
                     Result::Ok(())
@@ -756,14 +756,14 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
                         verify_expr(ctx, guard)?;
                         if !expression_type_matches(ctir::CtType::Bool, guard.ty) {
                             return Result::Err("CTIR match guard is not bool")
-                        } else {}
+                        }
                     },
                     None => (),
-                };
+                }
                 verify_expr(ctx, arm.body)?;
                 if !expression_type_matches(value.ty, arm.body.ty) {
                     return Result::Err("CTIR match arm type mismatch")
-                } else {}
+                }
             }
             Result::Ok(())
         },
@@ -819,7 +819,7 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
         ctir::CtExprKind::Break { target, value: result } => {
             if !types_equal(value.ty, ctir::CtType::Never) {
                 return Result::Err("CTIR break expression must have type Never")
-            } else {};
+            }
             let Some((expected, accepts_value)) = loop_target(ctx, target) else {
                 return Result::Err("CTIR break target is not in scope")
             };
@@ -877,11 +877,11 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
                     };
                     if !types_equal(value.ty, signature.1) {
                         return Result::Err("CTIR intrinsic return type mismatch")
-                    } else {};
+                    }
                     return verify_expr_list(ctx, args, signature.0)
                 },
                 _ => (),
-            };
+            }
             let Some(function) = call_function(ctx, target) else {
                 return Result::Err("unresolved CTIR call target")
             };
@@ -889,12 +889,12 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[(), string] {
                 || args.len() != function.parameter_types.len()
                 || !types_equal(value.ty, function.return_type) {
                 return Result::Err("CTIR call signature mismatch")
-            } else {};
+            }
             for index in 0..args.len() {
                 verify_expr(ctx, args[index])?;
                 if !expression_type_matches(function.parameter_types[index], args[index].ty) {
                     return Result::Err("CTIR call argument type mismatch")
-                } else {}
+                }
             }
             Result::Ok(())
         },
@@ -1041,7 +1041,7 @@ fn verify_function(
         return Result::Err("CTIR function has fewer locals than parameters")
     } else if value.local_count != value.local_types.len() {
         return Result::Err("CTIR function local type count does not match local count")
-    } else {};
+    }
     let seen = collections::BitSet::new();
     for index in 0..value.parameter_slots.len() {
         let slot = value.parameter_slots[index];
@@ -1049,7 +1049,7 @@ fn verify_function(
             return Result::Err("invalid CTIR parameter slot")
         } else if !types_equal(value.local_types[slot], value.parameter_types[index]) {
             return Result::Err("CTIR parameter local type mismatch")
-        } else {}
+        }
     }
     for ty in value.parameter_types {
         verify_type(ty)?
@@ -1083,7 +1083,7 @@ fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::Ct
             return Result::Err("duplicate CTIR module package `" + dependency.package_name + "`")
         } else if dependency.target.int_width != module.target.int_width {
             return Result::Err("CTIR target mismatch")
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -1098,7 +1098,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         return Result::Err("invalid CTIR target integer width")
     } else if module.origins.is_empty() {
         return Result::Err("CTIR module has no source origins")
-    } else {};
+    }
     verify_unique_module_names(module, dependencies)?;
     let value_nodes = Ref::new(0);
     let value_bytes = Ref::new(0);
@@ -1106,7 +1106,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     for function in module.functions {
         if function.id < 0 || !ids.insert(function.id) {
             return Result::Err("duplicate or negative CTIR function id")
-        } else {}
+        }
         verify_function(module, dependencies, function, value_nodes, value_bytes)?
     }
     let entry_names: collections::HashSet[string] = collections::HashSet::new();
@@ -1114,14 +1114,14 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         if entry.name == "" || !entry_names.insert(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
             return Result::Err("invalid CTIR entry")
-        } else {}
+        }
     }
     let derive_export_names: collections::HashSet[string] = collections::HashSet::new();
     for entry in module.derive_entries {
         if entry.name == "" || !entry_names.insert(entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
             return Result::Err("invalid CTIR derive entry")
-        } else {};
+        }
         let Some(function) = verify_find_function(module, entry.function_id) else {
             return Result::Err("invalid CTIR derive entry")
         };
@@ -1132,20 +1132,20 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
             if export_name == "" || export_name.contains("::")
                 || !derive_export_names.insert(export_name) {
                 return Result::Err("invalid or duplicate CTIR derive export name")
-            } else {};
+            }
             if function.parameter_types.len() != 1
                 || !types_equal(function.parameter_types[0], ctir::CtType::Meta("DeriveInput"))
                 || !types_equal(function.return_type, ctir::CtType::Meta("DeriveOutput")) {
                 return Result::Err("invalid CTIR derive entry signature")
-            } else {}
-        } else {}
+            }
+        }
     }
     let site_ids: collections::HashSet[isize] = collections::HashSet::new();
     for site in module.sites {
         if site.id < 0 || !site_ids.insert(site.id) || site.local_count < 0
             || site.local_count != site.local_types.len() {
             return Result::Err("invalid CTIR site")
-        } else {}
+        }
         let ctx = VerifyContext {
             module,
             dependencies,
@@ -1163,7 +1163,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
     for constant in module.constants {
         if constant.name == "" || !constant_names.insert(constant.name) {
             return Result::Err("duplicate or empty CTIR constant")
-        } else {}
+        }
         verify_type(value_type(constant.value))?;
         verify_value_limits(constant.value, value_nodes, value_bytes)?
     }

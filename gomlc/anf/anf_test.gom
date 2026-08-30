@@ -120,7 +120,7 @@ fn eliminates_dead_anf_locals_without_dropping_calls() -> () {
     match verify(value) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let output = encode(value);
     testing::assert(!output.contains("dead/"));
     testing::assert(output.contains("println"))
@@ -160,7 +160,7 @@ fn eliminates_unreachable_recursive_join_members() -> () {
     match verify(value) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let output = encode(value);
     testing::assert(output.contains("join live"));
     testing::assert(!output.contains("join dead"))
@@ -192,7 +192,7 @@ fn eliminates_unreferenced_nonrecursive_joins() -> () {
     match verify(value) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     testing::assert(!encode(value).contains("join dead"))
 }
 
@@ -506,7 +506,7 @@ fn inlines_small_static_calls() -> () {
     match verify(file) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let output = encode(file);
     testing::assert(!output.contains("let value/1 = id("));
     testing::assert(output.contains("jump inline_cont"))
@@ -559,7 +559,7 @@ fn exhausts_static_inline_budget() -> () {
     ) {
         Some(_) => testing::fail("expected exhausted inline budget"),
         None => (),
-    };
+    }
     testing::assert_eq(inline_block_cost(callee.body), 1)
 }
 
@@ -570,7 +570,7 @@ fn commutes_known_constructor_continuations() -> () {
     match verify(lowered) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let output = encode(lowered);
     testing::assert(output.contains("join commute_arm"));
     testing::assert(!output.contains("match mtmp"))
@@ -583,7 +583,7 @@ fn preserves_continuations_with_unknown_entries() -> () {
     match verify(lowered) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let output = encode(lowered);
     testing::assert(output.contains("join k"));
     testing::assert(!output.contains("join commute_arm"))
@@ -664,7 +664,7 @@ fn fuses_recursive_join_consumers() -> () {
     match verify(lowered) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let any = encoded_function(encode(lowered), "any");
     testing::assert(any.contains("joinrec"));
     testing::assert(!any.contains("find("));
@@ -738,7 +738,7 @@ fn hoists_safe_loop_invariants() -> () {
     match verify(lowered) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let output = encoded_function(encode(lowered), "work");
     let loop_position = required_position(output, "joinrec");
     testing::assert(required_position(output, "let square/4 = (base/0 * base/0)") < loop_position);
@@ -754,7 +754,7 @@ fn preserves_trapping_and_mutable_loop_values() -> () {
     match verify(lowered) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let output = encoded_function(encode(lowered), "work");
     let loop_position = required_position(output, "joinrec");
     testing::assert(required_position(output, "let quotient/5 = (100 / divisor/0)") > loop_position);

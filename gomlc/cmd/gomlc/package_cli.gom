@@ -109,7 +109,7 @@ fn sorted_unique_package_inputs(values: Vec[string]) -> Vec[string] {
     for value in sorted {
         if result.is_empty() || result[result.len() - 1] != value {
             result.push(value)
-        } else {}
+        }
     }
     result
 }
@@ -202,7 +202,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
             }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
-            } else {}
+            }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
                 Some(value) => value,
@@ -236,7 +236,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 match inline_cli_value(argument, "--interface-path") {
                     Some(value) => interface_paths.push(value),
                     None => (),
-                };
+                }
                 index = index + 1;
             }
         } else if argument == "--output" {
@@ -270,7 +270,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
                 },
                 None => (),
-            };
+            }
             let usage = if cli_option(argument)
                 && (option_string_present(package_name) || option_string_present(output)
                     || !inputs.is_empty()
@@ -285,13 +285,13 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
     let missing: Vec[string] = Vec::new();
     if !option_string_present(package_name) {
         missing.push("--package <PACKAGE>")
-    } else {};
+    }
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
-    } else {};
+    }
     if !option_string_present(output) {
         missing.push("--output <OUTPUT>")
-    } else {};
+    }
     if !missing.is_empty() {
         Result::Err(
             missing_required_arguments_error_with_usage(
@@ -374,7 +374,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
             }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
-            } else {}
+            }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
                 Some(value) => value,
@@ -436,13 +436,13 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
     let missing: Vec[string] = Vec::new();
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
-    } else {};
+    }
     if !option_string_present(entry) {
         missing.push("--entry <ENTRY>")
-    } else {};
+    }
     if !option_string_present(output) {
         missing.push("--output <OUTPUT>")
-    } else {};
+    }
     if !missing.is_empty() {
         Result::Err(missing_required_arguments_error(command, missing))
     } else {
@@ -513,7 +513,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
             }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
-            } else {}
+            }
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
                 Some(value) => value,
@@ -540,7 +540,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
             match inline_cli_value(argument, "--package") {
                 Some(value) => packages.push(value),
                 None => (),
-            };
+            }
             index = index + 1;
         } else if argument == "--output" {
             if index + 1 >= args.len() || cli_option(args[index + 1]) {
@@ -590,16 +590,16 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
     let missing: Vec[string] = Vec::new();
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
-    } else {};
+    }
     if packages.is_empty() {
         missing.push("--package <PACKAGE>")
-    } else {};
+    }
     if !option_string_present(output) {
         missing.push("--output <OUTPUT>")
-    } else {};
+    }
     if !option_string_present(manifest) {
         missing.push("--manifest <MANIFEST>")
-    } else {};
+    }
     if !missing.is_empty() {
         Result::Err(missing_required_arguments_error(command, missing))
     } else {

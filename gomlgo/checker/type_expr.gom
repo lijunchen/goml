@@ -213,11 +213,11 @@ fn field_tag(state: CheckState, node: Option[syntax::NodeId]) -> string {
 fn field_name_exists(fields: Vec[go_types::StructField], name: string) -> bool {
     if name == "_" {
         return false
-    } else {};
+    }
     for field in fields {
         if field.variable.name == name {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -244,9 +244,9 @@ fn report_field_redeclaration(
                     None => {},
                 },
                 None => {},
-            };
+            }
             return
-        } else {}
+        }
     }
 }
 
@@ -272,7 +272,7 @@ fn add_field_object(
         state.info.implicits.push(ObjectFact { node, object: Option::Some(object) })
     } else {
         state.info.defs.push(ObjectFact { node, object: Option::Some(object) })
-    };
+    }
     object
 }
 
@@ -298,13 +298,13 @@ fn collapse_parenthesized_embedded_fact(
     match recorded_type_fact(state, expression) {
         Some(fact) => update_operand_fact(state, node, fact.type_id, Option::None),
         None => {},
-    };
+    }
     let _ = state.omitted_type_fact_nodes.insert(expression.value);
     let mut object: Option[go_types::ObjectId] = Option::None;
     for fact in state.info.uses {
         if fact.node.value == expression.value {
             object = fact.object;
-        } else {}
+        }
     }
     match object {
         Some(object) => {
@@ -552,7 +552,7 @@ fn add_parameter(
 ) -> () {
     if name == "" {
         return
-    } else {};
+    }
     let object = go_types::add_object(
         state.world,
         go_types::ObjectKind::Var,
@@ -566,7 +566,7 @@ fn add_parameter(
     if name == "_" {
         state.info.defs.push(ObjectFact { node, object: Option::Some(object) });
         return
-    } else {};
+    }
     match go_types::insert(state.world, scope, name, object) {
         Some(existing) => {
             diagnostic(state, node, name + " redeclared in this block", false);
@@ -647,7 +647,7 @@ fn resolve_parameter_list(
                     } else {
                         variadic = true;
                     }
-                } else {};
+                }
                 if names.is_empty() {
                     let position = match syntax::get_node(state.syntax.arena, type_node) {
                         Some(syntax::SyntaxNode {
@@ -676,13 +676,13 @@ fn resolve_parameter_list(
                     for fact in state.info.implicits {
                         if fact.node.value == fields[field_index].value {
                             recorded = true;
-                        } else {}
+                        }
                     }
                     if !recorded {
                         state.info.implicits.push(
                             ObjectFact { node: fields[field_index], object: Option::Some(object) },
                         )
-                    } else {};
+                    }
                     variables.push(
                         go_types::Variable {
                             name: "",
@@ -779,7 +779,7 @@ fn declare_type_parameters(
                                             None => {},
                                         },
                                         None => {},
-                                    };
+                                    }
                                     bindings.push(
                                         TypeParameterBinding {
                                             object,
@@ -812,7 +812,7 @@ fn declare_type_parameters(
             }
         },
         None => {},
-    };
+    }
     bindings
 }
 
@@ -905,7 +905,7 @@ fn resolve_type_parameter_constraint(
     } else {
         if invalid_instantiation {
             go_types::mark_invalid_type_set(state.world, resolved_constraint)
-        } else {};
+        }
         match go_types::get_type(state.world, go_types::unalias(state.world, resolved_constraint)) {
             Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
                 let embedded = go_types::add_type(state.world, go_types::TypeKind::Union { terms });
@@ -984,7 +984,7 @@ fn complete_type_parameters(
                     comma_ok: false,
                 },
             )
-        } else {};
+        }
         let _ = go_types::set_type(
             state.world,
             binding.type_id,
@@ -1058,7 +1058,7 @@ fn normalize_named_type_parameter_constraints(state: CheckState, named: go_types
                 },
                 None => {},
             }
-        } else {};
+        }
         parameters.push(
             go_types::TypeParameter {
                 object: data.1[index].object,
@@ -1069,7 +1069,7 @@ fn normalize_named_type_parameter_constraints(state: CheckState, named: go_types
     }
     if !changed {
         return
-    } else {};
+    }
     let count = state.world.types.len();
     for index in 0..count {
         let type_id = go_types::type_id(index);
@@ -1095,7 +1095,7 @@ fn normalize_named_type_parameter_constraints(state: CheckState, named: go_types
                         methods,
                     },
                 );
-            } else {},
+            },
             _ => {},
         }
     }
@@ -1118,7 +1118,7 @@ fn resolve_function_type(
             scope_end = value;
         },
         None => {},
-    };
+    }
     let function_scope = go_types::add_scope(
         state.world,
         go_types::ScopeKind::Function,
@@ -1129,7 +1129,7 @@ fn resolve_function_type(
     );
     if !state.scope_fact_indices.contains(node.value) {
         record_scope_fact(state, node, function_scope)
-    } else {};
+    }
     let resolved_type_params = if state.ignore_function_type_params {
         Vec::new()
     } else {
@@ -1227,7 +1227,7 @@ fn resolve_function_signature(
             state.type_cycle_depth -= 1;
             if record {
                 record_type_expression(state, node, result)
-            } else {};
+            }
             result
         },
         _ => state.world.invalid,
@@ -1239,7 +1239,7 @@ fn interface_method_exists(state: CheckState, methods: Vec[go_types::ObjectId], 
         match go_types::get_object(state.world, method) {
             Some(value) => if value.name == name {
                 return true
-            } else {},
+            },
             None => {},
         }
     }
@@ -1253,7 +1253,7 @@ fn interface_method_object(state: CheckState, methods: Vec[go_types::ObjectId], 
         match go_types::get_object(state.world, method) {
             Some(value) => if value.name == name {
                 return Option::Some(method)
-            } else {},
+            },
             None => {},
         }
     }
@@ -1285,7 +1285,7 @@ fn interface_method_occurrence(
                 existing_object.owner,
             ) {
                 return Option::Some(existing)
-            } else {},
+            },
             None => {},
         }
     }
@@ -1520,14 +1520,14 @@ fn resolve_interface_type(
                 for index in deferred_instance_start..state.deferred_instances.len() {
                     if !state.deferred_instances[index].count_only {
                         deferred_instantiation = true;
-                    } else {}
+                    }
                 }
                 if embedded.value == state.world.invalid.value
                     || (go_types::underlying(state.world, embedded).value
                         == state.world.invalid.value
                         && !deferred_instantiation) {
                     invalid_type_set = true;
-                } else {};
+                }
                 let generic_element = interface_element_requires_generics(state, type_node);
                 if generic_element && !go_version_at_least(state, type_node, 18) {
                     invalid_type_set = true;
@@ -1551,7 +1551,7 @@ fn resolve_interface_type(
                             false,
                         )
                     }
-                } else {};
+                }
                 let embedded_type_parameter = match go_types::type_data(
                     state.world,
                     go_types::unalias(state.world, embedded),
@@ -1594,7 +1594,7 @@ fn resolve_interface_type(
                             false,
                         )
                     }
-                } else {};
+                }
                 if embedded_name(state, type_node) == "comparable"
                     && embedded.value != state.world.invalid.value {
                     comparable = true;
@@ -1620,14 +1620,14 @@ fn resolve_interface_type(
                                         existing.node,
                                         interface_method_name(state, method),
                                     )
-                                } else {}
+                                }
                             },
                             None => method_occurrences.push(
                                 InterfaceMethodOccurrence { method, node: type_node },
                             ),
                         }
                     }
-                };
+                }
                 embeddeds.push(
                     if embedded_type_parameter {
                         state.world.invalid
@@ -1686,7 +1686,7 @@ fn resolve_interface_type(
                                     )
                                 },
                                 None => {},
-                            };
+                            }
                             let object = go_types::add_object(
                                 state.world,
                                 go_types::ObjectKind::Func,
@@ -1726,7 +1726,7 @@ fn resolve_interface_type(
                                                     name_node,
                                                     name,
                                                 )
-                                            } else {}
+                                            }
                                         },
                                         None => method_occurrences.push(
                                             InterfaceMethodOccurrence {
@@ -1736,13 +1736,13 @@ fn resolve_interface_type(
                                         ),
                                     };
                                 },
-                            };
+                            }
                             state.info.defs.push(
                                 ObjectFact { node: name_node, object: Option::Some(object) },
                             );
-                        } else {}
+                        }
                     }
-                } else {}
+                }
             },
             None => {},
         }
@@ -1754,7 +1754,7 @@ fn resolve_interface_type(
     );
     if invalid_type_set {
         go_types::mark_invalid_type_set(state.world, result)
-    } else {};
+    }
     set_interface_method_receivers(state, result, result);
     record_type_expression(state, node, result);
     reject_constraint_type(state, node, go_types::format_type(state.world, result), result)

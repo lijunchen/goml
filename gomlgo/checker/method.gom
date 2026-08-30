@@ -44,7 +44,7 @@ fn receiver_type_seen(values: Vec[go_types::TypeId], value: go_types::TypeId) ->
     for existing in values {
         if existing.value == value.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -56,7 +56,7 @@ fn receiver_instantiated_target_inner(
 ) -> Option[go_types::TypeId] {
     if receiver_type_seen(visited, type_id) {
         return Option::None
-    } else {};
+    }
     visited.push(type_id);
     match go_types::get_type(state.world, type_id) {
         Some(go_types::TypeData {
@@ -101,7 +101,7 @@ fn existing_method(state: CheckState, type_id: go_types::TypeId, name: string) -
 ] {
     if name == "_" {
         return Option::None
-    } else {};
+    }
     match go_types::get_type(state.world, type_id) {
         Some(go_types::TypeData {
             id: _,
@@ -116,12 +116,12 @@ fn existing_method(state: CheckState, type_id: go_types::TypeId, name: string) -
             match go_types::get_object(state.world, method) {
                 Some(value) => if value.name == name {
                     return Option::Some(method)
-                } else {},
+                },
                 None => {},
             }
         },
         _ => {},
-    };
+    }
     Option::None
 }
 
@@ -172,9 +172,9 @@ fn add_named_method(state: CheckState, type_id: go_types::TypeId, method: go_typ
     match go_types::get_object(state.world, method) {
         Some(method) => if method.name == "_" {
             return
-        } else {},
+        },
         None => return,
-    };
+    }
     match go_types::get_type(state.world, type_id) {
         Some(go_types::TypeData {
             id: _,
@@ -408,7 +408,7 @@ fn recover_invalid_receiver_parameters(
                 Some(_) => {},
                 None => state.info.defs.push(ObjectFact { node, object: Option::Some(object) }),
             }
-        };
+        }
         parameters.push(
             go_types::TypeParameter { object, constraint: state.world.invalid, grouped: false },
         )
@@ -425,7 +425,7 @@ fn resolve_receiver(
     let parts = receiver_type_parts(state, receiver_type_node);
     if !parts.1.is_empty() && !go_version_at_least(state, parts.0, 18) {
         diagnostic(state, parts.0, "type instantiation requires go1.18 or later", false)
-    } else {};
+    }
     let declared_origin = match identifier(state, parts.0) {
         Some(name) => match go_types::lookup(state.world, file_scope, name) {
             Some(object) => match go_types::get_object(state.world, object) {
@@ -457,7 +457,7 @@ fn resolve_receiver(
             let _ = evaluate_type_object(state, object);
         },
         _ => {},
-    };
+    }
     let diagnostic_origin = if origin.value == state.world.invalid.value {
         declared_origin.unwrap_or(origin)
     } else {
@@ -484,7 +484,7 @@ fn resolve_receiver(
                 false,
             );
             record_type_expression(state, parts.0, diagnostic_origin)
-        } else {};
+        }
         for index in 0..parts.1.len() {
             let name = identifier(state, parts.1[index]).unwrap_or("");
             if name != "_" {
@@ -496,9 +496,9 @@ fn resolve_receiver(
                             parts.1[previous],
                             "\tother declaration of " + name,
                         )
-                    } else {}
+                    }
                 }
-            } else {}
+            }
         }
         let recovered_alias = match go_types::get_type(state.world, origin) {
             Some(go_types::TypeData {
@@ -524,7 +524,7 @@ fn resolve_receiver(
         };
         if invalid_alias_origin && !parts.1.is_empty() {
             omit_incomplete_method_receiver_facts(state, receiver_type_node)
-        } else {};
+        }
         return Option::Some(
             ReceiverResolution {
                 receiver_type,
@@ -537,7 +537,7 @@ fn resolve_receiver(
                 type_params: recovered_parameters.1,
             },
         )
-    } else {};
+    }
     let instantiated_alias = receiver_instantiated_target(state, origin);
     if parts.1.is_empty() && instantiated_alias.is_some() {
         let receiver_type = if parts.2 {
@@ -561,7 +561,7 @@ fn resolve_receiver(
                 type_params: Vec::new(),
             },
         )
-    } else {};
+    }
     if parts.1.is_empty() {
         if !origin_parameters.is_empty() {
             diagnostic(
@@ -580,7 +580,7 @@ fn resolve_receiver(
                     type_params: Vec::new(),
                 },
             )
-        } else {};
+        }
         let receiver_type = if parts.2 {
             go_types::add_type(state.world, go_types::TypeKind::Pointer { element: origin })
         } else {
@@ -679,7 +679,7 @@ fn resolve_receiver(
                         ObjectFact { node: name_node, object: Option::Some(object) },
                     ),
                 }
-            };
+            }
             receiver_parameters.push(go_types::TypeParameter { object, constraint, grouped: false })
         }
         record_invalid_type_expression(state, parts.0);
@@ -691,7 +691,7 @@ fn resolve_receiver(
                 type_params: receiver_parameters,
             },
         )
-    } else {};
+    }
     let receiver_arity_mismatch = origin_parameters.len() != parts.1.len();
     if receiver_arity_mismatch {
         diagnostic(
@@ -707,7 +707,7 @@ fn resolve_receiver(
                 + origin_parameters.len().to_string(),
             false,
         )
-    } else {};
+    }
     let receiver_scope = go_types::add_scope(
         state.world,
         go_types::ScopeKind::Block,
@@ -731,7 +731,7 @@ fn resolve_receiver(
                 false,
             );
             name = "_";
-        } else {};
+        }
         let info_node = if synthetic {
             match syntax::get_node(state.syntax.arena, name_node) {
                 Some(source) => {
@@ -805,7 +805,7 @@ fn resolve_receiver(
                     ObjectFact { node: info_node, object: Option::Some(object) },
                 ),
             }
-        };
+        }
         receiver_arguments.push(type_id);
         receiver_parameters.push(
             go_types::TypeParameter {
@@ -870,10 +870,10 @@ fn receiver_field(state: CheckState, node: syntax::NodeId) -> Option[
     let fields = field_list_nodes(state, node);
     if fields.is_empty() {
         return Option::None
-    } else {};
+    }
     if fields.len() > 1 {
         diagnostic(state, fields[fields.len() - 1], "method has multiple receivers", false);
-    } else {};
+    }
     match field_data(state, fields[0]) {
         Some((names, type_node, _)) => Option::Some(
             (
@@ -913,7 +913,7 @@ fn defer_receiver_validation(state: CheckState, node: syntax::NodeId) -> () {
     for existing in state.receiver_validation_nodes {
         if existing.value == base_node.value {
             return
-        } else {}
+        }
     }
     state.receiver_validation_nodes.push(base_node)
 }
@@ -956,7 +956,7 @@ fn receiver_may_declare_method(state: CheckState, node: syntax::NodeId) -> bool 
             };
             if !local {
                 return false
-            } else {};
+            }
             match go_types::get_type(state.world, go_types::underlying(state.world, resolved)) {
                 Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element: _ } }) | Some(go_types::TypeData {
                     id: _,
@@ -1117,7 +1117,7 @@ fn check_field_method_collisions(state: CheckState) -> () {
                                             false,
                                         ),
                                         None => {},
-                                    };
+                                    }
                                     match field_object.node {
                                         Some(node) => secondary_diagnostic(
                                             state,
@@ -1126,13 +1126,13 @@ fn check_field_method_collisions(state: CheckState) -> () {
                                         ),
                                         None => {},
                                     }
-                                } else {},
+                                },
                                 None => {},
                             },
                             None => {},
                         }
                     }
-                } else {},
+                },
                 None => {},
             }
         }
@@ -1142,7 +1142,7 @@ fn check_field_method_collisions(state: CheckState) -> () {
 fn check_missing_method_receiver(state: CheckState, node: syntax::NodeId) -> () {
     if field_list_nodes(state, node).is_empty() {
         diagnostic(state, node, "method has no receiver", false)
-    } else {}
+    }
 }
 
 fn empty_method_signature(state: CheckState, receiver_name: string, resolution: ReceiverResolution) -> go_types::TypeId {
@@ -1184,7 +1184,7 @@ fn record_implicit_receiver(
             receiver_type,
         );
         state.info.implicits.push(ObjectFact { node: fields[0], object: Option::Some(object) })
-    } else {}
+    }
 }
 
 fn predeclare_method_declaration(
@@ -1210,7 +1210,7 @@ fn predeclare_method_declaration(
                 if !invalid_cardinality
                     && resolution.receiver_type.value != state.world.invalid.value {
                     defer_receiver_validation(state, receiver_type_node)
-                } else {};
+                }
                 let can_declare = !invalid_cardinality
                     && (receiver_may_declare_method(state, receiver_type_node)
                         || (resolution.receiver_type.value == state.world.invalid.value
@@ -1261,10 +1261,10 @@ fn predeclare_method_declaration(
                 save_declared_object(state, name_node, Option::Some(method));
                 if can_declare && !duplicate {
                     add_named_method(state, resolution.base, method)
-                } else {};
+                }
                 if receiver_name_node.is_none() {
                     record_implicit_receiver(state, receiver_node, method_resolution.receiver_type)
-                } else {};
+                }
                 state.pending_methods.push(
                     PendingMethod {
                         object: method,
@@ -1279,7 +1279,7 @@ fn predeclare_method_declaration(
             },
             None => if !invalid_receiver_cardinality_after_resolution(state, receiver_node) {
                 defer_receiver_validation(state, receiver_type_node)
-            } else {},
+            },
         },
         None => if field_list_nodes(state, receiver_node).is_empty() {
             let signature = resolve_method_signature(state, file_scope, type_node);
@@ -1295,7 +1295,7 @@ fn predeclare_method_declaration(
             );
             state.info.defs.push(ObjectFact { node: name_node, object: Option::Some(method) });
             save_declared_object(state, name_node, Option::Some(method))
-        } else {},
+        },
     }
 }
 
@@ -1322,7 +1322,7 @@ fn complete_method_declarations(state: CheckState) -> () {
                 },
                 None => {},
             }
-        } else {};
+        }
         let receiver_name = match pending.receiver_name_node {
             Some(value) => identifier(state, value).unwrap_or(""),
             None => "",
@@ -1346,7 +1346,7 @@ fn complete_method_declarations(state: CheckState) -> () {
                 pending.resolution.receiver_type,
             ),
             _ => {},
-        };
+        }
         match go_types::get_type(state.world, signature) {
             Some(value) => {
                 let _ = go_types::set_type(state.world, pending.placeholder, value.kind);
@@ -1375,7 +1375,7 @@ fn check_method_declaration(
                     if !invalid_cardinality
                         && resolution.receiver_type.value != state.world.invalid.value {
                         defer_receiver_validation(state, receiver_type_node)
-                    } else {};
+                    }
                     if invalid_cardinality {} else if !receiver_may_declare_method(
                         state,
                         receiver_type_node,
@@ -1416,7 +1416,7 @@ fn check_method_declaration(
                                 },
                                 None => {},
                             }
-                        } else {};
+                        }
                         let receiver_name = match receiver_name_node {
                             Some(value) => identifier(state, value).unwrap_or(""),
                             None => "",
@@ -1443,8 +1443,8 @@ fn check_method_declaration(
                                 state.info.implicits.push(
                                     ObjectFact { node: fields[0], object: Option::Some(object) },
                                 )
-                            } else {}
-                        } else {};
+                            }
+                        }
                         match (receiver_name_node, signature_scope(state, type_node)) {
                             (Some(receiver_name_node), Some(scope)) => add_parameter(
                                 state,
@@ -1454,7 +1454,7 @@ fn check_method_declaration(
                                 resolution.receiver_type,
                             ),
                             _ => {},
-                        };
+                        }
                         let method = go_types::add_object(
                             state.world,
                             go_types::ObjectKind::Func,
@@ -1474,7 +1474,7 @@ fn check_method_declaration(
                 },
                 None => if !invalid_receiver_cardinality_after_resolution(state, receiver_node) {
                     defer_receiver_validation(state, receiver_type_node)
-                } else {},
+                },
             }
         },
         None => {},

@@ -9,7 +9,7 @@ fn pair_seen(values: Vec[TypePair], left: TypeId, right: TypeId) -> bool {
     for value in values {
         if value.left.value == left.value && value.right.value == right.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -28,7 +28,7 @@ pub fn unalias(world: World, value: TypeId) -> TypeId {
     loop {
         if remaining <= 0 {
             return world.invalid
-        } else {};
+        }
         remaining -= 1;
         match type_data(world, current) {
             TypeData {
@@ -48,7 +48,7 @@ pub fn underlying(world: World, value: TypeId) -> TypeId {
     loop {
         if remaining <= 0 {
             return world.invalid
-        } else {};
+        }
         remaining -= 1;
         match type_data(world, current) {
             TypeData {
@@ -112,7 +112,7 @@ fn identical_variables(
 ) -> bool {
     if left.len() != right.len() {
         return false
-    } else {};
+    }
     for index in 0..left.len() {
         if !identical_inner_mode(
             world,
@@ -122,7 +122,7 @@ fn identical_variables(
             compare_tags,
         ) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -136,7 +136,7 @@ fn identical_type_parameters(
 ) -> bool {
     if left.len() != right.len() {
         return false
-    } else {};
+    }
     for index in 0..left.len() {
         if !identical_inner_mode(
             world,
@@ -146,7 +146,7 @@ fn identical_type_parameters(
             compare_tags,
         ) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -160,7 +160,7 @@ fn identical_structs(
 ) -> bool {
     if left.len() != right.len() {
         return false
-    } else {};
+    }
     for index in 0..left.len() {
         let left_field = left[index];
         let right_field = right[index];
@@ -180,7 +180,7 @@ fn identical_structs(
                 compare_tags,
             ) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -219,44 +219,44 @@ fn identical_interfaces(
 ) -> bool {
     if left_comparable != right_comparable {
         return false
-    } else {};
+    }
     let mut ordinary = true;
     for embedded in left_embeddeds {
         if !is_interface(world, embedded) {
             ordinary = false;
-        } else {}
+        }
     }
     for embedded in right_embeddeds {
         if !is_interface(world, embedded) {
             ordinary = false;
-        } else {}
+        }
     }
     if ordinary {
         let left_set = interface_methods(world, left_type);
         let right_set = interface_methods(world, right_type);
         if left_set.len() != right_set.len() {
             return false
-        } else {};
+        }
         for left_method in left_set {
             let mut found = false;
             for right_method in right_set {
                 if method_identity(world, left_method, right_method, visited, compare_tags) {
                     found = true;
-                } else {}
+                }
             }
             if !found {
                 return false
-            } else {}
+            }
         }
         return true
     } else if left_methods.len() != right_methods.len()
         || left_embeddeds.len() != right_embeddeds.len() {
         return false
-    } else {};
+    }
     for index in 0..left_methods.len() {
         if !method_identity(world, left_methods[index], right_methods[index], visited, compare_tags) {
             return false
-        } else {}
+        }
     }
     for index in 0..left_embeddeds.len() {
         if !identical_inner_mode(
@@ -267,7 +267,7 @@ fn identical_interfaces(
             compare_tags,
         ) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -285,7 +285,7 @@ fn identical_inner_mode(
         return true
     } else if pair_seen(visited, left, right) {
         return true
-    } else {};
+    }
     let next = visited;
     next.push(TypePair { left, right });
     match (type_data(world, left).kind, type_data(world, right).kind) {
@@ -420,11 +420,11 @@ fn identical_type_arguments(
 ) -> bool {
     if left.len() != right.len() {
         return false
-    } else {};
+    }
     for index in 0..left.len() {
         if !identical_inner_mode(world, left[index], right[index], visited, compare_tags) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -438,7 +438,7 @@ fn identical_terms(
 ) -> bool {
     if left.len() != right.len() {
         return false
-    } else {};
+    }
     for index in 0..left.len() {
         if left[index].tilde != right[index].tilde
             || !identical_inner_mode(
@@ -449,7 +449,7 @@ fn identical_terms(
                 compare_tags,
             ) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -461,7 +461,7 @@ pub fn identical(world: World, left: TypeId, right: TypeId) -> bool {
 pub fn is_integer(world: World, value: TypeId) -> bool {
     if is_type_parameter(world, value) {
         return type_set_is_integer(world, value)
-    } else {};
+    }
     match basic_kind(world, value) {
         Some(BasicKind::Int | BasicKind::Int8 | BasicKind::Int16 | BasicKind::Int32 | BasicKind::Int64 | BasicKind::Uint | BasicKind::Uint8 | BasicKind::Uint16 | BasicKind::Uint32 | BasicKind::Uint64 | BasicKind::Uintptr | BasicKind::UntypedInt | BasicKind::UntypedRune,) => true,
         _ => false,
@@ -471,7 +471,7 @@ pub fn is_integer(world: World, value: TypeId) -> bool {
 pub fn is_numeric(world: World, value: TypeId) -> bool {
     if is_type_parameter(world, value) {
         return type_set_is_numeric(world, value)
-    } else {};
+    }
     is_integer(world, value)
         || match basic_kind(world, value) {
             Some(BasicKind::Float32 | BasicKind::Float64 | BasicKind::Complex64 | BasicKind::Complex128 | BasicKind::UntypedFloat | BasicKind::UntypedComplex,) => true,
@@ -482,7 +482,7 @@ pub fn is_numeric(world: World, value: TypeId) -> bool {
 pub fn is_ordered(world: World, value: TypeId) -> bool {
     if is_type_parameter(world, value) {
         return type_set_is_ordered(world, value)
-    } else {};
+    }
     match basic_kind(world, value) {
         Some(BasicKind::String | BasicKind::UntypedString) => true,
         Some(BasicKind::Complex64 | BasicKind::Complex128 | BasicKind::UntypedComplex) => false,
@@ -509,7 +509,7 @@ pub fn comparable(world: World, value: TypeId) -> bool {
             value,
         ),
         _ => {},
-    };
+    }
     match type_data(world, underlying(world, value)) {
         TypeData { id: _, kind: TypeKind::Invalid } => true,
         TypeData {
@@ -526,7 +526,7 @@ pub fn comparable(world: World, value: TypeId) -> bool {
             for field in fields {
                 if !comparable(world, field.variable.type_id) {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -589,7 +589,7 @@ pub fn is_nilable_type(world: World, value: TypeId) -> bool {
             for type_id in types {
                 if !is_nilable(world, type_id) {
                     return false
-                } else {}
+                }
             }
             true
         }
@@ -746,7 +746,7 @@ fn slice_array_conversion_minor(world: World, source: TypeId, target: TypeId) ->
 fn convertible_concrete(world: World, source: TypeId, target: TypeId, visited: Vec[TypePair]) -> bool {
     if pair_seen(visited, source, target) {
         return true
-    } else {};
+    }
     let next = copied_type_pairs(visited);
     next.push(TypePair { left: source, right: target });
     if assignable_types(world, source, target) {
@@ -817,32 +817,32 @@ fn convertible_inner(world: World, source: TypeId, target: TypeId, visited: Vec[
         let source_types = type_set_specific_types(world, source);
         if source_types.is_empty() {
             return false
-        } else {};
+        }
         for source_type in source_types {
             if target_parameter {
                 let target_types = type_set_specific_types(world, target);
                 if target_types.is_empty() {
                     return false
-                } else {};
+                }
                 for target_type in target_types {
                     if !convertible_concrete(world, source_type, target_type, visited) {
                         return false
-                    } else {}
+                    }
                 }
             } else if !convertible_concrete(world, source_type, target, visited) {
                 return false
-            } else {}
+            }
         }
         true
     } else if target_parameter {
         let target_types = type_set_specific_types(world, target);
         if target_types.is_empty() {
             return false
-        } else {};
+        }
         for target_type in target_types {
             if !convertible_concrete(world, source, target_type, visited) {
                 return false
-            } else {}
+            }
         }
         true
     } else {
@@ -871,7 +871,7 @@ pub fn conversion_minimum_minor(world: World, source: TypeId, target: TypeId) ->
             let required = slice_array_conversion_minor(world, source_type, target_type);
             if required > result {
                 result = required;
-            } else {}
+            }
         }
     }
     result

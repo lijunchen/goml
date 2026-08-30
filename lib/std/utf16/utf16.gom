@@ -67,11 +67,11 @@ pub fn decode(input: Slice[u16]) -> Result[string, Utf16Error] {
         let value = if high_surrogate(first) {
             if index + 1 >= input.len() {
                 return Result::Err(Utf16Error::new(index, Utf16ErrorKind::UnpairedSurrogate))
-            } else {};
+            }
             let second = input[index + 1].to_u32();
             if !low_surrogate(second) {
                 return Result::Err(Utf16Error::new(index, Utf16ErrorKind::UnpairedSurrogate))
-            } else {};
+            }
             index += 1;
             0x10000 + ((first - 0xD800) << 10) + (second - 0xDC00)
         } else if surrogate(first) {
@@ -84,7 +84,7 @@ pub fn decode(input: Slice[u16]) -> Result[string, Utf16Error] {
             None => {
                 return Result::Err(Utf16Error::new(index, Utf16ErrorKind::UnpairedSurrogate))
             },
-        };
+        }
         index += 1;
     }
     Result::Ok(output.finish())
@@ -93,7 +93,7 @@ pub fn decode(input: Slice[u16]) -> Result[string, Utf16Error] {
 pub fn decode_bytes(input: Slice[byte], byte_order: endian::Endian) -> Result[string, Utf16Error] {
     if input.len() % 2 != 0 {
         return Result::Err(Utf16Error::new(input.len() - 1, Utf16ErrorKind::OddByteLength))
-    } else {};
+    }
     let values: Vec[u16] = Vec::with_capacity(input.len() / 2);
     let mut offset = 0;
     while offset < input.len() {
@@ -102,7 +102,7 @@ pub fn decode_bytes(input: Slice[byte], byte_order: endian::Endian) -> Result[st
             Err(_) => {
                 return Result::Err(Utf16Error::new(offset, Utf16ErrorKind::OddByteLength))
             },
-        };
+        }
         offset += 2;
     }
     decode(values.as_slice())

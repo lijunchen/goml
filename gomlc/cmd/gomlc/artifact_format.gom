@@ -79,7 +79,7 @@ fn output_transaction[T](anchor: string, action: () -> Result[T, string]) -> Res
             let _ = release_output_lock(lock);
             return Result::Err(error)
         },
-    };
+    }
     let result = action();
     match result {
         Ok(value) => match atomic_write_text(epoch_path, "complete:" + epoch) {
@@ -139,14 +139,14 @@ fn output_snapshot[T](anchor: string, action: () -> Result[T, string]) -> Result
             }
         } else if !completed_output_epoch(before) {
             return Result::Err("incomplete output transaction for " + anchor)
-        } else {};
+        }
         let result = action();
         let after = read_output_epoch(anchor)?;
         if !fs::exists(output_lock_path(anchor)) && output_epochs_equal(before, after) {
             return result
         } else if started.elapsed().as_seconds() >= 30 {
             return Result::Err("output changed repeatedly while reading " + anchor)
-        } else {}
+        }
     }
 }
 

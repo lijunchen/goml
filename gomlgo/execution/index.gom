@@ -249,7 +249,7 @@ pub fn build_type_info_index(
         for type_arg in fact.type_args {
             if !valid_type(world, type_arg) {
                 valid = false;
-            } else {}
+            }
         }
         if !valid_node(fact.node, node_count) {
             diagnostics.push(
@@ -321,11 +321,11 @@ pub fn build_type_info_index(
                     "initializer has invalid expression node " + initializer.right.value.to_string(),
                 ),
             )
-        } else {}
+        }
         for object in initializer.left {
             if !valid_object(world, object) {
                 diagnostics.push(index_diagnostic(package_path, "initializer has invalid object"))
-            } else {}
+            }
         }
     }
     TypeInfoIndexResult { index, diagnostics }
@@ -468,13 +468,13 @@ pub fn require_scope(index: TypeInfoIndex, node: syntax::NodeId) -> Result[
 pub fn set_use(index: TypeInfoIndex, fact: checker::ObjectFact) -> bool {
     if !valid_index_node(index, fact.node) {
         return false
-    } else {};
+    }
     let fact_index = index.use_indices[fact.node.value].to_isize();
     if fact_index >= 0 && fact_index < index.uses.len() {
         index.uses[fact_index] = fact;
     } else {
         index.use_indices[fact.node.value] = index.uses.len().to_i32();
         index.uses.push(fact)
-    };
+    }
     true
 }

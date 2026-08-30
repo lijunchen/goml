@@ -37,7 +37,7 @@ pub fn install_catalog_error(value: Manifest) -> Option[string] {
         if !catalog_supports_package(import_path) {
             reset_catalog();
             return Option::Some("native catalog does not support package " + import_path)
-        } else {}
+        }
     }
     for aggregate in value.aggregates {
         let type_keys: Vec[string] = Vec::with_capacity(aggregate.fields.len());
@@ -53,7 +53,7 @@ pub fn install_catalog_error(value: Manifest) -> Option[string] {
         ) {
             reset_catalog();
             return Option::Some("native catalog does not support aggregate " + aggregate.key)
-        } else {}
+        }
     }
     for type_value in value.types {
         if !catalog_register_type(type_value.key, type_value.import_path, type_value.name) {
@@ -62,7 +62,7 @@ pub fn install_catalog_error(value: Manifest) -> Option[string] {
                 "native catalog does not support type " + type_value.import_path + "."
                     + type_value.name,
             )
-        } else {}
+        }
     }
     for global in value.globals {
         if !catalog_register_global(global.object_id, global.import_path, global.name) {
@@ -70,7 +70,7 @@ pub fn install_catalog_error(value: Manifest) -> Option[string] {
             return Option::Some(
                 "native catalog does not support global " + global.import_path + "." + global.name,
             )
-        } else {}
+        }
     }
     for proxy in value.proxies {
         if !catalog_register_proxy(proxy.import_path, proxy.name) {
@@ -78,7 +78,7 @@ pub fn install_catalog_error(value: Manifest) -> Option[string] {
             return Option::Some(
                 "native catalog does not support interface " + proxy.import_path + "." + proxy.name,
             )
-        } else {}
+        }
     }
     for call in value.calls {
         let exit = match call.binding {
@@ -105,7 +105,7 @@ pub fn install_catalog_error(value: Manifest) -> Option[string] {
                 "native catalog does not support call " + call.import_path + "." + receiver
                     + call.symbol,
             )
-        } else {}
+        }
     }
     Option::None
 }

@@ -264,7 +264,7 @@ fn symbol_has_receiver(syntax: SyntaxIndex, node: SyntaxNode, kind: SymbolKind) 
                         None => true,
                     } {
                     first = Option::Some(candidate);
-                } else {}
+                }
             }
             match first {
                 Some(parameter) => match first_identifier(syntax, parameter) {
@@ -365,14 +365,14 @@ fn collection_lang_method(attrs: Vec[ast::Attribute], item: string) -> Option[st
                                 == "from_array"
                                 && value_kind == "string" {
                                 return Option::Some(value)
-                            } else {},
+                            },
                             _ => (),
                         }
                     }
-                } else {},
+                },
                 _ => (),
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -380,7 +380,7 @@ fn collection_lang_method(attrs: Vec[ast::Attribute], item: string) -> Option[st
 fn index_builtin_collection_methods(source: SourceFile, symbols: Vec[Symbol]) -> () {
     if source.package_name != "builtin" {
         return
-    } else {};
+    }
     let lowered = ast::lower(parser::parse(source.source));
     match lowered.ast {
         Some(file) => for item in file.items {
@@ -456,14 +456,14 @@ pub fn find_symbol(index: SymbolIndex, qualified_name: string) -> Option[Symbol]
         let symbol = index.symbols[index.symbols.len() - 1 - offset];
         if symbol.qualified_name == qualified_name {
             return Option::Some(symbol)
-        } else {}
+        }
     }
     let suffixes: Vec[Symbol] = Vec::new();
     for symbol in index.symbols {
         if symbol_name_ends_with(qualified_name, symbol.qualified_name)
             || symbol_name_ends_with(symbol.qualified_name, qualified_name) {
             suffixes.push(symbol)
-        } else {}
+        }
     }
     if suffixes.len() == 1 {
         Option::Some(suffixes[0])

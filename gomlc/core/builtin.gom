@@ -60,7 +60,7 @@ pub fn lower_builtins(counter: Ref[isize]) -> Result[File, string] {
     let checked = tast::check_builtin_package_files(hir_files);
     if checked.tast.is_none() {
         return Result::Err("failed to typecheck builtin package")
-    } else {};
+    }
     Result::Ok(lower_with_counter(checked, counter))
 }
 
@@ -70,7 +70,7 @@ pub fn lower_prelude(builtins: File, counter: Ref[isize]) -> Result[File, string
     let checked = tast::check_package_files_for_link_with_dependencies(prelude_files, builtin_files);
     if checked.tast.is_none() || !checked.diagnostics.is_empty() {
         return Result::Err("failed to typecheck prelude package")
-    } else {};
+    }
     Result::Ok(
         without_roots(
             lower_with_counter_types_and_options(

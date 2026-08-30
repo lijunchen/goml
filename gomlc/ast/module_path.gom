@@ -5,7 +5,7 @@ use std::text;
 fn resolve_module_path(value: Path, module_path: string) -> Path {
     if value.segments.len() < 2 || value.segments[0].ident != "module" {
         return value
-    } else {};
+    }
     let segments: Vec[PathSegment] = Vec::new();
     for name in text::split(module_path, "::") {
         segments.push(PathSegment { ident: name, span: value.segments[0].span })

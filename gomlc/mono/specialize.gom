@@ -106,7 +106,7 @@ fn projection_binding_name(base: core::Type, name: string, reference: Option[cor
             }
         },
         None => (),
-    };
+    }
     builder.write_char('#');
     builder.write_string(name);
     builder.finish()
@@ -116,7 +116,7 @@ fn has_projection_binding(values: Vec[TypeBinding]) -> bool {
     for value in values {
         if value.name.starts_with("projection#") {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -501,7 +501,7 @@ fn structural_items(value: core::Expr, ty: core::Type) -> Vec[(core::Expr, core:
             result.push((structural_array_item(value, ty, elem, index), elem))
         },
         _ => (),
-    };
+    }
     result
 }
 
@@ -998,7 +998,7 @@ fn find_inherent_function(
                 let callable_matches = unify_type(function_type(function), callable_ty, Vec::new());
                 if owner_matches || callable_matches {
                     return Option::Some(function)
-                } else {}
+                }
             },
             _ => (),
         }
@@ -1119,7 +1119,7 @@ fn ensure_instance(ctx: SpecializeCtx, original_name: string, bindings: Vec[Type
                     return original_name
                 },
                 None => (),
-            };
+            }
             let base = instance_base_name(ctx, original_name, bindings);
             let name = if bindings.is_empty() {
                 base
@@ -1165,19 +1165,19 @@ fn mono_type_contains_proper_subterm(value: core::Type, expected: core::Type) ->
                 if mono_types_equal(value, expected)
                     || mono_type_contains_proper_subterm(value, expected) {
                     return true
-                } else {}
+                }
             }
             false
         },
         App { ty: base, args } => {
             if mono_types_equal(base, expected) || mono_type_contains_proper_subterm(base, expected) {
                 return true
-            } else {};
+            }
             for arg in args {
                 if mono_types_equal(arg, expected)
                     || mono_type_contains_proper_subterm(arg, expected) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -1195,12 +1195,12 @@ fn mono_type_contains_proper_subterm(value: core::Type, expected: core::Type) ->
             if mono_types_equal(ret_ty, expected)
                 || mono_type_contains_proper_subterm(ret_ty, expected) {
                 return true
-            } else {};
+            }
             for param in params {
                 if mono_types_equal(param, expected)
                     || mono_type_contains_proper_subterm(param, expected) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -1260,7 +1260,7 @@ fn specialization_growth_message(
                                     + " to "
                                     + mono_type_text(new_ty),
                             )
-                        } else {}
+                        }
                     },
                     _ => (),
                 }
@@ -1279,7 +1279,7 @@ fn specialization_growth_message(
                                     + " to "
                                     + mono_type_text(new_binding.ty),
                             )
-                        } else {}
+                        }
                     }
                 }
             }
@@ -1397,10 +1397,10 @@ fn matching_trait_selections(
                             if !keys.insert(key) {} else {
                                 selections.push(selection)
                             }
-                        } else {}
-                    } else {}
-                } else {}
-            } else {},
+                        }
+                    }
+                }
+            },
             None => (),
         }
     }
@@ -1473,10 +1473,10 @@ fn matching_projection_types(
                                 if !keys.insert(key) {} else {
                                     result.push(value)
                                 }
-                            } else {}
+                            }
                         }
-                    } else {}
-                } else {}
+                    }
+                }
             },
             None => (),
         }
@@ -1616,7 +1616,7 @@ fn types_contain_associated_projection(values: Vec[core::Type]) -> bool {
     for value in values {
         if type_contains_associated_projection(value) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1705,8 +1705,8 @@ fn complete_function_bindings_up_to(
                                     associated.1,
                                 );
                             }
-                        } else {}
-                    } else {}
+                        }
+                    }
                 },
                 Equality { lhs, rhs } => {
                     let lhs = substitute_type(lhs, bindings);
@@ -1719,7 +1719,7 @@ fn complete_function_bindings_up_to(
         }
         if bindings.len() == previous_len {
             break
-        } else {}
+        }
     }
 }
 
@@ -1778,7 +1778,7 @@ fn builtin_structural_trait_satisfied(
             for item in items {
                 if !builtin_trait_satisfied(builtin, item, reference) {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -1933,7 +1933,7 @@ fn specialize_function_callable(
                     ctx.error.set(
                         Option::Some(incomplete_function_message(ctx, function, call_bindings)),
                     )
-                } else {};
+                }
                 core::Expr::Callable { callable: core::Callable::Function(name), ty }
             }
         } else {
@@ -2052,7 +2052,7 @@ fn trait_method_bindings(
         || !unify_type(metadata.for_ty, for_ty, bindings)
         || !unify_types(metadata.trait_ref.args, reference.args, bindings) {
         return Option::None
-    } else {};
+    }
     let param_types: Vec[core::Type] = Vec::new();
     for param in function.params {
         param_types.push(param.1)
@@ -2087,11 +2087,11 @@ fn ensure_trait_method_instance(
                 match base_name {
                     Some(base) => if base != name {
                         instance_name = Option::Some(name);
-                    } else {},
+                    },
                     None => (),
-                };
+                }
                 resolved = specialize_trait_ref(ctx, reference, bindings);
-            } else {},
+            },
             None => (),
         }
     };
@@ -2117,7 +2117,7 @@ fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: core::
                 if unify_type(metadata.for_ty, for_ty, bindings)
                     && complete_bindings(ctx, function, bindings) {
                     ensure_instance(ctx, function.name, bindings);
-                } else {}
+                }
             },
             None => (),
         }
@@ -2143,7 +2143,7 @@ fn specialize_found_var_with_projection_bindings(
                     ctx.error.set(
                         Option::Some(incomplete_function_message(ctx, function, call_bindings)),
                     )
-                } else {};
+                }
                 core::Expr::Var { name, ty }
             }
         } else {
@@ -2380,7 +2380,7 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
             match receiver {
                 Some(value) => actual_types.push(core::expr_type(value)),
                 None => (),
-            };
+            }
             for arg in args {
                 actual_types.push(core::expr_type(arg))
             }
@@ -2592,7 +2592,7 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             match receiver {
                 Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
                 None => (),
-            };
+            }
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
         Break { value, ty: _, .. } => match value {
@@ -2685,7 +2685,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
         match inherent_function_method(function) {
             Some(method_name) => add_indexed_function(inherent_method_index, method_name, function),
             None => (),
-        };
+        }
         match function.trait_impl {
             Some(metadata) => {
                 add_indexed_function(trait_function_index, metadata.trait_ref.name, function);
@@ -2728,7 +2728,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     for function in ctx.functions {
         if function.root && !function_is_generic(function) {
             ensure_instance(ctx, function.name, Vec::new());
-        } else {}
+        }
     }
     let output: Vec[core::Function] = Vec::new();
     let mut index = 0;
@@ -2751,7 +2751,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
         ensure_runtime_trait_impls(ctx, output);
         if ctx.work.len() == previous_len {
             break
-        } else {}
+        }
     }
     core::File { functions: output, enums, structs, type_instances, constants, statics }
 }

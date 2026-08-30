@@ -31,7 +31,7 @@ fn invalid_import_character(value: string) -> Option[string] {
                     + character.to_string()
                     + "'",
             )
-        } else {}
+        }
     }
     Option::None
 }
@@ -75,7 +75,7 @@ fn package_by_path(state: CheckState, path: string) -> Option[go_types::PackageI
     for pkg in state.world.packages {
         if pkg.path == path || pkg.path == "vendor/" + path || pkg.path == "cmd/vendor/" + path {
             return Option::Some(pkg.id)
-        } else {}
+        }
     }
     Option::None
 }
@@ -85,15 +85,15 @@ fn available_import_name(state: CheckState, path: string) -> Option[string] {
         return Option::Some("unsafe")
     } else if path == "C" && state.config.fake_import_c {
         return Option::Some("C")
-    } else {};
+    }
     match package_by_path(state, path) {
         Some(package_id) => return Option::Some(state.world.packages[package_id.value].name),
         None => {},
-    };
+    }
     for available in state.config.available_imports {
         if available.path == path {
             return Option::Some(available.name)
-        } else {}
+        }
     }
     Option::None
 }
@@ -102,7 +102,7 @@ fn import_error_message(state: CheckState, path: string) -> string {
     for value in state.config.import_errors {
         if value.path == path {
             return " (" + value.message + ")"
-        } else {}
+        }
     }
     ""
 }
@@ -125,7 +125,7 @@ fn ignored_import(state: CheckState, path: string) -> bool {
     for value in state.config.ignored_imports {
         if value == path {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -149,7 +149,7 @@ fn insert_dot_import(
                     ),
                     None => {},
                 }
-            } else {},
+            },
             None => {},
         }
     }
@@ -174,7 +174,7 @@ fn bind_import(
     if binding_name == "init" {
         diagnostic(state, object_node, "cannot import package as init - init must be a func", false);
         return
-    } else {};
+    }
     let object = go_types::add_object(
         state.world,
         go_types::ObjectKind::PackageName,
@@ -191,7 +191,7 @@ fn bind_import(
             ObjectFact { node: name_node, object: Option::Some(object) },
         ),
         None => state.info.implicits.push(ObjectFact { node, object: Option::Some(object) }),
-    };
+    }
     if binding_name == "." {
         insert_dot_import(state, file_scope, package_id, node);
         let index = state.imports.len();
@@ -290,7 +290,7 @@ fn mark_import_used(state: CheckState, object: go_types::ObjectId) -> () {
     for index in 0..state.imports.len() {
         if state.imports[index].object.value == object.value {
             state.imports[index].used = true;
-        } else {}
+        }
     }
 }
 
@@ -385,7 +385,7 @@ fn check_package_import_conflicts(state: CheckState) -> () {
 fn check_unused_imports(state: CheckState) -> () {
     if state.config.disable_unused_import_check {
         return
-    } else {};
+    }
     for import in state.imports {
         if !import.used && !import.ignored {
             match go_types::get_object(state.world, import.object) {
@@ -412,6 +412,6 @@ fn check_unused_imports(state: CheckState) -> () {
                 },
                 None => {},
             }
-        } else {}
+        }
     }
 }

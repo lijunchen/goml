@@ -55,7 +55,7 @@ fn ctir_type(writer: wire::ArtifactJsonWriter, value: ctir::CtType) -> () {
             ctir_tag(writer, "meta");
             wire::artifact_json_string(writer, name)
         },
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -113,7 +113,7 @@ fn ctir_value(writer: wire::ArtifactJsonWriter, value: ctir::CtValue) -> () {
             wire::artifact_json_string(writer, kind);
             ctir_number(writer, id)
         },
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -152,7 +152,7 @@ fn ctir_pattern(writer: wire::ArtifactJsonWriter, value: ctir::CtPattern) -> () 
             match rest {
                 Some(value) => ctir_number(writer, value),
                 None => wire::artifact_json_null(writer),
-            };
+            }
             ctir_patterns(writer, suffix)
         },
         ctir::CtPattern::Struct { name, fields } => {
@@ -188,7 +188,7 @@ fn ctir_pattern(writer: wire::ArtifactJsonWriter, value: ctir::CtPattern) -> () 
             ctir_value(writer, end);
             wire::artifact_json_bool(writer, inclusive)
         },
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -282,7 +282,7 @@ fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bo
                 match arm.guard {
                     Some(value) => ctir_expr(writer, value, semantic),
                     None => wire::artifact_json_null(writer),
-                };
+                }
                 ctir_expr(writer, arm.body, semantic);
                 ctir_number(
                     writer,
@@ -359,7 +359,7 @@ fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bo
                     ctir_tag(writer, "intrinsic");
                     wire::artifact_json_string(writer, name)
                 },
-            };
+            }
             wire::artifact_json_end_array(writer);
             ctir_exprs(writer, args, semantic)
         },
@@ -390,7 +390,7 @@ fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bo
             ctir_tag(writer, "compile_error");
             ctir_expr(writer, value, semantic)
         },
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -434,7 +434,7 @@ fn ctir_stmt(writer: wire::ArtifactJsonWriter, value: ctir::CtStmt, semantic: bo
             ctir_tag(writer, "expr");
             ctir_expr(writer, value, semantic)
         },
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -456,7 +456,7 @@ fn ctir_block(writer: wire::ArtifactJsonWriter, value: ctir::CtBlock, semantic: 
     match value.tail {
         Some(value) => ctir_expr(writer, value, semantic),
         None => wire::artifact_json_null(writer),
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -530,7 +530,7 @@ fn ctir_module(writer: wire::ArtifactJsonWriter, value: ctir::CtModule, semantic
         match entry.export_name {
             Some(value) => wire::artifact_json_string(writer, value),
             None => wire::artifact_json_null(writer),
-        };
+        }
         wire::artifact_json_end_array(writer)
     }
     wire::artifact_json_end_array(writer);
@@ -564,7 +564,7 @@ fn ctir_module(writer: wire::ArtifactJsonWriter, value: ctir::CtModule, semantic
             ctir_number(writer, origin.end);
             wire::artifact_json_end_array(writer)
         }
-    };
+    }
     wire::artifact_json_end_array(writer);
     wire::artifact_json_end_object(writer)
 }
@@ -634,7 +634,7 @@ fn decode_ctir_type(value: wire::ArtifactValue) -> Result[ctir::CtType, string] 
     let values = ctir_array(value, "type")?;
     if values.is_empty() {
         return Result::Err(wire::artifact_decode_error("CTIR type"))
-    } else {};
+    }
     let tag = ctir_string(values[0], "type tag")?;
     match tag {
         "unit" => {
@@ -715,17 +715,17 @@ fn decode_ctir_types(value: wire::ArtifactValue) -> Result[Vec[ctir::CtType], st
 fn parse_uint64_string(value: string) -> Result[u64, string] {
     if value == "" {
         return Result::Err(wire::artifact_decode_error("CTIR u64"))
-    } else {};
+    }
     let mut result = 0.to_u64();
     for index in 0..value.byte_len() {
         let digit = value.byte_get(index);
         if digit < b'0' || digit > b'9' {
             return Result::Err(wire::artifact_decode_error("CTIR u64"))
-        } else {};
+        }
         let next = result * 10 + ((digit - b'0').to_u64());
         if next < result {
             return Result::Err(wire::artifact_decode_error("CTIR u64"))
-        } else {};
+        }
         result = next;
     }
     Result::Ok(result)
@@ -735,7 +735,7 @@ fn decode_ctir_value(value: wire::ArtifactValue) -> Result[ctir::CtValue, string
     let values = ctir_array(value, "value")?;
     if values.is_empty() {
         return Result::Err(wire::artifact_decode_error("CTIR value"))
-    } else {};
+    }
     let tag = ctir_string(values[0], "value tag")?;
     match tag {
         "unit" => {
@@ -841,7 +841,7 @@ fn decode_ctir_pattern(value: wire::ArtifactValue) -> Result[ctir::CtPattern, st
     let values = ctir_array(value, "pattern")?;
     if values.is_empty() {
         return Result::Err(wire::artifact_decode_error("CTIR pattern"))
-    } else {};
+    }
     let tag = ctir_string(values[0], "pattern tag")?;
     match tag {
         "wild" => {
@@ -976,7 +976,7 @@ fn decode_ctir_expr(value: wire::ArtifactValue) -> Result[ctir::CtExpr, string] 
     let values = ctir_array(value, "expression")?;
     if values.len() < 3 {
         return Result::Err(wire::artifact_decode_error("CTIR expression"))
-    } else {};
+    }
     let ty = decode_ctir_type(values[0])?;
     let origin = ctir_int(values[1], "expression origin")?;
     let tag = ctir_string(values[2], "expression tag")?;
@@ -1117,7 +1117,7 @@ fn decode_ctir_expr(value: wire::ArtifactValue) -> Result[ctir::CtExpr, string] 
             let target_value = ctir_array(values[3], "call target")?;
             if target_value.is_empty() {
                 return Result::Err(wire::artifact_decode_error("CTIR call target"))
-            } else {};
+            }
             let target = match ctir_string(target_value[0], "call target tag")? {
                 "local" => {
                     ctir_expect_length(target_value, 2, "local call target")?;
@@ -1184,7 +1184,7 @@ fn decode_ctir_stmt(value: wire::ArtifactValue) -> Result[ctir::CtStmt, string] 
     let values = ctir_array(value, "statement")?;
     if values.is_empty() {
         return Result::Err(wire::artifact_decode_error("CTIR statement"))
-    } else {};
+    }
     match ctir_string(values[0], "statement tag")? {
         "let" => {
             ctir_expect_length(values, 3, "let statement")?;
@@ -1333,7 +1333,7 @@ pub fn artifact_decode_comptime_unit(value: wire::ArtifactValue) -> Result[
     let version = ctir_int(wire::artifact_json_required_field(object, "version")?, "version")?;
     if version != 4 {
         return Result::Err("unsupported comptime artifact version")
-    } else {};
+    }
     let module = decode_ctir_module(wire::artifact_json_required_field(object, "module")?)?;
     let semantic_hash = wire::artifact_json_field_string(object, "semantic_hash")?;
     if ctir_semantic_hash(module) != semantic_hash {

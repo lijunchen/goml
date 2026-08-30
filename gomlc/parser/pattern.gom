@@ -50,9 +50,9 @@ fn alias_pattern(parser: Parser) -> Option[MarkerClosed] {
         if parser.enter_pattern() {
             if marker_is_none(alias_pattern(parser)) {
                 parser.error("expected a pattern after `@`")
-            } else {};
+            }
             parser.leave_pattern()
-        } else {};
+        }
         Option::Some(parser.close(marker, cst::NodeKind::PATTERN_ALIAS))
     } else {
         range_pattern(parser)
@@ -72,7 +72,7 @@ fn range_pattern(parser: Parser) -> Option[MarkerClosed] {
                 parser.advance();
                 if marker_is_none(simple_pattern(parser)) {
                     parser.error("expected a range pattern endpoint")
-                } else {};
+                }
                 Option::Some(marker.completed(parser, cst::NodeKind::PATTERN_RANGE))
             }
         },
@@ -196,7 +196,7 @@ fn ident_pattern(parser: Parser) -> MarkerClosed {
             parser.expect(lexer::TokenKind::RParen)
         } else if parser.at(lexer::TokenKind::LBrace) {
             struct_pattern_field_list(parser)
-        } else {};
+        }
         parser.close(marker, cst::NodeKind::PATTERN_CONSTR)
     }
 }
@@ -213,21 +213,21 @@ fn array_pattern(parser: Parser) -> MarkerClosed {
         if parser.at(lexer::TokenKind::DotDot) || bound_rest {
             if has_rest {
                 parser.error("array pattern can contain at most one `..`")
-            } else {};
+            }
             let _ = rest_pattern(parser);
             has_rest = true;
         } else if is_pattern_first(parser.peek()) {
             let _ = pattern(parser);
         } else {
             parser.advance_with_error("expected an array pattern element")
-        };
+        }
         if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBracket)
             && !is_list_boundary(parser.peek()) {
             parser.error("expected `,` or `]` in array pattern");
             if !parser.eof() && !is_pattern_first(parser.peek()) {
                 parser.advance()
-            } else {}
-        } else {}
+            }
+        }
     }
     parser.expect(lexer::TokenKind::RBracket);
     parser.close(marker, cst::NodeKind::PATTERN_ARRAY)
@@ -238,7 +238,7 @@ fn rest_pattern(parser: Parser) -> MarkerClosed {
     if parser.at_lower_ident() {
         parser.expect_lower_ident("rest pattern binding");
         parser.expect(lexer::TokenKind::At)
-    } else {};
+    }
     parser.expect(lexer::TokenKind::DotDot);
     parser.close(marker, cst::NodeKind::PATTERN_REST)
 }
@@ -251,13 +251,13 @@ fn struct_pattern_field_list(parser: Parser) -> () {
         if parser.at(lexer::TokenKind::DotDot) {
             if has_rest {
                 parser.error("struct pattern can contain at most one `..`")
-            } else {};
+            }
             let _ = rest_pattern(parser);
             has_rest = true;
             parser.eat(lexer::TokenKind::Comma);
             if !parser.at(lexer::TokenKind::RBrace) && !is_list_boundary(parser.peek()) {
                 parser.error("`..` must be the last item in a struct pattern")
-            } else {}
+            }
         } else if parser.at(lexer::TokenKind::Ident) {
             struct_pattern_field(parser);
             if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace)
@@ -282,6 +282,6 @@ fn struct_pattern_field(parser: Parser) -> () {
         } else {
             parser.advance_with_error("expected a pattern")
         }
-    } else {};
+    }
     let _ = parser.close(marker, cst::NodeKind::STRUCT_PATTERN_FIELD);
 }

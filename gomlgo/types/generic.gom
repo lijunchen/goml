@@ -10,7 +10,7 @@ fn substitution_argument(value: ObjectId, parameters: Vec[TypeParameter], argume
     for index in 0..parameters.len() {
         if parameters[index].object.value == value.value && index < arguments.len() {
             return Option::Some(arguments[index])
-        } else {}
+        }
     }
     Option::None
 }
@@ -97,7 +97,7 @@ fn instantiate_method_object(
                 if index < receiver_arguments.len() {
                     signature_parameters.push(receiver_type_params[index]);
                     signature_arguments.push(receiver_arguments[index]);
-                } else {}
+                }
             }
             let entries: SubstitutionEntries = collections::IndexMap::new();
             let signature = add_type(
@@ -237,7 +237,7 @@ fn substitute_inner(
     match substituted_entry(entries, value) {
         Some(value) => return value,
         None => {},
-    };
+    }
     match type_data(world, value) {
         TypeData { id: _, kind: TypeKind::TypeParam { object, constraint: _, index: _ } } => substitution_argument(
             object,
@@ -336,7 +336,7 @@ fn substitute_inner(
                 if index < arguments.len() {
                     signature_parameters.push(receiver_type_params[index]);
                     signature_arguments.push(arguments[index]);
-                } else {}
+                }
             }
             add_type(
                 world,
@@ -662,7 +662,7 @@ pub fn ensure_named_instance_methods(world: World, instance: TypeId) -> () {
     };
     if instance_data.3.is_empty() {
         return
-    } else {};
+    }
     let origin = match get_object(world, instance_data.0) {
         Some(object) => object.type_id,
         None => return,
@@ -692,7 +692,7 @@ pub fn ensure_named_instance_methods(world: World, instance: TypeId) -> () {
         for index in 0..methods.len() {
             if object_name(world, methods[index]) == name {
                 existing_index = index;
-            } else {}
+            }
         }
         let instantiated = instantiate_method_object(
             world,
@@ -727,7 +727,7 @@ fn incomplete_type_parameters(world: World, values: Vec[TypeParameter]) -> bool 
             return true
         } else if value.constraint.value < 0 || value.constraint.value >= world.types.len() {
             return true
-        } else {};
+        }
         match world.types[value.constraint.value].kind {
             TypeKind::Invalid => return true,
             _ => {},
@@ -739,7 +739,7 @@ fn incomplete_type_parameters(world: World, values: Vec[TypeParameter]) -> bool 
 pub fn refresh_named_instances(world: World, origin: TypeId) -> () {
     if origin.value < 0 || origin.value >= world.types.len() {
         return
-    } else {};
+    }
     let origin_data = match world.types[origin.value].kind {
         TypeKind::Named { object, underlying, type_params, type_args: _, methods } => {
             (object, underlying, type_params, methods)
@@ -780,9 +780,9 @@ pub fn refresh_named_instances(world: World, origin: TypeId) -> () {
                             ),
                         },
                     );
-                } else {},
+                },
                 _ => {},
             }
-        } else {}
+        }
     }
 }

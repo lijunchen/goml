@@ -21,11 +21,11 @@ fn is_valid_ident(value: string) -> bool {
     };
     if !(is_ascii_letter(first) || first == '_') {
         return false
-    } else {};
+    }
     for character in characters {
         if !(is_ascii_letter(character) || is_ascii_digit(character) || character == '_') {
             return false
-        } else {};
+        }
     }
     true
 }
@@ -204,7 +204,7 @@ fn encode_name(value: string) -> string {
     }
     if pending_colon {
         write_encoded_char(builder, ':')
-    } else {};
+    }
     builder.finish()
 }
 

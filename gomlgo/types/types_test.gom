@@ -78,7 +78,7 @@ fn universe_materializes_alias_named_and_basic_types() -> () {
     ).kind {
         TypeKind::Alias { object: _, rhs: _, type_params: _, type_args: _ } => (),
         _ => testing::fail("any is not an alias"),
-    };
+    }
     let error_object = required_object(world, world.universe, "error");
     let error_type = world.objects[error_object.value].type_id;
     testing::assert_eq(format_type(world, error_type), "error");

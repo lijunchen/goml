@@ -105,7 +105,7 @@ fn package_name_for_directory(module_dir: string, module_path: string, directory
         return Result::Err("target is outside the module")
     } else if directory == module_dir {
         return Result::Ok(module_path)
-    } else {};
+    }
     let relative = relative_path(module_dir, directory);
     let segments: Vec[string] = Vec::new();
     let current = text::StringBuilder::new();
@@ -114,14 +114,14 @@ fn package_name_for_directory(module_dir: string, module_path: string, directory
             if !(current.is_empty()) {
                 segments.push(current.finish());
                 current.clear()
-            } else {}
+            }
         } else {
             current.write_char(character)
         }
     }
     if !(current.is_empty()) {
         segments.push(current.finish())
-    } else {};
+    }
     if segments.is_empty() {
         Result::Ok(module_path)
     } else {
@@ -145,7 +145,7 @@ fn directory_for_package(module_dir: string, module_path: string, package_name: 
                 result = path::join(result, segment);
                 if fs::is_file(path::join(result, manifest::FILENAME)) {
                     return Option::None
-                } else {}
+                }
             }
             Option::Some(result)
         }
@@ -168,7 +168,7 @@ fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], s
                     None => false,
                 }) {
             result.push(source_path)
-        } else {}
+        }
     }
     Result::Ok(util::sorted_unique(result))
 }
@@ -189,7 +189,7 @@ fn directory_contains_gom(directory: string) -> Result[bool, string] {
                 Ok(false) => (),
                 Err(message) => return Result::Err(message),
             }
-        } else {}
+        }
     }
     Result::Ok(false)
 }
@@ -207,7 +207,7 @@ fn black_box_test_files(tests_dir: string) -> Result[Vec[string], string] {
                 Ok(false) => (),
                 Err(message) => return Result::Err(message),
             }
-        } else {}
+        }
     }
     Result::Ok(files)
 }
@@ -234,14 +234,14 @@ fn compiler_package_info(compiler: string, module_dir: string, files: Vec[string
     )?;
     if !(process::ExitStatus::success(process::Output::status(output))) {
         return Result::Err(output_text(process::Output::stderr(output)))
-    } else {};
+    }
     let root = json::parse(output_text(process::Output::stdout(output)))?;
     match json::field(root, "protocol_version") {
         Some(Number(value)) => if value != "1" {
             return Result::Err("unsupported package-info protocol " + value)
-        } else {},
+        },
         _ => return Result::Err("package-info omitted protocol_version"),
-    };
+    }
     let values = match json::field(root, "files") {
         Some(value) => match json::as_array(value) {
             Some(values) => values,
@@ -312,11 +312,11 @@ fn select_package_info(module_dir: string, all_info: Vec[PackageInfoFile], files
         for value in all_info {
             if value.path == relative {
                 result.push(value)
-            } else {}
+            }
         }
         if result.len() == before {
             return Result::Err("package-info omitted " + relative)
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -325,7 +325,7 @@ fn source_by_name(sources: Vec[ModuleSource], name: string) -> Option[ModuleSour
     for source in sources {
         if source.name == name {
             return Option::Some(source)
-        } else {}
+        }
     }
     Option::None
 }
@@ -337,12 +337,12 @@ fn source_for_package(sources: Vec[ModuleSource], package_name: string) -> Optio
             match selected {
                 Some(current) => if source.name.byte_len() > current.name.byte_len() {
                     selected = Option::Some(source);
-                } else {},
+                },
                 None => {
                     selected = Option::Some(source);
                 },
             }
-        } else {}
+        }
     }
     selected
 }
@@ -356,12 +356,12 @@ fn source_for_package_directory(sources: Vec[ModuleSource], directory: string) -
             match selected {
                 Some(current) => if source.directory.byte_len() > current.directory.byte_len() {
                     selected = Option::Some(source);
-                } else {},
+                },
                 None => {
                     selected = Option::Some(source);
                 },
             }
-        } else {}
+        }
     }
     selected
 }
@@ -389,7 +389,7 @@ fn module_sources(module_dir: string, module_manifest: manifest::Manifest) -> Re
     );
     if module_manifest.dependencies.is_empty() {
         return Result::Ok(result)
-    } else {};
+    }
     let resolved = registry::resolve(module_dir)?;
     for module in resolved {
         match source_by_name(result, module.name) {
@@ -432,9 +432,9 @@ fn local_import(sources: Vec[ModuleSource], current_module: string, import_path:
             for segment in text::split(suffix, "::") {
                 if segment == "tests" {
                     return Result::Err("test-only package " + import_path + " cannot be imported")
-                } else {}
+                }
             }
-        } else {};
+        }
         match package_directory_in_source(current, import_path) {
             Some(directory) => if fs::is_dir(directory) {
                 return Result::Ok(Option::Some(import_path))
@@ -442,7 +442,7 @@ fn local_import(sources: Vec[ModuleSource], current_module: string, import_path:
                 return Result::Err("local package does not exist: " + import_path)
             },
             None => (),
-        };
+        }
         for source in sources {
             if source.name == current_module {} else {
                 match package_directory_in_source(source, import_path) {
@@ -476,7 +476,7 @@ fn package_from_info(
             declared_name = file.package_name;
         } else if declared_name != file.package_name {
             return Result::Err("package declaration mismatch in " + file.path)
-        } else {};
+        }
         for use_decl in file.uses {
             match local_import(sources, source.name, use_decl.path) {
                 Ok(Some(value)) => imports.push(value),
@@ -518,7 +518,7 @@ fn extend_package_with_info(
     )?;
     if test_package.declared_name != package_value.declared_name {
         return Result::Err("package declaration mismatch in " + package_value.directory)
-    } else {};
+    }
     let imports: Vec[string] = Vec::new();
     for value in package_value.imports {
         imports.push(value)
@@ -556,7 +556,7 @@ fn load_package(
     let files = source_files(directory, include_entry_tests && package_name == entry_package)?;
     if files.is_empty() {
         return Result::Err("package has no .gom files: " + package_name)
-    } else {};
+    }
     let info = compiler_package_info(compiler, module_dir, files)?;
     package_from_info(sources, source, package_name, directory, files, info)
 }
@@ -565,7 +565,7 @@ fn find_package(packages: Vec[Package], name: string) -> Option[Package] {
     for package_value in packages {
         if package_value.name == name {
             return Option::Some(package_value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -580,7 +580,7 @@ fn visit_package(
         Some(1) => return Result::Err("package dependency cycle at " + name),
         Some(2) => return Result::Ok(()),
         _ => (),
-    };
+    }
     states[name] = 1;
     let Some(package_value) = find_package(packages, name) else {
         return Result::Err("missing package " + name)
@@ -622,7 +622,7 @@ fn collect_package_directories(
 ) -> Result[(), string] {
     if directory != module_dir && fs::is_file(path::join(directory, manifest::FILENAME)) {
         return Result::Ok(())
-    } else {};
+    }
     let names = fs::read_dir(directory).map_err(|error| error.to_string())?;
     let source_files: Vec[string] = Vec::new();
     let test_directories: Vec[string] = Vec::new();
@@ -644,8 +644,8 @@ fn collect_package_directories(
                 test_directories.push(value)
             } else if name != "testdata" && !name.starts_with(".") {
                 children.push(value)
-            } else {}
-        } else {}
+            }
+        }
     }
     if !test_directories.is_empty() {
         let value = test_directories[test_directories.len() - 1];
@@ -654,11 +654,11 @@ fn collect_package_directories(
             return Result::Err(
                 "black-box test package " + value + " has no parent production package",
             )
-        } else {}
-    } else {};
+        }
+    }
     if !source_files.is_empty() {
         result.push(directory)
-    } else {};
+    }
     for child in util::sorted(children) {
         collect_package_directories(module_dir, child, artifact_root, result)?
     }
@@ -678,14 +678,14 @@ fn discover_module_graph(
     }
     if directories.is_empty() {
         return Result::Err("module has no package directories")
-    } else {};
+    }
     let package_files: Vec[(string, Vec[string])] = Vec::new();
     let all_files: Vec[string] = Vec::new();
     for directory in directories {
         let files = source_files(directory, false)?;
         if files.is_empty() {
             return Result::Err("package has no .gom files: " + directory)
-        } else {};
+        }
         for file in files {
             all_files.push(file)
         }
@@ -726,7 +726,7 @@ fn toolchain_module_source(lib_dir: string, module_name: string) -> Result[Modul
         )
     } else if !module_manifest.dependencies.is_empty() && module_name != "prelude" {
         return Result::Err("toolchain manifest " + directory + " cannot declare dependencies")
-    } else {};
+    }
     Result::Ok(
         ModuleSource {
             name: module_name,
@@ -822,7 +822,7 @@ fn discover_graph(
             for dependency in package_value.imports {
                 if !seen.contains(dependency) {
                     pending.push_back(dependency)
-                } else {}
+                }
             }
             packages.push(package_value)
         }
@@ -920,7 +920,7 @@ fn resolve_compiler(explicit: Option[string]) -> Result[ResolvedCompiler, string
     )?;
     if !(process::ExitStatus::success(process::Output::status(output))) {
         return Result::Err("gomlc does not support the driver protocol")
-    } else {};
+    }
     let version = json::parse(output_text(process::Output::stdout(output)))?;
     match json::field(version, "driver_protocol") {
         Some(Number(value)) => if value == "2" {
@@ -1008,7 +1008,7 @@ fn graph_with_entry(base: Graph, extra: Graph, entry: string) -> Result[Graph, s
         match find_package(packages, package_value.name) {
             Some(existing) => if existing.declared_name != package_value.declared_name {
                 return Result::Err("conflicting package inputs for " + package_value.name)
-            } else {},
+            },
             None => packages.push(package_value),
         }
     }
@@ -1036,14 +1036,14 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
             packages.push(test_package)
         } else {
             packages.push(current)
-        };
+        }
         let _ = seen.insert(current.name);
     }
     let pending: collections::Deque[string] = collections::Deque::new();
     for dependency in test_package.imports {
         if !seen.contains(dependency) {
             pending.push_back(dependency)
-        } else {}
+        }
     }
     while !pending.is_empty() {
         let package_name = match pending.pop_front() {
@@ -1062,7 +1062,7 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
             for dependency in current.imports {
                 if !seen.contains(dependency) {
                     pending.push_back(dependency)
-                } else {}
+                }
             }
             packages.push(current)
         }
@@ -1088,8 +1088,8 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
             let files = source_files(package_value.directory, true)?;
             if files.len() > package_value.files.len() {
                 names.push(package_value.name)
-            } else {}
-        } else {}
+            }
+        }
     }
     let package_files: Vec[(Package, Vec[string], Vec[string])] = Vec::new();
     let all_files: Vec[string] = Vec::new();
@@ -1103,13 +1103,13 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
             if !package_value.files.contains(file) {
                 test_files.push(file);
                 all_files.push(file)
-            } else {}
+            }
         }
         package_files.push((package_value, files, test_files))
     }
     if package_files.is_empty() {
         return Result::Ok(result)
-    } else {};
+    }
     let all_info = compiler_package_info(context.compiler, context.graph.module_dir, all_files)?;
     for item in package_files {
         let package_value = item.0;
@@ -1135,7 +1135,7 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
     for package_value in context.graph.packages {
         if package_value.module_name == context.graph.module_path {
             names.push(package_value.name)
-        } else {}
+        }
     }
     for target_package in util::sorted(names) {
         let Some(package_value) = find_package(context.graph.packages, target_package) else {
@@ -1160,7 +1160,7 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
                 };
                 if test_package.declared_name != "tests" {
                     return Result::Err(tests_dir + " must declare package tests;")
-                } else {};
+                }
                 let combined = graph_with_entry(context.graph, graph, test_package.name)?;
                 result.push(ExternalTest { graph: combined, target_package })
             }

@@ -38,7 +38,7 @@ fn quoted_values(value: string) -> Vec[string] {
                     start = Option::Some(index + 1);
                 },
             }
-        } else {}
+        }
     }
     result
 }
@@ -59,8 +59,8 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
             let values = quoted_values(line);
             if values.len() >= 2 {
                 result.push(DependencyRequirement { name: values[0], version: values[1] })
-            } else {}
-        } else {};
+            }
+        }
         if end == source.byte_len() {
             cursor = source.byte_len() + 1;
         } else {
@@ -95,7 +95,7 @@ fn parse_sem_version(value: string) -> Option[SemVersion] {
         if index == value.byte_len() || value.byte_get(index) == b'.' {
             parts.push(value.byte_slice(start, index));
             start = index + 1;
-        } else {}
+        }
     }
     if parts.len() != 3 {
         Option::None
@@ -180,7 +180,7 @@ fn registry_versions(root: string, module_name: string) -> Result[Vec[string], s
             for version in quoted_values(line) {
                 result.push(version)
             }
-        } else {};
+        }
         if end == source.byte_len() {
             cursor = source.byte_len() + 1;
         } else {
@@ -213,7 +213,7 @@ fn select_registry_version(root: string, requirement: DependencyRequirement) -> 
                 } {
                 selected = Option::Some(version);
                 selected_version = Option::Some(parsed);
-            } else {},
+            },
             None => return Result::Err("invalid registry semver `" + version + "`"),
         }
     }
@@ -288,11 +288,11 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
                     return Result::Err(
                         "registry module " + requirement.name + " declares module path " + name,
                     )
-                } else {},
+                },
                 None => return Result::Err(
                     "registry module " + requirement.name + " has no module path",
                 ),
-            };
+            }
             let _ = selected.insert(
                 requirement.name,
                 ResolvedModule { name: requirement.name, version, root },
@@ -300,7 +300,7 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
             for dependency in manifest_dependencies(module_manifest) {
                 queue.push_back(dependency)
             }
-        } else {}
+        }
     }
     Result::Ok(selected.values())
 }
@@ -330,7 +330,7 @@ fn external_package_directory(module: ResolvedModule, package_name: string) -> O
             if separator {
                 directory = path::join(directory, suffix.byte_slice(start, index));
                 start = index + 2;
-            } else {}
+            }
         }
         Option::Some(directory)
     } else {

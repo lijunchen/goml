@@ -163,7 +163,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                     return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
                 },
                 None => (),
-            };
+            }
             let usage = if !used_dumps.is_empty() || file.is_some() {
                 selected_run_usage(used_dumps)
             } else {

@@ -85,7 +85,7 @@ fn invalidate_commute_dependents(known: Vec[CommuteBinding], name: string) -> ()
         match binding.value {
             Dispatch { selector: _, fields, constructor: _ } => if imms_use_name(fields, name) {
                 invalidated.push(binding.name)
-            } else {},
+            },
             Unknown => (),
         }
     }
@@ -201,7 +201,7 @@ fn imms_use_name(values: Vec[Imm], name: string) -> bool {
     for value in values {
         if imm_uses_name(value, name) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -238,11 +238,11 @@ fn term_uses_name(value: Term, name: string) -> bool {
         Match { scrutinee, arms, default, .. } => {
             if imm_uses_name(scrutinee, name) {
                 return true
-            } else {};
+            }
             for arm in arms {
                 if imm_uses_name(arm.lhs, name) || block_uses_name(arm.body, name) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => block_uses_name(body, name),
@@ -262,7 +262,7 @@ fn term_uses_name(value: Term, name: string) -> bool {
                         }
                         || block_uses_name(body, name) {
                         return true
-                    } else {},
+                    },
                     Send { channel, value, guard, body } => if imm_uses_name(channel, name)
                         || imm_uses_name(value, name)
                         || match guard {
@@ -271,7 +271,7 @@ fn term_uses_name(value: Term, name: string) -> bool {
                         }
                         || block_uses_name(body, name) {
                         return true
-                    } else {},
+                    },
                 }
             }
             match default {
@@ -288,14 +288,14 @@ fn block_uses_name(value: Block, name: string) -> bool {
         match bind {
             Let(value) => if value_uses_name(value.value, name) {
                 return true
-            } else {},
+            },
             Join(value) => if block_uses_name(value.body, name) {
                 return true
-            } else {},
+            },
             JoinRec(values) => for value in values {
                 if block_uses_name(value.body, name) {
                     return true
-                } else {}
+                }
             },
         }
     }
@@ -312,7 +312,7 @@ fn find_commute_field(
         if value.index == index && constructors_equal(value.constructor, constructor)
             && repr::types_equal(value.ty, ty) {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -335,7 +335,7 @@ fn collect_commute_value_fields(
                         name: fresh_commute(counter, "commute_field"),
                     },
                 )
-            } else {}
+            }
         },
         _ => (),
     }
@@ -541,7 +541,7 @@ fn commute_arm_params(
     for index in 0..params.len() {
         if index != scrutinee_index || keep_scrutinee {
             result.push(params[index])
-        } else {}
+        }
     }
     for field in fields {
         result.push((field.name, field.ty))
@@ -664,7 +664,7 @@ fn live_commute_fields(values: Vec[CommuteField], body: Block) -> Vec[CommuteFie
     for value in values {
         if block_uses_name(body, value.name) {
             result.push(value)
-        } else {}
+        }
     }
     result
 }
@@ -679,7 +679,7 @@ fn build_commute_arm(
     let fields: Vec[CommuteField] = Vec::new();
     if assigned_names(value.body).contains(scrutinee) {} else {
         collect_commute_block_fields(fields, value.body, scrutinee, counter)
-    };
+    }
     let body = remove_commute_aliases(replace_commute_block(value.body, fields, scrutinee));
     let fields = live_commute_fields(fields, body);
     let keep_scrutinee = block_uses_name(body, scrutinee);
@@ -703,7 +703,7 @@ fn build_commute_default(
     let fields: Vec[CommuteField] = Vec::new();
     if assigned_names(value).contains(scrutinee) {} else {
         collect_commute_block_fields(fields, value, scrutinee, counter)
-    };
+    }
     let body = remove_commute_aliases(replace_commute_block(value, fields, scrutinee));
     let fields = live_commute_fields(fields, body);
     let keep_scrutinee = block_uses_name(body, scrutinee);
@@ -720,7 +720,7 @@ fn find_commute_arm(values: Vec[CommuteArm], selector: Imm) -> Option[CommuteArm
     for value in values {
         if match_imms_equal(value.selector, selector) {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -737,7 +737,7 @@ fn commute_call_args(
     for index in 0..args.len() {
         if index != scrutinee_index || keep_scrutinee {
             result.push(args[index])
-        } else {}
+        }
     }
     for field in fields {
         let present = constructor?;
@@ -762,7 +762,7 @@ fn rewrite_commute_call(
 ) -> Option[Term] {
     if scrutinee_index < 0 || scrutinee_index >= args.len() {
         return Option::None
-    } else {};
+    }
     match known_dispatch(args[scrutinee_index], known) {
         Dispatch { selector, fields, constructor } => {
             match find_commute_arm(arms, selector) {
@@ -1029,10 +1029,10 @@ fn commute_scrutinee_param(params: Vec[(string, repr::Type)], value: Imm) -> Opt
         Var { name, ty: _ } => for index in 0..params.len() {
             if params[index].0 == name {
                 return Option::Some((name, index))
-            } else {}
+            }
         },
         _ => (),
-    };
+    }
     Option::None
 }
 
@@ -1069,7 +1069,7 @@ fn prepend_commute_joins(
             ),
         ),
         None => (),
-    };
+    }
     for bind in rest.binds {
         binds.push(bind)
     }
@@ -1082,10 +1082,10 @@ fn try_commute_join(value: JoinBind, rest: Block, known: Vec[CommuteBinding], co
     match value.role {
         JoinRole::Continuation => (),
         JoinRole::Return | JoinRole::LoopExit => return Option::None,
-    };
+    }
     if !value.body.binds.is_empty() || count_join_uses_block(rest, value.name) == 0 {
         return Option::None
-    } else {};
+    }
     match value.body.term {
         Match { scrutinee, arms: values, default: fallback, ret_ty } => {
             let scrutinee_param = commute_scrutinee_param(value.params, scrutinee)?;

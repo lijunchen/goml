@@ -54,7 +54,7 @@ fn artifact_json_primitive_value(
         wire::artifact_json_string(writer, value)
     } else {
         wire::artifact_json_number(writer, value)
-    };
+    }
     wire::artifact_json_end_object(writer);
     wire::artifact_json_end_object(writer)
 }
@@ -162,9 +162,9 @@ pub fn artifact_constructor_separator(value: string) -> isize {
         for index in 0..value.byte_len() - 1 {
             if text::starts_with_at(value, index, "::") {
                 result = index;
-            } else {}
+            }
         }
-    } else {};
+    }
     result
 }
 
@@ -180,7 +180,7 @@ fn artifact_json_constructor(writer: wire::ArtifactJsonWriter, value: core::Cons
         let separator = artifact_constructor_separator(value.name);
         if separator < 0 {
             fail("error[compile]: invalid enum constructor in compiler artifact")
-        } else {};
+        }
         wire::artifact_json_name(writer, "Enum");
         wire::artifact_json_begin_object(writer);
         wire::artifact_json_name(writer, "type_name");
@@ -202,7 +202,7 @@ fn artifact_json_constructor(writer: wire::ArtifactJsonWriter, value: core::Cons
             },
         );
         wire::artifact_json_end_object(writer)
-    };
+    }
     wire::artifact_json_end_object(writer)
 }
 
@@ -329,7 +329,7 @@ fn artifact_json_core_select_arms(
                 wire::artifact_json_name(writer, "body");
                 artifact_json_core_expr(writer, context, body)
             },
-        };
+        }
         wire::artifact_json_end_object(writer)
     }
     wire::artifact_json_end_array(writer)
@@ -400,7 +400,7 @@ fn artifact_json_core_expr(
                     wire::artifact_json_name(writer, "body");
                     tast_codec::artifact_json_callable_body(writer, callable)
                 },
-            };
+            }
             wire::artifact_json_name(writer, "ty");
             artifact_json_core_type(writer, context, ty);
             wire::artifact_json_end_object(writer)
@@ -692,7 +692,7 @@ fn artifact_json_core_expr(
             artifact_json_core_type(writer, context, ty);
             wire::artifact_json_end_object(writer)
         },
-    };
+    }
     wire::artifact_json_end_object(writer)
 }
 
@@ -793,7 +793,7 @@ fn artifact_json_core_function_origin(
             wire::artifact_json_name(writer, "TraitImplementation");
             wire::artifact_json_string(writer, method_name)
         },
-    };
+    }
     wire::artifact_json_end_object(writer)
 }
 
@@ -918,7 +918,7 @@ fn artifact_json_const_expr(
             artifact_json_core_type(writer, context, ty);
             wire::artifact_json_end_object(writer)
         },
-    };
+    }
     wire::artifact_json_end_object(writer)
 }
 

@@ -21,7 +21,7 @@ fn artifact_core_function_matches_scheme(value: core::Function, scheme: artifact
             for index in 0..value.params.len() {
                 if !artifact_core_types_equal(value.params[index].1, function_type.params[index]) {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -67,7 +67,7 @@ fn artifact_prepare_core_function_metadata(
     for function in exports.functions {
         if function.name == value.name && artifact_core_function_matches_scheme(value, function) {
             predicates = core::lower_predicates(function.constraints);
-        } else {}
+        }
     }
     let trait_impl = match value.trait_impl {
         Some(metadata) => {
@@ -92,11 +92,11 @@ fn artifact_prepare_core_function_metadata(
                                     implementation.definition.constraints,
                                     method.constraints,
                                 );
-                            } else {}
+                            }
                         },
                         None => (),
                     }
-                } else {}
+                }
             }
             Option::Some(
                 core::TraitImpl {
@@ -120,12 +120,12 @@ fn artifact_prepare_core_function_metadata(
                                     implementation.definition.constraints,
                                     method.constraints,
                                 );
-                            } else {}
+                            }
                         }
-                    } else {}
+                    }
                 },
                 None => (),
-            };
+            }
             Option::None
         },
     };
@@ -149,9 +149,9 @@ fn artifact_fill_constructor_fields(value: core::Constructor, definitions: Vec[c
                 for field in definition.fields {
                     value.fields.push(field.0)
                 }
-            } else {}
+            }
         }
-    } else {}
+    }
 }
 
 fn artifact_prepare_core_exprs(values: Vec[core::Expr], definitions: Vec[core::StructDef]) -> () {

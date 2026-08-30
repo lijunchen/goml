@@ -130,7 +130,7 @@ pub fn node_at(index: SyntaxIndex, offset: isize) -> Option[SyntaxNode] {
         if contains_offset(node.start, node.end, offset)
             && (best < 0 || node_width <= index.nodes[best].end - index.nodes[best].start) {
             best = candidate;
-        } else {}
+        }
     }
     if best >= 0 {
         Option::Some(index.nodes[best])

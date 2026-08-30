@@ -10,7 +10,7 @@ fn push_name(values: collections::IndexSet[string], value: string) -> () {
 fn push_mutable(values: collections::IndexMap[string, tast::Type], name: string, ty: tast::Type) -> () {
     if !values.contains(name) {
         let _ = values.insert(name, ty);
-    } else {}
+    }
 }
 
 fn collect_mutable_exprs(values: Vec[tast::Expr], result: collections::IndexMap[string, tast::Type]) -> () {
@@ -69,7 +69,7 @@ fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string,
                 match arm.guard {
                     Some(guard) => collect_mutable_expr(guard, result),
                     None => (),
-                };
+                }
                 collect_mutable_expr(arm.body, result)
             }
         },
@@ -80,7 +80,7 @@ fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string,
                     match guard {
                         Some(value) => collect_mutable_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_mutable_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
@@ -89,7 +89,7 @@ fn collect_mutable_expr(value: tast::Expr, result: collections::IndexMap[string,
                     match guard {
                         Some(value) => collect_mutable_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_mutable_expr(body, result)
                 },
                 Default { body } => collect_mutable_expr(body, result),
@@ -149,7 +149,7 @@ fn collect_mutable_pattern(
     match value {
         Var { name, is_mut, ty } => if inherited || is_mut {
             push_mutable(result, name, ty)
-        } else {},
+        },
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
             pats: args,
             ty: _,
@@ -164,11 +164,11 @@ fn collect_mutable_pattern(
                 Some(value) => match value.binding {
                     Some(name) => if inherited {
                         push_mutable(result, name, value.ty)
-                    } else {},
+                    },
                     None => (),
                 },
                 None => (),
-            };
+            }
             for item in suffix {
                 collect_mutable_pattern(item, inherited, result)
             }
@@ -176,7 +176,7 @@ fn collect_mutable_pattern(
         Alias { name, pat, ty } => {
             if inherited {
                 push_mutable(result, name, ty)
-            } else {};
+            }
             collect_mutable_pattern(pat, inherited, result)
         },
         Constant { name: _, ty: _ } | Prim { value: _, ty: _ } | Range {
@@ -209,7 +209,7 @@ fn collect_pattern_names(value: tast::Pat, result: collections::IndexSet[string]
                     None => (),
                 },
                 None => (),
-            };
+            }
             for item in suffix {
                 collect_pattern_names(item, result)
             }
@@ -283,7 +283,7 @@ fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) 
                 match arm.guard {
                     Some(guard) => collect_bound_expr(guard, result),
                     None => (),
-                };
+                }
                 collect_bound_expr(arm.body, result)
             }
         },
@@ -295,7 +295,7 @@ fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) 
                     match guard {
                         Some(value) => collect_bound_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_bound_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
@@ -304,7 +304,7 @@ fn collect_bound_expr(value: tast::Expr, result: collections::IndexSet[string]) 
                     match guard {
                         Some(value) => collect_bound_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_bound_expr(body, result)
                 },
                 Default { body } => collect_bound_expr(body, result),
@@ -408,7 +408,7 @@ fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[strin
                 match arm.guard {
                     Some(guard) => collect_reference_expr(guard, result),
                     None => (),
-                };
+                }
                 collect_reference_expr(arm.body, result)
             }
         },
@@ -419,7 +419,7 @@ fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[strin
                     match guard {
                         Some(value) => collect_reference_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_reference_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
@@ -428,7 +428,7 @@ fn collect_reference_expr(value: tast::Expr, result: collections::IndexSet[strin
                     match guard {
                         Some(value) => collect_reference_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_reference_expr(body, result)
                 },
                 Default { body } => collect_reference_expr(body, result),
@@ -550,7 +550,7 @@ fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]
                 match arm.guard {
                     Some(guard) => collect_capture_expr(guard, result),
                     None => (),
-                };
+                }
                 collect_capture_expr(arm.body, result)
             }
         },
@@ -561,7 +561,7 @@ fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]
                     match guard {
                         Some(value) => collect_capture_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_capture_expr(body, result)
                 },
                 Send { channel, value, guard, body } => {
@@ -570,7 +570,7 @@ fn collect_capture_expr(value: tast::Expr, result: collections::IndexSet[string]
                     match guard {
                         Some(value) => collect_capture_expr(value, result),
                         None => (),
-                    };
+                    }
                     collect_capture_expr(body, result)
                 },
                 Default { body } => collect_capture_expr(body, result),
@@ -630,7 +630,7 @@ fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
     for value in mutables {
         if captures.contains(value.0) {
             result.push(value)
-        } else {}
+        }
     }
     result
 }

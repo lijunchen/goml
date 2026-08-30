@@ -283,7 +283,7 @@ fn once_cell_get_or_init_item(instance: repr::TypeInstance) -> Item {
 pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[repr::Type]) -> () {
     if !missing_types.is_empty() {
         items.push(missing_base_item())
-    } else {}
+    }
 }
 
 fn unit_to_string_hook_item(key: string) -> Item {
@@ -375,7 +375,7 @@ fn integer_to_string_hook_item(key: string, ty: Type, signed: bool) -> Item {
                 else_: Option::None,
             },
         )
-    } else {};
+    }
     stmts.push(
         Stmt::Var {
             name: "buffer",
@@ -785,7 +785,7 @@ fn needs_structured_runtime_error(hooks: Vec[resources::RuntimeHook]) -> bool {
     for hook in hooks {
         if runtime_hook_uses_structured_error(hook) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -805,56 +805,56 @@ fn runtime_hook_needs_task_support(hook: resources::RuntimeHook) -> bool {
 fn emit_runtime_import_items(items: Vec[Item], required: collections::IndexSet[RuntimeImport]) -> () {
     if required.is_empty() {
         return
-    } else {};
+    }
     let imports: Vec[(string, string)] = Vec::new();
     if required.contains(RuntimeImport::Bytes) {
         imports.push(("_goml_bytes", "bytes"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Context) {
         imports.push(("_goml_context", "context"))
-    } else {};
+    }
     if required.contains(RuntimeImport::CryptoRand) {
         imports.push(("_goml_cryptorand", "crypto/rand"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Errors) {
         imports.push(("_goml_errors", "errors"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Hash) {
         imports.push(("_goml_hash", "hash"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Io) {
         imports.push(("_goml_io", "io"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Math) {
         imports.push(("_goml_math", "math"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Os) {
         imports.push(("_goml_os", "os"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Exec) {
         imports.push(("_goml_exec", "os/exec"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Filepath) {
         imports.push(("_goml_filepath", "path/filepath"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Reflect) {
         imports.push(("_goml_reflect", "reflect"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Sha256) {
         imports.push(("_goml_sha256", "crypto/sha256"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Sync) {
         imports.push(("_goml_sync", "sync"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Runtime) {
         imports.push(("_goml_runtime_pkg", "runtime"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Syscall) {
         imports.push(("_goml_syscall", "syscall"))
-    } else {};
+    }
     if required.contains(RuntimeImport::Time) {
         imports.push(("_goml_time", "time"))
-    } else {};
+    }
     items.push(Item::ImportGroup(imports))
 }
 
@@ -991,7 +991,7 @@ pub fn emit_runtime_hook_items(
         } else if intrinsic == "once_cell.new" || intrinsic == "once_cell.get_or_init" {
             require_runtime_import(required_imports, RuntimeImport::Sync);
             require_runtime_import(required_imports, RuntimeImport::Runtime)
-        } else {}
+        }
     }
     let uses_structured_error = needs_structured_runtime_error(hooks);
     if uses_structured_error {
@@ -999,11 +999,11 @@ pub fn emit_runtime_hook_items(
         require_runtime_import(required_imports, RuntimeImport::Io);
         require_runtime_import(required_imports, RuntimeImport::Os);
         require_runtime_import(required_imports, RuntimeImport::Syscall)
-    } else {};
+    }
     emit_runtime_import_items(items, required_imports);
     if intrinsics.contains("once_cell.new") || intrinsics.contains("once_cell.get_or_init") {
         items.push(once_cell_goroutine_id_item())
-    } else {};
+    }
     let mut needs_timer_support = false;
     for hook in hooks {
         match hook {
@@ -1017,27 +1017,27 @@ pub fn emit_runtime_hook_items(
         for item in std_time_timer_support_items() {
             items.push(item)
         }
-    } else {};
+    }
     let mut needs_task_support = false;
     for hook in hooks {
         if runtime_hook_needs_task_support(hook) {
             needs_task_support = true;
-        } else {}
+        }
     }
     for intrinsic in intrinsics {
         if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
             needs_task_support = true;
-        } else {}
+        }
     }
     if needs_task_support {
         for item in task_runtime_support_items() {
             items.push(item)
         }
-    } else {};
+    }
     if uses_structured_error {
         items.push(std_runtime_error_kind_item());
         items.push(std_runtime_error_raw_code_item())
-    } else {};
+    }
     for spec in resources::runtime_abi_specs() {
         if hooks.contains(spec.hook) {
             match spec.hook {
@@ -1048,11 +1048,11 @@ pub fn emit_runtime_hook_items(
                             items.push(std_time_monotonic_origin_item())
                         },
                         Env(_) | Fs(_) | Io(_) | Path(_) | Process(_) | TestingFail | Math(_) | Crypto(_) | Time(UnixNanoseconds | SleepNanoseconds | TimerNew | TimerStop) | Task(_) => (),
-                    };
+                    }
                     items.push(standard_runtime_hook_item(hook, spec.key))
                 },
             }
-        } else {}
+        }
     }
 }
 
@@ -1115,7 +1115,7 @@ fn array_runtime_items(array_ty: repr::Type) -> Vec[Item] {
             )
         },
         _ => (),
-    };
+    }
     result
 }
 
@@ -1543,7 +1543,7 @@ fn vec_runtime_items(vec_ty: repr::Type) -> Vec[Item] {
             )
         },
         _ => (),
-    };
+    }
     result
 }
 
@@ -1683,7 +1683,7 @@ fn ref_runtime_items(ref_ty: repr::Type) -> Vec[Item] {
             )
         },
         _ => (),
-    };
+    }
     result
 }
 
@@ -1761,7 +1761,7 @@ fn hashmap_option_info(
                             some_tag = index;
                         } else if variant.name == variants.1 {
                             none_tag = index;
-                        } else {};
+                        }
                         fields.push(enum_field_types(variant.fields))
                     }
                     compact_variant_fields(fields, structs)
@@ -2593,7 +2593,7 @@ fn hashmap_get_item(
         some_fields.push((compact_variant_field_name(some_tag, 0), Expr::Var { name: "value" }))
     } else {
         some_fields.push(("_0", Expr::Var { name: "value" }))
-    };
+    }
     let some_stmts: Vec[Stmt] = Vec::new();
     some_stmts.push(
         Stmt::Return {
@@ -2610,7 +2610,7 @@ fn hashmap_get_item(
     let none_fields: Vec[(string, Expr)] = Vec::new();
     if compact {
         none_fields.push(("_tag", Expr::Int { value: none_tag.to_string() }))
-    } else {};
+    }
     stmts.push(
         Stmt::Return {
             expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: none_fields }),
@@ -2659,7 +2659,7 @@ fn hashmap_option_some_expr(
         fields.push((compact_variant_field_name(some_tag, 0), value))
     } else {
         fields.push(("_0", value))
-    };
+    }
     Expr::StructLiteral {
         ty: if compact {
             option_ty
@@ -2674,7 +2674,7 @@ fn hashmap_option_none_expr(option_ty: Type, none_ty: Type, compact: bool, none_
     let fields: Vec[(string, Expr)] = Vec::new();
     if compact {
         fields.push(("_tag", Expr::Int { value: none_tag.to_string() }))
-    } else {};
+    }
     Expr::StructLiteral {
         ty: if compact {
             option_ty
@@ -2853,7 +2853,7 @@ fn hashmap_insert_missing_stmts(key: repr::Type, value: repr::Type, native_key: 
                 value: Expr::Var { name: "bucket" },
             },
         )
-    };
+    }
     stmts.push(hashmap_increment_len());
     stmts
 }
@@ -3778,7 +3778,7 @@ fn hashmap_items(
             ),
         );
         fields.push(("hashes", Type::Slice { elem: Type::Uint64 }))
-    };
+    }
     fields.push(("len", Type::Int));
     result.push(Item::Struct(StructDef { name, fields }));
     let option = hashmap_option_info(builtin, value, instances, enums, structs, function_names);
@@ -3786,7 +3786,7 @@ fn hashmap_items(
         for item in synthetic_option_items(value) {
             result.push(item)
         }
-    } else {};
+    }
     result.push(
         if native_key {
             hashmap_native_new_item(key, value)
@@ -3834,7 +3834,7 @@ fn hashmap_items(
         result.push(hashmap_remove_item(builtin, key, value));
         result.push(hashmap_contains_item(builtin, key, value));
         result.push(hashmap_entries_item(key, value))
-    };
+    }
     result
 }
 
@@ -3866,7 +3866,7 @@ fn dyn_wrapper_name(names: DynHelperNames, trait_name: string, for_ty: repr::Typ
     for entry in names.wrappers {
         if entry.0 == trait_name && entry.1 == key && entry.2 == method {
             result = entry.3;
-        } else {}
+        }
     }
     result
 }
@@ -3881,7 +3881,7 @@ pub fn dyn_factory_name(names: DynHelperNames, trait_name: string, for_ty: repr:
     for entry in names.factories {
         if entry.0 == trait_name && entry.1 == key {
             result = entry.2;
-        } else {}
+        }
     }
     result
 }
@@ -3897,7 +3897,7 @@ fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
     for value in values {
         if value.name == expected {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -3907,7 +3907,7 @@ fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
     for index in 0..value.byte_len() {
         if separator < 0 && value.byte_get(index) == b'#' {
             separator = index;
-        } else {}
+        }
     }
     if separator < 0 {
         (fallback, value)
@@ -3927,8 +3927,8 @@ fn collect_dyn_call_method(result: Vec[DynMethod], trait_name: string, value: an
                     params.push(anf::imm_type(arg))
                 }
                 result.push(DynMethod { name: parts.1, dispatch_trait: parts.0, params, ret_ty })
-            } else {}
-        } else {},
+            }
+        },
         _ => (),
     }
 }
@@ -3985,7 +3985,7 @@ fn dyn_methods(builtin: tast::BuiltinContract, functions: Vec[anf::Function], tr
                             ret_ty: function.ret_ty,
                         },
                     )
-                } else {}
+                }
             },
             _ => (),
         }
@@ -4025,7 +4025,7 @@ fn dyn_methods(builtin: tast::BuiltinContract, functions: Vec[anf::Function], tr
                 ret_ty: repr::Type::String,
             },
         )
-    } else {};
+    }
     result
 }
 
@@ -4034,7 +4034,7 @@ fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> isiz
     for coercion in coercions {
         if raw_dyn_factory_name(coercion.trait_name, coercion.for_ty) == expected {
             count = count + 1;
-        } else {}
+        }
     }
     count
 }
@@ -4050,7 +4050,7 @@ fn dyn_wrapper_name_count(
         for method in dyn_methods(builtin, functions, coercion.trait_name) {
             if raw_dyn_wrapper_name(coercion.trait_name, coercion.for_ty, method.name) == expected {
                 count = count + 1;
-            } else {}
+            }
         }
     }
     count
@@ -4074,7 +4074,7 @@ pub fn build_dyn_helper_names(
                     go_hashed_ident("fn", "dyn_vtable#" + coercion.trait_name + "#" + key),
                 ),
             )
-        } else {};
+        }
         for method in dyn_methods(builtin, functions, coercion.trait_name) {
             let raw_wrapper = raw_dyn_wrapper_name(
                 coercion.trait_name,
@@ -4093,7 +4093,7 @@ pub fn build_dyn_helper_names(
                         ),
                     ),
                 )
-            } else {}
+            }
         }
     }
     DynHelperNames { factories, wrappers }
@@ -4236,7 +4236,7 @@ fn dyn_coercion_items(
             )
         } else {
             wrapper_stmts.push(Stmt::Return { expr: Option::Some(wrapper_call) })
-        };
+        }
         result.push(
             Item::Function(
                 Function {
@@ -4305,7 +4305,7 @@ pub fn emit_builtin_runtime_items(
             && instance.args.len() == 1 {
             items.push(once_cell_new_item(instance));
             items.push(once_cell_get_or_init_item(instance))
-        } else {}
+        }
     }
     for ty in types {
         match repr::resolve_type(ty) {
@@ -4360,7 +4360,7 @@ pub fn emit_builtin_runtime_items(
                 }
                 if include_option {
                     let _ = options.insert(option);
-                } else {}
+                }
             },
             _ => (),
         }
@@ -4394,7 +4394,7 @@ pub fn emit_dyn_runtime_items(
                     for item in dyn_type_items(name, dyn_methods(builtin, functions, name)) {
                         items.push(item)
                     }
-                } else {}
+                }
             },
             _ => (),
         }

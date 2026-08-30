@@ -57,9 +57,9 @@ fn comptime_derive_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxT
                 if (first >= b'A' && first <= b'Z') || (first >= b'a' && first <= b'z')
                     || first == b'_' {
                     result.push(token)
-                } else {}
-            } else {}
-        } else {};
+                }
+            }
+        }
         index = index + 1;
     }
     result
@@ -83,8 +83,8 @@ fn comptime_derive_paths(value: Analysis, canonical: string) -> Vec[string] {
                     if seen.insert(reexport.1) {
                         result.push(reexport.1);
                         pending.push_back(reexport.1)
-                    } else {}
-                } else {}
+                    }
+                }
             }
         }
     }
@@ -103,7 +103,7 @@ fn comptime_derive_targets(value: Analysis, canonical: string) -> Vec[ComptimeDe
                     && (entry.public || module.package_name == value.package_name
                         || module.package_name == "builtin") {
                     result.push(ComptimeDeriveTarget { module, entry })
-                } else {}
+                }
             }
         }
     }
@@ -113,7 +113,7 @@ fn comptime_derive_targets(value: Analysis, canonical: string) -> Vec[ComptimeDe
 fn comptime_derive_targets_at(value: Analysis, offset: isize) -> Vec[ComptimeDeriveTarget] {
     if !derive_attribute_at(value, offset) {
         return Vec::new()
-    } else {};
+    }
     match node_at_kind(value.syntax, offset, cst::NodeKind::ATTRIBUTE) {
         Some(node) => {
             let identifiers = comptime_derive_identifiers(value, node);
@@ -197,8 +197,8 @@ fn append_comptime_derive_completions(
                         },
                         prefix,
                     )
-                } else {}
+                }
             }
-        } else {}
+        }
     }
 }

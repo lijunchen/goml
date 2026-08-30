@@ -67,7 +67,7 @@ fn btree_split_child[K: cmp::Ord, V](parent: BTreeNode[K, V], index: isize) -> (
             position += 1;
         }
         child.children.truncate(BTREE_MIN_DEGREE);
-    } else {};
+    }
     parent.keys.insert(index, middle_key);
     parent.values.insert(index, middle_value);
     parent.children.insert(index + 1, sibling)
@@ -93,8 +93,8 @@ fn btree_insert_non_full[K: cmp::Ord, V](node: BTreeNode[K, V], key: K, value: V
                 return Option::Some(previous)
             } else if ordering.is_gt() {
                 index += 1;
-            } else {}
-        } else {};
+            }
+        }
         btree_insert_non_full(node.children[index], key, value)
     }
 }
@@ -126,13 +126,13 @@ fn btree_borrow_from_previous[K, V](parent: BTreeNode[K, V], index: isize) -> ()
             Some(value) => child.children.insert(0, value),
             None => (),
         }
-    } else {};
+    }
     match sibling.keys.pop() {
         Some(value) => {
             parent.keys[index - 1] = value;
         },
         None => (),
-    };
+    }
     match sibling.values.pop() {
         Some(value) => {
             parent.values[index - 1] = value;
@@ -148,7 +148,7 @@ fn btree_borrow_from_next[K, V](parent: BTreeNode[K, V], index: isize) -> () {
     child.values.push(parent.values[index]);
     if !child.leaf {
         child.children.push(sibling.children.remove(0));
-    } else {};
+    }
     parent.keys[index] = sibling.keys.remove(0);
     parent.values[index] = sibling.values.remove(0);
 }
@@ -209,7 +209,7 @@ fn btree_remove_from_node[K: cmp::Ord, V](node: BTreeNode[K, V], key: K) -> Opti
                 let _ = btree_merge_children(node, index - 1);
                 index -= 1;
             }
-        } else {};
+        }
         btree_remove_from_node(node.children[index], key)
     }
 }
@@ -280,7 +280,7 @@ impl[K: cmp::Ord, V] BTreeMap[K, V] {
                 };
                 if result.is_none() {
                     self.len.set(self.len.get() + 1)
-                } else {};
+                }
                 result
             },
         }
@@ -293,14 +293,14 @@ impl[K: cmp::Ord, V] BTreeMap[K, V] {
                 let result = btree_remove_from_node(root, key);
                 if result.is_some() {
                     self.len.set(self.len.get() - 1);
-                } else {};
+                }
                 if root.keys.is_empty() {
                     if root.leaf {
                         self.root.set(Option::None)
                     } else {
                         self.root.set(Option::Some(root.children[0]))
                     }
-                } else {};
+                }
                 result
             },
         }
@@ -330,12 +330,12 @@ impl[K: cmp::Ord, V] BTreeMap[K, V] {
         match self.root.get() {
             Some(root) => stack.push(BTreeIterFrame { node: root, position: 0 }),
             None => (),
-        };
+        }
         FnIterator::from_fn(
             || loop {
                 if stack.is_empty() {
                     return Option::None
-                } else {};
+                }
                 let top = stack.len() - 1;
                 let frame = stack[top];
                 if frame.node.leaf {

@@ -51,7 +51,7 @@ fn parser_new_with_mode(source: bytes::Bytes, retain_comments: bool, skip_functi
         for value in comments.nodes {
             comment_nodes.push(value)
         }
-    } else {};
+    }
     Parser {
         tokens: scanned.tokens,
         cursor: Ref::new(0),
@@ -85,7 +85,7 @@ fn significant_index(parser: Parser, distance: isize) -> isize {
         } else {
             return parser.tokens.len()
         }
-    } else {};
+    }
     let mut remaining = distance;
     while index < parser.tokens.len() {
         if token::equal(parser.tokens[index].kind, token::Kind::Comment) {
@@ -142,7 +142,7 @@ fn at_any(parser: Parser, kinds: Vec[token::Kind]) -> bool {
     for kind in kinds {
         if token::equal(current_kind, kind) {
             found.set(true)
-        } else {}
+        }
     }
     found.get()
 }
@@ -161,7 +161,7 @@ fn advance(parser: Parser) -> token::Token {
     if index < parser.tokens.len() {
         parser.cursor.set(index + 1);
         parser.previous_end.set(result.end)
-    } else {};
+    }
     parser.fuel.set(CURSOR_FUEL);
     result
 }
@@ -195,7 +195,7 @@ fn report(parser: Parser, offset: isize, message: string) -> () {
     } else if !parser.diagnostic_limit_hit.get() {
         parser.diagnostics.push(diagnostic::make("too many parser diagnostics", offset));
         parser.diagnostic_limit_hit.set(true)
-    } else {}
+    }
 }
 
 fn enter_nesting(parser: Parser) -> bool {
@@ -216,7 +216,7 @@ fn enter_nesting(parser: Parser) -> bool {
 fn leave_nesting(parser: Parser) -> () {
     if parser.nesting.get() > 0 {
         parser.nesting.set(parser.nesting.get() - 1)
-    } else {}
+    }
 }
 
 fn ensure_progress(parser: Parser, before: isize, context: string) -> bool {
@@ -238,7 +238,7 @@ fn recover_until(parser: Parser, recovery: Vec[token::Kind]) -> () {
     }
     if attempts == CURSOR_FUEL && !eof(parser) {
         report(parser, current(parser).start, "parser recovery limit reached")
-    } else {}
+    }
 }
 
 fn consume_semicolon(parser: Parser) -> () {
@@ -260,12 +260,12 @@ fn consume_semicolon(parser: Parser) -> () {
             )
         } else {
             report(parser, found.start, "expected semicolon or newline");
-        };
+        }
         if !eof(parser) && !at(parser, token::Kind::Semicolon) && !at(parser, token::Kind::Rparen)
             && !at(parser, token::Kind::Rbrace) {
             let _ = advance(parser);
-        } else {}
-    } else {}
+        }
+    }
 }
 
 fn compare_diagnostic(left: diagnostic::Diagnostic, right: diagnostic::Diagnostic) -> isize {

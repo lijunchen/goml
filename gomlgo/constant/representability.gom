@@ -83,7 +83,7 @@ fn rational_binary_exponent(value: BigRat) -> isize {
     };
     if compared < 0 {
         exponent -= 1;
-    } else {};
+    }
     exponent
 }
 
@@ -97,7 +97,7 @@ fn rounded_rational(
         return Option::Some(rational_zero())
     } else if !rational_fits_float(value, precision, maximum_exponent) {
         return Option::None
-    } else {};
+    }
     let absolute = rational_abs(value);
     let exponent = rational_binary_exponent(absolute);
     let scale = if exponent < minimum_exponent {

@@ -10,7 +10,7 @@ fn source_named(values: Vec[checker::SourceFile], name: string) -> bool {
     for value in values {
         if path::file_name(value.name) == Option::Some(name) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -27,7 +27,7 @@ fn loads_source_dependencies_with_platform_selection() -> () {
     for pkg in result.world.packages {
         if pkg.path == "example/q" {
             dependency = Option::Some(pkg.id);
-        } else {}
+        }
     }
     let dependency = testing::expect_some(dependency, "missing source dependency");
     testing::assert(result.world.packages[dependency.value].complete);
@@ -96,7 +96,7 @@ fn evaluates_plus_build_and_custom_constraints() -> () {
             randomized = true;
         } else if tag == "goexperiment.greenteagc" {
             green_tea = true;
-        } else {}
+        }
     }
     testing::assert(randomized);
     testing::assert(green_tea)

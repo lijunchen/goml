@@ -68,7 +68,7 @@ fn artifact_json_enum_def(
             Vec::from_array([variants.0, variants.1]),
         ),
         None => wire::artifact_json_null(writer),
-    };
+    }
     wire::artifact_json_name(writer, "variants");
     wire::artifact_json_begin_array(writer);
     for variant in value.variants {
@@ -90,7 +90,7 @@ fn artifact_json_enum_def(
                 artifact_json_type_pairs(writer, context, fields);
                 wire::artifact_json_end_object(writer)
             },
-        };
+        }
         wire::artifact_json_end_object(writer)
     }
     wire::artifact_json_end_array(writer);
@@ -255,7 +255,7 @@ fn artifact_json_inherent_impl_key(
             wire::artifact_json_name(writer, "Constr");
             wire::artifact_json_string(writer, value)
         },
-    };
+    }
     wire::artifact_json_end_object(writer)
 }
 
@@ -397,7 +397,7 @@ fn artifact_json_interface_hash_view(
         wire::artifact_json_number(writer, "23");
         wire::artifact_json_name(writer, "compiler_abi");
         wire::artifact_json_number(writer, "5")
-    } else {};
+    }
     wire::artifact_json_name(writer, "package");
     wire::artifact_json_string(writer, value.package_name);
     wire::artifact_json_name(writer, "exports");
@@ -408,7 +408,7 @@ fn artifact_json_interface_hash_view(
     match value.comptime {
         Some(value) => artifact_json_comptime_unit(writer, value, true),
         None => wire::artifact_json_null(writer),
-    };
+    }
     wire::artifact_json_name(writer, "deps");
     artifact_json_string_map(writer, value.deps);
     wire::artifact_json_end_object(writer)
@@ -474,7 +474,7 @@ pub fn artifact_json_interface_unit(
     match value.comptime {
         Some(value) => artifact_json_comptime_unit(writer, value, false),
         None => wire::artifact_json_null(writer),
-    };
+    }
     wire::artifact_json_name(writer, "deps");
     artifact_json_string_map(writer, value.deps);
     wire::artifact_json_name(writer, "interface_hash");

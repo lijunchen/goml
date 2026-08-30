@@ -34,7 +34,7 @@ fn has_diagnostic(values: Vec[Diagnostic], expected: string) -> bool {
     for value in values {
         if value.message == expected {
             found.set(true)
-        } else {}
+        }
     }
     found.get()
 }
@@ -44,7 +44,7 @@ fn has_diagnostic_containing(values: Vec[Diagnostic], expected: string) -> bool 
     for value in values {
         if value.message.contains(expected) {
             found.set(true)
-        } else {}
+        }
     }
     found.get()
 }
@@ -56,7 +56,7 @@ fn assert_single_unreachable_code_warning(label: string, values: Vec[Diagnostic]
             messages += "\n" + value.message;
         }
         testing::fail(messages)
-    } else {};
+    }
     testing::assert_eq(values[0].message, "unreachable_code: unreachable code")
 }
 
@@ -88,7 +88,7 @@ fn validates_comptime_derive_capability_boundaries() -> () {
             None => testing::fail("expected named derive export"),
         },
         _ => testing::fail("expected named derive handler"),
-    };
+    }
     let private_named = checked_diagnostics(
         "#[comptime_derive(Label)] fn handler(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") }",
     );
@@ -217,11 +217,11 @@ fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> () {
             match diagnostic.span {
                 Some(span) => testing::assert_eq(span.start, expected_call),
                 None => testing::fail("expected runtime-only call span"),
-            };
+            }
             testing::assert_eq(diagnostic.secondary_labels.len(), 1);
             testing::assert_eq(diagnostic.secondary_labels[0].span.start, expected_attribute);
             found.set(true)
-        } else {}
+        }
     }
     testing::assert(found.get())
 }
@@ -248,10 +248,10 @@ fn reports_compile_error_from_comptime() -> () {
                     testing::assert_eq(span.start, expected_start)
                 },
                 None => testing::fail("expected precise comptime failure span"),
-            };
+            }
             testing::assert_eq(diagnostic.secondary_labels.len(), 1);
             found.set(true)
-        } else {}
+        }
     }
     testing::assert(found.get())
 }
@@ -351,7 +351,7 @@ fn environment_collection_preserves_hir_trait_scope() -> () {
     match package_signatures(file) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert_eq(file.use_traits.len(), 0)
 }
 
@@ -420,14 +420,14 @@ fn records_typecheck_query_facts() -> () {
             match resolve_type(params.get(0)) {
                 Int32 => (),
                 _ => testing::fail("expected call parameter type"),
-            };
+            }
             match resolve_type(ret_ty) {
                 Int32 => (),
                 _ => testing::fail("expected call return type"),
             }
         },
         _ => testing::fail("expected callable type"),
-    };
+    }
     let local_reference = Ref::new(false);
     let callable_reference = Ref::new(false);
     for reference in result.typeck_results.references {
@@ -476,7 +476,7 @@ fn merges_typecheck_query_facts_for_package_files() -> () {
             value_facts.set(value_facts.get() + 1)
         } else if fact.source_path == "answer.gom" {
             answer_facts.set(answer_facts.get() + 1)
-        } else {}
+        }
     }
     testing::assert(value_facts.get() > 0);
     testing::assert(answer_facts.get() > 0)
@@ -510,7 +510,7 @@ fn checks_cross_file_package_definitions() -> () {
     match implicit_builtin_dependency_environment() {
         Ok(environment) => dependencies.push(environment),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match implicit_prelude_hir_files() {
         Ok(files) => match dependency_environments(files) {
             Ok(values) => for environment in values {
@@ -519,7 +519,7 @@ fn checks_cross_file_package_definitions() -> () {
             Err(error) => testing::fail(error.to_string()),
         },
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let checked = check_package_files_for_link_with_environments(hir_files, dependencies);
     testing::assert_eq(checked.diagnostics.len(), 0);
     match checked.tast {
@@ -652,7 +652,7 @@ fn resolves_generic_functions_from_package_interfaces() -> () {
                 match resolve_type(params.get(0)) {
                     String => (),
                     _ => testing::fail("expected string package parameter"),
-                };
+                }
                 match resolve_type(ret_ty) {
                     String => (),
                     _ => testing::fail("expected string package return"),
@@ -744,7 +744,7 @@ fn permits_empty_marker_dyn_go_ffi_values() -> () {
     );
     if !diagnostics.is_empty() {
         testing::fail(diagnostics[0].message)
-    } else {}
+    }
 }
 
 #[test]
@@ -831,7 +831,7 @@ fn permits_runtime_externs_in_builtin_sources() -> () {
     match lowered.hir {
         Some(file) => files.push(file),
         None => testing::fail("expected builtin HIR"),
-    };
+    }
     let checked = check_builtin_package_files(files);
     testing::assert_eq(checked.diagnostics.len(), 0)
 }
@@ -851,7 +851,7 @@ fn rejects_runtime_externs_in_prelude_sources() -> () {
     match lowered.hir {
         Some(file) => files.push(file),
         None => testing::fail("expected prelude HIR"),
-    };
+    }
     let checked = check_package_files_for_link_with_dependencies(files, Vec::new());
     testing::assert(
         has_diagnostic(checked.diagnostics, "extern output is not permitted in this source"),
@@ -1106,7 +1106,7 @@ fn rejects_non_function_go_operands() -> () {
     match result.diagnostics.get(0).severity {
         Warning => (),
         Error => testing::fail("expected unstructured go warning"),
-    };
+    }
     testing::assert_eq(
         result.diagnostics.get(1).message,
         "`go` expects a value of type () -> (), found never",
@@ -1706,7 +1706,7 @@ fn lowers_collection_from_array_to_specialized_intrinsic() -> () {
                 match params[0] {
                     Array { len, elem: _ } => testing::assert_eq(len, 2),
                     _ => testing::fail("expected specialized array parameter"),
-                };
+                }
                 match args[0] {
                     Array { items, ty: _ } => testing::assert_eq(items.len(), 2),
                     _ => testing::fail("expected array argument"),
@@ -1842,7 +1842,7 @@ fn reports_unimported_package_members_canonically() -> () {
     match result.diagnostics.get(0).span {
         None => (),
         Some(_) => testing::fail("expected spanless inference diagnostic"),
-    };
+    }
     testing::assert_eq(result.diagnostics.get(0).source_path, "");
     testing::assert_eq(
         result.diagnostics.get(1).message,
@@ -1891,7 +1891,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> () {
             _ => testing::fail("expected external () constructor"),
         },
         _ => testing::fail("expected zero function"),
-    };
+    }
     match file.items.get(1) {
         Function(value) => match value.body.tail {
             Some(Constr { constructor, args: values, ty: Con { name } }) => {
@@ -1900,7 +1900,7 @@ fn resolves_enum_constructors_from_package_interfaces() -> () {
                 match resolve_type(expr_type(values.get(0))) {
                     Int32 => (),
                     _ => testing::fail("expected i32 constructor argument"),
-                };
+                }
                 testing::assert_eq(name, "vendor::api::Choice")
             },
             _ => testing::fail("expected external payload constructor"),
@@ -1996,7 +1996,7 @@ fn erases_indexed_assignment_read_types() -> () {
                 match resolve_type(target_ty) {
                     Unit => (),
                     _ => testing::fail("expected () assignment target read type"),
-                };
+                }
                 match resolve_type(expr_type(value)) {
                     String => (),
                     _ => testing::fail("expected string assignment value type"),
@@ -2017,11 +2017,11 @@ fn infers_shift_operands_independently() -> () {
                 match resolve_type(expr_type(left)) {
                     Uint8 => (),
                     _ => testing::fail("expected u8 left operand"),
-                };
+                }
                 match resolve_type(expr_type(right)) {
                     Int => (),
                     _ => testing::fail("expected isize shift count"),
-                };
+                }
                 match resolve_type(ty) {
                     Uint8 => (),
                     _ => testing::fail("expected u8 shift result"),
@@ -2045,7 +2045,7 @@ fn infers_generic_function_calls() -> () {
                 match resolve_type(ty) {
                     String => (),
                     _ => testing::fail("expected string call result"),
-                };
+                }
                 match function {
                     Callable { callable: Function(name), ty: Func { params, ret_ty } } => {
                         testing::assert_eq(name, "id");
@@ -2053,7 +2053,7 @@ fn infers_generic_function_calls() -> () {
                         match resolve_type(params.get(0)) {
                             String => (),
                             _ => testing::fail("expected instantiated string parameter"),
-                        };
+                        }
                         match resolve_type(ret_ty) {
                             String => (),
                             _ => testing::fail("expected instantiated string return"),
@@ -2083,7 +2083,7 @@ fn resolves_reordered_result_try_tags() -> () {
                         }
                     },
                     _ => testing::fail("expected success constructor pattern"),
-                };
+                }
                 match arms.get(1).pat {
                     Constr { constructor, args: _, ty: _ } => {
                         match constructor.tag {
@@ -2092,7 +2092,7 @@ fn resolves_reordered_result_try_tags() -> () {
                         }
                     },
                     _ => testing::fail("expected residual constructor pattern"),
-                };
+                }
                 match arms.get(1).body {
                     Return { expr: Some(Constr { constructor, args: _, ty: _ }), ty: _ } => {
                         match constructor.tag {
@@ -2120,11 +2120,11 @@ fn checks_closures_with_call_context() -> () {
                     match resolve_type(closure_ty) {
                         Func { params: _, ret_ty: String } => (),
                         _ => testing::fail("expected contextual closure return"),
-                    };
+                    }
                     match (resolve_type(params.get(0).ty), resolve_type(params.get(1).ty)) {
                         (Int, String) => (),
                         _ => testing::fail("expected contextual closure parameters"),
-                    };
+                    }
                     match body {
                         Binary {
                             op: _,
@@ -2182,7 +2182,7 @@ fn infers_trait_goals_from_function_calls() -> () {
                     }
                 },
                 _ => testing::fail("expected inferred vector binding"),
-            };
+            }
             match value.body.tail {
                 Some(Call {
                     func: Callable { callable: Function(name), ty: Func { params, ret_ty: Int } },
@@ -2224,7 +2224,7 @@ fn checks_positional_struct_constructors() -> () {
             _ => testing::fail("expected positional Point constructor"),
         },
         _ => testing::fail("expected point function"),
-    };
+    }
     match file.items.get(1) {
         Function(value) => match value.body.tail {
             Some(Constr { constructor, args: values, ty: App { ty: Con { name: owner }, args } }) => {
@@ -2253,7 +2253,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> () {
                 match ty {
                     Int32 => (),
                     _ => testing::fail("expected i32 match result"),
-                };
+                }
                 match arms.get(0).pat {
                     Constr { constructor, args, ty: Con { name } } => {
                         testing::assert_eq(constructor.name, "Choice::Some");
@@ -2261,7 +2261,7 @@ fn checks_enum_patterns_and_default_integer_literals() -> () {
                         testing::assert_eq(name, "Choice")
                     },
                     _ => testing::fail("expected constructor pattern"),
-                };
+                }
                 match arms.get(1).body {
                     Prim { value: Int { value }, ty: literal_ty } => {
                         testing::assert_eq(value, "0");
@@ -2296,7 +2296,7 @@ fn resolves_contextual_enum_patterns_from_expected_types() -> () {
                     some.set(true)
                 } else if constructor.name == "Result::Ok" {
                     ok.set(true)
-                } else {}
+                }
             },
             _ => (),
         }
@@ -2345,7 +2345,7 @@ fn resolves_associated_types_and_bound_methods() -> () {
             _ => testing::fail("expected bound trait method call"),
         },
         _ => testing::fail("expected read function"),
-    };
+    }
     match file.items.get(2) {
         Function(value) => match value.body.tail {
             Some(Call {
@@ -2476,18 +2476,18 @@ fn specializes_array_builtin_lengths() -> () {
                     match resolve_type(params.get(0)) {
                         Array { len: 2, elem: Int32 } => (),
                         _ => testing::fail("expected specialized array.set length"),
-                    };
+                    }
                     match resolve_type(ret_ty) {
                         Array { len: 2, elem: Int32 } => (),
                         _ => testing::fail("expected specialized array.set return length"),
-                    };
+                    }
                     match resolve_type(ty) {
                         Array { len: 2, elem: Int32 } => (),
                         _ => testing::fail("expected specialized array.set result length"),
                     }
                 },
                 _ => testing::fail("expected array.set call"),
-            };
+            }
             match value.body.tail {
                 Some(Call {
                     func: Callable { callable: Intrinsic(name), ty: Func { params, ret_ty: Int32 } },
@@ -2593,7 +2593,7 @@ fn types_control_flow_member_subexpressions_as_unit() -> () {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
                         (Int32, Unit) => (),
                         _ => testing::fail("expected () control flow expression type"),
-                    };
+                    }
                     if index == 1 {
                         match expression {
                             Index {
@@ -2603,7 +2603,7 @@ fn types_control_flow_member_subexpressions_as_unit() -> () {
                             } => testing::assert_eq(value, "0"),
                             _ => testing::fail("expected preserved index expression"),
                         }
-                    } else {}
+                    }
                 },
                 _ => testing::fail("expected typed control flow binding"),
             },
@@ -2786,7 +2786,7 @@ fn normalizes_and_escapes_char_literals() -> () {
     match parse_char_literal("\\u0041") {
         Some(value) => testing::assert(value == 'A'),
         None => testing::fail("expected unicode char literal"),
-    };
+    }
     testing::assert_eq(primitive_text(Primitive::Char { value: 'A' }), "'A'");
     testing::assert_eq(primitive_text(Primitive::Char { value: '\n' }), "'\\n'");
     testing::assert_eq(primitive_text(Primitive::Char { value: '\\' }), "'\\\\'")
@@ -2805,7 +2805,7 @@ fn resolves_generic_trait_associated_applications() -> () {
                     value: Call { func: _, args: _, ty: String },
                 } => (),
                 _ => testing::fail("expected string associated output"),
-            };
+            }
             match value.body.stmts.get(1) {
                 Let {
                     is_mut: _,
@@ -2813,7 +2813,7 @@ fn resolves_generic_trait_associated_applications() -> () {
                     value: Call { func: _, args: _, ty: Int32 },
                 } => (),
                 _ => testing::fail("expected i32 associated output"),
-            };
+            }
             match value.body.stmts.get(2) {
                 Let {
                     is_mut: _,
@@ -2846,13 +2846,13 @@ fn resolves_trait_methods_from_call_context() -> () {
                 match reference.args.get(0) {
                     Param { name: arg } => testing::assert_eq(arg, "T"),
                     _ => testing::fail("expected contextual trait argument"),
-                };
+                }
                 testing::assert_eq(result, "T")
             },
             _ => testing::fail("expected contextual bound method"),
         },
         _ => testing::fail("expected invoke function"),
-    };
+    }
     match file.items.get(8) {
         Function(value) => {
             match value.body.stmts.get(0) {
@@ -2862,7 +2862,7 @@ fn resolves_trait_methods_from_call_context() -> () {
                     value: Call { func: _, args: _, ty: String },
                 } => (),
                 _ => testing::fail("expected integer overload"),
-            };
+            }
             match value.body.stmts.get(1) {
                 Let {
                     is_mut: _,
@@ -2870,7 +2870,7 @@ fn resolves_trait_methods_from_call_context() -> () {
                     value: Call { func: _, args: _, ty: String },
                 } => (),
                 _ => testing::fail("expected string overload"),
-            };
+            }
             match value.body.stmts.get(2) {
                 Let {
                     is_mut: _,
@@ -2878,7 +2878,7 @@ fn resolves_trait_methods_from_call_context() -> () {
                     value: Call { func: _, args: _, ty: String },
                 } => (),
                 _ => testing::fail("expected string return overload"),
-            };
+            }
             match value.body.stmts.get(3) {
                 Let {
                     is_mut: _,
@@ -2886,7 +2886,7 @@ fn resolves_trait_methods_from_call_context() -> () {
                     value: Call { func: _, args: _, ty: Int32 },
                 } => (),
                 _ => testing::fail("expected i32 return overload"),
-            };
+            }
             match value.body.stmts.get(4) {
                 Let {
                     is_mut: _,
@@ -2925,7 +2925,7 @@ fn resolves_builtin_for_iterator_types() -> () {
                     }
                 },
                 _ => testing::fail("expected vector for loop"),
-            };
+            }
             match value.body.stmts.get(1) {
                 Expr {
                     expr: For {
@@ -3014,7 +3014,7 @@ fn accepts_builtin_into_iterator_predicates() -> () {
                         testing::assert_eq(reference.name, "IntoIterator")
                     },
                     _ => testing::fail("expected IntoIterator predicate"),
-                };
+                }
                 match value.predicates.get(1) {
                     Equality {
                         lhs: Projection {
@@ -3029,7 +3029,7 @@ fn accepts_builtin_into_iterator_predicates() -> () {
                         testing::assert_eq(reference.name, "IntoIterator")
                     },
                     _ => testing::fail("expected explicit Item equality"),
-                };
+                }
                 match value.predicates.get(2) {
                     Equality {
                         lhs: Projection {
@@ -3057,7 +3057,7 @@ fn accepts_builtin_into_iterator_predicates() -> () {
                         testing::assert_eq(iterator.name, "Iterator")
                     },
                     _ => testing::fail("expected implied Item equality"),
-                };
+                }
                 match value.predicates.get(3) {
                     Trait {
                         for_ty: Projection {
@@ -3210,7 +3210,7 @@ fn rounds_float32_literals() -> () {
             _ => testing::fail("expected rounded inferred f32 literal"),
         },
         _ => testing::fail("expected inferred function"),
-    };
+    }
     match file.items.get(1) {
         Function(value) => match value.body.tail {
             Some(Prim { value: Float { value: literal }, ty: Float32 }) => {
@@ -3219,7 +3219,7 @@ fn rounds_float32_literals() -> () {
             _ => testing::fail("expected rounded explicit f32 literal"),
         },
         _ => testing::fail("expected explicit function"),
-    };
+    }
     let generic = checked_file(
         "fn identity[T](value: T) -> T { value } fn inferred() -> f32 { identity(3.14) }",
     );
@@ -3323,7 +3323,7 @@ fn checks_exact_float_literals_in_integer_patterns() -> () {
             _ => testing::fail("expected match expression"),
         },
         _ => testing::fail("expected classify function"),
-    };
+    }
     let invalid = checked_diagnostics(
         "fn fractional(value: i64) -> bool { match value { 1.5 => true, _ => false } } fn precise(value: i64) -> bool { match value { 1.0000000000000001 => true, _ => false } } fn tiny(value: i64) -> bool { match value { 1e-999999 => true, _ => false } } fn signed_over(value: i64) -> bool { match value { 9223372036854775808.0 => true, _ => false } } fn unsigned_over(value: u64) -> bool { match value { 18446744073709551616.0 => true, _ => false } } fn huge(value: i64) -> bool { match value { 1e999999 => true, _ => false } }",
     );
@@ -3380,7 +3380,7 @@ fn resolves_supertraits_and_implied_predicates() -> () {
                 match reference.args.get(0) {
                     Param { name: arg } => testing::assert_eq(arg, "T"),
                     _ => testing::fail("expected inherited trait argument"),
-                };
+                }
                 testing::assert_eq(name, "parent");
                 testing::assert_eq(result, "T")
             },
@@ -3473,7 +3473,7 @@ fn warns_for_unstructured_go_and_honors_allow_attribute() -> () {
     match diagnostics.get(0).severity {
         Warning => (),
         Error => testing::fail("expected unstructured go warning"),
-    };
+    }
     let allowed = checked_diagnostics("#[allow(unstructured_go)] fn main() -> () { go || {}; }");
     testing::assert_eq(allowed.len(), 0)
 }
@@ -3485,7 +3485,7 @@ fn warns_for_unreachable_code_and_honors_allow_attribute() -> () {
     match direct[0].severity {
         Warning => (),
         Error => testing::fail("expected unreachable code warning"),
-    };
+    }
     testing::assert_eq(direct[0].secondary_labels.len(), 1);
     testing::assert_eq(direct[0].secondary_labels[0].message, "control flow exits here");
     let branches = checked_diagnostics(
@@ -3545,7 +3545,7 @@ fn warns_for_unused_private_functions_across_package_files() -> () {
         match diagnostic.severity {
             DiagnosticSeverity::Warning => (),
             DiagnosticSeverity::Error => testing::fail(diagnostic.message),
-        };
+        }
         testing::assert(diagnostic.message.starts_with("unused_function: function "));
         testing::assert_eq(diagnostic.source_path, "helpers.gom");
         match diagnostic.span {

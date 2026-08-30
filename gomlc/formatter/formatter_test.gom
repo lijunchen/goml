@@ -19,7 +19,7 @@ fn token_kind_signature(source: string, expected: lexer::TokenKind) -> string {
         if lexer::token_kind_equal(token.kind, expected) {
             output.write_string(lexer::encode_text_hex(token.text));
             output.write_string("\n")
-        } else {}
+        }
     }
     output.finish()
 }
@@ -39,7 +39,7 @@ fn literal_signature(source: string) -> string {
             output.write_string(":");
             output.write_string(lexer::encode_text_hex(token.text));
             output.write_string("\n")
-        } else {}
+        }
     }
     output.finish()
 }
@@ -51,8 +51,8 @@ fn has_trailing_space(source: string) -> bool {
             let previous = source.byte_get(index - 1);
             if previous == 32 || previous == 9 {
                 return true
-            } else {}
-        } else {}
+            }
+        }
     }
     false
 }
@@ -61,7 +61,7 @@ fn has_carriage_return(source: string) -> bool {
     for index in range(0, source.byte_len()) {
         if source.byte_get(index) == 13 {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -102,7 +102,7 @@ fn assert_format_invariants(source: string, formatted: string) -> () {
     match format_source(formatted) {
         Ok(again) => testing::assert_eq(again, formatted),
         Err(_) => testing::fail("second format failed"),
-    };
+    }
     testing::assert_eq(token_signature(formatted), token_signature(source));
     testing::assert_eq(literal_signature(formatted), literal_signature(source));
     testing::assert_eq(
@@ -150,9 +150,9 @@ fn formatter_goldens_match() -> () {
                 }
             } else {
                 testing::assert_eq(formatted, read_fixture(golden_path))
-            };
+            }
             assert_format_invariants(source, formatted)
-        } else {}
+        }
     }
 }
 
@@ -266,7 +266,7 @@ fn normalizes_line_endings_and_empty_input() -> () {
     match format_source("") {
         Ok(formatted) => testing::assert_eq(formatted, ""),
         Err(_) => testing::fail("empty format failed"),
-    };
+    }
     match format_source("fn main() -> () {\r\n    ()\r\n}\r\n\r\n") {
         Ok(formatted) => {
             testing::assert(!has_carriage_return(formatted));

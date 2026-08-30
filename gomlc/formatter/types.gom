@@ -17,9 +17,9 @@ fn direct_delimiter_tokens(node: LocatedNode) -> Option[(LocatedToken, LocatedTo
                 if delimiter {
                     if first.get().is_none() {
                         first.set(Option::Some(token))
-                    } else {};
+                    }
                     last.set(Option::Some(token))
-                } else {}
+                }
             },
             _ => (),
         }
@@ -50,7 +50,7 @@ fn direct_prefix_doc(node: LocatedNode, open: LocatedToken) -> Doc {
             Some(Token(token)) => if token.start < open.start
                 && !lexer::token_is_trivia(token.token.kind) {
                 values.push(token_doc(token))
-            } else {},
+            },
             _ => (),
         }
     }
@@ -60,14 +60,14 @@ fn direct_prefix_doc(node: LocatedNode, open: LocatedToken) -> Doc {
 fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
     if node_has_comment(node) {
         return format_commented_delimited_list(value, node)
-    } else {};
+    }
     let Some(delimiters) = direct_delimiter_tokens(node) else {
         return format_generic(value, node)
     };
     let (open, close) = delimiters;
     if open.start == close.start {
         return format_generic(value, node)
-    } else {};
+    }
     let item_nodes = direct_nodes(node);
     let items: Vec[Doc] = Vec::new();
     for item in item_nodes {
@@ -118,7 +118,7 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
             Some(Node(child)) => if child.start > open.start && child.end <= close.start {
                 if !body.values.is_empty() && body.trailing_lines.get() == 0 {
                     body.ensure_lines(1)
-                } else {};
+                }
                 body.push_syntax(format_item_content(value, child));
                 if body.trailing_lines.get() == 0 {
                     body.push_syntax(
@@ -128,9 +128,9 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
                             Option::Some(lexer::TokenKind::Comma),
                         ),
                     )
-                } else {};
+                }
                 item_count.set(item_count.get() + 1)
-            } else {},
+            },
             Some(Token(token)) => if token.start <= open.start || token.start >= close.start
                 || token_is(token, lexer::TokenKind::Comma) {} else if token_is(
                 token,
@@ -147,7 +147,7 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
     }
     if item_count.get() == 0 && body.values.is_empty() {
         return format_generic(value, node)
-    } else {};
+    }
     let prefix = direct_prefix_doc(node, open);
     let body_doc = body.finish();
     let closing = if body_doc.trailing_lines > 0 {
@@ -171,11 +171,11 @@ fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDo
 fn format_where_clause_with_body(value: Builder, node: LocatedNode, body_follows: bool) -> BuiltDoc {
     if node_has_comment(node) {
         return format_generic(value, node)
-    } else {};
+    }
     let predicates = direct_nodes(node);
     if predicates.is_empty() {
         return format_generic(value, node)
-    } else {};
+    }
     let docs: Vec[Doc] = Vec::new();
     for predicate in predicates {
         docs.push(format_node(value, predicate).doc)

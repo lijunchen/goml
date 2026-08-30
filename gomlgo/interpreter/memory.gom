@@ -23,7 +23,7 @@ pub fn allocate_cell(memory: Memory, value: Value) -> CellId {
     let block = index / memory_cell_block_size;
     if block >= memory.cells.len() {
         memory.cells.push(Vec::with_capacity(memory_cell_block_size))
-    } else {};
+    }
     memory.cells[block].push(copy_value(value));
     memory.length.set(index + 1);
     cell_id(index)
@@ -57,7 +57,7 @@ fn release_reusable_cell(memory: Memory, cell: CellId) -> () {
     if cell.value >= 0 && cell.value < memory.length.get() {
         set_cell_value(memory, cell.value, Value::Local(LocalValue::Unit));
         memory.reusable_cells.push(cell.value)
-    } else {}
+    }
 }
 
 fn frame_cell_checkpoint(memory: Memory) -> isize {
@@ -169,7 +169,7 @@ fn slice_element_place(value: SliceValue, index: isize) -> Result[Place, string]
         return Result::Err(
             "index out of range [" + index.to_string() + "] with length " + value.length.to_string(),
         )
-    } else {};
+    }
     let base = value.backing.ok_or("index of nil slice")?;
     Result::Ok(index_place(base, value.offset + index))
 }
@@ -188,7 +188,7 @@ fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], o
 ] {
     if offset >= projections.len() {
         return Result::Ok(copy_value(value))
-    } else {};
+    }
     match (value, projections[offset]) {
         (
             Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }),
@@ -227,7 +227,7 @@ fn load_projection(memory: Memory, value: Value, projections: Vec[Projection], o
 pub fn load_place(memory: Memory, place: Place) -> Result[Value, string] {
     if !cell_valid(memory, place.root.value) {
         return Result::Err("invalid cell " + place.root.value.to_string())
-    } else {};
+    }
     let value = cell_value(memory, place.root.value);
     match place.projections {
         Some(projections) => load_projection(memory, value, projections, 0),
@@ -241,7 +241,7 @@ fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection],
 ] {
     if offset >= projections.len() {
         return Result::Ok(value)
-    } else {};
+    }
     match (value, projections[offset]) {
         (
             Value::Local(LocalValue::Aggregate { type_id: _, elements, host: _ }),
@@ -278,7 +278,7 @@ fn borrow_projection(memory: Memory, value: Value, projections: Vec[Projection],
 pub fn borrow_place(memory: Memory, place: Place) -> Result[Value, string] {
     if !cell_valid(memory, place.root.value) {
         return Result::Err("invalid cell " + place.root.value.to_string())
-    } else {};
+    }
     let value = cell_value(memory, place.root.value);
     match place.projections {
         Some(projections) => borrow_projection(memory, value, projections, 0),
@@ -295,7 +295,7 @@ fn store_projection(
 ) -> Result[Value, string] {
     if offset >= projections.len() {
         return Result::Err("store projection ended without a cell")
-    } else {};
+    }
     match (current, projections[offset]) {
         (
             Value::Local(LocalValue::Aggregate { type_id, elements, host: _ }),
@@ -306,7 +306,7 @@ fn store_projection(
         ) => {
             if index < 0 || index >= elements.len() {
                 return Result::Err("aggregate index out of range")
-            } else {};
+            }
             let updated: Vec[Value] = Vec::with_capacity(elements.len());
             for element in elements {
                 updated.push(element)
@@ -321,7 +321,7 @@ fn store_projection(
                     offset + 1,
                     value,
                 )?;
-            };
+            }
             Result::Ok(local_aggregate(type_id, updated))
         },
         (Value::Local(LocalValue::BoolBacking(elements)), Projection::Index(index)) => {
@@ -329,7 +329,7 @@ fn store_projection(
                 return Result::Err("aggregate index out of range")
             } else if offset + 1 != projections.len() {
                 return Result::Err("place projection does not match stored value")
-            } else {};
+            }
             elements[index] = boolean_value(value)?;
             Result::Ok(Value::Local(LocalValue::BoolBacking(elements)))
         },
@@ -345,7 +345,7 @@ fn store_projection(
                     };
                 }
                 store_place(memory, projected, value)?;
-            };
+            }
             Result::Ok(Value::Local(LocalValue::Slice(slice)))
         },
         _ => Result::Err("place projection does not match stored value"),
@@ -355,7 +355,7 @@ fn store_projection(
 pub fn store_place(memory: Memory, place: Place, value: Value) -> Result[(), string] {
     if !cell_valid(memory, place.root.value) {
         return Result::Err("invalid cell " + place.root.value.to_string())
-    } else {};
+    }
     match place.projections {
         Some(projections) => {
             let updated = store_projection(

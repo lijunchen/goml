@@ -24,7 +24,7 @@ fn licm_assigned_contains(values: Vec[collections::HashSet[string]], name: strin
     for value in values {
         if value.contains(name) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -94,7 +94,7 @@ fn licm_collect_local_names(value: Block, result: collections::HashSet[string]) 
                         let _ = result.insert(binding);
                     },
                     Send { .. } => (),
-                };
+                }
                 licm_collect_local_names(
                     match arm {
                         Receive { body, .. } | Send { body, .. } => body,
@@ -145,7 +145,7 @@ fn licm_collect_param_names(value: Block, result: collections::HashSet[string]) 
                         let _ = result.insert(binding);
                     },
                     Send { .. } => (),
-                };
+                }
                 licm_collect_param_names(
                     match arm {
                         Receive { body, .. } | Send { body, .. } => body,

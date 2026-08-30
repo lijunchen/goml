@@ -350,7 +350,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("end_optional without begin_optional")
         } else if self.current.get().is_some() {
             return Result::Err("optional item was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Optional => {
                 pop_value_deserializer_frame(self);
@@ -376,7 +376,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("sequence element without sequence")
         } else if self.current.get().is_some() {
             return Result::Err("previous sequence element was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Sequence { values, index } => if index.get() >= values.len() {
                 Result::Ok(false)
@@ -394,7 +394,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("end_sequence without begin_sequence")
         } else if self.current.get().is_some() {
             return Result::Err("sequence element was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Sequence { values, index } => if index.get() != values.len() {
                 Result::Err("sequence ended before all elements were consumed")
@@ -426,7 +426,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("tuple element without tuple")
         } else if self.current.get().is_some() {
             return Result::Err("previous tuple element was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Tuple { values, index: next } => if index != next.get()
                 || index >= values.len() {
@@ -445,7 +445,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("end_tuple without begin_tuple")
         } else if self.current.get().is_some() {
             return Result::Err("tuple element was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Tuple { values, index } => if index.get() != values.len() {
                 Result::Err("tuple ended before all elements were consumed")
@@ -475,7 +475,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("map entry without map")
         } else if self.current.get().is_some() {
             return Result::Err("previous map value was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Map { entries, index, state } => {
                 if state.get() == 2 {
@@ -483,7 +483,7 @@ impl Deserializer for ValueDeserializer {
                     state.set(0)
                 } else if state.get() != 0 {
                     return Result::Err("previous map entry is incomplete")
-                } else {};
+                }
                 if index.get() >= entries.len() {
                     Result::Ok(false)
                 } else {
@@ -498,7 +498,7 @@ impl Deserializer for ValueDeserializer {
     fn begin_map_key(self: ValueDeserializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map key without map")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Map { entries, index, state } => if state.get() != 1 {
                 Result::Err("map is not expecting a key")
@@ -523,7 +523,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("map value without map")
         } else if self.current.get().is_some() {
             return Result::Err("map key was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Map { entries, index, state } => if state.get() != 3 {
                 Result::Err("map is not expecting a value")
@@ -546,13 +546,13 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("end_map without begin_map")
         } else if self.current.get().is_some() {
             return Result::Err("map value was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Map { entries, index, state } => {
                 if state.get() == 2 {
                     index.set(index.get() + 1);
                     state.set(0)
-                } else {};
+                }
                 if state.get() != 0 || index.get() != entries.len() {
                     Result::Err("map ended before all entries were consumed")
                 } else {
@@ -583,7 +583,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("struct field without struct")
         } else if self.current.get().is_some() {
             return Result::Err("previous struct field was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Struct { fields, index } => if index.get() >= fields.len() {
                 Result::Ok(Option::None)
@@ -612,7 +612,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("end_struct without begin_struct")
         } else if self.current.get().is_some() {
             return Result::Err("struct field was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Struct { fields, index } => if index.get() != fields.len() {
                 Result::Err("struct ended before all fields were consumed")
@@ -664,7 +664,7 @@ impl Deserializer for ValueDeserializer {
     ] {
         if self.frames.is_empty() {
             return Result::Err("variant fields without variant")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Variant {
                 kind: actual_kind,
@@ -688,7 +688,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("variant field without variant")
         } else if self.current.get().is_some() {
             return Result::Err("previous variant field was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Variant { kind, fields, index, begun } => if !begun.get() {
                 Result::Err("variant fields were not begun")
@@ -714,7 +714,7 @@ impl Deserializer for ValueDeserializer {
             return Result::Err("end_variant without begin_variant")
         } else if self.current.get().is_some() {
             return Result::Err("variant field was not consumed")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueDeserializeFrame::Variant { kind: _, fields, index, begun } => if !begun.get() {
                 Result::Err("variant fields were not begun")

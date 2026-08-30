@@ -14,7 +14,7 @@ fn binary_operator_token(node: LocatedNode) -> Option[LocatedToken] {
     for token in direct_tokens(node) {
         if is_binary_operator(token.token.kind) {
             return Option::Some(token)
-        } else {}
+        }
     }
     Option::None
 }
@@ -85,7 +85,7 @@ fn parse_decimal_int32(value: string) -> Option[isize] {
             } else {
                 result = result * 10 + digit;
             }
-        };
+        }
         index = index + 1;
     }
     if valid {
@@ -206,7 +206,7 @@ fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
             }
         },
         None => (),
-    };
+    }
     args
 }
 

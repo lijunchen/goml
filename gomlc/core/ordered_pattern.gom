@@ -14,7 +14,7 @@ fn pattern_requires_ordered(value: tast::Pat) -> bool {
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -22,7 +22,7 @@ fn pattern_requires_ordered(value: tast::Pat) -> bool {
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -36,7 +36,7 @@ fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
             Some(_) => return true,
             None => if pattern_requires_ordered(arm.pat) {
                 return true
-            } else {},
+            },
         }
     }
     false
@@ -250,7 +250,7 @@ fn lower_ordered_array_pattern(
                         None => (),
                     },
                     None => (),
-                };
+                }
                 for offset in 0..suffix.len() {
                     let index = suffix.len() - 1 - offset;
                     let item = place_index_read(

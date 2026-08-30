@@ -312,7 +312,7 @@ fn write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(hex_digit(value / 16))
-    } else {};
+    }
     builder.write_char(hex_digit(value % 16));
     builder.write_char('}')
 }
@@ -339,7 +339,7 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> () {
         } else {
             let width = utf8_width(byte);
             builder.write_string(value.byte_slice(index, index + width))
-        };
+        }
         index = index + utf8_width(byte);
     }
     builder.write_char('"')
@@ -366,7 +366,7 @@ fn write_interpolated_text(builder: text::StringBuilder, value: string) -> () {
         } else {
             let width = utf8_width(byte);
             builder.write_string(value.byte_slice(index, index + width))
-        };
+        }
         index = index + utf8_width(byte);
     }
 }
@@ -520,7 +520,7 @@ fn block_doc(value: Block) -> pretty::Doc {
     match value.tail {
         Some(tail) => values.push(expr_doc(tail)),
         None => (),
-    };
+    }
     braced_docs(values, 4)
 }
 
@@ -773,7 +773,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             match base {
                 Some(value) => values.push(pretty::append(pretty::text(".."), expr_doc(value))),
                 None => (),
-            };
+            }
             record_doc(pretty::text(name), values)
         },
         Tuple { items: values } => pretty::delimited("(", ",", ")", expr_docs(values)),
@@ -1008,7 +1008,7 @@ fn pat_doc(value: Pat) -> pretty::Doc {
             }
             if has_rest {
                 values.push(pretty::text(".."))
-            } else {};
+            }
             record_doc(pattern_head_doc(head), values)
         },
         Tuple { items: values } => pretty::delimited("(", ",", ")", pat_docs(values)),
@@ -1034,7 +1034,7 @@ fn pat_doc(value: Pat) -> pretty::Doc {
                     },
                 ),
                 None => (),
-            };
+            }
             for value in suffix {
                 values.push(pat_doc(value))
             }
@@ -1156,7 +1156,7 @@ fn struct_doc(value: StructDef) -> pretty::Doc {
                 ],
             ),
         )
-    } else {};
+    }
     let fields: Vec[pretty::Doc] = Vec::with_capacity(value.fields.len());
     for field in value.fields {
         fields.push(

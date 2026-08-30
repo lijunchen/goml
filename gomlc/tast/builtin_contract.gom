@@ -111,7 +111,7 @@ fn required_lang_item(item: string) -> Result[BuiltinLangItem, string] {
             } else {
                 found.set(Option::Some(value))
             }
-        } else {}
+        }
     }
     match found.get() {
         Some(value) => Result::Ok(value),
@@ -134,7 +134,7 @@ fn required_lang_property(value: BuiltinLangItem, property: string) -> Result[st
             } else {
                 found.set(Option::Some(entry.1))
             }
-        } else {}
+        }
     }
     match found.get() {
         Some(value) => Result::Ok(value),
@@ -155,7 +155,7 @@ fn optional_lang_property(value: BuiltinLangItem, property: string) -> Result[
             } else {
                 return Result::Ok(Option::Some(entry.1))
             }
-        } else {}
+        }
     }
     Result::Ok(Option::None)
 }
@@ -166,7 +166,7 @@ fn validate_lang_properties(value: BuiltinLangItem, allowed: Vec[string]) -> Res
             return Result::Err(
                 "unknown property " + property.0 + " on builtin lang item " + value.item,
             )
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -185,7 +185,7 @@ fn required_trait_method(value: BuiltinLangItem, property: string) -> Result[str
     for method in value.methods {
         if method == name {
             return Result::Ok(name)
-        } else {}
+        }
     }
     Result::Err(
         "property " + property + " on builtin lang item " + value.item
@@ -199,7 +199,7 @@ fn required_associated_type(value: BuiltinLangItem, property: string) -> Result[
     for associated in value.associated_types {
         if associated == name {
             return Result::Ok(name)
-        } else {}
+        }
     }
     Result::Err(
         "property " + property + " on builtin lang item " + value.item
@@ -231,7 +231,7 @@ fn required_lang_variant(value: BuiltinLangItem, property: string, arity: isize)
                     "variant " + name + " on builtin lang item " + value.item + " has invalid arity",
                 )
             }
-        } else {}
+        }
     }
     Result::Err(
         "property " + property + " on builtin lang item " + value.item
@@ -302,9 +302,9 @@ fn builtin_inherent_method_exists(owner: string, method: string) -> Result[bool,
                         for candidate in value.methods {
                             if candidate.name == method {
                                 return Result::Ok(true)
-                            } else {}
+                            }
                         }
-                    } else {},
+                    },
                     None => (),
                 },
                 _ => (),
@@ -351,14 +351,14 @@ fn load_builtin_contract() -> Result[BuiltinContract, string] {
     validate_lang_properties(static_cell_value, Vec::from_array(["constructor"]))?;
     if static_cell_value.kind != BuiltinLangItemKind::Struct {
         return Result::Err("builtin lang item static_cell must be declared on a struct")
-    } else {};
+    }
     let static_cell_constructor = required_lang_property(static_cell_value, "constructor")?;
     if !builtin_inherent_method_exists(static_cell_value.name, static_cell_constructor)? {
         return Result::Err(
             "property constructor on builtin lang item static_cell names missing inherent method "
                 + static_cell_constructor,
         )
-    } else {};
+    }
     let ordering_value = required_enum_lang_item("ordering")?;
     validate_lang_properties(
         ordering_value,

@@ -111,7 +111,7 @@ fn parse_json_stream(input: string) -> Result[Vec[json::Value], string] {
             return Result::Err(
                 "go list emitted a non-object JSON value at byte " + index.to_string(),
             )
-        } else {};
+        }
         let start = index;
         let mut depth = 0;
         let mut in_string = false;
@@ -126,7 +126,7 @@ fn parse_json_stream(input: string) -> Result[Vec[json::Value], string] {
                     escaped = true;
                 } else if byte == b'"' {
                     in_string = false;
-                } else {}
+                }
             } else if byte == b'"' {
                 in_string = true;
             } else if byte == b'{' || byte == b'[' {
@@ -142,13 +142,13 @@ fn parse_json_stream(input: string) -> Result[Vec[json::Value], string] {
                     return Result::Err(
                         "go list emitted unbalanced JSON at byte " + index.to_string(),
                     )
-                } else {}
-            } else {};
+                }
+            }
             index += 1;
         }
         if !complete {
             return Result::Err("go list emitted incomplete JSON at byte " + start.to_string())
-        } else {}
+        }
     }
     Result::Ok(values)
 }
@@ -166,7 +166,7 @@ pub fn discover_toolchain(go_binary: string) -> Result[GoToolchain, string] {
     let version = required_json_string(root, "GOVERSION")?;
     if !compatible_go_version(version) {
         return Result::Err("gomlgo execution requires Go 1.26.x, found " + version)
-    } else {};
+    }
     Result::Ok(
         GoToolchain {
             binary,
@@ -206,10 +206,10 @@ fn decode_list_package(value: json::Value) -> Result[GoListPackage, string] {
             let message = optional_json_string(error, "Err");
             if message != "" {
                 return Result::Err(message)
-            } else {}
+            }
         },
         None => {},
-    };
+    }
     Result::Ok(
         GoListPackage {
             directory: required_json_string(value, "Dir")?,
@@ -231,7 +231,7 @@ fn listed_root_path(packages: Vec[GoListPackage]) -> Result[string, string] {
     for package_value in packages {
         if !package_value.dependency_only {
             roots.push(package_value.import_path)
-        } else {}
+        }
     }
     if roots.len() == 1 {
         Result::Ok(roots[0])
@@ -251,7 +251,7 @@ fn list_go_package_patterns(
     let command = process::Command::new(toolchain.binary).arg("list").arg("-deps").arg("-json");
     if !config.tags.is_empty() {
         let _ = command.arg("-tags").arg(text::join(config.tags, ","));
-    } else {};
+    }
     let output = command.args(patterns).current_dir(directory).env("GOTOOLCHAIN", "local").env(
         "GOOS",
         config.goos,

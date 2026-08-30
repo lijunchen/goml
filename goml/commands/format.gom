@@ -32,12 +32,12 @@ fn default_formatter_candidate() -> string {
                 let sibling = path::join(parent, "gomlfmt");
                 if fs::is_file(sibling) {
                     return sibling
-                } else {}
+                }
             },
             None => (),
         },
         Err(_) => (),
-    };
+    }
     match home_directory() {
         Ok(home) => {
             let installed = path::join(path::join(home, "bin"), "gomlfmt");
@@ -71,7 +71,7 @@ fn collect_owned_graph_files(graph: project::Graph, module_path: string, result:
             for file in package_value.files {
                 result.push(file)
             }
-        } else {}
+        }
     }
 }
 
@@ -103,7 +103,7 @@ pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[
     let files = module_format_files(context)?;
     if files.is_empty() {
         return Result::Ok(0)
-    } else {};
+    }
     let formatter = resolve_program(formatter_candidate(formatter_override))?;
     let command = process::Command::new(formatter).arg(
         if check {

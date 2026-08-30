@@ -48,7 +48,7 @@ pub fn parse_positive_int(value: string) -> Result[isize, string] {
     let length = value.byte_len();
     if length == 0 {
         return Result::Err("expected a positive integer")
-    } else {};
+    }
     let mut result = 0;
     for index in 0..length {
         let byte = value.byte_get(index);
@@ -88,7 +88,7 @@ fn shell_plain(value: string) -> bool {
 pub fn shell_escape(value: string) -> string {
     if shell_plain(value) {
         return value
-    } else {};
+    }
     let builder = text::StringBuilder::with_capacity(value.byte_len() + 2);
     builder.write_char('\'');
     for character in value.chars() {

@@ -17,7 +17,7 @@ fn strip_suffix(value: string, suffix: string) -> string {
     for index in 0..value.byte_len() {
         if value.byte_get(index) != b'_' {
             builder.write_string(value.byte_slice(index, index + 1))
-        } else {}
+        }
     }
     let normalized = builder.finish();
     if normalized.ends_with(suffix) {

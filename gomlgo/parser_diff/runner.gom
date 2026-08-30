@@ -21,7 +21,7 @@ fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string]
             collect_go_files(entry, files)?
         } else if fs::is_file(entry) && path::extension(entry) == Option::Some("go") {
             files.push(entry)
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -51,7 +51,7 @@ fn compare_diagnostics(
                         + ": "
                         + actual.diagnostics[index].message,
                 )
-            } else {}
+            }
         }
         Result::Ok(())
     }
@@ -82,7 +82,7 @@ fn compare_file(file: string, mode: Mode) -> Result[bool, string] {
                 + " first diagnostic="
                 + expected_diagnostic,
         )
-    } else {};
+    }
     if mode == Mode::Diagnostics {
         compare_diagnostics(file, actual, expected)?
     } else if mode != Mode::Acceptance && actual_ok {
@@ -101,7 +101,7 @@ fn compare_file(file: string, mode: Mode) -> Result[bool, string] {
             ),
             None => {},
         }
-    } else {};
+    }
     Result::Ok(actual_ok)
 }
 
@@ -111,12 +111,12 @@ pub fn compare_tree(root: string, mode: Mode) -> Result[Summary, string] {
         files.push(root)
     } else {
         collect_go_files(root, files)?
-    };
+    }
     let mut accepted = 0;
     for file in files {
         if compare_file(file, mode)? {
             accepted += 1;
-        } else {}
+        }
     }
     Result::Ok(Summary { files: files.len(), accepted })
 }

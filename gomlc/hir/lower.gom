@@ -98,7 +98,7 @@ fn join_segments(values: Vec[string]) -> string {
     for value in values {
         if index > 0 {
             builder.write_string("::")
-        } else {};
+        }
         builder.write_string(value);
         index = index + 1;
     }
@@ -162,9 +162,9 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
                     expanded.push(target[index])
                 }
                 return Option::Some(expanded)
-            } else {}
+            }
         }
-    } else {};
+    }
     Option::None
 }
 
@@ -181,7 +181,7 @@ fn prospective_use_aliases(file: ast::File) -> Vec[AliasEntry] {
                 Some(value) => result.push(AliasEntry { alias: value, target, item: false }),
                 None => (),
             }
-        } else {}
+        }
     }
     result
 }
@@ -232,7 +232,7 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
                         ),
                     ),
                     ast::Visibility::Private => (),
-                };
+                }
                 traits.push(join_segments(item_target))
             }
         } else {
@@ -250,12 +250,12 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
                             AliasEntry { alias, target: expanded, item: true },
                         ),
                         None => (),
-                    };
+                    }
                     traits.push(join_segments(expanded));
                     match use_decl.visibility {
                         ast::Visibility::Public => if exported_name != "" {
                             public_reexports.push((exported_name, join_segments(expanded)))
-                        } else {},
+                        },
                         ast::Visibility::Private => (),
                     }
                 },
@@ -300,14 +300,14 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
                 )
             } else if previous.alias == current.alias {
                 diagnostics.push("Ambiguous use alias " + current.alias)
-            } else {}
+            }
         }
     }
     for index in 0..public_reexports.len() {
         for previous_index in 0..index {
             if public_reexports[previous_index].0 == public_reexports[index].0 {
                 diagnostics.push("Duplicate public re-export " + public_reexports[index].0)
-            } else {}
+            }
         }
     }
     ResolvedUses { aliases, traits, public_reexports, diagnostics }
@@ -323,7 +323,7 @@ fn import_aliases_from_file(file: ast::File, aliases: Vec[AliasEntry]) -> Vec[Im
                 None => target,
             };
             result.push(ImportAlias { alias: "", package_name: join_segments(target) })
-        } else {}
+        }
     }
     for entry in aliases {
         if entry.item {} else {
@@ -340,7 +340,7 @@ fn imports_from_aliases(aliases: Vec[AliasEntry]) -> Vec[string] {
     for entry in aliases {
         if entry.item {
             result.push(join_segments(entry.target))
-        } else {}
+        }
     }
     result
 }
@@ -360,7 +360,7 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
                     result.push(values[index])
                 }
                 return result
-            } else {}
+            }
         }
         values
     }
@@ -396,7 +396,7 @@ fn static_member(
         for index in 0..parts.len() - 1 {
             owner_parts.push(parts[index])
         }
-    } else {};
+    }
     ExprKind::StaticMember {
         owner: join_segments(owner_parts),
         member: match last_string(parts) {
@@ -434,7 +434,7 @@ fn find_binding(values: Vec[(string, LocalId)], name: string) -> Option[LocalId]
         let entry = values[index];
         if entry.0 == name {
             return Option::Some(entry.1)
-        } else {}
+        }
     }
     Option::None
 }
@@ -751,7 +751,7 @@ fn join_pattern_names(values: Vec[string]) -> string {
     for value in values {
         if index > 0 {
             builder.write_string(", ")
-        } else {};
+        }
         builder.write_string(value);
         index = index + 1;
     }
@@ -782,14 +782,14 @@ fn pattern_binding_mismatch(expected: Vec[(string, LocalId)], actual: Vec[(strin
         if !missing.is_empty() {
             details.write_string("missing ");
             details.write_string(join_pattern_names(sort_pattern_names(missing)))
-        } else {};
+        }
         if !extra.is_empty() {
             if details.is_empty() {} else {
                 details.write_string("; ")
-            };
+            }
             details.write_string("extra ");
             details.write_string(join_pattern_names(sort_pattern_names(extra)))
-        } else {};
+        }
         Option::Some("Or-pattern alternatives must bind the same variables: " + details.finish())
     }
 }
@@ -1095,7 +1095,7 @@ fn lower_expr_value(
                                 },
                                 None => (),
                             }
-                        } else {};
+                        }
                         let parts = qualified_segments(ctx, path);
                         if parts.len() == 1 {
                             let name = parts[0];
@@ -1241,7 +1241,7 @@ fn lower_expr_value(
                         let local = fresh_local(ctx, binding);
                         if binding != "_" {
                             arm_env.push((binding, local))
-                        } else {};
+                        }
                         lowered_arms.push(
                             SelectArm::Receive {
                                 channel: lower_expr(ctx, channel, env, type_params),
@@ -1749,7 +1749,7 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
             match item_name(canonical_package_name, item) {
                 Some(name) => definitions.push((name, def_id)),
                 None => (),
-            };
+            }
             match item {
                 Constant(value) => {
                     constants.push((full_name(canonical_package_name, value.name), def_id))
@@ -1769,7 +1769,7 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
                 TypeAlias(value) => nominal_types.push(value.name),
                 TraitDef(value) => traits.push(value.name),
                 _ => (),
-            };
+            }
             index = index + 1;
         }
     }
@@ -1805,7 +1805,7 @@ fn file_context(base: LowerCtx, resolved: ResolvedUses, diagnostics: Vec[Diagnos
                     span: Option::None,
                 },
             )
-        } else {}
+        }
     }
     LowerCtx {
         package_name: base.package_name,
@@ -1888,7 +1888,7 @@ fn lower_file_with_context(
                     ),
                 )
             },
-        };
+        }
         index = index + 1;
     }
     File {
@@ -1960,7 +1960,7 @@ pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResu
         None => {
             if diagnostics.is_empty() {
                 diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None })
-            } else {};
+            }
             LowerResult { hir: Option::None, source_path, diagnostics }
         },
     }
@@ -1983,7 +1983,7 @@ pub fn lower_expanded_package(
         None => {
             if diagnostics.is_empty() {
                 diagnostics.push(Diagnostic { message: "AST lowering failed", span: Option::None })
-            } else {};
+            }
             LowerResult { hir: Option::None, source_path, diagnostics }
         },
     }
@@ -2040,7 +2040,7 @@ pub fn lower_expanded_package_files(
                     diagnostics.push(
                         Diagnostic { message: "AST lowering failed", span: Option::None },
                     )
-                } else {};
+                }
                 lowered.push(LowerResult { hir: Option::None, source_path: value.1, diagnostics })
             },
         }

@@ -36,7 +36,7 @@ fn trailing_number(value: string) -> Option[isize] {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return Option::None
-        } else {}
+        }
     }
     if value.byte_len() == 0 {
         Option::None
@@ -65,7 +65,7 @@ fn observe_name(maximum: Ref[isize], name: string) -> () {
     match trailing_number(name) {
         Some(value) => if value > maximum.get() {
             maximum.set(value)
-        } else {},
+        },
         None => (),
     }
 }

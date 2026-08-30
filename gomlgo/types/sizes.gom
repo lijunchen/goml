@@ -116,7 +116,7 @@ fn size_type_seen(values: Vec[TypeId], value: TypeId) -> bool {
     for existing in values {
         if existing.value == value.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -147,7 +147,7 @@ fn alignof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[T
                     let alignment = alignof_inner(world, field.variable.type_id, sizes, next);
                     if alignment > result {
                         result = alignment;
-                    } else {}
+                    }
                 }
                 result
             }
@@ -260,7 +260,7 @@ fn sizeof_inner(world: World, value: TypeId, sizes: TargetSizes, visited: Vec[Ty
                 } else {
                     if offset > 0 && field_size == 0 {
                         field_size = 1;
-                    } else {};
+                    }
                     aligned_offset(offset + field_size, alignof_inner(world, value, sizes, visited))
                 }
             }

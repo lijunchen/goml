@@ -56,7 +56,7 @@ fn strip_comment(value: string) -> string {
             quoted = !quoted;
         } else if !quoted && byte == b'#' {
             return value.byte_slice(0, index)
-        } else {}
+        }
     }
     value
 }
@@ -82,9 +82,9 @@ fn manifest_module_path(source: string) -> Option[string] {
                 if value.byte_len() >= 2 && value.byte_get(0) == b'"'
                     && value.byte_get(value.byte_len() - 1) == b'"' {
                     return Option::Some(value.byte_slice(1, value.byte_len() - 1))
-                } else {}
-            } else {}
-        } else {};
+                }
+            }
+        }
         if end == source.byte_len() {
             cursor = source.byte_len() + 1;
         } else {
@@ -115,7 +115,7 @@ fn find_module(source_path: string) -> Result[Option[ModuleInfo], string] {
                 },
                 Err(error) => return Result::Err(error.to_string()),
             }
-        } else {};
+        }
         match path::parent(current) {
             Some(parent) => {
                 let parent = path::clean(parent);
@@ -159,7 +159,7 @@ fn package_name(module_root: string, module_path: string, package_dir: string) -
                     builder.write_string("::")
                 } else {
                     builder.write_string(relative.byte_slice(index, index + 1))
-                };
+                }
                 index = index + 1;
             }
             Result::Ok(builder.finish())
@@ -192,7 +192,7 @@ fn contains_source_file(values: Vec[SourceFile], expected: string) -> bool {
     for value in values {
         if same_path(value.path, expected) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -238,20 +238,20 @@ fn collect_package_files(
                     ),
                     Err(error) => return Result::Err(error),
                 }
-            } else {}
+            }
         },
         Err(error) => return Result::Err(error.to_string()),
-    };
+    }
     for value in overrides {
         let value_parent = source_directory(value.path);
         if same_path(value_parent, package_dir) && include_source_file(value.path, include_tests)
             && !contains_source_file(files, value.path) {
             files.push(SourceFile { path: value.path, source: value.source, package_name: "" })
-        } else {}
+        }
     }
     if !contains_source_file(files, source_path) {
         files.push(SourceFile { path: source_path, source, package_name: "" })
-    } else {};
+    }
     Result::Ok(files)
 }
 
@@ -280,12 +280,12 @@ fn local_package_directory(module_root: string, module_path: string, package_nam
                         return Option::None
                     } else {
                         directory = path::join(directory, segment);
-                    };
+                    }
                     if separator {
                         index = index + 1;
                         start = index + 1;
-                    } else {}
-                } else {};
+                    }
+                }
                 index = index + 1;
             }
             Option::Some(directory)
@@ -308,16 +308,16 @@ fn collect_dependency_files(package_dir: string, overrides: Vec[SourceOverride])
                     ),
                     Err(error) => return Result::Err(error),
                 }
-            } else {}
+            }
         },
         Err(error) => return Result::Err(error.to_string()),
-    };
+    }
     for value in overrides {
         let value_parent = source_directory(value.path);
         if same_path(value_parent, package_dir) && include_source_file(value.path, false)
             && !contains_source_file(files, value.path) {
             files.push(SourceFile { path: value.path, source: value.source, package_name: "" })
-        } else {}
+        }
     }
     if files.is_empty() {
         Result::Err("package directory " + package_dir + " has no .gom files")

@@ -65,7 +65,7 @@ fn pipeline_case_insert_index(values: Vec[string], name: string) -> isize {
     for index in 0..values.len() {
         if name < values[index] {
             return index
-        } else {}
+        }
     }
     values.len()
 }
@@ -89,7 +89,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
             testing::fail("failed to create Go work dir: " + message.to_string());
             return ""
         },
-    };
+    }
     let main_file = path::join(work_dir, "main.go");
     let executable = path::join(work_dir, "main");
     let source_current = if fs::is_file(main_file) {
@@ -107,7 +107,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
                 testing::fail("failed to write Go source: " + message.to_string());
                 return ""
             },
-        };
+        }
         if fs::is_file(executable) {
             match fs::remove_file(executable) {
                 Ok(()) => (),
@@ -116,8 +116,8 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
                     return ""
                 },
             }
-        } else {}
-    };
+        }
+    }
     let interpreted = if source_current && fs::is_file(executable)
         || !go_backend::yaegi_compatible(go_source) {
         Option::None
@@ -143,7 +143,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
     match interpreted {
         Some(value) => return value,
         None => (),
-    };
+    }
     if source_current && fs::is_file(executable) {} else {
         match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
             work_dir,
@@ -167,7 +167,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
                 return ""
             },
         }
-    };
+    }
     match process::Command::new(executable).current_dir(work_dir).output_structured() {
         Ok(output) => {
             if process::ExitStatus::success(process::Output::status(output)) {
@@ -211,12 +211,12 @@ pub fn all_pipeline_cases() -> Vec[string] {
                 } else {
                     result.insert(index, name)
                 }
-            } else {}
+            }
         },
         Err(message) => {
             testing::fail("failed to read pipeline fixtures: " + message.to_string())
         },
-    };
+    }
     result
 }
 
@@ -257,7 +257,7 @@ fn test_one_case_with_go(compiler: compiler_driver::SourceCompiler, name: string
                 name,
             ),
         )
-    } else {}
+    }
 }
 
 pub fn test_one_case(name: string) -> () {
@@ -291,7 +291,7 @@ pub fn test_pipeline_shard(shard: isize, shard_count: isize) -> () {
                 },
             };
             compiler_sources.push(source)
-        } else {};
+        }
         index.set(current + 1)
     }
     let compiler = compiler_driver::source_compiler_for_sources(compiler_sources);

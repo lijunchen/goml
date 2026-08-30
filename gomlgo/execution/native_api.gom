@@ -208,15 +208,15 @@ fn visit_native_api(package_path: string, states: HashMap[string, isize], output
         Some(1) => return false,
         Some(2) => return true,
         _ => {},
-    };
+    }
     if native_api_text(package_path).is_none() {
         return false
-    } else {};
+    }
     states[package_path] = 1;
     for dependency in native_api_dependencies(package_path) {
         if !visit_native_api(dependency, states, output) {
             return false
-        } else {}
+        }
     }
     states[package_path] = 2;
     output.push(package_path);
@@ -229,7 +229,7 @@ fn native_api_order(imports: Vec[string]) -> Option[Vec[string]] {
     for import_path in imports {
         if import_path == "unsafe" || !visit_native_api(import_path, states, result) {
             return Option::None
-        } else {}
+        }
     }
     Option::Some(result)
 }
@@ -248,7 +248,7 @@ fn native_api_file_header(source: bytes::Bytes) -> Option[(string, Vec[string])]
     let name = scanner::package_name_bytes(source);
     if name == "" {
         return Option::None
-    } else {};
+    }
     let imports: Vec[string] = Vec::new();
     for literal in scanner::import_literals(source) {
         match constant::parse_string_literal(literal) {

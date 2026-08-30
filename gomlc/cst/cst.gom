@@ -267,7 +267,7 @@ fn debug_write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(debug_hex_digit(value / 16))
-    } else {};
+    }
     builder.write_char(debug_hex_digit(value % 16));
     builder.write_char('}')
 }
@@ -294,7 +294,7 @@ fn debug_write_quoted_string(builder: text::StringBuilder, value: string) -> () 
         } else {
             let width = debug_utf8_width(byte);
             builder.write_string(value.byte_slice(index, index + width))
-        };
+        }
         index = index + debug_utf8_width(byte);
     }
     builder.write_char('"')

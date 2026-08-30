@@ -136,18 +136,18 @@ impl string {
                 let (byte_index, _) = item;
                 if char_index == start {
                     start_byte = Option::Some(byte_index);
-                } else {};
+                }
                 if char_index == end {
                     end_byte = Option::Some(byte_index);
-                } else {};
+                }
                 char_index += 1;
             }
             if char_index == start {
                 start_byte = Option::Some(self.byte_len());
-            } else {};
+            }
             if char_index == end {
                 end_byte = Option::Some(self.byte_len());
-            } else {};
+            }
             match (start_byte, end_byte) {
                 (Some(first), Some(last)) => Option::Some(self.byte_slice(first, last)),
                 _ => Option::None,
@@ -200,7 +200,7 @@ impl string {
         if separator_len == 0 {
             result.push(self);
             return result
-        } else {};
+        }
         let mut start = 0;
         loop {
             match string_find_from(self, separator, start) {
@@ -236,12 +236,12 @@ impl string {
         let result = self.split("\n");
         if !result.is_empty() && result[result.len() - 1] == "" {
             let _ = result.pop();
-        } else {};
+        }
         for index in 0..result.len() {
             let line = result[index];
             if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
                 result[index] = line.byte_slice(0, line.byte_len() - 1);
-            } else {}
+            }
         }
         result
     }
@@ -285,7 +285,7 @@ impl string {
         for index in 0..self.byte_len() {
             if self.byte_get(index) > 127 {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -297,7 +297,7 @@ impl string {
             for index in 0..self.byte_len() {
                 if !ascii_eq_ignore_case(self.byte_get(index), other.byte_get(index)) {
                     return false
-                } else {}
+                }
             }
             true
         }
@@ -1136,7 +1136,7 @@ impl[T] Vec[T] {
         let value = self[index];
         if index + 1 < len {
             self[index] = self[len - 1];
-        } else {};
+        }
         self.truncate(len - 1);
         value
     }
@@ -1242,7 +1242,7 @@ impl[T] Vec[T] {
         for index in 0..self.len() {
             if predicate(self[index]) {
                 return Option::Some(index)
-            } else {}
+            }
         }
         Option::None
     }
@@ -1251,7 +1251,7 @@ impl[T] Vec[T] {
         let length = self.len();
         if length < 2 {
             return
-        } else {};
+        }
         let buffer: Vec[T] = Vec::with_capacity(length);
         for index in 0..length {
             buffer.push(self[index])
@@ -1272,7 +1272,7 @@ impl[T] Vec[T] {
                     } else {
                         buffer[output] = self[second];
                         second += 1;
-                    };
+                    }
                     output += 1;
                 }
                 while first < middle {
@@ -1341,7 +1341,7 @@ impl[T] Vec[T] {
                 let value = self[index];
                 if compare(value, best) < 0 {
                     best = value;
-                } else {}
+                }
             }
             Option::Some(best)
         }
@@ -1356,7 +1356,7 @@ impl[T] Vec[T] {
                 let value = self[index];
                 if compare(value, best) > 0 {
                     best = value;
-                } else {}
+                }
             }
             Option::Some(best)
         }
@@ -1373,14 +1373,14 @@ impl[T] Vec[T] {
     fn dedup_by(self: Self, equal: (T, T) -> bool) -> () {
         if self.len() < 2 {
             return
-        } else {};
+        }
         let mut output = 1;
         for index in 1..self.len() {
             let value = self[index];
             if !equal(self[output - 1], value) {
                 self[output] = value;
                 output += 1;
-            } else {}
+            }
         }
         self.truncate(output)
     }
@@ -1404,7 +1404,7 @@ impl[T: ToString] Vec[T] {
         for index in 0..parts.len() {
             if index > 0 {
                 result.push(separator)
-            } else {};
+            }
             result.push(parts[index])
         }
         __goml_builtin_string_concat(result)
@@ -1417,7 +1417,7 @@ impl[T: PartialEq] Vec[T] {
         while index < self.len() {
             if PartialEq::eq(self[index], expected) {
                 return true
-            } else {}
+            }
             index += 1;
         }
         false
@@ -1434,7 +1434,7 @@ impl[T: PartialEq] Slice[T] {
         while index < self.len() {
             if PartialEq::eq(self[index], expected) {
                 return true
-            } else {}
+            }
             index += 1;
         }
         false
@@ -1447,7 +1447,7 @@ impl[T: PartialEq] FrozenVec[T] {
         while index < self.len() {
             if PartialEq::eq(self.get(index), expected) {
                 return true
-            } else {}
+            }
             index += 1;
         }
         false
@@ -1869,7 +1869,7 @@ impl string {
                 if self.is_char_boundary(start) && self.is_char_boundary(end)
                     && self.byte_slice(start, end) == expected {
                     return true
-                } else {}
+                }
             }
             false
         }

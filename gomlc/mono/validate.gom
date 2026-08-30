@@ -22,13 +22,13 @@ fn validate_type(ctx: ValidateContext, value: Type, context: string) -> Result[(
         Dyn { trait_name, args, associated_types, additional_bounds } => {
             if trait_name.byte_len() == 0 {
                 return Result::Err(context + " has an empty dynamic trait name")
-            } else {};
+            }
             validate_types(ctx, args, context + " dynamic argument")?;
             validate_named_types(ctx, associated_types, context + " dynamic associated type")?;
             for bound in additional_bounds {
                 if bound.trait_name.byte_len() == 0 {
                     return Result::Err(context + " has an empty dynamic bound name")
-                } else {};
+                }
                 validate_types(ctx, bound.args, context + " dynamic bound argument")?;
                 validate_named_types(
                     ctx,
@@ -244,12 +244,12 @@ pub fn validate(value: File) -> Result[(), string] {
     for definition in value.enums {
         if !type_names.insert(definition.name) {
             return Result::Err("duplicate Mono type definition " + definition.name)
-        } else {}
+        }
     }
     for definition in value.structs {
         if !type_names.insert(definition.name) {
             return Result::Err("duplicate Mono type definition " + definition.name)
-        } else {}
+        }
     }
     let instance_names: collections::HashSet[string] = collections::HashSet::new();
     for instance in value.type_instances {

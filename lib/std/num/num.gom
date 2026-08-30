@@ -26,8 +26,8 @@ fn integer_base(value: string, start: isize, radix: isize) -> (bool, isize, isiz
                 return (true, start + 2, 8, true)
             } else if marker == b'b' || marker == b'B' {
                 return (true, start + 2, 2, true)
-            } else {}
-        } else {};
+            }
+        };
         (true, start, 8, true)
     } else {
         (true, start, 10, true)
@@ -53,13 +53,13 @@ fn integer_magnitude(
             if !allow_underscores || (!previous_digit && !after_prefix)
                 || index + 1 >= value.byte_len() {
                 return (false, 0, "invalid syntax")
-            } else {};
+            }
             match integer_digit(value.byte_get(index + 1)) {
                 Some(digit) => if digit >= radix {
                     return (false, 0, "invalid syntax")
-                } else {},
+                },
                 None => return (false, 0, "invalid syntax"),
-            };
+            }
             previous_digit = false;
             index += 1;
         } else {
@@ -69,12 +69,12 @@ fn integer_magnitude(
             };
             if digit >= radix {
                 return (false, 0, "invalid syntax")
-            } else {};
+            }
             let unsigned_digit = digit.to_u64();
             let unsigned_radix = radix.to_u64();
             if result > (limit - unsigned_digit) / unsigned_radix {
                 return (false, 0, "value out of range")
-            } else {};
+            }
             result = result * unsigned_radix + unsigned_digit;
             saw_digit = true;
             previous_digit = true;
@@ -94,11 +94,11 @@ fn parse_int_value(value: string, radix: isize) -> (bool, isize, string) {
     if start < value.byte_len() && (value.byte_get(start) == b'+' || value.byte_get(start) == b'-') {
         negative = value.byte_get(start) == b'-';
         start += 1;
-    } else {};
+    }
     let (valid_radix, digits_start, actual_radix, prefix) = integer_base(value, start, radix);
     if !valid_radix {
         return (false, 0, "invalid radix")
-    } else {};
+    }
     let limit: u64 = if negative {
         9223372036854775808
     } else {
@@ -127,7 +127,7 @@ fn parse_uint_value(value: string, radix: isize) -> (bool, usize, string) {
     let (valid_radix, digits_start, actual_radix, prefix) = integer_base(value, 0, radix);
     if !valid_radix {
         return (false, 0, "invalid radix")
-    } else {};
+    }
     let (valid, magnitude, message) = integer_magnitude(
         value,
         digits_start,

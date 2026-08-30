@@ -87,13 +87,13 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                         }
                     },
                     None => (),
-                };
+                }
                 index += 1;
             }
         } else {
             if positional {
                 return Result::Err(unexpected_argument_error(VERSION_COMMAND, argument, false))
-            } else {};
+            }
             match similar_cli_argument(VERSION_COMMAND, argument) {
                 Some(similar) => return Result::Err(
                     unexpected_similar_argument_error(

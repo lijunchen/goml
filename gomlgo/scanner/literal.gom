@@ -15,7 +15,7 @@ fn scan_escape(scanner: Scanner, quote: i32) -> bool {
     if escape_simple(scanner.current.get(), quote) {
         next(scanner);
         return true
-    } else {};
+    }
     let mut digits = 0;
     let mut base = 0;
     let mut maximum = 0.to_u32();
@@ -49,7 +49,7 @@ fn scan_escape(scanner: Scanner, quote: i32) -> bool {
             },
         );
         return false
-    };
+    }
     let mut value = 0.to_u32();
     while digits > 0 {
         let digit = digit_value(scanner.current.get());
@@ -64,7 +64,7 @@ fn scan_escape(scanner: Scanner, quote: i32) -> bool {
                 },
             );
             return false
-        } else {};
+        }
         value = value * base.to_u32() + digit.to_u32();
         next(scanner);
         digits -= 1;
@@ -88,7 +88,7 @@ fn scan_rune(scanner: Scanner) -> string {
             if valid {
                 report(scanner, start, "rune literal not terminated");
                 valid = false;
-            } else {};
+            }
             finished = true;
         } else {
             next(scanner);
@@ -98,13 +98,13 @@ fn scan_rune(scanner: Scanner) -> string {
                 count += 1;
                 if current == b'\\'.to_i32() && !scan_escape(scanner, b'\''.to_i32()) {
                     valid = false;
-                } else {}
+                }
             }
         }
     }
     if valid && count != 1 {
         report(scanner, start, "illegal rune literal")
-    } else {};
+    }
     source_text(scanner.source, start, scanner.offset.get())
 }
 
@@ -122,7 +122,7 @@ fn scan_string(scanner: Scanner) -> string {
                 finished = true;
             } else if current == b'\\'.to_i32() {
                 let _ = scan_escape(scanner, b'"'.to_i32());
-            } else {}
+            }
         }
     }
     source_text(scanner.source, start, scanner.offset.get())
@@ -138,7 +138,7 @@ fn strip_carriage_returns(source: Vec[byte], start: isize, end: isize, comment: 
                 && source[index + 1] == b'/');
         if preserve {
             output.push(value)
-        } else {};
+        }
         index += 1;
     }
     source_text(output, 0, output.len())
@@ -159,7 +159,7 @@ fn scan_raw_string(scanner: Scanner) -> string {
                 finished = true;
             } else if current == b'\r'.to_i32() {
                 has_carriage_return = true;
-            } else {}
+            }
         }
     }
     if has_carriage_return {

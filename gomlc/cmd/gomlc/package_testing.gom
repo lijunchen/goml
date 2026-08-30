@@ -34,7 +34,7 @@ fn named_test_attributes(values: Vec[ast::Attribute], expected: string) -> Vec[a
     for value in values {
         if value.name == expected {
             result.push(value)
-        } else {}
+        }
     }
     result
 }
@@ -88,7 +88,7 @@ fn test_ignore_reason(
 ) -> Option[string] {
     if attributes.is_empty() {
         return Option::None
-    } else {};
+    }
     let attribute = attributes[0];
     if !attribute.has_argument_list {
         Option::None
@@ -141,7 +141,7 @@ fn collect_function_test(
                 ),
             )
         }
-    } else {};
+    }
     if ignore_attrs.len() > 1 {
         for index in 1..ignore_attrs.len() {
             let attribute = ignore_attrs[index];
@@ -154,7 +154,7 @@ fn collect_function_test(
                 ),
             )
         }
-    } else {};
+    }
     if test_attrs.is_empty() && case_attrs.is_empty() {
         for attribute in ignore_attrs {
             diagnostics.push(
@@ -167,7 +167,7 @@ fn collect_function_test(
             )
         }
         return
-    } else {};
+    }
     if !test_attrs.is_empty() && !case_attrs.is_empty() {
         diagnostics.push(
             package_test_diagnostic(
@@ -178,7 +178,7 @@ fn collect_function_test(
             ),
         );
         return
-    } else {};
+    }
     if !case_attrs.is_empty() {
         let ignore_reason = test_ignore_reason(ignore_attrs, source_path, diagnostics);
         for case_attr in case_attrs {
@@ -193,7 +193,7 @@ fn collect_function_test(
                         case_attr.span,
                     ),
                 )
-            } else {};
+            }
             for argument in case_attr.args {
                 match argument {
                     String(value) => arguments.push(("string", value)),
@@ -236,10 +236,10 @@ fn collect_function_test(
                         arguments,
                     },
                 )
-            } else {}
+            }
         }
         return
-    } else {};
+    }
     let test_attr = test_attrs[0];
     if test_attr.has_argument_list {
         diagnostics.push(
@@ -251,7 +251,7 @@ fn collect_function_test(
             ),
         );
         return
-    } else {};
+    }
     let ignore_reason = test_ignore_reason(ignore_attrs, source_path, diagnostics);
     candidates.push(
         TestCandidate {
@@ -292,7 +292,7 @@ fn reject_item_test_attributes(
                     value.span,
                 ),
             )
-        } else {}
+        }
     }
 }
 
@@ -399,7 +399,7 @@ fn find_test_scheme(exports: artifact::ArtifactPackageExports, symbol: string) -
     for function in exports.functions {
         if function.name == symbol {
             return Option::Some(function)
-        } else {}
+        }
     }
     Option::None
 }
@@ -452,7 +452,7 @@ fn find_valid_test_candidate(package_name: string, values: Vec[TestCandidate], i
     for value in values {
         if test_candidate_id(package_name, value) == id {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -493,7 +493,7 @@ fn validate_package_tests(
                     span,
                 ),
             )
-        } else {};
+        }
         if !scheme.type_params.is_empty() {
             diagnostics.push(
                 package_test_diagnostic(
@@ -503,7 +503,7 @@ fn validate_package_tests(
                     span,
                 ),
             )
-        } else {};
+        }
         match tast::resolve_type(scheme.ty) {
             Func { params, ret_ty } => {
                 if params.len() != candidate.arguments.len() {
@@ -522,7 +522,7 @@ fn validate_package_tests(
                             span,
                         ),
                     )
-                } else {};
+                }
                 if params.len() == candidate.arguments.len() {
                     for index in 0..params.len() {
                         let valid = match tast::resolve_type(params[index]) {
@@ -541,9 +541,9 @@ fn validate_package_tests(
                                     span,
                                 ),
                             )
-                        } else {}
+                        }
                     }
-                } else {};
+                }
                 match tast::resolve_type(ret_ty) {
                     Unit => (),
                     actual => {
@@ -570,7 +570,7 @@ fn validate_package_tests(
                     ),
                 )
             },
-        };
+        }
         if diagnostics.len() == diagnostic_count {
             match find_valid_test_candidate(package_name, valid_candidates, id) {
                 Some(first) => diagnostics.push(
@@ -594,7 +594,7 @@ fn validate_package_tests(
                     valid_candidates.push(candidate)
                 },
             }
-        } else {}
+        }
     }
     TestValidation { tests: sort_test_descriptors(tests), diagnostics }
 }
@@ -659,7 +659,7 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
         let value = values[index];
         if index > 0 {
             builder.write_char(',')
-        } else {};
+        }
         builder.write_string("\n  {\n    \"id\": ");
         write_test_json_string(builder, value.id);
         builder.write_string(",\n    \"package\": ");
@@ -686,12 +686,12 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
         match value.ignore_reason {
             Some(reason) => write_test_json_string(builder, reason),
             None => builder.write_string("null"),
-        };
+        }
         builder.write_string(",\n    \"arguments\": [");
         for argument_index in 0..value.arguments.len() {
             if argument_index > 0 {
                 builder.write_char(',')
-            } else {};
+            }
             builder.write_string("{\"kind\":");
             write_test_json_string(builder, value.arguments[argument_index].0);
             builder.write_string(",\"value\":");
@@ -703,7 +703,7 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
     }
     if !values.is_empty() {
         builder.write_char('\n')
-    } else {};
+    }
     builder.write_char(']');
     builder.finish()
 }

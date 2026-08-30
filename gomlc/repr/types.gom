@@ -83,7 +83,7 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
         for index in 0..left.len() {
             if !types_equal(left[index], right[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -96,7 +96,7 @@ fn named_types_equal(left: Vec[(string, Type)], right: Vec[(string, Type)]) -> b
         for index in 0..left.len() {
             if left[index].0 != right[index].0 || !types_equal(left[index].1, right[index].1) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -111,7 +111,7 @@ fn dyn_bounds_equal(left: Vec[DynTraitBound], right: Vec[DynTraitBound]) -> bool
                 || !type_lists_equal(left[index].args, right[index].args)
                 || !named_types_equal(left[index].associated_types, right[index].associated_types) {
                 return false
-            } else {}
+            }
         }
         true
     }

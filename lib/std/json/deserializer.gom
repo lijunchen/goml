@@ -78,7 +78,7 @@ fn write_json_deserialize_frame_path(builder: text::StringBuilder, frame: JsonDe
             if name.byte_len() == 0 {} else {
                 builder.write_char('.');
                 builder.write_string(name)
-            };
+            }
             match field.get() {
                 Some(name) => {
                     builder.write_char('.');
@@ -106,7 +106,7 @@ fn write_json_deserialize_frame_path(builder: text::StringBuilder, frame: JsonDe
                 builder.write_char('[');
                 builder.write_string(json_current_index(index).to_string());
                 builder.write_char(']')
-            } else {}
+            }
         },
     }
 }
@@ -192,7 +192,7 @@ fn skip_direct_json_array(parser: JsonParser) -> Result[(), string] {
         && parser.input.byte_get(parser.index.get()) == b']' {
         parser.index.set(parser.index.get() + 1);
         return Result::Ok(())
-    } else {};
+    }
     while parser.index.get() < parser.input.byte_len() {
         skip_direct_json_value(parser)?;
         skip_json_whitespace(parser);
@@ -217,7 +217,7 @@ fn skip_direct_json_object(parser: JsonParser) -> Result[(), string] {
         && parser.input.byte_get(parser.index.get()) == b'}' {
         parser.index.set(parser.index.get() + 1);
         return Result::Ok(())
-    } else {};
+    }
     while parser.index.get() < parser.input.byte_len() {
         let _ = parse_json_string(parser)?;
         consume_json_byte(parser, b':', "expected object colon")?;
@@ -361,7 +361,7 @@ fn next_json_array_value(deserializer: JsonDeserializer, first: bool, done: bool
 ] {
     if done {
         return Result::Ok((first, done, false))
-    } else {};
+    }
     skip_json_whitespace(deserializer.parser);
     if deserializer.parser.index.get() >= deserializer.parser.input.byte_len() {
         Result::Err(json_error(deserializer.parser, "unterminated array"))
@@ -388,7 +388,7 @@ fn next_json_object_field(deserializer: JsonDeserializer, first: bool, done: boo
 ] {
     if done {
         return Result::Ok((first, done, Option::None))
-    } else {};
+    }
     skip_json_whitespace(deserializer.parser);
     if deserializer.parser.index.get() >= deserializer.parser.input.byte_len() {
         Result::Err(json_error(deserializer.parser, "unterminated object"))
@@ -404,7 +404,7 @@ fn next_json_object_field(deserializer: JsonDeserializer, first: bool, done: boo
             } else {
                 return Result::Err(json_error(deserializer.parser, "expected object separator"))
             }
-        } else {};
+        }
         let name = parse_json_string(deserializer.parser)?;
         consume_json_byte(deserializer.parser, b':', "expected object colon")?;
         Result::Ok((false, false, Option::Some(name)))
@@ -417,7 +417,7 @@ fn next_json_map_entry(deserializer: JsonDeserializer, first: bool, done: bool) 
 ] {
     if done {
         return Result::Ok((first, done, false))
-    } else {};
+    }
     skip_json_whitespace(deserializer.parser);
     if deserializer.parser.index.get() >= deserializer.parser.input.byte_len() {
         Result::Err(json_error(deserializer.parser, "unterminated map"))
@@ -606,7 +606,7 @@ impl serde::Deserializer for JsonDeserializer {
                 first = false;
             } else {
                 consume_json_byte(self.parser, b',', "expected byte array separator")?;
-            };
+            }
             values.push(direct_json_uint(self, 8)?.to_u8())
         }
         Result::Err("unreachable byte array state")
@@ -655,7 +655,7 @@ impl serde::Deserializer for JsonDeserializer {
                 let next = next_json_array_value(self, first.get(), done.get())?;
                 if next.2 {
                     index.set(index.get() + 1)
-                } else {};
+                }
                 first.set(next.0);
                 done.set(next.1);
                 Result::Ok(next.2)
@@ -681,7 +681,7 @@ impl serde::Deserializer for JsonDeserializer {
     fn begin_tuple(self: JsonDeserializer, length: isize) -> Result[(), string] {
         if length < 0 {
             return Result::Err(json_error(self.parser, "tuple length cannot be negative"))
-        } else {};
+        }
         consume_json_byte(self.parser, b'[', "expected tuple array")?;
         self.frames.push(JsonDeserializeFrame::Tuple { length, index: Ref::new(0) });
         Result::Ok(())
@@ -698,7 +698,7 @@ impl serde::Deserializer for JsonDeserializer {
                     consume_json_byte(self.parser, b',', "expected tuple separator")?
                 } else {
                     skip_json_whitespace(self.parser)
-                };
+                }
                 if self.parser.index.get() >= self.parser.input.byte_len()
                     || self.parser.input.byte_get(self.parser.index.get()) == b']' {
                     Result::Err(json_error(self.parser, "tuple has too few elements"))
@@ -750,7 +750,7 @@ impl serde::Deserializer for JsonDeserializer {
                 done.set(next.1);
                 if next.2 {
                     key.set(Option::None)
-                } else {};
+                }
                 state.set(
                     if next.2 {
                         1
@@ -811,7 +811,7 @@ impl serde::Deserializer for JsonDeserializer {
     fn begin_struct(self: JsonDeserializer, name: string, fields: isize) -> Result[(), string] {
         if fields < 0 {
             return Result::Err(json_error(self.parser, "struct field count cannot be negative"))
-        } else {};
+        }
         consume_json_byte(self.parser, b'{', "expected object")?;
         self.frames.push(
             JsonDeserializeFrame::Struct {
@@ -870,7 +870,7 @@ impl serde::Deserializer for JsonDeserializer {
     ] {
         if variants < 0 {
             return Result::Err(json_error(self.parser, "enum variant count cannot be negative"))
-        } else {};
+        }
         skip_json_whitespace(self.parser);
         if self.parser.index.get() >= self.parser.input.byte_len() {
             Result::Err(json_error(self.parser, "expected enum variant"))
@@ -917,7 +917,7 @@ impl serde::Deserializer for JsonDeserializer {
     ] {
         if kind < 0 || kind > 2 || fields < 0 || kind == 0 && fields != 0 {
             return Result::Err(json_error(self.parser, "invalid enum variant payload shape"))
-        } else {};
+        }
         let frame = json_frame_index(self)?;
         match self.frames[frame] {
             JsonDeserializeFrame::Variant {
@@ -994,7 +994,7 @@ impl serde::Deserializer for JsonDeserializer {
                 let position = index.get();
                 if next.2 {
                     index.set(position + 1)
-                } else {};
+                }
                 first.set(next.0);
                 done.set(next.1);
                 if next.2 {
@@ -1008,7 +1008,7 @@ impl serde::Deserializer for JsonDeserializer {
                 let next = next_json_object_field(self, first.get(), done.get())?;
                 if next.2.is_some() {
                     index.set(index.get() + 1)
-                } else {};
+                }
                 first.set(next.0);
                 done.set(next.1);
                 match next.2 {
@@ -1040,10 +1040,10 @@ impl serde::Deserializer for JsonDeserializer {
                     consume_json_byte(self.parser, b']', "expected tuple variant end")?
                 } else if kind.get() == 2 {
                     consume_json_byte(self.parser, b'}', "expected struct variant end")?
-                } else {};
+                }
                 if representation == 1 {
                     consume_json_byte(self.parser, b'}', "expected enum object end")?
-                } else {};
+                }
                 pop_json_frame(self);
                 Result::Ok(())
             },

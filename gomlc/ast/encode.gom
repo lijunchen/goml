@@ -137,7 +137,7 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> () {
             }
             encode_type(builder, ret_ty)
         },
-    };
+    }
     encode_close(builder)
 }
 
@@ -214,7 +214,7 @@ fn encode_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> ()
                 encode_type(builder, lhs);
                 encode_type(builder, rhs)
             },
-        };
+        }
         encode_close(builder)
     }
 }
@@ -288,7 +288,7 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> () {
         encode_open(builder, "Variant");
         if !variant.attrs.is_empty() {
             encode_attributes(builder, variant.attrs)
-        } else {};
+        }
         encode_string_value(builder, variant.name);
         match variant.fields {
             Unit => {
@@ -301,7 +301,7 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> () {
                 for index in 0..types.len() {
                     if index < variant.field_attrs.len() && !variant.field_attrs[index].is_empty() {
                         encode_attributes(builder, variant.field_attrs[index])
-                    } else {};
+                    }
                     let ty = types[index];
                     encode_type(builder, ty)
                 }
@@ -315,14 +315,14 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> () {
                     encode_open(builder, "Field");
                     if index < variant.field_attrs.len() && !variant.field_attrs[index].is_empty() {
                         encode_attributes(builder, variant.field_attrs[index])
-                    } else {};
+                    }
                     encode_string_value(builder, field.0);
                     encode_type(builder, field.1);
                     encode_close(builder)
                 }
                 encode_close(builder)
             },
-        };
+        }
         encode_close(builder)
     }
     encode_close(builder)
@@ -348,7 +348,7 @@ fn encode_struct(builder: text::StringBuilder, value: StructDef) -> () {
         encode_open(builder, "Field");
         if index < value.field_attrs.len() && !value.field_attrs[index].is_empty() {
             encode_attributes(builder, value.field_attrs[index])
-        } else {};
+        }
         encode_string_value(builder, name);
         encode_type(builder, ty);
         encode_close(builder)
@@ -395,7 +395,7 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> () {
                 encode_block(builder, body)
             },
             None => encode_none(builder),
-        };
+        }
         encode_close(builder)
     }
     encode_close(builder)
@@ -421,7 +421,7 @@ fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> () {
             encode_trait_ref(builder, trait_ref)
         },
         None => encode_none(builder),
-    };
+    }
     encode_type(builder, value.for_type);
     encode_list(builder, value.methods.len());
     for method in value.methods {
@@ -487,7 +487,7 @@ fn encode_block(builder: text::StringBuilder, value: Block) -> () {
             encode_expr(builder, expr)
         },
         None => encode_none(builder),
-    };
+    }
     encode_close(builder)
 }
 
@@ -522,7 +522,7 @@ fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> () {
                     encode_string_value(builder, binary_name(value))
                 },
                 Plain => encode_none(builder),
-            };
+            }
             encode_expr(builder, target);
             encode_expr(builder, expr)
         },
@@ -531,7 +531,7 @@ fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> () {
             encode_span(builder, value_span);
             encode_expr(builder, expr)
         },
-    };
+    }
     encode_close(builder)
 }
 
@@ -550,7 +550,7 @@ fn encode_file(builder: text::StringBuilder, value: File) -> () {
                 encode_string_value(builder, alias)
             },
             None => encode_none(builder),
-        };
+        }
         encode_list(builder, use_decl.items.len());
         for item in use_decl.items {
             encode_open(builder, "UseItem");
@@ -561,7 +561,7 @@ fn encode_file(builder: text::StringBuilder, value: File) -> () {
                     encode_string_value(builder, alias)
                 },
                 None => encode_none(builder),
-            };
+            }
             encode_span(builder, item.span);
             encode_close(builder)
         }
@@ -582,7 +582,7 @@ pub fn encode(value: LowerResult) -> string {
             encode_file(builder, file)
         },
         None => encode_none(builder),
-    };
+    }
     encode_list(builder, value.diagnostics.len());
     for diagnostic in value.diagnostics {
         encode_open(builder, "Diagnostic");

@@ -144,7 +144,7 @@ fn rejects_invalid_mono_nominal_types() -> () {
     match validate(file) {
         Ok(_) => (),
         Err(message) => testing::fail(message),
-    };
+    }
     let function = file.functions[0];
     let functions = Vec::from_array(
         [
@@ -180,7 +180,7 @@ fn rejects_open_types_at_the_mono_boundary() -> () {
     match parameter.error {
         Some(message) => testing::assert(message.contains("generic parameter T remained")),
         None => testing::fail("expected residual generic parameter rejection"),
-    };
+    }
     let projection = lower_checked(
         core_file_with_residual_type(
             core::Type::Projection {
@@ -193,7 +193,7 @@ fn rejects_open_types_at_the_mono_boundary() -> () {
     match projection.error {
         Some(message) => testing::assert(message.contains("projection remained")),
         None => testing::fail("expected residual projection rejection"),
-    };
+    }
     let nested = lower_checked(
         core_file_with_residual_type(
             core::Type::Dyn {
@@ -313,7 +313,7 @@ fn normalizes_supertrait_associated_projections() -> () {
                 },
                 None => testing::fail("expected function tail"),
             }
-        } else {}
+        }
     }
     testing::assert(found.get())
 }
@@ -474,7 +474,7 @@ fn rejects_recursive_generic_type_specialization() -> () {
             "Infinite monomorphization detected for generic type Bad: recursive specialization grows type parameter T from Option[i32] to Option[Option[i32]]",
         ),
         None => testing::fail("expected recursive enum specialization error"),
-    };
+    }
     let struct_result = lower_checked_source(
         "struct Bad[T] { value: T, next: Ref[Option[Bad[Option[T]]]] } fn use_bad(value: Bad[i32]) -> () {} fn main() -> () {}",
     );

@@ -129,7 +129,7 @@ fn set_field(fields: Vec[(string, json::Value)], name: string, value: json::Valu
         if fields[index].0 == name {
             fields[index] = (name, value);
             return
-        } else {}
+        }
     }
 }
 
@@ -147,7 +147,7 @@ fn contains_type(values: Vec[isize], value: isize) -> bool {
     for item in values {
         if item == value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -179,7 +179,7 @@ fn contains_named_origin(world: go_types::World, values: Vec[isize], value: go_t
                 },
             }) => if active_object.value == object.value {
                 return true
-            } else {},
+            },
             _ => {},
         }
     }
@@ -332,7 +332,7 @@ fn normalize_type_reference(value: checker::CheckResult, id: go_types::TypeId) -
             string_value("*types.Union"),
         ),
         _ => {},
-    };
+    }
     object_value(fields)
 }
 
@@ -348,7 +348,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
     if (contains_type(active, id.value) && !repeated_union)
         || contains_named_origin(value.world, active, id) {
         return normalize_type_reference(value, id)
-    } else {};
+    }
     let next: Vec[isize] = Vec::with_capacity(active.len() + 1);
     for item in active {
         next.push(item)
@@ -430,21 +430,21 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                         normalize_variable(value, receiver, next),
                     ),
                     None => {},
-                };
+                }
                 let parameters: Vec[json::Value] = Vec::new();
                 match go_types::get_type(value.world, params) {
                     Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => for variable in variables {
                         parameters.push(normalize_variable(value, variable, next))
                     },
                     _ => {},
-                };
+                }
                 let result_values: Vec[json::Value] = Vec::new();
                 match go_types::get_type(value.world, results) {
                     Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => for variable in variables {
                         result_values.push(normalize_variable(value, variable, next))
                     },
                     _ => {},
-                };
+                }
                 set_field(fields, "parameters", array_value(parameters));
                 set_field(fields, "results", array_value(result_values));
                 set_field(fields, "variadic", bool_value(variadic));
@@ -526,7 +526,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                         set_field(fields, "declaration", string_value(object_key(value, object)))
                     },
                     None => {},
-                };
+                }
                 set_field(
                     fields,
                     "type_parameters",
@@ -548,7 +548,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
                         set_field(fields, "declaration", string_value(object_key(value, object)))
                     },
                     None => {},
-                };
+                }
                 let rhs_value = normalize_type_inner(value, rhs, next);
                 set_field(
                     fields,
@@ -599,7 +599,7 @@ fn normalize_type_inner(value: checker::CheckResult, id: go_types::TypeId, activ
             },
         },
         None => {},
-    };
+    }
     object_value(fields)
 }
 
@@ -672,7 +672,7 @@ fn normalize_scope_objects(value: checker::CheckResult, scope_id: go_types::Scop
         for entry in value.world.scopes[scope_id.value].entries {
             result.push(normalize_object(value, entry.object))
         }
-    } else {};
+    }
     collections::sort_by(result, compare_json_name);
     result
 }
@@ -711,7 +711,7 @@ fn find_type_fact(value: checker::CheckResult, node: syntax::NodeId) -> Option[c
     for fact in value.info.types {
         if fact.node.value == node.value {
             return Option::Some(fact)
-        } else {}
+        }
     }
     Option::None
 }
@@ -857,7 +857,7 @@ fn normalize_scopes(value: checker::CheckResult) -> Vec[json::Value] {
                     ),
                 ),
             )
-        } else {}
+        }
     }
     collections::sort_by(result, compare_json_node);
     result

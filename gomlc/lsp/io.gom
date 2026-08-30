@@ -15,7 +15,7 @@ fn read_stdin_line() -> Result[bytes::Bytes, string] {
                 data.push(value);
                 if value == 10 {
                     return Result::Ok(data)
-                } else {}
+                }
             },
             Err(error) => if !data.is_empty() {
                 return Result::Ok(data)
@@ -44,7 +44,7 @@ pub fn read_rpc_payload() -> Result[string, string] {
                     Err(error) => return Result::Err(error),
                 },
             }
-        } else {}
+        }
     };
     match length {
         Some(length) => match io::read_stdin_exact_structured(length) {

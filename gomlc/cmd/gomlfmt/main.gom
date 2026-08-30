@@ -60,12 +60,12 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
     } else {
         if paths.is_empty() {
             paths.push("-")
-        } else {};
+        }
         let mut stdin_count = 0;
         for path in paths {
             if path == "-" {
                 stdin_count += 1;
-            } else {}
+            }
         }
         if write && stdin_count > 0 {
             Result::Err("-w cannot be used with stdin")
@@ -128,7 +128,7 @@ fn write_files(values: Vec[FormattedFile]) -> Result[(), string] {
                 Ok(_) => (),
                 Err(error) => return Result::Err(f"{value.path}: {error}"),
             }
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -147,8 +147,8 @@ fn run(options: Options) -> isize {
             changed = true;
             if options.list {
                 io::println(file.path)
-            } else {}
-        } else {}
+            }
+        }
     }
     if options.write {
         match write_files(files) {
@@ -160,7 +160,7 @@ fn run(options: Options) -> isize {
         }
     } else if !options.list && !options.check {
         io::print(files[0].formatted)
-    } else {};
+    }
     if options.check && changed {
         1
     } else {

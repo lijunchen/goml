@@ -485,7 +485,7 @@ fn dce_functions_context(value: File) -> DceFunctions {
 fn dce_retain_function(ctx: DceFunctions, name: string) -> () {
     if ctx.functions.contains(name) && ctx.reachable.insert(name) {
         ctx.pending.push(name)
-    } else {}
+    }
 }
 
 fn dce_retain_indexed_functions(
@@ -526,7 +526,7 @@ fn dce_retain_runtime_trait_functions(ctx: DceFunctions) -> () {
     for name in ctx.trait_names {
         if dce_runtime_trait_name(name) {
             dce_retain_trait_functions(ctx, name)
-        } else {}
+        }
     }
 }
 
@@ -730,7 +730,7 @@ fn dce_collect_function_expr(ctx: DceFunctions, value: Expr) -> () {
             match instance_name {
                 Some(name) => dce_retain_function(ctx, name),
                 None => (),
-            };
+            }
             dce_collect_trait_ref_types(ctx, trait_ref);
             dce_collect_type(ctx, for_ty);
             dce_collect_optional_function_expr(ctx, receiver);
@@ -768,7 +768,7 @@ fn dce_collect_function(ctx: DceFunctions, value: Function) -> () {
             dce_collect_named_types(ctx, metadata.associated_types)
         },
         None => (),
-    };
+    }
     dce_collect_function_block(ctx, value.body)
 }
 
@@ -777,7 +777,7 @@ pub fn eliminate_unreachable_functions(value: File) -> File {
     for function in value.functions {
         if function.root {
             dce_retain_function(ctx, function.name)
-        } else {}
+        }
     }
     let mut index = 0;
     while index < ctx.pending.len() {
@@ -792,7 +792,7 @@ pub fn eliminate_unreachable_functions(value: File) -> File {
     for function in value.functions {
         if dce_names_contains(ctx.reachable, function.name) {
             functions.push(function)
-        } else {}
+        }
     }
     File {
         functions,

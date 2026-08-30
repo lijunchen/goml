@@ -246,16 +246,16 @@ fn import_path_byte(value: byte) -> bool {
 fn valid_import_path(value: string) -> bool {
     if value == "" || value.starts_with("/") || value.ends_with("/") || value.contains("//") {
         return false
-    } else {};
+    }
     for part in text::split(value, "/") {
         if part == "." || part == ".." || part == "" {
             return false
-        } else {}
+        }
     }
     for index in 0..value.byte_len() {
         if !import_path_byte(value.byte_get(index)) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -263,7 +263,7 @@ fn valid_import_path(value: string) -> bool {
 fn valid_exported_symbol(value: string) -> bool {
     if value == "" || value.byte_get(0) < b'A' || value.byte_get(0) > b'Z' {
         return false
-    } else {};
+    }
     for index in 1..value.byte_len() {
         let item = value.byte_get(index);
         if (item >= b'a' && item <= b'z') || (item >= b'A' && item <= b'Z')
@@ -279,7 +279,7 @@ fn validate_types(values: Vec[string], location: string) -> Result[(), string] {
     for value in values {
         if value == "" {
             return Result::Err(location + " contains an empty Go type")
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -303,7 +303,7 @@ fn validate_emitted_types(values: Vec[string], location: string) -> Result[(), s
         for index in 0..value.byte_len() {
             if !emitted_type_byte(value.byte_get(index)) {
                 return Result::Err(location + " contains an unsafe Go type " + value)
-            } else {}
+            }
         }
     }
     Result::Ok(())
@@ -316,7 +316,7 @@ fn validate_call(value: NativeCallSpec) -> Result[(), string] {
         return Result::Err("native calls cannot bind the native bridge package")
     } else if !valid_exported_symbol(value.symbol) {
         return Result::Err("native call has invalid exported symbol " + value.symbol)
-    } else {};
+    }
     validate_emitted_types(
         value.type_argument_keys,
         "native call " + value.call_id.to_string() + " type arguments",
@@ -381,11 +381,11 @@ fn validate_proxy(value: NativeProxySpec) -> Result[(), string] {
         return Result::Err("native proxy has invalid interface identity")
     } else if value.methods.is_empty() {
         return Result::Err("native proxy has no methods")
-    } else {};
+    }
     for method in value.methods {
         if !valid_exported_symbol(method.name) {
             return Result::Err("native proxy has invalid method " + method.name)
-        } else {};
+        }
         validate_types(method.parameter_type_keys, "native proxy parameters")?;
         validate_types(method.result_type_keys, "native proxy results")?
     }
@@ -415,13 +415,13 @@ fn aggregate_field_type_supported(value: string) -> bool {
 fn validate_aggregate(value: NativeAggregateSpec) -> Result[(), string] {
     if value.key == "" || !valid_exported_symbol(value.name) || value.fields.is_empty() {
         return Result::Err("native aggregate has invalid identity")
-    } else {};
+    }
     for field in value.fields {
         if field.name == "" || field.type_key == "" || field.tag.contains("`") {
             return Result::Err("native aggregate has invalid field metadata")
         } else if !aggregate_field_type_supported(field.type_key) {
             return Result::Err("native aggregate has unsupported field type " + field.type_key)
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -430,7 +430,7 @@ fn call_uses_package(calls: Vec[NativeCallSpec], import_path: string) -> bool {
     for call in calls {
         if call.import_path == import_path {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -440,7 +440,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
         return Result::Err(
             "native manifest ABI " + value.abi_version.to_string() + " is unsupported",
         )
-    } else {};
+    }
     let calls: Vec[NativeCallSpec] = Vec::with_capacity(value.calls.len());
     for call in value.calls {
         validate_call(call)?;
@@ -452,7 +452,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
             return Result::Err(
                 "native call ID " + calls[index].call_id.to_string() + " is registered twice",
             )
-        } else {}
+        }
     }
     let types: Vec[NativeTypeSpec] = Vec::with_capacity(value.types.len());
     for type_value in value.types {
@@ -463,7 +463,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
     for index in 1..types.len() {
         if types[index - 1].key == types[index].key {
             return Result::Err("native type is registered twice")
-        } else {}
+        }
     }
     let globals: Vec[NativeGlobalSpec] = Vec::with_capacity(value.globals.len());
     for global in value.globals {
@@ -474,7 +474,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
     for index in 1..globals.len() {
         if globals[index - 1].object_id == globals[index].object_id {
             return Result::Err("native global is registered twice")
-        } else {}
+        }
     }
     let proxies: Vec[NativeProxySpec] = Vec::with_capacity(value.proxies.len());
     for proxy in value.proxies {
@@ -485,7 +485,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
     for index in 1..proxies.len() {
         if compare_proxy(proxies[index - 1], proxies[index]) == 0 {
             return Result::Err("native proxy is registered twice")
-        } else {}
+        }
     }
     let aggregates: Vec[NativeAggregateSpec] = Vec::with_capacity(value.aggregates.len());
     for aggregate in value.aggregates {
@@ -496,7 +496,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
     for index in 1..aggregates.len() {
         if aggregates[index - 1].key == aggregates[index].key {
             return Result::Err("native aggregate is registered twice")
-        } else {}
+        }
     }
     let packages: collections::BTreeSet[string] = collections::BTreeSet::new();
     for import_path in value.initialization_packages {
@@ -506,7 +506,7 @@ pub fn canonical_manifest(value: Manifest) -> Result[Manifest, string] {
             return Result::Err("native manifest cannot initialize the native bridge package")
         } else if !call_uses_package(calls, import_path) {
             let _ = packages.insert(import_path);
-        } else {}
+        }
     }
     Result::Ok(
         Manifest {

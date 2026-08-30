@@ -28,14 +28,14 @@ fn load_bytecode(name: string) -> bytecode::BytecodeProgram {
     if !loaded.diagnostics.is_empty() {
         testing::fail(loaded.diagnostics[0].message);
         loop {}
-    } else {};
+    }
     let lowered = bytecode::lower(
         testing::expect_some(loaded.program, "execution program is missing"),
     );
     if !lowered.diagnostics.is_empty() {
         testing::fail(lowered.diagnostics[0].message);
         loop {}
-    } else {};
+    }
     testing::expect_some(lowered.program, "bytecode program is missing")
 }
 
@@ -222,7 +222,7 @@ fn executes_compiler_generated_vector_shape() -> () {
     let result = run(load_bytecode("generated_vec"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("generated vector execution failed"))
-    } else {};
+    }
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "42\n");
@@ -260,11 +260,11 @@ fn passes_native_backed_pointers_through_native_interfaces() -> () {
     match native::install_catalog_error(manifest) {
         Some(error) => testing::fail(error),
         None => {},
-    };
+    }
     let result = run(program, default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("native locker execution failed"))
-    } else {};
+    }
     testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "true\n");
     testing::assert(result.error.is_none())
 }
@@ -294,7 +294,7 @@ fn calls_host_interface_methods_with_named_scalar_results() -> () {
     let result = run(program, default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("native file mode execution failed"))
-    } else {};
+    }
     testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "true true\n");
     testing::assert(result.error.is_none())
 }
@@ -310,7 +310,7 @@ fn wakes_mixed_native_selects_from_local_channels() -> () {
     let result = run(program, default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("mixed select execution failed"))
-    } else {};
+    }
     testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "ready\ndefault\ndone\n");
     testing::assert(result.error.is_none())
 }
@@ -326,7 +326,7 @@ fn initializes_native_composite_literals_with_callbacks() -> () {
     let result = run(program, default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("native command literal failed"))
-    } else {};
+    }
     testing::assert_eq(result.stderr.to_string_utf8().unwrap_or(""), "/bin/true 1\n");
     testing::assert(result.error.is_none())
 }
@@ -338,7 +338,7 @@ fn converts_strings_and_byte_slices() -> () {
         testing::fail(
             result.stderr.to_string_utf8().unwrap_or("string conversion execution failed"),
         )
-    } else {};
+    }
     testing::assert_eq(result.exit_code, 0);
     testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
@@ -455,7 +455,7 @@ fn schedules_goroutines_and_channels_cooperatively() -> () {
     let result = run(load_bytecode("channels"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("channel execution failed"))
-    } else {};
+    }
     testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
         result.stderr.to_string_utf8().unwrap_or(""),
@@ -469,7 +469,7 @@ fn executes_channel_select_and_labeled_breaks() -> () {
     let result = run(load_bytecode("select"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("select execution failed"))
-    } else {};
+    }
     testing::assert_eq(
         result.stderr.to_string_utf8().unwrap_or(""),
         "recv 4\ndefault\nclosed 0 false\nsend-ready\nsent 9\nreceive-ready 12\nlabeled\n",
@@ -532,7 +532,7 @@ fn executes_defer_panic_and_recover() -> () {
     let result = run(load_bytecode("defer_panic_recover"), default_config());
     if result.exit_code != 0 {
         testing::fail(result.stderr.to_string_utf8().unwrap_or("defer execution failed"))
-    } else {};
+    }
     testing::assert_eq(result.stdout.to_string_utf8().unwrap_or(""), "");
     testing::assert_eq(
         result.stderr.to_string_utf8().unwrap_or(""),
@@ -561,7 +561,7 @@ fn assert_runtime_error(name: string, message: string) -> () {
     let stderr = result.stderr.to_string_utf8().unwrap_or("<non-UTF-8>");
     if !stderr.contains(message) {
         testing::fail("runtime error for " + name + " was: " + stderr)
-    } else {}
+    }
 }
 
 #[test]
@@ -588,7 +588,7 @@ fn assert_matches_go(name: string) -> () {
             "exit mismatch for " + name + ": "
                 + interpreted.stderr.to_string_utf8().unwrap_or("<non-UTF-8>"),
         )
-    } else {};
+    }
     testing::assert_eq(
         interpreted.exit_code,
         process::ExitStatus::code(process::Output::status(native)).unwrap_or(-1),

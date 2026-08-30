@@ -252,7 +252,7 @@ fn pretty_write_control_escape(builder: text::StringBuilder, value: u8) -> () {
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(pretty_hex_digit(value / 16))
-    } else {};
+    }
     builder.write_char(pretty_hex_digit(value % 16));
     builder.write_char('}')
 }
@@ -279,7 +279,7 @@ fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> ()
         } else {
             let width = pretty_utf8_width(byte);
             builder.write_string(value.byte_slice(index, index + width))
-        };
+        }
         index = index + pretty_utf8_width(byte);
     }
     builder.write_char('"')
@@ -436,7 +436,7 @@ fn pretty_struct_doc(value: StructDef) -> doc::Doc {
                 ],
             ),
         )
-    } else {};
+    }
     let fields: Vec[doc::Doc] = Vec::with_capacity(value.fields.len());
     for index in 0..value.fields.len() {
         let field = value.fields[index];
@@ -769,14 +769,14 @@ fn pretty_file(value: File) -> string {
         values.push(doc::stack(uses));
         values.push(doc::hardline());
         values.push(doc::hardline())
-    } else {};
+    }
     if !items.is_empty() {
         values.push(
             doc::join(doc::concat(Vec::from_array([doc::hardline(), doc::hardline()])), items),
         );
         values.push(doc::hardline());
         values.push(doc::hardline())
-    } else {};
+    }
     doc::pretty(100, doc::concat(values))
 }
 

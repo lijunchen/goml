@@ -343,7 +343,7 @@ fn new_ct_reachability() -> CtReachability {
 fn add_reachable_function(values: CtReachability, id: isize) -> () {
     if values.functions.insert(id) {
         values.function_ids.push(id)
-    } else {}
+    }
 }
 
 fn add_reachable_constant(values: CtReachability, name: string) -> () {
@@ -355,7 +355,7 @@ fn collect_reachable_expr(package_name: string, value: CtExpr, reachable: CtReac
         Value(_) | Local(_) | Continue { .. } => (),
         Constant { package_name: owner, name } => if owner == package_name {
             add_reachable_constant(reachable, name)
-        } else {},
+        },
         Tuple(values) | Array(values) | Struct { fields: values, .. } | Enum { fields: values, .. } => for value in values {
             collect_reachable_expr(package_name, value, reachable)
         },
@@ -380,7 +380,7 @@ fn collect_reachable_expr(package_name: string, value: CtExpr, reachable: CtReac
                 match arm.guard {
                     Some(value) => collect_reachable_expr(package_name, value, reachable),
                     None => (),
-                };
+                }
                 collect_reachable_expr(package_name, arm.body, reachable)
             }
         },
@@ -406,7 +406,7 @@ fn collect_reachable_expr(package_name: string, value: CtExpr, reachable: CtReac
             match target {
                 Local(id) => add_reachable_function(reachable, id),
                 External { .. } | Intrinsic(_) => (),
-            };
+            }
             for value in args {
                 collect_reachable_expr(package_name, value, reachable)
             }
@@ -442,14 +442,14 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
         if public_entry_names.contains(entry.name) {
             entries.push(entry);
             add_reachable_function(reachable, entry.function_id)
-        } else {}
+        }
     }
     let derive_entries: Vec[CtDeriveEntry] = Vec::with_capacity(value.derive_entries.len());
     for entry in value.derive_entries {
         if entry.public {
             derive_entries.push(entry);
             add_reachable_function(reachable, entry.function_id)
-        } else {}
+        }
     }
     let functions_by_id: HashMap[isize, CtFunction] = HashMap::new();
     for function in value.functions {
@@ -460,14 +460,14 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
         match functions_by_id[reachable.function_ids[index]] {
             Some(function) => collect_reachable_block(value.package_name, function.body, reachable),
             None => (),
-        };
+        }
         index = index + 1;
     }
     let functions: Vec[CtFunction] = Vec::with_capacity(reachable.function_ids.len());
     for function in value.functions {
         if reachable.functions.contains(function.id) {
             functions.push(function)
-        } else {}
+        }
     }
     CtModule {
         package_name: value.package_name,
@@ -481,7 +481,7 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
             for constant in value.constants {
                 if reachable.constants.contains(constant.name) {
                     result.push(constant)
-                } else {}
+                }
             }
             result
         },

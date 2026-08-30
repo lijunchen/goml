@@ -54,7 +54,7 @@ pub fn add_type(world: World, kind: TypeKind) -> TypeId {
     world.named_type_objects.push(object);
     if object >= 0 {
         register_named_type(world, id, object)
-    } else {};
+    }
     id
 }
 
@@ -63,7 +63,7 @@ pub fn set_type(world: World, id: TypeId, kind: TypeKind) -> bool {
         let object = named_type_object(kind);
         if object >= 0 && world.named_type_objects[id.value] != object {
             register_named_type(world, id, object)
-        } else {};
+        }
         world.named_type_objects[id.value] = object;
         world.types[id.value] = TypeData { id, kind };
         advance_type_revision(world);
@@ -114,7 +114,7 @@ fn update_scope_depth(world: World, scope: ScopeId, depth: isize) -> () {
         for child in world.scopes[scope.value].children {
             update_scope_depth(world, child, depth + 1)
         }
-    } else {}
+    }
 }
 
 fn remove_scope_child(world: World, parent: ScopeId, child: ScopeId) -> () {
@@ -123,16 +123,16 @@ fn remove_scope_child(world: World, parent: ScopeId, child: ScopeId) -> () {
         for candidate in world.scopes[parent.value].children {
             if candidate.value != child.value {
                 children.push(candidate)
-            } else {}
+            }
         }
         world.scopes[parent.value].children = children;
-    } else {}
+    }
 }
 
 pub fn set_scope_parent(world: World, scope: ScopeId, parent: ScopeId) -> bool {
     if !valid_scope(world, scope) || !valid_scope(world, parent) {
         return false
-    } else {};
+    }
     let previous = world.scopes[scope.value].parent;
     let unchanged = match previous {
         Some(value) => value.value == parent.value,
@@ -140,11 +140,11 @@ pub fn set_scope_parent(world: World, scope: ScopeId, parent: ScopeId) -> bool {
     };
     if unchanged {
         return true
-    } else {};
+    }
     match previous {
         Some(value) => remove_scope_child(world, value, scope),
         None => {},
-    };
+    }
     world.scopes[scope.value].parent = Option::Some(parent);
     world.scopes[parent.value].children.push(scope);
     update_scope_depth(world, scope, world.scopes[parent.value].depth + 1);
@@ -178,9 +178,9 @@ pub fn add_scope(
     match parent {
         Some(parent_id) => if parent_id.value >= 0 && parent_id.value < world.scopes.len() {
             world.scopes[parent_id.value].children.push(id)
-        } else {},
+        },
         None => {},
-    };
+    }
     id
 }
 
@@ -249,7 +249,7 @@ pub fn set_object_type(world: World, id: ObjectId, object_type: TypeId) -> bool 
         if world.objects[id.value].type_id.value != object_type.value {
             world.objects[id.value].type_id = object_type;
             advance_type_revision(world)
-        } else {};
+        }
         true
     } else {
         false
@@ -278,11 +278,11 @@ pub fn set_object_imported_package(world: World, id: ObjectId, imported: Package
 pub fn insert(world: World, scope: ScopeId, name: string, object: ObjectId) -> Option[ObjectId] {
     if scope.value < 0 || scope.value >= world.scopes.len() {
         return Option::Some(object)
-    } else {};
+    }
     match world.scopes[scope.value].entry_objects[name] {
         Some(existing) => return Option::Some(existing),
         None => {},
-    };
+    }
     world.scopes[scope.value].entries.push(ScopeEntry { name, object });
     world.scopes[scope.value].entry_objects[name] = object;
     Option::None
@@ -293,11 +293,11 @@ pub fn lookup(world: World, scope: ScopeId, name: string) -> Option[ObjectId] {
     while let Some(scope_id_value) = current {
         if scope_id_value.value < 0 || scope_id_value.value >= world.scopes.len() {
             return Option::None
-        } else {};
+        }
         match world.scopes[scope_id_value.value].entry_objects[name] {
             Some(object) => return Option::Some(object),
             None => {},
-        };
+        }
         current = world.scopes[scope_id_value.value].parent;
     }
     Option::None
@@ -306,7 +306,7 @@ pub fn lookup(world: World, scope: ScopeId, name: string) -> Option[ObjectId] {
 pub fn lookup_local(world: World, scope: ScopeId, name: string) -> Option[ObjectId] {
     if scope.value < 0 || scope.value >= world.scopes.len() {
         return Option::None
-    } else {};
+    }
     world.scopes[scope.value].entry_objects[name]
 }
 
@@ -315,16 +315,16 @@ pub fn lookup_at(world: World, scope: ScopeId, name: string, position: isize) ->
     while let Some(scope_id_value) = current {
         if scope_id_value.value < 0 || scope_id_value.value >= world.scopes.len() {
             return Option::None
-        } else {};
+        }
         match world.scopes[scope_id_value.value].entry_objects[name] {
             Some(entry_object) => match get_object(world, entry_object) {
                 Some(object) => if object.position < 0 || object.position <= position {
                     return Option::Some(entry_object)
-                } else {},
+                },
                 None => {},
             },
             None => {},
-        };
+        }
         current = world.scopes[scope_id_value.value].parent;
     }
     Option::None
@@ -334,7 +334,7 @@ pub fn basic_type(world: World, name: string) -> Option[TypeId] {
     for entry in world.basics {
         if entry.name == name {
             return Option::Some(entry.type_id)
-        } else {}
+        }
     }
     Option::None
 }

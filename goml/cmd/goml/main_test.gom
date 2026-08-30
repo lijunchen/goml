@@ -56,7 +56,7 @@ fn parses_fmt_options() -> () {
             }
         },
         Err(message) => testing::fail(message),
-    };
+    }
     match parse_fmt(Vec::from_array(["goml", "fmt"])) {
         Ok(options) => {
             testing::assert(!options.check);
@@ -71,7 +71,7 @@ fn rejects_invalid_fmt_options() -> () {
     match parse_fmt(Vec::from_array(["goml", "fmt", "--check", "--check"])) {
         Ok(_) => testing::fail("repeated --check accepted"),
         Err(message) => testing::assert_eq(message, "--check cannot be repeated"),
-    };
+    }
     match parse_fmt(Vec::from_array(["goml", "fmt", "main.gom"])) {
         Ok(_) => testing::fail("fmt file target accepted"),
         Err(message) => testing::assert_eq(message, "unexpected argument main.gom"),
@@ -108,7 +108,7 @@ fn json_parser_reads_package_info_shape() -> () {
             testing::assert_eq(value, "1")
         },
         _ => testing::fail("missing protocol version"),
-    };
+    }
     match json::field(value, "files") {
         Some(value) => match json::as_array(value) {
             Some(values) => testing::assert_eq(values.len(), 1),
@@ -141,7 +141,7 @@ fn run_plan_places_executables_under_package_paths() -> () {
     match root.executable {
         Some(value) => testing::assert_eq(value, path::join(path::join("_artifact", "bin"), "demo")),
         None => testing::fail("missing root executable"),
-    };
+    }
     let nested = match project::run_plan(project_context("alice::demo::cmd::server")) {
         Ok(value) => value,
         Err(message) => {

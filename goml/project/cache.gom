@@ -85,14 +85,14 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             match world {
                 Some(value) => inputs.push(value),
                 None => (),
-            };
+            }
             let outputs = Vec::from_array([path::with_extension(output, "interface")]);
             match subcommand {
                 BUILD_SUBCOMMAND | TEST_BUILD_SUBCOMMAND => {
                     outputs.push(path::with_extension(output, "core"))
                 },
                 _ => (),
-            };
+            }
             Option::Some(
                 CacheSpec {
                     kind: subcommand,
@@ -117,7 +117,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             match counter_output {
                 Some(value) => outputs.push(value),
                 None => (),
-            };
+            }
             Option::Some(
                 CacheSpec {
                     kind: "toolchain-build",
@@ -155,7 +155,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             match world {
                 Some(value) => inputs.push(value),
                 None => (),
-            };
+            }
             Option::Some(
                 CacheSpec {
                     kind: "link",
@@ -174,7 +174,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             match world {
                 Some(value) => inputs.push(value),
                 None => (),
-            };
+            }
             Option::Some(
                 CacheSpec {
                     kind: "test-link",
@@ -254,12 +254,12 @@ fn cache_is_fresh(cache: DigestCache, context: Context, spec: CacheSpec, fingerp
     let record_path = cache_path(context.graph.module_dir, spec);
     if !fs::is_file(record_path) {
         return Result::Ok(false)
-    } else {};
+    }
     let source = fs::read_file_structured(record_path).map_err(|error| error.to_string())?;
     let lines = text::split(source, "\n");
     if lines.len() != spec.outputs.len() + 1 || lines[0] != fingerprint {
         return Result::Ok(false)
-    } else {};
+    }
     let actual = match output_digests(cache, context.graph.module_dir, spec.outputs) {
         Ok(Some(value)) => value,
         Ok(None) => return Result::Ok(false),
@@ -268,7 +268,7 @@ fn cache_is_fresh(cache: DigestCache, context: Context, spec: CacheSpec, fingerp
     for index in 0..actual.len() {
         if lines[index + 1] != actual[index] {
             return Result::Ok(false)
-        } else {}
+        }
     }
     Result::Ok(true)
 }
@@ -306,7 +306,7 @@ fn store_cache(
     if after != before {
         let _ = prepare_cache_execution(context, spec);
         return Result::Err("cache input changed while executing subcommand")
-    } else {};
+    }
     let digests = match output_digests(cache, context.graph.module_dir, spec.outputs) {
         Ok(Some(value)) => value,
         Ok(None) => {
@@ -328,6 +328,6 @@ fn store_cache(
     match path::parent(record_path) {
         Some(parent) => fs::create_dir_all(parent).map_err(|error| error.to_string())?,
         None => return Result::Err("fingerprint path has no parent directory"),
-    };
+    }
     fs::write_file_structured(record_path, builder.finish()).map_err(|error| error.to_string())
 }

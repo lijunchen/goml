@@ -249,7 +249,7 @@ impl Serializer for ValueSerializer {
     fn end_optional(self: ValueSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_optional without begin_optional")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Optional { values, present, ready } => {
                 if ready.get()
@@ -260,7 +260,7 @@ impl Serializer for ValueSerializer {
                             0
                         } {
                     return Result::Err("optional value has the wrong number of items")
-                } else {};
+                }
                 let _ = self.frames.pop();
                 append_serialized_value(self, Value::Optional(values))
             },
@@ -286,7 +286,7 @@ impl Serializer for ValueSerializer {
     fn begin_sequence_element(self: ValueSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("sequence element without sequence")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Sequence { values, length, ready } => if ready.get() {
                 Result::Err("previous sequence element has no value")
@@ -303,12 +303,12 @@ impl Serializer for ValueSerializer {
     fn end_sequence(self: ValueSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_sequence without begin_sequence")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Sequence { values, length, ready } => {
                 if ready.get() || values.len() != length {
                     return Result::Err("sequence length does not match its elements")
-                } else {};
+                }
                 let _ = self.frames.pop();
                 append_serialized_value(self, Value::Sequence(values))
             },
@@ -334,7 +334,7 @@ impl Serializer for ValueSerializer {
     fn begin_tuple_element(self: ValueSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("tuple element without tuple")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Tuple { values, length, ready } => if ready.get() {
                 Result::Err("previous tuple element has no value")
@@ -351,12 +351,12 @@ impl Serializer for ValueSerializer {
     fn end_tuple(self: ValueSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_tuple without begin_tuple")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Tuple { values, length, ready } => {
                 if ready.get() || values.len() != length {
                     return Result::Err("tuple length does not match its elements")
-                } else {};
+                }
                 let _ = self.frames.pop();
                 append_serialized_value(self, Value::Tuple(values))
             },
@@ -383,7 +383,7 @@ impl Serializer for ValueSerializer {
     fn begin_map_key(self: ValueSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map key without map")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Map { entries, length, state, key } => if state.get() != 0
                 || key.get().is_some() {
@@ -401,7 +401,7 @@ impl Serializer for ValueSerializer {
     fn begin_map_value(self: ValueSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map value without map")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Map { entries, length: _, state, key } => if state.get() != 0
                 || key.get().is_none() {
@@ -419,12 +419,12 @@ impl Serializer for ValueSerializer {
     fn end_map(self: ValueSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_map without begin_map")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Map { entries, length, state, key } => {
                 if state.get() != 0 || key.get().is_some() || entries.len() != length {
                     return Result::Err("map length does not match its entries")
-                } else {};
+                }
                 let _ = self.frames.pop();
                 append_serialized_value(self, Value::Sequence(entries))
             },
@@ -451,7 +451,7 @@ impl Serializer for ValueSerializer {
     fn begin_struct_field(self: ValueSerializer, index: isize, name: string) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("struct field without struct")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Struct { fields, length, pending } => if pending.get().is_some() {
                 Result::Err("previous struct field has no value")
@@ -468,12 +468,12 @@ impl Serializer for ValueSerializer {
     fn end_struct(self: ValueSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_struct without begin_struct")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Struct { fields, length, pending } => {
                 if pending.get().is_some() || fields.len() != length {
                     return Result::Err("struct field count does not match its values")
-                } else {};
+                }
                 let _ = self.frames.pop();
                 append_serialized_value(self, Value::Struct(fields))
             },
@@ -510,7 +510,7 @@ impl Serializer for ValueSerializer {
     fn begin_variant_field(self: ValueSerializer, index: isize, name: string) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("variant field without variant")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Variant { index: _, name: _, kind: _, fields, length, pending } => if pending.get().is_some() {
                 Result::Err("previous variant field has no value")
@@ -527,12 +527,12 @@ impl Serializer for ValueSerializer {
     fn end_variant(self: ValueSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_variant without begin_variant")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             ValueSerializeFrame::Variant { index, name, kind, fields, length, pending } => {
                 if pending.get().is_some() || fields.len() != length {
                     return Result::Err("variant field count does not match its values")
-                } else {};
+                }
                 let _ = self.frames.pop();
                 append_serialized_value(self, Value::Variant { index, name, kind, fields })
             },

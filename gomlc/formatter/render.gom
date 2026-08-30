@@ -41,7 +41,7 @@ fn string_contains_newline(value: string) -> bool {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'\n' {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -124,7 +124,7 @@ fn write_indent(value: Renderer) -> () {
         }
         value.column.set(value.indent_level.get() * 4);
         value.line_start.set(false)
-    } else {}
+    }
 }
 
 fn write_text(value: Renderer, content: string, width: isize) -> () {
@@ -140,7 +140,7 @@ fn raw_last_line_width(content: string) -> isize {
     for index in 0..content.byte_len() {
         if content.byte_get(index) == b'\n' {
             start.set(index + 1)
-        } else {}
+        }
     }
     codepoint_width(content.byte_slice(start.get(), content.byte_len()))
 }

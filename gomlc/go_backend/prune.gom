@@ -184,7 +184,7 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> () {
                         collect_expr_names(result, channel);
                         collect_expr_names(result, value)
                     },
-                };
+                }
                 collect_block_names(result, case.body)
             }
             match default {
@@ -218,7 +218,7 @@ fn import_is_used(names: NameSet, alias: string) -> bool {
     for name in names {
         if name_uses_import(name, alias) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -236,7 +236,7 @@ fn collect_item_names(result: NameSet, value: Item) -> () {
             match global.ty {
                 Some(ty) => collect_type_names(result, ty),
                 None => (),
-            };
+            }
             collect_expr_names(result, global.value)
         },
         Interface(definition) => {
@@ -262,7 +262,7 @@ fn collect_item_names(result: NameSet, value: Item) -> () {
             match function.ret_ty {
                 Some(ty) => collect_type_names(result, ty),
                 None => (),
-            };
+            }
             collect_block_names(result, function.body)
         },
         Method(method) => {
@@ -273,7 +273,7 @@ fn collect_item_names(result: NameSet, value: Item) -> () {
             match method.ret_ty {
                 Some(ty) => collect_type_names(result, ty),
                 None => (),
-            };
+            }
             collect_block_names(result, method.body)
         },
         ImportGroup(_) => (),
@@ -293,11 +293,11 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
                 for entry in imports {
                     if import_is_used(names, entry.0) {
                         retained.push(entry)
-                    } else {}
+                    }
                 }
                 if !retained.is_empty() {
                     result.push(Item::ImportGroup(retained))
-                } else {}
+                }
             },
             other => result.push(other),
         }
@@ -318,14 +318,14 @@ pub fn prune_functions(value: File) -> File {
                         && !name_present(expanded, function.name) {
                         add_reachable(expanded, function.name);
                         collect_block_names(reachable, function.body);
-                    } else {}
+                    }
                 },
                 _ => (),
             }
         }
         if expanded.len() == previous_len {
             break
-        } else {}
+        }
     }
     loop {
         let previous_len = expanded.len();
@@ -335,13 +335,13 @@ pub fn prune_functions(value: File) -> File {
                     && !name_present(expanded, global.name) {
                     add_reachable(expanded, global.name);
                     collect_expr_names(reachable, global.value)
-                } else {},
+                },
                 _ => (),
             }
         }
         if expanded.len() == previous_len {
             break
-        } else {}
+        }
     }
     loop {
         let previous_len = expanded.len();
@@ -351,14 +351,14 @@ pub fn prune_functions(value: File) -> File {
                     if name_present(reachable, spec.name) && !name_present(expanded, spec.name) {
                         add_reachable(expanded, spec.name);
                         collect_expr_names(reachable, spec.value)
-                    } else {}
+                    }
                 },
                 _ => (),
             }
         }
         if expanded.len() == previous_len {
             break
-        } else {}
+        }
     }
     let items: Vec[Item] = Vec::new();
     for item in value.items {
@@ -366,7 +366,7 @@ pub fn prune_functions(value: File) -> File {
             Function(function) => {
                 if name_present(reachable, function.name) {
                     items.push(Item::Function(function))
-                } else {}
+                }
             },
             ConstGroup(group) => {
                 let was_empty = group.specs.is_empty();
@@ -374,16 +374,16 @@ pub fn prune_functions(value: File) -> File {
                 for spec in group.specs {
                     if name_present(reachable, spec.name) {
                         specs.push(spec)
-                    } else {}
+                    }
                 }
                 if was_empty || !specs.is_empty() {
                     items.push(Item::ConstGroup(ConstGroup { specs }))
-                } else {}
+                }
             },
             Global(global) => {
                 if name_present(reachable, global.name) {
                     items.push(Item::Global(global))
-                } else {}
+                }
             },
             _ => items.push(item),
         }

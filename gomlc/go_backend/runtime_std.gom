@@ -1349,7 +1349,7 @@ fn std_fs_atomic_failure(close_file: bool) -> Block {
         stmts.push(
             Stmt::Expr { expr: std_method_call(Expr::Var { name: "file" }, "Close", Vec::new()) },
         )
-    } else {};
+    }
     for stmt in std_error_failure_stmts() {
         stmts.push(stmt)
     }
@@ -3435,7 +3435,7 @@ fn std_process_command_setup(command_function: string) -> Vec[Stmt] {
     let command_args: Vec[Expr] = Vec::new();
     if command_function == "_goml_exec.CommandContext" {
         command_args.push(Expr::Var { name: "ctx" })
-    } else {};
+    }
     command_args.push(Expr::Var { name: "program" });
     command_args.push(Expr::Var { name: "arguments.items..." });
     stmts.push(
@@ -3735,7 +3735,7 @@ fn std_process_output_item_for(key: string, mode: ProcessExecutionMode) -> Item 
         for stmt in std_process_cancel_group_setup() {
             stmts.push(stmt)
         }
-    } else {};
+    }
     let set_input: Vec[Stmt] = Vec::new();
     let reader_args: Vec[Expr] = Vec::new();
     reader_args.push(Expr::Field { expr: Expr::Var { name: "input" }, field_name: "items" });
@@ -3820,8 +3820,8 @@ fn std_process_output_item_for(key: string, mode: ProcessExecutionMode) -> Item 
         );
         if timed {
             stmts.push(Stmt::Expr { expr: std_call("cancel", Vec::new()) })
-        } else {}
-    } else {};
+        }
+    }
     stmts.push(
         Stmt::Var { name: "code", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );
@@ -3926,7 +3926,7 @@ fn std_process_status_item_for(key: string, mode: ProcessExecutionMode) -> Item 
         for stmt in std_process_cancel_group_setup() {
             stmts.push(stmt)
         }
-    } else {};
+    }
     stmts.push(
         Stmt::FieldAssign {
             target: Expr::Var { name: "cmd" },
@@ -3987,8 +3987,8 @@ fn std_process_status_item_for(key: string, mode: ProcessExecutionMode) -> Item 
         );
         if timed {
             stmts.push(Stmt::Expr { expr: std_call("cancel", Vec::new()) })
-        } else {}
-    } else {};
+        }
+    }
     stmts.push(
         Stmt::Var { name: "code", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );

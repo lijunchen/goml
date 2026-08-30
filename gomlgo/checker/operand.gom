@@ -69,7 +69,7 @@ fn similar_package_member(state: CheckState, package_id: go_types::PackageId, na
             Some(object) => if object.exported
                 && unicode::lowercase(object.name) == unicode::lowercase(name) {
                 return object.name
-            } else {},
+            },
             None => {},
         }
     }
@@ -86,7 +86,7 @@ fn similar_field_in_type_inner(
     for existing in visited {
         if existing == resolved.value {
             return Option::None
-        } else {}
+        }
     }
     visited.push(resolved.value);
     go_types::ensure_named_instance_methods(state.world, resolved);
@@ -113,7 +113,7 @@ fn similar_field_in_type_inner(
                     Some(object_id) => match go_types::get_object(state.world, object_id) {
                         Some(object) => if similar_selector_object(state, object, name) {
                             return Option::Some(object_id)
-                        } else {},
+                        },
                         None => {},
                     },
                     None => {},
@@ -125,7 +125,7 @@ fn similar_field_in_type_inner(
                         Some(object) => return Option::Some(object),
                         None => {},
                     }
-                } else {}
+                }
             }
             Option::None
         },
@@ -175,7 +175,7 @@ fn similar_method_object_in_type(
             Some(object) => if object.name != name && similar_selector_object(state, object, name)
                 && selector_object_accessible(state, object) {
                 result = Option::Some(selection.object);
-            } else {},
+            },
             None => {},
         }
     }
@@ -190,11 +190,11 @@ fn similar_method_object_in_type(
                     && similar_selector_object(state, object, name)
                     && selector_object_accessible(state, object) {
                     result = Option::Some(selection.object);
-                } else {},
+                },
                 None => {},
             }
         }
-    } else {};
+    }
     result
 }
 
@@ -254,7 +254,7 @@ fn diagnostic_method_string(state: CheckState, object_id: go_types::ObjectId) ->
                             },
                             _ => {},
                         }
-                    } else {};
+                    }
                     parameter_types.push(type_string)
                 }
                 let result_types: Vec[string] = Vec::new();
@@ -298,7 +298,7 @@ fn interface_implementation_detail(
         return ""
     } else if incomplete_named_instance(state, source) || incomplete_named_instance(state, target) {
         return ""
-    } else {};
+    }
     for required_id in go_types::interface_methods(state.world, target) {
         match go_types::get_object(state.world, required_id) {
             Some(required) => match go_types::lookup_field_or_method_detailed(
@@ -327,7 +327,7 @@ fn interface_implementation_detail(
                             } else {
                                 "\n\t\thave " + have + "\n\t\twant " + want
                             }
-                    } else {},
+                    },
                     None => return "(missing method " + required.name + ")",
                 },
                 go_types::FieldOrMethodLookup::Ambiguous => return "(ambiguous selector "
@@ -342,7 +342,7 @@ fn interface_implementation_detail(
                             + "\n\t\twant "
                             + diagnostic_method_string(state, required_id),
                         None => {},
-                    };
+                    }
                     let pointer = go_types::add_type(
                         state.world,
                         go_types::TypeKind::Pointer { element: source },
@@ -363,11 +363,11 @@ fn interface_implementation_detail(
                                 required.type_id,
                             ) {
                                 return "(method " + required.name + " has pointer receiver)"
-                            } else {},
+                            },
                             None => {},
                         },
                         _ => {},
-                    };
+                    }
                     return "(missing method " + required.name + ")"
                 },
             },
@@ -406,13 +406,13 @@ fn pointer_to_interface_type(state: CheckState, value: go_types::TypeId) -> bool
 fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, generation: isize) -> bool {
     if !go_types::has_type(state.world, type_id) {
         return true
-    } else {};
+    }
     while state.type_visit_marks.len() <= type_id.value {
         state.type_visit_marks.push(0)
     }
     if state.type_visit_marks[type_id.value] == generation {
         return false
-    } else {};
+    }
     state.type_visit_marks[type_id.value] = generation;
     match go_types::type_data(state.world, type_id) {
         go_types::TypeData { id: _, kind: go_types::TypeKind::Invalid } => true,
@@ -435,7 +435,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
             for variable in variables {
                 if type_contains_invalid_inner(state, variable.type_id, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -443,7 +443,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
             for field in fields {
                 if type_contains_invalid_inner(state, field.variable.type_id, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -454,19 +454,19 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
             for method in methods {
                 if method.value < 0 || method.value >= state.world.objects.len() {
                     return true
-                } else {};
+                }
                 if type_contains_invalid_inner(
                     state,
                     state.world.objects[method.value].type_id,
                     generation,
                 ) {
                     return true
-                } else {}
+                }
             }
             for embedded in embeddeds {
                 if type_contains_invalid_inner(state, embedded, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -488,9 +488,9 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
                     generation,
                 ) {
                     return true
-                } else {},
+                },
                 None => {},
-            };
+            }
             type_contains_invalid_inner(state, params, generation)
                 || type_contains_invalid_inner(state, results, generation)
         },
@@ -498,7 +498,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
             for term in terms {
                 if type_contains_invalid_inner(state, term.type_id, generation) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -527,7 +527,7 @@ fn type_contains_invalid_inner(state: CheckState, type_id: go_types::TypeId, gen
 fn type_contains_invalid(state: CheckState, type_id: go_types::TypeId) -> bool {
     if !go_types::has_type(state.world, type_id) {
         return true
-    } else {};
+    }
     while state.type_invalid_cache.len() <= type_id.value {
         state.type_invalid_cache.push(0.to_i32())
     }
@@ -537,7 +537,7 @@ fn type_contains_invalid(state: CheckState, type_id: go_types::TypeId) -> bool {
         return false
     } else if cached == -revision {
         return true
-    } else {};
+    }
     let generation = state.type_visit_generation.get() + 1;
     state.type_visit_generation.set(generation);
     let result = type_contains_invalid_inner(state, type_id, generation);
@@ -557,7 +557,7 @@ fn type_contains_active_type_inner(
     for existing in visited {
         if existing == type_id.value {
             return false
-        } else {}
+        }
     }
     visited.push(type_id.value);
     match go_types::get_type(state.world, type_id) {
@@ -574,7 +574,7 @@ fn type_contains_active_type_inner(
             for active in state.active_type_objects {
                 if active.value == object.value {
                     return true
-                } else {}
+                }
             }
             type_contains_active_type_inner(state, underlying, visited)
         },
@@ -717,7 +717,7 @@ fn expression_has_comma_ok(state: CheckState, node: syntax::NodeId) -> bool {
 fn failed_inherited_initializer_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> bool {
     if operand.type_id.value != state.world.invalid.value || state.active_value_objects.is_empty() {
         return false
-    } else {};
+    }
     match pending_value_index(
         state,
         state.active_value_objects[state.active_value_objects.len() - 1],
@@ -726,7 +726,7 @@ fn failed_inherited_initializer_operand(state: CheckState, node: syntax::NodeId,
             for value_node in state.pending_values[index].value_nodes {
                 if value_node.value == node.value {
                     return true
-                } else {}
+                }
             }
             false
         } else {
@@ -742,11 +742,11 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
             if state.preserved_type_fact_nodes.contains(node.value)
                 || failed_inherited_initializer_operand(state, node, operand) {
                 return
-            } else {};
+            }
             let fact = state.info.types[index];
             if fact.type_expr || fact.builtin {
                 return
-            } else {};
+            }
             if (fact.type_id.value == state.world.invalid.value
                 && operand.type_id.value != state.world.invalid.value)
                 || state.current_iota >= 0 {
@@ -771,18 +771,18 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
                     assignable: operand.assignable,
                     comma_ok: fact.comma_ok,
                 };
-            } else {};
+            }
             return
         },
         None => {},
-    };
+    }
     match source_type_fact_index(state, node) {
         Some(index) => {
             set_type_fact_index(state, node, index);
             return
         },
         None => {},
-    };
+    }
     index_type_fact(state, node, state.info.types.len());
     let value = match operand.value {
         Some(value) => Option::Some(constant::constant_exact_string(value)),
@@ -819,11 +819,11 @@ fn record_operand(state: CheckState, node: syntax::NodeId, operand: Operand) -> 
 fn preserve_inherited_type_fact(state: CheckState, node: syntax::NodeId) -> () {
     if state.current_iota < 0 {
         return
-    } else {};
+    }
     match recorded_type_fact(state, node) {
         Some(fact) => if fact.type_id.value != state.world.invalid.value {
             let _ = state.preserved_type_fact_nodes.insert(node.value);
-        } else {},
+        },
         None => {},
     }
 }
@@ -880,7 +880,7 @@ fn contextualize_untyped_component(
                             state.config.sizes,
                         ).is_some()) {
                     contextualize_untyped_expression(state, node, target, false)
-                } else {},
+                },
                 None => {},
             },
             None => contextualize_untyped_expression(state, node, target, false),
@@ -918,7 +918,7 @@ fn contextualize_untyped_expression(
                     false,
                 ),
                 None => {},
-            };
+            }
             let mut valid = true;
             match type_fact_constant(fact) {
                 Some(exact) => match constant::constant_from_exact(
@@ -983,14 +983,14 @@ fn contextualize_untyped_expression(
                                 valid = false;
                                 if !convert_value {
                                     let _ = state.omitted_type_fact_nodes.insert(node.value);
-                                } else {}
+                                }
                             },
                         }
                     },
                     None => {},
                 },
                 None => update_operand_fact(state, node, target, Option::None),
-            };
+            }
             if valid && type_fact_constant(fact).is_none()
                 && (go_types::is_numeric(state.world, fact.type_id)
                     || basic_kind(state, fact.type_id) == go_types::BasicKind::UntypedBool) {
@@ -1015,11 +1015,11 @@ fn contextualize_untyped_expression(
                                 false,
                             );
                             let _ = state.omitted_type_fact_nodes.insert(left.value);
-                        } else {};
+                        }
                         contextualize_untyped_expression(state, left, target, false);
                         if !shift_operator(op) {
                             contextualize_untyped_expression(state, right, target, false)
-                        } else {}
+                        }
                     },
                     Some(syntax::SyntaxNode {
                         id: _,
@@ -1037,8 +1037,8 @@ fn contextualize_untyped_expression(
                     }) => contextualize_untyped_expression(state, expression, target, false),
                     _ => {},
                 }
-            } else {}
-        } else {},
+            }
+        },
         None => {},
     }
 }
@@ -1053,11 +1053,11 @@ fn update_contextual_operand_fact(
         || operand.type_id.value == state.world.invalid.value
         || !go_types::is_untyped(state.world, operand.type_id) {
         return
-    } else {};
+    }
     if go_types::is_untyped(state.world, target) {
         retag_untyped_expression(state, node, target);
         return
-    } else {};
+    }
     if !go_types::is_interface(state.world, target)
         && !go_types::is_type_parameter(state.world, target)
         && ((is_string_type(state, operand.type_id) || is_string_type(state, target))
@@ -1065,7 +1065,7 @@ fn update_contextual_operand_fact(
             || (is_boolean_type(state, operand.type_id) || is_boolean_type(state, target))
                 && !(is_boolean_type(state, operand.type_id) && is_boolean_type(state, target))) {
         return
-    } else {};
+    }
     match operand.value {
         Some(value) => {
             if constant::constant_kind(value) == constant::ConstantKind::Unknown {
@@ -1082,7 +1082,7 @@ fn update_contextual_operand_fact(
             } else if go_types::is_type_parameter(state.world, target) {
                 if constant_assignable_to_type_parameter(state, value, target) {
                     contextualize_untyped_expression(state, node, target, true)
-                } else {}
+                }
             } else {
                 let target_kind = basic_kind(state, target);
                 if target_kind != go_types::BasicKind::Invalid
@@ -1107,7 +1107,7 @@ fn update_contextual_operand_fact(
                                     },
                                 }) => contextualize_untyped_component(state, expression, target),
                                 _ => {},
-                            };
+                            }
                             update_operand_fact(state, node, target, Option::Some(rounded))
                         },
                         None => {},
@@ -1124,7 +1124,7 @@ fn update_contextual_operand_fact(
                         },
                         None => {},
                     }
-                } else {}
+                }
             }
         },
         None => if go_types::is_untyped(state.world, operand.type_id)
@@ -1141,7 +1141,7 @@ fn update_contextual_operand_fact(
                 },
                 true,
             )
-        } else {},
+        },
     }
 }
 
@@ -1149,7 +1149,7 @@ fn retag_untyped_expression(state: CheckState, node: syntax::NodeId, target: go_
     match type_fact_index(state, node) {
         Some(index) => if go_types::is_untyped(state.world, state.info.types[index].type_id) {
             state.info.types[index].type_id = target;
-        } else {},
+        },
         None => {},
     }
 }
@@ -1159,7 +1159,7 @@ fn save_constant(state: CheckState, object: go_types::ObjectId, value: constant:
         if state.constants[index].object.value == object.value {
             state.constants[index].value = constant::constant_copy(value);
             return
-        } else {}
+        }
     }
     state.constants.push(ConstantObjectValue { object, value: constant::constant_copy(value) })
 }
@@ -1168,12 +1168,12 @@ fn find_constant(state: CheckState, object: go_types::ObjectId) -> Option[consta
     for entry in state.constants {
         if entry.object.value == object.value {
             return Option::Some(constant::constant_copy(entry.value))
-        } else {}
+        }
     }
     let index = checked_object_index(state, object);
     if index < 0 {
         return Option::None
-    } else {};
+    }
     let value = state.world.objects[index];
     if value.name == "iota" {
         Option::Some(
@@ -1212,8 +1212,8 @@ fn literal_operand(state: CheckState, node: syntax::NodeId, token: string, value
                 "hexadecimal floating-point literal requires go1.13 or later",
                 false,
             )
-        } else {}
-    } else {};
+        }
+    }
     let parsed = match token {
         INT_LITERAL_TOKEN => constant::parse_integer_literal(value),
         FLOAT_LITERAL_TOKEN => constant::parse_float_literal(value),
@@ -1280,7 +1280,7 @@ fn identifier_operand(
             record_type_value_cycle(state, object_id);
             if object_id.value < 0 || object_id.value >= state.world.objects.len() {
                 return invalid_operand(state)
-            } else {};
+            }
             let object = state.world.objects[object_id.value];
             mark_dot_import_used(state, object_id);
             record_use(state, node, object_id);
@@ -1399,7 +1399,7 @@ fn recovered_conversion_target(
 ) -> go_types::TypeId {
     if resolved.value != state.world.invalid.value || declared.value == state.world.invalid.value {
         return resolved
-    } else {};
+    }
     if !generic_parameters(state, declared).is_empty() {
         resolved
     } else {
@@ -1445,7 +1445,7 @@ fn conversion_target(state: CheckState, scope: go_types::ScopeId, node: syntax::
                     let object_index = checked_object_index(state, object);
                     if object_index < 0 {
                         return Option::None
-                    } else {};
+                    }
                     match state.world.objects[object_index].imported_package {
                         Some(pkg) => {
                             let member = identifier(state, selector).unwrap_or("");
@@ -1454,7 +1454,7 @@ fn conversion_target(state: CheckState, scope: go_types::ScopeId, node: syntax::
                                 mark_import_used(state, object);
                                 record_use(state, expression, object);
                                 return Option::None
-                            } else {};
+                            }
                             match go_types::lookup_local(
                                 state.world,
                                 state.world.packages[pkg.value].scope,
@@ -1598,7 +1598,7 @@ fn check_conversion(
                 },
                 _ => {},
             }
-        } else {};
+        }
         let retain_invalid = match syntax::get_node(state.syntax.arena, node) {
             Some(syntax::SyntaxNode {
                 id: _,
@@ -1639,7 +1639,7 @@ fn check_conversion(
         };
         if retain_invalid {
             let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
-        } else {};
+        }
         if !uninstantiated_generic {
             for argument in arguments {
                 let operand = check_expression(state, scope, argument);
@@ -1650,9 +1650,9 @@ fn check_conversion(
                         operand,
                         default_operand_type(state, operand),
                     )
-                } else {}
+                }
             }
-        } else {};
+        }
         return if retain_invalid {
             Operand {
                 type_id: state.world.invalid,
@@ -1663,7 +1663,7 @@ fn check_conversion(
         } else {
             invalid_operand(state)
         }
-    } else {};
+    }
     if ellipsis >= 0 {
         diagnostic(
             state,
@@ -1671,7 +1671,7 @@ fn check_conversion(
             "invalid use of ... in conversion to " + diagnostic_type_string(state, target),
             false,
         )
-    } else {};
+    }
     if arguments.is_empty() {
         let position = match syntax::get_node(state.syntax.arena, node) {
             Some(syntax::SyntaxNode {
@@ -1708,7 +1708,7 @@ fn check_conversion(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     if go_types::is_constraint_interface(state.world, target) {
         let source = check_expression(state, scope, arguments[0]);
         let recovered_type = default_operand_type(state, source);
@@ -1732,14 +1732,14 @@ fn check_conversion(
                 assignable: false,
             }
         }
-    } else {};
+    }
     let source = check_expression(state, scope, arguments[0]);
     if source.type_id.value == state.world.invalid.value
         || (!go_types::is_named(state.world, source.type_id)
             && type_contains_invalid(state, source.type_id)
             && !type_contains_active_type(state, source.type_id)) {
         return invalid_operand(state)
-    } else {};
+    }
     if ellipsis >= 0 {
         return Operand {
             type_id: default_operand_type(state, source),
@@ -1750,7 +1750,7 @@ fn check_conversion(
             addressable: source.addressable,
             assignable: source.assignable,
         }
-    } else {};
+    }
     if record_active_value_type_cycle(state, target, false) {
         let _ = state.omitted_type_fact_nodes.insert(node.value);
         match syntax::get_node(state.syntax.arena, node) {
@@ -1770,14 +1770,14 @@ fn check_conversion(
                 let _ = state.omitted_type_fact_nodes.insert(function.value);
             },
             _ => {},
-        };
+        }
         return Operand {
             type_id: target,
             value: Option::None,
             addressable: false,
             assignable: false,
         }
-    } else {};
+    }
     let untyped_nonconstant_shift = source.value.is_none()
         && go_types::is_untyped(state.world, source.type_id)
         && go_types::is_numeric(state.world, source.type_id)
@@ -1808,12 +1808,12 @@ fn check_conversion(
                 addressable: false,
                 assignable: false,
             }
-        } else {}
-    } else {};
+        }
+    }
     if ellipsis < 0 && source.value.is_none()
         && go_types::convertible_types(state.world, source.type_id, target) {
         update_contextual_operand_fact(state, arguments[0], source, target)
-    } else {};
+    }
     let required_version = go_types::conversion_minimum_minor(state.world, source.type_id, target);
     if required_version > 0 && !go_version_at_least(state, node, required_version) {
         diagnostic(
@@ -1833,7 +1833,7 @@ fn check_conversion(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     match source.value {
         Some(value) => if go_types::is_type_parameter(state.world, target) {
             let types = go_types::type_set_specific_types(state.world, target);
@@ -1851,7 +1851,7 @@ fn check_conversion(
                     false,
                 );
                 return invalid_operand(state)
-            } else {};
+            }
             for type_id in types {
                 let target_kind = basic_kind(state, type_id);
                 let convertible = if target_kind == go_types::BasicKind::Invalid
@@ -1895,7 +1895,7 @@ fn check_conversion(
                         false,
                     );
                     return invalid_operand(state)
-                } else {}
+                }
             }
             if ellipsis < 0 {
                 match default_type_for_kind(state, basic_kind(state, source.type_id)) {
@@ -1907,7 +1907,7 @@ fn check_conversion(
                     ),
                     None => {},
                 }
-            } else {};
+            }
             Operand { type_id: target, value: Option::None, addressable: false, assignable: false }
         } else {
             let target_kind = basic_kind(state, target);
@@ -1927,7 +1927,7 @@ fn check_conversion(
                             && !(go_types::is_integer(state.world, source.type_id)
                                 && is_string_type(state, target)) {
                             update_operand_fact(state, arguments[0], target, source.value)
-                        } else {};
+                        }
                         Operand {
                             type_id: target,
                             value: Option::Some(value),
@@ -1954,7 +1954,7 @@ fn check_conversion(
                                     + diagnostic_type_string(state, target),
                                 false,
                             )
-                        };
+                        }
                         preserve_inherited_type_fact(state, node);
                         invalid_operand(state)
                     },
@@ -1970,7 +1970,7 @@ fn check_conversion(
                         ),
                         None => {},
                     }
-                } else {};
+                }
                 Operand {
                     type_id: target,
                     value: Option::None,
@@ -2063,7 +2063,7 @@ fn constant_assignable_to_type_parameter(
     let terms = go_types::type_set_specific_types(state.world, target);
     if terms.is_empty() {
         return false
-    } else {};
+    }
     for term in terms {
         if !constant::constant_representable(
             constant::constant_copy(value),
@@ -2071,7 +2071,7 @@ fn constant_assignable_to_type_parameter(
             state.config.sizes,
         ) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -2091,7 +2091,7 @@ fn type_parameter_assignment_failure(
         return ""
     } else if target_parameter && go_types::is_named(state.world, source) {
         return ""
-    } else {};
+    }
     let source_types = if source_parameter {
         go_types::type_set_specific_types(state.world, source)
     } else {
@@ -2104,7 +2104,7 @@ fn type_parameter_assignment_failure(
     };
     if source_types.is_empty() || target_types.is_empty() {
         return ""
-    } else {};
+    }
     for source_type in source_types {
         for target_type in target_types {
             if !go_types::assignable_types(state.world, source_type, target_type) {
@@ -2121,7 +2121,7 @@ fn type_parameter_assignment_failure(
                     } else {
                         ""
                     }
-            } else {}
+            }
         }
     }
     ""
@@ -2136,7 +2136,7 @@ fn type_parameter_conversion_failure(
     let target_parameter = go_types::is_type_parameter(state.world, target);
     if !source_parameter && !target_parameter {
         return ""
-    } else {};
+    }
     let source_types = if source_parameter {
         go_types::type_set_specific_types(state.world, source)
     } else {
@@ -2149,7 +2149,7 @@ fn type_parameter_conversion_failure(
     };
     if source_types.is_empty() || target_types.is_empty() {
         return ""
-    } else {};
+    }
     for source_type in source_types {
         for target_type in target_types {
             if !go_types::convertible_types(state.world, source_type, target_type) {
@@ -2166,7 +2166,7 @@ fn type_parameter_conversion_failure(
                     } else {
                         ""
                     }
-            } else {}
+            }
         }
     }
     ""
@@ -2179,7 +2179,7 @@ fn argument_assignable(state: CheckState, source: Operand, target: go_types::Typ
         && !type_contains_active_type(state, source.type_id)
         && invalid_source_assignment_recoverable(state, source.type_id) {
         return true
-    } else {};
+    }
     match source.value {
         Some(value) => if go_types::is_type_parameter(state.world, target) {
             constant_assignable_to_type_parameter(state, value, target)
@@ -2216,7 +2216,7 @@ fn argument_assignable(state: CheckState, source: Operand, target: go_types::Typ
                         for type_id in types {
                             if basic_kind(state, type_id) != go_types::BasicKind::Bool {
                                 valid = false;
-                            } else {}
+                            }
                         }
                         valid
                     }
@@ -2232,7 +2232,7 @@ fn argument_assignable(state: CheckState, source: Operand, target: go_types::Typ
                         for type_id in types {
                             if !go_types::assignable_types(state.world, source.type_id, type_id) {
                                 assignable = false;
-                            } else {}
+                            }
                         }
                         assignable
                     }
@@ -2250,7 +2250,7 @@ fn argument_assignable(state: CheckState, source: Operand, target: go_types::Typ
                     for type_id in types {
                         if !go_types::assignable_types(state.world, type_id, target) {
                             assignable = false;
-                        } else {}
+                        }
                     }
                     assignable
                 }
@@ -2273,7 +2273,7 @@ fn argument_assignable(state: CheckState, source: Operand, target: go_types::Typ
                         for type_id in types {
                             if basic_kind(state, type_id) != go_types::BasicKind::Bool {
                                 valid = false;
-                            } else {}
+                            }
                         }
                         valid
                     }
@@ -2348,7 +2348,7 @@ fn call_have_types(
         };
         if ellipsis >= 0 && index + 1 == checked.len() {
             value = value + "...";
-        } else {};
+        }
         values.push(value)
     }
     "(" + text::join(values, ", ") + ")"
@@ -2430,7 +2430,7 @@ fn recovered_call_result(state: CheckState, node: syntax::NodeId, results: go_ty
     let values = tuple_variables(state, results);
     if values.is_empty() {
         mark_void_node(state, node)
-    } else {};
+    }
     let result_type = if values.len() == 1 {
         values[0].type_id
     } else {
@@ -2443,7 +2443,7 @@ fn recovered_call_result(state: CheckState, node: syntax::NodeId, results: go_ty
     };
     if result_type.value == state.world.invalid.value {
         let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
-    } else {};
+    }
     Operand { type_id: result_type, value: Option::None, addressable: false, assignable: false }
 }
 
@@ -2494,7 +2494,7 @@ fn recovered_generic_call_result(
     for parameter in generic_parameters(state, signature) {
         if type_contains_parameter(state, recovered.type_id, parameter.object, Vec::new()) {
             let _ = state.omitted_type_fact_nodes.insert(node.value);
-        } else {}
+        }
     }
     recovered
 }
@@ -2536,7 +2536,7 @@ fn check_call(
             ellipsis,
         ),
         None => {},
-    };
+    }
     state.generic_function_context_depth.set(state.generic_function_context_depth.get() + 1);
     let function = check_expression(state, scope, function_node);
     state.generic_function_context_depth.set(state.generic_function_context_depth.get() - 1);
@@ -2550,7 +2550,7 @@ fn check_call(
         }
         let _ = state.omitted_type_fact_nodes.insert(node.value);
         return invalid_operand(state)
-    } else {};
+    }
     if state.failed_inference_nodes.contains(function_node.value) {
         let _ = state.omitted_type_fact_nodes.insert(node.value);
         for argument in arguments {
@@ -2597,7 +2597,7 @@ fn check_call(
             }
         }
         return invalid_operand(state)
-    } else {};
+    }
     let function_object = match identifier(state, function_node) {
         Some(name) => match go_types::lookup(state.world, scope, name) {
             Some(object_id) => {
@@ -2622,12 +2622,12 @@ fn check_call(
                 if direct_signature_type(state, selection.type_id)
                     && selection_type_contains_direct_invalid(state, selection.type_id) {
                     return recovered_signature_call_result(state, node, selection.type_id)
-                } else {}
+                }
             },
             None => {},
-        };
+        }
         return invalid_operand(state)
-    } else {};
+    }
     if !generic_parameters(state, function.type_id).is_empty()
         && !go_version_at_least(state, node, 18) {
         let position = match syntax::get_node(state.syntax.arena, node) {
@@ -2653,7 +2653,7 @@ fn check_call(
             "implicit function instantiation requires go1.18 or later",
             false,
         )
-    } else {};
+    }
     match go_types::type_data(state.world, core_type_id(state, function.type_id)) {
         go_types::TypeData {
             id: _,
@@ -2699,11 +2699,11 @@ fn check_call(
                     );
                     let _ = state.failed_inference_nodes.insert(node.value);
                     return recovered_generic_call_result(state, node, function.type_id)
-                } else {}
-            } else {}
-        } else {},
+                }
+            }
+        },
         _ => {},
-    };
+    }
     let function_type = infer_signature(
         state,
         scope,
@@ -2719,10 +2719,10 @@ fn check_call(
             if state.failed_inference_nodes.contains(argument.value) {
                 let _ = state.omitted_type_fact_nodes.insert(node.value);
                 return invalid_operand(state)
-            } else {}
+            }
         }
         return recovered_generic_call_result(state, node, function.type_id)
-    } else {};
+    }
     match go_types::type_data(state.world, core_type_id(state, function_type)) {
         go_types::TypeData {
             id: _,
@@ -2767,7 +2767,7 @@ fn check_call(
                     obvious_too_few,
                 );
                 return recovered_call_result(state, node, results)
-            } else {};
+            }
             if variadic && arguments.len() == 1 && ellipsis >= 0 {
                 let value = check_expression(state, scope, arguments[0]);
                 let values = tuple_variables(state, value.type_id);
@@ -2781,8 +2781,8 @@ fn check_call(
                         false,
                     );
                     return recovered_call_result(state, node, results)
-                } else {}
-            } else {};
+                }
+            }
             let previous_target_inference_context = state.target_inference_context.get();
             let previous_target_inference_call = state.target_inference_call.get();
             state.target_inference_context.set(1);
@@ -2798,7 +2798,7 @@ fn check_call(
                     for index in 0..arguments.len() {
                         if parameters.is_empty() {
                             result.push(state.world.invalid)
-                        } else {};
+                        }
                         let parameter_index = if parameters.is_empty() {
                             0
                         } else if index < parameters.len() {
@@ -2810,9 +2810,9 @@ fn check_call(
                             let mut target = parameters[parameter_index].type_id;
                             if variadic && parameter_index + 1 == parameters.len() && ellipsis < 0 {
                                 target = variadic_element(state, target);
-                            } else {};
+                            }
                             result.push(target)
-                        } else {}
+                        }
                     }
                     result
                 },
@@ -2830,7 +2830,7 @@ fn check_call(
                     false,
                 );
                 return recovered_call_result(state, node, results)
-            } else {};
+            }
             let too_few = checked_arguments.len() < minimum
                 || (variadic && ellipsis >= 0 && checked_arguments.len() < parameters.len());
             let too_many = (!variadic && checked_arguments.len() > parameters.len())
@@ -2848,7 +2848,7 @@ fn check_call(
                     too_few,
                 );
                 return recovered_call_result(state, node, results)
-            } else {};
+            }
             for index in 0..checked_arguments.len() {
                 let argument_node = if arguments.len() == 1 {
                     arguments[0]
@@ -2864,7 +2864,7 @@ fn check_call(
                 if variadic && parameter_index + 1 == parameters.len()
                     && (ellipsis < 0 || index + 1 < checked_arguments.len()) {
                     target = variadic_element(state, target);
-                } else {};
+                }
                 let multiple = tuple_variables(state, checked_arguments[index].type_id).len() > 1;
                 if multiple {
                     diagnostic(
@@ -2930,7 +2930,7 @@ fn check_call(
                             },
                         false,
                     )
-                } else {}
+                }
             }
             let results = tuple_variables(state, results);
             if results.is_empty() && state.array_length_depth > 0 {
@@ -2939,10 +2939,10 @@ fn check_call(
                     Some(object) => for active in state.active_function_objects {
                         if active.value == object.value {
                             active_function = Option::Some(object);
-                        } else {}
+                        }
                     },
                     None => {},
-                };
+                }
                 match active_function {
                     Some(object) => match go_types::get_object(state.world, object) {
                         Some(object) => {
@@ -2954,7 +2954,7 @@ fn check_call(
                                     object.name + "() (no value) used as value or type",
                                     false,
                                 )
-                            } else {};
+                            }
                             mark_void_node(state, node);
                             return Operand {
                                 type_id: state.world.invalid,
@@ -2967,10 +2967,10 @@ fn check_call(
                     },
                     None => {},
                 }
-            } else {};
+            }
             if results.is_empty() {
                 mark_void_node(state, node)
-            } else {};
+            }
             let mut recursive_result = false;
             for result in results {
                 match go_types::get_type(
@@ -2988,13 +2988,13 @@ fn check_call(
                         },
                     }) => if record_call_result_type_cycle(state, object, function_object) {
                         recursive_result = true;
-                    } else {},
+                    },
                     _ => {},
                 }
             }
             if recursive_result {
                 let _ = state.omitted_type_fact_nodes.insert(node.value);
-            } else {};
+            }
             let result_type = if results.len() == 1 {
                 results[0].type_id
             } else {
@@ -3007,7 +3007,7 @@ fn check_call(
             };
             if result_type.value == state.world.invalid.value {
                 let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
-            } else {};
+            }
             Operand {
                 type_id: result_type,
                 value: Option::None,
@@ -3021,10 +3021,10 @@ fn check_call(
                 Some(object) => for active in state.active_function_objects {
                     if active.value == object.value {
                         active_function = Option::Some(object);
-                    } else {}
+                    }
                 },
                 None => {},
-            };
+            }
             match active_function {
                 Some(object) => match go_types::get_object(state.world, object) {
                     Some(object) => if !state.reported_recursive_calls.contains(function_node.value) {
@@ -3035,7 +3035,7 @@ fn check_call(
                             object.name + "() (no value) used as value or type",
                             false,
                         )
-                    } else {},
+                    },
                     None => {},
                 },
                 None => if function.type_id.value != state.world.invalid.value {
@@ -3060,8 +3060,8 @@ fn check_call(
                             + call_failure,
                         false,
                     )
-                } else {},
-            };
+                },
+            }
             invalid_operand(state)
         },
     }
@@ -3180,11 +3180,11 @@ fn addressable_composite_literal(state: CheckState, node: syntax::NodeId) -> boo
 fn channel_type_parameter_failure(state: CheckState, value: go_types::TypeId, receive: bool) -> string {
     if !go_types::is_type_parameter(state.world, value) {
         return ""
-    } else {};
+    }
     let terms = go_types::type_set_specific_types(state.world, value);
     if terms.is_empty() {
         return "no specific channel type"
-    } else {};
+    }
     let mut common_type = terms[0];
     let mut common_underlying = go_types::underlying(state.world, common_type);
     for term in terms {
@@ -3220,8 +3220,8 @@ fn channel_type_parameter_failure(state: CheckState, value: go_types::TypeId, re
                         return "channels " + diagnostic_type_string(state, common_type) + " and "
                             + diagnostic_type_string(state, term)
                             + " have conflicting directions"
-                    } else {}
-                } else {},
+                    }
+                },
                 _ => {},
             },
             _ => return "non-channel " + diagnostic_type_string(state, term),
@@ -3255,7 +3255,7 @@ fn check_unary(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     if op == TILDE_OPERATOR {
         diagnostic(
             state,
@@ -3305,10 +3305,10 @@ fn check_unary(
                 false,
             );
             return invalid_operand(state)
-        } else {};
+        }
         if state.array_length_depth > 0 && type_contains_active_type(state, source.type_id) {
             let _ = state.omitted_type_fact_nodes.insert(node.value);
-        } else {};
+        }
         return Operand {
             type_id: go_types::add_type(
                 state.world,
@@ -3331,7 +3331,7 @@ fn check_unary(
                 false,
             );
             return invalid_operand(state)
-        } else {};
+        }
         match go_types::get_type(state.world, core_type_id(state, source.type_id)) {
             Some(go_types::TypeData {
                 id: _,
@@ -3354,7 +3354,7 @@ fn check_unary(
             }) => {
                 if record_active_value_type_cycle(state, element, false) {
                     let _ = state.omitted_type_fact_nodes.insert(node.value);
-                } else {};
+                }
                 return Operand {
                     type_id: element,
                     value: Option::None,
@@ -3375,7 +3375,7 @@ fn check_unary(
                 return invalid_operand(state)
             },
         }
-    } else {};
+    }
     let result = match source.value {
         Some(value) => match op {
             ADD_OPERATOR => constant::constant_copy(value),
@@ -3413,7 +3413,7 @@ fn check_unary(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     if source.value.is_some() && !go_types::is_untyped(state.world, source.type_id)
         && constant::constant_kind(result) != constant::ConstantKind::Unknown
         && constant::round_constant(result, basic_kind(state, source.type_id), state.config.sizes).is_none() {
@@ -3432,7 +3432,7 @@ fn check_unary(
         );
         let _ = state.omitted_type_fact_nodes.insert(node.value);
         return invalid_operand(state)
-    } else {};
+    }
     if valid && op == BIT_XOR_OPERATOR
         && basic_kind(state, source.type_id) == go_types::BasicKind::UntypedInt
         && constant::constant_exceeds_integer_precision(result, 512) {
@@ -3453,7 +3453,7 @@ fn check_unary(
             addressable: false,
             assignable: false,
         }
-    } else {};
+    }
     Operand {
         type_id: source.type_id,
         value: match source.value {
@@ -3500,7 +3500,7 @@ fn report_binary_operand_overflow(
 ) -> bool {
     if !go_types::is_untyped(state.world, operand.type_id) {
         return false
-    } else {};
+    }
     match operand.value {
         Some(value) => if !(if go_types::is_type_parameter(state.world, target) {
             constant_assignable_to_type_parameter(state, value, target)
@@ -3591,7 +3591,7 @@ fn promote_untyped_expression_fact(
                 }) => promote_untyped_expression_fact(state, expression, target),
                 _ => {},
             }
-        } else {},
+        },
         None => {},
     }
 }
@@ -3609,7 +3609,7 @@ fn update_binary_operand_fact(
             && !go_types::identical(state.world, operand.type_id, target) {
             update_operand_fact(state, node, target, operand.value);
             promote_untyped_expression_fact(state, node, target)
-        } else {}
+        }
     } else {
         update_contextual_operand_fact(state, node, operand, target)
     }
@@ -3694,7 +3694,7 @@ fn comparison_type_label(state: CheckState, value: go_types::TypeId) -> string {
 fn noncomparable_reason(state: CheckState, value: go_types::TypeId) -> string {
     if go_types::is_type_parameter(state.world, value) {
         return "incomparable types in type set"
-    } else {};
+    }
     match go_types::get_type(state.world, go_types::underlying(state.world, value)) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element: _ } }) => "slice can only be compared to nil",
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key: _, value: _ } }) => "map can only be compared to nil",
@@ -3715,7 +3715,7 @@ fn noncomparable_reason(state: CheckState, value: go_types::TypeId) -> string {
                 if contained.value == value.value
                     && !go_types::comparable(state.world, field.variable.type_id) {
                     contained = field.variable.type_id;
-                } else {}
+                }
             }
             "struct containing " + diagnostic_type_string(state, contained) + " cannot be compared"
         },
@@ -3760,11 +3760,11 @@ fn selector_operand(
             return invalid_operand(state)
         },
         None => {},
-    };
+    }
     match conversion_target(state, scope, expression) {
         Some(receiver) => return method_expression_operand(state, node, selector, receiver, name),
         None => {},
-    };
+    }
     match identifier(state, expression) {
         Some(package_name) => match go_types::lookup(state.world, scope, package_name) {
             Some(package_object) => match go_types::get_object(state.world, package_object) {
@@ -3793,7 +3793,7 @@ fn selector_operand(
                                                     + package_name,
                                                 false,
                                             )
-                                        } else {};
+                                        }
                                         record_use(state, selector, member);
                                         Operand {
                                             type_id: member_object.type_id,
@@ -4059,12 +4059,12 @@ fn selection_type_contains_direct_invalid(state: CheckState, type_id: go_types::
             for variable in tuple_variables(state, params) {
                 if variable.type_id.value == state.world.invalid.value {
                     return true
-                } else {}
+                }
             }
             for variable in tuple_variables(state, results) {
                 if variable.type_id.value == state.world.invalid.value {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -4075,7 +4075,7 @@ fn selection_type_contains_direct_invalid(state: CheckState, type_id: go_types::
 fn recovered_field_selection_type(state: CheckState, type_id: go_types::TypeId) -> go_types::TypeId {
     if incomplete_named_instance(state, type_id) {
         return state.world.invalid
-    } else {};
+    }
     match go_types::type_data(state.world, go_types::unalias(state.world, type_id)) {
         go_types::TypeData {
             id: _,
@@ -4215,7 +4215,7 @@ fn rebuild_selection_indices(state: CheckState) -> () {
 fn record_selection(state: CheckState, fact: SelectionFact) -> () {
     if recorded_selection_index(state, fact.node).is_some() {
         return
-    } else {};
+    }
     state.selection_indices[fact.node.value] = state.info.selections.len();
     state.info.selections.push(fact)
 }
@@ -4257,7 +4257,7 @@ fn method_expression_operand(
             },
             _ => {},
         }
-    } else {};
+    }
     if incomplete_named_instance(state, receiver) {
         let _ = state.omitted_type_fact_nodes.insert(node.value);
         match syntax::get_node(state.syntax.arena, node) {
@@ -4269,14 +4269,14 @@ fn method_expression_operand(
                 kind: syntax::SyntaxKind::SelectorExpr { expression, selector: _ },
             }) => omit_incomplete_method_receiver_facts(state, expression),
             _ => {},
-        };
+        }
         return invalid_operand(state)
-    } else {};
+    }
     if receiver.value == state.world.invalid.value
         || (!go_types::is_named(state.world, receiver) && type_contains_invalid(state, receiver)
             && !type_contains_active_type(state, receiver)) {
         return invalid_operand(state)
-    } else {};
+    }
     if pointer_to_interface_type(state, receiver) {
         diagnostic(
             state,
@@ -4287,7 +4287,7 @@ fn method_expression_operand(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     match go_types::lookup_field_or_method_detailed(state.world, receiver, false, name) {
         go_types::FieldOrMethodLookup::Found(selection) => match go_types::get_object(
             state.world,
@@ -4380,7 +4380,7 @@ fn method_expression_operand(
                     false,
                 );
                 return invalid_operand(state)
-            } else {};
+            }
             let recursive = if state.array_length_depth > 0 && !state.active_type_objects.is_empty() {
                 match go_types::get_type(state.world, go_types::unalias(state.world, receiver)) {
                     Some(go_types::TypeData {
@@ -4414,7 +4414,7 @@ fn method_expression_operand(
                         + ")",
                     false,
                 )
-            };
+            }
             invalid_operand(state)
         },
     }
@@ -4442,11 +4442,11 @@ fn value_selector_operand(
                         assignable: base.assignable,
                     };
                     record_operand(state, expression, base);
-                } else {}
+                }
             },
             None => {},
         }
-    } else {};
+    }
     let pointer_to_named = match go_types::type_data(
         state.world,
         go_types::unalias(state.world, base.type_id),
@@ -4464,7 +4464,7 @@ fn value_selector_operand(
             && !type_contains_active_type(state, base.type_id)
             && !invalid_struct) {
         return invalid_operand(state)
-    } else {};
+    }
     if pointer_to_interface_type(state, base.type_id) {
         diagnostic(
             state,
@@ -4475,11 +4475,11 @@ fn value_selector_operand(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     let indirect_recursive = record_active_value_type_cycle(state, base.type_id, true);
     if indirect_recursive {
         omit_indirect_cycle_facts(state, node, expression)
-    } else {};
+    }
     match go_types::lookup_field_or_method_detailed(
         state.world,
         base.type_id,
@@ -4504,7 +4504,7 @@ fn value_selector_operand(
                         false,
                     );
                     return invalid_operand(state)
-                } else {};
+                }
                 if !selector_object_accessible(state, object) {
                     let similar_method = similar_method_in_type(
                         state,
@@ -4540,9 +4540,9 @@ fn value_selector_operand(
                                 + ")",
                             false,
                         )
-                    };
+                    }
                     return invalid_operand(state)
-                } else {};
+                }
                 let field_type = if object.kind == go_types::ObjectKind::Func {
                     object.type_id
                 } else {
@@ -4551,7 +4551,7 @@ fn value_selector_operand(
                 let recovered_field_type = field_type.value != object.type_id.value;
                 if recovered_field_type {
                     let _ = go_types::set_object_type(state.world, selection.object, field_type);
-                } else {};
+                }
                 let selected_type = if object.kind == go_types::ObjectKind::Func {
                     method_value_type(state, object.type_id)
                 } else {
@@ -4560,7 +4560,7 @@ fn value_selector_operand(
                 publish_active_initializer_root_type(state, node, selected_type);
                 if object.kind == go_types::ObjectKind::Func {
                     evaluate_function_dependency(state, selection.object)
-                } else {};
+                }
                 let selection_type = if object.kind == go_types::ObjectKind::Func {
                     method_value_selection_type(state, base.type_id, object.type_id)
                 } else {
@@ -4571,7 +4571,7 @@ fn value_selector_operand(
                 if incomplete_field {
                     let _ = state.omitted_type_fact_nodes.insert(node.value);
                     let _ = state.omitted_use_fact_nodes.insert(selector.value);
-                } else {};
+                }
                 record_use(state, selector, selection.object);
                 record_selection(
                     state,
@@ -4589,7 +4589,7 @@ fn value_selector_operand(
                 } else if recovered_field_type {
                     if selected_type.value == state.world.invalid.value {
                         let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
-                    } else {};
+                    }
                     selected_type
                 } else if selection_type_contains_direct_invalid(state, selected_type) {
                     let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
@@ -4638,7 +4638,7 @@ fn value_selector_operand(
                     false,
                 );
                 return invalid_operand(state)
-            } else {};
+            }
             if !base.addressable {
                 let pointer = go_types::add_type(
                     state.world,
@@ -4658,12 +4658,12 @@ fn value_selector_operand(
                                 false,
                             );
                             return invalid_operand(state)
-                        } else {},
+                        },
                         None => {},
                     },
                     _ => {},
                 }
-            } else {};
+            }
             let recursive_type = if state.array_length_depth > 0
                 && !state.active_type_objects.is_empty() {
                 match go_types::get_type(state.world, go_types::unalias(state.world, base.type_id)) {
@@ -4687,7 +4687,7 @@ fn value_selector_operand(
                 let active = state.active_type_objects[state.active_type_objects.len() - 1];
                 if !type_value_cycle_contains(state, active) {
                     state.deferred_direct_type_cycles.push(active)
-                } else {}
+                }
             } else {
                 let similar_method = similar_method_in_type(
                     state,
@@ -4724,7 +4724,7 @@ fn value_selector_operand(
                         + ")",
                     false,
                 )
-            };
+            }
             invalid_operand(state)
         },
     }
@@ -4747,12 +4747,12 @@ fn dereference_operand(
             return invalid_operand(state)
         },
         None => {},
-    };
+    }
     let source = check_expression(state, scope, expression);
     if type_contains_invalid(state, source.type_id)
         && !type_contains_active_type(state, source.type_id) {
         return invalid_operand(state)
-    } else {};
+    }
     if go_types::is_type_parameter(state.world, source.type_id) {
         let terms = go_types::type_set_specific_types(state.world, source.type_id);
         let mut element: Option[go_types::TypeId] = Option::None;
@@ -4766,7 +4766,7 @@ fn dereference_operand(
                 }) => match element {
                     Some(existing) => if !go_types::identical(state.world, existing, candidate) {
                         identical_elements = false;
-                    } else {},
+                    },
                     None => {
                         element = Option::Some(candidate);
                     },
@@ -4795,13 +4795,13 @@ fn dereference_operand(
                 },
                 None => {},
             }
-        } else {}
-    } else {};
+        }
+    }
     match go_types::get_type(state.world, core_type_id(state, source.type_id)) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
             if record_active_value_type_cycle(state, element, false) {
                 let _ = state.omitted_type_fact_nodes.insert(node.value);
-            } else {};
+            }
             Operand { type_id: element, value: Option::None, addressable: true, assignable: true }
         },
         _ => {
@@ -4850,7 +4850,7 @@ fn check_binary(
     if left.type_id.value == state.world.invalid.value
         || right.type_id.value == state.world.invalid.value {
         return invalid_operand(state)
-    } else {};
+    }
     let left_multiple = tuple_variables(state, left.type_id).len() > 1;
     let right_multiple = tuple_variables(state, right.type_id).len() > 1;
     if left_multiple {
@@ -4860,7 +4860,7 @@ fn check_binary(
             "multiple-value " + operand_string(state, left_node, left) + " in single-value context",
             false,
         )
-    } else {};
+    }
     if right_multiple {
         diagnostic(
             state,
@@ -4869,10 +4869,10 @@ fn check_binary(
                 + " in single-value context",
             false,
         )
-    } else {};
+    }
     if left_multiple || right_multiple {
         return invalid_operand(state)
-    } else {};
+    }
     if !go_types::identical(state.world, left.type_id, right.type_id)
         && (type_parameter_constraint_contains_invalid(state, left.type_id)
             || type_parameter_constraint_contains_invalid(state, right.type_id)) {
@@ -4883,7 +4883,7 @@ fn check_binary(
             } else if go_types::is_untyped(state.world, right.type_id)
                 && !go_types::is_untyped(state.world, left.type_id) {
                 update_operand_fact(state, right_node, left.type_id, right.value)
-            } else {};
+            }
             Operand {
                 type_id: basic_type_id(state, "untyped bool"),
                 value: Option::None,
@@ -4893,7 +4893,7 @@ fn check_binary(
         } else {
             invalid_operand(state)
         }
-    } else {};
+    }
     let empty_type_set = if equality_operator(op)
         && anonymous_empty_type_parameter(state, left.type_id) {
         Option::Some(left_node)
@@ -4913,7 +4913,7 @@ fn check_binary(
             return invalid_operand(state)
         },
         None => {},
-    };
+    }
     if shift_operator(op) {
         let valid_untyped_left = go_types::is_untyped(state.world, left.type_id)
             && match left.value {
@@ -4929,7 +4929,7 @@ fn check_binary(
                 false,
             );
             return invalid_operand(state)
-        } else {};
+        }
         match right.value {
             Some(value) => match constant::constant_to_integer(value) {
                 Some(_) => if constant::constant_sign(value).unwrap_or(0) < 0 {
@@ -4953,7 +4953,7 @@ fn check_binary(
                         false,
                     );
                     return invalid_operand(state)
-                } else {},
+                },
                 None => {
                     diagnostic(
                         state,
@@ -4978,7 +4978,7 @@ fn check_binary(
                         right,
                         basic_type_id(state, "uint"),
                     )
-                } else {}
+                }
             } else if !go_types::is_integer(state.world, right.type_id) {
                 diagnostic(
                     state,
@@ -4988,8 +4988,8 @@ fn check_binary(
                     false,
                 );
                 return invalid_operand(state)
-            } else {},
-        };
+            },
+        }
         if right.value.is_none() && signed_integer_type(state, right.type_id)
             && !go_version_at_least(state, node, 13) {
             diagnostic(
@@ -5000,7 +5000,7 @@ fn check_binary(
                 false,
             );
             return invalid_operand(state)
-        } else {};
+        }
         let value: Option[constant::ConstValue] = match (left.value, right.value) {
             (Some(left_value), Some(right_value)) => match shift_amount(right_value) {
                 Some(amount) => if amount > 1074 {
@@ -5056,7 +5056,7 @@ fn check_binary(
                 addressable: false,
                 assignable: false,
             }
-        } else {};
+        }
         let result_type = if left.value.is_some() && right.value.is_some()
             && !go_types::is_integer(state.world, left.type_id) {
             basic_type_id(state, "untyped int")
@@ -5086,14 +5086,14 @@ fn check_binary(
                 false,
             );
             return invalid_operand(state)
-        } else {};
+        }
         return Operand { type_id: result_type, value, addressable: false, assignable: false }
-    } else {};
+    }
     if logical_operator(op) {
         if !is_boolean_type(state, left.type_id) || !is_boolean_type(state, right.type_id) {
             diagnostic(state, node, "invalid boolean operation", false);
             return invalid_operand(state)
-        } else {};
+        }
         let result_type = binary_operand_type(state, left, right);
         if result_type.value == state.world.invalid.value {
             diagnostic(
@@ -5107,12 +5107,12 @@ fn check_binary(
                 false,
             );
             return invalid_operand(state)
-        } else {};
+        }
         if result_type.value != state.world.invalid.value
             && !go_types::is_untyped(state.world, result_type) {
             update_contextual_operand_fact(state, left_node, left, result_type);
             update_contextual_operand_fact(state, right_node, right, result_type)
-        } else {};
+        }
         let value = match (left.value, right.value) {
             (Some(constant::ConstValue::Bool(left)), Some(constant::ConstValue::Bool(right))) => Option::Some(
                 constant::ConstValue::Bool(
@@ -5139,7 +5139,7 @@ fn check_binary(
                 assignable: false,
             },
         }
-    } else {};
+    }
     if comparison_operator(op) {
         let equality = equality_operator(op);
         let mut operand_type = binary_operand_type(state, left, right);
@@ -5150,8 +5150,8 @@ fn check_binary(
                 operand_type = right.type_id;
             } else if go_types::assignable_types(state.world, right.type_id, left.type_id) {
                 operand_type = left.type_id;
-            } else {}
-        } else {};
+            }
+        }
         let nil_comparison = (basic_kind(state, left.type_id) == go_types::BasicKind::UntypedNil
             && go_types::is_nilable_type(state.world, right.type_id))
             || (basic_kind(state, right.type_id) == go_types::BasicKind::UntypedNil
@@ -5162,7 +5162,7 @@ fn check_binary(
             } else {
                 left.type_id
             };
-        } else {};
+        }
         if go_types::is_untyped(state.world, operand_type)
             && (left.value.is_none() || right.value.is_none()) {
             let contextual_type = default_operand_type(
@@ -5185,7 +5185,7 @@ fn check_binary(
                     Option::Some(value),
                 ),
                 None => {},
-            };
+            }
             match right.value {
                 Some(value) => update_operand_fact(
                     state,
@@ -5194,7 +5194,7 @@ fn check_binary(
                     Option::Some(value),
                 ),
                 None => {},
-            };
+            }
             if state.diagnostics.len() > diagnostic_count {
                 return Operand {
                     type_id: basic_type_id(state, "untyped bool"),
@@ -5202,15 +5202,15 @@ fn check_binary(
                     addressable: false,
                     assignable: false,
                 }
-            } else {};
+            }
             operand_type = contextual_type;
-        } else {};
+        }
         if operand_type.value != state.world.invalid.value
             && !go_types::is_untyped(state.world, operand_type)
             && (report_binary_operand_overflow(state, left_node, left, operand_type)
                 || report_binary_operand_overflow(state, right_node, right, operand_type)) {
             return invalid_operand(state)
-        } else {};
+        }
         let valid = operand_type.value != state.world.invalid.value
             && if equality {
                 nil_comparison
@@ -5274,9 +5274,9 @@ fn check_binary(
                     (right_node, right.type_id)
                 };
                 report_unsupported_comparison(state, node, unsupported_node, op, unsupported)
-            };
+            }
             return invalid_operand(state)
-        } else {};
+        }
         update_binary_operand_fact(state, left_node, left, operand_type);
         update_binary_operand_fact(state, right_node, right, operand_type);
         return match (left.value, right.value) {
@@ -5299,7 +5299,7 @@ fn check_binary(
                 assignable: false,
             },
         }
-    } else {};
+    }
     let result_type = binary_operand_type(state, left, right);
     if result_type.value == state.world.invalid.value {
         diagnostic(
@@ -5313,12 +5313,12 @@ fn check_binary(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     if !go_types::is_untyped(state.world, result_type)
         && (report_binary_operand_overflow(state, left_node, left, result_type)
             || report_binary_operand_overflow(state, right_node, right, result_type)) {
         return invalid_operand(state)
-    } else {};
+    }
     update_binary_operand_fact(state, left_node, left, result_type);
     update_binary_operand_fact(state, right_node, right, result_type);
     if !valid_binary_operator(state, op, result_type) {
@@ -5330,7 +5330,7 @@ fn check_binary(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     if (op == DIVIDE_OPERATOR || op == REMAINDER_OPERATOR)
         && (go_types::is_integer(state.world, result_type) || left.value.is_some())
         && match right.value {
@@ -5339,7 +5339,7 @@ fn check_binary(
         } {
         diagnostic(state, right_node, "invalid operation: division by zero", false);
         return invalid_operand(state)
-    } else {};
+    }
     let value: Option[constant::ConstValue] = match (
         binary_constant_value(state, left, result_type),
         binary_constant_value(state, right, result_type),
@@ -5374,7 +5374,7 @@ fn check_binary(
             addressable: false,
             assignable: false,
         }
-    } else {};
+    }
     if !go_types::is_untyped(state.world, result_type)
         && match value {
             Some(value) => constant::constant_kind(value) != constant::ConstantKind::Unknown
@@ -5481,7 +5481,7 @@ fn check_expression(state: CheckState, scope: go_types::ScopeId, node: syntax::N
             let inner = check_expression(state, scope, expression);
             if node_is_void(state, expression) {
                 mark_void_node(state, node)
-            } else {};
+            }
             Operand {
                 type_id: inner.type_id,
                 value: match inner.value {
@@ -5545,7 +5545,7 @@ fn check_expression(state: CheckState, scope: go_types::ScopeId, node: syntax::N
                         "cannot index " + operand_string(state, expression, base),
                         false,
                     )
-                } else {};
+                }
                 invalid_operand(state)
             },
         },

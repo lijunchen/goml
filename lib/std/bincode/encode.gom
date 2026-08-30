@@ -456,7 +456,7 @@ impl serde::Serializer for BincodeSerializer {
     fn end_optional(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_optional without begin_optional")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             BincodeSerializeFrame::Optional { ready } => if ready.get() {
                 Result::Err("optional item was not serialized")
@@ -488,7 +488,7 @@ impl serde::Serializer for BincodeSerializer {
     fn begin_sequence_element(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("sequence element without sequence")
-        } else {};
+        }
         let frame = self.frames.len() - 1;
         match self.frames[frame] {
             BincodeSerializeFrame::Sequence { length, index: next, ready } => if ready.get()
@@ -507,7 +507,7 @@ impl serde::Serializer for BincodeSerializer {
     fn end_sequence(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_sequence without begin_sequence")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             BincodeSerializeFrame::Sequence { length, index, ready } => if ready.get()
                 || index.get() != length {
@@ -535,7 +535,7 @@ impl serde::Serializer for BincodeSerializer {
     fn begin_tuple_element(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("tuple element without tuple")
-        } else {};
+        }
         let frame = self.frames.len() - 1;
         match self.frames[frame] {
             BincodeSerializeFrame::Tuple { length, index: next, ready } => if ready.get()
@@ -554,7 +554,7 @@ impl serde::Serializer for BincodeSerializer {
     fn end_tuple(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_tuple without begin_tuple")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             BincodeSerializeFrame::Tuple { length, index, ready } => if ready.get()
                 || index.get() != length {
@@ -583,7 +583,7 @@ impl serde::Serializer for BincodeSerializer {
     fn begin_map_key(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map key without map")
-        } else {};
+        }
         let frame = self.frames.len() - 1;
         match self.frames[frame] {
             BincodeSerializeFrame::Map { length, index: next, state } => if state.get() != 0
@@ -601,7 +601,7 @@ impl serde::Serializer for BincodeSerializer {
     fn begin_map_value(self: BincodeSerializer, index: isize) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("map value without map")
-        } else {};
+        }
         let frame = self.frames.len() - 1;
         match self.frames[frame] {
             BincodeSerializeFrame::Map { length: _, index: next, state } => if state.get() != 2
@@ -618,7 +618,7 @@ impl serde::Serializer for BincodeSerializer {
     fn end_map(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_map without begin_map")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             BincodeSerializeFrame::Map { length, index, state } => if state.get() != 0
                 || index.get() != length {
@@ -652,7 +652,7 @@ impl serde::Serializer for BincodeSerializer {
         let _ = name;
         if self.frames.is_empty() {
             return Result::Err("struct field without struct")
-        } else {};
+        }
         let frame = self.frames.len() - 1;
         match self.frames[frame] {
             BincodeSerializeFrame::Struct { length, index: next, ready } => if ready.get()
@@ -671,7 +671,7 @@ impl serde::Serializer for BincodeSerializer {
     fn end_struct(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_struct without begin_struct")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             BincodeSerializeFrame::Struct { length, index, ready } => if ready.get()
                 || index.get() != length {
@@ -723,7 +723,7 @@ impl serde::Serializer for BincodeSerializer {
         let _ = name;
         if self.frames.is_empty() {
             return Result::Err("variant field without variant")
-        } else {};
+        }
         let frame = self.frames.len() - 1;
         match self.frames[frame] {
             BincodeSerializeFrame::Variant { length, index: next, ready } => if ready.get()
@@ -742,7 +742,7 @@ impl serde::Serializer for BincodeSerializer {
     fn end_variant(self: BincodeSerializer) -> Result[(), string] {
         if self.frames.is_empty() {
             return Result::Err("end_variant without begin_variant")
-        } else {};
+        }
         match self.frames[self.frames.len() - 1] {
             BincodeSerializeFrame::Variant { length, index, ready } => if ready.get()
                 || index.get() != length {

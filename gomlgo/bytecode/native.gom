@@ -58,7 +58,7 @@ fn native_option_slots(count: isize) -> Vec[Option[NativeCallId]] {
 fn execution_package_index(program: execution::ExecutionProgram, package_id: go_types::PackageId) -> isize {
     if package_id.value < 0 || package_id.value >= program.package_indices.len() {
         return -1
-    } else {};
+    }
     match program.package_indices[package_id.value] {
         Some(index) => if index >= 0 && index < program.packages.len() {
             index
@@ -72,7 +72,7 @@ fn execution_package_index(program: execution::ExecutionProgram, package_id: go_
 fn native_basic_key(basic: go_types::BasicKind, untyped: bool) -> Result[string, string] {
     if untyped {
         return Result::Err("untyped values are not supported")
-    } else {};
+    }
     match basic {
         go_types::BasicKind::Bool => Result::Ok("bool"),
         go_types::BasicKind::Int => Result::Ok("int"),
@@ -150,18 +150,18 @@ fn native_type_key(world: go_types::World, type_id: go_types::TypeId) -> Result[
         } => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() {
                 return Result::Err("generic callback functions are not supported")
-            } else {};
+            }
             let parameters = native_tuple(world, params)?;
             let result_values = native_tuple(world, results)?;
             if variadic {
                 if parameters.0.is_empty() {
                     return Result::Err("variadic callback has no final parameter")
-                } else {};
+                }
                 parameters.1[parameters.1.len() - 1] = native_variadic_key(
                     world,
                     parameters.0[parameters.0.len() - 1],
                 )?;
-            } else {};
+            }
             Result::Ok(
                 "func(" + text::join(parameters.1, ",") + ")(" + text::join(result_values.1, ",")
                     + ")",
@@ -194,18 +194,18 @@ fn native_proxy_method(world: go_types::World, object: go_types::ObjectId) -> Re
         }) => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() || variadic {
                 return Result::Err("generic or variadic interface methods are not supported")
-            } else {};
+            }
             let parameter_type_keys = native_tuple(world, params)?.1;
             let result_type_keys = native_tuple(world, results)?.1;
             for key in parameter_type_keys {
                 if !native_proxy_type_key_supported(key) {
                     return Result::Err("interface method parameter is not proxyable")
-                } else {}
+                }
             }
             for key in result_type_keys {
                 if !native_proxy_type_key_supported(key) {
                     return Result::Err("interface method result is not proxyable")
-                } else {}
+                }
             }
             Result::Ok(
                 native_api::NativeProxyMethodSpec {
@@ -317,7 +317,7 @@ fn interpreted_package(program: BytecodeProgram, package_id: go_types::PackageId
     for package_value in program.packages {
         if package_value.package_id.value == package_id.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -369,14 +369,14 @@ fn native_aggregate_specs(program: BytecodeProgram) -> Vec[native_api::NativeAgg
                                             fields: specs,
                                         },
                                     )
-                                } else {}
+                                }
                             },
                             _ => {},
                         }
-                    } else {},
+                    },
                     None => {},
                 }
-            } else {},
+            },
             _ => {},
         }
     }
@@ -428,18 +428,18 @@ fn native_signature(world: go_types::World, signature: go_types::TypeId) -> Resu
         }) => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() {
                 return Result::Err("generic functions are not supported")
-            } else {};
+            }
             let parameters = native_tuple(world, params)?;
             let result_values = native_tuple(world, results)?;
             if variadic {
                 if parameters.0.is_empty() {
                     return Result::Err("variadic function has no final parameter")
-                } else {};
+                }
                 parameters.1[parameters.1.len() - 1] = native_variadic_key(
                     world,
                     parameters.0[parameters.0.len() - 1],
                 )?;
-            } else {};
+            }
             Result::Ok(
                 NativeSignature {
                     parameter_types: parameters.0,
@@ -476,7 +476,7 @@ fn native_receiver(world: go_types::World, receiver: go_types::TypeId) -> Result
         }) => {
             if !type_params.is_empty() || !type_args.is_empty() {
                 return Result::Err("generic native method receivers are not supported")
-            } else {};
+            }
             let value = world.objects[object.value];
             let package_id = value.owner.ok_or("native method receiver has no package owner")?;
             Result::Ok(
@@ -511,7 +511,7 @@ fn native_callable_signature(world: go_types::World, signature: go_types::TypeId
         }) => {
             if !receiver_type_params.is_empty() || !type_params.is_empty() {
                 return Result::Err("generic native methods are not supported")
-            } else {};
+            }
             let receiver = native_receiver(world, receiver.type_id)?;
             let parameters = native_tuple(world, params)?;
             let result_values = native_tuple(world, results)?;
@@ -526,12 +526,12 @@ fn native_callable_signature(world: go_types::World, signature: go_types::TypeId
             if variadic {
                 if parameter_types.len() < 2 {
                     return Result::Err("variadic method has no final parameter")
-                } else {};
+                }
                 parameter_type_keys[parameter_type_keys.len() - 1] = native_variadic_key(
                     world,
                     parameter_types[parameter_types.len() - 1],
                 )?;
-            } else {};
+            }
             Result::Ok(
                 (
                     NativeSignature {
@@ -580,7 +580,7 @@ fn native_type_has_parameter(world: go_types::World, type_id: go_types::TypeId) 
     let value = go_types::unalias(world, type_id);
     if go_types::is_type_parameter(world, value) {
         return true
-    } else {};
+    }
     match go_types::get_type(world, value) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => {
             native_type_has_parameter(world, element)
@@ -591,11 +591,11 @@ fn native_type_has_parameter(world: go_types::World, type_id: go_types::TypeId) 
         }) => {
             if native_type_has_parameter(world, underlying) {
                 return true
-            } else {};
+            }
             for argument in type_args {
                 if native_type_has_parameter(world, argument) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -641,7 +641,7 @@ fn native_path_included(paths: Vec[string], path: string) -> bool {
     for value in paths {
         if value == path {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -656,7 +656,7 @@ fn collect_native_type(
     if type_id.value < 0 || type_id.value >= program.world.types.len()
         || seen.contains(type_id.value) {
         return
-    } else {};
+    }
     let _ = seen.insert(type_id.value);
     match program.world.types[type_id.value].kind {
         go_types::TypeKind::Array { length: _, element } | go_types::TypeKind::Slice { element } | go_types::TypeKind::Pointer {
@@ -685,7 +685,7 @@ fn collect_native_type(
             match receiver {
                 Some(value) => collect_native_type(program, paths, seen, values, value.type_id),
                 None => {},
-            };
+            }
             collect_native_type(program, paths, seen, values, params);
             collect_native_type(program, paths, seen, values, results)
         },
@@ -699,7 +699,7 @@ fn collect_native_type(
                         values,
                         program.world.objects[method.value].type_id,
                     )
-                } else {}
+                }
             }
             for embedded in embeddeds {
                 collect_native_type(program, paths, seen, values, embedded)
@@ -735,8 +735,8 @@ fn collect_native_type(
                                             + object_value.name,
                                     },
                                 )
-                            } else {}
-                        } else {}
+                            }
+                        }
                     },
                     None => {},
                 }
@@ -774,7 +774,7 @@ fn collect_native_types(program: execution::ExecutionProgram) -> Vec[NativeType]
                             values,
                             program.world.objects[object.value].type_id,
                         )
-                    } else {},
+                    },
                     None => {},
                 }
             }
@@ -789,7 +789,7 @@ fn collect_native_types(program: execution::ExecutionProgram) -> Vec[NativeType]
                             values,
                             program.world.objects[object.value].type_id,
                         )
-                    } else {},
+                    },
                     None => {},
                 }
             }
@@ -803,7 +803,7 @@ fn collect_native_types(program: execution::ExecutionProgram) -> Vec[NativeType]
                     collect_native_type(program, paths, seen, values, argument)
                 }
             }
-        } else {}
+        }
     }
     collections::sort_by(
         values,
@@ -819,7 +819,7 @@ fn collect_native_types(program: execution::ExecutionProgram) -> Vec[NativeType]
     for value in values {
         if result.is_empty() || result[result.len() - 1].key != value.key {
             result.push(value)
-        } else {}
+        }
     }
     result
 }
@@ -870,10 +870,10 @@ fn direct_native_packages(program: execution::ExecutionProgram) -> Vec[string] {
                     let value = program.packages[dependency_index];
                     if value.mode == execution::ExecutionMode::Native && value.path != "unsafe" {
                         let _ = paths.insert(value.path);
-                    } else {}
-                } else {}
+                    }
+                }
             }
-        } else {}
+        }
     }
     paths.to_vec()
 }
@@ -892,7 +892,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                         let generic = generic_function_signature(program.world, object.type_id);
                         if !generic && selected.contains(object_id.value) {
                             continue
-                        } else {};
+                        }
                         match object.owner {
                             Some(owner) => {
                                 let owner_index = execution_package_index(program, owner);
@@ -902,10 +902,10 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                         && object.kind == go_types::ObjectKind::Func {
                                         if native_intrinsic(owner_package.path, object.name) {
                                             continue
-                                        } else {};
+                                        }
                                         if !generic {
                                             let _ = selected.insert(object_id.value);
-                                        } else {};
+                                        }
                                         if !object.exported {
                                             diagnostics.push(
                                                 native_diagnostic(
@@ -942,7 +942,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                                             ) {
                                                                 deferred = true;
                                                                 continue
-                                                            } else {};
+                                                            }
                                                             match native_type_key(
                                                                 program.world,
                                                                 argument,
@@ -967,7 +967,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                                         }
                                                         if deferred {
                                                             continue
-                                                        } else {};
+                                                        }
                                                         candidate_object = go_types::add_object(
                                                             program.world,
                                                             go_types::ObjectKind::Func,
@@ -1000,7 +1000,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                                         ),
                                                     ),
                                                 }
-                                            } else {};
+                                            }
                                             match native_callable_signature(
                                                 program.world,
                                                 signature,
@@ -1056,16 +1056,16 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                                 ),
                                             }
                                         }
-                                    } else {}
-                                } else {}
+                                    }
+                                }
                             },
                             None => {},
                         }
-                    } else {},
+                    },
                     None => {},
                 }
             }
-        } else {}
+        }
     }
     collections::sort_by(candidates, native_candidate_compare);
     let calls: Vec[NativeCall] = Vec::with_capacity(candidates.len());
@@ -1082,7 +1082,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                 checker::ObjectFact { node: candidate.node, object: Option::Some(existing.object) },
             );
             continue
-        } else {};
+        }
         let id = native_call_id(calls.len());
         object_calls[candidate.object.value] = Option::Some(id);
         calls.push(
@@ -1160,7 +1160,7 @@ pub fn native_manifest(program: BytecodeProgram) -> Result[native_api::Manifest,
                     ),
                 )
             }
-        };
+        }
         let first_parameter = if call.receiver_name == "" {
             0
         } else {
@@ -1173,11 +1173,11 @@ pub fn native_manifest(program: BytecodeProgram) -> Result[native_api::Manifest,
                     for current in proxies {
                         if same_proxy(current, proxy) {
                             exists = true;
-                        } else {}
+                        }
                     }
                     if !exists {
                         proxies.push(proxy)
-                    } else {}
+                    }
                 },
                 Ok(None) | Err(_) => {},
             };
@@ -1213,8 +1213,8 @@ pub fn native_manifest(program: BytecodeProgram) -> Result[native_api::Manifest,
                                     name: value.name,
                                 },
                             )
-                        } else {}
-                    } else {},
+                        }
+                    },
                     _ => {},
                 }
             }

@@ -100,7 +100,7 @@ pub fn integer_mul(left: BigInt, right: BigInt) -> BigInt {
 pub fn integer_quo_rem(left: BigInt, right: BigInt) -> Result[(BigInt, BigInt), string] {
     if right.sign == 0 {
         return Result::Err("division by zero")
-    } else {};
+    }
     let divided = natural_div_rem(left.magnitude, right.magnitude)?;
     Result::Ok(
         (
@@ -211,7 +211,7 @@ pub fn integer_xor(left: BigInt, right: BigInt) -> BigInt {
 pub fn integer_parse(value: string) -> Result[BigInt, string] {
     if value == "" {
         return Result::Err("missing integer")
-    } else {};
+    }
     let mut sign = 1;
     let mut start = 0;
     if value.byte_get(0) == b'-' {
@@ -219,7 +219,7 @@ pub fn integer_parse(value: string) -> Result[BigInt, string] {
         start = 1;
     } else if value.byte_get(0) == b'+' {
         start = 1;
-    } else {};
+    }
     let mut radix = 10.to_u32();
     if start + 2 <= value.byte_len() && value.byte_get(start) == b'0' {
         let prefix = value.byte_get(start + 1);
@@ -235,8 +235,8 @@ pub fn integer_parse(value: string) -> Result[BigInt, string] {
         } else if value.byte_len() > start + 1 {
             radix = 8.to_u32();
             start = start + 1;
-        } else {}
-    } else {};
+        }
+    }
     let magnitude = natural_parse_digits(value.byte_slice(start, value.byte_len()), radix)?;
     Result::Ok(integer_from_parts(sign, magnitude))
 }

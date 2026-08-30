@@ -66,7 +66,7 @@ fn parse_file(parser: Parser) -> () {
     let marker = parser.open();
     if parser.at(lexer::TokenKind::PackageKeyword) {
         package_decl(parser)
-    } else {};
+    }
     while parser.at(lexer::TokenKind::UseKeyword)
         || (parser.at(lexer::TokenKind::PubKeyword) && parser.nth(1) == lexer::TokenKind::UseKeyword) {
         use_decl(parser)
@@ -102,7 +102,7 @@ fn parse_file(parser: Parser) -> () {
         } else if is_expr_first(parser.peek()) {
             if marker_is_none(expr(parser)) {
                 parser.advance_with_error("expected an expression")
-            } else {}
+            }
         } else {
             parser.advance_with_error("expected a function")
         }
@@ -126,18 +126,18 @@ fn use_decl(parser: Parser) -> () {
 fn use_decl_with_marker(parser: Parser, marker: MarkerOpened) -> () {
     if parser.at(lexer::TokenKind::PubKeyword) {
         parser.expect(lexer::TokenKind::PubKeyword)
-    } else {};
+    }
     parser.expect(lexer::TokenKind::UseKeyword);
     if parser.at(lexer::TokenKind::Ident) {
         use_path(parser)
     } else if !parser.eof() {
         parser.advance_with_error("expected a path after `use`")
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         use_item_list(parser)
     } else if parser.eat(lexer::TokenKind::AsKeyword) {
         parser.expect(lexer::TokenKind::Ident)
-    } else {};
+    }
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::USE);
 }
@@ -151,7 +151,7 @@ fn use_path(parser: Parser) -> () {
     }
     if parser.at(lexer::TokenKind::ColonColon) && parser.nth(1) == lexer::TokenKind::LBrace {
         parser.advance()
-    } else {};
+    }
     let _ = parser.close(marker, cst::NodeKind::PATH);
 }
 
@@ -160,18 +160,18 @@ fn use_item_list(parser: Parser) -> () {
     parser.expect(lexer::TokenKind::LBrace);
     if parser.at(lexer::TokenKind::RBrace) {
         parser.error("use item list cannot be empty")
-    } else {};
+    }
     while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) && !is_list_boundary(parser.peek()) {
         let item = parser.open();
         parser.expect(lexer::TokenKind::Ident);
         if parser.eat(lexer::TokenKind::AsKeyword) {
             parser.expect(lexer::TokenKind::Ident)
-        } else {};
+        }
         let _ = parser.close(item, cst::NodeKind::USE_ITEM);
         if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBrace)
             && !is_list_boundary(parser.peek()) {
             parser.advance_with_error("expected ',' or '}' in use item list")
-        } else {}
+        }
     }
     parser.expect(lexer::TokenKind::RBrace);
     let _ = parser.close(marker, cst::NodeKind::USE_ITEM_LIST);
@@ -203,7 +203,7 @@ fn item_with_attrs(parser: Parser, attrs: MarkerClosed) -> () {
         parser.error("expected a top-level item after attributes");
         if !parser.eof() {
             parser.advance()
-        } else {};
+        }
         let _ = parser.close(marker, cst::NodeKind::ErrorTree);
     }
 }
@@ -237,7 +237,7 @@ fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> () {
         parser.error("expected a public top-level item");
         if !parser.eof() {
             parser.advance()
-        } else {};
+        }
         let _ = parser.close(marker, cst::NodeKind::ErrorTree);
     }
 }
@@ -248,12 +248,12 @@ fn use_decl_after_pub(parser: Parser, marker: MarkerOpened) -> () {
         use_path(parser)
     } else if !parser.eof() {
         parser.advance_with_error("expected a path after `use`")
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         use_item_list(parser)
     } else if parser.eat(lexer::TokenKind::AsKeyword) {
         parser.expect(lexer::TokenKind::Ident)
-    } else {};
+    }
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::USE);
 }
@@ -268,13 +268,13 @@ fn type_alias_with_marker(parser: Parser, marker: MarkerOpened) -> () {
     parser.expect_upper_ident("type alias name");
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, false)
-    } else {};
+    }
     parser.expect(lexer::TokenKind::Eq);
     if is_type_first(parser.peek()) {
         type_expr(parser)
     } else {
         parser.error("expected a type after `=`")
-    };
+    }
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::TYPE_ALIAS);
 }
@@ -292,11 +292,11 @@ fn constant_with_marker(parser: Parser, marker: MarkerOpened) -> () {
         type_expr(parser)
     } else {
         parser.error("expected a constant type after `:`")
-    };
+    }
     parser.expect(lexer::TokenKind::Eq);
     if marker_is_none(expr(parser)) {
         parser.error("expected a constant expression after `=`")
-    } else {};
+    }
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::CONST);
 }
@@ -314,11 +314,11 @@ fn static_with_marker(parser: Parser, marker: MarkerOpened) -> () {
         type_expr(parser)
     } else {
         parser.error("expected a static type after `:`")
-    };
+    }
     parser.expect(lexer::TokenKind::Eq);
     if marker_is_none(expr(parser)) {
         parser.error("expected a static initializer after `=`")
-    } else {};
+    }
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::STATIC);
 }
@@ -339,7 +339,7 @@ fn attribute(parser: Parser) -> () {
         attribute_body(parser)
     } else {
         parser.error("expected '[' after '#'")
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::ATTRIBUTE);
 }
 
@@ -361,7 +361,7 @@ fn attribute_body(parser: Parser) -> () {
     }
     if depth > 0 {
         parser.error("unterminated attribute")
-    } else {}
+    }
 }
 
 fn extern_decl(parser: Parser) -> () {
@@ -381,14 +381,14 @@ fn extern_decl_with_marker(parser: Parser, marker: MarkerOpened) -> () {
         parser.expect_lower_ident("function name");
         if parser.at(lexer::TokenKind::LBracket) {
             generic_list(parser, true)
-        } else {};
+        }
         param_list(parser);
         if parser.eat(lexer::TokenKind::Arrow) {
             type_expr(parser)
-        } else {};
+        }
         if parser.at(lexer::TokenKind::WhereKeyword) {
             where_clause(parser)
-        } else {};
+        }
         parser.expect(lexer::TokenKind::Semi);
         let _ = parser.close(marker, cst::NodeKind::EXTERN);
     }
@@ -404,20 +404,20 @@ fn func_with_marker(parser: Parser, marker: MarkerOpened) -> () {
     parser.expect_lower_ident("function name");
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, true)
-    } else {};
+    }
     param_list(parser);
     if parser.eat(lexer::TokenKind::Arrow) {
         type_expr(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::WhereKeyword) {
         where_clause(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         block(parser)
     } else {
         parser.error("functions must have a body");
         parser.eat(lexer::TokenKind::Semi);
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::FN);
 }
 
@@ -430,14 +430,14 @@ fn impl_block_with_marker(parser: Parser, marker: MarkerOpened) -> () {
     parser.expect(lexer::TokenKind::ImplKeyword);
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, true)
-    } else {};
+    }
     type_expr(parser);
     if parser.eat(lexer::TokenKind::ForKeyword) {
         type_expr(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::WhereKeyword) {
         where_clause(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         parser.advance();
         while !parser.at(lexer::TokenKind::RBrace) && !parser.eof()
@@ -453,7 +453,7 @@ fn impl_block_with_marker(parser: Parser, marker: MarkerOpened) -> () {
                     parser.error("expected a function after `pub`");
                     if !parser.eof() {
                         parser.advance()
-                    } else {};
+                    }
                     let _ = parser.close(marker, cst::NodeKind::ErrorTree);
                 }
             } else if parser.at(lexer::TokenKind::TypeKeyword) {
@@ -465,7 +465,7 @@ fn impl_block_with_marker(parser: Parser, marker: MarkerOpened) -> () {
         parser.expect(lexer::TokenKind::RBrace)
     } else {
         parser.error("impl declarations require a brace-delimited body")
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::IMPL);
 }
 
@@ -479,18 +479,18 @@ fn trait_def_with_marker(parser: Parser, marker: MarkerOpened) -> () {
     parser.expect_upper_ident("trait name");
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, true)
-    } else {};
+    }
     if parser.eat(lexer::TokenKind::Colon) {
         trait_set(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::WhereKeyword) {
         where_clause(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         trait_method_list(parser)
     } else {
         parser.error("trait declarations require a brace-delimited body")
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::TRAIT);
 }
 
@@ -517,19 +517,19 @@ fn trait_method(parser: Parser) -> () {
     parser.expect_lower_ident("method name");
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, true)
-    } else {};
+    }
     param_list(parser);
     if parser.eat(lexer::TokenKind::Arrow) {
         type_expr(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::WhereKeyword) {
         where_clause(parser)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         block(parser)
     } else {
         parser.expect(lexer::TokenKind::Semi)
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::TRAIT_METHOD_SIG);
 }
 
@@ -539,7 +539,7 @@ fn trait_associated_type(parser: Parser) -> () {
     parser.expect_upper_ident("associated type name");
     if parser.eat(lexer::TokenKind::Colon) {
         trait_set(parser)
-    } else {};
+    }
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::TRAIT_ASSOCIATED_TYPE);
 }
@@ -564,12 +564,12 @@ fn enum_def_with_marker(parser: Parser, marker: MarkerOpened) -> () {
     parser.expect_upper_ident("enum name");
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, false)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         variant_list(parser)
     } else {
         parser.error("enum declarations require a brace-delimited body")
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::ENUM);
 }
 
@@ -583,7 +583,7 @@ fn struct_def_with_marker(parser: Parser, marker: MarkerOpened) -> () {
     parser.expect_upper_ident("struct name");
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, false)
-    } else {};
+    }
     if parser.at(lexer::TokenKind::LBrace) {
         struct_field_list(parser)
     } else if parser.at(lexer::TokenKind::LParen) {
@@ -593,7 +593,7 @@ fn struct_def_with_marker(parser: Parser, marker: MarkerOpened) -> () {
         parser.error(
             "struct declarations require a brace-delimited body or one parenthesized field",
         )
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::STRUCT);
 }
 
@@ -612,14 +612,14 @@ fn newtype_field(parser: Parser) -> () {
             type_expr(parser)
         } else {
             parser.error("expected a newtype field type")
-        };
+        }
         let _ = parser.close(marker, cst::NodeKind::NEWTYPE_FIELD);
         parser.eat(lexer::TokenKind::Comma);
         while !parser.at(lexer::TokenKind::RParen) && !parser.eof()
             && !is_type_list_recovery(parser.peek()) {
             parser.advance_with_error("newtype structs require exactly one field")
         }
-    };
+    }
     parser.expect(lexer::TokenKind::RParen)
 }
 
@@ -634,7 +634,7 @@ fn variant_list(parser: Parser) -> () {
                 variant_with_marker(parser, attrs.precede(parser))
             } else {
                 variant(parser)
-            };
+            }
             if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace)
                 || is_enum_body_recovery(parser.peek()) {} else {
                 parser.error("expected `,` between enum variants")
@@ -659,7 +659,7 @@ fn struct_field_list(parser: Parser) -> () {
                 struct_field_with_marker(parser, attrs.precede(parser))
             } else {
                 struct_field(parser)
-            };
+            }
             if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace)
                 || is_struct_body_recovery(parser.peek()) {} else {
                 parser.error("expected `,` between struct fields")
@@ -696,7 +696,7 @@ fn variant_with_marker(parser: Parser, marker: MarkerOpened) -> () {
         variant_type_list(parser)
     } else if parser.at(lexer::TokenKind::LBrace) {
         struct_field_list(parser)
-    } else {};
+    }
     let _ = parser.close(marker, cst::NodeKind::VARIANT);
 }
 
@@ -715,7 +715,7 @@ fn variant_type_list(parser: Parser) -> () {
                 type_expr(parser)
             } else {
                 parser.error("expected a type after enum field attributes")
-            };
+            }
             let _ = parser.close(field_marker, cst::NodeKind::ENUM_TUPLE_FIELD);
             if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RParen)
                 || is_type_list_recovery(parser.peek()) {} else {
@@ -753,10 +753,10 @@ fn generic(parser: Parser, allow_bounds: bool) -> () {
     parser.expect_upper_ident("generic parameter name");
     if parser.at(lexer::TokenKind::LBracket) {
         generic_list(parser, false)
-    } else {};
+    }
     if allow_bounds && parser.eat(lexer::TokenKind::Colon) {
         trait_set(parser)
-    } else {};
+    }
     let _ = parser.close(marker, cst::NodeKind::GENERIC);
 }
 
@@ -768,7 +768,7 @@ fn trait_set(parser: Parser) -> () {
         parser.advance_with_error("expected a trait name");
         let _ = parser.close(marker, cst::NodeKind::TRAIT_SET);
         return
-    };
+    }
     while parser.eat(lexer::TokenKind::Plus) {
         if parser.at(lexer::TokenKind::Ident) {
             trait_ref(parser)
@@ -785,7 +785,7 @@ fn trait_ref(parser: Parser) -> () {
     parse_path_always(parser);
     if parser.at(lexer::TokenKind::LBracket) {
         type_param_list(parser)
-    } else {};
+    }
     let _ = parser.close(marker, cst::NodeKind::TYPE_TAPP);
 }
 
@@ -797,7 +797,7 @@ fn where_clause(parser: Parser) -> () {
         where_predicate(parser);
         if !parser.eat(lexer::TokenKind::Comma) {
             break
-        } else {}
+        }
     }
     let _ = parser.close(marker, cst::NodeKind::WHERE_CLAUSE);
 }
@@ -810,7 +810,7 @@ fn where_predicate(parser: Parser) -> () {
         parser.advance_with_error("expected a type in where predicate");
         let _ = parser.close(marker, cst::NodeKind::WHERE_PREDICATE);
         return
-    };
+    }
     if parser.eat(lexer::TokenKind::Colon) {
         trait_set(parser)
     } else if parser.eat(lexer::TokenKind::Eq) {
@@ -821,7 +821,7 @@ fn where_predicate(parser: Parser) -> () {
         }
     } else {
         parser.error("expected ':' or '=' in where predicate")
-    };
+    }
     let _ = parser.close(marker, cst::NodeKind::WHERE_PREDICATE);
 }
 
@@ -868,17 +868,17 @@ fn param(parser: Parser) -> () {
         type_expr(parser)
     } else if !self_shorthand {
         parser.error("only the first trait or impl parameter may use the `self` shorthand")
-    } else {};
+    }
     if !parser.at(lexer::TokenKind::RParen) && !is_param_list_recovery(parser.peek()) {
         parser.expect(lexer::TokenKind::Comma)
-    } else {};
+    }
     let _ = parser.close(marker, cst::NodeKind::PARAM);
 }
 
 fn type_expr(parser: Parser) -> () {
     if marker_is_none(type_expr_bp(parser, 0)) && !parser.eof() {
         parser.advance_with_error("expected a type")
-    } else {}
+    }
 }
 
 fn type_expr_bp(parser: Parser, min_bp: isize) -> Option[MarkerClosed] {
@@ -903,7 +903,7 @@ fn type_expr_bp(parser: Parser, min_bp: isize) -> Option[MarkerClosed] {
                             parser.expect(lexer::TokenKind::Arrow);
                             if marker_is_none(type_expr_bp(parser, right_bp)) {
                                 parser.error("expected a return type")
-                            } else {};
+                            }
                             lhs = marker.completed(parser, cst::NodeKind::TYPE_FUNC);
                         }
                     } else {
@@ -990,12 +990,12 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             if is_type_first(parser.peek()) {
                 if marker_is_none(type_expr_bp(parser, 0)) {
                     parser.error("expected array element type")
-                } else {}
+                }
             } else if is_list_boundary(parser.peek()) {
                 parser.error("expected array element type")
             } else {
                 parser.advance_with_error("expected array element type")
-            };
+            }
             parser.expect(lexer::TokenKind::Semi);
             if parser.at(lexer::TokenKind::IntLit) {
                 parser.advance()
@@ -1003,7 +1003,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
                 parser.error("expected array length")
             } else {
                 parser.advance_with_error("expected array length")
-            };
+            }
             parser.expect(lexer::TokenKind::RBracket);
             parser.close(marker, cst::NodeKind::TYPE_ARRAY)
         },
@@ -1011,7 +1011,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             parse_path_always(parser);
             if parser.at(lexer::TokenKind::LBracket) {
                 type_param_list(parser)
-            } else {};
+            }
             parser.close(marker, cst::NodeKind::TYPE_TAPP)
         },
         DynKeyword => {
@@ -1036,10 +1036,10 @@ fn dyn_bound(parser: Parser) -> () {
         parse_path_always(parser)
     } else {
         parser.advance_with_error("expected a trait name in dyn type")
-    };
+    }
     if parser.at(lexer::TokenKind::LBracket) {
         dyn_arg_list(parser)
-    } else {};
+    }
     let _ = parser.close(marker, cst::NodeKind::DYN_BOUND);
 }
 
@@ -1058,20 +1058,20 @@ fn dyn_arg_list(parser: Parser) -> () {
                 type_expr(parser)
             } else {
                 parser.advance_with_error("expected a type in dyn associated type binding")
-            };
+            }
             let _ = parser.close(binding, cst::NodeKind::DYN_ASSOC_BINDING);
         } else if is_type_first(parser.peek()) {
             if saw_associated_binding {
                 parser.error("dyn type arguments must precede associated type bindings")
-            } else {};
+            }
             type_expr(parser)
         } else {
             parser.advance_with_error("expected a type argument or associated type binding")
-        };
+        }
         if parser.eat(lexer::TokenKind::Comma) {} else if !parser.at(lexer::TokenKind::RBracket)
             && !is_list_boundary(parser.peek()) {
             parser.error("expected `,` between dyn arguments")
-        } else {};
+        }
     }
     parser.expect(lexer::TokenKind::RBracket);
     let _ = parser.close(marker, cst::NodeKind::DYN_ARG_LIST);
@@ -1106,7 +1106,7 @@ fn block(parser: Parser) -> () {
         if trailing_expr_seen {
             if !is_block_recovery(parser.peek()) {
                 parser.advance_with_error("expected `}` after block expression");
-            } else {};
+            }
             parsing = false;
         } else if parser.at(lexer::TokenKind::LetKeyword) {
             let _ = let_stmt(parser);

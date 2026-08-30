@@ -42,7 +42,7 @@ fn strip_comment(value: string) -> string {
             quoted = !quoted;
         } else if !quoted && byte == b'#' {
             return value.byte_slice(0, index)
-        } else {}
+        }
     }
     value
 }
@@ -52,7 +52,7 @@ fn parse_string(value: string) -> Result[string, string] {
     if value.byte_len() < 2 || value.byte_get(0) != b'"'
         || value.byte_get(value.byte_len() - 1) != b'"' {
         return Result::Err("manifest values must be quoted strings")
-    } else {};
+    }
     let content = value.byte_slice(1, value.byte_len() - 1);
     let builder = text::StringBuilder::with_capacity(content.byte_len());
     let mut escaped = false;
@@ -80,7 +80,7 @@ fn parse_string(value: string) -> Result[string, string] {
 fn valid_segment(value: string) -> bool {
     if value.byte_len() == 0 {
         return false
-    } else {};
+    }
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if (byte >= b'0' && byte <= b'9') || (byte >= b'A' && byte <= b'Z')
@@ -97,11 +97,11 @@ fn validate_module_path(value: string, allow_toolchain: bool) -> Result[(), stri
     let segments = text::split(value, "::");
     if segments.is_empty() {
         return Result::Err("module.path is empty")
-    } else {};
+    }
     for segment in segments {
         if !valid_segment(segment) {
             return Result::Err("invalid module.path " + value)
-        } else {}
+        }
     }
     if !allow_toolchain && (segments[0] == "builtin" || segments[0] == "prelude") {
         Result::Err("module path " + value + " is reserved for the toolchain")
@@ -117,12 +117,12 @@ fn validate_target_dir(value: string) -> Result[(), string] {
         for segment in text::split(value, "/") {
             if segment == ".." {
                 return Result::Err("build.target-dir must stay inside the module")
-            } else {}
+            }
         }
         for segment in text::split(value, "\\") {
             if segment == ".." {
                 return Result::Err("build.target-dir must stay inside the module")
-            } else {}
+            }
         }
         Result::Ok(())
     }
@@ -144,11 +144,11 @@ fn load_with_policy(path: string, allow_toolchain: bool) -> Result[Manifest, str
             for index in 0..line.byte_len() {
                 if equals < 0 && line.byte_get(index) == b'=' {
                     equals = index;
-                } else {}
+                }
             }
             if equals < 0 {
                 return Result::Err("invalid manifest line: " + original)
-            } else {};
+            }
             let key = text::trim(line.byte_slice(0, equals));
             let value = parse_string(line.byte_slice(equals + 1, line.byte_len()))?;
             match (section, key) {

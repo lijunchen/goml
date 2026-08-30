@@ -26,7 +26,7 @@ fn main() -> () {
             "usage: gomlgo_parse_diff [parse-acceptance|ast-shape|ast-position|ast-comments|diagnostic-strict] [ROOT]",
         );
         process::exit(1)
-    } else {};
+    }
     match parser_diff::compare_tree(root, mode) {
         Ok(summary) => println(
             parser_diff::mode_name(mode) + " zero diff: files=" + summary.files.to_string()

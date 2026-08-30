@@ -143,7 +143,7 @@ fn package_object(result: CheckResult, name: string) -> go_types::Object {
     for entry in scope.entries {
         if entry.name == name {
             return result.world.objects[entry.object.value]
-        } else {}
+        }
     }
     testing::fail("missing package object " + name);
     loop {}
@@ -153,7 +153,7 @@ fn first_file_scope(result: CheckResult) -> go_types::ScopeId {
     for scope in result.world.scopes {
         if scope.kind == go_types::ScopeKind::File {
             return scope.id
-        } else {}
+        }
     }
     testing::fail("missing file scope");
     loop {}
@@ -163,7 +163,7 @@ fn oracle_scope_object(response: typecheck_diff::CheckResponse, name: string) ->
     for object in response.package_scope {
         if json_string_field(object, "name") == name {
             return object
-        } else {}
+        }
     }
     testing::fail("missing oracle package object " + name);
     loop {}
@@ -430,7 +430,7 @@ fn omits_invalid_operands_from_partial_type_info() -> () {
     for fact in result.info.types {
         if fact.value_expr && fact.type_id.value == result.world.invalid.value {
             invalid_facts += 1;
-        } else {}
+        }
     }
     testing::assert_eq(invalid_facts, 0)
 }
@@ -443,7 +443,7 @@ fn reports_initialization_cycles_through_static_function_and_method_bodies() -> 
     for diagnostic in result.diagnostics {
         if diagnostic.message.contains("initialization cycle") {
             cycles += 1;
-        } else {}
+        }
     }
     testing::assert_eq(cycles, 2);
     let oracle = expect_oracle(
@@ -480,13 +480,13 @@ fn checks_named_alias_and_recursive_slice_types() -> () {
             testing::assert_eq(go_types::format_type(result.world, underlying), "int")
         },
         _ => testing::fail("Count is not a named type"),
-    };
+    }
     match result.world.types[alias.type_id.value].kind {
         go_types::TypeKind::Alias { object: _, rhs, type_params: _, type_args: _ } => {
             testing::assert_eq(go_types::format_type(result.world, rhs), "example/p.Count")
         },
         _ => testing::fail("Alias is not an alias type"),
-    };
+    }
     match result.world.types[list.type_id.value].kind {
         go_types::TypeKind::Named {
             object: _,
@@ -502,7 +502,7 @@ fn checks_named_alias_and_recursive_slice_types() -> () {
             _ => testing::fail("List does not have slice underlying type"),
         },
         _ => testing::fail("List is not a named type"),
-    };
+    }
     let oracle = expect_oracle(
         typecheck_diff::run_check(
             typecheck_diff::request(
@@ -578,7 +578,7 @@ fn checks_struct_interface_and_function_declarations_when_bodies_are_ignored() -
             _ => testing::fail("Node does not have struct underlying type"),
         },
         _ => testing::fail("Node is not named"),
-    };
+    }
     let oracle_request = typecheck_diff::request(
         "example/p",
         Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
@@ -697,7 +697,7 @@ fn checks_imported_packages_in_a_shared_type_world() -> () {
             for pkg in result.world.packages {
                 if pkg.path == "example/q" {
                     result_id = Option::Some(pkg.id);
-                } else {}
+                }
             }
             result_id
         },
@@ -811,7 +811,7 @@ fn attaches_value_and_pointer_receiver_methods_to_named_types() -> () {
             }
         },
         _ => testing::fail("Box is not a named type"),
-    };
+    }
     let oracle_request = typecheck_diff::request(
         "example/p",
         Vec::from_array([typecheck_diff::SourceFile { name: "a.go", source }]),
@@ -1001,9 +1001,9 @@ fn evaluates_local_const_iota_and_inherited_expressions() -> () {
                 if object.name == expected_names[index] {
                     testing::assert_eq(object.constant.unwrap_or(""), expected_values[index]);
                     found += 1;
-                } else {}
+                }
             }
-        } else {}
+        }
     }
     testing::assert_eq(found, 4);
     let oracle = expect_oracle(
@@ -1026,7 +1026,7 @@ fn checks_labels_branches_and_switch_fallthrough() -> () {
     for object in result.world.objects {
         if object.kind == go_types::ObjectKind::Label {
             labels += 1;
-        } else {}
+        }
     }
     testing::assert_eq(labels, 2);
     let oracle = expect_oracle(
@@ -1071,7 +1071,7 @@ fn reports_unused_locals_independently_in_nested_functions() -> () {
             other = true;
         } else if diagnostic.message.contains("inner") {
             inner = true;
-        } else {}
+        }
     }
     testing::assert(outer && other && inner);
     let oracle = expect_oracle(
@@ -1161,17 +1161,17 @@ fn checks_container_memory_and_side_effect_builtins() -> () {
         } else if fact.builtin
             && go_types::format_type(result.world, fact.type_id) == "func(S, ...E) S" {
             slice_append_found = true;
-        } else {}
+        }
     }
     if !delete_found {
         testing::fail("delete builtin signature not found")
-    } else {};
+    }
     if !generic_append_found {
         testing::fail("generic append builtin signature not found")
-    } else {};
+    }
     if !slice_append_found {
         testing::fail("slice append builtin signature not found")
-    } else {};
+    }
     let oracle = expect_oracle(
         typecheck_diff::run_check(
             typecheck_diff::request(
@@ -1191,7 +1191,7 @@ fn permits_slicing_pointer_to_array_values() -> () {
     for diagnostic in result.diagnostics {
         if diagnostic.message.contains("slice of unaddressable array") {
             unaddressable = true;
-        } else {}
+        }
     }
     testing::assert(unaddressable);
     let valid_source = "package p\nfunc Slice(pointer *[4]int) []int { return pointer[:] }\n";
@@ -1271,10 +1271,10 @@ fn checks_nil_comparisons_and_type_info_operand_modes() -> () {
     for fact in result.info.types {
         if fact.nil {
             nil_values += 1;
-        } else {};
+        }
         if fact.void {
             void_values += 1;
-        } else {}
+        }
     }
     testing::assert_eq(nil_values, 6);
     testing::assert_eq(void_values, 2);
@@ -1299,7 +1299,7 @@ fn defaults_untyped_print_arguments() -> () {
         let key = syntax::node_key(result.syntax, fact.node).unwrap_or("");
         if key.contains(".fields.args[") && !fact.builtin {
             actual.push(go_types::format_type(result.world, fact.type_id))
-        } else {}
+        }
     }
     testing::assert_eq(actual.len(), 3);
     testing::assert_eq(actual[0], "string");
@@ -1351,7 +1351,7 @@ fn preserves_constant_kinds_during_contextual_typing_and_string_conversion() -> 
             testing::assert_eq(type_fact_constant_kind(fact), "Int");
             testing::assert_eq(type_fact_constant(fact).unwrap_or(""), "16777217");
             conversion_found = true;
-        } else {}
+        }
     }
     testing::assert(division_found);
     testing::assert(rune_found);
@@ -1370,7 +1370,7 @@ fn preserves_explicit_integer_complex_constant_values() -> () {
             testing::assert_eq(object.constant_kind, "Int");
             testing::assert_eq(object.constant.unwrap_or(""), "1");
             found += 1;
-        } else {}
+        }
     }
     testing::assert_eq(found, 2)
 }
@@ -1390,7 +1390,7 @@ fn promotes_untyped_binary_operands_to_the_common_numeric_type() -> () {
         } else if key.ends_with(".fields.decls[1].fields.specs[0].fields.values[0].fields.x") {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "untyped float");
             float_found = true;
-        } else {}
+        }
     }
     testing::assert(rune_found);
     testing::assert(float_found);
@@ -1416,7 +1416,7 @@ fn records_recover_result_as_the_empty_interface() -> () {
         if key.ends_with(".fields.results[0]") {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "interface{}");
             found = true;
-        } else {}
+        }
     }
     testing::assert(found)
 }
@@ -1432,7 +1432,7 @@ fn records_inferred_ellipsis_array_type_expressions() -> () {
         if fact.type_expr && key.ends_with(".fields.values[0].fields.type") {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "[3]int");
             found = true;
-        } else {}
+        }
     }
     testing::assert(found)
 }
@@ -1449,7 +1449,7 @@ fn contextualizes_append_elements_to_named_types() -> () {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "example/p.token");
             testing::assert_eq(type_fact_constant(fact).unwrap_or(""), "256");
             found = true;
-        } else {}
+        }
     }
     testing::assert(found)
 }
@@ -1469,7 +1469,7 @@ fn preserves_typed_constant_sequence_indices() -> () {
         } else if key.ends_with(".fields.decls[3].fields.specs[0].fields.values[0].fields.args[1]") {
             testing::assert_eq(go_types::format_type(result.world, fact.type_id), "example/p.Index");
             make_found = true;
-        } else {}
+        }
     }
     testing::assert(found);
     testing::assert(make_found)
@@ -1495,14 +1495,14 @@ fn checks_unsafe_builtins_and_gc_layout_constants() -> () {
         } else if fact.builtin
             && go_types::format_type(result.world, fact.type_id) == "func(T) uintptr" {
             generic_size = true;
-        } else {}
+        }
     }
     if invalid_builtins < 4 {
         testing::fail("invalid unsafe builtin facts not found")
-    } else {};
+    }
     if !generic_size {
         testing::fail("generic unsafe.Sizeof signature not found")
-    } else {};
+    }
     let oracle = expect_oracle(
         typecheck_diff::run_check(
             typecheck_diff::request(
@@ -1520,7 +1520,7 @@ fn checks_nonconstant_slice_unsafe_and_type_set_conversions() -> () {
     let result = check_source(source);
     if !result.diagnostics.is_empty() {
         testing::fail(result.diagnostics[0].message)
-    } else {};
+    }
     testing::assert_eq(result.diagnostics.len(), 0);
     testing::assert_eq(
         go_types::format_type(result.world, package_object(result, "Dynamic").type_id),
@@ -1540,7 +1540,7 @@ fn checks_nonconstant_slice_unsafe_and_type_set_conversions() -> () {
     );
     if !oracle.ok {
         testing::fail(oracle.diagnostics[0].message)
-    } else {};
+    }
     testing::assert(oracle.ok);
     let invalid_source = "package p\ntype Mixed interface { ~int | ~[]byte }\nfunc Bad[P Mixed]() P { return P(1) }\n";
     let invalid = check_source(invalid_source);
@@ -1694,7 +1694,7 @@ fn checks_expression_type_switch_and_select_scopes() -> () {
     for fact in result.info.types {
         if fact.nil {
             nil_facts += 1;
-        } else {}
+        }
     }
     testing::assert_eq(nil_facts, 1);
     let mut guard_definition = false;
@@ -1703,7 +1703,7 @@ fn checks_expression_type_switch_and_select_scopes() -> () {
         if key.ends_with(".fields.assign.fields.lhs[0]") {
             testing::assert(fact.object.is_none());
             guard_definition = true;
-        } else {}
+        }
     }
     testing::assert(guard_definition);
     let oracle = expect_oracle(
@@ -1985,7 +1985,7 @@ fn checks_multi_value_calls_and_comma_ok_assignments() -> () {
                 },
                 _ => testing::assert(false),
             }
-        } else {}
+        }
     }
     testing::assert(comma_ok >= 4);
     let oracle = expect_oracle(
@@ -2103,7 +2103,7 @@ fn checks_goto_block_and_variable_declaration_restrictions() -> () {
             skipped_declaration = true;
         } else if diagnostic.message.contains("jumps into block") {
             entered_block = true;
-        } else {}
+        }
     }
     testing::assert(skipped_declaration);
     testing::assert(entered_block);
@@ -2171,7 +2171,7 @@ fn permits_repeated_blank_declarations_without_scope_bindings() -> () {
         match fact.object {
             Some(object) => if result.world.objects[object.value].name == "_" {
                 blanks += 1;
-            } else {},
+            },
             None => {},
         }
     }
@@ -2226,7 +2226,7 @@ fn type_fact_source_index_handles_collisions_and_duplicates() -> () {
         };
         if collision == first && candidate.hash() & index.mask == first_slot {
             collision = candidate;
-        } else {}
+        }
     }
     testing::assert(collision != first);
     insert_type_fact_source(index, first, 7);

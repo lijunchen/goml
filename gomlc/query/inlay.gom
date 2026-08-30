@@ -62,7 +62,7 @@ pub fn inlay_hints_in_range(value: Analysis, start: isize, end: isize) -> Vec[In
             };
             if definition.span.end < start || definition.span.end > end {
                 continue
-            } else {};
+            }
             let Some(token) = token_at(value.syntax, definition.span.start) else {
                 continue
             };
@@ -85,7 +85,7 @@ pub fn inlay_hints_in_range(value: Analysis, start: isize, end: isize) -> Vec[In
                 },
                 None => (),
             }
-        } else {}
+        }
     }
     hints
 }

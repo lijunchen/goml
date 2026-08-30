@@ -78,7 +78,7 @@ fn input_eof(parser: Parser) -> bool {
 fn input_skip(parser: Parser) -> () {
     if !input_eof(parser) {
         parser.cursor.set(parser.cursor.get() + 1)
-    } else {}
+    }
 }
 
 fn input_peek(parser: Parser) -> lexer::TokenKind {
@@ -95,7 +95,7 @@ fn input_nth(parser: Parser, offset: isize) -> lexer::TokenKind {
             return kind
         } else {
             remaining = remaining - 1;
-        };
+        }
         index = index + 1;
     }
     lexer::TokenKind::Eof
@@ -110,7 +110,7 @@ fn input_nth_text(parser: Parser, offset: isize) -> string {
             return token.text
         } else {
             remaining = remaining - 1;
-        };
+        }
         index = index + 1;
     }
     ""
@@ -164,7 +164,7 @@ fn missing_range(parser: Parser) -> (isize, isize) {
         let token = parser.tokens[index];
         if !lexer::token_is_trivia(token.kind) {
             return (token.end, token.end)
-        } else {};
+        }
         index = index - 1;
     }
     match current_token_index(parser) {
@@ -204,7 +204,7 @@ impl Parser {
                 cst::diagnostic("parser did not consume input while parsing", start, end),
             );
             self.stuck_reported.set(true)
-        } else {}
+        }
     }
 
     pub fn peek(self: Parser) -> lexer::TokenKind {
@@ -331,7 +331,7 @@ impl Parser {
                 Event::Error { message: value.message, start: value.start, end: value.end },
             ),
             None => (),
-        };
+        }
         self.fuel.set(256);
         input_skip(self);
         self.stuck_reported.set(false);
@@ -362,7 +362,7 @@ impl Parser {
                     let (start, end) = current_range(self);
                     self.events.push(Event::Error { message, start, end })
                 },
-            };
+            }
             self.advance();
             let _ = self.close(marker, cst::NodeKind::ErrorTree);
         }
@@ -423,7 +423,7 @@ impl Parser {
             if !self.depth_limit_hit.get() {
                 self.error(message);
                 self.depth_limit_hit.set(true)
-            } else {};
+            }
             false
         } else {
             depth.set(depth.get() + 1);
@@ -453,7 +453,7 @@ impl MarkerClosed {
                 Event::Open { kind, forward_parent: Option::Some(marker.index - self.index) },
             ),
             _ => (),
-        };
+        }
         marker
     }
 }
@@ -538,7 +538,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                     let current = kinds[kind_index];
                     if !cst::node_kind_equal(current, cst::NodeKind::TombStone) {
                         stack.push(cst::node(current, Vec::new(), 0))
-                    } else {};
+                    }
                     kind_index = kind_index - 1;
                 }
             },
@@ -547,12 +547,12 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 if cursor < parser.tokens.len() {
                     push_token(stack, parser.tokens[cursor]);
                     cursor = cursor + 1;
-                } else {}
+                }
             },
             Error { message, start, end } => {
                 parser.diagnostics.push(cst::diagnostic(message, start, end))
             },
-        };
+        }
         while cursor < parser.tokens.len() && lexer::token_is_trivia(parser.tokens[cursor].kind) {
             push_token(stack, parser.tokens[cursor]);
             cursor = cursor + 1;

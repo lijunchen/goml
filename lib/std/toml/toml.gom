@@ -32,14 +32,14 @@ fn strip_comment(value: string) -> string {
                 quote = current;
             } else if current == b'#' {
                 return value.byte_slice(0, index)
-            } else {}
+            }
         } else if quote == b'"' && escaped {
             escaped = false;
         } else if quote == b'"' && current == b'\\' {
             escaped = true;
         } else if current == quote {
             quote = 0;
-        } else {}
+        }
     }
     value
 }
@@ -59,7 +59,7 @@ fn hex_digit(value: byte) -> Option[u32] {
 fn unicode_escape(value: string, start: isize, length: isize) -> Result[(char, isize), string] {
     if start + length > value.byte_len() {
         return Result::Err("incomplete unicode escape")
-    } else {};
+    }
     let mut codepoint = 0.to_u32();
     for index in start..start + length {
         match hex_digit(value.byte_get(index)) {
@@ -160,14 +160,14 @@ fn top_level_separator(value: string, expected: byte) -> Option[isize] {
                 curly -= 1;
             } else if current == expected && square == 0 && curly == 0 {
                 return Option::Some(index)
-            } else {}
+            }
         } else if quote == b'"' && escaped {
             escaped = false;
         } else if quote == b'"' && current == b'\\' {
             escaped = true;
         } else if current == quote {
             quote = 0;
-        } else {}
+        }
     }
     Option::None
 }
@@ -189,11 +189,11 @@ fn split_top_level(value: string, separator: byte) -> Result[Vec[string], string
     }
     if !result.is_empty() && result[result.len() - 1] == "" {
         let _ = result.pop();
-    } else {};
+    }
     for item in result {
         if item == "" {
             return Result::Err("empty list item")
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -213,7 +213,7 @@ fn parse_key(value: string) -> Result[string, string] {
                 || current == b'-';
             if !valid {
                 return Result::Err("invalid bare key")
-            } else {}
+            }
         }
         Result::Ok(value)
     }
@@ -267,7 +267,7 @@ fn parse_inline_table(value: string) -> Result[Value, string] {
     let fields: Vec[(string, Value)] = Vec::new();
     if body == "" {
         return Result::Ok(Value::Table(fields))
-    } else {};
+    }
     for item in split_top_level(body, b',')? {
         let Some(index) = top_level_separator(item, b'=') else {
             return Result::Err("inline table entry requires `=`")
@@ -275,11 +275,11 @@ fn parse_inline_table(value: string) -> Result[Value, string] {
         let path = parse_key_path(item.byte_slice(0, index))?;
         if path.len() != 1 {
             return Result::Err("dotted inline table keys are not supported")
-        } else {};
+        }
         for field in fields {
             if field.0 == path[0] {
                 return Result::Err("duplicate inline table key")
-            } else {}
+            }
         }
         fields.push((path[0], parse_value(item.byte_slice(index + 1, item.byte_len()))?))
     }
@@ -291,7 +291,7 @@ fn parse_array(value: string) -> Result[Value, string] {
     let values: Vec[Value] = Vec::new();
     if body == "" {
         return Result::Ok(Value::Array(values))
-    } else {};
+    }
     for item in split_top_level(body, b',')? {
         values.push(parse_value(item)?)
     }
@@ -348,7 +348,7 @@ fn same_path(left: Vec[string], right: Vec[string]) -> bool {
         for index in 0..left.len() {
             if left[index] != right[index] {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -361,7 +361,7 @@ fn path_prefix(value: Vec[string], prefix: Vec[string]) -> bool {
         for index in 0..prefix.len() {
             if value[index] != prefix[index] {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -371,7 +371,7 @@ fn string_in(values: Vec[string], expected: string) -> bool {
     for value in values {
         if value == expected {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -386,14 +386,14 @@ fn table_from_entries(entries: Vec[FlatEntry], prefix: Vec[string]) -> Result[Va
                 fields.push((name, entry.value))
             } else if !string_in(children, name) {
                 children.push(name)
-            } else {}
-        } else {}
+            }
+        }
     }
     for child in children {
         for field in fields {
             if field.0 == child {
                 return Result::Err("key is both a value and a table: " + child)
-            } else {}
+            }
         }
         let path = append_path(prefix, Vec::from_array([child]));
         fields.push((child, table_from_entries(entries, path)?))
@@ -412,7 +412,7 @@ pub fn parse(input: string) -> Result[Value, string] {
             if line.byte_len() < 2 || line.byte_get(line.byte_len() - 1) != b']'
                 || line.byte_len() > 1 && line.byte_get(1) == b'[' {
                 return Result::Err(toml_error(line_number, "invalid table header"))
-            } else {};
+            }
             match parse_key_path(line.byte_slice(1, line.byte_len() - 1)) {
                 Ok(path) => {
                     section = path;
@@ -430,7 +430,7 @@ pub fn parse(input: string) -> Result[Value, string] {
             for entry in entries {
                 if same_path(entry.path, path) {
                     return Result::Err(toml_error(line_number, "duplicate key"))
-                } else {}
+                }
             }
             match parse_value(line.byte_slice(separator + 1, line.byte_len())) {
                 Ok(value) => entries.push(FlatEntry { path, value }),
@@ -452,7 +452,7 @@ fn bare_key(value: string) -> bool {
                 || current == b'_'
                 || current == b'-') {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -538,9 +538,9 @@ fn write_table(builder: text::StringBuilder, path: Vec[string], fields: Vec[(str
     if !path.is_empty() {
         if !builder.is_empty() {
             builder.write_string("\n")
-        } else {};
+        }
         builder.write_line("[" + encoded_path(path) + "]")
-    } else {};
+    }
     for field in fields {
         match field.1 {
             Value::Table(_) => (),
@@ -577,7 +577,7 @@ pub fn field(value: Value, name: string) -> Option[Value] {
             for field in fields {
                 if field.0 == name {
                     return Option::Some(field.1)
-                } else {}
+                }
             }
             Option::None
         },

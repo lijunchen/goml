@@ -21,7 +21,7 @@ fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string]
             collect_go_files(entry, files)?
         } else if fs::is_file(entry) && path::extension(entry) == Option::Some("go") {
             files.push(entry)
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -64,7 +64,7 @@ fn compare_file(file: string) -> Result[isize, string] {
                     + "\nexpected: "
                     + render_expected(expected_token),
             )
-        } else {}
+        }
     }
     if actual.tokens.len() != expected.tokens.len() {
         Result::Err(
@@ -83,7 +83,7 @@ pub fn compare_tree(root: string) -> Result[Summary, string] {
         files.push(root)
     } else {
         collect_go_files(root, files)?
-    };
+    }
     let mut token_count = 0;
     for file in files {
         token_count += compare_file(file)?;

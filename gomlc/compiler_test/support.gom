@@ -58,7 +58,7 @@ pub fn collect_main_sources(directory: string, result: Vec[string]) -> () {
         } else if name == "main.gom"
             && (fs::is_file(entry + ".out") || (update_expected() && fs::is_file(entry + ".update"))) {
             result.push(entry)
-        } else {}
+        }
     }
 }
 
@@ -75,11 +75,11 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
                 Some(extension) => if extension == "gom" {
                     if fs::is_file(entry + ".diag") || update_expected() {
                         result.push(entry)
-                    } else {}
-                } else {},
+                    }
+                },
                 None => (),
             }
-        } else {}
+        }
     }
     result
 }
@@ -153,7 +153,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
                 testing::fail("failed to write " + main_file + ": " + message.to_string());
                 return ""
             },
-        };
+        }
         if fs::is_file(executable) {
             match fs::remove_file(executable) {
                 Ok(()) => (),
@@ -165,8 +165,8 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
                     return ""
                 },
             }
-        } else {}
-    };
+        }
+    }
     let interpreted = if source_current && fs::is_file(executable)
         || !go_backend::yaegi_compatible(source) {
         Option::None
@@ -190,7 +190,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
     match interpreted {
         Some(value) => return value,
         None => (),
-    };
+    }
     if source_current && fs::is_file(executable) {} else {
         match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
             directory,
@@ -208,7 +208,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: isize, ind
                 return ""
             },
         }
-    };
+    }
     match process::Command::new(executable).current_dir(directory).env("TZ", "UTC").output_structured() {
         Ok(output) => if process::ExitStatus::success(process::Output::status(output)) {
             bytes_text(process::Output::stdout(output))
@@ -238,9 +238,9 @@ fn assert_text(actual: string, expected_path: string, source: string) -> () {
             Err(message) => testing::fail(
                 "failed to write " + expected_path + ": " + message.to_string(),
             ),
-        };
+        }
         return ()
-    } else {};
+    }
     let expected = read_file(expected_path);
     if actual == expected {} else {
         testing::fail(
@@ -260,7 +260,7 @@ pub fn assert_e2e_suite(kind: string, shard: isize, shard_count: isize) -> () {
         compiler_index.set(current + 1);
         if current % shard_count == shard {
             compiler_sources.push(read_file(source_path))
-        } else {}
+        }
     }
     let compiler = compiler_driver::source_compiler_for_sources(compiler_sources);
     let index = Ref::new(0);
@@ -289,7 +289,7 @@ pub fn assert_e2e_suite(kind: string, shard: isize, shard_count: isize) -> () {
                 Diagnostics(value) => value,
             };
             assert_text(actual, source_path + ".out", source_path)
-        } else {}
+        }
     }
 }
 
@@ -320,7 +320,7 @@ pub fn assert_diagnostic_suite(name: string, expected_count: isize) -> () {
 fn diagnostic_location_prefix(value: string) -> bool {
     if value == "" {
         return false
-    } else {};
+    }
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if (byte >= b'0' && byte <= b'9') || byte == b':' {} else {
@@ -350,7 +350,7 @@ fn collect_diagnostic_kinds(name: string, result: collections::HashSet[string]) 
                     let _ = result.insert(diagnostic_kind(line));
                 }
             }
-        } else {}
+        }
     }
 }
 
@@ -422,7 +422,7 @@ fn module_projects() -> Vec[string] {
             && (fs::is_file(path::join(project, "main.gom.out"))
                 || (update_expected() && fs::is_file(path::join(project, "goml.toml")))) {
             result.push(project)
-        } else {}
+        }
     }
     result
 }
@@ -461,7 +461,7 @@ pub fn assert_module_shard(shard: isize, shard_count: isize) -> () {
                 path::join(source_project, "main.gom.out"),
                 source_project,
             )
-        } else {}
+        }
     }
 }
 
@@ -475,7 +475,7 @@ fn module_diagnostic_projects() -> Vec[string] {
                 || fs::is_file(path::join(project, "main.gom.ok"))
                 || fs::is_file(path::join(project, "main.gom.build"))) {
             result.push(project)
-        } else {}
+        }
     }
     result
 }
@@ -535,14 +535,14 @@ pub fn assert_standard_binary_stdio() -> () {
     ) {
         Ok(()) => (),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     match fs::write_file_structured(
         path::join(project, "main.gom"),
         "package main;\n\nuse std::bytes;\nuse std::env;\nuse std::io;\nuse std::process;\n\nfn main() -> () {\n    match env::var_structured(\"GOML_EMPTY\") {\n        Result::Ok(value) => if value != \"\" { process::exit(1) } else { () },\n        Result::Err(_) => process::exit(1),\n    };\n    match env::var_structured(\"GOML_MISSING_ENVIRONMENT_VALUE\") {\n        Result::Ok(_) => process::exit(1),\n        Result::Err(_) => (),\n    };\n    match io::read_stdin_structured() {\n        Result::Ok(data) => {\n            match io::write_stdout_structured(data) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            };\n            match io::write_stderr_structured(bytes::Bytes::from_string(\"binary stderr\")) {\n                Result::Ok(()) => (),\n                Result::Err(_) => process::exit(1),\n            }\n        },\n        Result::Err(_) => process::exit(1),\n    }\n}\n",
     ) {
         Ok(()) => (),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     let target = path::join(project, "_artifact");
     let built = project_command("build", project, target);
     assert_command_success(built, "stdio project build");
@@ -577,7 +577,7 @@ fn collect_crasher_sources(directory: string, extension: string, result: Vec[str
             collect_crasher_sources(entry, extension, result)
         } else if name == "main.gom" && fs::is_file(entry + extension) {
             result.push(entry)
-        } else {}
+        }
     }
 }
 
@@ -608,7 +608,7 @@ pub fn assert_crasher_diagnostic_shard(shard: isize, shard_count: isize) -> () {
                 source_path + ".diag",
                 source_path,
             )
-        } else {}
+        }
     }
 }
 
@@ -643,7 +643,7 @@ pub fn assert_crasher_runtime_shard(shard: isize, shard_count: isize) -> () {
                 source_path + ".out",
                 source_path,
             )
-        } else {}
+        }
     }
 }
 

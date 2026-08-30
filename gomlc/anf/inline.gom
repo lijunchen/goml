@@ -431,7 +431,7 @@ fn inline_term_has_joinrec(value: Term) -> bool {
             for arm in arms {
                 if inline_block_has_joinrec(arm.body) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_has_joinrec(body),
@@ -446,7 +446,7 @@ fn inline_term_has_joinrec(value: Term) -> bool {
                     },
                 ) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_has_joinrec(body),
@@ -463,7 +463,7 @@ fn inline_block_has_joinrec(value: Block) -> bool {
             Let(_) => (),
             Join(value) => if inline_block_has_joinrec(value.body) {
                 return true
-            } else {},
+            },
             JoinRec(_) => return true,
         }
     }
@@ -486,7 +486,7 @@ fn inline_term_assigns(value: Term, name: string) -> bool {
             for arm in arms {
                 if inline_block_assigns(arm.body, name) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_assigns(body, name),
@@ -502,7 +502,7 @@ fn inline_term_assigns(value: Term, name: string) -> bool {
                     name,
                 ) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_assigns(body, name),
@@ -518,14 +518,14 @@ fn inline_block_assigns(value: Block, name: string) -> bool {
         match bind {
             Let(value) => if inline_value_assigns(value.value, name) {
                 return true
-            } else {},
+            },
             Join(value) => if inline_block_assigns(value.body, name) {
                 return true
-            } else {},
+            },
             JoinRec(values) => for value in values {
                 if inline_block_assigns(value.body, name) {
                     return true
-                } else {}
+                }
             },
         }
     }
@@ -535,12 +535,12 @@ fn inline_block_assigns(value: Block, name: string) -> bool {
 fn inline_params_safe(value: Function, args: Vec[Imm]) -> bool {
     if value.params.len() != args.len() {
         return false
-    } else {};
+    }
     for index in 0..args.len() {
         if !repr::types_equal(value.params[index].1, imm_type(args[index]))
             || inline_block_assigns(value.body, value.params[index].0) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -553,7 +553,7 @@ fn inline_term_calls(value: Term, name: string) -> bool {
             for arm in arms {
                 if inline_block_calls(arm.body, name) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_calls(body, name),
@@ -569,7 +569,7 @@ fn inline_term_calls(value: Term, name: string) -> bool {
                     name,
                 ) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_calls(body, name),
@@ -597,14 +597,14 @@ fn inline_block_calls(value: Block, name: string) -> bool {
         match bind {
             Let(value) => if inline_value_calls(value.value, name) {
                 return true
-            } else {},
+            },
             Join(value) => if inline_block_calls(value.body, name) {
                 return true
-            } else {},
+            },
             JoinRec(values) => for value in values {
                 if inline_block_calls(value.body, name) {
                     return true
-                } else {}
+                }
             },
         }
     }
@@ -619,11 +619,11 @@ fn inline_term_consumes(value: Term, name: string) -> bool {
         Match { scrutinee: Var { name: present, ty: _ }, arms, default, .. } => {
             if present != name || arms.is_empty() {
                 return false
-            } else {};
+            }
             for arm in arms {
                 if !inline_block_returns(arm.body) {
                     return false
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_returns(body),
@@ -643,11 +643,11 @@ fn inline_term_returns(value: Term) -> bool {
         Match { arms, default, .. } => {
             if arms.is_empty() {
                 return false
-            } else {};
+            }
             for arm in arms {
                 if !inline_block_returns(arm.body) {
                     return false
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_returns(body),
@@ -657,7 +657,7 @@ fn inline_term_returns(value: Term) -> bool {
         Select { arms, default, .. } => {
             if arms.is_empty() {
                 return false
-            } else {};
+            }
             for arm in arms {
                 if !inline_block_returns(
                     match arm {
@@ -665,7 +665,7 @@ fn inline_term_returns(value: Term) -> bool {
                     },
                 ) {
                     return false
-                } else {}
+                }
             }
             match default {
                 Some(body) => inline_block_returns(body),
@@ -704,7 +704,7 @@ fn indexed_inline_candidate(
 ) -> Option[Function] {
     if name == caller {
         return Option::None
-    } else {};
+    }
     let value = functions[name]?;
     let cost = inline_block_cost(value.body);
     let recursive = inline_block_has_joinrec(value.body);

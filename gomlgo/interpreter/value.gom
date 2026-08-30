@@ -479,7 +479,7 @@ fn aggregate_has_host(elements: Vec[Value]) -> bool {
             Value::Host { .. } => return true,
             Value::Local(LocalValue::Aggregate { type_id: _, elements: _, host }) => if host {
                 return true
-            } else {},
+            },
             _ => {},
         }
     }
@@ -555,7 +555,7 @@ fn projection_values_equal(left: Vec[Projection], right: Vec[Projection]) -> boo
             };
             if !equal {
                 return false
-            } else {}
+            }
         }
         true
     } else {
@@ -640,11 +640,11 @@ pub fn values_equal(world: go_types::World, left: Value, right: Value) -> Result
         (Value::Local(LocalValue::String(left)), Value::Local(LocalValue::String(right))) => {
             if left.len() != right.len() {
                 return Result::Ok(false)
-            } else {};
+            }
             for index in 0..left.len() {
                 if left.get(index) != right.get(index) {
                     return Result::Ok(false)
-                } else {}
+                }
             }
             Result::Ok(true)
         },
@@ -708,11 +708,11 @@ pub fn values_equal(world: go_types::World, left: Value, right: Value) -> Result
         ) => {
             if left.len() != right.len() {
                 return Result::Ok(false)
-            } else {};
+            }
             for index in 0..left.len() {
                 if !values_equal(world, left[index], right[index])? {
                     return Result::Ok(false)
-                } else {}
+                }
             }
             Result::Ok(true)
         },

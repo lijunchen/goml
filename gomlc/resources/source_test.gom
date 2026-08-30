@@ -44,7 +44,7 @@ fn loads_builtin_and_prelude_layers_independently() -> () {
             testing::assert(values[7].path.ends_with("/builtin/ordering.gom"))
         },
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match prelude_sources() {
         Ok(values) => {
             testing::assert_eq(values.len(), 1);
@@ -76,7 +76,7 @@ fn keeps_runtime_bridges_in_the_builtin_layer() -> () {
     } {
         if source.source.contains("#[runtime(\"std.") {
             found_standard_runtime.set(true)
-        } else {}
+        }
     }
     testing::assert(found_standard_runtime.get());
     for source in match prelude_sources() {
@@ -105,17 +105,17 @@ fn loads_multifile_standard_package() -> () {
         Ok(Some(values)) => testing::assert_eq(values.len(), 13),
         Ok(None) => testing::fail("expected standard package"),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match standard_sources("std::json") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 3),
         Ok(None) => testing::fail("expected standard package"),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match standard_sources("std::bincode") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 3),
         Ok(None) => testing::fail("expected bincode package"),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match standard_sources("std::text") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 3),
         Ok(None) => testing::fail("expected text package"),
@@ -202,17 +202,17 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         Ok(Some(values)) => testing::assert_eq(values.len(), 6),
         Ok(None) => testing::fail("expected serde package"),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match standard_sources("std::toml") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 2),
         Ok(None) => testing::fail("expected TOML package"),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match standard_sources("std::error") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 1),
         Ok(None) => testing::fail("expected error package"),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     assert_strings(
         standard_package_closure(Vec::from_array(["std::json", "std::fs"])),
         Vec::from_array(

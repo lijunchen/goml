@@ -122,9 +122,9 @@ pub fn components(path: string) -> Vec[string] {
         if index == path.byte_len() || is_separator_byte(path.byte_get(index)) {
             if index > start {
                 result.push(path.byte_slice(start, index))
-            } else {};
+            }
             start = index + 1;
-        } else {};
+        }
         index += 1;
     }
     result
@@ -147,8 +147,8 @@ pub fn windows_prefix(path: string) -> Option[string] {
                 separators += 1;
                 if separators == 2 {
                     return Option::Some(path.byte_slice(0, index))
-                } else {};
-            } else {};
+                }
+            }
             index += 1;
         }
         if separators == 1 && index > 2 {

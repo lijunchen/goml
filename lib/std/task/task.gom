@@ -89,7 +89,7 @@ pub fn try_scope[T, E](body: (Scope) -> Result[T, E]) -> Result[T, E] {
             let value = body(Scope { handle });
             if value.is_err() {
                 internal_task::cancel(handle)
-            } else {};
+            }
             result.set(Option::Some(value))
         },
     );
@@ -105,7 +105,7 @@ pub fn try_scope_with[T, E](parent: CancelToken, body: (Scope) -> Result[T, E]) 
             let value = body(Scope { handle });
             if value.is_err() {
                 internal_task::cancel(handle)
-            } else {};
+            }
             result.set(Option::Some(value))
         },
     );
@@ -154,7 +154,7 @@ impl Scope {
                 let value = body(token);
                 if value.is_err() {
                     self.cancel()
-                } else {};
+                }
                 value
             },
         )
@@ -306,7 +306,7 @@ pub fn for_each_concurrent[T, E](
 ) -> Result[(), Vec[IndexedError[E]]] {
     if values.is_empty() {
         return Result::Ok(())
-    } else {};
+    }
     let total = values.len();
     let worker_count = if limit <= 0 {
         1
@@ -367,7 +367,7 @@ pub fn for_each_concurrent[T, E](
 pub fn race[T](bodies: Vec[(CancelToken) -> T]) -> Option[T] {
     if bodies.is_empty() {
         return Option::None
-    } else {};
+    }
     scope(
         |scope: Scope| {
             let results: Channel[T] = Channel::new(1);

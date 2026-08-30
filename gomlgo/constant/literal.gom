@@ -39,7 +39,7 @@ fn literal_digit(value: byte, radix: isize) -> Option[isize] {
 fn parse_exponent(value: string) -> Result[isize, string] {
     if value == "" {
         return Result::Err("missing exponent")
-    } else {};
+    }
     let mut sign = 1;
     let mut index = 0;
     if value.byte_get(0) == b'+' {
@@ -47,10 +47,10 @@ fn parse_exponent(value: string) -> Result[isize, string] {
     } else if value.byte_get(0) == b'-' {
         sign = -1;
         index = 1;
-    } else {};
+    }
     if index >= value.byte_len() {
         return Result::Err("missing exponent")
-    } else {};
+    }
     let mut result = 0;
     while index < value.byte_len() {
         let digit = match literal_digit(value.byte_get(index), 10) {
@@ -59,7 +59,7 @@ fn parse_exponent(value: string) -> Result[isize, string] {
         };
         if result > LITERAL_EXPONENT_LIMIT / 10 || result * 10 + digit > LITERAL_EXPONENT_LIMIT {
             return Result::Err("exponent is too large")
-        } else {};
+        }
         result = result * 10 + digit;
         index += 1;
     }
@@ -73,7 +73,7 @@ fn exponent_marker(value: string, hexadecimal: bool) -> Option[isize] {
         if (hexadecimal && (byte == b'p' || byte == b'P'))
             || (!hexadecimal && (byte == b'e' || byte == b'E')) {
             return Option::Some(index)
-        } else {};
+        }
         index += 1;
     }
     Option::None
@@ -89,14 +89,14 @@ fn remove_point(value: string) -> Result[(string, isize), string] {
         if byte == b'.' {
             if seen_point {
                 return Result::Err("multiple decimal points")
-            } else {};
+            }
             seen_point = true;
         } else {
             builder.values.push(byte);
             digits += 1;
             if seen_point {
                 fraction += 1;
-            } else {}
+            }
         }
     }
     if digits == 0 {
@@ -128,7 +128,7 @@ pub fn parse_integer_literal(value: string) -> Result[ConstValue, string] {
 pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     if value.byte_len() > LITERAL_LENGTH_LIMIT {
         return Result::Err("excessively long constant")
-    } else {};
+    }
     let normalized = without_underscores(value);
     let hexadecimal = normalized.byte_len() >= 2 && normalized.byte_get(0) == b'0'
         && (normalized.byte_get(1) == b'x' || normalized.byte_get(1) == b'X');
@@ -161,7 +161,7 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
     )?;
     if magnitude.limbs.is_empty() {
         return Result::Ok(ConstValue::Rat(rational_zero()))
-    } else {};
+    }
     let scaled_exponent = if hexadecimal {
         exponent - 4 * parts.1
     } else {
@@ -196,7 +196,7 @@ pub fn parse_float_literal(value: string) -> Result[ConstValue, string] {
 pub fn parse_imaginary_literal(value: string) -> Result[ConstValue, string] {
     if value.byte_len() < 2 || value.byte_get(value.byte_len() - 1) != b'i' {
         return Result::Err("invalid imaginary literal")
-    } else {};
+    }
     let number = value.byte_slice(0, value.byte_len() - 1);
     let parsed = if number.contains(".") || number.contains("e") || number.contains("E")
         || number.contains("p")
@@ -240,7 +240,7 @@ fn parse_escape(value: string, index: isize, quote: byte, builder: text::StringB
 ] {
     if index >= value.byte_len() {
         return Result::Err("escape sequence not terminated")
-    } else {};
+    }
     let escape = value.byte_get(index);
     if escape == b'a' {
         builder.values.push(7);
@@ -293,10 +293,10 @@ fn parse_escape(value: string, index: isize, quote: byte, builder: text::StringB
             cursor += 1;
         } else {
             return Result::Err("unknown escape sequence")
-        };
+        }
         if cursor + digits > value.byte_len() {
             return Result::Err("escape sequence not terminated")
-        } else {};
+        }
         let mut decoded = 0.to_u32();
         for offset in 0..digits {
             match literal_digit(value.byte_get(cursor + offset), radix) {
@@ -323,11 +323,11 @@ fn parse_escape(value: string, index: isize, quote: byte, builder: text::StringB
 pub fn parse_string_literal(value: string) -> Result[ConstValue, string] {
     if value.byte_len() < 2 {
         return Result::Err("string literal not terminated")
-    } else {};
+    }
     let quote = value.byte_get(0);
     if value.byte_get(value.byte_len() - 1) != quote || (quote != b'"' && quote != b'`') {
         return Result::Err("string literal not terminated")
-    } else {};
+    }
     let builder = text::StringBuilder::with_capacity(value.byte_len() - 2);
     if quote == b'`' {
         for index in 1..value.byte_len() - 1 {
@@ -356,14 +356,14 @@ pub fn parse_rune_literal(value: string) -> Result[ConstValue, string] {
     if value.byte_len() < 3 || value.byte_get(0) != b'\''
         || value.byte_get(value.byte_len() - 1) != b'\'' {
         return Result::Err("illegal rune literal")
-    } else {};
+    }
     let content = value.byte_slice(1, value.byte_len() - 1);
     let codepoint = if content.byte_get(0) == b'\\' {
         let builder = text::StringBuilder::new();
         let end = parse_escape(content, 1, b'\'', builder)?;
         if end != content.byte_len() {
             return Result::Err("illegal rune literal")
-        } else {};
+        }
         if builder.values.len() == 1 {
             builder.values[0].to_u32()
         } else {

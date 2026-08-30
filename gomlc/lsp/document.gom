@@ -68,7 +68,7 @@ fn invalidate_other_analyses(value: Server, path: string) -> () {
             let _ = value.analyses.insert(path, cached);
         },
         None => (),
-    };
+    }
     advance_generation(value)
 }
 
@@ -91,10 +91,10 @@ fn source_line_index(value: Server, source_path: string, source: string) -> text
         Some(cached) => {
             if cached.path == source_path && cached.generation == value.generation.get() {
                 return cached.index
-            } else {}
+            }
         },
         None => (),
-    };
+    }
     let index = line_index(source);
     let _ = value.line_indexes.insert(
         source_path,
@@ -157,10 +157,10 @@ pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
         Some(cached) => {
             if cached.path == document.path && cached.generation == value.generation.get() {
                 return cached.analysis
-            } else {}
+            }
         },
         None => (),
-    };
+    }
     let analysis = query::analyze_with_context(
         value.analysis_context,
         document.path,

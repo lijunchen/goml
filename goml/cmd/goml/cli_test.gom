@@ -547,7 +547,7 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> () {
     match fs::write_bytes_structured(artifact, bytes::Bytes::from_string("corrupt")) {
         Ok(()) => (),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     test_support::assert_success(cli_check(root));
     let restored = match fs::read_bytes_structured(artifact) {
         Ok(value) => value,
@@ -561,7 +561,7 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> () {
     match fs::remove_file(artifact) {
         Ok(()) => (),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     test_support::assert_success(cli_check(root));
     testing::assert(fs::is_file(artifact));
     test_support::write_file(
@@ -587,7 +587,7 @@ fn sha256_file_handles_streamed_content_and_missing_files() -> () {
             "48705161f98666a9d694f3b8e9d1bc5b842fa1ff0e85d710150616c433af9aae",
         ),
         Err(message) => testing::fail(message.to_string()),
-    };
+    }
     match fs::sha256_file(path::join(root, "missing.txt")) {
         Ok(_) => testing::fail("missing file produced a digest"),
         Err(_) => (),

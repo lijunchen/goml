@@ -10,7 +10,7 @@ fn listed_package(packages: Vec[GoListPackage], package_path: string) -> Option[
     for package_value in packages {
         if package_value.import_path == package_path {
             return Option::Some(package_value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -25,7 +25,7 @@ fn visit_package(
         Some(1) => return Result::Err("package dependency cycle at " + package_path),
         Some(2) => return Result::Ok(()),
         _ => {},
-    };
+    }
     let Some(package_value) = listed_package(packages, package_path) else {
         return Result::Err("go list omitted package " + package_path)
     };
@@ -33,7 +33,7 @@ fn visit_package(
     for dependency in package_value.imports {
         if dependency != "C" {
             visit_package(packages, states, output, dependency)?
-        } else {}
+        }
     }
     states[package_path] = 2;
     output.push(package_path);
@@ -101,7 +101,7 @@ fn world_package(world: go_types::World, package_path: string) -> Option[go_type
         if package_value.path == package_path || package_value.path == "vendor/" + package_path
             || package_value.path == "cmd/vendor/" + package_path {
             return Option::Some(package_value.id)
-        } else {}
+        }
     }
     Option::None
 }
@@ -120,7 +120,7 @@ fn package_dependencies(world: go_types::World, package_value: GoListPackage) ->
                         + " was not loaded",
                 ),
             }
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -297,7 +297,7 @@ fn load_checked_packages_with_order(
                 "entry package must be named main, found " + root_package.name,
             ),
         )
-    } else {};
+    }
     let mut main_function: Option[go_types::ObjectId] = Option::None;
     match go_types::lookup_local(world, root_package.scope, "main") {
         Some(object_id) => match go_types::get_object(world, object_id) {
@@ -309,7 +309,7 @@ fn load_checked_packages_with_order(
             None => diagnostics.push(linker_diagnostic(listed.root_path, "main.main is invalid")),
         },
         None => diagnostics.push(linker_diagnostic(listed.root_path, "main.main is not defined")),
-    };
+    }
     let program = if diagnostics.is_empty() {
         let package_indices: Vec[Option[isize]] = Vec::with_capacity(world.packages.len());
         for _ in world.packages {
@@ -319,7 +319,7 @@ fn load_checked_packages_with_order(
             let package_id = packages[index].package_id;
             if package_id.value >= 0 && package_id.value < package_indices.len() {
                 package_indices[package_id.value] = Option::Some(index);
-            } else {}
+            }
         }
         match main_function {
             Some(main_function) => Option::Some(
@@ -364,7 +364,7 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
 ] {
     if files.len() != 1 {
         return Result::Err("single-file execution requires exactly one Go source file")
-    } else {};
+    }
     let first = fs::canonicalize(files[0]).map_err(|error| error.to_string())?;
     let directory = path::parent(first).ok_or("Go source file has no parent directory")?;
     let names: Vec[string] = Vec::with_capacity(files.len());
@@ -372,7 +372,7 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
         let canonical = fs::canonicalize(file).map_err(|error| error.to_string())?;
         if path::parent(canonical).ok_or("Go source file has no parent directory")? != directory {
             return Result::Err("named Go source files must all be in one directory")
-        } else {};
+        }
         names.push(path::file_name(canonical).ok_or("Go source file has no file name")?)
     }
     let toolchain = discover_toolchain(config.go_binary)?;
@@ -391,11 +391,11 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
                 )?;
                 if loaded.program.is_some() {
                     return Result::Ok(loaded)
-                } else {}
+                }
             },
             None => {},
         }
-    } else {};
+    }
     let listed = list_go_files(config, toolchain, directory, names)?;
     let diagnostics: Vec[ExecutionDiagnostic] = Vec::new();
     for package_value in listed.packages {
@@ -407,10 +407,10 @@ pub fn load_files(config: ExecutionConfig, files: Vec[string]) -> Result[
                         + package_value.import_path,
                 ),
             )
-        } else {}
+        }
     }
     if !diagnostics.is_empty() {
         return Result::Ok(ExecutionLoadResult { program: Option::None, diagnostics })
-    } else {};
+    }
     load_checked_packages(config, listed)
 }

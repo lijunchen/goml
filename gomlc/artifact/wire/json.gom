@@ -208,14 +208,14 @@ fn artifact_json_indent(value: ArtifactJsonWriter) -> () {
         for _ in 0..value.depth.get() {
             value.builder.write_string("  ")
         }
-    } else {}
+    }
 }
 
 fn artifact_json_line(value: ArtifactJsonWriter) -> () {
     if value.pretty {
         value.builder.write_char('\n');
         artifact_json_indent(value)
-    } else {}
+    }
 }
 
 fn artifact_json_before_value(value: ArtifactJsonWriter) -> () {
@@ -228,7 +228,7 @@ fn artifact_json_before_value(value: ArtifactJsonWriter) -> () {
                     first.set(false)
                 } else {
                     value.builder.write_char(',')
-                };
+                }
                 artifact_json_line(value)
             },
             None => (),
@@ -252,7 +252,7 @@ fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> 
             || byte < b' ' {
             if start < index {
                 value.builder.write_string(input.byte_slice(start, index))
-            } else {};
+            }
             if byte == b'"' {
                 value.builder.write_string("\\\"")
             } else if byte == b'\\' {
@@ -270,13 +270,13 @@ fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> 
             } else {
                 value.builder.write_string("\\u00");
                 artifact_json_write_hex(value, byte)
-            };
+            }
             start = index + 1;
-        } else {}
+        }
     }
     if start < input.byte_len() {
         value.builder.write_string(input.byte_slice(start, input.byte_len()))
-    } else {}
+    }
 }
 
 fn artifact_json_write_quoted(value: ArtifactJsonWriter, input: string) -> () {
@@ -318,7 +318,7 @@ pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> () {
         };
         if !first {
             artifact_json_line(value)
-        } else {};
+        }
         value.builder.write_char('}')
     }
 }
@@ -354,7 +354,7 @@ pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> () {
         };
         if !first {
             artifact_json_line(value)
-        } else {};
+        }
         value.builder.write_char(']')
     }
 }
@@ -366,7 +366,7 @@ pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
         match value.binary_scopes.peek() {
             Some(scope) => scope.count.set(scope.count.get() + 1),
             None => (),
-        };
+        }
         artifact_binary_stream_error(
             value,
             artifact_binary_encode_string_id(value.binary_writer, value.binary_table, name),
@@ -386,14 +386,14 @@ pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> () {
                 value.builder.write_char(',')
             },
             None => (),
-        };
+        }
         artifact_json_line(value);
         artifact_json_write_quoted(value, name);
         if value.pretty {
             value.builder.write_string(": ")
         } else {
             value.builder.write_char(':')
-        };
+        }
         value.after_name.set(true)
     }
 }

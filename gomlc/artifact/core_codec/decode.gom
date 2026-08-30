@@ -37,7 +37,7 @@ fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: strin
             for field in value.1 {
                 result.push(field)
             }
-        } else {}
+        }
     }
     result
 }
@@ -79,7 +79,7 @@ fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primiti
     let object = wire::artifact_json_object(value, "primitive")?;
     if object.len() != 1 {
         return Result::Err(wire::artifact_decode_error("primitive variant"))
-    } else {};
+    }
     let kind = object[0].0;
     let payload = object[0].1;
     if kind == "Unit" {

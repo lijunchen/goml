@@ -16,7 +16,7 @@ fn oracle_exact(expression: string) -> string {
     );
     if !response.ok {
         testing::fail("constant oracle rejected expression");
-    } else {};
+    }
     match response.value {
         Some(value) => value.exact,
         None => {
@@ -74,11 +74,11 @@ fn parses_interpreted_and_raw_strings() -> () {
     ) {
         ConstValue::String(value) => testing::assert_eq(value, "a\nB世"),
         _ => testing::fail("expected string constant"),
-    };
+    }
     match testing::expect_ok(parse_string_literal("`a\r\nb`"), "raw string failed") {
         ConstValue::String(value) => testing::assert_eq(value, "a\nb"),
         _ => testing::fail("expected string constant"),
-    };
+    }
     match testing::expect_ok(parse_string_literal("\"\\xff\\x00\""), "byte string failed") {
         ConstValue::String(value) => {
             testing::assert_eq(value.byte_len(), 2);
@@ -86,7 +86,7 @@ fn parses_interpreted_and_raw_strings() -> () {
             testing::assert_eq(value.byte_get(1), 0.to_u8());
         },
         _ => testing::fail("expected string constant"),
-    };
+    }
     testing::assert_eq(exact(parse_string_literal("\"\\xff\\x00\"")), "\"\\xff\\x00\"")
 }
 

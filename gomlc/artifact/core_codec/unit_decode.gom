@@ -51,7 +51,7 @@ fn artifact_decode_test_descriptor(value: wire::ArtifactValue) -> Result[
             )
         },
         None => (),
-    };
+    }
     Result::Ok(
         artifact::ArtifactTestDescriptor {
             id,
@@ -93,7 +93,7 @@ fn artifact_test_descriptors_valid(
             || (!value.ignored && tast_codec::option_string_present(value.ignore_reason))
             || !ids.insert(value.id) {
             return false
-        } else {}
+        }
     }
     true
 }

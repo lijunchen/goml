@@ -58,7 +58,7 @@ fn pattern_contains_constant(value: tast::Pat) -> bool {
             for arg in args {
                 if pattern_contains_constant(arg) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -66,12 +66,12 @@ fn pattern_contains_constant(value: tast::Pat) -> bool {
             for arg in prefix {
                 if pattern_contains_constant(arg) {
                     return true
-                } else {}
+                }
             }
             for arg in suffix {
                 if pattern_contains_constant(arg) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -229,7 +229,7 @@ fn expand_or_pattern_rows(rows: Vec[PatternRow], source: string) -> Option[Vec[P
                         result.push(PatternRow { columns, bindings: row.bindings, body: row.body })
                     },
                     _ => result.push(row),
-                };
+                }
                 expanded = true;
             },
             None => result.push(row),
@@ -250,7 +250,7 @@ fn or_pattern_column_index(row: PatternRow, source: string) -> Option[isize] {
                 Or { pats: _, ty: _ } => return Option::Some(index),
                 _ => (),
             }
-        } else {}
+        }
     }
     Option::None
 }
@@ -261,7 +261,7 @@ fn pattern_source_count(rows: Vec[PatternRow], source: string) -> isize {
         for column in row.columns {
             if column.source == source {
                 count = count + 1;
-            } else {}
+            }
         }
     }
     count
@@ -280,7 +280,7 @@ fn branch_pattern_column(rows: Vec[PatternRow]) -> Option[PatternColumn] {
             if count >= best {
                 best = count;
                 selected = index;
-            } else {}
+            }
         }
         Option::Some(columns[selected])
     }
@@ -548,11 +548,11 @@ fn enum_pattern_present(rows: Vec[PatternRow], source: string, constructor_name:
                     Constr { constructor, args: _, ty: _ } => {
                         if constructor.name == constructor_name {
                             return true
-                        } else {}
+                        }
                     },
                     _ => (),
                 }
-            } else {}
+            }
         }
     }
     false
@@ -572,7 +572,7 @@ fn pattern_row_has_source(row: PatternRow, source: string) -> bool {
     for column in row.columns {
         if column.source == source {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -608,7 +608,7 @@ fn lower_enum_pattern_rows(
                     rows: enum_pattern_rows(rows, column.source, constructor_name, variables),
                 },
             )
-        } else {}
+        }
     }
     let complete = cases.len() == definition.variants.len();
     let arms: Vec[LowerArm] = Vec::new();
@@ -740,7 +740,7 @@ fn primitive_pattern_case_exists(values: Vec[PrimitivePatternCase], key: string)
     for value in values {
         if value.key == key {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -759,7 +759,7 @@ fn primitive_pattern_cases(rows: Vec[PatternRow], source: string) -> Vec[Primiti
                     },
                     _ => (),
                 }
-            } else {}
+            }
         }
     }
     result
@@ -893,7 +893,7 @@ fn pattern_rows_from_arms(source: string, source_ty: tast::Type, arms: Vec[tast:
     for arm in arms {
         if pattern_contains_constant(arm.pat) {
             return Option::None
-        } else {};
+        }
         match arm.guard {
             Some(_) => return Option::None,
             None => {

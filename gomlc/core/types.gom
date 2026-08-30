@@ -93,7 +93,7 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
         for index in 0..left.len() {
             if !types_equal(left[index], right[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -106,7 +106,7 @@ fn associated_types_equal(left: Vec[(string, Type)], right: Vec[(string, Type)])
         for index in 0..left.len() {
             if left[index].0 != right[index].0 || !types_equal(left[index].1, right[index].1) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -124,7 +124,7 @@ fn dyn_bounds_equal(left: Vec[DynTraitBound], right: Vec[DynTraitBound]) -> bool
                     right[index].associated_types,
                 ) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -222,7 +222,7 @@ pub fn type_contains_error(value: Type) -> bool {
             for item in items {
                 if type_contains_error(item) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -230,23 +230,23 @@ pub fn type_contains_error(value: Type) -> bool {
             for arg in args {
                 if type_contains_error(arg) {
                     return true
-                } else {}
+                }
             }
             for associated in associated_types {
                 if type_contains_error(associated.1) {
                     return true
-                } else {}
+                }
             }
             for bound in additional_bounds {
                 for arg in bound.args {
                     if type_contains_error(arg) {
                         return true
-                    } else {}
+                    }
                 }
                 for associated in bound.associated_types {
                     if type_contains_error(associated.1) {
                         return true
-                    } else {}
+                    }
                 }
             }
             false
@@ -260,7 +260,7 @@ pub fn type_contains_error(value: Type) -> bool {
                         for arg in reference.args {
                             if type_contains_error(arg) {
                                 return true
-                            } else {}
+                            }
                         }
                         false
                     },
@@ -275,7 +275,7 @@ pub fn type_contains_error(value: Type) -> bool {
                 for arg in args {
                     if type_contains_error(arg) {
                         return true
-                    } else {}
+                    }
                 }
                 false
             }
@@ -288,7 +288,7 @@ pub fn type_contains_error(value: Type) -> bool {
             for param in params {
                 if type_contains_error(param) {
                     return true
-                } else {}
+                }
             }
             type_contains_error(ret_ty)
         },
@@ -315,20 +315,20 @@ pub fn type_is_concrete(value: Type) -> bool {
         Dyn { args, associated_types, additional_bounds, .. } => {
             if !concrete_types(args) {
                 return false
-            } else {}
+            }
             for associated in associated_types {
                 if !type_is_concrete(associated.1) {
                     return false
-                } else {}
+                }
             }
             for bound in additional_bounds {
                 if !concrete_types(bound.args) {
                     return false
-                } else {}
+                }
                 for associated in bound.associated_types {
                     if !type_is_concrete(associated.1) {
                         return false
-                    } else {}
+                    }
                 }
             }
             true
@@ -356,7 +356,7 @@ fn find_type_binding(bindings: Vec[(string, Type)], name: string) -> Option[Type
     for binding in bindings {
         if binding.0 == name {
             return Option::Some(binding.1)
-        } else {}
+        }
     }
     Option::None
 }
@@ -454,7 +454,7 @@ fn push_type_parameter(values: Vec[string], name: string) -> () {
     for value in values {
         if value == name {
             return ()
-        } else {}
+        }
     }
     values.push(name)
 }

@@ -21,7 +21,7 @@ fn type_in_list(values: Vec[TypeId], value: TypeId) -> bool {
     for existing in values {
         if existing.value == value.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -29,7 +29,7 @@ fn type_in_list(values: Vec[TypeId], value: TypeId) -> bool {
 pub fn mark_invalid_type_set(world: World, value: TypeId) -> () {
     if !type_in_list(world.invalid_type_sets, value) {
         world.invalid_type_sets.push(value)
-    } else {}
+    }
 }
 
 pub fn type_set_is_invalid(world: World, value: TypeId) -> bool {
@@ -78,7 +78,7 @@ fn push_unique_term(world: World, result: Vec[UnionTerm], value: UnionTerm) -> (
     for existing in result {
         if term_equivalent(world, existing, value) {
             return
-        } else {}
+        }
     }
     result.push(copy_union_term(value))
 }
@@ -120,7 +120,7 @@ fn union_type_terms(world: World, left: TypeTerms, right: TypeTerms) -> TypeTerm
 fn invalid_tilde_type_set(world: World, value: TypeId) -> bool {
     if !type_in_list(world.invalid_type_sets, value) {
         return false
-    } else {};
+    }
     match get_type(world, value) {
         Some(TypeData { id: _, kind: TypeKind::Union { terms } }) => terms.len() == 1
             && terms[0].tilde,
@@ -134,7 +134,7 @@ fn constraint_type_terms(world: World, value: TypeId, visited: Vec[TypeId]) -> T
         return TypeTerms { all: true, terms: Vec::new() }
     } else if invalid_tilde_type_set(world, resolved) {
         return TypeTerms { all: false, terms: Vec::new() }
-    } else {};
+    }
     visited.push(resolved);
     match get_type(world, resolved) {
         Some(TypeData { id: _, kind: TypeKind::TypeParam { object: _, constraint, index: _ } }) => constraint_type_terms(
@@ -181,10 +181,10 @@ fn constraint_type_terms(world: World, value: TypeId, visited: Vec[TypeId]) -> T
                     };
                     if strictly_comparable_type(world, candidate) {
                         filtered.push(copy_union_term(term))
-                    } else {}
+                    }
                 }
                 result = TypeTerms { all: false, terms: filtered };
-            } else {};
+            }
             result
         },
         Some(TypeData { id: _, kind: TypeKind::Union { terms } }) => {
@@ -219,7 +219,7 @@ fn comparable_type_inner(world: World, value: TypeId, visited: Vec[TypeId]) -> b
     let resolved = unalias(world, value);
     if type_in_list(visited, resolved) {
         return true
-    } else {};
+    }
     visited.push(resolved);
     match get_type(world, underlying(world, resolved)) {
         Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => true,
@@ -235,7 +235,7 @@ fn comparable_type_inner(world: World, value: TypeId, visited: Vec[TypeId]) -> b
             for field in fields {
                 if !comparable_type_inner(world, field.variable.type_id, visited) {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -265,7 +265,7 @@ fn constraint_reaches_types(world: World, value: TypeId, targets: Vec[TypeId], v
         return true
     } else if type_in_list(visited, resolved) {
         return false
-    } else {};
+    }
     visited.push(resolved);
     match get_type(world, resolved) {
         Some(TypeData {
@@ -285,7 +285,7 @@ fn constraint_reaches_types(world: World, value: TypeId, targets: Vec[TypeId], v
             for embedded in embeddeds {
                 if constraint_reaches_types(world, embedded, targets, copied_type_ids(visited)) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -293,7 +293,7 @@ fn constraint_reaches_types(world: World, value: TypeId, targets: Vec[TypeId], v
             for term in terms {
                 if constraint_reaches_types(world, term.type_id, targets, copied_type_ids(visited)) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -314,7 +314,7 @@ fn union_terms_comparable(world: World, terms: Vec[UnionTerm], visited: Vec[Type
             if !type_set_is_invalid(world, term.type_id)
                 && !constraint_reaches_types(world, term.type_id, visited, Vec::new()) {
                 return false
-            } else {}
+            }
         } else {
             match get_type(world, unalias(world, term.type_id)) {
                 Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => {},
@@ -322,7 +322,7 @@ fn union_terms_comparable(world: World, terms: Vec[UnionTerm], visited: Vec[Type
                     found = true;
                     if !comparable_type_inner(world, term.type_id, copied_type_ids(visited)) {
                         return false
-                    } else {}
+                    }
                 },
             }
         }
@@ -333,10 +333,10 @@ fn union_terms_comparable(world: World, terms: Vec[UnionTerm], visited: Vec[Type
 fn type_set_contains_invalid(world: World, value: TypeId, visited: Vec[TypeId]) -> bool {
     if type_in_list(world.invalid_type_sets, value) {
         return true
-    } else {};
+    }
     if type_in_list(visited, value) {
         return false
-    } else {};
+    }
     visited.push(value);
     match get_type(world, value) {
         Some(TypeData { id: _, kind: TypeKind::Invalid }) => false,
@@ -375,7 +375,7 @@ fn type_set_contains_invalid(world: World, value: TypeId, visited: Vec[TypeId]) 
                     copied_type_ids(visited),
                 ) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -383,7 +383,7 @@ fn type_set_contains_invalid(world: World, value: TypeId, visited: Vec[TypeId]) 
             for variable in variables {
                 if type_set_contains_invalid(world, variable.type_id, copied_type_ids(visited)) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -411,14 +411,14 @@ fn type_set_contains_invalid(world: World, value: TypeId, visited: Vec[TypeId]) 
                         copied_type_ids(visited),
                     ) {
                         return true
-                    } else {},
+                    },
                     None => return true,
                 }
             }
             for embedded in embeddeds {
                 if type_set_contains_invalid(world, embedded, copied_type_ids(visited)) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -426,7 +426,7 @@ fn type_set_contains_invalid(world: World, value: TypeId, visited: Vec[TypeId]) 
             for term in terms {
                 if type_set_contains_invalid(world, term.type_id, copied_type_ids(visited)) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -443,7 +443,7 @@ fn structural_type_set_comparable_inner(world: World, value: TypeId, visited: Ve
     let resolved = unalias(world, value);
     if type_in_list(visited, resolved) {
         return true
-    } else {};
+    }
     visited.push(resolved);
     match get_type(world, resolved) {
         Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => false,
@@ -474,7 +474,7 @@ fn structural_type_set_comparable_inner(world: World, value: TypeId, visited: Ve
                 return true
             } else if embeddeds.is_empty() {
                 return false
-            } else {};
+            }
             for embedded in embeddeds {
                 let embedded_comparable = match get_type(world, unalias(world, embedded)) {
                     Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => false,
@@ -495,7 +495,7 @@ fn structural_type_set_comparable_inner(world: World, value: TypeId, visited: Ve
                 };
                 if !embedded_comparable {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -532,7 +532,7 @@ fn type_set_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId]) 
     } else if type_set_contains_invalid(world, value, Vec::new()) {
         return has_direct_union_type_set(world, value)
             && structural_type_set_comparable_inner(world, value, visited)
-    } else {};
+    }
     let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all {
         interface_requires_comparable(world, value)
@@ -544,7 +544,7 @@ fn type_set_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId]) 
         for term in terms.terms {
             if !strictly_comparable_type_inner(world, term.type_id, copied_type_ids(visited)) {
                 return false
-            } else {}
+            }
         }
         true
     } else {
@@ -560,7 +560,7 @@ fn strictly_comparable_type_inner(world: World, value: TypeId, visited: Vec[Type
     let resolved = unalias(world, value);
     if type_in_list(visited, resolved) {
         return true
-    } else {};
+    }
     visited.push(resolved);
     match get_type(world, underlying(world, resolved)) {
         Some(TypeData { id: _, kind: TypeKind::Invalid }) | None => true,
@@ -576,7 +576,7 @@ fn strictly_comparable_type_inner(world: World, value: TypeId, visited: Vec[Type
             for field in fields {
                 if !strictly_comparable_type_inner(world, field.variable.type_id, visited) {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -604,7 +604,7 @@ fn strictly_comparable_type(world: World, value: TypeId) -> bool {
 fn type_set_strictly_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId]) -> bool {
     if type_set_contains_invalid(world, value, Vec::new()) {
         return false
-    } else {};
+    }
     let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all {
         interface_requires_comparable(world, value)
@@ -614,7 +614,7 @@ fn type_set_strictly_comparable_inner(world: World, value: TypeId, visited: Vec[
         for term in terms.terms {
             if !strictly_comparable_type_inner(world, term.type_id, visited) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -668,7 +668,7 @@ fn type_set_basic_property(world: World, value: TypeId, property: isize) -> bool
     let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all || terms.terms.is_empty() {
         return false
-    } else {};
+    }
     for term in terms.terms {
         let kind = match concrete_basic_kind(world, term.type_id) {
             Some(value) => value,
@@ -685,7 +685,7 @@ fn type_set_basic_property(world: World, value: TypeId, property: isize) -> bool
         };
         if !valid {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -711,7 +711,7 @@ pub fn type_set_specific_types(world: World, value: TypeId) -> Vec[TypeId] {
     let terms = constraint_type_terms(world, value, Vec::new());
     if terms.all {
         return result
-    } else {};
+    }
     for term in terms.terms {
         result.push(term.type_id)
     }
@@ -733,17 +733,17 @@ pub fn type_set_subset(world: World, source: TypeId, target: TypeId) -> bool {
         return true
     } else if source_terms.all {
         return false
-    } else {};
+    }
     for source_term in source_terms.terms {
         let mut contained = false;
         for target_term in target_terms.terms {
             if term_contains(world, target_term, source_term) {
                 contained = true;
-            } else {}
+            }
         }
         if !contained {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -778,7 +778,7 @@ pub fn core_type(world: World, value: TypeId) -> Option[TypeId] {
             let terms = constraint_type_terms(world, constraint, Vec::new());
             if terms.all || terms.terms.is_empty() {
                 return Option::None
-            } else {};
+            }
             let mut result = underlying(world, terms.terms[0].type_id);
             for index in 1..terms.terms.len() {
                 let candidate = underlying(world, terms.terms[index].type_id);
@@ -789,7 +789,7 @@ pub fn core_type(world: World, value: TypeId) -> Option[TypeId] {
                         },
                         None => return Option::None,
                     }
-                } else {}
+                }
             }
             Option::Some(result)
         },

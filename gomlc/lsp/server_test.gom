@@ -17,7 +17,7 @@ fn response_has_label(value: json::Value, expected: string) -> bool {
                     Some(label) => match json::as_string(label) {
                         Some(label) => if label == expected {
                             return true
-                        } else {},
+                        },
                         None => (),
                     },
                     None => (),
@@ -45,10 +45,10 @@ fn response_has_snippet(value: json::Value, expected: string) -> bool {
                     match json::field(item, "insertTextFormat") {
                         Some(json::Value::Number(value)) => if value == "2" {
                             return true
-                        } else {},
+                        },
                         _ => (),
                     }
-                } else {}
+                }
             },
             None => (),
         },
@@ -63,22 +63,22 @@ fn identifies_status_operations() -> () {
     match status_operation(hover) {
         Some(operation) => testing::assert_eq(operation, "Hover"),
         None => testing::fail("expected hover status"),
-    };
+    }
     let check = "{\"jsonrpc\":\"2.0\",\"method\":\"goml/checkDiagnostics\",\"params\":{}}";
     match status_operation(check) {
         Some(operation) => testing::assert_eq(operation, "Checking diagnostics"),
         None => testing::fail("expected diagnostics status"),
-    };
+    }
     let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{}}";
     match status_operation(change) {
         Some(_) => testing::fail("unexpected change status"),
         None => (),
-    };
+    }
     let initialize = "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"initialize\",\"params\":{}}";
     match status_operation(initialize) {
         Some(_) => testing::fail("unexpected initialize status"),
         None => (),
-    };
+    }
     let notification = status_notification("busy", "Hover");
     match json::field(notification, "method") {
         Some(method) => match json::as_string(method) {
@@ -122,12 +122,12 @@ fn initializes_and_answers_hover_requests() -> () {
             }
         },
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-test.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> i32 { let value = 42; value }\"}}}";
     match handle_payload(server, open) {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let hover = "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"textDocument/hover\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-test.gom\"},\"position\":{\"line\":0,\"character\":38}}}";
     match handle_payload(server, hover) {
         Ok(messages) => {
@@ -162,7 +162,7 @@ fn returns_expanded_derive_source() -> () {
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let request = "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"goml/expandedDerive\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/expanded.gom\"}}}";
     match handle_payload(server, request) {
         Ok(messages) => match response_result(messages.get(0)) {
@@ -186,7 +186,7 @@ fn applies_full_document_changes_and_stops_on_exit() -> () {
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\"fn main() -> i32 { 2 }\"}]}}";
     match handle_payload(server, change) {
         Ok(_) => match server_document(server, "file:///tmp/gomllsp-change.gom") {
@@ -197,7 +197,7 @@ fn applies_full_document_changes_and_stops_on_exit() -> () {
             None => testing::fail("expected changed document"),
         },
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let _ = handle_payload(server, "{\"jsonrpc\":\"2.0\",\"method\":\"exit\"}");
     testing::assert(!server_running(server))
 }
@@ -212,7 +212,7 @@ fn completes_from_cached_analysis_after_document_changes() -> () {
     match handle_payload(server, open) {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let changed = "struct Point { x: i32 } fn consume(value: i32) -> () { () } fn main() -> () { let point = Point { x: 1 }; consume(point.); () }";
     let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\""
         + changed
@@ -220,7 +220,7 @@ fn completes_from_cached_analysis_after_document_changes() -> () {
     match handle_payload(server, change) {
         Ok(messages) => testing::assert_eq(messages.len(), 0),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let position = changed.byte_len() - "); () }".byte_len();
     let completion = "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"textDocument/completion\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\"},\"position\":{\"line\":0,\"character\":"
         + position.to_string()
@@ -231,7 +231,7 @@ fn completes_from_cached_analysis_after_document_changes() -> () {
             testing::assert(response_has_label(messages.get(0), "x"))
         },
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let check = "{\"jsonrpc\":\"2.0\",\"method\":\"goml/checkDiagnostics\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/completion-change.gom\"}}}";
     match handle_payload(server, check) {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
@@ -281,7 +281,7 @@ fn refreshes_completion_analysis_after_dependency_changes() -> () {
             testing::assert(response_has_label(messages.get(0), "old_value"))
         },
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     change_document(server, lib_uri, new_lib_source, 2);
     match handle_payload(server, completion) {
         Ok(messages) => {
@@ -303,7 +303,7 @@ fn completes_select_with_snippets() -> () {
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let completion = "{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"textDocument/completion\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/select-completion.gom\"},\"position\":{\"line\":0,\"character\":23}}}";
     match handle_payload(server, completion) {
         Ok(messages) => {
@@ -321,14 +321,14 @@ fn keeps_cached_analysis_when_an_open_document_is_saved() -> () {
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert_eq(server.analyses.len(), 1);
     let generation = server.generation.get();
     let save = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didSave\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-save.gom\"}}}";
     match handle_payload(server, save) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     testing::assert_eq(server.analyses.len(), 1);
     testing::assert_eq(server.generation.get(), generation)
 }
@@ -340,7 +340,7 @@ fn returns_run_test_code_lenses() -> () {
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let request = "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"textDocument/codeLens\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/value_test.gom\"}}}";
     match handle_payload(server, request) {
         Ok(messages) => match response_result(messages.get(0)) {
@@ -429,7 +429,7 @@ fn reports_json_rpc_parse_and_invalid_request_errors() -> () {
             }
         },
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     match handle_payload(server, "{\"jsonrpc\":\"1.0\",\"id\":1,\"method\":\"initialize\"}") {
         Ok(messages) => match json::field(messages.get(0), "error") {
             Some(error) => match json::field(error, "code") {
@@ -452,7 +452,7 @@ fn filters_inlay_hints_to_the_requested_range() -> () {
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let request = "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"textDocument/inlayHint\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/inlay.gom\"},\"range\":{\"start\":{\"line\":2,\"character\":0},\"end\":{\"line\":3,\"character\":0}}}}";
     match handle_payload(server, request) {
         Ok(messages) => match response_result(messages.get(0)) {
@@ -484,7 +484,7 @@ fn rejects_requests_after_shutdown() -> () {
     match handle_payload(server, shutdown) {
         Ok(messages) => testing::assert_eq(messages.len(), 1),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let request = "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"initialize\"}";
     match handle_payload(server, request) {
         Ok(messages) => match json::field(messages.get(0), "error") {
@@ -508,7 +508,7 @@ fn includes_diagnostics_in_hover() -> () {
     match handle_payload(server, open) {
         Ok(_) => (),
         Err(error) => testing::fail(error.to_string()),
-    };
+    }
     let request = "{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"textDocument/hover\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/hover-error.gom\"},\"position\":{\"line\":0,\"character\":21}}}";
     match handle_payload(server, request) {
         Ok(messages) => match response_result(messages.get(0)) {

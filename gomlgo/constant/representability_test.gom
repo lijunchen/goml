@@ -112,10 +112,10 @@ fn default_types_follow_go_untyped_rules() -> () {
     match default_type(go_types::BasicKind::UntypedRune) {
         Some(value) => testing::assert(value == go_types::BasicKind::Int32),
         None => testing::fail("missing rune default"),
-    };
+    }
     match default_type(go_types::BasicKind::UntypedComplex) {
         Some(value) => testing::assert(value == go_types::BasicKind::Complex128),
         None => testing::fail("missing complex default"),
-    };
+    }
     testing::assert(default_type(go_types::BasicKind::UntypedNil).is_none())
 }

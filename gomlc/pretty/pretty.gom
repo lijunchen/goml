@@ -66,7 +66,7 @@ pub fn text(value: string) -> Doc {
             pieces.push(raw_text(value.byte_slice(start.get(), index)));
             pieces.push(line());
             start.set(index + 1)
-        } else {}
+        }
     }
     pieces.push(raw_text(value.byte_slice(start.get(), value.byte_len())));
     concat(pieces)
@@ -111,7 +111,7 @@ pub fn concat(values: Vec[Doc]) -> Doc {
 pub fn join(separator: Doc, values: Vec[Doc]) -> Doc {
     if values.len() == 0 {
         return nil()
-    } else {};
+    }
     let mut index = values.len() - 1;
     let mut result = values.get(index);
     while index > 0 {
@@ -124,7 +124,7 @@ pub fn join(separator: Doc, values: Vec[Doc]) -> Doc {
 pub fn folddoc(combine: (Doc, Doc) -> Doc, values: Vec[Doc]) -> Doc {
     if values.len() == 0 {
         return nil()
-    } else {};
+    }
     let mut index = values.len() - 1;
     let mut result = values.get(index);
     while index > 0 {
@@ -264,7 +264,7 @@ pub fn fillwords(value: string) -> Doc {
                 words.push(text(current.finish()));
                 current.clear();
                 inside.set(false)
-            } else {}
+            }
         } else {
             current.write_char(character);
             inside.set(true)
@@ -272,7 +272,7 @@ pub fn fillwords(value: string) -> Doc {
     }
     if inside.get() {
         words.push(text(current.finish()))
-    } else {};
+    }
     fill(words)
 }
 
@@ -360,9 +360,9 @@ fn fits(initial: isize, initial_tasks: Tasks) -> bool {
                     tasks = saved_tasks;
                     fallbacks = remaining;
                 },
-            };
+            }
             continue
-        } else {};
+        }
         match tasks {
             Done => return true,
             More(task, rest) => match task {

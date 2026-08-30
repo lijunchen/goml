@@ -170,7 +170,7 @@ fn entry_wrapper_name(
     for function in functions {
         if function.name != "main" {
             add_reachable(used, go_ident(function.name))
-        } else {}
+        }
     }
     for definition in structs {
         add_reachable(used, go_user_type_name(definition.name))
@@ -461,7 +461,7 @@ fn go_foreign_wrapper(spec: GoForeignSpec) -> Function {
                 _ => stmts.push(
                     Stmt::Return { expr: Option::Some(go_foreign_result(call, ret_ty)) },
                 ),
-            };
+            }
             Function {
                 name: go_foreign_wrapper_name(spec.import_path, spec.symbol, spec.ty),
                 params,
@@ -488,15 +488,15 @@ fn emit_go_foreign_import_items(items: Vec[Item], values: Vec[GoForeignSpec]) ->
             if present.1 == value.import_path {
                 found = true;
                 break
-            } else {}
+            }
         }
         if !found {
             imports.push((go_foreign_import_alias(value.import_path), value.import_path))
-        } else {}
+        }
     }
     if !imports.is_empty() {
         items.push(Item::ImportGroup(imports))
-    } else {}
+    }
 }
 
 fn emit_go_foreign_wrapper_items(items: Vec[Item], values: Vec[GoForeignSpec]) -> () {
@@ -527,7 +527,7 @@ fn callable_name(env: LowerEnv, value: repr::Callable, ty: repr::Type) -> string
 fn compact_go_float_literal(value: string) -> string {
     if value.byte_len() <= 64 || value.contains(".") || value.contains("e") || value.contains("E") {
         return value
-    } else {};
+    }
     let start = if value.byte_get(0) == b'-' {
         1
     } else {
@@ -635,9 +635,9 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
             match info {
                 Some(value) => if value.compact {
                     fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
-                } else {},
+                },
                 None => (),
-            };
+            }
             for index in 0..args.len() {
                 fields.push(
                     (
@@ -1076,7 +1076,7 @@ fn compile_slice_callable(key: string, function_ty: repr::Type) -> Expr {
                 stmts.push(Stmt::IndexAssign { base: vars[0], index: vars[1], value: vars[2] });
                 stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
                 return Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
-            } else {};
+            }
             if key == "mut_slice.copy_from" {
                 let source_len_args: Vec[Expr] = Vec::new();
                 source_len_args.push(vars[2]);
@@ -1138,7 +1138,7 @@ fn compile_slice_callable(key: string, function_ty: repr::Type) -> Expr {
                 );
                 stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: true }) });
                 return Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
-            } else {};
+            }
             let value = if key == "slice.new" || key == "mut_slice.new" {
                 Expr::Slice {
                     base: Expr::Field { expr: vars[0], field_name: "items" },
@@ -1327,7 +1327,7 @@ fn compile_channel_callable(key: string, function_ty: repr::Type) -> Expr {
                     Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: "close" }, args } },
                 );
                 stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) })
-            };
+            }
             Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
         },
         _ => Expr::Var { name: go_ident(key) },
@@ -1862,7 +1862,7 @@ fn compile_dynamic_reflect_select_callable(key: string, function_ty: repr::Type)
                         },
                     },
                 )
-            } else {};
+            }
             stmts.push(Stmt::Var { name: "chosen", ty: Type::Int, value: Option::None });
             stmts.push(
                 Stmt::Var {
@@ -1907,7 +1907,7 @@ fn compile_dynamic_reflect_select_callable(key: string, function_ty: repr::Type)
                         else_: Option::None,
                     },
                 )
-            } else {};
+            }
             let receive_value = Expr::Call {
                 func: Expr::Field { expr: Expr::Var { name: "received" }, field_name: "Interface" },
                 args: Vec::new(),
@@ -2065,7 +2065,7 @@ fn compile_collection_from_array_callable(key: string, function_ty: repr::Type) 
                     },
                 );
                 stmts.push(Stmt::Return { expr: Option::Some(result) })
-            };
+            }
             Expr::FuncLit { params, ret_ty: lower_type(ret_ty), body: Block { stmts } }
         },
         _ => Expr::Var { name: go_ident(key) },
@@ -2131,10 +2131,10 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
                     },
                     _ => Expr::Unary { op: UnaryOp::Address, expr: compiled[index] },
                 };
-            } else {}
+            }
         },
         None => (),
-    };
+    }
     match func {
         Callable { callable: Intrinsic(key), ty: _ } => {
             if key == "slice.new" || key == "mut_slice.new" {
@@ -2225,7 +2225,7 @@ fn struct_field_types(env: LowerEnv, value: repr::Type) -> Vec[repr::Type] {
             None => (),
         },
         _ => (),
-    };
+    }
     result
 }
 
@@ -2260,14 +2260,14 @@ fn compile_constructor(
             },
             None => (),
         }
-    };
+    }
     let fields: Vec[(string, Expr)] = Vec::new();
     match info {
         Some(value) => if value.compact {
             fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
-        } else {},
+        },
         None => (),
-    };
+    }
     for index in 0..args.len() {
         let name = if constructor.is_struct && index < constructor.fields.len() {
             go_ident(constructor.fields[index])
@@ -2330,7 +2330,7 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                         fields.push(("_" + index.to_string(), compile_imm(env, items[index])))
                     }
                 },
-            };
+            }
             Expr::StructLiteral { ty: lower_type(ty), fields }
         },
         Array { items, ty } => {
@@ -2512,7 +2512,7 @@ fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
     match compile_hashmap_array_literal_let(env, value) {
         Some(result) => return result,
         None => (),
-    };
+    }
     let result: Vec[Stmt] = Vec::new();
     let compiled = compile_value(env, value.name, value.value, value.ty);
     append_stmts(result, compiled.stmts);
@@ -2569,7 +2569,7 @@ fn hashmap_array_literal_fields(key: repr::Type, value: repr::Type, capacity: Ex
                 },
             ),
         )
-    };
+    }
     fields.push(("len", Expr::Int { value: "0" }));
     fields
 }
@@ -2694,7 +2694,7 @@ fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Bl
                     match collection_array_consumer(value.binds[index + 1]) {
                         Some(consumer) => if consumer.1 == bind.name {
                             result[consumer.0] = anf::Value::Array { items, ty };
-                        } else {},
+                        },
                         None => (),
                     }
                 },
@@ -2704,7 +2704,7 @@ fn collect_collection_arrays(result: HashMap[string, anf::Value], value: anf::Bl
             JoinRec(joins) => for join in joins {
                 collect_collection_arrays(result, join.body)
             },
-        };
+        }
         index += 1;
     }
     collect_collection_arrays_term(result, value.term)
@@ -2796,7 +2796,7 @@ fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Optio
             Some(body) => block_target(body),
             None => Option::None,
         }
-    } else {};
+    }
     let expected = block_target(arms[0].body)?;
     for index in 1..arms.len() {
         match block_target(arms[index].body) {
@@ -2814,7 +2814,7 @@ fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Optio
             None => return Option::None,
         },
         None => (),
-    };
+    }
     Option::Some(expected)
 }
 
@@ -2824,7 +2824,7 @@ fn select_block_target(arms: Vec[anf::SelectArm], default: Option[anf::Block]) -
             Some(body) => block_target(body),
             None => Option::None,
         }
-    } else {};
+    }
     let first = match arms[0] {
         Receive { body, .. } | Send { body, .. } => body,
     };
@@ -2848,7 +2848,7 @@ fn select_block_target(arms: Vec[anf::SelectArm], default: Option[anf::Block]) -
             None => return Option::None,
         },
         None => (),
-    };
+    }
     Option::Some(expected)
 }
 
@@ -2918,7 +2918,7 @@ fn blocks_reach_target(
     for arm in values {
         if block_reaches_target(arm.body, target, joins, visited) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -2933,7 +2933,7 @@ fn compile_jump_args(env: LowerEnv, value: anf::JoinBind, args: Vec[anf::Imm]) -
                     value: compile_imm_expected(env, args[index], value.params[index].1),
                 },
             )
-        } else {}
+        }
     }
     result
 }
@@ -2955,7 +2955,7 @@ fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join
                                 value: Option::None,
                             },
                         )
-                    } else {}
+                    }
                 }
                 pending.push(value)
             },
@@ -3000,7 +3000,7 @@ fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join
             },
             None => append_stmts(stmts, compile_term_with_pending(env, value.term, pending)),
         }
-    } else {};
+    }
     Block { stmts }
 }
 
@@ -3069,7 +3069,7 @@ fn compile_match_leaf(
                 default: lowered_default,
             },
         )
-    };
+    }
     result
 }
 
@@ -3288,7 +3288,7 @@ fn compile_select(
                     },
                 )
             },
-        };
+        }
         arm_index = arm_index + 1;
     }
     let lowered_default = match default {
@@ -3322,7 +3322,7 @@ fn compile_select(
             }
             append_stmts(result, nested.get().stmts)
         },
-    };
+    }
     result
 }
 
@@ -3356,7 +3356,7 @@ fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
             compile_select(env, mode, arms, default, |body| compile_block(env, body)),
         ),
         Unreachable { ty: _ } => result.push(Stmt::Unreachable),
-    };
+    }
     result
 }
 
@@ -3443,7 +3443,7 @@ fn compile_term_to_join(env: LowerEnv, value: anf::Term, target: string, join: a
             ),
         ),
         _ => append_stmts(result, compile_term_leaf(env, value)),
-    };
+    }
     result
 }
 
@@ -3491,7 +3491,7 @@ fn active_loop_label(env: LowerEnv, target: string) -> Option[string] {
         let value = env.active_loop_labels[env.active_loop_labels.len() - 1 - offset];
         if value.0 == target {
             return Option::Some(value.1)
-        } else {}
+        }
     }
     Option::None
 }
@@ -3569,7 +3569,7 @@ fn term_reaches_target(
                     visited,
                 ) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => block_reaches_target(body, target, joins, visited),
@@ -3600,7 +3600,7 @@ fn match_tail_target_through_joins(
             Some(body) => block_tail_target_through_joins(body, joins, visited),
             None => Option::None,
         }
-    } else {};
+    }
     let expected = block_tail_target_through_joins(arms[0].body, joins, visited)?;
     for index in 1..arms.len() {
         match block_tail_target_through_joins(arms[index].body, joins, visited) {
@@ -3618,7 +3618,7 @@ fn match_tail_target_through_joins(
             None => return Option::None,
         },
         None => (),
-    };
+    }
     Option::Some(expected)
 }
 
@@ -3633,7 +3633,7 @@ fn select_tail_target_through_joins(
             Some(body) => block_tail_target_through_joins(body, joins, visited),
             None => Option::None,
         }
-    } else {};
+    }
     let first = match arms[0] {
         Receive { body, .. } | Send { body, .. } => body,
     };
@@ -3657,7 +3657,7 @@ fn select_tail_target_through_joins(
             None => return Option::None,
         },
         None => (),
-    };
+    }
     Option::Some(expected)
 }
 
@@ -3749,7 +3749,7 @@ fn term_all_paths_reach_or_terminate(
             for arm in arms {
                 if !block_all_paths_reach_or_terminate(arm.body, target, joins, visited) {
                     return false
-                } else {}
+                }
             }
             match default {
                 Some(body) => {
@@ -3769,7 +3769,7 @@ fn term_all_paths_reach_or_terminate(
                     visited,
                 ) {
                     return false
-                } else {}
+                }
             }
             match default {
                 Some(body) => block_all_paths_reach_or_terminate(body, target, joins, visited),
@@ -3835,7 +3835,7 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
             match default {
                 Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
                 None => (),
-            };
+            }
             let exits: Vec[string] = Vec::new();
             let continues: Vec[()] = Vec::new();
             for target in targets {
@@ -3847,12 +3847,12 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
             }
             if continues.is_empty() || exits.is_empty() {
                 return Option::None
-            } else {};
+            }
             let target = exits[0];
             for value in exits {
                 if value != target {
                     return Option::None
-                } else {}
+                }
             }
             Option::Some(target)
         },
@@ -3872,7 +3872,7 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
             match default {
                 Some(body) => targets.push(loop_branch_target(body, loop_name, joins)),
                 None => (),
-            };
+            }
             let exits: Vec[string] = Vec::new();
             let continues: Vec[()] = Vec::new();
             for target in targets {
@@ -3884,12 +3884,12 @@ fn simple_loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf
             }
             if continues.is_empty() || exits.is_empty() {
                 return Option::None
-            } else {};
+            }
             let target = exits[0];
             for value in exits {
                 if value != target {
                     return Option::None
-                } else {}
+                }
             }
             Option::Some(target)
         },
@@ -4046,10 +4046,10 @@ fn term_loop_outcomes(
                     branches = branches + 1;
                 },
                 None => (),
-            };
+            }
             if branches == 0 {
                 result.valid = false;
-            } else {};
+            }
             result
         },
         Select { arms, default, .. } => {
@@ -4087,10 +4087,10 @@ fn term_loop_outcomes(
                     branches = branches + 1;
                 },
                 None => (),
-            };
+            }
             if branches == 0 {
                 result.valid = false;
-            } else {};
+            }
             result
         },
         Return(_) | Unreachable { ty: _ } => neutral_loop_outcomes(),
@@ -4103,7 +4103,7 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
     match simple_loop_exit_target(value, loop_name, parent) {
         Some(target) => return Option::Some(target),
         None => (),
-    };
+    }
     let internal_joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(internal_joins, value);
     let outcomes = block_loop_outcomes(
@@ -4116,12 +4116,12 @@ fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinB
     );
     if !outcomes.valid || !outcomes.has_continue || outcomes.exits.is_empty() {
         return Option::None
-    } else {};
+    }
     let target = outcomes.exits[0];
     for value in outcomes.exits {
         if value != target {
             return Option::None
-        } else {}
+        }
     }
     Option::Some(target)
 }
@@ -4140,7 +4140,7 @@ fn find_loop_exit(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBin
                             Some(target) => return Option::Some(target),
                             None => (),
                         }
-                    } else {},
+                    },
                     _ => (),
                 }
             }
@@ -4174,7 +4174,7 @@ fn compile_loop_branch_to_join(
                                 value: Option::None,
                             },
                         )
-                    } else {}
+                    }
                 }
                 pending.push(value)
             },
@@ -4263,7 +4263,7 @@ fn compile_loop_branch_to_join(
                 ),
             ),
         }
-    } else {};
+    }
     Block { stmts }
 }
 
@@ -4287,7 +4287,7 @@ fn compile_loop_term_leaf(
                 match find_join(env.joins, target) {
                     Some(join) => append_stmts(result, compile_jump_args(env, join, args)),
                     None => (),
-                };
+                }
                 result.push(Stmt::BreakLabel { label })
             } else {
                 match find_join(env.joins, target) {
@@ -4297,7 +4297,7 @@ fn compile_loop_term_leaf(
                                 append_stmts(result, compile_jump_args(env, join, args))
                             },
                             _ => (),
-                        };
+                        }
                         append_stmts(
                             result,
                             compile_loop_block(env, join.body, loop_name, exit_name, label).stmts,
@@ -4388,7 +4388,7 @@ fn compile_loop_term_leaf(
             )
         },
         _ => append_stmts(result, compile_term_leaf(env, value)),
-    };
+    }
     result
 }
 
@@ -4551,7 +4551,7 @@ fn compile_loop_term_to_join(
             ),
         ),
         _ => append_stmts(result, compile_loop_term_leaf(env, value, loop_name, exit_name, label)),
-    };
+    }
     result
 }
 
@@ -4606,7 +4606,7 @@ fn compile_loop_block(
                                 value: Option::None,
                             },
                         )
-                    } else {}
+                    }
                 }
                 pending.push(value)
             },
@@ -4630,7 +4630,7 @@ fn compile_loop_block(
             stmts,
             compile_loop_term_with_pending(env, value.term, pending, loop_name, exit_name, label),
         )
-    } else {};
+    }
     Block { stmts }
 }
 
@@ -4677,7 +4677,7 @@ fn compile_joinrec_in_loop(
                         )
                     },
                     None => (),
-                };
+                }
                 loop_names.push(value.name)
             },
             None => if single
@@ -4709,7 +4709,7 @@ fn compile_joinrec_in_loop(
                     ).stmts,
                 );
                 loop_names.push(value.name)
-            } else {},
+            },
         }
     }
     JoinRecResult { stmts, loop_names }
@@ -4719,7 +4719,7 @@ fn block_contains_loop_label(value: Block, label: string) -> bool {
     for stmt in value.stmts {
         if stmt_contains_loop_label(stmt, label) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -4741,7 +4741,7 @@ fn stmt_contains_loop_label(value: Stmt, label: string) -> bool {
             for case in cases {
                 if block_contains_loop_label(case.body, label) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => block_contains_loop_label(body, label),
@@ -4752,7 +4752,7 @@ fn stmt_contains_loop_label(value: Stmt, label: string) -> bool {
             for case in cases {
                 if block_contains_loop_label(case.body, label) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => block_contains_loop_label(body, label),
@@ -4763,7 +4763,7 @@ fn stmt_contains_loop_label(value: Stmt, label: string) -> bool {
             for case in cases {
                 if block_contains_loop_label(case.body, label) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => block_contains_loop_label(body, label),
@@ -4797,7 +4797,7 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
                         append_stmts(stmts, compile_block(env, exit.body).stmts)
                     },
                     None => (),
-                };
+                }
                 loop_names.push(value.name)
             },
             None => if single
@@ -4820,7 +4820,7 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
                 ) {
                 append_stmts(stmts, compile_block(env, value.body).stmts);
                 loop_names.push(value.name)
-            } else {},
+            },
         }
     }
     JoinRecResult { stmts, loop_names }
@@ -4843,7 +4843,7 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
                                 value: Option::None,
                             },
                         )
-                    } else {}
+                    }
                 }
                 pending.push(value)
             },
@@ -4864,7 +4864,7 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
     };
     if !suppress {
         append_stmts(stmts, compile_term_with_pending(env, value.term, pending))
-    } else {};
+    }
     Block { stmts }
 }
 
@@ -4884,14 +4884,14 @@ fn add_collected_type(result: CollectedTypes, value: repr::Type) -> () {
             for present in values {
                 if repr::types_equal(present, value) {
                     return ()
-                } else {}
+                }
             }
             values.push(value)
         },
         None => {
             result.buckets[key] = Vec::from_array([value]);
         },
-    };
+    }
     result.values.push(value)
 }
 
@@ -4949,18 +4949,18 @@ fn collect_runtime_imm(
         Callable { callable: Runtime(key), ty: _ } => {
             if !result.contains(key) {
                 result.push(key)
-            } else {}
+            }
         },
         Callable { callable: Intrinsic(key), ty: function_ty } => {
             if !intrinsics.contains(key) {
                 intrinsics.push(key)
-            } else {};
+            }
             if key == "compiler.missing" {
                 match repr::resolve_type(function_ty) {
                     Func { params: _, ret_ty } => add_collected_type(missing_types, ret_ty),
                     _ => (),
                 }
-            } else {}
+            }
         },
         Callable { callable: GoForeign { import_path, symbol }, ty } => {
             let name = go_foreign_wrapper_name(import_path, symbol, ty);
@@ -4969,11 +4969,11 @@ fn collect_runtime_imm(
                 if go_foreign_wrapper_name(value.import_path, value.symbol, value.ty) == name {
                     found = true;
                     break
-                } else {}
+                }
             }
             if !found {
                 go_foreign.push(GoForeignSpec { import_path, symbol, ty })
-            } else {}
+            }
         },
         _ => (),
     }
@@ -5096,7 +5096,7 @@ fn collect_runtime_block(
                                 value,
                             ),
                             None => (),
-                        };
+                        }
                         collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
                     },
                     Send { channel, value, guard, body } => {
@@ -5111,7 +5111,7 @@ fn collect_runtime_block(
                                 value,
                             ),
                             None => (),
-                        };
+                        }
                         collect_runtime_block(result, missing_types, intrinsics, go_foreign, body)
                     },
                 }
@@ -5238,7 +5238,7 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> () {
                         match guard {
                             Some(value) => collect_imm_type(result, value),
                             None => (),
-                        };
+                        }
                         collect_type(result, binding_ty);
                         collect_block_types(result, body)
                     },
@@ -5248,7 +5248,7 @@ fn collect_block_types(result: CollectedTypes, value: anf::Block) -> () {
                         match guard {
                             Some(value) => collect_imm_type(result, value),
                             None => (),
-                        };
+                        }
                         collect_block_types(result, body)
                     },
                 }
@@ -5316,7 +5316,7 @@ fn add_dyn_coercion(result: Vec[DynCoercion], trait_name: string, for_ty: repr::
     for value in result {
         if value.trait_name == trait_name && encode_type(value.for_ty) == encode_type(for_ty) {
             return
-        } else {}
+        }
     }
     result.push(DynCoercion { trait_name, for_ty })
 }
@@ -5369,11 +5369,11 @@ fn block_assigns_name(value: anf::Block, name: string) -> bool {
             },
             Join(value) => if block_assigns_name(value.body, name) {
                 return true
-            } else {},
+            },
             JoinRec(values) => for value in values {
                 if block_assigns_name(value.body, name) {
                     return true
-                } else {}
+                }
             },
         }
     }
@@ -5385,7 +5385,7 @@ fn block_assigns_name(value: anf::Block, name: string) -> bool {
             for arm in arms {
                 if block_assigns_name(arm.body, name) {
                     return true
-                } else {}
+                }
             }
             match default {
                 Some(body) => block_assigns_name(body, name),
@@ -5421,11 +5421,11 @@ fn go_type_list_size(values: Vec[repr::Type], structs: Vec[repr::StructDef], dep
         let field = go_type_size(value, structs, depth + 1);
         if !field.known {
             return unknown_go_size()
-        } else {};
+        }
         size = aligned_go_size(size, field.alignment) + field.size;
         if field.alignment > alignment {
             alignment = field.alignment;
-        } else {};
+        }
     }
     known_go_size(aligned_go_size(size, alignment), alignment)
 }
@@ -5505,7 +5505,7 @@ fn imms_use_function(values: Vec[anf::Imm], target: string) -> bool {
     for value in values {
         if imm_uses_function(value, target) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -5527,55 +5527,55 @@ fn inspect_pointer_call(
     match value {
         Imm(value) => if imm_uses_function(value, target) {
             valid.set(false)
-        } else {},
+        },
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
             items: args,
             ty: _,
         } => if imms_use_function(args, target) {
             valid.set(false)
-        } else {},
+        },
         ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | ToDyn { expr, .. } | Proj {
             tuple: expr,
             ..,
         } => if imm_uses_function(expr, target) {
             valid.set(false)
-        } else {},
+        },
         Binary { lhs, rhs, .. } => if imm_uses_function(lhs, target)
             || imm_uses_function(rhs, target) {
             valid.set(false)
-        } else {},
+        },
         Assign { name: _, value, target_ty: _, ty: _ } => {
             if imm_uses_function(value, target) {
                 valid.set(false)
-            } else {}
+            }
         },
         Call { func, args, ty: _ } => match direct_function_name(func) {
             Some(name) if name == target => {
                 calls.set(calls.get() + 1);
                 if parameter >= args.len() || !pointer_call_argument(args[parameter]) {
                     valid.set(false)
-                } else {};
+                }
                 if imms_use_function(args, target) {
                     valid.set(false)
-                } else {}
+                }
             },
             _ => {
                 if imm_uses_function(func, target) || imms_use_function(args, target) {
                     valid.set(false)
-                } else {}
+                }
             },
         },
         DynCall { receiver, args, .. } => if imm_uses_function(receiver, target)
             || imms_use_function(args, target) {
             valid.set(false)
-        } else {},
+        },
         Go { closure, ty: _ } => if imm_uses_function(closure, target) {
             valid.set(false)
-        } else {},
+        },
         PackClosure { environment, apply, ty: _ } => if apply == target
             || imm_uses_function(environment, target) {
             valid.set(false)
-        } else {},
+        },
     }
 }
 
@@ -5598,25 +5598,25 @@ fn inspect_pointer_calls(
     match value.term {
         Return(value) => if imm_uses_function(value, target) {
             valid.set(false)
-        } else {},
+        },
         Jump { target: _, args, ret_ty: _ } => if imms_use_function(args, target) {
             valid.set(false)
-        } else {},
+        },
         If { cond, then_, else_, ret_ty: _ } => {
             if imm_uses_function(cond, target) {
                 valid.set(false)
-            } else {};
+            }
             inspect_pointer_calls(then_, target, parameter, valid, calls);
             inspect_pointer_calls(else_, target, parameter, valid, calls)
         },
         Match { scrutinee, arms, default, ret_ty: _ } => {
             if imm_uses_function(scrutinee, target) {
                 valid.set(false)
-            } else {};
+            }
             for arm in arms {
                 if imm_uses_function(arm.lhs, target) {
                     valid.set(false)
-                } else {};
+                }
                 inspect_pointer_calls(arm.body, target, parameter, valid, calls)
             }
             match default {
@@ -5630,25 +5630,25 @@ fn inspect_pointer_calls(
                     Receive { channel, guard, binding: _, binding_ty: _, body } => {
                         if imm_uses_function(channel, target) {
                             valid.set(false)
-                        } else {};
+                        }
                         match guard {
                             Some(value) => if imm_uses_function(value, target) {
                                 valid.set(false)
-                            } else {},
+                            },
                             None => (),
-                        };
+                        }
                         inspect_pointer_calls(body, target, parameter, valid, calls)
                     },
                     Send { channel, value, guard, body } => {
                         if imm_uses_function(channel, target) || imm_uses_function(value, target) {
                             valid.set(false)
-                        } else {};
+                        }
                         match guard {
                             Some(value) => if imm_uses_function(value, target) {
                                 valid.set(false)
-                            } else {},
+                            },
                             None => (),
-                        };
+                        }
                         inspect_pointer_calls(body, target, parameter, valid, calls)
                     },
                 }
@@ -5694,7 +5694,7 @@ fn pointer_param_enabled(values: Vec[PointerParamInfo], function: string, index:
     for value in values {
         if value.function == function {
             return index >= 0 && index < value.values.len() && value.values[index]
-        } else {}
+        }
     }
     false
 }
@@ -5703,7 +5703,7 @@ fn pointer_param_copied(values: Vec[PointerParamInfo], function: string, index: 
     for value in values {
         if value.function == function {
             return index >= 0 && index < value.copies.len() && value.copies[index]
-        } else {}
+        }
     }
     false
 }
@@ -5740,9 +5740,9 @@ fn compile_function(
                 copied_params.push((name, pointer_name, ty))
             } else {
                 let _ = pointer_vars.insert(param.0);
-            };
+            }
             ty = Type::Pointer { elem: ty };
-        } else {};
+        }
         params.push(
             (
                 if pointer_param_copied(pointer_params, value.name, index) {
@@ -5843,7 +5843,7 @@ fn compile_functions(
     match completed {
         Ok(()) => (),
         Err(_) => (),
-    };
+    }
     let result: Vec[Function] = Vec::with_capacity(values.len());
     for index in 0..values.len() {
         match compiled[index] {
@@ -5984,17 +5984,17 @@ fn lower_with_test_cases(
             && instance.args.len() == 1 {
             if !intrinsics.contains("once_cell.new") {
                 intrinsics.push("once_cell.new")
-            } else {};
+            }
             if !intrinsics.contains("once_cell.get_or_init") {
                 intrinsics.push("once_cell.get_or_init")
-            } else {}
-        } else {}
+            }
+        }
     }
     if testing {
         runtime_hooks.push(
             resources::RuntimeHook::Standard(resources::StandardRuntimeHook::TestingFail),
         )
-    } else {};
+    }
     let dyn_helper_names = build_dyn_helper_names(builtin, coercions, value.functions);
     collect_type_definition_fields(types, enums, structs, type_instances);
     emit_go_foreign_import_items(items, go_foreign);
@@ -6070,7 +6070,7 @@ fn lower_with_test_cases(
                 },
             ),
         )
-    };
+    }
     Result::Ok(prune_functions(File { items }))
 }
 
@@ -6118,7 +6118,7 @@ fn validate_anf_block(value: anf::Block) -> Result[(), string] {
                     return Result::Err(
                         "Go backend requires each recursive join group to contain exactly one join",
                     )
-                } else {};
+                }
                 validate_anf_block(joins[0].body)?
             },
         }
@@ -6147,14 +6147,14 @@ fn validate_anf(value: anf::File) -> Result[(), string] {
         match validate_anf_block(function.body) {
             Ok(_) => (),
             Err(error) => return Result::Err("in function " + function.name + ": " + error),
-        };
+        }
         collect_runtime_block(runtime_hooks, missing_types, intrinsics, go_foreign, function.body)
     }
     resolve_runtime_hooks(runtime_hooks)?;
     for key in intrinsics {
         if resources::intrinsic_abi_by_key(key).is_none() {
             return Result::Err("unknown intrinsic " + key)
-        } else {}
+        }
     }
     Result::Ok(())
 }

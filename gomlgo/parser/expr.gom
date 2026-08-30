@@ -165,19 +165,19 @@ fn parse_index_slice_or_instance(parser: Parser, expression: ast::Node) -> ast::
             "expected operand, found '" + token::name(current(parser).kind) + "'",
         );
         values.push(bad_expr(position, position))
-    } else {};
+    }
     match eat(parser, token::Kind::Colon) {
         Some(first_colon) => {
             slice = true;
             if !at(parser, token::Kind::Colon) && !at(parser, token::Kind::Rbrack) {
                 high = Option::Some(parse_expression(parser));
-            } else {};
+            }
             match eat(parser, token::Kind::Colon) {
                 Some(second_colon) => {
                     slice_three = true;
                     if high.is_none() {
                         report(parser, first_colon.start, "middle index required in 3-index slice")
-                    } else {};
+                    }
                     if !at(parser, token::Kind::Rbrack) {
                         maximum = Option::Some(parse_expression(parser));
                     } else {
@@ -196,7 +196,7 @@ fn parse_index_slice_or_instance(parser: Parser, expression: ast::Node) -> ast::
                 }
             }
         },
-    };
+    }
     let right = expect(parser, token::Kind::Rbrack);
     parser.expr_level.set(saved_level);
     if slice {
@@ -258,14 +258,14 @@ fn parse_call(parser: Parser, function: ast::Node) -> ast::Node {
         arguments.push(parse_expression(parser));
         if eat(parser, token::Kind::Ellipsis).is_some() {
             ellipsis = parser.previous_end.get() - 3;
-        } else {};
+        }
         if eat(parser, token::Kind::Comma).is_some() {
             if at(parser, token::Kind::Rparen) {
                 break
-            } else {}
+            }
         } else {
             break
-        };
+        }
         let _ = ensure_progress(parser, before, "argument list");
     }
     let right = expect(parser, token::Kind::Rparen);
@@ -336,11 +336,11 @@ fn parse_composite_literal(parser: Parser, type_value: Option[ast::Node]) -> ast
             report(parser, current(parser).start, "expected composite literal element");
             incomplete = true;
             let _ = advance(parser);
-        };
+        }
         if eat(parser, token::Kind::Comma).is_some() {} else if !at(parser, token::Kind::Rbrace) {
             report(parser, current(parser).start, "missing ',' in composite literal");
             incomplete = true;
-        } else {};
+        }
         let _ = ensure_progress(parser, before, "composite literal");
     }
     let right = expect(parser, token::Kind::Rbrace);
@@ -472,7 +472,7 @@ fn parse_binary_expression(parser: Parser, initial: ast::Node, minimum: isize) -
             let next_precedence = precedence(peek(parser));
             if operator_precedence < next_precedence {
                 right = parse_binary_expression(parser, right, operator_precedence + 1);
-            } else {};
+            }
             left = ast::node(
                 ast::Kind::BinaryExpr,
                 left.span.start,
@@ -494,7 +494,7 @@ fn parse_binary_expression(parser: Parser, initial: ast::Node, minimum: isize) -
 fn parse_expression(parser: Parser) -> ast::Node {
     if !enter_nesting(parser) {
         return bad_expr(current(parser).start, current(parser).start)
-    } else {};
+    }
     let left = parse_unary_expression(parser);
     let result = parse_binary_expression(parser, left, 1);
     leave_nesting(parser);

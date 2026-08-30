@@ -114,7 +114,7 @@ impl LineIndex {
                         offset += 2;
                     } else {
                         offset += 1;
-                    };
+                    }
                     line_start = offset;
                     line_starts.push(line_start);
                     wide_offsets.push(wide_chars.len())
@@ -129,7 +129,7 @@ impl LineIndex {
                         wide_chars.push(
                             LineIndexWideChar { start: offset - line_start, end: end - line_start },
                         )
-                    } else {};
+                    }
                     offset = end;
                 }
             }
@@ -178,7 +178,7 @@ impl LineIndex {
                 column -= width - line_index_encoded_width(width, encoding);
             } else if wide.start < byte_column {
                 column -= byte_column - wide.start;
-            } else {};
+            }
             wide_index += 1;
         }
         LineColumn { line, column }
@@ -201,7 +201,7 @@ impl LineIndex {
                 if column > wide.start {
                     let width = wide.end - wide.start;
                     column += width - line_index_encoded_width(width, encoding);
-                } else {};
+                }
                 wide_index += 1;
             }
             if column > line_length {

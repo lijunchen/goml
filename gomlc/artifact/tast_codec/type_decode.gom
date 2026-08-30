@@ -46,7 +46,7 @@ fn artifact_decode_dyn_bound(context: ArtifactDecodeContext, value: wire::Artifa
         let pair = wire::artifact_json_array(value, "dyn associated type binding")?;
         if pair.len() != 2 {
             return Result::Err(wire::artifact_decode_error("dyn associated type binding"))
-        } else {};
+        }
         associated_types.push(
             (
                 wire::artifact_json_string_value(pair[0], "associated type name")?,
@@ -120,7 +120,7 @@ fn artifact_decode_named_type(
         artifact_add_type_name(context.enum_names, name)
     } else {
         artifact_add_type_name(context.struct_names, name)
-    };
+    }
     Result::Ok(tast::Type::Con { name })
 }
 
@@ -164,7 +164,7 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
         Object(fields) => {
             if fields.len() != 1 {
                 return Result::Err(wire::artifact_decode_error("type variant"))
-            } else {};
+            }
             let kind = fields[0].0;
             let payload = fields[0].1;
             match kind {

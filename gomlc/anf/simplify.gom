@@ -97,7 +97,7 @@ fn imms_stable(values: Vec[Imm], assigned: collections::HashSet[string]) -> bool
         match value {
             Var { name, ty: _ } => if assigned.contains(name) {
                 return false
-            } else {},
+            },
             _ => (),
         }
     }
@@ -113,7 +113,7 @@ fn record_known_value(
 ) -> () {
     if assigned.contains(name) {
         return ()
-    } else {};
+    }
     match value {
         Imm(value) => match value {
             Var { name: source, ty: source_ty } => if assigned.contains(source)
@@ -129,12 +129,12 @@ fn record_known_value(
                     value: KnownValue::Constr { constructor, args: copy_imms(args), ty },
                 },
             )
-        } else {},
+        },
         Tuple { items, ty } => if imms_stable(items, assigned) {
             known.push(
                 KnownBinding { name, value: KnownValue::Tuple { items: copy_imms(items), ty } },
             )
-        } else {},
+        },
         _ => (),
     }
 }
@@ -426,7 +426,7 @@ fn select_known_match_arm(
             for arm in arms {
                 if match_imms_equal(scrutinee, arm.lhs) {
                     return Option::Some(arm.body)
-                } else {}
+                }
             }
             default
         },
@@ -697,7 +697,7 @@ fn substitute_join_imm(value: Imm, params: Vec[(string, repr::Type)], args: Vec[
             for index in 0..params.len() {
                 if params[index].0 == name && index < args.len() {
                     return args[index]
-                } else {}
+                }
             }
             value
         },
@@ -718,11 +718,11 @@ fn substitute_join_imms(values: Vec[Imm], params: Vec[(string, repr::Type)], arg
 fn join_args_match(params: Vec[(string, repr::Type)], args: Vec[Imm]) -> bool {
     if params.len() != args.len() {
         return false
-    } else {};
+    }
     for index in 0..args.len() {
         if !repr::types_equal(imm_type(args[index]), params[index].1) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -739,7 +739,7 @@ fn join_rewrite_safe_term(value: Term, join: JoinBind) -> bool {
             for arm in arms {
                 if !join_rewrite_safe_block(arm.body, join) {
                     return false
-                } else {}
+                }
             }
             match default {
                 Some(body) => join_rewrite_safe_block(body, join),
@@ -755,7 +755,7 @@ fn join_rewrite_safe_term(value: Term, join: JoinBind) -> bool {
                     join,
                 ) {
                     return false
-                } else {}
+                }
             }
             match default {
                 Some(body) => join_rewrite_safe_block(body, join),
@@ -772,11 +772,11 @@ fn join_rewrite_safe_block(value: Block, join: JoinBind) -> bool {
             Let(_) => (),
             Join(value) => if !join_rewrite_safe_block(value.body, join) {
                 return false
-            } else {},
+            },
             JoinRec(values) => for value in values {
                 if !join_rewrite_safe_block(value.body, join) {
                     return false
-                } else {}
+                }
             },
         }
     }
@@ -1055,7 +1055,7 @@ fn simplify_functions(values: Vec[Function]) -> Vec[Function] {
     match completed {
         Ok(()) => (),
         Err(_) => (),
-    };
+    }
     let result: Vec[Function] = Vec::with_capacity(values.len());
     for index in 0..values.len() {
         match simplified[index] {

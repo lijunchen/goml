@@ -224,12 +224,12 @@ fn parse_duration(value: string) -> Result[isize, string] {
 fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     if args.len() < 2 {
         return Result::Err(top_help())
-    } else {};
+    }
     let command = args[1];
     match command {
         CHECK_COMMAND | BUILD_COMMAND | BUILD_ARTIFACTS_COMMAND | RUN_COMMAND_NAME | TEST_COMMAND => (),
         _ => return Result::Err(f"unknown command {command}"),
-    };
+    }
     let targets: Vec[string] = Vec::new();
     let mut target_dir: Option[string] = Option::None;
     let mut compiler: Option[string] = Option::None;
@@ -556,7 +556,7 @@ fn run_toolchain_finalize(args: Vec[string]) -> Result[(), string] {
                     Ok(()) => (),
                     Err(error) => return Result::Err(error.to_string()),
                 }
-            } else {};
+            }
             let plan = project::toolchain_world_plan(context, temporary)?;
             let jobs = match env::var_structured("GOML_BUILD_JOBS") {
                 Ok(value) => util::parse_positive_int(value)?,

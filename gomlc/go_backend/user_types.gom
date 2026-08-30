@@ -66,7 +66,7 @@ fn type_lists_match(left: Vec[repr::Type], right: Vec[repr::Type]) -> bool {
         for index in 0..left.len() {
             if !repr::types_equal(left[index], right[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -122,7 +122,7 @@ fn enum_has_variant(value: repr::EnumDef, variant_name: string) -> bool {
     for variant in value.variants {
         if variant.name == variant_name {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -132,7 +132,7 @@ fn variant_definition_count(enums: Vec[repr::EnumDef], variant_name: string) -> 
     for definition in enums {
         if enum_has_variant(definition, variant_name) {
             result.set(result.get() + 1)
-        } else {}
+        }
     }
     result.get()
 }
@@ -204,7 +204,7 @@ fn tag_only_variant_fields(values: Vec[Vec[repr::Type]]) -> bool {
     for fields in values {
         if !fields.is_empty() {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -607,9 +607,9 @@ fn last_separator(value: string) -> isize {
         for index in 0..value.byte_len() - 1 {
             if text::starts_with_at(value, index, "::") {
                 result = index;
-            } else {}
+            }
         }
-    } else {};
+    }
     result
 }
 

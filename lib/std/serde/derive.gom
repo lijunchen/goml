@@ -139,7 +139,7 @@ fn renamed_attribute(attribute: MetaAttribute, fallback: string) -> string {
                 && meta_attribute_argument_name(attribute, index) == "rename"
                 && meta_attribute_argument_value_kind(attribute, index) == "string" {
                 return meta_attribute_argument_text(attribute, index)
-            } else {};
+            }
             index = index + 1;
         }
         fallback
@@ -189,7 +189,7 @@ fn type_seen(input: DeriveInput, variant: isize, field: isize, ty: MetaType) -> 
         while previous < field {
             if meta_type_equal(derive_field_type(input, previous), ty) {
                 return true
-            } else {};
+            }
             previous = previous + 1;
         }
     } else {
@@ -202,7 +202,7 @@ fn type_seen(input: DeriveInput, variant: isize, field: isize, ty: MetaType) -> 
                     ty,
                 ) {
                     return true
-                } else {};
+                }
                 previous_field = previous_field + 1;
             }
             previous_variant = previous_variant + 1;
@@ -211,10 +211,10 @@ fn type_seen(input: DeriveInput, variant: isize, field: isize, ty: MetaType) -> 
         while previous_field < field {
             if meta_type_equal(derive_variant_field_type(input, variant, previous_field), ty) {
                 return true
-            } else {};
+            }
             previous_field = previous_field + 1;
         }
-    };
+    }
     false
 }
 
@@ -226,7 +226,7 @@ fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) 
             let ty = derive_field_type(input, field);
             if meta_type_contains_generic(input, ty) && !type_seen(input, 0, field, ty) {
                 derive_output_add_predicate(output, ty, trait_name)
-            } else {};
+            }
             field = field + 1;
         }
     } else {
@@ -237,7 +237,7 @@ fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) 
                 let ty = derive_variant_field_type(input, variant, field);
                 if meta_type_contains_generic(input, ty) && !type_seen(input, variant, field, ty) {
                     derive_output_add_predicate(output, ty, trait_name)
-                } else {};
+                }
                 field = field + 1;
             }
             variant = variant + 1;
@@ -313,7 +313,7 @@ fn serialize_enum_body(input: DeriveInput) -> MetaExpr {
                 )
             } else {
                 meta_pattern_list_push(positional, meta_pattern_bind(binding))
-            };
+            }
             meta_block_expr(
                 block,
                 try_serializer_call(
@@ -658,7 +658,7 @@ fn deserialize_variant_body(input: DeriveInput, variant: isize) -> MetaExpr {
             )
         } else {
             meta_expr_list_push(positional, value)
-        };
+        }
         field = field + 1;
     }
     let source_name = derive_variant_name(input, variant);

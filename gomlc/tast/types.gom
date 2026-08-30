@@ -140,7 +140,7 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
             for item in values {
                 if occurs(variable, item) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -152,10 +152,10 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                     Some(reference) => for arg in reference.args {
                         if occurs(variable, arg) {
                             return true
-                        } else {}
+                        }
                     },
                     None => (),
-                };
+                }
                 false
             }
         },
@@ -166,7 +166,7 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                 for arg in args {
                     if occurs(variable, arg) {
                         return true
-                    } else {}
+                    }
                 }
                 false
             }
@@ -182,7 +182,7 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                 for param in params {
                     if occurs(variable, param) {
                         return true
-                    } else {}
+                    }
                 }
                 false
             }
@@ -214,7 +214,7 @@ fn unify_types(left: Vec[Type], right: Vec[Type]) -> bool {
         for index in 0..left.len() {
             if !unify(left[index], right[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -236,7 +236,7 @@ fn associated_type_bindings_unify(first: Vec[(string, Type)], second: Vec[(strin
         for index in 0..first.len() {
             if first[index].0 != second[index].0 || !unify(first[index].1, second[index].1) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -254,7 +254,7 @@ fn dyn_bound_lists_unify(first: Vec[DynTraitBound], second: Vec[DynTraitBound]) 
                     second[index].associated_types,
                 ) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -267,7 +267,7 @@ fn associated_type_bindings_equal(first: Vec[(string, Type)], second: Vec[(strin
         for index in 0..first.len() {
             if first[index].0 != second[index].0 || !types_equal(first[index].1, second[index].1) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -285,7 +285,7 @@ fn dyn_bound_lists_equal(first: Vec[DynTraitBound], second: Vec[DynTraitBound]) 
                     second[index].associated_types,
                 ) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -592,7 +592,7 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
         for index in 0..left.len() {
             if !types_equal(left[index], right[index]) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -708,7 +708,7 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
             for value in values {
                 if contains_parameter(value, name, substitutions) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -720,10 +720,10 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
                     Some(reference) => for arg in reference.args {
                         if contains_parameter(arg, name, substitutions) {
                             return true
-                        } else {}
+                        }
                     },
                     None => (),
-                };
+                }
                 false
             }
         },
@@ -734,7 +734,7 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
                 for arg in args {
                     if contains_parameter(arg, name, substitutions) {
                         return true
-                    } else {}
+                    }
                 }
                 false
             }
@@ -753,7 +753,7 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
                 for param in params {
                     if contains_parameter(param, name, substitutions) {
                         return true
-                    } else {}
+                    }
                 }
                 false
             }
@@ -787,7 +787,7 @@ fn unify_parameter_alias_lists(left: Vec[Type], right: Vec[Type], substitutions:
         for index in 0..left.len() {
             if !unify_parameter_aliases(left[index], right[index], substitutions) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -887,7 +887,7 @@ fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> isi
     for index in 0..values.len() {
         if result < 0 && types_equal(values[index].projection, projection) {
             result = index;
-        } else {}
+        }
     }
     result
 }
@@ -918,7 +918,7 @@ fn type_list_contains(values: Vec[Type], expected: Type) -> bool {
     for value in values {
         if types_equal(value, expected) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -954,12 +954,12 @@ fn predicate_projection_aliases(predicates: Vec[TypePredicate]) -> Vec[Projectio
                 (projection @ Projection { for_ty: _, name: _, trait_ref: _ }, other) => {
                     if projection_alias_index(aliases, projection) < 0 {
                         aliases.push(ProjectionAlias { projection, ty: other })
-                    } else {}
+                    }
                 },
                 (other, projection @ Projection { for_ty: _, name: _, trait_ref: _ }) => {
                     if projection_alias_index(aliases, projection) < 0 {
                         aliases.push(ProjectionAlias { projection, ty: other })
-                    } else {}
+                    }
                 },
                 _ => (),
             },
@@ -971,7 +971,7 @@ fn predicate_projection_aliases(predicates: Vec[TypePredicate]) -> Vec[Projectio
         if projection_alias_index(aliases, equality.0) < 0
             && projection_alias_index(aliases, equality.1) < 0 {
             aliases.push(ProjectionAlias { projection: equality.0, ty: equality.1 })
-        } else {}
+        }
     }
     aliases
 }
@@ -988,7 +988,7 @@ fn advance_projection_aliases(aliases: Vec[ProjectionAlias], equalities: Vec[(Ty
         } else if !types_equal(right_alias, right) && types_equal(left_alias, left)
             && set_projection_alias(aliases, left, right_alias) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -1010,7 +1010,7 @@ fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
         let associated = value.associated_types[value.associated_types.len() - 1 - offset];
         if associated.0 == name {
             return Option::Some(associated.1)
-        } else {}
+        }
     }
     Option::None
 }
@@ -1029,10 +1029,10 @@ fn builtin_source_predicates_satisfied(predicates: Vec[TypePredicate], goals: Ve
                 goals,
             ) {
                 return false
-            } else {},
+            },
             TypePredicate::Equality { lhs, rhs } => if !unify(lhs, rhs) {
                 return false
-            } else {},
+            },
         }
     }
     true
@@ -1042,7 +1042,7 @@ fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[st
     let goal = builtin_source_trait_goal(base, reference);
     if goals.contains(goal) {
         return false
-    } else {};
+    }
     let next_goals = extend_trait_goals(goals, goal);
     let implementations = builtin_source_impl_infos();
     let mut implementation_index = 0;
@@ -1060,9 +1060,9 @@ fn builtin_source_trait_satisfied(base: Type, reference: TraitRef, goals: Vec[st
                 let predicates = substitute_predicates(implementation.predicates, substitutions);
                 if builtin_source_predicates_satisfied(predicates, next_goals) {
                     return true
-                } else {}
-            } else {}
-        } else {};
+                }
+            }
+        }
         implementation_index += 1;
     }
     false
@@ -1098,12 +1098,12 @@ pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef])
                         let candidate = substitute_type(associated, substitutions);
                         if !type_list_contains(candidates, candidate) {
                             candidates.push(candidate)
-                        } else {}
-                    } else {}
-                } else {}
+                        }
+                    }
+                }
             },
             None => (),
-        };
+        }
         implementation_index += 1;
     }
     if candidates.len() == 1 {
@@ -1142,9 +1142,9 @@ fn collect_impl_projection_candidate(
                     let candidate = substitute_type(associated, substitutions);
                     if !type_list_contains(candidates, candidate) {
                         candidates.push(candidate)
-                    } else {}
-                } else {}
-            } else {}
+                    }
+                }
+            }
         },
         None => (),
     }
@@ -1156,7 +1156,7 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
     let goal = type_text(Type::Projection { for_ty: base, name, trait_ref: qualifier });
     if ctx.active_projections.contains(goal) {
         return Option::None
-    } else {};
+    }
     ctx.active_projections.push(goal);
     let candidates: Vec[Type] = Vec::new();
     match qualifier {
@@ -1176,7 +1176,7 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
         None => for impl_info in ctx.impls {
             collect_impl_projection_candidate(ctx, impl_info, base, name, qualifier, candidates)
         },
-    };
+    }
     ctx.active_projections.truncate(ctx.active_projections.len() - 1);
     if candidates.len() == 1 {
         Option::Some(candidates[0])
@@ -1199,7 +1199,7 @@ fn dyn_associated_type(value: Type, name: string) -> Option[Type] {
             for binding in associated_types {
                 if binding.0 == name {
                     return Option::Some(binding.1)
-                } else {}
+                }
             }
             Option::None
         },
@@ -1320,7 +1320,7 @@ fn find_substitution(values: Vec[TypeSubst], name: string) -> Option[Type] {
         let value = values[values.len() - 1 - offset];
         if value.name == name {
             return Option::Some(value.ty)
-        } else {}
+        }
     }
     Option::None
 }
@@ -1389,7 +1389,7 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
     for index in 0..names.len() {
         if index < args.len() {
             substitutions.push(TypeSubst { name: names[index], ty: args[index] })
-        } else {}
+        }
     }
     substitute_type(value, substitutions)
 }
@@ -1598,7 +1598,7 @@ fn parse_array_length(value: string) -> isize {
         let byte = value.byte_get(index);
         if byte >= b'0' && byte <= b'9' {
             result = result * 10 + (byte - 48).to_isize();
-        } else {}
+        }
     }
     result
 }

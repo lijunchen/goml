@@ -61,7 +61,7 @@ pub fn workspace(name: string) -> string {
             Ok(()) => (),
             Err(message) => testing::fail(message.to_string()),
         }
-    } else {};
+    }
     match fs::create_dir_all(result) {
         Ok(()) => result,
         Err(message) => {
@@ -82,7 +82,7 @@ pub fn write_file(file: string, content: string) -> () {
     match path::parent(file) {
         Some(parent) => create_dir(parent),
         None => (),
-    };
+    }
     match fs::write_file_structured(file, content) {
         Ok(()) => (),
         Err(message) => testing::fail(message.to_string()),
@@ -136,7 +136,7 @@ pub fn assert_contains(value: string, expected: string) -> () {
 pub fn assert_not_contains(value: string, unexpected: string) -> () {
     if value.contains(unexpected) {
         testing::fail("expected text not to contain:\n" + unexpected + "\nactual:\n" + value)
-    } else {}
+    }
 }
 
 pub fn run(args: Vec[string], directory: string) -> process::Output {
@@ -157,7 +157,7 @@ pub fn project_command(command: string, target: string, extra: Vec[string], dire
     let args = Vec::from_array([command]);
     if command == "run" && target != "" {
         args.push(target)
-    } else {};
+    }
     args.push("--compiler");
     args.push(gomlc_binary());
     for value in extra {

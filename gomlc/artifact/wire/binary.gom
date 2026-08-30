@@ -146,7 +146,7 @@ fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[u64, str
         let byte = artifact_binary_read_u8(reader)?;
         if index == 9 && byte > 1 {
             return Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))
-        } else {};
+        }
         value = value | (((byte & 127).to_u64()) << (index * 7));
         if byte & 128 == 0 {
             return Result::Ok(value)

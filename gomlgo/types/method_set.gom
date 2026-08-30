@@ -31,7 +31,7 @@ fn type_seen(values: Vec[TypeId], value: TypeId) -> bool {
     for existing in values {
         if existing.value == value.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -40,7 +40,7 @@ fn object_seen(values: Vec[ObjectId], value: ObjectId) -> bool {
     for existing in values {
         if existing.value == value.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -63,8 +63,8 @@ fn name_seen(world: World, values: Vec[ObjectId], name: string, owner: Option[Pa
             let object = world.objects[object_id.value];
             if method_name_identical(object.name, object.owner, name, owner) {
                 return true
-            } else {}
-        } else {}
+            }
+        }
     }
     false
 }
@@ -82,7 +82,7 @@ fn interface_methods_inner(world: World, value: TypeId, visited: Vec[TypeId], re
     let resolved = underlying(world, value);
     if type_seen(visited, resolved) {
         return
-    } else {};
+    }
     visited.push(resolved);
     match type_data(world, resolved).kind {
         TypeKind::Interface { methods, embeddeds, comparable: _, implicit: _ } => {
@@ -91,8 +91,8 @@ fn interface_methods_inner(world: World, value: TypeId, visited: Vec[TypeId], re
                     let object = world.objects[method.value];
                     if !name_seen(world, result, object.name, object.owner) {
                         result.push(method)
-                    } else {}
-                } else {}
+                    }
+                }
             }
             for embedded in embeddeds {
                 interface_methods_inner(world, embedded, visited, result)
@@ -186,8 +186,8 @@ fn add_method_candidate(
             result.push(
                 Selection { object: method, index: append_index(path, method_index), indirect },
             )
-        } else {}
-    } else {}
+        }
+    }
 }
 
 fn dereference(world: World, value: TypeId) -> (TypeId, bool) {
@@ -307,12 +307,12 @@ fn search_underlying(
                         ),
                         None => {},
                     }
-                } else {};
+                }
                 if field.embedded {
                     next.push(
                         SearchNode { type_id: field.variable.type_id, index: field_path, indirect },
                     )
-                } else {}
+                }
             }
         },
         TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => {
@@ -337,7 +337,7 @@ fn search_underlying(
 pub fn lookup_field_or_method_detailed(world: World, value: TypeId, addressable: bool, name: string) -> FieldOrMethodLookup {
     if pointer_indirection_forbidden(world, value) {
         return FieldOrMethodLookup::Missing
-    } else {};
+    }
     let mut current: Vec[SearchNode] = Vec::from_array(
         [SearchNode { type_id: value, index: Vec::new(), indirect: false }],
     );
@@ -349,18 +349,18 @@ pub fn lookup_field_or_method_detailed(world: World, value: TypeId, addressable:
             let key = dereference(world, node.type_id).0;
             if !type_seen(visited, key) {
                 search_node(world, node, addressable, name, matches, next)
-            } else {}
+            }
         }
         if matches.len() == 1 {
             return FieldOrMethodLookup::Found(matches[0])
         } else if matches.len() > 1 {
             return FieldOrMethodLookup::Ambiguous
-        } else {};
+        }
         for node in current {
             let key = dereference(world, node.type_id).0;
             if !type_seen(visited, key) {
                 visited.push(key)
-            } else {}
+            }
         }
         current = next;
     }
@@ -384,11 +384,11 @@ fn collect_method_names_inner(
 ) -> () {
     if pointer_indirection_forbidden(world, value) {
         return
-    } else {};
+    }
     let dereferenced = dereference(world, value).0;
     if type_seen(visited, dereferenced) {
         return
-    } else {};
+    }
     visited.push(dereferenced);
     ensure_named_instance_methods(world, dereferenced);
     match type_data(world, dereferenced).kind {
@@ -402,14 +402,14 @@ fn collect_method_names_inner(
             for method in methods {
                 if !object_seen(result, method) {
                     result.push(method)
-                } else {}
+                }
             }
             collect_method_names_inner(world, named_underlying, visited, result)
         },
         TypeKind::Struct { fields } => for field in fields {
             if field.embedded {
                 collect_method_names_inner(world, field.variable.type_id, visited, result)
-            } else {}
+            }
         },
         TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => for method in interface_methods(
             world,
@@ -417,7 +417,7 @@ fn collect_method_names_inner(
         ) {
             if !object_seen(result, method) {
                 result.push(method)
-            } else {}
+            }
         },
         TypeKind::TypeParam { object: _, constraint, index: _ } => for method in interface_methods(
             world,
@@ -425,7 +425,7 @@ fn collect_method_names_inner(
         ) {
             if !object_seen(result, method) {
                 result.push(method)
-            } else {}
+            }
         },
         _ => {},
     }
@@ -441,10 +441,10 @@ pub fn method_set(world: World, value: TypeId) -> Vec[Selection] {
             match lookup_field_or_method(world, value, false, object.name) {
                 Some(selection) => if !object_seen_selection(result, selection.object) {
                     result.push(selection)
-                } else {},
+                },
                 None => {},
             }
-        } else {}
+        }
     }
     result
 }
@@ -453,7 +453,7 @@ fn object_seen_selection(values: Vec[Selection], value: ObjectId) -> bool {
     for selection in values {
         if selection.object.value == value.value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -474,7 +474,7 @@ fn interface_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId])
     let resolved = unalias(world, value);
     if type_seen(visited, resolved) {
         return false
-    } else {};
+    }
     visited.push(resolved);
     match type_data(world, resolved).kind {
         TypeKind::TypeParam { object: _, constraint, index: _ } => return interface_comparable_inner(
@@ -483,16 +483,16 @@ fn interface_comparable_inner(world: World, value: TypeId, visited: Vec[TypeId])
             visited,
         ),
         _ => {},
-    };
+    }
     match type_data(world, underlying(world, value)).kind {
         TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ } => {
             if comparable {
                 return true
-            } else {};
+            }
             for embedded in embeddeds {
                 if interface_comparable_inner(world, embedded, visited) {
                     return true
-                } else {}
+                }
             }
             false
         },
@@ -512,13 +512,13 @@ fn constraint_interface_inner(world: World, value: TypeId, visited: Vec[TypeId])
     let resolved = underlying(world, value);
     if type_seen(visited, resolved) {
         return false
-    } else {};
+    }
     visited.push(resolved);
     match type_data(world, resolved).kind {
         TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ } => {
             if comparable {
                 return true
-            } else {};
+            }
             for embedded in embeddeds {
                 match type_data(world, underlying(world, embedded)).kind {
                     TypeKind::Interface { methods: _, embeddeds: _, comparable: _, implicit: _ } => if constraint_interface_inner(
@@ -527,7 +527,7 @@ fn constraint_interface_inner(world: World, value: TypeId, visited: Vec[TypeId])
                         visited,
                     ) {
                         return true
-                    } else {},
+                    },
                     _ => return true,
                 }
             }
@@ -546,16 +546,16 @@ pub fn implements(world: World, value: TypeId, interface_type: TypeId) -> bool {
         return false
     } else if interface_comparable(world, interface_type) && !comparable(world, value) {
         return false
-    } else {};
+    }
     for required in interface_methods(world, interface_type) {
         if !valid_object_id(world, required) {
             return false
-        } else {};
+        }
         let required_object = world.objects[required.value];
         match lookup_field_or_method(world, value, false, required_object.name) {
             Some(actual) => if !method_objects_identical(world, actual.object, required) {
                 return false
-            } else {},
+            },
             None => return false,
         }
     }

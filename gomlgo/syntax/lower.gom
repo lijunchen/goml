@@ -26,7 +26,7 @@ fn int_field(context: LowerContext, value: ast::Node, name: string) -> isize {
     if !field.present {
         report(context, value, "missing integer field " + name);
         return -1
-    } else {};
+    }
     match field.value {
         ast::Value::Int(result) => result,
         _ => {
@@ -41,7 +41,7 @@ fn string_field(context: LowerContext, value: ast::Node, name: string) -> string
     if !field.present {
         report(context, value, "missing string field " + name);
         return ""
-    } else {};
+    }
     match field.value {
         ast::Value::String(result) => result,
         _ => {
@@ -56,7 +56,7 @@ fn bool_field(context: LowerContext, value: ast::Node, name: string) -> bool {
     if !field.present {
         report(context, value, "missing boolean field " + name);
         return false
-    } else {};
+    }
     match field.value {
         ast::Value::Bool(result) => result,
         _ => {
@@ -86,7 +86,7 @@ fn optional_child(context: LowerContext, value: ast::Node, name: string, path: s
     if !field.present {
         report(context, value, "missing optional node field " + name);
         return Option::None
-    } else {};
+    }
     match field.value {
         ast::Value::Node(child) => Option::Some(lower_node(context, child, path)),
         ast::Value::Null => Option::None,
@@ -101,7 +101,7 @@ fn required_child(context: LowerContext, value: ast::Node, name: string, path: s
     let field = ast::get_field(value, name);
     if !field.present {
         return invalid_child(context, value, path, "missing node field " + name)
-    } else {};
+    }
     match field.value {
         ast::Value::Node(child) => lower_node(context, child, path),
         _ => invalid_child(context, value, path, "expected node field " + name),
@@ -113,7 +113,7 @@ fn child_list(context: LowerContext, value: ast::Node, name: string, path: strin
     if !field.present {
         report(context, value, "missing node list field " + name);
         return Vec::new()
-    } else {};
+    }
     match field.value {
         ast::Value::Nodes(children) => {
             let result: Vec[NodeId] = Vec::with_capacity(children.len());
@@ -455,7 +455,7 @@ fn lower_node(context: LowerContext, value: ast::Node, path: string) -> NodeId {
     let id = allocate(context, value, path, kind);
     if ast::kind_equal(value.kind, ast::Kind::ImportSpec) {
         context.imports.push(id)
-    } else {};
+    }
     id
 }
 
@@ -463,7 +463,7 @@ fn contains_name(values: Vec[string], name: string) -> bool {
     for value in values {
         if value == name {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -506,7 +506,7 @@ fn lower_package_inner(sources: Vec[SourceFile], retain_paths: bool) -> PackageS
             )
         } else {
             names.push(source.name)
-        };
+        }
         let context = LowerContext {
             file_id: file_id(index),
             file_name: source.name,

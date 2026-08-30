@@ -26,7 +26,7 @@ fn collect_go_files(directory: string, files: Vec[string]) -> Result[(), string]
             collect_go_files(entry, files)?
         } else if fs::is_file(entry) && path::extension(entry) == Option::Some("go") {
             files.push(entry)
-        } else {}
+        }
     }
     Result::Ok(())
 }
@@ -44,7 +44,7 @@ fn delete_range(value: bytes::Bytes, start: isize, end: isize) -> bytes::Bytes {
     for index in 0..value.len() {
         if index < start || index >= end {
             result.push(value.get(index))
-        } else {}
+        }
     }
     result
 }
@@ -79,7 +79,7 @@ fn middle_token(source: bytes::Bytes) -> Option[token::Token] {
             && !token::equal(value.kind, token::Kind::Comment)
             && !token::equal(value.kind, token::Kind::Semicolon) {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -91,7 +91,7 @@ fn last_token_of_kind(source: bytes::Bytes, kind: token::Kind) -> Option[token::
         index -= 1;
         if token::equal(tokens[index].kind, kind) {
             return Option::Some(tokens[index])
-        } else {}
+        }
     }
     Option::None
 }
@@ -101,7 +101,7 @@ fn first_string_token(source: bytes::Bytes) -> Option[token::Token] {
         if token::equal(value.kind, token::Kind::String)
             || token::equal(value.kind, token::Kind::Char) {
             return Option::Some(value)
-        } else {}
+        }
     }
     Option::None
 }
@@ -115,7 +115,7 @@ fn mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
         let tail = copy_bytes(source);
         tail.truncate(source.len() - 1);
         result.push(tail)
-    } else {};
+    }
     if let Some(value) = middle_token(source) {
         result.push(delete_range(source, value.start, value.end));
         result.push(insert_bytes(source, value.start, slice_bytes(source, value.start, value.end)));
@@ -128,21 +128,21 @@ fn mutations(source: bytes::Bytes) -> Vec[bytes::Bytes] {
                 bytes::Bytes::from_vec(Vec::from_array([255.to_u8()])),
             ),
         )
-    } else {};
+    }
     if let Some(value) = last_token_of_kind(source, token::Kind::Rbrace) {
         result.push(delete_range(source, value.start, value.end))
-    } else {};
+    }
     if let Some(value) = last_token_of_kind(source, token::Kind::Rparen) {
         result.push(delete_range(source, value.start, value.end))
-    } else {};
+    }
     if let Some(value) = last_token_of_kind(source, token::Kind::Rbrack) {
         result.push(delete_range(source, value.start, value.end))
-    } else {};
+    }
     if let Some(value) = first_string_token(source) {
         if value.end > value.start {
             result.push(delete_range(source, value.end - 1, value.end))
-        } else {}
-    } else {};
+        }
+    }
     result
 }
 
@@ -259,7 +259,7 @@ pub fn run(root: string, output: string, seed_limit: isize) -> Result[Summary, s
         files.push(root)
     } else {
         collect_go_files(root, files)?
-    };
+    }
     let mut seeds = 0;
     let mut cases = 0;
     let mut failures = 0;
@@ -286,10 +286,10 @@ pub fn run(root: string, output: string, seed_limit: isize) -> Result[Summary, s
                             + "\nexpected_first_offset="
                             + first_oracle_offset(expected).to_string();
                         save_failure(output, input, actual, expected, message)?
-                    } else {}
+                    }
                 }
-            } else {}
-        } else {}
+            }
+        }
     }
     Result::Ok(Summary { seeds, cases, failures })
 }

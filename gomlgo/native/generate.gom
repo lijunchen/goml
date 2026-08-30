@@ -21,7 +21,7 @@ fn function_package_paths(value: Manifest) -> Vec[string] {
         match call.binding {
             NativeBindingKind::Function => if !bridge_function(call) {
                 let _ = paths.insert(call.import_path);
-            } else {},
+            },
             NativeBindingKind::Method => {
                 let _ = paths.insert(call.import_path);
             },
@@ -44,7 +44,7 @@ fn package_alias(paths: Vec[string], expected: string) -> string {
     for index in 0..paths.len() {
         if paths[index] == expected {
             return "_gomlgo_nativepkg" + index.to_string()
-        } else {}
+        }
     }
     ""
 }
@@ -53,7 +53,7 @@ fn package_paths_contain(paths: Vec[string], expected: string) -> bool {
     for value in paths {
         if value == expected {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -65,7 +65,7 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
     imports.push(RegistryImport { import_path: bridge_import_path, alias: "_gomlgo_nativebridge" });
     if !value.proxies.is_empty() {
         imports.push(RegistryImport { import_path: "reflect", alias: "_gomlgo_reflect" })
-    } else {};
+    }
     for index in 0..function_paths.len() {
         imports.push(
             RegistryImport {
@@ -78,7 +78,7 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
     for import_path in value.initialization_packages {
         if !package_paths_contain(function_paths, import_path) {
             let _ = blank_paths.insert(import_path);
-        } else {}
+        }
     }
     for call in value.calls {
         match call.binding {
@@ -86,7 +86,7 @@ fn registry_imports(value: Manifest, function_paths: Vec[string], bridge_import_
             NativeBindingKind::Method => (),
             NativeBindingKind::Exit => if !package_paths_contain(function_paths, call.import_path) {
                 let _ = blank_paths.insert(call.import_path);
-            } else {},
+            },
         }
     }
     for import_path in blank_paths {
@@ -130,12 +130,12 @@ fn write_binding(builder: text::StringBuilder, call: NativeCallSpec, function_pa
                 builder.write_string(package_alias(function_paths, call.import_path));
                 builder.write_string(".");
                 builder.write_string(call.symbol)
-            };
+            }
             if !call.type_argument_keys.is_empty() {
                 builder.write_string("[");
                 builder.write_string(text::join(call.type_argument_keys, ", "));
                 builder.write_string("]")
-            } else {};
+            }
             builder.write_string("),\n")
         },
         NativeBindingKind::Method => {
@@ -144,13 +144,13 @@ fn write_binding(builder: text::StringBuilder, call: NativeCallSpec, function_pa
             builder.write_string("), ");
             if call.receiver_pointer {
                 builder.write_string("(*")
-            } else {};
+            }
             builder.write_string(package_alias(function_paths, call.import_path));
             builder.write_string(".");
             builder.write_string(call.receiver_name);
             if call.receiver_pointer {
                 builder.write_string(")")
-            } else {};
+            }
             builder.write_string(".");
             builder.write_string(call.symbol);
             builder.write_string("),\n")
@@ -216,7 +216,7 @@ fn write_proxy_method(
     for index in 0..method.parameter_type_keys.len() {
         if index > 0 {
             builder.write_string(", ")
-        } else {};
+        }
         builder.write_string("_gomlgo_arg");
         builder.write_string(index.to_string());
         builder.write_string(" ");
@@ -228,11 +228,11 @@ fn write_proxy_method(
         for index in 0..method.result_type_keys.len() {
             if index > 0 {
                 builder.write_string(", ")
-            } else {};
+            }
             builder.write_string(proxy_go_type(method.result_type_keys[index]))
         }
         builder.write_string(")")
-    } else {};
+    }
     builder.write_string(" {\n");
     if method.result_type_keys.is_empty() {
         builder.write_string("\t_gomlgo_nativebridge.InvokeCallback(_gomlgo_receiver.token, \"")
@@ -240,13 +240,13 @@ fn write_proxy_method(
         builder.write_string(
             "\t_gomlgo_results := _gomlgo_nativebridge.InvokeCallback(_gomlgo_receiver.token, \"",
         )
-    };
+    }
     builder.write_string(method.name);
     builder.write_string("\", []_gomlgo_nativebridge.ValueRef{");
     for index in 0..method.parameter_type_keys.len() {
         if index > 0 {
             builder.write_string(", ")
-        } else {};
+        }
         builder.write_string("_gomlgo_reflect.ValueOf(_gomlgo_arg");
         builder.write_string(index.to_string());
         builder.write_string(")")
@@ -255,7 +255,7 @@ fn write_proxy_method(
     for index in 0..method.result_type_keys.len() {
         if index > 0 {
             builder.write_string(", ")
-        } else {};
+        }
         builder.write_string("_gomlgo_reflect.TypeFor[");
         builder.write_string(proxy_go_type(method.result_type_keys[index]));
         builder.write_string("]()")
@@ -266,7 +266,7 @@ fn write_proxy_method(
         for index in 0..method.result_type_keys.len() {
             if index > 0 {
                 builder.write_string(", ")
-            } else {};
+            }
             builder.write_string("_gomlgo_nativebridge.CallbackValue[");
             builder.write_string(proxy_go_type(method.result_type_keys[index]));
             builder.write_string("](_gomlgo_results, ");
@@ -274,7 +274,7 @@ fn write_proxy_method(
             builder.write_string(")")
         }
         builder.write_string("\n")
-    } else {};
+    }
     builder.write_string("}\n\n")
 }
 
@@ -304,7 +304,7 @@ fn write_aggregates(builder: text::StringBuilder, value: Manifest) -> () {
                 builder.write_string(" `");
                 builder.write_string(field.tag);
                 builder.write_string("`")
-            } else {};
+            }
             builder.write_string("\n")
         }
         builder.write_string("}\n\n")
@@ -347,12 +347,12 @@ fn validate_bridge_import(value: Manifest, bridge_import_path: string) -> Result
     for import_path in value.initialization_packages {
         if import_path == bridge_import_path {
             return Result::Err("native manifest cannot initialize the generated bridge package")
-        } else {}
+        }
     }
     for call in value.calls {
         if call.import_path == bridge_import_path {
             return Result::Err("native calls cannot bind the generated bridge package")
-        } else {}
+        }
     }
     Result::Ok(())
 }

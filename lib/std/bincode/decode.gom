@@ -393,7 +393,7 @@ fn read_variant(decoder: Decoder, variants: Vec[serde::VariantSchema]) -> Result
                     fields,
                 },
             )
-        } else {}
+        }
     }
     Result::Err(decoder_error(decoder, "unknown enum variant index"))
 }
@@ -840,7 +840,7 @@ impl serde::Deserializer for Decoder {
     ] {
         if variants < 0 {
             return Result::Err(decoder_error(self, "enum variant count cannot be negative"))
-        } else {};
+        }
         claim_bincode_input(self)?;
         let index = read_unsigned(self, 32)?;
         if index > 9223372036854775807.to_u64() {
@@ -863,7 +863,7 @@ impl serde::Deserializer for Decoder {
     fn begin_variant_fields(self: Decoder, kind: isize, fields: isize) -> Result[(), string] {
         if kind < 0 || kind > 2 || fields < 0 || kind == 0 && fields != 0 {
             return Result::Err(decoder_error(self, "invalid variant field state"))
-        } else {};
+        }
         let frame = decoder_frame_index(self)?;
         match self.frames[frame] {
             BincodeFrame::Variant {

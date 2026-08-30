@@ -34,19 +34,19 @@ fn hover_function_text(
                 tast::ComptimeCapability::Capable => builder.write_string("comptime "),
                 tast::ComptimeCapability::Derive => builder.write_string("comptime derive "),
                 tast::ComptimeCapability::RuntimeOnly => (),
-            };
+            }
             if !generics.is_empty() {
                 builder.write_char('[');
                 let mut index = 0;
                 for generic in generics {
                     if index > 0 {
                         builder.write_string(", ")
-                    } else {};
+                    }
                     builder.write_string(short_type_name(generic));
                     index = index + 1;
                 }
                 builder.write_string("] ")
-            } else {};
+            }
             builder.write_string(signature);
             Option::Some(builder.finish())
         },
@@ -114,12 +114,12 @@ fn function_hover_by_name(value: Analysis, name: string) -> Option[string] {
                     function.params,
                     function.ret_ty,
                 )
-            } else {}
+            }
         }
     }
     if short_type_name(name) != name {
         return Option::None
-    } else {};
+    }
     let mut environment_index = value.environments.len() - 1;
     while environment_index >= 0 {
         let environment = value.environments[environment_index];
@@ -155,9 +155,9 @@ fn trait_method_hover(value: Analysis, symbol: Symbol) -> Option[string] {
                             method.params,
                             method.ret_ty,
                         )
-                    } else {}
+                    }
                 }
-            } else {}
+            }
         }
     }
     Option::None
@@ -168,7 +168,7 @@ fn constant_hover(value: Analysis, symbol: Symbol) -> Option[string] {
         for constant in environment.constants {
             if constant.name == symbol.qualified_name {
                 return hover_text(constant.ty)
-            } else {}
+            }
         }
     }
     Option::None
@@ -179,7 +179,7 @@ fn type_alias_hover(value: Analysis, symbol: Symbol) -> Option[string] {
         for alias in environment.type_aliases {
             if alias.name == symbol.qualified_name {
                 return hover_text(alias.ty)
-            } else {}
+            }
         }
     }
     Option::None
@@ -196,7 +196,7 @@ fn function_hover_by_def(value: Analysis, expected: hir::DefId) -> Option[string
                         function.params,
                         function.ret_ty,
                     )
-                } else {},
+                },
                 None => (),
             }
         }
@@ -271,7 +271,7 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                                 field_index = field_index - 1;
                             }
                         }
-                    } else {}
+                    }
                     definition_index = definition_index - 1;
                 }
                 environment_index = environment_index - 1;
@@ -311,7 +311,7 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
             None => (),
         },
         None => (),
-    };
+    }
     match symbol_at_offset(value, offset) {
         Some(symbol) => match symbol.kind {
             Function => match symbol_hover_type(value, symbol) {
@@ -323,7 +323,7 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
             _ => (),
         },
         None => (),
-    };
+    }
     let mut result: Option[HoverResult] = Option::None;
     let mut width = 2147483647;
     for fact in value.checked.typeck_results.calls {
@@ -339,7 +339,7 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
                 },
                 None => (),
             }
-        } else {}
+        }
     }
     for fact in value.checked.typeck_results.references {
         let fact_width = fact.span.end - fact.span.start;
@@ -354,7 +354,7 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
                 },
                 None => (),
             }
-        } else {}
+        }
     }
     for fact in value.checked.typeck_results.exprs {
         let fact_width = fact.span.end - fact.span.start;
@@ -369,7 +369,7 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
                 },
                 None => (),
             }
-        } else {}
+        }
     }
     for fact in value.checked.typeck_results.pats {
         let fact_width = fact.span.end - fact.span.start;
@@ -384,7 +384,7 @@ pub fn hover(value: Analysis, offset: isize) -> Option[HoverResult] {
                 },
                 None => (),
             }
-        } else {}
+        }
     }
     match result {
         Some(result) => Option::Some(result),

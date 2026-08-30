@@ -21,7 +21,7 @@ fn assert_valid_file(source: string) -> ast::Node {
             "unexpected parser diagnostic at " + actual.diagnostics[0].offset.to_string() + ": "
                 + actual.diagnostics[0].message,
         )
-    } else {};
+    }
     match actual.root {
         Some(value) => value,
         None => {
@@ -44,7 +44,7 @@ fn assert_acceptance_matches(source: string) -> () {
     if !expected.ok {
         testing::assert(!actual.diagnostics.is_empty());
         testing::assert_eq(actual.diagnostics[0].offset, expected.diagnostics[0].offset)
-    } else {}
+    }
 }
 
 fn assert_expression_matches(source: string) -> () {
@@ -66,7 +66,7 @@ fn assert_expression_matches(source: string) -> () {
             Some(value) => testing::assert_eq(ast::kind_name(value.kind), expected_kind),
             None => testing::fail("missing expression AST"),
         }
-    } else {}
+    }
 }
 
 #[test]
@@ -144,7 +144,7 @@ fn attaches_comments_and_go_version() -> () {
     match ast::get_string(file, "go_version") {
         Some(value) => testing::assert_eq(value, "go1.20"),
         None => testing::fail("missing Go version"),
-    };
+    }
     testing::assert_eq(ast::get_nodes(file, "comments").len(), 3);
     let declaration = ast::get_nodes(file, "decls")[0];
     testing::assert(ast::get_node(declaration, "doc").is_some());

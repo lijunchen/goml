@@ -76,14 +76,14 @@ fn builtin_lang_item_from_attrs(
                 )
             } else if attribute.args.is_empty() {
                 return Result::Err("missing lang item name on builtin " + kind_name + " " + name)
-            } else {};
+            }
             match attribute.args[0] {
                 ast::AttributeArg::String(item) => {
                     if item.byte_len() == 0 {
                         return Result::Err(
                             "empty lang item name on builtin " + kind_name + " " + name,
                         )
-                    } else {};
+                    }
                     let properties: Vec[(string, string)] = Vec::new();
                     for index in 1..attribute.args.len() {
                         match attribute.args[index] {
@@ -94,7 +94,7 @@ fn builtin_lang_item_from_attrs(
                                         return Result::Err(
                                             "duplicate property " + name + " on lang item " + item,
                                         )
-                                    } else {}
+                                    }
                                 }
                                 properties.push((name, value))
                             } else {
@@ -126,7 +126,7 @@ fn builtin_lang_item_from_attrs(
                     "lang item name on builtin " + kind_name + " " + name + " must be a string",
                 ),
             }
-        } else {}
+        }
     }
     Result::Ok(found.get())
 }
@@ -152,7 +152,7 @@ fn append_builtin_lang_item(
     )? {
         Some(value) => result.push(value),
         None => (),
-    };
+    }
     Result::Ok(())
 }
 
@@ -345,7 +345,7 @@ fn builtin_source_trait_info(name: string) -> Option[TraitInfo] {
         let value = values.get(index);
         if value.name == name {
             return Option::Some(value)
-        } else {};
+        }
         index += 1;
     }
     Option::None
@@ -391,7 +391,7 @@ fn builtin_source_enum_info(name: string) -> Option[EnumInfo] {
         let value = values.get(index);
         if value.name == expected {
             return Option::Some(value)
-        } else {};
+        }
         index += 1;
     }
     Option::None
@@ -430,7 +430,7 @@ fn builtin_source_struct_info(name: string) -> Option[StructInfo] {
         let value = values.get(index);
         if value.name == expected {
             return Option::Some(value)
-        } else {};
+        }
         index += 1;
     }
     Option::None
@@ -461,7 +461,7 @@ fn builtin_source_function_scheme(name: string) -> Option[FunctionScheme] {
         let value = values.get(index);
         if value.name == name {
             return Option::Some(value)
-        } else {};
+        }
         index += 1;
     }
     Option::None
@@ -471,7 +471,7 @@ fn append_builtin_source_arity(values: Vec[(string, isize)], name: string, arity
     for value in values {
         if value.0 == name {
             return
-        } else {}
+        }
     }
     values.push((name, arity))
 }
@@ -522,7 +522,7 @@ fn builtin_source_nominal_arity(name: string) -> Option[isize] {
         let value = values.get(index);
         if value.0 == expected {
             return Option::Some(value.1)
-        } else {};
+        }
         index += 1;
     }
     Option::None

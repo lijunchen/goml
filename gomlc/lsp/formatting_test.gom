@@ -81,7 +81,7 @@ fn formats_the_latest_unicode_document() -> () {
             None => testing::fail("formatted text must be a string"),
         },
         None => testing::fail("missing formatted text"),
-    };
+    }
     match json::field(edit, "range") {
         Some(value) => match parse_range(value) {
             Ok(value) => {
@@ -93,7 +93,7 @@ fn formats_the_latest_unicode_document() -> () {
             Err(error) => testing::fail(error.to_string()),
         },
         None => testing::fail("missing formatting range"),
-    };
+    }
     match server_document(server, uri) {
         Some(value) => {
             testing::assert_eq(value.version, 2);

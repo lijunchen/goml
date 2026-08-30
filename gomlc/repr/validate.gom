@@ -11,7 +11,7 @@ fn validate_named_types(values: Vec[(string, Type)], context: string) -> Result[
     for value in values {
         if value.0.byte_len() == 0 {
             return Result::Err(context + " has an empty binding name")
-        } else {};
+        }
         validate_type_in(value.1, context + " " + value.0)?
     }
     Result::Ok(())
@@ -36,13 +36,13 @@ fn validate_type_in(value: Type, context: string) -> Result[(), string] {
         Dyn { trait_name, args, associated_types, additional_bounds } => {
             if trait_name.byte_len() == 0 {
                 return Result::Err(context + " has an empty dynamic trait name")
-            } else {};
+            }
             validate_types(args, context + " dynamic argument")?;
             validate_named_types(associated_types, context + " dynamic associated type")?;
             for bound in additional_bounds {
                 if bound.trait_name.byte_len() == 0 {
                     return Result::Err(context + " has an empty dynamic bound name")
-                } else {};
+                }
                 validate_types(bound.args, context + " dynamic bound argument")?;
                 validate_named_types(
                     bound.associated_types,

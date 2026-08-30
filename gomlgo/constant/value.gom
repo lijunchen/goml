@@ -199,7 +199,7 @@ fn parse_exact_component(value: string) -> Option[NumericComponent] {
 fn parse_exact_complex(value: string) -> Option[(NumericComponent, NumericComponent)] {
     if !value.starts_with("(") || !value.ends_with("i)") {
         return Option::None
-    } else {};
+    }
     let inner = value.byte_slice(1, value.byte_len() - 2);
     match text::split_once(inner, " + ") {
         Some((real, imaginary)) => match (
@@ -342,20 +342,20 @@ fn trim_decimal_zeros(value: string) -> string {
     let mut result = value;
     if !result.contains(".") {
         return result
-    } else {};
+    }
     while result.ends_with("0") {
         result = result.byte_slice(0, result.byte_len() - 1);
     }
     if result.ends_with(".") {
         result = result.byte_slice(0, result.byte_len() - 1);
-    } else {};
+    }
     result
 }
 
 fn manual_rational_short_string(value: BigRat) -> string {
     if value.numerator.sign == 0 {
         return "0"
-    } else {};
+    }
     let numerator = value.numerator.magnitude;
     let denominator = value.denominator;
     let numerator_digits = natural_to_string(numerator);
@@ -365,13 +365,13 @@ fn manual_rational_short_string(value: BigRat) -> string {
         let scaled_denominator = natural_mul(denominator, natural_pow_small(10, exponent));
         if natural_compare(numerator, scaled_denominator) < 0 {
             exponent -= 1;
-        } else {}
+        }
     } else {
         let scaled_numerator = natural_mul(numerator, natural_pow_small(10, -exponent));
         if natural_compare(scaled_numerator, denominator) < 0 {
             exponent -= 1;
-        } else {}
-    };
+        }
+    }
     let shift = 5 - exponent;
     let scaled_numerator = if shift >= 0 {
         natural_mul(numerator, natural_pow_small(10, shift))
@@ -391,13 +391,13 @@ fn manual_rational_short_string(value: BigRat) -> string {
     let comparison = natural_compare(doubled_remainder, scaled_denominator);
     if comparison > 0 || (comparison == 0 && rounded.limbs[0] % 2 == 1) {
         rounded = natural_add_small(rounded, 1);
-    } else {};
+    }
     let mut digits = natural_to_string(rounded);
     if digits.byte_len() > 6 {
         rounded = natural_div_rem_small(rounded, 10).unwrap_or((rounded, 0.to_u32())).0;
         digits = natural_to_string(rounded);
         exponent += 1;
-    } else {};
+    }
     while digits.byte_len() < 6 {
         digits = "0" + digits;
     }
@@ -508,7 +508,7 @@ pub fn constant_equal(left: ConstValue, right: ConstValue) -> bool {
             None => return false,
         },
         _ => {},
-    };
+    }
     let binary = match (left, right) {
         (ConstValue::LargeFloat(_), _) | (_, ConstValue::LargeFloat(_)) => match (
             constant_to_binary_float(left, binary_float_default_precision()),
@@ -522,7 +522,7 @@ pub fn constant_equal(left: ConstValue, right: ConstValue) -> bool {
     match binary {
         Some(value) => return value,
         None => {},
-    };
+    }
     match (left, right) {
         (ConstValue::Unknown, ConstValue::Unknown) => true,
         (ConstValue::Bool(left), ConstValue::Bool(right)) => left == right,

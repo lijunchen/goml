@@ -11,7 +11,7 @@ fn scan_one(scanner: Scanner) -> token::Token {
         let offset = scanner.pending_newline.get();
         scanner.pending_newline.set(-1);
         return scanned_token(token::Kind::Semicolon, "\n", offset, offset, true)
-    } else {};
+    }
     skip_whitespace(scanner);
     let start = scanner.offset.get();
     let current = scanner.current.get();
@@ -65,7 +65,7 @@ fn scan_one(scanner: Scanner) -> token::Token {
                 next(scanner);
                 next(scanner);
                 kind = token::Kind::Ellipsis;
-            } else {}
+            }
         } else if current == b','.to_i32() {
             kind = token::Kind::Comma;
         } else if current == b';'.to_i32() {
@@ -115,7 +115,7 @@ fn scan_one(scanner: Scanner) -> token::Token {
                     scanner.insert_semi.set(false)
                 } else {
                     insert_semi = scanner.insert_semi.get();
-                };
+                }
                 kind = token::Kind::Comment;
             } else {
                 kind = switch_two(scanner, token::Kind::Quo, token::Kind::QuoAssign);
@@ -177,15 +177,15 @@ fn scan_one(scanner: Scanner) -> token::Token {
         } else {
             if current != BOM {
                 report(scanner, start, "illegal character")
-            } else {};
+            }
             kind = token::Kind::Illegal;
             literal = codepoint_text(current);
             insert_semi = scanner.insert_semi.get();
         }
-    };
+    }
     if !synthetic {
         scanner.insert_semi.set(insert_semi);
-    } else {};
+    }
     let end = if synthetic {
         start
     } else {
@@ -193,6 +193,6 @@ fn scan_one(scanner: Scanner) -> token::Token {
     };
     if literal == "" && !token::equal(kind, token::Kind::Eof) {
         literal = token::name(kind);
-    } else {};
+    }
     scanned_token(kind, literal, start, end, synthetic)
 }

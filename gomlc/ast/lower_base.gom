@@ -86,7 +86,7 @@ fn push_attribute_arg(args: Vec[AttributeArg], value: Option[AttributeArg], name
                     },
                 ),
                 None => args.push(value),
-            };
+            }
             Option::None
         },
         None => named,
@@ -133,7 +133,7 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                             Option::Some(AttributeArg::Ident(token.token.text)),
                             named_arg,
                         );
-                    } else {},
+                    },
                     lexer::TokenKind::Str => if in_args {
                         named_arg = push_attribute_arg(
                             args,
@@ -150,14 +150,14 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                             },
                             None => (),
                         }
-                    } else {},
+                    },
                     lexer::TokenKind::Comma => if in_args {
                         named_arg = push_attribute_arg(
                             args,
                             take_attribute_path(path_segments),
                             named_arg,
                         );
-                    } else {},
+                    },
                     lexer::TokenKind::Eq => if in_args {
                         match take_attribute_path(path_segments) {
                             Some(value) => {
@@ -165,7 +165,7 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                             },
                             None => (),
                         }
-                    } else {},
+                    },
                     _ => (),
                 }
             }
@@ -180,7 +180,7 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
             )
         },
         None => (),
-    };
+    }
     attrs
 }
 
@@ -200,7 +200,7 @@ fn find_attribute(attrs: Vec[Attribute], expected: string) -> Option[Attribute] 
     for attr in attrs {
         if attribute_matches(attr, expected) {
             return Option::Some(attr)
-        } else {}
+        }
     }
     Option::None
 }
@@ -235,7 +235,7 @@ fn normalized_array_length(value: string) -> Option[string] {
                 return Option::Some(normalized)
             } else if left > right {
                 return Option::None
-            } else {}
+            }
         }
         Option::Some(normalized)
     }
@@ -286,9 +286,9 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                                     node_span(node),
                                     "type, trait, and generic names must start with an uppercase letter",
                                 )
-                            } else {},
+                            },
                             None => (),
-                        };
+                        }
                         let args = match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
                             Some(list) => lower_type_list(ctx, list),
                             None => Vec::new(),
@@ -334,14 +334,14 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                                                             ),
                                                             None => (),
                                                         }
-                                                    } else {}
+                                                    }
                                                 },
                                                 None => (),
                                             }
                                         }
                                     },
                                     None => (),
-                                };
+                                }
                                 bounds.push(DynTraitBound { trait_path, args, associated_types })
                             },
                             None => (),
@@ -405,7 +405,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                                 match lower_ty(ctx, param_node) {
                                     Some(value) => values.push(value),
                                     None => (),
-                                };
+                                }
                                 values
                             };
                             Option::Some(TypeExpr::Func { params, ret_ty })
@@ -506,7 +506,7 @@ fn lower_where_clause(ctx: LowerCtx, node: LocatedNode) -> Vec[Predicate] {
             }
         },
         None => (),
-    };
+    }
     result
 }
 
@@ -538,10 +538,10 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
                                     span: token_span(names[0]),
                                 },
                             )
-                        } else {}
+                        }
                     },
                     None => (),
-                };
+                }
                 Option::Some(UseDecl { visibility: lower_visibility(node), path, alias, items })
             },
             None => Option::None,

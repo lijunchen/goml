@@ -41,7 +41,7 @@ fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::
                     ),
                 }
             }
-        } else {}
+        }
     }
 }
 
@@ -149,7 +149,7 @@ fn environment_modules(value: DeriveEnvironment) -> Vec[ctir::CtModule] {
     match value.builtin {
         Some(module) => result.push(module),
         None => (),
-    };
+    }
     for module in value.dependencies {
         result.push(module)
     }
@@ -175,7 +175,7 @@ fn module_derive_exports(module: ctir::CtModule, name: string) -> Vec[ctir::CtDe
     for entry in module.derive_entries {
         if entry.public && derive_entry_export_name(entry) == name {
             result.push(entry)
-        } else {}
+        }
     }
     result
 }
@@ -204,12 +204,12 @@ fn resolve_derive_export_target(
     while true {
         if !seen.insert(current) {
             return Result::Err("cyclic derive re-export `" + display_name + "`")
-        } else {};
+        }
         let targets: Vec[string] = Vec::new();
         for value in environment.reexports {
             if value.0 == current {
                 targets.push(value.1)
-            } else {}
+            }
         }
         if targets.len() > 1 {
             return Result::Err("ambiguous derive re-export `" + display_name + "`")
@@ -229,7 +229,7 @@ fn package_alias_target(file: ast::File, alias: string) -> Option[string] {
     for entry in prospective_use_aliases(file) {
         if entry.alias == alias {
             return Option::Some(join_segments(entry.target))
-        } else {}
+        }
     }
     Option::None
 }
@@ -252,7 +252,7 @@ fn resolve_package_derive(
             for entry in module_derive_exports(module, resolved.1) {
                 matches.push((module, entry))
             }
-        } else {}
+        }
     }
     if matches.is_empty() {
         Result::Err(
@@ -274,7 +274,7 @@ fn resolve_qualified_derive(file: ast::File, environment: DeriveEnvironment, tar
         return Result::Err(
             "custom derive target `" + target + "` must use an imported package alias",
         )
-    } else {};
+    }
     let package_name = match package_alias_target(file, segments[0]) {
         Some(value) => value,
         None => return Result::Err(
@@ -305,7 +305,7 @@ fn module_imported_derives(
             for entry in module_derive_exports(module, resolved.1) {
                 result.push(ImportedDerive { local_name, module, entry })
             }
-        } else {}
+        }
     }
     result
 }
@@ -363,7 +363,7 @@ fn derive_imports(file: ast::File, environment: DeriveEnvironment) -> Vec[Import
                             None => export_name,
                         },
                     )
-                } else {},
+                },
                 None => (),
             }
         }
@@ -381,13 +381,13 @@ fn resolve_bare_derive(file: ast::File, environment: DeriveEnvironment, name: st
             candidates.push(ResolvedDerive::Handler { module, entry })
         },
         None => (),
-    };
+    }
     for imported in derive_imports(file, environment) {
         if imported.local_name == name {
             candidates.push(
                 ResolvedDerive::Handler { module: imported.module, entry: imported.entry },
             )
-        } else {}
+        }
     }
     if candidates.is_empty() {
         Result::Err(
@@ -418,7 +418,7 @@ fn derive_dependencies(environment: DeriveEnvironment, package_name: string) -> 
 fn derive_error_message(value: ctfe::CtError) -> string {
     if value.stack.is_empty() {
         return value.message
-    } else {};
+    }
     let builder = text::StringBuilder::new();
     builder.write_string(value.message);
     builder.write_string("\ncomptime derive stack:");
@@ -500,7 +500,7 @@ fn derive_impls(
                     ),
                 }
             }
-        } else {}
+        }
     }
     result
 }

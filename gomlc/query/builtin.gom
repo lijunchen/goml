@@ -45,7 +45,7 @@ fn builtin_comptime_module() -> Result[Option[ctir::CtModule], string] {
     let checked = tast::check_builtin_package_files(files);
     if checked.tast.is_none() {
         return Result::Err("failed to typecheck builtin package")
-    } else {};
+    }
     let module = ctir::public_module(checked.comptime, Vec::new(), Vec::new());
     if module.derive_entries.is_empty() {
         Result::Ok(Option::None)

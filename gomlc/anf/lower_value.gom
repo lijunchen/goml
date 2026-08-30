@@ -80,8 +80,8 @@ fn lower_list(state: State, values: Vec[lift::Expr], k: (Vec[Imm]) -> Block) -> 
         let start = state.counter.get();
         if probe_linear_list(state, values) {
             state.counter.set(start)
-        } else {}
-    };
+        }
+    }
     let result: Vec[Imm] = Vec::new();
     lower_list_from(state, values, 0, result, k)
 }

@@ -125,11 +125,11 @@ fn validate_pack_closure(
     };
     if repr::types_equal(ty, definition.signature) {} else {
         return Result::Err(context + " closure signature does not match " + apply)
-    };
+    }
     match expr_type(environment) {
         ClosureEnvironment { name } if name == definition.environment => (),
         _ => return Result::Err(context + " closure environment does not match " + apply),
-    };
+    }
     validate_expr(ctx, environment, context + " closure environment")
 }
 
@@ -239,7 +239,7 @@ fn validate_closure_definition(
 ) -> Result[(), string] {
     if structs.contains(definition.environment) {} else {
         return Result::Err("closure apply function has no environment " + definition.environment)
-    };
+    }
     let function = match functions[definition.apply] {
         Some(value) => value,
         None => return Result::Err(
@@ -251,20 +251,20 @@ fn validate_closure_definition(
             == definition.environment
             && method_name == "apply" => (),
         _ => return Result::Err("closure apply function has invalid origin " + definition.apply),
-    };
+    }
     match definition.signature {
         Func { params, ret_ty } => {
             if function.params.len() != params.len() + 1 {
                 return Result::Err(
                     "closure apply function has invalid parameters " + definition.apply,
                 )
-            } else {};
+            }
             match function.params[0].1 {
                 ClosureEnvironment { name } if name == definition.environment => (),
                 _ => return Result::Err(
                     "closure apply function has invalid environment " + definition.apply,
                 ),
-            };
+            }
             for index in 0..params.len() {
                 if repr::types_equal(function.params[index + 1].1, params[index]) {} else {
                     return Result::Err(

@@ -97,7 +97,7 @@ fn filename_selected(name: string, config: LoadConfig) -> bool {
         || (!config.include_tests && name.ends_with("_test.go"))
         || path::extension(name) != Option::Some("go") {
         return false
-    } else {};
+    }
     let stem = name.byte_slice(0, name.byte_len() - 3);
     let parts = text::split(stem, "_");
     if parts.len() >= 2 {
@@ -107,8 +107,8 @@ fn filename_selected(name: string, config: LoadConfig) -> bool {
             return false
         } else if known_goarch(last) && last != config.goarch {
             return false
-        } else {}
-    } else {};
+        }
+    }
     if parts.len() >= 3 {
         let system = parts[parts.len() - 2];
         let architecture = parts[parts.len() - 1];
@@ -116,8 +116,8 @@ fn filename_selected(name: string, config: LoadConfig) -> bool {
             && (!platform_tag(config.goos, config.goarch, config.cgo, config.tags, system)
                 || architecture != config.goarch) {
             return false
-        } else {}
-    } else {};
+        }
+    }
     true
 }
 
@@ -131,7 +131,7 @@ fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool 
         } else if value.starts_with("// +build") {
             let start = "// +build".byte_len();
             plus_build_constraints.push(value.byte_slice(start, value.byte_len()));
-        } else {}
+        }
     }
     match go_build {
         Some(value) => evaluate_constraint_with_tags(
@@ -153,7 +153,7 @@ fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool 
                     config.tags,
                 ) {
                     return false
-                } else {}
+                }
             }
             true
         },
@@ -171,23 +171,23 @@ fn test_source(value: checker::SourceFile) -> bool {
 fn package_directory(config: LoadConfig, import_path: string) -> Option[string] {
     if import_path == config.root_path && config.root_directory != "" {
         return Option::Some(config.root_directory)
-    } else {};
+    }
     for root in config.source_roots {
         let directory = path::join(root, import_path);
         if fs::is_dir(directory) {
             return Option::Some(directory)
-        } else {};
+        }
         let vendor_directory = path::join(path::join(root, "vendor"), import_path);
         if fs::is_dir(vendor_directory) {
             return Option::Some(vendor_directory)
-        } else {};
+        }
         let command_vendor_directory = path::join(
             path::join(path::join(root, "cmd"), "vendor"),
             import_path,
         );
         if fs::is_dir(command_vendor_directory) {
             return Option::Some(command_vendor_directory)
-        } else {}
+        }
     }
     Option::None
 }
@@ -200,7 +200,7 @@ fn resolved_package_path(config: LoadConfig, import_path: string) -> string {
             return "vendor/" + import_path
         } else if fs::is_dir(path::join(path::join(path::join(root, "cmd"), "vendor"), import_path)) {
             return "cmd/vendor/" + import_path
-        } else {}
+        }
     }
     import_path
 }
@@ -209,7 +209,7 @@ fn missing_import_message(config: LoadConfig, import_path: string) -> string {
     if import_path.starts_with("/") {
         return "can't find import: \"" + import_path + "\": stat " + import_path
             + ".a: no such file or directory"
-    } else {};
+    }
     let goroot_source = if config.source_roots.is_empty() {
         "/usr/lib/go-1.26/src"
     } else {
@@ -232,7 +232,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
 ] {
     if import_path == config.root_path && !config.root_sources.is_empty() {
         return Result::Ok(config.root_sources)
-    } else {};
+    }
     let directory = package_directory(config, import_path).ok_or(
         "package not found: " + import_path,
     )?;
@@ -246,10 +246,10 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
             match source {
                 Ok(source) => if source_constraint_selected(source, config) {
                     selected.push(checker::SourceFile { name: file, source })
-                } else {},
+                },
                 Err(message) => return Result::Err(message.to_string()),
             }
-        } else {}
+        }
     }
     let result: Vec[checker::SourceFile] = Vec::new();
     if config.include_tests {
@@ -257,7 +257,7 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
         for source in selected {
             if !test_source(source) && package_name == "" {
                 package_name = source_package_name(source);
-            } else {}
+            }
         }
         for source in selected {
             let test = test_source(source);
@@ -265,13 +265,13 @@ pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
             if (config.external_tests && external)
                 || (!config.external_tests && (!test || !external)) {
                 result.push(source)
-            } else {}
+            }
         }
     } else {
         for source in selected {
             result.push(source)
         }
-    };
+    }
     if result.is_empty() {
         Result::Err("no buildable Go source files for " + import_path)
     } else {
@@ -285,7 +285,7 @@ fn source_imports(source: checker::SourceFile) -> Vec[string] {
         match constant::parse_string_literal(literal) {
             Ok(constant::ConstValue::String(value)) => if valid_import_dependency(value) {
                 result.push(value)
-            } else {},
+            },
             _ => {},
         }
     }
@@ -311,7 +311,7 @@ fn package_name_from_sources(sources: Vec[checker::SourceFile], import_path: str
         let name = source_package_name(source);
         if name != "" {
             return name
-        } else {}
+        }
     }
     let parts = text::split(import_path, "/");
     parts[parts.len() - 1]
@@ -326,7 +326,7 @@ fn discovered_import_used(result: checker::CheckResult, import_path: string) -> 
                     Some(package_id) => if object.kind == go_types::ObjectKind::PackageName
                         && result.world.packages[package_id.value].path == import_path {
                         return true
-                    } else {},
+                    },
                     None => {},
                 }
             },
@@ -342,7 +342,7 @@ fn discovered_import_used(result: checker::CheckResult, import_path: string) -> 
                         && object.name == "."
                         && result.world.packages[package_id.value].path == import_path {
                         return true
-                    } else {},
+                    },
                     None => {},
                 }
             },
@@ -376,7 +376,7 @@ fn discover_api_imports(
                     name: package_name_from_sources(dependency_sources, dependency),
                 },
             )
-        } else {}
+        }
     }
     let checked = checker::check_package(
         config,
@@ -389,7 +389,7 @@ fn discover_api_imports(
     for dependency in imports {
         if discovered_import_used(checked, dependency) {
             let _ = result.insert(dependency);
-        } else {}
+        }
     }
     Result::Ok(result)
 }
@@ -398,12 +398,12 @@ fn valid_import_dependency(value: string) -> bool {
     let illegal = "!\"#$%&'()*,:;<=>?[\\]^{|}`�";
     if value == "" {
         return false
-    } else {};
+    }
     for character in value.chars() {
         if unicode::is_control(character) || unicode::is_whitespace(character)
             || illegal.contains(character.to_string()) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -412,7 +412,7 @@ fn string_in(values: Vec[string], value: string) -> bool {
     for existing in values {
         if existing == value {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -434,7 +434,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         return Result::Err("import cycle not allowed: " + import_path)
     } else if import_path == "unsafe" {
         return Result::Err("unsafe is built in")
-    } else {};
+    }
     state.loading.push(import_path);
     let sources = selected_sources_cached(state, import_path)?;
     let imports: collections::IndexSet[string] = collections::IndexSet::new();
@@ -442,7 +442,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         for dependency in source_imports(source) {
             if dependency != "unsafe"
                 && !(dependency == "C" && state.config.checker_config.fake_import_c)
-                && imports.insert(dependency) {} else {}
+                && imports.insert(dependency) {}
         }
     }
     let api_only = state.config.root_path != "" && import_path != state.config.root_path;
@@ -472,7 +472,7 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
                     )
                 },
             }
-        } else {}
+        }
     }
     let checker_config = state.config.checker_config;
     if api_only {
@@ -484,9 +484,9 @@ fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) 
         for dependency in imports {
             if !selected_imports.contains(dependency) {
                 checker_config.ignored_imports.push(dependency)
-            } else {}
+            }
         }
-    } else {};
+    }
     let result = checker::check_package_in_world(
         checker_config,
         checker::PackageInput {
@@ -601,7 +601,7 @@ pub fn check_import_path(config: LoadConfig, import_path: string) -> Result[
 ] {
     if config.root_path == "" {
         config.root_path = import_path;
-    } else {};
+    }
     let state = LoadState {
         config,
         world: go_types::new_world(),
@@ -623,19 +623,19 @@ pub fn check_sources_with_diagnostics(
             Ok(value) => {
                 if value.contains("// -fakeImportC") {
                     config.checker_config.fake_import_c = true;
-                } else {};
+                }
                 if value.contains("// -gotypesalias=0") {
                     config.checker_config.enable_alias = false;
                 } else if value.contains("// -gotypesalias=1") {
                     config.checker_config.enable_alias = true;
-                } else {};
+                }
                 for line in text::split(value, "\n") {
                     if line.starts_with("// -lang=") {
                         config.checker_config.go_version = text::split(
                             line.byte_slice(9, line.byte_len()),
                             " ",
                         )[0];
-                    } else {}
+                    }
                 }
             },
             Err(_) => {},

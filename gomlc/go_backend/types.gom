@@ -30,7 +30,7 @@ fn join_type_parts(values: Vec[repr::Type]) -> string {
     for index in 0..values.len() {
         if index > 0 {
             builder.write_char('_')
-        } else {};
+        }
         let encoded = encode_type(values[index]);
         builder.write_string(encoded.byte_len().to_string());
         builder.write_string(encoded)

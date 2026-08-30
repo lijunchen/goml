@@ -23,9 +23,9 @@ fn test_path_kind(source_path: string) -> Option[TestItemKind] {
                 match path::file_name(parent) {
                     Some(name) => if name == "tests" {
                         return Option::Some(TestItemKind::External)
-                    } else {},
+                    },
                     None => (),
-                };
+                }
                 if parent == current {
                     break
                 } else {
@@ -50,7 +50,7 @@ fn has_test_attribute(values: Vec[ast::Attribute]) -> bool {
     for value in values {
         if is_test_attribute(value) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -63,7 +63,7 @@ fn function_symbol_span(symbols: SymbolIndex, source_path: string, name: string)
                 _ => false,
             } {
             return symbol.span
-        } else {}
+        }
     }
     ast::span(0, 0)
 }
@@ -97,7 +97,7 @@ pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
                                         kind,
                                     },
                                 )
-                            } else {},
+                            },
                             _ => (),
                         }
                     }
@@ -106,6 +106,6 @@ pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
             }
         },
         None => (),
-    };
+    }
     result
 }

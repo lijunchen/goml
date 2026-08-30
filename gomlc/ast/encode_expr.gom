@@ -56,7 +56,7 @@ fn encode_arm(builder: text::StringBuilder, value: Arm) -> () {
             encode_expr(builder, guard)
         },
         None => encode_none(builder),
-    };
+    }
     encode_expr(builder, value.body);
     encode_close(builder)
 }
@@ -73,7 +73,7 @@ fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> () {
                     encode_expr(builder, value)
                 },
                 None => encode_none(builder),
-            };
+            }
             encode_string_value(builder, binding);
             encode_expr(builder, body)
         },
@@ -88,7 +88,7 @@ fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> () {
                     encode_expr(builder, value)
                 },
                 None => encode_none(builder),
-            };
+            }
             encode_expr(builder, body)
         },
         Default { body, span: value_span } => {
@@ -96,7 +96,7 @@ fn encode_select_arm(builder: text::StringBuilder, value: SelectArm) -> () {
             encode_span(builder, value_span);
             encode_expr(builder, body)
         },
-    };
+    }
     encode_close(builder)
 }
 
@@ -385,7 +385,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> () {
             encode_span(builder, value_span);
             encode_block(builder, block)
         },
-    };
+    }
     encode_close(builder)
 }
 
@@ -462,11 +462,11 @@ fn encode_pat(builder: text::StringBuilder, value: Pat) -> () {
                             encode_string_value(builder, binding)
                         },
                         None => encode_none(builder),
-                    };
+                    }
                     encode_close(builder)
                 },
                 None => encode_none(builder),
-            };
+            }
             encode_pats(builder, suffix)
         },
         Alias { name, pat, span: value_span } => {
@@ -491,7 +491,7 @@ fn encode_pat(builder: text::StringBuilder, value: Pat) -> () {
             encode_open(builder, "Pat.Wild");
             encode_span(builder, value_span)
         },
-    };
+    }
     encode_close(builder)
 }
 

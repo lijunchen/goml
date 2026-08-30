@@ -46,7 +46,7 @@ fn child_cursor(value: LocatedNode) -> ChildCursor {
                     LocatedToken { token, start: offset.get(), end: offset.get() + length },
                 ),
             ),
-        };
+        }
         offset.set(offset.get() + length)
     }
     ChildCursor { elements, index: Ref::new(0) }
@@ -176,10 +176,10 @@ fn node_has_comment(value: LocatedNode) -> bool {
         match cursor.next() {
             Some(Node(node)) => if node_has_comment(node) {
                 return true
-            } else {},
+            },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::Comment) {
                 return true
-            } else {},
+            },
             None => (),
         }
     }

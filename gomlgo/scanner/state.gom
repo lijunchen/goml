@@ -145,7 +145,7 @@ fn next(scanner: Scanner) -> () {
             }
         } else if value == BOM && offset > 0 {
             report(scanner, offset, "illegal byte order mark")
-        } else {};
+        }
         scanner.read_offset.set(scanner.read_offset.get() + width);
         scanner.current.set(value)
     } else {
@@ -175,7 +175,7 @@ fn scanner_new(source: Vec[byte]) -> Scanner {
     next(scanner);
     if scanner.current.get() == BOM {
         next(scanner)
-    } else {};
+    }
     scanner
 }
 
@@ -312,7 +312,7 @@ pub fn leading_comments(source: bytes::Bytes) -> Vec[string] {
         } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Package)
             || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Eof) {
             finished = true;
-        } else {}
+        }
     }
     result
 }
@@ -328,7 +328,7 @@ pub fn package_name_bytes(source: bytes::Bytes) -> string {
             package_seen = true;
         } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Eof) {
             return ""
-        } else {}
+        }
     }
     ""
 }
@@ -347,7 +347,7 @@ pub fn import_literals(source: bytes::Bytes) -> Vec[string] {
         } else if !package_seen {
             if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Package) {
                 package_seen = true;
-            } else {}
+            }
         } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Import) {
             active = true;
         } else if active {
@@ -360,13 +360,13 @@ pub fn import_literals(source: bytes::Bytes) -> Vec[string] {
                 active = false;
             } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Semicolon) && !grouped {
                 active = false;
-            } else {}
+            }
         } else if gomlgo::token::equal(value.kind, gomlgo::token::Kind::Const)
             || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Type)
             || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Var)
             || gomlgo::token::equal(value.kind, gomlgo::token::Kind::Func) {
             finished = true;
-        } else {}
+        }
     }
     result
 }

@@ -137,12 +137,12 @@ fn cli_error_with_usage(message: string, usage: string) -> string {
 fn cli_argument_name(argument: string) -> string {
     if !argument.starts_with("--") {
         return argument
-    } else {};
+    }
     let mut end = argument.byte_len();
     for index in 0..argument.byte_len() {
         if end == argument.byte_len() && argument.byte_get(index) == b'=' {
             end = index;
-        } else {}
+        }
     }
     argument.byte_slice(0, end)
 }
@@ -242,7 +242,7 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
             candidates.push("--help")
         },
         _ => candidates.push("--help"),
-    };
+    }
     let name = cli_argument_name(argument);
     let mut best: Option[string] = Option::None;
     let mut distance = 2147483647;
@@ -251,7 +251,7 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
         if candidate_distance < distance {
             distance = candidate_distance;
             best = Option::Some(candidate);
-        } else {}
+        }
     }
     if distance <= 3 {
         best
@@ -453,7 +453,7 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
         return Option::Some(CliSimilarity { value: right, numerator: 1, denominator: 1 })
     } else if left.byte_len() == 0 || right.byte_len() == 0 {
         return Option::None
-    } else {};
+    }
     let window = cli_maximum(cli_maximum(left.byte_len(), right.byte_len()) / 2 - 1, 0);
     let left_matches: Vec[bool] = Vec::new();
     let right_matches: Vec[bool] = Vec::new();
@@ -482,7 +482,7 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     }
     if matches == 0 {
         return Option::None
-    } else {};
+    }
     let mut right_index = 0;
     let mut mismatches = 0;
     for left_index in 0..left.byte_len() {
@@ -492,9 +492,9 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
             }
             if left.byte_get(left_index) != right.byte_get(right_index) {
                 mismatches = mismatches + 1;
-            } else {};
+            }
             right_index = right_index + 1;
-        } else {}
+        }
     }
     let matched = matches;
     let transpositions = mismatches / 2;
@@ -521,7 +521,7 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
         match cli_jaro_similarity(command, candidate) {
             Some(value) => if value.numerator * 10 >= value.denominator * 7 {
                 similar.push(value)
-            } else {},
+            },
             None => (),
         }
     }
@@ -548,7 +548,7 @@ fn similar_subcommand_tip(values: Vec[string]) -> string {
         for index in 0..values.len() {
             if index > 0 {
                 builder.write_string(", ")
-            } else {};
+            }
             builder.write_char('\'');
             builder.write_string(values[index]);
             builder.write_char('\'')
@@ -577,7 +577,7 @@ fn handle_cli_parse_error(command: string, error: string) -> () {
         match command_help(command) {
             Some(help) => print_cli_help(help),
             None => (),
-        };
+        }
         process::exit(0)
     } else {
         fail_cli(error)

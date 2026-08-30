@@ -40,7 +40,7 @@ where
                 match iterator.next() {
                     Some(value) => if predicate(value) {
                         return Option::Some(value)
-                    } else {},
+                    },
                     None => return Option::None,
                 }
             }
@@ -201,7 +201,7 @@ where
                     Some(value) => return Option::Some(value),
                     None => first_done.set(true),
                 }
-            } else {};
+            }
             second.next()
         },
     )
@@ -281,7 +281,7 @@ pub fn find[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[T] wh
         match iterator.next() {
             Some(value) => if predicate(value) {
                 return Option::Some(value)
-            } else {},
+            },
             None => return Option::None,
         }
     }

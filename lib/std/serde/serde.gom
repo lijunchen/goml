@@ -115,7 +115,7 @@ pub fn named_field(fields: Vec[(string, Value)], name: string) -> Result[Value, 
     for field in fields {
         if field.0 == name {
             return Result::Ok(field.1)
-        } else {}
+        }
     }
     Result::Err("missing field `" + name + "`")
 }

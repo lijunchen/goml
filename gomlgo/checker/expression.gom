@@ -27,7 +27,7 @@ fn struct_field_by_name(fields: Vec[go_types::StructField], name: string) -> Opt
     for field in fields {
         if field.variable.name == name {
             return Option::Some(field)
-        } else {}
+        }
     }
     Option::None
 }
@@ -40,12 +40,12 @@ fn similar_struct_field(state: CheckState, fields: Vec[go_types::StructField], n
             Some(object) => match go_types::get_object(state.world, object) {
                 Some(object) => if similar_selector_object(state, object, name) {
                     return Option::Some(field)
-                } else {},
+                },
                 None => {},
             },
             None => if unicode::lowercase(field.variable.name) == unicode::lowercase(name) {
                 return Option::Some(field)
-            } else {},
+            },
         }
     }
     Option::None
@@ -103,7 +103,7 @@ fn check_composite_element(
                 let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else if target.value == state.world.invalid.value {
                 let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
-            } else {};
+            }
             Operand { type_id: target, value: Option::None, addressable: false, assignable: false }
         } else {
             check_expression(state, scope, node)
@@ -147,7 +147,7 @@ fn check_composite_element(
                 },
             false,
         )
-    } else {};
+    }
     operand
 }
 
@@ -161,7 +161,7 @@ fn check_invalid_composite_element(
             match identifier(state, key) {
                 Some(_) => {},
                 None => check_invalid_composite_element(state, scope, key),
-            };
+            }
             check_invalid_composite_element(state, scope, value)
         },
         None => match syntax::get_node(state.syntax.arena, node) {
@@ -200,7 +200,7 @@ fn check_composite_literal_elements(
             check_invalid_composite_element(state, scope, element)
         }
         return
-    } else {};
+    }
     match go_types::type_data(state.world, core_type_id(state, literal_type)) {
         go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } } => check_struct_literal(
             state,
@@ -241,7 +241,7 @@ fn check_composite_literal_elements(
             let object = state.active_type_objects[state.active_type_objects.len() - 1];
             if !invalid_type_object_seen(state, object) && !type_value_cycle_contains(state, object) {
                 state.deferred_direct_type_cycles.push(object)
-            } else {}
+            }
         } else {
             let element_type = match syntax::get_node(state.syntax.arena, node) {
                 Some(syntax::SyntaxNode {
@@ -343,7 +343,7 @@ fn check_struct_literal(
                     );
                     mixed = true;
                     continue
-                } else {};
+                }
                 keyed = true;
                 match identifier(state, key) {
                     Some(name) => match struct_field_by_name(fields, name) {
@@ -352,7 +352,7 @@ fn check_struct_literal(
                             for existing in names {
                                 if existing == name {
                                     duplicate = true;
-                                } else {}
+                                }
                             }
                             if duplicate {
                                 diagnostic(
@@ -363,13 +363,13 @@ fn check_struct_literal(
                                 )
                             } else {
                                 names.push(name)
-                            };
+                            }
                             match field.object {
                                 Some(object) => if !incomplete_named_instance(state, literal_type) {
                                     record_use(state, key, object)
-                                } else {},
+                                },
                                 None => {},
-                            };
+                            }
                             let _ = check_composite_element(
                                 state,
                                 scope,
@@ -421,7 +421,7 @@ fn check_struct_literal(
                     );
                     mixed = true;
                     continue
-                } else {};
+                }
                 unkeyed = true;
                 if index >= fields.len() {
                     diagnostic(
@@ -464,7 +464,7 @@ fn check_struct_literal(
                 + diagnostic_type_string(state, literal_type),
             false,
         )
-    } else {}
+    }
 }
 
 fn constant_index(
@@ -476,13 +476,13 @@ fn constant_index(
     let operand = check_expression(state, scope, node);
     if operand.type_id.value == state.world.invalid.value {
         return Option::None
-    } else {};
+    }
     match operand.value {
         Some(value) => if constant::constant_kind(value) == constant::ConstantKind::Unknown {
             if go_types::is_untyped(state.world, operand.type_id)
                 && go_types::is_numeric(state.world, operand.type_id) {
                 update_contextual_operand_fact(state, node, operand, basic_type_id(state, "int"));
-            } else {};
+            }
             Option::None
         } else {
             match constant::constant_to_integer(value) {
@@ -540,7 +540,7 @@ fn constant_index(
                         "index " + expression_source_text(state, node) + " must be integer constant",
                         false,
                     )
-                } else {}
+                }
             } else if !go_types::is_integer(state.world, operand.type_id) {
                 diagnostic(
                     state,
@@ -556,7 +556,7 @@ fn constant_index(
                     "index " + expression_source_text(state, node) + " must be integer constant",
                     false,
                 )
-            } else {};
+            }
             Option::None
         },
     }
@@ -596,7 +596,7 @@ fn check_sequence_literal(
                     None => {
                         valid_index = false;
                     },
-                };
+                }
                 value
             },
             None => element,
@@ -620,9 +620,9 @@ fn check_sequence_literal(
                                 + ")",
                             false,
                         ),
-                    };
+                    }
                     in_bounds = false;
-                } else {},
+                },
                 None => {},
             }
         } else {
@@ -630,21 +630,21 @@ fn check_sequence_literal(
             for existing in used {
                 if existing == next_index {
                     occupied = true;
-                } else {}
+                }
             }
             if !occupied {
                 used.push(next_index)
-            } else {};
+            }
             if next_index > maximum {
                 maximum = next_index;
-            } else {}
-        };
+            }
+        }
         if valid_index && in_bounds {
             let mut duplicate = false;
             for existing in used {
                 if existing == next_index {
                     duplicate = true;
-                } else {}
+                }
             }
             if duplicate {
                 diagnostic(
@@ -662,11 +662,11 @@ fn check_sequence_literal(
                 )
             } else {
                 used.push(next_index)
-            };
+            }
             if next_index > maximum {
                 maximum = next_index;
-            } else {}
-        } else {};
+            }
+        }
         let _ = check_composite_element(
             state,
             scope,
@@ -720,7 +720,7 @@ fn check_map_literal(
                             )
                                 && constant::constant_equal(constant_keys[index], candidate) {
                                 duplicate = true;
-                            } else {}
+                            }
                         }
                         if duplicate {
                             diagnostic(
@@ -735,7 +735,7 @@ fn check_map_literal(
                             constant_key_types.push(candidate_type);
                         }
                     },
-                };
+                }
                 if !duplicate && key_valid {
                     let _ = check_composite_element(
                         state,
@@ -745,7 +745,7 @@ fn check_map_literal(
                         "map literal",
                         true,
                     );
-                } else {};
+                }
             },
             None => diagnostic(state, element, "missing key in map literal", false),
         }
@@ -849,14 +849,14 @@ fn check_composite_literal(
                     },
                     elements,
                 )
-            } else {};
+            }
             if resolved.value != state.world.invalid.value && !valid_literal_type
                 && !track_type_cycle
                 && !invalid_core {
                 let _ = state.omitted_type_fact_nodes.insert(node.value);
             } else if invalid_type_parameter_literal {
                 let _ = state.omitted_type_fact_nodes.insert(node.value);
-            } else {};
+            }
             if invalid_core && (track_type_cycle || invalid_type_parameter_literal) {
                 state.world.invalid
             } else {
@@ -868,7 +868,7 @@ fn check_composite_literal(
         && !(state.array_length_depth > 0 && !state.active_type_objects.is_empty())
         && !state.omitted_type_fact_nodes.contains(node.value) {
         let _ = state.retained_invalid_type_fact_nodes.insert(node.value);
-    } else {};
+    }
     Operand { type_id, value: Option::None, addressable: false, assignable: false }
 }
 
@@ -880,11 +880,11 @@ fn indexed_concrete_type(state: CheckState, value: go_types::TypeId) -> Option[
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => {
             if go_types::is_type_parameter(state.world, element) {
                 return Option::None
-            } else {};
+            }
             resolved = core_type_id(state, element);
         },
         _ => {},
-    };
+    }
     match go_types::get_type(state.world, resolved) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => Option::Some(
             (element, true, Option::Some(length), Option::None),
@@ -920,14 +920,14 @@ fn indexed_type(state: CheckState, value: go_types::TypeId) -> Option[
     match indexed_concrete_type(state, value) {
         Some(value) => return Option::Some(value),
         None => {},
-    };
+    }
     if !go_types::is_type_parameter(state.world, value) {
         return Option::None
-    } else {};
+    }
     let terms = go_types::type_set_specific_types(state.world, value);
     if terms.is_empty() {
         return Option::None
-    } else {};
+    }
     let mut element: Option[go_types::TypeId] = Option::None;
     let mut addressable = true;
     let mut length: Option[i64] = Option::None;
@@ -940,11 +940,11 @@ fn indexed_type(state: CheckState, value: go_types::TypeId) -> Option[
                 match map_kind {
                     Some(existing) => if existing != candidate_map {
                         return Option::None
-                    } else {},
+                    },
                     None => {
                         map_kind = Option::Some(candidate_map);
                     },
-                };
+                }
                 match (map_key, candidate_key) {
                     (Some(existing), Some(candidate)) => if !go_types::identical(
                         state.world,
@@ -952,28 +952,28 @@ fn indexed_type(state: CheckState, value: go_types::TypeId) -> Option[
                         candidate,
                     ) {
                         return Option::None
-                    } else {},
+                    },
                     (None, Some(candidate)) => {
                         map_key = Option::Some(candidate);
                     },
                     _ => {},
-                };
+                }
                 match element {
                     Some(element) => if !go_types::identical(state.world, element, candidate) {
                         return Option::None
-                    } else {},
+                    },
                     None => {
                         element = Option::Some(candidate);
                     },
-                };
+                }
                 if !candidate_addressable {
                     addressable = false;
-                } else {};
+                }
                 match candidate_length {
                     Some(candidate_length) => match length {
                         Some(existing) => if candidate_length < existing {
                             length = Option::Some(candidate_length);
-                        } else {},
+                        },
                         None => {
                             length = Option::Some(candidate_length);
                         },
@@ -1029,7 +1029,7 @@ fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression
                     if node_start(state, fact.node) >= node_start(state, argument)
                         && node_end(state, fact.node) <= node_end(state, argument) {
                         omitted.push(fact.node)
-                    } else {}
+                    }
                 }
                 for omitted_node in omitted {
                     let _ = state.omitted_type_fact_nodes.insert(omitted_node.value);
@@ -1042,7 +1042,7 @@ fn omit_indirect_cycle_facts(state: CheckState, node: syntax::NodeId, expression
                 },
                 None => {},
             }
-        } else {},
+        },
         _ => {},
     }
 }
@@ -1058,7 +1058,7 @@ fn check_index_expression(
     let recursive = record_active_value_type_cycle(state, base.type_id, true);
     if recursive {
         omit_indirect_cycle_facts(state, node, expression)
-    } else {};
+    }
     match go_types::get_type(state.world, core_type_id(state, base.type_id)) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => {
             let index_operand = check_expression(state, scope, index);
@@ -1077,7 +1077,7 @@ fn check_index_expression(
                 )
             } else {
                 update_contextual_operand_fact(state, index, index_operand, key)
-            };
+            }
             return Operand {
                 type_id: value,
                 value: Option::None,
@@ -1086,7 +1086,7 @@ fn check_index_expression(
             }
         },
         _ => {},
-    };
+    }
     let pointer_to_array = pointer_to_array_type(state, base.type_id);
     let indexed = indexed_type(state, base.type_id);
     let index_value = if recursive {
@@ -1111,7 +1111,7 @@ fn check_index_expression(
                     )
                 } else {
                     update_contextual_operand_fact(state, index, index_operand, key)
-                };
+                }
                 Option::None
             },
             Some(_) => constant_index(state, scope, index, false),
@@ -1133,9 +1133,9 @@ fn check_index_expression(
             match (index_value, length) {
                 (Some(index_value), Some(length)) => if index_value.to_i64() >= length {
                     report_index_out_of_bounds(state, index, index_value, length)
-                } else {},
+                },
                 _ => {},
-            };
+            }
             Operand {
                 type_id: element,
                 value: Option::None,
@@ -1153,7 +1153,7 @@ fn check_index_expression(
                     "cannot index " + operand_string(state, expression, base),
                     false,
                 )
-            } else {};
+            }
             invalid_operand(state)
         },
     }
@@ -1185,29 +1185,29 @@ fn check_slice_bounds(
                 (Some(node), Some(value)) => if value.to_i64() > length {
                     report_index_out_of_bounds(state, node, value, value.to_i64());
                     out_of_bounds = true;
-                } else {},
+                },
                 _ => {},
-            };
+            }
             match (high_node, high) {
                 (Some(node), Some(value)) => if value.to_i64() > length {
                     report_index_out_of_bounds(state, node, value, value.to_i64());
                     out_of_bounds = true;
-                } else {},
+                },
                 _ => {},
-            };
+            }
             match (max_node, max) {
                 (Some(node), Some(value)) => if value.to_i64() > length {
                     report_index_out_of_bounds(state, node, value, value.to_i64());
                     out_of_bounds = true;
-                } else {},
+                },
                 _ => {},
             }
         },
         None => {},
-    };
+    }
     if out_of_bounds {
         return
-    } else {};
+    }
     match (low, high_node, high) {
         (Some(low), Some(node), Some(high)) => if high < low {
             diagnostic(
@@ -1216,9 +1216,9 @@ fn check_slice_bounds(
                 "invalid slice indices: " + high.to_string() + " < " + low.to_string(),
                 false,
             )
-        } else {},
+        },
         _ => {},
-    };
+    }
     match (high, max_node, max) {
         (Some(high), Some(node), Some(max)) => if max < high {
             diagnostic(
@@ -1227,7 +1227,7 @@ fn check_slice_bounds(
                 "invalid slice indices: " + max.to_string() + " < " + high.to_string(),
                 false,
             )
-        } else {},
+        },
         _ => {},
     }
 }
@@ -1246,7 +1246,7 @@ fn sliceable_type(state: CheckState, value: go_types::TypeId, slice3: bool) -> i
             }
         },
         _ => {},
-    };
+    }
     match go_types::get_type(state.world, resolved) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element: _ } }) => 1,
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element: _ } }) => 2,
@@ -1277,12 +1277,12 @@ fn type_parameter_slice_indices_valid(state: CheckState, value: go_types::TypeId
     let terms = go_types::type_set_specific_types(state.world, value);
     if terms.is_empty() {
         return false
-    } else {};
+    }
     let mut first: Option[go_types::TypeId] = Option::None;
     for term in terms {
         if sliceable_type(state, term, false) == 0 || (slice3 && is_string_type(state, term)) {
             return false
-        } else {};
+        }
         match first {
             Some(previous) => {
                 let same = go_types::identical(
@@ -1295,7 +1295,7 @@ fn type_parameter_slice_indices_valid(state: CheckState, value: go_types::TypeId
                     || (is_string_type(state, term) && is_byte_slice_type(state, previous));
                 if !same && !string_bytes {
                     return false
-                } else {}
+                }
             },
             None => {
                 first = Option::Some(term);
@@ -1322,25 +1322,25 @@ fn check_slice_expression(
                 let _ = check_expression(state, scope, value);
             },
             None => {},
-        };
+        }
         match high {
             Some(value) => {
                 let _ = check_expression(state, scope, value);
             },
             None => {},
-        };
+        }
         match max {
             Some(value) => {
                 let _ = check_expression(state, scope, value);
             },
             None => {},
-        };
+        }
         return invalid_operand(state)
-    } else {};
+    }
     let recursive = record_active_value_type_cycle(state, base.type_id, true);
     if recursive {
         omit_indirect_cycle_facts(state, node, expression)
-    } else {};
+    }
     let check_indices = sliceable_type(state, base.type_id, slice3) > 0
         || (go_types::is_type_parameter(state.world, base.type_id)
             && type_parameter_slice_indices_valid(state, base.type_id, slice3));
@@ -1367,7 +1367,7 @@ fn check_slice_expression(
             pointer_to_array = true;
         },
         _ => {},
-    };
+    }
     match go_types::get_type(state.world, resolved) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => if !base.addressable
             && !pointer_to_array {
@@ -1454,10 +1454,10 @@ fn check_slice_expression(
                     valid = false;
                 } else if classification == 1 {
                     requires_addressable = true;
-                } else {}
+                }
                 if is_string_type(state, term) {
                     has_string = true;
-                } else {};
+                }
                 match first_type {
                     Some(first) => {
                         let same = go_types::identical(
@@ -1471,7 +1471,7 @@ fn check_slice_expression(
                         if !same && !string_bytes && mismatch.is_none() {
                             mismatch = Option::Some((first, term));
                             valid = false;
-                        } else {}
+                        }
                     },
                     None => {
                         first_type = Option::Some(term);
@@ -1493,7 +1493,7 @@ fn check_slice_expression(
                     return invalid_operand(state)
                 },
                 None => {},
-            };
+            }
             if !valid {
                 diagnostic(
                     state,
@@ -1540,7 +1540,7 @@ fn check_slice_expression(
                     "cannot slice " + operand_string(state, expression, base),
                     false,
                 )
-            } else {};
+            }
             invalid_operand(state)
         },
     }
@@ -1575,7 +1575,7 @@ fn check_type_assertion(
             false,
         );
         return invalid_operand(state)
-    } else {};
+    }
     match type_node {
         Some(type_node) => {
             let target = resolve_type(state, scope, type_node);
@@ -1594,7 +1594,7 @@ fn check_type_assertion(
             let recursive = record_active_value_type_cycle(state, target, false);
             if recursive {
                 let _ = state.omitted_type_fact_nodes.insert(node.value);
-            } else {};
+            }
             if !recursive && !type_contains_invalid(state, target)
                 && !go_types::assertable_to(state.world, source.type_id, target) {
                 let detail = interface_implementation_detail(state, target, source.type_id);
@@ -1612,7 +1612,7 @@ fn check_type_assertion(
                         },
                     false,
                 )
-            } else {};
+            }
             Operand {
                 type_id: result_target,
                 value: Option::None,
@@ -1641,8 +1641,8 @@ fn check_function_literal(
         if type_contains_alias_cycle(state, signature, object, Vec::new())
             && !local_alias_cycle_seen(state, object) {
             state.deferred_local_alias_cycles.push(object)
-        } else {}
-    } else {};
+        }
+    }
     if state.initialization_depth > 0 {
         check_deferred_function_body_early(state, type_node, signature, body, state.current_iota)
     } else if !state.active_type_objects.is_empty() || state.local_type_declaration_depth > 0 {
@@ -1651,6 +1651,6 @@ fn check_function_literal(
         check_deferred_function_body_early(state, type_node, signature, body, state.current_iota)
     } else {
         check_function_body(state, type_node, signature, body)
-    };
+    }
     Operand { type_id: signature, value: Option::None, addressable: false, assignable: false }
 }

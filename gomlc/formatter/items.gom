@@ -30,7 +30,7 @@ fn format_file(value: Builder, node: LocatedNode) -> BuiltDoc {
                     output.ensure_lines(1)
                 } else {
                     output.ensure_lines(2)
-                };
+                }
                 output.push_syntax(format_node(value, child));
                 previous_category.set(category)
             },
@@ -46,7 +46,7 @@ fn format_file(value: Builder, node: LocatedNode) -> BuiltDoc {
     }
     if !output.values.is_empty() {
         output.ensure_lines(1)
-    } else {};
+    }
     output.finish()
 }
 
@@ -55,12 +55,12 @@ fn format_attribute_list(value: Builder, node: LocatedNode) -> BuiltDoc {
     for attribute in direct_nodes(node) {
         if !output.values.is_empty() {
             output.ensure_lines(1)
-        } else {};
+        }
         output.push_syntax(format_node(value, attribute))
     }
     if !output.values.is_empty() {
         output.ensure_lines(1)
-    } else {};
+    }
     output.finish()
 }
 
@@ -91,7 +91,7 @@ fn direct_node_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Option[Locate
     for child in direct_nodes(value) {
         if node_is(child, kind) {
             return Option::Some(child)
-        } else {}
+        }
     }
     Option::None
 }
@@ -120,7 +120,7 @@ fn meaningful_block_nodes(value: LocatedNode) -> Vec[LocatedNode] {
     for child in direct_nodes(value) {
         if !omittable_block_node(child) {
             result.push(child)
-        } else {}
+        }
     }
     result
 }
@@ -139,21 +139,21 @@ fn omittable_empty_else(value: LocatedNode) -> bool {
 fn omittable_empty_else_range(value: LocatedNode) -> Option[(isize, isize)] {
     if !node_is(value, cst::NodeKind::EXPR_IF) {
         return Option::None
-    } else {};
+    }
     let else_start: Ref[Option[isize]] = Ref::new(Option::None);
     let cursor = child_cursor(value);
     while cursor.remaining() > 0 {
         match cursor.next() {
             Some(Token(token)) => if token_is(token, lexer::TokenKind::ElseKeyword) {
                 else_start.set(Option::Some(token.start))
-            } else {},
+            },
             Some(Node(child)) => if node_is(child, cst::NodeKind::EXPR_IF_ELSE)
                 && omittable_empty_else(child) {
                 return match else_start.get() {
                     Some(start) => Option::Some((start, child.end)),
                     None => Option::None,
                 }
-            } else {},
+            },
             None => (),
         }
     }
@@ -233,9 +233,9 @@ fn expression_statement_drops_semicolon(node: LocatedNode, following: Option[Loc
     match first_significant_token(node) {
         Some(token) => if token.token.kind == lexer::TokenKind::Label {
             return false
-        } else {},
+        },
         None => (),
-    };
+    }
     let following_continues = match following {
         Some(value) => node_continues_expression(value),
         None => false,
@@ -283,12 +283,12 @@ fn format_block(value: Builder, node: LocatedNode) -> BuiltDoc {
                 node_index.set(node_index.get() + 1);
                 if meaningful.get() {
                     content.ensure_lines(1)
-                } else {};
+                }
                 if node_is(child, cst::NodeKind::STMT_EXPR) {
                     content.push_syntax(format_expr_statement(value, child, following))
                 } else {
                     content.push_syntax(format_node(value, child))
-                };
+                }
                 meaningful.set(true)
             },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::LBrace)
@@ -340,7 +340,7 @@ fn format_impl(value: Builder, node: LocatedNode) -> BuiltDoc {
             Some(Node(child)) => if in_body.get() {
                 if item_count.get() > 0 {
                     body.ensure_lines(2)
-                } else {};
+                }
                 body.push_syntax(format_node(value, child));
                 item_count.set(item_count.get() + 1)
             } else {
@@ -408,7 +408,7 @@ fn format_inline_variant_field_list(value: Builder, node: LocatedNode) -> BuiltD
     let fields = direct_nodes(node);
     if fields.is_empty() || node_has_comment(node) {
         return format_generic(value, node)
-    } else {};
+    }
     let docs: Vec[Doc] = Vec::new();
     for field in fields {
         docs.push(format_node(value, field).doc)
@@ -477,7 +477,7 @@ fn enum_variants_require_vertical_fields(value: Builder, node: LocatedNode) -> b
     for child in direct_nodes(node) {
         if node_is(child, cst::NodeKind::VARIANT) && variant_requires_vertical_fields(value, child) {
             return true
-        } else {}
+        }
     }
     false
 }
@@ -496,13 +496,13 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
             Some(Node(child)) => {
                 if item_count.get() > 0 {
                     content.ensure_lines(1)
-                } else {};
+                }
                 if cst::node_kind_equal(kind, cst::NodeKind::VARIANT_LIST)
                     && node_is(child, cst::NodeKind::VARIANT) {
                     content.push_syntax(format_variant(value, child, vertical_variant_fields))
                 } else {
                     content.push_syntax(format_node(value, child))
-                };
+                }
                 if vertical_body_uses_comma(kind) && content.trailing_lines.get() == 0 {
                     content.push_syntax(
                         built(
@@ -511,7 +511,7 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
                             Option::Some(lexer::TokenKind::Comma),
                         ),
                     )
-                } else {};
+                }
                 item_count.set(item_count.get() + 1)
             },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::RBrace)

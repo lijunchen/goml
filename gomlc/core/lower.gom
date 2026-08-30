@@ -129,7 +129,7 @@ fn trait_impl_method_name(reference: tast::TraitRef, for_ty: tast::Type, name: s
         for index in 0..reference.args.len() {
             if index > 0 {
                 builder.write_char(',')
-            } else {};
+            }
             builder.write_string(compact_type(reference.args[index]))
         }
         builder.write_string("]@");
@@ -534,7 +534,7 @@ fn lower_generic_match(
                 Some(lhs) => result.push(LowerArm { lhs, body: lower_expr(ctx, arm.body) }),
                 None => if default.is_none() {
                     default = Option::Some(lower_expr(ctx, arm.body));
-                } else {},
+                },
             },
         }
     }
@@ -558,7 +558,7 @@ fn bool_arm(arms: Vec[tast::Arm], expected: bool) -> Option[tast::Arm] {
     for arm in arms {
         if pattern_matches_bool(arm.pat, expected) {
             return Option::Some(arm)
-        } else {}
+        }
     }
     Option::None
 }
@@ -720,7 +720,7 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
                 fields.push(field.0);
                 if field.0 == name {
                     field_index = index;
-                } else {}
+                }
             }
             LowerExpr::ConstrGet {
                 expr: lower_expr(ctx, value),
@@ -1596,7 +1596,7 @@ fn remaining_tast_block(
     }
     if ctx.cleanups.len() == cleanup_start {
         return tast::Expr::Block { block: tast::Block { stmts: remaining, tail }, ty }
-    } else {};
+    }
     let tail = match tail {
         Some(value) => {
             let value_ty = tast::expr_type(value);
@@ -1677,7 +1677,7 @@ fn lower_pattern_continuation(
                 )
             },
             None => (),
-        };
+        }
         lower_pattern_rows(ctx, rows, ty)
     }
 }
@@ -1939,7 +1939,7 @@ fn lower_file_with_types(
                     };
                     if numeric_conversion {
                         continue
-                    } else {};
+                    }
                     let trait_impl = match block.trait_ref {
                         Some(reference) => Option::Some(
                             LowerTraitImpl {

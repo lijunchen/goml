@@ -298,7 +298,7 @@ fn signature_type_parameters(world: go_types::World, signature: go_types::TypeId
             }
         },
         _ => {},
-    };
+    }
     result
 }
 
@@ -433,7 +433,7 @@ fn collect_function_sources(
                         "interpreted package has no syntax",
                     ),
                 ),
-            };
+            }
             match package_value.syntax {
                 Some(package_syntax) => for node_value in package_syntax.arena.nodes {
                     let Some(node) = node_value else {
@@ -496,7 +496,7 @@ fn collect_function_sources(
                 },
                 None => {},
             }
-        } else {}
+        }
     }
     sources
 }
@@ -543,7 +543,7 @@ fn inherit_literal_type_parameters(
             }
             current_package = value.package_index;
             current_file = value.file;
-        } else {};
+        }
         while !active.is_empty() && active[active.len() - 1].end < value.start {
             let _ = active.pop();
         }
@@ -556,12 +556,12 @@ fn inherit_literal_type_parameters(
                     if owner < 0 || width < owner_width {
                         owner = candidate.source;
                         owner_width = width;
-                    } else {}
-                } else {}
+                    }
+                }
             }
             if owner >= 0 {
                 sources[value.source].type_parameters = sources[owner].type_parameters;
-            } else {}
+            }
         } else {
             active.push(value)
         }
@@ -617,7 +617,7 @@ fn analyze_function_capture_objects(
             if entry.object.value >= 0 && entry.object.value < object_scopes.len()
                 && object_scopes[entry.object.value].is_none() {
                 object_scopes[entry.object.value] = Option::Some(scope.id);
-            } else {}
+            }
         }
     }
     let package_uses: Vec[Vec[CaptureUse]] = Vec::with_capacity(program.packages.len());
@@ -641,12 +641,12 @@ fn analyze_function_capture_objects(
                                 object,
                             },
                         )
-                    } else {},
+                    },
                     None => {},
                 }
             },
             None => {},
-        };
+        }
         collections::sort_by(uses, compare_capture_use);
         package_uses.push(uses)
     }
@@ -669,7 +669,7 @@ fn analyze_function_capture_objects(
                 let usage = uses[usage_index];
                 if usage.file.value != body.file.value || usage.start > body.span.end {
                     break
-                } else {};
+                }
                 if usage.end <= body.span.end {
                     match object_scopes[usage.object.value] {
                         Some(scope) => match nearest_function_scope(program.world, scope) {
@@ -678,15 +678,15 @@ fn analyze_function_capture_objects(
                                 && !selected.contains(usage.object.value) {
                                 let _ = selected.insert(usage.object.value);
                                 captures.push(usage.object);
-                            } else {},
+                            },
                             None => {},
                         },
                         None => {},
                     }
-                } else {};
+                }
                 usage_index = usage_index + 1;
             }
-        } else {};
+        }
         result.push(FunctionCaptures { objects: captures })
     }
     Result::Ok(result)
@@ -717,11 +717,11 @@ fn collect_globals(program: execution::ExecutionProgram, object_globals: Vec[Opt
                                 },
                             );
                             object_globals[object.id.value] = Option::Some(id);
-                        } else {}
-                    } else {}
+                        }
+                    }
                 }
-            } else {}
-        } else {}
+            }
+        }
     }
     globals
 }
@@ -899,7 +899,7 @@ fn emit(builder: FunctionBuilder, node: syntax::NodeId, kind: InstructionKind) -
             "cannot emit " + description + " after block " + builder.current.get().value.to_string()
                 + " was terminated",
         )
-    } else {};
+    }
     let value = match syntax::get_node(builder.syntax.arena, node) {
         Some(value) => value,
         None => return Result::Err("invalid syntax node " + node.value.to_string()),
@@ -915,7 +915,7 @@ fn terminate(builder: FunctionBuilder, node: syntax::NodeId, kind: TerminatorKin
 ] {
     if current_terminated(builder) {
         return Result::Err("basic block already has a terminator")
-    } else {};
+    }
     let value = match syntax::get_node(builder.syntax.arena, node) {
         Some(value) => value,
         None => return Result::Err("invalid syntax node " + node.value.to_string()),
@@ -962,7 +962,7 @@ fn ensure_local(
 fn object_local(builder: FunctionBuilder, object: go_types::ObjectId) -> Result[LocalId, string] {
     if object.value < 0 || object.value >= builder.world.objects.len() {
         return Result::Err("object is outside the world")
-    } else {};
+    }
     match builder.object_locals[object.value] {
         Some(local) => Result::Ok(local),
         None => {
@@ -1040,7 +1040,7 @@ fn coerce_register(
 ) -> Result[RegisterId, string] {
     if source.value < 0 || source.value >= builder.register_types.len() {
         return Result::Err("coercion source register is invalid")
-    } else {};
+    }
     let source_type = builder.register_types[source.value];
     if go_types::basic_kind(builder.world, source_type)
         == Option::Some(go_types::BasicKind::UntypedNil)
@@ -1146,7 +1146,7 @@ fn expression_result_types(builder: FunctionBuilder, node: syntax::NodeId) -> Re
     let result: Vec[go_types::TypeId] = Vec::new();
     if fact.void {
         return Result::Ok(result)
-    } else {};
+    }
     let underlying = go_types::underlying(builder.world, fact.type_id);
     match go_types::type_data(builder.world, underlying) {
         go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } } => {
@@ -1187,10 +1187,10 @@ fn lower_place(builder: FunctionBuilder, node: syntax::NodeId) -> Result[Option[
             }.ok_or("identifier has no variable object")?;
             if object.value < 0 || object.value >= builder.world.objects.len() {
                 return Result::Err("identifier object is outside the world")
-            } else {};
+            }
             if builder.world.objects[object.value].kind != go_types::ObjectKind::Var {
                 return Result::Err("identifier is not a variable")
-            } else {};
+            }
             match builder.object_globals[object.value] {
                 Some(global) => Result::Ok(Option::Some(global_place(builder, node, global)?)),
                 None => {
@@ -1237,7 +1237,7 @@ fn lower_place(builder: FunctionBuilder, node: syntax::NodeId) -> Result[Option[
             let expression_type = node_type(builder, expression)?;
             if map_type(builder, expression_type) {
                 return Result::Err("map index is not addressable")
-            } else {};
+            }
             let base = if pointer_to_array(builder, expression_type) {
                 let pointer = lower_single_expression(builder, expression)?;
                 let place = new_place(builder);
@@ -1348,11 +1348,11 @@ fn function_instance_matches(
 ) -> bool {
     if value.type_arguments.len() != arguments.len() {
         return false
-    } else {};
+    }
     for index in 0..arguments.len() {
         if !go_types::identical(world, value.type_arguments[index], arguments[index]) {
             return false
-        } else {}
+        }
     }
     true
 }
@@ -1372,7 +1372,7 @@ fn instantiated_arguments(builder: FunctionBuilder, node: syntax::NodeId) -> Vec
             result.push(substitute_type(builder, argument))
         },
         Err(_) => {},
-    };
+    }
     result
 }
 
@@ -1408,7 +1408,7 @@ fn receiver_type_arguments(builder: FunctionBuilder, type_id: go_types::TypeId) 
             value = element;
         },
         _ => {},
-    };
+    }
     match go_types::get_type(builder.world, go_types::unalias(builder.world, value)) {
         Some(go_types::TypeData {
             id: _,
@@ -1427,14 +1427,14 @@ fn receiver_type_arguments(builder: FunctionBuilder, type_id: go_types::TypeId) 
 fn source_object(builder: FunctionBuilder, object: go_types::ObjectId) -> go_types::ObjectId {
     if object.value < 0 || object.value >= builder.world.objects.len() {
         return object
-    } else {};
+    }
     let value = builder.world.objects[object.value];
     match value.owner {
         Some(owner) => if owner.value != builder.package_id.value {
             return object
-        } else {},
+        },
         None => {},
-    };
+    }
     match value.node {
         Some(node) => match execution::require_definition_index(builder.index, node) {
             Ok(fact_index) => builder.index.definitions[fact_index].object.unwrap_or(object),
@@ -1496,12 +1496,12 @@ fn instantiate_function(
             "function instance has " + arguments.len().to_string() + " type arguments but requires "
                 + source.type_parameters.len().to_string(),
         )
-    } else {};
+    }
     for instance_index in builder.function_instance_indices[template] {
         let instance = builder.function_instances[instance_index];
         if function_instance_matches(builder.world, instance, arguments) {
             return Result::Ok(instance.function)
-        } else {}
+        }
     }
     let function = function_id(builder.next_function.get());
     builder.next_function.set(builder.next_function.get() + 1);
@@ -1538,7 +1538,7 @@ fn instantiate_function(
     builder.object_functions[instance_object.value] = Option::Some(function);
     if arguments.is_empty() {
         builder.object_functions[source.object.value] = Option::Some(function);
-    } else {};
+    }
     let instance_index = builder.function_instances.len();
     builder.function_instances.push(
         FunctionInstance {
@@ -1619,7 +1619,7 @@ fn emit_function_value(builder: FunctionBuilder, node: syntax::NodeId, function:
 ] {
     if function.value < 0 || function.value >= builder.function_capture_objects.len() {
         return Result::Err("function value target is outside the program")
-    } else {};
+    }
     let captures: Vec[LocalId] = Vec::with_capacity(
         builder.function_capture_objects[function.value].objects.len(),
     );
@@ -1679,13 +1679,13 @@ fn native_call_for_node(builder: FunctionBuilder, node: syntax::NodeId, object: 
             };
         },
         Err(_) => {},
-    };
+    }
     for call in builder.native_calls {
         if call.import_path == package_value.path && call.symbol == value.name
             && call.type_argument_keys == type_argument_keys
             && go_types::identical(builder.world, call.signature, signature) {
             return Result::Ok(call.id)
-        } else {}
+        }
     }
     let shape = native_signature(builder.world, signature)?;
     let clone = go_types::add_object(
@@ -1740,14 +1740,14 @@ fn native_method_call_for_node(builder: FunctionBuilder, object: go_types::Objec
     let receiver = receiver.ok_or("native method has no receiver")?;
     if receiver.package_id.value == builder.package_id.value {
         return Result::Err("method receiver package is interpreted")
-    } else {};
+    }
     for call in builder.native_calls {
         if call.import_path == receiver.import_path && call.symbol == value.name
             && call.receiver_name == receiver.name
             && call.receiver_pointer == receiver.pointer
             && go_types::identical(builder.world, call.signature, value.type_id) {
             return Result::Ok(call.id)
-        } else {}
+        }
     }
     let clone = go_types::add_object(
         builder.world,
@@ -1814,10 +1814,10 @@ fn lower_call_target(builder: FunctionBuilder, node: syntax::NodeId) -> Result[C
             };
             if type_expression {
                 return Result::Ok(CallTarget::Dynamic(lower_single_expression(builder, node)?))
-            } else {}
+            }
         },
         _ => {},
-    };
+    }
     let object = match kind {
         syntax::SyntaxKind::Ident { name_pos: _, name: _ } => use_object(builder, node)?,
         syntax::SyntaxKind::SelectorExpr { expression: _, selector } => use_object(
@@ -1828,15 +1828,15 @@ fn lower_call_target(builder: FunctionBuilder, node: syntax::NodeId) -> Result[C
     };
     if object.value < 0 || object.value >= builder.world.objects.len() {
         return Result::Err("call target object is outside the world")
-    } else {};
+    }
     let value = builder.world.objects[object.value];
     match value.owner {
         Some(owner) => if builder.world.packages[owner.value].path == "slices"
             && value.name == "Grow" {
             return Result::Ok(CallTarget::Builtin(BuiltinKind::SliceGrow))
-        } else {},
+        },
         None => {},
-    };
+    }
     match value.kind {
         go_types::ObjectKind::Builtin => Result::Ok(CallTarget::Builtin(builtin_kind(value.name)?)),
         go_types::ObjectKind::Func => match kind {
@@ -1993,7 +1993,7 @@ fn lower_method_receiver(
     let expected = method_receiver_type(builder, object)?;
     if selection_index.is_empty() {
         return Result::Err("method selection has an empty path")
-    } else {};
+    }
     let fields: Vec[isize] = Vec::with_capacity(selection_index.len() - 1);
     for index in 0..selection_index.len() - 1 {
         fields.push(selection_index[index])
@@ -2002,7 +2002,7 @@ fn lower_method_receiver(
     let actual = field_path_type(builder, source_type, fields)?;
     if go_types::identical(builder.world, actual, expected) {
         return lower_receiver_value(builder, node, expression, fields, actual)
-    } else {};
+    }
     match (pointer_element(builder, expected), pointer_element(builder, actual)) {
         (Some(element), None) if go_types::identical(builder.world, element, actual) => {
             let place = lower_receiver_place(builder, node, expression, fields)?.0.ok_or(
@@ -2059,7 +2059,7 @@ fn lower_receiver_value(
 ) -> Result[RegisterId, string] {
     if fields.is_empty() {
         return lower_single_expression(builder, expression)
-    } else {};
+    }
     let base = lower_single_expression(builder, expression)?;
     let target = new_register(builder, type_id);
     emit(builder, node, InstructionKind::FieldValue { target, base, index: fields })?;
@@ -2094,7 +2094,7 @@ fn lower_receiver_place(
                 current_type = element;
             },
             None => {},
-        };
+        }
         let fields = match go_types::get_type(
             builder.world,
             go_types::underlying(builder.world, current_type),
@@ -2104,7 +2104,7 @@ fn lower_receiver_place(
         };
         if field < 0 || field >= fields.len() {
             return Result::Err("method receiver field index is out of range")
-        } else {};
+        }
         let base = current_place.ok_or("method receiver is not addressable")?;
         let place = new_place(builder);
         emit(
@@ -2124,7 +2124,7 @@ fn lower_conversion(builder: FunctionBuilder, node: syntax::NodeId, arguments: V
 ] {
     if arguments.len() != 1 {
         return Result::Err("conversion requires one argument")
-    } else {};
+    }
     let source = lower_single_expression(builder, arguments[0])?;
     let type_id = node_type(builder, node)?;
     let target = new_register(builder, type_id);
@@ -2138,7 +2138,7 @@ fn lower_new_builtin(builder: FunctionBuilder, node: syntax::NodeId, arguments: 
 ] {
     if arguments.len() != 1 {
         return Result::Err("new requires one argument")
-    } else {};
+    }
     let argument_fact = node_fact(builder, arguments[0])?;
     let value = if argument_fact.type_expr {
         Option::None
@@ -2157,18 +2157,18 @@ fn lower_make_builtin(
 ) -> Result[Vec[RegisterId], string] {
     if arguments.is_empty() {
         return Result::Err("make has an invalid argument count")
-    } else {};
+    }
     let type_fact = node_fact(builder, arguments[0])?;
     if !type_fact.type_expr {
         return Result::Err("make first argument is not a type")
-    } else {};
+    }
     let type_id = node_type(builder, node)?;
     let underlying = go_types::underlying(builder.world, type_id);
     match go_types::get_type(builder.world, underlying) {
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element: _ } }) => {
             if arguments.len() < 2 || arguments.len() > 3 {
                 return Result::Err("make slice has an invalid argument count")
-            } else {};
+            }
             let length = lower_single_expression(builder, arguments[1])?;
             let capacity = if arguments.len() == 3 {
                 lower_single_expression(builder, arguments[2])?
@@ -2182,7 +2182,7 @@ fn lower_make_builtin(
         Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key: _, value: _ } }) => {
             if arguments.len() > 2 {
                 return Result::Err("make map has an invalid argument count")
-            } else {};
+            }
             let capacity = if arguments.len() == 2 {
                 Option::Some(lower_single_expression(builder, arguments[1])?)
             } else {
@@ -2198,7 +2198,7 @@ fn lower_make_builtin(
         }) => {
             if arguments.len() > 2 {
                 return Result::Err("make channel has an invalid argument count")
-            } else {};
+            }
             let int_type = go_types::basic_type(builder.world, "int").ok_or("world has no int type")?;
             let capacity = if arguments.len() == 2 {
                 lower_single_expression(builder, arguments[1])?
@@ -2236,7 +2236,7 @@ fn callable_parameters(builder: FunctionBuilder, node: syntax::NodeId) -> Result
                     result.push(substitute_type(builder, variable.type_id))
                 },
                 _ => return Result::Err("callable parameter list is not a tuple"),
-            };
+            }
             Result::Ok((result, variadic))
         },
         _ => Result::Err("call target has no signature"),
@@ -2330,7 +2330,7 @@ fn lower_call(
     let function_fact = node_fact(builder, function_node)?;
     if function_fact.type_expr {
         return lower_conversion(builder, node, arguments)
-    } else {};
+    }
     let target = lower_call_target(builder, function_node)?;
     match target {
         CallTarget::Builtin(BuiltinKind::New) => return lower_new_builtin(builder, node, arguments),
@@ -2340,7 +2340,7 @@ fn lower_call(
             arguments,
         ),
         _ => {},
-    };
+    }
     let argument_values = lower_call_arguments(
         builder,
         node,
@@ -2381,7 +2381,7 @@ fn lower_call(
                 variadic: ellipsis >= 0,
             },
         )?,
-    };
+    }
     Result::Ok(results)
 }
 
@@ -2394,7 +2394,7 @@ fn lower_composite_literal(
     let underlying = go_types::underlying(builder.world, type_id);
     if !go_types::has_type(builder.world, underlying) {
         return Result::Err("composite literal has an invalid type")
-    } else {};
+    }
     let type_kind = go_types::type_data(builder.world, underlying).kind;
     match type_kind {
         go_types::TypeKind::Map { key: _, value: _ } => {
@@ -2436,7 +2436,7 @@ fn lower_composite_literal(
             return Result::Ok(Vec::from_array([target]))
         },
         _ => {},
-    };
+    }
     let values: Vec[AggregateElement] = Vec::new();
     let mut length = elements.len();
     for position in 0..elements.len() {
@@ -2453,7 +2453,7 @@ fn lower_composite_literal(
                         for field_index in 0..fields.len() {
                             if fields[field_index].variable.name == name {
                                 found = field_index;
-                            } else {}
+                            }
                         }
                         if found < 0 {
                             return Result::Err("struct literal field was not found")
@@ -2475,7 +2475,7 @@ fn lower_composite_literal(
                             return Result::Err("composite literal index is negative")
                         } else if index + 1 > length {
                             length = index + 1;
-                        } else {};
+                        }
                         index
                     },
                     _ => return Result::Err("keyed literal type is not supported"),
@@ -2596,7 +2596,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                 let object = use_object(builder, node)?;
                 if object.value < 0 || object.value >= builder.world.objects.len() {
                     return Result::Err("identifier object is outside the world")
-                } else {};
+                }
                 match builder.world.objects[object.value].kind {
                     go_types::ObjectKind::Var => {
                         let place = lower_place(builder, node)?.ok_or(
@@ -2652,7 +2652,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             let types = expression_result_types(builder, node)?;
             if types.is_empty() || types.len() > 2 {
                 return Result::Err("channel receive has an invalid result shape")
-            } else {};
+            }
             let value = new_register(builder, types[0]);
             let ok = if types.len() == 2 {
                 Option::Some(new_register(builder, types[1]))
@@ -2664,7 +2664,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             match ok {
                 Some(register) => result.push(register),
                 None => {},
-            };
+            }
             Result::Ok(result)
         } else {
             let operand = lower_single_expression(builder, expression)?;
@@ -2759,7 +2759,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                                 InstructionKind::MakeMethodValue { target, function, receiver },
                             )?;
                         }
-                    };
+                    }
                     Result::Ok(Vec::from_array([target]))
                 },
                 Err(_) => {
@@ -2771,7 +2771,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                     };
                     if object.value < 0 || object.value >= builder.world.objects.len() {
                         return Result::Err("selector object is outside the world")
-                    } else {};
+                    }
                     match builder.world.objects[object.value].kind {
                         go_types::ObjectKind::Const => {
                             Result::Ok(Vec::from_array([emit_constant(builder, node)?]))
@@ -2800,14 +2800,14 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             match lower_generic_function_value(builder, node)? {
                 Some(value) => return Result::Ok(Vec::from_array([value])),
                 None => {},
-            };
+            }
             let expression_type = node_type(builder, expression)?;
             if pointer_to_array(builder, expression_type) {
                 let place = lower_place(builder, node)?.ok_or("indexed pointer is not addressable")?;
                 return Result::Ok(
                     Vec::from_array([emit_load(builder, node, place, node_type(builder, node)?)?]),
                 )
-            } else {};
+            }
             let base = lower_single_expression(builder, expression)?;
             let index_value = lower_single_expression(builder, index)?;
             let coerced_index = match go_types::get_type(
@@ -2825,7 +2825,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             let result_types = expression_result_types(builder, node)?;
             if result_types.is_empty() || result_types.len() > 2 {
                 return Result::Err("index expression has an invalid result shape")
-            } else {};
+            }
             let target = new_register(builder, result_types[0]);
             let ok = if result_types.len() == 2 {
                 Option::Some(new_register(builder, result_types[1]))
@@ -2841,7 +2841,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             match ok {
                 Some(value) => result.push(value),
                 None => {},
-            };
+            }
             Result::Ok(result)
         },
         syntax::SyntaxKind::SliceExpr {
@@ -2890,7 +2890,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                 _ => {
                     base_value = Option::Some(lower_single_expression(builder, expression)?);
                 },
-            };
+            }
             let low = match low {
                 Some(value) => Option::Some(lower_single_expression(builder, value)?),
                 None => Option::None,
@@ -2939,7 +2939,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
                         maximum,
                     },
                 )?,
-            };
+            }
             Result::Ok(Vec::from_array([target]))
         },
         syntax::SyntaxKind::CompositeLit {
@@ -2973,12 +2973,12 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             let fact = node_fact(builder, type_node)?;
             if !fact.type_expr {
                 return Result::Err("type assertion target is not a type")
-            } else {};
+            }
             let source = lower_single_expression(builder, expression)?;
             let result_types = expression_result_types(builder, node)?;
             if result_types.is_empty() || result_types.len() > 2 {
                 return Result::Err("type assertion has an invalid result shape")
-            } else {};
+            }
             let target = new_register(builder, result_types[0]);
             let ok = if result_types.len() == 2 {
                 Option::Some(new_register(builder, result_types[1]))
@@ -2994,7 +2994,7 @@ fn lower_expression(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
             match ok {
                 Some(value) => values.push(value),
                 None => {},
-            };
+            }
             Result::Ok(values)
         },
         _ => Result::Err("syntax node is not a runtime expression"),
@@ -3106,7 +3106,7 @@ fn store_assignment_values(
                 + values.len().to_string()
                 + " values",
         )
-    } else {};
+    }
     for index in 0..targets.len() {
         match targets[index] {
             AssignmentTarget::Place(Some(place)) => {
@@ -3145,7 +3145,7 @@ fn store_values(
                 + values.len().to_string()
                 + " values",
         )
-    } else {};
+    }
     for index in 0..places.len() {
         match places[index] {
             Some(place) => emit(
@@ -3183,7 +3183,7 @@ fn lower_assignment(
         for target in left {
             renew_definition_local(builder, target)?
         }
-    } else {};
+    }
     let targets = lower_assignment_targets(builder, left)?;
     if token == "=" || token == ":=" {
         let values = lower_expression_list(builder, right)?;
@@ -3191,7 +3191,7 @@ fn lower_assignment(
     } else {
         if targets.len() != 1 || right.len() != 1 {
             return Result::Err("compound assignment requires one target and one value")
-        } else {};
+        }
         let type_id = node_type(builder, left[0])?;
         let current = match targets[0] {
             AssignmentTarget::Place(Some(place)) => emit_load(builder, left[0], place, type_id)?,
@@ -3252,7 +3252,7 @@ fn lower_value_spec(
             )?;
             if object.value < 0 || object.value >= builder.world.objects.len() {
                 return Result::Err("variable object is outside the world")
-            } else {};
+            }
             result.push(emit_zero(builder, name, builder.world.objects[object.value].type_id)?)
         }
         result
@@ -3262,7 +3262,7 @@ fn lower_value_spec(
     let coerced: Vec[RegisterId] = Vec::with_capacity(initializers.len());
     if names.len() != initializers.len() {
         return Result::Err("variable initializer count does not match names")
-    } else {};
+    }
     for index in 0..initializers.len() {
         coerced.push(
             coerce_register(
@@ -3290,7 +3290,7 @@ fn lower_declaration(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(
                 }
             } else if token == "const" || token == "type" {} else {
                 return Result::Err("unsupported declaration " + token)
-            };
+            }
             Result::Ok(())
         },
         _ => Result::Err("statement declaration is not a general declaration"),
@@ -3300,7 +3300,7 @@ fn lower_declaration(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(
 fn ensure_open_block(builder: FunctionBuilder) -> () {
     if current_terminated(builder) {
         switch_to(builder, new_block(builder))
-    } else {}
+    }
 }
 
 fn lower_return(builder: FunctionBuilder, node: syntax::NodeId, expressions: Vec[syntax::NodeId]) -> Result[
@@ -3319,7 +3319,7 @@ fn lower_return(builder: FunctionBuilder, node: syntax::NodeId, expressions: Vec
     };
     if values.len() != builder.results.len() {
         return Result::Err("return value count does not match results")
-    } else {};
+    }
     let coerced: Vec[RegisterId] = Vec::with_capacity(values.len());
     for index in 0..values.len() {
         coerced.push(
@@ -3345,7 +3345,7 @@ fn lower_if(
     match initialization {
         Some(value) => lower_statement(builder, value)?,
         None => {},
-    };
+    }
     let condition = lower_single_expression(builder, condition)?;
     let then_block = new_block(builder);
     let else_block = new_block(builder);
@@ -3365,15 +3365,15 @@ fn lower_if(
     lower_statement(builder, body)?;
     if !current_terminated(builder) {
         terminate(builder, node, TerminatorKind::Jump { target: join_block, arguments: Vec::new() })?
-    } else {};
+    }
     switch_to(builder, else_block);
     match else_branch {
         Some(value) => lower_statement(builder, value)?,
         None => {},
-    };
+    }
     if !current_terminated(builder) {
         terminate(builder, node, TerminatorKind::Jump { target: join_block, arguments: Vec::new() })?
-    } else {};
+    }
     switch_to(builder, join_block);
     Result::Ok(())
 }
@@ -3391,7 +3391,7 @@ fn for_definition_locals(builder: FunctionBuilder, initialization: Option[syntax
                         && object.value < builder.object_globals.len()
                         && builder.object_globals[object.value].is_none() {
                         result.push(object_local(builder, object)?)
-                    } else {},
+                    },
                     None => {},
                 }
             },
@@ -3415,7 +3415,7 @@ fn lower_for(
     match initialization {
         Some(value) => lower_statement(builder, value)?,
         None => {},
-    };
+    }
     let condition_block = new_block(builder);
     let body_block = new_block(builder);
     let post_block = new_block(builder);
@@ -3446,7 +3446,7 @@ fn lower_for(
             node,
             TerminatorKind::Jump { target: body_block, arguments: Vec::new() },
         )?,
-    };
+    }
     builder.break_targets.push(exit_block);
     builder.continue_targets.push(post_block);
     match label {
@@ -3455,12 +3455,12 @@ fn lower_for(
             builder.continue_labels[name] = post_block;
         },
         None => {},
-    };
+    }
     switch_to(builder, body_block);
     lower_statement(builder, body)?;
     if !current_terminated(builder) {
         terminate(builder, node, TerminatorKind::Jump { target: post_block, arguments: Vec::new() })?
-    } else {};
+    }
     switch_to(builder, post_block);
     for local in iteration_locals {
         emit(builder, node, InstructionKind::CloneLocal { local })?
@@ -3468,14 +3468,14 @@ fn lower_for(
     match post {
         Some(value) => lower_statement(builder, value)?,
         None => {},
-    };
+    }
     if !current_terminated(builder) {
         terminate(
             builder,
             node,
             TerminatorKind::Jump { target: condition_block, arguments: Vec::new() },
         )?
-    } else {};
+    }
     let _ = builder.break_targets.pop();
     let _ = builder.continue_targets.pop();
     match label {
@@ -3484,7 +3484,7 @@ fn lower_for(
             let _ = builder.continue_labels.remove(name);
         },
         None => {},
-    };
+    }
     switch_to(builder, exit_block);
     Result::Ok(())
 }
@@ -3497,15 +3497,15 @@ fn renew_range_definition_locals(
 ) -> Result[(), string] {
     if !define {
         return Result::Ok(())
-    } else {};
+    }
     match key {
         Some(target) => renew_definition_local(builder, target)?,
         None => {},
-    };
+    }
     match value {
         Some(target) => renew_definition_local(builder, target)?,
         None => {},
-    };
+    }
     Result::Ok(())
 }
 
@@ -3621,7 +3621,7 @@ fn lower_map_range(
             node,
             TerminatorKind::Jump { target: condition_block, arguments: Vec::new() },
         )?
-    } else {};
+    }
     let _ = builder.break_targets.pop();
     let _ = builder.continue_targets.pop();
     remove_range_label(builder, label);
@@ -3642,7 +3642,7 @@ fn lower_channel_range(
 ) -> Result[(), string] {
     if value.is_some() {
         return Result::Err("channel range has more than one iteration variable")
-    } else {};
+    }
     let bool_type = go_types::basic_type(builder.world, "bool").ok_or("world has no bool type")?;
     let receive_block = new_block(builder);
     let body_block = new_block(builder);
@@ -3681,7 +3681,7 @@ fn lower_channel_range(
             node,
             TerminatorKind::Jump { target: receive_block, arguments: Vec::new() },
         )?
-    } else {};
+    }
     let _ = builder.break_targets.pop();
     let _ = builder.continue_targets.pop();
     remove_range_label(builder, label);
@@ -3745,7 +3745,7 @@ fn lower_range_source(builder: FunctionBuilder, expression: syntax::NodeId) -> R
             Option::None,
             -1,
         )
-    } else {};
+    }
     let underlying = go_types::underlying(builder.world, source_type);
     match go_types::get_type(builder.world, underlying) {
         Some(go_types::TypeData {
@@ -3829,7 +3829,7 @@ fn lower_range_bound(
 ) -> Result[RangeBound, string] {
     if source.integer {
         return Result::Ok(RangeBound { index_type: source.source_type, value: source.source })
-    } else {};
+    }
     if source.fixed_length >= 0 {
         let result = new_register(builder, source.int_type);
         emit(
@@ -3877,7 +3877,7 @@ fn lower_range_iteration_value(
         return Result::Ok(
             RangeIterationValue { width: Option::Some(width), value: Option::Some(rune) },
         )
-    } else {};
+    }
     match value {
         Some(_) => {
             let target = new_register(
@@ -3904,7 +3904,7 @@ fn lower_range_iteration_value(
                         ok: Option::None,
                     },
                 )?,
-            };
+            }
             Result::Ok(RangeIterationValue { width: Option::None, value: Option::Some(target) })
         },
         None => Result::Ok(RangeIterationValue { width: Option::None, value: Option::None }),
@@ -3995,7 +3995,7 @@ fn lower_indexed_range(
     lower_statement(builder, body)?;
     if !current_terminated(builder) {
         terminate(builder, node, TerminatorKind::Jump { target: post_block, arguments: Vec::new() })?
-    } else {};
+    }
     switch_to(builder, post_block);
     let step = lower_range_step(builder, node, iteration.width, bound.index_type)?;
     let next = new_register(builder, bound.index_type);
@@ -4112,7 +4112,7 @@ fn lower_switch(
     match initialization {
         Some(value) => lower_statement(builder, value)?,
         None => {},
-    };
+    }
     let tag_value = match tag {
         Some(value) => lower_single_expression(builder, value)?,
         None => true_register(builder, node)?,
@@ -4123,7 +4123,7 @@ fn lower_switch(
     for clause in clauses {
         if clause.expressions.is_empty() {
             default_target = clause.target;
-        } else {}
+        }
     }
     let bool_type = go_types::basic_type(builder.world, "bool").ok_or("world has no bool type")?;
     for clause in clauses {
@@ -4162,7 +4162,7 @@ fn lower_switch(
             builder.break_labels[name] = exit;
         },
         None => {},
-    };
+    }
     for index in 0..clauses.len() {
         let clause = clauses[index];
         switch_to(builder, clause.target);
@@ -4181,7 +4181,7 @@ fn lower_switch(
                 clause.node,
                 TerminatorKind::Jump { target: exit, arguments: Vec::new() },
             )?
-        } else {}
+        }
     }
     let _ = builder.break_targets.pop();
     match label {
@@ -4189,7 +4189,7 @@ fn lower_switch(
             let _ = builder.break_labels.remove(name);
         },
         None => {},
-    };
+    }
     switch_to(builder, exit);
     Result::Ok(())
 }
@@ -4208,7 +4208,7 @@ fn type_switch_guard(builder: FunctionBuilder, node: syntax::NodeId) -> Result[
         syntax::SyntaxKind::AssignStmt { left, token_pos: _, token, right } => {
             if token != ":=" || left.len() != 1 || right.len() != 1 {
                 return Result::Err("invalid type switch assignment")
-            } else {};
+            }
             match node_kind(builder, right[0]) {
                 syntax::SyntaxKind::TypeAssertExpr {
                     expression,
@@ -4235,7 +4235,7 @@ fn type_switch_binding(
     };
     if identifier(builder, variable)? == "_" {
         return Result::Ok((target, Option::None))
-    } else {};
+    }
     let object = execution::require_implicit(builder.index, clause)?.object.ok_or(
         "type switch clause has no implicit variable object",
     )?;
@@ -4307,13 +4307,13 @@ fn lower_type_switch(
     match initialization {
         Some(value) => lower_statement(builder, value)?,
         None => {},
-    };
+    }
     let guard = type_switch_guard(builder, assignment)?;
     let source = lower_single_expression(builder, guard.0)?;
     let source_type = builder.register_types[source.value];
     if !go_types::is_interface(builder.world, source_type) {
         return Result::Err("type switch source is not interface typed")
-    } else {};
+    }
     let clauses = type_switch_clauses(builder, body, guard.1)?;
     let exit = new_block(builder);
     let bool_type = go_types::basic_type(builder.world, "bool").ok_or("world has no bool type")?;
@@ -4394,14 +4394,14 @@ fn lower_type_switch(
             node,
             TerminatorKind::Jump { target: exit, arguments: Vec::new() },
         )?,
-    };
+    }
     builder.break_targets.push(exit);
     match label {
         Some(name) => {
             builder.break_labels[name] = exit;
         },
         None => {},
-    };
+    }
     for clause in clauses {
         match clause.binding {
             Some(binding) => {
@@ -4420,7 +4420,7 @@ fn lower_type_switch(
                 )?
             },
             None => {},
-        };
+        }
         switch_to(builder, clause.target);
         lower_statement_list(builder, clause.body)?;
         if !current_terminated(builder) {
@@ -4429,7 +4429,7 @@ fn lower_type_switch(
                 clause.node,
                 TerminatorKind::Jump { target: exit, arguments: Vec::new() },
             )?
-        } else {}
+        }
     }
     let _ = builder.break_targets.pop();
     match label {
@@ -4437,7 +4437,7 @@ fn lower_type_switch(
             let _ = builder.break_labels.remove(name);
         },
         None => {},
-    };
+    }
     switch_to(builder, exit);
     Result::Ok(())
 }
@@ -4535,7 +4535,7 @@ fn lower_select_operation(builder: FunctionBuilder, clause: SelectClause) -> Res
         syntax::SyntaxKind::AssignStmt { left, token_pos: _, token, right } => {
             if right.len() != 1 || left.is_empty() || left.len() > 2 {
                 return Result::Err("select receive assignment has an invalid shape")
-            } else {};
+            }
             let source = select_receive_source(builder, right[0])?;
             let element_type = select_channel_element(builder, source)?;
             let bool_type = go_types::basic_type(builder.world, "bool").ok_or(
@@ -4562,13 +4562,13 @@ fn lower_select_binding(builder: FunctionBuilder, clause: SelectClause) -> Resul
                 for target in binding.left {
                     renew_definition_local(builder, target)?
                 }
-            } else {};
+            }
             let targets = lower_assignment_targets(builder, binding.left)?;
             let values = Vec::from_array([binding.value]);
             match binding.ok {
                 Some(value) => values.push(value),
                 None => {},
-            };
+            }
             store_assignment_values(builder, clause.node, binding.left, targets, values)
         } else {
             Result::Ok(())
@@ -4605,7 +4605,7 @@ fn lower_select(
             builder.break_labels[name] = exit;
         },
         None => {},
-    };
+    }
     for clause in clauses {
         switch_to(builder, clause.target);
         lower_select_binding(builder, clause)?;
@@ -4616,7 +4616,7 @@ fn lower_select(
                 clause.node,
                 TerminatorKind::Jump { target: exit, arguments: Vec::new() },
             )?
-        } else {}
+        }
     }
     let _ = builder.break_targets.pop();
     match label {
@@ -4624,7 +4624,7 @@ fn lower_select(
             let _ = builder.break_labels.remove(name);
         },
         None => {},
-    };
+    }
     switch_to(builder, exit);
     Result::Ok(())
 }
@@ -4644,7 +4644,7 @@ fn lower_branch(
             None => {
                 if builder.break_targets.is_empty() {
                     return Result::Err("break has no enclosing target")
-                } else {};
+                }
                 builder.break_targets[builder.break_targets.len() - 1]
             },
         }
@@ -4657,14 +4657,14 @@ fn lower_branch(
             None => {
                 if builder.continue_targets.is_empty() {
                     return Result::Err("continue has no enclosing target")
-                } else {};
+                }
                 builder.continue_targets[builder.continue_targets.len() - 1]
             },
         }
     } else if token == "fallthrough" {
         if builder.fallthrough_targets.is_empty() {
             return Result::Err("fallthrough has no following case")
-        } else {};
+        }
         builder.fallthrough_targets[builder.fallthrough_targets.len() - 1]
     } else if token == "goto" {
         let label = identifier(builder, label.ok_or("goto has no label")?)?;
@@ -4800,7 +4800,7 @@ fn lower_statement(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(),
             let target = builder.labels[name].ok_or("label " + name + " was not collected")?;
             if !current_terminated(builder) {
                 terminate(builder, node, TerminatorKind::Jump { target, arguments: Vec::new() })?
-            } else {};
+            }
             switch_to(builder, target);
             match node_kind(builder, statement) {
                 syntax::SyntaxKind::ForStmt { for_pos: _, init, condition, post, body } => lower_for(
@@ -4901,7 +4901,7 @@ fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), 
             let name = identifier(builder, label)?;
             if builder.labels[name].is_some() {
                 return Result::Err("duplicate label " + name)
-            } else {};
+            }
             builder.labels[name] = new_block(builder);
             collect_labels(builder, statement)
         },
@@ -4915,7 +4915,7 @@ fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), 
             match init {
                 Some(value) => collect_labels(builder, value)?,
                 None => {},
-            };
+            }
             collect_labels(builder, body)?;
             match else_branch {
                 Some(value) => collect_labels(builder, value),
@@ -4926,11 +4926,11 @@ fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), 
             match init {
                 Some(value) => collect_labels(builder, value)?,
                 None => {},
-            };
+            }
             match post {
                 Some(value) => collect_labels(builder, value)?,
                 None => {},
-            };
+            }
             collect_labels(builder, body)
         },
         syntax::SyntaxKind::RangeStmt {
@@ -4952,7 +4952,7 @@ fn collect_labels(builder: FunctionBuilder, node: syntax::NodeId) -> Result[(), 
             match init {
                 Some(value) => collect_labels(builder, value)?,
                 None => {},
-            };
+            }
             collect_labels(builder, body)
         },
         syntax::SyntaxKind::SelectStmt { select_pos: _, body } => collect_labels(builder, body),
@@ -5068,18 +5068,18 @@ fn initialize_signature_locals(
             let objects = field_objects(builder, receiver_list)?;
             if objects.len() != 1 {
                 return Result::Err("method receiver does not have one binding")
-            } else {};
+            }
             append_parameter_local(builder, objects[0], receiver)?
         },
         None => if receiver_node.is_some() {
             return Result::Err("function syntax has an unexpected receiver")
-        } else {},
-    };
+        },
+    }
     let parameter_variables = signature_tuple_variables(builder, signature.1)?;
     let parameter_objects = field_objects(builder, params_node)?;
     if parameter_variables.len() != parameter_objects.len() {
         return Result::Err("parameter syntax does not match function signature")
-    } else {};
+    }
     for index in 0..parameter_variables.len() {
         append_parameter_local(builder, parameter_objects[index], parameter_variables[index])?
     }
@@ -5093,7 +5093,7 @@ fn initialize_signature_locals(
     };
     if result_variables.len() != result_objects.len() {
         return Result::Err("result syntax does not match function signature")
-    } else {};
+    }
     for index in 0..result_variables.len() {
         append_result_local(builder, result_objects[index], result_variables[index])?
     }
@@ -5110,7 +5110,7 @@ fn finalize_blocks(builder: FunctionBuilder, source: syntax::NodeId) -> Result[
         } else {
             terminate(builder, source, TerminatorKind::Unreachable)?
         }
-    } else {};
+    }
     let result: Vec[BasicBlock] = Vec::new();
     let value = match syntax::get_node(builder.syntax.arena, source) {
         Some(value) => value,
@@ -5157,7 +5157,7 @@ fn lower_function(
     let package_syntax = package_value.syntax.ok_or("interpreted package has no syntax")?;
     if source.object.value < 0 || source.object.value >= program.world.objects.len() {
         return Result::Err("function object is outside the world")
-    } else {};
+    }
     let object = program.world.objects[source.object.value];
     let blocks: Vec[OpenBlock] = Vec::new();
     blocks.push(
@@ -5255,7 +5255,7 @@ fn lower_package_initializer(
     let package_syntax = package_value.syntax.ok_or("interpreted package has no syntax")?;
     if source.object.value < 0 || source.object.value >= program.world.objects.len() {
         return Result::Err("initializer object is outside the world")
-    } else {};
+    }
     let object = program.world.objects[source.object.value];
     let blocks: Vec[OpenBlock] = Vec::new();
     blocks.push(
@@ -5309,12 +5309,12 @@ fn lower_package_initializer(
         let values = lower_expression(builder, fact.right)?;
         if values.len() != fact.left.len() {
             return Result::Err("package initializer value count does not match variables")
-        } else {};
+        }
         for index in 0..fact.left.len() {
             let object_id = fact.left[index];
             if object_id.value < 0 || object_id.value >= program.world.objects.len() {
                 return Result::Err("package initializer object is outside the world")
-            } else {};
+            }
             let target_object = program.world.objects[object_id.value];
             if target_object.name != "_" {
                 let global = object_globals[object_id.value].ok_or(
@@ -5328,7 +5328,7 @@ fn lower_package_initializer(
                     target_object.type_id,
                 )?;
                 emit(builder, fact.right, InstructionKind::Store { target: place, value })?
-            } else {}
+            }
         }
     }
     for function in init_functions {
@@ -5377,12 +5377,12 @@ fn package_bytecode(
             for function in bytecode_functions {
                 if function.package_id.value == package_value.package_id.value {
                     functions.push(function.id)
-                } else {}
+                }
             }
             for global in globals {
                 if global.package_id.value == package_value.package_id.value {
                     package_globals.push(global.id)
-                } else {}
+                }
             }
             result.push(
                 BytecodePackage {
@@ -5397,7 +5397,7 @@ fn package_bytecode(
                     },
                 },
             )
-        } else {}
+        }
     }
     result
 }
@@ -5563,7 +5563,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
     }
     if !diagnostics.is_empty() {
         return LowerResult { program: Option::None, diagnostics }
-    } else {};
+    }
     let object_functions: Vec[Option[FunctionId]] = option_slots(program.world.objects.len());
     let object_globals: Vec[Option[GlobalId]] = option_slots(program.world.objects.len());
     let literal_functions: HashMap[string, isize] = HashMap::new();
@@ -5658,7 +5658,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
                         && program.world.objects[source.object.value].name == "init"
                         && source.receiver.is_none() {
                         init_functions.push(source.function)
-                    } else {}
+                    }
                 }
                 match main_source {
                     Some(source) => {
@@ -5754,10 +5754,10 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
                 "main.main has no interpreted body",
             ),
         )
-    } else {};
+    }
     if !diagnostics.is_empty() {
         return LowerResult { program: Option::None, diagnostics }
-    } else {};
+    }
     let bytecode = BytecodeProgram {
         world: program.world,
         packages: package_bytecode(program, functions, globals, initializer),
@@ -5778,7 +5778,7 @@ fn lower_with_verification(program: execution::ExecutionProgram, validate: bool)
         for diagnostic in verification {
             diagnostics.push(verifier_lower_diagnostic(diagnostic))
         }
-    } else {};
+    }
     LowerResult {
         program: if diagnostics.is_empty() {
             Option::Some(bytecode)

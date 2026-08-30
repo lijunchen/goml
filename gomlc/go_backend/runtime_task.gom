@@ -552,7 +552,7 @@ fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
         closed.push(Stmt::Panic { message: "task scope is closed" })
     } else {
         closed.push(task_return(Expr::Bool { value: false }))
-    };
+    }
     stmts.push(
         Stmt::If {
             cond: Expr::Binary {

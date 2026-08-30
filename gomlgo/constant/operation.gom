@@ -168,13 +168,13 @@ pub fn constant_bit_not_width(value: ConstValue, bits: isize) -> ConstValue {
 pub fn constant_add(left: ConstValue, right: ConstValue) -> ConstValue {
     if has_complex(left) || has_complex(right) {
         return add_complex_values(left, right)
-    } else {};
+    }
     if has_large_float(left) || has_large_float(right) {
         if constant_sign(left).unwrap_or(1) == 0 {
             return constant_copy(right)
         } else if constant_sign(right).unwrap_or(1) == 0 {
             return constant_copy(left)
-        } else {};
+        }
         match (
             constant_to_binary_float(left, binary_float_default_precision()),
             constant_to_binary_float(right, binary_float_default_precision()),
@@ -193,7 +193,7 @@ pub fn constant_add(left: ConstValue, right: ConstValue) -> ConstValue {
             },
             _ => {},
         }
-    } else {};
+    }
     match (left, right) {
         (ConstValue::String(left), ConstValue::String(right)) => ConstValue::String(left + right),
         (left, right) => {
@@ -219,11 +219,11 @@ pub fn constant_sub(left: ConstValue, right: ConstValue) -> ConstValue {
 pub fn constant_mul(left: ConstValue, right: ConstValue) -> ConstValue {
     if has_complex(left) || has_complex(right) {
         return multiply_complex_values(left, right)
-    } else {};
+    }
     if has_large_float(left) || has_large_float(right) {
         if constant_sign(left).unwrap_or(1) == 0 || constant_sign(right).unwrap_or(1) == 0 {
             return ConstValue::Rat(rational_zero())
-        } else {};
+        }
         match (
             constant_to_binary_float(left, binary_float_default_precision()),
             constant_to_binary_float(right, binary_float_default_precision()),
@@ -238,7 +238,7 @@ pub fn constant_mul(left: ConstValue, right: ConstValue) -> ConstValue {
             },
             _ => {},
         }
-    } else {};
+    }
     let complex = has_complex(left) || has_complex(right);
     let floating = has_float(left) || has_float(right);
     match numeric_pair(left, right) {
@@ -257,7 +257,7 @@ pub fn constant_div(left: ConstValue, right: ConstValue) -> ConstValue {
     let floating = has_float(left) || has_float(right);
     if complex {
         return divide_complex_values(left, right)
-    } else {};
+    }
     if !complex && !floating {
         return match (constant_to_integer(left), constant_to_integer(right)) {
             (Some(left), Some(right)) => match integer_quo_rem(left, right) {
@@ -266,7 +266,7 @@ pub fn constant_div(left: ConstValue, right: ConstValue) -> ConstValue {
             },
             _ => ConstValue::Unknown,
         }
-    } else {};
+    }
     if !complex && (has_large_float(left) || has_large_float(right)) {
         if constant_sign(left).unwrap_or(1) == 0 {
             return if constant_sign(right).unwrap_or(0) == 0 {
@@ -274,7 +274,7 @@ pub fn constant_div(left: ConstValue, right: ConstValue) -> ConstValue {
             } else {
                 ConstValue::Rat(rational_zero())
             }
-        } else {};
+        }
         return match (
             constant_to_binary_float(left, binary_float_default_precision()),
             constant_to_binary_float(right, binary_float_default_precision()),
@@ -289,7 +289,7 @@ pub fn constant_div(left: ConstValue, right: ConstValue) -> ConstValue {
             },
             _ => ConstValue::Unknown,
         }
-    } else {};
+    }
     match numeric_pair(left, right) {
         Some((left, right)) => {
             let denominator = rational_add(
@@ -387,7 +387,7 @@ pub fn constant_compare(left: ConstValue, right: ConstValue) -> Option[isize] {
             (Some(left), Some(right)) => return Option::Some(binary_float_compare(left, right)),
             _ => {},
         }
-    } else {};
+    }
     match (left, right) {
         (ConstValue::String(left), ConstValue::String(right)) => if left < right {
             Option::Some(-1)

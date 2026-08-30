@@ -93,18 +93,18 @@ fn scan_file(file: string) -> () {
     }
     if !result.diagnostics.is_empty() {
         process::exit(1)
-    } else {}
+    }
 }
 
 fn print_parse_result(result: parser::ParseResult) -> () {
     match result.root {
         Some(root) => println(ast::encode(root)),
         None => println("null"),
-    };
+    }
     print_diagnostics(result);
     if !result.diagnostics.is_empty() {
         process::exit(1)
-    } else {}
+    }
 }
 
 fn check_files(files: Vec[string], package_path: string) -> () {
@@ -118,7 +118,7 @@ fn check_files(files: Vec[string], package_path: string) -> () {
                         if value.message.starts_with("entry package must be named main")
                             || value.message.starts_with("main.main") {
                             fallback = true;
-                        } else {}
+                        }
                     }
                     if !fallback {
                         for value in result.diagnostics {
@@ -131,14 +131,14 @@ fn check_files(files: Vec[string], package_path: string) -> () {
                         }
                         if result.program.is_none() || !result.diagnostics.is_empty() {
                             process::exit(1)
-                        } else {};
+                        }
                         return
-                    } else {}
+                    }
                 },
                 Err(_) => {},
             }
-        } else {}
-    } else {};
+        }
+    }
     let sources: Vec[checker::SourceFile] = Vec::new();
     for file in files {
         sources.push(checker::SourceFile { name: file, source: read_source(file) })
@@ -162,7 +162,7 @@ fn check_files(files: Vec[string], package_path: string) -> () {
     }
     if !result.diagnostics.is_empty() {
         process::exit(1)
-    } else {}
+    }
 }
 
 fn check_package(directory: string) -> () {
@@ -205,18 +205,18 @@ fn artifact_module_root(generated: string) -> Result[string, string] {
         if fs::is_file(path::join(current, "goml.toml"))
             && fs::is_file(path::join(current, "nativebridge/bridge.go")) {
             return Result::Ok(current)
-        } else {};
+        }
         let nested = path::join(current, "gomlgo");
         if fs::is_file(path::join(nested, "goml.toml"))
             && fs::is_file(path::join(nested, "nativebridge/bridge.go")) {
             return Result::Ok(nested)
-        } else {};
+        }
         let Some(parent) = path::parent(current) else {
             break
         };
         if parent == current {
             break
-        } else {};
+        }
         current = parent;
     }
     Result::Err("generated source is not below a gomlgo module root")
@@ -405,20 +405,20 @@ fn execute_loaded(
                 ),
             );
             return
-        } else {}
-    } else {};
+        }
+    }
     let result = interpreter::run(program, vm_config);
     match io::write_stdout_structured(result.stdout) {
         Ok(()) => {},
         Err(message) => fail(message.to_string()),
-    };
+    }
     match io::write_stderr_structured(result.stderr) {
         Ok(()) => {},
         Err(message) => fail(message.to_string()),
-    };
+    }
     if result.exit_code != 0 {
         process::exit(result.exit_code)
-    } else {}
+    }
 }
 
 fn run_files(arguments: Vec[string]) -> () {
@@ -429,7 +429,7 @@ fn run_files(arguments: Vec[string]) -> () {
         if arguments[index] == "--seed" {
             if index + 1 >= arguments.len() {
                 fail(COMMAND_USAGE)
-            } else {};
+            }
             vm_config.select_seed = match num::parse_uint_structured(arguments[index + 1]) {
                 Ok(value) => value.to_u64(),
                 Err(message) => {
@@ -441,7 +441,7 @@ fn run_files(arguments: Vec[string]) -> () {
         } else if arguments[index] == "--max-goroutines" {
             if index + 1 >= arguments.len() {
                 fail(COMMAND_USAGE)
-            } else {};
+            }
             vm_config.max_goroutines = match num::parse_int_structured(arguments[index + 1]) {
                 Ok(value) => if value > 0 {
                     value
@@ -458,7 +458,7 @@ fn run_files(arguments: Vec[string]) -> () {
         } else if arguments[index] == "--max-steps" {
             if index + 1 >= arguments.len() {
                 fail(COMMAND_USAGE)
-            } else {};
+            }
             vm_config.max_steps = match num::parse_int_structured(arguments[index + 1]) {
                 Ok(value) => if value > 0 || value == -1 {
                     value.to_i64()
@@ -475,7 +475,7 @@ fn run_files(arguments: Vec[string]) -> () {
         } else if arguments[index] == "--program-executable" {
             if index + 1 >= arguments.len() {
                 fail(COMMAND_USAGE)
-            } else {};
+            }
             vm_config.program_executable = arguments[index + 1];
             index += 2;
         } else {
@@ -485,7 +485,7 @@ fn run_files(arguments: Vec[string]) -> () {
     }
     if files.len() != 1 {
         fail(COMMAND_USAGE)
-    } else {};
+    }
     match execution::load_files(execution::default_config(), files) {
         Ok(value) => execute_loaded(value, files, vm_config),
         Err(message) => fail(message),

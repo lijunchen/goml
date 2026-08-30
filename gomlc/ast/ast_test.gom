@@ -27,7 +27,7 @@ fn has_diagnostic(values: Vec[cst::Diagnostic], expected: string) -> bool {
     for value in values {
         if value.message == expected {
             found.set(true)
-        } else {}
+        }
     }
     found.get()
 }
@@ -68,7 +68,7 @@ fn lowers_items_types_and_float_values() -> () {
             testing::assert_eq(value.variants.len(), 2)
         },
         _ => testing::fail("expected enum"),
-    };
+    }
     match file.items.get(2) {
         Function(value) => match value.body.tail {
             Some(Float { value: number, span: _ }) => testing::assert_eq(number, "3.140"),
@@ -126,7 +126,7 @@ fn lowers_named_attribute_arguments_structurally() -> () {
                     testing::assert_eq(value, "entry")
                 },
                 _ => testing::fail("expected named string attribute argument"),
-            };
+            }
             match attribute.args[1] {
                 AttributeArg::Named { name, value_kind, value } => {
                     testing::assert_eq(name, "with");
@@ -134,7 +134,7 @@ fn lowers_named_attribute_arguments_structurally() -> () {
                     testing::assert_eq(value, "codec::value")
                 },
                 _ => testing::fail("expected named path attribute argument"),
-            };
+            }
             match attribute.args[2] {
                 AttributeArg::Ident(value) => testing::assert_eq(value, "skip"),
                 _ => testing::fail("expected flag attribute argument"),
@@ -154,11 +154,11 @@ fn lowers_derive_paths_and_nested_item_attributes() -> () {
             match value.attrs[0].args[0] {
                 AttributeArg::Path(value) => testing::assert_eq(value, "macros::handler"),
                 _ => testing::fail("expected derive path"),
-            };
+            }
             testing::assert_eq(value.field_attrs[0][0].name, "field_tag")
         },
         _ => testing::fail("expected struct"),
-    };
+    }
     match file.items[1] {
         EnumDef(value) => {
             testing::assert_eq(value.variants[0].attrs[0].name, "variant_tag");
@@ -184,7 +184,7 @@ fn lowers_unicode_strings_and_constructor_patterns() -> () {
                     span: _,
                 } => testing::assert_eq(text_value, "λA🙂"),
                 _ => testing::fail("expected string binding"),
-            };
+            }
             match value.body.tail {
                 Some(Match { expr: _, arms, span: _ }) => {
                     testing::assert_eq(arms.len(), 2);
@@ -283,7 +283,7 @@ fn preserves_inconsistent_and_duplicate_pattern_bindings() -> () {
     match inconsistent.ast {
         Some(_) => (),
         None => testing::fail("expected inconsistent pattern AST"),
-    };
+    }
     let duplicate = lower(parser::parse("fn main() -> () { let (value, value) = (1, 2); }"));
     testing::assert_eq(duplicate.diagnostics.len(), 0);
     match duplicate.ast {

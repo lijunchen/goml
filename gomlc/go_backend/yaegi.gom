@@ -25,10 +25,10 @@ pub fn yaegi_compatible(source: string) -> bool {
             } else if indent > select_indent.get()
                 && (body.starts_with("break ") || body.starts_with("continue ")) {
                 return false
-            } else {}
+            }
         } else if body == "select {" {
             select_indent.set(indent)
-        } else {}
+        }
     }
     true
 }

@@ -61,7 +61,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
                 || !integer_digit_in_base(value.byte_get(index - 1), base)
                 || !integer_digit_in_base(value.byte_get(index + 1), base) {
                 return Option::None
-            } else {}
+            }
         } else {
             match integer_digit(source) {
                 Some(part) => if part < base {
@@ -106,7 +106,7 @@ fn decimal_at_most(value: string, limit: isize) -> bool {
                 return true
             } else if value.byte_get(index) > bound.byte_get(index) {
                 return false
-            } else {}
+            }
         }
         true
     }
@@ -131,7 +131,7 @@ fn signed_decimal(negative: bool, value: string) -> string {
 pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[string] {
     if max_digits <= 0 || value.byte_len() == 0 {
         return Option::None
-    } else {};
+    }
     let negative = value.byte_get(0) == b'-';
     let start = if negative {
         1
@@ -144,7 +144,7 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
         if byte == b'e' || byte == b'E' {
             exponent_start = index;
             break
-        } else {}
+        }
     }
     let coefficient_builder = text::StringBuilder::with_capacity(exponent_start - start);
     let mut fraction_digits = 0;
@@ -155,7 +155,7 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
             coefficient_builder.write_string(value.byte_slice(index, index + 1));
             if decimal_seen {
                 fraction_digits = fraction_digits + 1;
-            } else {}
+            }
         } else if byte == b'.' && !decimal_seen {
             decimal_seen = true;
         } else if byte == b'_' {} else {
@@ -178,8 +178,8 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
                 digits_start = digits_start + 1;
             } else if sign == b'+' {
                 digits_start = digits_start + 1;
-            } else {}
-        } else {};
+            }
+        }
         match normalize_integer(value.byte_slice(digits_start, value.byte_len())) {
             Some(value) => value,
             None => return Option::None,
@@ -187,7 +187,7 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
     };
     if coefficient == "0" {
         return Option::Some(signed_decimal(negative, coefficient))
-    } else {};
+    }
     let mut trailing_zeros = 0;
     let mut index = coefficient.byte_len();
     while index > 0 && coefficient.byte_get(index - 1) == b'0' {
@@ -197,30 +197,30 @@ pub fn normalize_float_integer(value: string, max_digits: isize) -> Option[strin
     let result = if exponent_negative {
         if fraction_digits > trailing_zeros {
             return Option::None
-        } else {};
+        }
         let available = trailing_zeros - fraction_digits;
         if !decimal_at_most(exponent, available) {
             return Option::None
-        } else {};
+        }
         let remove = fraction_digits + decimal_isize(exponent);
         coefficient.byte_slice(0, coefficient.byte_len() - remove)
     } else {
         let exponent_limit = fraction_digits + max_digits;
         if !decimal_at_most(exponent, exponent_limit) {
             return Option::None
-        } else {};
+        }
         let exponent = decimal_isize(exponent);
         if exponent < fraction_digits {
             let remove = fraction_digits - exponent;
             if remove > trailing_zeros {
                 return Option::None
-            } else {};
+            }
             coefficient.byte_slice(0, coefficient.byte_len() - remove)
         } else {
             let zeros = exponent - fraction_digits;
             if coefficient.byte_len() + zeros > max_digits {
                 return Option::None
-            } else {};
+            }
             let builder = text::StringBuilder::with_capacity(coefficient.byte_len() + zeros);
             builder.write_string(coefficient);
             for _ in 0..zeros {

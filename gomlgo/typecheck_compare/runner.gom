@@ -44,7 +44,7 @@ fn collect_go_files(root: string, files: Vec[string]) -> Result[(), string] {
     if fs::is_file(root) {
         if path::extension(root) == Option::Some("go") {
             files.push(root)
-        } else {}
+        }
     } else {
         let names = fs::read_dir(root).map_err(|error| error.to_string())?;
         collections::sort(names);
@@ -77,7 +77,7 @@ fn source_go_version(source: string) -> string {
     for line in text::split(source, "\n") {
         if line.starts_with("// -lang=") {
             return text::split(line.byte_slice(9, line.byte_len()), " ")[0]
-        } else {}
+        }
     }
     "go1.26"
 }
@@ -188,7 +188,7 @@ fn compare_diagnostics(
                     + " "
                     + right.message,
             )
-        } else {}
+        }
     }
     if actual_diagnostics.len() != expected_diagnostics.len() {
         return Result::Err(
@@ -196,7 +196,7 @@ fn compare_diagnostics(
                 + "\nexpected="
                 + expected_diagnostics.len().to_string(),
         )
-    } else {};
+    }
     Result::Ok(())
 }
 
@@ -211,7 +211,7 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
         );
         if node != "" {
             actual_keys.push(node)
-        } else {}
+        }
     }
     let expected_keys: Vec[string] = Vec::new();
     for value in expected {
@@ -220,7 +220,7 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
         );
         if node != "" {
             expected_keys.push(node)
-        } else {}
+        }
     }
     if actual.len() != expected.len() && !actual_keys.is_empty() && !expected_keys.is_empty() {
         let mut actual_index = 0;
@@ -256,8 +256,8 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
                     + "\nexpected fact="
                     + json::try_to_string(expected[expected_index]).unwrap_or(""),
             )
-        } else {}
-    } else {};
+        }
+    }
     if actual.len() == expected.len() {
         for index in 0..actual.len() {
             match parser_diff::compare_ast(
@@ -280,7 +280,7 @@ fn compare_section(file: string, name: string, actual: Vec[json::Value], expecte
                 None => {},
             }
         }
-    } else {};
+    }
     match parser_diff::compare_ast(
         json::Value::Array(actual),
         json::Value::Array(expected),
@@ -322,7 +322,7 @@ pub fn compare_info(
                 + " complete="
                 + expected.package_info.complete.to_string(),
         )
-    } else {};
+    }
     let normalized = normalize_result(actual);
     compare_section(file, "package_scope", normalized.package_scope, expected.package_scope)?;
     compare_section(file, "types", normalized.types, expected.types)?;
@@ -403,7 +403,7 @@ fn compare_file(file: string, mode: CompareMode) -> Result[(bool, bool), string]
                 Err(message) => return Result::Err(message),
             },
         }
-    };
+    }
     Result::Ok(
         (
             false,
@@ -424,10 +424,10 @@ pub fn compare_tree_mode(root: string, mode: CompareMode) -> Result[Summary, str
         let result = compare_file(file, mode)?;
         if result.0 {
             accepted += 1;
-        } else {};
+        }
         if result.1 {
             info_compared += 1;
-        } else {}
+        }
     }
     Result::Ok(
         Summary { files: files.len(), accepted, rejected: files.len() - accepted, info_compared },
