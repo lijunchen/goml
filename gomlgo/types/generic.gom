@@ -1,9 +1,8 @@
 package types;
 
-struct SubstitutionEntry {
-    source: TypeId,
-    target: TypeId,
-}
+use std::collections;
+
+type SubstitutionEntries = collections::IndexMap[isize, TypeId];
 
 fn substitution_argument(value: ObjectId, parameters: Vec[TypeParameter], arguments: Vec[TypeId]) -> Option[
     TypeId,
@@ -16,13 +15,8 @@ fn substitution_argument(value: ObjectId, parameters: Vec[TypeParameter], argume
     Option::None
 }
 
-fn substituted_entry(entries: Vec[SubstitutionEntry], source: TypeId) -> Option[TypeId] {
-    for entry in entries {
-        if entry.source.value == source.value {
-            return Option::Some(entry.target)
-        } else {}
-    }
-    Option::None
+fn substituted_entry(entries: SubstitutionEntries, source: TypeId) -> Option[TypeId] {
+    entries.get(source.value)
 }
 
 fn substitute_variables(
@@ -30,7 +24,7 @@ fn substitute_variables(
     values: Vec[Variable],
     parameters: Vec[TypeParameter],
     arguments: Vec[TypeId],
-    entries: Vec[SubstitutionEntry],
+    entries: SubstitutionEntries,
 ) -> Vec[Variable] {
     let result: Vec[Variable] = Vec::new();
     for value in values {
@@ -105,7 +99,7 @@ fn instantiate_method_object(
                     signature_arguments.push(receiver_arguments[index]);
                 } else {}
             }
-            let entries: Vec[SubstitutionEntry] = Vec::new();
+            let entries: SubstitutionEntries = collections::IndexMap::new();
             let signature = add_type(
                 world,
                 TypeKind::Signature {
@@ -149,7 +143,13 @@ fn instantiate_method_object(
         _ => clone_object_with_type(
             world,
             source,
-            substitute_inner(world, object.type_id, parameters, arguments, Vec::new()),
+            substitute_inner(
+                world,
+                object.type_id,
+                parameters,
+                arguments,
+                collections::IndexMap::new(),
+            ),
         ),
     }
 }
@@ -183,7 +183,7 @@ fn substitute_objects(
     values: Vec[ObjectId],
     parameters: Vec[TypeParameter],
     arguments: Vec[TypeId],
-    entries: Vec[SubstitutionEntry],
+    entries: SubstitutionEntries,
 ) -> Vec[ObjectId] {
     let result: Vec[ObjectId] = Vec::new();
     for value in values {
@@ -206,7 +206,7 @@ fn substitute_type_parameters(
     values: Vec[TypeParameter],
     parameters: Vec[TypeParameter],
     arguments: Vec[TypeId],
-    entries: Vec[SubstitutionEntry],
+    entries: SubstitutionEntries,
 ) -> Vec[TypeParameter] {
     let result: Vec[TypeParameter] = Vec::new();
     for value in values {
@@ -232,7 +232,7 @@ fn substitute_inner(
     value: TypeId,
     parameters: Vec[TypeParameter],
     arguments: Vec[TypeId],
-    entries: Vec[SubstitutionEntry],
+    entries: SubstitutionEntries,
 ) -> TypeId {
     match substituted_entry(entries, value) {
         Some(value) => return value,
@@ -429,7 +429,7 @@ fn substitute_inner(
         },
         TypeData { id: _, kind: TypeKind::Interface { methods, embeddeds, comparable, implicit } } => {
             let result = add_type(world, TypeKind::Invalid);
-            entries.push(SubstitutionEntry { source: value, target: result });
+            let _ = entries.insert(value.value, result);
             let result_embeddeds: Vec[TypeId] = Vec::new();
             for embedded in embeddeds {
                 result_embeddeds.push(
@@ -455,7 +455,7 @@ fn substitute_inner(
             value
         } else {
             let result = add_type(world, TypeKind::Invalid);
-            entries.push(SubstitutionEntry { source: value, target: result });
+            let _ = entries.insert(value.value, result);
             let next_arguments: Vec[TypeId] = Vec::new();
             for argument in type_args {
                 next_arguments.push(
@@ -542,7 +542,7 @@ pub fn substitute(
     parameters: Vec[TypeParameter],
     arguments: Vec[TypeId],
 ) -> TypeId {
-    substitute_inner(world, value, parameters, arguments, Vec::new())
+    substitute_inner(world, value, parameters, arguments, collections::IndexMap::new())
 }
 
 fn instantiate_inner(
@@ -776,7 +776,7 @@ pub fn refresh_named_instances(world: World, origin: TypeId) -> () {
                                 origin_data.3,
                                 origin_data.2,
                                 type_args,
-                                Vec::new(),
+                                collections::IndexMap::new(),
                             ),
                         },
                     );

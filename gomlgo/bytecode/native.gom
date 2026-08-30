@@ -881,10 +881,7 @@ fn direct_native_packages(program: execution::ExecutionProgram) -> Vec[string] {
 fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
     let candidates: Vec[NativeCandidate] = Vec::new();
     let diagnostics: Vec[LowerDiagnostic] = Vec::new();
-    let selected: Vec[bool] = Vec::with_capacity(program.world.objects.len());
-    for _ in program.world.objects {
-        selected.push(false)
-    }
+    let selected = collections::BitSet::new();
     for source_package in program.packages {
         if source_package.mode == execution::ExecutionMode::Interpreted {
             for value in source_package.index.uses {
@@ -893,7 +890,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                         && object_id.value < program.world.objects.len() {
                         let object = program.world.objects[object_id.value];
                         let generic = generic_function_signature(program.world, object.type_id);
-                        if !generic && selected[object_id.value] {
+                        if !generic && selected.contains(object_id.value) {
                             continue
                         } else {};
                         match object.owner {
@@ -907,7 +904,7 @@ fn link_native_calls(program: execution::ExecutionProgram) -> NativeLinkResult {
                                             continue
                                         } else {};
                                         if !generic {
-                                            selected[object_id.value] = true;
+                                            let _ = selected.insert(object_id.value);
                                         } else {};
                                         if !object.exported {
                                             diagnostics.push(
@@ -1196,16 +1193,15 @@ pub fn native_manifest(program: BytecodeProgram) -> Result[native_api::Manifest,
             },
         )
     }
-    let selected: Vec[bool] = Vec::with_capacity(program.world.objects.len());
-    for _ in program.world.objects {
-        selected.push(false)
-    }
+    let selected = collections::BitSet::new();
     for function in program.functions {
         for block in function.blocks {
             for instruction in block.instructions {
                 match instruction.kind {
-                    InstructionKind::NativeGlobalLoad { target: _, object } => if !selected[object.value] {
-                        selected[object.value] = true;
+                    InstructionKind::NativeGlobalLoad { target: _, object } => if !selected.contains(
+                        object.value,
+                    ) {
+                        let _ = selected.insert(object.value);
                         let value = program.world.objects[object.value];
                         let owner = value.owner.ok_or("native global has no package owner")?;
                         let import_path = program.world.packages[owner.value].path;

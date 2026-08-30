@@ -174,15 +174,7 @@ struct TypeFactSourceKey {
     end: i32,
 }
 
-struct TypeFactSourceEntry {
-    key: TypeFactSourceKey,
-    index: i32,
-}
-
-struct TypeFactSourceIndex {
-    entries: Vec[TypeFactSourceEntry],
-    mask: u64,
-}
+type TypeFactSourceIndex = collections::IndexMap[TypeFactSourceKey, isize];
 
 struct ActiveInstantiation {
     origin: go_types::TypeId,
@@ -313,47 +305,17 @@ fn type_fact_source_key(state: CheckState, node: syntax::NodeId) -> TypeFactSour
 }
 
 fn empty_type_fact_source_index(count: isize) -> TypeFactSourceIndex {
-    let mut capacity = 16;
-    while capacity <= count {
-        capacity *= 2;
-    }
-    let entries: Vec[TypeFactSourceEntry] = Vec::with_capacity(capacity);
-    for _ in 0..capacity {
-        entries.push(
-            TypeFactSourceEntry { key: TypeFactSourceKey { file: 0, start: 0, end: 0 }, index: -1 },
-        )
-    }
-    TypeFactSourceIndex { entries, mask: (capacity - 1).to_u64() }
-}
-
-fn type_fact_source_slot(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> isize {
-    let hash = key.hash();
-    let mut position = (hash & index.mask).to_isize();
-    let mut perturb = hash;
-    loop {
-        let entry = index.entries[position];
-        if entry.index < 0 || entry.key == key {
-            return position
-        } else {};
-        position = ((position.to_u64() * 5 + perturb + 1) & index.mask).to_isize();
-        perturb >>= 5;
-    }
+    collections::IndexMap::with_capacity(count)
 }
 
 fn insert_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey, value: isize) -> () {
-    let position = type_fact_source_slot(index, key);
-    if index.entries[position].index < 0 {
-        index.entries[position] = TypeFactSourceEntry { key, index: value.to_i32() };
+    if !index.contains(key) {
+        let _ = index.insert(key, value);
     } else {}
 }
 
 fn find_type_fact_source(index: TypeFactSourceIndex, key: TypeFactSourceKey) -> Option[isize] {
-    let entry = index.entries[type_fact_source_slot(index, key)];
-    if entry.index >= 0 {
-        Option::Some(entry.index.to_isize())
-    } else {
-        Option::None
-    }
+    index.get(key)
 }
 
 fn fact_index_slots(count: isize) -> Vec[i32] {

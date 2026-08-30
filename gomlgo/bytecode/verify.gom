@@ -1,20 +1,13 @@
 package bytecode;
 
 use gomlgo::types as go_types;
+use std::collections;
 
 struct SignatureShape {
     receiver: Option[go_types::TypeId],
     parameters: Vec[go_types::TypeId],
     results: Vec[go_types::TypeId],
     variadic: bool,
-}
-
-fn bool_slots(count: isize) -> Vec[bool] {
-    let result: Vec[bool] = Vec::with_capacity(count);
-    for _ in 0..count {
-        result.push(false)
-    }
-    result
 }
 
 fn int_slots(count: isize, value: isize) -> Vec[isize] {
@@ -2335,7 +2328,7 @@ fn check_function(
             )
         } else {}
     }
-    let seen_captures = bool_slots(function.locals.len());
+    let seen_captures = collections::BitSet::new();
     for index in 0..function.captures.len() {
         let local = function.captures[index];
         if !local_valid(function, local) {
@@ -2354,7 +2347,7 @@ fn check_function(
                 -1,
                 "capture local does not match capture index",
             )
-        } else if seen_captures[local.value] {
+        } else if seen_captures.contains(local.value) {
             report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2363,11 +2356,11 @@ fn check_function(
                 "duplicate capture local " + local.value.to_string(),
             )
         } else {
-            seen_captures[local.value] = true;
+            let _ = seen_captures.insert(local.value);
         }
     }
     for local in function.parameters {
-        if local_valid(function, local) && seen_captures[local.value] {
+        if local_valid(function, local) && seen_captures.contains(local.value) {
             report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2386,7 +2379,7 @@ fn check_function(
                 -1,
                 "invalid result local " + local.value.to_string(),
             )
-        } else if seen_captures[local.value] {
+        } else if seen_captures.contains(local.value) {
             report(
                 diagnostics,
                 Option::Some(function.id),
@@ -2761,16 +2754,16 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
             )
         } else {}
     }
-    let seen_packages = bool_slots(program.world.packages.len());
+    let seen_packages = collections::BitSet::new();
     for package_value in program.packages {
         if !valid_package(program, package_value.package_id) {
             report(diagnostics, Option::None, Option::None, -1, "invalid bytecode package")
-        } else if seen_packages[package_value.package_id.value] {
+        } else if seen_packages.contains(package_value.package_id.value) {
             report(diagnostics, Option::None, Option::None, -1, "duplicate bytecode package")
         } else {
-            seen_packages[package_value.package_id.value] = true;
+            let _ = seen_packages.insert(package_value.package_id.value);
         };
-        let seen_functions = bool_slots(program.functions.len());
+        let seen_functions = collections::BitSet::new();
         for function in package_value.functions {
             if !function_valid(program, function)
                 || program.functions[function.value].package_id.value
@@ -2782,7 +2775,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "package function index is inconsistent",
                 )
-            } else if seen_functions[function.value] {
+            } else if seen_functions.contains(function.value) {
                 report(
                     diagnostics,
                     Option::None,
@@ -2791,10 +2784,10 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     "package contains a duplicate function",
                 )
             } else {
-                seen_functions[function.value] = true;
+                let _ = seen_functions.insert(function.value);
             }
         }
-        let seen_globals = bool_slots(program.globals.len());
+        let seen_globals = collections::BitSet::new();
         for global in package_value.globals {
             if !global_valid(program, global)
                 || program.globals[global.value].package_id.value != package_value.package_id.value {
@@ -2805,7 +2798,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     -1,
                     "package global index is inconsistent",
                 )
-            } else if seen_globals[global.value] {
+            } else if seen_globals.contains(global.value) {
                 report(
                     diagnostics,
                     Option::None,
@@ -2814,7 +2807,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                     "package contains a duplicate global",
                 )
             } else {
-                seen_globals[global.value] = true;
+                let _ = seen_globals.insert(global.value);
             }
         }
         match package_value.initializer {
@@ -2845,7 +2838,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
             None => {},
         }
     }
-    let seen_initialization = bool_slots(program.world.packages.len());
+    let seen_initialization = collections::BitSet::new();
     for package_id in program.initialization_order {
         if !valid_package(program, package_id) {
             report(
@@ -2855,7 +2848,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 -1,
                 "initialization order contains an invalid package",
             )
-        } else if seen_initialization[package_id.value] {
+        } else if seen_initialization.contains(package_id.value) {
             report(
                 diagnostics,
                 Option::None,
@@ -2864,7 +2857,7 @@ pub fn verify(program: BytecodeProgram) -> Vec[VerifyDiagnostic] {
                 "initialization order contains a duplicate package",
             )
         } else {
-            seen_initialization[package_id.value] = true;
+            let _ = seen_initialization.insert(package_id.value);
         }
     }
     diagnostics
