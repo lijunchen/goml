@@ -335,7 +335,31 @@ fn formats_comptime_contextually_without_reserving_the_name() -> () {
 fn removes_redundant_unit_expressions_and_semicolons() -> () {
     expect_format(
         "fn empty()->(){;;;()}fn control(flag:bool,values:Vec[isize])->(){while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->(){if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[isize])->(Vec[isize],Vec[isize]){for value in values{let _=value;};(values,values)}",
-        "fn empty() -> () {}\n\nfn control(flag: bool, values: Vec[isize]) -> () {\n    while flag {}\n    for value in values {\n        let _ = value;\n    }\n    loop {\n        break;\n    }\n    if flag {} else {};\n    match flag {\n        true => (),\n        false => (),\n    };\n}\n\nfn retain(flag: bool) -> () {\n    if flag {\n        1\n    } else {\n        2\n    };\n    match flag {\n        true => 1,\n        false => 2,\n    };\n    loop {\n        break 1\n    };\n}\n\nfn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {\n    for value in values {\n        let _ = value;\n    };\n    (values, values)\n}\n",
+        "fn empty() -> () {}\n\nfn control(flag: bool, values: Vec[isize]) -> () {\n    while flag {}\n    for value in values {\n        let _ = value;\n    }\n    loop {\n        break;\n    }\n    if flag {}\n    match flag {\n        true => (),\n        false => (),\n    };\n}\n\nfn retain(flag: bool) -> () {\n    if flag {\n        1\n    } else {\n        2\n    }\n    match flag {\n        true => 1,\n        false => 2,\n    }\n    loop {\n        break 1\n    };\n}\n\nfn boundary(values: Vec[isize]) -> (Vec[isize], Vec[isize]) {\n    for value in values {\n        let _ = value;\n    };\n    (values, values)\n}\n",
+    )
+}
+
+#[test]
+fn normalizes_empty_else_and_braced_control_statements() -> () {
+    expect_format(
+        "fn flow(flag:bool,ch:Channel[isize])->(){if flag{println(\"first\")}else{};if flag{println(\"yes\")}else{println(\"no\")};match flag{true=>println(\"yes\"),false=>println(\"no\"),};select{recv(ch)as _=>(),default=>(),};println(\"done\")}fn nested(first:bool,second:bool)->(){if first{println(\"first\")}else if second{println(\"second\")}else{()};}fn value(flag:bool)->(){let _=if flag{()}else{};if flag{1}else{2};}fn comments(flag:bool)->(){if flag{}else{\n// keep\n};}",
+        "fn flow(flag: bool, ch: Channel[isize]) -> () {\n    if flag {\n        println(\"first\")\n    }\n    if flag {\n        println(\"yes\")\n    } else {\n        println(\"no\")\n    }\n    match flag {\n        true => println(\"yes\"),\n        false => println(\"no\"),\n    }\n    select {\n        recv(ch) as _ => (),\n        default => (),\n    }\n    println(\"done\")\n}\n\nfn nested(first: bool, second: bool) -> () {\n    if first {\n        println(\"first\")\n    } else if second {\n        println(\"second\")\n    }\n}\n\nfn value(flag: bool) -> () {\n    let _ = if flag {};\n    if flag {\n        1\n    } else {\n        2\n    };\n}\n\nfn comments(flag: bool) -> () {\n    if flag {} else {\n        // keep\n    };\n}\n",
+    )
+}
+
+#[test]
+fn normalizes_empty_if_let_else() -> () {
+    expect_format(
+        "fn inspect(candidate:Option[isize])->(){if let Some(value)=candidate{println(value)}else{};}",
+        "fn inspect(candidate: Option[isize]) -> () {\n    if let Some(value) = candidate {\n        println(value)\n    }\n}\n",
+    )
+}
+
+#[test]
+fn preserves_control_semicolons_before_expression_continuations() -> () {
+    expect_format(
+        "fn if_boundary(flag:bool)->(){if flag{}else{};(println)(\"if\")}fn match_boundary(flag:bool)->(){match flag{true=>(),false=>(),};(println)(\"match\")}fn select_boundary(channel:Channel[isize])->(){select{recv(channel)as _=>(),default=>(),};(println)(\"select\")}fn select_value(channel:Channel[isize])->(){select{recv(channel)as _=>1,default=>2,};}",
+        "fn if_boundary(flag: bool) -> () {\n    if flag {};\n    (println)(\"if\")\n}\n\nfn match_boundary(flag: bool) -> () {\n    match flag {\n        true => (),\n        false => (),\n    };\n    (println)(\"match\")\n}\n\nfn select_boundary(channel: Channel[isize]) -> () {\n    select {\n        recv(channel) as _ => (),\n        default => (),\n    };\n    (println)(\"select\")\n}\n\nfn select_value(channel: Channel[isize]) -> () {\n    select {\n        recv(channel) as _ => 1,\n        default => 2,\n    };\n}\n",
     )
 }
 
