@@ -1467,6 +1467,14 @@ fn packs_optional_small_scalars() -> () {
 }
 
 #[test]
+fn packs_negative_signed_scalars_without_overflowing_go_constants() -> () {
+    let source = "enum MaybeSigned { None, Some(i32), } fn read(value: MaybeSigned) -> i32 { match value { MaybeSigned::None => 0, MaybeSigned::Some(value) => value, } } fn main() -> () { println(read(MaybeSigned::Some(-7))) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "type MaybeSigned uint64"));
+    testing::assert(!string_contains(output, "uint32(-7)"))
+}
+
+#[test]
 fn plans_nested_enums_before_their_owners() -> () {
     let source = "enum Outer { None, Some(Inner), } enum Inner { Left(u8), Right(u8), } fn main() -> () { let value = Outer::Some(Inner::Right(9)); match value { Outer::None => println(0), Outer::Some(Inner::Left(x)) => println(x), Outer::Some(Inner::Right(x)) => println(x), } }";
     let output = encode(lower_source(source));
