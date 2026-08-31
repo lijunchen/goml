@@ -1414,7 +1414,7 @@ fn lower_lift_stage(value: mono::File, counter: Ref[isize]) -> lift::File {
 }
 
 fn lower_anf_stage(value: lift::File, counter: Ref[isize]) -> anf::File {
-    let result = anf::dce(anf::lower_with_counter(value, counter));
+    let result = anf::scalar_replace(anf::lower_with_counter(value, counter));
     if let Err(message) = anf::verify(result) {
         fail(COMPILE_ERROR_PREFIX + "invalid ANF IR: " + message)
     }

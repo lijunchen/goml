@@ -1699,6 +1699,17 @@ fn synthetic_option_items(value: repr::Type) -> Vec[Item] {
     result
 }
 
+struct HashmapOptionInfo {
+    owner_ty: repr::Type,
+    option_ty: Type,
+    some_ty: Type,
+    none_ty: Type,
+    synthetic: bool,
+    owner: Option[EnumInfo],
+    some: Option[VariantInfo],
+    none: Option[VariantInfo],
+}
+
 fn hashmap_option_info(
     builtin: tast::BuiltinContract,
     value: repr::Type,
@@ -1706,7 +1717,8 @@ fn hashmap_option_info(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
-) -> (Type, Type, Type, bool, bool, isize, isize) {
+    planned: VariantInfos,
+) -> HashmapOptionInfo {
     let args: Vec[repr::Type] = Vec::new();
     args.push(value);
     match find_instance(instances, builtin.option.name, args) {
@@ -1718,9 +1730,8 @@ fn hashmap_option_info(
             );
             let mut some_tag = 0;
             let mut none_tag = 1;
-            let compact = match definition {
+            match definition {
                 Some(value) => {
-                    let fields: Vec[Vec[repr::Type]] = Vec::with_capacity(value.variants.len());
                     for index in 0..value.variants.len() {
                         let variant = value.variants[index];
                         if variant.name == variants.0 {
@@ -1728,17 +1739,21 @@ fn hashmap_option_info(
                         } else if variant.name == variants.1 {
                             none_tag = index;
                         }
-                        fields.push(enum_field_types(variant.fields))
                     }
-                    compact_variant_fields(fields, structs)
-                        || compact_builtin_variant_fields(fields, structs)
                 },
+                None => (),
+            }
+            let owner_ty = repr::Type::Named { name: instance.name };
+            let option_ty = Type::Named { name: go_user_type_name(instance.name) };
+            let owner = find_enum_info(planned, owner_ty);
+            let direct = match owner {
+                Some(value) => enum_storage_is_direct(value.storage),
                 None => false,
             };
-            let option_ty = Type::Named { name: go_user_type_name(instance.name) };
-            (
+            HashmapOptionInfo {
+                owner_ty,
                 option_ty,
-                if compact {
+                some_ty: if direct {
                     option_ty
                 } else {
                     Type::Named {
@@ -1752,7 +1767,7 @@ fn hashmap_option_info(
                         ),
                     }
                 },
-                if compact {
+                none_ty: if direct {
                     option_ty
                 } else {
                     Type::Named {
@@ -1766,23 +1781,24 @@ fn hashmap_option_info(
                         ),
                     }
                 },
-                false,
-                compact,
-                some_tag,
-                none_tag,
-            )
+                synthetic: false,
+                owner,
+                some: find_variant_info(planned, owner_ty, some_tag),
+                none: find_variant_info(planned, owner_ty, none_tag),
+            }
         },
         None => {
             let option_name = go_generated_ident("_goml_synthetic_" + synthetic_option_base(value));
-            (
-                Type::Named { name: option_name },
-                Type::Named { name: go_generated_ident(option_name + "_Some") },
-                Type::Named { name: go_generated_ident(option_name + "_None") },
-                true,
-                false,
-                0,
-                1,
-            )
+            HashmapOptionInfo {
+                owner_ty: repr::Type::Unit,
+                option_ty: Type::Named { name: option_name },
+                some_ty: Type::Named { name: go_generated_ident(option_name + "_Some") },
+                none_ty: Type::Named { name: go_generated_ident(option_name + "_None") },
+                synthetic: true,
+                owner: Option::None,
+                some: Option::None,
+                none: Option::None,
+            }
         },
     }
 }
@@ -2519,16 +2535,7 @@ fn hashmap_lookup_item(builtin: tast::BuiltinContract, key: repr::Type, value: r
     )
 }
 
-fn hashmap_get_item(
-    key: repr::Type,
-    value: repr::Type,
-    option_ty: Type,
-    some_ty: Type,
-    none_ty: Type,
-    compact: bool,
-    some_tag: isize,
-    none_tag: isize,
-) -> Item {
+fn hashmap_get_item(key: repr::Type, value: repr::Type, option: HashmapOptionInfo) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let params: Vec[(string, Type)] = Vec::new();
     params.push(("m", lower_type(map_ty)));
@@ -2553,17 +2560,10 @@ fn hashmap_get_item(
             },
         },
     );
-    let some_fields: Vec[(string, Expr)] = Vec::new();
-    if compact {
-        some_fields.push(("_tag", Expr::Int { value: some_tag.to_string() }));
-        some_fields.push((compact_variant_field_name(some_tag, 0), Expr::Var { name: "value" }))
-    } else {
-        some_fields.push(("_0", Expr::Var { name: "value" }))
-    }
     let some_stmts: Vec[Stmt] = Vec::new();
     some_stmts.push(
         Stmt::Return {
-            expr: Option::Some(Expr::StructLiteral { ty: some_ty, fields: some_fields }),
+            expr: Option::Some(hashmap_option_some_expr(option, Expr::Var { name: "value" })),
         },
     );
     stmts.push(
@@ -2573,20 +2573,12 @@ fn hashmap_get_item(
             else_: Option::None,
         },
     );
-    let none_fields: Vec[(string, Expr)] = Vec::new();
-    if compact {
-        none_fields.push(("_tag", Expr::Int { value: none_tag.to_string() }))
-    }
-    stmts.push(
-        Stmt::Return {
-            expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: none_fields }),
-        },
-    );
+    stmts.push(Stmt::Return { expr: Option::Some(hashmap_option_none_expr(option)) });
     Item::Function(
         Function {
             name: runtime_helper_name("hashmap_get", map_ty),
             params,
-            ret_ty: Option::Some(option_ty),
+            ret_ty: Option::Some(option.option_ty),
             body: Block { stmts },
         },
     )
@@ -2612,42 +2604,124 @@ fn hashmap_increment_len() -> Stmt {
     }
 }
 
-fn hashmap_option_some_expr(
-    option_ty: Type,
-    some_ty: Type,
-    compact: bool,
-    some_tag: isize,
-    value: Expr,
-) -> Expr {
-    let fields: Vec[(string, Expr)] = Vec::new();
-    if compact {
-        fields.push(("_tag", Expr::Int { value: some_tag.to_string() }));
-        fields.push((compact_variant_field_name(some_tag, 0), value))
-    } else {
-        fields.push(("_0", value))
-    }
-    Expr::StructLiteral {
-        ty: if compact {
-            option_ty
-        } else {
-            some_ty
+fn hashmap_option_some_expr(option: HashmapOptionInfo, value: Expr) -> Expr {
+    match option.owner {
+        Some(owner) => {
+            let variant = option.some;
+            let tag = match variant {
+                Some(value) => value.tag,
+                None => 0,
+            };
+            match owner.storage {
+                Singleton => Expr::StructLiteral { ty: option.option_ty, fields: Vec::new() },
+                TagOnly => Expr::Convert {
+                    ty: option.option_ty,
+                    expr: Expr::Int { value: tag.to_string() },
+                },
+                Flat => {
+                    let fields = Vec::from_array([("_tag", Expr::Int { value: tag.to_string() })]);
+                    if let Some(info) = variant {
+                        if !info.field_names.is_empty() {
+                            if let Some(name) = info.field_names[0] {
+                                fields.push((name, value))
+                            }
+                        }
+                    }
+                    Expr::StructLiteral { ty: option.option_ty, fields }
+                },
+                PointerNiche => Expr::StructLiteral {
+                    ty: option.option_ty,
+                    fields: Vec::from_array([("_value", value)]),
+                },
+                Packed => enum_packed_value_expr(
+                    owner,
+                    option.owner_ty,
+                    owner.payload_ty.unwrap_or(repr::Type::Unit),
+                    value,
+                ),
+                Node => {
+                    let fields = Vec::from_array([("_tag", Expr::Int { value: tag.to_string() })]);
+                    if let Some(info) = variant {
+                        if !info.field_names.is_empty() {
+                            if let Some(name) = info.field_names[0] {
+                                fields.push((name, value))
+                            }
+                        }
+                    }
+                    Expr::StructLiteral {
+                        ty: option.option_ty,
+                        fields: Vec::from_array(
+                            [
+                                (
+                                    "_node",
+                                    Expr::Unary {
+                                        op: UnaryOp::Address,
+                                        expr: Expr::StructLiteral {
+                                            ty: Type::Named { name: owner.node_name },
+                                            fields,
+                                        },
+                                    },
+                                ),
+                            ],
+                        ),
+                    }
+                },
+                Interface => Expr::StructLiteral {
+                    ty: option.some_ty,
+                    fields: Vec::from_array([("_0", value)]),
+                },
+            }
         },
-        fields,
+        None => Expr::StructLiteral { ty: option.some_ty, fields: Vec::from_array([("_0", value)]) },
     }
 }
 
-fn hashmap_option_none_expr(option_ty: Type, none_ty: Type, compact: bool, none_tag: isize) -> Expr {
-    let fields: Vec[(string, Expr)] = Vec::new();
-    if compact {
-        fields.push(("_tag", Expr::Int { value: none_tag.to_string() }))
-    }
-    Expr::StructLiteral {
-        ty: if compact {
-            option_ty
-        } else {
-            none_ty
+fn hashmap_option_none_expr(option: HashmapOptionInfo) -> Expr {
+    match option.owner {
+        Some(owner) => {
+            let tag = match option.none {
+                Some(value) => value.tag,
+                None => 1,
+            };
+            match owner.storage {
+                Singleton => Expr::StructLiteral { ty: option.option_ty, fields: Vec::new() },
+                TagOnly => Expr::Convert {
+                    ty: option.option_ty,
+                    expr: Expr::Int { value: tag.to_string() },
+                },
+                Flat => Expr::StructLiteral {
+                    ty: option.option_ty,
+                    fields: Vec::from_array([("_tag", Expr::Int { value: tag.to_string() })]),
+                },
+                PointerNiche => Expr::StructLiteral { ty: option.option_ty, fields: Vec::new() },
+                Packed => Expr::Convert { ty: option.option_ty, expr: Expr::Int { value: "0" } },
+                Node => if owner.nil_tag == Option::Some(tag) {
+                    Expr::StructLiteral { ty: option.option_ty, fields: Vec::new() }
+                } else {
+                    Expr::StructLiteral {
+                        ty: option.option_ty,
+                        fields: Vec::from_array(
+                            [
+                                (
+                                    "_node",
+                                    Expr::Unary {
+                                        op: UnaryOp::Address,
+                                        expr: Expr::StructLiteral {
+                                            ty: Type::Named { name: owner.node_name },
+                                            fields: Vec::from_array(
+                                                [("_tag", Expr::Int { value: tag.to_string() })],
+                                            ),
+                                        },
+                                    },
+                                ),
+                            ],
+                        ),
+                    }
+                },
+                Interface => Expr::StructLiteral { ty: option.none_ty, fields: Vec::new() },
+            }
         },
-        fields,
+        None => Expr::StructLiteral { ty: option.none_ty, fields: Vec::new() },
     }
 }
 
@@ -2668,6 +2742,7 @@ fn hashmap_fused_lookup_stmts(map_ty: repr::Type, value: repr::Type) -> Vec[Stmt
             },
         },
     );
+    stmts.push(Stmt::Assign { name: "_", value: Expr::Var { name: "previous" } });
     stmts.push(Stmt::Assign { name: "_", value: Expr::Var { name: "index" } });
     stmts.push(Stmt::Assign { name: "_", value: Expr::Var { name: "hash" } });
     stmts
@@ -2824,16 +2899,7 @@ fn hashmap_insert_missing_stmts(key: repr::Type, value: repr::Type, native_key: 
     stmts
 }
 
-fn hashmap_insert_item(
-    key: repr::Type,
-    value: repr::Type,
-    option_ty: Type,
-    some_ty: Type,
-    none_ty: Type,
-    compact: bool,
-    some_tag: isize,
-    none_tag: isize,
-) -> Item {
+fn hashmap_insert_item(key: repr::Type, value: repr::Type, option: HashmapOptionInfo) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let params = Vec::from_array(
         [("m", lower_type(map_ty)), ("key", lower_type(key)), ("value", lower_type(value))],
@@ -2849,15 +2915,7 @@ fn hashmap_insert_item(
     );
     found_stmts.push(
         Stmt::Return {
-            expr: Option::Some(
-                hashmap_option_some_expr(
-                    option_ty,
-                    some_ty,
-                    compact,
-                    some_tag,
-                    Expr::Var { name: "previous" },
-                ),
-            ),
+            expr: Option::Some(hashmap_option_some_expr(option, Expr::Var { name: "previous" })),
         },
     );
     stmts.push(
@@ -2868,11 +2926,7 @@ fn hashmap_insert_item(
         },
     );
     let nil_stmts = Vec::from_array(
-        [
-            Stmt::Return {
-                expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
-            },
-        ],
+        [Stmt::Return { expr: Option::Some(hashmap_option_none_expr(option)) }],
     );
     stmts.push(
         Stmt::If {
@@ -2884,16 +2938,12 @@ fn hashmap_insert_item(
     for stmt in hashmap_insert_missing_stmts(key, value, hashmap_native_key(key)) {
         stmts.push(stmt)
     }
-    stmts.push(
-        Stmt::Return {
-            expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
-        },
-    );
+    stmts.push(Stmt::Return { expr: Option::Some(hashmap_option_none_expr(option)) });
     Item::Function(
         Function {
             name: runtime_helper_name("hashmap_insert", map_ty),
             params,
-            ret_ty: Option::Some(option_ty),
+            ret_ty: Option::Some(option.option_ty),
             body: Block { stmts },
         },
     )
@@ -2947,16 +2997,7 @@ fn hashmap_get_or_insert_with_item(key: repr::Type, value: repr::Type) -> Item {
     )
 }
 
-fn hashmap_update_item(
-    key: repr::Type,
-    value: repr::Type,
-    option_ty: Type,
-    some_ty: Type,
-    none_ty: Type,
-    compact: bool,
-    some_tag: isize,
-    none_tag: isize,
-) -> Item {
+fn hashmap_update_item(key: repr::Type, value: repr::Type, option: HashmapOptionInfo) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let update_ty = Type::Func {
         params: Vec::from_array([lower_type(value)]),
@@ -2967,11 +3008,7 @@ fn hashmap_update_item(
     );
     let stmts = hashmap_fused_lookup_stmts(map_ty, value);
     let missing_stmts = Vec::from_array(
-        [
-            Stmt::Return {
-                expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
-            },
-        ],
+        [Stmt::Return { expr: Option::Some(hashmap_option_none_expr(option)) }],
     );
     stmts.push(
         Stmt::If {
@@ -2999,46 +3036,25 @@ fn hashmap_update_item(
     );
     stmts.push(
         Stmt::Return {
-            expr: Option::Some(
-                hashmap_option_some_expr(
-                    option_ty,
-                    some_ty,
-                    compact,
-                    some_tag,
-                    Expr::Var { name: "value" },
-                ),
-            ),
+            expr: Option::Some(hashmap_option_some_expr(option, Expr::Var { name: "value" })),
         },
     );
     Item::Function(
         Function {
             name: runtime_helper_name("hashmap_update", map_ty),
             params,
-            ret_ty: Option::Some(option_ty),
+            ret_ty: Option::Some(option.option_ty),
             body: Block { stmts },
         },
     )
 }
 
-fn hashmap_remove_value_item(
-    key: repr::Type,
-    value: repr::Type,
-    option_ty: Type,
-    some_ty: Type,
-    none_ty: Type,
-    compact: bool,
-    some_tag: isize,
-    none_tag: isize,
-) -> Item {
+fn hashmap_remove_value_item(key: repr::Type, value: repr::Type, option: HashmapOptionInfo) -> Item {
     let map_ty = repr::Type::HashMap { key, value };
     let params = Vec::from_array([("m", lower_type(map_ty)), ("key", lower_type(key))]);
     let stmts = hashmap_fused_lookup_stmts(map_ty, value);
     let missing_stmts = Vec::from_array(
-        [
-            Stmt::Return {
-                expr: Option::Some(hashmap_option_none_expr(option_ty, none_ty, compact, none_tag)),
-            },
-        ],
+        [Stmt::Return { expr: Option::Some(hashmap_option_none_expr(option)) }],
     );
     stmts.push(
         Stmt::If {
@@ -3076,22 +3092,14 @@ fn hashmap_remove_value_item(
     );
     stmts.push(
         Stmt::Return {
-            expr: Option::Some(
-                hashmap_option_some_expr(
-                    option_ty,
-                    some_ty,
-                    compact,
-                    some_tag,
-                    Expr::Var { name: "previous" },
-                ),
-            ),
+            expr: Option::Some(hashmap_option_some_expr(option, Expr::Var { name: "previous" })),
         },
     );
     Item::Function(
         Function {
             name: runtime_helper_name("hashmap_remove_value", map_ty),
             params,
-            ret_ty: Option::Some(option_ty),
+            ret_ty: Option::Some(option.option_ty),
             body: Block { stmts },
         },
     )
@@ -3718,6 +3726,7 @@ fn hashmap_items(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
+    planned: VariantInfos,
     include_option: bool,
 ) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
@@ -3747,8 +3756,16 @@ fn hashmap_items(
     }
     fields.push(("len", Type::Int));
     result.push(Item::Struct(StructDef { name, fields }));
-    let option = hashmap_option_info(builtin, value, instances, enums, structs, function_names);
-    if include_option && option.3 {
+    let option = hashmap_option_info(
+        builtin,
+        value,
+        instances,
+        enums,
+        structs,
+        function_names,
+        planned,
+    );
+    if include_option && option.synthetic {
         for item in synthetic_option_items(value) {
             result.push(item)
         }
@@ -3768,28 +3785,11 @@ fn hashmap_items(
             hashmap_lookup_item(builtin, key, value)
         },
     );
-    result.push(
-        hashmap_get_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
-    );
-    result.push(
-        hashmap_insert_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
-    );
+    result.push(hashmap_get_item(key, value, option));
+    result.push(hashmap_insert_item(key, value, option));
     result.push(hashmap_get_or_insert_with_item(key, value));
-    result.push(
-        hashmap_update_item(key, value, option.0, option.1, option.2, option.4, option.5, option.6),
-    );
-    result.push(
-        hashmap_remove_value_item(
-            key,
-            value,
-            option.0,
-            option.1,
-            option.2,
-            option.4,
-            option.5,
-            option.6,
-        ),
-    );
+    result.push(hashmap_update_item(key, value, option));
+    result.push(hashmap_remove_value_item(key, value, option));
     if native_key {
         result.push(hashmap_native_set_item(key, value));
         result.push(hashmap_native_remove_item(key, value));
@@ -4262,6 +4262,7 @@ pub fn emit_builtin_runtime_items(
     enums: Vec[repr::EnumDef],
     structs: Vec[repr::StructDef],
     function_names: FunctionNames,
+    planned: VariantInfos,
 ) -> () {
     for instance in instances {
         if backend_names_match(instance.base_name, builtin.static_cell.name)
@@ -4307,6 +4308,7 @@ pub fn emit_builtin_runtime_items(
                 enums,
                 structs,
                 function_names,
+                planned,
                 include_option,
             ) {
                 items.push(item)

@@ -618,43 +618,110 @@ fn compile_constant_expr(variants: VariantInfos, value: repr::ConstExpr) -> Expr
             Expr::ArrayLiteral { ty: lower_type(ty), items: values }
         },
         Constr { constructor, args, ty } => {
-            let fields: Vec[(string, Expr)] = Vec::with_capacity(args.len());
             let info = constructor.tag.and_then(|tag| find_variant_info(variants, ty, tag));
-            if let Some(value) = info {
-                if value.compact {
-                    fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
-                }
-            }
+            let values: Vec[Expr] = Vec::with_capacity(args.len());
             for index in 0..args.len() {
-                fields.push(
-                    (
-                        if constructor.is_struct && index < constructor.fields.len() {
-                            go_ident(constructor.fields[index])
-                        } else if match info {
-                            Some(value) => value.compact,
-                            None => false,
-                        } {
-                            compact_variant_field_name(constructor.tag.unwrap_or(0), index)
-                        } else {
-                            f"_{index}"
-                        },
-                        compile_constant_expr(variants, args[index]),
-                    ),
-                )
+                values.push(compile_constant_expr(variants, args[index]))
             }
-            let go_ty = if constructor.is_struct {
-                lower_type(ty)
-            } else {
-                match info {
-                    Some(value) => if value.compact {
-                        lower_type(ty)
-                    } else {
-                        Type::Named { name: value.variant_name }
-                    },
-                    None => constructor_type(constructor),
+            if constructor.is_struct {
+                let fields: Vec[(string, Expr)] = Vec::with_capacity(values.len());
+                for index in 0..values.len() {
+                    fields.push(
+                        (
+                            if index < constructor.fields.len() {
+                                go_ident(constructor.fields[index])
+                            } else {
+                                f"_{index}"
+                            },
+                            values[index],
+                        ),
+                    )
                 }
+                return Expr::StructLiteral { ty: lower_type(ty), fields }
+            }
+            let variant = match info {
+                Some(value) => value,
+                None => {
+                    let fields: Vec[(string, Expr)] = Vec::with_capacity(values.len());
+                    for index in 0..values.len() {
+                        fields.push((f"_{index}", values[index]))
+                    }
+                    return Expr::StructLiteral { ty: constructor_type(constructor), fields }
+                },
             };
-            Expr::StructLiteral { ty: go_ty, fields }
+            match find_enum_info(variants, ty) {
+                Some(owner) => match owner.storage {
+                    Singleton => Expr::StructLiteral { ty: lower_type(ty), fields: Vec::new() },
+                    TagOnly => enum_named_expr(ty, Expr::Int { value: variant.tag.to_string() }),
+                    Flat | PointerNiche | Node => {
+                        let fields: Vec[(string, Expr)] = Vec::new();
+                        for index in 0..values.len() {
+                            if index < variant.field_names.len() {
+                                if let Some(name) = variant.field_names[index] {
+                                    fields.push((name, values[index]))
+                                }
+                            }
+                        }
+                        match owner.storage {
+                            Flat => {
+                                fields.push(("_tag", Expr::Int { value: variant.tag.to_string() }));
+                                Expr::StructLiteral { ty: lower_type(ty), fields }
+                            },
+                            PointerNiche => Expr::StructLiteral { ty: lower_type(ty), fields },
+                            Node => if owner.nil_tag == Option::Some(variant.tag) {
+                                Expr::StructLiteral { ty: lower_type(ty), fields: Vec::new() }
+                            } else {
+                                fields.push(("_tag", Expr::Int { value: variant.tag.to_string() }));
+                                Expr::StructLiteral {
+                                    ty: lower_type(ty),
+                                    fields: Vec::from_array(
+                                        [
+                                            (
+                                                "_node",
+                                                Expr::Unary {
+                                                    op: UnaryOp::Address,
+                                                    expr: Expr::StructLiteral {
+                                                        ty: Type::Named { name: owner.node_name },
+                                                        fields,
+                                                    },
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                }
+                            },
+                            _ => Expr::StructLiteral { ty: lower_type(ty), fields },
+                        }
+                    },
+                    Packed => if values.is_empty() {
+                        enum_named_expr(ty, Expr::Int { value: "0" })
+                    } else {
+                        enum_packed_value_expr(
+                            owner,
+                            ty,
+                            owner.payload_ty.unwrap_or(repr::Type::Unit),
+                            values[0],
+                        )
+                    },
+                    Interface => {
+                        let fields: Vec[(string, Expr)] = Vec::with_capacity(values.len());
+                        for index in 0..values.len() {
+                            fields.push((f"_{index}", values[index]))
+                        }
+                        Expr::StructLiteral {
+                            ty: Type::Named { name: variant.variant_name },
+                            fields,
+                        }
+                    },
+                },
+                None => {
+                    let fields: Vec[(string, Expr)] = Vec::with_capacity(values.len());
+                    for index in 0..values.len() {
+                        fields.push((f"_{index}", values[index]))
+                    }
+                    Expr::StructLiteral { ty: constructor_type(constructor), fields }
+                },
+            }
         },
     }
 }
@@ -778,16 +845,55 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
         Callable { callable: value, ty } => Expr::Var { name: callable_name(env, value, ty) },
         Prim { value, ty } => compile_primitive(value, ty),
         Tag { index, ty: owner_ty } => {
-            match find_variant_info(env.variants, owner_ty, index) {
-                Some(info) => {
-                    if info.tag_only {
-                        Expr::Var { name: info.variant_name }
-                    } else {
-                        Expr::Int { value: index.to_string() }
-                    }
+            match find_enum_info(env.variants, owner_ty) {
+                Some(owner) => match owner.storage {
+                    Singleton => Expr::StructLiteral {
+                        ty: lower_type(owner_ty),
+                        fields: Vec::new(),
+                    },
+                    TagOnly => match find_variant_info(env.variants, owner_ty, index) {
+                        Some(info) => Expr::Var { name: info.variant_name },
+                        None => Expr::Int { value: index.to_string() },
+                    },
+                    PointerNiche | Packed => Expr::Bool {
+                        value: owner.payload_tag == Option::Some(index),
+                    },
+                    Flat | Node | Interface => Expr::Int { value: index.to_string() },
                 },
                 None => Expr::Int { value: index.to_string() },
             }
+        },
+    }
+}
+
+fn enum_node_expr(value: Expr) -> Expr {
+    Expr::Field { expr: value, field_name: "_node" }
+}
+
+fn enum_named_expr(owner_ty: repr::Type, value: Expr) -> Expr {
+    Expr::Convert { ty: lower_type(owner_ty), expr: value }
+}
+
+fn compile_packed_constructor(env: LowerEnv, owner: EnumInfo, owner_ty: repr::Type, value: anf::Imm) -> Expr {
+    let payload_ty = owner.payload_ty.unwrap_or(anf::imm_type(value));
+    enum_packed_value_expr(owner, owner_ty, payload_ty, compile_imm(env, value))
+}
+
+fn compile_packed_projection(env: LowerEnv, owner: EnumInfo, value: anf::Imm) -> Expr {
+    let payload_ty = owner.payload_ty.unwrap_or(anf::imm_type(value));
+    match repr::resolve_type(payload_ty) {
+        Bool => Expr::Binary {
+            op: BinaryOp::Eq,
+            lhs: compile_imm(env, value),
+            rhs: enum_named_expr(anf::imm_type(value), Expr::Int { value: "2" }),
+        },
+        _ => Expr::Convert {
+            ty: lower_type(payload_ty),
+            expr: Expr::Binary {
+                op: BinaryOp::Sub,
+                lhs: Expr::Convert { ty: owner.tag_ty, expr: compile_imm(env, value) },
+                rhs: Expr::Int { value: "1" },
+            },
         },
     }
 }
@@ -846,17 +952,45 @@ fn compile_closure_function(
 fn compile_imm_expected(env: LowerEnv, value: anf::Imm, expected_ty: repr::Type) -> Expr {
     match value {
         Tag { index: tag, ty: owner_ty } => {
-            match find_variant_info(env.variants, owner_ty, tag) {
-                Some(info) => if info.compact {
-                    Expr::StructLiteral {
+            match find_enum_info(env.variants, owner_ty) {
+                Some(owner) => match owner.storage {
+                    Singleton | TagOnly => compile_imm(env, value),
+                    Flat => Expr::StructLiteral {
                         ty: lower_type(owner_ty),
                         fields: Vec::from_array([("_tag", Expr::Int { value: tag.to_string() })]),
-                    }
-                } else {
-                    match variant_type(env.variants, owner_ty, tag) {
+                    },
+                    PointerNiche => Expr::StructLiteral {
+                        ty: lower_type(owner_ty),
+                        fields: Vec::new(),
+                    },
+                    Packed => enum_named_expr(owner_ty, Expr::Int { value: "0" }),
+                    Node => if owner.nil_tag == Option::Some(tag) {
+                        Expr::StructLiteral { ty: lower_type(owner_ty), fields: Vec::new() }
+                    } else {
+                        Expr::StructLiteral {
+                            ty: lower_type(owner_ty),
+                            fields: Vec::from_array(
+                                [
+                                    (
+                                        "_node",
+                                        Expr::Unary {
+                                            op: UnaryOp::Address,
+                                            expr: Expr::StructLiteral {
+                                                ty: Type::Named { name: owner.node_name },
+                                                fields: Vec::from_array(
+                                                    [("_tag", Expr::Int { value: tag.to_string() })],
+                                                ),
+                                            },
+                                        },
+                                    ),
+                                ],
+                            ),
+                        }
+                    },
+                    Interface => match variant_type(env.variants, owner_ty, tag) {
                         Some(ty) => Expr::StructLiteral { ty, fields: Vec::new() },
                         None => compile_imm(env, value),
-                    }
+                    },
                 },
                 None => compile_imm(env, value),
             }
@@ -2231,43 +2365,105 @@ fn compile_constructor(
             }
         }
     }
-    let fields: Vec[(string, Expr)] = Vec::new();
-    if let Some(value) = info {
-        if value.compact {
-            fields.push(("_tag", Expr::Int { value: value.tag.to_string() }))
+    if constructor.is_struct {
+        let fields: Vec[(string, Expr)] = Vec::new();
+        for index in 0..args.len() {
+            let name = if index < constructor.fields.len() {
+                go_ident(constructor.fields[index])
+            } else {
+                f"_{index}"
+            };
+            let compiled = if index < expected.len() {
+                compile_imm_expected(env, args[index], expected[index])
+            } else {
+                compile_imm(env, args[index])
+            };
+            fields.push((name, compiled))
         }
+        return Expr::StructLiteral { ty: lower_type(ty), fields }
     }
+    let variant = match info {
+        Some(value) => value,
+        None => {
+            let fields: Vec[(string, Expr)] = Vec::new();
+            for index in 0..args.len() {
+                fields.push((f"_{index}", compile_imm(env, args[index])))
+            }
+            return Expr::StructLiteral { ty: constructor_type(constructor), fields }
+        },
+    };
+    let owner = match find_enum_info(env.variants, ty) {
+        Some(value) => value,
+        None => {
+            let fields: Vec[(string, Expr)] = Vec::new();
+            for index in 0..args.len() {
+                fields.push((f"_{index}", compile_imm(env, args[index])))
+            }
+            return Expr::StructLiteral { ty: Type::Named { name: variant.variant_name }, fields }
+        },
+    };
+    if let Packed = owner.storage {
+        if !args.is_empty() {
+            return compile_packed_constructor(env, owner, ty, args[0])
+        }
+        return enum_named_expr(ty, Expr::Int { value: "0" })
+    }
+    let payload_fields: Vec[(string, Expr)] = Vec::new();
     for index in 0..args.len() {
-        let name = if constructor.is_struct && index < constructor.fields.len() {
-            go_ident(constructor.fields[index])
-        } else if match info {
-            Some(value) => value.compact,
-            None => false,
-        } {
-            compact_variant_field_name(constructor.tag.unwrap_or(0), index)
-        } else {
-            f"_{index}"
-        };
         let compiled = if index < expected.len() {
             compile_imm_expected(env, args[index], expected[index])
         } else {
             compile_imm(env, args[index])
         };
-        fields.push((name, compiled))
-    }
-    let go_ty = if constructor.is_struct {
-        lower_type(ty)
-    } else {
-        match info {
-            Some(value) => if value.compact {
-                lower_type(ty)
-            } else {
-                Type::Named { name: value.variant_name }
+        match owner.storage {
+            Flat | Node | PointerNiche => if index < variant.field_names.len() {
+                if let Some(name) = variant.field_names[index] {
+                    payload_fields.push((name, compiled))
+                }
             },
-            None => constructor_type(constructor),
+            Interface => payload_fields.push((f"_{index}", compiled)),
+            Singleton | TagOnly | Packed => (),
         }
-    };
-    Expr::StructLiteral { ty: go_ty, fields }
+    }
+    match owner.storage {
+        Singleton | TagOnly => compile_imm_expected(
+            env,
+            anf::Imm::Tag { index: variant.tag, ty },
+            ty,
+        ),
+        Flat => {
+            payload_fields.push(("_tag", Expr::Int { value: variant.tag.to_string() }));
+            Expr::StructLiteral { ty: lower_type(ty), fields: payload_fields }
+        },
+        PointerNiche => Expr::StructLiteral { ty: lower_type(ty), fields: payload_fields },
+        Packed => enum_named_expr(ty, Expr::Int { value: "0" }),
+        Node => if owner.nil_tag == Option::Some(variant.tag) {
+            Expr::StructLiteral { ty: lower_type(ty), fields: Vec::new() }
+        } else {
+            payload_fields.push(("_tag", Expr::Int { value: variant.tag.to_string() }));
+            Expr::StructLiteral {
+                ty: lower_type(ty),
+                fields: Vec::from_array(
+                    [
+                        (
+                            "_node",
+                            Expr::Unary {
+                                op: UnaryOp::Address,
+                                expr: Expr::StructLiteral {
+                                    ty: Type::Named { name: owner.node_name },
+                                    fields: payload_fields,
+                                },
+                            },
+                        ),
+                    ],
+                ),
+            }
+        },
+        Interface => Expr::StructLiteral {
+            ty: Type::Named { name: variant.variant_name },
+            fields: payload_fields,
+        },
+    }
 }
 
 fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_ty: repr::Type) -> CompiledValue {
@@ -2312,42 +2508,61 @@ fn compile_value(env: LowerEnv, bind_name: string, value: anf::Value, expected_t
                 items: compile_imms_expected(env, items, expected),
             }
         },
-        ConstrGet { expr, constructor, field_index: index, ty: _ } => {
+        ConstrGet { expr, constructor, field_index: index, ty: field_ty } => {
             let owner_ty = anf::imm_type(expr);
-            let info = constructor.tag.and_then(
-                |tag| find_variant_info(env.variants, owner_ty, tag),
-            );
-            let field = if constructor.is_struct && index < constructor.fields.len() {
-                go_ident(constructor.fields[index])
-            } else if match info {
-                Some(value) => value.compact,
-                None => false,
-            } {
-                compact_variant_field_name(constructor.tag.unwrap_or(0), index)
+            if constructor.is_struct {
+                let field = if index < constructor.fields.len() {
+                    go_ident(constructor.fields[index])
+                } else {
+                    f"_{index}"
+                };
+                Expr::Field { expr: compile_imm(env, expr), field_name: field }
             } else {
-                f"_{index}"
-            };
-            let target = if constructor.is_struct {
-                compile_imm(env, expr)
-            } else {
-                match info {
-                    Some(value) => if value.compact {
-                        compile_imm(env, expr)
-                    } else {
-                        Expr::Cast {
-                            expr: compile_imm(env, expr),
-                            ty: Type::Named { name: value.variant_name },
-                        }
+                let variant = constructor.tag.and_then(
+                    |tag| find_variant_info(env.variants, owner_ty, tag),
+                );
+                match find_enum_info(env.variants, owner_ty) {
+                    Some(owner) => match owner.storage {
+                        Packed => compile_packed_projection(env, owner, expr),
+                        Flat | PointerNiche | Node => match variant {
+                            Some(variant) => if index < variant.field_names.len() {
+                                match variant.field_names[index] {
+                                    Some(field) => Expr::Field {
+                                        expr: if let Node = owner.storage {
+                                            enum_node_expr(compile_imm(env, expr))
+                                        } else {
+                                            compile_imm(env, expr)
+                                        },
+                                        field_name: field,
+                                    },
+                                    None => enum_zero_expr(field_ty),
+                                }
+                            } else {
+                                enum_zero_expr(field_ty)
+                            },
+                            None => enum_zero_expr(field_ty),
+                        },
+                        Interface => match variant {
+                            Some(variant) => Expr::Field {
+                                expr: Expr::Cast {
+                                    expr: compile_imm(env, expr),
+                                    ty: Type::Named { name: variant.variant_name },
+                                },
+                                field_name: f"_{index}",
+                            },
+                            None => enum_zero_expr(field_ty),
+                        },
+                        Singleton | TagOnly => enum_zero_expr(field_ty),
                     },
-                    None => {
-                        Expr::Cast {
+                    None => Expr::Field {
+                        expr: Expr::Cast {
                             expr: compile_imm(env, expr),
                             ty: constructor_type(constructor),
-                        }
+                        },
+                        field_name: f"_{index}",
                     },
                 }
-            };
-            Expr::Field { expr: target, field_name: field }
+            }
         },
         Unary { op, expr: operand, ty: _ } => {
             let compiled = match op {
@@ -3019,11 +3234,24 @@ fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
 }
 
 fn compile_match_scrutinee(env: LowerEnv, value: anf::Imm) -> Expr {
-    match find_variant_info(env.variants, anf::imm_type(value), 0) {
-        Some(info) => if info.compact {
-            Expr::Field { expr: compile_imm(env, value), field_name: "_tag" }
-        } else {
-            compile_imm(env, value)
+    match find_enum_info(env.variants, anf::imm_type(value)) {
+        Some(info) => match info.storage {
+            Flat => Expr::Field { expr: compile_imm(env, value), field_name: "_tag" },
+            PointerNiche => Expr::Binary {
+                op: BinaryOp::NotEq,
+                lhs: Expr::Field { expr: compile_imm(env, value), field_name: "_value" },
+                rhs: Expr::Nil,
+            },
+            Packed => Expr::Binary {
+                op: BinaryOp::NotEq,
+                lhs: compile_imm(env, value),
+                rhs: enum_named_expr(anf::imm_type(value), Expr::Int { value: "0" }),
+            },
+            Node => Expr::Call {
+                func: Expr::Var { name: enum_node_tag_helper_name(info.owner_name) },
+                args: Vec::from_array([compile_imm(env, value)]),
+            },
+            Singleton | TagOnly | Interface => compile_imm(env, value),
         },
         None => compile_imm(env, value),
     }
@@ -5798,6 +6026,7 @@ fn lower_with_test_cases(
         function_names,
     );
     let pointer_params = build_pointer_param_infos(value.functions, structs);
+    let variants = plan_variant_infos(builtin, enums, structs, type_instances, function_names);
     let items: Vec[Item] = Vec::new();
     let types = new_collected_types();
     let runtime_hook_keys: Vec[string] = Vec::new();
@@ -5805,7 +6034,6 @@ fn lower_with_test_cases(
     let go_foreign: Vec[GoForeignSpec] = Vec::new();
     let missing_types = new_collected_types();
     let coercions: Vec[DynCoercion] = Vec::new();
-    let variants = new_variant_infos();
     for function in value.functions {
         for param in function.params {
             collect_type(types, param.1)
@@ -5856,6 +6084,7 @@ fn lower_with_test_cases(
         enums,
         structs,
         function_names,
+        variants,
     );
     emit_user_type_items(builtin, items, variants, enums, structs, type_instances, function_names);
     emit_constants(items, constants, variants);
